@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Iterable, Mapping
 
-from .state import Channel, CoreInvariantError, RhythmState, SCALAR_CHANNELS
+from .state import AUXILIARY_FIELDS, Channel, CoreInvariantError, RhythmState, SCALAR_CHANNELS
 
 
 class ProvenanceError(CoreInvariantError):
@@ -191,6 +191,39 @@ class CoreEvent:
 
 
 @dataclass(frozen=True)
+class AuxiliaryChange:
+    """One change of the core's auxiliary dynamic state in one minute (P2D-1).
+
+    Only the integrator writes one, under a core-coupling source. It records the value before
+    and after, so the auxiliary state can be replayed and audited like a channel.
+    """
+
+    quantity: str
+    before: float
+    after: float
+    source: Source
+    minute: int
+    description: str
+
+    def __post_init__(self):
+        if self.quantity not in AUXILIARY_FIELDS:
+            raise ProvenanceError(f"unknown auxiliary quantity {self.quantity!r}")
+        for name in ("before", "after"):
+            value = getattr(self, name)
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+                raise ProvenanceError("an auxiliary value is a finite number")
+        if not isinstance(self.source, Source) or self.source.kind is not SourceKind.CORE_COUPLING:
+            raise ProvenanceError("only the core (a core-coupling source) changes its auxiliary state")
+        _minute(self.minute)
+        if not self.description:
+            raise ProvenanceError("an auxiliary change says what it is")
+
+    def to_dict(self) -> dict:
+        return {"type": "auxiliary", "quantity": self.quantity, "before": self.before, "after": self.after,
+                "source": self.source.to_dict(), "minute": self.minute, "description": self.description}
+
+
+@dataclass(frozen=True)
 class MinuteRecord:
     """Everything applied in one minute, in a deterministic order."""
 
@@ -200,10 +233,11 @@ class MinuteRecord:
     settings: tuple[SettingChange, ...] = ()
     events: tuple[CoreEvent, ...] = ()
     internal_updates: tuple[str, ...] = field(default=())
+    auxiliary: tuple[AuxiliaryChange, ...] = field(default=())
 
     def __post_init__(self):
         _minute(self.minute)
-        for item in self.deltas + self.transitions + self.settings + self.events:
+        for item in self.deltas + self.transitions + self.settings + self.events + self.auxiliary:
             if item.minute != self.minute:
                 raise ProvenanceError("a record holds only changes applied in its own minute")
 
@@ -222,7 +256,8 @@ class MinuteRecord:
                 "transitions": [item.to_dict() for item in self.transitions],
                 "settings": [item.to_dict() for item in self.settings],
                 "events": [item.to_dict() for item in self.events],
-                "internal_updates": list(self.internal_updates)}
+                "internal_updates": list(self.internal_updates),
+                "auxiliary": [item.to_dict() for item in self.auxiliary]}
 
 
 def attribution(records: Iterable[MinuteRecord], channel: Channel) -> dict[str, float]:

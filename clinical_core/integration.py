@@ -27,13 +27,12 @@ import math
 from dataclasses import dataclass, fields, is_dataclass
 from typing import Any, ClassVar, Iterable, Mapping, Sequence
 
-from .derived import (ADOPTED, DEFAULT_PROFILE, LACTATE_KINETICS, PRELOAD_CONGESTION, PROVISIONAL,
-                      SYMPATHETIC_DRIVE, CoreProfile, Derived, congestion_rate, derive, lactate_after_minute,
-                      sympathetic_after_minute)
-from .provenance import (ChannelDelta, CoreEvent, MinuteRecord, ProvenanceError, RhythmTransition, SettingChange,
-                         Source, SourceKind)
-from .state import (Anchors, Channel, CoreInvariantError, CoreState, FrozenRecord, SCALAR_CHANNELS, digest,
-                    initial_state)
+from .derived import (ADOPTED, AUXILIARY_SOURCES, DEFAULT_PROFILE, PRELOAD_CONGESTION, PROVISIONAL, CoreProfile,
+                      Derived, congestion_rate, derive, lactate_after_minute, sympathetic_after_minute)
+from .provenance import (AuxiliaryChange, ChannelDelta, CoreEvent, MinuteRecord, ProvenanceError, RhythmTransition,
+                         SettingChange, Source, SourceKind)
+from .state import (AUXILIARY_FIELDS, Anchors, AuxiliaryState, Channel, CoreInvariantError, CoreState, FrozenRecord,
+                    SCALAR_CHANNELS, digest, initial_state)
 
 #: (lower, upper, status, why). A bound is a safety constraint, not physiology: every time one
 #: acts, the clipped amount is recorded as a clamp delta, so it is never silent.
@@ -213,7 +212,7 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
         deltas.append(ChannelDelta(Channel.L, congestion, PRELOAD_CONGESTION, minute,
                                    "excess preload on a pump without reserve"))
     transitions, settings, events = [], [], []
-    internal = {LACTATE_KINETICS.key: FrozenRecord({"excess_mmol_l": lactate_after_minute(state, profile)})}
+    internal = {}
     for contributor in ordered:
         # A contributor sees only the signals it declares it responds to.
         heard = tuple(signal for signal in signals if signal.name in contributor.responds_to)
@@ -241,13 +240,18 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
     new_internal = state.internal.updated(**internal) if internal else state.internal
     new_state = state.evolve(minute=minute, R=rhythm, fio2=fio2, terminal_since=terminal, internal=new_internal,
                              **values)
-    # The drive answers to the state the minute ends in, so a fall in pressure raises the rate in
-    # the same minute; only its decay is lagged.
-    internal[SYMPATHETIC_DRIVE.key] = FrozenRecord(
-        {"drive": sympathetic_after_minute(state, new_state, anchors, profile)})
-    new_state = new_state.evolve(internal=state.internal.updated(**internal))
+    # The core's auxiliary state (P2D-1). Lactate follows the debt of the minute before; the
+    # drive answers to the state the minute ends in, so a fall in pressure raises the rate in
+    # the same minute and only its decay is lagged.
+    aux = AuxiliaryState(lactate_excess_mmol_l=lactate_after_minute(state, profile),
+                         sympathetic_drive=sympathetic_after_minute(state, new_state, anchors, profile))
+    new_state = new_state.evolve(aux=aux)
+    changes = tuple(AuxiliaryChange(name, getattr(state.aux, name), getattr(aux, name), AUXILIARY_SOURCES[name],
+                                    minute, AUXILIARY_FIELDS[name])
+                    for name in AUXILIARY_FIELDS if getattr(aux, name) != getattr(state.aux, name))
     record = MinuteRecord(minute=minute, deltas=tuple(deltas), transitions=tuple(transitions),
-                          settings=tuple(settings), events=tuple(events), internal_updates=tuple(sorted(internal)))
+                          settings=tuple(settings), events=tuple(events), internal_updates=tuple(sorted(internal)),
+                          auxiliary=changes)
     _check_conservation(state, new_state, record)
     derive(new_state, anchors, profile)   # the observation invariants hold, or this minute fails
     return new_state, record
@@ -276,6 +280,13 @@ def _setting_after(current: float, setting: str, settings: list[SettingChange]) 
 
 
 def _check_conservation(before: CoreState, after: CoreState, record: MinuteRecord) -> None:
+    changed = {change.quantity: change for change in record.auxiliary}
+    for name in AUXILIARY_FIELDS:
+        change = changed.get(name)
+        expected = (getattr(before.aux, name), getattr(before.aux, name)) if change is None else (change.before,
+                                                                                                  change.after)
+        if (getattr(before.aux, name), getattr(after.aux, name)) != expected:
+            raise ProvenanceError(f"auxiliary {name} changed without a record of the change")
     for channel in SCALAR_CHANNELS:
         change = after.value(channel) - before.value(channel)
         total = record.total(channel)

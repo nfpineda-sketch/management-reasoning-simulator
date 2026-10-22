@@ -195,8 +195,10 @@ def test_kd_s2_hemostasis_never_writes_the_rate_it_acts_only_through_volume_and_
                     for record in bleeding.records)
     replayed = run(BLEEDING, (Replay("replay", changes),), 120)
     assert _rates(replayed) == pytest.approx(_rates(bleeding), abs=1e-9)
-    assert all(SYMPATHETIC_DRIVE.key in record.internal_updates for record in bleeding.records), \
-        "the drive is the core's own memory, kept every minute"
+    drives = [change for record in bleeding.records for change in record.auxiliary
+              if change.quantity == "sympathetic_drive"]
+    assert drives and all(change.source == SYMPATHETIC_DRIVE for change in drives), \
+        "the drive is the core's own auxiliary state, and every change of it is recorded"
 
 
 def test_kd_s2_a_hemostasis_without_resuscitation_leaves_the_rate_up():

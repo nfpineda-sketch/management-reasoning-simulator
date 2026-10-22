@@ -178,6 +178,10 @@ class FrozenRecord(Mapping):
     def __setattr__(self, name, value):
         raise AttributeError("FrozenRecord is immutable")
 
+    def __reduce__(self):
+        # Copies and pickles rebuild the record from its frozen items: never by setting attributes.
+        return (FrozenRecord, (self._items,))
+
     def __getitem__(self, key):
         for item_key, value in self._items:
             if item_key == key:
@@ -306,12 +310,48 @@ class Anchors:
         return cls(**values)
 
 
+#: The common core's auxiliary dynamic state (P2D-1), by field: what it remembers.
+#: It is neither a channel (V..K) nor a derived observable: it is memory the core needs to derive
+#: observables and responses over time. Only the integrator changes it, each change recorded with
+#: its source (``provenance.AuxiliaryChange``). It is never shown to a resident.
+AUXILIARY_FIELDS: Mapping[str, str] = {
+    "lactate_excess_mmol_l": "lactate above arrival that D has produced and clearance has not yet removed (KD-S1)",
+    "sympathetic_drive": "the common sympathetic drive the core holds (KD-S2)",
+}
+
+
+@dataclass(frozen=True)
+class AuxiliaryState:
+    """Typed, serializable memory owned by the common core (P2D-1); see ``AUXILIARY_FIELDS``."""
+
+    lactate_excess_mmol_l: float = 0.0
+    sympathetic_drive: float = 0.0
+
+    def __post_init__(self):
+        for name in AUXILIARY_FIELDS:
+            _finite(getattr(self, name), name)
+
+    def to_dict(self) -> dict:
+        return {name: getattr(self, name) for name in AUXILIARY_FIELDS}
+
+    @classmethod
+    def from_dict(cls, data: Mapping) -> "AuxiliaryState":
+        unknown = set(data) - set(AUXILIARY_FIELDS)
+        if unknown:
+            raise CoreInvariantError(f"unknown auxiliary state {sorted(unknown)}")
+        return cls(**{name: data[name] for name in AUXILIARY_FIELDS if name in data})
+
+
+ARRIVAL_AUXILIARY = AuxiliaryState()
+
+
 @dataclass(frozen=True)
 class CoreState:
     """The whole physiological state at the end of ``minute`` (0 = arrival).
 
     ``internal`` holds each contributor's own state under its source key ("kind:id");
-    only that contributor's contribution can replace it. ``fio2`` is a support setting,
+    only that contributor's contribution can replace it. ``aux`` is the core's own memory
+    (``AuxiliaryState``), which only the integrator changes. ``fio2`` is a support setting,
     not a channel: proposal §7.3 makes SpO2 a function of G, L, W and FiO2.
     ``terminal_since`` is the minute the rhythm stopped perfusing; resuscitation is not
     modelled (proposal Appendix A5), so it is never cleared.
@@ -333,6 +373,7 @@ class CoreState:
     fio2: float
     terminal_since: int | None = None
     internal: FrozenRecord = field(default=EMPTY)
+    aux: AuxiliaryState = field(default=ARRIVAL_AUXILIARY)
 
     def __post_init__(self):
         if isinstance(self.minute, bool) or not isinstance(self.minute, int) or self.minute < 0:
@@ -351,6 +392,8 @@ class CoreState:
             raise CoreInvariantError("terminal_since lies within the encounter")
         if not isinstance(self.internal, FrozenRecord):
             raise CoreInvariantError("internal state is a FrozenRecord")
+        if not isinstance(self.aux, AuxiliaryState):
+            raise CoreInvariantError("the core's auxiliary state is an AuxiliaryState")
 
     def value(self, channel: Channel) -> float:
         if channel is Channel.R:
@@ -366,7 +409,8 @@ class CoreState:
 
     def to_dict(self) -> dict:
         data = {"minute": self.minute, "R": self.R.to_dict(), "fio2": self.fio2,
-                "terminal_since": self.terminal_since, "internal": self.internal.to_dict()}
+                "terminal_since": self.terminal_since, "internal": self.internal.to_dict(),
+                "aux": self.aux.to_dict()}
         for channel in SCALAR_CHANNELS:
             data[_attribute(channel)] = getattr(self, _attribute(channel))
         return data
@@ -376,6 +420,7 @@ class CoreState:
         values = dict(data)
         values["R"] = RhythmState.from_dict(values["R"])
         values["internal"] = FrozenRecord(values.get("internal") or {})
+        values["aux"] = AuxiliaryState.from_dict(values.get("aux") or {})
         return cls(**values)
 
     def digest(self) -> str:

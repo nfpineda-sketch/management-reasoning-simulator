@@ -26,12 +26,12 @@ PROVISIONAL = "provisional"
 #: that variable is therefore 300 / 0.36 mL-equivalent of intravascular volume.
 LEGACY_ML_PER_CIRCULATION_UNIT = 300.0 / 0.36
 
-#: The core's own memory of lactate (KD-S1): the excess over arrival that D produces and the
-#: liver clears. Written only by the integrator, under this key of ``CoreState.internal``.
+#: The sources of the changes to the core's auxiliary dynamic state (``CoreState.aux``, P2D-1):
+#: lactate kinetics (KD-S1) and the common sympathetic drive (KD-S2). Only the integrator
+#: writes them; each change is an ``AuxiliaryChange`` in the minute's record.
 LACTATE_KINETICS = Source(SourceKind.CORE_COUPLING, "lactate_kinetics")
-#: The core's own memory of sympathetic drive (KD-S2): it rises at once and decays with a time
-#: constant. Written only by the integrator, under this key of ``CoreState.internal``.
 SYMPATHETIC_DRIVE = Source(SourceKind.CORE_COUPLING, "sympathetic_drive")
+AUXILIARY_SOURCES = {"lactate_excess_mmol_l": LACTATE_KINETICS, "sympathetic_drive": SYMPATHETIC_DRIVE}
 #: The core's coupling from excess preload on a pump without reserve to lung water L (KD-S4).
 PRELOAD_CONGESTION = Source(SourceKind.CORE_COUPLING, "preload_congestion")
 
@@ -171,8 +171,8 @@ def _level(value: float, levels) -> int:
 
 
 def lactate_excess(state: CoreState) -> float:
-    """The lactate the core holds above arrival (mmol/L): its own memory, not a function of D."""
-    return float(state.internal_for(LACTATE_KINETICS.key).get("excess_mmol_l", 0.0))
+    """The lactate the core holds above arrival (mmol/L): auxiliary state, not a function of D."""
+    return state.aux.lactate_excess_mmol_l
 
 
 def lactate_after_minute(state: CoreState, profile: CoreProfile) -> float:
@@ -308,9 +308,8 @@ def sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile)
 
 
 def sympathetic_drive(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:
-    """The drive the core holds (its memory), or the drive the state calls for if none is held yet."""
-    held = state.internal_for(SYMPATHETIC_DRIVE.key).get("drive")
-    return float(held) if held is not None else sympathetic_target(state, anchors, profile)
+    """The drive the core holds: auxiliary state (0 at arrival, where the state calls for none)."""
+    return state.aux.sympathetic_drive
 
 
 def sympathetic_after_minute(before: CoreState, after: CoreState, anchors: Anchors, profile: CoreProfile) -> float:

@@ -35,7 +35,7 @@ from contracts_v2.trace import TraceProvenance
 from . import AUTHORITATIVE_ENGINE, CORE_VERSION
 from .derived import derive
 from .integration import Trajectory
-from .state import SCALAR_CHANNELS, digest
+from .state import AUXILIARY_FIELDS, SCALAR_CHANNELS, digest
 
 SHADOW_NAMESPACE = "clinical_core_shadow"
 #: Keys that carry what a resident sees in the Phase-0/Phase-1 records. None may appear here.
@@ -120,6 +120,12 @@ def shadow_trace(trajectory: Trajectory, adapted) -> TraceProvenance:
                      "profile_digest": digest(trajectory.profile.to_dict())},
         "contributors": [item.to_spec() for item in trajectory.contributors],
         "minutes": [record.to_dict() for record in trajectory.records],
+        # The core's auxiliary dynamic state (P2D-1): its own memory, not a channel, not an
+        # observable, never authoritative. Each minute's changes are in "minutes" above.
+        "core_auxiliary_state": {"layer": "core_internal_state", "authoritative": False,
+                                 "quantities": dict(AUXILIARY_FIELDS),
+                                 "arrival": trajectory.states[0].aux.to_dict(),
+                                 "end": trajectory.states[-1].aux.to_dict()},
     }
     check_shadow_payload(payload)
     return TraceProvenance(payload=payload)
