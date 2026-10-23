@@ -158,6 +158,10 @@
    "provisional",
    "burden (fraction below the threshold x minutes) at which R moves to a pulseless rhythm (P2E-3): TBD; off by default"
   ],
+  "collapse_burden_per_minute": [
+   "provisional",
+   "collapse burden accrued per minute at full severity (P2F-7): 1 by construction so far: TBD"
+  ],
   "collapse_output_threshold": [
    "provisional",
    "output_rel below which the collapse burden accrues (P2E-3): TBD; off (None) by default, synthetic values in tests only"
@@ -189,6 +193,10 @@
   "debt_clearance_tau_min": [
    "provisional",
    "tau_D_recovery: TBD (KD-S1); 60 min is not approved. D repays only what it accrued: the deficit against demand is never a credit (P2E-2)"
+  ],
+  "debt_per_delivery_deficit": [
+   "provisional",
+   "D accrued per unit of delivery deficit per minute (P2F-7): 1 by construction so far; only its product with the D -> lactate gain shows in lactate: TBD"
   ],
   "hr_per_sympathetic_drive": [
    "adopted",
@@ -297,9 +305,21 @@
     "P2E-2"
    ],
    "case_parameters": {
+    "arrival_delivery_ratio": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as adequate",
+     "source": "default_unmapped",
+     "value": 1.0
+    },
     "arrival_lactate_excess": {
      "calibrated": false,
      "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
+    "arrival_oxygen_debt": {
+     "calibrated": false,
+     "note": "not declared: no debt accrued before arrival",
      "source": "default_unmapped",
      "value": 0.0
     },
@@ -317,7 +337,7 @@
     },
     "metabolic_demand_baseline": {
      "calibrated": false,
-     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "note": "not declared: the reference demand, met by the reference delivery",
      "source": "default_unmapped",
      "value": 1.0
     },
@@ -332,6 +352,12 @@
      "note": "not declared: neutral value",
      "source": "default_unmapped",
      "value": 1.0
+    },
+    "reference_preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: no euvolemic reference, so no explicit volume deficit",
+     "source": "default_unmapped",
+     "value": null
     }
    },
    "classification": {
@@ -469,7 +495,9 @@
    ],
    "migration_gate": {
     "blocked": [
+     "arrival_delivery_ratio",
      "arrival_lactate_excess",
+     "arrival_oxygen_debt",
      "beta_blockade",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
@@ -1758,9 +1786,21 @@
     "P2E-2"
    ],
    "case_parameters": {
+    "arrival_delivery_ratio": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as adequate",
+     "source": "default_unmapped",
+     "value": 1.0
+    },
     "arrival_lactate_excess": {
      "calibrated": false,
      "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
+    "arrival_oxygen_debt": {
+     "calibrated": false,
+     "note": "not declared: no debt accrued before arrival",
      "source": "default_unmapped",
      "value": 0.0
     },
@@ -1778,7 +1818,7 @@
     },
     "metabolic_demand_baseline": {
      "calibrated": false,
-     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "note": "not declared: the reference demand, met by the reference delivery",
      "source": "default_unmapped",
      "value": 1.0
     },
@@ -1793,6 +1833,12 @@
      "note": "not declared: neutral value",
      "source": "default_unmapped",
      "value": 1.0
+    },
+    "reference_preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: no euvolemic reference, so no explicit volume deficit",
+     "source": "default_unmapped",
+     "value": null
     }
    },
    "classification": {
@@ -1924,7 +1970,9 @@
    ],
    "migration_gate": {
     "blocked": [
+     "arrival_delivery_ratio",
      "arrival_lactate_excess",
+     "arrival_oxygen_debt",
      "beta_blockade",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
@@ -3386,9 +3434,21 @@
     "P2E-2"
    ],
    "case_parameters": {
+    "arrival_delivery_ratio": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as adequate",
+     "source": "default_unmapped",
+     "value": 1.0
+    },
     "arrival_lactate_excess": {
      "calibrated": false,
      "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
+    "arrival_oxygen_debt": {
+     "calibrated": false,
+     "note": "not declared: no debt accrued before arrival",
      "source": "default_unmapped",
      "value": 0.0
     },
@@ -3406,7 +3466,7 @@
     },
     "metabolic_demand_baseline": {
      "calibrated": false,
-     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "note": "not declared: the reference demand, met by the reference delivery",
      "source": "default_unmapped",
      "value": 1.0
     },
@@ -3421,6 +3481,12 @@
      "note": "not declared: neutral value",
      "source": "default_unmapped",
      "value": 1.0
+    },
+    "reference_preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: no euvolemic reference, so no explicit volume deficit",
+     "source": "default_unmapped",
+     "value": null
     }
    },
    "classification": {
@@ -3534,7 +3600,9 @@
    ],
    "migration_gate": {
     "blocked": [
+     "arrival_delivery_ratio",
      "arrival_lactate_excess",
+     "arrival_oxygen_debt",
      "beta_blockade",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
@@ -4377,9 +4445,21 @@
     "P2E-2"
    ],
    "case_parameters": {
+    "arrival_delivery_ratio": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as adequate",
+     "source": "default_unmapped",
+     "value": 1.0
+    },
     "arrival_lactate_excess": {
      "calibrated": false,
      "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
+    "arrival_oxygen_debt": {
+     "calibrated": false,
+     "note": "not declared: no debt accrued before arrival",
      "source": "default_unmapped",
      "value": 0.0
     },
@@ -4397,7 +4477,7 @@
     },
     "metabolic_demand_baseline": {
      "calibrated": false,
-     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "note": "not declared: the reference demand, met by the reference delivery",
      "source": "default_unmapped",
      "value": 1.0
     },
@@ -4412,6 +4492,12 @@
      "note": "not declared: neutral value",
      "source": "default_unmapped",
      "value": 1.0
+    },
+    "reference_preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: no euvolemic reference, so no explicit volume deficit",
+     "source": "default_unmapped",
+     "value": null
     }
    },
    "classification": {
@@ -4532,7 +4618,9 @@
    ],
    "migration_gate": {
     "blocked": [
+     "arrival_delivery_ratio",
      "arrival_lactate_excess",
+     "arrival_oxygen_debt",
      "beta_blockade",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
@@ -5816,9 +5904,21 @@
   "gi_bleed_57m/queued_timed_bags": {
    "acting_mechanisms": [],
    "case_parameters": {
+    "arrival_delivery_ratio": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as adequate",
+     "source": "default_unmapped",
+     "value": 1.0
+    },
     "arrival_lactate_excess": {
      "calibrated": false,
      "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
+    "arrival_oxygen_debt": {
+     "calibrated": false,
+     "note": "not declared: no debt accrued before arrival",
      "source": "default_unmapped",
      "value": 0.0
     },
@@ -5836,7 +5936,7 @@
     },
     "metabolic_demand_baseline": {
      "calibrated": false,
-     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "note": "not declared: the reference demand, met by the reference delivery",
      "source": "default_unmapped",
      "value": 1.0
     },
@@ -5851,6 +5951,12 @@
      "note": "not declared: neutral value",
      "source": "default_unmapped",
      "value": 1.0
+    },
+    "reference_preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: no euvolemic reference, so no explicit volume deficit",
+     "source": "default_unmapped",
+     "value": null
     }
    },
    "classification": {
@@ -5986,7 +6092,9 @@
    ],
    "migration_gate": {
     "blocked": [
+     "arrival_delivery_ratio",
      "arrival_lactate_excess",
+     "arrival_oxygen_debt",
      "beta_blockade",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
@@ -7005,9 +7113,21 @@
     "P2E-2"
    ],
    "case_parameters": {
+    "arrival_delivery_ratio": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as adequate",
+     "source": "default_unmapped",
+     "value": 1.0
+    },
     "arrival_lactate_excess": {
      "calibrated": false,
      "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
+    "arrival_oxygen_debt": {
+     "calibrated": false,
+     "note": "not declared: no debt accrued before arrival",
      "source": "default_unmapped",
      "value": 0.0
     },
@@ -7025,7 +7145,7 @@
     },
     "metabolic_demand_baseline": {
      "calibrated": false,
-     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "note": "not declared: the reference demand, met by the reference delivery",
      "source": "default_unmapped",
      "value": 1.0
     },
@@ -7040,6 +7160,12 @@
      "note": "not declared: neutral value",
      "source": "default_unmapped",
      "value": 1.0
+    },
+    "reference_preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: no euvolemic reference, so no explicit volume deficit",
+     "source": "default_unmapped",
+     "value": null
     }
    },
    "classification": {
@@ -7163,7 +7289,9 @@
    ],
    "migration_gate": {
     "blocked": [
+     "arrival_delivery_ratio",
      "arrival_lactate_excess",
+     "arrival_oxygen_debt",
      "beta_blockade",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
@@ -8273,9 +8401,21 @@
     "P2E-2"
    ],
    "case_parameters": {
+    "arrival_delivery_ratio": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as adequate",
+     "source": "default_unmapped",
+     "value": 1.0
+    },
     "arrival_lactate_excess": {
      "calibrated": false,
      "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
+    "arrival_oxygen_debt": {
+     "calibrated": false,
+     "note": "not declared: no debt accrued before arrival",
      "source": "default_unmapped",
      "value": 0.0
     },
@@ -8293,7 +8433,7 @@
     },
     "metabolic_demand_baseline": {
      "calibrated": false,
-     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "note": "not declared: the reference demand, met by the reference delivery",
      "source": "default_unmapped",
      "value": 1.0
     },
@@ -8308,6 +8448,12 @@
      "note": "not declared: neutral value",
      "source": "default_unmapped",
      "value": 1.0
+    },
+    "reference_preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: no euvolemic reference, so no explicit volume deficit",
+     "source": "default_unmapped",
+     "value": null
     }
    },
    "classification": {
@@ -8449,7 +8595,9 @@
    ],
    "migration_gate": {
     "blocked": [
+     "arrival_delivery_ratio",
      "arrival_lactate_excess",
+     "arrival_oxygen_debt",
      "beta_blockade",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
@@ -9912,9 +10060,21 @@
     "P2E-2"
    ],
    "case_parameters": {
+    "arrival_delivery_ratio": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as adequate",
+     "source": "default_unmapped",
+     "value": 1.0
+    },
     "arrival_lactate_excess": {
      "calibrated": false,
      "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
+    "arrival_oxygen_debt": {
+     "calibrated": false,
+     "note": "not declared: no debt accrued before arrival",
      "source": "default_unmapped",
      "value": 0.0
     },
@@ -9932,7 +10092,7 @@
     },
     "metabolic_demand_baseline": {
      "calibrated": false,
-     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "note": "not declared: the reference demand, met by the reference delivery",
      "source": "default_unmapped",
      "value": 1.0
     },
@@ -9947,6 +10107,12 @@
      "note": "not declared: neutral value",
      "source": "default_unmapped",
      "value": 1.0
+    },
+    "reference_preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: no euvolemic reference, so no explicit volume deficit",
+     "source": "default_unmapped",
+     "value": null
     }
    },
    "classification": {
@@ -10085,7 +10251,9 @@
    ],
    "migration_gate": {
     "blocked": [
+     "arrival_delivery_ratio",
      "arrival_lactate_excess",
+     "arrival_oxygen_debt",
      "beta_blockade",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
@@ -11196,9 +11364,21 @@
     "P2E-2"
    ],
    "case_parameters": {
+    "arrival_delivery_ratio": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as adequate",
+     "source": "default_unmapped",
+     "value": 1.0
+    },
     "arrival_lactate_excess": {
      "calibrated": false,
      "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
+    "arrival_oxygen_debt": {
+     "calibrated": false,
+     "note": "not declared: no debt accrued before arrival",
      "source": "default_unmapped",
      "value": 0.0
     },
@@ -11216,7 +11396,7 @@
     },
     "metabolic_demand_baseline": {
      "calibrated": false,
-     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "note": "not declared: the reference demand, met by the reference delivery",
      "source": "default_unmapped",
      "value": 1.0
     },
@@ -11231,6 +11411,12 @@
      "note": "not declared: neutral value",
      "source": "default_unmapped",
      "value": 1.0
+    },
+    "reference_preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: no euvolemic reference, so no explicit volume deficit",
+     "source": "default_unmapped",
+     "value": null
     }
    },
    "classification": {
@@ -11393,7 +11579,9 @@
    ],
    "migration_gate": {
     "blocked": [
+     "arrival_delivery_ratio",
      "arrival_lactate_excess",
+     "arrival_oxygen_debt",
      "beta_blockade",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
@@ -12680,9 +12868,21 @@
   "gi_bleed_57m/untreated_60": {
    "acting_mechanisms": [],
    "case_parameters": {
+    "arrival_delivery_ratio": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as adequate",
+     "source": "default_unmapped",
+     "value": 1.0
+    },
     "arrival_lactate_excess": {
      "calibrated": false,
      "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
+    "arrival_oxygen_debt": {
+     "calibrated": false,
+     "note": "not declared: no debt accrued before arrival",
      "source": "default_unmapped",
      "value": 0.0
     },
@@ -12700,7 +12900,7 @@
     },
     "metabolic_demand_baseline": {
      "calibrated": false,
-     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "note": "not declared: the reference demand, met by the reference delivery",
      "source": "default_unmapped",
      "value": 1.0
     },
@@ -12715,6 +12915,12 @@
      "note": "not declared: neutral value",
      "source": "default_unmapped",
      "value": 1.0
+    },
+    "reference_preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: no euvolemic reference, so no explicit volume deficit",
+     "source": "default_unmapped",
+     "value": null
     }
    },
    "classification": {
@@ -12907,7 +13113,9 @@
    ],
    "migration_gate": {
     "blocked": [
+     "arrival_delivery_ratio",
      "arrival_lactate_excess",
+     "arrival_oxygen_debt",
      "beta_blockade",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
@@ -14016,9 +14224,21 @@
     "P2E-2"
    ],
    "case_parameters": {
+    "arrival_delivery_ratio": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as adequate",
+     "source": "default_unmapped",
+     "value": 1.0
+    },
     "arrival_lactate_excess": {
      "calibrated": false,
      "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
+    "arrival_oxygen_debt": {
+     "calibrated": false,
+     "note": "not declared: no debt accrued before arrival",
      "source": "default_unmapped",
      "value": 0.0
     },
@@ -14036,7 +14256,7 @@
     },
     "metabolic_demand_baseline": {
      "calibrated": false,
-     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "note": "not declared: the reference demand, met by the reference delivery",
      "source": "default_unmapped",
      "value": 1.0
     },
@@ -14051,6 +14271,12 @@
      "note": "not declared: neutral value",
      "source": "default_unmapped",
      "value": 1.0
+    },
+    "reference_preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: no euvolemic reference, so no explicit volume deficit",
+     "source": "default_unmapped",
+     "value": null
     }
    },
    "classification": {
@@ -14188,7 +14414,9 @@
    ],
    "migration_gate": {
     "blocked": [
+     "arrival_delivery_ratio",
      "arrival_lactate_excess",
+     "arrival_oxygen_debt",
      "beta_blockade",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
@@ -15477,9 +15705,21 @@
     "P2E-2"
    ],
    "case_parameters": {
+    "arrival_delivery_ratio": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as adequate",
+     "source": "default_unmapped",
+     "value": 1.0
+    },
     "arrival_lactate_excess": {
      "calibrated": false,
      "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
+    "arrival_oxygen_debt": {
+     "calibrated": false,
+     "note": "not declared: no debt accrued before arrival",
      "source": "default_unmapped",
      "value": 0.0
     },
@@ -15497,7 +15737,7 @@
     },
     "metabolic_demand_baseline": {
      "calibrated": false,
-     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "note": "not declared: the reference demand, met by the reference delivery",
      "source": "default_unmapped",
      "value": 1.0
     },
@@ -15512,6 +15752,12 @@
      "note": "not declared: neutral value",
      "source": "default_unmapped",
      "value": 1.0
+    },
+    "reference_preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: no euvolemic reference, so no explicit volume deficit",
+     "source": "default_unmapped",
+     "value": null
     }
    },
    "classification": {
@@ -15643,7 +15889,9 @@
    ],
    "migration_gate": {
     "blocked": [
+     "arrival_delivery_ratio",
      "arrival_lactate_excess",
+     "arrival_oxygen_debt",
      "beta_blockade",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
@@ -17105,9 +17353,21 @@
     "P2E-2"
    ],
    "case_parameters": {
+    "arrival_delivery_ratio": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as adequate",
+     "source": "default_unmapped",
+     "value": 1.0
+    },
     "arrival_lactate_excess": {
      "calibrated": false,
      "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
+    "arrival_oxygen_debt": {
+     "calibrated": false,
+     "note": "not declared: no debt accrued before arrival",
      "source": "default_unmapped",
      "value": 0.0
     },
@@ -17125,7 +17385,7 @@
     },
     "metabolic_demand_baseline": {
      "calibrated": false,
-     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "note": "not declared: the reference demand, met by the reference delivery",
      "source": "default_unmapped",
      "value": 1.0
     },
@@ -17140,6 +17400,12 @@
      "note": "not declared: neutral value",
      "source": "default_unmapped",
      "value": 1.0
+    },
+    "reference_preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: no euvolemic reference, so no explicit volume deficit",
+     "source": "default_unmapped",
+     "value": null
     }
    },
    "classification": {
@@ -17251,7 +17517,9 @@
    ],
    "migration_gate": {
     "blocked": [
+     "arrival_delivery_ratio",
      "arrival_lactate_excess",
+     "arrival_oxygen_debt",
      "beta_blockade",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
@@ -18091,9 +18359,21 @@
     "P2E-2"
    ],
    "case_parameters": {
+    "arrival_delivery_ratio": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as adequate",
+     "source": "default_unmapped",
+     "value": 1.0
+    },
     "arrival_lactate_excess": {
      "calibrated": false,
      "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
+    "arrival_oxygen_debt": {
+     "calibrated": false,
+     "note": "not declared: no debt accrued before arrival",
      "source": "default_unmapped",
      "value": 0.0
     },
@@ -18111,7 +18391,7 @@
     },
     "metabolic_demand_baseline": {
      "calibrated": false,
-     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "note": "not declared: the reference demand, met by the reference delivery",
      "source": "default_unmapped",
      "value": 1.0
     },
@@ -18126,6 +18406,12 @@
      "note": "not declared: neutral value",
      "source": "default_unmapped",
      "value": 1.0
+    },
+    "reference_preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: no euvolemic reference, so no explicit volume deficit",
+     "source": "default_unmapped",
+     "value": null
     }
    },
    "classification": {
@@ -18246,7 +18532,9 @@
    ],
    "migration_gate": {
     "blocked": [
+     "arrival_delivery_ratio",
      "arrival_lactate_excess",
+     "arrival_oxygen_debt",
      "beta_blockade",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
@@ -19530,9 +19818,21 @@
   "gi_bleed_72f/queued_timed_bags": {
    "acting_mechanisms": [],
    "case_parameters": {
+    "arrival_delivery_ratio": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as adequate",
+     "source": "default_unmapped",
+     "value": 1.0
+    },
     "arrival_lactate_excess": {
      "calibrated": false,
      "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
+    "arrival_oxygen_debt": {
+     "calibrated": false,
+     "note": "not declared: no debt accrued before arrival",
      "source": "default_unmapped",
      "value": 0.0
     },
@@ -19550,7 +19850,7 @@
     },
     "metabolic_demand_baseline": {
      "calibrated": false,
-     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "note": "not declared: the reference demand, met by the reference delivery",
      "source": "default_unmapped",
      "value": 1.0
     },
@@ -19565,6 +19865,12 @@
      "note": "not declared: neutral value",
      "source": "default_unmapped",
      "value": 1.0
+    },
+    "reference_preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: no euvolemic reference, so no explicit volume deficit",
+     "source": "default_unmapped",
+     "value": null
     }
    },
    "classification": {
@@ -19700,7 +20006,9 @@
    ],
    "migration_gate": {
     "blocked": [
+     "arrival_delivery_ratio",
      "arrival_lactate_excess",
+     "arrival_oxygen_debt",
      "beta_blockade",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
@@ -20719,9 +21027,21 @@
     "P2E-2"
    ],
    "case_parameters": {
+    "arrival_delivery_ratio": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as adequate",
+     "source": "default_unmapped",
+     "value": 1.0
+    },
     "arrival_lactate_excess": {
      "calibrated": false,
      "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
+    "arrival_oxygen_debt": {
+     "calibrated": false,
+     "note": "not declared: no debt accrued before arrival",
      "source": "default_unmapped",
      "value": 0.0
     },
@@ -20739,7 +21059,7 @@
     },
     "metabolic_demand_baseline": {
      "calibrated": false,
-     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "note": "not declared: the reference demand, met by the reference delivery",
      "source": "default_unmapped",
      "value": 1.0
     },
@@ -20754,6 +21074,12 @@
      "note": "not declared: neutral value",
      "source": "default_unmapped",
      "value": 1.0
+    },
+    "reference_preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: no euvolemic reference, so no explicit volume deficit",
+     "source": "default_unmapped",
+     "value": null
     }
    },
    "classification": {
@@ -20877,7 +21203,9 @@
    ],
    "migration_gate": {
     "blocked": [
+     "arrival_delivery_ratio",
      "arrival_lactate_excess",
+     "arrival_oxygen_debt",
      "beta_blockade",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
@@ -21987,9 +22315,21 @@
     "P2E-2"
    ],
    "case_parameters": {
+    "arrival_delivery_ratio": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as adequate",
+     "source": "default_unmapped",
+     "value": 1.0
+    },
     "arrival_lactate_excess": {
      "calibrated": false,
      "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
+    "arrival_oxygen_debt": {
+     "calibrated": false,
+     "note": "not declared: no debt accrued before arrival",
      "source": "default_unmapped",
      "value": 0.0
     },
@@ -22007,7 +22347,7 @@
     },
     "metabolic_demand_baseline": {
      "calibrated": false,
-     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "note": "not declared: the reference demand, met by the reference delivery",
      "source": "default_unmapped",
      "value": 1.0
     },
@@ -22022,6 +22362,12 @@
      "note": "not declared: neutral value",
      "source": "default_unmapped",
      "value": 1.0
+    },
+    "reference_preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: no euvolemic reference, so no explicit volume deficit",
+     "source": "default_unmapped",
+     "value": null
     }
    },
    "classification": {
@@ -22163,7 +22509,9 @@
    ],
    "migration_gate": {
     "blocked": [
+     "arrival_delivery_ratio",
      "arrival_lactate_excess",
+     "arrival_oxygen_debt",
      "beta_blockade",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
@@ -23624,9 +23972,21 @@
   "gi_bleed_72f/stop_fluids": {
    "acting_mechanisms": [],
    "case_parameters": {
+    "arrival_delivery_ratio": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as adequate",
+     "source": "default_unmapped",
+     "value": 1.0
+    },
     "arrival_lactate_excess": {
      "calibrated": false,
      "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
+    "arrival_oxygen_debt": {
+     "calibrated": false,
+     "note": "not declared: no debt accrued before arrival",
      "source": "default_unmapped",
      "value": 0.0
     },
@@ -23644,7 +24004,7 @@
     },
     "metabolic_demand_baseline": {
      "calibrated": false,
-     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "note": "not declared: the reference demand, met by the reference delivery",
      "source": "default_unmapped",
      "value": 1.0
     },
@@ -23659,6 +24019,12 @@
      "note": "not declared: neutral value",
      "source": "default_unmapped",
      "value": 1.0
+    },
+    "reference_preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: no euvolemic reference, so no explicit volume deficit",
+     "source": "default_unmapped",
+     "value": null
     }
    },
    "classification": {
@@ -23794,7 +24160,9 @@
    ],
    "migration_gate": {
     "blocked": [
+     "arrival_delivery_ratio",
      "arrival_lactate_excess",
+     "arrival_oxygen_debt",
      "beta_blockade",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
@@ -24902,9 +25270,21 @@
     "P2E-2"
    ],
    "case_parameters": {
+    "arrival_delivery_ratio": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as adequate",
+     "source": "default_unmapped",
+     "value": 1.0
+    },
     "arrival_lactate_excess": {
      "calibrated": false,
      "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
+    "arrival_oxygen_debt": {
+     "calibrated": false,
+     "note": "not declared: no debt accrued before arrival",
      "source": "default_unmapped",
      "value": 0.0
     },
@@ -24922,7 +25302,7 @@
     },
     "metabolic_demand_baseline": {
      "calibrated": false,
-     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "note": "not declared: the reference demand, met by the reference delivery",
      "source": "default_unmapped",
      "value": 1.0
     },
@@ -24937,6 +25317,12 @@
      "note": "not declared: neutral value",
      "source": "default_unmapped",
      "value": 1.0
+    },
+    "reference_preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: no euvolemic reference, so no explicit volume deficit",
+     "source": "default_unmapped",
+     "value": null
     }
    },
    "classification": {
@@ -25099,7 +25485,9 @@
    ],
    "migration_gate": {
     "blocked": [
+     "arrival_delivery_ratio",
      "arrival_lactate_excess",
+     "arrival_oxygen_debt",
      "beta_blockade",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
@@ -26386,9 +26774,21 @@
   "gi_bleed_72f/untreated_60": {
    "acting_mechanisms": [],
    "case_parameters": {
+    "arrival_delivery_ratio": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as adequate",
+     "source": "default_unmapped",
+     "value": 1.0
+    },
     "arrival_lactate_excess": {
      "calibrated": false,
      "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
+    "arrival_oxygen_debt": {
+     "calibrated": false,
+     "note": "not declared: no debt accrued before arrival",
      "source": "default_unmapped",
      "value": 0.0
     },
@@ -26406,7 +26806,7 @@
     },
     "metabolic_demand_baseline": {
      "calibrated": false,
-     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "note": "not declared: the reference demand, met by the reference delivery",
      "source": "default_unmapped",
      "value": 1.0
     },
@@ -26421,6 +26821,12 @@
      "note": "not declared: neutral value",
      "source": "default_unmapped",
      "value": 1.0
+    },
+    "reference_preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: no euvolemic reference, so no explicit volume deficit",
+     "source": "default_unmapped",
+     "value": null
     }
    },
    "classification": {
@@ -26526,7 +26932,9 @@
    ],
    "migration_gate": {
     "blocked": [
+     "arrival_delivery_ratio",
      "arrival_lactate_excess",
+     "arrival_oxygen_debt",
      "beta_blockade",
      "fraction_after_hemostasis",
      "fraction_with_ppi",

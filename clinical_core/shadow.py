@@ -17,7 +17,7 @@ from pathlib import Path
 
 from . import CORE_VERSION
 from .comparison import _display, compare, mismatching, summarize
-from .derived import PARAMETERS, _level, case_parameter_provenance
+from .derived import PARAMETERS, _level, case_parameter_provenance, effective_delivery
 from .integration import CHANNEL_BOUNDS, Trajectory, run
 from .legacy_adapter import (FAMILY_CASE_PARAMETER_RULES, LEGACY_LITERALS, LegacyRun, anchors_from_legacy,
                              contributors_from_legacy, run_legacy)
@@ -140,7 +140,7 @@ def acting_mechanisms(core: Trajectory) -> tuple[str, ...]:
     """The run-dependent mechanisms that acted in this run (``RUN_DEPENDENT``)."""
     derived = core.derived()
     # The debt of minute m reads the delivery at the start of the minute and the demand of the minute.
-    clipped = any(derived[minute - 1].delivery_rel > core.states[minute].aux.oxygen_demand
+    clipped = any(effective_delivery(derived[minute - 1].delivery_rel, core.anchors) > core.states[minute].aux.oxygen_demand
                   for minute in range(1, len(core.states)))
     return ("P2E-2",) if clipped else ()
 

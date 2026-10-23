@@ -17,7 +17,8 @@ from clinical_core.state import CASE_PARAMETERS, CoreInvariantError
 GI = FAMILY_GATES["gi_bleed"]
 #: Synthetic case values for every case parameter (not a bank case, not calibrated).
 VALUES = {"beta_blockade": 0.2, "preload_fraction": 0.4, "pump_reserve": 0.8, "intrinsic_sinus_rate": 70.0,
-          "metabolic_demand_baseline": 1.1, "arrival_lactate_excess": 0.5}
+          "metabolic_demand_baseline": 1.1, "arrival_lactate_excess": 0.5, "arrival_oxygen_debt": 10.0,
+          "arrival_delivery_ratio": 0.9}
 FAMILY = {name: (1.0, "explicit_case") for name in GI.family_parameters}
 
 
@@ -27,8 +28,10 @@ def declared(source="explicit_case", **overrides):
     return Anchors(**{**ARRIVAL, **VALUES, "declared": sources})
 
 
-def test_every_case_parameter_is_required_for_the_gi_family():
-    assert GI.case_parameters == tuple(CASE_PARAMETERS) and len(GI.case_parameters) == 6
+def test_every_case_parameter_a_mechanism_reads_is_required_for_the_gi_family():
+    from clinical_core.migration import DIAGNOSTIC_ONLY
+    assert GI.case_parameters == tuple(name for name in CASE_PARAMETERS if name not in DIAGNOSTIC_ONLY)
+    assert len(GI.case_parameters) == 8 and DIAGNOSTIC_ONLY == {"reference_preload_fraction"}
     assert set(GI.family_parameters) == {"volume_loss_ml_per_min", "hb_loss_g_dl_per_min", "fraction_with_ppi",
                                          "fraction_after_hemostasis"}
 

@@ -32,7 +32,8 @@ from typing import Any, ClassVar, Iterable, Mapping, Sequence
 
 from .derived import (ADOPTED, AUXILIARY_SOURCES, COLLAPSE, DEFAULT_PROFILE, LUNG_WATER_CLEARANCE, PRELOAD_CONGESTION,
                       PROVISIONAL, CoreProfile, Derived, arrival_state, collapse_burden_after_minute, collapse_reached,
-                      congestion_rate, delivery_deficit, derive, lactate_after_minute, lung_water_clearance,
+                      congestion_rate, delivery_deficit, derive, effective_delivery, lactate_after_minute,
+                      lung_water_clearance,
                       oxygen_demand, sympathetic_after_minute, terminal_rhythm)
 from .provenance import (AuxiliaryChange, ChannelDelta, CoreEvent, DemandModifier, MinuteRecord, ProvenanceError,
                          RhythmTransition, SettingChange, Source, SourceKind)
@@ -160,8 +161,9 @@ def _oxygen_debt(state: CoreState, anchors: Anchors, profile: CoreProfile, minut
                  modulators: tuple[Source, ...]) -> ChannelDelta:
     """D accumulates the deficit of oxygen delivery below demand and repays it slowly (P2E-2).
 
-    dD = max(0, demand - delivery_rel) - D / tau, with delivery read at the start of the
-    minute and demand the one declared for it. Delivery above demand is no credit: D only
+    dD = g x max(0, demand - delivery) - D / tau, with delivery the effective delivery
+    (arrival-relative delivery times the case's arrival delivery ratio, P2F-6) read at the
+    start of the minute, demand the one declared for it and g the deficit-to-debt gain. Delivery above demand is no credit: D only
     repays what it accrued, and never falls below 0. With the neutral demand baseline and no
     modifier, demand is 1, so arrival does not move; at a steady deficit s the debt settles
     at tau * s, which the lactate derivation reads (proposal C8). The sources that modified
@@ -169,9 +171,10 @@ def _oxygen_debt(state: CoreState, anchors: Anchors, profile: CoreProfile, minut
     against the modified demand differs from the deficit against the case's baseline.
     """
     before = derive(state, anchors, profile)
-    deficit = delivery_deficit(demand, before.delivery_rel)
-    changed = deficit != delivery_deficit(anchors.metabolic_demand_baseline, before.delivery_rel)
-    amount = deficit - state.D / profile.debt_clearance_tau_min
+    delivery = effective_delivery(before.delivery_rel, anchors)
+    deficit = delivery_deficit(demand, delivery)
+    changed = deficit != delivery_deficit(anchors.metabolic_demand_baseline, delivery)
+    amount = profile.debt_per_delivery_deficit * deficit - state.D / profile.debt_clearance_tau_min
     return ChannelDelta(Channel.D, amount, OXYGEN_DEBT, minute,
                         "oxygen-delivery deficit below metabolic demand, less first-order repayment",
                         modulated_by=modulators if changed else ())

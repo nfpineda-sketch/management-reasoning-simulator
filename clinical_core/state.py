@@ -59,7 +59,8 @@ CHANNEL_DEFINITIONS: Mapping[Channel, tuple[str, str, str]] = {
     Channel.L: ("C5", "index deviation from arrival", "Lung water / congestion"),
     Channel.G: ("C6", "shunt / V-Q impairment deviation from arrival", "Gas exchange"),
     Channel.W: ("C7", "deviation of alveolar ventilation relative to need", "Ventilation"),
-    Channel.D: ("C8", "index-minutes, deviation from arrival", "Oxygen-delivery debt"),
+    Channel.D: ("C8", "index-minutes accrued; its arrival value is the case's declared arrival debt (0 undeclared)",
+                "Oxygen-delivery debt"),
     Channel.N: ("C9", "level deviation from arrival", "CNS depression / neurological state"),
     Channel.HB: ("C10", "g/dL", "Haemoglobin"),
     Channel.GLUCOSE: ("C11", "mg/dL", "Glucose"),
@@ -248,7 +249,23 @@ EMPTY = FrozenRecord()
 #: not declare one (``None``: the profile's provisional default).
 CASE_PARAMETERS: Mapping[str, Any] = {"beta_blockade": 0.0, "preload_fraction": None, "pump_reserve": 1.0,
                                        "intrinsic_sinus_rate": None, "metabolic_demand_baseline": 1.0,
-                                       "arrival_lactate_excess": 0.0}
+                                       "arrival_lactate_excess": 0.0, "arrival_oxygen_debt": 0.0,
+                                       "arrival_delivery_ratio": 1.0, "reference_preload_fraction": None}
+
+#: The three arrival layers (P2F-1). Every Anchors field belongs to exactly one:
+#: - authored_observation: what the resident sees at t = 0 (and the support in place);
+#: - physiological_reference: the patient's non-acute reference the core normalizes against;
+#: - arrival_dynamic_state: the acute physiology already present when the simulation starts.
+#: The arrival observation is never assumed to be the physiological normal: the two differ by
+#: the dynamic state. No layer is a new channel.
+ARRIVAL_LAYERS: Mapping[str, tuple[str, ...]] = {
+    "authored_observation": ("sbp", "dbp", "hr", "spo2", "respiratory_rate", "crt_s", "lactate", "hb", "glucose",
+                             "k", "fio2", "rhythm", "consciousness_level"),
+    "physiological_reference": ("intrinsic_sinus_rate", "metabolic_demand_baseline", "reference_preload_fraction",
+                                "beta_blockade", "pump_reserve"),
+    "arrival_dynamic_state": ("preload_fraction", "arrival_oxygen_debt", "arrival_lactate_excess",
+                              "arrival_delivery_ratio"),
+}
 #: Where a declared case parameter comes from (P2D-8, P2E-6). One that is not declared is
 #: "default_unmapped".
 DECLARED_SOURCES = frozenset({"explicit_case", "approved_family_default", "synthetic_probe"})
@@ -273,12 +290,22 @@ class Anchors:
     - ``intrinsic_sinus_rate`` (bpm) is the sinus rate without sympathetic drive (P2E-1). The
       observed arrival HR is that rate plus the arrival sympathetic contribution. ``None``
       reads the arrival HR as intrinsic (no sympathetic share at arrival).
-    - ``metabolic_demand_baseline`` is the arrival oxygen demand in units of the arrival oxygen
-      delivery (P2E-2). 1, the neutral value, reads arrival delivery as meeting arrival demand;
-      above 1 the patient arrives already in deficit, and D accrues from arrival.
+    - ``metabolic_demand_baseline`` is the patient's reference oxygen demand, in units of the
+      delivery that meets it (P2E-2, P2F-1). 1, the neutral value, is that definition; above 1
+      only with explicit hypermetabolic evidence. It is not a free parameter for lactate.
     - ``arrival_lactate_excess`` (mmol/L) is the share of the arrival lactate that can clear:
       the arrival lactate less its clearance baseline (P2E-2). 0, the neutral value, reads the
       arrival lactate as the baseline, so the core never clears lactate below arrival.
+    - ``arrival_oxygen_debt`` (index-minutes) is the debt D already accrued before arrival
+      (P2F-3). It is the arrival value of D; 0, the neutral value, is no pre-arrival debt.
+    - ``arrival_delivery_ratio`` is the effective oxygen delivery at arrival in units of the
+      delivery that meets the reference demand (P2F-1, P2F-6). 1, the neutral value, reads the
+      arrival delivery as adequate; below 1 the patient arrives in an ongoing deficit.
+    - ``reference_preload_fraction`` is where the euvolemic patient would sit on the preload
+      curve (physiological reference, P2F-1). With it the arrival volume deficit is explicit;
+      no mechanism reads it yet. ``None`` leaves the deficit undeclared.
+
+    Which layer each field belongs to is ``ARRIVAL_LAYERS``.
 
     ``declared`` names the source of every case parameter that is declared (P2D-8):
     ``explicit_case`` (the case states it), ``approved_family_default`` (the family's approved
@@ -306,6 +333,9 @@ class Anchors:
     intrinsic_sinus_rate: float | None = None
     metabolic_demand_baseline: float = 1.0
     arrival_lactate_excess: float = 0.0
+    arrival_oxygen_debt: float = 0.0
+    arrival_delivery_ratio: float = 1.0
+    reference_preload_fraction: float | None = None
     declared: FrozenRecord = field(default=EMPTY)
 
     def __post_init__(self):
@@ -348,6 +378,12 @@ class Anchors:
             raise CoreInvariantError("the arrival metabolic demand is positive")
         if not 0.0 <= self.arrival_lactate_excess <= self.lactate:
             raise CoreInvariantError("the clearable arrival lactate is between 0 and the arrival lactate")
+        if self.arrival_oxygen_debt < 0.0:
+            raise CoreInvariantError("the arrival oxygen debt is never negative")
+        if not self.arrival_delivery_ratio > 0.0:
+            raise CoreInvariantError("the arrival oxygen delivery ratio is positive")
+        if self.reference_preload_fraction is not None and not 0.0 < self.reference_preload_fraction < 1.0:
+            raise CoreInvariantError("the reference preload fraction is strictly between 0 and 1")
         if not isinstance(self.rhythm, RhythmState):
             raise CoreInvariantError("the arrival rhythm is a RhythmState")
         if not self.rhythm.pulse_present:
@@ -529,7 +565,8 @@ def declares_arrival_references(anchors: Anchors) -> bool:
     Such an arrival is built only by ``derived.arrival_state``, which needs the profile.
     """
     return ((anchors.intrinsic_sinus_rate is not None and anchors.intrinsic_sinus_rate != anchors.hr)
-            or anchors.metabolic_demand_baseline != 1.0 or anchors.arrival_lactate_excess != 0.0)
+            or anchors.metabolic_demand_baseline != 1.0 or anchors.arrival_lactate_excess != 0.0
+            or anchors.arrival_oxygen_debt != 0.0)
 
 
 def anchored_state(anchors: Anchors) -> CoreState:

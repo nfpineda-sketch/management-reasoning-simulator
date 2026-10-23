@@ -402,7 +402,8 @@ def test_p2d8_provenance_says_value_source_and_calibration():
     assert {name: entry["source"] for name, entry in plain.items()} == {
         "beta_blockade": "default_unmapped", "preload_fraction": "default_unmapped", "pump_reserve": "default_unmapped",
         "intrinsic_sinus_rate": "default_unmapped", "metabolic_demand_baseline": "default_unmapped",
-        "arrival_lactate_excess": "default_unmapped"}
+        "arrival_lactate_excess": "default_unmapped", "arrival_oxygen_debt": "default_unmapped",
+        "arrival_delivery_ratio": "default_unmapped", "reference_preload_fraction": "default_unmapped"}
     assert plain["preload_fraction"]["value"] == DEFAULT_PROFILE.arrival_preload_fraction
     assert not any(entry["calibrated"] for entry in plain.values())
     declared = Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, "beta_blockade": 0.4,

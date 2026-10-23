@@ -34,8 +34,9 @@ class MigrationBlocked(CoreInvariantError):
 class FamilyGate:
     """What a family must declare before it migrates.
 
-    ``case_parameters`` are the core's case parameters on the family's causal paths (all of
-    them for every family so far: the shared mechanisms read each one); ``family_parameters``
+    ``case_parameters`` are the core's case parameters on the family's causal paths (every one a
+    mechanism reads, for every family so far; ``DIAGNOSTIC_ONLY`` ones are not required);
+    ``family_parameters``
     are the family's own source and control parameters (its disease module and modulators).
     """
 
@@ -50,9 +51,12 @@ class FamilyGate:
             raise CoreInvariantError(f"{self.family}: unknown case parameters {sorted(unknown)}")
 
 
+#: Case parameters no mechanism reads yet (P2F-1): declarable references, reported, never required.
+DIAGNOSTIC_ONLY = frozenset({"reference_preload_fraction"})
+
 FAMILY_GATES: Mapping[str, FamilyGate] = {
     "gi_bleed": FamilyGate(
-        "gi_bleed", tuple(CASE_PARAMETERS),
+        "gi_bleed", tuple(name for name in CASE_PARAMETERS if name not in DIAGNOSTIC_ONLY),
         ("volume_loss_ml_per_min", "hb_loss_g_dl_per_min", "fraction_with_ppi", "fraction_after_hemostasis"),
         "shadow baseline only: the golden runs every case parameter default_unmapped, and the haemorrhage module "
         "takes the family engine's literals (adopted for the comparison, not approved for migration)"),

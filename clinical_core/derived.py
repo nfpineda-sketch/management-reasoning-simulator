@@ -82,6 +82,7 @@ class CoreProfile:
     lactate_per_output_deficit: float = 2.0
     lactate_floor: float = 0.8
     debt_clearance_tau_min: float = 60.0
+    debt_per_delivery_deficit: float = 1.0
     lactate_clearance_tau_min: float = 60.0
     rr_per_lactate: float = 7.5
     lactate_drive_threshold_mmol_l: float = 2.0
@@ -96,6 +97,7 @@ class CoreProfile:
     collapse_burden_limit: float | None = None
     collapse_repayment_tau_min: float | None = None
     collapse_terminal_rhythm: str = "pea"
+    collapse_burden_per_minute: float = 1.0
 
     def __post_init__(self):
         for item in fields(self):
@@ -115,6 +117,8 @@ class CoreProfile:
             raise CoreInvariantError("the pump/preload coupling c is between 0 and 1")
         if self.afterload_sensitivity >= 1.0:
             raise CoreInvariantError("afterload sensitivity is below 1, so output stays positive at any tone")
+        if min(self.debt_per_delivery_deficit, self.collapse_burden_per_minute) <= 0.0:
+            raise CoreInvariantError("the deficit-to-debt and collapse-burden gains are positive")
         if min(self.debt_clearance_tau_min, self.lactate_clearance_tau_min) < 1.0:
             # D and lactate are integrated one minute at a time; a shorter time constant would
             # overshoot and take them negative.
@@ -179,6 +183,11 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
                                             "reached here as the steady state of D and of lactate kinetics; the "
                                             "D -> lactate production gain it implies is provisional (KD-S1)"),
     "lactate_floor": (ADOPTED, "family_engine._diagnostic: max(.8, ...)"),
+    "debt_per_delivery_deficit": (PROVISIONAL, "D accrued per unit of delivery deficit per minute (P2F-7): 1 by "
+                                               "construction so far; only its product with the D -> lactate gain "
+                                               "shows in lactate: TBD"),
+    "collapse_burden_per_minute": (PROVISIONAL, "collapse burden accrued per minute at full severity (P2F-7): 1 by "
+                                                "construction so far: TBD"),
     "debt_clearance_tau_min": (PROVISIONAL, "tau_D_recovery: TBD (KD-S1); 60 min is not approved. D repays "
                                             "only what it accrued: the deficit against demand is never a credit "
                                             "(P2E-2)"),
@@ -314,7 +323,11 @@ def case_parameter_provenance(anchors: Anchors, profile: CoreProfile = DEFAULT_P
                                             "not declared: provisional profile default (TBD)"),
                        "intrinsic_sinus_rate": (anchors.hr, "not declared: the arrival HR is read as intrinsic, with "
                                                             "no sympathetic share at arrival")}
-    unmapped_notes = {"metabolic_demand_baseline": "not declared: arrival delivery read as meeting arrival demand",
+    unmapped_notes = {"metabolic_demand_baseline": "not declared: the reference demand, met by the reference delivery",
+                      "arrival_oxygen_debt": "not declared: no debt accrued before arrival",
+                      "arrival_delivery_ratio": "not declared: arrival delivery read as adequate",
+                      "reference_preload_fraction": "not declared: no euvolemic reference, so no explicit volume "
+                                                    "deficit",
                       "arrival_lactate_excess": "not declared: the arrival lactate is the clearance baseline, so "
                                                 "lactate does not fall below arrival"}
     provenance = {}
@@ -353,8 +366,146 @@ def heart_rate_decomposition(anchors: Anchors, profile: CoreProfile = DEFAULT_PR
             "source": anchors.declared.get("intrinsic_sinus_rate", UNMAPPED)}
 
 
+def relative_delivery(output_rel: float, hb: float, spo2: float, anchors: Anchors) -> float:
+    """Oxygen delivery relative to the arrival delivery: (Q / Q_a) x (Hb / Hb_a) x (SpO2 / SpO2_a) (P2F-6).
+
+    Dimensionless and relative, never an indexed physical DO2 (mL/min/m2): flow, oxygen-carrying
+    capacity and saturation each scale it in proportion, and dissolved oxygen is ignored.
+    """
+    return output_rel * (hb / anchors.hb) * (spo2 / anchors.spo2)
+
+
+def effective_delivery(delivery_rel: float, anchors: Anchors) -> float:
+    """Delivery in units of the delivery that meets the reference demand (P2F-1, P2F-6).
+
+    The arrival-relative delivery times the case's ``arrival_delivery_ratio``: 1 when the
+    arrival delivery is adequate (the neutral, undeclared value), below 1 when the patient
+    arrives in an ongoing deficit. Demand is in the same units.
+    """
+    return anchors.arrival_delivery_ratio * delivery_rel
+
+
+@dataclass(frozen=True)
+class AuthoredArrival:
+    """Layer A (P2F-1): what the resident sees at t = 0, as the case authors it."""
+
+    sbp: float
+    dbp: float
+    map: float
+    hr: float
+    spo2: float
+    respiratory_rate: float
+    crt_s: float
+    lactate: float
+    hb: float
+    glucose: float
+    k: float
+    fio2: float
+    rhythm: str
+    consciousness_level: int
+
+
+@dataclass(frozen=True)
+class PhysiologicalReference:
+    """Layer B (P2F-1): the patient's non-acute reference the core normalizes against.
+
+    ``sources`` names where each declared value comes from (``default_unmapped`` when not).
+    """
+
+    intrinsic_sinus_rate: float
+    lactate_clearance_baseline: float
+    metabolic_demand_baseline: float
+    reference_preload_fraction: float | None
+    beta_blockade: float
+    pump_reserve: float
+    sources: Mapping[str, str]
+
+
+@dataclass(frozen=True)
+class ArrivalDynamicState:
+    """Layer C (P2F-1): the acute physiology already present when the simulation begins."""
+
+    preload_fraction: float
+    volume_deficit_ml: float | None
+    oxygen_debt: float
+    lactate_excess: float
+    sympathetic_drive: float
+    sympathetic_bpm: float
+    delivery_ratio: float
+    oxygen_demand: float
+    delivery_deficit: float
+    sources: Mapping[str, str]
+
+
+@dataclass(frozen=True)
+class ArrivalLayers:
+    authored: AuthoredArrival
+    reference: PhysiologicalReference
+    dynamic: ArrivalDynamicState
+
+    def to_dict(self) -> dict:
+        def plain(record):
+            return {item.name: (dict(getattr(record, item.name)) if item.name == "sources"
+                                else getattr(record, item.name)) for item in fields(record)}
+        return {"authored_observation": plain(self.authored), "physiological_reference": plain(self.reference),
+                "arrival_dynamic_state": plain(self.dynamic)}
+
+
+def arrival_volume_deficit(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> float | None:
+    """mL-equivalent between the euvolemic reference and the arrival position on the arrival curve (P2F-1).
+
+    Positive when the patient arrives below euvolemia. ``None`` without a declared reference.
+    """
+    if anchors.reference_preload_fraction is None:
+        return None
+    return profile.preload_curve_scale_ml * (math.log1p(-arrival_preload(anchors, profile))
+                                             - math.log1p(-anchors.reference_preload_fraction))
+
+
+def arrival_layers(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> ArrivalLayers:
+    """The three arrival layers of a case (P2F-1): authored observation, reference, dynamic state."""
+    def source(name):
+        return anchors.declared.get(name, UNMAPPED)
+
+    authored = AuthoredArrival(anchors.sbp, anchors.dbp, (anchors.sbp + 2 * anchors.dbp) / 3, anchors.hr,
+                               anchors.spo2, anchors.respiratory_rate, anchors.crt_s, anchors.lactate, anchors.hb,
+                               anchors.glucose, anchors.k, anchors.fio2, anchors.rhythm.code.value,
+                               anchors.consciousness_level)
+    reference = PhysiologicalReference(
+        intrinsic_sinus_rate(anchors), lactate_baseline(anchors), anchors.metabolic_demand_baseline,
+        anchors.reference_preload_fraction, anchors.beta_blockade, anchors.pump_reserve,
+        {name: source(name) for name in ("intrinsic_sinus_rate", "arrival_lactate_excess", "metabolic_demand_baseline",
+                                         "reference_preload_fraction", "beta_blockade", "pump_reserve")})
+    drive = arrival_sympathetic_drive(anchors, profile)
+    dynamic = ArrivalDynamicState(
+        arrival_preload(anchors, profile), arrival_volume_deficit(anchors, profile), anchors.arrival_oxygen_debt,
+        anchors.arrival_lactate_excess, drive, anchors.hr - intrinsic_sinus_rate(anchors),
+        anchors.arrival_delivery_ratio, anchors.metabolic_demand_baseline,
+        delivery_deficit(anchors.metabolic_demand_baseline, anchors.arrival_delivery_ratio),
+        {name: source(name) for name in ("preload_fraction", "reference_preload_fraction", "arrival_oxygen_debt",
+                                         "arrival_lactate_excess", "intrinsic_sinus_rate", "arrival_delivery_ratio",
+                                         "metabolic_demand_baseline")})
+    return ArrivalLayers(authored, reference, dynamic)
+
+
+def check_arrival_reconstruction(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> Derived:
+    """The arrival state, derived, reproduces the authored observation exactly (P2F-1), or this raises.
+
+    Reference and dynamic state change what happens next, never what the resident sees at t = 0.
+    """
+    derived = derive(arrival_state(anchors, profile), anchors, profile)
+    expected = {"sbp": anchors.sbp, "dbp": anchors.dbp, "pulse_rate_bpm": anchors.hr, "spo2": anchors.spo2,
+                "respiratory_rate": anchors.respiratory_rate, "crt_s": anchors.crt_s, "lactate": anchors.lactate,
+                "consciousness_level": anchors.consciousness_level}
+    for name, value in expected.items():
+        if not math.isclose(getattr(derived, name), value, rel_tol=0.0, abs_tol=1e-9):
+            raise CoreInvariantError(f"{anchors.case_id}: the arrival state reads {name} = {getattr(derived, name)!r}, "
+                                     f"not the authored {value!r}")
+    return derived
+
+
 def oxygen_demand(anchors: Anchors, modifiers) -> float:
-    """Metabolic oxygen demand for a minute, in units of arrival oxygen delivery (P2E-2).
+    """Metabolic oxygen demand for a minute, in units of the delivery that meets the reference demand.
 
     The case's baseline times every factor declared for the minute (disease or module, and
     transient). No factor declared: the baseline. The factors and the normalization against
@@ -374,11 +525,12 @@ def arrival_state(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> C
     - R holds the intrinsic sinus rate and the auxiliary state the arrival sympathetic drive,
       so the derived arrival HR is the observed one (P2E-1);
     - the auxiliary state holds the arrival oxygen demand (the case's baseline) and the
-      clearable arrival lactate, so the derived arrival lactate is the authored one (P2E-2).
+      clearable arrival lactate, so the derived arrival lactate is the authored one (P2E-2);
+    - D holds the debt accrued before arrival (P2F-3).
     Undeclared, they are the anchored defaults: intrinsic = observed HR and no drive; demand
-    met by arrival delivery; no clearable lactate.
+    met by arrival delivery; no clearable lactate; no arrival debt.
     """
-    state = anchored_state(anchors)
+    state = anchored_state(anchors).evolve(D=anchors.arrival_oxygen_debt)
     if state.R.code is RhythmCode.SINUS:
         state = state.evolve(R=replace(state.R, rate_bpm=intrinsic_sinus_rate(anchors)))
     return state.evolve(aux=AuxiliaryState(lactate_excess_mmol_l=anchors.arrival_lactate_excess,
@@ -431,7 +583,7 @@ def _perfusion(state: CoreState, anchors: Anchors, profile: CoreProfile) -> tupl
     pressure_rel = output_rel * state.T
     oxygen = (max(0.0, state.fio2 - profile.room_air_fio2) - max(0.0, anchors.fio2 - profile.room_air_fio2))
     spo2 = min(100.0, max(0.0, anchors.spo2 + profile.spo2_per_fio2 * oxygen))
-    delivery_rel = output_rel * (state.hb / anchors.hb) * (spo2 / anchors.spo2)
+    delivery_rel = relative_delivery(output_rel, state.hb, spo2, anchors)
     return output_rel, pressure_rel, spo2, delivery_rel
 
 
@@ -481,7 +633,7 @@ def collapse_burden_after_minute(state: CoreState, anchors: Anchors, profile: Co
         return burden
     severity = max(0.0, threshold - _perfusion(state, anchors, profile)[0]) / threshold
     if severity > 0.0:
-        return burden + severity
+        return burden + profile.collapse_burden_per_minute * severity
     if profile.collapse_repayment_tau_min is None:
         return burden
     return burden * math.exp(-1.0 / profile.collapse_repayment_tau_min)
@@ -539,7 +691,8 @@ def sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile)
 
     It sums the stimuli the core holds state for, each as a deviation from arrival:
     - the pressure deficit;
-    - the oxygen-delivery debt D;
+    - the oxygen-delivery debt D above its arrival value (P2F-3: a debt the patient arrives
+      with is already in the arrival drive, and repaying it lowers the drive);
     - hypoxaemia;
     - hypoglycaemia.
 
@@ -556,7 +709,7 @@ def sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile)
     # Absolute drive (P2E-1): the arrival drive plus the stimuli's deviations from arrival.
     target = (arrival_sympathetic_drive(anchors, profile)
               + profile.sympathetic_per_pressure_deficit * (1.0 - pressure_rel)
-              + profile.sympathetic_per_debt * state.D / profile.debt_clearance_tau_min
+              + profile.sympathetic_per_debt * (state.D - anchors.arrival_oxygen_debt) / profile.debt_clearance_tau_min
               + profile.sympathetic_per_hypoxaemia_point * hypoxaemia
               + profile.sympathetic_per_hypoglycaemia_mg_dl * hypoglycaemia)
     # P2D-3: the drive is never negative. As its stimuli resolve, the rate falls back to the
