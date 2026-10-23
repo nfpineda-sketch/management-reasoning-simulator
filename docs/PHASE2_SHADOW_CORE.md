@@ -1168,3 +1168,187 @@ Las correcciones no cambian el golden. El golden por Contracts v2 sigue IDÉNTIC
 
 No hay ninguno. Ningún módulo de la aplicación importa `clinical_core`, incluido `clinical_core.migration`:
 `test_shadow_core_isolation.py` lo comprueba.
+
+## 12. P2F · Marco de calibración de Nivel 2 y estados de referencia GI (2026-10-23)
+
+- Base: `f008951` (P2E aceptado y cerrado).
+- Sigue todo en sombra y fuera de línea, sin gancho en tiempo de ejecución ni cambio visible para el residente.
+- Lo que P2F no hace:
+  - no migra el GI ni otra familia;
+  - no aprueba ningún número;
+  - no elige un conjunto de parámetros;
+  - no optimiza contra el motor heredado.
+
+### 12.1 Tres capas de llegada (P2F-1)
+
+`state.ARRIVAL_LAYERS` asigna cada campo de `Anchors` a una sola capa. `derived.arrival_layers` las informa por
+separado.
+
+| Capa | Qué es | Campos |
+|---|---|---|
+| **A. Observación de llegada** | Lo que ve el residente en t = 0 | PAS, PAD, FC, SpO2, FR, TLC, lactato, Hb, glucosa, K, FiO2, ritmo, conciencia |
+| **B. Referencia fisiológica** | La normalidad no aguda del paciente | frecuencia sinusal intrínseca, demanda basal, posición euvolémica, betabloqueo, reserva de bomba |
+| **C. Estado dinámico de llegada** | La fisiología aguda ya presente | posición en la curva de precarga, D de llegada, lactato aclarable, razón de entrega de llegada (y, derivados, el impulso simpático y el déficit de volumen) |
+
+- La observación de llegada nunca se lee como normalidad.
+- `check_arrival_reconstruction` prueba que, declare lo que declare B o C, la llegada derivada reproduce
+  exactamente lo que el caso autoriza.
+- Ninguna capa es un canal nuevo.
+- Parámetros nuevos, neutros y `default_unmapped` en el golden GI:
+  - `arrival_oxygen_debt`: el valor de llegada de D. D ya no está forzada a 0.
+  - `arrival_delivery_ratio`: la entrega efectiva de llegada en unidades de la entrega que cubre la demanda de
+    referencia. Un déficit en curso se expresa por la entrega, no por la demanda.
+  - `reference_preload_fraction`: la referencia euvolémica. Hace explícito el déficit de volumen; ningún mecanismo la
+    lee.
+- **El término de D del impulso simpático lee D por encima de su valor de llegada.** Así, una deuda de llegada ya está
+  en el impulso de llegada, y repagarla baja la FC hacia la intrínseca.
+- **La llegada no tiene que estar en estado estacionario.**
+  - La consistencia de estado estacionario es una propiedad opcional de una sonda sintética de equilibrio.
+  - La consistencia del estado de llegada es lo exigido en los casos reales:
+    - signos y combinaciones posibles;
+    - reconstrucción exacta de la observación;
+    - respuesta coherente después.
+
+### 12.2 Verdad del repositorio GI (P2F-2)
+
+- **Inventario.** `gi_reference.INVENTORY` tiene 58 entradas, 29 por caso. Cada una lleva valor, línea exacta, un
+  fragmento que debe estar en esa línea y el parámetro que restringe. Una prueba verifica las líneas y los valores
+  contra el banco.
+- **Lo que los casos no dicen** (no se infiere):
+  - terapia previa a la llegada;
+  - duración de la hipoperfusión;
+  - frecuencia basal;
+  - que no tomen betabloqueadores (sólo que no figuran);
+  - potasio (es el valor por defecto del banco, 4,1; `clinical_cases.py:297`);
+  - puntaje de dolor (2/10 es el valor por defecto de la familia; `analgesia.py:22`);
+  - estado mental (`Alert` es el valor por defecto de `_observable`; `clinical_cases.py:202`).
+
+| Dato | 57m (fuente) | 72f (fuente) | Restringe |
+|---|---|---|---|
+| FC, ritmo | 124, taquicardia sinusal (`:881`, `:211`) | 112 (`:910`) | techo de la intrínseca; parte simpática |
+| PAS/PAD (PAM derivada) | 88/54 (65,3) (`:881`) | 98/62 (74,0) (`:910`) | anclas de presión; presión de pulso 34/36 |
+| SpO2, FR | 97, 26 (`:881`) | 96, 24 (`:910`) | sin impulso hipoxémico; parte metabólica de la FR |
+| Gasometría arterial | pH 7,37, PaCO2 31, HCO3 17,3 (`:901`) | 7,40, 33, 19,8 (`:930`) | acidosis metabólica compensada |
+| TLC, perfusión | 5 s, frías, alterada (`:881-882`) | 4 s, frías, alterada (`:910-911`) | entrega de llegada baja |
+| Hb, lactato | 6,7; 4,4 (`:900`) | 6,4; 3,4 (`:929`) | entrega; lactato aclarable y D |
+| Temperatura, leucocitos, dolor | 36,5; 11,1; leve | 36,6; 10,3; leve | sin modificador de demanda |
+| POCUS | VI pequeño hiperdinámico, VCI 0,9 cm (`:154-155`) | hiperdinámico, VCI 1,1 cm (`:156`) | posición de precarga baja; reserva |
+| Pulmón, troponina | sin líneas B, sin edema; 16 (`:903`) | ídem; 17 (`:932`) | sin congestión ni lesión |
+| Sangrado activo | melena desde ayer (`:890`) | tres días y hoy (`:921`) | fuente; duración no dicha |
+| Medicación | ibuprofeno (`:889`) | naproxeno (`:918`) | betabloqueo |
+
+### 12.3 Bandas candidatas por caso (P2F-3/4/5)
+
+Todas las bandas son CANDIDATE (`gi_reference.case_bands`). Cada una tiene su propia justificación; ninguna se
+deriva de una historia previa ni de las cinéticas.
+
+| Banda | 57m | 72f | Justificación |
+|---|---|---|---|
+| Lactato aclarable (mmol/L) | 2,4 – 3,4 – 3,6 | 1,4 – 2,4 – 2,6 | lactato de llegada menos una basal no shock de 0,8–2,0 |
+| D de llegada (índice-min) | 0 – 20 – 60 | 0 – 20 – 60 | escala de la variable: de nada a la deuda de un déficit grave (0,5) tras unas dos horas; ninguno dice la duración |
+| Razón de entrega de llegada | 0,6 – 0,85 – 1,0 | 0,6 – 0,85 – 1,0 | perfusión alterada, hipotensión y anemia grave: igual o bajo la adecuación |
+| Frecuencia intrínseca (lpm) | 60 – 80 – 100 | 60 – 80 – 100 | frecuencia de reposo no aguda (no la intrínseca farmacológica bajo bloqueo autonómico, que es mayor) |
+| Impulso simpático de llegada | 0,96 – 1,76 – 2,56 (24–64 lpm) | 0,48 – 1,28 – 2,08 (12–52 lpm) | FC observada menos la intrínseca; nunca negativo |
+| Demanda basal | 1 | 1 | hemorragia no complicada: afebril, alerta, dolor leve; el caso no respalda ningún modificador |
+| Posición de precarga | 0,2 – 0,35 – 0,5 | 0,3 – 0,45 – 0,6 | POCUS |
+| Reserva de bomba | 0,7 – 1,0 | 0,7 – 1,0 | sin evidencia de reserva reducida; la edad no se usa para inferirla |
+| Posición euvolémica (diagnóstica) | 0,6 – 0,7 – 0,8 | ídem | ningún caso la dice; ningún mecanismo la lee |
+
+- **La demanda no es un parámetro libre.** El caso no respalda ningún modificador de demanda, así que no hay ninguno.
+- **Separación por caso** (`gi_reference.reference_mapping`):
+  - A: verdad del repositorio;
+  - B: inferencia candidata;
+  - C: decisión docente.
+- **Siguen como candidato o decisión docente**, aunque se puedan calcular a partir de otros candidatos:
+  - la frecuencia intrínseca;
+  - el impulso simpático de llegada;
+  - la D de llegada;
+  - el lactato aclarable;
+  - la demanda basal.
+- **Historias previas a la llegada.** Se reconstruyen sólo como `SYNTHETIC_PLAUSIBILITY_PROBE`
+  (`pre_arrival_plausibility_probe`).
+  - No son entrada de migración, ni verdad del caso, ni procedencia, ni evidencia de calibración.
+  - Ninguna banda ni regla de aceptación se deriva de ellas.
+  - La simulación empieza en la llegada autorizada.
+
+### 12.4 Modelo de entrega de O2 (P2F-6)
+
+- **La entrega es relativa y adimensional:** entrega = (Q/Q_llegada) × (Hb/Hb_llegada) × (SpO2/SpO2_llegada), por la
+  razón de entrega de llegada. Así queda en unidades de la entrega que cubre la demanda de referencia.
+- **No es un DO2 físico indexado.** No se mezclan las dos lecturas.
+- Sondas a demanda fija (`calibration.delivery_probes`):
+
+| Sonda | Entrega | Déficit con demanda 1 | Déficit con demanda 1,2 | D a 60 min |
+|---|---|---|---|---|
+| Gasto bajo aislado (0,6) | 0,60 | 0,40 | 0,60 | 15,2 |
+| Anemia aislada (0,6) | 0,60 | 0,40 | 0,60 | 15,2 |
+| Hipoxemia aislada (SpO2 × 0,85) | 0,85 | 0,15 | 0,35 | 5,7 |
+| Gasto bajo + anemia | 0,36 | 0,64 | 0,84 | 24,3 |
+| Anemia + hipoxemia | 0,51 | 0,49 | 0,69 | 18,6 |
+| Las tres | 0,31 | 0,69 | 0,89 | 26,3 |
+
+- Cada factor baja la entrega; combinados, se multiplican. A igual entrega, más demanda da más déficit.
+- **Brecha.** En una corrida, la SpO2 sólo cambia con la FiO2 (G, L y W todavía no la alimentan).
+  - La hipoxemia aislada se prueba perdiendo el oxígeno de una llegada con FiO2 0,4: la SpO2 baja de 97 a 91,3 y la
+    entrega a 0,94.
+
+### 12.5 Registro de bandas de Nivel 2 (P2F-7)
+
+- **Qué es.** `calibration.REGISTRY` tiene 54 entradas. Cada una lleva:
+  - grupo y destino (perfil, caso o familia);
+  - banda (inferior – punto medio – superior) u opciones;
+  - unidades, justificación y evidencia;
+  - mecanismos afectados y restricciones;
+  - estado y valor canónico.
+- **Estados:**
+  - **CANDIDATE:** 47 entradas.
+  - **DEFAULT_UNMAPPED:** 4, los multiplicadores de demanda de sepsis, fiebre, convulsión y agitación o dolor (sin
+    banda).
+  - **SYNTHETIC_ONLY:** 2, los valores de colapso de las pruebas P2E-3 y el factor 1,3 de la sonda de demanda.
+  - **FACULTY_APPROVED:** 0. Ningún número tiene una aprobación docente explícita previa. Los literales adoptados del
+    motor heredado son CANDIDATE.
+- **Banda de la ganancia D → lactato** (2 – 6 – 12). Se lee como el exceso estacionario por unidad de déficit
+  sostenido: un déficit de 0,5 queda 1–6 mmol/L sobre la basal.
+  - No se infirió del lactato de llegada GI.
+  - Un borrador previo citaba esa factibilidad; se quitó con la corrección metodológica. Los límites no cambiaron.
+
+### 12.6 Reglas de aceptación congeladas (antes del barrido final)
+
+- `calibration.FROZEN_RULES`, con el digest `594e895d…c551320` de la tabla y del código de cada prueba.
+- Quedaron congeladas y comprometidas antes del barrido final.
+- Los tamaños de las sondas son operacionalizaciones candidatas de direcciones aprobadas, no números aprobados.
+- Ninguna regla se eligió, mantuvo ni endureció por la cantidad de candidatos que deja pasar.
+
+| Regla | Qué exige | Fuente | Sonda |
+|---|---|---|---|
+| DL1 | Un déficit sostenido peor nunca da menos D | KD-S1, P2D-4, P2E-2 | demanda × 1,1 / 1,3 / 1,5 durante 120 min, a igual entrega |
+| DL2 | … ni menos exceso de lactato | KD-S1, P2D-4 | las mismas corridas |
+| DL3 | La recuperación es gradual | KD-S1 | demanda × 1,3 durante 60 min y luego nada: D baja cada minuto; el lactato, desde su pico; ninguno se reduce a la mitad en 10 min, y ambos bajan en 4 h |
+| DL4 | Nada negativo: D, exceso, lactato | P2E-2 | todas las corridas |
+| RR1 | Corregir el shock no crea bradipnea patológica | KD-S1 | lactato aclarable, 40 min de pérdida y corrección 580 mL sobre la llegada: FR ≥ min(FR de llegada, 10) |
+| HR1 | El deterioro puede subir la FC | KD-S2 | ambas llegadas GI, pérdida de 8 mL/min durante 30 min |
+| HR2 | La recuperación puede bajarla hacia la intrínseca | P2E-1 | la misma pérdida, luego 400 mL sobre la llegada: la FC termina bajo la de llegada |
+| HR3 | Sin impulso simpático negativo | P2D-3 | todas las corridas de FC |
+| HR4 | FC bajo la intrínseca sólo con un mecanismo explícito | P2E-1 | ídem: FC ≥ intrínseca |
+| PL1 | Rendimiento decreciente de la precarga | KD-S4 | +250 / +500 / +750 mL |
+| PL2 | Una bomba deprimida limita el rescate con volumen | P2D-5 | P 0,6: 500 mL no ganan más que con P 1 ni restauran el gasto de llegada |
+| PL3 | Una bomba muy deprimida no se normaliza con poco volumen | P2D-5 | P 0,4 + 250 mL: gasto < 0,8 |
+| PL4 | El exceso de precarga puede producir L con reserva limitada | KD-S4 | reserva 0,3, +2,9 L: L > 0 en 60 min |
+| PR1 | La presión baja monótonamente con el gasto a tono fijo | P2E-4 | `pressure_rel` 1,3 → 0, llegadas neutra y GI |
+| PR2 | La presión tiende a 0 con el gasto | P2E-4 | a 1e-6, ambas < 1 mmHg |
+| PR3 | PAS nunca bajo PAD en el rango | §11.4 | ídem |
+| CO1 | Un flujo bajo breve y moderado no tiene por qué parar | P2E-3 | 5 min al 90 % del umbral de colapso |
+| CO2 | Un flujo bajo grave y prolongado puede llegar a la transición terminal | P2E-3 | gasto 0,1 durante 240 min |
+| DM1 | Más demanda a igual entrega empeora el déficit | P2E-2 | entregas 0,6 / 0,9 / 1,0 / 1,2 |
+| AC1 | La llegada declarada reconstruye exactamente la observación | P2F-1 | ambas llegadas GI |
+| AC2 | La llegada GI declarada responde coherentemente | P2F-1, P2E-2 | sin tratamiento y con manejo definitivo, minuto 60: el tratamiento nunca deja D ni lactato sobre la corrida sin tratamiento; nada negativo; FC ≥ intrínseca |
+
+**Cambios antes de congelar, y por qué:**
+- **AR2 quitada como regla.** Exigía que existiera una historia previa que reprodujera el lactato de llegada. Se
+  convirtió en `SYNTHETIC_PLAUSIBILITY_PROBE`. La razón es metodológica: D y el lactato de llegada se declaran
+  precisamente para no reconstruir una trayectoria previa desconocida. En el barrido preliminar todos los rechazos GI
+  eran AR2.
+- **CO1.** Se probó cambiarla a 10 min al 75 % tras ver un barrido preliminar que no rechazaba nada. Se revirtió a la
+  definición escrita antes de cualquier barrido (5 min al 90 %, como en las pruebas P2E-3), porque el cambio estaba
+  motivado por el resultado.
+- **Estado estacionario.** No es una regla.

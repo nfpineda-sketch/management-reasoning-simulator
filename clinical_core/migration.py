@@ -134,3 +134,67 @@ def gate_summary(family: str, anchors: Anchors, family_parameters=None, profile:
     rows = migration_gate(family, anchors, family_parameters, profile)
     return {"migratable": all(row["migratable"] for row in rows.values()),
             "blocked": sorted(name for name, row in rows.items() if not row["migratable"])}
+
+
+# P2F-11 -- GI dry run --------------------------------------------------------------------------
+
+MAPPABLE = "A. MAPPABLE FROM EXISTING CASE TRUTH"
+FAMILY_DEFAULT = "B. REQUIRES APPROVED FAMILY DEFAULT"
+FACULTY = "C. REQUIRES FACULTY DECISION"
+NOT_REQUIRED = "D. NOT REQUIRED FOR GI"
+DRY_RUN_CATEGORIES = (MAPPABLE, FAMILY_DEFAULT, FACULTY, NOT_REQUIRED)
+
+#: How each GI parameter could become migratable, from the repository-truth inventory
+#: (gi_reference.INVENTORY). A CANDIDATE band is never a mapping: it only informs the decision.
+GI_DRY_RUN: Mapping[str, tuple[str, str]] = {
+    "beta_blockade": (FAMILY_DEFAULT, "neither case lists a beta-blocker (clinical_cases.py:889, :918), but neither "
+                                      "states that none is taken: a bank rule 'no listed beta-blocker -> 0' needs "
+                                      "approval"),
+    "preload_fraction": (FACULTY, "POCUS places both arrivals low on the curve (clinical_cases.py:154-156); the "
+                                  "position is a candidate band, not case truth"),
+    "pump_reserve": (FAMILY_DEFAULT, "no cardiac history, no B-lines, no oedema, troponin below the reference: a "
+                                     "family default 'normal reserve without such findings' needs approval"),
+    "intrinsic_sinus_rate": (FACULTY, "no baseline HR is authored; candidate resting band 60-100 bpm"),
+    "metabolic_demand_baseline": (FACULTY, "afebrile, alert, mild pain, no sepsis or seizure stated; 1 is the "
+                                           "candidate (a family default for uncomplicated haemorrhage is one way to "
+                                           "decide it), not case truth"),
+    "arrival_lactate_excess": (FACULTY, "the authored lactate fixes the sum, not the split into baseline and excess"),
+    "arrival_oxygen_debt": (FACULTY, "follows from the excess and the lactate kinetics over an unstated pre-arrival "
+                                     "duration"),
+    "arrival_delivery_ratio": (FACULTY, "follows from the same pre-arrival history"),
+    "reference_preload_fraction": (NOT_REQUIRED, "no GI mechanism reads it; it only makes the volume deficit explicit"),
+    "volume_loss_ml_per_min": (FAMILY_DEFAULT, "the family engine's literal, adopted for the comparison only"),
+    "hb_loss_g_dl_per_min": (FAMILY_DEFAULT, "the family engine's literal, adopted for the comparison only"),
+    "fraction_with_ppi": (FAMILY_DEFAULT, "family_engine.GI_BLEED['bleeding_with_ppi']"),
+    "fraction_after_hemostasis": (FAMILY_DEFAULT, "family_engine.GI_BLEED['bleeding_after_hemostasis']"),
+}
+
+#: The authored arrival observation the core reads (layer A): mappable from case truth as it stands.
+GI_ANCHORS_FROM_CASE_TRUTH = ("sbp", "dbp", "hr", "spo2", "respiratory_rate", "crt_s", "lactate", "hb", "glucose",
+                              "fio2", "rhythm", "consciousness_level")
+#: An anchor the cases do not author themselves: the bank's default potassium (clinical_cases.py:297).
+GI_ANCHORS_FROM_BANK_DEFAULTS = ("k",)
+
+
+def gate_dry_run(case: str) -> dict:
+    """P2F-11: run the gate on a GI case as the shadow comparison builds it, and classify every parameter.
+
+    It never declares the case migrated and never turns a candidate into a mapping. The
+    blockers are every required parameter the gate refuses, with its category.
+    """
+    from .gi_reference import canonical_anchors
+    anchors = canonical_anchors(case)
+    rows = migration_gate("gi_bleed", anchors)
+    try:
+        check_migration_gate("gi_bleed", anchors)
+        passes = True
+    except MigrationBlocked:
+        passes = False
+    classified = {name: {**row, "category": GI_DRY_RUN[name][0], "path": GI_DRY_RUN[name][1]}
+                  for name, row in rows.items()}
+    not_required = {name: {"category": category, "path": path} for name, (category, path) in GI_DRY_RUN.items()
+                    if name not in rows}
+    return {"case": case, "passes_gate": passes, "parameters": classified, "not_required": not_required,
+            "anchors_from_case_truth": list(GI_ANCHORS_FROM_CASE_TRUTH),
+            "anchors_from_bank_defaults": list(GI_ANCHORS_FROM_BANK_DEFAULTS),
+            "blockers": sorted(name for name, row in rows.items() if not row["migratable"])}
