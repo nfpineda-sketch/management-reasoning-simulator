@@ -4,7 +4,9 @@ qualitative rules, the deterministic sweep, Appendix A9 and the GI migration-gat
 Nothing here approves a number, migrates GI or reads the family engine to accept a candidate.
 """
 import hashlib
+import inspect
 import json
+from dataclasses import replace
 
 import pytest
 
@@ -13,8 +15,9 @@ from clinical_core.derived import DEFAULT_PROFILE, CoreProfile
 from clinical_core.migration import FACULTY, FAMILY_DEFAULT, NOT_REQUIRED, gate_dry_run
 from clinical_core.shadow import GOLDEN
 
-#: The digest of the frozen rule table and the check sources, recorded when the rules were frozen.
-FROZEN_DIGEST = "594e895d8f25ca3e93069c11727d3e8e168f429ef5ebadfd724fc1ae2c551320"
+#: The digest of everything acceptance depends on, recorded when the rules were re-frozen after the
+#: review (docs/PHASE2_SHADOW_CORE.md §12.6; the first freeze, 594e895d..., covered less).
+FROZEN_DIGEST = "99265a6fae67baea2e3b1029f4f2d0b0cd647d309f7a9682de3e4c3556155aab"
 
 
 # P2F-2 / P2F-5 -- repository truth, candidate inference, faculty decision ---------------------
@@ -161,6 +164,46 @@ def test_the_rules_are_frozen():
     assert "reverted" in calibration.FROZEN_RULES["CO1"].rationale
 
 
+def test_the_hr_rules_read_the_candidates_full_declared_arrival():
+    # Review finding: HR1-HR4 used to run on an arrival that declared only the intrinsic rate. A
+    # 72f arrival debt of 60 with a 30-min repayment is above what any deficit can sustain, so the
+    # debt's share of the drive falls during the bleed and HR does not rise: the full arrival fails.
+    profile = {"debt_clearance_tau_min": 30.0}
+    failing = calibration.GICandidate(profile, debt="upper")
+    arrivals = {case: gi_reference.candidate_anchors(case, calibration.case_values(case, failing))
+                for case in gi_reference.GI_CASES}
+    with pytest.raises(calibration.Failed, match=r"HR1 \(gi_bleed_72f\)"):
+        calibration.check_hr(replace(DEFAULT_PROFILE, **profile), arrivals=arrivals)
+    assert "HR1-HR4" in calibration.gi_physiology(failing)["failed"]
+    assert "HR1-HR4" not in calibration.gi_physiology(calibration.GICandidate(profile))["failed"]
+
+
+def test_dm1_runs_through_the_integrator_and_reads_the_profile():
+    # Review finding: DM1 used to test only the arithmetic of max(0, .), whatever the profile.
+    source = inspect.getsource(calibration.check_demand)
+    assert "run(" in source and "Demand(" in source
+    calibration.check_demand(DEFAULT_PROFILE)
+    trajectories = []
+    original = calibration.run
+
+    def spy(*args, **kwargs):
+        trajectories.append(args[3] if len(args) > 3 else kwargs.get("profile"))
+        return original(*args, **kwargs)
+
+    calibration.run = spy
+    try:
+        calibration.check_demand(replace(DEFAULT_PROFILE, debt_clearance_tau_min=30.0))
+    finally:
+        calibration.run = original
+    assert trajectories and all(item.debt_clearance_tau_min == 30.0 for item in trajectories)
+
+
+def test_the_rules_say_which_ones_construction_already_guarantees():
+    guaranteed = {name for name, rule in calibration.FROZEN_RULES.items() if rule.guaranteed}
+    assert {"DL1", "DL2", "DL4", "HR3", "HR4", "PR1", "PR2", "DM1", "CO1", "AC1"} <= guaranteed
+    assert not {"HR1", "HR2", "PL2", "PL3", "PR3"} & guaranteed
+
+
 def test_the_canonical_profile_passes_every_frozen_rule():
     assert calibration.physiology({}) == {"valid": True, "failed": {}, "passed": list(calibration.CHECKS)}
 
@@ -220,4 +263,5 @@ def test_the_gi_dry_run_classifies_every_parameter_and_never_migrates(case):
         assert categories[name] == FAMILY_DEFAULT
     assert result["not_required"]["reference_preload_fraction"]["category"] == NOT_REQUIRED
     assert len(result["blockers"]) == 12 and set(result["blockers"]) == set(result["parameters"])
-    assert "hr" in result["anchors_from_case_truth"] and result["anchors_from_bank_defaults"] == ["k"]
+    assert "hr" in result["anchors_from_case_truth"] and result["anchors_from_bank_defaults"] == ["k", "rhythm", "fio2"]
+    assert not {"rhythm", "fio2"} & set(result["anchors_from_case_truth"])

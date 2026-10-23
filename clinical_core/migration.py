@@ -152,16 +152,19 @@ GI_DRY_RUN: Mapping[str, tuple[str, str]] = {
                                       "approval"),
     "preload_fraction": (FACULTY, "POCUS places both arrivals low on the curve (clinical_cases.py:154-156); the "
                                   "position is a candidate band, not case truth"),
-    "pump_reserve": (FAMILY_DEFAULT, "no cardiac history, no B-lines, no oedema, troponin below the reference: a "
-                                     "family default 'normal reserve without such findings' needs approval"),
+    "pump_reserve": (FAMILY_DEFAULT, "the case mentions no cardiac disease; no B-lines, no oedema, troponin below "
+                                     "the reference: a family default 'normal reserve without such findings' needs "
+                                     "approval"),
     "intrinsic_sinus_rate": (FACULTY, "no baseline HR is authored; candidate resting band 60-100 bpm"),
     "metabolic_demand_baseline": (FACULTY, "afebrile, alert, mild pain, no sepsis or seizure stated; 1 is the "
                                            "candidate (a family default for uncomplicated haemorrhage is one way to "
                                            "decide it), not case truth"),
     "arrival_lactate_excess": (FACULTY, "the authored lactate fixes the sum, not the split into baseline and excess"),
-    "arrival_oxygen_debt": (FACULTY, "follows from the excess and the lactate kinetics over an unstated pre-arrival "
-                                     "duration"),
-    "arrival_delivery_ratio": (FACULTY, "follows from the same pre-arrival history"),
+    "arrival_oxygen_debt": (FACULTY, "declared directly by faculty as part of the arrival state; no pre-arrival "
+                                     "history is reconstructed, and neither case states the duration of "
+                                     "hypoperfusion"),
+    "arrival_delivery_ratio": (FACULTY, "declared directly by faculty as part of the arrival state; no pre-arrival "
+                                        "history is reconstructed, and the case does not measure delivery"),
     "reference_preload_fraction": (NOT_REQUIRED, "no GI mechanism reads it; it only makes the volume deficit explicit"),
     "volume_loss_ml_per_min": (FAMILY_DEFAULT, "the family engine's literal, adopted for the comparison only"),
     "hb_loss_g_dl_per_min": (FAMILY_DEFAULT, "the family engine's literal, adopted for the comparison only"),
@@ -171,9 +174,11 @@ GI_DRY_RUN: Mapping[str, tuple[str, str]] = {
 
 #: The authored arrival observation the core reads (layer A): mappable from case truth as it stands.
 GI_ANCHORS_FROM_CASE_TRUTH = ("sbp", "dbp", "hr", "spo2", "respiratory_rate", "crt_s", "lactate", "hb", "glucose",
-                              "fio2", "rhythm", "consciousness_level")
-#: An anchor the cases do not author themselves: the bank's default potassium (clinical_cases.py:297).
-GI_ANCHORS_FROM_BANK_DEFAULTS = ("k",)
+                              "consciousness_level")
+#: Anchors the cases do not author themselves: the bank's default potassium (clinical_cases.py:297),
+#: the rhythm the bank derives from HR (clinical_cases.py:211) and the engine's room air at the start
+#: (family_engine.py:973).
+GI_ANCHORS_FROM_BANK_DEFAULTS = ("k", "rhythm", "fio2")
 
 
 def gate_dry_run(case: str) -> dict:

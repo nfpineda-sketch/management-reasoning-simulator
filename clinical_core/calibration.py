@@ -114,8 +114,8 @@ REGISTRY: Mapping[str, RegistryEntry] = {entry.name: entry for entry in (
     # RR
     _p("rr_per_lactate", "RR", 3.0, 7.5, 12.0, "breaths/min per mmol/L at the threshold",
        "metabolic drive gain; the ABGs show compensated metabolic acidosis", ("RR",), ("RR1",)),
-    _p("lactate_drive_threshold_mmol_l", "RR", 1.5, 2.0, 2.5, "mmol/L", "lactate above which acidaemia drives breathing",
-       ("RR",), ("RR1",)),
+    _p("lactate_drive_threshold_mmol_l", "RR", 1.5, 2.0, 2.5, "mmol/L",
+       "lactate above which acidaemia drives breathing", ("RR",), ("RR1",)),
     _p("rr_metabolic_max", "RR", 15.0, 25.0, 30.0, "breaths/min", "saturation of the metabolic addition", ("RR",),
        ("RR1",)),
     _p("rr_ventilatory_floor", "RR", 10.0, 12.0, 14.0, "breaths/min",
@@ -321,14 +321,16 @@ def check_rr1(profile: CoreProfile, **_):
             f"RR1: correcting shock took RR to {min(item.respiratory_rate for item in derived):.1f} (< {floor})")
 
 
-def _gi_arrival(case: str, intrinsic: float):
-    return gi_reference.candidate_anchors(case, {"intrinsic_sinus_rate": intrinsic})
+def _midpoint_arrivals() -> dict:
+    """Each GI case with every case band at its midpoint: the arrival the group sweeps probe."""
+    return {case: gi_reference.candidate_anchors(case, case_values(case, GICandidate({})))
+            for case in gi_reference.GI_CASES}
 
 
-def check_hr(profile: CoreProfile, intrinsic: Mapping[str, float] | None = None, **_):
-    for case in gi_reference.GI_CASES:
-        rate = (intrinsic or {}).get(case, gi_reference.intrinsic_hr_band(case).midpoint)
-        arrival = _gi_arrival(case, rate)
+def check_hr(profile: CoreProfile, arrivals: Mapping[str, Anchors] | None = None, **_):
+    """HR1-HR4 on each GI case's full declared arrival (the candidate's, or every band at its midpoint)."""
+    for case, arrival in (arrivals or _midpoint_arrivals()).items():
+        rate = arrival.intrinsic_sinus_rate if arrival.intrinsic_sinus_rate is not None else arrival.hr
         bleed = run(arrival, (Drift("loss", "V", 0, 30, -8.0),), 30, profile)
         rates = [item.pulse_rate_bpm for item in bleed.derived()]
         _expect(max(rates) > arrival.hr, f"HR1 ({case}): deterioration did not raise HR")
@@ -391,19 +393,28 @@ def check_collapse(profile: CoreProfile, **_):
 
 
 def check_demand(profile: CoreProfile, **_):
-    for delivery in (0.6, 0.9, 1.0, 1.2):
-        _expect(delivery_deficit(1.2, delivery) >= delivery_deficit(1.0, delivery),
-                "DM1: more demand at the same delivery gave less deficit")
+    """DM1 through the integrator: at the same reduced delivery, more demand never gives less D."""
+    anaemic = Drift("anaemia", "hb", 0, 1, -0.3 * NEUTRAL.hb)
+    runs = [run(NEUTRAL, (anaemic, Demand("demand", 0, 60, factor)), 60, profile) for factor in (1.0, 1.2)]
+    deliveries = [[item.delivery_rel for item in trajectory.derived()] for trajectory in runs]
+    _expect(deliveries[0] == deliveries[1], "DM1: demand changed delivery")
+    _expect(all(b >= a - 1e-12 for a, b in zip(_debts(runs[0]), _debts(runs[1]))) and
+            _debts(runs[1])[-1] > _debts(runs[0])[-1], "DM1: more demand at the same delivery gave less D")
 
 
 @dataclass(frozen=True)
 class Rule:
-    """A qualitative acceptance rule, frozen before the final sweep (P2F methodological correction 3)."""
+    """A qualitative acceptance rule, frozen before the final sweep (P2F methodological correction 3).
+
+    ``guaranteed`` says when the model's construction already ensures the rule within the
+    bands, so that passing it says nothing about a candidate (non-discriminating).
+    """
 
     rule: str
     source: str
     probe: str
     rationale: str
+    guaranteed: str = ""
 
 
 #: Every qualitative acceptance rule, frozen before the final sweep. The probe sizes are candidate
@@ -413,28 +424,35 @@ class Rule:
 FROZEN_RULES: Mapping[str, Rule] = {
     "DL1": Rule("a worse sustained deficit never yields less D", "KD-S1, P2D-4, P2E-2",
                 "demand x1.1, x1.3, x1.5 for 120 min at identical delivery: D ordered every minute",
-                "monotonicity of the debt in the deficit"),
+                "monotonicity of the debt in the deficit", "by construction: D is linear in the deficit, gain > 0"),
     "DL2": Rule("a worse sustained deficit never yields less lactate excess", "KD-S1, P2D-4",
-                "the same runs: lactate excess ordered every minute", "monotonicity of lactate in the debt"),
+                "the same runs: lactate excess ordered every minute", "monotonicity of lactate in the debt",
+                "by construction: lactate is linear in D, gain > 0"),
     "DL3": Rule("recovery is gradual", "KD-S1 (restoration leaves debt and lactate to clear gradually)",
                 "demand x1.3 for 60 min, then none: D falls every minute after, lactate falls after its peak, "
                 "neither halves within 10 minutes, and both are lower after 4 hours",
-                "memory: an abrupt reset (half the debt gone in minutes) is what the decision rules out"),
+                "memory: an abrupt reset (half the debt gone in minutes) is what the decision rules out",
+                "within the bands: every time constant is at least 30 min"),
     "DL4": Rule("no negative D, lactate excess or lactate", "P2E-2 invariants", "every probe run",
-                "sign consistency"),
+                "sign consistency", "by construction: the D bound and the state invariants"),
     "RR1": Rule("correcting shock alone does not create pathological bradypnoea", "KD-S1",
                 "clearable arrival lactate, 40 min of volume loss, then correction 580 mL beyond arrival, 600 min: "
-                "RR >= min(arrival RR, 10)", "clearing lactate may lower RR, never below the ventilatory part"),
-    "HR1": Rule("deterioration can increase HR", "KD-S2", "both GI arrivals, volume loss 8 mL/min for 30 min: "
-                "HR rises above the arrival HR", "the drive answers to the pressure deficit"),
+                "RR >= min(arrival RR, 10)", "clearing lactate may lower RR, never below the ventilatory part",
+                "by construction: the metabolic share falls at most to 0 and the floor is >= 10"),
+    "HR1": Rule("deterioration can increase HR", "KD-S2",
+                "each GI case's full declared arrival (the candidate's), volume loss 8 mL/min for 30 min: HR rises "
+                "above the arrival HR", "the drive answers to the pressure deficit; corrected after the review: "
+                "the probe used to declare only the intrinsic rate, not the candidate's whole arrival"),
     "HR2": Rule("recovery can reduce HR toward intrinsic", "P2E-1",
-                "the same loss, then 400 mL beyond arrival, 240 min: HR ends below the arrival HR",
-                "an arrival sympathetic share can resolve"),
-    "HR3": Rule("no negative sympathetic contribution", "P2D-3", "every HR probe run", "sign consistency"),
+                "the same arrival and loss, then 400 mL beyond arrival, 240 min: HR ends below the arrival HR",
+                "an arrival sympathetic share can resolve; same correction as HR1"),
+    "HR3": Rule("no negative sympathetic contribution", "P2D-3", "every HR probe run", "sign consistency",
+                "by construction: the drive's target is floored at 0"),
     "HR4": Rule("HR below intrinsic requires an explicit mechanism", "P2E-1", "every HR probe run: HR >= intrinsic",
-                "no probe declares a negative chronotrope"),
+                "no probe declares a negative chronotrope",
+                "by construction: sinus HR = intrinsic + gain x drive, drive >= 0"),
     "PL1": Rule("diminishing returns of preload", "KD-S4", "+250, +500, +750 mL: each output gain smaller",
-                "saturating curve"),
+                "saturating curve", "by construction: the curve is concave above the empty point"),
     "PL2": Rule("a depressed pump limits fluid rescue", "P2D-5",
                 "P 0.6: 500 mL gains no more than at P 1 and does not restore arrival output",
                 "the pump shapes the curve"),
@@ -444,26 +462,35 @@ FROZEN_RULES: Mapping[str, Rule] = {
                 "reserve 0.3, +2.9 L (the volume bound is 3 L): L > 0 within 60 min",
                 "'may': it must be reachable within the bounds"),
     "PR1": Rule("pressure falls monotonically with output at fixed tone", "P2E-4",
-                "pressure_rel 1.3 down to 0 for the neutral and both GI arrivals: MAP never rises", ""),
+                "pressure_rel 1.3 down to 0 for the neutral and both GI arrivals: MAP never rises", "",
+                "by construction (P2E-4)"),
     "PR2": Rule("pressure tends toward zero as output tends to zero", "P2E-4",
-                "at pressure_rel 1e-6 both pressures below 1 mmHg", ""),
+                "at pressure_rel 1e-6 both pressures below 1 mmHg", "", "by construction (P2E-4)"),
     "PR3": Rule("SBP never below DBP over the output range", "§11.4 invariant (fails closed otherwise)",
                 "the same range, for the neutral and both GI arrivals", "state consistency"),
     "CO1": Rule("brief, moderate low flow need not cause arrest", "P2E-3",
                 "five minutes at 90% of the collapse threshold, then recovery: no arrest",
                 "written before any sweep, as in the P2E-3 tests (a few minutes just inside the critical region); "
                 "a change to ten minutes at 75% was tried after a preliminary sweep and reverted, because it was "
-                "motivated by that sweep's result"),
+                "motivated by that sweep's result",
+                "within the bands: severity 0.1 for at most about six minutes at the largest gain 2 accrues "
+                "about 1.2, below the smallest limit (5)"),
     "CO2": Rule("severe, prolonged low flow can accumulate burden to the terminal transition", "P2E-3",
-                "output 0.1 (the pump bound) for 240 min: the criterion is met", "'can': reachable within bounds"),
+                "output 0.1 (the pump bound) for 240 min: the criterion is met", "'can': reachable within bounds",
+                "within the bands: 240 x 0.5 x 0.5 = 60 exceeds the largest limit (30)"),
     "DM1": Rule("more demand at identical delivery worsens the deficit", "P2E-2",
-                "deficit at demand 1.2 >= at demand 1, at delivery 0.6, 0.9, 1.0, 1.2", ""),
+                "through the integrator: Hb down by 30%, demand x1 and x1.2 for 60 min: identical delivery, D "
+                "never less and finally more with more demand",
+                "corrected after the review: the probe used to test only the arithmetic of max(0, .)",
+                "by construction: the deficit is monotonic in demand"),
     "AC1": Rule("the declared arrival reconstructs the authored observation exactly", "P2F-1",
-                "check_arrival_reconstruction on both GI arrivals", "arrival-state consistency"),
+                "check_arrival_reconstruction on both GI arrivals", "arrival-state consistency",
+                "by construction (P2F-1)"),
     "AC2": Rule("the declared GI arrival responds coherently", "P2F-1, P2E-2",
                 "untreated_60 and definitive_management from each declared arrival: at minute 60 treatment never "
                 "leaves D or lactate above the untreated run; no negative D or excess; HR never below intrinsic",
-                "arrival-state consistency of a dynamically evolving arrival; steady state is not required"),
+                "arrival-state consistency of a dynamically evolving arrival; steady state is not required",
+                "the sign and intrinsic parts by construction; the treatment comparison is not guaranteed"),
 }
 
 
@@ -481,14 +508,25 @@ CHECKS: Mapping[str, tuple[Callable, tuple[str, ...]]] = {
 
 
 def frozen_digest() -> str:
-    """The digest of the frozen rule table and of every check's source: a later change shows up."""
+    """The digest of everything acceptance depends on: the rule table, every function a check
+    calls, the registry's band points, the case bands, the probe arrival, the groups and the GI
+    design. Any later change shows up and has to be recorded with its reason."""
     import hashlib
     import inspect
-    text = json.dumps({name: asdict(rule) for name, rule in FROZEN_RULES.items()}, sort_keys=True)
-    sources = "".join(inspect.getsource(function) for function in (
-        check_dl1_dl2_dl4, check_dl3, check_rr1, check_hr, check_preload, check_congestion, check_pressure,
-        check_collapse, check_demand, check_arrival_state))
-    return hashlib.sha256((text + sources).encode("utf-8")).hexdigest()
+    from .bands import ARRIVAL as probe_arrival
+    functions = (check_dl1_dl2_dl4, check_dl3, check_rr1, check_hr, _midpoint_arrivals, check_preload, _output,
+                 check_congestion, check_pressure, check_collapse, check_demand, check_arrival_state, _run_case,
+                 case_values, _level, gi_physiology, physiology, gi_candidates, acceptable, _expect, _debts, _excess,
+                 peak_index, gi_reference.candidate_anchors, gi_reference.case_bands)
+    data = {"rules": {name: asdict(rule) for name, rule in FROZEN_RULES.items()},
+            "checks": {name: list(groups) for name, (_, groups) in CHECKS.items()},
+            "groups": {name: [list(names), list(checks)] for name, (names, checks) in GROUPS.items()},
+            "points": {name: [str(point) for point in entry.points()] for name, entry in REGISTRY.items()},
+            "case_bands": {case: {name: asdict(band) for name, band in gi_reference.case_bands(case).items()}
+                           for case in gi_reference.GI_CASES},
+            "probe_arrival": {name: str(value) for name, value in probe_arrival.items()}, "levels": list(LEVELS)}
+    text = json.dumps(data, sort_keys=True) + "".join(inspect.getsource(function) for function in functions)
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 def physiology(profile_values: Mapping[str, Any], checks=None, **context) -> dict:
@@ -664,17 +702,20 @@ def gi_physiology(candidate: GICandidate, cache: dict | None = None) -> dict:
     Never reads the family engine's golden, and never the pre-arrival plausibility probe.
     """
     profile = replace(DEFAULT_PROFILE, **candidate.profile)
-    intrinsic = {case: case_values(case, candidate)["intrinsic_sinus_rate"] for case in gi_reference.GI_CASES}
+    values = {case: case_values(case, candidate) for case in gi_reference.GI_CASES}
+    arrivals = {case: gi_reference.candidate_anchors(case, values[case]) for case in gi_reference.GI_CASES}
     failed, passed = {}, []
     try:
         check_arrival_state(profile, candidate)
         passed.append("AC1/AC2")
     except (Failed, CoreInvariantError) as error:
         failed["AC1/AC2"] = str(error)
-    key = (tuple(sorted(candidate.profile.items())), tuple(sorted(intrinsic.items())))
+    # The cache key holds every declared value of both cases, so a probe never reuses another arrival.
+    key = (tuple(sorted(candidate.profile.items())),
+           tuple((case, tuple(sorted(values[case].items()))) for case in gi_reference.GI_CASES))
     cache = {} if cache is None else cache
     if key not in cache:
-        cache[key] = physiology(candidate.profile, ("DL1/DL2/DL4", "DL3", "RR1", "HR1-HR4"), intrinsic=intrinsic)
+        cache[key] = physiology(candidate.profile, ("DL1/DL2/DL4", "DL3", "RR1", "HR1-HR4"), arrivals=arrivals)
     failed.update(cache[key]["failed"])
     passed.extend(cache[key]["passed"])
     return {"valid": not failed, "failed": failed, "passed": passed}
@@ -780,9 +821,7 @@ def registry_report() -> dict:
     for name, entry in REGISTRY.items():
         row = asdict(entry)
         if entry.per_case:
-            row["per_case"] = {case: (asdict(band) if (band := gi_reference.case_bands(case).get(name)) else
-                                      "derived per kinetics (see arrival histories)")
-                               for case in gi_reference.GI_CASES}
+            row["per_case"] = {case: asdict(gi_reference.case_bands(case)[name]) for case in gi_reference.GI_CASES}
         rows[name] = row
     return rows
 

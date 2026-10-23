@@ -58,7 +58,8 @@ INVENTORY: tuple[InventoryItem, ...] = _items("gi_bleed_57m", (
     ("hr", 124, "clinical_cases.py:881", "_o = _observable(88, 54, 124, 97, 26",
      ("intrinsic_sinus_rate", "arrival sympathetic contribution"), "upper bound of the intrinsic rate",
      ("observable", "hr")),
-    ("sbp", 88, "clinical_cases.py:881", "_o = _observable(88, 54, 124", ("pressure anchor",), "", ("observable", "sbp")),
+    ("sbp", 88, "clinical_cases.py:881", "_o = _observable(88, 54, 124", ("pressure anchor",), "",
+     ("observable", "sbp")),
     ("dbp", 54, "clinical_cases.py:881", "_o = _observable(88, 54", ("pressure anchor", "pressure gains and knee"),
      "pulse pressure 34 mmHg bounds (sbp gain - dbp gain) x (1 - knee)", ("observable", "dbp")),
     ("map", "65.3 (derived, not authored)", "clinical_cases.py:881", "_o = _observable(88, 54", (),
@@ -66,24 +67,28 @@ INVENTORY: tuple[InventoryItem, ...] = _items("gi_bleed_57m", (
     ("spo2", 97, "clinical_cases.py:881", "_observable(88, 54, 124, 97", ("delivery saturation reference",),
      "above the hypoxaemia threshold: no hypoxaemic drive at arrival", ("observable", "spo2")),
     ("respiratory_rate", 26, "clinical_cases.py:881", "_observable(88, 54, 124, 97, 26",
-     ("rr_per_lactate", "rr_ventilatory_floor"), "with the ABG, a metabolic share of RR at arrival",
+     ("rr_per_lactate", "rr_ventilatory_floor"),
+     "candidate inference: with the ABG, a metabolic share of RR at arrival",
      ("observable", "respiratory_rate")),
     ("abg", "pH 7.37, PaCO2 31, HCO3 17.3, PaO2 91 on FiO2 21%", "clinical_cases.py:901", "abg=(7.37, 31, 91)",
-     ("rr_per_lactate",), "compensated metabolic acidosis: supports a lactate-driven ventilatory share"),
+     ("rr_per_lactate",), "HCO3 is computed by the bank from pH and PaCO2 (clinical_cases.py:251), not authored; "
+     "candidate inference: compensated metabolic acidosis, consistent with a lactate-driven ventilatory share"),
     ("mental_status", "Alert", "clinical_cases.py:202", 'mental="Alert"', ("metabolic_demand_baseline",),
      "the bank default (the case passes none); no agitation stated", ("observable", "mental_status")),
     ("neurological_exam", "Awake and oriented, reporting persistent faintness", "clinical_cases.py:899",
      "Awake and oriented, reporting persistent faintness", ("metabolic_demand_baseline",), "no agitation"),
     ("crt_s", 5, "clinical_cases.py:881", "crt=5", ("arrival_delivery_ratio", "preload_fraction"),
-     "with cool extremities and impaired perfusion: low output at arrival", ("observable", "crt")),
+     "candidate inference: with cool extremities and impaired perfusion, low output at arrival", ("observable", "crt")),
     ("extremities", "Cool", "clinical_cases.py:881", 'extremities="Cool"', ("arrival_delivery_ratio",), "",
      ("observable", "extremities")),
     ("peripheral_perfusion", "impaired", "clinical_cases.py:882", 'perfusion="impaired"',
      ("arrival_delivery_ratio",), "", ("observable", "peripheral_perfusion")),
     ("hb_g_dl", 6.7, "clinical_cases.py:900", "lactate=4.4, hemoglobin=6.7", ("arrival_delivery_ratio",),
-     "about half a normal content: arrival delivery below the reference", ("engine", "baseline_hemoglobin")),
-    ("lactate_mmol_l", 4.4, "clinical_cases.py:900", "lactate=4.4", ("arrival_lactate_excess", "arrival_oxygen_debt",
-     "lactate_per_output_deficit"), "split into clearance baseline and clearable excess",
+     "candidate inference: about half a normal content, arrival delivery below the reference",
+     ("engine", "baseline_hemoglobin")),
+    ("lactate_mmol_l", 4.4, "clinical_cases.py:900", "lactate=4.4", ("arrival_lactate_excess",),
+     "fixes the sum of the clearance baseline and the clearable excess, not the split; it constrains neither the "
+     "D->lactate gain nor the arrival debt",
      ("engine", "baseline_lactate")),
     ("glucose_mg_dl", 118, "clinical_cases.py:882", "temperature=36.5, glucose=118", (),
      "no hypoglycaemic drive", ("observable", "glucose_mg_dl")),
@@ -98,11 +103,14 @@ INVENTORY: tuple[InventoryItem, ...] = _items("gi_bleed_57m", (
      "the engine starts every case on room air; the ABG is on FiO2 21% (clinical_cases.py:253)"),
     ("pocus_lv", "small cavity, hyperdynamic, near-obliteration in systole", "clinical_cases.py:154",
      "Small cavity with hyperdynamic contraction", ("preload_fraction", "pump_reserve"),
-     "severe underfilling with a preserved pump"),
+     "candidate inference: severe underfilling with a preserved pump"),
     ("pocus_ivc", "0.9 cm, near-complete inspiratory collapse", "clinical_cases.py:155",
-     'ivc="0.9 cm; near-complete inspiratory collapse"', ("preload_fraction",), "low on the preload curve"),
+     'ivc="0.9 cm; near-complete inspiratory collapse"', ("preload_fraction",),
+     "candidate inference: low on the preload curve"),
     ("lungs", "no B-lines; chest X-ray without oedema", "clinical_cases.py:903",
-     "No focal consolidation or pulmonary edema", ("pump_reserve",), "no arrival congestion (L = 0)"),
+     "No focal consolidation or pulmonary edema", ("pump_reserve",),
+     "the X-ray is authored here; 'no B-lines' is the _pocus default (clinical_cases.py:69, :83), which the case "
+     "does not override; candidate inference: no arrival congestion (L = 0)"),
     ("troponin_ng_l", "16 (upper reference 19)", "clinical_cases.py:903", "troponin=16", ("pump_reserve",),
      "no myocardial injury stated"),
     ("active_bleeding", "melena since yesterday; black tarry stool on rectal examination",
@@ -132,7 +140,8 @@ INVENTORY: tuple[InventoryItem, ...] = _items("gi_bleed_57m", (
     ("respiratory_rate", 24, "clinical_cases.py:910", "_observable(98, 62, 112, 96, 24",
      ("rr_per_lactate", "rr_ventilatory_floor"), "", ("observable", "respiratory_rate")),
     ("abg", "pH 7.40, PaCO2 33, HCO3 19.8, PaO2 84 on FiO2 21%", "clinical_cases.py:930", "abg=(7.40, 33, 84)",
-     ("rr_per_lactate",), "compensated metabolic acidosis, milder"),
+     ("rr_per_lactate",), "HCO3 is computed by the bank (clinical_cases.py:251), not authored; candidate inference: "
+     "compensated metabolic acidosis, milder"),
     ("mental_status", "Alert", "clinical_cases.py:202", 'mental="Alert"', ("metabolic_demand_baseline",),
      "the bank default (the case passes none)", ("observable", "mental_status")),
     ("neurological_exam", "Alert, oriented and moving all limbs symmetrically", "clinical_cases.py:928",
@@ -145,8 +154,9 @@ INVENTORY: tuple[InventoryItem, ...] = _items("gi_bleed_57m", (
      ("arrival_delivery_ratio",), "", ("observable", "peripheral_perfusion")),
     ("hb_g_dl", 6.4, "clinical_cases.py:929", "lactate=3.4, hemoglobin=6.4", ("arrival_delivery_ratio",), "",
      ("engine", "baseline_hemoglobin")),
-    ("lactate_mmol_l", 3.4, "clinical_cases.py:929", "lactate=3.4", ("arrival_lactate_excess", "arrival_oxygen_debt",
-     "lactate_per_output_deficit"), "", ("engine", "baseline_lactate")),
+    ("lactate_mmol_l", 3.4, "clinical_cases.py:929", "lactate=3.4", ("arrival_lactate_excess",),
+     "fixes the sum, not the split; it constrains neither the D->lactate gain nor the arrival debt",
+     ("engine", "baseline_lactate")),
     ("glucose_mg_dl", 130, "clinical_cases.py:911", "temperature=36.6, glucose=130", (), "",
      ("observable", "glucose_mg_dl")),
     ("temperature_c", 36.6, "clinical_cases.py:911", "temperature=36.6", ("metabolic_demand_baseline",), "afebrile",
@@ -156,11 +166,13 @@ INVENTORY: tuple[InventoryItem, ...] = _items("gi_bleed_57m", (
      ("metabolic_demand_baseline",), "the case authors no pain score (clinical_cases.py:916)"),
     ("oxygen_support", "room air (FiO2 0.21)", "family_engine.py:973", '"oxygen_fio2": .21', ("fio2 anchor",), ""),
     ("pocus_lv", "hyperdynamic contraction", "clinical_cases.py:156", '_pocus(lv="Hyperdynamic contraction"',
-     ("preload_fraction", "pump_reserve"), "underfilling with a preserved pump"),
+     ("preload_fraction", "pump_reserve"), "candidate inference: underfilling with a preserved pump"),
     ("pocus_ivc", "1.1 cm, >50% inspiratory collapse", "clinical_cases.py:156", 'ivc="1.1 cm; >50% inspiratory',
-     ("preload_fraction",), "low on the preload curve, less than 57m"),
+     ("preload_fraction",), "candidate inference: low on the preload curve, less than 57m"),
     ("lungs", "no B-lines; no acute cardiopulmonary abnormality on X-ray", "clinical_cases.py:932",
-     "No acute cardiopulmonary abnormality", ("pump_reserve",), "no arrival congestion"),
+     "No acute cardiopulmonary abnormality", ("pump_reserve",),
+     "the X-ray is authored here; 'no B-lines' is the _pocus default (clinical_cases.py:69, :83); candidate "
+     "inference: no arrival congestion"),
     ("troponin_ng_l", "17 (upper reference 19)", "clinical_cases.py:932", "troponin=17", ("pump_reserve",), ""),
     ("active_bleeding", "melena for three days with another episode this morning", "clinical_cases.py:921",
      "I have passed black, sticky stool for three days", ("haemorrhage source parameters",),
@@ -327,9 +339,13 @@ def pre_arrival_plausibility_probe(excess: float, profile: CoreProfile = DEFAULT
 def arrival_debt_band(case: str) -> Band:
     """Independent of any pre-arrival reconstruction and of the lactate kinetics (P2F-3)."""
     return Band("arrival_oxygen_debt", 0.0, 60.0, 20.0, "index-minutes",
-                "the scale of the variable, not a fit: 0 (no accrued debt) up to the debt a severe deficit (0.5) "
-                "would leave after about two hours at the provisional repayment rate; neither case states a "
-                "duration, so the band is wide and the same for both; arrival need not be in steady state",
+                "the scale of the variable, not a fit: 0 (no accrued debt) to 60; neither case states a duration, "
+                "so the band is wide and the same for both, and arrival need not be in steady state. Correction "
+                "after the review (the values are unchanged, frozen before the sweep): the earlier wording derived "
+                "the upper limit from a deficit of 0.5 for about two hours at the provisional repayment time (60 min), "
+                "which gives about 26, not 60; 60 is the steady state of a total deficit (no delivery) at 60 min, and "
+                "a debt above debt_per_delivery_deficit x demand x debt_clearance_tau_min (30 at tau 30) cannot "
+                "accrue from any deficit. Whether to add such a reachability limit is a faculty decision",
                 (_source(case, "lactate_mmol_l"), _source(case, "active_bleeding"), _source(case, "crt_s")))
 
 

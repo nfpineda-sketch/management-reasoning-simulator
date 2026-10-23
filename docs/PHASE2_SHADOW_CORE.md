@@ -1228,12 +1228,12 @@ separado.
 | FC, ritmo | 124, taquicardia sinusal (`:881`, `:211`) | 112 (`:910`) | techo de la intrínseca; parte simpática |
 | PAS/PAD (PAM derivada) | 88/54 (65,3) (`:881`) | 98/62 (74,0) (`:910`) | anclas de presión; presión de pulso 34/36 |
 | SpO2, FR | 97, 26 (`:881`) | 96, 24 (`:910`) | sin impulso hipoxémico; parte metabólica de la FR |
-| Gasometría arterial | pH 7,37, PaCO2 31, HCO3 17,3 (`:901`) | 7,40, 33, 19,8 (`:930`) | acidosis metabólica compensada |
-| TLC, perfusión | 5 s, frías, alterada (`:881-882`) | 4 s, frías, alterada (`:910-911`) | entrega de llegada baja |
-| Hb, lactato | 6,7; 4,4 (`:900`) | 6,4; 3,4 (`:929`) | entrega; lactato aclarable y D |
+| Gasometría arterial | pH 7,37, PaCO2 31, PaO2 91 (`:901`); HCO3 17,3 calculado por el banco (`:251`) | 7,40, 33, 84 (`:930`); HCO3 19,8 calculado | inferencia candidata: acidosis metabólica compensada |
+| TLC, perfusión | 5 s, frías, alterada (`:881-882`) | 4 s, frías, alterada (`:910-911`) | inferencia candidata: entrega de llegada baja |
+| Hb, lactato | 6,7; 4,4 (`:900`) | 6,4; 3,4 (`:929`) | entrega; la suma de la basal y el lactato aclarable (no su reparto, ni la ganancia D → lactato, ni la D de llegada) |
 | Temperatura, leucocitos, dolor | 36,5; 11,1; leve | 36,6; 10,3; leve | sin modificador de demanda |
-| POCUS | VI pequeño hiperdinámico, VCI 0,9 cm (`:154-155`) | hiperdinámico, VCI 1,1 cm (`:156`) | posición de precarga baja; reserva |
-| Pulmón, troponina | sin líneas B, sin edema; 16 (`:903`) | ídem; 17 (`:932`) | sin congestión ni lesión |
+| POCUS | VI pequeño hiperdinámico, VCI 0,9 cm (`:154-155`) | hiperdinámico, VCI 1,1 cm (`:156`) | inferencia candidata: precarga baja; reserva |
+| Pulmón, troponina | radiografía sin edema y troponina 16 (`:903`); «sin líneas B» es el valor por defecto de `_pocus` (`:69`, `:83`), que el caso no cambia | radiografía y troponina 17 (`:932`); ídem | inferencia candidata: sin congestión ni lesión |
 | Sangrado activo | melena desde ayer (`:890`) | tres días y hoy (`:921`) | fuente; duración no dicha |
 | Medicación | ibuprofeno (`:889`) | naproxeno (`:918`) | betabloqueo |
 
@@ -1245,7 +1245,7 @@ deriva de una historia previa ni de las cinéticas.
 | Banda | 57m | 72f | Justificación |
 |---|---|---|---|
 | Lactato aclarable (mmol/L) | 2,4 – 3,4 – 3,6 | 1,4 – 2,4 – 2,6 | lactato de llegada menos una basal no shock de 0,8–2,0 |
-| D de llegada (índice-min) | 0 – 20 – 60 | 0 – 20 – 60 | escala de la variable: de nada a la deuda de un déficit grave (0,5) tras unas dos horas; ninguno dice la duración |
+| D de llegada (índice-min) | 0 – 20 – 60 | 0 – 20 – 60 | escala de la variable; ninguno dice la duración. Corregido tras la revisión (los valores no cambian): la derivación escrita antes (déficit 0,5 durante unas dos horas con τ_D 60) da ≈ 26, no 60; 60 es el estacionario de un déficit total con τ_D 60, y con τ_D 30 ningún déficit sostiene más de 30 |
 | Razón de entrega de llegada | 0,6 – 0,85 – 1,0 | 0,6 – 0,85 – 1,0 | perfusión alterada, hipotensión y anemia grave: igual o bajo la adecuación |
 | Frecuencia intrínseca (lpm) | 60 – 80 – 100 | 60 – 80 – 100 | frecuencia de reposo no aguda (no la intrínseca farmacológica bajo bloqueo autonómico, que es mayor) |
 | Impulso simpático de llegada | 0,96 – 1,76 – 2,56 (24–64 lpm) | 0,48 – 1,28 – 2,08 (12–52 lpm) | FC observada menos la intrínseca; nunca negativo |
@@ -1314,8 +1314,12 @@ deriva de una historia previa ni de las cinéticas.
 
 ### 12.6 Reglas de aceptación congeladas (antes del barrido final)
 
-- `calibration.FROZEN_RULES`, con el digest `594e895d…c551320` de la tabla y del código de cada prueba.
-- Quedaron congeladas y comprometidas antes del barrido final.
+- `calibration.FROZEN_RULES`, con el digest `99265a6f…6155aab`. Cubre la tabla de reglas, el código de cada prueba y
+  de cada auxiliar que usa, los grupos, los puntos de cada banda del registro, las bandas de cada caso GI y la llegada
+  de las sondas.
+  - El primer congelamiento (digest `594e895d…c551320`, `b4040ba`) cubría sólo la tabla y el código de las pruebas.
+    La revisión adversarial lo encontró incompleto y halló dos defectos de implementación (abajo).
+- Quedaron congeladas y comprometidas antes de cada barrido final.
 - Los tamaños de las sondas son operacionalizaciones candidatas de direcciones aprobadas, no números aprobados.
 - Ninguna regla se eligió, mantuvo ni endureció por la cantidad de candidatos que deja pasar.
 
@@ -1326,7 +1330,7 @@ deriva de una historia previa ni de las cinéticas.
 | DL3 | La recuperación es gradual | KD-S1 | demanda × 1,3 durante 60 min y luego nada: D baja cada minuto; el lactato, desde su pico; ninguno se reduce a la mitad en 10 min, y ambos bajan en 4 h |
 | DL4 | Nada negativo: D, exceso, lactato | P2E-2 | todas las corridas |
 | RR1 | Corregir el shock no crea bradipnea patológica | KD-S1 | lactato aclarable, 40 min de pérdida y corrección 580 mL sobre la llegada: FR ≥ min(FR de llegada, 10) |
-| HR1 | El deterioro puede subir la FC | KD-S2 | ambas llegadas GI, pérdida de 8 mL/min durante 30 min |
+| HR1 | El deterioro puede subir la FC | KD-S2 | la llegada declarada completa de cada caso GI (la del candidato), pérdida de 8 mL/min durante 30 min |
 | HR2 | La recuperación puede bajarla hacia la intrínseca | P2E-1 | la misma pérdida, luego 400 mL sobre la llegada: la FC termina bajo la de llegada |
 | HR3 | Sin impulso simpático negativo | P2D-3 | todas las corridas de FC |
 | HR4 | FC bajo la intrínseca sólo con un mecanismo explícito | P2E-1 | ídem: FC ≥ intrínseca |
@@ -1339,7 +1343,7 @@ deriva de una historia previa ni de las cinéticas.
 | PR3 | PAS nunca bajo PAD en el rango | §11.4 | ídem |
 | CO1 | Un flujo bajo breve y moderado no tiene por qué parar | P2E-3 | 5 min al 90 % del umbral de colapso |
 | CO2 | Un flujo bajo grave y prolongado puede llegar a la transición terminal | P2E-3 | gasto 0,1 durante 240 min |
-| DM1 | Más demanda a igual entrega empeora el déficit | P2E-2 | entregas 0,6 / 0,9 / 1,0 / 1,2 |
+| DM1 | Más demanda a igual entrega empeora el déficit | P2E-2 | por el integrador: Hb −30 %, demanda × 1 y × 1,2 durante 60 min; misma entrega, D nunca menor y al final mayor |
 | AC1 | La llegada declarada reconstruye exactamente la observación | P2F-1 | ambas llegadas GI |
 | AC2 | La llegada GI declarada responde coherentemente | P2F-1, P2E-2 | sin tratamiento y con manejo definitivo, minuto 60: el tratamiento nunca deja D ni lactato sobre la corrida sin tratamiento; nada negativo; FC ≥ intrínseca |
 
@@ -1352,6 +1356,32 @@ deriva de una historia previa ni de las cinéticas.
   definición escrita antes de cualquier barrido (5 min al 90 %, como en las pruebas P2E-3), porque el cambio estaba
   motivado por el resultado.
 - **Estado estacionario.** No es una regla.
+
+**Garantizadas por construcción** (`Rule.guaranteed`). Pasarlas no distingue un candidato de otro:
+- por la forma del modelo: DL1, DL2, DL4, RR1, HR3, HR4, PL1, PR1, PR2, DM1, AC1, y las partes de signo y de
+  intrínseca de AC2;
+- por las bandas: DL3 (toda constante de tiempo ≥ 30 min), CO1 (a lo sumo unos 6 min con severidad 0,1 y ganancia 2
+  dan ≈ 1,2, bajo el límite mínimo de 5) y CO2 (240 × 0,5 × 0,5 = 60, sobre el límite máximo de 30).
+- **No garantizadas:** HR1, HR2, PL2, PL3, PL4, PR3 y la comparación con tratamiento de AC2.
+
+**Cambios tras la revisión adversarial, antes del segundo barrido final, y por qué.** Son defectos de implementación:
+la sonda no medía lo que la regla escrita decía. Ninguno se decidió por cuántos candidatos pasan. Ninguna regla cambió
+de enunciado.
+- **HR1–HR4: arnés.** La regla dice «ambas llegadas GI», pero la sonda declaraba sólo la frecuencia intrínseca del
+  candidato. La D de llegada, el lactato aclarable, la razón de entrega y la posición de precarga quedaban en sus
+  valores por defecto.
+  - Ahora corre sobre la llegada declarada completa de cada caso.
+  - La clave de caché incluye todos los valores declarados de ambos casos.
+  - Consecuencia, prevista antes de correr: con τ_D = 30, una D de llegada de 60 en 72f está por encima de la que
+    cualquier déficit puede sostener, así que la parte de la deuda en el impulso cae durante el sangrado y la FC no
+    sube. HR1 debe rechazar esos conjuntos.
+- **DM1: sonda vacía.** Probaba sólo la aritmética de max(0, ·), sin leer el perfil del candidato, así que no podía
+  rechazar nada. Ahora pasa por el integrador.
+- **Digest incompleto.** Ahora cubre también los auxiliares, las bandas y el diseño (arriba).
+- **`Rule.guaranteed`.** Se agregó para decir qué reglas no discriminan. No cambia la aceptación.
+- **Textos sin efecto en la aceptación**, pero dentro del digest porque cambian las bandas de caso:
+  - el razonamiento de la banda de D de llegada (§12.3);
+  - notas y citas del inventario (§12.2).
 
 ### 12.7 Barrido final (desde cero, con las reglas congeladas)
 
@@ -1474,9 +1504,9 @@ candidato se convierte en mapeo.
 
 | Categoría | Parámetros |
 |---|---|
-| A. Mapeable desde la verdad del caso | sólo las anclas de llegada (PAS, PAD, FC, SpO2, FR, TLC, lactato, Hb, glucosa, FiO2, ritmo, conciencia); el K es un valor por defecto del banco |
+| A. Mapeable desde la verdad del caso | sólo las anclas de llegada que el caso escribe (PAS, PAD, FC, SpO2, FR, TLC, lactato, Hb, glucosa, conciencia). No lo son, y van aparte como valores por defecto: el K del banco (`clinical_cases.py:297`), el ritmo que el banco deriva de la FC (`:211`) y el aire ambiente con que el motor empieza (`family_engine.py:973`) |
 | B. Requiere un valor por defecto de familia aprobado | betabloqueo, reserva de bomba, los cuatro parámetros de la fuente hemorrágica |
-| C. Requiere decisión docente | frecuencia intrínseca, D de llegada, lactato aclarable, razón de entrega de llegada, demanda basal, posición de precarga |
+| C. Requiere decisión docente | frecuencia intrínseca, D de llegada y razón de entrega de llegada (declaradas directamente por docentes, sin reconstruir una historia previa), lactato aclarable, demanda basal, posición de precarga |
 | D. No requerido para GI | posición euvolémica |
 
 Bloquean la migración los 12 parámetros requeridos, todos `default_unmapped` en la línea base en sombra.
