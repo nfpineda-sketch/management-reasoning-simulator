@@ -15,9 +15,18 @@ from clinical_core.derived import DEFAULT_PROFILE, CoreProfile
 from clinical_core.migration import FACULTY, FAMILY_DEFAULT, NOT_REQUIRED, gate_dry_run
 from clinical_core.shadow import GOLDEN
 
-#: The digest of everything acceptance depends on, recorded when the rules were re-frozen after the
-#: review (docs/PHASE2_SHADOW_CORE.md §12.6; the first freeze, 594e895d..., covered less).
-FROZEN_DIGEST = "c7b2f4bb410af2b622f6ed6adc0baf365ab8f2ab618831f087b21880d83a5634"
+#: The calibration freeze by component, recorded when P2G-1 extended it to the family-engine path
+#: and the materialized inputs (docs/PHASE2_SHADOW_CORE.md §13.1; P2F's c7b2f4bb... covered less).
+FROZEN_COMPONENTS = {
+    "rules": "07f526f1cd9c65d4eb465f19c652a87d77adc678b2a706664b81c7237c59bc91",
+    "bands": "e9de8e613ecd46dfa3b02071ad2542d78bf3b2c543c6c096abead0eede16674a",
+    "gi_reference": "159fdc558c713a743261ab82075dc2574f7389f017a81a80f95f0d7207e0a9bd",
+    "scenarios": "7380daec5536c8f9a23c857df2138c99a16d63eace51d62b295aa3f4ed100b58",
+    "input_path_sources": "8bbff3d408efba2024917559156cfaa732c920b3bc7a45e0bac0e3e4838f65b9",
+    "input_adapter_sources": "2f4f3b2db115a2aa6209991caa8a50095015892b716ddbf71c2841e694b4d97e",
+    "scenario_inputs": "06ef96d1dc6be7a476ea58142ecd98942694241a8a637cc260f83f35b709362c",
+}
+FROZEN_DIGEST = "0db3403dae1071437834d7fb6355ce94b29e0951eb8220a9d2446899947d65f9"
 
 
 # P2F-2 / P2F-5 -- repository truth, candidate inference, faculty decision ---------------------
@@ -154,8 +163,9 @@ def test_every_profile_band_contains_the_canonical_value_or_says_it_is_off():
 # P2F-8 / P2F-9 -- frozen rules, sweep, no legacy optimization ---------------------------------
 
 def test_the_rules_are_frozen():
-    assert calibration.frozen_digest() == FROZEN_DIGEST, (
-        "an acceptance rule or a check changed after the rules were frozen: record why, then update the digest")
+    assert calibration.digest_components() == FROZEN_COMPONENTS, (
+        "a component of the calibration freeze changed: record which and why, then update the digest")
+    assert calibration.frozen_digest() == FROZEN_DIGEST
     covered = {part for name in calibration.CHECKS for part in name.replace("-", "/").split("/")}
     assert {"DL1", "DL2", "DL3", "DL4", "RR1", "HR1", "PL1", "PL4", "PR1", "CO1", "DM1"} <= covered | {"HR1"}
     assert set(calibration.FROZEN_RULES) >= {"DL1", "DL2", "DL3", "DL4", "RR1", "HR1", "HR2", "HR3", "HR4", "PL1",

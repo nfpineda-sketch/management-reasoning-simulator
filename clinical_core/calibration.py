@@ -507,33 +507,105 @@ CHECKS: Mapping[str, tuple[Callable, tuple[str, ...]]] = {
 }
 
 
-def frozen_digest() -> str:
-    """The digest of everything acceptance depends on: the rule table, every function a check
-    calls, the registry's band points, the case bands, the probe arrival, the groups, the GI
-    design, and the GI scenarios with the code that turns their orders into core inputs. The
-    family engine that runs those orders is held by the golden test instead. Any later change
-    shows up and has to be recorded with its reason."""
+#: P2G-1 -- the family-engine path that produces the GI scenarios' inputs. Every repository file
+#: outside clinical_core/ that runs (is imported or called) while the engine builds the GI
+#: arrivals and runs every GI scenario, traced in a fresh interpreter; a test keeps the list exact.
+#: The case bank is clinical_cases.py: the path opens no data file of its own.
+INPUT_PATH_SOURCES = (
+    "acs_reperfusion.py", "active_order_context.py", "airway_pharmacology.py", "analgesia.py",
+    "anaphylaxis_reaction.py", "antipyretics.py", "asthma_complications.py", "asthma_ventilation.py",
+    "bradycardia_toxicology.py", "case_catalog.py", "case_cues.py", "clinical_cases.py", "clinical_time.py",
+    "cognitive_catalog.py", "cognitive_generator.py", "competency_mapping.py", "efast_report.py",
+    "event_provenance.py", "family_engine.py", "family_parser.py", "glucose_rescue.py", "hypoglycemia_catalog.py",
+    "inotrope_support.py", "opioid_reversal.py", "patient_body.py", "pe_obstruction.py", "pilot_freeze.py",
+    "shared_order_language.py", "shared_order_quantities.py", "trauma_hemorrhage.py", "unexecuted_items.py",
+    "urine_output.py", "visual_observations.py", "weight_based_doses.py", "work_of_breathing.py")
+#: The clinical_core files that turn the engine's run into the core's inputs (the order adapter).
+INPUT_ADAPTER_SOURCES = ("clinical_core/legacy_adapter.py", "clinical_core/interventions/timing.py")
+#: The GI reference mapping: inventory, case bands and candidate anchors (P2F-2/3).
+GI_REFERENCE_SOURCE = "clinical_core/gi_reference.py"
+REPOSITORY = Path(__file__).resolve().parents[1]
+
+
+def _source_bytes(path: str) -> bytes:
+    return (REPOSITORY / path).read_bytes()
+
+
+def scenario_inputs() -> dict:
+    """P2G-1: what the harness takes from the family engine, materialized.
+
+    Per GI case, the canonical arrival anchors, and per scenario the contributors the core
+    runs, the orders as the engine executed them and the engine's snapshots (C reads them).
+    A change anywhere that alters an input -- including a core constant the adapter reads --
+    shows up here even if no listed source changed.
+    """
+    from .legacy_adapter import contributors_from_legacy
+    from .shadow import SCENARIOS
+    inputs = {}
+    for case in gi_reference.GI_CASES:
+        runs = {}
+        for name, spec in SCENARIOS.items():
+            legacy = _legacy_run(case, spec)
+            runs[name] = {"contributors": [repr(item) for item in contributors_from_legacy(legacy)],
+                          "orders": [repr(order) for order in legacy.orders], "snapshots": list(legacy.snapshots)}
+        inputs[case] = {"arrival_anchors": gi_reference.canonical_anchors(case).to_dict(), "scenarios": runs}
+    return inputs
+
+
+def digest_components() -> dict[str, str]:
+    """P2G-1: the calibration freeze, component by component, so a change says where it is.
+
+    - rules: the rule table, the check registry, the groups and every harness function a check
+      or the GI acceptance calls;
+    - bands: the registry's band points, the GI case bands, the probe arrival and the levels;
+    - gi_reference: the GI reference mapping (inventory, case bands, candidate anchors);
+    - scenarios: the GI scenario definitions;
+    - input_path_sources: every file of the family-engine path (INPUT_PATH_SOURCES);
+    - input_adapter_sources: the order adapter (INPUT_ADAPTER_SOURCES);
+    - scenario_inputs: the materialized inputs (``scenario_inputs``).
+    The core model the calibration evaluates is not part of the freeze: the Phase-2 tests and
+    the golden hold it.
+    """
     import hashlib
     import inspect
     from .bands import ARRIVAL as probe_arrival
-    from .legacy_adapter import contributors_from_legacy, run_legacy
     from .shadow import SCENARIOS
+
+    def sha(data) -> str:
+        return hashlib.sha256(data if isinstance(data, bytes) else data.encode("utf-8")).hexdigest()
+
+    def text(data) -> str:
+        return json.dumps(data, sort_keys=True, default=repr)
+
     functions = (check_dl1_dl2_dl4, check_dl3, check_rr1, check_hr, _midpoint_arrivals, check_preload, _output,
                  check_congestion, check_pressure, check_collapse, check_demand, check_arrival_state, _run_case,
                  case_values, _level, gi_physiology, physiology, gi_candidates, acceptable, _expect, _debts, _excess,
-                 peak_index, gi_reference.candidate_anchors, gi_reference.case_bands, _legacy, run_legacy,
-                 contributors_from_legacy)
-    data = {"rules": {name: asdict(rule) for name, rule in FROZEN_RULES.items()},
-            "scenarios": {name: [spec["minutes"], {str(minute): text for minute, text in spec["orders"].items()}]
-                          for name, spec in SCENARIOS.items()},
-            "checks": {name: list(groups) for name, (_, groups) in CHECKS.items()},
-            "groups": {name: [list(names), list(checks)] for name, (names, checks) in GROUPS.items()},
-            "points": {name: [str(point) for point in entry.points()] for name, entry in REGISTRY.items()},
-            "case_bands": {case: {name: asdict(band) for name, band in gi_reference.case_bands(case).items()}
-                           for case in gi_reference.GI_CASES},
-            "probe_arrival": {name: str(value) for name, value in probe_arrival.items()}, "levels": list(LEVELS)}
-    text = json.dumps(data, sort_keys=True) + "".join(inspect.getsource(function) for function in functions)
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+                 peak_index, _legacy, _legacy_run)
+    rules = {"rules": {name: asdict(rule) for name, rule in FROZEN_RULES.items()},
+             "checks": {name: list(groups) for name, (_, groups) in CHECKS.items()},
+             "groups": {name: [list(names), list(checks)] for name, (names, checks) in GROUPS.items()}}
+    bands = {"points": {name: [str(point) for point in entry.points()] for name, entry in REGISTRY.items()},
+             "case_bands": {case: {name: asdict(band) for name, band in gi_reference.case_bands(case).items()}
+                            for case in gi_reference.GI_CASES},
+             "probe_arrival": {name: str(value) for name, value in probe_arrival.items()}, "levels": list(LEVELS)}
+    scenarios = {name: [spec["minutes"], {str(minute): order for minute, order in spec["orders"].items()}]
+                 for name, spec in SCENARIOS.items()}
+    return {
+        "rules": sha(text(rules) + "".join(inspect.getsource(function) for function in functions)),
+        "bands": sha(text(bands)),
+        "gi_reference": sha(_source_bytes(GI_REFERENCE_SOURCE)),
+        "scenarios": sha(text(scenarios)),
+        "input_path_sources": sha(text({path: sha(_source_bytes(path)) for path in INPUT_PATH_SOURCES})),
+        "input_adapter_sources": sha(text({path: sha(_source_bytes(path)) for path in INPUT_ADAPTER_SOURCES})),
+        "scenario_inputs": sha(text(scenario_inputs())),
+    }
+
+
+def frozen_digest() -> str:
+    """The digest of everything acceptance and its inputs depend on (``digest_components``). Any
+    later change shows up and has to be recorded with its reason."""
+    import hashlib
+    return hashlib.sha256(json.dumps(digest_components(), sort_keys=True).encode("utf-8")).hexdigest()
 
 
 def physiology(profile_values: Mapping[str, Any], checks=None, **context) -> dict:
@@ -634,17 +706,33 @@ def case_values(case: str, candidate: GICandidate) -> dict:
 
 
 _LEGACY: dict = {}
+_RUNS: dict = {}
+
+
+def _scenario_key(variant: str, spec: Mapping) -> tuple:
+    """A scenario's identity is its content, not its name: a changed definition is never served stale."""
+    return variant, spec["minutes"], tuple(sorted(spec["orders"].items()))
+
+
+def _legacy_run(variant: str, spec: Mapping):
+    """The family engine's run of one scenario, computed once per content (it does not depend on the core)."""
+    from .legacy_adapter import run_legacy
+    key = _scenario_key(variant, spec)
+    if key not in _RUNS:
+        _RUNS[key] = run_legacy(variant, spec["orders"], spec["minutes"])
+    return _RUNS[key]
 
 
 def _legacy(variant: str, scenario: str):
     """The family engine's run and its adapted inputs, computed once (they do not depend on the core)."""
-    from .legacy_adapter import contributors_from_legacy, run_legacy
+    from .legacy_adapter import contributors_from_legacy
     from .shadow import SCENARIOS
-    if (variant, scenario) not in _LEGACY:
-        spec = SCENARIOS[scenario]
-        legacy = run_legacy(variant, spec["orders"], spec["minutes"])
-        _LEGACY[(variant, scenario)] = (legacy, contributors_from_legacy(legacy), spec["minutes"])
-    return _LEGACY[(variant, scenario)]
+    spec = SCENARIOS[scenario]
+    key = _scenario_key(variant, spec)
+    if key not in _LEGACY:
+        legacy = _legacy_run(variant, spec)
+        _LEGACY[key] = (legacy, contributors_from_legacy(legacy), spec["minutes"])
+    return _LEGACY[key]
 
 
 TRACKED = ("sbp", "pulse_rate_bpm", "respiratory_rate", "lactate", "crt_s")
@@ -834,9 +922,11 @@ def registry_report() -> dict:
 
 
 def report(quick: bool = False) -> dict:
+    # The freeze the sweep runs under, recorded with its results (P2G-1).
+    freeze = {"digest": frozen_digest(), "components": digest_components()}
     groups = {group: group_sweep(group, quick) for group in GROUPS}
     sweep = gi_sweep(quick)
-    return {"delivery_model": DELIVERY_MODEL, "delivery_probes": delivery_probes(),
+    return {"freeze": freeze, "delivery_model": DELIVERY_MODEL, "delivery_probes": delivery_probes(),
             "hypoxaemia_trajectory_probe": hypoxaemia_trajectory_probe(), "registry": registry_report(),
             "status_counts": {status: sum(entry.status == status for entry in REGISTRY.values())
                               for status in STATUSES},
