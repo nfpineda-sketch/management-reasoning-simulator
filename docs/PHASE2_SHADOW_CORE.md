@@ -1615,3 +1615,84 @@ llegada 1e4) llega a 127 mmol/L.
 
 No hay ninguno. Ningún módulo de la aplicación importa `clinical_core`, incluidos `gi_reference`, `calibration` y
 `a9`: `test_shadow_core_isolation.py` lo comprueba.
+
+## 13. P2G · Paquete de decisiones docentes de calibración (2026-10-23)
+
+- **Base:** `83cee15` (P2F aceptado y cerrado).
+- **Naturaleza:** análisis y apoyo a decisiones. Nada se aprueba, nada pasa a FACULTY_APPROVED, el GI no migra, no hay
+  gancho en tiempo de ejecución y no cambia ningún valor por defecto canónico.
+- **El paquete para la docencia** es `docs/revision/P2G_DECISIONES_DOCENTES_CALIBRACION_GI.md`, con sus números en
+  `docs/revision/P2G_decision_pack.json`. Aquí sólo queda lo que cambia en el núcleo.
+
+### 13.1 El congelamiento de calibración cubre las entradas (P2G-1)
+
+`calibration.digest_components()` separa el congelamiento en componentes, y `frozen_digest()` es el digest de todos.
+Una prueba registra cada componente, así que un cambio dice dónde está.
+
+| Componente | Qué cubre | Por qué | Antes (P2F, `c7b2f4bb…`) |
+|---|---|---|---|
+| `rules` | la tabla de reglas, el registro de pruebas, los grupos y cada función del arnés que una prueba o la aceptación GI llama (incluidos `_legacy` y `_legacy_run`) | deciden la aceptación | igual, salvo `run_legacy` y `contributors_from_legacy`, que pasan al componente del adaptador |
+| `bands` | los puntos de cada banda del registro, las bandas de caso GI, la llegada de las sondas y los niveles | definen el diseño | igual |
+| `gi_reference` | el archivo completo `clinical_core/gi_reference.py`: inventario, bandas y anclas candidatas | es el mapeo GI de referencia | sólo `candidate_anchors`, `case_bands` y sus datos |
+| `scenarios` | las definiciones de los escenarios GI | son las órdenes que corren | igual |
+| `input_path_sources` | los 35 archivos del repositorio fuera de `clinical_core/` que corren (se importan o se llaman) mientras el motor de familias arma las llegadas GI y corre cada escenario: el lector congelado (`family_parser.py`), el motor (`family_engine.py`), el banco (`clinical_cases.py`), el generador de encuentros y sus módulos | pueden cambiar las entradas heredadas | **no cubierto**: sólo lo fijaba la prueba del golden |
+| `input_adapter_sources` | `clinical_core/legacy_adapter.py` y `clinical_core/interventions/timing.py` | convierten la corrida del motor en entradas del núcleo | sólo dos funciones del adaptador |
+| `scenario_inputs` | las entradas materializadas: por caso, las anclas canónicas; por escenario, los contribuyentes, las órdenes ejecutadas y las instantáneas del motor | atrapa cualquier cambio que altere una entrada, incluida una constante del núcleo que lea el adaptador | **no cubierto** |
+
+- **Cómo se obtuvo la lista** de `INPUT_PATH_SOURCES`: trazando en un intérprete limpio (`sys.settrace` y el
+  `audithook` de apertura de archivos) la construcción de todas las entradas.
+  - El camino no abre ningún archivo de datos aparte de los `.py`; el banco es Python.
+  - No lee variables de entorno (búsqueda en los 35 archivos).
+  - Una prueba repite la traza y exige que la lista sea exactamente la que corre, en los dos sentidos.
+- **Qué queda fuera, y por qué:**
+  - el resto del repositorio, porque no corre en ese camino;
+  - los archivos del modelo del núcleo, porque son lo que la calibración evalúa. Los fijan las pruebas de Fase 2 y el
+    golden, y el componente `scenario_inputs` atrapa cualquier efecto suyo sobre las entradas.
+- **Pruebas** (`test_clinical_core_calibration_freeze.py`). Cambiar cualquiera de estas cosas cambia exactamente el
+  componente esperado:
+  - `family_engine.py`, `family_parser.py` o `clinical_cases.py`;
+  - el adaptador o `gi_reference.py`;
+  - un escenario;
+  - una constante que altera una entrada materializada.
+
+  Además, un escenario cambiado nunca se sirve de una caché vieja (la clave es su contenido), y el digest se
+  reproduce en un intérprete limpio.
+- **Digest nuevo:** `0db3403d…d65f9`.
+- **Ninguna regla, prueba, banda ni función de aceptación cambió.** El único cambio en el código del arnés es la
+  clave de la caché de las corridas heredadas, ahora el contenido del escenario en vez de su nombre. Para los
+  escenarios sin cambios da las mismas entradas. Por eso no se repitió el barrido de P2F: sus resultados (§12.7)
+  siguen valiendo, y la región admisible que usa P2G es la suya.
+
+### 13.2 Generador del paquete (P2G-2 a P2G-11)
+
+- **`clinical_core/decision_pack.py`** calcula, sobre la región admisible de P2F (los 1054 conjuntos), las
+  trayectorias de las decisiones 1 a 6.
+  - Lactato, FC, PA sin tratamiento, colapso sintético, volumen agresivo y FR.
+  - Envolventes, representantes bajo / medio / alto y efectos de un factor por vez.
+  - El análisis de PL2, el de la alcanzabilidad de la D de llegada y el borde de precarga 0,2.
+- **`p2f_rejection`** escribe el resultado del barrido de P2F (163 rechazos). No es una regla nueva: las pruebas lo
+  contrastan con la aceptación congelada en los dos tipos de rechazo y en conjuntos admisibles.
+- **Nunca elige, ordena ni recomienda.** «Bajo», «medio» y «alto» son posiciones para una lectura concreta. Una prueba
+  revisa que no haya claves de selección ni FACULTY_APPROVED en la salida.
+- **`clinical_core/decision_pack_markdown.py`** sólo presenta: escribe las tablas del documento a partir del JSON.
+  Una prueba falla si el documento, el JSON o el código del paquete no coinciden con el congelamiento vigente.
+- **Corrida completa:** 4 min 52 s. Ninguna llamada de IA de la app.
+
+### 13.3 Hallazgos del modelo que la docencia necesita
+
+Son evidencia del modelo, no recomendaciones. El detalle está en el paquete.
+- **Lactato:** en el centro de la región, una hora de sangrado sin tratar no lo sube. El exceso de llegada se aclara
+  más rápido de lo que el déficit produce lactato nuevo.
+- **FC:** la frecuencia intrínseca no cambia la trayectoria mientras dura el estímulo; sólo fija el piso de la
+  recuperación.
+- **PA sin tratamiento:** la empuja sólo la fuente de 2,5 mL/min. Bajo la rodilla de presión cae rápido, y con el
+  colapso apagado la corrida se detiene (57m, minuto 144).
+- **Volumen agresivo:** no hay techo de presión sobre la llegada. La escala de la curva decide cuándo el líquido deja
+  de servir.
+- **FR:** el reparto de la FR de llegada fija el piso de la recuperación, y `rr_per_lactate` lo mueve más que
+  `rr_ventilatory_floor`.
+- **PL2:** sólo falla su segunda cláusula, y nunca se prueba sobre las llegadas GI.
+- **Alcanzabilidad:** es una propiedad del repago de primer orden del modelo, no una condición física.
+- **Precarga 0,2:** el propio sangrado del caso vacía el ventrículo en 75 min. La falla es una interacción, no sólo
+  la sonda.
+- **Puerta de migración:** el GI sigue fallando en sus 12 parámetros; FACULTY_APPROVED sigue en 0.
