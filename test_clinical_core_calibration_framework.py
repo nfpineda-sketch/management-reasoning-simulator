@@ -17,7 +17,7 @@ from clinical_core.shadow import GOLDEN
 
 #: The digest of everything acceptance depends on, recorded when the rules were re-frozen after the
 #: review (docs/PHASE2_SHADOW_CORE.md §12.6; the first freeze, 594e895d..., covered less).
-FROZEN_DIGEST = "99265a6fae67baea2e3b1029f4f2d0b0cd647d309f7a9682de3e4c3556155aab"
+FROZEN_DIGEST = "c7b2f4bb410af2b622f6ed6adc0baf365ab8f2ab618831f087b21880d83a5634"
 
 
 # P2F-2 / P2F-5 -- repository truth, candidate inference, faculty decision ---------------------

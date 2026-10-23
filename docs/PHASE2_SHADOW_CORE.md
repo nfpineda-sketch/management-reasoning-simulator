@@ -1314,9 +1314,13 @@ deriva de una historia previa ni de las cinéticas.
 
 ### 12.6 Reglas de aceptación congeladas (antes del barrido final)
 
-- `calibration.FROZEN_RULES`, con el digest `99265a6f…6155aab`. Cubre la tabla de reglas, el código de cada prueba y
-  de cada auxiliar que usa, los grupos, los puntos de cada banda del registro, las bandas de cada caso GI y la llegada
-  de las sondas.
+- `calibration.FROZEN_RULES`, con el digest `c7b2f4bb…d83a5634`. Cubre:
+  - la tabla de reglas;
+  - el código de cada prueba y de cada auxiliar que usa;
+  - los grupos y los puntos de cada banda del registro;
+  - las bandas de cada caso GI y la llegada de las sondas;
+  - los escenarios GI y el código que convierte sus órdenes en entradas del núcleo. El motor de familias que ejecuta
+    esas órdenes lo fija la prueba del golden, no el digest.
   - El primer congelamiento (digest `594e895d…c551320`, `b4040ba`) cubría sólo la tabla y el código de las pruebas.
     La revisión adversarial lo encontró incompleto y halló dos defectos de implementación (abajo).
 - Quedaron congeladas y comprometidas antes de cada barrido final.
@@ -1377,7 +1381,10 @@ de enunciado.
     sube. HR1 debe rechazar esos conjuntos.
 - **DM1: sonda vacía.** Probaba sólo la aritmética de max(0, ·), sin leer el perfil del candidato, así que no podía
   rechazar nada. Ahora pasa por el integrador.
-- **Digest incompleto.** Ahora cubre también los auxiliares, las bandas y el diseño (arriba).
+- **Digest incompleto.** Ahora cubre también los auxiliares, las bandas, el diseño y los escenarios (arriba).
+  - Un primer re-congelamiento (`7e68f55`, digest `99265a6f…6155aab`) olvidó los escenarios GI que usa AC2. Se notó
+    durante el barrido, que se detuvo sin mirar resultados (no llegó a escribir el informe). Se amplió el digest, se
+    comprometió y se repitió el barrido desde cero. Ninguna regla ni prueba cambió.
 - **`Rule.guaranteed`.** Se agregó para decir qué reglas no discriminan. No cambia la aceptación.
 - **Textos sin efecto en la aceptación**, pero dentro del digest porque cambian las bandas de caso:
   - el razonamiento de la banda de D de llegada (§12.3);

@@ -509,16 +509,23 @@ CHECKS: Mapping[str, tuple[Callable, tuple[str, ...]]] = {
 
 def frozen_digest() -> str:
     """The digest of everything acceptance depends on: the rule table, every function a check
-    calls, the registry's band points, the case bands, the probe arrival, the groups and the GI
-    design. Any later change shows up and has to be recorded with its reason."""
+    calls, the registry's band points, the case bands, the probe arrival, the groups, the GI
+    design, and the GI scenarios with the code that turns their orders into core inputs. The
+    family engine that runs those orders is held by the golden test instead. Any later change
+    shows up and has to be recorded with its reason."""
     import hashlib
     import inspect
     from .bands import ARRIVAL as probe_arrival
+    from .legacy_adapter import contributors_from_legacy, run_legacy
+    from .shadow import SCENARIOS
     functions = (check_dl1_dl2_dl4, check_dl3, check_rr1, check_hr, _midpoint_arrivals, check_preload, _output,
                  check_congestion, check_pressure, check_collapse, check_demand, check_arrival_state, _run_case,
                  case_values, _level, gi_physiology, physiology, gi_candidates, acceptable, _expect, _debts, _excess,
-                 peak_index, gi_reference.candidate_anchors, gi_reference.case_bands)
+                 peak_index, gi_reference.candidate_anchors, gi_reference.case_bands, _legacy, run_legacy,
+                 contributors_from_legacy)
     data = {"rules": {name: asdict(rule) for name, rule in FROZEN_RULES.items()},
+            "scenarios": {name: [spec["minutes"], {str(minute): text for minute, text in spec["orders"].items()}]
+                          for name, spec in SCENARIOS.items()},
             "checks": {name: list(groups) for name, (_, groups) in CHECKS.items()},
             "groups": {name: [list(names), list(checks)] for name, (names, checks) in GROUPS.items()},
             "points": {name: [str(point) for point in entry.points()] for name, entry in REGISTRY.items()},
