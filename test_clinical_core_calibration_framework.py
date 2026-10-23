@@ -15,18 +15,20 @@ from clinical_core.derived import DEFAULT_PROFILE, CoreProfile
 from clinical_core.migration import FACULTY, FAMILY_DEFAULT, NOT_REQUIRED, gate_dry_run
 from clinical_core.shadow import GOLDEN
 
-#: The calibration freeze by component, recorded when P2G-1 extended it to the family-engine path
-#: and the materialized inputs (docs/PHASE2_SHADOW_CORE.md §13.1; P2F's c7b2f4bb... covered less).
+#: The calibration freeze by component, recorded when P2G-1 extended it to the family-engine path,
+#: the materialized inputs and the harness files whole (docs/PHASE2_SHADOW_CORE.md §13.1; P2F's
+#: c7b2f4bb... covered less).
 FROZEN_COMPONENTS = {
     "rules": "07f526f1cd9c65d4eb465f19c652a87d77adc678b2a706664b81c7237c59bc91",
     "bands": "e9de8e613ecd46dfa3b02071ad2542d78bf3b2c543c6c096abead0eede16674a",
+    "harness_sources": "b0ad8c0896705c975aaabce4587c45e5445392808fc19ec733db273d890d0a92",
     "gi_reference": "159fdc558c713a743261ab82075dc2574f7389f017a81a80f95f0d7207e0a9bd",
     "scenarios": "7380daec5536c8f9a23c857df2138c99a16d63eace51d62b295aa3f4ed100b58",
     "input_path_sources": "8bbff3d408efba2024917559156cfaa732c920b3bc7a45e0bac0e3e4838f65b9",
     "input_adapter_sources": "2f4f3b2db115a2aa6209991caa8a50095015892b716ddbf71c2841e694b4d97e",
     "scenario_inputs": "06ef96d1dc6be7a476ea58142ecd98942694241a8a637cc260f83f35b709362c",
 }
-FROZEN_DIGEST = "0db3403dae1071437834d7fb6355ce94b29e0951eb8220a9d2446899947d65f9"
+FROZEN_DIGEST = "a7436fe8e8cb73b2a391035f28f7f98bea8049049b0cfa2f4938bcbc45137d39"
 
 
 # P2F-2 / P2F-5 -- repository truth, candidate inference, faculty decision ---------------------

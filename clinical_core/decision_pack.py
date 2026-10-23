@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import inspect
 import json
 import math
 from dataclasses import replace
@@ -25,7 +24,7 @@ from pathlib import Path
 from . import calibration, gi_reference
 from .bands import ARRIVAL, Drift
 from .calibration import LEVELS, REGISTRY, GICandidate
-from .derived import DEFAULT_PROFILE, _metabolic_drive, preload_position
+from .derived import DEFAULT_PROFILE, _metabolic_drive, preload_position, respiratory_rate
 from .integration import run
 from .legacy_adapter import contributors_from_legacy
 from .modules import GIHaemorrhage
@@ -248,9 +247,28 @@ def lactate_tables(runs: dict) -> dict:
                    "lactate_per_output_deficit": _kinetic("lactate_per_output_deficit"),
                    "lactate_clearance_tau_min": _kinetic("lactate_clearance_tau_min")}
         tables[case] = {"envelopes": envelopes, "representatives": representatives,
+                        "fractions": lactate_fractions(runs, case),
                         "effects": {scenario: _effects(case, scenario, factors, "lactate", LACTATE_TIMES)
                                     for scenario in ("untreated_120", "definitive_management")}}
     return tables
+
+
+def lactate_fractions(runs: dict, case: str) -> dict:
+    """Share of the admissible region on each side of the faculty questions' thresholds (model-only).
+
+    ``n`` counts the runs that reach the minute read; a run that stopped earlier is not counted.
+    """
+    def share(scenario, minute, test):
+        values = [(run_["points"][0]["lactate"], run_["points"][minute]["lactate"])
+                  for (key, case_, scenario_), run_ in runs.items()
+                  if case_ == case and scenario_ == scenario and minute in run_["points"]]
+        return {"n": len(values), "fraction": sum(1 for arrival, now in values if test(arrival, now)) / len(values)}
+    return {"untreated 60 min above arrival": share("untreated_120", 60, lambda arrival, now: now > arrival),
+            "untreated 60 min more than 1 mmol/L above arrival":
+                share("untreated_120", 60, lambda arrival, now: now > arrival + 1.0),
+            "definitive 30 min below arrival": share("definitive_management", 30, lambda arrival, now: now < arrival),
+            "definitive 120 min below arrival": share("definitive_management", 120,
+                                                      lambda arrival, now: now < arrival)}
 
 
 # P2G-3 heart rate ------------------------------------------------------------------------------
@@ -258,12 +276,27 @@ def lactate_tables(runs: dict) -> dict:
 HR_TIMES = (0, 30, 60, 120)
 
 
-def _half_resolution(case: str, candidate: GICandidate, scenario: str) -> int | None:
-    """First minute the sympathetic share of HR is at most half its arrival value (descriptive)."""
+def _resolution(case: str, candidate: GICandidate, scenario: str) -> dict:
+    """Two descriptive speeds of HR resolution in one run (neither is a criterion).
+
+    - ``sympathetic_half_min``: first minute the sympathetic share of HR is at most half its
+      arrival value. It depends on the intrinsic rate: a higher intrinsic rate leaves a smaller
+      sympathetic share at the same arrival HR.
+    - ``half_of_fall_min``: first minute HR has covered half of its own fall from arrival to the
+      end of the run. HR - arrival HR is the same whatever the intrinsic rate while the sympathetic
+      drive stays above its floor of zero; where it nears zero (``sympathetic_end_bpm``), HR stops at
+      the intrinsic rate and the fall is shorter.
+    """
     run_ = trajectory(case, candidate, scenario, times=range(DECISION_SCENARIOS[scenario]["minutes"] + 1))
-    arrival = run_["points"][0]["sympathetic_bpm"]
-    return next((minute for minute, point in run_["points"].items()
-                 if minute and point["sympathetic_bpm"] <= arrival / 2), None)
+    points = run_["points"]
+    arrival, last = points[0], points[max(points)]
+    fall = arrival["hr"] - last["hr"]
+    return {"sympathetic_half_min": next((minute for minute, point in points.items()
+                                          if minute and point["sympathetic_bpm"] <= arrival["sympathetic_bpm"] / 2),
+                                         None),
+            "half_of_fall_min": (next(minute for minute, point in points.items()
+                                      if point["hr"] <= arrival["hr"] - fall / 2) if fall > 0 else None),
+            "hr_end": last["hr"], "fall_bpm": fall, "sympathetic_end_bpm": last["sympathetic_bpm"]}
 
 
 def hr_tables(runs: dict) -> dict:
@@ -284,7 +317,6 @@ def hr_tables(runs: dict) -> dict:
             scenarios[scenario] = {"envelope": {minute: envelope(runs, case, scenario, "hr", minute)
                                                 for minute in times},
                                    "decomposition": decomposition}
-        decays = _profile_points("sympathetic_decay_tau_min")
         factors = {"intrinsic_sinus_rate": _levels("intrinsic"),
                    "sympathetic_decay_tau_min": _profile_points("sympathetic_decay_tau_min"),
                    "sympathetic_per_pressure_deficit": _profile_points("sympathetic_per_pressure_deficit"),
@@ -297,9 +329,9 @@ def hr_tables(runs: dict) -> dict:
                                      middle["hr"] - bands["intrinsic_sinus_rate"].midpoint,
                                      middle["hr"] - bands["intrinsic_sinus_rate"].lower],
             "scenarios": scenarios,
-            "half_resolution_min": {label: _half_resolution(case, candidate, "definitive_management")
-                                    for label, candidate in (("decay 2", decays[0][1]), ("middle", MIDDLE),
-                                                             ("decay 15", decays[2][1]))},
+            "resolution": {decay: {level: _resolution(case, replace(candidate, intrinsic=level),
+                                                      "definitive_management") for level in LEVELS}
+                           for decay, candidate, _ in _profile_points("sympathetic_decay_tau_min")},
             "effects": {scenario: _effects(case, scenario, factors, "hr", HR_TIMES)
                         for scenario in ("untreated_120", "definitive_management")}}
     return tables
@@ -368,6 +400,27 @@ def _collapse_run(episodes, rule: dict, horizon: int = 240) -> dict:
             "burden_at": {minute: burden[minute] for minute in BURDEN_TIMES if minute < len(burden)}}
 
 
+def _thousandths(value: float) -> int:
+    scaled = round(value * 1000)
+    if abs(value * 1000 - scaled) > 1e-6:
+        raise ValueError(f"{value} is not exact in thousandths")
+    return scaled
+
+
+def _minutes_to_limit(threshold: float, gain: float, limit: float, output: float) -> int | None:
+    """Whole minutes of burden accrual to the limit at a constant output, in exact arithmetic.
+
+    burden += gain x (threshold - output) / threshold per minute, so the limit needs
+    limit x threshold / (gain x (threshold - output)) minutes, rounded up. The simulation adds the
+    minute the output takes to fall and the minute the transition is read, so a simulated arrest
+    comes later than this count.
+    """
+    t, g, l, o = (_thousandths(value) for value in (threshold, gain, limit, output))
+    if o >= t:
+        return None
+    return -(-(l * t) // (g * (t - o)))
+
+
 def collapse_tables() -> dict:
     """Decision support for the collapse rule. Canonical GI runs keep it off (threshold None)."""
     analytic = []
@@ -376,9 +429,7 @@ def collapse_tables() -> dict:
             for limit in REGISTRY["collapse_burden_limit"].points():
                 row = {"threshold": threshold, "gain": gain, "limit": limit, "minutes_to_transition": {}}
                 for output in (0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35):
-                    severity = max(0.0, threshold - output) / threshold
-                    row["minutes_to_transition"][output] = (math.ceil(limit / (gain * severity))
-                                                            if severity > 0 else None)
+                    row["minutes_to_transition"][output] = _minutes_to_limit(threshold, gain, limit, output)
                 analytic.append(row)
     patterns = {name: _collapse_run(((0, minutes, level),), COLLAPSE_MIDDLE)
                 for name, (level, minutes) in COLLAPSE_PATTERNS.items()}
@@ -468,6 +519,8 @@ def volume_summary(rows: list[dict]) -> dict:
                                                       "marginal_responsiveness", "net_V_ml_eq", "stopped_at")})
             cell["final_L"] = [min(row["final_L"] for row in mine), max(row["final_L"] for row in mine)]
             cell["status"] = assess(candidate)["status"]
+            # P2F's design varies the preload position only at the default curve scale.
+            cell["in_p2f_design"] = cell["preload_curve_scale_ml"] == DEFAULT_PROFILE.preload_curve_scale_ml
         summary[case] = sorted(cells.values(), key=lambda cell: (LEVELS.index(cell["preload_fraction"]),
                                                                  cell["preload_curve_scale_ml"]))
     congestion = {}
@@ -484,6 +537,41 @@ RR_TIMES = (0, 30, 60, 120)
 SEVERITIES = {"mild (debt 0, delivery 1.0)": ("lower", "upper"),
               "moderate (debt 20, delivery 0.85)": ("midpoint", "midpoint"),
               "severe (debt 60, delivery 0.6)": ("upper", "lower")}
+
+
+def rr_bounds(case: str) -> dict:
+    """Where RR can go in this case over the RR band grid, read from ``derived.respiratory_rate``.
+
+    With W = 0 (no GI module moves it), RR is the arrival RR less its metabolic share plus the
+    metabolic drive now. Its ceiling (lactate without limit) is RR_arrival - the arrival drive +
+    rr_metabolic_max; its floor (lactate under the threshold) is RR_arrival - the share. rr_max
+    then caps the ceiling: the table reads the ceiling at each rr_max band point.
+    """
+    anchors = gi_reference.candidate_anchors(case, calibration.case_values(case, MIDDLE))
+    state = run(anchors, (), 0, replace(DEFAULT_PROFILE, **MIDDLE.profile)).states[0]
+    if state.W != 0.0:
+        raise AssertionError("the bounds assume W = 0 at a GI arrival")
+    rows = []
+    for cap in REGISTRY["rr_metabolic_max"].points():
+        for gain in REGISTRY["rr_per_lactate"].points():
+            for threshold in REGISTRY["lactate_drive_threshold_mmol_l"].points():
+                for floor in REGISTRY["rr_ventilatory_floor"].points():
+                    row = {"rr_metabolic_max": cap, "rr_per_lactate": gain, "lactate_drive_threshold_mmol_l": threshold,
+                           "rr_ventilatory_floor": floor}
+                    for rr_max in sorted(set(REGISTRY["rr_max"].points())):
+                        profile = replace(DEFAULT_PROFILE, rr_metabolic_max=cap, rr_per_lactate=gain,
+                                          lactate_drive_threshold_mmol_l=threshold, rr_ventilatory_floor=floor,
+                                          rr_max=rr_max)
+                        row[f"ceiling at rr_max {rr_max:g}"] = respiratory_rate(state, anchors, profile, 1e6)
+                        row["floor"] = respiratory_rate(state, anchors, profile, 0.0)
+                    rows.append(row)
+    ceilings = sorted({key for row in rows for key in row if key.startswith("ceiling")})
+    by_cap = {f"{cap:g}": {key: [min(row[key] for row in rows if row["rr_metabolic_max"] == cap),
+                                 max(row[key] for row in rows if row["rr_metabolic_max"] == cap)]
+                           for key in (*ceilings, "floor")}
+              for cap in REGISTRY["rr_metabolic_max"].points()}
+    return {"arrival_rr": anchors.respiratory_rate, "arrival_lactate": anchors.lactate, "by_cap": by_cap,
+            "rows": rows}
 
 
 def rr_tables(runs: dict) -> dict:
@@ -504,6 +592,7 @@ def rr_tables(runs: dict) -> dict:
             "envelopes": {scenario: {minute: envelope(runs, case, scenario, "rr", minute) for minute in RR_TIMES}
                           for scenario in ("untreated_120", "definitive_management")},
             "severities": severities,
+            "bounds": rr_bounds(case),
             "effects": {scenario: _effects(case, scenario, factors, "rr", RR_TIMES)
                         for scenario in ("untreated_120", "definitive_management")},
             "ceiling": max(point["rr"] for (key, case_, scenario), run_ in runs.items() if case_ == case
@@ -601,12 +690,25 @@ def reachability_analysis() -> dict:
 
 # The pack ---------------------------------------------------------------------------------------
 
+#: Not hashed: it only renders the pack into the faculty document and cannot change a number.
+PACK_DIGEST_EXCLUDED = ("clinical_core/decision_pack_markdown.py",)
+
+
+def pack_sources() -> dict[str, str]:
+    """Every shadow-core source the tables can depend on (the model, the harness and this module), by hash."""
+    package = calibration.REPOSITORY / "clinical_core"
+    paths = sorted(path.relative_to(calibration.REPOSITORY).as_posix() for path in package.rglob("*.py")
+                   if "__pycache__" not in path.parts)
+    return {path: hashlib.sha256(calibration._source_bytes(path)).hexdigest()
+            for path in paths if path not in PACK_DIGEST_EXCLUDED}
+
+
 def pack_digest() -> str:
-    """What the tables were generated from: the calibration freeze, this module and its scenarios."""
+    """What the tables were generated from: the calibration freeze, the core sources and the scenarios."""
     scenarios = {name: [spec["minutes"], {str(minute): order for minute, order in spec["orders"].items()}]
                  for name, spec in DECISION_SCENARIOS.items()}
-    text = json.dumps({"freeze": calibration.frozen_digest(), "scenarios": scenarios}, sort_keys=True)
-    text += inspect.getsource(inspect.getmodule(pack_digest))
+    text = json.dumps({"freeze": calibration.frozen_digest(), "scenarios": scenarios, "sources": pack_sources()},
+                      sort_keys=True)
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 

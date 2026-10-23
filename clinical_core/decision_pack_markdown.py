@@ -44,6 +44,10 @@ def level(text: str) -> str:
     return ("×" if text.startswith("x") else "") + shown.replace(".", ",")
 
 
+FRACTION = {"untreated 60 min above arrival": "sin tratamiento, 60′ por encima de la llegada",
+            "untreated 60 min more than 1 mmol/L above arrival": "sin tratamiento, 60′ más de 1 mmol/L por encima",
+            "definitive 30 min below arrival": "manejo definitivo, 30′ por debajo de la llegada",
+            "definitive 120 min below arrival": "manejo definitivo, 120′ por debajo de la llegada"}
 FACTOR = {"bleeding source (x rate)": "`volume_loss_ml_per_min` y `hb_loss_g_dl_per_min` (× tasa)"}
 PATTERN = {"transient moderate low flow (0.25 for 10 min)": "flujo moderado transitorio (0,25 durante 10 min)",
            "sustained moderate low flow (0.25)": "flujo moderado sostenido (0,25)",
@@ -113,6 +117,11 @@ def lactate(pack: dict) -> str:
                             + [num(item["trajectories"][scenario][str(minute)], 2) for minute in (0, 30, 60, 120)])
         out.append(table(["Región", "Conjunto", "Corrida", "0′", "30′", "60′", "120′"], rows))
         out.append("")
+        out.append("Proporción de la región admisible a cada lado de las preguntas docentes (sólo modelo):\n")
+        out.append(table(["Lectura", "Conjuntos", "Proporción"],
+                         [[FRACTION[name], str(item["n"]), f"{round(100 * item['fraction'])} %"]
+                          for name, item in data["fractions"].items()]))
+        out.append("")
         out.append("Efecto de cada factor alrededor del punto medio:\n")
         out.append(_effects(data["effects"], (30, 60, 120), 2,
                             {"untreated_120": "sin trat.", "definitive_management": "definitivo"}))
@@ -143,11 +152,17 @@ def heart_rate(pack: dict) -> str:
                                if label == "middle" else ""])
         out.append(table(["Corrida", "Intrínseca", "30′ (FC = intr. + simp.)", "60′", "120′",
                           "Región admisible (mín – mediana – máx)"], rows))
-        half = data["half_resolution_min"]
         out.append("")
-        out.append("Minutos hasta que la parte simpática cae a la mitad de la de llegada, con manejo definitivo: "
-                   f"decaimiento 2 min → {half['decay 2']}; punto medio (5 min) → {half['middle']}; "
-                   f"decaimiento 15 min → {half['decay 15']}.")
+        out.append("Velocidad de resolución con manejo definitivo, por decaimiento simpático (τ) e intrínseca: minuto en "
+                   "que la parte simpática cae a la mitad de la de llegada («mitad simpática», depende de la "
+                   "intrínseca) y minuto en que la FC recorre la mitad de su propia caída hasta los 120′ («mitad de "
+                   "la caída»):\n")
+        rows = [[decay, LEVEL[name], str(item["sympathetic_half_min"] or "nunca"), str(item["half_of_fall_min"] or "—"),
+                 num(item["hr_end"]), num(item["fall_bpm"]), num(item["sympathetic_end_bpm"])]
+                for decay, levels in sorted(data["resolution"].items(), key=lambda pair: float(pair[0]))
+                for name, item in levels.items()]
+        out.append(table(["τ simpático (min)", "Intrínseca", "Mitad simpática (min)", "Mitad de la caída (min)",
+                          "FC 120′", "Caída (lpm)", "Parte simpática 120′ (lpm)"], rows))
         out.append("")
         out.append(_effects(data["effects"], (30, 60, 120), 1,
                             {"untreated_120": "sin trat.", "definitive_management": "definitivo"}))
@@ -178,7 +193,9 @@ def pressure(pack: dict) -> str:
 
 def collapse(pack: dict) -> str:
     data = pack["collapse"]
-    out = ["Minutos hasta la transición terminal con gasto constante (exacto: límite / (ganancia × severidad)):\n"]
+    out = ["Minutos de acumulación hasta el límite con gasto constante, en aritmética exacta: ⌈límite × umbral / "
+           "(ganancia × (umbral − gasto))⌉. La simulación suma el minuto en que cae el gasto y el minuto en que se "
+           "lee la transición, así que su paro llega después de esta cuenta:\n"]
     outputs = ("0.05", "0.1", "0.15", "0.2", "0.25", "0.35")
     rows = [[num(row["threshold"]), num(row["gain"]), num(row["limit"], 0)]
             + [str(row["minutes_to_transition"][output]) if row["minutes_to_transition"][output] else "nunca"
@@ -211,18 +228,19 @@ def volume(pack: dict) -> str:
     data = pack["volume"]["summary"]
     for case in CASES:
         out.append(f"**{case}** — volumen agresivo (90 min). Lo que mueve la presión es la posición y la escala de la "
-                   "curva; la rodilla y la ganancia de congestión y la reserva sólo cambian L (rango en la última "
-                   "columna). El estado es el del conjunto completo, que aplica el mismo nivel a los dos casos: la "
-                   "precarga inferior se rechaza por 57m.\n")
+                   "curva; la rodilla y la ganancia de congestión y la reserva sólo cambian L (rango en «L final»). "
+                   "«Estado» aplica las reglas congeladas al conjunto completo (el mismo nivel en los dos casos) con "
+                   "esa escala; «En el diseño de P2F» dice si P2F barrió esa celda (sólo con la escala por defecto).\n")
         rows = [[LEVEL[cell["preload_fraction"]], num(cell["preload_curve_scale_ml"], 0), num(cell["net_V_ml_eq"], 0),
                  f"{num(cell['arrival_sbp'], 0)} → {num(cell['peak_sbp'], 0)}", num(cell["peak_map"], 0),
                  num(cell["peak_output"], 2), f"{num(cell['arrival_position'], 2)} → {num(cell['final_position'], 2)}",
                  num(cell["marginal_responsiveness"], 2), num(cell["final_hr"], 0),
-                 f"{num(cell['final_L'][0], 3)} – {num(cell['final_L'][1], 3)}", STATUS[cell["status"]]]
+                 f"{num(cell['final_L'][0], 3)} – {num(cell['final_L'][1], 3)}", STATUS[cell["status"]],
+                 num(cell["in_p2f_design"])]
                 for cell in data["cells"][case]]
         out.append(table(["Precarga", "Escala (mL)", "V neto (mL-eq)", "PAS llegada → pico", "PAM pico",
                           "Gasto pico (× llegada)", "Posición llegada → final", "Respuesta marginal final",
-                          "FC final", "L final", "Estado"], rows))
+                          "FC final", "L final", "Estado", "En el diseño de P2F"], rows))
         out.append("")
     status = pack["volume"]["summary"]["congestion_parameter_status"]
     out.append("Estado de los parámetros de congestión: "
@@ -236,8 +254,20 @@ def respiratory_rate(pack: dict) -> str:
     out = []
     for case in CASES:
         data = pack["rr"][case]
-        out.append(f"**{case}** — FR (resp/min), mínimo – mediana – máximo en la región admisible; techo "
-                   f"{num(data['ceiling'])}, piso {num(data['floor'])} en todas las corridas:\n")
+        bounds = data["bounds"]
+        out.append(f"**{case}** — FR de llegada {num(bounds['arrival_rr'], 0)} resp/min con lactato "
+                   f"{num(bounds['arrival_lactate'])} mmol/L. Cotas del modelo sobre la cuadrícula de bandas de FR "
+                   "(`rr_per_lactate` × `lactate_drive_threshold_mmol_l` × `rr_ventilatory_floor`, por "
+                   "`rr_metabolic_max`): techo con lactato sin límite, antes y después de `rr_max`, y piso con lactato "
+                   "bajo el umbral (mínimo – máximo):\n")
+        rows = [[cap] + [f"{num(values[0])} – {num(values[1])}" for key, values in item.items()]
+                for cap, item in sorted(bounds["by_cap"].items(), key=lambda pair: float(pair[0]))]
+        keys = list(next(iter(bounds["by_cap"].values())))
+        out.append(table(["`rr_metabolic_max`"] + [key.replace("ceiling at rr_max", "techo con `rr_max`")
+                                                    .replace("floor", "piso") for key in keys], rows))
+        out.append("")
+        out.append(f"En las corridas del paquete, FR observada entre {num(data['floor'])} y {num(data['ceiling'])}. "
+                   "Mínimo – mediana – máximo en la región admisible:\n")
         out.append(table(["Corrida", "0′", "30′", "60′", "120′"],
                          [[SCENARIO[scenario]] + [spread(data["envelopes"][scenario][str(minute)])
                                                   for minute in (0, 30, 60, 120)]

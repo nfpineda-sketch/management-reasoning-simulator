@@ -1633,6 +1633,7 @@ Una prueba registra cada componente, así que un cambio dice dónde está.
 |---|---|---|---|
 | `rules` | la tabla de reglas, el registro de pruebas, los grupos y cada función del arnés que una prueba o la aceptación GI llama (incluidos `_legacy` y `_legacy_run`) | deciden la aceptación | igual, salvo `run_legacy` y `contributors_from_legacy`, que pasan al componente del adaptador |
 | `bands` | los puntos de cada banda del registro, las bandas de caso GI, la llegada de las sondas y los niveles | definen el diseño | igual |
+| `harness_sources` | los archivos completos del arnés: `clinical_core/calibration.py` y `clinical_core/bands.py` | `rules` no veía el enlace de cada prueba con su función, los valores por defecto del diseño (`GICandidate`) ni las sondas (`Drift`, `Demand`); la segunda revisión lo encontró | **no cubierto** |
 | `gi_reference` | el archivo completo `clinical_core/gi_reference.py`: inventario, bandas y anclas candidatas | es el mapeo GI de referencia | sólo `candidate_anchors`, `case_bands` y sus datos |
 | `scenarios` | las definiciones de los escenarios GI | son las órdenes que corren | igual |
 | `input_path_sources` | los 35 archivos del repositorio fuera de `clinical_core/` que corren (se importan o se llaman) mientras el motor de familias arma las llegadas GI y corre cada escenario: el lector congelado (`family_parser.py`), el motor (`family_engine.py`), el banco (`clinical_cases.py`), el generador de encuentros y sus módulos | pueden cambiar las entradas heredadas | **no cubierto**: sólo lo fijaba la prueba del golden |
@@ -1647,17 +1648,19 @@ Una prueba registra cada componente, así que un cambio dice dónde está.
 - **Qué queda fuera, y por qué:**
   - el resto del repositorio, porque no corre en ese camino;
   - los archivos del modelo del núcleo, porque son lo que la calibración evalúa. Los fijan las pruebas de Fase 2 y el
-    golden, y el componente `scenario_inputs` atrapa cualquier efecto suyo sobre las entradas.
+    golden, y el componente `scenario_inputs` atrapa cualquier efecto suyo sobre las entradas. El digest del paquete
+    de decisiones (§13.2) sí los cubre.
 - **Pruebas** (`test_clinical_core_calibration_freeze.py`). Cambiar cualquiera de estas cosas cambia exactamente el
   componente esperado:
   - `family_engine.py`, `family_parser.py` o `clinical_cases.py`;
   - el adaptador o `gi_reference.py`;
+  - `calibration.py` o `bands.py` (componente `harness_sources`);
   - un escenario;
   - una constante que altera una entrada materializada.
 
   Además, un escenario cambiado nunca se sirve de una caché vieja (la clave es su contenido), y el digest se
   reproduce en un intérprete limpio.
-- **Digest nuevo:** `0db3403d…d65f9`.
+- **Digest nuevo:** `a7436fe8…37d39`. El primer cierre de P2G registró `0db3403d…d65f9`, sin `harness_sources`.
 - **Ninguna regla, prueba, banda ni función de aceptación cambió.** El único cambio en el código del arnés es la
   clave de la caché de las corridas heredadas, ahora el contenido del escenario en vez de su nombre. Para los
   escenarios sin cambios da las mismas entradas. Por eso no se repitió el barrido de P2F: sus resultados (§12.7)
@@ -1676,23 +1679,54 @@ Una prueba registra cada componente, así que un cambio dice dónde está.
   revisa que no haya claves de selección ni FACULTY_APPROVED en la salida.
 - **`clinical_core/decision_pack_markdown.py`** sólo presenta: escribe las tablas del documento a partir del JSON.
   Una prueba falla si el documento, el JSON o el código del paquete no coinciden con el congelamiento vigente.
+- **`pack_digest()`** suma al digest de calibración los escenarios de decisión y el hash de cada fuente de
+  `clinical_core/**/*.py` (`pack_sources()`): el modelo, el arnés y el propio generador. Sólo excluye el renderizador,
+  que no cambia ningún número. Una prueba cambia `derived.py`, `integration.py` y `decision_pack.py` y exige un digest
+  distinto; cambiar el renderizador no lo cambia.
 - **Corrida completa:** 4 min 52 s. Ninguna llamada de IA de la app.
 
 ### 13.3 Hallazgos del modelo que la docencia necesita
 
 Son evidencia del modelo, no recomendaciones. El detalle está en el paquete.
-- **Lactato:** en el centro de la región, una hora de sangrado sin tratar no lo sube. El exceso de llegada se aclara
-  más rápido de lo que el déficit produce lactato nuevo.
+- **Lactato:** en el centro de la región, una hora de sangrado sin tratar no lo sube: el exceso de llegada se aclara
+  más rápido de lo que el déficit produce lactato nuevo. Sube en el 25 % (57m) y el 34 % (72f) de la región, más de
+  1 mmol/L en el 10 % y el 12 %.
 - **FC:** la frecuencia intrínseca no cambia la trayectoria mientras dura el estímulo; sólo fija el piso de la
-  recuperación.
+  recuperación. Por eso la velocidad de resolución se lee como «mitad de la caída», que no depende de ella.
 - **PA sin tratamiento:** la empuja sólo la fuente de 2,5 mL/min. Bajo la rodilla de presión cae rápido, y con el
   colapso apagado la corrida se detiene (57m, minuto 144).
 - **Volumen agresivo:** no hay techo de presión sobre la llegada. La escala de la curva decide cuándo el líquido deja
   de servir.
-- **FR:** el reparto de la FR de llegada fija el piso de la recuperación, y `rr_per_lactate` lo mueve más que
-  `rr_ventilatory_floor`.
+- **FR:** el reparto de la FR de llegada fija el piso de la recuperación (10,0–21,5 sobre la cuadrícula), y
+  `rr_per_lactate` lo mueve más que `rr_ventilatory_floor`. El techo teórico es FR de llegada − impulso metabólico de
+  llegada + `rr_metabolic_max`, recortado por `rr_max`.
 - **PL2:** sólo falla su segunda cláusula, y nunca se prueba sobre las llegadas GI.
 - **Alcanzabilidad:** es una propiedad del repago de primer orden del modelo, no una condición física.
 - **Precarga 0,2:** el propio sangrado del caso vacía el ventrículo en 75 min. La falla es una interacción, no sólo
   la sonda.
 - **Puerta de migración:** el GI sigue fallando en sus 12 parámetros; FACULTY_APPROVED sigue en 0.
+
+### 13.4 Segunda revisión adversarial (sólo lectura) y correcciones
+
+Revisó el arnés final, la cobertura de los digests, las tablas docentes y la puerta de migración. Sin hallazgos de
+gravedad alta; cada hallazgo se confirmó con una sonda antes de corregirlo.
+
+| # | Gravedad | Hallazgo | Corrección |
+|---|---|---|---|
+| 1 | media | el congelamiento no veía el enlace de cada prueba con su función, los valores por defecto de `GICandidate` ni las sondas de `bands.py` | componente `harness_sources` (archivos completos) y dos pruebas de mutación (§13.1) |
+| 2 | media | `pack_digest` no cubría el modelo del núcleo | `pack_sources()`: cada `clinical_core/**/*.py` salvo el renderizador, con prueba de mutación (§13.2) |
+| 3 | media, anterior a P2G | la puerta acepta un CANDIDATE reetiquetado como `explicit_case` | sin cambio de arquitectura: prueba estática de que ningún módulo del núcleo, salvo el vocabulario de la puerta, escribe esas fuentes; límite explicado en el paquete (§14) y decisión FD-49 |
+| 4 | media | la «mitad simpática» de la FC depende de la intrínseca y el texto la daba como general | cuadrícula τ simpático × intrínseca y una lectura que no depende de la intrínseca («mitad de la caída»); texto y FD-06 reescritos |
+| 5 | media | la fórmula del techo de la FR y las cifras de FD-18 estaban mal | `rr_bounds()` lee techo y piso de `derived.respiratory_rate` sobre la cuadrícula de bandas de FR; texto, FD-18 y FD-19 desde esas cifras |
+| 6 | media | la tabla maestra omitía parámetros CANDIDATE | FD-41 a FD-48, lista de los que quedan fuera con su motivo y prueba de completitud contra el registro |
+| 7 | baja | afirmaciones del lactato sin cifra | proporciones generadas de la región admisible y texto ajustado a ellas |
+| 8 | baja | «los parámetros de FR mueven ~1 resp/min» era falso | texto corregido con el efecto máximo de la tabla |
+| 9 | baja | los minutos «exactos» del colapso usaban techo en coma flotante (16 celdas con un minuto de más) | aritmética entera exacta y explicación de los minutos que agrega la simulación |
+| 10 | baja | la minitabla de §4 no daba el rango a los 30 min | rango agregado |
+| 11 | baja | «admisible» era ambiguo en §6 (celdas fuera del diseño de P2F) | definición en «Cómo leer», columna «En el diseño de P2F» y frase del renderizador corregida |
+
+- **Lo que la revisión confirmó:** `p2f_rejection` coincide con la aceptación congelada en los 1217 conjuntos; el
+  manifiesto de entradas es exacto, sin dependencia del entorno y estable con `PYTHONHASHSEED`; las descomposiciones
+  suman; el JSON coincide con un recálculo; la puerta falla con 12 bloqueos por caso; FACULTY_APPROVED sigue en 0.
+- **Sin barrido de P2F nuevo:** ninguna regla, prueba, banda ni función de aceptación cambió. `harness_sources` sólo
+  agrega cobertura al digest.

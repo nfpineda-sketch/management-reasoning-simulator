@@ -123,7 +123,32 @@ def test_the_preload_edge_empties_under_the_case_bleed_too(quick_pack):
     assert row["probe 4 mL/min"] is None
 
 
+@pytest.mark.parametrize("path, changes", [
+    ("clinical_core/derived.py", True), ("clinical_core/integration.py", True),
+    ("clinical_core/decision_pack.py", True), ("clinical_core/decision_pack_markdown.py", False)])
+def test_the_pack_digest_covers_the_model_and_not_the_renderer(monkeypatch, path, changes):
+    assert path in decision_pack.pack_sources() or path in decision_pack.PACK_DIGEST_EXCLUDED
+    before = decision_pack.pack_digest()
+    original = calibration._source_bytes
+    monkeypatch.setattr(calibration, "_source_bytes",
+                        lambda name: original(name) + (b"\n# changed\n" if name == path else b""))
+    assert (decision_pack.pack_digest() != before) is changes
+
+
 # P2G-14: nothing is approved, nothing migrates ---------------------------------------------------
+
+def test_no_core_module_but_the_gate_and_its_vocabulary_writes_a_migratable_source():
+    """The gate trusts the declared source; inside the core only the gate's own vocabulary names one.
+
+    Nothing in the shadow core can label a CANDIDATE value as case truth or as an approved
+    default. A caller outside the core still could: that limit is decision FD-41.
+    """
+    from pathlib import Path
+    package = Path(decision_pack.__file__).resolve().parent
+    writers = {path.relative_to(package).as_posix() for path in package.rglob("*.py")
+               if any(label in path.read_text(encoding="utf-8") for label in migration.MIGRATABLE_SOURCES)}
+    assert writers == {"state.py", "derived.py", "migration.py"}
+
 
 def test_nothing_is_faculty_approved_and_no_family_default_is_recorded():
     assert sum(entry.status == calibration.FACULTY_APPROVED for entry in calibration.REGISTRY.values()) == 0
@@ -187,6 +212,17 @@ def test_the_master_table_leaves_every_decision_open_and_covers_every_gate_block
         for name in gate_dry_run(case)["blockers"]:
             assert f"`{name}`" in table, name
     assert "FACULTY_APPROVED" not in table
+
+
+def test_every_registry_parameter_is_in_the_master_table_or_listed_out_of_scope_with_a_reason():
+    document, _ = _document()
+    table = "\n".join("|".join(row) for row in _rows(document, "FD-"))
+    start = document.index("**Parámetros del registro fuera de esta tabla")
+    outside = document[start:document.index("\n## ", start)]
+    for name in calibration.REGISTRY:
+        assert (f"`{name}`" in table) != (f"`{name}`" in outside), name
+    for bullet in outside.split("\n- ")[1:]:
+        assert bullet.startswith("`") and ": " in bullet, bullet
 
 
 def test_the_a9_worksheet_lists_every_variable_with_its_type_and_no_tolerance():

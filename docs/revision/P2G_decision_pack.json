@@ -1749,8 +1749,8 @@
      "0.05": 12,
      "0.1": 15,
      "0.15": 20,
-     "0.2": 31,
-     "0.25": 61,
+     "0.2": 30,
+     "0.25": 60,
      "0.3": null,
      "0.35": null
     },
@@ -1763,8 +1763,8 @@
      "0.05": 36,
      "0.1": 45,
      "0.15": 60,
-     "0.2": 91,
-     "0.25": 181,
+     "0.2": 90,
+     "0.25": 180,
      "0.3": null,
      "0.35": null
     },
@@ -1777,8 +1777,8 @@
      "0.05": 72,
      "0.1": 90,
      "0.15": 120,
-     "0.2": 181,
-     "0.25": 361,
+     "0.2": 180,
+     "0.25": 360,
      "0.3": null,
      "0.35": null
     },
@@ -1791,8 +1791,8 @@
      "0.05": 6,
      "0.1": 8,
      "0.15": 10,
-     "0.2": 16,
-     "0.25": 31,
+     "0.2": 15,
+     "0.25": 30,
      "0.3": null,
      "0.35": null
     },
@@ -1805,8 +1805,8 @@
      "0.05": 18,
      "0.1": 23,
      "0.15": 30,
-     "0.2": 46,
-     "0.25": 91,
+     "0.2": 45,
+     "0.25": 90,
      "0.3": null,
      "0.35": null
     },
@@ -1819,8 +1819,8 @@
      "0.05": 36,
      "0.1": 45,
      "0.15": 60,
-     "0.2": 91,
-     "0.25": 181,
+     "0.2": 90,
+     "0.25": 180,
      "0.3": null,
      "0.35": null
     },
@@ -1834,7 +1834,7 @@
      "0.1": 4,
      "0.15": 5,
      "0.2": 8,
-     "0.25": 16,
+     "0.25": 15,
      "0.3": null,
      "0.35": null
     },
@@ -1848,7 +1848,7 @@
      "0.1": 12,
      "0.15": 15,
      "0.2": 23,
-     "0.25": 46,
+     "0.25": 45,
      "0.3": null,
      "0.35": null
     },
@@ -1861,8 +1861,8 @@
      "0.05": 18,
      "0.1": 23,
      "0.15": 30,
-     "0.2": 46,
-     "0.25": 91,
+     "0.2": 45,
+     "0.25": 90,
      "0.3": null,
      "0.35": null
     },
@@ -2214,7 +2214,7 @@
    "pea": "pea"
   }
  },
- "freeze_digest": "0db3403dae1071437834d7fb6355ce94b29e0951eb8220a9d2446899947d65f9",
+ "freeze_digest": "a7436fe8e8cb73b2a391035f28f7f98bea8049049b0cfa2f4938bcbc45137d39",
  "hr": {
   "gi_bleed_57m": {
    "arrival_hr": 124.0,
@@ -2512,16 +2512,82 @@
      }
     ]
    },
-   "half_resolution_min": {
-    "decay 15": 82,
-    "decay 2": 59,
-    "middle": 62
-   },
    "intrinsic_band": [
     60.0,
     80.0,
     100.0
    ],
+   "resolution": {
+    "15": {
+     "lower": {
+      "fall_bpm": 23.351584282972652,
+      "half_of_fall_min": 41,
+      "hr_end": 100.64841571702735,
+      "sympathetic_end_bpm": 40.64841571702735,
+      "sympathetic_half_min": null
+     },
+     "midpoint": {
+      "fall_bpm": 23.351584282972638,
+      "half_of_fall_min": 41,
+      "hr_end": 100.64841571702736,
+      "sympathetic_end_bpm": 20.64841571702736,
+      "sympathetic_half_min": 82
+     },
+     "upper": {
+      "fall_bpm": 23.351584282972652,
+      "half_of_fall_min": 41,
+      "hr_end": 100.64841571702735,
+      "sympathetic_end_bpm": 0.6484157170273528,
+      "sympathetic_half_min": 42
+     }
+    },
+    "2": {
+     "lower": {
+      "fall_bpm": 23.49883000517761,
+      "half_of_fall_min": 28,
+      "hr_end": 100.50116999482239,
+      "sympathetic_end_bpm": 40.5011699948224,
+      "sympathetic_half_min": null
+     },
+     "midpoint": {
+      "fall_bpm": 23.49883000517761,
+      "half_of_fall_min": 28,
+      "hr_end": 100.50116999482239,
+      "sympathetic_end_bpm": 20.501169994822394,
+      "sympathetic_half_min": 59
+     },
+     "upper": {
+      "fall_bpm": 23.49883000517761,
+      "half_of_fall_min": 28,
+      "hr_end": 100.50116999482239,
+      "sympathetic_end_bpm": 0.501169994822391,
+      "sympathetic_half_min": 29
+     }
+    },
+    "5": {
+     "lower": {
+      "fall_bpm": 23.490177235408197,
+      "half_of_fall_min": 31,
+      "hr_end": 100.5098227645918,
+      "sympathetic_end_bpm": 40.50982276459181,
+      "sympathetic_half_min": null
+     },
+     "midpoint": {
+      "fall_bpm": 23.490177235408197,
+      "half_of_fall_min": 31,
+      "hr_end": 100.5098227645918,
+      "sympathetic_end_bpm": 20.50982276459181,
+      "sympathetic_half_min": 62
+     },
+     "upper": {
+      "fall_bpm": 23.490177235408183,
+      "half_of_fall_min": 31,
+      "hr_end": 100.50982276459182,
+      "sympathetic_end_bpm": 0.5098227645918103,
+      "sympathetic_half_min": 32
+     }
+    }
+   },
    "scenarios": {
     "definitive_management": {
      "decomposition": {
@@ -3294,16 +3360,82 @@
      }
     ]
    },
-   "half_resolution_min": {
-    "decay 15": 95,
-    "decay 2": 65,
-    "middle": 71
-   },
    "intrinsic_band": [
     60.0,
     80.0,
     100.0
    ],
+   "resolution": {
+    "15": {
+     "lower": {
+      "fall_bpm": 16.521453534575954,
+      "half_of_fall_min": 41,
+      "hr_end": 95.47854646542405,
+      "sympathetic_end_bpm": 35.478546465424046,
+      "sympathetic_half_min": null
+     },
+     "midpoint": {
+      "fall_bpm": 16.52145353457597,
+      "half_of_fall_min": 41,
+      "hr_end": 95.47854646542403,
+      "sympathetic_end_bpm": 15.478546465424031,
+      "sympathetic_half_min": 95
+     },
+     "upper": {
+      "fall_bpm": 11.980755416922165,
+      "half_of_fall_min": 33,
+      "hr_end": 100.01924458307784,
+      "sympathetic_end_bpm": 0.01924458307784042,
+      "sympathetic_half_min": 33
+     }
+    },
+    "2": {
+     "lower": {
+      "fall_bpm": 16.679373691239576,
+      "half_of_fall_min": 29,
+      "hr_end": 95.32062630876042,
+      "sympathetic_end_bpm": 35.320626308760424,
+      "sympathetic_half_min": null
+     },
+     "midpoint": {
+      "fall_bpm": 16.679373691239576,
+      "half_of_fall_min": 29,
+      "hr_end": 95.32062630876042,
+      "sympathetic_end_bpm": 15.32062630876043,
+      "sympathetic_half_min": 65
+     },
+     "upper": {
+      "fall_bpm": 12.0,
+      "half_of_fall_min": 21,
+      "hr_end": 100.0,
+      "sympathetic_end_bpm": 3.2387686604323814e-18,
+      "sympathetic_half_min": 21
+     }
+    },
+    "5": {
+     "lower": {
+      "fall_bpm": 16.66220243695811,
+      "half_of_fall_min": 32,
+      "hr_end": 95.33779756304189,
+      "sympathetic_end_bpm": 35.33779756304189,
+      "sympathetic_half_min": null
+     },
+     "midpoint": {
+      "fall_bpm": 16.66220243695811,
+      "half_of_fall_min": 32,
+      "hr_end": 95.33779756304189,
+      "sympathetic_end_bpm": 15.337797563041889,
+      "sympathetic_half_min": 71
+     },
+     "upper": {
+      "fall_bpm": 11.999999833265434,
+      "half_of_fall_min": 24,
+      "hr_end": 100.00000016673457,
+      "sympathetic_end_bpm": 1.6673457058773058e-07,
+      "sympathetic_half_min": 24
+     }
+    }
+   },
    "scenarios": {
     "definitive_management": {
      "decomposition": {
@@ -4155,6 +4287,24 @@
      }
     }
    },
+   "fractions": {
+    "definitive 120 min below arrival": {
+     "fraction": 0.9089184060721063,
+     "n": 1054
+    },
+    "definitive 30 min below arrival": {
+     "fraction": 0.786527514231499,
+     "n": 1054
+    },
+    "untreated 60 min above arrival": {
+     "fraction": 0.25332068311195444,
+     "n": 1054
+    },
+    "untreated 60 min more than 1 mmol/L above arrival": {
+     "fraction": 0.09962049335863378,
+     "n": 1054
+    }
+   },
    "representatives": {
     "high": {
      "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
@@ -4582,6 +4732,24 @@
      }
     }
    },
+   "fractions": {
+    "definitive 120 min below arrival": {
+     "fraction": 0.8434535104364327,
+     "n": 1054
+    },
+    "definitive 30 min below arrival": {
+     "fraction": 0.6840607210626186,
+     "n": 1054
+    },
+    "untreated 60 min above arrival": {
+     "fraction": 0.3387096774193548,
+     "n": 1054
+    },
+    "untreated 60 min more than 1 mmol/L above arrival": {
+     "fraction": 0.11669829222011385,
+     "n": 1054
+    }
+   },
    "representatives": {
     "high": {
      "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
@@ -4637,7 +4805,7 @@
    }
   }
  },
- "pack_digest": "144094ee6922d75075ff10b52a9c57e56fe06bbcbb2c4a27324e13f1923b10da",
+ "pack_digest": "fd90dd59cd233c751530df95d21ddf6b7792f06a0e2e2eea37c528fd4a802dbf",
  "pl2": {
   "rows": [
    {
@@ -6832,6 +7000,785 @@
  },
  "rr": {
   "gi_bleed_57m": {
+   "bounds": {
+    "arrival_lactate": 4.4,
+    "arrival_rr": 26.0,
+    "by_cap": {
+     "15": {
+      "ceiling at rr_max 40": [
+       27.47410378406542,
+       36.25792113818534
+      ],
+      "ceiling at rr_max 60": [
+       27.47410378406542,
+       36.25792113818534
+      ],
+      "floor": [
+       12.474103784065422,
+       21.25792113818534
+      ]
+     },
+     "25": {
+      "ceiling at rr_max 40": [
+       32.21444129602699,
+       40.0
+      ],
+      "ceiling at rr_max 60": [
+       32.21444129602699,
+       45.90310649588634
+      ],
+      "floor": [
+       10.0,
+       20.90310649588634
+      ]
+     },
+     "30": {
+      "ceiling at rr_max 40": [
+       35.40458542647816,
+       40.0
+      ],
+      "ceiling at rr_max 60": [
+       35.40458542647816,
+       50.808774018300866
+      ],
+      "floor": [
+       10.0,
+       20.80877401830087
+      ]
+     }
+    },
+    "rows": [
+     {
+      "ceiling at rr_max 40": 34.398475498481034,
+      "ceiling at rr_max 60": 34.398475498481034,
+      "floor": 19.39847549848103,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 34.398475498481034,
+      "ceiling at rr_max 60": 34.398475498481034,
+      "floor": 19.39847549848103,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 34.398475498481034,
+      "ceiling at rr_max 60": 34.398475498481034,
+      "floor": 19.39847549848103,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 35.28175087709211,
+      "ceiling at rr_max 60": 35.28175087709211,
+      "floor": 20.28175087709211,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 35.28175087709211,
+      "ceiling at rr_max 60": 35.28175087709211,
+      "floor": 20.28175087709211,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 35.28175087709211,
+      "ceiling at rr_max 60": 35.28175087709211,
+      "floor": 20.28175087709211,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 36.25792113818534,
+      "ceiling at rr_max 60": 36.25792113818534,
+      "floor": 21.25792113818534,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 36.25792113818534,
+      "ceiling at rr_max 60": 36.25792113818534,
+      "floor": 21.25792113818534,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 36.25792113818534,
+      "ceiling at rr_max 60": 36.25792113818534,
+      "floor": 21.25792113818534,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 29.518554321406967,
+      "ceiling at rr_max 60": 29.518554321406967,
+      "floor": 14.518554321406965,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 29.518554321406967,
+      "ceiling at rr_max 60": 29.518554321406967,
+      "floor": 14.518554321406965,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 29.518554321406967,
+      "ceiling at rr_max 60": 29.518554321406967,
+      "floor": 14.518554321406965,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 30.51791317868303,
+      "ceiling at rr_max 60": 30.51791317868303,
+      "floor": 15.51791317868303,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 30.51791317868303,
+      "ceiling at rr_max 60": 30.51791317868303,
+      "floor": 15.51791317868303,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 30.51791317868303,
+      "ceiling at rr_max 60": 30.51791317868303,
+      "floor": 15.51791317868303,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 31.801115351817515,
+      "ceiling at rr_max 60": 31.801115351817515,
+      "floor": 16.801115351817515,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 31.801115351817515,
+      "ceiling at rr_max 60": 31.801115351817515,
+      "floor": 16.801115351817515,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 31.801115351817515,
+      "ceiling at rr_max 60": 31.801115351817515,
+      "floor": 16.801115351817515,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 27.47410378406542,
+      "ceiling at rr_max 60": 27.47410378406542,
+      "floor": 12.474103784065422,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 27.47410378406542,
+      "ceiling at rr_max 60": 27.47410378406542,
+      "floor": 12.474103784065422,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 27.47410378406542,
+      "ceiling at rr_max 60": 27.47410378406542,
+      "floor": 14.0,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 28.19910443195525,
+      "ceiling at rr_max 60": 28.19910443195525,
+      "floor": 13.19910443195525,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 28.19910443195525,
+      "ceiling at rr_max 60": 28.19910443195525,
+      "floor": 13.19910443195525,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 28.19910443195525,
+      "ceiling at rr_max 60": 28.19910443195525,
+      "floor": 14.0,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 29.28067830428322,
+      "ceiling at rr_max 60": 29.28067830428322,
+      "floor": 14.28067830428322,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 29.28067830428322,
+      "ceiling at rr_max 60": 29.28067830428322,
+      "floor": 14.28067830428322,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 29.28067830428322,
+      "ceiling at rr_max 60": 29.28067830428322,
+      "floor": 14.28067830428322,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 43.65247190535961,
+      "floor": 18.65247190535961,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 43.65247190535961,
+      "floor": 18.65247190535961,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 43.65247190535961,
+      "floor": 18.65247190535961,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 44.74403980597603,
+      "floor": 19.74403980597603,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 44.74403980597603,
+      "floor": 19.74403980597603,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 44.74403980597603,
+      "floor": 19.74403980597603,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 45.90310649588634,
+      "floor": 20.90310649588634,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 45.90310649588634,
+      "floor": 20.90310649588634,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 45.90310649588634,
+      "floor": 20.90310649588634,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 36.47378873119098,
+      "ceiling at rr_max 60": 36.47378873119098,
+      "floor": 11.473788731190975,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 36.47378873119098,
+      "ceiling at rr_max 60": 36.47378873119098,
+      "floor": 12.0,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 36.47378873119098,
+      "ceiling at rr_max 60": 36.47378873119098,
+      "floor": 14.0,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 38.16880639899929,
+      "ceiling at rr_max 60": 38.16880639899929,
+      "floor": 13.168806398999287,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 38.16880639899929,
+      "ceiling at rr_max 60": 38.16880639899929,
+      "floor": 13.168806398999287,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 38.16880639899929,
+      "ceiling at rr_max 60": 38.16880639899929,
+      "floor": 14.0,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 40.138135967488424,
+      "floor": 15.138135967488424,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 40.138135967488424,
+      "floor": 15.138135967488424,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 40.138135967488424,
+      "floor": 15.138135967488424,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 32.21444129602699,
+      "ceiling at rr_max 60": 32.21444129602699,
+      "floor": 10.0,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 32.21444129602699,
+      "ceiling at rr_max 60": 32.21444129602699,
+      "floor": 12.0,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 32.21444129602699,
+      "ceiling at rr_max 60": 32.21444129602699,
+      "floor": 14.0,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 33.90010321729656,
+      "ceiling at rr_max 60": 33.90010321729656,
+      "floor": 10.0,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 33.90010321729656,
+      "ceiling at rr_max 60": 33.90010321729656,
+      "floor": 12.0,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 33.90010321729656,
+      "ceiling at rr_max 60": 33.90010321729656,
+      "floor": 14.0,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 36.04299950243965,
+      "ceiling at rr_max 60": 36.04299950243965,
+      "floor": 11.042999502439647,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 36.04299950243965,
+      "ceiling at rr_max 60": 36.04299950243965,
+      "floor": 12.0,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 36.04299950243965,
+      "ceiling at rr_max 60": 36.04299950243965,
+      "floor": 14.0,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 48.447907027356955,
+      "floor": 18.447907027356955,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 48.447907027356955,
+      "floor": 18.447907027356955,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 48.447907027356955,
+      "floor": 18.447907027356955,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 49.5988358319966,
+      "floor": 19.598835831996603,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 49.5988358319966,
+      "floor": 19.598835831996603,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 49.5988358319966,
+      "floor": 19.598835831996603,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 50.808774018300866,
+      "floor": 20.80877401830087,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 50.808774018300866,
+      "floor": 20.80877401830087,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 50.808774018300866,
+      "floor": 20.80877401830087,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 40.52973706866087,
+      "floor": 10.529737068660872,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 40.52973706866087,
+      "floor": 12.0,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 40.52973706866087,
+      "floor": 14.0,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 42.46434908282079,
+      "floor": 12.464349082820792,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 42.46434908282079,
+      "floor": 12.464349082820792,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 42.46434908282079,
+      "floor": 14.0,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 44.656551693950604,
+      "floor": 14.6565516939506,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 44.656551693950604,
+      "floor": 14.6565516939506,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 44.656551693950604,
+      "floor": 14.6565516939506,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 35.40458542647816,
+      "ceiling at rr_max 60": 35.40458542647816,
+      "floor": 10.0,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 35.40458542647816,
+      "ceiling at rr_max 60": 35.40458542647816,
+      "floor": 12.0,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 35.40458542647816,
+      "ceiling at rr_max 60": 35.40458542647816,
+      "floor": 14.0,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 37.48678657925336,
+      "ceiling at rr_max 60": 37.48678657925336,
+      "floor": 10.0,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 37.48678657925336,
+      "ceiling at rr_max 60": 37.48678657925336,
+      "floor": 12.0,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 37.48678657925336,
+      "ceiling at rr_max 60": 37.48678657925336,
+      "floor": 14.0,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 40.02999281029727,
+      "floor": 10.029992810297273,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 40.02999281029727,
+      "floor": 12.0,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 40.02999281029727,
+      "floor": 14.0,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 14.0
+     }
+    ]
+   },
    "ceiling": 36.17201156462641,
    "effects": {
     "definitive_management": [
@@ -7375,6 +8322,785 @@
    }
   },
   "gi_bleed_72f": {
+   "bounds": {
+    "arrival_lactate": 3.4,
+    "arrival_rr": 24.0,
+    "by_cap": {
+     "15": {
+      "ceiling at rr_max 40": [
+       27.28067830428322,
+       36.52905317116908
+      ],
+      "ceiling at rr_max 60": [
+       27.28067830428322,
+       36.52905317116908
+      ],
+      "floor": [
+       12.28067830428322,
+       21.529053171169082
+      ]
+     },
+     "25": {
+      "ceiling at rr_max 40": [
+       34.042999502439656,
+       40.0
+      ],
+      "ceiling at rr_max 60": [
+       34.042999502439656,
+       46.440689910760874
+      ],
+      "floor": [
+       10.0,
+       21.440689910760874
+      ]
+     },
+     "30": {
+      "ceiling at rr_max 40": [
+       38.02999281029728,
+       40.0
+      ],
+      "ceiling at rr_max 60": [
+       38.02999281029728,
+       51.41793555813685
+      ],
+      "floor": [
+       10.0,
+       21.417935558136847
+      ]
+     }
+    },
+    "rows": [
+     {
+      "ceiling at rr_max 40": 34.25792113818534,
+      "ceiling at rr_max 60": 34.25792113818534,
+      "floor": 19.25792113818534,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 34.25792113818534,
+      "ceiling at rr_max 60": 34.25792113818534,
+      "floor": 19.25792113818534,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 34.25792113818534,
+      "ceiling at rr_max 60": 34.25792113818534,
+      "floor": 19.25792113818534,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 35.33675612183588,
+      "ceiling at rr_max 60": 35.33675612183588,
+      "floor": 20.336756121835883,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 35.33675612183588,
+      "ceiling at rr_max 60": 35.33675612183588,
+      "floor": 20.336756121835883,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 35.33675612183588,
+      "ceiling at rr_max 60": 35.33675612183588,
+      "floor": 20.336756121835883,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 36.52905317116908,
+      "ceiling at rr_max 60": 36.52905317116908,
+      "floor": 21.529053171169082,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 36.52905317116908,
+      "ceiling at rr_max 60": 36.52905317116908,
+      "floor": 21.529053171169082,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 36.52905317116908,
+      "ceiling at rr_max 60": 36.52905317116908,
+      "floor": 21.529053171169082,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 29.80111535181752,
+      "ceiling at rr_max 60": 29.80111535181752,
+      "floor": 14.801115351817518,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 29.80111535181752,
+      "ceiling at rr_max 60": 29.80111535181752,
+      "floor": 14.801115351817518,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 29.80111535181752,
+      "ceiling at rr_max 60": 29.80111535181752,
+      "floor": 14.801115351817518,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 31.448779556871145,
+      "ceiling at rr_max 60": 31.448779556871145,
+      "floor": 16.448779556871145,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 31.448779556871145,
+      "ceiling at rr_max 60": 31.448779556871145,
+      "floor": 16.448779556871145,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 31.448779556871145,
+      "ceiling at rr_max 60": 31.448779556871145,
+      "floor": 16.448779556871145,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 33.5644222743266,
+      "ceiling at rr_max 60": 33.5644222743266,
+      "floor": 18.5644222743266,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 33.5644222743266,
+      "ceiling at rr_max 60": 33.5644222743266,
+      "floor": 18.5644222743266,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 33.5644222743266,
+      "ceiling at rr_max 60": 33.5644222743266,
+      "floor": 18.5644222743266,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 27.28067830428322,
+      "ceiling at rr_max 60": 27.28067830428322,
+      "floor": 12.28067830428322,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 27.28067830428322,
+      "ceiling at rr_max 60": 27.28067830428322,
+      "floor": 12.28067830428322,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 27.28067830428322,
+      "ceiling at rr_max 60": 27.28067830428322,
+      "floor": 14.0,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 28.894196919345596,
+      "ceiling at rr_max 60": 28.894196919345596,
+      "floor": 13.894196919345594,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 28.894196919345596,
+      "ceiling at rr_max 60": 28.894196919345596,
+      "floor": 13.894196919345594,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 28.894196919345596,
+      "ceiling at rr_max 60": 28.894196919345596,
+      "floor": 14.0,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 31.301283839399577,
+      "ceiling at rr_max 60": 31.301283839399577,
+      "floor": 16.301283839399577,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 31.301283839399577,
+      "ceiling at rr_max 60": 31.301283839399577,
+      "floor": 16.301283839399577,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 31.301283839399577,
+      "ceiling at rr_max 60": 31.301283839399577,
+      "floor": 16.301283839399577,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 15.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 43.90310649588635,
+      "floor": 18.903106495886345,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 43.90310649588635,
+      "floor": 18.903106495886345,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 43.90310649588635,
+      "floor": 18.903106495886345,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 45.13384586711647,
+      "floor": 20.13384586711647,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 45.13384586711647,
+      "floor": 20.13384586711647,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 45.13384586711647,
+      "floor": 20.13384586711647,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 46.440689910760874,
+      "floor": 21.440689910760874,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 46.440689910760874,
+      "floor": 21.440689910760874,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 46.440689910760874,
+      "floor": 21.440689910760874,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 38.138135967488424,
+      "ceiling at rr_max 60": 38.138135967488424,
+      "floor": 13.138135967488427,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 38.138135967488424,
+      "ceiling at rr_max 60": 38.138135967488424,
+      "floor": 13.138135967488427,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 38.138135967488424,
+      "ceiling at rr_max 60": 38.138135967488424,
+      "floor": 14.0,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 40.42617049537642,
+      "floor": 15.426170495376418,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 40.42617049537642,
+      "floor": 15.426170495376418,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 40.42617049537642,
+      "floor": 15.426170495376418,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 43.08448735842133,
+      "floor": 18.08448735842133,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 43.08448735842133,
+      "floor": 18.08448735842133,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 43.08448735842133,
+      "floor": 18.08448735842133,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 34.042999502439656,
+      "ceiling at rr_max 60": 34.042999502439656,
+      "floor": 10.0,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 34.042999502439656,
+      "ceiling at rr_max 60": 34.042999502439656,
+      "floor": 12.0,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 34.042999502439656,
+      "ceiling at rr_max 60": 34.042999502439656,
+      "floor": 14.0,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 36.767154584154696,
+      "ceiling at rr_max 60": 36.767154584154696,
+      "floor": 11.767154584154698,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 36.767154584154696,
+      "ceiling at rr_max 60": 36.767154584154696,
+      "floor": 12.0,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 36.767154584154696,
+      "ceiling at rr_max 60": 36.767154584154696,
+      "floor": 14.0,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 40.230234417128685,
+      "floor": 15.230234417128687,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 40.230234417128685,
+      "floor": 15.230234417128687,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 40.230234417128685,
+      "floor": 15.230234417128687,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 25.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 48.808774018300866,
+      "floor": 18.80877401830087,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 48.808774018300866,
+      "floor": 18.80877401830087,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 48.808774018300866,
+      "floor": 18.80877401830087,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 50.080747061964175,
+      "floor": 20.080747061964175,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 50.080747061964175,
+      "floor": 20.080747061964175,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 50.080747061964175,
+      "floor": 20.080747061964175,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 51.41793555813685,
+      "floor": 21.417935558136847,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 51.41793555813685,
+      "floor": 21.417935558136847,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 51.41793555813685,
+      "floor": 21.417935558136847,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 3.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 42.656551693950604,
+      "floor": 12.656551693950604,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 42.656551693950604,
+      "floor": 12.656551693950604,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 42.656551693950604,
+      "floor": 14.0,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 45.1406426915614,
+      "floor": 15.140642691561403,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 45.1406426915614,
+      "floor": 15.140642691561403,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 45.1406426915614,
+      "floor": 15.140642691561403,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 47.95548656278131,
+      "floor": 17.95548656278131,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 47.95548656278131,
+      "floor": 17.95548656278131,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 47.95548656278131,
+      "floor": 17.95548656278131,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 7.5,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 38.02999281029728,
+      "ceiling at rr_max 60": 38.02999281029728,
+      "floor": 10.0,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 38.02999281029728,
+      "ceiling at rr_max 60": 38.02999281029728,
+      "floor": 12.0,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 38.02999281029728,
+      "ceiling at rr_max 60": 38.02999281029728,
+      "floor": 14.0,
+      "lactate_drive_threshold_mmol_l": 1.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 41.13627191546445,
+      "floor": 11.136271915464446,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 41.13627191546445,
+      "floor": 12.0,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 41.13627191546445,
+      "floor": 14.0,
+      "lactate_drive_threshold_mmol_l": 2.0,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 14.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 44.93028978213093,
+      "floor": 14.93028978213093,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 10.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 44.93028978213093,
+      "floor": 14.93028978213093,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 12.0
+     },
+     {
+      "ceiling at rr_max 40": 40.0,
+      "ceiling at rr_max 60": 44.93028978213093,
+      "floor": 14.93028978213093,
+      "lactate_drive_threshold_mmol_l": 2.5,
+      "rr_metabolic_max": 30.0,
+      "rr_per_lactate": 12.0,
+      "rr_ventilatory_floor": 14.0
+     }
+    ]
+   },
    "ceiling": 38.050999434125416,
    "effects": {
     "definitive_management": [
@@ -14413,6 +16139,7 @@
       ],
       "final_hr": 80.0000028119058,
       "final_position": 0.869429608744668,
+      "in_p2f_design": false,
       "marginal_responsiveness": 0.16321298906916495,
       "net_V_ml_eq": 1087.6195498407887,
       "peak_map": 174.40315175487444,
@@ -14432,6 +16159,7 @@
       ],
       "final_hr": 80.00000593224041,
       "final_position": 0.7830930916193122,
+      "in_p2f_design": true,
       "marginal_responsiveness": 0.2711336354758598,
       "net_V_ml_eq": 1087.6195498407887,
       "peak_map": 161.41851463422336,
@@ -14451,6 +16179,7 @@
       ],
       "final_hr": 80.0000815979256,
       "final_position": 0.612571224098548,
+      "in_p2f_design": false,
       "marginal_responsiveness": 0.4842859698768149,
       "net_V_ml_eq": 1087.6195498407887,
       "peak_map": 134.48629299778145,
@@ -14470,6 +16199,7 @@
       ],
       "final_hr": 81.91237536190816,
       "final_position": 0.8939115571050428,
+      "in_p2f_design": false,
       "marginal_responsiveness": 0.16321298906916498,
       "net_V_ml_eq": 1087.6195498407887,
       "peak_map": 115.97289188619173,
@@ -14489,6 +16219,7 @@
       ],
       "final_hr": 86.92593503749507,
       "final_position": 0.823763136940691,
+      "in_p2f_design": true,
       "marginal_responsiveness": 0.27113363547585995,
       "net_V_ml_eq": 1087.6195498407887,
       "peak_map": 109.94431036588942,
@@ -14508,6 +16239,7 @@
       ],
       "final_hr": 96.8311763628623,
       "final_position": 0.6852141195800703,
+      "in_p2f_design": false,
       "marginal_responsiveness": 0.48428596987681494,
       "net_V_ml_eq": 1087.6195498407887,
       "peak_map": 97.44006460611281,
@@ -14527,6 +16259,7 @@
       ],
       "final_hr": 99.85070914282343,
       "final_position": 0.9183935054654175,
+      "in_p2f_design": false,
       "marginal_responsiveness": 0.16321298906916493,
       "net_V_ml_eq": 1087.6195498407887,
       "peak_map": 92.60078793871861,
@@ -14546,6 +16279,7 @@
       ],
       "final_hr": 102.55452387860933,
       "final_position": 0.8644331822620701,
+      "in_p2f_design": true,
       "marginal_responsiveness": 0.2711336354758598,
       "net_V_ml_eq": 1087.6195498407887,
       "peak_map": 89.35462865855584,
@@ -14565,6 +16299,7 @@
       ],
       "final_hr": 107.9003281679574,
       "final_position": 0.7578570150615925,
+      "in_p2f_design": false,
       "marginal_responsiveness": 0.48428596987681494,
       "net_V_ml_eq": 1087.6195498407887,
       "peak_map": 82.62157324944536,
@@ -14586,6 +16321,7 @@
       ],
       "final_hr": 80.0000037816112,
       "final_position": 0.8857509076515845,
+      "in_p2f_design": false,
       "marginal_responsiveness": 0.16321298906916504,
       "net_V_ml_eq": 1087.6195498407887,
       "peak_map": 137.624060745899,
@@ -14605,6 +16341,7 @@
       ],
       "final_hr": 80.0000110122996,
       "final_position": 0.8102064551668982,
+      "in_p2f_design": true,
       "marginal_responsiveness": 0.2711336354758598,
       "net_V_ml_eq": 1087.6195498407887,
       "peak_map": 130.04968909218587,
@@ -14624,6 +16361,7 @@
       ],
       "final_hr": 80.00087656788335,
       "final_position": 0.6609998210862296,
+      "in_p2f_design": false,
       "marginal_responsiveness": 0.484285969876815,
       "net_V_ml_eq": 1087.6195498407887,
       "peak_map": 114.33922647092805,
@@ -14643,6 +16381,7 @@
       ],
       "final_hr": 83.19899492438729,
       "final_position": 0.9102328560119592,
+      "in_p2f_design": false,
       "marginal_responsiveness": 0.16321298906916498,
       "net_V_ml_eq": 1087.6195498407887,
       "peak_map": 107.32688896213756,
@@ -14662,6 +16401,7 @@
       ],
       "final_hr": 86.50119001863628,
       "final_position": 0.850876500488277,
+      "in_p2f_design": true,
       "marginal_responsiveness": 0.27113363547585995,
       "net_V_ml_eq": 1087.6195498407887,
       "peak_map": 103.35936095304974,
@@ -14681,6 +16421,7 @@
       ],
       "final_hr": 93.0278903966605,
       "final_position": 0.7336427165677517,
+      "in_p2f_design": false,
       "marginal_responsiveness": 0.484285969876815,
       "net_V_ml_eq": 1087.6195498407887,
       "peak_map": 95.13007100858137,
@@ -14700,6 +16441,7 @@
       ],
       "final_hr": 94.85152527804846,
       "final_position": 0.934714804372334,
+      "in_p2f_design": false,
       "marginal_responsiveness": 0.16321298906916495,
       "net_V_ml_eq": 1087.6195498407887,
       "peak_map": 92.17830307025686,
@@ -14719,6 +16461,7 @@
       ],
       "final_hr": 96.64804281253883,
       "final_position": 0.8915465458096561,
+      "in_p2f_design": true,
       "marginal_responsiveness": 0.2711336354758598,
       "net_V_ml_eq": 1087.6195498407887,
       "peak_map": 90.01419688348169,
@@ -14738,6 +16481,7 @@
       ],
       "final_hr": 100.22837660005023,
       "final_position": 0.8062856120492741,
+      "in_p2f_design": false,
       "marginal_responsiveness": 0.48428596987681477,
       "net_V_ml_eq": 1087.6195498407887,
       "peak_map": 85.52549327740802,

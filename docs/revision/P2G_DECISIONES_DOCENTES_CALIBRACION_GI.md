@@ -4,7 +4,7 @@ Apoyo a decisiones, no decisiones. Nada de este documento aprueba un número, ma
 FACULTY_APPROVED, migra el GI, toca el tiempo de ejecución ni cambia lo que ve el residente. Todos los valores
 siguen CANDIDATE.
 
-- **Generado desde:** el congelamiento de calibración `0db3403dae1071437834d7fb6355ce94b29e0951eb8220a9d2446899947d65f9` y el paquete `144094ee6922d75075ff10b52a9c57e56fe06bbcbb2c4a27324e13f1923b10da`
+- **Generado desde:** el congelamiento de calibración `a7436fe8e8cb73b2a391035f28f7f98bea8049049b0cfa2f4938bcbc45137d39` y el paquete `fd90dd59cd233c751530df95d21ddf6b7792f06a0e2e2eea37c528fd4a802dbf`
   (`python -m clinical_core.decision_pack`; las tablas, con `python -m clinical_core.decision_pack_markdown`).
   Los números están en `docs/revision/P2G_decision_pack.json`. Una prueba falla si el código o las entradas cambian
   sin regenerarlos.
@@ -15,8 +15,11 @@ siguen CANDIDATE.
   - **«bajo», «medio» y «alto»** son posiciones dentro de esa región para una lectura concreta. No son preferencias.
   - **Una fila de efecto** cambia un solo factor alrededor del conjunto con todas las bandas en su punto medio.
     Muestra dirección y tamaño, no interacciones.
+  - **«Región admisible»** es el diseño GI de P2F menos sus 163 rechazos: 1054 conjuntos. Un conjunto fuera de ese
+    diseño (por ejemplo, otra escala de la curva de precarga) puede ser *admisible* para las reglas congeladas sin
+    pertenecer a la región: las tablas lo dicen cuando ocurre.
   - **El estado de cada fila:**
-    - *admisible*: las reglas congeladas lo aceptan;
+    - *admisible*: las reglas congeladas lo aceptan (no implica que P2F lo haya barrido);
     - *rechazado*: las reglas congeladas lo rechazan;
     - *no evaluado*: ninguna regla congelada lee ese parámetro;
     - *sonda de sensibilidad*: el parámetro no tiene banda candidata.
@@ -25,9 +28,11 @@ siguen CANDIDATE.
 
 ## 1. Reproducibilidad (P2G-1)
 
-El congelamiento de calibración cubre ahora todo lo que puede cambiar las entradas de los escenarios: el camino del
-motor de familias, el adaptador de órdenes, el banco de casos y las entradas materializadas. El detalle está en
-`docs/PHASE2_SHADOW_CORE.md` §13.1.
+El congelamiento de calibración cubre ahora todo lo que puede cambiar las entradas de los escenarios o la aceptación:
+el camino del motor de familias, el adaptador de órdenes, el banco de casos, las entradas materializadas y los
+archivos del arnés completos (`calibration.py`, `bands.py`). El digest del paquete suma a eso cada fuente del núcleo
+en sombra (`clinical_core/**/*.py`), salvo el renderizador de este documento, que no cambia ningún número. El detalle
+está en `docs/PHASE2_SHADOW_CORE.md` §13.1.
 
 ## 2. Decisión 1 · Lactato (P2G-2)
 
@@ -39,12 +44,15 @@ D → lactato (G); lo que se aclara depende de τ_L.
   aclara más rápido de lo que el déficit en curso produce lactato nuevo.
   - A los 60 min, la mediana es 3,8 (57m) y 3,1 (72f).
   - El rango va de 1,8 a 9,6 en 57m y de 1,5 a 9,2 en 72f.
-  - Sólo sube de verdad en el extremo alto: G 12, τ_L 45, D de llegada 60 y entrega 0,6.
+  - A los 60 min queda por encima del de llegada en el 25 % de la región (57m) y el 34 % (72f), y más de 1 mmol/L
+    por encima en el 10 % y el 12 % (tabla «Proporción de la región admisible»).
+  - Las subidas grandes se concentran en el extremo alto: G 12, τ_L 45, D de llegada 60 y entrega 0,6.
   - El sangrado sin tratamiento es lento (2,5 mL/min; decisión 3), y eso también limita la producción.
 - **Lo que más empuja hacia arriba** es la D de llegada y la ganancia G.
   - τ_L actúa en los dos sentidos: aclara antes el exceso, pero también deja ver antes la producción nueva.
   - Un exceso aclarable menor deja el lactato más alto, porque la basal a la que tiende es mayor.
-- **Con manejo definitivo**, en casi toda la región el descenso empieza en los primeros 30 min.
+- **Con manejo definitivo**, a los 30 min el lactato ya está por debajo del de llegada en el 79 % de la región (57m) y
+  el 68 % (72f); a los 120 min, en el 91 % y el 84 %.
   - A los 120 min queda entre 1,0 y 6,0 (57m), con mediana 3,0.
   - Que vuelva a la basal (0,8–2,0, sin dato en el caso) depende sobre todo de τ_L y de la D de llegada.
 
@@ -66,6 +74,15 @@ Representantes (posición del lactato a los 60 min sin tratamiento; no son prefe
 | medio | τ_D 60 · τ_L 120 · G 6 · resto medio | manejo definitivo (GR + IBP + endoscopia) | 4,40 | 4,00 | 3,56 | 2,73 |
 | alto | τ_D 60 · τ_L 45 · G 12 · exceso inf. · intrínseca sup. · D sup. · entrega inf. | sin tratamiento | 4,40 | 8,35 | 9,58 | 10,42 |
 | alto | τ_D 60 · τ_L 45 · G 12 · exceso inf. · intrínseca sup. · D sup. · entrega inf. | manejo definitivo (GR + IBP + endoscopia) | 4,40 | 8,12 | 8,24 | 5,71 |
+
+Proporción de la región admisible a cada lado de las preguntas docentes (sólo modelo):
+
+| Lectura | Conjuntos | Proporción |
+|---|---|---|
+| manejo definitivo, 120′ por debajo de la llegada | 1054 | 91 % |
+| manejo definitivo, 30′ por debajo de la llegada | 1054 | 79 % |
+| sin tratamiento, 60′ por encima de la llegada | 1054 | 25 % |
+| sin tratamiento, 60′ más de 1 mmol/L por encima | 1054 | 10 % |
 
 Efecto de cada factor alrededor del punto medio:
 
@@ -101,6 +118,15 @@ Representantes (posición del lactato a los 60 min sin tratamiento; no son prefe
 | medio | τ_D 60 · τ_L 120 · G 6 · resto medio | manejo definitivo (GR + IBP + endoscopia) | 3,40 | 3,23 | 2,96 | 2,37 |
 | alto | τ_D 60 · τ_L 45 · G 12 · exceso inf. · intrínseca sup. · D sup. · entrega inf. | sin tratamiento | 3,40 | 7,83 | 9,22 | 9,85 |
 | alto | τ_D 60 · τ_L 45 · G 12 · exceso inf. · intrínseca sup. · D sup. · entrega inf. | manejo definitivo (GR + IBP + endoscopia) | 3,40 | 7,66 | 8,17 | 5,83 |
+
+Proporción de la región admisible a cada lado de las preguntas docentes (sólo modelo):
+
+| Lectura | Conjuntos | Proporción |
+|---|---|---|
+| manejo definitivo, 120′ por debajo de la llegada | 1054 | 84 % |
+| manejo definitivo, 30′ por debajo de la llegada | 1054 | 68 % |
+| sin tratamiento, 60′ por encima de la llegada | 1054 | 34 % |
+| sin tratamiento, 60′ más de 1 mmol/L por encima | 1054 | 12 % |
 
 Efecto de cada factor alrededor del punto medio:
 
@@ -151,8 +177,17 @@ Efecto de cada factor alrededor del punto medio:
   - 72f: 99 y 99 (rango 88–101).
   - A los 120 min queda unos 20 lpm sobre la intrínseca media, porque la presión no vuelve del todo y queda deuda.
 
-**Rapidez de la resolución.** La parte simpática tarda 59–82 min (57m) y 65–95 min (72f) en caer a la mitad.
-- La constante de decaimiento (2–15 min) pesa poco, porque el impulso sigue a sus estímulos.
+**Rapidez de la resolución** (tabla «Velocidad de resolución», con manejo definitivo). Hay dos lecturas y sólo una
+no depende de la intrínseca:
+- **Mitad de la caída:** el minuto en que la FC recorre la mitad de su propia caída hasta los 120 min. Es igual para
+  toda intrínseca mientras el impulso no llegue a cero: 28 (τ 2), 31 (τ 5) y 41 min (τ 15) en 57m; 29, 32 y 41 en
+  72f. Con intrínseca 100, en 72f la FC se detiene en 100 (el impulso llega a ~0), la caída es más corta y su mitad
+  llega antes (21–33 min).
+- **Mitad simpática:** el minuto en que la parte simpática cae a la mitad de la de llegada. Depende de la intrínseca,
+  porque ésta fija cuánto de la FC de llegada es simpático: con intrínseca 60 no ocurre en 120 min; con la media,
+  59–82 min (57m) y 65–95 (72f); con 100, 29–42 (57m) y 21–33 (72f).
+- La constante de decaimiento (2–15 min) mueve la mitad de la caída 12–13 min: pesa menos que las ganancias,
+  porque el impulso sigue a sus estímulos.
 - El factor más fuerte es la ganancia por déficit de presión: en 57m a los 120 min con manejo definitivo, 81 lpm con
   ganancia 2 y 110 con ganancia 0,5.
 
@@ -174,7 +209,19 @@ Efecto de cada factor alrededor del punto medio:
 | sin tratamiento | intrínseca sup. | 127,9 = 100 + 27,9 | 133,3 = 100 + 33,3 | 147,2 = 100 + 47,2 |  |
 | sin tratamiento | medio | 127,9 = 80 + 47,9 | 133,3 = 80 + 53,3 | 147,2 = 80 + 67,2 | 30′ 124,0 – 128,6 – 132,1; 60′ 127,1 – 134,0 – 139,3; 120′ 136,0 – 147,2 – 153,8 |
 
-Minutos hasta que la parte simpática cae a la mitad de la de llegada, con manejo definitivo: decaimiento 2 min → 59; punto medio (5 min) → 62; decaimiento 15 min → 82.
+Velocidad de resolución con manejo definitivo, por decaimiento simpático (τ) e intrínseca: minuto en que la parte simpática cae a la mitad de la de llegada («mitad simpática», depende de la intrínseca) y minuto en que la FC recorre la mitad de su propia caída hasta los 120′ («mitad de la caída»):
+
+| τ simpático (min) | Intrínseca | Mitad simpática (min) | Mitad de la caída (min) | FC 120′ | Caída (lpm) | Parte simpática 120′ (lpm) |
+|---|---|---|---|---|---|---|
+| 2 | inf. | nunca | 28 | 100,5 | 23,5 | 40,5 |
+| 2 | medio | 59 | 28 | 100,5 | 23,5 | 20,5 |
+| 2 | sup. | 29 | 28 | 100,5 | 23,5 | 0,5 |
+| 5 | inf. | nunca | 31 | 100,5 | 23,5 | 40,5 |
+| 5 | medio | 62 | 31 | 100,5 | 23,5 | 20,5 |
+| 5 | sup. | 32 | 31 | 100,5 | 23,5 | 0,5 |
+| 15 | inf. | nunca | 41 | 100,6 | 23,4 | 40,6 |
+| 15 | medio | 82 | 41 | 100,6 | 23,4 | 20,6 |
+| 15 | sup. | 42 | 41 | 100,6 | 23,4 | 0,6 |
 
 | Factor | Nivel | Estado | sin trat. 30′ | sin trat. 60′ | sin trat. 120′ | definitivo 30′ | definitivo 60′ | definitivo 120′ |
 |---|---|---|---|---|---|---|---|---|
@@ -208,7 +255,19 @@ Minutos hasta que la parte simpática cae a la mitad de la de llegada, con manej
 | sin tratamiento | intrínseca sup. | 114,3 = 100 + 14,3 | 117,8 = 100 + 17,8 | 126,9 = 100 + 26,9 |  |
 | sin tratamiento | medio | 114,3 = 80 + 34,3 | 117,8 = 80 + 37,8 | 126,9 = 80 + 46,9 | 30′ 110,4 – 115,0 – 118,5; 60′ 111,5 – 118,6 – 123,7; 120′ 118,7 – 127,5 – 133,6 |
 
-Minutos hasta que la parte simpática cae a la mitad de la de llegada, con manejo definitivo: decaimiento 2 min → 65; punto medio (5 min) → 71; decaimiento 15 min → 95.
+Velocidad de resolución con manejo definitivo, por decaimiento simpático (τ) e intrínseca: minuto en que la parte simpática cae a la mitad de la de llegada («mitad simpática», depende de la intrínseca) y minuto en que la FC recorre la mitad de su propia caída hasta los 120′ («mitad de la caída»):
+
+| τ simpático (min) | Intrínseca | Mitad simpática (min) | Mitad de la caída (min) | FC 120′ | Caída (lpm) | Parte simpática 120′ (lpm) |
+|---|---|---|---|---|---|---|
+| 2 | inf. | nunca | 29 | 95,3 | 16,7 | 35,3 |
+| 2 | medio | 65 | 29 | 95,3 | 16,7 | 15,3 |
+| 2 | sup. | 21 | 21 | 100,0 | 12,0 | 0,0 |
+| 5 | inf. | nunca | 32 | 95,3 | 16,7 | 35,3 |
+| 5 | medio | 71 | 32 | 95,3 | 16,7 | 15,3 |
+| 5 | sup. | 24 | 24 | 100,0 | 12,0 | 0,0 |
+| 15 | inf. | nunca | 41 | 95,5 | 16,5 | 35,5 |
+| 15 | medio | 95 | 41 | 95,5 | 16,5 | 15,5 |
+| 15 | sup. | 33 | 33 | 100,0 | 12,0 | 0,0 |
 
 | Factor | Nivel | Estado | sin trat. 30′ | sin trat. 60′ | sin trat. 120′ | definitivo 30′ | definitivo 60′ | definitivo 120′ |
 |---|---|---|---|---|---|---|---|---|
@@ -240,8 +299,8 @@ estrecho. PAS mínima – máxima:
 
 | | 0′ | 30′ | 60′ | 120′ |
 |---|---|---|---|---|
-| 57m | 88 | 80 | 72–79 | 26–69 |
-| 72f | 98 | 93 | 87–92 | 71–85 |
+| 57m | 88 | 80–84 | 72–79 | 26–69 |
+| 72f | 98 | 93–95 | 87–92 | 71–85 |
 
 - **La caída se acelera bajo la rodilla de presión (0,5).** En 57m, al punto medio, la PAS pasa de 72 a los 60 min a
   26 a los 120.
@@ -347,7 +406,8 @@ representar cada caso?
 - **Repago:** sobre el umbral, la carga se repaga con su τ.
 
 **Resultados.**
-- La primera tabla da los minutos exactos para un gasto constante.
+- La primera tabla da los minutos de acumulación hasta el límite con un gasto constante, en aritmética exacta. Una
+  corrida simulada para algo después: suma el minuto en que cae el gasto y el minuto en que se lee la transición.
 - Los patrones muestran, con la regla en sus puntos medios:
   - un flujo moderado breve no para;
   - uno moderado sostenido para a los 92 min;
@@ -360,7 +420,7 @@ representar cada caso?
 medio, en el minuto 144).
 
 <!-- generado:colapso -->
-Minutos hasta la transición terminal con gasto constante (exacto: límite / (ganancia × severidad)):
+Minutos de acumulación hasta el límite con gasto constante, en aritmética exacta: ⌈límite × umbral / (ganancia × (umbral − gasto))⌉. La simulación suma el minuto en que cae el gasto y el minuto en que se lee la transición, así que su paro llega después de esta cuenta:
 
 | Umbral | Ganancia | Límite | gasto 0,05 | gasto 0,1 | gasto 0,15 | gasto 0,2 | gasto 0,25 | gasto 0,35 |
 |---|---|---|---|---|---|---|---|---|
@@ -373,15 +433,15 @@ Minutos hasta la transición terminal con gasto constante (exacto: límite / (ga
 | 0,2 | 2,0 | 5 | 4 | 5 | 10 | nunca | nunca | nunca |
 | 0,2 | 2,0 | 15 | 10 | 15 | 30 | nunca | nunca | nunca |
 | 0,2 | 2,0 | 30 | 20 | 30 | 60 | nunca | nunca | nunca |
-| 0,3 | 0,5 | 5 | 12 | 15 | 20 | 31 | 61 | nunca |
-| 0,3 | 0,5 | 15 | 36 | 45 | 60 | 91 | 181 | nunca |
-| 0,3 | 0,5 | 30 | 72 | 90 | 120 | 181 | 361 | nunca |
-| 0,3 | 1,0 | 5 | 6 | 8 | 10 | 16 | 31 | nunca |
-| 0,3 | 1,0 | 15 | 18 | 23 | 30 | 46 | 91 | nunca |
-| 0,3 | 1,0 | 30 | 36 | 45 | 60 | 91 | 181 | nunca |
-| 0,3 | 2,0 | 5 | 3 | 4 | 5 | 8 | 16 | nunca |
-| 0,3 | 2,0 | 15 | 9 | 12 | 15 | 23 | 46 | nunca |
-| 0,3 | 2,0 | 30 | 18 | 23 | 30 | 46 | 91 | nunca |
+| 0,3 | 0,5 | 5 | 12 | 15 | 20 | 30 | 60 | nunca |
+| 0,3 | 0,5 | 15 | 36 | 45 | 60 | 90 | 180 | nunca |
+| 0,3 | 0,5 | 30 | 72 | 90 | 120 | 180 | 360 | nunca |
+| 0,3 | 1,0 | 5 | 6 | 8 | 10 | 15 | 30 | nunca |
+| 0,3 | 1,0 | 15 | 18 | 23 | 30 | 45 | 90 | nunca |
+| 0,3 | 1,0 | 30 | 36 | 45 | 60 | 90 | 180 | nunca |
+| 0,3 | 2,0 | 5 | 3 | 4 | 5 | 8 | 15 | nunca |
+| 0,3 | 2,0 | 15 | 9 | 12 | 15 | 23 | 45 | nunca |
+| 0,3 | 2,0 | 30 | 18 | 23 | 30 | 45 | 90 | nunca |
 | 0,4 | 0,5 | 5 | 12 | 14 | 16 | 20 | 27 | 80 |
 | 0,4 | 0,5 | 15 | 35 | 40 | 48 | 60 | 80 | 240 |
 | 0,4 | 0,5 | 30 | 69 | 80 | 96 | 120 | 160 | 480 |
@@ -426,9 +486,13 @@ Ritmo terminal según la política declarada: `asystole` → `asystole`; `pea` �
 entradas, un V neto de +1088 mL-eq.
 
 **Presión y gasto.** Los dimensiona la posición y la escala de la curva de precarga.
-- **Pico de PAS en la región admisible:** 113–186 (57m) y 114–155 (72f). Un conjunto rechazado llega a 243.
+- **Pico de PAS dentro del diseño de P2F** (escala de la curva por defecto, 833 mL): 122–151 (57m) y 121–140 (72f).
+  La precarga inferior con esa escala la rechazan las reglas congeladas (picos de 225 y 178).
+- **Con otras escalas**, que P2F no barrió pero las reglas congeladas aceptan: 113–186 (57m) y 114–155 (72f). La
+  precarga inferior con escala 600 se rechaza y llega a 243 (57m).
 - **No hay techo de presión por encima de la llegada.** PAS = llegada + ganancia × (gasto relativo − 1), y el gasto
-  llega a 1,4–4,4 veces el de llegada. Es la fuente principal de valores inverosímilmente altos.
+  llega a 1,4–4,4 veces el de llegada. Esa falta de techo es la que permite los picos altos; si son plausibles lo
+  decide la docencia (FD-14).
 
 **Cuándo deja de servir el líquido.** La respuesta marginal final (lo que darían 500 mL más, frente a los primeros
 500) es exp(−1088 / escala): 0,16 con 600 mL, 0,27 con 833 y 0,48 con 1500. La escala decide cuándo el líquido se
@@ -441,33 +505,33 @@ vuelve mayormente ineficaz.
 **FC.** Con precarga baja, la FC cae hasta la intrínseca (80).
 
 <!-- generado:volumen -->
-**gi_bleed_57m** — volumen agresivo (90 min). Lo que mueve la presión es la posición y la escala de la curva; la rodilla y la ganancia de congestión y la reserva sólo cambian L (rango en la última columna). El estado es el del conjunto completo, que aplica el mismo nivel a los dos casos: la precarga inferior se rechaza por 57m.
+**gi_bleed_57m** — volumen agresivo (90 min). Lo que mueve la presión es la posición y la escala de la curva; la rodilla y la ganancia de congestión y la reserva sólo cambian L (rango en «L final»). «Estado» aplica las reglas congeladas al conjunto completo (el mismo nivel en los dos casos) con esa escala; «En el diseño de P2F» dice si P2F barrió esa celda (sólo con la escala por defecto).
 
-| Precarga | Escala (mL) | V neto (mL-eq) | PAS llegada → pico | PAM pico | Gasto pico (× llegada) | Posición llegada → final | Respuesta marginal final | FC final | L final | Estado |
-|---|---|---|---|---|---|---|---|---|---|---|
-| inf. | 600 | 1088 | 88 → 243 | 174 | 4,44 | 0,20 → 0,87 | 0,16 | 80 | 0,000 – 0,677 | rechazado por las reglas congeladas |
-| inf. | 833 | 1088 | 88 → 225 | 161 | 4,03 | 0,20 → 0,78 | 0,27 | 80 | 0,000 – 0,191 | rechazado por las reglas congeladas |
-| inf. | 1500 | 1088 | 88 → 186 | 134 | 3,18 | 0,20 → 0,61 | 0,48 | 80 | 0,000 – 0,000 | admisible |
-| medio | 600 | 1088 | 88 → 160 | 116 | 2,60 | 0,35 → 0,89 | 0,16 | 82 | 0,000 – 0,863 | admisible |
-| medio | 833 | 1088 | 88 → 151 | 110 | 2,41 | 0,35 → 0,82 | 0,27 | 87 | 0,000 – 0,403 | admisible |
-| medio | 1500 | 1088 | 88 → 134 | 97 | 2,01 | 0,35 → 0,69 | 0,48 | 97 | 0,000 – 0,000 | admisible |
-| sup. | 600 | 1088 | 88 → 127 | 93 | 1,86 | 0,50 → 0,92 | 0,16 | 100 | 0,000 – 1,082 | admisible |
-| sup. | 833 | 1088 | 88 → 122 | 89 | 1,76 | 0,50 → 0,86 | 0,27 | 103 | 0,000 – 0,682 | admisible |
-| sup. | 1500 | 1088 | 88 → 113 | 83 | 1,55 | 0,50 → 0,76 | 0,48 | 108 | 0,000 – 0,062 | admisible |
+| Precarga | Escala (mL) | V neto (mL-eq) | PAS llegada → pico | PAM pico | Gasto pico (× llegada) | Posición llegada → final | Respuesta marginal final | FC final | L final | Estado | En el diseño de P2F |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| inf. | 600 | 1088 | 88 → 243 | 174 | 4,44 | 0,20 → 0,87 | 0,16 | 80 | 0,000 – 0,677 | rechazado por las reglas congeladas | no |
+| inf. | 833 | 1088 | 88 → 225 | 161 | 4,03 | 0,20 → 0,78 | 0,27 | 80 | 0,000 – 0,191 | rechazado por las reglas congeladas | sí |
+| inf. | 1500 | 1088 | 88 → 186 | 134 | 3,18 | 0,20 → 0,61 | 0,48 | 80 | 0,000 – 0,000 | admisible | no |
+| medio | 600 | 1088 | 88 → 160 | 116 | 2,60 | 0,35 → 0,89 | 0,16 | 82 | 0,000 – 0,863 | admisible | no |
+| medio | 833 | 1088 | 88 → 151 | 110 | 2,41 | 0,35 → 0,82 | 0,27 | 87 | 0,000 – 0,403 | admisible | sí |
+| medio | 1500 | 1088 | 88 → 134 | 97 | 2,01 | 0,35 → 0,69 | 0,48 | 97 | 0,000 – 0,000 | admisible | no |
+| sup. | 600 | 1088 | 88 → 127 | 93 | 1,86 | 0,50 → 0,92 | 0,16 | 100 | 0,000 – 1,082 | admisible | no |
+| sup. | 833 | 1088 | 88 → 122 | 89 | 1,76 | 0,50 → 0,86 | 0,27 | 103 | 0,000 – 0,682 | admisible | sí |
+| sup. | 1500 | 1088 | 88 → 113 | 83 | 1,55 | 0,50 → 0,76 | 0,48 | 108 | 0,000 – 0,062 | admisible | no |
 
-**gi_bleed_72f** — volumen agresivo (90 min). Lo que mueve la presión es la posición y la escala de la curva; la rodilla y la ganancia de congestión y la reserva sólo cambian L (rango en la última columna). El estado es el del conjunto completo, que aplica el mismo nivel a los dos casos: la precarga inferior se rechaza por 57m.
+**gi_bleed_72f** — volumen agresivo (90 min). Lo que mueve la presión es la posición y la escala de la curva; la rodilla y la ganancia de congestión y la reserva sólo cambian L (rango en «L final»). «Estado» aplica las reglas congeladas al conjunto completo (el mismo nivel en los dos casos) con esa escala; «En el diseño de P2F» dice si P2F barrió esa celda (sólo con la escala por defecto).
 
-| Precarga | Escala (mL) | V neto (mL-eq) | PAS llegada → pico | PAM pico | Gasto pico (× llegada) | Posición llegada → final | Respuesta marginal final | FC final | L final | Estado |
-|---|---|---|---|---|---|---|---|---|---|---|
-| inf. | 600 | 1088 | 98 → 188 | 138 | 3,01 | 0,30 → 0,89 | 0,16 | 80 | 0,000 – 0,798 | rechazado por las reglas congeladas |
-| inf. | 833 | 1088 | 98 → 178 | 130 | 2,77 | 0,30 → 0,81 | 0,27 | 80 | 0,000 – 0,326 | rechazado por las reglas congeladas |
-| inf. | 1500 | 1088 | 98 → 155 | 114 | 2,27 | 0,30 → 0,66 | 0,48 | 80 | 0,000 – 0,000 | admisible |
-| medio | 600 | 1088 | 98 → 145 | 107 | 2,05 | 0,45 → 0,91 | 0,16 | 83 | 0,000 – 1,005 | admisible |
-| medio | 833 | 1088 | 98 → 140 | 103 | 1,93 | 0,45 → 0,85 | 0,27 | 87 | 0,000 – 0,582 | admisible |
-| medio | 1500 | 1088 | 98 → 128 | 95 | 1,67 | 0,45 → 0,73 | 0,48 | 93 | 0,000 – 0,000 | admisible |
-| sup. | 600 | 1088 | 98 → 124 | 92 | 1,57 | 0,60 → 0,93 | 0,16 | 95 | 0,000 – 1,255 | admisible |
-| sup. | 833 | 1088 | 98 → 121 | 90 | 1,51 | 0,60 → 0,89 | 0,27 | 97 | 0,000 – 0,910 | admisible |
-| sup. | 1500 | 1088 | 98 → 114 | 86 | 1,36 | 0,60 → 0,81 | 0,48 | 100 | 0,000 – 0,319 | admisible |
+| Precarga | Escala (mL) | V neto (mL-eq) | PAS llegada → pico | PAM pico | Gasto pico (× llegada) | Posición llegada → final | Respuesta marginal final | FC final | L final | Estado | En el diseño de P2F |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| inf. | 600 | 1088 | 98 → 188 | 138 | 3,01 | 0,30 → 0,89 | 0,16 | 80 | 0,000 – 0,798 | rechazado por las reglas congeladas | no |
+| inf. | 833 | 1088 | 98 → 178 | 130 | 2,77 | 0,30 → 0,81 | 0,27 | 80 | 0,000 – 0,326 | rechazado por las reglas congeladas | sí |
+| inf. | 1500 | 1088 | 98 → 155 | 114 | 2,27 | 0,30 → 0,66 | 0,48 | 80 | 0,000 – 0,000 | admisible | no |
+| medio | 600 | 1088 | 98 → 145 | 107 | 2,05 | 0,45 → 0,91 | 0,16 | 83 | 0,000 – 1,005 | admisible | no |
+| medio | 833 | 1088 | 98 → 140 | 103 | 1,93 | 0,45 → 0,85 | 0,27 | 87 | 0,000 – 0,582 | admisible | sí |
+| medio | 1500 | 1088 | 98 → 128 | 95 | 1,67 | 0,45 → 0,73 | 0,48 | 93 | 0,000 – 0,000 | admisible | no |
+| sup. | 600 | 1088 | 98 → 124 | 92 | 1,57 | 0,60 → 0,93 | 0,16 | 95 | 0,000 – 1,255 | admisible | no |
+| sup. | 833 | 1088 | 98 → 121 | 90 | 1,51 | 0,60 → 0,89 | 0,27 | 97 | 0,000 – 0,910 | admisible | sí |
+| sup. | 1500 | 1088 | 98 → 114 | 86 | 1,36 | 0,60 → 0,81 | 0,48 | 100 | 0,000 – 0,319 | admisible | no |
 
 Estado de los parámetros de congestión: `congestion_per_excess_preload` 0,02 admisible, 0,05 admisible, 0,1 admisible; `congestion_preload_knee` 0,75 admisible, 0,85 admisible, 0,92 admisible.
 <!-- /generado:volumen -->
@@ -488,14 +552,18 @@ En GI no hay mecanismo W ni N, así que la parte ventilatoria es constante y fij
 
 **Rango.**
 - En la región va de 13 a 36 (57m) y de 15 a 38 (72f).
-- La dispersión viene de la trayectoria del lactato (decisión 1), no de los parámetros de FR, que mueven el punto
-  medio alrededor de 1 resp/min.
-- El techo teórico es la parte ventilatoria más la metabólica máxima.
-  - Al punto medio es 13,2 + 25 en 57m.
-  - Según las bandas de FR, va de 28 a 50 resp/min.
+- La dispersión viene sobre todo de la trayectoria del lactato (decisión 1). Un parámetro de FR, cambiado solo
+  alrededor del punto medio, mueve la FR hasta 3,8 resp/min (`rr_per_lactate`, 57m, manejo definitivo); los demás,
+  hasta 2.
+- **Techo teórico** (lactato sin límite): FR de llegada − impulso metabólico de llegada + `rr_metabolic_max`, y
+  luego `rr_max`. Lo lee la tabla de cotas, generada desde `derived.respiratory_rate`.
+  - Al punto medio es 13,2 + 25 = 38,2 en 57m.
+  - Sobre la cuadrícula de bandas de FR: 27,5–36,3 con `rr_metabolic_max` 15, 32,2–45,9 con 25 y 35,4–50,8 con 30
+    (57m); 27,3–36,5, 34,0–46,4 y 38,0–51,4 (72f). Con `rr_max` 40 el techo no pasa de 40.
   - En las corridas no se alcanza: el máximo observado es 36 (57m) y 38 (72f).
-- **El reparto de la FR de llegada también fija el piso de la recuperación.** Con `rr_per_lactate` 3, la parte
-  ventilatoria sube a ~20 resp/min, y ése es el nuevo piso.
+- **El reparto de la FR de llegada también fija el piso de la recuperación** (lactato bajo el umbral). Sobre la
+  cuadrícula va de 10,0 a 21,3 (57m) y de 10,0 a 21,5 (72f): con un reparto metabólico pequeño (`rr_per_lactate` 3)
+  la parte ventilatoria sube a ~20 resp/min, y ése es el nuevo piso.
 
 **Por gravedad del shock de llegada, sin tratamiento:**
 - leve: la FR baja de 26 a 20, porque el lactato se aclara;
@@ -505,7 +573,15 @@ En GI no hay mecanismo W ni N, así que la parte ventilatoria es constante y fij
 **Con mejoría** (manejo definitivo, 57m a los 120 min): 15–24.
 
 <!-- generado:fr -->
-**gi_bleed_57m** — FR (resp/min), mínimo – mediana – máximo en la región admisible; techo 36,2, piso 13,2 en todas las corridas:
+**gi_bleed_57m** — FR de llegada 26 resp/min con lactato 4,4 mmol/L. Cotas del modelo sobre la cuadrícula de bandas de FR (`rr_per_lactate` × `lactate_drive_threshold_mmol_l` × `rr_ventilatory_floor`, por `rr_metabolic_max`): techo con lactato sin límite, antes y después de `rr_max`, y piso con lactato bajo el umbral (mínimo – máximo):
+
+| `rr_metabolic_max` | techo con `rr_max` 40 | techo con `rr_max` 60 | piso |
+|---|---|---|---|
+| 15 | 27,5 – 36,3 | 27,5 – 36,3 | 12,5 – 21,3 |
+| 25 | 32,2 – 40,0 | 32,2 – 45,9 | 10,0 – 20,9 |
+| 30 | 35,4 – 40,0 | 35,4 – 50,8 | 10,0 – 20,8 |
+
+En las corridas del paquete, FR observada entre 13,2 y 36,2. Mínimo – mediana – máximo en la región admisible:
 
 | Corrida | 0′ | 30′ | 60′ | 120′ |
 |---|---|---|---|---|
@@ -536,7 +612,15 @@ En GI no hay mecanismo W ni N, así que la parte ventilatoria es constante y fij
 | `lactate_drive_threshold_mmol_l` | 2 | admisible | 24,7 | 23,6 | 23,5 | 24,5 | 22,5 | 18,1 |
 | `lactate_drive_threshold_mmol_l` | 2,5 | admisible | 24,5 | 23,2 | 23,1 | 24,2 | 21,9 | 16,8 |
 
-**gi_bleed_72f** — FR (resp/min), mínimo – mediana – máximo en la región admisible; techo 38,1, piso 15,4 en todas las corridas:
+**gi_bleed_72f** — FR de llegada 24 resp/min con lactato 3,4 mmol/L. Cotas del modelo sobre la cuadrícula de bandas de FR (`rr_per_lactate` × `lactate_drive_threshold_mmol_l` × `rr_ventilatory_floor`, por `rr_metabolic_max`): techo con lactato sin límite, antes y después de `rr_max`, y piso con lactato bajo el umbral (mínimo – máximo):
+
+| `rr_metabolic_max` | techo con `rr_max` 40 | techo con `rr_max` 60 | piso |
+|---|---|---|---|
+| 15 | 27,3 – 36,5 | 27,3 – 36,5 | 12,3 – 21,5 |
+| 25 | 34,0 – 40,0 | 34,0 – 46,4 | 10,0 – 21,4 |
+| 30 | 38,0 – 40,0 | 38,0 – 51,4 | 10,0 – 21,4 |
+
+En las corridas del paquete, FR observada entre 15,4 y 38,1. Mínimo – mediana – máximo en la región admisible:
 
 | Corrida | 0′ | 30′ | 60′ | 120′ |
 |---|---|---|---|---|
@@ -806,26 +890,26 @@ modelo); la evidencia del repositorio es lo que dicen los casos.
 | FD-03 | ¿Vuelta a la basal en el horizonte o lactato persistente por la deuda? | basal 0,8–2,0 (implícita en `arrival_lactate_excess`); τ_L | lactato final | basal alta: el lactato no baja de ~2 | basal baja: puede bajar a ~1 | la basal no figura en el caso | §2 | | ABIERTA |
 | FD-04 | Rango de FC tras hemostasia y reanimación | `sympathetic_per_pressure_deficit` 0,5–1–2; `sympathetic_per_debt`; intrínseca | FC visible | ganancia baja: FC alta tras la hemostasia (110) | ganancia alta: FC cerca de la intrínseca (81) | FC 124 / 112 (`:881`, `:910`) | §3 | | ABIERTA |
 | FD-05 | Cuánto puede bajar la FC bajo la taquicardia de llegada | `intrinsic_sinus_rate` 60–80–100 (piso) | FC en la recuperación | piso bajo: puede bajar mucho | piso alto: la FC no baja de la intrínseca | ninguna FC basal autorizada | §3 (la intrínseca fija sólo el piso) | | ABIERTA |
-| FD-06 | Rapidez de la resolución de la taquicardia | `sympathetic_decay_tau_min` 2–5–15; ganancias | curso de la FC | mitad en ~59 min | mitad en ~82 min (57m) | ninguna | §3 | | ABIERTA |
+| FD-06 | Rapidez de la resolución de la taquicardia | `sympathetic_decay_tau_min` 2–5–15; ganancias | curso de la FC | τ 2: la FC recorre la mitad de su caída en 28–29 min | τ 15: en 41 min (la «mitad simpática» depende además de la intrínseca: §3) | ninguna | §3 (resolución por τ e intrínseca) | | ABIERTA |
 | FD-07 | ¿Intrínseca por caso o valor por defecto de familia? | por caso / familia GI | `intrinsic_sinus_rate` | — | — | ninguna FC basal ni betabloqueador autorizado | §3 | | ABIERTA |
 | FD-08 | Caída de la PA en 1 h sin tratamiento | `volume_loss_ml_per_min`; `preload_fraction`; `preload_curve_scale_ml` 600–833–1500; `sbp_per_pressure_deficit` 35–45–55 | PAS/PAM; conciencia; logística | PAS 80 a los 60 min (57m) | PAS 26–62 a los 60 min o detención | PAS 88 / 98; POCUS (`:154-156`) | §4 | | ABIERTA |
 | FD-09 | Umbral de flujo bajo para el colapso | `collapse_output_threshold` 0,2–0,3–0,4 | paro | sólo el flujo muy bajo acumula | el flujo moderado ya acumula | ninguna | §5 | | ABIERTA |
 | FD-10 | Permanencia antes de la AESP o la asistolia | `collapse_burden_per_minute` 0,5–1–2; `collapse_burden_limit` 5–15–30 | paro | paro en minutos | paro en horas | ninguna | §5 (minutos exactos) | | ABIERTA |
 | FD-11 | Repago de la carga de colapso | `collapse_repayment_tau_min` 30–60–240 o sin repago | episodios repetidos | el segundo episodio no para | el segundo episodio para | ninguna | §5 | | ABIERTA |
-| FD-12 | Política del ritmo terminal | según la causa o el estado / declarada (`pea`, `asystole`) | ritmo del paro | — | — | ninguna | §5 | | ABIERTA |
+| FD-12 | Política del ritmo terminal | `collapse_terminal_rhythm`: según la causa o el estado / declarada (`pea`, `asystole`) | ritmo del paro | — | — | ninguna | §5 | | ABIERTA |
 | FD-13 | ¿Encender el colapso en las corridas GI? | apagado (hoy) / encendido con FD-09–FD-11 | final de la hemorragia sin tratar | detención en vez de paro | paro con la regla elegida | ninguna | §5, §11 | | ABIERTA |
 | FD-14 | Subida máxima de la PA con volumen solo | `preload_curve_scale_ml`; `preload_fraction`; ¿techo de presión? | PAS/PAM con volumen | PAS pico 113 | PAS pico 186 (243 rechazado); no hay techo | ninguna | §6 | | ABIERTA |
 | FD-15 | Desde dónde el líquido se vuelve ineficaz | `preload_curve_scale_ml` | respuesta al volumen | escala corta: ineficaz pronto (0,16) | escala larga: sigue respondiendo (0,48) | ninguna | §6 | | ABIERTA |
 | FD-16 | Congestión tolerada | `congestion_preload_knee` 0,75–0,85–0,92; `congestion_per_excess_preload` 0,02–0,05–0,1; `lung_water_clearance_tau_min`; `pump_reserve` | L (aún sin SpO2) | sin congestión | L hasta ~1,3 con reserva 0,7 | sin edema ni líneas B en la llegada | §6 | | ABIERTA |
 | FD-17 | Rango plausible de FR en el shock GI no complicado | sigue al lactato (FD-01–FD-03) | FR visible | 13–15 | 36–38 | FR 26 / 24 (`:881`, `:910`) | §7 | | ABIERTA |
-| FD-18 | Taquipnea metabólica máxima | `rr_metabolic_max` 15–25–30; `rr_per_lactate` 3–7,5–12; `lactate_drive_threshold_mmol_l` 1,5–2–2,5 | techo de la FR | techo teórico 28–35 (máximo 15) | techo teórico 42–50 (máximo 30) | gasometría (`:901`, `:930`) | §7 | | ABIERTA |
-| FD-19 | Límite inferior de la FR en la recuperación | `rr_ventilatory_floor` 10–12–14 y `rr_per_lactate` (que reparten la FR de llegada) | piso de la FR | piso 12–13 (`rr_per_lactate` alto) | piso ~20 (`rr_per_lactate` 3) | ninguna | §7 | | ABIERTA |
+| FD-18 | Taquipnea metabólica máxima | `rr_metabolic_max` 15–25–30; `rr_per_lactate` 3–7,5–12; `lactate_drive_threshold_mmol_l` 1,5–2–2,5 | techo de la FR | máximo 15: techo teórico 27,5–36,3 (57m) y 27,3–36,5 (72f) | máximo 30: 35,4–50,8 (57m) y 38,0–51,4 (72f), recortado a 40 si `rr_max` es 40 | gasometría (`:901`, `:930`) | §7 (cotas del modelo) | | ABIERTA |
+| FD-19 | Límite inferior de la FR en la recuperación | `rr_ventilatory_floor` 10–12–14 y `rr_per_lactate`, `lactate_drive_threshold_mmol_l`, `rr_metabolic_max` (que reparten la FR de llegada) | piso de la FR | piso 10–13 (reparto metabólico grande) | piso hasta 21,3 (57m) y 21,5 (72f) (reparto metabólico pequeño) | ninguna | §7 (cotas del modelo) | | ABIERTA |
 | FD-20 | `beta_blockade` | convención «no listado ⇒ 0» / declarado por caso | FC | — | — | medicación sin betabloqueador listado (`:889`, `:918`) | §8 | | ABIERTA |
 | FD-21 | `pump_reserve` | 1,0 de familia sin hallazgos / por caso | congestión | reserva 0,7: congestión con volumen | 1,0: sin congestión | §8 | §6 | | ABIERTA |
-| FD-22 | `volume_loss_ml_per_min` | 2,5 de familia / por caso / otra tasa | caída de la PA, lactato, FC | × 0,5: PAS 80 a los 60 min | × 2: PAS 26 a los 60 min | ninguna tasa (`:890`, `:921`) | §4, §8 | | ABIERTA |
-| FD-23 | `hb_loss_g_dl_per_min` | 0,009 de familia / coherente con FD-22 | Hb | — | — | Hb 6,7 / 6,4 | §8 | | ABIERTA |
-| FD-24 | `fraction_with_ppi` | 0,8 de familia / otro | sangrado con IBP | — | — | ninguna | §8 | | ABIERTA |
-| FD-25 | `fraction_after_hemostasis` | 0,1 de familia / otro | sangrado tras la hemostasia | — | — | ninguna | §8 | | ABIERTA |
+| FD-22 | `volume_loss_ml_per_min` (`gi_volume_loss_ml_per_min`) | 2,5 de familia / por caso / otra tasa | caída de la PA, lactato, FC | × 0,5: PAS 80 a los 60 min | × 2: PAS 26 a los 60 min | ninguna tasa (`:890`, `:921`) | §4, §8 | | ABIERTA |
+| FD-23 | `hb_loss_g_dl_per_min` (`gi_hb_loss_g_dl_per_min`) | 0,009 de familia / coherente con FD-22 | Hb | — | — | Hb 6,7 / 6,4 | §8 | | ABIERTA |
+| FD-24 | `fraction_with_ppi` (`gi_fraction_with_ppi`) | 0,8 de familia / otro | sangrado con IBP | — | — | ninguna | §8 | | ABIERTA |
+| FD-25 | `fraction_after_hemostasis` (`gi_fraction_after_hemostasis`) | 0,1 de familia / otro | sangrado tras la hemostasia | — | — | ninguna | §8 | | ABIERTA |
 | FD-26 | PL2 | `KEEP_PL2` / `REVISE_PL2` / `REMOVE_PL2` | bandas de escala de precarga | — | — | ninguna | §9 | | ABIERTA |
 | FD-27 | Alcanzabilidad de la D de llegada | `NO_REACHABILITY_RULE` / `MODEL_REACHABILITY_RULE` / `REVISE_FORMULATION` | banda de `arrival_oxygen_debt` | — | — | ninguna duración | §10 | | ABIERTA |
 | FD-28 | Precarga 0,2 en 57m | permitida / límite inferior mayor / curva asintótica / sonda a la tasa del caso | `preload_fraction` de 57m | — | — | POCUS (`:154`) | §11 | | ABIERTA |
@@ -841,12 +925,35 @@ modelo); la evidencia del repositorio es lo que dicen los casos.
 | FD-38 | Tolerancias A9, grupo B (continuos visibles) | X por variable | PAS, PAD, PAM, FC, FR, SpO2, TLC, lactato | — | — | — | §12 | | ABIERTA |
 | FD-39 | Tolerancias A9, grupo C (categóricos visibles) | mismo nivel / desfase N | conciencia | — | — | — | §12 | | ABIERTA |
 | FD-40 | Criterios A9, grupo D (estado interno) | signo y dirección | V, D, L, gasto, demanda, impulso, carga | — | — | — | §12 | | ABIERTA |
+| FD-41 | Ganancia del déficit de entrega en la deuda | `debt_per_delivery_deficit` 0,5–1–2 | D, lactato, impulso; cota de alcanzabilidad (§10) | la D crece despacio con el déficit; cota g × τ_D de 15 a 60 | la D crece rápido; cota de 60 a 240 | ninguna | §10 (no se varió en el diseño de P2F: g = 1) | | ABIERTA |
+| FD-42 | Rodilla de presión con gasto bajo | `low_output_pressure_knee` 0,3–0,5–0,6 | PAS/PAM bajo la rodilla | 0,3: PAS 37 a los 120 min sin tratamiento (57m) | 0,6: PAS 23 | ninguna | §4 | | ABIERTA |
+| FD-43 | Ganancia de PAD por déficit de presión | `dbp_per_pressure_deficit` 15–25–30 | PAD y PAM | 15: PAM 58 a los 120 min (72f) | 30: PAM 53 | PA de llegada 88/54, 98/62 (`:881`, `:910`) | §4 | | ABIERTA |
+| FD-44 | Acoplamiento bomba/precarga | `pump_preload_coupling` 0–0,5–1 | gasto con bomba deprimida | sin efecto en las corridas GI (la bomba no se mueve) | sin efecto en GI; PL2 lo lee (§9) | ninguna | §4, §9 | | ABIERTA |
+| FD-45 | Sensibilidad a la poscarga | `afterload_sensitivity` 0,1–0,3–0,5 | gasto con cambios de tono | sin efecto en las corridas GI (el tono no se mueve) | sin efecto en GI | ninguna | §4 | | ABIERTA |
+| FD-46 | Posición de precarga de las sondas neutras | `arrival_preload_fraction` 0,3–0,5–0,7 | reglas congeladas que leen la llegada neutra (PL2) | 0,3: PL2 falla su cláusula 2 con escala 600 u 833 (§9) | 0,5 y 0,7: PL2 se cumple | ninguna (no es un dato de caso) | §9 | | ABIERTA |
+| FD-47 | Lpm por unidad de impulso simpático | `hr_per_sympathetic_drive` 25 (banda de un punto: el literal del motor, adoptado en P2C) | escala de la parte simpática de la FC | — | — | literal del motor de familias | §3 | | ABIERTA |
+| FD-48 | Tope de seguridad de la FR | `rr_max` 40–60 | techo de la FR | 40: recorta el techo teórico cuando `rr_metabolic_max` ≥ 25 | 60: no recorta ningún punto de la cuadrícula | ninguna (no es fisiología) | §7 | | ABIERTA |
+| FD-49 | Verificación de la procedencia en la puerta de migración | confiar en la fuente declarada (hoy) / verificar `explicit_case` contra la verdad del caso (`gi_reference`) / exigir un registro docente por valor | puerta de migración (no los números) | — | — | — | §14 (límite de la puerta) | | ABIERTA |
 
-**Decisiones abiertas: 40.**
+**Decisiones abiertas: 49.**
+
+**Parámetros del registro fuera de esta tabla, con el motivo.** Cada nombre del registro está en la tabla o aquí; una
+prueba lo comprueba.
+- `arrival_sympathetic_drive`: no es libre; es la FC de llegada menos la intrínseca, sobre la ganancia (FD-05, FD-32,
+  FD-47).
+- `reference_preload_fraction`: referencia euvolémica sólo diagnóstica; ninguna regla ni corrida la lee.
+- `sympathetic_per_hypoxaemia_point`, `hypoxaemia_threshold_spo2`: ninguna llegada GI está hipoxémica (SpO2 97 y 96).
+- `sympathetic_per_hypoglycaemia_mg_dl`, `hypoglycaemia_threshold_mg_dl`: ninguna llegada GI está hipoglucémica
+  (118 y 130 mg/dL).
+- `sepsis_demand_multiplier`, `fever_demand_multiplier`, `seizure_demand_multiplier`,
+  `agitation_pain_demand_multiplier`: DEFAULT_UNMAPPED, sin módulo ni evidencia GI; la demanda GI es FD-34.
+- `collapse_rule_test_values`, `vasodilation_with_demand_probe_factor`: SYNTHETIC_ONLY, valores de prueba y de sonda;
+  nunca valores de caso.
 
 ## 14. Puerta de migración (P2G-14)
 
-- **Ensayo en seco:** `migration.gate_dry_run` se repitió al cierre de P2G. Los dos casos GI siguen fallando, cada uno
+- **Ensayo en seco:** `migration.gate_dry_run` se repitió al cierre de P2G, tras las correcciones de la segunda
+  revisión. Los dos casos GI siguen fallando, cada uno
   con 12 bloqueos:
   - los 6 parámetros de caso que requieren decisión docente;
   - `beta_blockade` y `pump_reserve`;
@@ -854,9 +961,15 @@ modelo); la evidencia del repositorio es lo que dicen los casos.
 - **Ningún valor aprobado:**
   - FACULTY_APPROVED: 0 entradas en el registro;
   - `APPROVED_FAMILY_DEFAULTS` está vacío.
-- **Una prueba lo garantiza** (`test_clinical_core_decision_pack.py`):
+- **Lo que las pruebas comprueban** (`test_clinical_core_decision_pack.py`):
   - declarar todos los candidatos como `synthetic_probe` no pasa la puerta;
   - reclamar el punto medio de una banda CANDIDATE como `approved_family_default` tampoco, porque no hay ninguno
     registrado;
-  - usar «CANDIDATE» como fuente de procedencia se rechaza.
+  - usar «CANDIDATE» como fuente de procedencia se rechaza;
+  - ningún módulo del núcleo en sombra, salvo el vocabulario de la puerta (`state.py`, `derived.py`, `migration.py`),
+    escribe `explicit_case` ni `approved_family_default`: nada del núcleo etiqueta un CANDIDATE como verdad del caso.
+- **Límite de la puerta (anterior a P2G):** la puerta confía en la fuente declarada. Un llamador fuera del núcleo que
+  declare un valor CANDIDATE como `explicit_case` pasaría ese parámetro, porque la puerta no compara el valor con la
+  verdad del caso. Ninguna ruta de código actual lo hace, y cambiar la puerta es una decisión de arquitectura: queda
+  como FD-49, sin implementar.
 - **El GI no se declara migrado** ni calibrado.
