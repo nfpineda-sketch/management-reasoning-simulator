@@ -1392,7 +1392,11 @@ de enunciado.
 
 ### 12.7 Barrido final (desde cero, con las reglas congeladas)
 
-- **Corrida.** `python3 -m clinical_core.calibration` sobre `b4040ba`, con el digest de §12.6: 10 min.
+- **Corrida.** `python3 -m clinical_core.calibration`, desde cero, sobre `98e76a7` (el código es el de `8054987`), con
+  el digest `c7b2f4bb…d83a5634` de §12.6: 18 min 43 s.
+- **Reemplaza al primer barrido final** (`b4040ba`, digest `594e895d…c551320`). Ese barrido aceptaba los 1217
+  conjuntos GI porque HR1–HR4 no corrían sobre la llegada del candidato (§12.12, hallazgo 1). Sus números ya no
+  valen; sólo se citan abajo para mostrar qué cambió.
 - **Dimensiones.** Cada grupo recorre en factorial los puntos de su banda (inferior, medio y superior); los demás
   parámetros quedan en su valor canónico.
   - D/lactato: τ_D, ganancia déficit → D, ganancia D → lactato, τ del lactato.
@@ -1424,56 +1428,80 @@ de enunciado.
 | Presión | 27 | 0 | |
 | Colapso | 162 | 0 | |
 | Demanda | 3 | 0 | |
-| GI (A) | 1217 | 0 | |
+| GI (A) | 1217 | 163 | 162 por HR1 en 72f y 1 por un estado inválido en la sonda de HR (abajo) |
 
-- **Región aceptable:** todas las bandas, salvo la combinación de posición 0,3 con escala de 833 mL o menos.
+- **Los 162 rechazos por HR1** son exactamente los conjuntos con τ_D = 30 y D de llegada = 60, en sus dos esquinas de
+  entrega (0,6 y 1,0): las 9 cinéticas con τ_D = 30, por las 9 combinaciones de lactato aclarable y frecuencia
+  intrínseca, por 2.
+  - Con τ_D = 30 ningún déficit sostiene una D de más de 30, así que la deuda se repaga incluso durante el sangrado.
+    La parte de la deuda en el impulso, (D − D_llegada)/τ_D, se vuelve negativa y contrarresta la parte por presión:
+    la FC baja mientras la PAS cae.
+  - En 57m la misma combinación pasa HR1 (se prueba antes que 72f y no falla); no se analizó por qué.
+  - Es la combinación inalcanzable que señala la banda corregida de la D de llegada (§12.3). Si una regla de
+    alcanzabilidad (D ≤ g × demanda × τ_D) debe excluirla de antemano es una decisión docente; no se agregó.
+- **El rechazo por estado inválido** es el conjunto con la posición de precarga en su límite inferior (0,2) en 57m.
+  - En el minuto 24 de la sonda HR1 (8 mL/min) el gasto efectivo llega a 0 con pulso, sin una transición terminal
+    declarada, y la corrida se detiene (invariante P2D-2).
+  - A esa posición, con la escala por defecto, sólo unos 186 mL-eq la separan de un ventrículo vacío.
+  - Si eso descalifica la posición o indica que la sonda es demasiado grande para esa llegada es una decisión docente.
+- **Región aceptable:** todas las bandas, salvo:
+  - la posición 0,3 con escala de 833 mL o menos (PL2);
+  - τ_D = 30 con D de llegada = 60 (HR1, en 72f);
+  - la posición de precarga 0,2 en 57m (estado inválido).
 - **Lo que dice PL2.** Tal como está operacionalizada (en la posición de llegada), choca con la dependencia de
   precarga: en una curva empinada el volumen sí rescata una bomba moderadamente deprimida.
   - Si eso contradice la dirección aprobada en un paciente dependiente de precarga es una decisión docente.
   - No se cambió la regla.
-- **Las restricciones cualitativas actuales casi no discriminan.** En el GI pasan los 1217 conjuntos sin mirar el
-  golden heredado. Es un resultado, no un defecto que haya que tapar. Para estrechar las bandas hacen falta
-  restricciones docentes nuevas (§12.11).
+- **Las restricciones cualitativas actuales discriminan poco.** En el GI pasan 1054 de 1217 conjuntos sin mirar el
+  golden heredado.
+  - Todos los rechazos vienen de una sola regla (HR1) en una sola esquina inalcanzable, más una llegada al borde del
+    vaciamiento.
+  - 15 de las 21 reglas están garantizadas, total o parcialmente, por construcción o por las bandas (§12.6).
+  - Es un resultado, no un defecto que haya que tapar. Para estrechar las bandas hacen falta restricciones docentes
+    nuevas (§12.11).
 
-**B. Trayectorias GI.** Valor al final de la corrida, rango entre los 1217 conjuntos aceptables:
+**B. Trayectorias GI.** Valor al final de la corrida, rango entre los 1054 conjuntos aceptables:
 
 | Corrida | PAS | FC | FR | Lactato | TLC |
 |---|---|---|---|---|---|
-| 57m `untreated_60` | 27,7 – 79,1 | 114 – 145 | 13 – 37 | 1,8 – 11,7 | 5,8 – 8,2 |
-| 57m `definitive_management` | 107 – 165 | 80 – 110 | 13 – 31 | 1,0 – 6,0 | 0 – 3,3 |
-| 57m `aggressive_volume` | 121 – 219 | 66 – 103 | 13 – 32 | 1,3 – 6,8 | 0 – 2,1 |
-| 72f `untreated_60` | 77 – 92 | 99 – 124 | 15 – 39 | 1,5 – 11,3 | 4,5 – 5,8 |
-| 72f `definitive_management` | 111 – 143 | 74 – 101 | 15 – 33 | 1,0 – 5,8 | 0 – 2,9 |
-| 72f `aggressive_volume` | 120 – 175 | 66 – 100 | 15 – 34 | 1,1 – 6,7 | 0 – 2,1 |
+| 57m `untreated_60` | 71,5 – 79,1 | 127 – 139 | 13 – 36 | 1,8 – 9,6 | 5,8 – 6,5 |
+| 57m `definitive_management` | 107 – 124 | 93 – 110 | 13 – 31 | 1,0 – 6,0 | 1,8 – 3,3 |
+| 57m `aggressive_volume` | 121 – 149 | 80 – 103 | 13 – 32 | 1,3 – 6,8 | 0 – 2,1 |
+| 72f `untreated_60` | 87,2 – 92,1 | 112 – 124 | 15 – 38 | 1,5 – 9,2 | 4,5 – 5,0 |
+| 72f `definitive_management` | 111 – 122 | 88 – 101 | 15 – 33 | 1,0 – 5,8 | 1,9 – 2,9 |
+| 72f `aggressive_volume` | 120 – 138 | 80 – 100 | 15 – 34 | 1,1 – 6,7 | 0,4 – 2,1 |
 
-- **Cómo terminan las corridas.** Ninguna se detuvo en un límite no resuelto.
-- **Lactato con manejo definitivo.** Termina bajo la llegada en 1070 de 1217 conjuntos en 57m y en 974 en 72f. Los
+- **Cómo terminan las corridas.** Ninguna corrida de un conjunto aceptable se detuvo en un límite no resuelto, y todas
+  terminan con pulso.
+- **Lactato con manejo definitivo.** Termina bajo la llegada en 958 de 1054 conjuntos en 57m y en 889 en 72f. Los
   demás son los conjuntos con aclaramiento lento o con un déficit de llegada grave.
-- **Bandas anchas.** Todavía incluyen trayectorias clínicamente inverosímiles: una PAS de 28 a los 60 min sin
-  tratamiento (sin regla de colapso) y una de 219 con volumen agresivo. Ninguna regla aprobada las excluye; queda
-  para las restricciones docentes.
+- **Qué cambió respecto del primer barrido.** Los extremos de entonces (una PAS de 28 a los 60 min sin tratamiento y
+  una de 219 con volumen agresivo, en 57m) venían del conjunto con la precarga en 0,2, que ahora se rechaza. Ya no
+  aparece una FC que baja durante la hemorragia en 72f: era la de los 162 conjuntos rechazados.
+- **Bandas anchas.** La FR al final va de 13 a 38 y el lactato sin tratamiento de 1,5 a 9,6. Ninguna regla aprobada
+  acota eso; queda para las restricciones docentes.
 
 **C. Diferencia con el golden heredado** (diagnóstico). Minutos distintos sumados en las 20 corridas, rango entre los
 conjuntos aceptables:
 
 | Variable | Rango |
 |---|---|
-| PAS | 1123 – 1490 |
-| PAD | 1025 – 1467 |
-| PAM | 1064 – 1475 |
-| FC | 1038 – 1470 |
+| PAS | 1123 – 1254 |
+| PAD | 1025 – 1084 |
+| PAM | 1064 – 1157 |
+| FC | 1038 – 1384 |
 | FR | 1139 – 1510 |
 | Lactato | 1207 – 1510 |
-| TLC | 974 – 1206 |
-| Conciencia | 6 – 63 |
+| TLC | 974 – 1068 |
+| Conciencia | 6 – 30 |
 | V | 130 (no cambia) |
 
 Ningún conjunto se eligió, ordenó ni descartó por esta diferencia. `calibration.acceptable` lee sólo A, y una prueba
 lo comprueba alterando C.
 
-**Diagnósticos (no se usan para aceptar):**
-- La sonda `SYNTHETIC_PLAUSIBILITY_PROBE` encuentra alguna historia previa constante en 812 de 1217 conjuntos para
-  57m y en 947 para 72f. En los demás, ninguna. Eso no dice nada contra el conjunto: la llegada se declara.
+**Diagnósticos (no se usan para aceptar), sobre los 1217 conjuntos:**
+- La sonda `SYNTHETIC_PLAUSIBILITY_PROBE` encuentra alguna historia previa constante en 812 conjuntos para 57m y en
+  947 para 72f. En los demás, ninguna. Eso no dice nada contra el conjunto: la llegada se declara.
 - dD/dt en la llegada va de −2,0 a +0,4 por minuto, y sólo es 0 en los 486 casos sin deuda ni déficit de llegada. La
   llegada evoluciona; no se exige estado estacionario.
 
@@ -1537,6 +1565,10 @@ Bloquean la migración los 12 parámetros requeridos, todos `default_unmapped` e
   - permanencia antes del paro;
   - techo de PAS con volumen agresivo.
 - **PL2 en pacientes dependientes de precarga.** Hay que decidir si la regla vale ahí (§12.7).
+- **Alcanzabilidad de la D de llegada.** Hay que decidir si se agrega una regla D ≤ g × demanda × τ_D. Excluiría de
+  antemano la esquina que hoy rechaza HR1 (§12.3, §12.7). No se agregó, porque sería una regla posterior al barrido.
+- **Precarga de llegada en 0,2 en 57m.** La sonda HR1 la vacía en 24 min. Hay que decidir si eso descalifica la
+  posición o si la sonda es demasiado grande para esa llegada (§12.7).
 - **Valores de llegada GI** (decisión docente):
   - frecuencia intrínseca;
   - impulso simpático;
