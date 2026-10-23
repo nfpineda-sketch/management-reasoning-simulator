@@ -1294,7 +1294,7 @@ deriva de una historia previa ni de las cinéticas.
 
 ### 12.5 Registro de bandas de Nivel 2 (P2F-7)
 
-- **Qué es.** `calibration.REGISTRY` tiene 54 entradas. Cada una lleva:
+- **Qué es.** `calibration.REGISTRY` tiene 53 entradas. Cada una lleva:
   - grupo y destino (perfil, caso o familia);
   - banda (inferior – punto medio – superior) u opciones;
   - unidades, justificación y evidencia;
@@ -1352,3 +1352,174 @@ deriva de una historia previa ni de las cinéticas.
   definición escrita antes de cualquier barrido (5 min al 90 %, como en las pruebas P2E-3), porque el cambio estaba
   motivado por el resultado.
 - **Estado estacionario.** No es una regla.
+
+### 12.7 Barrido final (desde cero, con las reglas congeladas)
+
+- **Corrida.** `python3 -m clinical_core.calibration` sobre `b4040ba`, con el digest de §12.6: 10 min.
+- **Dimensiones.** Cada grupo recorre en factorial los puntos de su banda (inferior, medio y superior); los demás
+  parámetros quedan en su valor canónico.
+  - D/lactato: τ_D, ganancia déficit → D, ganancia D → lactato, τ del lactato.
+  - FR: ganancia metabólica, máximo metabólico, piso ventilatorio, τ del lactato.
+  - Simpático: ganancias de presión y de D, decaimiento.
+  - Precarga: escala, posición por defecto, acoplamiento bomba/precarga, sensibilidad a la poscarga.
+  - Congestión: escala, rodilla, ganancia, τ de L.
+  - Presión: rodilla y las dos ganancias.
+  - Colapso: umbral, ganancia, límite, repago y ritmo terminal.
+  - Demanda: SpO2 por FiO2.
+- **Diseño GI.**
+  - Las 27 cinéticas, de τ_D × ganancia D → lactato × τ del lactato.
+  - Por 9 combinaciones de lactato aclarable × frecuencia intrínseca.
+  - Por 5 combinaciones de D de llegada × razón de entrega:
+    - nada (0, 1);
+    - medio (20, 0,85);
+    - grave (60, 0,6);
+    - y las dos esquinas mixtas.
+  - Más 2 variantes de la posición de precarga.
+- **Conjuntos evaluados:** 543 en los grupos y 1217 GI, en total 1760.
+
+| Grupo | Evaluados | Rechazados | Motivo |
+|---|---|---|---|
+| D/lactato | 81 | 0 | |
+| FR | 81 | 0 | |
+| Simpático | 27 | 0 | |
+| Precarga | 81 | 18 | PL2: con la posición por defecto en 0,3 y una escala de 600 u 833 mL (cualquier acoplamiento y poscarga), 500 mL devuelven el gasto de llegada a una bomba al 60 % |
+| Congestión | 81 | 0 | |
+| Presión | 27 | 0 | |
+| Colapso | 162 | 0 | |
+| Demanda | 3 | 0 | |
+| GI (A) | 1217 | 0 | |
+
+- **Región aceptable:** todas las bandas, salvo la combinación de posición 0,3 con escala de 833 mL o menos.
+- **Lo que dice PL2.** Tal como está operacionalizada (en la posición de llegada), choca con la dependencia de
+  precarga: en una curva empinada el volumen sí rescata una bomba moderadamente deprimida.
+  - Si eso contradice la dirección aprobada en un paciente dependiente de precarga es una decisión docente.
+  - No se cambió la regla.
+- **Las restricciones cualitativas actuales casi no discriminan.** En el GI pasan los 1217 conjuntos sin mirar el
+  golden heredado. Es un resultado, no un defecto que haya que tapar. Para estrechar las bandas hacen falta
+  restricciones docentes nuevas (§12.11).
+
+**B. Trayectorias GI.** Valor al final de la corrida, rango entre los 1217 conjuntos aceptables:
+
+| Corrida | PAS | FC | FR | Lactato | TLC |
+|---|---|---|---|---|---|
+| 57m `untreated_60` | 27,7 – 79,1 | 114 – 145 | 13 – 37 | 1,8 – 11,7 | 5,8 – 8,2 |
+| 57m `definitive_management` | 107 – 165 | 80 – 110 | 13 – 31 | 1,0 – 6,0 | 0 – 3,3 |
+| 57m `aggressive_volume` | 121 – 219 | 66 – 103 | 13 – 32 | 1,3 – 6,8 | 0 – 2,1 |
+| 72f `untreated_60` | 77 – 92 | 99 – 124 | 15 – 39 | 1,5 – 11,3 | 4,5 – 5,8 |
+| 72f `definitive_management` | 111 – 143 | 74 – 101 | 15 – 33 | 1,0 – 5,8 | 0 – 2,9 |
+| 72f `aggressive_volume` | 120 – 175 | 66 – 100 | 15 – 34 | 1,1 – 6,7 | 0 – 2,1 |
+
+- **Cómo terminan las corridas.** Ninguna se detuvo en un límite no resuelto.
+- **Lactato con manejo definitivo.** Termina bajo la llegada en 1070 de 1217 conjuntos en 57m y en 974 en 72f. Los
+  demás son los conjuntos con aclaramiento lento o con un déficit de llegada grave.
+- **Bandas anchas.** Todavía incluyen trayectorias clínicamente inverosímiles: una PAS de 28 a los 60 min sin
+  tratamiento (sin regla de colapso) y una de 219 con volumen agresivo. Ninguna regla aprobada las excluye; queda
+  para las restricciones docentes.
+
+**C. Diferencia con el golden heredado** (diagnóstico). Minutos distintos sumados en las 20 corridas, rango entre los
+conjuntos aceptables:
+
+| Variable | Rango |
+|---|---|
+| PAS | 1123 – 1490 |
+| PAD | 1025 – 1467 |
+| PAM | 1064 – 1475 |
+| FC | 1038 – 1470 |
+| FR | 1139 – 1510 |
+| Lactato | 1207 – 1510 |
+| TLC | 974 – 1206 |
+| Conciencia | 6 – 63 |
+| V | 130 (no cambia) |
+
+Ningún conjunto se eligió, ordenó ni descartó por esta diferencia. `calibration.acceptable` lee sólo A, y una prueba
+lo comprueba alterando C.
+
+**Diagnósticos (no se usan para aceptar):**
+- La sonda `SYNTHETIC_PLAUSIBILITY_PROBE` encuentra alguna historia previa constante en 812 de 1217 conjuntos para
+  57m y en 947 para 72f. En los demás, ninguna. Eso no dice nada contra el conjunto: la llegada se declara.
+- dD/dt en la llegada va de −2,0 a +0,4 por minuto, y sólo es 0 en los 486 casos sin deuda ni déficit de llegada. La
+  llegada evoluciona; no se exige estado estacionario.
+
+### 12.8 Marco del Apéndice A9 (P2F-10)
+
+`clinical_core/a9.py` asigna a cada variable un tipo de comparación. Todas las tolerancias numéricas siguen TBD. El
+estado interno oculto no se mide con la lógica de los observables mostrados.
+
+| Variable | Visible | Tipo | Además | Por qué |
+|---|---|---|---|---|
+| PAS | sí | diferencia absoluta acotada | categoría clínica | los umbrales 90/80/65 condicionan la conciencia y la logística |
+| PAD | sí | diferencia absoluta acotada | | |
+| PAM | sí | diferencia absoluta acotada | categoría clínica | 65 mmHg es un objetivo |
+| FC | sí | diferencia absoluta acotada | tendencia | el impulso tiene memoria |
+| FR | sí | diferencia absoluta acotada | categoría clínica | bradipnea y taquipnea marcada |
+| SpO2 | sí | diferencia absoluta acotada | categoría clínica | niveles 94/87/80 |
+| TLC | sí | diferencia absoluta acotada | categoría clínica | > 3 s |
+| Conciencia | sí | categoría clínica | | el mismo nivel minuto a minuto |
+| Lactato | sí | diferencia relativa acotada | tendencia | relativa en valores altos; dirección del aclaramiento |
+| Hb | sí | coincidencia exacta | | aritmética adoptada del motor |
+| Momento de los eventos | sí | momento exacto | | endoscopia, transfusión, paro |
+| Pulso o paro | sí | coincidencia exacta | | minuto a minuto |
+| V | no | divergencia estructural aprobada | coincidencia exacta dentro de la pinza | KD-S4 |
+| D | no | tendencia | | sin equivalente en el motor |
+| L | no | tendencia | | sondas |
+| Gasto efectivo | no | tendencia | | dirección de la circulación del motor |
+| Demanda de O2 | no | coincidencia exacta | | contabilidad de lo declarado |
+| Impulso simpático | no | tendencia | | sin equivalente |
+| Carga de colapso | no | tendencia | momento exacto de la transición | |
+
+### 12.9 Ensayo en seco de la puerta de migración GI (P2F-11)
+
+`migration.gate_dry_run`: los dos casos fallan la puerta en sus 12 parámetros requeridos. Nada se migra, y ningún
+candidato se convierte en mapeo.
+
+| Categoría | Parámetros |
+|---|---|
+| A. Mapeable desde la verdad del caso | sólo las anclas de llegada (PAS, PAD, FC, SpO2, FR, TLC, lactato, Hb, glucosa, FiO2, ritmo, conciencia); el K es un valor por defecto del banco |
+| B. Requiere un valor por defecto de familia aprobado | betabloqueo, reserva de bomba, los cuatro parámetros de la fuente hemorrágica |
+| C. Requiere decisión docente | frecuencia intrínseca, D de llegada, lactato aclarable, razón de entrega de llegada, demanda basal, posición de precarga |
+| D. No requerido para GI | posición euvolémica |
+
+Bloquean la migración los 12 parámetros requeridos, todos `default_unmapped` en la línea base en sombra.
+
+### 12.10 Seguridad del golden canónico (P2F-12)
+
+- El golden canónico cambió sólo en etiquetas (los parámetros nuevos y su procedencia, y la lista de bloqueos de la
+  puerta). Ninguna trayectoria cambió.
+- La clasificación sigue en 220 MATCH, 140 APPROVED_DIRECTION_MAGNITUDE_TBD y 0 UNRESOLVED.
+- El golden directo y el de Contracts v2 son IDÉNTICOS.
+- Los barridos corren sobre copias. Una prueba comprueba que no cambian el perfil por defecto, las anclas canónicas
+  ni el archivo del golden.
+
+### 12.11 Limitaciones y decisiones pendientes
+
+- **Restricciones docentes para estrechar las bandas.** Las reglas aprobadas son estructurales y casi no
+  discriminan. Harían falta restricciones como:
+  - tiempo y cuantía del aclaramiento de lactato tras el manejo definitivo;
+  - FC esperada al reanimar;
+  - descenso de la PAS sin tratamiento en una hora;
+  - permanencia antes del paro;
+  - techo de PAS con volumen agresivo.
+- **PL2 en pacientes dependientes de precarga.** Hay que decidir si la regla vale ahí (§12.7).
+- **Valores de llegada GI** (decisión docente):
+  - frecuencia intrínseca;
+  - impulso simpático;
+  - D de llegada;
+  - lactato aclarable;
+  - razón de entrega;
+  - posición de precarga;
+  - demanda basal.
+- **Valores por defecto de familia por aprobar:**
+  - betabloqueo con medicación sin betabloqueador;
+  - reserva normal sin hallazgos cardíacos;
+  - los cuatro parámetros de la fuente hemorrágica.
+- **Normalización.** Umbral de colapso, demanda y entrega siguen relativos a la llegada (§11.9).
+- **SpO2 en una corrida.** Sólo responde a la FiO2.
+
+### 12.12 Revisión adversarial de P2F
+
+Pendiente al escribir esta sección; se completa con el resultado.
+
+### 12.13 Gancho en tiempo de ejecución
+
+No hay ninguno. Ningún módulo de la aplicación importa `clinical_core`, incluidos `gi_reference`, `calibration` y
+`a9`: `test_shadow_core_isolation.py` lo comprueba.
