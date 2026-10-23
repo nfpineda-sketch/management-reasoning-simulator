@@ -1060,6 +1060,8 @@ Sondas con umbral sintético 0,4 y límite 10:
 - **El golden informa la puerta por corrida.** Las 20 corridas GI están bloqueadas en los 10 parámetros: el GI es una
   línea base en sombra, no una migración.
 - No se tocó el banco de casos. El mapeo de la próxima familia es otro paquete.
+- **Sustituido en P2H-0 (§14).** La puerta ya no confía en la etiqueta: `explicit_case` exige que un mapeo registrado
+  confirme el valor desde la verdad del caso, y `APPROVED_FAMILY_DEFAULTS` pasó a `clinical_core/migration_authority.py`.
 
 ### 11.7 Golden antes y después (P2E-7)
 
@@ -1749,3 +1751,152 @@ corrigieron:
 | N7 | baja | §13.1 decía que el único cambio del arnés era la clave de la caché; el tiempo de la corrida no estaba al día | texto y tiempo actualizados |
 | N8 | baja | `pack_sources()` leía cualquier `.py` del árbol, también ocultos o no regulares | sólo archivos regulares y no ocultos, en el digest y en la prueba estática |
 | N9 | baja | la tabla de proporciones del lactato salía en orden alfabético | orden fijo |
+
+## 14. P2H-0 · Integridad de la procedencia en la puerta de migración (2026-10-23)
+
+- **Base:** `a4f33f2` (P2G aceptado y cerrado).
+- **Naturaleza:** corrección de arquitectura acotada antes de las decisiones numéricas. No cambia la fisiología, las
+  bandas, las reglas, los escenarios ni los adaptadores; no aprueba valores; el GI no migra; no hay integración en
+  tiempo de ejecución.
+
+### 14.1 El defecto (FD-49)
+
+La puerta confiaba en la etiqueta de fuente declarada. Una sonda sobre `a4f33f2` (anclas candidatas de 57m con todo
+reetiquetado como `explicit_case`, también los 4 parámetros de la fuente hemorrágica) hacía pasar
+`check_migration_gate` completa. Era un defecto de frontera de confianza: el objeto candidato se autorizaba a sí
+mismo.
+
+### 14.2 El modelo nuevo: valor, reclamación y autoridad separados
+
+| Capa | Dónde vive | Confianza |
+|---|---|---|
+| Valor del parámetro | `Anchors` (parámetros de caso) o `family_parameters` | lo entrega el candidato |
+| Reclamación de procedencia | `Anchors.declared` y, opcional, `migration.ProvenanceClaim` (caso, familia, mapeo y versión, ruta fuente, aprobación y versión) | ninguna: sólo referencias |
+| Autoridad | `clinical_core/migration_authority.py` | la única: verdad del caso y registros de confianza |
+
+- **`AuthoritySession.authorize(parameter, value)`** no recibe la reclamación. Recalcula la autorización desde:
+  - **A. verdad del caso + mapeo registrado** (`TRUSTED_CASE_MAPPINGS`). Cada mapeo fija:
+    - id y versión;
+    - familia y casos a los que aplica;
+    - parámetro destino;
+    - campos fuente del banco (rutas con punto);
+    - precondición de completitud y regla determinista, como código del registro, nunca del candidato;
+    - descripción de los requisitos.
+
+    La autoridad lee el registro del caso en `clinical_cases.py` ella misma, congelado, comprueba la precondición,
+    recalcula el valor y lo compara con el entregado.
+  - **B. registro de valores por defecto aprobados** (`APPROVED_FAMILY_DEFAULTS`): familia, parámetro, valor o rango
+    inclusivo, id y versión de la aprobación, y estado; sólo «approved» autoriza.
+- **Verificación del caso, antes de A o B:**
+  - las anclas son exactamente `Anchors` y el id es un `str` exacto de un caso del repositorio;
+  - su familia en el banco es la de la puerta;
+  - la llegada observada, en forma canónica de tipos exactos (números `int`/`float`, `RhythmState` y su código
+    exactos), es la que el camino heredado congelado construye para ese caso. La llegada de referencia se guarda en
+    caché por id y digest del registro del banco, así que una verdad del caso cambiada nunca se sirve vieja;
+  - desde ahí sólo se usa el id del banco, nunca el objeto del candidato.
+- **Lo único que la autoridad toma del candidato son valores primitivos exactos.** Un valor cuenta sólo si es un
+  `int` o `float` exacto y finito: una subclase podría informar un número y llevar otro (`__float__`, `__eq__`).
+- **Unanimidad de las fuentes de confianza (regla de cierre por defecto):** cada fuente aplicable debe estar de
+  acuerdo con el valor. Un mapeo o un valor aprobado que dice otra cosa, o un mapeo roto (campo inexistente, regla o
+  precondición que fallan, regla sin número exacto), bloquea. Un mapeo cuya precondición el caso no cumple no aplica.
+  La precedencia entre la verdad del caso y un valor de familia queda para decisión metodológica; mientras tanto,
+  cualquier discrepancia bloquea.
+- **Un parámetro sólo de diagnóstico** (`reference_preload_fraction`) no se exige; si se declara, se verifica como
+  los demás.
+- **La puerta** (`migration_gate`) autoriza un parámetro sólo si la autoridad lo confirma y la reclamación coincide:
+  - la fuente reclamada exige el tipo de confirmación correspondiente (`explicit_case` → mapeo; `approved_family_default`
+    → registro);
+  - una referencia dada (familia, caso, mapeo, versión, ruta, aprobación) debe coincidir;
+  - una referencia del otro tipo invalida la reclamación.
+
+  La reclamación sólo restringe; `default_unmapped`, `synthetic_probe` y CANDIDATE nunca autorizan.
+- **Registros:** los dos están vacíos. Son tuplas de registros `dataclass(frozen=True)`; las reclamaciones también son
+  inmutables y tipadas.
+- **Dónde vive la autoridad de migración:** fuera del objeto parámetro/procedencia del candidato, en la verdad del caso
+  verificable de forma independiente o en los registros de aprobación de confianza.
+
+### 14.3 Sondas de suplantación (`test_clinical_core_migration_gate.py`)
+
+Todas fallan cerradas:
+1. candidato reetiquetado como `explicit_case` sin evidencia del caso;
+2. candidato reetiquetado como `approved_family_default` sin entrada en el registro (también con entradas de otra
+   familia o de otro valor);
+3. caso equivocado: anclas de 72f con id de 57m, un id inexistente, o un caso reclamado distinto;
+4. familia equivocada: familia reclamada distinta, caso de otra familia, o un mapeo de otra familia;
+5. campo fuente inexistente en el caso;
+6. mapeo registrado cuyo valor fuente cambió en el banco;
+7. valor por defecto distinto del registrado (y también un estado no aprobado o un rango que no lo contiene);
+8. sonda sintética presentada como procedencia de un caso real (valores de sonda reetiquetados, o la llegada
+   sintética `band_probe`).
+
+Además:
+- **Regresión de la propiedad exigida:** con la verdad del caso y los registros fijos, 144 combinaciones aleatorias
+  con semilla fija de fuente, ruta, mapeo, aprobación, familia, caso reclamado e id de las anclas nunca hacen pasar a
+  un candidato no autorizado.
+- Cualquier fila migrable tiene una confirmación independiente de la autoridad.
+- Sólo cambiar una fuente de confianza (registrar un mapeo que confirma, o cambiar la verdad del caso) cambia la
+  autorización.
+- **Las pruebas no son vacías:** con una autoridad mutante que lo confirma todo fallan 20 pruebas, entre ellas las 8
+  sondas; cada uno de los 12 mutantes del revisor, y uno equivalente que afloja `exact_number`, hace fallar al menos
+  una. Sobre los registros de producción vacíos, 1600 intentos de suplantación (etiquetas, reclamaciones, ids y
+  valores adversarios) dan 0 filas migrables.
+  La regresión declara los 8 parámetros de caso y alterna reclamaciones sin referencias, para que una puerta que
+  confiara en la etiqueta no pueda pasarla; la prueba de confirmación independiente exige filas migrables.
+- **Pruebas adaptadas, y por qué:** las de P2E-6 que daban por bueno un caso sintético sólo por sus etiquetas ahora
+  instalan registros de confianza de prueba (mapeos y aprobaciones sintéticos) sobre un caso real. Lo que protegían
+  (cierre por defecto con un `synthetic_probe` o un parámetro de familia ausente, valor aprobado distinto) sigue
+  protegido; lo que cambió a propósito es que las etiquetas solas ya no pasan.
+
+### 14.4 Revisión adversarial de suplantación (sólo lectura)
+
+Con los registros de producción vacíos, ninguna suplantación tuvo éxito: 56 intentos sobre los dos casos GI, entre
+ellos subclases de `str` y `float` que mienten, reclamaciones que cambian entre lecturas, `declared` y `case_id`
+inyectados, NaN, `10**400` y booleanos. Al poblar registros en memoria, la revisión halló once puntos latentes;
+todos se confirmaron con sonda y se corrigieron, cada uno con su prueba:
+
+| # | Gravedad | Hallazgo | Corrección |
+|---|---|---|---|
+| F1 | media | el valor autorizado podía no ser el que lleva el candidato (`__float__` de una subclase) | sólo `int`/`float` exactos |
+| F2 | media | `verify_case` se engañaba con subclases que redefinen la igualdad | forma canónica de tipos exactos |
+| F3 | media | un `case_id` subclase de `str` podía cruzar casos y la caché | `str` exacto; después, sólo el id del banco |
+| F4 | media | mutantes que sobrevivían, una prueba vacía y una regresión de poca potencia | pruebas de precondición, `cases`, reglas rotas; regresión y prueba de confirmación reforzadas; los 12 mutantes del revisor fallan |
+| F5 | media | el candidato elegía qué fuente contaba; fuentes que discrepaban autorizaban | unanimidad de las fuentes aplicables (precedencia: decisión pendiente) |
+| F6 | baja | un parámetro sólo de diagnóstico declarado con valor de sonda no bloqueaba | se verifica si se declara |
+| F7 | baja | la llegada de referencia en caché podía quedar vieja | clave con el digest del registro del banco |
+| F8 | baja | `ApprovedDefault` no validaba tipos | números exactos y finitos |
+| F9 | baja | etiquetas subclase de `str` confundían el tipo de autoridad | `str` exacto en reclamaciones y etiquetas |
+| F10 | baja | excepciones de reglas y `10**400` no eran `MigrationBlocked` | se capturan y cierran |
+| F11 | baja | la comprobación estática era débil | importa nada de la puerta en ninguna forma; no lee `declared`; `authorize` no nombra reclamaciones |
+
+**Límites que quedan (endurecimiento, no defectos demostrados):**
+- la puerta devuelve un informe, no anclas selladas: quien migre debe usar las anclas verificadas tal como se
+  verificaron;
+- los registros, `REQUIRED_AUTHORITY` y `FAMILY_GATES` son globales del módulo: el digest cubre su código, no su estado
+  en ejecución;
+- los `family_parameters` del informe no están ligados todavía a los literales que usa el módulo hemorrágico;
+- la verificación del caso usa el camino heredado de GI: otra familia falla cerrada hasta adaptarlo.
+
+### 14.5 Semántica del betabloqueo para la autoría (no decidida)
+
+- **A.** Una fuente de medicación o antecedentes explícitamente completa que muestre que no hay betabloqueador podría
+  mapearse a `beta_blockade` = 0 con un mapeo registrado cuya precondición sea esa completitud.
+- **B.** Un betabloqueador simplemente no mencionado, o información de medicación incompleta, no es evidencia de
+  `beta_blockade` = 0.
+- **En el repositorio:** 57m declara ibuprofeno (`clinical_cases.py:889`) y 72f naproxeno, sin protector gástrico
+  (`:918`). La fuente es lo que relata el paciente, y ningún campo dice que la lista esté completa. P2H-0 no decide
+  si los casos cumplen A: queda para la docencia y la autoría (FD-20). No hay mapeo registrado, y `beta_blockade = 0`
+  no se aprueba globalmente.
+- La categoría del ensayo en seco de P2F-11 para `beta_blockade` («requiere valor por defecto de familia aprobado») no
+  cambió; su texto ahora dice que la ausencia de mención no es evidencia de 0. Si esa categoría debe pasar a
+  «requiere decisión docente» es parte de la misma pregunta.
+
+### 14.6 Digest y paquete
+
+- **Nuevo componente `migration_sources`** del congelamiento: `clinical_core/migration.py` y
+  `clinical_core/migration_authority.py` completos (las reglas de reclamación y los dos registros).
+- `harness_sources` cambia porque `calibration.py` declara ese componente.
+- `rules`, `bands`, `scenarios`, `input_path_sources`, `input_adapter_sources` y `scenario_inputs` no cambian: la
+  aceptación de P2F es la misma y no se repitió su barrido.
+- **El paquete de P2G se regeneró:** sus tablas numéricas son idénticas a las de `a4f33f2`; sólo cambian los digests.
+- **Documento docente:** §14 describe la regla, FD-49 sale de las decisiones abiertas (resuelta aquí) y FD-20 recoge la
+  semántica A/B.
