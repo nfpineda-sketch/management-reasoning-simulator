@@ -9,7 +9,7 @@ from dataclasses import replace
 
 import pytest
 
-from clinical_core import calibration, decision_pack, gi_reference, migration
+from clinical_core import calibration, decision_pack, gi_reference, migration, migration_authority
 from clinical_core.derived import DEFAULT_PROFILE, CoreProfile
 from clinical_core.migration import MigrationBlocked, check_migration_gate, gate_dry_run, migration_gate
 from clinical_core.shadow import GOLDEN
@@ -166,7 +166,7 @@ def test_no_core_module_but_the_gate_and_its_vocabulary_names_a_migratable_sourc
 
 def test_nothing_is_faculty_approved_and_no_family_default_is_recorded():
     assert sum(entry.status == calibration.FACULTY_APPROVED for entry in calibration.REGISTRY.values()) == 0
-    assert migration.APPROVED_FAMILY_DEFAULTS == {}
+    assert migration_authority.APPROVED_FAMILY_DEFAULTS == () and migration_authority.TRUSTED_CASE_MAPPINGS == ()
 
 
 @pytest.mark.parametrize("case", gi_reference.GI_CASES)

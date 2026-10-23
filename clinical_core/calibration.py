@@ -526,6 +526,9 @@ INPUT_ADAPTER_SOURCES = ("clinical_core/legacy_adapter.py", "clinical_core/inter
 GI_REFERENCE_SOURCE = "clinical_core/gi_reference.py"
 #: The harness itself, whole: every rule, check binding, design default and probe it runs.
 HARNESS_SOURCES = ("clinical_core/calibration.py", "clinical_core/bands.py")
+#: The migration gate and its trusted authority, whole: the claim rules, the registered case
+#: mappings and the approved-family-default registry (P2H-0).
+MIGRATION_SOURCES = ("clinical_core/migration.py", "clinical_core/migration_authority.py")
 REPOSITORY = Path(__file__).resolve().parents[1]
 
 
@@ -561,6 +564,7 @@ def digest_components() -> dict[str, str]:
       or the GI acceptance calls;
     - harness_sources: the harness files whole (HARNESS_SOURCES), so a check's binding, a design
       default or a probe contributor cannot change without the digest;
+    - migration_sources: the migration gate and its trusted registries whole (MIGRATION_SOURCES);
     - bands: the registry's band points, the GI case bands, the probe arrival and the levels;
     - gi_reference: the GI reference mapping (inventory, case bands, candidate anchors);
     - scenarios: the GI scenario definitions;
@@ -598,6 +602,7 @@ def digest_components() -> dict[str, str]:
         "rules": sha(text(rules) + "".join(inspect.getsource(function) for function in functions)),
         "bands": sha(text(bands)),
         "harness_sources": sha(text({path: sha(_source_bytes(path)) for path in HARNESS_SOURCES})),
+        "migration_sources": sha(text({path: sha(_source_bytes(path)) for path in MIGRATION_SOURCES})),
         "gi_reference": sha(_source_bytes(GI_REFERENCE_SOURCE)),
         "scenarios": sha(text(scenarios)),
         "input_path_sources": sha(text({path: sha(_source_bytes(path)) for path in INPUT_PATH_SOURCES})),

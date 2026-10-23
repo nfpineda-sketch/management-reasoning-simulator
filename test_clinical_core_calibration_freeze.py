@@ -3,7 +3,8 @@
 The digest is split by component so a change says where it is. These tests prove that the
 family-engine path is listed exactly (traced in a fresh interpreter) and that a change to a
 scenario, to a file of the path, to the order adapter, to the harness itself (a check binding, a
-design default, a band) or to a materialized input changes the digest.
+design default, a band), to the migration gate or its trusted registries, or to a materialized
+input changes the digest.
 """
 import json
 import os
@@ -62,7 +63,8 @@ def test_the_input_path_manifest_is_exactly_what_runs(traced):
     ("family_engine.py", "input_path_sources"), ("family_parser.py", "input_path_sources"),
     ("clinical_cases.py", "input_path_sources"), ("clinical_core/legacy_adapter.py", "input_adapter_sources"),
     ("clinical_core/gi_reference.py", "gi_reference"), ("clinical_core/calibration.py", "harness_sources"),
-    ("clinical_core/bands.py", "harness_sources")])
+    ("clinical_core/bands.py", "harness_sources"), ("clinical_core/migration.py", "migration_sources"),
+    ("clinical_core/migration_authority.py", "migration_sources")])
 def test_a_changed_input_source_changes_the_digest(monkeypatch, path, component):
     before = calibration.digest_components()
     original = calibration._source_bytes

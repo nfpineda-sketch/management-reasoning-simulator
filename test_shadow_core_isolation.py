@@ -31,7 +31,9 @@ LEGACY_READERS = {"legacy_adapter.py": {"family_engine", "family_parser", "cogni
                   "contracts_legacy.py": {"contracts_v2", "pilot_acceptance"},
                   "contracts_shadow.py": {"family_engine"},
                   # P2F-2: reads the GI cases' repository truth, read-only and offline.
-                  "gi_reference.py": {"clinical_cases"}}
+                  "gi_reference.py": {"clinical_cases"},
+                  # P2H-0: the migration authority reads repository case truth itself, read-only.
+                  "migration_authority.py": {"clinical_cases"}}
 #: The live runtime: the page, the engine, the reader, the submission guard and the order path.
 RUNTIME_ROOTS = ("app", "family_engine", "family_parser", "submission_guard", "order_pipeline")
 STDLIB = {"__future__", "argparse", "copy", "dataclasses", "enum", "functools", "hashlib", "inspect", "itertools",
