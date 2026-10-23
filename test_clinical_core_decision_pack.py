@@ -89,8 +89,17 @@ def test_every_effect_row_says_whether_the_frozen_rules_admit_it(quick_pack):
     rows = quick_pack["bp"]["gi_bleed_57m"]["effects"]["sbp"]
     assert {row["status"] for row in rows if row["factor"].startswith("bleeding source")} == {
         decision_pack.SENSITIVITY}
+    # Whether P2F ran the set: the all-midpoint set and a kinetic point did; a moved profile
+    # parameter, a scaled source or a reserve other than the case's did not.
+    design = {(row["factor"], row["level"]): row["in_p2f_design"] for row in rows}
+    assert design[("bleeding source (x rate)", "x1")] and not design[("bleeding source (x rate)", "x2")]
+    assert design[("preload_curve_scale_ml", "833.333")] and not design[("preload_curve_scale_ml", "600")]
+    assert {design[("pump_reserve", level)] for level in ("0.7", "1")} == {False, True}
     assert {row["status"] for row in rows if row["factor"] == "preload_fraction" and row["level"] == "lower"} == {
         decision_pack.REJECTED}
+    rows = quick_pack["lactate"]["gi_bleed_57m"]["effects"]["untreated_120"]
+    design = {(row["factor"], row["level"]): row["in_p2f_design"] for row in rows}
+    assert design[("lactate_clearance_tau_min", "45")] and not design[("arrival_oxygen_debt", "lower")]
 
 
 def test_the_collapse_support_is_synthetic_and_canonical_gi_keeps_collapse_off(quick_pack):
@@ -137,17 +146,22 @@ def test_the_pack_digest_covers_the_model_and_not_the_renderer(monkeypatch, path
 
 # P2G-14: nothing is approved, nothing migrates ---------------------------------------------------
 
-def test_no_core_module_but_the_gate_and_its_vocabulary_writes_a_migratable_source():
+def test_no_core_module_but_the_gate_and_its_vocabulary_names_a_migratable_source():
     """The gate trusts the declared source; inside the core only the gate's own vocabulary names one.
 
-    Nothing in the shadow core can label a CANDIDATE value as case truth or as an approved
-    default. A caller outside the core still could: that limit is decision FD-41.
+    No module outside state.py, derived.py and migration.py contains a migratable label, and none
+    outside state.py and migration.py reads the label sets. This checks the source text, not every
+    way a value could be built; a caller outside the core could still relabel a CANDIDATE as case
+    truth: that limit is decision FD-49.
     """
     from pathlib import Path
     package = Path(decision_pack.__file__).resolve().parent
-    writers = {path.relative_to(package).as_posix() for path in package.rglob("*.py")
-               if any(label in path.read_text(encoding="utf-8") for label in migration.MIGRATABLE_SOURCES)}
+    sources = {path.relative_to(package).as_posix(): path.read_text(encoding="utf-8")
+               for path in package.rglob("*.py") if path.is_file() and not path.name.startswith(".")}
+    writers = {name for name, text in sources.items() if any(label in text for label in migration.MIGRATABLE_SOURCES)}
     assert writers == {"state.py", "derived.py", "migration.py"}
+    readers = {name for name, text in sources.items() if "DECLARED_SOURCES" in text or "MIGRATABLE_SOURCES" in text}
+    assert readers == {"state.py", "migration.py"}
 
 
 def test_nothing_is_faculty_approved_and_no_family_default_is_recorded():

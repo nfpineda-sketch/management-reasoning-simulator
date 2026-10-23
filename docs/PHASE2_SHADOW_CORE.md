@@ -1661,8 +1661,9 @@ Una prueba registra cada componente, así que un cambio dice dónde está.
   Además, un escenario cambiado nunca se sirve de una caché vieja (la clave es su contenido), y el digest se
   reproduce en un intérprete limpio.
 - **Digest nuevo:** `a7436fe8…37d39`. El primer cierre de P2G registró `0db3403d…d65f9`, sin `harness_sources`.
-- **Ninguna regla, prueba, banda ni función de aceptación cambió.** El único cambio en el código del arnés es la
-  clave de la caché de las corridas heredadas, ahora el contenido del escenario en vez de su nombre. Para los
+- **Ninguna regla, prueba, banda ni función de aceptación cambió.** En el código del arnés cambian la clave de la
+  caché de las corridas heredadas (ahora el contenido del escenario en vez de su nombre) y el componente
+  `harness_sources`, que sólo agrega cobertura al digest. Para los
   escenarios sin cambios da las mismas entradas. Por eso no se repitió el barrido de P2F: sus resultados (§12.7)
   siguen valiendo, y la región admisible que usa P2G es la suya.
 
@@ -1683,7 +1684,8 @@ Una prueba registra cada componente, así que un cambio dice dónde está.
   `clinical_core/**/*.py` (`pack_sources()`): el modelo, el arnés y el propio generador. Sólo excluye el renderizador,
   que no cambia ningún número. Una prueba cambia `derived.py`, `integration.py` y `decision_pack.py` y exige un digest
   distinto; cambiar el renderizador no lo cambia.
-- **Corrida completa:** 4 min 52 s. Ninguna llamada de IA de la app.
+- **Corrida completa:** 4 min 52 s en el primer cierre; 5 min 24 s con las tablas y marcas agregadas tras la segunda revisión.
+  Ninguna llamada de IA de la app.
 
 ### 13.3 Hallazgos del modelo que la docencia necesita
 
@@ -1692,7 +1694,8 @@ Son evidencia del modelo, no recomendaciones. El detalle está en el paquete.
   más rápido de lo que el déficit produce lactato nuevo. Sube en el 25 % (57m) y el 34 % (72f) de la región, más de
   1 mmol/L en el 10 % y el 12 %.
 - **FC:** la frecuencia intrínseca no cambia la trayectoria mientras dura el estímulo; sólo fija el piso de la
-  recuperación. Por eso la velocidad de resolución se lee como «mitad de la caída», que no depende de ella.
+  recuperación. Por eso la velocidad de resolución se lee como «mitad de la caída», que no depende de ella mientras
+  el impulso no llegue a cero (con intrínseca 100 en 72f, sí: 21–33 min frente a 29–41).
 - **PA sin tratamiento:** la empuja sólo la fuente de 2,5 mL/min. Bajo la rodilla de presión cae rápido, y con el
   colapso apagado la corrida se detiene (57m, minuto 144).
 - **Volumen agresivo:** no hay techo de presión sobre la llegada. La escala de la curva decide cuándo el líquido deja
@@ -1730,3 +1733,19 @@ gravedad alta; cada hallazgo se confirmó con una sonda antes de corregirlo.
   suman; el JSON coincide con un recálculo; la puerta falla con 12 bloqueos por caso; FACULTY_APPROVED sigue en 0.
 - **Sin barrido de P2F nuevo:** ninguna regla, prueba, banda ni función de aceptación cambió. `harness_sources` sólo
   agrega cobertura al digest.
+
+**Verificación independiente de las correcciones** (sólo lectura, después de la tabla anterior). Confirmó 1, 2, 5, 6,
+7 y 10; dejó 3, 4, 9 y 11 parciales y 8 sin corregir, y halló nueve puntos nuevos. Todos se confirmaron con sonda y se
+corrigieron:
+
+| # | Gravedad | Hallazgo | Corrección |
+|---|---|---|---|
+| N1 | media | la frase del efecto de los parámetros de FR seguía mal (`rr_per_lactate` llega a 5,2 en 72f) | rangos por parámetro leídos de las filas de efecto |
+| N2 | baja | la explicación de los minutos que agrega la simulación del colapso era errónea | un minuto por la caída del gasto y uno más cuando la cuenta es entera (suma en coma flotante) |
+| N3 | baja | «las tablas lo dicen» era falso para las filas de efecto, casi todas fuera del diseño de P2F | `in_p2f_design` generado en cada fila de efecto y mostrado en el estado; FD-14 separa dentro y fuera del diseño |
+| N4 | baja | FD-06 y §13.3 generalizaban la «mitad de la caída»; «pesa menos que las ganancias» no tenía cifra | excepción de intrínseca 100 en 72f; comparación quitada |
+| N5 | baja | la prueba estática citaba FD-41 y afirmaba más de lo que comprueba | FD-49, texto acotado y una segunda comprobación: sólo `state.py` y `migration.py` leen los conjuntos de etiquetas |
+| N6 | media | el límite de la puerta era más amplio de lo descrito: reetiquetar todo como `explicit_case`, también los parámetros de familia, pasa la puerta completa | §14 y FD-49 lo dicen; la puerta no cambia (decisión de arquitectura) |
+| N7 | baja | §13.1 decía que el único cambio del arnés era la clave de la caché; el tiempo de la corrida no estaba al día | texto y tiempo actualizados |
+| N8 | baja | `pack_sources()` leía cualquier `.py` del árbol, también ocultos o no regulares | sólo archivos regulares y no ocultos, en el digest y en la prueba estática |
+| N9 | baja | la tabla de proporciones del lactato salía en orden alfabético | orden fijo |

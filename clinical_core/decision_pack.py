@@ -194,8 +194,27 @@ def _candidate(key: str) -> GICandidate:
     return next(candidate for candidate in calibration.gi_candidates() if candidate.key() == key)
 
 
+_DESIGN: set = set()
+
+
+def in_p2f_design(case: str, candidate: GICandidate, options: dict) -> bool:
+    """Whether P2F's sweep ran this exact set: a design point, the case's own source and reserve."""
+    if not _DESIGN:
+        _DESIGN.update(item.key() for item in calibration.gi_candidates())
+    # A profile entry at the canonical default is the design's own value, not a moved parameter.
+    profile = {name: value for name, value in candidate.profile.items()
+               if name in KINETICS or value != getattr(DEFAULT_PROFILE, name)}
+    if replace(candidate, profile=profile).key() not in _DESIGN or options.get("source_scale", 1.0) != 1.0:
+        return False
+    base = gi_reference.candidate_anchors(case, calibration.case_values(case, candidate))
+    return all(getattr(base, name) == value for name, value in options.get("case_extra", {}).items())
+
+
 def _effects(case, scenario, factors, field, times) -> list[dict]:
-    """One factor at a time around MIDDLE: (factor, level, label, status, read-outs)."""
+    """One factor at a time around MIDDLE: (factor, level, label, status, read-outs).
+
+    Most rows are not P2F design points (the design varies only the three kinetics and fixed
+    combinations of the case-band levels): ``in_p2f_design`` says which are."""
     rows = []
     for factor, variants in factors.items():
         for label, candidate, options in variants:
@@ -204,6 +223,7 @@ def _effects(case, scenario, factors, field, times) -> list[dict]:
             run_ = trajectory(case, candidate, scenario, times=times, **options)
             rows.append({"factor": factor, "level": label,
                          "status": status or assess(candidate)["status"],
+                         "in_p2f_design": in_p2f_design(case, candidate, options),
                          "stopped_at": run_["stopped_at"],
                          "values": {minute: run_["points"].get(minute, {}).get(field) for minute in times}})
     return rows
@@ -411,9 +431,9 @@ def _minutes_to_limit(threshold: float, gain: float, limit: float, output: float
     """Whole minutes of burden accrual to the limit at a constant output, in exact arithmetic.
 
     burden += gain x (threshold - output) / threshold per minute, so the limit needs
-    limit x threshold / (gain x (threshold - output)) minutes, rounded up. The simulation adds the
-    minute the output takes to fall and the minute the transition is read, so a simulated arrest
-    comes later than this count.
+    limit x threshold / (gain x (threshold - output)) minutes, rounded up. A simulated arrest comes
+    one minute later (the minute the output takes to fall), and one more when this quotient is a
+    whole number, because the model's floating-point sum stops just under the limit.
     """
     t, g, l, o = (_thousandths(value) for value in (threshold, gain, limit, output))
     if o >= t:
@@ -698,7 +718,7 @@ def pack_sources() -> dict[str, str]:
     """Every shadow-core source the tables can depend on (the model, the harness and this module), by hash."""
     package = calibration.REPOSITORY / "clinical_core"
     paths = sorted(path.relative_to(calibration.REPOSITORY).as_posix() for path in package.rglob("*.py")
-                   if "__pycache__" not in path.parts)
+                   if "__pycache__" not in path.parts and path.is_file() and not path.name.startswith("."))
     return {path: hashlib.sha256(calibration._source_bytes(path)).hexdigest()
             for path in paths if path not in PACK_DIGEST_EXCLUDED}
 

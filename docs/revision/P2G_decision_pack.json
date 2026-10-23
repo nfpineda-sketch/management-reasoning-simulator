@@ -6,6 +6,7 @@
     "map": [
      {
       "factor": "bleeding source (x rate)",
+      "in_p2f_design": false,
       "level": "x0.5",
       "status": "SENSITIVITY_PROBE",
       "stopped_at": null,
@@ -19,6 +20,7 @@
      },
      {
       "factor": "bleeding source (x rate)",
+      "in_p2f_design": true,
       "level": "x1",
       "status": "SENSITIVITY_PROBE",
       "stopped_at": null,
@@ -32,6 +34,7 @@
      },
      {
       "factor": "bleeding source (x rate)",
+      "in_p2f_design": false,
       "level": "x2",
       "status": "SENSITIVITY_PROBE",
       "stopped_at": 72,
@@ -45,6 +48,7 @@
      },
      {
       "factor": "bleeding source (x rate)",
+      "in_p2f_design": false,
       "level": "x4",
       "status": "SENSITIVITY_PROBE",
       "stopped_at": 36,
@@ -58,6 +62,7 @@
      },
      {
       "factor": "preload_fraction",
+      "in_p2f_design": true,
       "level": "lower",
       "status": "REJECTED_BY_FROZEN_RULES",
       "stopped_at": 75,
@@ -71,6 +76,7 @@
      },
      {
       "factor": "preload_fraction",
+      "in_p2f_design": true,
       "level": "midpoint",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -84,6 +90,7 @@
      },
      {
       "factor": "preload_fraction",
+      "in_p2f_design": true,
       "level": "upper",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -97,6 +104,7 @@
      },
      {
       "factor": "preload_curve_scale_ml",
+      "in_p2f_design": false,
       "level": "600",
       "status": "ADMISSIBLE",
       "stopped_at": 104,
@@ -110,6 +118,7 @@
      },
      {
       "factor": "preload_curve_scale_ml",
+      "in_p2f_design": true,
       "level": "833.333",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -123,6 +132,7 @@
      },
      {
       "factor": "preload_curve_scale_ml",
+      "in_p2f_design": false,
       "level": "1500",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -136,6 +146,7 @@
      },
      {
       "factor": "pump_preload_coupling",
+      "in_p2f_design": false,
       "level": "0",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -149,6 +160,7 @@
      },
      {
       "factor": "pump_preload_coupling",
+      "in_p2f_design": false,
       "level": "0.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -162,6 +174,7 @@
      },
      {
       "factor": "pump_preload_coupling",
+      "in_p2f_design": true,
       "level": "1",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -175,6 +188,7 @@
      },
      {
       "factor": "afterload_sensitivity",
+      "in_p2f_design": false,
       "level": "0.1",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -188,6 +202,7 @@
      },
      {
       "factor": "afterload_sensitivity",
+      "in_p2f_design": true,
       "level": "0.3",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -201,6 +216,7 @@
      },
      {
       "factor": "afterload_sensitivity",
+      "in_p2f_design": false,
       "level": "0.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -214,6 +230,7 @@
      },
      {
       "factor": "pump_reserve",
+      "in_p2f_design": false,
       "level": "0.7",
       "status": "NOT_ASSESSED",
       "stopped_at": null,
@@ -227,6 +244,7 @@
      },
      {
       "factor": "pump_reserve",
+      "in_p2f_design": true,
       "level": "1",
       "status": "NOT_ASSESSED",
       "stopped_at": null,
@@ -240,6 +258,7 @@
      },
      {
       "factor": "low_output_pressure_knee",
+      "in_p2f_design": false,
       "level": "0.3",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -253,6 +272,7 @@
      },
      {
       "factor": "low_output_pressure_knee",
+      "in_p2f_design": true,
       "level": "0.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -266,6 +286,7 @@
      },
      {
       "factor": "low_output_pressure_knee",
+      "in_p2f_design": false,
       "level": "0.6",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -279,6 +300,7 @@
      },
      {
       "factor": "sbp_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "35",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -292,6 +314,7 @@
      },
      {
       "factor": "sbp_per_pressure_deficit",
+      "in_p2f_design": true,
       "level": "45",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -305,6 +328,7 @@
      },
      {
       "factor": "sbp_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "55",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -318,6 +342,7 @@
      },
      {
       "factor": "dbp_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "15",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -331,6 +356,7 @@
      },
      {
       "factor": "dbp_per_pressure_deficit",
+      "in_p2f_design": true,
       "level": "25",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -344,6 +370,7 @@
      },
      {
       "factor": "dbp_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "30",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -359,6 +386,7 @@
     "sbp": [
      {
       "factor": "bleeding source (x rate)",
+      "in_p2f_design": false,
       "level": "x0.5",
       "status": "SENSITIVITY_PROBE",
       "stopped_at": null,
@@ -372,6 +400,7 @@
      },
      {
       "factor": "bleeding source (x rate)",
+      "in_p2f_design": true,
       "level": "x1",
       "status": "SENSITIVITY_PROBE",
       "stopped_at": null,
@@ -385,6 +414,7 @@
      },
      {
       "factor": "bleeding source (x rate)",
+      "in_p2f_design": false,
       "level": "x2",
       "status": "SENSITIVITY_PROBE",
       "stopped_at": 72,
@@ -398,6 +428,7 @@
      },
      {
       "factor": "bleeding source (x rate)",
+      "in_p2f_design": false,
       "level": "x4",
       "status": "SENSITIVITY_PROBE",
       "stopped_at": 36,
@@ -411,6 +442,7 @@
      },
      {
       "factor": "preload_fraction",
+      "in_p2f_design": true,
       "level": "lower",
       "status": "REJECTED_BY_FROZEN_RULES",
       "stopped_at": 75,
@@ -424,6 +456,7 @@
      },
      {
       "factor": "preload_fraction",
+      "in_p2f_design": true,
       "level": "midpoint",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -437,6 +470,7 @@
      },
      {
       "factor": "preload_fraction",
+      "in_p2f_design": true,
       "level": "upper",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -450,6 +484,7 @@
      },
      {
       "factor": "preload_curve_scale_ml",
+      "in_p2f_design": false,
       "level": "600",
       "status": "ADMISSIBLE",
       "stopped_at": 104,
@@ -463,6 +498,7 @@
      },
      {
       "factor": "preload_curve_scale_ml",
+      "in_p2f_design": true,
       "level": "833.333",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -476,6 +512,7 @@
      },
      {
       "factor": "preload_curve_scale_ml",
+      "in_p2f_design": false,
       "level": "1500",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -489,6 +526,7 @@
      },
      {
       "factor": "pump_preload_coupling",
+      "in_p2f_design": false,
       "level": "0",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -502,6 +540,7 @@
      },
      {
       "factor": "pump_preload_coupling",
+      "in_p2f_design": false,
       "level": "0.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -515,6 +554,7 @@
      },
      {
       "factor": "pump_preload_coupling",
+      "in_p2f_design": true,
       "level": "1",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -528,6 +568,7 @@
      },
      {
       "factor": "afterload_sensitivity",
+      "in_p2f_design": false,
       "level": "0.1",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -541,6 +582,7 @@
      },
      {
       "factor": "afterload_sensitivity",
+      "in_p2f_design": true,
       "level": "0.3",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -554,6 +596,7 @@
      },
      {
       "factor": "afterload_sensitivity",
+      "in_p2f_design": false,
       "level": "0.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -567,6 +610,7 @@
      },
      {
       "factor": "pump_reserve",
+      "in_p2f_design": false,
       "level": "0.7",
       "status": "NOT_ASSESSED",
       "stopped_at": null,
@@ -580,6 +624,7 @@
      },
      {
       "factor": "pump_reserve",
+      "in_p2f_design": true,
       "level": "1",
       "status": "NOT_ASSESSED",
       "stopped_at": null,
@@ -593,6 +638,7 @@
      },
      {
       "factor": "low_output_pressure_knee",
+      "in_p2f_design": false,
       "level": "0.3",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -606,6 +652,7 @@
      },
      {
       "factor": "low_output_pressure_knee",
+      "in_p2f_design": true,
       "level": "0.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -619,6 +666,7 @@
      },
      {
       "factor": "low_output_pressure_knee",
+      "in_p2f_design": false,
       "level": "0.6",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -632,6 +680,7 @@
      },
      {
       "factor": "sbp_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "35",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -645,6 +694,7 @@
      },
      {
       "factor": "sbp_per_pressure_deficit",
+      "in_p2f_design": true,
       "level": "45",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -658,6 +708,7 @@
      },
      {
       "factor": "sbp_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "55",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -671,6 +722,7 @@
      },
      {
       "factor": "dbp_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "15",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -684,6 +736,7 @@
      },
      {
       "factor": "dbp_per_pressure_deficit",
+      "in_p2f_design": true,
       "level": "25",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -697,6 +750,7 @@
      },
      {
       "factor": "dbp_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "30",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -812,6 +866,7 @@
     "map": [
      {
       "factor": "bleeding source (x rate)",
+      "in_p2f_design": false,
       "level": "x0.5",
       "status": "SENSITIVITY_PROBE",
       "stopped_at": null,
@@ -825,6 +880,7 @@
      },
      {
       "factor": "bleeding source (x rate)",
+      "in_p2f_design": true,
       "level": "x1",
       "status": "SENSITIVITY_PROBE",
       "stopped_at": null,
@@ -838,6 +894,7 @@
      },
      {
       "factor": "bleeding source (x rate)",
+      "in_p2f_design": false,
       "level": "x2",
       "status": "SENSITIVITY_PROBE",
       "stopped_at": 100,
@@ -851,6 +908,7 @@
      },
      {
       "factor": "bleeding source (x rate)",
+      "in_p2f_design": false,
       "level": "x4",
       "status": "SENSITIVITY_PROBE",
       "stopped_at": 50,
@@ -864,6 +922,7 @@
      },
      {
       "factor": "preload_fraction",
+      "in_p2f_design": true,
       "level": "lower",
       "status": "REJECTED_BY_FROZEN_RULES",
       "stopped_at": 119,
@@ -877,6 +936,7 @@
      },
      {
       "factor": "preload_fraction",
+      "in_p2f_design": true,
       "level": "midpoint",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -890,6 +950,7 @@
      },
      {
       "factor": "preload_fraction",
+      "in_p2f_design": true,
       "level": "upper",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -903,6 +964,7 @@
      },
      {
       "factor": "preload_curve_scale_ml",
+      "in_p2f_design": false,
       "level": "600",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -916,6 +978,7 @@
      },
      {
       "factor": "preload_curve_scale_ml",
+      "in_p2f_design": true,
       "level": "833.333",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -929,6 +992,7 @@
      },
      {
       "factor": "preload_curve_scale_ml",
+      "in_p2f_design": false,
       "level": "1500",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -942,6 +1006,7 @@
      },
      {
       "factor": "pump_preload_coupling",
+      "in_p2f_design": false,
       "level": "0",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -955,6 +1020,7 @@
      },
      {
       "factor": "pump_preload_coupling",
+      "in_p2f_design": false,
       "level": "0.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -968,6 +1034,7 @@
      },
      {
       "factor": "pump_preload_coupling",
+      "in_p2f_design": true,
       "level": "1",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -981,6 +1048,7 @@
      },
      {
       "factor": "afterload_sensitivity",
+      "in_p2f_design": false,
       "level": "0.1",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -994,6 +1062,7 @@
      },
      {
       "factor": "afterload_sensitivity",
+      "in_p2f_design": true,
       "level": "0.3",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1007,6 +1076,7 @@
      },
      {
       "factor": "afterload_sensitivity",
+      "in_p2f_design": false,
       "level": "0.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1020,6 +1090,7 @@
      },
      {
       "factor": "pump_reserve",
+      "in_p2f_design": false,
       "level": "0.7",
       "status": "NOT_ASSESSED",
       "stopped_at": null,
@@ -1033,6 +1104,7 @@
      },
      {
       "factor": "pump_reserve",
+      "in_p2f_design": true,
       "level": "1",
       "status": "NOT_ASSESSED",
       "stopped_at": null,
@@ -1046,6 +1118,7 @@
      },
      {
       "factor": "low_output_pressure_knee",
+      "in_p2f_design": false,
       "level": "0.3",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1059,6 +1132,7 @@
      },
      {
       "factor": "low_output_pressure_knee",
+      "in_p2f_design": true,
       "level": "0.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1072,6 +1146,7 @@
      },
      {
       "factor": "low_output_pressure_knee",
+      "in_p2f_design": false,
       "level": "0.6",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1085,6 +1160,7 @@
      },
      {
       "factor": "sbp_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "35",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1098,6 +1174,7 @@
      },
      {
       "factor": "sbp_per_pressure_deficit",
+      "in_p2f_design": true,
       "level": "45",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1111,6 +1188,7 @@
      },
      {
       "factor": "sbp_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "55",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1124,6 +1202,7 @@
      },
      {
       "factor": "dbp_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "15",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1137,6 +1216,7 @@
      },
      {
       "factor": "dbp_per_pressure_deficit",
+      "in_p2f_design": true,
       "level": "25",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1150,6 +1230,7 @@
      },
      {
       "factor": "dbp_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "30",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1165,6 +1246,7 @@
     "sbp": [
      {
       "factor": "bleeding source (x rate)",
+      "in_p2f_design": false,
       "level": "x0.5",
       "status": "SENSITIVITY_PROBE",
       "stopped_at": null,
@@ -1178,6 +1260,7 @@
      },
      {
       "factor": "bleeding source (x rate)",
+      "in_p2f_design": true,
       "level": "x1",
       "status": "SENSITIVITY_PROBE",
       "stopped_at": null,
@@ -1191,6 +1274,7 @@
      },
      {
       "factor": "bleeding source (x rate)",
+      "in_p2f_design": false,
       "level": "x2",
       "status": "SENSITIVITY_PROBE",
       "stopped_at": 100,
@@ -1204,6 +1288,7 @@
      },
      {
       "factor": "bleeding source (x rate)",
+      "in_p2f_design": false,
       "level": "x4",
       "status": "SENSITIVITY_PROBE",
       "stopped_at": 50,
@@ -1217,6 +1302,7 @@
      },
      {
       "factor": "preload_fraction",
+      "in_p2f_design": true,
       "level": "lower",
       "status": "REJECTED_BY_FROZEN_RULES",
       "stopped_at": 119,
@@ -1230,6 +1316,7 @@
      },
      {
       "factor": "preload_fraction",
+      "in_p2f_design": true,
       "level": "midpoint",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1243,6 +1330,7 @@
      },
      {
       "factor": "preload_fraction",
+      "in_p2f_design": true,
       "level": "upper",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1256,6 +1344,7 @@
      },
      {
       "factor": "preload_curve_scale_ml",
+      "in_p2f_design": false,
       "level": "600",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1269,6 +1358,7 @@
      },
      {
       "factor": "preload_curve_scale_ml",
+      "in_p2f_design": true,
       "level": "833.333",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1282,6 +1372,7 @@
      },
      {
       "factor": "preload_curve_scale_ml",
+      "in_p2f_design": false,
       "level": "1500",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1295,6 +1386,7 @@
      },
      {
       "factor": "pump_preload_coupling",
+      "in_p2f_design": false,
       "level": "0",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1308,6 +1400,7 @@
      },
      {
       "factor": "pump_preload_coupling",
+      "in_p2f_design": false,
       "level": "0.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1321,6 +1414,7 @@
      },
      {
       "factor": "pump_preload_coupling",
+      "in_p2f_design": true,
       "level": "1",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1334,6 +1428,7 @@
      },
      {
       "factor": "afterload_sensitivity",
+      "in_p2f_design": false,
       "level": "0.1",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1347,6 +1442,7 @@
      },
      {
       "factor": "afterload_sensitivity",
+      "in_p2f_design": true,
       "level": "0.3",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1360,6 +1456,7 @@
      },
      {
       "factor": "afterload_sensitivity",
+      "in_p2f_design": false,
       "level": "0.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1373,6 +1470,7 @@
      },
      {
       "factor": "pump_reserve",
+      "in_p2f_design": false,
       "level": "0.7",
       "status": "NOT_ASSESSED",
       "stopped_at": null,
@@ -1386,6 +1484,7 @@
      },
      {
       "factor": "pump_reserve",
+      "in_p2f_design": true,
       "level": "1",
       "status": "NOT_ASSESSED",
       "stopped_at": null,
@@ -1399,6 +1498,7 @@
      },
      {
       "factor": "low_output_pressure_knee",
+      "in_p2f_design": false,
       "level": "0.3",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1412,6 +1512,7 @@
      },
      {
       "factor": "low_output_pressure_knee",
+      "in_p2f_design": true,
       "level": "0.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1425,6 +1526,7 @@
      },
      {
       "factor": "low_output_pressure_knee",
+      "in_p2f_design": false,
       "level": "0.6",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1438,6 +1540,7 @@
      },
      {
       "factor": "sbp_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "35",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1451,6 +1554,7 @@
      },
      {
       "factor": "sbp_per_pressure_deficit",
+      "in_p2f_design": true,
       "level": "45",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1464,6 +1568,7 @@
      },
      {
       "factor": "sbp_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "55",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1477,6 +1582,7 @@
      },
      {
       "factor": "dbp_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "15",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1490,6 +1596,7 @@
      },
      {
       "factor": "dbp_per_pressure_deficit",
+      "in_p2f_design": true,
       "level": "25",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -1503,6 +1610,7 @@
      },
      {
       "factor": "dbp_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "30",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2222,6 +2330,7 @@
     "definitive_management": [
      {
       "factor": "intrinsic_sinus_rate",
+      "in_p2f_design": true,
       "level": "lower",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2234,6 +2343,7 @@
      },
      {
       "factor": "intrinsic_sinus_rate",
+      "in_p2f_design": true,
       "level": "midpoint",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2246,6 +2356,7 @@
      },
      {
       "factor": "intrinsic_sinus_rate",
+      "in_p2f_design": true,
       "level": "upper",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2258,6 +2369,7 @@
      },
      {
       "factor": "sympathetic_decay_tau_min",
+      "in_p2f_design": false,
       "level": "2",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2270,6 +2382,7 @@
      },
      {
       "factor": "sympathetic_decay_tau_min",
+      "in_p2f_design": true,
       "level": "5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2282,6 +2395,7 @@
      },
      {
       "factor": "sympathetic_decay_tau_min",
+      "in_p2f_design": false,
       "level": "15",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2294,6 +2408,7 @@
      },
      {
       "factor": "sympathetic_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "0.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2306,6 +2421,7 @@
      },
      {
       "factor": "sympathetic_per_pressure_deficit",
+      "in_p2f_design": true,
       "level": "1",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2318,6 +2434,7 @@
      },
      {
       "factor": "sympathetic_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "2",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2330,6 +2447,7 @@
      },
      {
       "factor": "sympathetic_per_debt",
+      "in_p2f_design": false,
       "level": "0.25",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2342,6 +2460,7 @@
      },
      {
       "factor": "sympathetic_per_debt",
+      "in_p2f_design": true,
       "level": "0.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2354,6 +2473,7 @@
      },
      {
       "factor": "sympathetic_per_debt",
+      "in_p2f_design": false,
       "level": "1",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2368,6 +2488,7 @@
     "untreated_120": [
      {
       "factor": "intrinsic_sinus_rate",
+      "in_p2f_design": true,
       "level": "lower",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2380,6 +2501,7 @@
      },
      {
       "factor": "intrinsic_sinus_rate",
+      "in_p2f_design": true,
       "level": "midpoint",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2392,6 +2514,7 @@
      },
      {
       "factor": "intrinsic_sinus_rate",
+      "in_p2f_design": true,
       "level": "upper",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2404,6 +2527,7 @@
      },
      {
       "factor": "sympathetic_decay_tau_min",
+      "in_p2f_design": false,
       "level": "2",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2416,6 +2540,7 @@
      },
      {
       "factor": "sympathetic_decay_tau_min",
+      "in_p2f_design": true,
       "level": "5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2428,6 +2553,7 @@
      },
      {
       "factor": "sympathetic_decay_tau_min",
+      "in_p2f_design": false,
       "level": "15",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2440,6 +2566,7 @@
      },
      {
       "factor": "sympathetic_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "0.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2452,6 +2579,7 @@
      },
      {
       "factor": "sympathetic_per_pressure_deficit",
+      "in_p2f_design": true,
       "level": "1",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2464,6 +2592,7 @@
      },
      {
       "factor": "sympathetic_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "2",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2476,6 +2605,7 @@
      },
      {
       "factor": "sympathetic_per_debt",
+      "in_p2f_design": false,
       "level": "0.25",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2488,6 +2618,7 @@
      },
      {
       "factor": "sympathetic_per_debt",
+      "in_p2f_design": true,
       "level": "0.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -2500,6 +2631,7 @@
      },
      {
       "factor": "sympathetic_per_debt",
+      "in_p2f_design": false,
       "level": "1",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3070,6 +3202,7 @@
     "definitive_management": [
      {
       "factor": "intrinsic_sinus_rate",
+      "in_p2f_design": true,
       "level": "lower",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3082,6 +3215,7 @@
      },
      {
       "factor": "intrinsic_sinus_rate",
+      "in_p2f_design": true,
       "level": "midpoint",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3094,6 +3228,7 @@
      },
      {
       "factor": "intrinsic_sinus_rate",
+      "in_p2f_design": true,
       "level": "upper",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3106,6 +3241,7 @@
      },
      {
       "factor": "sympathetic_decay_tau_min",
+      "in_p2f_design": false,
       "level": "2",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3118,6 +3254,7 @@
      },
      {
       "factor": "sympathetic_decay_tau_min",
+      "in_p2f_design": true,
       "level": "5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3130,6 +3267,7 @@
      },
      {
       "factor": "sympathetic_decay_tau_min",
+      "in_p2f_design": false,
       "level": "15",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3142,6 +3280,7 @@
      },
      {
       "factor": "sympathetic_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "0.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3154,6 +3293,7 @@
      },
      {
       "factor": "sympathetic_per_pressure_deficit",
+      "in_p2f_design": true,
       "level": "1",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3166,6 +3306,7 @@
      },
      {
       "factor": "sympathetic_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "2",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3178,6 +3319,7 @@
      },
      {
       "factor": "sympathetic_per_debt",
+      "in_p2f_design": false,
       "level": "0.25",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3190,6 +3332,7 @@
      },
      {
       "factor": "sympathetic_per_debt",
+      "in_p2f_design": true,
       "level": "0.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3202,6 +3345,7 @@
      },
      {
       "factor": "sympathetic_per_debt",
+      "in_p2f_design": false,
       "level": "1",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3216,6 +3360,7 @@
     "untreated_120": [
      {
       "factor": "intrinsic_sinus_rate",
+      "in_p2f_design": true,
       "level": "lower",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3228,6 +3373,7 @@
      },
      {
       "factor": "intrinsic_sinus_rate",
+      "in_p2f_design": true,
       "level": "midpoint",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3240,6 +3386,7 @@
      },
      {
       "factor": "intrinsic_sinus_rate",
+      "in_p2f_design": true,
       "level": "upper",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3252,6 +3399,7 @@
      },
      {
       "factor": "sympathetic_decay_tau_min",
+      "in_p2f_design": false,
       "level": "2",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3264,6 +3412,7 @@
      },
      {
       "factor": "sympathetic_decay_tau_min",
+      "in_p2f_design": true,
       "level": "5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3276,6 +3425,7 @@
      },
      {
       "factor": "sympathetic_decay_tau_min",
+      "in_p2f_design": false,
       "level": "15",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3288,6 +3438,7 @@
      },
      {
       "factor": "sympathetic_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "0.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3300,6 +3451,7 @@
      },
      {
       "factor": "sympathetic_per_pressure_deficit",
+      "in_p2f_design": true,
       "level": "1",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3312,6 +3464,7 @@
      },
      {
       "factor": "sympathetic_per_pressure_deficit",
+      "in_p2f_design": false,
       "level": "2",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3324,6 +3477,7 @@
      },
      {
       "factor": "sympathetic_per_debt",
+      "in_p2f_design": false,
       "level": "0.25",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3336,6 +3490,7 @@
      },
      {
       "factor": "sympathetic_per_debt",
+      "in_p2f_design": true,
       "level": "0.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3348,6 +3503,7 @@
      },
      {
       "factor": "sympathetic_per_debt",
+      "in_p2f_design": false,
       "level": "1",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3919,6 +4075,7 @@
     "definitive_management": [
      {
       "factor": "arrival_oxygen_debt",
+      "in_p2f_design": false,
       "level": "lower",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3931,6 +4088,7 @@
      },
      {
       "factor": "arrival_oxygen_debt",
+      "in_p2f_design": true,
       "level": "midpoint",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3943,6 +4101,7 @@
      },
      {
       "factor": "arrival_oxygen_debt",
+      "in_p2f_design": false,
       "level": "upper",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3955,6 +4114,7 @@
      },
      {
       "factor": "arrival_lactate_excess",
+      "in_p2f_design": true,
       "level": "lower",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3967,6 +4127,7 @@
      },
      {
       "factor": "arrival_lactate_excess",
+      "in_p2f_design": true,
       "level": "midpoint",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3979,6 +4140,7 @@
      },
      {
       "factor": "arrival_lactate_excess",
+      "in_p2f_design": true,
       "level": "upper",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -3991,6 +4153,7 @@
      },
      {
       "factor": "lactate_per_output_deficit",
+      "in_p2f_design": true,
       "level": "2",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4003,6 +4166,7 @@
      },
      {
       "factor": "lactate_per_output_deficit",
+      "in_p2f_design": true,
       "level": "6",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4015,6 +4179,7 @@
      },
      {
       "factor": "lactate_per_output_deficit",
+      "in_p2f_design": true,
       "level": "12",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4027,6 +4192,7 @@
      },
      {
       "factor": "lactate_clearance_tau_min",
+      "in_p2f_design": true,
       "level": "45",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4039,6 +4205,7 @@
      },
      {
       "factor": "lactate_clearance_tau_min",
+      "in_p2f_design": true,
       "level": "120",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4051,6 +4218,7 @@
      },
      {
       "factor": "lactate_clearance_tau_min",
+      "in_p2f_design": true,
       "level": "240",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4065,6 +4233,7 @@
     "untreated_120": [
      {
       "factor": "arrival_oxygen_debt",
+      "in_p2f_design": false,
       "level": "lower",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4077,6 +4246,7 @@
      },
      {
       "factor": "arrival_oxygen_debt",
+      "in_p2f_design": true,
       "level": "midpoint",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4089,6 +4259,7 @@
      },
      {
       "factor": "arrival_oxygen_debt",
+      "in_p2f_design": false,
       "level": "upper",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4101,6 +4272,7 @@
      },
      {
       "factor": "arrival_lactate_excess",
+      "in_p2f_design": true,
       "level": "lower",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4113,6 +4285,7 @@
      },
      {
       "factor": "arrival_lactate_excess",
+      "in_p2f_design": true,
       "level": "midpoint",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4125,6 +4298,7 @@
      },
      {
       "factor": "arrival_lactate_excess",
+      "in_p2f_design": true,
       "level": "upper",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4137,6 +4311,7 @@
      },
      {
       "factor": "lactate_per_output_deficit",
+      "in_p2f_design": true,
       "level": "2",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4149,6 +4324,7 @@
      },
      {
       "factor": "lactate_per_output_deficit",
+      "in_p2f_design": true,
       "level": "6",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4161,6 +4337,7 @@
      },
      {
       "factor": "lactate_per_output_deficit",
+      "in_p2f_design": true,
       "level": "12",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4173,6 +4350,7 @@
      },
      {
       "factor": "lactate_clearance_tau_min",
+      "in_p2f_design": true,
       "level": "45",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4185,6 +4363,7 @@
      },
      {
       "factor": "lactate_clearance_tau_min",
+      "in_p2f_design": true,
       "level": "120",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4197,6 +4376,7 @@
      },
      {
       "factor": "lactate_clearance_tau_min",
+      "in_p2f_design": true,
       "level": "240",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4364,6 +4544,7 @@
     "definitive_management": [
      {
       "factor": "arrival_oxygen_debt",
+      "in_p2f_design": false,
       "level": "lower",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4376,6 +4557,7 @@
      },
      {
       "factor": "arrival_oxygen_debt",
+      "in_p2f_design": true,
       "level": "midpoint",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4388,6 +4570,7 @@
      },
      {
       "factor": "arrival_oxygen_debt",
+      "in_p2f_design": false,
       "level": "upper",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4400,6 +4583,7 @@
      },
      {
       "factor": "arrival_lactate_excess",
+      "in_p2f_design": true,
       "level": "lower",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4412,6 +4596,7 @@
      },
      {
       "factor": "arrival_lactate_excess",
+      "in_p2f_design": true,
       "level": "midpoint",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4424,6 +4609,7 @@
      },
      {
       "factor": "arrival_lactate_excess",
+      "in_p2f_design": true,
       "level": "upper",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4436,6 +4622,7 @@
      },
      {
       "factor": "lactate_per_output_deficit",
+      "in_p2f_design": true,
       "level": "2",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4448,6 +4635,7 @@
      },
      {
       "factor": "lactate_per_output_deficit",
+      "in_p2f_design": true,
       "level": "6",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4460,6 +4648,7 @@
      },
      {
       "factor": "lactate_per_output_deficit",
+      "in_p2f_design": true,
       "level": "12",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4472,6 +4661,7 @@
      },
      {
       "factor": "lactate_clearance_tau_min",
+      "in_p2f_design": true,
       "level": "45",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4484,6 +4674,7 @@
      },
      {
       "factor": "lactate_clearance_tau_min",
+      "in_p2f_design": true,
       "level": "120",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4496,6 +4687,7 @@
      },
      {
       "factor": "lactate_clearance_tau_min",
+      "in_p2f_design": true,
       "level": "240",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4510,6 +4702,7 @@
     "untreated_120": [
      {
       "factor": "arrival_oxygen_debt",
+      "in_p2f_design": false,
       "level": "lower",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4522,6 +4715,7 @@
      },
      {
       "factor": "arrival_oxygen_debt",
+      "in_p2f_design": true,
       "level": "midpoint",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4534,6 +4728,7 @@
      },
      {
       "factor": "arrival_oxygen_debt",
+      "in_p2f_design": false,
       "level": "upper",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4546,6 +4741,7 @@
      },
      {
       "factor": "arrival_lactate_excess",
+      "in_p2f_design": true,
       "level": "lower",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4558,6 +4754,7 @@
      },
      {
       "factor": "arrival_lactate_excess",
+      "in_p2f_design": true,
       "level": "midpoint",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4570,6 +4767,7 @@
      },
      {
       "factor": "arrival_lactate_excess",
+      "in_p2f_design": true,
       "level": "upper",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4582,6 +4780,7 @@
      },
      {
       "factor": "lactate_per_output_deficit",
+      "in_p2f_design": true,
       "level": "2",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4594,6 +4793,7 @@
      },
      {
       "factor": "lactate_per_output_deficit",
+      "in_p2f_design": true,
       "level": "6",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4606,6 +4806,7 @@
      },
      {
       "factor": "lactate_per_output_deficit",
+      "in_p2f_design": true,
       "level": "12",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4618,6 +4819,7 @@
      },
      {
       "factor": "lactate_clearance_tau_min",
+      "in_p2f_design": true,
       "level": "45",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4630,6 +4832,7 @@
      },
      {
       "factor": "lactate_clearance_tau_min",
+      "in_p2f_design": true,
       "level": "120",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4642,6 +4845,7 @@
      },
      {
       "factor": "lactate_clearance_tau_min",
+      "in_p2f_design": true,
       "level": "240",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -4805,7 +5009,7 @@
    }
   }
  },
- "pack_digest": "fd90dd59cd233c751530df95d21ddf6b7792f06a0e2e2eea37c528fd4a802dbf",
+ "pack_digest": "61872b9dde96fd72b585e420cb5327bb7c056471ad952b3fe23ebb7fe234c158",
  "pl2": {
   "rows": [
    {
@@ -7784,6 +7988,7 @@
     "definitive_management": [
      {
       "factor": "rr_per_lactate",
+      "in_p2f_design": false,
       "level": "3",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -7796,6 +8001,7 @@
      },
      {
       "factor": "rr_per_lactate",
+      "in_p2f_design": true,
       "level": "7.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -7808,6 +8014,7 @@
      },
      {
       "factor": "rr_per_lactate",
+      "in_p2f_design": false,
       "level": "12",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -7820,6 +8027,7 @@
      },
      {
       "factor": "rr_metabolic_max",
+      "in_p2f_design": false,
       "level": "15",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -7832,6 +8040,7 @@
      },
      {
       "factor": "rr_metabolic_max",
+      "in_p2f_design": true,
       "level": "25",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -7844,6 +8053,7 @@
      },
      {
       "factor": "rr_metabolic_max",
+      "in_p2f_design": false,
       "level": "30",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -7856,6 +8066,7 @@
      },
      {
       "factor": "rr_ventilatory_floor",
+      "in_p2f_design": false,
       "level": "10",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -7868,6 +8079,7 @@
      },
      {
       "factor": "rr_ventilatory_floor",
+      "in_p2f_design": true,
       "level": "12",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -7880,6 +8092,7 @@
      },
      {
       "factor": "rr_ventilatory_floor",
+      "in_p2f_design": false,
       "level": "14",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -7892,6 +8105,7 @@
      },
      {
       "factor": "lactate_drive_threshold_mmol_l",
+      "in_p2f_design": false,
       "level": "1.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -7904,6 +8118,7 @@
      },
      {
       "factor": "lactate_drive_threshold_mmol_l",
+      "in_p2f_design": true,
       "level": "2",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -7916,6 +8131,7 @@
      },
      {
       "factor": "lactate_drive_threshold_mmol_l",
+      "in_p2f_design": false,
       "level": "2.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -7930,6 +8146,7 @@
     "untreated_120": [
      {
       "factor": "rr_per_lactate",
+      "in_p2f_design": false,
       "level": "3",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -7942,6 +8159,7 @@
      },
      {
       "factor": "rr_per_lactate",
+      "in_p2f_design": true,
       "level": "7.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -7954,6 +8172,7 @@
      },
      {
       "factor": "rr_per_lactate",
+      "in_p2f_design": false,
       "level": "12",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -7966,6 +8185,7 @@
      },
      {
       "factor": "rr_metabolic_max",
+      "in_p2f_design": false,
       "level": "15",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -7978,6 +8198,7 @@
      },
      {
       "factor": "rr_metabolic_max",
+      "in_p2f_design": true,
       "level": "25",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -7990,6 +8211,7 @@
      },
      {
       "factor": "rr_metabolic_max",
+      "in_p2f_design": false,
       "level": "30",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -8002,6 +8224,7 @@
      },
      {
       "factor": "rr_ventilatory_floor",
+      "in_p2f_design": false,
       "level": "10",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -8014,6 +8237,7 @@
      },
      {
       "factor": "rr_ventilatory_floor",
+      "in_p2f_design": true,
       "level": "12",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -8026,6 +8250,7 @@
      },
      {
       "factor": "rr_ventilatory_floor",
+      "in_p2f_design": false,
       "level": "14",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -8038,6 +8263,7 @@
      },
      {
       "factor": "lactate_drive_threshold_mmol_l",
+      "in_p2f_design": false,
       "level": "1.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -8050,6 +8276,7 @@
      },
      {
       "factor": "lactate_drive_threshold_mmol_l",
+      "in_p2f_design": true,
       "level": "2",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -8062,6 +8289,7 @@
      },
      {
       "factor": "lactate_drive_threshold_mmol_l",
+      "in_p2f_design": false,
       "level": "2.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9106,6 +9334,7 @@
     "definitive_management": [
      {
       "factor": "rr_per_lactate",
+      "in_p2f_design": false,
       "level": "3",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9118,6 +9347,7 @@
      },
      {
       "factor": "rr_per_lactate",
+      "in_p2f_design": true,
       "level": "7.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9130,6 +9360,7 @@
      },
      {
       "factor": "rr_per_lactate",
+      "in_p2f_design": false,
       "level": "12",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9142,6 +9373,7 @@
      },
      {
       "factor": "rr_metabolic_max",
+      "in_p2f_design": false,
       "level": "15",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9154,6 +9386,7 @@
      },
      {
       "factor": "rr_metabolic_max",
+      "in_p2f_design": true,
       "level": "25",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9166,6 +9399,7 @@
      },
      {
       "factor": "rr_metabolic_max",
+      "in_p2f_design": false,
       "level": "30",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9178,6 +9412,7 @@
      },
      {
       "factor": "rr_ventilatory_floor",
+      "in_p2f_design": false,
       "level": "10",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9190,6 +9425,7 @@
      },
      {
       "factor": "rr_ventilatory_floor",
+      "in_p2f_design": true,
       "level": "12",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9202,6 +9438,7 @@
      },
      {
       "factor": "rr_ventilatory_floor",
+      "in_p2f_design": false,
       "level": "14",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9214,6 +9451,7 @@
      },
      {
       "factor": "lactate_drive_threshold_mmol_l",
+      "in_p2f_design": false,
       "level": "1.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9226,6 +9464,7 @@
      },
      {
       "factor": "lactate_drive_threshold_mmol_l",
+      "in_p2f_design": true,
       "level": "2",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9238,6 +9477,7 @@
      },
      {
       "factor": "lactate_drive_threshold_mmol_l",
+      "in_p2f_design": false,
       "level": "2.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9252,6 +9492,7 @@
     "untreated_120": [
      {
       "factor": "rr_per_lactate",
+      "in_p2f_design": false,
       "level": "3",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9264,6 +9505,7 @@
      },
      {
       "factor": "rr_per_lactate",
+      "in_p2f_design": true,
       "level": "7.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9276,6 +9518,7 @@
      },
      {
       "factor": "rr_per_lactate",
+      "in_p2f_design": false,
       "level": "12",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9288,6 +9531,7 @@
      },
      {
       "factor": "rr_metabolic_max",
+      "in_p2f_design": false,
       "level": "15",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9300,6 +9544,7 @@
      },
      {
       "factor": "rr_metabolic_max",
+      "in_p2f_design": true,
       "level": "25",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9312,6 +9557,7 @@
      },
      {
       "factor": "rr_metabolic_max",
+      "in_p2f_design": false,
       "level": "30",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9324,6 +9570,7 @@
      },
      {
       "factor": "rr_ventilatory_floor",
+      "in_p2f_design": false,
       "level": "10",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9336,6 +9583,7 @@
      },
      {
       "factor": "rr_ventilatory_floor",
+      "in_p2f_design": true,
       "level": "12",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9348,6 +9596,7 @@
      },
      {
       "factor": "rr_ventilatory_floor",
+      "in_p2f_design": false,
       "level": "14",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9360,6 +9609,7 @@
      },
      {
       "factor": "lactate_drive_threshold_mmol_l",
+      "in_p2f_design": false,
       "level": "1.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9372,6 +9622,7 @@
      },
      {
       "factor": "lactate_drive_threshold_mmol_l",
+      "in_p2f_design": true,
       "level": "2",
       "status": "ADMISSIBLE",
       "stopped_at": null,
@@ -9384,6 +9635,7 @@
      },
      {
       "factor": "lactate_drive_threshold_mmol_l",
+      "in_p2f_design": false,
       "level": "2.5",
       "status": "ADMISSIBLE",
       "stopped_at": null,

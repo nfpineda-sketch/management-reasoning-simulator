@@ -4,7 +4,7 @@ Apoyo a decisiones, no decisiones. Nada de este documento aprueba un número, ma
 FACULTY_APPROVED, migra el GI, toca el tiempo de ejecución ni cambia lo que ve el residente. Todos los valores
 siguen CANDIDATE.
 
-- **Generado desde:** el congelamiento de calibración `a7436fe8e8cb73b2a391035f28f7f98bea8049049b0cfa2f4938bcbc45137d39` y el paquete `fd90dd59cd233c751530df95d21ddf6b7792f06a0e2e2eea37c528fd4a802dbf`
+- **Generado desde:** el congelamiento de calibración `a7436fe8e8cb73b2a391035f28f7f98bea8049049b0cfa2f4938bcbc45137d39` y el paquete `61872b9dde96fd72b585e420cb5327bb7c056471ad952b3fe23ebb7fe234c158`
   (`python -m clinical_core.decision_pack`; las tablas, con `python -m clinical_core.decision_pack_markdown`).
   Los números están en `docs/revision/P2G_decision_pack.json`. Una prueba falla si el código o las entradas cambian
   sin regenerarlos.
@@ -17,7 +17,9 @@ siguen CANDIDATE.
     Muestra dirección y tamaño, no interacciones.
   - **«Región admisible»** es el diseño GI de P2F menos sus 163 rechazos: 1054 conjuntos. Un conjunto fuera de ese
     diseño (por ejemplo, otra escala de la curva de precarga) puede ser *admisible* para las reglas congeladas sin
-    pertenecer a la región: las tablas lo dicen cuando ocurre.
+    pertenecer a la región. El diseño sólo varía las tres cinéticas (τ_D, G, τ_L) y combinaciones fijas de las bandas
+    del caso, así que la mayoría de las filas de efecto quedan fuera: cada fila de efecto lo marca («fuera del diseño
+    de P2F») y la tabla de volumen lo dice en su propia columna.
   - **El estado de cada fila:**
     - *admisible*: las reglas congeladas lo aceptan (no implica que P2F lo haya barrido);
     - *rechazado*: las reglas congeladas lo rechazan;
@@ -46,7 +48,8 @@ D → lactato (G); lo que se aclara depende de τ_L.
   - El rango va de 1,8 a 9,6 en 57m y de 1,5 a 9,2 en 72f.
   - A los 60 min queda por encima del de llegada en el 25 % de la región (57m) y el 34 % (72f), y más de 1 mmol/L
     por encima en el 10 % y el 12 % (tabla «Proporción de la región admisible»).
-  - Las subidas grandes se concentran en el extremo alto: G 12, τ_L 45, D de llegada 60 y entrega 0,6.
+  - El conjunto con la subida más alta (representante «alto») combina G 12, τ_L 45, D de llegada 60 y entrega 0,6.
+    Por separado, lo que más sube el lactato a los 60 min es G y la D de llegada (filas de efecto).
   - El sangrado sin tratamiento es lento (2,5 mL/min; decisión 3), y eso también limita la producción.
 - **Lo que más empuja hacia arriba** es la D de llegada y la ganancia G.
   - τ_L actúa en los dos sentidos: aclara antes el exceso, pero también deja ver antes la producción nueva.
@@ -79,18 +82,18 @@ Proporción de la región admisible a cada lado de las preguntas docentes (sólo
 
 | Lectura | Conjuntos | Proporción |
 |---|---|---|
-| manejo definitivo, 120′ por debajo de la llegada | 1054 | 91 % |
-| manejo definitivo, 30′ por debajo de la llegada | 1054 | 79 % |
 | sin tratamiento, 60′ por encima de la llegada | 1054 | 25 % |
 | sin tratamiento, 60′ más de 1 mmol/L por encima | 1054 | 10 % |
+| manejo definitivo, 30′ por debajo de la llegada | 1054 | 79 % |
+| manejo definitivo, 120′ por debajo de la llegada | 1054 | 91 % |
 
 Efecto de cada factor alrededor del punto medio:
 
 | Factor | Nivel | Estado | sin trat. 30′ | sin trat. 60′ | sin trat. 120′ | definitivo 30′ | definitivo 60′ | definitivo 120′ |
 |---|---|---|---|---|---|---|---|---|
-| `arrival_oxygen_debt` | inf. | admisible | 3,71 | 3,32 | 3,31 | 3,66 | 3,07 | 2,26 |
+| `arrival_oxygen_debt` | inf. | admisible · fuera del diseño de P2F | 3,71 | 3,32 | 3,31 | 3,66 | 3,07 | 2,26 |
 | `arrival_oxygen_debt` | medio | admisible | 4,05 | 3,80 | 3,78 | 4,00 | 3,56 | 2,73 |
-| `arrival_oxygen_debt` | sup. | admisible | 4,75 | 4,76 | 4,71 | 4,70 | 4,52 | 3,66 |
+| `arrival_oxygen_debt` | sup. | admisible · fuera del diseño de P2F | 4,75 | 4,76 | 4,71 | 4,70 | 4,52 | 3,66 |
 | `arrival_lactate_excess` | inf. | admisible | 4,28 | 4,19 | 4,41 | 4,23 | 3,95 | 3,36 |
 | `arrival_lactate_excess` | medio | admisible | 4,05 | 3,80 | 3,78 | 4,00 | 3,56 | 2,73 |
 | `arrival_lactate_excess` | sup. | admisible | 4,01 | 3,72 | 3,65 | 3,96 | 3,48 | 2,60 |
@@ -123,18 +126,18 @@ Proporción de la región admisible a cada lado de las preguntas docentes (sólo
 
 | Lectura | Conjuntos | Proporción |
 |---|---|---|
-| manejo definitivo, 120′ por debajo de la llegada | 1054 | 84 % |
-| manejo definitivo, 30′ por debajo de la llegada | 1054 | 68 % |
 | sin tratamiento, 60′ por encima de la llegada | 1054 | 34 % |
 | sin tratamiento, 60′ más de 1 mmol/L por encima | 1054 | 12 % |
+| manejo definitivo, 30′ por debajo de la llegada | 1054 | 68 % |
+| manejo definitivo, 120′ por debajo de la llegada | 1054 | 84 % |
 
 Efecto de cada factor alrededor del punto medio:
 
 | Factor | Nivel | Estado | sin trat. 30′ | sin trat. 60′ | sin trat. 120′ | definitivo 30′ | definitivo 60′ | definitivo 120′ |
 |---|---|---|---|---|---|---|---|---|
-| `arrival_oxygen_debt` | inf. | admisible | 2,92 | 2,68 | 2,76 | 2,88 | 2,48 | 1,90 |
+| `arrival_oxygen_debt` | inf. | admisible · fuera del diseño de P2F | 2,92 | 2,68 | 2,76 | 2,88 | 2,48 | 1,90 |
 | `arrival_oxygen_debt` | medio | admisible | 3,27 | 3,16 | 3,22 | 3,23 | 2,96 | 2,37 |
-| `arrival_oxygen_debt` | sup. | admisible | 3,97 | 4,12 | 4,16 | 3,93 | 3,92 | 3,30 |
+| `arrival_oxygen_debt` | sup. | admisible · fuera del diseño de P2F | 3,97 | 4,12 | 4,16 | 3,93 | 3,92 | 3,30 |
 | `arrival_lactate_excess` | inf. | admisible | 3,49 | 3,55 | 3,86 | 3,45 | 3,35 | 3,00 |
 | `arrival_lactate_excess` | medio | admisible | 3,27 | 3,16 | 3,22 | 3,23 | 2,96 | 2,37 |
 | `arrival_lactate_excess` | sup. | admisible | 3,23 | 3,08 | 3,10 | 3,19 | 2,88 | 2,24 |
@@ -186,8 +189,7 @@ no depende de la intrínseca:
 - **Mitad simpática:** el minuto en que la parte simpática cae a la mitad de la de llegada. Depende de la intrínseca,
   porque ésta fija cuánto de la FC de llegada es simpático: con intrínseca 60 no ocurre en 120 min; con la media,
   59–82 min (57m) y 65–95 (72f); con 100, 29–42 (57m) y 21–33 (72f).
-- La constante de decaimiento (2–15 min) mueve la mitad de la caída 12–13 min: pesa menos que las ganancias,
-  porque el impulso sigue a sus estímulos.
+- La constante de decaimiento (2–15 min) mueve la mitad de la caída 12–13 min.
 - El factor más fuerte es la ganancia por déficit de presión: en 57m a los 120 min con manejo definitivo, 81 lpm con
   ganancia 2 y 110 con ganancia 0,5.
 
@@ -228,15 +230,15 @@ Velocidad de resolución con manejo definitivo, por decaimiento simpático (τ) 
 | `intrinsic_sinus_rate` | inf. | admisible | 127,9 | 133,3 | 147,2 | 112,6 | 102,4 | 100,5 |
 | `intrinsic_sinus_rate` | medio | admisible | 127,9 | 133,3 | 147,2 | 112,6 | 102,4 | 100,5 |
 | `intrinsic_sinus_rate` | sup. | admisible | 127,9 | 133,3 | 147,2 | 112,6 | 102,4 | 100,5 |
-| `sympathetic_decay_tau_min` | 2 | admisible | 127,9 | 133,3 | 147,2 | 111,4 | 101,5 | 100,5 |
+| `sympathetic_decay_tau_min` | 2 | admisible · fuera del diseño de P2F | 127,9 | 133,3 | 147,2 | 111,4 | 101,5 | 100,5 |
 | `sympathetic_decay_tau_min` | 5 | admisible | 127,9 | 133,3 | 147,2 | 112,6 | 102,4 | 100,5 |
-| `sympathetic_decay_tau_min` | 15 | admisible | 127,9 | 133,3 | 147,2 | 116,1 | 105,7 | 100,6 |
-| `sympathetic_per_pressure_deficit` | 0,5 | admisible | 125,7 | 128,7 | 137,1 | 117,6 | 112,0 | 110,5 |
+| `sympathetic_decay_tau_min` | 15 | admisible · fuera del diseño de P2F | 127,9 | 133,3 | 147,2 | 116,1 | 105,7 | 100,6 |
+| `sympathetic_per_pressure_deficit` | 0,5 | admisible · fuera del diseño de P2F | 125,7 | 128,7 | 137,1 | 117,6 | 112,0 | 110,5 |
 | `sympathetic_per_pressure_deficit` | 1 | admisible | 127,9 | 133,3 | 147,2 | 112,6 | 102,4 | 100,5 |
-| `sympathetic_per_pressure_deficit` | 2 | admisible | 132,3 | 142,5 | 167,3 | 102,6 | 83,2 | 80,6 |
-| `sympathetic_per_debt` | 0,25 | admisible | 128,1 | 133,2 | 145,6 | 113,3 | 103,6 | 102,3 |
+| `sympathetic_per_pressure_deficit` | 2 | admisible · fuera del diseño de P2F | 132,3 | 142,5 | 167,3 | 102,6 | 83,2 | 80,6 |
+| `sympathetic_per_debt` | 0,25 | admisible · fuera del diseño de P2F | 128,1 | 133,2 | 145,6 | 113,3 | 103,6 | 102,3 |
 | `sympathetic_per_debt` | 0,5 | admisible | 127,9 | 133,3 | 147,2 | 112,6 | 102,4 | 100,5 |
-| `sympathetic_per_debt` | 1 | admisible | 127,5 | 133,5 | 150,2 | 111,3 | 99,9 | 97,0 |
+| `sympathetic_per_debt` | 1 | admisible · fuera del diseño de P2F | 127,5 | 133,5 | 150,2 | 111,3 | 99,9 | 97,0 |
 
 **gi_bleed_72f** — FC de llegada 112 lpm = intrínseca 60–100 (medio 80) + parte simpática 12–52 (medio 32); betabloqueo 0 (factor 1 − β = 1); ninguna otra fuente cronotrópica en estas corridas.
 
@@ -274,15 +276,15 @@ Velocidad de resolución con manejo definitivo, por decaimiento simpático (τ) 
 | `intrinsic_sinus_rate` | inf. | admisible | 114,3 | 117,8 | 126,9 | 104,1 | 97,0 | 95,3 |
 | `intrinsic_sinus_rate` | medio | admisible | 114,3 | 117,8 | 126,9 | 104,1 | 97,0 | 95,3 |
 | `intrinsic_sinus_rate` | sup. | admisible | 114,3 | 117,8 | 126,9 | 104,1 | 100,0 | 100,0 |
-| `sympathetic_decay_tau_min` | 2 | admisible | 114,3 | 117,8 | 126,9 | 103,3 | 96,3 | 95,3 |
+| `sympathetic_decay_tau_min` | 2 | admisible · fuera del diseño de P2F | 114,3 | 117,8 | 126,9 | 103,3 | 96,3 | 95,3 |
 | `sympathetic_decay_tau_min` | 5 | admisible | 114,3 | 117,8 | 126,9 | 104,1 | 97,0 | 95,3 |
-| `sympathetic_decay_tau_min` | 15 | admisible | 114,3 | 117,8 | 126,9 | 106,5 | 99,2 | 95,5 |
-| `sympathetic_per_pressure_deficit` | 0,5 | admisible | 112,9 | 114,7 | 120,3 | 107,4 | 103,3 | 101,9 |
+| `sympathetic_decay_tau_min` | 15 | admisible · fuera del diseño de P2F | 114,3 | 117,8 | 126,9 | 106,5 | 99,2 | 95,5 |
+| `sympathetic_per_pressure_deficit` | 0,5 | admisible · fuera del diseño de P2F | 112,9 | 114,7 | 120,3 | 107,4 | 103,3 | 101,9 |
 | `sympathetic_per_pressure_deficit` | 1 | admisible | 114,3 | 117,8 | 126,9 | 104,1 | 97,0 | 95,3 |
-| `sympathetic_per_pressure_deficit` | 2 | admisible | 117,2 | 123,8 | 140,2 | 97,5 | 84,4 | 82,2 |
-| `sympathetic_per_debt` | 0,25 | admisible | 114,6 | 117,9 | 126,1 | 104,7 | 98,2 | 97,1 |
+| `sympathetic_per_pressure_deficit` | 2 | admisible · fuera del diseño de P2F | 117,2 | 123,8 | 140,2 | 97,5 | 84,4 | 82,2 |
+| `sympathetic_per_debt` | 0,25 | admisible · fuera del diseño de P2F | 114,6 | 117,9 | 126,1 | 104,7 | 98,2 | 97,1 |
 | `sympathetic_per_debt` | 0,5 | admisible | 114,3 | 117,8 | 126,9 | 104,1 | 97,0 | 95,3 |
-| `sympathetic_per_debt` | 1 | admisible | 113,7 | 117,5 | 128,6 | 102,8 | 94,5 | 91,8 |
+| `sympathetic_per_debt` | 1 | admisible · fuera del diseño de P2F | 113,7 | 117,5 | 128,6 | 102,8 | 94,5 | 91,8 |
 <!-- /generado:fc -->
 
 **Preguntas para la docencia**
@@ -325,33 +327,33 @@ estrecho. PAS mínima – máxima:
 
 | Factor | Nivel | Estado | 15′ PAS/PAM | 30′ | 60′ | 120′ | Se detiene en |
 |---|---|---|---|---|---|---|---|
-| `volume_loss_ml_per_min` y `hb_loss_g_dl_per_min` (× tasa) | ×0,5 | sonda de sensibilidad | 86 / 64 | 84 / 63 | 80 / 60 | 72 / 54 |  |
+| `volume_loss_ml_per_min` y `hb_loss_g_dl_per_min` (× tasa) | ×0,5 | sonda de sensibilidad · fuera del diseño de P2F | 86 / 64 | 84 / 63 | 80 / 60 | 72 / 54 |  |
 | `volume_loss_ml_per_min` y `hb_loss_g_dl_per_min` (× tasa) | ×1 | sonda de sensibilidad | 84 / 63 | 80 / 60 | 72 / 54 | 26 / 19 |  |
-| `volume_loss_ml_per_min` y `hb_loss_g_dl_per_min` (× tasa) | ×2 | sonda de sensibilidad | 80 / 60 | 72 / 54 | 26 / 19 | — / — | 72 |
-| `volume_loss_ml_per_min` y `hb_loss_g_dl_per_min` (× tasa) | ×4 | sonda de sensibilidad | 72 / 54 | 26 / 19 | — / — | — / — | 36 |
+| `volume_loss_ml_per_min` y `hb_loss_g_dl_per_min` (× tasa) | ×2 | sonda de sensibilidad · fuera del diseño de P2F | 80 / 60 | 72 / 54 | 26 / 19 | — / — | 72 |
+| `volume_loss_ml_per_min` y `hb_loss_g_dl_per_min` (× tasa) | ×4 | sonda de sensibilidad · fuera del diseño de P2F | 72 / 54 | 26 / 19 | — / — | — / — | 36 |
 | `preload_fraction` | inf. | rechazado por las reglas congeladas | 80 / 60 | 71 / 53 | 28 / 21 | — / — | 75 |
 | `preload_fraction` | medio | admisible | 84 / 63 | 80 / 60 | 72 / 54 | 26 / 19 |  |
 | `preload_fraction` | sup. | admisible | 86 / 64 | 84 / 62 | 79 / 59 | 69 / 52 |  |
-| `preload_curve_scale_ml` | 600 | admisible | 83 / 62 | 77 / 58 | 62 / 47 | — / — | 104 |
+| `preload_curve_scale_ml` | 600 | admisible · fuera del diseño de P2F | 83 / 62 | 77 / 58 | 62 / 47 | — / — | 104 |
 | `preload_curve_scale_ml` | 833 | admisible | 84 / 63 | 80 / 60 | 72 / 54 | 26 / 19 |  |
-| `preload_curve_scale_ml` | 1500 | admisible | 86 / 64 | 84 / 62 | 79 / 59 | 69 / 52 |  |
-| `pump_preload_coupling` | 0 | admisible | 84 / 63 | 80 / 60 | 72 / 54 | 26 / 19 |  |
-| `pump_preload_coupling` | 0,5 | admisible | 84 / 63 | 80 / 60 | 72 / 54 | 26 / 19 |  |
+| `preload_curve_scale_ml` | 1500 | admisible · fuera del diseño de P2F | 86 / 64 | 84 / 62 | 79 / 59 | 69 / 52 |  |
+| `pump_preload_coupling` | 0 | admisible · fuera del diseño de P2F | 84 / 63 | 80 / 60 | 72 / 54 | 26 / 19 |  |
+| `pump_preload_coupling` | 0,5 | admisible · fuera del diseño de P2F | 84 / 63 | 80 / 60 | 72 / 54 | 26 / 19 |  |
 | `pump_preload_coupling` | 1 | admisible | 84 / 63 | 80 / 60 | 72 / 54 | 26 / 19 |  |
-| `afterload_sensitivity` | 0,1 | admisible | 84 / 63 | 80 / 60 | 72 / 54 | 26 / 19 |  |
+| `afterload_sensitivity` | 0,1 | admisible · fuera del diseño de P2F | 84 / 63 | 80 / 60 | 72 / 54 | 26 / 19 |  |
 | `afterload_sensitivity` | 0,3 | admisible | 84 / 63 | 80 / 60 | 72 / 54 | 26 / 19 |  |
-| `afterload_sensitivity` | 0,5 | admisible | 84 / 63 | 80 / 60 | 72 / 54 | 26 / 19 |  |
-| `pump_reserve` | 0,7 | no evaluado (ninguna regla congelada lo lee) | 84 / 63 | 80 / 60 | 72 / 54 | 26 / 19 |  |
+| `afterload_sensitivity` | 0,5 | admisible · fuera del diseño de P2F | 84 / 63 | 80 / 60 | 72 / 54 | 26 / 19 |  |
+| `pump_reserve` | 0,7 | no evaluado (ninguna regla congelada lo lee) · fuera del diseño de P2F | 84 / 63 | 80 / 60 | 72 / 54 | 26 / 19 |  |
 | `pump_reserve` | 1 | no evaluado (ninguna regla congelada lo lee) | 84 / 63 | 80 / 60 | 72 / 54 | 26 / 19 |  |
-| `low_output_pressure_knee` | 0,3 | admisible | 84 / 63 | 80 / 60 | 72 / 54 | 37 / 28 |  |
+| `low_output_pressure_knee` | 0,3 | admisible · fuera del diseño de P2F | 84 / 63 | 80 / 60 | 72 / 54 | 37 / 28 |  |
 | `low_output_pressure_knee` | 0,5 | admisible | 84 / 63 | 80 / 60 | 72 / 54 | 26 / 19 |  |
-| `low_output_pressure_knee` | 0,6 | admisible | 84 / 63 | 80 / 60 | 72 / 54 | 23 / 17 |  |
-| `sbp_per_pressure_deficit` | 35 | admisible | 85 / 63 | 82 / 60 | 75 / 55 | 28 / 20 |  |
+| `low_output_pressure_knee` | 0,6 | admisible · fuera del diseño de P2F | 84 / 63 | 80 / 60 | 72 / 54 | 23 / 17 |  |
+| `sbp_per_pressure_deficit` | 35 | admisible · fuera del diseño de P2F | 85 / 63 | 82 / 60 | 75 / 55 | 28 / 20 |  |
 | `sbp_per_pressure_deficit` | 45 | admisible | 84 / 63 | 80 / 60 | 72 / 54 | 26 / 19 |  |
-| `sbp_per_pressure_deficit` | 55 | admisible | 83 / 62 | 78 / 59 | 68 / 53 | 24 / 19 |  |
-| `dbp_per_pressure_deficit` | 15 | admisible | 84 / 63 | 80 / 61 | 72 / 56 | 26 / 21 |  |
+| `sbp_per_pressure_deficit` | 55 | admisible · fuera del diseño de P2F | 83 / 62 | 78 / 59 | 68 / 53 | 24 / 19 |  |
+| `dbp_per_pressure_deficit` | 15 | admisible · fuera del diseño de P2F | 84 / 63 | 80 / 61 | 72 / 56 | 26 / 21 |  |
 | `dbp_per_pressure_deficit` | 25 | admisible | 84 / 63 | 80 / 60 | 72 / 54 | 26 / 19 |  |
-| `dbp_per_pressure_deficit` | 30 | admisible | 84 / 62 | 80 / 59 | 72 / 53 | 26 / 19 |  |
+| `dbp_per_pressure_deficit` | 30 | admisible · fuera del diseño de P2F | 84 / 62 | 80 / 59 | 72 / 53 | 26 / 19 |  |
 
 **gi_bleed_72f** — sin tratamiento, mínimo – mediana – máximo en la región admisible:
 
@@ -362,33 +364,33 @@ estrecho. PAS mínima – máxima:
 
 | Factor | Nivel | Estado | 15′ PAS/PAM | 30′ | 60′ | 120′ | Se detiene en |
 |---|---|---|---|---|---|---|---|
-| `volume_loss_ml_per_min` y `hb_loss_g_dl_per_min` (× tasa) | ×0,5 | sonda de sensibilidad | 97 / 73 | 95 / 72 | 93 / 70 | 87 / 66 |  |
+| `volume_loss_ml_per_min` y `hb_loss_g_dl_per_min` (× tasa) | ×0,5 | sonda de sensibilidad · fuera del diseño de P2F | 97 / 73 | 95 / 72 | 93 / 70 | 87 / 66 |  |
 | `volume_loss_ml_per_min` y `hb_loss_g_dl_per_min` (× tasa) | ×1 | sonda de sensibilidad | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 55 |  |
-| `volume_loss_ml_per_min` y `hb_loss_g_dl_per_min` (× tasa) | ×2 | sonda de sensibilidad | 93 / 70 | 87 / 66 | 71 / 55 | — / — | 100 |
-| `volume_loss_ml_per_min` y `hb_loss_g_dl_per_min` (× tasa) | ×4 | sonda de sensibilidad | 87 / 66 | 71 / 55 | — / — | — / — | 50 |
+| `volume_loss_ml_per_min` y `hb_loss_g_dl_per_min` (× tasa) | ×2 | sonda de sensibilidad · fuera del diseño de P2F | 93 / 70 | 87 / 66 | 71 / 55 | — / — | 100 |
+| `volume_loss_ml_per_min` y `hb_loss_g_dl_per_min` (× tasa) | ×4 | sonda de sensibilidad · fuera del diseño de P2F | 87 / 66 | 71 / 55 | — / — | — / — | 50 |
 | `preload_fraction` | inf. | rechazado por las reglas congeladas | 93 / 71 | 88 / 67 | 77 / 59 | — / — | 119 |
 | `preload_fraction` | medio | admisible | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 55 |  |
 | `preload_fraction` | sup. | admisible | 97 / 73 | 95 / 72 | 92 / 70 | 85 / 65 |  |
-| `preload_curve_scale_ml` | 600 | admisible | 94 / 72 | 91 / 69 | 82 / 63 | 31 / 24 |  |
+| `preload_curve_scale_ml` | 600 | admisible · fuera del diseño de P2F | 94 / 72 | 91 / 69 | 82 / 63 | 31 / 24 |  |
 | `preload_curve_scale_ml` | 833 | admisible | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 55 |  |
-| `preload_curve_scale_ml` | 1500 | admisible | 97 / 73 | 95 / 72 | 92 / 70 | 86 / 65 |  |
-| `pump_preload_coupling` | 0 | admisible | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 55 |  |
-| `pump_preload_coupling` | 0,5 | admisible | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 55 |  |
+| `preload_curve_scale_ml` | 1500 | admisible · fuera del diseño de P2F | 97 / 73 | 95 / 72 | 92 / 70 | 86 / 65 |  |
+| `pump_preload_coupling` | 0 | admisible · fuera del diseño de P2F | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 55 |  |
+| `pump_preload_coupling` | 0,5 | admisible · fuera del diseño de P2F | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 55 |  |
 | `pump_preload_coupling` | 1 | admisible | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 55 |  |
-| `afterload_sensitivity` | 0,1 | admisible | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 55 |  |
+| `afterload_sensitivity` | 0,1 | admisible · fuera del diseño de P2F | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 55 |  |
 | `afterload_sensitivity` | 0,3 | admisible | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 55 |  |
-| `afterload_sensitivity` | 0,5 | admisible | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 55 |  |
-| `pump_reserve` | 0,7 | no evaluado (ninguna regla congelada lo lee) | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 55 |  |
+| `afterload_sensitivity` | 0,5 | admisible · fuera del diseño de P2F | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 55 |  |
+| `pump_reserve` | 0,7 | no evaluado (ninguna regla congelada lo lee) · fuera del diseño de P2F | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 55 |  |
 | `pump_reserve` | 1 | no evaluado (ninguna regla congelada lo lee) | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 55 |  |
-| `low_output_pressure_knee` | 0,3 | admisible | 95 / 72 | 93 / 70 | 87 / 66 | 74 / 57 |  |
+| `low_output_pressure_knee` | 0,3 | admisible · fuera del diseño de P2F | 95 / 72 | 93 / 70 | 87 / 66 | 74 / 57 |  |
 | `low_output_pressure_knee` | 0,5 | admisible | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 55 |  |
-| `low_output_pressure_knee` | 0,6 | admisible | 95 / 72 | 93 / 70 | 87 / 66 | 63 / 48 |  |
-| `sbp_per_pressure_deficit` | 35 | admisible | 96 / 72 | 94 / 71 | 90 / 67 | 76 / 56 |  |
+| `low_output_pressure_knee` | 0,6 | admisible · fuera del diseño de P2F | 95 / 72 | 93 / 70 | 87 / 66 | 63 / 48 |  |
+| `sbp_per_pressure_deficit` | 35 | admisible · fuera del diseño de P2F | 96 / 72 | 94 / 71 | 90 / 67 | 76 / 56 |  |
 | `sbp_per_pressure_deficit` | 45 | admisible | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 55 |  |
-| `sbp_per_pressure_deficit` | 55 | admisible | 95 / 72 | 92 / 70 | 85 / 66 | 66 / 53 |  |
-| `dbp_per_pressure_deficit` | 15 | admisible | 95 / 73 | 93 / 71 | 87 / 68 | 71 / 58 |  |
+| `sbp_per_pressure_deficit` | 55 | admisible · fuera del diseño de P2F | 95 / 72 | 92 / 70 | 85 / 66 | 66 / 53 |  |
+| `dbp_per_pressure_deficit` | 15 | admisible · fuera del diseño de P2F | 95 / 73 | 93 / 71 | 87 / 68 | 71 / 58 |  |
 | `dbp_per_pressure_deficit` | 25 | admisible | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 55 |  |
-| `dbp_per_pressure_deficit` | 30 | admisible | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 53 |  |
+| `dbp_per_pressure_deficit` | 30 | admisible · fuera del diseño de P2F | 95 / 72 | 93 / 70 | 87 / 66 | 71 / 53 |  |
 <!-- /generado:presion -->
 
 **Pregunta para la docencia:** ¿qué grado de deterioro hipotensivo sin tratamiento, a lo largo de una hora, debería
@@ -407,7 +409,8 @@ representar cada caso?
 
 **Resultados.**
 - La primera tabla da los minutos de acumulación hasta el límite con un gasto constante, en aritmética exacta. Una
-  corrida simulada para algo después: suma el minuto en que cae el gasto y el minuto en que se lee la transición.
+  corrida simulada para un minuto después (el minuto en que cae el gasto), y uno más cuando la cuenta es entera,
+  porque la suma en coma flotante del modelo queda justo bajo el límite.
 - Los patrones muestran, con la regla en sus puntos medios:
   - un flujo moderado breve no para;
   - uno moderado sostenido para a los 92 min;
@@ -420,7 +423,7 @@ representar cada caso?
 medio, en el minuto 144).
 
 <!-- generado:colapso -->
-Minutos de acumulación hasta el límite con gasto constante, en aritmética exacta: ⌈límite × umbral / (ganancia × (umbral − gasto))⌉. La simulación suma el minuto en que cae el gasto y el minuto en que se lee la transición, así que su paro llega después de esta cuenta:
+Minutos de acumulación hasta el límite con gasto constante, en aritmética exacta: ⌈límite × umbral / (ganancia × (umbral − gasto))⌉. Un paro simulado llega un minuto después (el minuto en que cae el gasto), y uno más cuando el cociente es entero, porque la suma en coma flotante del modelo queda justo bajo el límite:
 
 | Umbral | Ganancia | Límite | gasto 0,05 | gasto 0,1 | gasto 0,15 | gasto 0,2 | gasto 0,25 | gasto 0,35 |
 |---|---|---|---|---|---|---|---|---|
@@ -552,9 +555,12 @@ En GI no hay mecanismo W ni N, así que la parte ventilatoria es constante y fij
 
 **Rango.**
 - En la región va de 13 a 36 (57m) y de 15 a 38 (72f).
-- La dispersión viene sobre todo de la trayectoria del lactato (decisión 1). Un parámetro de FR, cambiado solo
-  alrededor del punto medio, mueve la FR hasta 3,8 resp/min (`rr_per_lactate`, 57m, manejo definitivo); los demás,
-  hasta 2.
+- La dispersión viene sobre todo de la trayectoria del lactato (decisión 1). Recorriendo su banda con lo demás en el
+  punto medio, un parámetro de FR cambia la FR, como máximo:
+  - `rr_per_lactate`: 5,2 resp/min (72f, manejo definitivo, 120 min) y 3,8 (57m);
+  - `rr_metabolic_max` y `lactate_drive_threshold_mmol_l`: 2,6 (57m, manejo definitivo);
+  - `rr_ventilatory_floor`: 0,5 o menos.
+  Sin tratamiento, ninguno pasa de 1,1.
 - **Techo teórico** (lactato sin límite): FR de llegada − impulso metabólico de llegada + `rr_metabolic_max`, y
   luego `rr_max`. Lo lee la tabla de cotas, generada desde `derived.respiratory_rate`.
   - Al punto medio es 13,2 + 25 = 38,2 en 57m.
@@ -599,18 +605,18 @@ En las corridas del paquete, FR observada entre 13,2 y 36,2. Mínimo – mediana
 
 | Factor | Nivel | Estado | sin trat. 30′ | sin trat. 60′ | sin trat. 120′ | definitivo 30′ | definitivo 60′ | definitivo 120′ |
 |---|---|---|---|---|---|---|---|---|
-| `rr_per_lactate` | 3 | admisible | 25,2 | 24,6 | 24,6 | 25,1 | 24,0 | 21,8 |
+| `rr_per_lactate` | 3 | admisible · fuera del diseño de P2F | 25,2 | 24,6 | 24,6 | 25,1 | 24,0 | 21,8 |
 | `rr_per_lactate` | 7,5 | admisible | 24,7 | 23,6 | 23,5 | 24,5 | 22,5 | 18,1 |
-| `rr_per_lactate` | 12 | admisible | 24,8 | 23,8 | 23,8 | 24,6 | 22,8 | 18,0 |
-| `rr_metabolic_max` | 15 | admisible | 25,1 | 24,4 | 24,4 | 25,0 | 23,6 | 20,1 |
+| `rr_per_lactate` | 12 | admisible · fuera del diseño de P2F | 24,8 | 23,8 | 23,8 | 24,6 | 22,8 | 18,0 |
+| `rr_metabolic_max` | 15 | admisible · fuera del diseño de P2F | 25,1 | 24,4 | 24,4 | 25,0 | 23,6 | 20,1 |
 | `rr_metabolic_max` | 25 | admisible | 24,7 | 23,6 | 23,5 | 24,5 | 22,5 | 18,1 |
-| `rr_metabolic_max` | 30 | admisible | 24,5 | 23,3 | 23,2 | 24,3 | 22,1 | 17,5 |
-| `rr_ventilatory_floor` | 10 | admisible | 24,7 | 23,6 | 23,5 | 24,5 | 22,5 | 18,1 |
+| `rr_metabolic_max` | 30 | admisible · fuera del diseño de P2F | 24,5 | 23,3 | 23,2 | 24,3 | 22,1 | 17,5 |
+| `rr_ventilatory_floor` | 10 | admisible · fuera del diseño de P2F | 24,7 | 23,6 | 23,5 | 24,5 | 22,5 | 18,1 |
 | `rr_ventilatory_floor` | 12 | admisible | 24,7 | 23,6 | 23,5 | 24,5 | 22,5 | 18,1 |
-| `rr_ventilatory_floor` | 14 | admisible | 24,8 | 23,7 | 23,7 | 24,6 | 22,7 | 18,6 |
-| `lactate_drive_threshold_mmol_l` | 1,5 | admisible | 24,9 | 24,0 | 23,9 | 24,7 | 23,1 | 19,4 |
+| `rr_ventilatory_floor` | 14 | admisible · fuera del diseño de P2F | 24,8 | 23,7 | 23,7 | 24,6 | 22,7 | 18,6 |
+| `lactate_drive_threshold_mmol_l` | 1,5 | admisible · fuera del diseño de P2F | 24,9 | 24,0 | 23,9 | 24,7 | 23,1 | 19,4 |
 | `lactate_drive_threshold_mmol_l` | 2 | admisible | 24,7 | 23,6 | 23,5 | 24,5 | 22,5 | 18,1 |
-| `lactate_drive_threshold_mmol_l` | 2,5 | admisible | 24,5 | 23,2 | 23,1 | 24,2 | 21,9 | 16,8 |
+| `lactate_drive_threshold_mmol_l` | 2,5 | admisible · fuera del diseño de P2F | 24,5 | 23,2 | 23,1 | 24,2 | 21,9 | 16,8 |
 
 **gi_bleed_72f** — FR de llegada 24 resp/min con lactato 3,4 mmol/L. Cotas del modelo sobre la cuadrícula de bandas de FR (`rr_per_lactate` × `lactate_drive_threshold_mmol_l` × `rr_ventilatory_floor`, por `rr_metabolic_max`): techo con lactato sin límite, antes y después de `rr_max`, y piso con lactato bajo el umbral (mínimo – máximo):
 
@@ -638,18 +644,18 @@ En las corridas del paquete, FR observada entre 15,4 y 38,1. Mínimo – mediana
 
 | Factor | Nivel | Estado | sin trat. 30′ | sin trat. 60′ | sin trat. 120′ | definitivo 30′ | definitivo 60′ | definitivo 120′ |
 |---|---|---|---|---|---|---|---|---|
-| `rr_per_lactate` | 3 | admisible | 23,7 | 23,4 | 23,5 | 23,6 | 22,8 | 21,2 |
+| `rr_per_lactate` | 3 | admisible · fuera del diseño de P2F | 23,7 | 23,4 | 23,5 | 23,6 | 22,8 | 21,2 |
 | `rr_per_lactate` | 7,5 | admisible | 23,4 | 22,8 | 23,1 | 23,1 | 21,7 | 18,0 |
-| `rr_per_lactate` | 12 | admisible | 23,2 | 22,5 | 22,9 | 22,9 | 21,0 | 16,0 |
-| `rr_metabolic_max` | 15 | admisible | 23,5 | 23,0 | 23,3 | 23,3 | 22,1 | 19,0 |
+| `rr_per_lactate` | 12 | admisible · fuera del diseño de P2F | 23,2 | 22,5 | 22,9 | 22,9 | 21,0 | 16,0 |
+| `rr_metabolic_max` | 15 | admisible · fuera del diseño de P2F | 23,5 | 23,0 | 23,3 | 23,3 | 22,1 | 19,0 |
 | `rr_metabolic_max` | 25 | admisible | 23,4 | 22,8 | 23,1 | 23,1 | 21,7 | 18,0 |
-| `rr_metabolic_max` | 30 | admisible | 23,3 | 22,7 | 23,0 | 23,1 | 21,5 | 17,8 |
-| `rr_ventilatory_floor` | 10 | admisible | 23,4 | 22,8 | 23,1 | 23,1 | 21,7 | 18,0 |
+| `rr_metabolic_max` | 30 | admisible · fuera del diseño de P2F | 23,3 | 22,7 | 23,0 | 23,1 | 21,5 | 17,8 |
+| `rr_ventilatory_floor` | 10 | admisible · fuera del diseño de P2F | 23,4 | 22,8 | 23,1 | 23,1 | 21,7 | 18,0 |
 | `rr_ventilatory_floor` | 12 | admisible | 23,4 | 22,8 | 23,1 | 23,1 | 21,7 | 18,0 |
-| `rr_ventilatory_floor` | 14 | admisible | 23,4 | 22,8 | 23,1 | 23,1 | 21,7 | 18,0 |
-| `lactate_drive_threshold_mmol_l` | 1,5 | admisible | 23,4 | 22,9 | 23,2 | 23,3 | 22,0 | 18,9 |
+| `rr_ventilatory_floor` | 14 | admisible · fuera del diseño de P2F | 23,4 | 22,8 | 23,1 | 23,1 | 21,7 | 18,0 |
+| `lactate_drive_threshold_mmol_l` | 1,5 | admisible · fuera del diseño de P2F | 23,4 | 22,9 | 23,2 | 23,3 | 22,0 | 18,9 |
 | `lactate_drive_threshold_mmol_l` | 2 | admisible | 23,4 | 22,8 | 23,1 | 23,1 | 21,7 | 18,0 |
-| `lactate_drive_threshold_mmol_l` | 2,5 | admisible | 23,2 | 22,6 | 23,0 | 23,0 | 21,3 | 18,1 |
+| `lactate_drive_threshold_mmol_l` | 2,5 | admisible · fuera del diseño de P2F | 23,2 | 22,6 | 23,0 | 23,0 | 21,3 | 18,1 |
 <!-- /generado:fr -->
 
 **Preguntas para la docencia**
@@ -890,7 +896,7 @@ modelo); la evidencia del repositorio es lo que dicen los casos.
 | FD-03 | ¿Vuelta a la basal en el horizonte o lactato persistente por la deuda? | basal 0,8–2,0 (implícita en `arrival_lactate_excess`); τ_L | lactato final | basal alta: el lactato no baja de ~2 | basal baja: puede bajar a ~1 | la basal no figura en el caso | §2 | | ABIERTA |
 | FD-04 | Rango de FC tras hemostasia y reanimación | `sympathetic_per_pressure_deficit` 0,5–1–2; `sympathetic_per_debt`; intrínseca | FC visible | ganancia baja: FC alta tras la hemostasia (110) | ganancia alta: FC cerca de la intrínseca (81) | FC 124 / 112 (`:881`, `:910`) | §3 | | ABIERTA |
 | FD-05 | Cuánto puede bajar la FC bajo la taquicardia de llegada | `intrinsic_sinus_rate` 60–80–100 (piso) | FC en la recuperación | piso bajo: puede bajar mucho | piso alto: la FC no baja de la intrínseca | ninguna FC basal autorizada | §3 (la intrínseca fija sólo el piso) | | ABIERTA |
-| FD-06 | Rapidez de la resolución de la taquicardia | `sympathetic_decay_tau_min` 2–5–15; ganancias | curso de la FC | τ 2: la FC recorre la mitad de su caída en 28–29 min | τ 15: en 41 min (la «mitad simpática» depende además de la intrínseca: §3) | ninguna | §3 (resolución por τ e intrínseca) | | ABIERTA |
+| FD-06 | Rapidez de la resolución de la taquicardia | `sympathetic_decay_tau_min` 2–5–15; ganancias | curso de la FC | τ 2: la FC recorre la mitad de su caída en 28–29 min | τ 15: en 41 min; con intrínseca 100 en 72f, 21 y 33 min (la «mitad simpática» depende además de la intrínseca: §3) | ninguna | §3 (resolución por τ e intrínseca) | | ABIERTA |
 | FD-07 | ¿Intrínseca por caso o valor por defecto de familia? | por caso / familia GI | `intrinsic_sinus_rate` | — | — | ninguna FC basal ni betabloqueador autorizado | §3 | | ABIERTA |
 | FD-08 | Caída de la PA en 1 h sin tratamiento | `volume_loss_ml_per_min`; `preload_fraction`; `preload_curve_scale_ml` 600–833–1500; `sbp_per_pressure_deficit` 35–45–55 | PAS/PAM; conciencia; logística | PAS 80 a los 60 min (57m) | PAS 26–62 a los 60 min o detención | PAS 88 / 98; POCUS (`:154-156`) | §4 | | ABIERTA |
 | FD-09 | Umbral de flujo bajo para el colapso | `collapse_output_threshold` 0,2–0,3–0,4 | paro | sólo el flujo muy bajo acumula | el flujo moderado ya acumula | ninguna | §5 | | ABIERTA |
@@ -898,7 +904,7 @@ modelo); la evidencia del repositorio es lo que dicen los casos.
 | FD-11 | Repago de la carga de colapso | `collapse_repayment_tau_min` 30–60–240 o sin repago | episodios repetidos | el segundo episodio no para | el segundo episodio para | ninguna | §5 | | ABIERTA |
 | FD-12 | Política del ritmo terminal | `collapse_terminal_rhythm`: según la causa o el estado / declarada (`pea`, `asystole`) | ritmo del paro | — | — | ninguna | §5 | | ABIERTA |
 | FD-13 | ¿Encender el colapso en las corridas GI? | apagado (hoy) / encendido con FD-09–FD-11 | final de la hemorragia sin tratar | detención en vez de paro | paro con la regla elegida | ninguna | §5, §11 | | ABIERTA |
-| FD-14 | Subida máxima de la PA con volumen solo | `preload_curve_scale_ml`; `preload_fraction`; ¿techo de presión? | PAS/PAM con volumen | PAS pico 113 | PAS pico 186 (243 rechazado); no hay techo | ninguna | §6 | | ABIERTA |
+| FD-14 | Subida máxima de la PA con volumen solo | `preload_curve_scale_ml`; `preload_fraction`; ¿techo de presión? | PAS/PAM con volumen | en el diseño de P2F, PAS pico 122 (57m) y 121 (72f); fuera de él, 113 | en el diseño, 151 y 140; fuera de él, 186 (243 rechazado); no hay techo | ninguna | §6 | | ABIERTA |
 | FD-15 | Desde dónde el líquido se vuelve ineficaz | `preload_curve_scale_ml` | respuesta al volumen | escala corta: ineficaz pronto (0,16) | escala larga: sigue respondiendo (0,48) | ninguna | §6 | | ABIERTA |
 | FD-16 | Congestión tolerada | `congestion_preload_knee` 0,75–0,85–0,92; `congestion_per_excess_preload` 0,02–0,05–0,1; `lung_water_clearance_tau_min`; `pump_reserve` | L (aún sin SpO2) | sin congestión | L hasta ~1,3 con reserva 0,7 | sin edema ni líneas B en la llegada | §6 | | ABIERTA |
 | FD-17 | Rango plausible de FR en el shock GI no complicado | sigue al lactato (FD-01–FD-03) | FR visible | 13–15 | 36–38 | FR 26 / 24 (`:881`, `:910`) | §7 | | ABIERTA |
@@ -933,7 +939,7 @@ modelo); la evidencia del repositorio es lo que dicen los casos.
 | FD-46 | Posición de precarga de las sondas neutras | `arrival_preload_fraction` 0,3–0,5–0,7 | reglas congeladas que leen la llegada neutra (PL2) | 0,3: PL2 falla su cláusula 2 con escala 600 u 833 (§9) | 0,5 y 0,7: PL2 se cumple | ninguna (no es un dato de caso) | §9 | | ABIERTA |
 | FD-47 | Lpm por unidad de impulso simpático | `hr_per_sympathetic_drive` 25 (banda de un punto: el literal del motor, adoptado en P2C) | escala de la parte simpática de la FC | — | — | literal del motor de familias | §3 | | ABIERTA |
 | FD-48 | Tope de seguridad de la FR | `rr_max` 40–60 | techo de la FR | 40: recorta el techo teórico cuando `rr_metabolic_max` ≥ 25 | 60: no recorta ningún punto de la cuadrícula | ninguna (no es fisiología) | §7 | | ABIERTA |
-| FD-49 | Verificación de la procedencia en la puerta de migración | confiar en la fuente declarada (hoy) / verificar `explicit_case` contra la verdad del caso (`gi_reference`) / exigir un registro docente por valor | puerta de migración (no los números) | — | — | — | §14 (límite de la puerta) | | ABIERTA |
+| FD-49 | Verificación de la procedencia en la puerta de migración | confiar en la fuente declarada (hoy: reetiquetar todo como `explicit_case`, también los parámetros de familia, pasa la puerta) / verificar `explicit_case` contra la verdad del caso (`gi_reference`) / exigir un registro docente por valor | puerta de migración (no los números) | — | — | — | §14 (límite de la puerta) | | ABIERTA |
 
 **Decisiones abiertas: 49.**
 
@@ -968,8 +974,10 @@ prueba lo comprueba.
   - usar «CANDIDATE» como fuente de procedencia se rechaza;
   - ningún módulo del núcleo en sombra, salvo el vocabulario de la puerta (`state.py`, `derived.py`, `migration.py`),
     escribe `explicit_case` ni `approved_family_default`: nada del núcleo etiqueta un CANDIDATE como verdad del caso.
-- **Límite de la puerta (anterior a P2G):** la puerta confía en la fuente declarada. Un llamador fuera del núcleo que
-  declare un valor CANDIDATE como `explicit_case` pasaría ese parámetro, porque la puerta no compara el valor con la
-  verdad del caso. Ninguna ruta de código actual lo hace, y cambiar la puerta es una decisión de arquitectura: queda
-  como FD-49, sin implementar.
+- **Límite de la puerta (anterior a P2G):** la puerta confía en la fuente declarada y no compara el valor con la
+  verdad del caso. Un llamador fuera del núcleo que declare los valores CANDIDATE como `explicit_case` (los
+  parámetros de caso y también los 4 de la fuente hemorrágica, que así no pasan por `APPROVED_FAMILY_DEFAULTS`) haría
+  pasar la puerta completa: una sonda lo comprobó en 57m. La prueba de que reclamar `approved_family_default` no
+  pasa no cubre ese camino. Ninguna ruta de código actual lo hace, y cambiar la puerta es una decisión de
+  arquitectura: queda como FD-49, sin implementar.
 - **El GI no se declara migrado** ni calibrado.

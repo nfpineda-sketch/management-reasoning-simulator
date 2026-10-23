@@ -82,13 +82,18 @@ def spread(item: dict, digits: int = 1) -> str:
     return text + (f" ({item['stopped_before']} detenidas)" if item.get("stopped_before") else "")
 
 
+def status(row: dict) -> str:
+    """The frozen rules' verdict, and whether P2F's sweep ran this set."""
+    return STATUS[row["status"]] + ("" if row.get("in_p2f_design") else " · fuera del diseño de P2F")
+
+
 def _effects(rows: list[dict], times, digits: int, scenarios: dict) -> str:
     """Effect rows of several scenarios side by side (same factors and levels in each)."""
     names = list(scenarios)
     header = ["Factor", "Nivel", "Estado"] + [f"{scenarios[name]} {minute}′" for name in names for minute in times]
     body = []
     for index, row in enumerate(rows[names[0]]):
-        cells = [FACTOR.get(row["factor"], f"`{row['factor']}`"), level(row["level"]), STATUS[row["status"]]]
+        cells = [FACTOR.get(row["factor"], f"`{row['factor']}`"), level(row["level"]), status(row)]
         for name in names:
             other = rows[name][index]
             cells += [num(other["values"].get(str(minute)), digits) for minute in times]
@@ -119,8 +124,8 @@ def lactate(pack: dict) -> str:
         out.append("")
         out.append("Proporción de la región admisible a cada lado de las preguntas docentes (sólo modelo):\n")
         out.append(table(["Lectura", "Conjuntos", "Proporción"],
-                         [[FRACTION[name], str(item["n"]), f"{round(100 * item['fraction'])} %"]
-                          for name, item in data["fractions"].items()]))
+                         [[label, str(data["fractions"][name]["n"]),
+                           f"{round(100 * data['fractions'][name]['fraction'])} %"] for name, label in FRACTION.items()]))
         out.append("")
         out.append("Efecto de cada factor alrededor del punto medio:\n")
         out.append(_effects(data["effects"], (30, 60, 120), 2,
@@ -182,7 +187,7 @@ def pressure(pack: dict) -> str:
         rows = []
         for index, row in enumerate(data["effects"]["sbp"]):
             mean = data["effects"]["map"][index]
-            rows.append([FACTOR.get(row["factor"], f"`{row['factor']}`"), level(row["level"]), STATUS[row["status"]]]
+            rows.append([FACTOR.get(row["factor"], f"`{row['factor']}`"), level(row["level"]), status(row)]
                         + [f"{num(row['values'].get(str(minute)), 0)} / {num(mean['values'].get(str(minute)), 0)}"
                            for minute in (15, 30, 60, 120)]
                         + [str(row["stopped_at"]) if row["stopped_at"] else ""])
@@ -194,8 +199,9 @@ def pressure(pack: dict) -> str:
 def collapse(pack: dict) -> str:
     data = pack["collapse"]
     out = ["Minutos de acumulación hasta el límite con gasto constante, en aritmética exacta: ⌈límite × umbral / "
-           "(ganancia × (umbral − gasto))⌉. La simulación suma el minuto en que cae el gasto y el minuto en que se "
-           "lee la transición, así que su paro llega después de esta cuenta:\n"]
+           "(ganancia × (umbral − gasto))⌉. Un paro simulado llega un minuto después (el minuto en que cae el gasto), "
+           "y uno más cuando el cociente es entero, porque la suma en coma flotante del modelo queda justo bajo el "
+           "límite:\n"]
     outputs = ("0.05", "0.1", "0.15", "0.2", "0.25", "0.35")
     rows = [[num(row["threshold"]), num(row["gain"]), num(row["limit"], 0)]
             + [str(row["minutes_to_transition"][output]) if row["minutes_to_transition"][output] else "nunca"
