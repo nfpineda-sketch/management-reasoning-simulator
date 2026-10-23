@@ -1551,10 +1551,33 @@ Bloquean la migración los 12 parámetros requeridos, todos `default_unmapped` e
   - los cuatro parámetros de la fuente hemorrágica.
 - **Normalización.** Umbral de colapso, demanda y entrega siguen relativos a la llegada (§11.9).
 - **SpO2 en una corrida.** Sólo responde a la FiO2.
+- **Lactato sin techo.** Con parámetros extremos fuera de las bandas (D de llegada 1e4) llega a 127 mmol/L (§12.12).
 
 ### 12.12 Revisión adversarial de P2F
 
-Pendiente al escribir esta sección; se completa con el resultado.
+Revisión de sólo lectura de `f008951..768feb3`, con sondas propias. Cada hallazgo se confirmó con una sonda antes de
+corregirlo.
+
+| # | Gravedad | Hallazgo | Resolución |
+|---|---|---|---|
+| 1 | Alta | HR1–HR4 corrían sobre una llegada que sólo declaraba la frecuencia intrínseca, no la del candidato; la clave de caché tampoco distinguía las llegadas | Arnés corregido y prueba nueva; re-congelado y barrido repetido (§12.6, §12.7). La sonda de la revisión predijo 162 rechazos HR1 en 72f (τ_D 30 con D de llegada 60) y una parada en un límite no resuelto en 57m |
+| 2 | Media | La historia previa reaparecía como vía de migración de la D y de la razón de entrega de llegada, y el lactato decía restringir la ganancia D → lactato y la D de llegada | Textos corregidos: ambas se declaran directamente; el lactato sólo fija la suma de basal y exceso aclarable |
+| 3 | Media | El techo de 60 de la banda de D de llegada no salía de su justificación escrita (daba ≈ 26) | Justificación corregida; valores sin cambio porque se congelaron antes del barrido. Queda como decisión docente, con un posible límite de alcanzabilidad (D ≤ g × demanda × τ_D) |
+| 4 | Media-baja | El digest no cubría auxiliares, datos ni escenarios | Ampliado en dos pasos (§12.6) |
+| 5 | Baja | DM1 no leía el perfil; HR3, HR4, CO1 y partes de AC2 no pueden fallar | DM1 pasa por el integrador; `Rule.guaranteed` marca las que no discriminan |
+| 6 | Baja | Notas de inferencia presentadas como verdad del caso; citas del HCO3 y de «sin líneas B»; FiO2 y ritmo clasificados como verdad del caso; «no cardiac history» | Notas marcadas como inferencia candidata, citas corregidas, FiO2 y ritmo con los valores por defecto, «the case mentions no cardiac disease» |
+
+Lo que la revisión encontró correcto, y no cambió:
+- el inventario (58 entradas, verificadas contra el banco) y el registro (53: 47 CANDIDATE, 4 DEFAULT_UNMAPPED,
+  2 SYNTHETIC_ONLY, 0 FACULTY_APPROVED);
+- los números del primer barrido, recalculados por la revisión;
+- sin optimización contra el motor heredado: la aceptación lee sólo A y nunca la sonda de plausibilidad;
+- los goldens (sólo etiquetas nuevas; `contracts_shadow` IDENTICAL);
+- las anclas nuevas: rechazan negativos, NaN e infinitos, y el objeto en caché no se puede alterar;
+- los invariantes con parámetros extremos, y el aislamiento.
+
+Nota de la revisión que queda como limitación (§12.11): el lactato no tiene techo; con parámetros extremos (D de
+llegada 1e4) llega a 127 mmol/L.
 
 ### 12.13 Gancho en tiempo de ejecución
 
