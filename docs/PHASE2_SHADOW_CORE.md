@@ -1800,7 +1800,8 @@ mismo.
   acuerdo con el valor. Un mapeo o un valor aprobado que dice otra cosa, o un mapeo roto (campo inexistente, regla o
   precondición que fallan, regla sin número exacto), bloquea. Un mapeo cuya precondición el caso no cumple no aplica.
   La precedencia entre la verdad del caso y un valor de familia queda para decisión metodológica; mientras tanto,
-  cualquier discrepancia bloquea.
+  cualquier discrepancia bloquea. **Sustituido en P2H-1 (§15):** entre el caso y la familia decide la política de
+  autoridad del parámetro; siguen bloqueando dos mapeos que discrepan, un mapeo roto y dos valores aprobados.
 - **Un parámetro sólo de diagnóstico** (`reference_preload_fraction`) no se exige; si se declara, se verifica como
   los demás.
 - **La puerta** (`migration_gate`) autoriza un parámetro sólo si la autoridad lo confirma y la reclamación coincide:
@@ -1860,7 +1861,7 @@ todos se confirmaron con sonda y se corrigieron, cada uno con su prueba:
 | F2 | media | `verify_case` se engañaba con subclases que redefinen la igualdad | forma canónica de tipos exactos |
 | F3 | media | un `case_id` subclase de `str` podía cruzar casos y la caché | `str` exacto; después, sólo el id del banco |
 | F4 | media | mutantes que sobrevivían, una prueba vacía y una regresión de poca potencia | pruebas de precondición, `cases`, reglas rotas; regresión y prueba de confirmación reforzadas; los 12 mutantes del revisor fallan |
-| F5 | media | el candidato elegía qué fuente contaba; fuentes que discrepaban autorizaban | unanimidad de las fuentes aplicables (precedencia: decisión pendiente) |
+| F5 | media | el candidato elegía qué fuente contaba; fuentes que discrepaban autorizaban | unanimidad de las fuentes aplicables (precedencia: decisión pendiente; sustituida por la precedencia de P2H-1, §15) |
 | F6 | baja | un parámetro sólo de diagnóstico declarado con valor de sonda no bloqueaba | se verifica si se declara |
 | F7 | baja | la llegada de referencia en caché podía quedar vieja | clave con el digest del registro del banco |
 | F8 | baja | `ApprovedDefault` no validaba tipos | números exactos y finitos |
@@ -1888,7 +1889,8 @@ todos se confirmaron con sonda y se corrigieron, cada uno con su prueba:
   no se aprueba globalmente.
 - La categoría del ensayo en seco de P2F-11 para `beta_blockade` («requiere valor por defecto de familia aprobado») no
   cambió; su texto ahora dice que la ausencia de mención no es evidencia de 0. Si esa categoría debe pasar a
-  «requiere decisión docente» es parte de la misma pregunta.
+  «requiere decisión docente» es parte de la misma pregunta. **P2H-1 la cambió por indicación del responsable del
+  proyecto (§15.4).**
 
 ### 14.6 Digest y paquete
 
@@ -1900,3 +1902,175 @@ todos se confirmaron con sonda y se corrigieron, cada uno con su prueba:
 - **El paquete de P2G se regeneró:** sus tablas numéricas son idénticas a las de `a4f33f2`; sólo cambian los digests.
 - **Documento docente:** §14 describe la regla, FD-49 sale de las decisiones abiertas (resuelta aquí) y FD-20 recoge la
   semántica A/B.
+
+## 15. P2H-1 · Precedencia de la autoridad de migración (2026-10-24)
+
+- **Base:** `4164d66` (P2H-0 aceptado y cerrado; FD-49 resuelta en arquitectura).
+- **Naturaleza:** semántica de la autoridad de migración. No cambia la fisiología, las bandas, las reglas, los escenarios
+  ni los adaptadores; no aprueba valores ni elige políticas; el GI no migra; no hay integración en tiempo de ejecución.
+
+### 15.1 La decisión aplicada
+
+Decisión metodológica aprobada por el responsable del proyecto: un valor por defecto de familia es un **respaldo**, no
+una fuente que compita con la verdad del paciente. Para un parámetro que admite que el caso lo sustituya:
+1. verdad del caso verificada (`explicit_case`, por un mapeo registrado);
+2. valor por defecto de familia aprobado;
+3. sin resolver: cierra.
+
+No se exige unanimidad entre el caso y el valor de familia. Esto sustituye la regla de unanimidad de §14.2 sólo entre
+esas dos fuentes; siguen cerrando dos mapeos del caso que discrepan entre sí, un mapeo roto y dos valores aprobados para
+un mismo parámetro.
+
+### 15.2 Dónde vive la política y qué dice
+
+- **Representación:** `migration_authority.AuthorityPolicy(family, parameter, policy, version, rationale)`, inmutable y de
+  tipos exactos, en el registro de confianza `AUTHORITY_POLICIES`, junto a los mapeos y las aprobaciones. La autoridad
+  la busca por familia y parámetro (`policy_for`).
+- **Nunca en la metadata del candidato:** `ProvenanceClaim` no tiene campo de política; `Anchors.declared` sólo admite
+  parámetros de caso; una entrada de familia es exactamente (valor, fuente).
+
+| Política | Con verdad del caso verificada | Sin ella, con valor de familia aprobado | Caso ≠ familia |
+|---|---|---|---|
+| `CASE_OVERRIDES_FAMILY_DEFAULT` | autoriza el caso | autoriza el valor de familia | autoriza el caso; el valor de familia no veta; la diferencia se registra |
+| `FAMILY_FIXED` | no decide: autoriza el valor de familia si coincide | autoriza el valor de familia | cierra: la sustitución por el caso no está permitida |
+| `CASE_REQUIRED` | autoriza el caso | cierra: un valor de familia no es respaldo | autoriza el caso; la diferencia se registra |
+
+- **Sin política declarada, o con más de una:** cierra. Una política desconocida no se puede construir.
+- **Orden de `authorize(parameter, value)`:**
+  1. registros de tipo exacto: una entrada que no es exactamente `AuthorityPolicy`, `CaseMapping` o `ApprovedDefault`
+     cierra todo;
+  2. política (se informa aunque ninguna fuente tenga el parámetro);
+  3. fuentes de confianza del parámetro;
+  4. valor exacto;
+  5. caso verificado;
+  6. mapeos recalculados desde la verdad del caso, sin mirar el valor entregado;
+  7. integridad de los registros;
+  8. selección según la política;
+  9. comparación del valor entregado con lo que resuelve la autoridad seleccionada.
+
+  La reclamación sigue sin ser una entrada: sólo restringe, en la puerta. Si reclama la autoridad que la política no
+  seleccionó, se rechaza.
+- **En producción `AUTHORITY_POLICIES` está vacío.** Qué política lleva cada parámetro GI no es una consecuencia de la
+  regla, sino una decisión metodológica por parámetro (FD-50). Hasta entonces todos cierran por falta de política; ya
+  cerraban por los registros vacíos.
+
+### 15.3 Informe de procedencia
+
+Cada fila de la puerta lleva en `authority`:
+- **`kind`, `reference`, `version`:** la autoridad que la política seleccionó (mapeo o aprobación), también en un
+  rechazo; `None` si no seleccionó ninguna;
+- **`confirmed`:** si esa autoridad sostiene el valor entregado. Una fila puede tener `confirmed` y no ser migrable,
+  si la reclamación no coincide;
+- **`policy`;**
+- **`resolved`:** el valor que la autoridad recalculó desde el caso, o el valor o rango aprobado;
+- **`not_used`:** las fuentes de confianza que existían y no decidieron, con el motivo. Puede ser por precedencia, por una
+  precondición no cumplida, por un mapeo limitado a otro caso, por un estado no aprobado o porque el respaldo no está
+  permitido;
+- **`conflicts`:** las discrepancias, también las que la precedencia resolvió.
+
+Si varios mapeos coinciden, el orden del registro selecciona uno y los demás aparecen en `not_used`; una reclamación
+que nombra otro de ellos se rechaza, porque sólo restringe. `authority` es `None` sólo cuando la autoridad no llegó a
+consultarse (fuente no migrable o no declarada). Ninguna discrepancia se descarta en silencio.
+
+### 15.4 Betabloqueo
+
+- La categoría del ensayo en seco de `beta_blockade` pasa a `E. FACULTY AUTHORING DECISION REQUIRED`; antes era
+  «requiere valor por defecto de familia aprobado».
+- **Pregunta abierta (FD-20):** ¿la autoría GI debe exigir una conciliación de medicación explícitamente completa, capaz
+  de probar `beta_blockade` = 0, o la docencia debe aprobar un valor por defecto de familia GI?
+- P2H-1 no elige ni infiere 0 de la ausencia de mención.
+- En términos de política, la primera opción sería `CASE_REQUIRED` con un mapeo cuya precondición es la completitud. La
+  segunda sería un valor aprobado con `CASE_OVERRIDES_FAMILY_DEFAULT` o `FAMILY_FIXED` (FD-50).
+
+### 15.5 Pruebas (`test_clinical_core_migration_gate.py`)
+
+Con registros y políticas de prueba (`test_p2h1_*`):
+1. la verdad del caso verificada prevalece sobre un valor de familia distinto con `CASE_OVERRIDES_FAMILY_DEFAULT`, y la
+   discrepancia queda en `conflicts`;
+2. el valor de familia se usa cuando no hay mapeo del caso, o el mapeo no aplica a ese caso;
+3. `FAMILY_FIXED` rechaza la sustitución por un caso distinto, cualquiera sea el valor o la fuente reclamada. Con un
+   caso que coincide autoriza la familia, y una reclamación `explicit_case` se rechaza;
+4. `CASE_REQUIRED` rechaza el respaldo de familia y autoriza la verdad del caso;
+5. la metadata del candidato no puede cambiar la política. No hay dónde ponerla: en una reclamación es un `TypeError`,
+   en `declared` un `CoreInvariantError`, en una entrada de familia `MigrationBlocked`. Sesenta reclamaciones aleatorias
+   por política no cambian la política, el valor resuelto ni los conflictos;
+6. reclamar la precedencia contraria (que gane el valor de familia) no cambia la autorización: la política sigue
+   seleccionando el caso;
+7. una política no declarada, duplicada o de otra familia cierra, y una política desconocida no se construye;
+8. el informe dice qué autoridad ganó, con su política, el valor resuelto y lo que no se usó, también en un rechazo.
+
+Además, la producción no declara ninguna política y cada parámetro GI cierra por eso. Las pruebas `test_review_*` de
+§15.7 cubren los bordes que halló la revisión.
+
+- **Se mantienen intactas** las ocho sondas de suplantación de FD-49 y la regresión de 144 combinaciones.
+- **Pruebas adaptadas, y por qué:**
+  - el fixture `trust` instala, además de mapeos y aprobaciones, una tabla de políticas de prueba
+    (`CASE_OVERRIDES_FAMILY_DEFAULT` para cada parámetro GI). Sin ella, todo cerraría por falta de política y las
+    pruebas de P2H-0 dejarían de probar lo suyo;
+  - la de F5 cubre ahora mapeos que discrepan y valores aprobados duplicados, porque caso contra familia es precedencia;
+  - la de F4 lee el motivo también en `not_used`;
+  - la del diccionario de autoridad incluye los campos nuevos.
+- `test_clinical_core_calibration_framework.py` comprueba la categoría E de `beta_blockade`, y
+  `test_clinical_core_decision_pack.py` admite el id retirado FD-49 sin reutilizarlo.
+
+### 15.6 Digest y paquete
+
+- **Nuevo componente `authority_registries`:** los tres registros tal como están cargados. Incluye las políticas; los
+  mapeos, con id, versión, campos, requisitos, casos y el código de su precondición y su regla; y las aprobaciones
+  (`migration_authority.registry_content`). Las políticas son parte de la frontera de confianza: cambiar sólo la
+  política de un parámetro cambia el digest (`test_a_changed_authority_registry_changes_the_digest`).
+- **Cómo se fija el código de un mapeo.** La precondición y la regla deben ser funciones Python normales definidas en
+  el repositorio; un `partial`, un objeto invocable o un método ligado no se pueden construir. El digest las fija por
+  su fuente (o su bytecode, si no hay fuente), sus constantes, sus valores por defecto (también los de sólo palabra
+  clave), su closure y los globales que nombran. Los módulos y clases del repositorio se fijan por su archivo. Los
+  conjuntos y diccionarios se ordenan, así que el digest es el mismo con cualquier `PYTHONHASHSEED`. Un contenido que
+  no puede fijarse así (un objeto cuya repr lleva una dirección, por ejemplo) hace fallar el digest de forma explícita,
+  en vez de omitirlo.
+- **Cambian:**
+  - `migration_sources` (`migration.py`, `migration_authority.py`);
+  - `harness_sources`, porque `calibration.py` declara el componente nuevo;
+  - el congelamiento: `d293793a…` pasa a `8048c04f…`.
+- **No cambian** `rules`, `bands`, `scenarios`, `input_path_sources`, `input_adapter_sources` ni `scenario_inputs`, así
+  que no se repitió el barrido de P2F.
+- **El paquete de P2G se regeneró:** sus tablas numéricas son idénticas a las de `4164d66`; sólo cambian los digests.
+- **Documento docente:**
+  - §14 reemplaza la unanimidad por la precedencia y describe el informe;
+  - FD-20 lleva la pregunta de autoría con sus dos opciones;
+  - FD-50 es la política de cada parámetro;
+  - quedan 49 decisiones abiertas.
+
+### 15.7 Revisión adversarial de precedencia y política (sólo lectura)
+
+La revisión confirmó que la precedencia era correcta en todos los escenarios probados. También halló seis puntos y
+un endurecimiento. Cada uno se reprodujo con su sonda y se corrigió con su prueba (`test_review_m*`, `test_review_f*`,
+`test_review_h1_*`):
+
+| # | Gravedad | Hallazgo | Corrección |
+|---|---|---|---|
+| F1 | media | 7 mutantes que rompían la política sobrevivían a las pruebas: FAMILY_FIXED recurría al caso; CASE_REQUIRED recurría al valor de familia si el mapeo no aplicaba; defaults duplicados tolerados si ganaba el caso; un rango nunca «difería»; precondición no cumplida que bloqueaba; rango exclusivo; conflicto con un rango descartado | pruebas para cada uno; hacen fallar al menos una prueba los 8 mutantes de la revisión que siguen aplicando, un equivalente de su M13 y 13 mutantes de las correcciones |
+| F2 | media | el digest no veía un cambio en un default de sólo palabra clave, en una lambda sin fuente, en un invocable, en un método ligado ni en una tabla global que lee la regla; con un `partial` o un conjunto en el closure cambiaba entre intérpretes | funciones normales del repositorio, forma canónica (§15.6) y fallo explícito ante lo que no puede fijarse |
+| F3 | media (decisión) | con FAMILY_FIXED y un rango aprobado, un valor dentro del rango se autorizaba aunque la verdad del caso, también dentro, fuera otra, sin dejar rastro | la diferencia queda en `conflicts`; la autorización no cambia: si debe rechazarse es parte de FD-50 |
+| F4 | baja | un `int` que el float no representa exactamente (2⁵³ + 1) se autorizaba contra 2⁵³ | `exact_number` lo rechaza |
+| F5 | baja | la puerta llamaba a `repr`/`str` del objeto del candidato: un `__repr__` que lanza escapaba como `RuntimeError` (también con los registros de producción vacíos) y uno mentiroso falseaba el motivo o la fuente | `migration_authority.shown`: nunca llama a métodos del candidato |
+| F6 | baja | en un rechazo el informe no decía qué autoridad había seleccionado la política; un segundo mapeo que coincidía desaparecía del informe; la política no se informaba si no había fuentes | `selected` y `confirmed` en el informe; los mapeos que coinciden van a `not_used`; la política se informa siempre |
+| H1 | endurecimiento | los registros se usaban sin comprobar el tipo de cada entrada: una tupla escapaba como `AttributeError` y un `SimpleNamespace` saltaba la validación | tipos exactos; si no, cierra todo y el digest falla |
+
+**Lo que la revisión confirmó que resiste:**
+- CASE_OVERRIDES: el caso gana sin unanimidad y el conflicto se registra.
+- FAMILY_FIXED bloquea si el caso difiere, si no hay valor aprobado o si sólo hay un borrador.
+- CASE_REQUIRED bloquea con un mapeo de otro caso o una precondición no cumplida, aunque haya valor de familia.
+- Una política no declarada, duplicada o de otra familia cierra.
+- La reclamación no llega a `authorize` y sólo restringe.
+- Producción: 0 políticas, 0 mapeos y 0 valores aprobados; los dos casos GI fallan la puerta; `beta_blockade` está en
+  la categoría E.
+
+**Límites que quedan:**
+- Una regla del repositorio puede leer un módulo de fuera del repositorio (la biblioteca estándar); de ese módulo el
+  digest sólo fija el nombre.
+- La revisión propuso restringir las reglas a funciones definidas en `MIGRATION_SOURCES`. No se adoptó: es una
+  decisión de arquitectura. Hoy basta con que estén en el repositorio.
+- Los registros de confianza siguen siendo globales del módulo, como en P2H-0. El digest fija ahora su contenido cargado.
+
+### 15.8 Gancho en tiempo de ejecución
+
+Ninguno. `clinical_core` sigue sólo en sombra; ningún módulo de la aplicación lo importa.

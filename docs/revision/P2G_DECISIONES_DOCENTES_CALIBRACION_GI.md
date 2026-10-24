@@ -4,7 +4,7 @@ Apoyo a decisiones, no decisiones. Nada de este documento aprueba un número, ma
 FACULTY_APPROVED, migra el GI, toca el tiempo de ejecución ni cambia lo que ve el residente. Todos los valores
 siguen CANDIDATE.
 
-- **Generado desde:** el congelamiento de calibración `d293793aa4de3c646ff13e4f8863d0a0800ef0d4665521dffcbe6f32d2f14dfe` y el paquete `cd15056e53a9c303d0128501d31a361be70e6fc27bc513ed5fdb89f1c1762dea`
+- **Generado desde:** el congelamiento de calibración `8048c04f8b605323eb61a0cf57fa25424f7e6a3953e796f1fe6e198f2022e877` y el paquete `0870611dec643898b380e45590b9e602a62d4ce458984ae850bf94021fc630db`
   (`python -m clinical_core.decision_pack`; las tablas, con `python -m clinical_core.decision_pack_markdown`).
   Los números están en `docs/revision/P2G_decision_pack.json`. Una prueba falla si el código o las entradas cambian
   sin regenerarlos.
@@ -910,7 +910,7 @@ modelo); la evidencia del repositorio es lo que dicen los casos.
 | FD-17 | Rango plausible de FR en el shock GI no complicado | sigue al lactato (FD-01–FD-03) | FR visible | 13–15 | 36–38 | FR 26 / 24 (`:881`, `:910`) | §7 | | ABIERTA |
 | FD-18 | Taquipnea metabólica máxima | `rr_metabolic_max` 15–25–30; `rr_per_lactate` 3–7,5–12; `lactate_drive_threshold_mmol_l` 1,5–2–2,5 | techo de la FR | máximo 15: techo teórico 27,5–36,3 (57m) y 27,3–36,5 (72f) | máximo 30: 35,4–50,8 (57m) y 38,0–51,4 (72f), recortado a 40 si `rr_max` es 40 | gasometría (`:901`, `:930`) | §7 (cotas del modelo) | | ABIERTA |
 | FD-19 | Límite inferior de la FR en la recuperación | `rr_ventilatory_floor` 10–12–14 y `rr_per_lactate`, `lactate_drive_threshold_mmol_l`, `rr_metabolic_max` (que reparten la FR de llegada) | piso de la FR | piso 10–13 (reparto metabólico grande) | piso hasta 21,3 (57m) y 21,5 (72f) (reparto metabólico pequeño) | ninguna | §7 (cotas del modelo) | | ABIERTA |
-| FD-20 | `beta_blockade` | A: fuente de medicación completa sin betabloqueador → 0 por un mapeo registrado / B: no mencionado o información incompleta → no es evidencia de 0; ¿cómo se autoriza entonces? (por caso, autoría o decisión docente) | FC | — | — | medicación sin betabloqueador listado y sin constancia de lista completa (`:889`, `:918`) | §8, §14 | | ABIERTA |
+| FD-20 | `beta_blockade` | ¿Cómo se autoriza? A: la autoría GI exige una conciliación de medicación explícitamente completa, capaz de probar β = 0 (`CASE_REQUIRED` con un mapeo registrado cuya precondición es esa completitud) / B: la docencia aprueba un valor por defecto de familia GI (`CASE_OVERRIDES_FAMILY_DEFAULT` o `FAMILY_FIXED`). En ninguna opción la ausencia de mención es evidencia de 0 | FC | — | — | medicación sin betabloqueador listado y sin constancia de lista completa (`:889`, `:918`) | §8, §14 |  | ABIERTA |
 | FD-21 | `pump_reserve` | 1,0 de familia sin hallazgos / por caso | congestión | reserva 0,7: congestión con volumen | 1,0: sin congestión | §8 | §6 | | ABIERTA |
 | FD-22 | `volume_loss_ml_per_min` (`gi_volume_loss_ml_per_min`) | 2,5 de familia / por caso / otra tasa | caída de la PA, lactato, FC | × 0,5: PAS 80 a los 60 min | × 2: PAS 26 a los 60 min | ninguna tasa (`:890`, `:921`) | §4, §8 | | ABIERTA |
 | FD-23 | `hb_loss_g_dl_per_min` (`gi_hb_loss_g_dl_per_min`) | 0,009 de familia / coherente con FD-22 | Hb | — | — | Hb 6,7 / 6,4 | §8 | | ABIERTA |
@@ -939,11 +939,13 @@ modelo); la evidencia del repositorio es lo que dicen los casos.
 | FD-46 | Posición de precarga de las sondas neutras | `arrival_preload_fraction` 0,3–0,5–0,7 | reglas congeladas que leen la llegada neutra (PL2) | 0,3: PL2 falla su cláusula 2 con escala 600 u 833 (§9) | 0,5 y 0,7: PL2 se cumple | ninguna (no es un dato de caso) | §9 | | ABIERTA |
 | FD-47 | Lpm por unidad de impulso simpático | `hr_per_sympathetic_drive` 25 (banda de un punto: el literal del motor, adoptado en P2C) | escala de la parte simpática de la FC | — | — | literal del motor de familias | §3 | | ABIERTA |
 | FD-48 | Tope de seguridad de la FR | `rr_max` 40–60 | techo de la FR | 40: recorta el techo teórico cuando `rr_metabolic_max` ≥ 25 | 60: no recorta ningún punto de la cuadrícula | ninguna (no es fisiología) | §7 | | ABIERTA |
+| FD-50 | Política de autoridad de cada parámetro GI | por parámetro: `CASE_OVERRIDES_FAMILY_DEFAULT` (prevalece la verdad del caso verificada; el valor de familia aprobado es sólo respaldo) / `FAMILY_FIXED` (manda el valor de familia; un valor de caso distinto bloquea) / `CASE_REQUIRED` (exige verdad del caso; sin respaldo de familia). Además, con `FAMILY_FIXED` y un rango aprobado: ¿se acepta un valor del rango distinto de la verdad del caso? (hoy se acepta y la diferencia queda registrada) | qué fuente de confianza puede autorizar cada uno de los 12 bloqueos de la puerta | — | — | ninguna política declarada (`AUTHORITY_POLICIES` vacío): sin política, el parámetro cierra | §14 | | ABIERTA |
 
-**Decisiones abiertas: 48.**
+**Decisiones abiertas: 49.**
 
 FD-49 (la puerta confiaba en la fuente declarada) quedó resuelta en P2H-0 por decisión del responsable del proyecto
-(2026-10-23): ya no es una decisión abierta. La regla nueva está en §14.
+(2026-10-23): ya no es una decisión abierta. La regla nueva está en §14. Su id no se reutiliza: la decisión siguiente
+es FD-50 (P2H-1).
 
 **Parámetros del registro fuera de esta tabla, con el motivo.** Cada nombre del registro está en la tabla o aquí; una
 prueba lo comprueba.
@@ -958,17 +960,19 @@ prueba lo comprueba.
 - `collapse_rule_test_values`, `vasodilation_with_demand_probe_factor`: SYNTHETIC_ONLY, valores de prueba y de sonda;
   nunca valores de caso.
 
-## 14. Puerta de migración (P2G-14, P2H-0)
+## 14. Puerta de migración (P2G-14, P2H-0, P2H-1)
 
-- **Ensayo en seco:** `migration.gate_dry_run` se repitió al cierre de P2H-0. Los dos casos GI siguen fallando, cada uno
+- **Ensayo en seco:** `migration.gate_dry_run` se repitió al cierre de P2H-1. Los dos casos GI siguen fallando, cada uno
   con 12 bloqueos:
   - los 6 parámetros de caso que requieren decisión docente;
-  - `beta_blockade` y `pump_reserve`;
+  - `beta_blockade`, ahora en la categoría «E. requiere decisión docente de autoría» (P2H-1);
+  - `pump_reserve`, que requiere un valor por defecto de familia aprobado;
   - los 4 de la fuente hemorrágica.
 - **Ningún valor aprobado ni mapeado:**
   - FACULTY_APPROVED: 0 entradas en el registro;
-  - los dos registros de confianza están vacíos: `migration_authority.TRUSTED_CASE_MAPPINGS` (mapeos desde la verdad
-    del caso) y `migration_authority.APPROVED_FAMILY_DEFAULTS` (valores por defecto de familia aprobados).
+  - los tres registros de confianza están vacíos: `migration_authority.TRUSTED_CASE_MAPPINGS` (mapeos desde la verdad
+    del caso), `migration_authority.APPROVED_FAMILY_DEFAULTS` (valores por defecto de familia aprobados) y
+    `migration_authority.AUTHORITY_POLICIES` (la política de autoridad de cada parámetro, P2H-1).
 - **Regla de integridad de la procedencia (P2H-0, resuelve FD-49).** Una etiqueta de fuente no se autoriza a sí misma.
   La puerta separa tres cosas:
   1. el valor del parámetro;
@@ -988,9 +992,22 @@ prueba lo comprueba.
   confirmación. La reclamación sólo puede restringir: `default_unmapped`, `synthetic_probe` y cualquier CANDIDATE
   nunca autorizan, y ningún cambio de etiqueta, referencia, familia o caso reclamado convierte un valor no confirmado
   en autorizado.
-- **Todas las fuentes de confianza aplicables deben coincidir.** Si la verdad del caso y un valor de familia aprobado
-  discrepan, o dos mapeos discrepan, el parámetro queda bloqueado. Qué fuente prevalece es una decisión metodológica
-  pendiente; mientras tanto, la discrepancia cierra.
+- **Precedencia de la autoridad (P2H-1; sustituye la unanimidad de P2H-0).** Un valor por defecto de familia es un
+  respaldo, no una fuente que compita con la verdad del paciente. Qué fuente decide cada parámetro lo fija su
+  política, declarada en la configuración de confianza (`AUTHORITY_POLICIES`), nunca en la metadata del candidato:
+  - `CASE_OVERRIDES_FAMILY_DEFAULT`: 1. la verdad del caso verificada; 2. el valor de familia aprobado, sólo si
+    ningún mapeo del caso aplica; 3. sin resolver, cierra. Si el caso y el valor de familia discrepan, autoriza el
+    caso: el valor de familia no veta;
+  - `FAMILY_FIXED`: manda el valor de familia aprobado; una verdad del caso distinta es una sustitución que la
+    política no permite, y cierra;
+  - `CASE_REQUIRED`: exige la verdad del caso verificada; un valor de familia nunca es respaldo, y sin caso cierra.
+
+  Un parámetro sin política declarada cierra. Siguen cerrando: dos mapeos del caso que discrepan entre sí, un mapeo
+  roto y dos valores aprobados para un mismo parámetro. **Hoy no hay ninguna política declarada:** elegir la de cada
+  parámetro es FD-50, y mientras tanto todos cierran.
+- **Informe de procedencia.** Cada fila de la puerta dice qué autoridad ganó (tipo, id y versión del mapeo o de la
+  aprobación), la política, el valor que la autoridad recalculó o resolvió, qué fuente de confianza existía y no se
+  usó, y por qué. Una discrepancia que la precedencia resuelve no se descarta: queda registrada.
 - **Lo que las pruebas comprueban** (`test_clinical_core_migration_gate.py`):
   - las ocho sondas de suplantación fallan cerradas: candidato reetiquetado como `explicit_case` sin evidencia del
     caso; candidato reetiquetado como `approved_family_default` sin registro; caso equivocado; familia equivocada;
@@ -1001,13 +1018,20 @@ prueba lo comprueba.
   - sólo cambiar una fuente de confianza cambia la autorización;
   - la autoridad no recibe la reclamación (firma de la función) ni importa la puerta;
   - el bypass de la revisión de P2G (todo reetiquetado como `explicit_case`, también los parámetros de familia) ya
-    no pasa.
+    no pasa;
+  - la precedencia (P2H-1), con registros y políticas de prueba: la verdad del caso prevalece sobre un valor de
+    familia distinto con `CASE_OVERRIDES_FAMILY_DEFAULT`; el valor de familia se usa cuando ningún mapeo aplica;
+    `FAMILY_FIXED` rechaza la sustitución por el caso; `CASE_REQUIRED` rechaza el respaldo de familia; ni la metadata
+    del candidato ni la precedencia que reclama cambian la política o la autorización; una política no declarada
+    cierra; el informe dice qué autoridad ganó.
 - **Semántica del betabloqueo para la autoría (sin decidir):**
   - A. una fuente de medicación o antecedentes explícitamente completa que muestre que no hay betabloqueador podría
     mapearse a `beta_blockade` = 0 con un mapeo registrado;
   - B. un betabloqueador que simplemente no se menciona, o información de medicación incompleta, no es evidencia de
     `beta_blockade` = 0.
 
-  La verdad del repositorio no establece que la lista de medicación de 57m o de 72f esté completa: la pregunta queda
-  para la docencia y la autoría (FD-20).
+  La verdad del repositorio no establece que la lista de medicación de 57m o de 72f esté completa. La pregunta
+  abierta (FD-20) es: ¿la autoría GI debe exigir una conciliación de medicación explícitamente completa, capaz de
+  probar `beta_blockade` = 0, o la docencia debe aprobar un valor por defecto de familia GI? P2H-1 no elige entre
+  las dos ni infiere 0 de la ausencia de mención.
 - **El GI no se declara migrado** ni calibrado.
