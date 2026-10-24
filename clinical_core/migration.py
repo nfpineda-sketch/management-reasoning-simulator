@@ -10,8 +10,10 @@ Three things are kept apart (P2H-0, FD-49):
    the approved-family-default registry.
 
 A parameter lets the family migrate only when the authority confirms its value AND the claim
-is consistent with that confirmation. A claim can only restrict: no source label, reference,
-case id or family named by the candidate can authorize a value the authority does not confirm.
+is consistent with that confirmation. Which trusted source decides is the parameter's authority
+policy in ``migration_authority.AUTHORITY_POLICIES`` (P2H-1), never the candidate's. A claim can
+only restrict: no source label, reference, case id or family named by the candidate can
+authorize a value the authority does not confirm or change which authority is selected.
 The sources:
 - ``explicit_case``: claims the value is case truth; it needs a confirmation from a registered
   case mapping (``migration_authority.TRUSTED_CASE_MAPPINGS``);
@@ -96,7 +98,8 @@ class ProvenanceClaim:
             value = getattr(self, item.name)
             # Exact strings only: a subclass could compare equal to anything.
             if not (type(value) is str and value) and not (value is None and item.name != "source"):
-                raise MigrationBlocked(f"a provenance claim's {item.name} is a non-empty plain string, not {value!r}")
+                raise MigrationBlocked(f"a provenance claim's {item.name} is a non-empty plain string, not "
+                                       f"{migration_authority.shown(value)}")
 
 
 def migration_gate(family: str, anchors: Anchors, family_parameters: Mapping[str, tuple] | None = None,
@@ -123,7 +126,7 @@ def migration_gate(family: str, anchors: Anchors, family_parameters: Mapping[str
         raise MigrationBlocked(f"{family}: claims for {sorted(unknown)}, which are not case parameters of this family")
     for name, claim in claims.items():
         if not isinstance(claim, ProvenanceClaim):
-            raise MigrationBlocked(f"{family}: the claim for {name} is a ProvenanceClaim, not {claim!r}")
+            raise MigrationBlocked(f"{family}: the claim for {name} is a ProvenanceClaim, not {migration_authority.shown(claim)}")
     authority = migration_authority.AuthoritySession(family, anchors)
     rows = {}
     # A diagnostic-only parameter is not required, but one that is declared is checked like the rest.
@@ -131,7 +134,7 @@ def migration_gate(family: str, anchors: Anchors, family_parameters: Mapping[str
     for name in checked:
         declared = case[name]["source"]
         if type(declared) is not str:
-            rows[name] = _refused(case[name]["value"], str(declared), "the declared source is not a plain string")
+            rows[name] = _refused(case[name]["value"], migration_authority.shown(declared), "the declared source is not a plain string")
             continue
         claim = claims.get(name, ProvenanceClaim(declared))
         if claim.source != declared:
@@ -142,7 +145,7 @@ def migration_gate(family: str, anchors: Anchors, family_parameters: Mapping[str
     for name in gate.family_parameters:
         entry = given.get(name, (None, UNMAPPED))
         if not isinstance(entry, tuple) or len(entry) != 2:
-            raise MigrationBlocked(f"{family}: {name} is declared as (value, source), not {entry!r}")
+            raise MigrationBlocked(f"{family}: {name} is declared as (value, source), not {migration_authority.shown(entry)}")
         value, claim = entry
         claim = claim if isinstance(claim, ProvenanceClaim) else ProvenanceClaim(claim) if isinstance(claim, str) \
             else None
@@ -152,13 +155,15 @@ def migration_gate(family: str, anchors: Anchors, family_parameters: Mapping[str
             raise MigrationBlocked(f"{family}: {name} from unknown source {claim.source!r}")
         if claim.source != UNMAPPED and migration_authority.exact_number(value) is None:
             raise MigrationBlocked(f"{family}: {name} declared from {claim.source} needs an exact finite number, "
-                                   f"not {value!r}")
+                                   f"not {migration_authority.shown(value)}")
         rows[name] = _row(family, anchors, name, value, claim, authority)
     return rows
 
 
-def _refused(value, source: str, reason: str) -> dict:
-    return {"value": value, "source": source, "migratable": False, "reason": reason, "authority": None}
+def _refused(value, source: str, reason: str, verdict: migration_authority.Authority | None = None) -> dict:
+    """``authority`` is ``None`` when the authority was not consulted, else its provenance report."""
+    return {"value": value, "source": source, "migratable": False, "reason": reason,
+            "authority": None if verdict is None else verdict.report()}
 
 
 def _row(family: str, anchors: Anchors, name: str, value, claim: ProvenanceClaim,
@@ -170,11 +175,13 @@ def _row(family: str, anchors: Anchors, name: str, value, claim: ProvenanceClaim
         return _refused(value, claim.source, f"a {claim.source} value never authorizes a migration")
     verdict = authority.authorize(name, value)
     if not verdict.authorized:
-        return _refused(value, claim.source, f"no trusted source confirms {value!r}: {verdict.reason}")
+        return _refused(value, claim.source, f"no trusted source confirms {migration_authority.shown(value)}: {verdict.reason}",
+                        verdict)
     if claim.family is not None and claim.family != family:
-        return _refused(value, claim.source, f"the claim names family {claim.family!r}, not {family!r}")
+        return _refused(value, claim.source, f"the claim names family {claim.family!r}, not {family!r}", verdict)
     if claim.case_id is not None and claim.case_id != anchors.case_id:
-        return _refused(value, claim.source, f"the claim names case {claim.case_id!r}, not {anchors.case_id!r}")
+        return _refused(value, claim.source, f"the claim names case {claim.case_id!r}, not {anchors.case_id!r}",
+                        verdict)
     kind = REQUIRED_AUTHORITY[claim.source]
     matching = [item for item in verdict.confirmations if item.kind == kind]
     if claim.source == "explicit_case":
@@ -189,12 +196,13 @@ def _row(family: str, anchors: Anchors, name: str, value, claim: ProvenanceClaim
         if claim.mapping_id is not None or claim.mapping_version is not None or claim.source_path is not None:
             matching = []
     if not matching:
-        return _refused(value, claim.source, f"the claim does not match what the trusted sources confirm: "
-                                             f"{[(item.kind, item.reference, item.version) for item in verdict.confirmations]}")
+        return _refused(value, claim.source, f"the claim does not match the authority the policy selects: "
+                                             f"{[(item.kind, item.reference, item.version) for item in verdict.confirmations]}",
+                        verdict)
     confirmed = matching[0]
     return {"value": value, "source": claim.source, "migratable": True,
-            "reason": f"verified: {confirmed.kind} {confirmed.reference} v{confirmed.version}",
-            "authority": {"kind": confirmed.kind, "reference": confirmed.reference, "version": confirmed.version}}
+            "reason": f"verified: {confirmed.kind} {confirmed.reference} v{confirmed.version} ({verdict.policy})",
+            "authority": verdict.report()}
 
 
 def check_migration_gate(family: str, anchors: Anchors, family_parameters: Mapping[str, tuple] | None = None,
@@ -208,7 +216,7 @@ def check_migration_gate(family: str, anchors: Anchors, family_parameters: Mappi
     blocked = {name: row for name, row in rows.items() if not row["migratable"]}
     if blocked:
         detail = "; ".join(f"{name} ({row['source']}: {row['reason']})" for name, row in sorted(blocked.items()))
-        raise MigrationBlocked(f"{family} cannot migrate case {anchors.case_id!r}: {detail}")
+        raise MigrationBlocked(f"{family} cannot migrate case {migration_authority.shown(anchors.case_id)}: {detail}")
     return rows
 
 
@@ -226,15 +234,19 @@ MAPPABLE = "A. MAPPABLE FROM EXISTING CASE TRUTH"
 FAMILY_DEFAULT = "B. REQUIRES APPROVED FAMILY DEFAULT"
 FACULTY = "C. REQUIRES FACULTY DECISION"
 NOT_REQUIRED = "D. NOT REQUIRED FOR GI"
-DRY_RUN_CATEGORIES = (MAPPABLE, FAMILY_DEFAULT, FACULTY, NOT_REQUIRED)
+#: P2H-1: the authoring of the case itself is undecided, not only a value.
+FACULTY_AUTHORING_DECISION_REQUIRED = "E. FACULTY AUTHORING DECISION REQUIRED"
+DRY_RUN_CATEGORIES = (MAPPABLE, FAMILY_DEFAULT, FACULTY, NOT_REQUIRED, FACULTY_AUTHORING_DECISION_REQUIRED)
 
 #: How each GI parameter could become migratable, from the repository-truth inventory
 #: (gi_reference.INVENTORY). A CANDIDATE band is never a mapping: it only informs the decision.
 GI_DRY_RUN: Mapping[str, tuple[str, str]] = {
-    "beta_blockade": (FAMILY_DEFAULT, "neither case lists a beta-blocker (clinical_cases.py:889, :918), but neither "
-                                      "states that its medication list is complete. Absence of mention is not "
-                                      "evidence of 0 (P2H-0): 0 would need a registered case mapping whose "
-                                      "precondition is a complete medication source, or a faculty decision"),
+    "beta_blockade": (FACULTY_AUTHORING_DECISION_REQUIRED,
+                      "neither case lists a beta-blocker (clinical_cases.py:889, :918), but repository truth does not "
+                      "establish that either medication/history source is complete, and absence of mention is not "
+                      "evidence of 0 (P2H-0). Undecided: should GI case authoring require an explicitly complete "
+                      "medication reconciliation capable of proving beta_blockade = 0, or should faculty approve a "
+                      "GI-family default?"),
     "preload_fraction": (FACULTY, "POCUS places both arrivals low on the curve (clinical_cases.py:154-156); the "
                                   "position is a candidate band, not case truth"),
     "pump_reserve": (FAMILY_DEFAULT, "the case mentions no cardiac disease; no B-lines, no oedema, troponin below "

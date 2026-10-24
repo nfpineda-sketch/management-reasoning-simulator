@@ -68,11 +68,23 @@ FULL_TRUST = {"mappings": tuple(mapping(name, value) for name, value in VALUES.i
               "defaults": tuple(approval(name, 1.0) for name in GI.family_parameters)}
 
 
+#: Every GI parameter the gate can check (case, family and diagnostic-only).
+GI_PARAMETERS = (*GI.case_parameters, *GI.family_parameters, "reference_preload_fraction")
+
+
+def policies(policy=authority.CASE_OVERRIDES_FAMILY_DEFAULT, family="gi_bleed", **overrides):
+    """A test-only policy table: ``policy`` for every GI parameter unless overridden by name."""
+    return tuple(authority.AuthorityPolicy(family, name, overrides.get(name, policy), "test",
+                                           "test only: not a methodological decision")
+                 for name in GI_PARAMETERS)
+
+
 @pytest.fixture
 def trust(monkeypatch):
-    def install(mappings=(), defaults=()):
+    def install(mappings=(), defaults=(), policy_table=None):
         monkeypatch.setattr(authority, "TRUSTED_CASE_MAPPINGS", tuple(mappings))
         monkeypatch.setattr(authority, "APPROVED_FAMILY_DEFAULTS", tuple(defaults))
+        monkeypatch.setattr(authority, "AUTHORITY_POLICIES", policies() if policy_table is None else tuple(policy_table))
     return install
 
 
@@ -94,8 +106,9 @@ def test_a_case_passes_only_when_trusted_sources_confirm_every_value(trust):
     trust(**FULL_TRUST)
     rows = check_migration_gate("gi_bleed", real(), FAMILY_APPROVED)
     assert all(row["migratable"] for row in rows.values()) and set(rows) == set(VALUES) | set(FAMILY_APPROVED)
-    assert rows["beta_blockade"]["authority"] == {"kind": authority.CASE_MAPPING,
-                                                  "reference": "test-map:beta_blockade", "version": "1"}
+    assert rows["beta_blockade"]["authority"] == {
+        "kind": authority.CASE_MAPPING, "reference": "test-map:beta_blockade", "version": "1", "confirmed": True,
+        "policy": authority.CASE_OVERRIDES_FAMILY_DEFAULT, "resolved": 0.2, "not_used": [], "conflicts": []}
     assert rows["fraction_with_ppi"]["authority"]["kind"] == authority.FAMILY_DEFAULT_REGISTRY
 
 
@@ -504,25 +517,20 @@ def test_review_f4_a_precondition_or_rule_that_does_not_hold_fails_closed(trust)
             (lambda f: True, lambda f: f["missing"], "the rule failed")):
         trust((*_without("beta_blockade"), with_rule(precondition, rule)), FULL_TRUST["defaults"])
         row = migration_gate("gi_bleed", real(), FAMILY_APPROVED)["beta_blockade"]
-        assert not row["migratable"] and phrase in row["reason"], (phrase, row["reason"])
+        explained = row["reason"] + " ".join(row["authority"]["not_used"])
+        assert not row["migratable"] and phrase in explained, (phrase, row)
 
 
-def test_review_f5_every_applicable_trusted_source_must_agree(trust):
-    claimed = real(beta_blockade="approved_family_default")
-    # Case truth maps to 0.2 and an approved default says 0.0: the default does not override case truth.
-    trust((*_without("beta_blockade"), mapping("beta_blockade", 0.5)),
-          FULL_TRUST["defaults"] + (approval("beta_blockade", 0.2),))
-    assert blocked(claimed, FAMILY_APPROVED) == ["beta_blockade"]
-    assert "do not all agree" in migration_gate("gi_bleed", claimed, FAMILY_APPROVED)["beta_blockade"]["reason"]
-    # Two mappings that disagree: neither value passes.
+def test_review_f5_case_mappings_that_disagree_or_a_doubled_default_fail_closed(trust):
+    # Two mappings that disagree on the case truth: neither value passes, whatever the policy.
     trust((*_without("beta_blockade"), mapping("beta_blockade", 0.2),
            replace(mapping("beta_blockade", 0.7), mapping_id="test-map:beta_blockade/2")), FULL_TRUST["defaults"])
-    assert blocked(real(), FAMILY_APPROVED) == ["beta_blockade"]
-    # A mapping whose precondition the case does not meet does not apply, so the approved default can authorize.
-    unmet = CaseMapping("test-map:beta_complete", "1", "gi_bleed", "beta_blockade", ("engine.family",),
-                        lambda f: False, lambda f: 0.0, "test only: a complete medication source")
-    trust((*_without("beta_blockade"), unmet), FULL_TRUST["defaults"] + (approval("beta_blockade", 0.2),))
-    assert blocked(claimed, FAMILY_APPROVED) == []
+    row = migration_gate("gi_bleed", real(), FAMILY_APPROVED)["beta_blockade"]
+    assert not row["migratable"] and "disagree" in row["reason"] and row["authority"]["conflicts"]
+    # Two approved defaults for one parameter are a registry inconsistency.
+    trust(FULL_TRUST["mappings"], FULL_TRUST["defaults"] + (replace(approval("fraction_with_ppi", 1.0),
+                                                                    approval_id="test-approval:ppi/2"),))
+    assert blocked(real(), FAMILY_APPROVED) == ["fraction_with_ppi"]
 
 
 def test_review_f6_a_declared_diagnostic_only_parameter_must_be_authorized(trust):
@@ -562,3 +570,326 @@ def test_review_f9_labels_and_claims_are_plain_strings(trust):
             ProvenanceClaim(**{"source": "explicit_case", field: LookalikeStr("explicit_case")})
     odd = real(**{"beta_blockade": LookalikeStr("explicit_case")})
     assert blocked(odd, FAMILY_APPROVED) == ["beta_blockade"]
+
+
+# P2H-1: authority precedence (verified case truth > approved family default > fail closed) -------------
+
+def _conflicting(policy, *, case=0.2, default=0.6, name="pump_reserve"):
+    """Trust in which the case mapping and the approved default disagree on one case parameter."""
+    others = tuple(item for item in FULL_TRUST["mappings"] if item.parameter != name)
+    return {"mappings": (*others, mapping(name, case)),
+            "defaults": (*FULL_TRUST["defaults"], approval(name, default)),
+            "policy_table": policies(**{name: policy})}
+
+
+def _with(name, value, source="explicit_case"):
+    return real(values={**VALUES, name: value}, **{name: source})
+
+
+def test_p2h1_1_verified_case_truth_overrides_a_conflicting_default(trust):
+    trust(**_conflicting(authority.CASE_OVERRIDES_FAMILY_DEFAULT))
+    rows = check_migration_gate("gi_bleed", _with("pump_reserve", 0.2), FAMILY_APPROVED)
+    row = rows["pump_reserve"]
+    assert row["migratable"] and row["authority"]["kind"] == authority.CASE_MAPPING
+    assert row["authority"]["reference"] == "test-map:pump_reserve" and row["authority"]["resolved"] == 0.2
+    assert any("test-approval:pump_reserve" in note and "not used" in note for note in row["authority"]["not_used"])
+    assert len(row["authority"]["conflicts"]) == 1 and "resolved by precedence" in row["authority"]["conflicts"][0], \
+        "a conflict that precedence resolves is still recorded"
+
+
+def test_p2h1_2_the_family_default_is_used_when_no_case_mapping_applies(trust):
+    others = tuple(item for item in FULL_TRUST["mappings"] if item.parameter != "pump_reserve")
+    for missing in ((), (mapping("pump_reserve", 0.2, cases=("gi_bleed_72f",)),)):
+        trust((*others, *missing), (*FULL_TRUST["defaults"], approval("pump_reserve", low=0.5, high=0.9)))
+        row = check_migration_gate("gi_bleed", _with("pump_reserve", 0.6, "approved_family_default"),
+                                   FAMILY_APPROVED)["pump_reserve"]
+        assert row["migratable"] and row["authority"]["kind"] == authority.FAMILY_DEFAULT_REGISTRY
+        assert row["authority"]["reference"] == "test-approval:pump_reserve"
+        assert row["authority"]["resolved"] == [0.5, 0.9] and row["authority"]["conflicts"] == []
+        assert bool(missing) == any("does not apply" in note for note in row["authority"]["not_used"])
+
+
+def test_p2h1_3_family_fixed_rejects_a_conflicting_case_override(trust):
+    trust(**_conflicting(authority.FAMILY_FIXED))
+    for value, source in ((0.2, "explicit_case"), (0.6, "approved_family_default"), (0.6, "explicit_case")):
+        row = migration_gate("gi_bleed", _with("pump_reserve", value, source), FAMILY_APPROVED)["pump_reserve"]
+        assert not row["migratable"] and "case override is not permitted" in row["reason"], (value, source)
+        assert row["authority"]["policy"] == authority.FAMILY_FIXED and row["authority"]["conflicts"]
+    # When the case agrees, the family value is authoritative and the case is recorded as not used.
+    trust(**_conflicting(authority.FAMILY_FIXED, case=0.6))
+    row = check_migration_gate("gi_bleed", _with("pump_reserve", 0.6, "approved_family_default"),
+                               FAMILY_APPROVED)["pump_reserve"]
+    assert row["authority"]["kind"] == authority.FAMILY_DEFAULT_REGISTRY
+    assert any("family value is authoritative" in note for note in row["authority"]["not_used"])
+    assert blocked(_with("pump_reserve", 0.6), FAMILY_APPROVED) == ["pump_reserve"], \
+        "a case claim cannot select a FAMILY_FIXED parameter's authority"
+
+
+def test_p2h1_4_case_required_rejects_the_family_default_fallback(trust):
+    others = tuple(item for item in FULL_TRUST["mappings"] if item.parameter != "pump_reserve")
+    trust(others, (*FULL_TRUST["defaults"], approval("pump_reserve", 0.6)),
+          policies(pump_reserve=authority.CASE_REQUIRED))
+    for source in ("approved_family_default", "explicit_case"):
+        row = migration_gate("gi_bleed", _with("pump_reserve", 0.6, source), FAMILY_APPROVED)["pump_reserve"]
+        assert not row["migratable"] and "CASE_REQUIRED" in row["reason"], source
+        assert any("not a permitted fallback" in note for note in row["authority"]["not_used"])
+    # With verified case truth the parameter passes, and the default is reported as not used.
+    trust(**_conflicting(authority.CASE_REQUIRED))
+    row = check_migration_gate("gi_bleed", _with("pump_reserve", 0.2), FAMILY_APPROVED)["pump_reserve"]
+    assert row["authority"]["kind"] == authority.CASE_MAPPING and row["authority"]["conflicts"]
+
+
+@pytest.mark.parametrize("policy", authority.POLICIES)
+def test_p2h1_5_candidate_metadata_cannot_change_the_policy(trust, policy):
+    # The candidate has no place to carry a policy: not in a claim, its labels or a family entry.
+    with pytest.raises(TypeError):
+        ProvenanceClaim(source="explicit_case", policy=authority.CASE_OVERRIDES_FAMILY_DEFAULT)
+    with pytest.raises(CoreInvariantError):
+        replace(real(), declared={**dict(real().declared), "policy": authority.FAMILY_FIXED})
+    trust(**_conflicting(policy))
+    entry = {**FAMILY_APPROVED, "fraction_with_ppi": (1.0, "approved_family_default", authority.FAMILY_FIXED)}
+    with pytest.raises(MigrationBlocked):
+        migration_gate("gi_bleed", real(), entry)
+    expected = migration_gate("gi_bleed", _with("pump_reserve", 0.2), FAMILY_APPROVED)["pump_reserve"]
+    rng = random.Random(1049)
+    for _ in range(60):
+        claims = {"pump_reserve": _claims(rng, {"mappings": ["test-map:pump_reserve"],
+                                                "approvals": ["test-approval:pump_reserve"]})}
+        anchors = _with("pump_reserve", rng.choice((0.2, 0.6)), rng.choice(SOURCES))
+        row = migration_gate("gi_bleed", anchors, FAMILY_APPROVED, claims=claims)["pump_reserve"]
+        if row["authority"] is not None:
+            assert row["authority"]["policy"] == policy
+            assert row["authority"]["resolved"] == expected["authority"]["resolved"]
+            assert row["authority"]["conflicts"] == expected["authority"]["conflicts"]
+
+
+def test_p2h1_6_claimed_precedence_cannot_change_authorization(trust):
+    trust(**_conflicting(authority.CASE_OVERRIDES_FAMILY_DEFAULT))
+    # The candidate claims the default should win: the policy still selects the verified case truth.
+    for value in (0.6, 0.2):
+        anchors = _with("pump_reserve", value, "approved_family_default")
+        claims = {"pump_reserve": ProvenanceClaim(source="approved_family_default",
+                                                  approval_id="test-approval:pump_reserve", approval_version="1")}
+        row = migration_gate("gi_bleed", anchors, FAMILY_APPROVED, claims=claims)["pump_reserve"]
+        assert not row["migratable"] and row["authority"]["resolved"] == 0.2, value
+    # A claim naming the case mapping cannot authorize a value the selected authority does not hold.
+    claims = {"pump_reserve": ProvenanceClaim(source="explicit_case", mapping_id="test-map:pump_reserve")}
+    assert blocked(_with("pump_reserve", 0.6), FAMILY_APPROVED, claims) == ["pump_reserve"]
+    assert blocked(_with("pump_reserve", 0.2), FAMILY_APPROVED, claims) == []
+
+
+def test_p2h1_7_an_undeclared_or_doubled_policy_fails_closed(trust):
+    table = tuple(item for item in policies() if item.parameter != "pump_reserve")
+    trust(FULL_TRUST["mappings"], FULL_TRUST["defaults"], table)
+    row = migration_gate("gi_bleed", real(), FAMILY_APPROVED)["pump_reserve"]
+    assert not row["migratable"] and "no authority policy is declared for gi_bleed/pump_reserve" in row["reason"]
+    assert blocked(real(), FAMILY_APPROVED) == ["pump_reserve"]
+    trust(FULL_TRUST["mappings"], FULL_TRUST["defaults"],
+          (*policies(), authority.AuthorityPolicy("gi_bleed", "pump_reserve", authority.CASE_REQUIRED, "2", "test")))
+    assert blocked(real(), FAMILY_APPROVED) == ["pump_reserve"]
+    trust(FULL_TRUST["mappings"], FULL_TRUST["defaults"], policies(family="another_family"))
+    assert set(blocked(real(), FAMILY_APPROVED)) == set(VALUES) | set(FAMILY_APPROVED)
+    for bad in ("case_overrides_family_default", "", None, "UNANIMOUS"):
+        with pytest.raises(ValueError):
+            authority.AuthorityPolicy("gi_bleed", "pump_reserve", bad, "1", "test")
+
+
+def test_p2h1_production_declares_no_policy_so_every_gi_parameter_fails_closed():
+    assert authority.AUTHORITY_POLICIES == ()
+    for name in GI_PARAMETERS:
+        assert authority.policy_for("gi_bleed", name) == (None, f"no authority policy is declared for gi_bleed/{name}")
+
+
+def test_p2h1_8_provenance_reports_the_authority_that_won(trust):
+    trust(**_conflicting(authority.CASE_OVERRIDES_FAMILY_DEFAULT))
+    rows = check_migration_gate("gi_bleed", _with("pump_reserve", 0.2), FAMILY_APPROVED)
+    case_row, default_row = rows["pump_reserve"], rows["fraction_with_ppi"]
+    assert case_row["reason"] == f"verified: {authority.CASE_MAPPING} test-map:pump_reserve v1 " \
+                                 f"({authority.CASE_OVERRIDES_FAMILY_DEFAULT})"
+    assert set(case_row["authority"]) == {"kind", "reference", "version", "confirmed", "policy", "resolved",
+                                          "not_used", "conflicts"}
+    assert (case_row["authority"]["kind"], case_row["authority"]["reference"], case_row["authority"]["version"],
+            case_row["authority"]["policy"], case_row["authority"]["resolved"]) == (
+        authority.CASE_MAPPING, "test-map:pump_reserve", "1", authority.CASE_OVERRIDES_FAMILY_DEFAULT, 0.2)
+    assert len(case_row["authority"]["not_used"]) == 1
+    assert case_row["authority"]["not_used"][0].startswith("test-approval:pump_reserve v1 holds 0.6: not used")
+    assert (default_row["authority"]["kind"], default_row["authority"]["reference"],
+            default_row["authority"]["resolved"], default_row["authority"]["not_used"]) == (
+        authority.FAMILY_DEFAULT_REGISTRY, "test-approval:fraction_with_ppi", 1.0, [])
+    # A refusal still reports which authority the policy selected, what it resolves and that it does not hold.
+    refused = migration_gate("gi_bleed", _with("pump_reserve", 0.6), FAMILY_APPROVED)["pump_reserve"]
+    assert (refused["authority"]["kind"], refused["authority"]["reference"], refused["authority"]["confirmed"],
+            refused["authority"]["resolved"]) == (authority.CASE_MAPPING, "test-map:pump_reserve", False, 0.2)
+    assert "case truth maps to 0.2, not 0.6" in refused["reason"]
+    # A refusal by the claim, after the selected authority confirmed: confirmed, not migratable.
+    claims = {"pump_reserve": ProvenanceClaim(source="explicit_case", family="asthma")}
+    row = migration_gate("gi_bleed", _with("pump_reserve", 0.2), FAMILY_APPROVED, claims=claims)["pump_reserve"]
+    assert not row["migratable"] and row["authority"]["confirmed"]
+    assert row["authority"]["reference"] == "test-map:pump_reserve"
+
+
+# P2H-1 adversarial review: precedence edges, digest, candidate objects, report --------------------
+
+def _trust_one(policy, *, maps=(), defaults=(), name="pump_reserve"):
+    """FULL_TRUST with ``name`` held only by ``maps`` and ``defaults`` under ``policy``."""
+    return {"mappings": (*(item for item in FULL_TRUST["mappings"] if item.parameter != name), *maps),
+            "defaults": (*FULL_TRUST["defaults"], *defaults), "policy_table": policies(**{name: policy})}
+
+
+def _pump(trust, value, source="explicit_case", **kwargs):
+    trust(**_trust_one(**kwargs))
+    return migration_gate("gi_bleed", _with("pump_reserve", value, source), FAMILY_APPROVED)["pump_reserve"]
+
+
+def test_review_m1_family_fixed_never_falls_back_to_case_truth(trust):
+    row = _pump(trust, 0.8, policy=authority.FAMILY_FIXED, maps=(mapping("pump_reserve", 0.8),))
+    assert not row["migratable"] and "no approved family default" in row["reason"]
+    assert any("cannot decide a FAMILY_FIXED parameter" in note for note in row["authority"]["not_used"])
+
+
+def test_review_m2_case_required_has_no_fallback_when_the_mapping_does_not_apply(trust):
+    elsewhere = mapping("pump_reserve", 0.8, cases=("gi_bleed_72f",))
+    unmet = CaseMapping("test-map:pump_reserve", "1", "gi_bleed", "pump_reserve", ("engine.family",),
+                        lambda fields: False, lambda fields: 0.8, "test only")
+    for maps in ((elsewhere,), (unmet,)):
+        for source in ("approved_family_default", "explicit_case"):
+            row = _pump(trust, 0.8, source, policy=authority.CASE_REQUIRED, maps=maps,
+                        defaults=(approval("pump_reserve", 0.8),))
+            assert not row["migratable"] and "CASE_REQUIRED" in row["reason"], (maps, source)
+
+
+def test_review_m3_duplicate_approved_defaults_block_even_when_case_truth_would_win(trust):
+    doubled = (approval("pump_reserve", 0.8), replace(approval("pump_reserve", 0.8), approval_id="dup"))
+    for policy in authority.POLICIES:
+        row = _pump(trust, 0.8, policy=policy, maps=(mapping("pump_reserve", 0.8),), defaults=doubled)
+        assert not row["migratable"] and "2 approved family defaults" in row["reason"], policy
+
+
+def test_review_m4_m7_a_range_default_differs_when_case_truth_is_outside_it(trust):
+    outside = {"maps": (mapping("pump_reserve", 0.95),), "defaults": (approval("pump_reserve", low=0.5, high=0.9),)}
+    row = _pump(trust, 0.6, "approved_family_default", policy=authority.FAMILY_FIXED, **outside)
+    assert not row["migratable"] and "case override is not permitted" in row["reason"]
+    row = _pump(trust, 0.95, policy=authority.CASE_OVERRIDES_FAMILY_DEFAULT, **outside)
+    assert row["migratable"] and len(row["authority"]["conflicts"]) == 1
+    assert "resolved by precedence" in row["authority"]["conflicts"][0]
+    row = _pump(trust, 0.95, policy=authority.CASE_REQUIRED, **outside)
+    assert row["migratable"] and len(row["authority"]["conflicts"]) == 1
+
+
+def test_review_m5_a_mapping_whose_precondition_is_unmet_lets_the_default_decide(trust):
+    unmet = CaseMapping("test-map:pump_reserve", "1", "gi_bleed", "pump_reserve", ("engine.family",),
+                        lambda fields: False, lambda fields: 0.2, "test only: a complete cardiac history")
+    row = _pump(trust, 0.8, "approved_family_default", policy=authority.CASE_OVERRIDES_FAMILY_DEFAULT,
+                maps=(unmet,), defaults=(approval("pump_reserve", 0.8),))
+    assert row["migratable"] and row["authority"]["kind"] == authority.FAMILY_DEFAULT_REGISTRY
+    assert any("does not meet its precondition" in note for note in row["authority"]["not_used"])
+
+
+def test_review_m6_an_approved_range_is_inclusive(trust):
+    for value, passes in ((0.5, True), (0.9, True), (0.7, True), (0.4999, False), (0.9001, False)):
+        row = _pump(trust, value, "approved_family_default", policy=authority.CASE_OVERRIDES_FAMILY_DEFAULT,
+                    defaults=(approval("pump_reserve", low=0.5, high=0.9),))
+        assert row["migratable"] is passes, value
+
+
+def test_review_f3_family_fixed_records_a_value_that_differs_from_agreeing_case_truth(trust):
+    # Decision pending (FD-50): the family range decides, and the difference is never silent.
+    inside = {"maps": (mapping("pump_reserve", 0.6),), "defaults": (approval("pump_reserve", low=0.5, high=0.9),)}
+    row = _pump(trust, 0.9, "approved_family_default", policy=authority.FAMILY_FIXED, **inside)
+    assert row["migratable"] and len(row["authority"]["conflicts"]) == 1
+    assert "differs from verified case truth" in row["authority"]["conflicts"][0]
+    row = _pump(trust, 0.6, "approved_family_default", policy=authority.FAMILY_FIXED, **inside)
+    assert row["migratable"] and row["authority"]["conflicts"] == []
+
+
+def test_review_f4_an_int_the_float_cannot_hold_exactly_is_refused(trust):
+    assert authority.exact_number(2 ** 53 + 1) is None and authority.exact_number(2 ** 53) == 2.0 ** 53
+    name = "arrival_oxygen_debt"
+    trust(**_trust_one(authority.CASE_OVERRIDES_FAMILY_DEFAULT, maps=(mapping(name, 2.0 ** 53),), name=name))
+    assert blocked(real(values={**VALUES, name: 2 ** 53 + 1}), FAMILY_APPROVED) == [name]
+    assert blocked(real(values={**VALUES, name: 2 ** 53}), FAMILY_APPROVED) == []
+    with pytest.raises(MigrationBlocked, match="exact finite number"):
+        migration_gate("gi_bleed", real(), {**FAMILY_APPROVED, "fraction_with_ppi": (2 ** 53 + 1, "explicit_case")})
+
+
+class RaisingFloat(float):
+    def __repr__(self):
+        raise RuntimeError("candidate code ran")
+
+    __str__ = __format__ = __repr__
+
+
+class LyingRepr(float):
+    def __repr__(self):
+        return "0.8"
+
+    __str__ = __repr__
+
+
+class LyingLabel(str):
+    def __str__(self):
+        return "approved_family_default"
+
+    __repr__ = __str__
+
+
+@pytest.mark.parametrize("installed", [False, True])
+def test_review_f5_the_gate_never_runs_the_candidate_s_repr_or_str(trust, installed):
+    if installed:
+        trust(**FULL_TRUST)
+    for value in (RaisingFloat(0.8), LyingRepr(0.3)):
+        anchors = replace(real(), declared={**dict(real().declared)})
+        object.__setattr__(anchors, "pump_reserve", value)
+        rows = migration_gate("gi_bleed", anchors, FAMILY_APPROVED)
+        assert not rows["pump_reserve"]["migratable"] and "0.8" not in rows["pump_reserve"]["reason"]
+        with pytest.raises(MigrationBlocked):
+            check_migration_gate("gi_bleed", anchors, FAMILY_APPROVED)
+        with pytest.raises(MigrationBlocked):
+            migration_gate("gi_bleed", real(), {**FAMILY_APPROVED, "fraction_with_ppi": (value, "explicit_case")})
+    anchors = real()
+    object.__setattr__(anchors, "declared", {**dict(anchors.declared), "pump_reserve": LyingLabel("explicit_case")})
+    row = migration_gate("gi_bleed", anchors, FAMILY_APPROVED)["pump_reserve"]
+    assert not row["migratable"] and type(row["source"]) is str and row["source"] != "approved_family_default"
+
+
+def test_review_f6_the_report_names_every_agreeing_mapping_and_a_declared_policy(trust):
+    trust(**_trust_one(authority.CASE_OVERRIDES_FAMILY_DEFAULT,
+                       maps=(mapping("pump_reserve", 0.8),
+                             replace(mapping("pump_reserve", 0.8), mapping_id="test-map:pump_reserve/2"))))
+    row = migration_gate("gi_bleed", _with("pump_reserve", 0.8), FAMILY_APPROVED)["pump_reserve"]
+    assert row["migratable"] and row["authority"]["reference"] == "test-map:pump_reserve"
+    assert any(note.startswith("test-map:pump_reserve/2 v1 -> 0.8: agrees") for note in row["authority"]["not_used"])
+    # A declared policy is reported even when no trusted source holds the parameter.
+    trust(**_trust_one(authority.CASE_REQUIRED))
+    row = migration_gate("gi_bleed", _with("pump_reserve", 0.8), FAMILY_APPROVED)["pump_reserve"]
+    assert not row["migratable"] and row["authority"]["policy"] == authority.CASE_REQUIRED
+
+
+@pytest.mark.parametrize("registry", ["AUTHORITY_POLICIES", "TRUSTED_CASE_MAPPINGS", "APPROVED_FAMILY_DEFAULTS"])
+def test_review_h1_a_registry_entry_of_the_wrong_type_fails_closed(trust, monkeypatch, registry):
+    from types import SimpleNamespace
+    trust(**FULL_TRUST)
+    good = getattr(authority, registry)[0]
+    for impostor in (tuple(vars(good).values()) if hasattr(good, "__dict__") else (),
+                     SimpleNamespace(**{name: getattr(good, name) for name in good.__dataclass_fields__})):
+        monkeypatch.setattr(authority, registry, (*getattr(authority, registry), impostor))
+        rows = migration_gate("gi_bleed", real(), FAMILY_APPROVED)
+        assert not any(row["migratable"] for row in rows.values())
+        assert all(f"the trusted registry {registry}" in row["reason"] for row in rows.values())
+        with pytest.raises(TypeError):
+            authority.registry_content()
+        trust(**FULL_TRUST)
+
+
+def test_review_f2_registered_rules_are_plain_functions():
+    import functools
+
+    class Rule:
+        def __call__(self, fields):
+            return 0.5
+
+        def method(self, fields):
+            return 0.5
+    for rule in (functools.partial(lambda fields, value: value, value=0.5), Rule(), Rule().method, float):
+        with pytest.raises(ValueError, match="plain Python functions"):
+            CaseMapping("m", "1", "gi_bleed", "pump_reserve", ("engine.family",), lambda fields: True, rule, "t")

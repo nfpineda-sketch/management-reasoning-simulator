@@ -565,6 +565,8 @@ def digest_components() -> dict[str, str]:
     - harness_sources: the harness files whole (HARNESS_SOURCES), so a check's binding, a design
       default or a probe contributor cannot change without the digest;
     - migration_sources: the migration gate and its trusted registries whole (MIGRATION_SOURCES);
+    - authority_registries: the trusted authority policies, case mappings and approved defaults
+      as loaded (``migration_authority.registry_content``, P2H-1);
     - bands: the registry's band points, the GI case bands, the probe arrival and the levels;
     - gi_reference: the GI reference mapping (inventory, case bands, candidate anchors);
     - scenarios: the GI scenario definitions;
@@ -576,6 +578,7 @@ def digest_components() -> dict[str, str]:
     """
     import hashlib
     import inspect
+    from . import migration_authority
     from .bands import ARRIVAL as probe_arrival
     from .shadow import SCENARIOS
 
@@ -603,6 +606,7 @@ def digest_components() -> dict[str, str]:
         "bands": sha(text(bands)),
         "harness_sources": sha(text({path: sha(_source_bytes(path)) for path in HARNESS_SOURCES})),
         "migration_sources": sha(text({path: sha(_source_bytes(path)) for path in MIGRATION_SOURCES})),
+        "authority_registries": sha(text(migration_authority.registry_content())),
         "gi_reference": sha(_source_bytes(GI_REFERENCE_SOURCE)),
         "scenarios": sha(text(scenarios)),
         "input_path_sources": sha(text({path: sha(_source_bytes(path)) for path in INPUT_PATH_SOURCES})),

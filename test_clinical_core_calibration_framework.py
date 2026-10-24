@@ -12,24 +12,27 @@ import pytest
 
 from clinical_core import a9, calibration, gi_reference
 from clinical_core.derived import DEFAULT_PROFILE, CoreProfile
-from clinical_core.migration import FACULTY, FAMILY_DEFAULT, NOT_REQUIRED, gate_dry_run
+from clinical_core.migration import (FACULTY, FACULTY_AUTHORING_DECISION_REQUIRED, FAMILY_DEFAULT, NOT_REQUIRED,
+                                     gate_dry_run)
 from clinical_core.shadow import GOLDEN
 
 #: The calibration freeze by component, recorded when P2G-1 extended it to the family-engine path,
 #: the materialized inputs and the harness files whole (docs/PHASE2_SHADOW_CORE.md §13.1; P2F's
-#: c7b2f4bb... covered less), and P2H-0 added the migration gate and its trusted registries (§14.6).
+#: c7b2f4bb... covered less), P2H-0 added the migration gate and its trusted registries (§14.6), and
+#: P2H-1 added the authority registries as loaded, policies included (§15.6).
 FROZEN_COMPONENTS = {
     "rules": "07f526f1cd9c65d4eb465f19c652a87d77adc678b2a706664b81c7237c59bc91",
     "bands": "e9de8e613ecd46dfa3b02071ad2542d78bf3b2c543c6c096abead0eede16674a",
-    "harness_sources": "952bb6dca6e83d792cda305703c64e99ec8006e2114b9496353cfcd070e6e6e6",
-    "migration_sources": "6a564881f5e2c45ec4ad456313779f1570f41e60e2b06cad419a7efc80015f96",
+    "harness_sources": "91e43dbfbac39e8a3598c70aa4bc4aca10a1a28174fea2d3f76eef7b895cb29d",
+    "migration_sources": "5bf8a70ff876391cb8ae8a550f7edf876ae054a2fea8adfd86d19aced8bd3fd0",
+    "authority_registries": "16c31f361a5ad760eb7d3910996ece33decd1ed1f99689d25c9ac88179344d1a",
     "gi_reference": "159fdc558c713a743261ab82075dc2574f7389f017a81a80f95f0d7207e0a9bd",
     "scenarios": "7380daec5536c8f9a23c857df2138c99a16d63eace51d62b295aa3f4ed100b58",
     "input_path_sources": "8bbff3d408efba2024917559156cfaa732c920b3bc7a45e0bac0e3e4838f65b9",
     "input_adapter_sources": "2f4f3b2db115a2aa6209991caa8a50095015892b716ddbf71c2841e694b4d97e",
     "scenario_inputs": "06ef96d1dc6be7a476ea58142ecd98942694241a8a637cc260f83f35b709362c",
 }
-FROZEN_DIGEST = "d293793aa4de3c646ff13e4f8863d0a0800ef0d4665521dffcbe6f32d2f14dfe"
+FROZEN_DIGEST = "8048c04f8b605323eb61a0cf57fa25424f7e6a3953e796f1fe6e198f2022e877"
 
 
 # P2F-2 / P2F-5 -- repository truth, candidate inference, faculty decision ---------------------
@@ -272,8 +275,12 @@ def test_the_gi_dry_run_classifies_every_parameter_and_never_migrates(case):
     for name in ("intrinsic_sinus_rate", "arrival_oxygen_debt", "arrival_lactate_excess", "arrival_delivery_ratio",
                  "metabolic_demand_baseline", "preload_fraction"):
         assert categories[name] == FACULTY
-    for name in ("beta_blockade", "pump_reserve", "volume_loss_ml_per_min", "fraction_with_ppi"):
+    for name in ("pump_reserve", "volume_loss_ml_per_min", "fraction_with_ppi"):
         assert categories[name] == FAMILY_DEFAULT
+    # P2H-1: whether 0 needs a complete medication reconciliation or a family default is faculty's choice.
+    assert categories["beta_blockade"] == FACULTY_AUTHORING_DECISION_REQUIRED
+    reason = result["parameters"]["beta_blockade"]["path"]
+    assert "absence of mention is not evidence of 0" in reason and "Undecided" in reason
     assert result["not_required"]["reference_preload_fraction"]["category"] == NOT_REQUIRED
     assert len(result["blockers"]) == 12 and set(result["blockers"]) == set(result["parameters"])
     assert "hr" in result["anchors_from_case_truth"] and result["anchors_from_bank_defaults"] == ["k", "rhythm", "fio2"]

@@ -3,13 +3,15 @@
 The digest is split by component so a change says where it is. These tests prove that the
 family-engine path is listed exactly (traced in a fresh interpreter) and that a change to a
 scenario, to a file of the path, to the order adapter, to the harness itself (a check binding, a
-design default, a band), to the migration gate or its trusted registries, or to a materialized
-input changes the digest.
+design default, a band), to the migration gate or its trusted registries (their source, and
+since P2H-1 the policies, mappings and approvals as loaded), or to a materialized input changes
+the digest.
 """
 import json
 import os
 import subprocess
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -72,6 +74,101 @@ def test_a_changed_input_source_changes_the_digest(monkeypatch, path, component)
                         lambda name: original(name) + (b"\n# changed\n" if name == path else b""))
     after = calibration.digest_components()
     assert {name for name in before if before[name] != after[name]} == {component}
+
+
+@pytest.mark.parametrize("registry", ["AUTHORITY_POLICIES", "TRUSTED_CASE_MAPPINGS", "APPROVED_FAMILY_DEFAULTS"])
+def test_a_changed_authority_registry_changes_the_digest(monkeypatch, registry):
+    """P2H-1: the policies, mappings and approvals as loaded are part of the trust boundary."""
+    from clinical_core import migration_authority as authority
+    entries = {
+        "AUTHORITY_POLICIES": (authority.AuthorityPolicy("gi_bleed", "pump_reserve", authority.FAMILY_FIXED, "1",
+                                                         "test only"),),
+        "TRUSTED_CASE_MAPPINGS": (authority.CaseMapping("test-map", "1", "gi_bleed", "pump_reserve",
+                                                        ("engine.family",), lambda fields: True,
+                                                        lambda fields: 0.5, "test only"),),
+        "APPROVED_FAMILY_DEFAULTS": (authority.ApprovedDefault("gi_bleed", "pump_reserve", "test-approval", "1",
+                                                               "approved", value=0.5),)}
+    before = calibration.digest_components()
+    monkeypatch.setattr(authority, registry, entries[registry])
+    after = calibration.digest_components()
+    assert {name for name in before if before[name] != after[name]} == {"authority_registries"}
+    if registry == "AUTHORITY_POLICIES":
+        monkeypatch.setattr(authority, registry, (replace(entries[registry][0], policy=authority.CASE_REQUIRED),))
+        assert calibration.digest_components()["authority_registries"] != after["authority_registries"], \
+            "changing only a parameter's policy changes the digest"
+    if registry == "TRUSTED_CASE_MAPPINGS":
+        monkeypatch.setattr(authority, registry, (replace(entries[registry][0], rule=lambda fields: 0.6),))
+        assert calibration.digest_components()["authority_registries"] != after["authority_registries"], \
+            "changing only a mapping's rule changes the digest"
+
+
+#: A module-level table a registered rule may read; the digest pins its content.
+RULE_TABLE = {"pump_reserve": 0.5}
+
+
+def _registered(rule, precondition=lambda fields: True):
+    from clinical_core import migration_authority as authority
+    return (authority.CaseMapping("test-map", "1", "gi_bleed", "pump_reserve", ("engine.family",), precondition,
+                                  rule, "test only"),)
+
+
+def _digest_of(monkeypatch, mappings):
+    from clinical_core import migration_authority as authority
+    monkeypatch.setattr(authority, "TRUSTED_CASE_MAPPINGS", mappings)
+    return json.dumps(authority.registry_content(), sort_keys=True)
+
+
+def test_review_f2_the_digest_pins_what_a_registered_rule_computes(monkeypatch):
+    """P2H-1 review F2: keyword defaults, constants without source, and globals a rule reads."""
+    def keyword(value):
+        return lambda fields, *, number=value: number
+    assert _digest_of(monkeypatch, _registered(keyword(0.5))) != _digest_of(monkeypatch, _registered(keyword(0.7)))
+    made = [eval(f"lambda fields: {number}") for number in (0.5, 0.7)]
+    assert _digest_of(monkeypatch, _registered(made[0])) != _digest_of(monkeypatch, _registered(made[1]))
+    reads = _registered(lambda fields: RULE_TABLE["pump_reserve"])
+    before = _digest_of(monkeypatch, reads)
+    monkeypatch.setitem(RULE_TABLE, "pump_reserve", 0.9)
+    assert _digest_of(monkeypatch, reads) != before
+
+
+def test_review_f2_content_the_digest_cannot_pin_is_refused(monkeypatch):
+    class Opaque:
+        pass
+    opaque = Opaque()
+    with pytest.raises(TypeError, match="cannot pin"):
+        _digest_of(monkeypatch, _registered(lambda fields, thing=opaque: 0.5))
+    outside = eval("lambda fields: 0.5", {"__name__": "not_in_the_repository"})
+    with pytest.raises(TypeError, match="defined in the repository"):
+        _digest_of(monkeypatch, _registered(outside))
+
+
+def set_bound_mapping():
+    """A registered mapping whose precondition carries a set: its order depends on the hash seed."""
+    keys = frozenset({"b", "a", "c", "engine.family", "gi_bleed"})
+    return _registered(lambda fields: 0.5, precondition=lambda fields, keys=keys: "gi_bleed" in keys)
+
+
+def test_review_f2_equal_sets_have_one_digest_form_whatever_their_iteration_order():
+    from clinical_core import migration_authority as authority
+    first, second = frozenset([1, 9]), frozenset([9, 1])  # 1 and 9 collide: insertion order decides iteration
+    assert first == second and list(first) != list(second)
+    assert authority._digest_form(first) == authority._digest_form(second)
+    assert authority._digest_form({"b": 1, "a": 2}) == authority._digest_form({"a": 2, "b": 1})
+
+
+def test_review_f2_the_registry_digest_is_the_same_in_every_interpreter():
+    script = ("import json\n"
+              "from clinical_core import migration_authority as a\n"
+              "from test_clinical_core_calibration_freeze import set_bound_mapping\n"
+              "a.TRUSTED_CASE_MAPPINGS = set_bound_mapping()\n"
+              "print(json.dumps(a.registry_content(), sort_keys=True))\n")
+    outputs = set()
+    for seed in ("1", "2", "3"):
+        result = subprocess.run([sys.executable, "-c", script], cwd=ROOT, capture_output=True, text=True, timeout=120,
+                                env={**os.environ, "PYTHONPATH": str(ROOT), "PYTHONHASHSEED": seed})
+        assert result.returncode == 0, result.stderr
+        outputs.add(result.stdout)
+    assert len(outputs) == 1
 
 
 def test_a_changed_scenario_changes_the_digest_and_is_never_served_stale(monkeypatch):

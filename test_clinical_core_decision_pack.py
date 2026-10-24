@@ -152,7 +152,7 @@ def test_no_core_module_but_the_gate_and_its_vocabulary_names_a_migratable_sourc
     No module outside state.py, derived.py and migration.py contains a migratable label, and none
     outside state.py and migration.py reads the label sets. This checks the source text, not every
     way a value could be built; a caller outside the core could still relabel a CANDIDATE as case
-    truth: that limit is decision FD-49.
+    truth, and since P2H-0 (FD-49, resolved) the label never authorizes: migration_authority decides.
     """
     from pathlib import Path
     package = Path(decision_pack.__file__).resolve().parent
@@ -167,6 +167,7 @@ def test_no_core_module_but_the_gate_and_its_vocabulary_names_a_migratable_sourc
 def test_nothing_is_faculty_approved_and_no_family_default_is_recorded():
     assert sum(entry.status == calibration.FACULTY_APPROVED for entry in calibration.REGISTRY.values()) == 0
     assert migration_authority.APPROVED_FAMILY_DEFAULTS == () and migration_authority.TRUSTED_CASE_MAPPINGS == ()
+    assert migration_authority.AUTHORITY_POLICIES == (), "no parameter's authority policy is chosen (FD-50)"
 
 
 @pytest.mark.parametrize("case", gi_reference.GI_CASES)
@@ -218,7 +219,11 @@ def test_the_master_table_leaves_every_decision_open_and_covers_every_gate_block
     document, _ = _document()
     rows = _rows(document, "FD-")
     ids = [row[0] for row in rows]
-    assert ids == [f"FD-{number:02d}" for number in range(1, len(rows) + 1)]
+    # Retired ids are never reused: FD-49 was resolved in P2H-0 and left the table.
+    retired = {"FD-49"}
+    numbered = [f"FD-{number:02d}" for number in range(1, len(rows) + len(retired) + 1)]
+    assert ids == [item for item in numbered if item not in retired]
+    assert not retired & set(ids) and all(f"{item} (" in document for item in retired)
     assert all(len(row) == 10 and row[8] == "" and row[9] == "ABIERTA" for row in rows)
     assert f"**Decisiones abiertas: {len(rows)}.**" in document
     table = "\n".join("|".join(row) for row in rows)
