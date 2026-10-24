@@ -264,3 +264,27 @@ def test_the_family_default_table_uses_exact_names_and_allowed_categories():
     assert all(row[6].startswith(categories) for row in rows)
     beta = next(row for row in rows if row[0].startswith("`beta_blockade`"))
     assert beta[6] == "FACULTY_DECISION_REQUIRED"
+
+
+def test_the_fd50_policy_matrix_covers_every_gi_parameter_and_approves_nothing():
+    """P2H-2: one row per parameter the gate can check, policies from the enum, no value approved."""
+    import re
+    document, _ = _document()
+    start = document.index("## 15. Matriz de políticas de autoridad")
+    section = document[start:]
+    rows = [row for row in _rows(section, "`") if len(row) == 8]
+    gate = migration.FAMILY_GATES["gi_bleed"]
+    names = [row[0].split("`")[1] for row in rows]
+    assert sorted(names) == sorted((*gate.case_parameters, *gate.family_parameters, *migration.DIAGNOSTIC_ONLY))
+    categories = {"FACULTY_DECISION_REQUIRED", "FACULTY_AUTHORING_DECISION_REQUIRED", "NOT_REQUIRED"}
+    for row in rows:
+        named = set(re.findall(r"`([A-Z][A-Z_]+)`", row[5] + row[6]))
+        assert named <= set(migration_authority.POLICIES), (row[0], named)
+        category = row[6]
+        assert category.split(" (")[0] in categories or category.startswith("Arquitectura: `"), category
+        assert "FACULTY_APPROVED" not in "|".join(row)
+    by_name = dict(zip(names, rows))
+    assert by_name["beta_blockade"][6] == "FACULTY_AUTHORING_DECISION_REQUIRED"
+    assert {name for name, row in by_name.items() if row[6].startswith("Arquitectura")} == {
+        "fraction_with_ppi", "fraction_after_hemostasis"}
+    assert migration_authority.AUTHORITY_POLICIES == (), "the matrix prepares FD-50; it declares no policy"

@@ -19,20 +19,21 @@ from clinical_core.shadow import GOLDEN
 #: The calibration freeze by component, recorded when P2G-1 extended it to the family-engine path,
 #: the materialized inputs and the harness files whole (docs/PHASE2_SHADOW_CORE.md §13.1; P2F's
 #: c7b2f4bb... covered less), P2H-0 added the migration gate and its trusted registries (§14.6), and
-#: P2H-1 added the authority registries as loaded, policies included (§15.6).
+#: P2H-1 added the authority registries as loaded, policies included (§15.6), and P2H-2 the policy
+#: vocabulary and each approval's fallback (§16.6).
 FROZEN_COMPONENTS = {
     "rules": "07f526f1cd9c65d4eb465f19c652a87d77adc678b2a706664b81c7237c59bc91",
     "bands": "e9de8e613ecd46dfa3b02071ad2542d78bf3b2c543c6c096abead0eede16674a",
     "harness_sources": "91e43dbfbac39e8a3598c70aa4bc4aca10a1a28174fea2d3f76eef7b895cb29d",
-    "migration_sources": "5bf8a70ff876391cb8ae8a550f7edf876ae054a2fea8adfd86d19aced8bd3fd0",
-    "authority_registries": "16c31f361a5ad760eb7d3910996ece33decd1ed1f99689d25c9ac88179344d1a",
+    "migration_sources": "c0ecedd5c19a8cfca63a7e81f39a70facc1618420d7f1a119d00a4d4429d9984",
+    "authority_registries": "7a1473d2da2126d875ad21366a2ee93a288b3779cfbd4856baa46014872576fc",
     "gi_reference": "159fdc558c713a743261ab82075dc2574f7389f017a81a80f95f0d7207e0a9bd",
     "scenarios": "7380daec5536c8f9a23c857df2138c99a16d63eace51d62b295aa3f4ed100b58",
     "input_path_sources": "8bbff3d408efba2024917559156cfaa732c920b3bc7a45e0bac0e3e4838f65b9",
     "input_adapter_sources": "2f4f3b2db115a2aa6209991caa8a50095015892b716ddbf71c2841e694b4d97e",
     "scenario_inputs": "06ef96d1dc6be7a476ea58142ecd98942694241a8a637cc260f83f35b709362c",
 }
-FROZEN_DIGEST = "8048c04f8b605323eb61a0cf57fa25424f7e6a3953e796f1fe6e198f2022e877"
+FROZEN_DIGEST = "152abc6cf3e2812fcade237f60db0430df78749e09f4199b0a0fff13a0dd4338"
 
 
 # P2F-2 / P2F-5 -- repository truth, candidate inference, faculty decision ---------------------

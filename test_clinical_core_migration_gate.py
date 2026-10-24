@@ -7,6 +7,7 @@ are empty, and the GI-bleed golden, a shadow baseline with every case parameter
 default_unmapped, is reported as blocked.
 """
 import ast
+import sys
 import inspect
 import itertools
 import json
@@ -59,8 +60,10 @@ def mapping(name, value, *, version="1", field="engine.family", cases=None, fami
                        cases=cases)
 
 
-def approval(name, value=None, *, low=None, high=None, status="approved", family="gi_bleed", version="1"):
-    return ApprovedDefault(family, name, f"test-approval:{name}", version, status, value=value, low=low, high=high)
+def approval(name, value=None, *, low=None, high=None, fallback=None, status="approved", family="gi_bleed",
+             version="1"):
+    return ApprovedDefault(family, name, f"test-approval:{name}", version, status, value=value, low=low, high=high,
+                           fallback=fallback)
 
 
 #: Test-only trust that confirms VALUES by case mapping and the family parameters at 1.0 by approval.
@@ -108,7 +111,8 @@ def test_a_case_passes_only_when_trusted_sources_confirm_every_value(trust):
     assert all(row["migratable"] for row in rows.values()) and set(rows) == set(VALUES) | set(FAMILY_APPROVED)
     assert rows["beta_blockade"]["authority"] == {
         "kind": authority.CASE_MAPPING, "reference": "test-map:beta_blockade", "version": "1", "confirmed": True,
-        "policy": authority.CASE_OVERRIDES_FAMILY_DEFAULT, "resolved": 0.2, "not_used": [], "conflicts": []}
+        "policy": authority.CASE_OVERRIDES_FAMILY_DEFAULT, "resolved": 0.2, "envelope": None, "not_used": [],
+        "conflicts": []}
     assert rows["fraction_with_ppi"]["authority"]["kind"] == authority.FAMILY_DEFAULT_REGISTRY
 
 
@@ -153,9 +157,11 @@ def test_an_approved_default_counts_only_when_the_registry_holds_it(trust):
     claimed = real(pump_reserve="approved_family_default")
     trust(others, FULL_TRUST["defaults"])
     assert blocked(claimed, FAMILY_APPROVED) == ["pump_reserve"], "nothing approves pump_reserve"
+    # P2H-2: a range is not a value; only its explicitly approved fallback can be one (none is invented).
     for record, passes in ((approval("pump_reserve", 0.8), True), (approval("pump_reserve", 0.9), False),
-                           (approval("pump_reserve", low=0.7, high=0.9), True),
-                           (approval("pump_reserve", low=0.85, high=0.9), False),
+                           (approval("pump_reserve", low=0.7, high=0.9), False),
+                           (approval("pump_reserve", low=0.7, high=0.9, fallback=0.8), True),
+                           (approval("pump_reserve", low=0.7, high=0.9, fallback=0.85), False),
                            (approval("pump_reserve", 0.8, status="proposed"), False),
                            (approval("pump_reserve", 0.8, family="sepsis"), False)):
         trust(others, FULL_TRUST["defaults"] + (record,))
@@ -599,30 +605,32 @@ def test_p2h1_1_verified_case_truth_overrides_a_conflicting_default(trust):
 
 def test_p2h1_2_the_family_default_is_used_when_no_case_mapping_applies(trust):
     others = tuple(item for item in FULL_TRUST["mappings"] if item.parameter != "pump_reserve")
-    for missing in ((), (mapping("pump_reserve", 0.2, cases=("gi_bleed_72f",)),)):
-        trust((*others, *missing), (*FULL_TRUST["defaults"], approval("pump_reserve", low=0.5, high=0.9)))
+    for missing, record in itertools.product(((), (mapping("pump_reserve", 0.2, cases=("gi_bleed_72f",)),)),
+                                             (approval("pump_reserve", 0.6),
+                                              approval("pump_reserve", low=0.5, high=0.9, fallback=0.6))):
+        trust((*others, *missing), (*FULL_TRUST["defaults"], record))
         row = check_migration_gate("gi_bleed", _with("pump_reserve", 0.6, "approved_family_default"),
                                    FAMILY_APPROVED)["pump_reserve"]
         assert row["migratable"] and row["authority"]["kind"] == authority.FAMILY_DEFAULT_REGISTRY
         assert row["authority"]["reference"] == "test-approval:pump_reserve"
-        assert row["authority"]["resolved"] == [0.5, 0.9] and row["authority"]["conflicts"] == []
+        assert row["authority"]["resolved"] == 0.6 and row["authority"]["conflicts"] == []
         assert bool(missing) == any("does not apply" in note for note in row["authority"]["not_used"])
 
 
 def test_p2h1_3_family_fixed_rejects_a_conflicting_case_override(trust):
-    trust(**_conflicting(authority.FAMILY_FIXED))
+    trust(**_conflicting(authority.FAMILY_FIXED_VALUE))
     for value, source in ((0.2, "explicit_case"), (0.6, "approved_family_default"), (0.6, "explicit_case")):
         row = migration_gate("gi_bleed", _with("pump_reserve", value, source), FAMILY_APPROVED)["pump_reserve"]
         assert not row["migratable"] and "case override is not permitted" in row["reason"], (value, source)
-        assert row["authority"]["policy"] == authority.FAMILY_FIXED and row["authority"]["conflicts"]
+        assert row["authority"]["policy"] == authority.FAMILY_FIXED_VALUE and row["authority"]["conflicts"]
     # When the case agrees, the family value is authoritative and the case is recorded as not used.
-    trust(**_conflicting(authority.FAMILY_FIXED, case=0.6))
+    trust(**_conflicting(authority.FAMILY_FIXED_VALUE, case=0.6))
     row = check_migration_gate("gi_bleed", _with("pump_reserve", 0.6, "approved_family_default"),
                                FAMILY_APPROVED)["pump_reserve"]
     assert row["authority"]["kind"] == authority.FAMILY_DEFAULT_REGISTRY
     assert any("family value is authoritative" in note for note in row["authority"]["not_used"])
     assert blocked(_with("pump_reserve", 0.6), FAMILY_APPROVED) == ["pump_reserve"], \
-        "a case claim cannot select a FAMILY_FIXED parameter's authority"
+        "a case claim cannot select a FAMILY_FIXED_VALUE parameter's authority"
 
 
 def test_p2h1_4_case_required_rejects_the_family_default_fallback(trust):
@@ -645,9 +653,9 @@ def test_p2h1_5_candidate_metadata_cannot_change_the_policy(trust, policy):
     with pytest.raises(TypeError):
         ProvenanceClaim(source="explicit_case", policy=authority.CASE_OVERRIDES_FAMILY_DEFAULT)
     with pytest.raises(CoreInvariantError):
-        replace(real(), declared={**dict(real().declared), "policy": authority.FAMILY_FIXED})
+        replace(real(), declared={**dict(real().declared), "policy": authority.FAMILY_FIXED_VALUE})
     trust(**_conflicting(policy))
-    entry = {**FAMILY_APPROVED, "fraction_with_ppi": (1.0, "approved_family_default", authority.FAMILY_FIXED)}
+    entry = {**FAMILY_APPROVED, "fraction_with_ppi": (1.0, "approved_family_default", authority.FAMILY_FIXED_VALUE)}
     with pytest.raises(MigrationBlocked):
         migration_gate("gi_bleed", real(), entry)
     expected = migration_gate("gi_bleed", _with("pump_reserve", 0.2), FAMILY_APPROVED)["pump_reserve"]
@@ -707,12 +715,12 @@ def test_p2h1_8_provenance_reports_the_authority_that_won(trust):
     assert case_row["reason"] == f"verified: {authority.CASE_MAPPING} test-map:pump_reserve v1 " \
                                  f"({authority.CASE_OVERRIDES_FAMILY_DEFAULT})"
     assert set(case_row["authority"]) == {"kind", "reference", "version", "confirmed", "policy", "resolved",
-                                          "not_used", "conflicts"}
+                                          "envelope", "not_used", "conflicts"}
     assert (case_row["authority"]["kind"], case_row["authority"]["reference"], case_row["authority"]["version"],
             case_row["authority"]["policy"], case_row["authority"]["resolved"]) == (
         authority.CASE_MAPPING, "test-map:pump_reserve", "1", authority.CASE_OVERRIDES_FAMILY_DEFAULT, 0.2)
     assert len(case_row["authority"]["not_used"]) == 1
-    assert case_row["authority"]["not_used"][0].startswith("test-approval:pump_reserve v1 holds 0.6: not used")
+    assert case_row["authority"]["not_used"][0].startswith("test-approval:pump_reserve v1 approves 0.6: not used")
     assert (default_row["authority"]["kind"], default_row["authority"]["reference"],
             default_row["authority"]["resolved"], default_row["authority"]["not_used"]) == (
         authority.FAMILY_DEFAULT_REGISTRY, "test-approval:fraction_with_ppi", 1.0, [])
@@ -742,9 +750,9 @@ def _pump(trust, value, source="explicit_case", **kwargs):
 
 
 def test_review_m1_family_fixed_never_falls_back_to_case_truth(trust):
-    row = _pump(trust, 0.8, policy=authority.FAMILY_FIXED, maps=(mapping("pump_reserve", 0.8),))
-    assert not row["migratable"] and "no approved family default" in row["reason"]
-    assert any("cannot decide a FAMILY_FIXED parameter" in note for note in row["authority"]["not_used"])
+    row = _pump(trust, 0.8, policy=authority.FAMILY_FIXED_VALUE, maps=(mapping("pump_reserve", 0.8),))
+    assert not row["migratable"] and "no approved family value" in row["reason"]
+    assert any("cannot decide a FAMILY_FIXED_VALUE parameter" in note for note in row["authority"]["not_used"])
 
 
 def test_review_m2_case_required_has_no_fallback_when_the_mapping_does_not_apply(trust):
@@ -767,8 +775,9 @@ def test_review_m3_duplicate_approved_defaults_block_even_when_case_truth_would_
 
 def test_review_m4_m7_a_range_default_differs_when_case_truth_is_outside_it(trust):
     outside = {"maps": (mapping("pump_reserve", 0.95),), "defaults": (approval("pump_reserve", low=0.5, high=0.9),)}
-    row = _pump(trust, 0.6, "approved_family_default", policy=authority.FAMILY_FIXED, **outside)
-    assert not row["migratable"] and "case override is not permitted" in row["reason"]
+    row = _pump(trust, 0.95, policy=authority.FAMILY_ALLOWED_RANGE, **outside)
+    assert not row["migratable"] and "outside the approved family range" in row["reason"]
+    assert len(row["authority"]["conflicts"]) == 1
     row = _pump(trust, 0.95, policy=authority.CASE_OVERRIDES_FAMILY_DEFAULT, **outside)
     assert row["migratable"] and len(row["authority"]["conflicts"]) == 1
     assert "resolved by precedence" in row["authority"]["conflicts"][0]
@@ -787,19 +796,25 @@ def test_review_m5_a_mapping_whose_precondition_is_unmet_lets_the_default_decide
 
 def test_review_m6_an_approved_range_is_inclusive(trust):
     for value, passes in ((0.5, True), (0.9, True), (0.7, True), (0.4999, False), (0.9001, False)):
-        row = _pump(trust, value, "approved_family_default", policy=authority.CASE_OVERRIDES_FAMILY_DEFAULT,
+        row = _pump(trust, value, policy=authority.FAMILY_ALLOWED_RANGE, maps=(mapping("pump_reserve", value),),
                     defaults=(approval("pump_reserve", low=0.5, high=0.9),))
         assert row["migratable"] is passes, value
 
 
-def test_review_f3_family_fixed_records_a_value_that_differs_from_agreeing_case_truth(trust):
-    # Decision pending (FD-50): the family range decides, and the difference is never silent.
+def test_review_f3_resolved_a_range_never_authorizes_a_value_other_than_verified_case_truth(trust):
+    """P2H-1 review F3, resolved in P2H-2: the range is an envelope, not the source of the value."""
     inside = {"maps": (mapping("pump_reserve", 0.6),), "defaults": (approval("pump_reserve", low=0.5, high=0.9),)}
-    row = _pump(trust, 0.9, "approved_family_default", policy=authority.FAMILY_FIXED, **inside)
-    assert row["migratable"] and len(row["authority"]["conflicts"]) == 1
-    assert "differs from verified case truth" in row["authority"]["conflicts"][0]
-    row = _pump(trust, 0.6, "approved_family_default", policy=authority.FAMILY_FIXED, **inside)
-    assert row["migratable"] and row["authority"]["conflicts"] == []
+    for source in ("approved_family_default", "explicit_case"):
+        row = _pump(trust, 0.9, source, policy=authority.FAMILY_ALLOWED_RANGE, **inside)
+        assert not row["migratable"], source
+    row = _pump(trust, 0.6, policy=authority.FAMILY_ALLOWED_RANGE, **inside)
+    assert row["migratable"] and row["authority"]["kind"] == authority.CASE_MAPPING
+    assert row["authority"]["envelope"] == {"approval_id": "test-approval:pump_reserve", "version": "1", "low": 0.5,
+                                            "high": 0.9, "fallback": None}
+    # A range cannot fix a value: FAMILY_FIXED_VALUE refuses it whatever the value.
+    for value in (0.6, 0.9):
+        row = _pump(trust, value, "approved_family_default", policy=authority.FAMILY_FIXED_VALUE, **inside)
+        assert not row["migratable"] and "a range does not fix one value" in row["reason"]
 
 
 def test_review_f4_an_int_the_float_cannot_hold_exactly_is_refused(trust):
@@ -893,3 +908,309 @@ def test_review_f2_registered_rules_are_plain_functions():
     for rule in (functools.partial(lambda fields, value: value, value=0.5), Rule(), Rule().method, float):
         with pytest.raises(ValueError, match="plain Python functions"):
             CaseMapping("m", "1", "gi_bleed", "pump_reserve", ("engine.family",), lambda fields: True, rule, "t")
+
+
+# P2H-2: FAMILY_FIXED_VALUE, FAMILY_ALLOWED_RANGE and where a trusted rule may live --------------------
+
+#: A trusted rule outside migration*.py: authority comes from the registry, the digest and the
+#: verification, not from the module that holds the code (P2H-2).
+def rule_outside_the_migration_modules(fields):
+    return 0.8
+
+
+def test_p2h2_the_policy_model_has_four_policies_and_the_old_name_is_gone():
+    assert authority.POLICIES == (authority.FAMILY_FIXED_VALUE, authority.FAMILY_ALLOWED_RANGE,
+                                  authority.CASE_OVERRIDES_FAMILY_DEFAULT, authority.CASE_REQUIRED)
+    assert not hasattr(authority, "FAMILY_FIXED")
+    with pytest.raises(ValueError):
+        authority.AuthorityPolicy("gi_bleed", "pump_reserve", "FAMILY_FIXED", "1", "test")
+
+
+def test_p2h2_family_fixed_value_requires_the_exact_family_value(trust):
+    fixed = {"policy": authority.FAMILY_FIXED_VALUE, "defaults": (approval("pump_reserve", 0.8),)}
+    row = _pump(trust, 0.8, "approved_family_default", **fixed)
+    assert row["migratable"] and row["authority"]["kind"] == authority.FAMILY_DEFAULT_REGISTRY
+    assert row["authority"]["resolved"] == 0.8
+    for value in (0.8000001, 0.79, 1.0):
+        assert not _pump(trust, value, "approved_family_default", **fixed)["migratable"], value
+    assert not _pump(trust, 0.8, "explicit_case", **fixed)["migratable"], "the family value is not case truth"
+
+
+def test_p2h2_family_fixed_value_rejects_a_different_case_value(trust):
+    for value, source in ((0.6, "explicit_case"), (0.8, "approved_family_default"), (0.6, "approved_family_default")):
+        row = _pump(trust, value, source, policy=authority.FAMILY_FIXED_VALUE, maps=(mapping("pump_reserve", 0.6),),
+                    defaults=(approval("pump_reserve", 0.8),))
+        assert not row["migratable"] and "case override is not permitted" in row["reason"], (value, source)
+        assert row["authority"]["conflicts"]
+
+
+def test_p2h2_allowed_range_authorizes_the_verified_case_value_inside_the_range(trust):
+    row = _pump(trust, 0.7, policy=authority.FAMILY_ALLOWED_RANGE, maps=(mapping("pump_reserve", 0.7),),
+                defaults=(approval("pump_reserve", low=0.5, high=0.9),))
+    assert row["migratable"] and row["source"] == "explicit_case"
+    assert (row["authority"]["kind"], row["authority"]["reference"], row["authority"]["resolved"]) == (
+        authority.CASE_MAPPING, "test-map:pump_reserve", 0.7), "the value stays case-specific"
+    assert row["authority"]["envelope"]["approval_id"] == "test-approval:pump_reserve"
+    assert row["reason"] == f"verified: {authority.CASE_MAPPING} test-map:pump_reserve v1 ({authority.FAMILY_ALLOWED_RANGE})"
+
+
+def test_p2h2_allowed_range_refuses_a_verified_case_value_outside_the_range(trust):
+    for case in (0.45, 0.95):
+        row = _pump(trust, case, policy=authority.FAMILY_ALLOWED_RANGE, maps=(mapping("pump_reserve", case),),
+                    defaults=(approval("pump_reserve", low=0.5, high=0.9, fallback=0.7),))
+        assert not row["migratable"] and "outside the approved family range" in row["reason"], case
+        assert any("lies outside the approved range" in item for item in row["authority"]["conflicts"])
+        assert not _pump(trust, 0.7, "approved_family_default", policy=authority.FAMILY_ALLOWED_RANGE,
+                         maps=(mapping("pump_reserve", case),),
+                         defaults=(approval("pump_reserve", low=0.5, high=0.9, fallback=0.7),))["migratable"], \
+            "the fallback never replaces a verified case value outside the range"
+
+
+def test_p2h2_allowed_range_never_authorizes_a_value_merely_inside_the_range(trust):
+    """The range is authority over allowed values, not proof of the patient-specific value."""
+    envelope = (approval("pump_reserve", low=0.5, high=0.9),)
+    not_applicable = (mapping("pump_reserve", 0.7, cases=("gi_bleed_72f",)),)
+    for maps in ((), not_applicable):
+        for value in (0.5, 0.6, 0.7, 0.9):
+            for source in ("approved_family_default", "explicit_case"):
+                row = _pump(trust, value, source, policy=authority.FAMILY_ALLOWED_RANGE, maps=maps, defaults=envelope)
+                assert not row["migratable"] and "no fallback" in row["reason"], (maps, value, source)
+    # With verified case truth 0.7, another in-range value is refused, whatever it claims.
+    case = (mapping("pump_reserve", 0.7),)
+    for value, source in ((0.6, "approved_family_default"), (0.6, "explicit_case"), (0.7, "approved_family_default")):
+        assert not _pump(trust, value, source, policy=authority.FAMILY_ALLOWED_RANGE, maps=case,
+                         defaults=envelope)["migratable"], (value, source)
+    # A self-declared value with a fabricated claim naming the approval is refused too.
+    trust(**_trust_one(authority.FAMILY_ALLOWED_RANGE, defaults=envelope))
+    claims = {"pump_reserve": ProvenanceClaim("approved_family_default", approval_id="test-approval:pump_reserve",
+                                              approval_version="1")}
+    assert blocked(_with("pump_reserve", 0.7, "approved_family_default"), FAMILY_APPROVED, claims) == ["pump_reserve"]
+
+
+def test_p2h2_allowed_range_uses_only_an_explicitly_approved_fallback(trust):
+    fallback = (approval("pump_reserve", low=0.5, high=0.9, fallback=0.8),)
+    row = _pump(trust, 0.8, "approved_family_default", policy=authority.FAMILY_ALLOWED_RANGE, defaults=fallback)
+    assert row["migratable"] and row["authority"]["kind"] == authority.FAMILY_DEFAULT_REGISTRY
+    assert row["authority"]["resolved"] == 0.8 and row["authority"]["envelope"]["low"] == 0.5
+    for value in (0.7, 0.5, 0.9):
+        assert not _pump(trust, value, "approved_family_default", policy=authority.FAMILY_ALLOWED_RANGE,
+                         defaults=fallback)["migratable"], value
+    # An exact value is not a range: the policy and the record must agree.
+    row = _pump(trust, 0.8, "approved_family_default", policy=authority.FAMILY_ALLOWED_RANGE,
+                defaults=(approval("pump_reserve", 0.8),))
+    assert not row["migratable"] and "not a range" in row["reason"]
+
+
+@pytest.mark.parametrize("numbers", [{"value": 0.8, "fallback": 0.8}, {"low": 0.5, "high": 0.9, "fallback": 0.95},
+                                     {"low": 0.5, "high": 0.9, "fallback": True},
+                                     {"low": 0.5, "high": 0.9, "fallback": float("nan")}])
+def test_p2h2_a_fallback_is_an_exact_value_inside_its_range(numbers):
+    with pytest.raises(ValueError):
+        ApprovedDefault("gi_bleed", "pump_reserve", "a", "1", "approved", **numbers)
+
+
+def test_p2h2_case_overrides_uses_an_exact_default_or_a_range_fallback_never_a_midpoint(trust):
+    for record, passes in ((approval("pump_reserve", 0.8), True),
+                           (approval("pump_reserve", low=0.7, high=0.9, fallback=0.8), True),
+                           (approval("pump_reserve", low=0.7, high=0.9), False),
+                           (approval("pump_reserve", low=0.6, high=1.0), False)):
+        row = _pump(trust, 0.8, "approved_family_default", policy=authority.CASE_OVERRIDES_FAMILY_DEFAULT,
+                    defaults=(record,))
+        assert row["migratable"] is passes, record
+    row = _pump(trust, 0.3, policy=authority.CASE_OVERRIDES_FAMILY_DEFAULT, maps=(mapping("pump_reserve", 0.3),),
+                defaults=(approval("pump_reserve", low=0.7, high=0.9, fallback=0.8),))
+    assert row["migratable"] and row["authority"]["resolved"] == 0.3 and row["authority"]["conflicts"]
+
+
+def test_p2h2_case_required_ignores_every_family_record(trust):
+    for record in (approval("pump_reserve", 0.8), approval("pump_reserve", low=0.7, high=0.9, fallback=0.8)):
+        row = _pump(trust, 0.8, "approved_family_default", policy=authority.CASE_REQUIRED, defaults=(record,))
+        assert not row["migratable"] and "CASE_REQUIRED" in row["reason"]
+    row = _pump(trust, 0.75, policy=authority.CASE_REQUIRED, maps=(mapping("pump_reserve", 0.75),),
+                defaults=(approval("pump_reserve", low=0.7, high=0.9, fallback=0.8),))
+    assert row["migratable"] and row["authority"]["conflicts"] == [], "inside the range: no disagreement"
+
+
+def test_p2h2_spoofed_metadata_cannot_widen_an_allowed_range(trust):
+    trust(**_trust_one(authority.FAMILY_ALLOWED_RANGE, maps=(mapping("pump_reserve", 0.7),),
+                       defaults=(approval("pump_reserve", low=0.5, high=0.9, fallback=0.8),)))
+    rng = random.Random(2050)
+    passed = 0
+    for _ in range(200):
+        value = rng.choice((0.5, 0.6, 0.7, 0.8, 0.9, 0.95))
+        anchors = _with("pump_reserve", value, rng.choice(SOURCES))
+        claims = {"pump_reserve": _claims(rng, {"mappings": ["test-map:pump_reserve"],
+                                                "approvals": ["test-approval:pump_reserve"]}, bare=rng.random() < 0.5)}
+        row = migration_gate("gi_bleed", anchors, FAMILY_APPROVED, claims=claims)["pump_reserve"]
+        if row["migratable"]:
+            passed += 1
+            assert value == 0.7 and row["source"] == "explicit_case" and row["authority"]["reference"] == \
+                "test-map:pump_reserve", (value, row)
+        assert row["authority"] is None or row["authority"]["policy"] == authority.FAMILY_ALLOWED_RANGE
+    assert passed, "the regression exercises authorized rows too"
+
+
+def test_p2h2_a_registered_rule_outside_the_migration_modules_is_valid(trust):
+    assert rule_outside_the_migration_modules.__module__ == __name__
+    assert Path(__file__).name not in {Path(path).name for path in calibration.MIGRATION_SOURCES}
+    outside = CaseMapping("test-map:pump_reserve", "1", "gi_bleed", "pump_reserve", ("engine.family",),
+                          lambda fields: fields["engine.family"] == "gi_bleed", rule_outside_the_migration_modules,
+                          "test only")
+    row = _pump(trust, 0.8, policy=authority.CASE_REQUIRED, maps=(outside,))
+    assert row["migratable"] and row["authority"]["reference"] == "test-map:pump_reserve"
+    content = authority.registry_content()
+    rule = next(item["rule"] for item in content["mappings"] if item["parameter"] == "pump_reserve")
+    assert rule["function"] == f"{__name__}.rule_outside_the_migration_modules"
+    assert "return 0.8" in rule["code"]["source"]
+
+
+def test_p2h2_an_undigestible_rule_closes_every_parameter(trust):
+    class Opaque:
+        pass
+    for rule in (lambda fields, thing=Opaque(): 0.8, eval("lambda fields: 0.8")):
+        broken = CaseMapping("test-map:pump_reserve", "1", "gi_bleed", "pump_reserve", ("engine.family",),
+                             lambda fields: True, rule, "test only")
+        trust(**_trust_one(authority.CASE_REQUIRED, maps=(broken,)))
+        rows = migration_gate("gi_bleed", _with("pump_reserve", 0.8), FAMILY_APPROVED)
+        assert not any(row["migratable"] for row in rows.values())
+        assert all("cannot be fingerprinted" in row["reason"] for row in rows.values())
+
+
+def test_p2h2_an_unregistered_or_nondeterministic_rule_never_authorizes(trust):
+    # Unregistered: a mapping the candidate names but the registry does not hold.
+    trust(**_trust_one(authority.CASE_REQUIRED))
+    claims = {"pump_reserve": ProvenanceClaim("explicit_case", mapping_id="test-map:pump_reserve")}
+    assert blocked(_with("pump_reserve", 0.8), FAMILY_APPROVED, claims) == ["pump_reserve"]
+    # Not deterministic: a rule that changes between two evaluations on the same case truth is broken.
+    flaky = CaseMapping("test-map:pump_reserve", "1", "gi_bleed", "pump_reserve", ("engine.family",),
+                        lambda fields: True, flaky_rule, "test only")
+    row = _pump(trust, 0.8, policy=authority.CASE_REQUIRED, maps=(flaky,))
+    assert not row["migratable"] and "not deterministic" in row["reason"]
+    # A rule whose state the digest cannot pin closes everything instead.
+    calls = itertools.count()
+    opaque = replace(flaky, rule=lambda fields, calls=calls: 0.8 if next(calls) % 2 == 0 else 0.7)
+    row = _pump(trust, 0.8, policy=authority.CASE_REQUIRED, maps=(opaque,))
+    assert not row["migratable"] and "cannot be fingerprinted" in row["reason"]
+
+
+#: Mutable module state a rule may read: the digest pins its content, the double evaluation its stability.
+FLAKY_CALLS = [0]
+
+
+def flaky_rule(fields):
+    FLAKY_CALLS[0] += 1
+    return 0.8 if FLAKY_CALLS[0] % 2 else 0.7
+
+
+# P2H-2 adversarial review: run-time callees, cycles, drift, rewriting, report and test gaps -----------
+
+#: A helper a registered rule calls through a global; replaced at run time in the review F1 test.
+def rule_helper(fields):
+    return 0.8
+
+
+def rule_calling_a_helper(fields):
+    return rule_helper(fields)
+
+
+#: Module state a registered rule reads; the review F2 and F3 tests make it cyclic or drift.
+RULE_STATE = [0.8]
+
+
+def rule_reading_state(fields):
+    return 0.8 if RULE_STATE else 0.0
+
+
+def rule_writing_state(fields):
+    RULE_STATE.append(0.5)
+    return 0.8
+
+
+def asserting_rule(fields):
+    assert fields["engine.family"] == "gi_bleed", "a GI rule"
+    return 0.8
+
+
+def _registered(rule, precondition=lambda fields: True):
+    return CaseMapping("test-map:pump_reserve", "1", "gi_bleed", "pump_reserve", ("engine.family",), precondition,
+                       rule, "test only")
+
+
+def test_review_p2h2_f1_a_rule_calling_run_time_built_code_closes_everything(trust, monkeypatch):
+    assert _pump(trust, 0.8, policy=authority.CASE_REQUIRED, maps=(_registered(rule_calling_a_helper),))["migratable"]
+    monkeypatch.setattr(sys.modules[__name__], "rule_helper", eval("lambda fields: 0.8"))
+    rows = migration_gate("gi_bleed", _with("pump_reserve", 0.8), FAMILY_APPROVED)
+    assert not any(row["migratable"] for row in rows.values())
+    assert all("no source file in the repository" in row["reason"] for row in rows.values())
+
+
+def test_review_p2h2_f2_a_self_containing_container_is_a_closed_refusal(trust, monkeypatch):
+    cyclic = [0.8]
+    cyclic.append(cyclic)
+    monkeypatch.setattr(sys.modules[__name__], "RULE_STATE", cyclic)
+    trust(**_trust_one(authority.CASE_REQUIRED, maps=(_registered(rule_reading_state),)))
+    rows = migration_gate("gi_bleed", _with("pump_reserve", 0.8), FAMILY_APPROVED)
+    assert not any(row["migratable"] for row in rows.values())
+    assert all("contains itself" in row["reason"] for row in rows.values())
+    with pytest.raises(TypeError, match="contains itself"):
+        authority.registry_content()
+
+
+def test_review_p2h2_f3_a_rule_that_changes_the_pinned_state_is_refused(trust, monkeypatch):
+    monkeypatch.setattr(sys.modules[__name__], "RULE_STATE", [0.8])
+    row = _pump(trust, 0.8, policy=authority.CASE_REQUIRED, maps=(_registered(rule_writing_state),))
+    assert not row["migratable"] and "changed while the registered rules ran" in row["reason"]
+
+
+def test_review_p2h2_f4_a_rule_s_digest_is_the_same_under_pytest_and_a_plain_interpreter(trust):
+    """This module is rewritten by pytest's assertion rewriting; a plain import is not."""
+    trust(**_trust_one(authority.CASE_REQUIRED, maps=(_registered(asserting_rule),)))
+    here = authority.registry_hash()
+    script = ("from clinical_core import migration_authority as a\n"
+              "import test_clinical_core_migration_gate as t\n"
+              "a.TRUSTED_CASE_MAPPINGS = tuple(item for item in t.FULL_TRUST['mappings'] if item.parameter != "
+              "'pump_reserve') + (t._registered(t.asserting_rule),)\n"
+              "a.APPROVED_FAMILY_DEFAULTS = t.FULL_TRUST['defaults']\n"
+              "a.AUTHORITY_POLICIES = t.policies(pump_reserve=a.CASE_REQUIRED)\n"
+              "print(a.registry_hash())\n")
+    root = Path(__file__).resolve().parent
+    import os
+    import subprocess
+    result = subprocess.run([sys.executable, "-c", script], cwd=root, capture_output=True, text=True, timeout=300,
+                            env={**os.environ, "PYTHONPATH": str(root)})
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == here
+
+
+def test_review_p2h2_r1_r2_the_report_names_the_fallback_it_used_or_did_not_use(trust):
+    with_fallback = (approval("pump_reserve", low=0.5, high=0.9, fallback=0.8),)
+    used = _pump(trust, 0.8, "approved_family_default", policy=authority.FAMILY_ALLOWED_RANGE, defaults=with_fallback)
+    assert used["migratable"] and used["authority"]["envelope"]["fallback"] == 0.8
+    assert not any("test-approval:pump_reserve" in note for note in used["authority"]["not_used"]), \
+        "the winning approval is not reported as not used"
+    case = _pump(trust, 0.7, policy=authority.FAMILY_ALLOWED_RANGE, maps=(mapping("pump_reserve", 0.7),),
+                 defaults=with_fallback)
+    assert case["migratable"] and case["authority"]["envelope"]["fallback"] == 0.8
+    assert any("fallback 0.8: not used" in note for note in case["authority"]["not_used"])
+
+
+def test_review_p2h2_t1_family_fixed_value_refuses_a_range_even_with_a_fallback(trust):
+    for value in (0.8, 0.5, 0.9, 0.7):
+        row = _pump(trust, value, "approved_family_default", policy=authority.FAMILY_FIXED_VALUE,
+                    defaults=(approval("pump_reserve", low=0.5, high=0.9, fallback=0.8),))
+        assert not row["migratable"] and "a range does not fix one value" in row["reason"], value
+
+
+def test_review_p2h2_t2_case_overrides_never_invents_a_bound_or_midpoint(trust):
+    for value in (0.5, 0.7, 0.9):
+        row = _pump(trust, value, "approved_family_default", policy=authority.CASE_OVERRIDES_FAMILY_DEFAULT,
+                    defaults=(approval("pump_reserve", low=0.5, high=0.9),))
+        assert not row["migratable"] and "none is invented" in row["reason"], value
+
+
+def test_review_p2h2_t4_a_nondeterministic_precondition_is_broken(trust):
+    calls = []
+    flips = _registered(rule_outside_the_migration_modules,
+                        precondition=lambda fields, calls=calls: calls.append(1) or len(calls) % 2 == 1)
+    row = _pump(trust, 0.8, policy=authority.CASE_REQUIRED, maps=(flips,))
+    assert not row["migratable"] and "precondition is not deterministic" in row["reason"]

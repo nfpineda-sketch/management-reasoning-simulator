@@ -244,9 +244,10 @@ GI_DRY_RUN: Mapping[str, tuple[str, str]] = {
     "beta_blockade": (FACULTY_AUTHORING_DECISION_REQUIRED,
                       "neither case lists a beta-blocker (clinical_cases.py:889, :918), but repository truth does not "
                       "establish that either medication/history source is complete, and absence of mention is not "
-                      "evidence of 0 (P2H-0). Undecided: should GI case authoring require an explicitly complete "
-                      "medication reconciliation capable of proving beta_blockade = 0, or should faculty approve a "
-                      "GI-family default?"),
+                      "evidence of 0 (P2H-0). Undecided (P2H-2): option A, CASE_REQUIRED: GI authoring provides a "
+                      "complete medication reconciliation, or an equivalent explicit field, sufficient to establish "
+                      "beta blockade; option B, a GI-family default: faculty approves a fallback value for when "
+                      "medication completeness is not available"),
     "preload_fraction": (FACULTY, "POCUS places both arrivals low on the curve (clinical_cases.py:154-156); the "
                                   "position is a candidate band, not case truth"),
     "pump_reserve": (FAMILY_DEFAULT, "the case mentions no cardiac disease; no B-lines, no oedema, troponin below "

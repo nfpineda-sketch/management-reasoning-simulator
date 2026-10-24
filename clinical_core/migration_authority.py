@@ -8,19 +8,29 @@ nothing else. It resolves authorization from two trusted sources only:
 A. repository case truth (``clinical_cases.py``), read here, through a mapping registered in
    ``TRUSTED_CASE_MAPPINGS``: this module reads the source fields itself, checks the
    mapping's preconditions and recomputes the value with the registered rule;
-B. ``APPROVED_FAMILY_DEFAULTS``: an approved record for this family and parameter, with its
-   value or range.
+B. ``APPROVED_FAMILY_DEFAULTS``: an approved record for this family and parameter: one exact
+   value, or an inclusive range with an optional, explicitly approved fallback value inside it.
 
-Which source decides is the parameter's authority policy (P2H-1), declared in
-``AUTHORITY_POLICIES``, never by the candidate:
-- ``CASE_OVERRIDES_FAMILY_DEFAULT``: verified case truth first; the family default is a
-  fallback used only when no case mapping applies. A differing default does not veto case
-  truth; the difference is reported;
-- ``FAMILY_FIXED``: the approved family value is authoritative; case truth that differs is
-  an override the policy does not permit, and blocks;
+Which source decides is the parameter's authority policy (P2H-1, refined in P2H-2), declared
+in ``AUTHORITY_POLICIES``, never by the candidate:
+- ``FAMILY_FIXED_VALUE``: the family approves one exact value, which is required; case truth
+  that differs is an override the policy does not permit, and blocks. A range cannot fix a value;
+- ``FAMILY_ALLOWED_RANGE``: the family approves a range as an authorization envelope, not as
+  the source of the value. The value is the verified case value, recomputed from case truth,
+  and it must lie in the range; a value merely inside the range is not authorized. Without a
+  verified case value, only the range's explicitly approved fallback, if any, is used: none is
+  invented (no midpoint);
+- ``CASE_OVERRIDES_FAMILY_DEFAULT``: verified case truth first; the family default (an exact
+  value, or a range's approved fallback) is used only when no case mapping applies. A
+  differing default does not veto case truth; the difference is reported;
 - ``CASE_REQUIRED``: verified case truth is required; a family default is never a fallback.
-A parameter with no declared policy fails closed. The supplied value is then compared with
-what the selected authority resolves.
+A parameter with no declared policy fails closed. The supplied value is then compared exactly
+with what the selected authority resolves.
+
+A registered rule may live anywhere in the versioned repository (P2H-2): authority comes from
+the registry, the digest and the verification, not from the module that holds the code. The
+rule must be a plain, deterministic function whose exact implementation the digest pins; when
+the registry cannot be fingerprinted reproducibly, every parameter fails closed.
 
 All three registries are empty: no policy is declared, no case parameter is mapped from case
 truth yet and no family default is approved.
@@ -51,11 +61,12 @@ CASE_MAPPING = "case_mapping"
 FAMILY_DEFAULT_REGISTRY = "family_default_registry"
 #: The only approval status that authorizes.
 APPROVED = "approved"
-#: Authority policies (P2H-1): which trusted source decides a parameter.
+#: Authority policies (P2H-1, refined in P2H-2): which trusted source decides a parameter.
+FAMILY_FIXED_VALUE = "FAMILY_FIXED_VALUE"
+FAMILY_ALLOWED_RANGE = "FAMILY_ALLOWED_RANGE"
 CASE_OVERRIDES_FAMILY_DEFAULT = "CASE_OVERRIDES_FAMILY_DEFAULT"
-FAMILY_FIXED = "FAMILY_FIXED"
 CASE_REQUIRED = "CASE_REQUIRED"
-POLICIES = (CASE_OVERRIDES_FAMILY_DEFAULT, FAMILY_FIXED, CASE_REQUIRED)
+POLICIES = (FAMILY_FIXED_VALUE, FAMILY_ALLOWED_RANGE, CASE_OVERRIDES_FAMILY_DEFAULT, CASE_REQUIRED)
 
 
 def exact_number(value) -> float | None:
@@ -125,7 +136,11 @@ class CaseMapping:
 
 @dataclass(frozen=True)
 class ApprovedDefault:
-    """An approved family default: an exact value or an inclusive range, with its approval identity."""
+    """An approved family record: one exact value, or an inclusive range, with its approval identity.
+
+    A range may carry ``fallback``, an exact value inside it approved for use when no verified
+    case value exists; a range without one has no fallback, and none is derived from it.
+    """
 
     family: str
     parameter: str
@@ -135,6 +150,7 @@ class ApprovedDefault:
     value: float | None = None
     low: float | None = None
     high: float | None = None
+    fallback: float | None = None
 
     def __post_init__(self):
         for name in ("family", "parameter", "approval_id", "version", "status"):
@@ -147,11 +163,24 @@ class ApprovedDefault:
             raise ValueError("an approved default's numbers are exact finite ints or floats")
         if "low" in given and not self.low <= self.high:
             raise ValueError("an approved range has low <= high")
+        if self.fallback is not None:
+            if self.value is not None:
+                raise ValueError("an exact approved value has no separate fallback")
+            if exact_number(self.fallback) is None or not self.low <= self.fallback <= self.high:
+                raise ValueError("a range's fallback is an exact finite number inside the range")
 
-    def holds(self, value: float) -> bool:
-        if self.value is not None:
-            return value == self.value
-        return self.low <= value <= self.high
+    @property
+    def is_range(self) -> bool:
+        return self.value is None
+
+    def contains(self, value: float) -> bool:
+        """Inside the inclusive range (a range only)."""
+        return self.is_range and self.low <= value <= self.high
+
+    @property
+    def default_value(self) -> float | None:
+        """The exact value this record approves for use as a value: its value, or a range's fallback."""
+        return self.value if self.value is not None else self.fallback
 
 
 @dataclass(frozen=True)
@@ -211,22 +240,35 @@ def _repository_source(module) -> str | None:
 
 
 def _in_repository(item) -> bool:
+    """Defined in a source file of the repository (any module): code built at run time is not."""
     if _repository_source(inspect.getmodule(item)) is None:
         return False
     code = getattr(item, "__code__", None)
-    if code is None or code.co_filename.startswith("<"):
+    if code is None:
         return True
-    return _ROOT in Path(code.co_filename).resolve().parents
+    return not code.co_filename.startswith("<") and _ROOT in Path(code.co_filename).resolve().parents
 
 
 def _code_form(code, seen: frozenset) -> dict:
+    """Code pinned by its source in the repository; code without a source file cannot be pinned.
+
+    The source alone, not the compiled constants: a tool that rewrites code on import (pytest's
+    assertion rewriting) changes the constants but not what the rule computes.
+    """
+    source = _source_of(code)
+    if source is None:
+        raise TypeError(f"the digest cannot pin code {code.co_name!r} from {code.co_filename!r}: it has no source "
+                        "in the repository")
+    return {"name": code.co_name, "source": source}
+
+
+@functools.lru_cache(maxsize=None)
+def _source_of(code) -> str | None:
+    """The source of loaded code (cached per code object: the same code always has the same source)."""
     try:
-        source = inspect.getsource(code)
+        return inspect.getsource(code)
     except (OSError, TypeError):
-        source = None
-    return {"name": code.co_name, "source": source, "bytecode": None if source is not None else code.co_code.hex(),
-            "consts": [_digest_form(item, seen) for item in code.co_consts], "names": list(code.co_names),
-            "varnames": list(code.co_varnames), "freevars": list(code.co_freevars)}
+        return None
 
 
 def _names(code) -> set[str]:
@@ -237,15 +279,34 @@ def _names(code) -> set[str]:
     return names
 
 
+def _identifiers(text: str) -> set[str]:
+    words, current = set(), []
+    for char in text + " ":
+        if char.isalnum() or char == "_":
+            current.append(char)
+        elif current:
+            words.add("".join(current))
+            current = []
+    return words
+
+
+def _read_names(function) -> set[str]:
+    """The names the function's own source reads: a tool that rewrites code on import (pytest's
+    assertion rewriting) adds names to the compiled code that no source spells."""
+    return _names(function.__code__) & _identifiers(_source_of(function.__code__) or "")
+
+
 def _function_form(function, seen: frozenset) -> dict:
     name = f"{function.__module__}.{function.__qualname__}"
-    if not _in_repository(function):
+    if _repository_source(inspect.getmodule(function)) is None:
         return {"external_function": name}
+    if not _in_repository(function):
+        raise TypeError(f"the digest cannot pin {name}: its code has no source file in the repository")
     if function in seen:
         return {"function": name, "recursive": True}
     seen = seen | {function}
     code = function.__code__
-    names = _names(code)
+    names = _read_names(function)
     return {"function": name, "code": _code_form(code, seen),
             "defaults": _digest_form(function.__defaults__, seen),
             "kwdefaults": _digest_form(function.__kwdefaults__, seen),
@@ -274,6 +335,11 @@ def _digest_form(value, seen: frozenset = frozenset()):
         return {"complex": [value.real.hex(), value.imag.hex()]}
     if kind is bytes:
         return {"bytes": value.hex()}
+    if kind in (tuple, list, set, frozenset, dict, FrozenRecord):
+        marker = ("container", id(value))
+        if marker in seen:
+            raise TypeError("a trusted registry holds a container that contains itself")
+        seen = seen | {marker}
     if kind in (tuple, list):
         return [_digest_form(item, seen) for item in value]
     if kind in (set, frozenset):
@@ -303,9 +369,14 @@ def _digest_form(value, seen: frozenset = frozenset()):
 def _rule_form(function) -> dict:
     """A registered precondition or rule: code of this repository, pinned whole."""
     if not _in_repository(function):
-        raise TypeError(f"a registered rule must be defined in the repository: {function.__module__}."
-                        f"{function.__qualname__} is not")
+        raise TypeError(f"a registered rule must be defined in a source file of the repository: "
+                        f"{function.__module__}.{function.__qualname__} is not")
     return _function_form(function, frozenset())
+
+
+def registry_hash() -> str:
+    """The digest of ``registry_content``; raises when the registries cannot be pinned."""
+    return hashlib.sha256(_json(registry_content()).encode("utf-8")).hexdigest()
 
 
 def registry_content() -> dict:
@@ -326,7 +397,9 @@ def registry_content() -> dict:
                           "precondition": _rule_form(item.precondition), "rule": _rule_form(item.rule)}
                          for item in TRUSTED_CASE_MAPPINGS],
             "defaults": [_digest_form([item.family, item.parameter, item.approval_id, item.version, item.status,
-                                       item.value, item.low, item.high]) for item in APPROVED_FAMILY_DEFAULTS]}
+                                       item.value, item.low, item.high, item.fallback])
+                         for item in APPROVED_FAMILY_DEFAULTS],
+            "policy_model": list(POLICIES)}
 
 
 @dataclass(frozen=True)
@@ -344,8 +417,10 @@ class Authority:
     """What the trusted sources say about one parameter's value.
 
     ``selected`` is the authority the policy selected, if any; ``confirmations`` holds it only
-    when it holds the value supplied. ``policy`` and ``resolved`` say which policy applied and
-    what the selected authority resolves (a number, or a range for a family default).
+    when the value supplied is exactly what it resolves. ``policy`` and ``resolved`` say which
+    policy applied and the exact value the selected authority resolves; ``envelope`` is the
+    approved range (with its fallback, if any) a ``FAMILY_ALLOWED_RANGE`` parameter was judged
+    against, whether it authorized the case value, supplied the fallback or refused.
     ``not_used`` lists the trusted sources that existed but did not decide, and why;
     ``conflicts`` lists disagreements, also those precedence resolved. Neither is ever silently
     dropped.
@@ -358,6 +433,7 @@ class Authority:
     not_used: tuple[str, ...] = ()
     conflicts: tuple[str, ...] = ()
     selected: Confirmation | None = None
+    envelope: tuple | None = None
 
     @property
     def authorized(self) -> bool:
@@ -370,6 +446,8 @@ class Authority:
                 "reference": None if selected is None else selected.reference,
                 "version": None if selected is None else selected.version,
                 "confirmed": self.authorized, "policy": self.policy, "resolved": self.resolved,
+                "envelope": None if self.envelope is None else dict(zip(("approval_id", "version", "low", "high",
+                                                                         "fallback"), self.envelope)),
                 "not_used": list(self.not_used), "conflicts": list(self.conflicts)}
 
 
@@ -509,20 +587,25 @@ def _apply(mapping: CaseMapping, case_id: str) -> tuple[str, float | None, str]:
         fields = FrozenRecord({path: read_field(record, path) for path in mapping.source_fields})
     except MissingSourceField as missing:
         return BROKEN, None, f"{mapping.mapping_id}: source field {missing.args[0]!r} does not exist in {case_id!r}"
+    # Each is evaluated twice on the same frozen fields: a rule that is not deterministic is broken.
     try:
-        applies = mapping.precondition(fields)
+        applies = [mapping.precondition(fields) for _ in range(2)]
     except Exception as error:
         return BROKEN, None, f"{mapping.mapping_id}: the precondition failed ({type(error).__name__})"
-    if applies is not True:
+    if [item is True for item in applies] not in ([True, True], [False, False]):
+        return BROKEN, None, f"{mapping.mapping_id}: the precondition is not deterministic"
+    if applies[0] is not True:
         return NOT_APPLICABLE, None, (f"{mapping.mapping_id}: the case truth does not meet its precondition "
                                       f"({mapping.requirements})")
     try:
-        recomputed = exact_number(mapping.rule(fields))
+        recomputed = [exact_number(mapping.rule(fields)) for _ in range(2)]
     except Exception as error:
         return BROKEN, None, f"{mapping.mapping_id}: the rule failed ({type(error).__name__})"
-    if recomputed is None:
+    if recomputed[0] is None or recomputed[1] is None:
         return BROKEN, None, f"{mapping.mapping_id}: the rule gives no exact finite number for {case_id!r}"
-    return COMPUTED, recomputed, ""
+    if recomputed[0] != recomputed[1]:
+        return BROKEN, None, f"{mapping.mapping_id}: the rule is not deterministic"
+    return COMPUTED, recomputed[0], ""
 
 
 def policy_for(family: str, parameter: str) -> tuple[AuthorityPolicy | None, str]:
@@ -538,8 +621,11 @@ def policy_for(family: str, parameter: str) -> tuple[AuthorityPolicy | None, str
     return registered[0], ""
 
 
-def _holds(record: ApprovedDefault) -> Any:
-    return record.value if record.value is not None else [record.low, record.high]
+def _approves(record: ApprovedDefault) -> str:
+    if not record.is_range:
+        return f"approves {record.value!r}"
+    fallback = "no fallback" if record.fallback is None else f"fallback {record.fallback!r}"
+    return f"approves the range [{record.low!r}, {record.high!r}] ({fallback})"
 
 
 class AuthoritySession:
@@ -549,6 +635,26 @@ class AuthoritySession:
         self.family = family
         self.anchors = anchors
         self._verification: CaseVerification | None = None
+        self._fingerprint: str | None = None
+        self._fault: str | None = None
+
+    def fingerprint_fault(self) -> str:
+        """Why the trusted registries cannot be pinned by the digest, or ``""``; computed once."""
+        if self._fault is None:
+            try:
+                self._fingerprint, self._fault = registry_hash(), ""
+            except Exception as error:  # any failure to pin the registries closes them
+                self._fault = f"the trusted registries cannot be fingerprinted: {type(error).__name__}: {error}"
+        return self._fault
+
+    def drift_fault(self) -> str:
+        """Why the registries' fingerprint is no longer the one taken before the rules ran, or ``""``."""
+        try:
+            current = registry_hash()
+        except Exception as error:
+            return f"the trusted registries cannot be fingerprinted: {type(error).__name__}: {error}"
+        return "" if current == self._fingerprint else ("the trusted registries changed while the registered rules "
+                                                         "ran: the digest no longer pins what authorized")
 
     def verification(self) -> CaseVerification:
         if self._verification is None:
@@ -559,9 +665,9 @@ class AuthoritySession:
         """Recompute authorization from the trusted sources. No claim is an input.
 
         The parameter's declared policy selects the authority (see the module docstring); the
-        supplied value is authorized only when the selected authority holds it.
+        supplied value is authorized only when it is exactly what the selected authority resolves.
         """
-        fault = registry_fault()
+        fault = registry_fault() or self.fingerprint_fault()
         if fault:
             return Authority((), fault)
         trusted_policy, why = policy_for(self.family, parameter)
@@ -592,12 +698,16 @@ class AuthoritySession:
         approved = [item for item in defaults if item.status == APPROVED]
         not_used += [f"{item.approval_id}: status {item.status!r} does not authorize" for item in defaults
                      if item.status != APPROVED]
+        envelope = None
 
         def refuse(reason: str, selected: Confirmation | None = None, resolved=None) -> Authority:
-            return Authority((), reason, policy, resolved, tuple(not_used), tuple(conflicts), selected)
+            return Authority((), reason, policy, resolved, tuple(not_used), tuple(conflicts), selected, envelope)
 
         if broken:
             return refuse("a registered case mapping is broken: " + "; ".join(broken))
+        drift = self.drift_fault() if mappings else ""
+        if drift:
+            return refuse(drift)
         if len({value_ for _, value_ in computed}) > 1:
             conflicts.append("case mappings disagree: " + ", ".join(f"{item.mapping_id} -> {value_!r}"
                                                                   for item, value_ in computed))
@@ -610,58 +720,94 @@ class AuthoritySession:
         case_note = ("" if case is None else
                      f"{case[0].mapping_id} v{case[0].version} -> {case[1]!r}")
         default_note = ("" if default is None else
-                        f"{default.approval_id} v{default.version} holds {_holds(default)!r}")
+                        f"{default.approval_id} v{default.version} {_approves(default)}")
         # Mappings that agree with the first: registry order selects one; the others are reported.
         not_used += [f"{item.mapping_id} v{item.version} -> {value_!r}: agrees with {case_note}, which the registry "
                      "order selects" for item, value_ in computed[1:]]
-        differ = case is not None and default is not None and not default.holds(case[1])
-        if policy == CASE_OVERRIDES_FAMILY_DEFAULT:
+
+        def from_case() -> tuple[Confirmation, float]:
+            return Confirmation(CASE_MAPPING, case[0].mapping_id, case[0].version, case[0].source_fields), case[1]
+
+        def from_family(number_: float) -> tuple[Confirmation, float]:
+            return Confirmation(FAMILY_DEFAULT_REGISTRY, default.approval_id, default.version), number_
+
+        def disagreement() -> bool:
+            """Case truth and the approved record differ: outside a range, or not the exact value."""
+            if case is None or default is None:
+                return False
+            return not default.contains(case[1]) if default.is_range else case[1] != default.value
+
+        if policy == FAMILY_FIXED_VALUE:
+            if default is None:
+                if case is not None:
+                    not_used.append(f"{case_note}: a case value cannot decide a FAMILY_FIXED_VALUE parameter")
+                return refuse("FAMILY_FIXED_VALUE: no approved family value")
+            if default.is_range:
+                if case is not None:
+                    not_used.append(f"{case_note}: a case value cannot decide a FAMILY_FIXED_VALUE parameter")
+                return refuse(f"FAMILY_FIXED_VALUE: {default_note}, and a range does not fix one value")
+            selected, resolved = from_family(default.value)
             if case is not None:
-                selected = Confirmation(CASE_MAPPING, case[0].mapping_id, case[0].version, case[0].source_fields)
-                resolved = case[1]
+                if case[1] != default.value:
+                    conflicts.append(f"case truth {case_note} differs from the fixed family value {default_note}")
+                    return refuse("FAMILY_FIXED_VALUE: the case truth differs from the approved family value, and a "
+                                  "case override is not permitted", selected, resolved)
+                not_used.append(f"{case_note}: agrees, but the family value is authoritative")
+        elif policy == FAMILY_ALLOWED_RANGE:
+            if default is None:
+                if case is not None:
+                    not_used.append(f"{case_note}: no approved family range authorizes it")
+                return refuse("FAMILY_ALLOWED_RANGE: no approved family range")
+            if not default.is_range:
+                if case is not None:
+                    not_used.append(f"{case_note}: no approved family range authorizes it")
+                return refuse(f"FAMILY_ALLOWED_RANGE: {default_note}, which is a single value, not a range")
+            envelope = (default.approval_id, default.version, default.low, default.high, default.fallback)
+            if case is not None:
+                if not default.contains(case[1]):
+                    conflicts.append(f"case truth {case_note} lies outside the approved range {default_note}")
+                    return refuse("FAMILY_ALLOWED_RANGE: the verified case value lies outside the approved family "
+                                  "range")
+                # The case value stays case-specific: the range only authorizes it.
+                selected, resolved = from_case()
+                if default.fallback is not None:
+                    not_used.append(f"{default.approval_id} v{default.version} fallback {default.fallback!r}: not "
+                                    "used, a verified case value exists")
+            elif default.fallback is not None:
+                selected, resolved = from_family(default.fallback)
+            else:
+                return refuse("FAMILY_ALLOWED_RANGE: no verified case value, and the approved range defines no "
+                              "fallback (none is invented)")
+        elif policy == CASE_OVERRIDES_FAMILY_DEFAULT:
+            if case is not None:
+                selected, resolved = from_case()
                 if default is not None:
                     not_used.append(f"{default_note}: not used, verified case truth takes precedence")
-                    if differ:
+                    if disagreement():
                         conflicts.append(f"case truth {case_note} differs from the family default {default_note}: "
                                          "resolved by precedence (case overrides the default)")
             elif default is not None:
-                selected = Confirmation(FAMILY_DEFAULT_REGISTRY, default.approval_id, default.version)
-                resolved = _holds(default)
+                if default.default_value is None:
+                    return refuse(f"CASE_OVERRIDES_FAMILY_DEFAULT: no applicable case mapping, and {default_note} "
+                                  "defines no fallback value (none is invented)")
+                selected, resolved = from_family(default.default_value)
             else:
                 return refuse("no applicable case mapping and no approved family default")
-        elif policy == FAMILY_FIXED:
-            if default is None:
-                if case is not None:
-                    not_used.append(f"{case_note}: a case value cannot decide a FAMILY_FIXED parameter")
-                return refuse("FAMILY_FIXED: no approved family default")
-            selected = Confirmation(FAMILY_DEFAULT_REGISTRY, default.approval_id, default.version)
-            resolved = _holds(default)
-            if differ:
-                conflicts.append(f"case truth {case_note} differs from the fixed family value {default_note}")
-                return refuse("FAMILY_FIXED: the case truth differs from the approved family value, and a case "
-                              "override is not permitted", selected, resolved)
-            if case is not None:
-                not_used.append(f"{case_note}: agrees, but the family value is authoritative")
-                if number != case[1]:
-                    conflicts.append(f"the value supplied, {number!r}, differs from verified case truth {case_note}; "
-                                     "the approved family range holds both, and FAMILY_FIXED lets the family value "
-                                     "decide")
         elif policy == CASE_REQUIRED:
             if default is not None:
                 not_used.append(f"{default_note}: a family default is not a permitted fallback under CASE_REQUIRED")
-                if differ:
+                if disagreement():
                     conflicts.append(f"case truth {case_note} differs from the family default {default_note}")
             if case is None:
                 return refuse("CASE_REQUIRED: no applicable case mapping gives verified case truth")
-            selected = Confirmation(CASE_MAPPING, case[0].mapping_id, case[0].version, case[0].source_fields)
-            resolved = case[1]
+            selected, resolved = from_case()
         else:  # unreachable: AuthorityPolicy validates its policy
             return refuse(f"unknown authority policy {policy!r}")
-        holds = number == resolved if selected.kind == CASE_MAPPING else default.holds(number)
-        if not holds:
+        if number != resolved:
             if selected.kind == CASE_MAPPING:
                 reason = f"{selected.reference}: case truth maps to {resolved!r}, not {number!r}"
             else:
-                reason = f"{selected.reference}: the approved default does not hold {number!r}"
+                reason = f"{selected.reference}: the approved family value is {resolved!r}, not {number!r}"
             return refuse(reason, selected, resolved)
-        return Authority((selected,), "confirmed", policy, resolved, tuple(not_used), tuple(conflicts), selected)
+        return Authority((selected,), "confirmed", policy, resolved, tuple(not_used), tuple(conflicts), selected,
+                         envelope)

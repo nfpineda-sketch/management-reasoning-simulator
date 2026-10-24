@@ -81,7 +81,7 @@ def test_a_changed_authority_registry_changes_the_digest(monkeypatch, registry):
     """P2H-1: the policies, mappings and approvals as loaded are part of the trust boundary."""
     from clinical_core import migration_authority as authority
     entries = {
-        "AUTHORITY_POLICIES": (authority.AuthorityPolicy("gi_bleed", "pump_reserve", authority.FAMILY_FIXED, "1",
+        "AUTHORITY_POLICIES": (authority.AuthorityPolicy("gi_bleed", "pump_reserve", authority.FAMILY_FIXED_VALUE, "1",
                                                          "test only"),),
         "TRUSTED_CASE_MAPPINGS": (authority.CaseMapping("test-map", "1", "gi_bleed", "pump_reserve",
                                                         ("engine.family",), lambda fields: True,
@@ -102,6 +102,23 @@ def test_a_changed_authority_registry_changes_the_digest(monkeypatch, registry):
             "changing only a mapping's rule changes the digest"
 
 
+@pytest.mark.parametrize("registry, field, value", [
+    ("APPROVED_FAMILY_DEFAULTS", "fallback", 0.7), ("APPROVED_FAMILY_DEFAULTS", "low", 0.6),
+    ("APPROVED_FAMILY_DEFAULTS", "high", 0.95), ("APPROVED_FAMILY_DEFAULTS", "status", "proposed"),
+    ("AUTHORITY_POLICIES", "version", "2"), ("AUTHORITY_POLICIES", "rationale", "another rationale"),
+    ("AUTHORITY_POLICIES", "policy", "FAMILY_ALLOWED_RANGE")])
+def test_review_p2h2_t3_every_field_of_a_trusted_record_is_pinned(monkeypatch, registry, field, value):
+    from clinical_core import migration_authority as authority
+    records = {"APPROVED_FAMILY_DEFAULTS": authority.ApprovedDefault("gi_bleed", "pump_reserve", "test-approval", "1",
+                                                                     "approved", low=0.5, high=0.9, fallback=0.8),
+               "AUTHORITY_POLICIES": authority.AuthorityPolicy("gi_bleed", "pump_reserve", authority.CASE_REQUIRED,
+                                                               "1", "test only")}
+    monkeypatch.setattr(authority, registry, (records[registry],))
+    before = authority.registry_hash()
+    monkeypatch.setattr(authority, registry, (replace(records[registry], **{field: value}),))
+    assert authority.registry_hash() != before, field
+
+
 #: A module-level table a registered rule may read; the digest pins its content.
 RULE_TABLE = {"pump_reserve": 0.5}
 
@@ -119,12 +136,10 @@ def _digest_of(monkeypatch, mappings):
 
 
 def test_review_f2_the_digest_pins_what_a_registered_rule_computes(monkeypatch):
-    """P2H-1 review F2: keyword defaults, constants without source, and globals a rule reads."""
+    """P2H-1 review F2: keyword defaults and the globals a rule reads."""
     def keyword(value):
         return lambda fields, *, number=value: number
     assert _digest_of(monkeypatch, _registered(keyword(0.5))) != _digest_of(monkeypatch, _registered(keyword(0.7)))
-    made = [eval(f"lambda fields: {number}") for number in (0.5, 0.7)]
-    assert _digest_of(monkeypatch, _registered(made[0])) != _digest_of(monkeypatch, _registered(made[1]))
     reads = _registered(lambda fields: RULE_TABLE["pump_reserve"])
     before = _digest_of(monkeypatch, reads)
     monkeypatch.setitem(RULE_TABLE, "pump_reserve", 0.9)
@@ -138,8 +153,11 @@ def test_review_f2_content_the_digest_cannot_pin_is_refused(monkeypatch):
     with pytest.raises(TypeError, match="cannot pin"):
         _digest_of(monkeypatch, _registered(lambda fields, thing=opaque: 0.5))
     outside = eval("lambda fields: 0.5", {"__name__": "not_in_the_repository"})
-    with pytest.raises(TypeError, match="defined in the repository"):
+    with pytest.raises(TypeError, match="defined in a source file of the repository"):
         _digest_of(monkeypatch, _registered(outside))
+    # P2H-2: code built at run time has no source in the repository, so the digest cannot pin it.
+    with pytest.raises(TypeError, match="source file of the repository"):
+        _digest_of(monkeypatch, _registered(eval("lambda fields: 0.5")))
 
 
 def set_bound_mapping():
