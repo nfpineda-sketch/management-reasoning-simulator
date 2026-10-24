@@ -2074,3 +2074,169 @@ un endurecimiento. Cada uno se reprodujo con su sonda y se corrigió con su prue
 ### 15.8 Gancho en tiempo de ejecución
 
 Ninguno. `clinical_core` sigue sólo en sombra; ningún módulo de la aplicación lo importa.
+
+## 16. P2H-2 · Semántica de las políticas de autoridad y matriz GI (2026-10-24)
+
+- **Base:** `b1fd5b9` (P2H-1 aceptado y cerrado).
+- **Naturaleza:** semántica de la autoridad y apoyo a la decisión FD-50. No cambia la fisiología, las bandas, las
+  reglas, los escenarios ni los adaptadores; no aprueba valores ni declara políticas; el GI no migra; no hay
+  integración en tiempo de ejecución.
+
+### 16.1 La ambigüedad de FAMILY_FIXED, resuelta
+
+Con P2H-1, `FAMILY_FIXED` y un rango aprobado autorizaban cualquier valor dentro del rango. Si el valor difería de la
+verdad del caso, sólo se registraba la diferencia (§15.7, F3). «Fijo» no quedaba claro. P2H-2 separa dos políticas y
+el registro distingue el valor del rango:
+
+| Política | Registro de familia que exige | Valor autorizado | Sin verdad del caso |
+|---|---|---|---|
+| `FAMILY_FIXED_VALUE` | un valor exacto (un rango cierra) | exactamente el valor de familia; un caso distinto cierra | el valor de familia |
+| `FAMILY_ALLOWED_RANGE` | un rango (un valor exacto cierra) | el valor del caso, recalculado desde la verdad del caso y dentro del rango; fuera, cierra | sólo el respaldo explícito del rango, si existe; si no, cierra |
+| `CASE_OVERRIDES_FAMILY_DEFAULT` | un valor exacto, o un rango con respaldo explícito | el valor del caso; el de familia no veta | el valor exacto o el respaldo; un rango sin respaldo cierra |
+| `CASE_REQUIRED` | ninguno: se informa como no usado | el valor del caso | cierra |
+
+- `ApprovedDefault` gana `fallback`: un valor exacto dentro del rango, aprobado explícitamente. Ningún respaldo se
+  deriva, ni siquiera el punto medio.
+- Un parámetro sin política, o con más de una, cierra. `FAMILY_FIXED` ya no existe; las políticas de producción
+  siguen vacías, así que no hay nada que migrar.
+- El valor entregado se compara siempre exactamente con el valor resuelto: un rango nunca es el valor.
+
+### 16.2 Modelo de confianza de FAMILY_ALLOWED_RANGE
+
+1. valor del candidato;
+2. mapeo `explicit_case` registrado y caso verificado;
+3. valor recalculado desde la verdad del caso;
+4. rango de familia de confianza;
+5. ¿el valor recalculado está dentro del rango?;
+6. autorización.
+
+- La autoridad seleccionada es el mapeo del caso: el valor sigue siendo del caso.
+- El rango aparece en el informe como `envelope` (aprobación, versión y límites).
+- Un candidato no pasa porque declare `approved_family_default` con un valor dentro del rango: el rango manda sobre
+  los valores permitidos, no prueba el valor del paciente. Lo comprueban:
+  - `test_p2h2_allowed_range_never_authorizes_a_value_merely_inside_the_range`: sin mapeo, con un mapeo de otro
+    caso, o con un valor del rango distinto de la verdad del caso;
+  - `test_p2h2_spoofed_metadata_cannot_widen_an_allowed_range`: 200 reclamaciones aleatorias, y sólo pasa el valor
+    del caso declarado `explicit_case`.
+
+### 16.3 Dónde puede vivir una regla de confianza
+
+**Decisión del responsable del proyecto:** no se restringe por módulo. Así queda la propuesta de la revisión de P2H-1
+(§15.7). Una regla puede vivir en cualquier archivo fuente versionado del repositorio si:
+- está registrada explícitamente en `TRUSTED_CASE_MAPPINGS`;
+- el digest cubre su implementación exacta: fuente, constantes, valores por defecto, closure y los globales que
+  nombra;
+- es determinista. La autoridad evalúa la precondición y la regla dos veces sobre la misma verdad congelada; si
+  difieren, el mapeo está roto y cierra;
+- cumple las restricciones de tipos exactos y de procedencia: es una función normal, devuelve un número exacto y
+  lee sólo campos del banco.
+
+Si el registro no puede fijarse de forma reproducible, `authorize` cierra todos los parámetros. Eso pasa, por ejemplo:
+- con una regla, o una función que la regla llama, construida en tiempo de ejecución sin fuente en el repositorio;
+- con un objeto cuya repr lleva una dirección;
+- con un contenedor que se contiene a sí mismo;
+- con cualquier otra falla al fijarlo.
+
+La huella se toma una vez por sesión y se recalcula después de evaluar las reglas: si una regla cambió el estado que el
+digest fija, cierra.
+
+El código se fija por su fuente y por los nombres que esa fuente lee, no por sus constantes compiladas. Así el digest
+es el mismo bajo la reescritura de aserciones de pytest y bajo el intérprete normal. Del código fuera del repositorio
+(la biblioteca estándar) sólo se fija el nombre.
+
+**Fundamento.** Restringir por módulo no agrega confianza: un archivo de migración también puede tener una regla mala.
+Y sí obligaría a mover la lógica del caso a donde no corresponde. Lo que sostiene la confianza es:
+- que la regla esté registrada, porque nada no registrado puede autorizar;
+- que el digest congelado la fije, porque cualquier cambio se ve y hay que registrarlo;
+- que la autoridad la verifique, recalculando desde la verdad del caso.
+
+Ninguna de las tres depende de la ubicación. `test_p2h2_a_registered_rule_outside_the_migration_modules_is_valid` usa
+una regla definida en el archivo de prueba.
+
+### 16.4 Matriz FD-50
+
+Está en el documento docente, §15: un renglón por parámetro que la puerta puede exigir, con su significado, la
+procedencia actual, la evidencia directa del caso, si tiene sentido a nivel de familia, las opciones de política, una
+categoría y el fundamento. No aprueba valores ni llena registros.
+- **Clara por la arquitectura:** `fraction_with_ppi` y `fraction_after_hemostasis` (`FAMILY_FIXED_VALUE`).
+- **Acotadas:**
+  - `hb_loss_g_dl_per_min` sigue a `volume_loss_ml_per_min`;
+  - en `preload_fraction` y `arrival_lactate_excess`, un valor fijo de familia contradice lo que muestra cada caso.
+- **Decisión docente:** el resto.
+- **`beta_blockade`:** FACULTY_AUTHORING_DECISION_REQUIRED, con la opción A (`CASE_REQUIRED` con conciliación completa)
+  y la B (valor de familia GI como respaldo). Ninguna está elegida.
+
+### 16.5 Pruebas
+
+- **Nuevas (`test_p2h2_*`):**
+  - las cuatro políticas, y que el nombre anterior no existe;
+  - `FAMILY_FIXED_VALUE`: exige el valor exacto y rechaza un caso distinto;
+  - `FAMILY_ALLOWED_RANGE`: el valor del caso dentro del rango pasa, fuera no, y un valor que sólo cae dentro del
+    rango no pasa; el respaldo, sólo si la aprobación lo define; un valor exacto no sirve como rango;
+  - las validaciones del respaldo;
+  - `CASE_OVERRIDES_FAMILY_DEFAULT`, sin punto medio;
+  - `CASE_REQUIRED`;
+  - metadata suplantada;
+  - una regla fuera de los módulos de migración es válida; una regla no fijable, no registrada o no determinista
+    cierra.
+- **De la revisión (`test_review_p2h2_*`):**
+  - una función construida en tiempo de ejecución que la regla llama cierra todo;
+  - un contenedor que se contiene a sí mismo es un rechazo cerrado;
+  - una regla que cambia el estado que el digest fija se rechaza;
+  - el digest es el mismo bajo pytest y bajo un intérprete normal;
+  - el informe nombra el respaldo usado o no usado;
+  - `FAMILY_FIXED_VALUE` rechaza un rango aunque tenga respaldo;
+  - `CASE_OVERRIDES_FAMILY_DEFAULT` nunca inventa un límite ni el punto medio;
+  - una precondición no determinista está rota;
+  - el digest fija cada campo de una aprobación (respaldo, límites, estado) y de una política (versión, fundamento,
+    política).
+- **Se mantienen** las sondas de FD-49, la regresión de 144 combinaciones y las pruebas de precedencia de P2H-1.
+- **Adaptadas al modelo nuevo, protegiendo lo mismo:**
+  - el nombre `FAMILY_FIXED` pasa a `FAMILY_FIXED_VALUE`;
+  - los rangos con `FAMILY_FIXED` pasan a `FAMILY_ALLOWED_RANGE`;
+  - un rango sin respaldo ya no es un valor por defecto (antes autorizaba cualquier valor del rango);
+  - la prueba de F3 comprueba ahora que el rango nunca autoriza un valor distinto de la verdad del caso;
+  - una lambda sin fuente ya no se fija por su bytecode: se rechaza;
+  - el informe gana `envelope`.
+
+### 16.6 Digest
+
+- `authority_registries` incluye ahora `policy_model` (el vocabulario de políticas) y el respaldo de cada aprobación.
+  Los registros de producción siguen vacíos, pero el componente cambia por el vocabulario.
+- `migration_sources` cambia (`migration.py` y `migration_authority.py`); el congelamiento pasa de `8048c04f…` a
+  `152abc6c…`.
+- `rules`, `bands`, `scenarios`, `input_path_sources`, `input_adapter_sources` y `scenario_inputs` no cambian: no se
+  repitió el barrido de P2F.
+
+### 16.7 Revisión adversarial de la semántica de políticas (sólo lectura)
+
+**Lo que la revisión confirmó que resiste:**
+- Producción: los dos casos GI fallan con 12 bloqueos y nada es migrable.
+- `FAMILY_FIXED_VALUE` rechaza un rango, un caso distinto y una reclamación `explicit_case`.
+- `FAMILY_ALLOWED_RANGE`:
+  - nunca autoriza un valor sólo por caer dentro del rango;
+  - no inventa el punto medio;
+  - usa el respaldo sólo si existe y sólo sin valor del caso;
+  - rechaza un registro exacto y un caso fuera del rango.
+- Un mapeo roto bloquea aunque haya respaldo.
+- Los mapeos de otro caso, familia o parámetro y los registros propuestos no autorizan.
+- Las reclamaciones sólo restringen.
+
+Halló estos puntos; cada uno se reprodujo con su sonda y se corrigió con su prueba:
+
+| # | Gravedad | Hallazgo | Corrección |
+|---|---|---|---|
+| F1 | media | una función construida en tiempo de ejecución que llama una regla del repositorio se fijaba sólo por su nombre: dos versiones con distinto resultado daban el mismo digest | sólo el código de fuera del repositorio se fija por nombre; el de un módulo del repositorio sin archivo fuente hace fallar la huella y cierra todo |
+| F2 | baja | un contenedor que se contiene a sí mismo hacía escapar `RecursionError` de la puerta | detección de ciclos; cualquier falla al fijar la huella es un rechazo cerrado |
+| F3 | baja | una regla que cambiaba el estado que fija el digest seguía autorizando con la huella ya desviada | la huella se recalcula después de evaluar las reglas; si cambió, cierra |
+| F4 | baja | el digest de una regla de un módulo de prueba cambiaba bajo la reescritura de aserciones de pytest | el código se fija por su fuente y por los nombres que esa fuente lee |
+| R1 | baja | con el respaldo de un rango, la aprobación ganadora figuraba también como «no usada» | ya no figura; `envelope` incluye el respaldo |
+| R2 | baja | con un valor del caso dentro del rango, un respaldo existente no se informaba como no usado | se informa |
+| T1–T5 | media/baja | sobrevivían mutantes: `FAMILY_FIXED_VALUE` con un rango con respaldo; `CASE_OVERRIDES_FAMILY_DEFAULT` inventando un límite; el digest sin respaldo, límites o versión y fundamento de la política; la precondición evaluada una vez; el respaldo no usado sin informar | pruebas nuevas. Hacen fallar al menos una prueba los 16 mutantes de la revisión que siguen aplicando (uno sustituido por su equivalente tras R1) y 5 mutantes de las correcciones |
+| Doc1–3 | — | en la matriz FD-50: la banda intrínseca es 60–100 en los dos casos; 2,5 mL-eq/min es la conversión del adaptador del literal 0,003 de circulación por minuto; el POCUS es un borrador pendiente de revisión docente | corregido en el documento docente |
+
+**Información:** un valor aprobado 0,0 acepta un -0,0 entregado, porque son iguales numéricamente.
+
+### 16.8 Gancho en tiempo de ejecución
+
+Ninguno. `clinical_core` sigue sólo en sombra.
