@@ -83,8 +83,15 @@ def test_the_legacy_reference_is_never_an_input(monkeypatch, quick):
         raise AssertionError("the family engine's lactate was read")
     monkeypatch.setattr(lactate_slice, "legacy_reference", refuse)
     import clinical_core.legacy_adapter as adapter
-    monkeypatch.setattr(adapter, "_lactate_lab", refuse)
+    clean = lactate_slice.region_runs(quick=True)
+    # P2I-2: the engine's runs supply the inputs and compute their own lactate, so refusing that
+    # read cannot be tested with the runs cached; poison it instead, with every cache emptied.
+    reads = []
+    monkeypatch.setattr(adapter, "_lactate_lab", lambda state: reads.append(1) or 99.0)
+    monkeypatch.setattr(calibration, "_RUNS", {})
+    monkeypatch.setattr(lactate_slice, "_INPUTS", {})
     runs = lactate_slice.region_runs(quick=True)
+    assert reads and runs == clean, "the engine's lactate changed a run"
     for case in gi_reference.GI_CASES:
         assert lactate_slice.classes(runs, case) == json.loads(json.dumps(lactate_slice.classes(runs, case)))
         lactate_slice.sensitivity(runs, case)
