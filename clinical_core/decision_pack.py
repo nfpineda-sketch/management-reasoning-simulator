@@ -710,8 +710,9 @@ def reachability_analysis() -> dict:
 
 # The pack ---------------------------------------------------------------------------------------
 
-#: Not hashed: it only renders the pack into the faculty document and cannot change a number.
-PACK_DIGEST_EXCLUDED = ("clinical_core/decision_pack_markdown.py",)
+#: Not hashed: modules the pack's numbers cannot depend on. The renderer only writes the pack into
+#: the faculty document; the P2I decision slices read the pack, never the other way round.
+PACK_DIGEST_EXCLUDED = ("clinical_core/decision_pack_markdown.py", "clinical_core/lactate_slice.py")
 
 
 def pack_sources() -> dict[str, str]:

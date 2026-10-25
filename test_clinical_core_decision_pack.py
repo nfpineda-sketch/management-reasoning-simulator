@@ -132,9 +132,46 @@ def test_the_preload_edge_empties_under_the_case_bleed_too(quick_pack):
     assert row["probe 4 mL/min"] is None
 
 
+def test_a_module_the_pack_digest_excludes_is_never_loaded_by_the_pack():
+    """P2I-1: excluding a module from the pack digest is safe only if the pack's own generation
+    never loads it; this runs the real generation path in a fresh interpreter and checks."""
+    import subprocess
+    import sys
+    from pathlib import Path
+    root = Path(__file__).resolve().parent
+    excluded = [path[:-3].replace("/", ".") for path in decision_pack.PACK_DIGEST_EXCLUDED]
+    script = ("import sys\n"
+              "from clinical_core import decision_pack\n"
+              "decision_pack.report(quick=True)\n"
+              f"print(sorted(name for name in {excluded!r} if name in sys.modules))\n")
+    result = subprocess.run([sys.executable, "-c", script], cwd=root, capture_output=True, text=True, timeout=900,
+                            env={**__import__("os").environ, "PYTHONPATH": str(root)})
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip().splitlines()[-1] == "[]", "the pack loads a module its digest excludes"
+    # And no hashed shadow-core module imports an excluded one (it would become a dependency of the pack).
+    import ast
+    for path in (root / "clinical_core").rglob("*.py"):
+        name = path.relative_to(root).as_posix()
+        if name in decision_pack.PACK_DIGEST_EXCLUDED:
+            continue
+        imported = set()
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            if isinstance(node, ast.Import):
+                imported.update(alias.name for alias in node.names)
+            elif isinstance(node, ast.ImportFrom):
+                base = "." * node.level + (node.module or "")
+                imported.add(base)
+                imported.update(f"{base}.{alias.name}".replace("..", ".") for alias in node.names)
+        for module in excluded:
+            leaf = module.split(".")[-1]
+            assert not any(item == module or item.endswith("." + leaf) or item == leaf for item in imported), (
+                name, module)
+
+
 @pytest.mark.parametrize("path, changes", [
     ("clinical_core/derived.py", True), ("clinical_core/integration.py", True),
-    ("clinical_core/decision_pack.py", True), ("clinical_core/decision_pack_markdown.py", False)])
+    ("clinical_core/decision_pack.py", True), ("clinical_core/decision_pack_markdown.py", False),
+    ("clinical_core/lactate_slice.py", False)])
 def test_the_pack_digest_covers_the_model_and_not_the_renderer(monkeypatch, path, changes):
     assert path in decision_pack.pack_sources() or path in decision_pack.PACK_DIGEST_EXCLUDED
     before = decision_pack.pack_digest()
