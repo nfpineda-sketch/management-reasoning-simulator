@@ -2240,3 +2240,35 @@ Halló estos puntos; cada uno se reprodujo con su sonda y se corrigió con su pr
 ### 16.8 Gancho en tiempo de ejecución
 
 Ninguno. `clinical_core` sigue sólo en sombra.
+
+## 17. P2I-1 · Corte de decisión docente: el lactato GI (2026-10-25)
+
+- **Base:** `045ec43` (P2H-2 aceptado y cerrado; la fase de arquitectura para la calibración GI en sombra se considera
+  completa).
+- **Naturaleza:** apoyo a la decisión, no infraestructura. No cambia la fisiología, las bandas, las reglas
+  congeladas, los escenarios del golden, el golden, la autoridad de migración ni los registros. FACULTY_APPROVED sigue
+  en 0 y no hay integración en tiempo de ejecución.
+- **Artefacto:** `docs/revision/P2I_DECISION_LACTATO_GI.md`, con sus números en `docs/revision/P2I_lactate_slice.json`.
+  Lo genera `python -m clinical_core.lactate_slice` sobre la región admisible de P2G (1054 conjuntos) en cuatro
+  escenarios de 120 min:
+  - L1, sin tratar;
+  - L2, salina sin hemostasia;
+  - L3, manejo definitivo;
+  - L4, hemostasia sin volumen. Es una **composición contrafactual manual**: el motor de familias difiere esa
+    endoscopia y nunca produce esa hemostasia, que se agrega a mano con un identificador propio. Ninguna pregunta
+    de la hoja de trabajo la usa.
+- **Descomposición exacta del exceso de lactato**, dada la trayectoria del déficit: lo que queda del exceso de llegada,
+  lo que produce la D de llegada y lo que produjo el déficit posterior. No es una atribución causal entre parámetros.
+- **Hoja de trabajo docente:** FD-LAC-01 a FD-LAC-06, con la selección en blanco. Hasta que la docencia las responda
+  no se abren FC, PA, FR, volumen ni colapso.
+- **La referencia heredada** aparece aparte y al final. Ninguna tabla ni clase la lee, y una prueba lo comprueba.
+- **Digests:**
+  - el congelamiento de calibración no cambia, porque el módulo nuevo no es parte del arnés;
+  - el paquete de P2G excluye el módulo de su digest, porque sus números no pueden depender de él: el corte lee el
+    paquete, nunca al revés. Una prueba lo comprueba: corre la generación del paquete en un intérprete nuevo y
+    verifica que nunca carga un módulo excluido, y que ningún módulo hasheado lo importa. Si un día lo importara, la
+    prueba falla y la exclusión hay que quitarla;
+  - ese cambio en `decision_pack.py` cambia una vez el digest del paquete, que se regeneró con tablas idénticas;
+  - el digest propio del corte cubre todas las fuentes de `clinical_core`, renderizadores incluidos, más el
+    congelamiento y las órdenes de los escenarios.
+- **Gancho en tiempo de ejecución:** ninguno.
