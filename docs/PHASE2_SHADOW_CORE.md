@@ -2272,3 +2272,35 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - el digest propio del corte cubre todas las fuentes de `clinical_core`, renderizadores incluidos, más el
     congelamiento y las órdenes de los escenarios.
 - **Gancho en tiempo de ejecución:** ninguno.
+
+## 18. P2I-2 · Restricciones docentes del lactato GI aplicadas (2026-10-25)
+
+- **Base:** `05cf1da` (P2I-1 aceptado y cerrado). La docencia respondió FD-LAC-01 a FD-LAC-06.
+- **Qué son:** las primeras restricciones clínicas de comportamiento aprobadas (FACULTY_APPROVED), registradas tal cual
+  en `clinical_core/faculty_constraints.py`. No aprueban ningún valor de parámetro oculto: el registro de calibración
+  sigue con FACULTY_APPROVED = 0, los registros de autoridad siguen vacíos, la puerta de migración GI sigue fallando y
+  ni la puerta, ni su autoridad, ni la calibración, ni las bandas leen el módulo (lo comprueba una prueba). El registro
+  de la decisión está en la §12 de `docs/revision/P2I_DECISION_LACTATO_GI.md`, generado desde el registro.
+- **Definiciones operativas:** son una propuesta del núcleo, no una decisión docente. Quedaron congeladas antes de
+  filtrar, en el commit `9301a6a`, con su diseño de sensibilidad y las reglas de informe (identificabilidad y
+  representantes). El filtro se niega a correr si cambian los digests de las definiciones, de la canalización o de las
+  reglas de informe. Este último se fijó después de la primera corrida, sobre el texto de `9301a6a`, que no cambió.
+- **Filtro:** `python -m clinical_core.lactate_constraints` sobre exactamente la región admisible de P2F (1054
+  conjuntos), sin candidatos nuevos, en L1, L2 y L3, todas trayectorias producidas por el motor; la L4 contrafactual no
+  entra. Sobreviven 66 a las seis: es la **región candidata restringida por la docencia**, que sigue CANDIDATE.
+  Resultados, sensibilidad, disociaciones, identificabilidad, representantes y la referencia heredada (ubicada después
+  del filtro, nunca dentro) están en `docs/revision/P2I2_RESTRICCIONES_LACTATO_GI.md` y
+  `docs/revision/P2I2_lactate_constraints.json`.
+- **Procedencia heredada:** una prueba envenena el lactato que calcula el motor de familias y vacía las cachés de sus
+  corridas (`calibration._RUNS` y `lactate_slice._INPUTS`):
+  - no cambia ninguna trayectoria, ningún veredicto ni ningún resultado del informe;
+  - sólo cambian la referencia heredada y los digests de procedencia, que detectan el motor cambiado;
+  - el lactato de llegada del núcleo es el valor escrito en el caso (verdad del repositorio).
+  La prueba equivalente de P2I-1 dependía de corridas en caché; quedó reforzada.
+- **Digests:**
+  - el paquete P2G excluye los dos módulos nuevos, con la misma guarda que `lactate_slice.py`, y se regeneró con tablas
+    idénticas;
+  - el digest del corte de P2I-1, que cubre todo `clinical_core`, cambió por los módulos nuevos, y el corte se regeneró
+    con números idénticos;
+  - el congelamiento de calibración no cambia.
+- **Gancho en tiempo de ejecución:** ninguno.

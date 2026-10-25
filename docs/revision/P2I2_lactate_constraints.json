@@ -1,0 +1,2530 @@
+{
+ "admissible_candidates": 1054,
+ "counts": {
+  "all_six": 66,
+  "before": 1054,
+  "discrimination": [
+   {
+    "constraint": "FD-LAC-01",
+    "eliminates": 820,
+    "eliminates_alone": 9,
+    "survivors_without_it": 75
+   },
+   {
+    "constraint": "FD-LAC-02",
+    "eliminates": 811,
+    "eliminates_alone": 6,
+    "survivors_without_it": 72
+   },
+   {
+    "constraint": "FD-LAC-03",
+    "eliminates": 748,
+    "eliminates_alone": 24,
+    "survivors_without_it": 90
+   },
+   {
+    "constraint": "FD-LAC-04",
+    "eliminates": 246,
+    "eliminates_alone": 87,
+    "survivors_without_it": 153
+   },
+   {
+    "constraint": "FD-LAC-05",
+    "eliminates": 192,
+    "eliminates_alone": 0,
+    "survivors_without_it": 66
+   },
+   {
+    "constraint": "FD-LAC-06",
+    "eliminates": 742,
+    "eliminates_alone": 12,
+    "survivors_without_it": 78
+   }
+  ],
+  "survivors": {
+   "FD-LAC-01": 234,
+   "FD-LAC-02": 243,
+   "FD-LAC-03": 306,
+   "FD-LAC-04": 808,
+   "FD-LAC-05": 862,
+   "FD-LAC-06": 312
+  }
+ },
+ "decisions": [
+  {
+   "approves_parameter_values": [],
+   "cases": [
+    "gi_bleed_57m",
+    "gi_bleed_72f"
+   ],
+   "decided": "2026-10-25",
+   "decision": "With ongoing active haemorrhage and persistently inadequate/worsening oxygen delivery, lactate should GENERALLY RISE. A brief period of stability is acceptable. A sustained fall should NOT be the typical trajectory when oxygen delivery remains inadequate. Do NOT interpret this as: \"lactate must rise every minute.\" The clinically important requirement is the trajectory over meaningful reassessment intervals.",
+   "id": "FD-LAC-01",
+   "observable": "lactate trajectory while bleeding is active and oxygen delivery is inadequate",
+   "rationale": "The clinically important requirement is the trajectory over meaningful reassessment intervals.",
+   "scenarios": [
+    "L1"
+   ],
+   "scope_note": "Approves a clinical behaviour of the lactate observable. Approves no hidden parameter value: arrival_oxygen_debt, arrival_lactate_excess, tau_D, tau_lactate, the D-to-lactate gain and the deficit-to-D gain stay CANDIDATE.",
+   "status": "FACULTY_APPROVED",
+   "title": "Untreated active bleeding",
+   "version": "FD-LAC v1"
+  },
+  {
+   "approves_parameter_values": [],
+   "cases": [
+    "gi_bleed_57m"
+   ],
+   "decided": "2026-10-25",
+   "decision": "APPROVED clinical band: arrival lactate: 4.4 mmol/L. 60-min untreated acceptable band: 4.4-7.0 mmol/L. Preferred direction: stable-to-rising, usually rising. Do NOT convert the midpoint of this band into a target. Values are a clinical acceptance envelope.",
+   "id": "FD-LAC-02",
+   "observable": "lactate (mmol/L) at 60 min untreated",
+   "rationale": "Values are a clinical acceptance envelope.",
+   "scenarios": [
+    "L1"
+   ],
+   "scope_note": "Approves a clinical behaviour of the lactate observable. Approves no hidden parameter value: arrival_oxygen_debt, arrival_lactate_excess, tau_D, tau_lactate, the D-to-lactate gain and the deficit-to-D gain stay CANDIDATE.",
+   "status": "FACULTY_APPROVED",
+   "title": "GI 57M, 60 min untreated",
+   "version": "FD-LAC v1"
+  },
+  {
+   "approves_parameter_values": [],
+   "cases": [
+    "gi_bleed_72f"
+   ],
+   "decided": "2026-10-25",
+   "decision": "APPROVED clinical band: arrival lactate: 3.4 mmol/L. 60-min untreated acceptable band: 3.4-5.5 mmol/L. Preferred direction: stable-to-rising, usually rising. Again, this is a clinical envelope, not a point target.",
+   "id": "FD-LAC-03",
+   "observable": "lactate (mmol/L) at 60 min untreated",
+   "rationale": "Again, this is a clinical envelope, not a point target.",
+   "scenarios": [
+    "L1"
+   ],
+   "scope_note": "Approves a clinical behaviour of the lactate observable. Approves no hidden parameter value: arrival_oxygen_debt, arrival_lactate_excess, tau_D, tau_lactate, the D-to-lactate gain and the deficit-to-D gain stay CANDIDATE.",
+   "status": "FACULTY_APPROVED",
+   "title": "GI 72F, 60 min untreated",
+   "version": "FD-LAC v1"
+  },
+  {
+   "approves_parameter_values": [],
+   "cases": [
+    "gi_bleed_57m",
+    "gi_bleed_72f"
+   ],
+   "decided": "2026-10-25",
+   "decision": "After successful haemostasis AND adequate sustained restoration of oxygen delivery, a CLEAR downward lactate trend should begin within: 15-30 minutes. This means onset of a meaningful downward trend. It does NOT mean: normalization by 30 minutes; arbitrary fixed mmol/L decline; clearance independent of accumulated debt.",
+   "id": "FD-LAC-04",
+   "observable": "onset of a clear downward lactate trend after haemostasis and sustained restoration of delivery",
+   "rationale": "This means onset of a meaningful downward trend.",
+   "scenarios": [
+    "L3"
+   ],
+   "scope_note": "Approves a clinical behaviour of the lactate observable. Approves no hidden parameter value: arrival_oxygen_debt, arrival_lactate_excess, tau_D, tau_lactate, the D-to-lactate gain and the deficit-to-D gain stay CANDIDATE.",
+   "status": "FACULTY_APPROVED",
+   "title": "Response after definitive management",
+   "version": "FD-LAC v1"
+  },
+  {
+   "approves_parameter_values": [],
+   "cases": [
+    "gi_bleed_57m",
+    "gi_bleed_72f"
+   ],
+   "decided": "2026-10-25",
+   "decision": "Residual lactate at 120 min should depend materially on accumulated oxygen debt. Typical severe-shock trajectories may remain MILDLY ELEVATED. Do NOT require full normalization within 120 minutes. Do NOT encode one fixed 120-min lactate target. The model should preserve memory of prior debt.",
+   "id": "FD-LAC-05",
+   "observable": "residual lactate at 120 min after definitive management and its dependence on accumulated oxygen debt",
+   "rationale": "The model should preserve memory of prior debt.",
+   "scenarios": [
+    "L3"
+   ],
+   "scope_note": "Approves a clinical behaviour of the lactate observable. Approves no hidden parameter value: arrival_oxygen_debt, arrival_lactate_excess, tau_D, tau_lactate, the D-to-lactate gain and the deficit-to-D gain stay CANDIDATE.",
+   "status": "FACULTY_APPROVED",
+   "title": "120 min after successful management",
+   "version": "FD-LAC v1"
+  },
+  {
+   "approves_parameter_values": [],
+   "cases": [
+    "gi_bleed_57m",
+    "gi_bleed_72f"
+   ],
+   "decided": "2026-10-25",
+   "decision": "ONLY IF OXYGEN DELIVERY IS ADEQUATE. Active haemorrhage by itself does not require lactate to rise. If resuscitation maintains/restores adequate oxygen delivery despite ongoing bleeding, lactate may fall. However: active bleeding + persistent/worsening inadequate oxygen delivery must NOT produce a sustained declining lactate trajectory. This rule takes precedence over diagnosis labels.",
+   "id": "FD-LAC-06",
+   "observable": "lactate trajectory while bleeding is active, by oxygen-delivery adequacy",
+   "rationale": "This rule takes precedence over diagnosis labels.",
+   "scenarios": [
+    "L1",
+    "L2",
+    "L3"
+   ],
+   "scope_note": "Approves a clinical behaviour of the lactate observable. Approves no hidden parameter value: arrival_oxygen_debt, arrival_lactate_excess, tau_D, tau_lactate, the D-to-lactate gain and the deficit-to-D gain stay CANDIDATE.",
+   "status": "FACULTY_APPROVED",
+   "title": "Active bleeding with falling lactate",
+   "version": "FD-LAC v1"
+  }
+ ],
+ "definitions_digest": "ee1deb2578504d3c295d2c4a3552b2d781529064f94043f99b07f04d0fe258cc",
+ "dissociation": [
+  {
+   "case": "gi_bleed_57m",
+   "faculty_constrained": {
+    "A": 0,
+    "B": 0,
+    "C": 0
+   },
+   "pattern": "L1 0-60 min: D rises while lactate falls",
+   "region": {
+    "A": 0,
+    "B": 531,
+    "C": 111
+   }
+  },
+  {
+   "case": "gi_bleed_57m",
+   "faculty_constrained": {
+    "A": 0,
+    "B": 0,
+    "C": 0
+   },
+   "pattern": "L1 0-120 min: D rises while lactate falls",
+   "region": {
+    "A": 0,
+    "B": 517,
+    "C": 60
+   }
+  },
+  {
+   "case": "gi_bleed_72f",
+   "faculty_constrained": {
+    "A": 0,
+    "B": 0,
+    "C": 0
+   },
+   "pattern": "L1 0-60 min: D rises while lactate falls",
+   "region": {
+    "A": 0,
+    "B": 378,
+    "C": 129
+   }
+  },
+  {
+   "case": "gi_bleed_72f",
+   "faculty_constrained": {
+    "A": 0,
+    "B": 0,
+    "C": 0
+   },
+   "pattern": "L1 0-120 min: D rises while lactate falls",
+   "region": {
+    "A": 0,
+    "B": 397,
+    "C": 45
+   }
+  }
+ ],
+ "faculty_constrained_region": [
+  "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
+  "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
+  "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+  "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
+  "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
+  "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+  "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
+  "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+  "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=midpoint;preload=midpoint;debt=lower;delivery=lower",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=midpoint;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=midpoint;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=midpoint;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=lower;delivery=lower",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=midpoint;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=midpoint;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=upper;intrinsic=midpoint;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=midpoint;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=midpoint;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=midpoint;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=midpoint;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=midpoint;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+  "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower"
+ ],
+ "fd01": {
+  "gi_bleed_57m": {
+   "only_generally_rises": 132,
+   "only_generally_rises_inside_envelope": 36,
+   "sustained_decline": 688
+  },
+  "gi_bleed_72f": {
+   "only_generally_rises": 159,
+   "only_generally_rises_inside_envelope": 48,
+   "sustained_decline": 562
+  }
+ },
+ "fd04": {
+  "gi_bleed_57m": {
+   "first_adequate_minute": {
+    "0": 405,
+    "1-30": 244,
+    "31-59": 405
+   },
+   "meaningful_fall_after_trigger": {
+    "0-30": 424,
+    "31-45": 327,
+    "46-60": 102,
+    "never": 126
+   },
+   "not_clear": 126,
+   "not_evaluable": {
+    "no elevated lactate left to clear at the trigger": 75
+   },
+   "not_timely": 3,
+   "onset_after_trigger": {
+    "0": 937,
+    "1-14": 30,
+    "15-30": 9,
+    "31 or later": 3
+   },
+   "survivor_first_adequate_minute": {
+    "0": 9,
+    "1-30": 36,
+    "31-59": 21
+   },
+   "survivor_meaningful_fall_after_trigger": {
+    "0-30": 36,
+    "31-45": 30
+   },
+   "survivor_onset_after_trigger": {
+    "0": 66
+   },
+   "triggers": {
+    "60": 1054
+   }
+  },
+  "gi_bleed_72f": {
+   "first_adequate_minute": {
+    "0": 405,
+    "1-30": 244,
+    "31-59": 405
+   },
+   "meaningful_fall_after_trigger": {
+    "0-30": 304,
+    "31-45": 195,
+    "46-60": 207,
+    "never": 246
+   },
+   "not_clear": 246,
+   "not_evaluable": {
+    "no elevated lactate left to clear at the trigger": 102
+   },
+   "not_timely": 21,
+   "onset_after_trigger": {
+    "0": 859,
+    "1-14": 42,
+    "15-30": 30,
+    "31 or later": 21
+   },
+   "survivor_first_adequate_minute": {
+    "0": 9,
+    "1-30": 36,
+    "31-59": 21
+   },
+   "survivor_meaningful_fall_after_trigger": {
+    "0-30": 27,
+    "31-45": 21,
+    "46-60": 18
+   },
+   "survivor_onset_after_trigger": {
+    "0": 66
+   },
+   "triggers": {
+    "60": 1054
+   }
+  }
+ },
+ "fd05": {
+  "gi_bleed_57m": {
+   "abrupt_normalizations_in_region": 6,
+   "region_debt_memory_range": [
+    0.23955616166085647,
+    3.151135294420741
+   ],
+   "region_debt_pairs": 324,
+   "region_pairs_higher_debt_higher_residual": 324,
+   "survivor_residual_median_by_arrival_debt": {
+    "lower": 3.2201383186971517,
+    "midpoint": 3.2108836357930968,
+    "upper": 3.8082855709154924
+   },
+   "survivor_residual_range": [
+    1.8784376909516867,
+    4.9180425828561205
+   ],
+   "survivors_above_normal_at_120": 63
+  },
+  "gi_bleed_72f": {
+   "abrupt_normalizations_in_region": 0,
+   "region_debt_memory_range": [
+    0.23955616166085647,
+    3.151135294420741
+   ],
+   "region_debt_pairs": 324,
+   "region_pairs_higher_debt_higher_residual": 324,
+   "survivor_residual_median_by_arrival_debt": {
+    "lower": 2.785612173167779,
+    "midpoint": 2.8568868884272773,
+    "upper": 3.770676403066378
+   },
+   "survivor_residual_range": [
+    1.8226811997155319,
+    4.551701317300138
+   ],
+   "survivors_above_normal_at_120": 63
+  }
+ },
+ "filter_digest": "5c72a62b19a18ee1841407821cb59f77100570448b965b79a951ccce5b585419",
+ "freeze_digest": "152abc6cf3e2812fcade237f60db0430df78749e09f4199b0a0fff13a0dd4338",
+ "legacy_position": {
+  "gi_bleed_57m": {
+   "at_60": 4.8,
+   "clear_fall_by_120": false,
+   "definitive": {
+    "0": 4.4,
+    "15": 4.1,
+    "30": 3.8,
+    "60": 3.2,
+    "90": 3.3,
+    "120": 3.3
+   },
+   "envelope": [
+    4.4,
+    7.0
+   ],
+   "haemostasis_minute": 60,
+   "inside_envelope": true,
+   "peak_after_haemostasis_min": 60,
+   "post_haemostasis_peak": 120,
+   "untreated": {
+    "0": 4.4,
+    "15": 4.5,
+    "30": 4.6,
+    "60": 4.8,
+    "90": 4.9,
+    "120": 5.1
+   },
+   "untreated_net_rise": true,
+   "untreated_sustained_declines": 0
+  },
+  "gi_bleed_72f": {
+   "at_60": 3.8,
+   "clear_fall_by_120": false,
+   "definitive": {
+    "0": 3.4,
+    "15": 3.1,
+    "30": 2.8,
+    "60": 2.2,
+    "90": 2.3,
+    "120": 2.3
+   },
+   "envelope": [
+    3.4,
+    5.5
+   ],
+   "haemostasis_minute": 60,
+   "inside_envelope": true,
+   "peak_after_haemostasis_min": 60,
+   "post_haemostasis_peak": 120,
+   "untreated": {
+    "0": 3.4,
+    "15": 3.5,
+    "30": 3.6,
+    "60": 3.8,
+    "90": 3.9,
+    "120": 4.1
+   },
+   "untreated_net_rise": true,
+   "untreated_sustained_declines": 0
+  }
+ },
+ "parameter_region": [
+  {
+   "classification": "POORLY IDENTIFIED",
+   "factor": "arrival_oxygen_debt",
+   "levels": [
+    {
+     "level": "lower",
+     "region": 486,
+     "survivors": 6,
+     "values": {
+      "gi_bleed_57m": 0.0,
+      "gi_bleed_72f": 0.0
+     }
+    },
+    {
+     "level": "midpoint",
+     "region": 244,
+     "survivors": 36,
+     "values": {
+      "gi_bleed_57m": 20.0,
+      "gi_bleed_72f": 20.0
+     }
+    },
+    {
+     "level": "upper",
+     "region": 324,
+     "survivors": 24,
+     "values": {
+      "gi_bleed_57m": 60.0,
+      "gi_bleed_72f": 60.0
+     }
+    }
+   ],
+   "ranges": {
+    "gi_bleed_57m": {
+     "region": [
+      0.0,
+      60.0
+     ],
+     "survivors": [
+      0.0,
+      60.0
+     ]
+    },
+    "gi_bleed_72f": {
+     "region": [
+      0.0,
+      60.0
+     ],
+     "survivors": [
+      0.0,
+      60.0
+     ]
+    }
+   },
+   "varied_by_region": true
+  },
+  {
+   "classification": "POORLY IDENTIFIED",
+   "factor": "arrival_lactate_excess",
+   "levels": [
+    {
+     "level": "lower",
+     "region": 351,
+     "survivors": 12,
+     "values": {
+      "gi_bleed_57m": 2.4,
+      "gi_bleed_72f": 1.4
+     }
+    },
+    {
+     "level": "midpoint",
+     "region": 352,
+     "survivors": 27,
+     "values": {
+      "gi_bleed_57m": 3.4,
+      "gi_bleed_72f": 2.4
+     }
+    },
+    {
+     "level": "upper",
+     "region": 351,
+     "survivors": 27,
+     "values": {
+      "gi_bleed_57m": 3.6,
+      "gi_bleed_72f": 2.6
+     }
+    }
+   ],
+   "ranges": {
+    "gi_bleed_57m": {
+     "region": [
+      2.4,
+      3.6
+     ],
+     "survivors": [
+      2.4,
+      3.6
+     ]
+    },
+    "gi_bleed_72f": {
+     "region": [
+      1.4,
+      2.6
+     ],
+     "survivors": [
+      1.4,
+      2.6
+     ]
+    }
+   },
+   "varied_by_region": true
+  },
+  {
+   "classification": "POORLY IDENTIFIED",
+   "factor": "debt_clearance_tau_min",
+   "levels": [
+    {
+     "level": "30",
+     "region": 243,
+     "survivors": 27,
+     "values": {
+      "gi_bleed_57m": 30.0,
+      "gi_bleed_72f": 30.0
+     }
+    },
+    {
+     "level": "60",
+     "region": 406,
+     "survivors": 30,
+     "values": {
+      "gi_bleed_57m": 60.0,
+      "gi_bleed_72f": 60.0
+     }
+    },
+    {
+     "level": "120",
+     "region": 405,
+     "survivors": 9,
+     "values": {
+      "gi_bleed_57m": 120.0,
+      "gi_bleed_72f": 120.0
+     }
+    }
+   ],
+   "ranges": {
+    "gi_bleed_57m": {
+     "region": [
+      30.0,
+      120.0
+     ],
+     "survivors": [
+      30.0,
+      120.0
+     ]
+    },
+    "gi_bleed_72f": {
+     "region": [
+      30.0,
+      120.0
+     ],
+     "survivors": [
+      30.0,
+      120.0
+     ]
+    }
+   },
+   "varied_by_region": true
+  },
+  {
+   "classification": "NOT IDENTIFIED",
+   "factor": "debt_per_delivery_deficit",
+   "levels": [
+    {
+     "level": "1",
+     "region": 1054,
+     "survivors": 66,
+     "values": {
+      "gi_bleed_57m": 1.0,
+      "gi_bleed_72f": 1.0
+     }
+    }
+   ],
+   "ranges": {
+    "gi_bleed_57m": {
+     "region": [
+      1.0,
+      1.0
+     ],
+     "survivors": [
+      1.0,
+      1.0
+     ]
+    },
+    "gi_bleed_72f": {
+     "region": [
+      1.0,
+      1.0
+     ],
+     "survivors": [
+      1.0,
+      1.0
+     ]
+    }
+   },
+   "varied_by_region": false
+  },
+  {
+   "classification": "PARTIALLY CONSTRAINED",
+   "factor": "lactate_per_output_deficit",
+   "levels": [
+    {
+     "level": "2",
+     "region": 351,
+     "survivors": 0,
+     "values": {
+      "gi_bleed_57m": 2.0,
+      "gi_bleed_72f": 2.0
+     }
+    },
+    {
+     "level": "6",
+     "region": 352,
+     "survivors": 15,
+     "values": {
+      "gi_bleed_57m": 6.0,
+      "gi_bleed_72f": 6.0
+     }
+    },
+    {
+     "level": "12",
+     "region": 351,
+     "survivors": 51,
+     "values": {
+      "gi_bleed_57m": 12.0,
+      "gi_bleed_72f": 12.0
+     }
+    }
+   ],
+   "ranges": {
+    "gi_bleed_57m": {
+     "region": [
+      2.0,
+      12.0
+     ],
+     "survivors": [
+      6.0,
+      12.0
+     ]
+    },
+    "gi_bleed_72f": {
+     "region": [
+      2.0,
+      12.0
+     ],
+     "survivors": [
+      6.0,
+      12.0
+     ]
+    }
+   },
+   "varied_by_region": true
+  },
+  {
+   "classification": "POORLY IDENTIFIED",
+   "factor": "lactate_clearance_tau_min",
+   "levels": [
+    {
+     "level": "45",
+     "region": 351,
+     "survivors": 30,
+     "values": {
+      "gi_bleed_57m": 45.0,
+      "gi_bleed_72f": 45.0
+     }
+    },
+    {
+     "level": "120",
+     "region": 352,
+     "survivors": 27,
+     "values": {
+      "gi_bleed_57m": 120.0,
+      "gi_bleed_72f": 120.0
+     }
+    },
+    {
+     "level": "240",
+     "region": 351,
+     "survivors": 9,
+     "values": {
+      "gi_bleed_57m": 240.0,
+      "gi_bleed_72f": 240.0
+     }
+    }
+   ],
+   "ranges": {
+    "gi_bleed_57m": {
+     "region": [
+      45.0,
+      240.0
+     ],
+     "survivors": [
+      45.0,
+      240.0
+     ]
+    },
+    "gi_bleed_72f": {
+     "region": [
+      45.0,
+      240.0
+     ],
+     "survivors": [
+      45.0,
+      240.0
+     ]
+    }
+   },
+   "varied_by_region": true
+  },
+  {
+   "classification": "POORLY IDENTIFIED",
+   "factor": "arrival_delivery_ratio",
+   "levels": [
+    {
+     "level": "lower",
+     "region": 405,
+     "survivors": 21,
+     "values": {
+      "gi_bleed_57m": 0.6,
+      "gi_bleed_72f": 0.6
+     }
+    },
+    {
+     "level": "midpoint",
+     "region": 244,
+     "survivors": 36,
+     "values": {
+      "gi_bleed_57m": 0.85,
+      "gi_bleed_72f": 0.85
+     }
+    },
+    {
+     "level": "upper",
+     "region": 405,
+     "survivors": 9,
+     "values": {
+      "gi_bleed_57m": 1.0,
+      "gi_bleed_72f": 1.0
+     }
+    }
+   ],
+   "ranges": {
+    "gi_bleed_57m": {
+     "region": [
+      0.6,
+      1.0
+     ],
+     "survivors": [
+      0.6,
+      1.0
+     ]
+    },
+    "gi_bleed_72f": {
+     "region": [
+      0.6,
+      1.0
+     ],
+     "survivors": [
+      0.6,
+      1.0
+     ]
+    }
+   },
+   "varied_by_region": true
+  },
+  {
+   "classification": "NOT IDENTIFIED",
+   "factor": "metabolic_demand_baseline",
+   "levels": [
+    {
+     "level": "fixed",
+     "region": 1054,
+     "survivors": 66,
+     "values": {
+      "gi_bleed_57m": 1.0,
+      "gi_bleed_72f": 1.0
+     }
+    }
+   ],
+   "ranges": {
+    "gi_bleed_57m": {
+     "region": [
+      1.0,
+      1.0
+     ],
+     "survivors": [
+      1.0,
+      1.0
+     ]
+    },
+    "gi_bleed_72f": {
+     "region": [
+      1.0,
+      1.0
+     ],
+     "survivors": [
+      1.0,
+      1.0
+     ]
+    }
+   },
+   "varied_by_region": false
+  }
+ ],
+ "per_case": {
+  "gi_bleed_57m": {
+   "FD-LAC-01": 234,
+   "FD-LAC-01 not applicable": 0,
+   "FD-LAC-02": 243,
+   "FD-LAC-04": 928,
+   "FD-LAC-04 not evaluable": {
+    "no elevated lactate left to clear at the trigger": 75
+   },
+   "FD-LAC-05": 862,
+   "FD-LAC-06": 312
+  },
+  "gi_bleed_72f": {
+   "FD-LAC-01": 333,
+   "FD-LAC-01 not applicable": 0,
+   "FD-LAC-03": 306,
+   "FD-LAC-04": 808,
+   "FD-LAC-04 not evaluable": {
+    "no elevated lactate left to clear at the trigger": 102
+   },
+   "FD-LAC-05": 937,
+   "FD-LAC-06": 456
+  }
+ },
+ "pipeline_digest": "4c326d6e60e9a96cde713afcf0fc38b14cf877b8521e60b7e33d584b24037394",
+ "quick": false,
+ "reporting_digest": "1b9e70365f7deea79733b3cbc59aa07abc5177fd4c81358853b951a70c723991",
+ "representatives": {
+  "gi_bleed_57m": {
+   "L1": {
+    "highest": {
+     "FD-LAC-01": {
+      "applicable": true,
+      "passes": true,
+      "windows": [
+       {
+        "brief_stability": true,
+        "end": 6.582379142826953,
+        "first_decline": null,
+        "generally_rises": true,
+        "passes": true,
+        "start": 4.470000000000001,
+        "sustained_declines": 0,
+        "window": [
+         1,
+         120
+        ]
+       }
+      ]
+     },
+     "FD-LAC-04": null,
+     "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+     "levels": {
+      "arrival_delivery_ratio": [
+       "upper",
+       1.0
+      ],
+      "arrival_lactate_excess": [
+       "upper",
+       3.6
+      ],
+      "arrival_oxygen_debt": [
+       "upper",
+       60.0
+      ],
+      "debt_clearance_tau_min": [
+       "60",
+       60.0
+      ],
+      "debt_per_delivery_deficit": [
+       "1",
+       1.0
+      ],
+      "lactate_clearance_tau_min": [
+       "120",
+       120.0
+      ],
+      "lactate_per_output_deficit": [
+       "12",
+       12.0
+      ],
+      "metabolic_demand_baseline": [
+       "fixed",
+       1.0
+      ]
+     },
+     "points": {
+      "0": {
+       "D": 60.0,
+       "adequate": true,
+       "bleeding": true,
+       "delivery": 1.0,
+       "demand": 1.0,
+       "lactate": 4.4
+      },
+      "15": {
+       "D": 47.30665226687248,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.8960927994902029,
+       "demand": 1.0,
+       "lactate": 5.238673134646611
+      },
+      "30": {
+       "D": 38.8333687490278,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.7918544056520556,
+       "demand": 1.0,
+       "lactate": 5.728514685541748
+      },
+      "60": {
+       "D": 31.009120777771678,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.582661696400967,
+       "demand": 1.0,
+       "lactate": 6.145602420859037
+      },
+      "90": {
+       "D": 31.260696445774375,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.37304950975170903,
+       "demand": 1.0,
+       "lactate": 6.318430631379991
+      },
+      "120": {
+       "D": 36.3907271991855,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.16377298448233435,
+       "demand": 1.0,
+       "lactate": 6.582379142826953
+      }
+     }
+    },
+    "lowest": {
+     "FD-LAC-01": {
+      "applicable": true,
+      "passes": true,
+      "windows": [
+       {
+        "brief_stability": true,
+        "end": 5.355276176157769,
+        "first_decline": null,
+        "generally_rises": true,
+        "passes": true,
+        "start": 4.4,
+        "sustained_declines": 0,
+        "window": [
+         0,
+         120
+        ]
+       }
+      ]
+     },
+     "FD-LAC-04": null,
+     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
+     "levels": {
+      "arrival_delivery_ratio": [
+       "lower",
+       0.6
+      ],
+      "arrival_lactate_excess": [
+       "midpoint",
+       3.4
+      ],
+      "arrival_oxygen_debt": [
+       "lower",
+       0.0
+      ],
+      "debt_clearance_tau_min": [
+       "30",
+       30.0
+      ],
+      "debt_per_delivery_deficit": [
+       "1",
+       1.0
+      ],
+      "lactate_clearance_tau_min": [
+       "240",
+       240.0
+      ],
+      "lactate_per_output_deficit": [
+       "12",
+       12.0
+      ],
+      "metabolic_demand_baseline": [
+       "fixed",
+       1.0
+      ]
+     },
+     "points": {
+      "0": {
+       "D": 0.0,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.6,
+       "demand": 1.0,
+       "lactate": 4.4
+      },
+      "15": {
+       "D": 5.162424767274964,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.5376556796941218,
+       "demand": 1.0,
+       "lactate": 4.256105127722117
+      },
+      "30": {
+       "D": 9.013812059048384,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.4751126433912333,
+       "demand": 1.0,
+       "lactate": 4.229941329401717
+      },
+      "60": {
+       "D": 14.672735960985804,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.34959701784058017,
+       "demand": 1.0,
+       "lactate": 4.413164475920077
+      },
+      "90": {
+       "D": 19.126385552373385,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.2238297058510254,
+       "demand": 1.0,
+       "lactate": 4.808535506248198
+      },
+      "120": {
+       "D": 23.14416842955759,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.09826379068940061,
+       "demand": 1.0,
+       "lactate": 5.355276176157769
+      }
+     }
+    },
+    "median": {
+     "FD-LAC-01": {
+      "applicable": true,
+      "passes": true,
+      "windows": [
+       {
+        "brief_stability": true,
+        "end": 5.105406441603604,
+        "first_decline": null,
+        "generally_rises": true,
+        "passes": true,
+        "start": 4.4,
+        "sustained_declines": 0,
+        "window": [
+         0,
+         120
+        ]
+       }
+      ]
+     },
+     "FD-LAC-04": null,
+     "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+     "levels": {
+      "arrival_delivery_ratio": [
+       "lower",
+       0.6
+      ],
+      "arrival_lactate_excess": [
+       "midpoint",
+       3.4
+      ],
+      "arrival_oxygen_debt": [
+       "upper",
+       60.0
+      ],
+      "debt_clearance_tau_min": [
+       "60",
+       60.0
+      ],
+      "debt_per_delivery_deficit": [
+       "1",
+       1.0
+      ],
+      "lactate_clearance_tau_min": [
+       "120",
+       120.0
+      ],
+      "lactate_per_output_deficit": [
+       "6",
+       6.0
+      ],
+      "metabolic_demand_baseline": [
+       "fixed",
+       1.0
+      ]
+     },
+     "points": {
+      "0": {
+       "D": 60.0,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.6,
+       "demand": 1.0,
+       "lactate": 4.4
+      },
+      "15": {
+       "D": 52.38399136012348,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.5376556796941218,
+       "demand": 1.0,
+       "lactate": 4.661039154777132
+      },
+      "30": {
+       "D": 47.300021249416666,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.4751126433912333,
+       "demand": 1.0,
+       "lactate": 4.8163155717374035
+      },
+      "60": {
+       "D": 42.60547246666299,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.34959701784058017,
+       "demand": 1.0,
+       "lactate": 4.955259820653227
+      },
+      "90": {
+       "D": 42.75641786746463,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.2238297058510254,
+       "demand": 1.0,
+       "lactate": 5.017858430633728
+      },
+      "120": {
+       "D": 45.83443631951129,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.09826379068940061,
+       "demand": 1.0,
+       "lactate": 5.105406441603604
+      }
+     }
+    }
+   },
+   "L3": {
+    "highest": {
+     "FD-LAC-01": null,
+     "FD-LAC-04": {
+      "at_end": 4.9180425828561205,
+      "at_onset": 5.864568863834091,
+      "at_trigger": 5.864568863834091,
+      "clear": true,
+      "evaluable": true,
+      "haemostasis": 60,
+      "onset": 60,
+      "onset_after_trigger_min": 0,
+      "passes": true,
+      "timely": true,
+      "trigger": 60
+     },
+     "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+     "levels": {
+      "arrival_delivery_ratio": [
+       "upper",
+       1.0
+      ],
+      "arrival_lactate_excess": [
+       "upper",
+       3.6
+      ],
+      "arrival_oxygen_debt": [
+       "upper",
+       60.0
+      ],
+      "debt_clearance_tau_min": [
+       "60",
+       60.0
+      ],
+      "debt_per_delivery_deficit": [
+       "1",
+       1.0
+      ],
+      "lactate_clearance_tau_min": [
+       "120",
+       120.0
+      ],
+      "lactate_per_output_deficit": [
+       "12",
+       12.0
+      ],
+      "metabolic_demand_baseline": [
+       "fixed",
+       1.0
+      ]
+     },
+     "points": {
+      "0": {
+       "D": 60.0,
+       "adequate": true,
+       "bleeding": true,
+       "delivery": 1.0,
+       "demand": 1.0,
+       "lactate": 4.4
+      },
+      "15": {
+       "D": 46.629705143408636,
+       "adequate": true,
+       "bleeding": true,
+       "delivery": 1.3081631926288113,
+       "demand": 1.0,
+       "lactate": 5.233802166604107
+      },
+      "30": {
+       "D": 36.23882336268718,
+       "adequate": true,
+       "bleeding": true,
+       "delivery": 1.6033311358794307,
+       "demand": 1.0,
+       "lactate": 5.688807942860953
+      },
+      "60": {
+       "D": 21.887538645200692,
+       "adequate": true,
+       "bleeding": false,
+       "delivery": 2.16062359465374,
+       "demand": 1.0,
+       "lactate": 5.864568863834091
+      },
+      "90": {
+       "D": 13.21964411345696,
+       "adequate": true,
+       "bleeding": false,
+       "delivery": 2.142136198282538,
+       "demand": 1.0,
+       "lactate": 5.501869139460625
+      },
+      "120": {
+       "D": 7.984405799085898,
+       "adequate": true,
+       "bleeding": false,
+       "delivery": 2.123624054755018,
+       "demand": 1.0,
+       "lactate": 4.9180425828561205
+      }
+     }
+    },
+    "lowest": {
+     "FD-LAC-01": null,
+     "FD-LAC-04": {
+      "at_end": 1.8784376909516867,
+      "at_onset": 3.872807508650117,
+      "at_trigger": 3.872807508650117,
+      "clear": true,
+      "evaluable": true,
+      "haemostasis": 60,
+      "onset": 60,
+      "onset_after_trigger_min": 0,
+      "passes": true,
+      "timely": true,
+      "trigger": 60
+     },
+     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=midpoint;delivery=midpoint",
+     "levels": {
+      "arrival_delivery_ratio": [
+       "midpoint",
+       0.85
+      ],
+      "arrival_lactate_excess": [
+       "upper",
+       3.6
+      ],
+      "arrival_oxygen_debt": [
+       "midpoint",
+       20.0
+      ],
+      "debt_clearance_tau_min": [
+       "30",
+       30.0
+      ],
+      "debt_per_delivery_deficit": [
+       "1",
+       1.0
+      ],
+      "lactate_clearance_tau_min": [
+       "45",
+       45.0
+      ],
+      "lactate_per_output_deficit": [
+       "12",
+       12.0
+      ],
+      "metabolic_demand_baseline": [
+       "fixed",
+       1.0
+      ]
+     },
+     "points": {
+      "0": {
+       "D": 20.0,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.85,
+       "demand": 1.0,
+       "lactate": 4.4
+      },
+      "15": {
+       "D": 12.511992897356453,
+       "adequate": true,
+       "bleeding": true,
+       "delivery": 1.1119387137344896,
+       "demand": 1.0,
+       "lactate": 5.2228809692685125
+      },
+      "30": {
+       "D": 7.524499832628137,
+       "adequate": true,
+       "bleeding": true,
+       "delivery": 1.362831465497516,
+       "demand": 1.0,
+       "lactate": 5.0829153160277585
+      },
+      "60": {
+       "D": 2.7213219975099263,
+       "adequate": true,
+       "bleeding": false,
+       "delivery": 1.8365300554556792,
+       "demand": 1.0,
+       "lactate": 3.872807508650117
+      },
+      "90": {
+       "D": 0.9841974322358129,
+       "adequate": true,
+       "bleeding": false,
+       "delivery": 1.8208157685401574,
+       "demand": 1.0,
+       "lactate": 2.68782215837762
+      },
+      "120": {
+       "D": 0.35594633288743494,
+       "adequate": true,
+       "bleeding": false,
+       "delivery": 1.8050804465417651,
+       "demand": 1.0,
+       "lactate": 1.8784376909516867
+      }
+     }
+    },
+    "median": {
+     "FD-LAC-01": null,
+     "FD-LAC-04": {
+      "at_end": 3.2201383186971517,
+      "at_onset": 3.8733411846937247,
+      "at_trigger": 3.8733411846937247,
+      "clear": true,
+      "evaluable": true,
+      "haemostasis": 60,
+      "onset": 60,
+      "onset_after_trigger_min": 0,
+      "passes": true,
+      "timely": true,
+      "trigger": 60
+     },
+     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
+     "levels": {
+      "arrival_delivery_ratio": [
+       "lower",
+       0.6
+      ],
+      "arrival_lactate_excess": [
+       "lower",
+       2.4
+      ],
+      "arrival_oxygen_debt": [
+       "lower",
+       0.0
+      ],
+      "debt_clearance_tau_min": [
+       "30",
+       30.0
+      ],
+      "debt_per_delivery_deficit": [
+       "1",
+       1.0
+      ],
+      "lactate_clearance_tau_min": [
+       "120",
+       120.0
+      ],
+      "lactate_per_output_deficit": [
+       "12",
+       12.0
+      ],
+      "metabolic_demand_baseline": [
+       "fixed",
+       1.0
+      ]
+     },
+     "points": {
+      "0": {
+       "D": 0.0,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.6,
+       "demand": 1.0,
+       "lactate": 4.4
+      },
+      "15": {
+       "D": 3.6507604204060877,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.7848979155772867,
+       "demand": 1.0,
+       "lactate": 4.2173617461038315
+      },
+      "30": {
+       "D": 3.6827689086086273,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.9619986815276583,
+       "demand": 1.0,
+       "lactate": 4.139411336766328
+      },
+      "60": {
+       "D": 1.3638180394506374,
+       "adequate": true,
+       "bleeding": false,
+       "delivery": 1.296374156792244,
+       "demand": 1.0,
+       "lactate": 3.8733411846937247
+      },
+      "90": {
+       "D": 0.4932404962339638,
+       "adequate": true,
+       "bleeding": false,
+       "delivery": 1.285281718969523,
+       "demand": 1.0,
+       "lactate": 3.533137477261725
+      },
+      "120": {
+       "D": 0.17838610436853108,
+       "adequate": true,
+       "bleeding": false,
+       "delivery": 1.2741744328530107,
+       "demand": 1.0,
+       "lactate": 3.2201383186971517
+      }
+     }
+    }
+   }
+  },
+  "gi_bleed_72f": {
+   "L1": {
+    "highest": {
+     "FD-LAC-01": {
+      "applicable": true,
+      "passes": true,
+      "windows": [
+       {
+        "brief_stability": true,
+        "end": 5.76773352111071,
+        "first_decline": null,
+        "generally_rises": true,
+        "passes": true,
+        "start": 3.4783333333333335,
+        "sustained_declines": 0,
+        "window": [
+         1,
+         120
+        ]
+       }
+      ]
+     },
+     "FD-LAC-04": null,
+     "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+     "levels": {
+      "arrival_delivery_ratio": [
+       "upper",
+       1.0
+      ],
+      "arrival_lactate_excess": [
+       "upper",
+       2.6
+      ],
+      "arrival_oxygen_debt": [
+       "upper",
+       60.0
+      ],
+      "debt_clearance_tau_min": [
+       "60",
+       60.0
+      ],
+      "debt_per_delivery_deficit": [
+       "1",
+       1.0
+      ],
+      "lactate_clearance_tau_min": [
+       "120",
+       120.0
+      ],
+      "lactate_per_output_deficit": [
+       "12",
+       12.0
+      ],
+      "metabolic_demand_baseline": [
+       "fixed",
+       1.0
+      ]
+     },
+     "points": {
+      "0": {
+       "D": 60.0,
+       "adequate": true,
+       "bleeding": true,
+       "delivery": 1.0,
+       "demand": 1.0,
+       "lactate": 3.4
+      },
+      "15": {
+       "D": 47.12605386650048,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.9238366325415057,
+       "demand": 1.0,
+       "lactate": 4.355339395500913
+      },
+      "30": {
+       "D": 38.13999393437895,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.8475664591971804,
+       "demand": 1.0,
+       "lactate": 4.939927257524728
+      },
+      "60": {
+       "D": 28.562512104973656,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.6949195967563885,
+       "demand": 1.0,
+       "lactate": 5.465098695731648
+      },
+      "90": {
+       "D": 26.402681669004327,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.5425396861877162,
+       "demand": 1.0,
+       "lactate": 5.628284337318636
+      },
+      "120": {
+       "D": 28.70967523137296,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.3909993517348735,
+       "demand": 1.0,
+       "lactate": 5.76773352111071
+      }
+     }
+    },
+    "lowest": {
+     "FD-LAC-01": {
+      "applicable": true,
+      "passes": true,
+      "windows": [
+       {
+        "brief_stability": true,
+        "end": 4.531857679374333,
+        "first_decline": null,
+        "generally_rises": true,
+        "passes": true,
+        "start": 3.4,
+        "sustained_declines": 0,
+        "window": [
+         0,
+         120
+        ]
+       }
+      ]
+     },
+     "FD-LAC-04": null,
+     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
+     "levels": {
+      "arrival_delivery_ratio": [
+       "lower",
+       0.6
+      ],
+      "arrival_lactate_excess": [
+       "midpoint",
+       2.4
+      ],
+      "arrival_oxygen_debt": [
+       "lower",
+       0.0
+      ],
+      "debt_clearance_tau_min": [
+       "30",
+       30.0
+      ],
+      "debt_per_delivery_deficit": [
+       "1",
+       1.0
+      ],
+      "lactate_clearance_tau_min": [
+       "240",
+       240.0
+      ],
+      "lactate_per_output_deficit": [
+       "12",
+       12.0
+      ],
+      "metabolic_demand_baseline": [
+       "fixed",
+       1.0
+      ]
+     },
+     "points": {
+      "0": {
+       "D": 0.0,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.6,
+       "demand": 1.0,
+       "lactate": 3.4
+      },
+      "15": {
+       "D": 5.061305169210029,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.5543019795249035,
+       "demand": 1.0,
+       "lactate": 3.3160628093744746
+      },
+      "30": {
+       "D": 8.651988159895796,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.5085398755183083,
+       "demand": 1.0,
+       "lactate": 3.3417735906038324
+      },
+      "60": {
+       "D": 13.534363617331831,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.41695175805383305,
+       "demand": 1.0,
+       "lactate": 3.595413249896711
+      },
+      "90": {
+       "D": 17.05282247813404,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.32552381171262973,
+       "demand": 1.0,
+       "lactate": 4.01207799493249
+      },
+      "120": {
+       "D": 20.071304703585785,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.23459961104092408,
+       "demand": 1.0,
+       "lactate": 4.531857679374333
+      }
+     }
+    },
+    "median": {
+     "FD-LAC-01": {
+      "applicable": true,
+      "passes": true,
+      "windows": [
+       {
+        "brief_stability": true,
+        "end": 5.089410938289104,
+        "first_decline": null,
+        "generally_rises": true,
+        "passes": true,
+        "start": 3.4,
+        "sustained_declines": 0,
+        "window": [
+         0,
+         120
+        ]
+       }
+      ]
+     },
+     "FD-LAC-04": null,
+     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+     "levels": {
+      "arrival_delivery_ratio": [
+       "midpoint",
+       0.85
+      ],
+      "arrival_lactate_excess": [
+       "upper",
+       2.6
+      ],
+      "arrival_oxygen_debt": [
+       "midpoint",
+       20.0
+      ],
+      "debt_clearance_tau_min": [
+       "30",
+       30.0
+      ],
+      "debt_per_delivery_deficit": [
+       "1",
+       1.0
+      ],
+      "lactate_clearance_tau_min": [
+       "120",
+       120.0
+      ],
+      "lactate_per_output_deficit": [
+       "12",
+       12.0
+      ],
+      "metabolic_demand_baseline": [
+       "fixed",
+       1.0
+      ]
+     },
+     "points": {
+      "0": {
+       "D": 20.0,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.85,
+       "demand": 1.0,
+       "lactate": 3.4
+      },
+      "15": {
+       "D": 14.215129843924288,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.7852611376602798,
+       "demand": 1.0,
+       "lactate": 3.891426188525191
+      },
+      "30": {
+       "D": 11.510982414021385,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.7204314903176033,
+       "demand": 1.0,
+       "lactate": 4.127385910518088
+      },
+      "60": {
+       "D": 10.924650926598726,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.5906816572429302,
+       "demand": 1.0,
+       "lactate": 4.351574305495459
+      },
+      "90": {
+       "D": 13.195577108536188,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.46115873325955875,
+       "demand": 1.0,
+       "lactate": 4.623005984929863
+      },
+      "120": {
+       "D": 16.49037105592422,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.33234944897464247,
+       "demand": 1.0,
+       "lactate": 5.089410938289104
+      }
+     }
+    }
+   },
+   "L3": {
+    "highest": {
+     "FD-LAC-01": null,
+     "FD-LAC-04": {
+      "at_end": 4.551701317300138,
+      "at_onset": 5.259307543778051,
+      "at_trigger": 5.259307543778051,
+      "clear": true,
+      "evaluable": true,
+      "haemostasis": 60,
+      "onset": 60,
+      "onset_after_trigger_min": 0,
+      "passes": true,
+      "timely": true,
+      "trigger": 60
+     },
+     "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+     "levels": {
+      "arrival_delivery_ratio": [
+       "upper",
+       1.0
+      ],
+      "arrival_lactate_excess": [
+       "upper",
+       2.6
+      ],
+      "arrival_oxygen_debt": [
+       "upper",
+       60.0
+      ],
+      "debt_clearance_tau_min": [
+       "60",
+       60.0
+      ],
+      "debt_per_delivery_deficit": [
+       "1",
+       1.0
+      ],
+      "lactate_clearance_tau_min": [
+       "120",
+       120.0
+      ],
+      "lactate_per_output_deficit": [
+       "12",
+       12.0
+      ],
+      "metabolic_demand_baseline": [
+       "fixed",
+       1.0
+      ]
+     },
+     "points": {
+      "0": {
+       "D": 60.0,
+       "adequate": true,
+       "bleeding": true,
+       "delivery": 1.0,
+       "demand": 1.0,
+       "lactate": 3.4
+      },
+      "15": {
+       "D": 46.629705143408636,
+       "adequate": true,
+       "bleeding": true,
+       "delivery": 1.221565138179679,
+       "demand": 1.0,
+       "lactate": 4.351767346393476
+      },
+      "30": {
+       "D": 36.23882336268718,
+       "adequate": true,
+       "bleeding": true,
+       "delivery": 1.435207405591951,
+       "demand": 1.0,
+       "lactate": 4.9108225187969525
+      },
+      "60": {
+       "D": 21.887538645200692,
+       "adequate": true,
+       "bleeding": false,
+       "delivery": 1.842552127545807,
+       "demand": 1.0,
+       "lactate": 5.259307543778051
+      },
+      "90": {
+       "D": 13.21964411345696,
+       "adequate": true,
+       "bleeding": false,
+       "delivery": 1.8286631287126474,
+       "demand": 1.0,
+       "lactate": 5.030984654707291
+      },
+      "120": {
+       "D": 7.984405799085898,
+       "adequate": true,
+       "bleeding": false,
+       "delivery": 1.8147597066277577,
+       "demand": 1.0,
+       "lactate": 4.551701317300138
+      }
+     }
+    },
+    "lowest": {
+     "FD-LAC-01": null,
+     "FD-LAC-04": {
+      "at_end": 1.8226811997155319,
+      "at_onset": 3.641042339590394,
+      "at_trigger": 3.641042339590394,
+      "clear": true,
+      "evaluable": true,
+      "haemostasis": 60,
+      "onset": 60,
+      "onset_after_trigger_min": 0,
+      "passes": true,
+      "timely": true,
+      "trigger": 60
+     },
+     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=midpoint;delivery=midpoint",
+     "levels": {
+      "arrival_delivery_ratio": [
+       "midpoint",
+       0.85
+      ],
+      "arrival_lactate_excess": [
+       "upper",
+       2.6
+      ],
+      "arrival_oxygen_debt": [
+       "midpoint",
+       20.0
+      ],
+      "debt_clearance_tau_min": [
+       "30",
+       30.0
+      ],
+      "debt_per_delivery_deficit": [
+       "1",
+       1.0
+      ],
+      "lactate_clearance_tau_min": [
+       "45",
+       45.0
+      ],
+      "lactate_per_output_deficit": [
+       "12",
+       12.0
+      ],
+      "metabolic_demand_baseline": [
+       "fixed",
+       1.0
+      ]
+     },
+     "points": {
+      "0": {
+       "D": 20.0,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.85,
+       "demand": 1.0,
+       "lactate": 3.4
+      },
+      "15": {
+       "D": 12.709312772145907,
+       "adequate": true,
+       "bleeding": true,
+       "delivery": 1.038330367452727,
+       "demand": 1.0,
+       "lactate": 4.52226216377854
+      },
+      "30": {
+       "D": 7.643164651015396,
+       "adequate": true,
+       "bleeding": true,
+       "delivery": 1.2199262947531584,
+       "demand": 1.0,
+       "lactate": 4.600536196411137
+      },
+      "60": {
+       "D": 2.7642384953225103,
+       "adequate": true,
+       "bleeding": false,
+       "delivery": 1.5661693084139359,
+       "demand": 1.0,
+       "lactate": 3.641042339590394
+      },
+      "90": {
+       "D": 0.9997186777871843,
+       "adequate": true,
+       "bleeding": false,
+       "delivery": 1.5543636594057502,
+       "demand": 1.0,
+       "lactate": 2.5747995140758775
+      },
+      "120": {
+       "D": 0.3615597700443533,
+       "adequate": true,
+       "bleeding": false,
+       "delivery": 1.542545750633594,
+       "demand": 1.0,
+       "lactate": 1.8226811997155319
+      }
+     }
+    },
+    "median": {
+     "FD-LAC-01": null,
+     "FD-LAC-04": {
+      "at_end": 3.0008874787757054,
+      "at_onset": 3.413964924511065,
+      "at_trigger": 3.413964924511065,
+      "clear": true,
+      "evaluable": true,
+      "haemostasis": 60,
+      "onset": 60,
+      "onset_after_trigger_min": 0,
+      "passes": true,
+      "timely": true,
+      "trigger": 60
+     },
+     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
+     "levels": {
+      "arrival_delivery_ratio": [
+       "lower",
+       0.6
+      ],
+      "arrival_lactate_excess": [
+       "lower",
+       1.4
+      ],
+      "arrival_oxygen_debt": [
+       "lower",
+       0.0
+      ],
+      "debt_clearance_tau_min": [
+       "30",
+       30.0
+      ],
+      "debt_per_delivery_deficit": [
+       "1",
+       1.0
+      ],
+      "lactate_clearance_tau_min": [
+       "120",
+       120.0
+      ],
+      "lactate_per_output_deficit": [
+       "12",
+       12.0
+      ],
+      "metabolic_demand_baseline": [
+       "fixed",
+       1.0
+      ]
+     },
+     "points": {
+      "0": {
+       "D": 0.0,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.6,
+       "demand": 1.0,
+       "lactate": 3.4
+      },
+      "15": {
+       "D": 3.9699521624315333,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.7329390829078074,
+       "demand": 1.0,
+       "lactate": 3.3400441623083843
+      },
+      "30": {
+       "D": 4.7966099204384784,
+       "adequate": false,
+       "bleeding": true,
+       "delivery": 0.8611244433551706,
+       "demand": 1.0,
+       "lactate": 3.397195402128909
+      },
+      "60": {
+       "D": 2.293162354095683,
+       "adequate": true,
+       "bleeding": false,
+       "delivery": 1.105531276527484,
+       "demand": 1.0,
+       "lactate": 3.413964924511065
+      },
+      "90": {
+       "D": 0.8293485675954343,
+       "adequate": true,
+       "bleeding": false,
+       "delivery": 1.0971978772275883,
+       "demand": 1.0,
+       "lactate": 3.2273372105944675
+      },
+      "120": {
+       "D": 0.2999434581437835,
+       "adequate": true,
+       "bleeding": false,
+       "delivery": 1.0888558239766546,
+       "demand": 1.0,
+       "lactate": 3.0008874787757054
+      }
+     }
+    }
+   }
+  }
+ },
+ "robustness_start_of_minute_delivery": {
+  "all_six": 66,
+  "changed_membership": 0,
+  "survivors": {
+   "FD-LAC-01": 231,
+   "FD-LAC-02": 243,
+   "FD-LAC-03": 306,
+   "FD-LAC-04": 808,
+   "FD-LAC-05": 862,
+   "FD-LAC-06": 312
+  }
+ },
+ "sensitivity": [
+  {
+   "all_six": 84,
+   "overrides": {
+    "meaningful_change": 0.05
+   },
+   "survivors": {
+    "FD-LAC-01": 234,
+    "FD-LAC-02": 243,
+    "FD-LAC-03": 306,
+    "FD-LAC-04": 970,
+    "FD-LAC-05": 1036,
+    "FD-LAC-06": 210
+   },
+   "variant": "meaningful change 5 %"
+  },
+  {
+   "all_six": 30,
+   "overrides": {
+    "meaningful_change": 0.2
+   },
+   "survivors": {
+    "FD-LAC-01": 195,
+    "FD-LAC-02": 243,
+    "FD-LAC-03": 306,
+    "FD-LAC-04": 390,
+    "FD-LAC-05": 658,
+    "FD-LAC-06": 540
+   },
+   "variant": "meaningful change 20 %"
+  },
+  {
+   "all_six": 72,
+   "overrides": {
+    "adequacy_tolerance": 0.05
+   },
+   "survivors": {
+    "FD-LAC-01": 234,
+    "FD-LAC-02": 243,
+    "FD-LAC-03": 306,
+    "FD-LAC-04": 808,
+    "FD-LAC-05": 862,
+    "FD-LAC-06": 333
+   },
+   "variant": "adequacy tolerance 5 %"
+  },
+  {
+   "all_six": 72,
+   "overrides": {
+    "adequacy_tolerance": 0.1
+   },
+   "survivors": {
+    "FD-LAC-01": 231,
+    "FD-LAC-02": 243,
+    "FD-LAC-03": 306,
+    "FD-LAC-04": 808,
+    "FD-LAC-05": 862,
+    "FD-LAC-06": 351
+   },
+   "variant": "adequacy tolerance 10 %"
+  },
+  {
+   "all_six": 66,
+   "overrides": {
+    "reassessment_interval_min": 10
+   },
+   "survivors": {
+    "FD-LAC-01": 234,
+    "FD-LAC-02": 243,
+    "FD-LAC-03": 306,
+    "FD-LAC-04": 808,
+    "FD-LAC-05": 862,
+    "FD-LAC-06": 312
+   },
+   "variant": "reassessment every 10 min"
+  },
+  {
+   "all_six": 69,
+   "overrides": {
+    "reassessment_interval_min": 30
+   },
+   "survivors": {
+    "FD-LAC-01": 234,
+    "FD-LAC-02": 243,
+    "FD-LAC-03": 306,
+    "FD-LAC-04": 808,
+    "FD-LAC-05": 862,
+    "FD-LAC-06": 318
+   },
+   "variant": "reassessment every 30 min"
+  },
+  {
+   "all_six": 66,
+   "overrides": {
+    "sustained_min": 15
+   },
+   "survivors": {
+    "FD-LAC-01": 234,
+    "FD-LAC-02": 243,
+    "FD-LAC-03": 306,
+    "FD-LAC-04": 808,
+    "FD-LAC-05": 862,
+    "FD-LAC-06": 312
+   },
+   "variant": "sustained over 15 min"
+  },
+  {
+   "all_six": 72,
+   "overrides": {
+    "sustained_min": 45
+   },
+   "survivors": {
+    "FD-LAC-01": 243,
+    "FD-LAC-02": 243,
+    "FD-LAC-03": 306,
+    "FD-LAC-04": 808,
+    "FD-LAC-05": 862,
+    "FD-LAC-06": 318
+   },
+   "variant": "sustained over 45 min"
+  },
+  {
+   "all_six": 81,
+   "overrides": {
+    "sustained_min": 60
+   },
+   "survivors": {
+    "FD-LAC-01": 255,
+    "FD-LAC-02": 243,
+    "FD-LAC-03": 306,
+    "FD-LAC-04": 808,
+    "FD-LAC-05": 862,
+    "FD-LAC-06": 336
+   },
+   "variant": "sustained over 60 min"
+  },
+  {
+   "all_six": 66,
+   "overrides": {
+    "fd01_unapplicable_passes": false
+   },
+   "survivors": {
+    "FD-LAC-01": 234,
+    "FD-LAC-02": 243,
+    "FD-LAC-03": 306,
+    "FD-LAC-04": 808,
+    "FD-LAC-05": 862,
+    "FD-LAC-06": 312
+   },
+   "variant": "FD-LAC-01 not applicable counts as failing"
+  },
+  {
+   "all_six": 42,
+   "overrides": {
+    "fd01_brief_stability_min": 60
+   },
+   "survivors": {
+    "FD-LAC-01": 162,
+    "FD-LAC-02": 243,
+    "FD-LAC-03": 306,
+    "FD-LAC-04": 808,
+    "FD-LAC-05": 862,
+    "FD-LAC-06": 312
+   },
+   "variant": "FD-LAC-01 stability ends within 60 min"
+  },
+  {
+   "all_six": 57,
+   "overrides": {
+    "fd01_brief_stability_min": 90
+   },
+   "survivors": {
+    "FD-LAC-01": 195,
+    "FD-LAC-02": 243,
+    "FD-LAC-03": 306,
+    "FD-LAC-04": 808,
+    "FD-LAC-05": 862,
+    "FD-LAC-06": 312
+   },
+   "variant": "FD-LAC-01 stability ends within 90 min"
+  },
+  {
+   "all_six": 75,
+   "overrides": {
+    "fd0203_display_decimals": 1
+   },
+   "survivors": {
+    "FD-LAC-01": 234,
+    "FD-LAC-02": 264,
+    "FD-LAC-03": 330,
+    "FD-LAC-04": 808,
+    "FD-LAC-05": 862,
+    "FD-LAC-06": 312
+   },
+   "variant": "FD-LAC-02/03 as displayed (1 decimal)"
+  },
+  {
+   "all_six": 66,
+   "overrides": {
+    "fd04_onset_limit_min": 15
+   },
+   "survivors": {
+    "FD-LAC-01": 234,
+    "FD-LAC-02": 243,
+    "FD-LAC-03": 306,
+    "FD-LAC-04": 808,
+    "FD-LAC-05": 862,
+    "FD-LAC-06": 312
+   },
+   "variant": "FD-LAC-04 onset within 15 min"
+  },
+  {
+   "all_six": 66,
+   "overrides": {
+    "fd04_onset_limit_min": 45
+   },
+   "survivors": {
+    "FD-LAC-01": 234,
+    "FD-LAC-02": 243,
+    "FD-LAC-03": 306,
+    "FD-LAC-04": 808,
+    "FD-LAC-05": 862,
+    "FD-LAC-06": 312
+   },
+   "variant": "FD-LAC-04 onset within 45 min"
+  },
+  {
+   "all_six": 0,
+   "overrides": {
+    "fd04_onset_floor_min": 15
+   },
+   "survivors": {
+    "FD-LAC-01": 234,
+    "FD-LAC-02": 243,
+    "FD-LAC-03": 306,
+    "FD-LAC-04": 75,
+    "FD-LAC-05": 862,
+    "FD-LAC-06": 312
+   },
+   "variant": "FD-LAC-04 onset only in 15-30 min"
+  },
+  {
+   "all_six": 66,
+   "overrides": {
+    "fd04_sustained_restoration_min": 15
+   },
+   "survivors": {
+    "FD-LAC-01": 234,
+    "FD-LAC-02": 243,
+    "FD-LAC-03": 306,
+    "FD-LAC-04": 808,
+    "FD-LAC-05": 862,
+    "FD-LAC-06": 312
+   },
+   "variant": "FD-LAC-04 restoration sustained 15 min"
+  },
+  {
+   "all_six": 66,
+   "overrides": {
+    "fd04_sustained_restoration_min": 60
+   },
+   "survivors": {
+    "FD-LAC-01": 234,
+    "FD-LAC-02": 243,
+    "FD-LAC-03": 306,
+    "FD-LAC-04": 808,
+    "FD-LAC-05": 862,
+    "FD-LAC-06": 312
+   },
+   "variant": "FD-LAC-04 restoration sustained 60 min"
+  },
+  {
+   "all_six": 66,
+   "overrides": {
+    "fd04_unevaluable_passes": false
+   },
+   "survivors": {
+    "FD-LAC-01": 234,
+    "FD-LAC-02": 243,
+    "FD-LAC-03": 306,
+    "FD-LAC-04": 706,
+    "FD-LAC-05": 862,
+    "FD-LAC-06": 312
+   },
+   "variant": "FD-LAC-04 not evaluable counts as failing"
+  },
+  {
+   "all_six": 66,
+   "overrides": {
+    "fd05_reference_debt": 20.0
+   },
+   "survivors": {
+    "FD-LAC-01": 234,
+    "FD-LAC-02": 243,
+    "FD-LAC-03": 306,
+    "FD-LAC-04": 808,
+    "FD-LAC-05": 514,
+    "FD-LAC-06": 312
+   },
+   "variant": "FD-LAC-05 reference debt 20"
+  }
+ ],
+ "settings": {
+  "adequacy_tolerance": 0.0,
+  "fd01_brief_stability_min": null,
+  "fd01_min_window_min": 60,
+  "fd01_unapplicable_passes": true,
+  "fd0203_display_decimals": null,
+  "fd04_elevated_above_mmol_l": 2.0,
+  "fd04_observation_after_trigger_min": 60,
+  "fd04_onset_floor_min": 0,
+  "fd04_onset_limit_min": 30,
+  "fd04_sustained_restoration_min": 30,
+  "fd04_unevaluable_passes": true,
+  "fd05_minute": 120,
+  "fd05_normal_upper_mmol_l": 2.0,
+  "fd05_normalization_window_min": 15,
+  "fd05_reference_debt": 60.0,
+  "meaningful_change": 0.1,
+  "reassessment_interval_min": 15,
+  "sustained_min": 30
+ }
+}

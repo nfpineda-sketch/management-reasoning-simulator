@@ -1,12 +1,14 @@
 # P2I-1 · Decisión docente: el lactato en la hemorragia digestiva (GI)
 
-Apoyo a una decisión, no una decisión. Este documento no aprueba ningún número ni marca nada como FACULTY_APPROVED.
-Tampoco migra el GI, llena registros de autoridad ni cambia el golden canónico. Todos los valores siguen CANDIDATE. Es
-el primer corte clínico: hasta que la docencia responda estas preguntas no se abren FC, PA, FR, volumen ni colapso.
+Apoyo a una decisión. El corte de P2I-1 no aprobó ningún número. La docencia respondió después FD-LAC-01 a FD-LAC-06
+(§10 y §12): son restricciones clínicas de comportamiento del lactato, con estado FACULTY_APPROVED, y **no aprueban
+ningún valor de parámetro oculto**. Todos los valores siguen CANDIDATE, los registros de autoridad siguen vacíos, el GI
+no se migra y el golden canónico no cambia. Su aplicación a la región candidata está en
+`docs/revision/P2I2_RESTRICCIONES_LACTATO_GI.md`. FC, PA, FR, volumen y colapso siguen sin abrirse.
 
 - **Generado desde:** el congelamiento de calibración
   `152abc6cf3e2812fcade237f60db0430df78749e09f4199b0a0fff13a0dd4338` y el corte
-  `287b7b5ded9bf01ff694d3e9fbd3eb60dfb6a42d40c61faf105b1d687eae6ccc` (`python -m clinical_core.lactate_slice`).
+  `7368a4b6b70a9f0f2ecdd8c665a7e8e666afc3c67ebf8639e13f3d3eed52e57a` (`python -m clinical_core.lactate_slice`).
   Los números están en `docs/revision/P2I_lactate_slice.json`. Una prueba falla si el código o las entradas cambian
   sin regenerarlos.
 - **Base:** la región estructuralmente admisible de P2F que P2G ya usa: 1054 conjuntos (`decision_pack.admissible`).
@@ -483,21 +485,39 @@ El lactato que reporta el motor de familias en los mismos escenarios. Ninguna ta
 
 ## 10. Hoja de trabajo docente (FD-LAC)
 
-La selección queda en blanco. Las opciones del modelo para cada pregunta están en §8.
+La docencia respondió el 2026-10-25 (versión «FD-LAC v1»). La selección resume la opción elegida; el texto que rige
+está en §12, tal como lo escribió la docencia. Las opciones del modelo para cada pregunta están en §8.
 
 | ID | Pregunta | Opciones | Selección docente | Estado |
 |---|---|---|---|---|
-| FD-LAC-01 | En la hemorragia sin tratar con perfusión que empeora, el lactato debe… | A. poder bajar desde la llegada / B. mantenerse aproximadamente estable / C. subir en general / D. exigir una subida mínima en 60 min | | ABIERTA |
-| FD-LAC-02 | 57m: ¿qué rango de lactato a los 60 min sin tratar es clínicamente aceptable? | el rango que ofrece el modelo para 57m (§8) u otro que la docencia fije | | ABIERTA |
-| FD-LAC-03 | 72f: ¿qué rango de lactato a los 60 min sin tratar es clínicamente aceptable? | el rango que ofrece el modelo para 72f (§8) u otro que la docencia fije | | ABIERTA |
-| FD-LAC-04 | Tras la hemostasia exitosa y la reanimación adecuada, ¿cuándo debe verse por primera vez una tendencia clara a la baja? | en 15 min / 15–30 min / 30–60 min / después de 60 min | | ABIERTA |
-| FD-LAC-05 | A los 120 min del manejo exitoso, el lactato debe… | seguir sustancialmente elevado / seguir levemente elevado / estar cerca de la basal de llegada / depender mucho de la deuda acumulada inicial | | ABIERTA |
-| FD-LAC-06 | ¿Puede la hemorragia activa con perfusión que sigue empeorando mostrar un lactato en descenso sólo porque se aclara el lactato aclarable de llegada? | SÍ / NO / SÓLO SI LA ENTREGA ES ADECUADA | | ABIERTA |
+| FD-LAC-01 | En la hemorragia sin tratar con perfusión que empeora, el lactato debe… | A. poder bajar desde la llegada / B. mantenerse aproximadamente estable / C. subir en general / D. exigir una subida mínima en 60 min | C. subir en general; una estabilidad breve es aceptable | FACULTY_APPROVED |
+| FD-LAC-02 | 57m: ¿qué rango de lactato a los 60 min sin tratar es clínicamente aceptable? | el rango que ofrece el modelo para 57m (§8) u otro que la docencia fije | 4,4–7,0 mmol/L a los 60 min: envolvente clínica, no un objetivo | FACULTY_APPROVED |
+| FD-LAC-03 | 72f: ¿qué rango de lactato a los 60 min sin tratar es clínicamente aceptable? | el rango que ofrece el modelo para 72f (§8) u otro que la docencia fije | 3,4–5,5 mmol/L a los 60 min: envolvente clínica, no un objetivo | FACULTY_APPROVED |
+| FD-LAC-04 | Tras la hemostasia exitosa y la reanimación adecuada, ¿cuándo debe verse por primera vez una tendencia clara a la baja? | en 15 min / 15–30 min / 30–60 min / después de 60 min | 15–30 min: inicio de una tendencia clara a la baja | FACULTY_APPROVED |
+| FD-LAC-05 | A los 120 min del manejo exitoso, el lactato debe… | seguir sustancialmente elevado / seguir levemente elevado / estar cerca de la basal de llegada / depender mucho de la deuda acumulada inicial | depender de la deuda acumulada; puede seguir levemente elevado; sin normalización obligatoria | FACULTY_APPROVED |
+| FD-LAC-06 | ¿Puede la hemorragia activa con perfusión que sigue empeorando mostrar un lactato en descenso sólo porque se aclara el lactato aclarable de llegada? | SÍ / NO / SÓLO SI LA ENTREGA ES ADECUADA | SÓLO SI LA ENTREGA ES ADECUADA | FACULTY_APPROVED |
 
 ## 11. Lo que este corte no hace
 
-- No aprueba valores: FACULTY_APPROVED sigue en 0. Los registros de autoridad siguen vacíos y la puerta de migración
-  sigue fallando para 57m y 72f.
+- No aprueba valores. En el registro de calibración FACULTY_APPROVED sigue en 0: las decisiones FD-LAC aprueban
+  comportamiento, no parámetros. Los registros de autoridad siguen vacíos y la puerta de migración sigue fallando para
+  57m y 72f.
 - No elige candidatos por su parecido con el motor de familias.
 - No cambia la fisiología, las bandas, las reglas congeladas, los escenarios del golden ni el golden.
 - No abre FC, PA, FR, volumen ni colapso.
+
+<!-- generado:decisiones-lactato -->
+## 12. Registro de decisiones docentes (P2I-2)
+
+Respondidas por la docencia y registradas el 2026-10-25, versión «FD-LAC v1», en `clinical_core/faculty_constraints.py`. Son restricciones clínicas de comportamiento del lactato observable, con estado FACULTY_APPROVED. **No aprueban ningún valor de parámetro oculto:** `arrival_oxygen_debt`, `arrival_lactate_excess`, `debt_clearance_tau_min`, `debt_per_delivery_deficit`, `lactate_per_output_deficit`, `lactate_clearance_tau_min`, `arrival_delivery_ratio`, `metabolic_demand_baseline` siguen CANDIDATE, y nada de esto entra en los registros de autoridad de migración. El texto que rige es el original, en inglés. La docencia no dio un fundamento aparte: la columna «Frase clave» cita la frase de su propio texto que lo expresa. Su aplicación a la región candidata está en `docs/revision/P2I2_RESTRICCIONES_LACTATO_GI.md`.
+
+| ID | Estado | Fecha · versión | Observable | Escenarios · casos | Decisión (texto original) | Frase clave del texto docente | Valores de parámetros que aprueba |
+|---|---|---|---|---|---|---|---|
+| FD-LAC-01 | FACULTY_APPROVED | 2026-10-25 · FD-LAC v1 | trayectoria del lactato con sangrado activo y entrega de O2 inadecuada | L1 · 57m, 72f | «With ongoing active haemorrhage and persistently inadequate/worsening oxygen delivery, lactate should GENERALLY RISE. A brief period of stability is acceptable. A sustained fall should NOT be the typical trajectory when oxygen delivery remains inadequate. Do NOT interpret this as: "lactate must rise every minute." The clinically important requirement is the trajectory over meaningful reassessment intervals.» | «The clinically important requirement is the trajectory over meaningful reassessment intervals.» | ninguno |
+| FD-LAC-02 | FACULTY_APPROVED | 2026-10-25 · FD-LAC v1 | lactato (mmol/L) a los 60 min sin tratar | L1 · 57m | «APPROVED clinical band: arrival lactate: 4.4 mmol/L. 60-min untreated acceptable band: 4.4-7.0 mmol/L. Preferred direction: stable-to-rising, usually rising. Do NOT convert the midpoint of this band into a target. Values are a clinical acceptance envelope.» | «Values are a clinical acceptance envelope.» | ninguno |
+| FD-LAC-03 | FACULTY_APPROVED | 2026-10-25 · FD-LAC v1 | lactato (mmol/L) a los 60 min sin tratar | L1 · 72f | «APPROVED clinical band: arrival lactate: 3.4 mmol/L. 60-min untreated acceptable band: 3.4-5.5 mmol/L. Preferred direction: stable-to-rising, usually rising. Again, this is a clinical envelope, not a point target.» | «Again, this is a clinical envelope, not a point target.» | ninguno |
+| FD-LAC-04 | FACULTY_APPROVED | 2026-10-25 · FD-LAC v1 | inicio de una tendencia clara a la baja tras la hemostasia y la restauración sostenida de la entrega | L3 · 57m, 72f | «After successful haemostasis AND adequate sustained restoration of oxygen delivery, a CLEAR downward lactate trend should begin within: 15-30 minutes. This means onset of a meaningful downward trend. It does NOT mean: normalization by 30 minutes; arbitrary fixed mmol/L decline; clearance independent of accumulated debt.» | «This means onset of a meaningful downward trend.» | ninguno |
+| FD-LAC-05 | FACULTY_APPROVED | 2026-10-25 · FD-LAC v1 | lactato residual a los 120 min del manejo definitivo y su dependencia de la deuda de O2 acumulada | L3 · 57m, 72f | «Residual lactate at 120 min should depend materially on accumulated oxygen debt. Typical severe-shock trajectories may remain MILDLY ELEVATED. Do NOT require full normalization within 120 minutes. Do NOT encode one fixed 120-min lactate target. The model should preserve memory of prior debt.» | «The model should preserve memory of prior debt.» | ninguno |
+| FD-LAC-06 | FACULTY_APPROVED | 2026-10-25 · FD-LAC v1 | trayectoria del lactato con sangrado activo, según la adecuación de la entrega | L1, L2, L3 · 57m, 72f | «ONLY IF OXYGEN DELIVERY IS ADEQUATE. Active haemorrhage by itself does not require lactate to rise. If resuscitation maintains/restores adequate oxygen delivery despite ongoing bleeding, lactate may fall. However: active bleeding + persistent/worsening inadequate oxygen delivery must NOT produce a sustained declining lactate trajectory. This rule takes precedence over diagnosis labels.» | «This rule takes precedence over diagnosis labels.» | ninguno |
+
+<!-- /generado:decisiones-lactato -->
