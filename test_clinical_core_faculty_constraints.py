@@ -6,6 +6,7 @@ them. Their operationalization is checked here on synthetic trajectories, before
 of the region it filters.
 """
 import ast
+import json
 from dataclasses import replace
 from pathlib import Path
 
@@ -20,6 +21,9 @@ from clinical_core.migration import gate_dry_run
 
 ROOT = Path(__file__).resolve().parent
 P = fc.params()
+DOCUMENT = ROOT / "docs" / "revision" / "P2I2_RESTRICCIONES_LACTATO_GI.md"
+DATA = ROOT / "docs" / "revision" / "P2I2_lactate_constraints.json"
+DECISION_DOCUMENT = ROOT / "docs" / "revision" / "P2I_DECISION_LACTATO_GI.md"
 
 
 def trajectory(lactate, delivery=None, demand=1.0, controlled_at=None, D=None):
@@ -234,9 +238,15 @@ def test_the_pipeline_reads_the_core_and_only_engine_produced_runs():
 
 def test_the_engine_lactate_never_reaches_the_filter(monkeypatch):
     """The engine's run is still made (it supplies the scenarios' inputs, as in P2I-1) and it
-    computes its own lactate; poisoning that lactate, with every cache emptied, changes nothing."""
+    computes its own lactate; poisoning that lactate, with the engine-run caches emptied, changes
+    no trajectory, no verdict and nothing in the report but the legacy reference itself. The core's
+    arrival lactate is the case's authored value (repository truth), not an engine trajectory."""
+    clean_report = lactate_constraints.report(quick=True)
     clean = lactate_constraints.region(quick=True)
-    clean_verdicts = lactate_constraints.evaluate_region(clean, P)
+    truth = {entry.case: float(entry.value) for entry in gi_reference.INVENTORY if entry.item == "lactate_mmol_l"}
+    for item in clean.values():
+        for case in gi_reference.GI_CASES:
+            assert all(run_.lactate[0] == truth[case] for run_ in item["runs"][case].values())
     import clinical_core.legacy_adapter as adapter
     poisoned_reads = []
 
@@ -246,12 +256,62 @@ def test_the_engine_lactate_never_reaches_the_filter(monkeypatch):
     monkeypatch.setattr(adapter, "_lactate_lab", poisoned)
     monkeypatch.setattr(calibration, "_RUNS", {})
     monkeypatch.setattr(lactate_slice, "_INPUTS", {})
-
-    def refuse(*args, **kwargs):
-        raise AssertionError("the legacy reference was read while filtering")
-    monkeypatch.setattr(lactate_constraints, "legacy_position", refuse)
     again = lactate_constraints.region(quick=True)
     assert poisoned_reads, "the engine's runs were really recomputed with the poisoned lactate"
     for key, item in clean.items():
         assert again[key]["runs"] == item["runs"]
-    assert lactate_constraints.evaluate_region(again, P) == clean_verdicts
+    poisoned_report = lactate_constraints.report(quick=True)
+    assert poisoned_report["legacy_position"] != clean_report["legacy_position"], "the poison reached the reference"
+    # The calibration freeze pins the engine's materialized runs, so it (and the filter digest that
+    # includes it) correctly reports a changed engine; every result is unchanged.
+    provenance = {"legacy_position", "freeze_digest", "filter_digest"}
+    assert all(poisoned_report[key] != clean_report[key] for key in provenance)
+    assert {key: value for key, value in poisoned_report.items() if key not in provenance} == {
+        key: value for key, value in clean_report.items() if key not in provenance}
+
+
+def test_the_reporting_rules_are_pinned():
+    assert lactate_constraints.reporting_digest() == lactate_constraints.FROZEN_REPORTING_DIGEST
+
+
+# The artifacts ------------------------------------------------------------------------------------
+
+def test_the_results_document_is_generated_from_the_current_code():
+    data = json.loads(DATA.read_text(encoding="utf-8"))
+    document = DOCUMENT.read_text(encoding="utf-8")
+    assert data["filter_digest"] == lactate_constraints.filter_digest(), "the results are stale: regenerate them"
+    assert data["definitions_digest"] == lactate_constraints.FROZEN_DEFINITIONS_DIGEST
+    assert data["pipeline_digest"] == lactate_constraints.FROZEN_PIPELINE_DIGEST
+    assert data["freeze_digest"] == calibration.frozen_digest() and not data["quick"]
+    assert data["admissible_candidates"] == len(decision_pack.admissible()) == data["counts"]["before"]
+    assert data["settings"] == fc.PRIMARY
+    for digest in ("filter_digest", "definitions_digest", "pipeline_digest", "freeze_digest"):
+        assert data[digest] in document
+    assert lactate_constraints.apply(document, lactate_constraints.render(data)) == document, (
+        "the document differs from the results: run python -m clinical_core.lactate_constraints --write")
+
+
+def test_the_results_are_a_constrained_candidate_region_not_an_approval():
+    data = json.loads(DATA.read_text(encoding="utf-8"))
+    keys = {candidate.key() for candidate in decision_pack.admissible()}
+    survivors = set(data["faculty_constrained_region"])
+    assert survivors <= keys and len(survivors) == data["counts"]["all_six"]
+    assert data["counts"]["all_six"] <= min(data["counts"]["survivors"].values())
+    assert [row["id"] for row in data["decisions"]] == list(fc.CONSTRAINT_IDS)
+    assert all(row["status"] == fc.FACULTY_APPROVED and row["approves_parameter_values"] == []
+               for row in data["decisions"])
+    classes = {row["factor"]: row["classification"] for row in data["parameter_region"]}
+    assert set(classes) == set(fc.HIDDEN_PARAMETERS)
+    assert classes["debt_per_delivery_deficit"] == classes["metabolic_demand_baseline"] == "NOT IDENTIFIED"
+    document = DOCUMENT.read_text(encoding="utf-8")
+    assert "REGIÓN CANDIDATA RESTRINGIDA POR LA DOCENCIA" in document and "No aprueban ningún" in document
+
+
+def test_the_decision_record_is_generated_from_the_registry():
+    document = DECISION_DOCUMENT.read_text(encoding="utf-8")
+    assert lactate_constraints.apply_block(document, lactate_constraints.render_decisions(),
+                                           lactate_constraints.DECISIONS_OPENING,
+                                           lactate_constraints.DECISIONS_CLOSING) == document, (
+        "run python -m clinical_core.lactate_constraints --decisions docs/revision/P2I_DECISION_LACTATO_GI.md")
+    for item in fc.FACULTY_CLINICAL_CONSTRAINTS:
+        assert f"«{item.decision}»" in document and item.status in document

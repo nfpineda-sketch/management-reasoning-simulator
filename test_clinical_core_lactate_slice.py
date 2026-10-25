@@ -134,13 +134,20 @@ def test_the_faculty_document_is_generated_from_the_current_code():
         "the document's tables differ from the slice: run python -m clinical_core.lactate_slice --write")
 
 
-def test_the_worksheet_leaves_every_question_open():
+def test_the_worksheet_records_the_faculty_answers_without_approving_a_value():
+    """P2I-1 left the six questions open; the faculty answered them (P2I-2). The worksheet now
+    records each as FACULTY_APPROVED; the decision text itself is generated from the registry
+    (checked in test_clinical_core_faculty_constraints.py) and no parameter value is approved."""
+    from clinical_core import lactate_constraints
     document = DOCUMENT.read_text(encoding="utf-8")
     rows = [[cell.strip() for cell in line.strip().strip("|").split("|")]
-            for line in document.splitlines() if line.startswith("| FD-LAC-")]
+            for line in document.split("<!-- generado:decisiones-lactato -->")[0].splitlines()
+            if line.startswith("| FD-LAC-")]
     assert [row[0] for row in rows] == [f"FD-LAC-0{number}" for number in range(1, 7)]
-    assert all(len(row) == 5 and row[3] == "" and row[4] == "ABIERTA" for row in rows)
-    assert "FACULTY_APPROVED" not in "\n".join("|".join(row) for row in rows)
+    assert all(len(row) == 5 and row[4] == "FACULTY_APPROVED" for row in rows)
+    assert {row[0]: row[3] for row in rows} == lactate_constraints.SELECTION_ES
+    assert "no aprueban\nningún valor de parámetro oculto" in document
+    assert sum(entry.status == calibration.FACULTY_APPROVED for entry in calibration.REGISTRY.values()) == 0
 
 
 def test_l4_is_labelled_a_manual_counterfactual_everywhere(quick):
