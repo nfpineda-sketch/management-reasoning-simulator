@@ -2304,3 +2304,29 @@ Ninguno. `clinical_core` sigue sólo en sombra.
     con números idénticos;
   - el congelamiento de calibración no cambia.
 - **Gancho en tiempo de ejecución:** ninguno.
+
+## 19. P2I-2R · Restricciones del lactato GI aclaradas por la docencia (2026-10-26)
+
+- **Base:** `0f6aed1`. La docencia aclaró FD-LAC-01, FD-LAC-04 y FD-LAC-05 y confirmó las definiciones comunes. Lo hizo
+  con texto propio, registrado tal cual en `clinical_core/faculty_constraints.py` (versión «FD-LAC v2»). Es una
+  aclaración de decisiones ya aprobadas, no una regla elegida por el resultado de P2I-2 (66 sobrevivientes).
+- **Qué cambió:**
+  - **FD-LAC-01:** sólo prohíbe, antes de los 60 min, un descenso sostenido y sustancial (≥ 10 % en ≥ 30 min) con
+    sangrado activo y entrega inadecuada; las envolventes de 60 min siguen siendo duras;
+  - **FD-LAC-04:**
+    - T\* es la más tardía entre la hemostasia y el inicio de la entrega adecuada sostenida;
+    - L(T\*) ≤ 2,0 es ALREADY_NORMALIZED;
+    - la falta de seguimiento, o una entrega que deja de ser adecuada, es NOT_EVALUABLE;
+    - pasa con L(T\* + 30) < L(T\*) y un aclaramiento en curso;
+    - los umbrales de 5, 10 y 15 % son sólo sensibilidad;
+  - **FD-LAC-05:** con entrega adecuada sostenida, L120 dentro de 1,5–4,0 (57m) o 1,2–3,5 (72f) y L120 < L(T\*).
+- **Recongelamiento antes de filtrar:** definiciones, canalización y reglas de informe quedaron fijadas en `9601ce9` sin
+  ningún conteo revisado; después se filtró desde cero.
+- **Resultado:** sobreviven 72 de los mismos 1054 candidatos. Sigue siendo la región candidata restringida por la
+  docencia: CANDIDATE, sin aprobar valores. Detalle en `docs/revision/P2I2_RESTRICCIONES_LACTATO_GI.md` y
+  `docs/revision/P2I2_lactate_constraints.json`.
+- **Digests:**
+  - el paquete P2G no cambia, porque los módulos nuevos están excluidos de su digest;
+  - el corte de P2I-1 se regeneró con números idénticos;
+  - el congelamiento de calibración no cambia.
+- **Gancho en tiempo de ejecución:** ninguno.
