@@ -1,4 +1,4 @@
-"""P2I-2: apply the faculty-approved GI lactate constraints (FD-LAC-01..06) to P2F's admissible region.
+"""P2I-2R: apply the faculty-approved GI lactate constraints (FD-LAC-01..06) to P2F's admissible region.
 
     python -m clinical_core.lactate_constraints [--quick] [--out <directory outside the repository>]
     python -m clinical_core.lactate_constraints --write <document> --json <results JSON>
@@ -14,9 +14,11 @@ lactate appears last, as a reference placed against the approved envelopes.
 
 The surviving set is the FACULTY-CONSTRAINED CANDIDATE REGION: still CANDIDATE, not approved.
 
-The operational definitions are frozen: ``faculty_constraints.definitions_digest`` and this
-module's ``pipeline_digest`` (how a core run becomes a ``Trajectory`` and how the region is
-evaluated) are pinned below, before any filtering ran; the filter refuses to run on others.
+The operational definitions are frozen: ``faculty_constraints.definitions_digest``, this module's
+``pipeline_digest`` (how a core run becomes a ``Trajectory`` and how the region is evaluated) and
+its ``reporting_digest`` (counts, classes, region, summaries, representatives, legacy position)
+are pinned below before any filtering ran; the filter refuses to run on others. P2I-2R refroze all
+three after the faculty clarified FD-LAC-01, FD-LAC-04 and FD-LAC-05 (2026-10-26).
 """
 from __future__ import annotations
 
@@ -32,7 +34,7 @@ from . import lactate_slice
 from .derived import DEFAULT_PROFILE, derive, effective_delivery
 from .faculty_constraints import Trajectory
 
-FROZEN_DEFINITIONS_DIGEST = "ee1deb2578504d3c295d2c4a3552b2d781529064f94043f99b07f04d0fe258cc"
+FROZEN_DEFINITIONS_DIGEST = "092c32cf5a20cbf62e3e9df32a47896ccdef701f97170634740a8f8399d7982a"
 FROZEN_PIPELINE_DIGEST = "4c326d6e60e9a96cde713afcf0fc38b14cf877b8521e60b7e33d584b24037394"
 CASES = fc.CASES
 L1, L2, L3 = fc.UNTREATED, fc.PARTIAL, fc.DEFINITIVE
@@ -124,20 +126,22 @@ def counts(verdicts: dict) -> dict:
 
 
 def per_case(verdicts: dict) -> dict:
+    """Per case and constraint: how many runs pass, and every outcome (PASS, FAIL, NOT_APPLICABLE,
+    NOT_EVALUABLE with its reason, ALREADY_NORMALIZED)."""
     table = {}
     for case in CASES:
         row = {}
         for item in fc.FACULTY_CLINICAL_CONSTRAINTS:
-            if case in item.cases:
-                row[item.id] = sum(1 for verdict in verdicts.values() if verdict["detail"][case][item.id]["passes"])
-        row["FD-LAC-01 not applicable"] = sum(1 for verdict in verdicts.values()
-                                              if not verdict["detail"][case]["FD-LAC-01"]["applicable"])
-        reasons: dict = {}
-        for verdict in verdicts.values():
-            response = verdict["detail"][case]["FD-LAC-04"]
-            if not response["evaluable"]:
-                reasons[response["reason"]] = reasons.get(response["reason"], 0) + 1
-        row["FD-LAC-04 not evaluable"] = reasons
+            if case not in item.cases:
+                continue
+            outcomes: dict = {}
+            for verdict in verdicts.values():
+                result = verdict["detail"][case][item.id]
+                label = result["status"] + (f": {result['reason']}" if "reason" in result else "")
+                outcomes[label] = outcomes.get(label, 0) + 1
+            row[item.id] = {"passes": sum(1 for verdict in verdicts.values()
+                                          if verdict["detail"][case][item.id]["passes"]),
+                            "outcomes": dict(sorted(outcomes.items()))}
         table[case] = row
     return table
 
@@ -151,13 +155,13 @@ def sensitivity(members: dict) -> list:
     return rows
 
 
-# P2I-2.7 the P2I-1 dissociations, revisited ---------------------------------------------------
+# The P2I-1 dissociations, revisited ----------------------------------------------------------
 
 def dissociation(members: dict, survivors: list, settings: dict) -> list:
     """P2I-1's 'D rises while lactate falls' (untreated, 0-60 and 0-120 min), classified.
 
-    B UNACCEPTABLE: a sustained decline inside a window of active bleeding with inadequate
-      delivery within the span (what FD-LAC-01/06 forbid);
+    B UNACCEPTABLE: a substantial sustained decline inside a window of active bleeding with
+      inadequate delivery within the span (what FD-LAC-01/06 forbid);
     A ACCEPTABLE: otherwise, and the lactate falls only in minutes whose delivery is adequate;
     C TRANSIENT/AMBIGUOUS: otherwise (a fall with inadequate delivery too small or too short to be
       a sustained decline)."""
@@ -188,7 +192,7 @@ def dissociation(members: dict, survivors: list, settings: dict) -> list:
     return rows
 
 
-# P2I-2.8/2.9 the region after filtering --------------------------------------------------------
+# The region after filtering ----------------------------------------------------------------------
 
 def _level_values(candidate, case: str) -> dict:
     values = calibration.case_values(case, candidate)
@@ -232,8 +236,79 @@ def parameter_region(members: dict, survivors: list) -> list:
     return rows
 
 
+# Verifications and summaries that do not filter ------------------------------------------------
+
+def fd01_summary(members: dict, verdicts: dict, settings: dict) -> dict:
+    """FD-LAC-01's reasons, per case, and the untreated runs that pass it (no substantial sustained
+    decline before 60 min) but decline after 60 min with inadequate delivery (FD-LAC-06's to judge)."""
+    result = {}
+    for case in CASES:
+        before, after_only = 0, 0
+        for key, verdict in verdicts.items():
+            detail = verdict["detail"][case]
+            if detail["FD-LAC-01"]["status"] == fc.FAIL:
+                before += 1
+            elif any(item["scenario"] == L1 for item in detail["FD-LAC-06"]["violations"]):
+                after_only += 1
+        result[case] = {"sustained_decline_before_60": before, "untreated_decline_only_after_60": after_only}
+    return result
+
+
+def _fall_bin(reduction: float) -> str:
+    return ("no decrease" if reduction <= 0 else "0-5 %" if reduction < 0.05 else "5-10 %" if reduction < 0.10
+            else "10-15 %" if reduction < 0.15 else "15 % or more")
+
+
+def fd04_summary(members: dict, survivors: list, verdicts: dict, settings: dict) -> dict:
+    """FD-LAC-04: where T* falls, every outcome, the reduction at T* + 30 (binned; region and
+    survivors) and how many survivors would meet each reported threshold (information only)."""
+    keep, result = set(survivors), {}
+    for case in CASES:
+        summary = {"triggers": {}, "first_adequate_minute": {}, "reduction": {}, "survivor_reduction": {},
+                   "survivor_thresholds": {f"{threshold:g}": 0 for threshold in fc.REPORTED_FALL_THRESHOLDS},
+                   "survivor_evaluated": 0}
+        for key, verdict in verdicts.items():
+            response = verdict["detail"][case]["FD-LAC-04"]
+            trigger = str(response["trigger"])
+            summary["triggers"][trigger] = summary["triggers"].get(trigger, 0) + 1
+            run_ = members[key]["runs"][case][L3]
+            first = next((minute for minute in range(run_.end + 1) if fc.adequate(run_, minute, settings)), None)
+            bucket = "never" if first is None else "0" if first == 0 else "1-30" if first <= 30 else "31-59" \
+                if first < 60 else "60 or later"
+            summary["first_adequate_minute"][bucket] = summary["first_adequate_minute"].get(bucket, 0) + 1
+            if "reduction_at_window" not in response:
+                continue
+            reduction = response["reduction_at_window"]
+            label = _fall_bin(reduction)
+            summary["reduction"][label] = summary["reduction"].get(label, 0) + 1
+            if key in keep:
+                summary["survivor_reduction"][label] = summary["survivor_reduction"].get(label, 0) + 1
+                summary["survivor_evaluated"] += 1
+                for threshold in fc.REPORTED_FALL_THRESHOLDS:
+                    if reduction > 0 and reduction >= threshold:
+                        summary["survivor_thresholds"][f"{threshold:g}"] += 1
+        result[case] = summary
+    return result
+
+
+def survivor_reductions(survivors: list, verdicts: dict) -> list:
+    """FD-LAC-04's actual reduction at T* + 30 for each surviving candidate (or its outcome)."""
+    rows = []
+    for key in survivors:
+        row = {"candidate": key}
+        for case in CASES:
+            response = verdicts[key]["detail"][case]["FD-LAC-04"]
+            row[case] = {"status": response["status"], "trigger": response["trigger"],
+                         "at_trigger": response.get("at_trigger"), "at_trigger_plus_30": response.get(
+                             "at_trigger_plus_window"), "reduction": response.get("reduction_at_window")}
+        rows.append(row)
+    return rows
+
+
 def fd05_verification(members: dict, survivors: list, verdicts: dict) -> dict:
-    """FD-LAC-05 checks on the region and the survivors; no numeric band is applied."""
+    """FD-LAC-05 on the survivors (residual range, below L(T*)) and the debt memory on the region:
+    siblings that differ only in arrival debt (lower against upper, same delivery) and whether the
+    higher debt leaves the higher residual. Nothing here filters."""
     result = {}
     for case in CASES:
         by_debt: dict = {}
@@ -241,7 +316,6 @@ def fd05_verification(members: dict, survivors: list, verdicts: dict) -> dict:
             item = members[key]
             by_debt.setdefault(item["candidate"].debt, []).append(item["runs"][case][L3].lactate[-1])
         pairs, higher = 0, 0
-        # Siblings: the same candidate but for the arrival debt (lower against upper, same delivery).
         index = {(json.dumps(item["candidate"].profile, sort_keys=True), item["candidate"].excess,
                   item["candidate"].intrinsic, item["candidate"].preload, item["candidate"].debt,
                   item["candidate"].delivery): key for key, item in members.items()}
@@ -254,60 +328,31 @@ def fd05_verification(members: dict, survivors: list, verdicts: dict) -> dict:
             pairs += 1
             higher += members[sibling]["runs"][case][L3].lactate[-1] > members[key]["runs"][case][L3].lactate[-1]
         residual = sorted(members[key]["runs"][case][L3].lactate[-1] for key in survivors)
-        memory = sorted(verdicts[key]["detail"][case]["FD-LAC-05"]["debt_memory_at_reference_debt"] for key in members)
+        memory = sorted(verdict["detail"][case]["FD-LAC-05"]["debt_memory_at_reference_debt"]
+                        for verdict in verdicts.values())
         result[case] = {
             "survivor_residual_median_by_arrival_debt": {level: lactate_slice._quantile(sorted(values), 0.5)
                                                          for level, values in sorted(by_debt.items())},
-            "region_debt_pairs": pairs, "region_pairs_higher_debt_higher_residual": higher,
             "survivor_residual_range": [residual[0], residual[-1]] if residual else None,
-            "survivors_above_normal_at_120": sum(1 for value in residual if value > fc.PRIMARY["fd05_normal_upper_mmol_l"]),
-            "region_debt_memory_range": [memory[0], memory[-1]],
-            "abrupt_normalizations_in_region": sum(1 for verdict in verdicts.values()
-                                                   if verdict["detail"][case]["FD-LAC-05"]["abrupt_normalization"])}
+            "survivors_above_2_at_120": sum(1 for value in residual if value > fc.PRIMARY["already_normalized_mmol_l"]),
+            "region_debt_pairs": pairs, "region_pairs_higher_debt_higher_residual": higher,
+            "region_debt_memory_range": [memory[0], memory[-1]]}
     return result
 
 
-def fd04_summary(members: dict, survivors: list, verdicts: dict, settings: dict) -> dict:
-    """Where FD-LAC-04's clock starts and why runs pass or fail it, with the minute delivery first
-    became adequate in L3 (before haemostasis, the trend may already be under way)."""
-    keep, result = set(survivors), {}
-    for case in CASES:
-        summary = {"triggers": {}, "onset_after_trigger": {}, "not_clear": 0, "not_timely": 0, "not_evaluable": {},
-                   "first_adequate_minute": {}, "survivor_onset_after_trigger": {}, "survivor_first_adequate_minute": {},
-                   "meaningful_fall_after_trigger": {}, "survivor_meaningful_fall_after_trigger": {}}
-        for key, verdict in verdicts.items():
-            response = verdict["detail"][case]["FD-LAC-04"]
-            trigger = str(response["trigger"])
-            summary["triggers"][trigger] = summary["triggers"].get(trigger, 0) + 1
-            run_ = members[key]["runs"][case][L3]
-            first = next((minute for minute in range(run_.end + 1) if fc.adequate(run_, minute, settings)), None)
-            bucket = "never" if first is None else "0" if first == 0 else "1-30" if first <= 30 else "31-59" \
-                if first < 60 else "60 or later"
-            summary["first_adequate_minute"][bucket] = summary["first_adequate_minute"].get(bucket, 0) + 1
-            if key in keep:
-                summary["survivor_first_adequate_minute"][bucket] = summary["survivor_first_adequate_minute"].get(
-                    bucket, 0) + 1
-            if not response["evaluable"]:
-                summary["not_evaluable"][response["reason"]] = summary["not_evaluable"].get(response["reason"], 0) + 1
-                continue
-            delay = response["onset_after_trigger_min"]
-            label = "0" if delay == 0 else "1-14" if delay < 15 else "15-30" if delay <= 30 else "31 or later"
-            summary["onset_after_trigger"][label] = summary["onset_after_trigger"].get(label, 0) + 1
-            if key in keep:
-                summary["survivor_onset_after_trigger"][label] = summary["survivor_onset_after_trigger"].get(label, 0) + 1
-            summary["not_clear"] += not response["clear"]
-            summary["not_timely"] += not response["timely"]
-            # F2 (information): the minute the fall from the onset first reaches the meaningful change.
-            onset, limit = response["onset"], (1.0 - settings["meaningful_change"]) * response["at_onset"]
-            reached = next((minute for minute in range(onset + 1, run_.end + 1) if run_.lactate[minute] <= limit), None)
-            after = None if reached is None else reached - response["trigger"]
-            label = "never" if after is None else "0-30" if after <= 30 else "31-45" if after <= 45 else "46-60"
-            summary["meaningful_fall_after_trigger"][label] = summary["meaningful_fall_after_trigger"].get(label, 0) + 1
-            if key in keep:
-                summary["survivor_meaningful_fall_after_trigger"][label] = summary[
-                    "survivor_meaningful_fall_after_trigger"].get(label, 0) + 1
-        result[case] = summary
-    return result
+def robustness_start_of_minute(members: dict, verdicts: dict) -> dict:
+    """The core accrues each minute's debt from the delivery at the START of that minute; the frozen
+    definition reads delivery at the minute's end (one minute earlier). This rereads every run with
+    the start-of-minute delivery and reports how the counts move. It never filters."""
+    shifted = {}
+    for key, item in members.items():
+        runs = {case: {scenario: replace(run_, delivery=(run_.delivery[0],) + run_.delivery[:-1])
+                       for scenario, run_ in by_scenario.items()} for case, by_scenario in item["runs"].items()}
+        shifted[key] = {"candidate": item["candidate"], "runs": runs}
+    found = counts(evaluate_region(shifted, fc.params()))
+    primary = {key for key, verdict in verdicts.items() if verdict["all"]}
+    return {"survivors": found["survivors"], "all_six": found["all_six"],
+            "changed_membership": len(primary ^ set(found["all_six_keys"]))}
 
 
 def _points(run_: Trajectory, settings: dict) -> dict:
@@ -337,46 +382,54 @@ def representatives(members: dict, survivors: list, verdicts: dict, settings: di
                                                  _level_values(item["candidate"], case).items()},
                     "points": _points(item["runs"][case][scenario], settings),
                     "FD-LAC-04": detail["FD-LAC-04"] if scenario == L3 else None,
+                    "FD-LAC-05": detail["FD-LAC-05"] if scenario == L3 else None,
                     "FD-LAC-01": detail["FD-LAC-01"] if scenario == L1 else None}
     return chosen
 
 
-# P2I-2.10 the legacy reference, last -----------------------------------------------------------
+# The legacy reference, last -----------------------------------------------------------------------
 
 def legacy_position(settings: dict) -> dict:
-    """LEGACY REFERENCE, NOT A CALIBRATION TARGET: where the family engine's lactate lies against
-    the approved envelopes, read only after filtering and never by it. The engine has no oxygen
-    delivery in the core's sense, so only the lactate-only parts are placed: the envelope, net
-    rise and sustained decline untreated; after its own endoscopy minute, the post-haemostasis peak."""
+    """LEGACY REFERENCE, NOT A CALIBRATION TARGET: where the family engine's lactate lies against the
+    revised constraints, read only after filtering and never by it. The engine has no oxygen delivery
+    in the core's sense, so only the lactate parts are placed: the 60-min envelope; substantial
+    sustained declines untreated, before and after 60 min (as if delivery were inadequate throughout);
+    and, after its own endoscopy minute taken as T*, the fall by T* + 30, the 120-min envelope and
+    L120 < L(T*)."""
     result = {}
-    change = settings["meaningful_change"]
+    change, span = settings["meaningful_change"], settings["sustained_min"]
     for case in CASES:
-        envelope = fc.ENVELOPES[case]
+        envelope, late = fc.ENVELOPES[case], fc.ENVELOPES_120[case]
         untreated = [item["lactate_lab"] for item in calibration._legacy_run(case, lactate_slice.ORDERS[L1]).snapshots]
         definitive = [item["lactate_lab"] for item in calibration._legacy_run(case, lactate_slice.ORDERS[L3]).snapshots]
-        points = fc.reassessments(0, len(untreated) - 1, settings)
-        declines = [(early, late) for index, early in enumerate(points) for late in points[index + 1:]
-                    if late - early >= settings["sustained_min"] and untreated[late] <= (1 - change) * untreated[early]]
-        haemostasis = lactate_slice.endoscopy_minute(case)
-        peak = max(range(haemostasis, len(definitive)), key=lambda minute: (definitive[minute], minute))
+
+        def declines(first: int, last: int) -> int:
+            points = fc.reassessments(first, last, settings)
+            return sum(1 for index, early in enumerate(points) for later in points[index + 1:]
+                       if later - early >= span and untreated[later] <= (1 - change) * untreated[early])
+        trigger = lactate_slice.endoscopy_minute(case)
+        window = settings["fd04_window_min"]
+        at, after = definitive[trigger], definitive[trigger + window]
         result[case] = {
             "untreated": {minute: untreated[minute] for minute in TIMES},
             "definitive": {minute: definitive[minute] for minute in TIMES},
             "at_60": untreated[60], "envelope": [envelope["low"], envelope["high"]],
             "inside_envelope": envelope["low"] <= untreated[60] <= envelope["high"],
-            "untreated_net_rise": untreated[-1] >= (1 + change) * untreated[0],
-            "untreated_sustained_declines": len(declines),
-            "haemostasis_minute": haemostasis, "post_haemostasis_peak": peak,
-            "peak_after_haemostasis_min": peak - haemostasis,
-            "clear_fall_by_120": peak < len(definitive) - 1 and definitive[-1] <= (1 - change) * definitive[peak]}
+            "untreated_sustained_declines_before_60": declines(0, 60),
+            "untreated_sustained_declines_0_120": declines(0, len(untreated) - 1),
+            "trigger_minute": trigger, "at_trigger": at, "at_trigger_plus_30": after,
+            "falls_by_trigger_plus_30": after < at, "reduction_at_30": (at - after) / at,
+            "at_120": definitive[120], "envelope_120": [late["low"], late["high"]],
+            "inside_envelope_120": late["low"] <= definitive[120] <= late["high"],
+            "below_trigger_at_120": definitive[120] < at}
     return result
 
 
-#: The reporting rules the document declares frozen (counts, dissociation classes, parameter region
-#: and identifiability, representatives, sensitivity). Their text is the freeze commit's (9301a6a),
-#: unchanged; this digest was pinned after the first run, over that same text.
-REPORTING = (counts, per_case, sensitivity, dissociation, _level_values, parameter_region, _points, representatives)
-FROZEN_REPORTING_DIGEST = "1b9e70365f7deea79733b3cbc59aa07abc5177fd4c81358853b951a70c723991"
+#: The reporting rules, frozen with the definitions before filtering.
+REPORTING = (counts, per_case, sensitivity, dissociation, _level_values, parameter_region, fd01_summary, _fall_bin,
+             fd04_summary, survivor_reductions, fd05_verification, robustness_start_of_minute, _points,
+             representatives, legacy_position)
+FROZEN_REPORTING_DIGEST = "9316d312946cb4b03b6f0ec29c396b312d8518c0a5eeceee7f2f9ecf63b62be2"
 
 
 def reporting_digest() -> str:
@@ -384,49 +437,11 @@ def reporting_digest() -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-# Verifications that do not filter ---------------------------------------------------------------
-
-def fd01_summary(verdicts: dict) -> dict:
-    """Why FD-LAC-01 fails, per case: a sustained decline, or only (b) 'generally rise' (no
-    sustained decline but less than the meaningful net rise); and how many of the latter are inside
-    the FD-LAC-02/03 envelope. Information for faculty; nothing here filters."""
-    result = {}
-    for case in CASES:
-        envelope = fc.ENVELOPES[case]["constraint"]
-        declines = only_rise = only_rise_inside = 0
-        for verdict in verdicts.values():
-            detail = verdict["detail"][case]
-            windows = detail["FD-LAC-01"]["windows"]
-            if any(window["sustained_declines"] for window in windows):
-                declines += 1
-            elif not detail["FD-LAC-01"]["passes"]:
-                only_rise += 1
-                only_rise_inside += detail[envelope]["passes"]
-        result[case] = {"sustained_decline": declines, "only_generally_rises": only_rise,
-                        "only_generally_rises_inside_envelope": only_rise_inside}
-    return result
-
-
-def robustness_start_of_minute(members: dict, verdicts: dict) -> dict:
-    """The core accrues each minute's debt from the delivery at the START of that minute; the frozen
-    definition reads delivery at the minute's end (one minute earlier). This rereads every run with
-    the start-of-minute delivery and reports how the counts move. It never filters."""
-    shifted = {}
-    for key, item in members.items():
-        runs = {case: {scenario: replace(run_, delivery=(run_.delivery[0],) + run_.delivery[:-1])
-                       for scenario, run_ in by_scenario.items()} for case, by_scenario in item["runs"].items()}
-        shifted[key] = {"candidate": item["candidate"], "runs": runs}
-    found = counts(evaluate_region(shifted, fc.params()))
-    primary = {key for key, verdict in verdicts.items() if verdict["all"]}
-    return {"survivors": found["survivors"], "all_six": found["all_six"],
-            "changed_membership": len(primary ^ set(found["all_six_keys"]))}
-
-
 # The report --------------------------------------------------------------------------------------
 
 def filter_digest() -> str:
     """Every shadow-core source (no exclusion), the calibration freeze, the scenario orders and the
-    frozen definitions: a change to any of them makes the results stale."""
+    frozen definitions, pipeline and reporting rules: a change to any of them makes the results stale."""
     orders = {name: [spec["minutes"], {str(minute): order for minute, order in spec["orders"].items()}]
               for name, spec in lactate_slice.ORDERS.items() if name in SCENARIOS}
     text = json.dumps({"freeze": calibration.frozen_digest(), "orders": orders,
@@ -437,8 +452,9 @@ def filter_digest() -> str:
 
 def decision_records() -> list:
     return [{"id": item.id, "title": item.title, "status": item.status, "decided": item.decided,
-             "version": item.version, "decision": item.decision, "rationale": item.rationale,
-             "observable": item.observable, "scenarios": list(item.scenarios), "cases": list(item.cases),
+             "clarified": item.clarified, "version": item.version, "decision": item.decision,
+             "clarification": item.clarification, "rationale": item.rationale, "observable": item.observable,
+             "scenarios": list(item.scenarios), "cases": list(item.cases),
              "approves_parameter_values": list(item.approves_parameter_values), "scope_note": item.scope_note}
             for item in fc.FACULTY_CLINICAL_CONSTRAINTS]
 
@@ -446,23 +462,24 @@ def decision_records() -> list:
 def report(quick: bool = False) -> dict:
     check_frozen()
     digests = {"filter_digest": filter_digest(), "definitions_digest": fc.definitions_digest(),
-               "pipeline_digest": pipeline_digest(), "freeze_digest": calibration.frozen_digest()}
+               "pipeline_digest": pipeline_digest(), "reporting_digest": reporting_digest(),
+               "freeze_digest": calibration.frozen_digest()}
     settings = fc.params()
     members = region(quick)
     verdicts = evaluate_region(members, settings)
     found = counts(verdicts)
     survivors = found["all_six_keys"]
-    data = {**digests, "reporting_digest": reporting_digest(), "quick": quick,
-            "admissible_candidates": len(members), "settings": settings,
-            "decisions": decision_records(), "counts": {name: value for name, value in found.items()
-                                                         if name != "all_six_keys"},
+    data = {**digests, "quick": quick, "admissible_candidates": len(members), "settings": settings,
+            "decisions": decision_records(), "confirmed_definitions": list(fc.FACULTY_CONFIRMED_DEFINITIONS),
+            "counts": {name: value for name, value in found.items() if name != "all_six_keys"},
             "faculty_constrained_region": survivors, "per_case": per_case(verdicts),
             "sensitivity": sensitivity(members), "dissociation": dissociation(members, survivors, settings),
             "parameter_region": parameter_region(members, survivors),
-            "fd01": fd01_summary(verdicts),
+            "fd01": fd01_summary(members, verdicts, settings),
             "fd04": fd04_summary(members, survivors, verdicts, settings),
-            "robustness_start_of_minute_delivery": robustness_start_of_minute(members, verdicts),
+            "survivor_reductions": survivor_reductions(survivors, verdicts),
             "fd05": fd05_verification(members, survivors, verdicts),
+            "robustness_start_of_minute_delivery": robustness_start_of_minute(members, verdicts),
             "representatives": representatives(members, survivors, verdicts, settings)}
     # Last and apart: never an input to anything above.
     data["legacy_position"] = legacy_position(settings)
@@ -700,44 +717,50 @@ def apply(document: str, block: str) -> str:
 # The decision record in the P2I-1 faculty document ---------------------------------------------
 
 DECISIONS_OPENING, DECISIONS_CLOSING = "<!-- generado:decisiones-lactato -->\n", "<!-- /generado:decisiones-lactato -->"
-#: The option each answer selects among those P2I-1 offered (§10 of the P2I-1 document).
+#: The option each answer selects among those P2I-1 offered (§10 of the P2I-1 document), as clarified.
 SELECTION_ES = {
-    "FD-LAC-01": "C. subir en general; una estabilidad breve es aceptable",
+    "FD-LAC-01": "C. subir o seguir elevado en general; sin descenso sostenido y sustancial antes de los 60 min; "
+                 "sin subida mínima obligatoria",
     "FD-LAC-02": "4,4–7,0 mmol/L a los 60 min: envolvente clínica, no un objetivo",
     "FD-LAC-03": "3,4–5,5 mmol/L a los 60 min: envolvente clínica, no un objetivo",
-    "FD-LAC-04": "15–30 min: inicio de una tendencia clara a la baja",
-    "FD-LAC-05": "depender de la deuda acumulada; puede seguir levemente elevado; sin normalización obligatoria",
+    "FD-LAC-04": "15–30 min: L(T*+30) < L(T*) con aclaramiento en curso; ningún porcentaje fijo aprobado",
+    "FD-LAC-05": "a los 120 min con entrega adecuada sostenida: 1,5–4,0 (57m) y 1,2–3,5 (72f) mmol/L, y L120 < L(T*)",
     "FD-LAC-06": "SÓLO SI LA ENTREGA ES ADECUADA",
 }
 OBSERVABLES_ES = {
-    "FD-LAC-01": "trayectoria del lactato con sangrado activo y entrega de O2 inadecuada",
+    "FD-LAC-01": "trayectoria del lactato antes de los 60 min, con sangrado activo y entrega de O2 inadecuada",
     "FD-LAC-02": "lactato (mmol/L) a los 60 min sin tratar",
     "FD-LAC-03": "lactato (mmol/L) a los 60 min sin tratar",
-    "FD-LAC-04": "inicio de una tendencia clara a la baja tras la hemostasia y la restauración sostenida de la entrega",
-    "FD-LAC-05": "lactato residual a los 120 min del manejo definitivo y su dependencia de la deuda de O2 acumulada",
+    "FD-LAC-04": "lactato en T* + 30 min frente a T*, tras la hemostasia y con entrega adecuada sostenida",
+    "FD-LAC-05": "lactato (mmol/L) a los 120 min del manejo definitivo, con entrega adecuada sostenida",
     "FD-LAC-06": "trayectoria del lactato con sangrado activo, según la adecuación de la entrega",
 }
 
 
 def render_decisions() -> str:
     """§12 of docs/revision/P2I_DECISION_LACTATO_GI.md, from the registry (never by hand)."""
-    lines = ["## 12. Registro de decisiones docentes (P2I-2)\n",
-             f"Respondidas por la docencia y registradas el {fc.DECIDED}, versión «{fc.VERSION}», en "
-             "`clinical_core/faculty_constraints.py`. Son restricciones clínicas de comportamiento del lactato "
-             "observable, con estado FACULTY_APPROVED. **No aprueban ningún valor de parámetro oculto:** "
+    lines = ["## 12. Registro de decisiones docentes (P2I-2 y P2I-2R)\n",
+             f"Respondidas por la docencia el {fc.DECIDED} y aclaradas el {fc.CLARIFIED} (versión «{fc.VERSION}»), "
+             "registradas en `clinical_core/faculty_constraints.py`. Son restricciones clínicas de comportamiento del "
+             "lactato observable, con estado FACULTY_APPROVED. **No aprueban ningún valor de parámetro oculto:** "
              + ", ".join(f"`{name}`" for name in fc.HIDDEN_PARAMETERS)
-             + " siguen CANDIDATE, y nada de esto entra en los registros de autoridad de migración. El texto que "
-             "rige es el original, en inglés. La docencia no dio un fundamento aparte: la columna «Frase clave» cita "
-             "la frase de su propio texto que lo expresa. Su aplicación a la región candidata está en "
-             "`docs/revision/P2I2_RESTRICCIONES_LACTATO_GI.md`.\n",
+             + " siguen CANDIDATE, y nada de esto entra en los registros de autoridad de migración. Las envolventes "
+             "de FD-LAC-05 son envolventes clínicas de calibración para estos casos GI, no límites fisiológicos "
+             "universales. El texto que rige es el original, en inglés: la decisión y, cuando la hay, su aclaración. "
+             "La docencia no dio un fundamento aparte: la columna «Frase clave» cita la frase de su propio texto que "
+             "lo expresa. Su aplicación a la región candidata está en `docs/revision/P2I2_RESTRICCIONES_LACTATO_GI.md`.\n",
              "| ID | Estado | Fecha · versión | Observable | Escenarios · casos | Decisión (texto original) | "
-             "Frase clave del texto docente | Valores de parámetros que aprueba |",
-             "|---|---|---|---|---|---|---|---|"]
+             "Aclaración docente (texto original) | Frase clave del texto docente | Valores de parámetros que aprueba |",
+             "|---|---|---|---|---|---|---|---|---|"]
     for item in fc.FACULTY_CLINICAL_CONSTRAINTS:
-        lines.append(f"| {item.id} | {item.status} | {item.decided} · {item.version} | {OBSERVABLES_ES[item.id]} | "
+        dates = item.decided + (f", aclarada {item.clarified}" if item.clarified else "")
+        clarification = f"«{item.clarification}»" if item.clarification else "sin cambios"
+        lines.append(f"| {item.id} | {item.status} | {dates} · {item.version} | {OBSERVABLES_ES[item.id]} | "
                      f"{', '.join(item.scenarios)} · {', '.join(case[-3:] for case in item.cases)} | "
-                     f"«{item.decision}» | «{item.rationale}» | ninguno |")
+                     f"«{item.decision}» | {clarification} | «{item.rationale}» | ninguno |")
     lines.append("")
+    lines.append("**Definiciones operativas confirmadas por la docencia (2026-10-26, texto original):** "
+                 + "; ".join(f"«{text}»" for text in fc.FACULTY_CONFIRMED_DEFINITIONS) + ".\n")
     return "\n".join(lines)
 
 

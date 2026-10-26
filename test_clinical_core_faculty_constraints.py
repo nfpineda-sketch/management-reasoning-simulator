@@ -40,17 +40,26 @@ def linear(start, end, minutes=120):
 
 # The decision records -----------------------------------------------------------------------------
 
-def test_the_six_decisions_are_recorded_verbatim_and_approve_no_parameter():
+def test_the_six_decisions_are_recorded_verbatim_with_their_clarifications_and_approve_no_parameter():
     assert fc.CONSTRAINT_IDS == tuple(f"FD-LAC-0{number}" for number in range(1, 7))
     for item in fc.FACULTY_CLINICAL_CONSTRAINTS:
-        assert item.status == fc.FACULTY_APPROVED and item.decided == "2026-10-25" and item.version == "FD-LAC v1"
+        assert item.status == fc.FACULTY_APPROVED and item.decided == "2026-10-25" and item.version == "FD-LAC v2"
         assert item.approves_parameter_values == () and "Approves no hidden parameter value" in item.scope_note
         assert item.decision and item.rationale in item.decision and item.observable
+        assert bool(item.clarification) == bool(item.clarified) == (item.id in ("FD-LAC-01", "FD-LAC-04", "FD-LAC-05"))
     texts = {item.id: item.decision for item in fc.FACULTY_CLINICAL_CONSTRAINTS}
     assert "GENERALLY RISE" in texts["FD-LAC-01"] and "lactate must rise every minute" in texts["FD-LAC-01"]
     assert "4.4-7.0 mmol/L" in texts["FD-LAC-02"] and "3.4-5.5 mmol/L" in texts["FD-LAC-03"]
     assert "15-30 minutes" in texts["FD-LAC-04"] and "memory of prior debt" in texts["FD-LAC-05"]
     assert texts["FD-LAC-06"].startswith("ONLY IF OXYGEN DELIVERY IS ADEQUATE")
+    clarified = {item.id: item.clarification for item in fc.FACULTY_CLINICAL_CONSTRAINTS}
+    assert "Do NOT encode: L60 >= L0" in clarified["FD-LAC-01"] and "fixed percentage increase" in clarified["FD-LAC-01"]
+    assert "L(T* + 30) < L(T*)" in clarified["FD-LAC-04"] and "SENSITIVITY ANALYSIS ONLY" in clarified["FD-LAC-04"]
+    assert "1.5 <= L120 <= 4.0" in clarified["FD-LAC-05"] and "1.2 <= L120 <= 3.5" in clarified["FD-LAC-05"]
+    assert "not universal human physiological limits" in clarified["FD-LAC-05"]
+    assert fc.ENVELOPES_120 == {"gi_bleed_57m": {"minute": 120, "low": 1.5, "high": 4.0},
+                                "gi_bleed_72f": {"minute": 120, "low": 1.2, "high": 3.5}}
+    assert "inadequate delivery = oxygen delivery < oxygen demand" in fc.FACULTY_CONFIRMED_DEFINITIONS
 
 
 def test_the_envelopes_state_the_repository_arrival_lactate():
@@ -77,9 +86,10 @@ def test_the_constraints_stay_out_of_authority_provenance_and_the_registry():
         assert gate_dry_run(case)["passes_gate"] is False
 
 
-def test_the_definitions_and_pipeline_are_frozen():
+def test_the_definitions_pipeline_and_reporting_rules_are_frozen():
     assert fc.definitions_digest() == lactate_constraints.FROZEN_DEFINITIONS_DIGEST
     assert lactate_constraints.pipeline_digest() == lactate_constraints.FROZEN_PIPELINE_DIGEST
+    assert lactate_constraints.reporting_digest() == lactate_constraints.FROZEN_REPORTING_DIGEST
     lactate_constraints.check_frozen()
 
 
@@ -95,6 +105,8 @@ def test_every_sensitivity_variant_changes_one_known_setting():
         assert fc.PRIMARY["fd05_reference_debt"] == severe, "the upper end of the arrival-debt band"
     for name, overrides in fc.SENSITIVITY.items():
         assert len(overrides) == 1 and fc.params(**overrides) != fc.PRIMARY, name
+    # No fixed 30-min fall is primary: the faculty's rule is any decrease; 5-15 % are sensitivity only.
+    assert fc.PRIMARY["fd04_required_fall"] == 0.0 and fc.REPORTED_FALL_THRESHOLDS == (0.0, 0.05, 0.10, 0.15)
     with pytest.raises(KeyError):
         fc.params(not_a_setting=1)
 
@@ -122,18 +134,23 @@ def test_reassessment_points_and_sustained_decline():
     assert fc.sustained_declines(slow, 0, 120, P), "a slow fall that persists is sustained"
 
 
-def test_fd_lac_01_generally_rises_tolerating_stability_and_refusing_sustained_falls():
+def test_fd_lac_01_refuses_only_a_substantial_sustained_decline_before_60_min():
     assert fc.fd_lac_01(trajectory(linear(4.4, 5.1)), P)["passes"], "a slow steady rise"
-    plateau_then_rise = trajectory([4.4] * 61 + linear(4.4, 5.5, 59)[1:] + [5.5])
-    assert fc.fd_lac_01(plateau_then_rise, P)["passes"], "stability is tolerated"
-    assert not fc.fd_lac_01(trajectory([4.4] * 121), P)["passes"], "never rising is not 'generally rise'"
+    assert fc.fd_lac_01(trajectory([4.4] * 121), P)["passes"], "no rise and no fixed increase are required"
+    small = trajectory(linear(4.4, 4.1, 30) + linear(4.1, 4.3, 30)[1:] + [4.3] * 60)
+    assert fc.fd_lac_01(small, P)["passes"], "a small decrease (7 %) is not a substantial decline"
+    transient = trajectory(linear(4.4, 3.9, 15) + linear(3.9, 4.5, 15)[1:] + [4.5] * 90)
+    assert fc.fd_lac_01(transient, P)["passes"], "a transient dip recovered within 30 min"
     u_shape = trajectory(linear(4.4, 3.8, 45) + linear(3.8, 6.0, 75)[1:])
     result = fc.fd_lac_01(u_shape, P)
-    assert not result["passes"] and result["windows"][0]["sustained_declines"], "a sustained fall first"
-    assert not fc.fd_lac_01(plateau_then_rise, fc.params(fd01_brief_stability_min=30))["passes"]
+    assert not result["passes"] and result["status"] == fc.FAIL and result["windows"][0]["sustained_declines"]
+    assert fc.fd_lac_01(u_shape, fc.params(meaningful_change=0.15))["passes"], "the threshold is exposed"
+    late = trajectory([4.4] * 61 + linear(4.4, 3.5, 59)[1:] + [3.5])
+    assert fc.fd_lac_01(late, P)["passes"], "after 60 min it is FD-LAC-06's to judge"
+    assert not fc.fd_lac_06({"L1": late}, P)["passes"]
     adequate_all_along = trajectory(linear(4.4, 3.0), delivery=1.1)
     result = fc.fd_lac_01(adequate_all_along, P)
-    assert not result["applicable"] and result["passes"]
+    assert result["status"] == fc.NOT_APPLICABLE and result["passes"]
     assert not fc.fd_lac_01(adequate_all_along, fc.params(fd01_unapplicable_passes=False))["passes"]
 
 
@@ -147,30 +164,48 @@ def test_fd_lac_02_03_are_inclusive_hard_envelopes():
     assert not fc.fd_lac_envelope(trajectory([4.4] * 50), "gi_bleed_57m", P)["passes"], "no value at 60"
 
 
-def test_fd_lac_04_starts_the_clock_at_haemostasis_with_sustained_restoration():
-    delivery = [0.6] * 70 + [1.1] * 51
-    lactate = [5.0] * 75 + linear(5.0, 4.0, 45)
-    run_ = trajectory(lactate, delivery=delivery, controlled_at=60)
-    assert fc.restoration_trigger(run_, P) == 70, "not while delivery is still inadequate"
-    result = fc.fd_lac_04(run_, fc.params(fd04_observation_after_trigger_min=50))
-    assert result["onset"] == 75 and result["onset_after_trigger_min"] == 5 and result["passes"]
-    assert not fc.fd_lac_04(run_, P)["evaluable"], "only 50 min observed after the trigger"
+def test_fd_lac_04_t_star_is_the_later_of_haemostasis_and_sustained_adequate_delivery():
+    restored = [1.1] * 121
+    early = trajectory(linear(5.0, 3.0), delivery=[0.6] * 10 + [1.1] * 111, controlled_at=60)
+    assert fc.restoration_trigger(early, P) == 60, "delivery adequate since minute 10: T* is haemostasis"
+    late = trajectory(linear(5.0, 3.0), delivery=[0.6] * 70 + [1.1] * 51, controlled_at=60)
+    assert fc.restoration_trigger(late, P) == 70, "not while delivery is still inadequate"
+    brief = trajectory(linear(5.0, 3.0), delivery=[0.6] * 70 + [1.1] * 20 + [0.6] * 31, controlled_at=60)
+    assert fc.restoration_trigger(brief, P) is None, "20 min of adequacy is not sustained"
+    assert fc.restoration_trigger(trajectory(linear(5.0, 3.0), delivery=restored), P) is None, "no haemostasis"
+
+
+def test_fd_lac_04_requires_a_fall_by_t_star_plus_30_with_ongoing_clearance():
     restored = [1.1] * 121
     falling = trajectory(linear(5.0, 3.0), delivery=restored, controlled_at=60)
     result = fc.fd_lac_04(falling, P)
-    assert result["trigger"] == 60 and result["onset"] == 60 and result["passes"], "already falling"
-    assert not fc.fd_lac_04(falling, fc.params(fd04_onset_floor_min=15))["passes"]
-    late = trajectory([4.0] * 60 + linear(4.0, 5.0, 40) + linear(5.0, 4.0, 20)[1:], delivery=restored, controlled_at=60)
-    assert fc.fd_lac_04(late, P)["onset_after_trigger_min"] == 40 and not fc.fd_lac_04(late, P)["passes"]
-    shallow = trajectory([5.0] * 60 + linear(5.0, 4.6, 60), delivery=restored, controlled_at=60)
-    assert not fc.fd_lac_04(shallow, P)["clear"], "an 8 % fall is not a clear trend"
-    never = trajectory(linear(5.0, 3.0), delivery=0.7, controlled_at=60)
-    assert not fc.fd_lac_04(never, P)["evaluable"] and fc.fd_lac_04(never, P)["passes"]
-    assert not fc.fd_lac_04(never, fc.params(fd04_unevaluable_passes=False))["passes"]
+    assert result["trigger"] == 60 and result["status"] == fc.PASS, "already falling before T*: no new peak needed"
+    assert abs(result["reduction_at_window"] - (4.0 - 3.5) / 4.0) < 1e-12
+    slight = trajectory([5.0] * 60 + linear(5.0, 4.9, 30) + [4.9] * 30, delivery=restored, controlled_at=60)
+    assert fc.fd_lac_04(slight, P)["passes"], "any decrease (2 %) is the faculty's rule"
+    assert not fc.fd_lac_04(slight, fc.params(fd04_required_fall=0.05))["passes"], "5 % is sensitivity only"
+    rising = trajectory([5.0] * 60 + linear(5.0, 5.3, 30) + [5.3] * 30, delivery=restored, controlled_at=60)
+    assert fc.fd_lac_04(rising, P)["status"] == fc.FAIL
+    rebound = trajectory([5.0] * 60 + linear(5.0, 4.0, 15) + linear(4.0, 4.6, 15)[1:] + [4.6] * 30,
+                         delivery=restored, controlled_at=60)
+    assert not fc.fd_lac_04(rebound, P)["passes"], "lower at 30 min but rising again: not ongoing clearance"
+    assert fc.fd_lac_04(rebound, fc.params(fd04_ongoing_clearance=False))["passes"]
+
+
+def test_fd_lac_04_already_normalized_and_not_evaluable():
+    restored = [1.1] * 121
     normal = trajectory([1.8] * 121, delivery=restored, controlled_at=60)
-    assert fc.fd_lac_04(normal, P)["reason"] == "no elevated lactate left to clear at the trigger"
-    no_haemostasis = trajectory(linear(5.0, 3.0), delivery=restored)
-    assert fc.fd_lac_04(no_haemostasis, P)["trigger"] is None
+    result = fc.fd_lac_04(normal, P)
+    assert result["status"] == fc.ALREADY_NORMALIZED and result["passes"], "no further fall from a normal lactate"
+    short = trajectory(linear(5.0, 3.0), delivery=[0.6] * 100 + [1.1] * 21, controlled_at=60)
+    assert fc.fd_lac_04(short, P)["status"] == fc.NOT_EVALUABLE, "no sustained span to define T*"
+    tail = trajectory(linear(5.0, 3.0), delivery=restored, controlled_at=100)
+    result = fc.fd_lac_04(tail, P)
+    assert result["trigger"] == 100 and result["status"] == fc.NOT_EVALUABLE and "follow-up" in result["reason"]
+    ceases = trajectory(linear(5.0, 3.0), delivery=[1.1] * 75 + [0.6] * 46, controlled_at=60)
+    result = fc.fd_lac_04(ceases, P)
+    assert result["trigger"] == 60 and result["status"] == fc.NOT_EVALUABLE and "ceased" in result["reason"]
+    assert result["passes"] and not fc.fd_lac_04(ceases, fc.params(fd04_unevaluable_passes=False))["passes"]
 
 
 def test_fd_lac_05_debt_memory_is_the_core_s_own_arrival_debt_term():
@@ -183,17 +218,29 @@ def test_fd_lac_05_debt_memory_is_the_core_s_own_arrival_debt_term():
         assert abs(coefficient * p["arrival_oxygen_debt"] - split["rows"][120]["from_arrival_debt"]) < 1e-9
 
 
-def test_fd_lac_05_requires_material_memory_and_no_abrupt_normalization_but_never_normal():
-    slow = {"debt_clearance_tau_min": 120.0, "lactate_clearance_tau_min": 240.0, "lactate_per_output_deficit": 12.0}
-    fast = {"debt_clearance_tau_min": 30.0, "lactate_clearance_tau_min": 45.0, "lactate_per_output_deficit": 2.0}
-    elevated = trajectory(linear(5.0, 3.5), delivery=1.1, controlled_at=60)
-    kept = fc.fd_lac_05(elevated, 60, slow, 4.4, P)
-    assert kept["material_memory"] and kept["passes"] and kept["residual"] == elevated.lactate[120]
-    assert not fc.fd_lac_05(elevated, 60, fast, 4.4, P)["material_memory"]
-    abrupt = trajectory([4.4] * 61 + [1.5] * 60, delivery=1.1, controlled_at=60)
-    assert fc.fd_lac_05(abrupt, 60, slow, 4.4, P)["abrupt_normalization"]
-    assert fc.fd_lac_05(trajectory([4.4] * 121, delivery=1.1, controlled_at=60), 60, slow, 4.4, P)["passes"], (
-        "a lactate still elevated at 120 min is never a failure")
+KINETICS = {"debt_clearance_tau_min": 60.0, "lactate_clearance_tau_min": 120.0, "lactate_per_output_deficit": 6.0}
+
+
+def test_fd_lac_05_is_the_120_min_envelope_below_t_star_with_sustained_delivery():
+    restored = [1.1] * 121
+    for value, passes in ((1.5, True), (4.0, True), (1.49, False), (4.01, False), (1.9, True)):
+        run_ = trajectory(linear(5.0, value), delivery=restored, controlled_at=60)
+        assert fc.fd_lac_05(run_, 60, KINETICS, 4.4, P, "gi_bleed_57m")["passes"] is passes, value
+    run_ = trajectory(linear(5.0, 1.25), delivery=restored, controlled_at=60)
+    assert fc.fd_lac_05(run_, 60, KINETICS, 3.4, P, "gi_bleed_72f")["passes"], "below 2 mmol/L is allowed"
+    flat = trajectory([3.0] * 121, delivery=restored, controlled_at=60)
+    result = fc.fd_lac_05(flat, 60, KINETICS, 4.4, P, "gi_bleed_57m")
+    assert result["inside_envelope"] and not result["below_trigger"] and not result["passes"], "L120 < L(T*)"
+    normal = trajectory([1.8] * 121, delivery=restored, controlled_at=60)
+    assert not fc.fd_lac_05(normal, 60, KINETICS, 4.4, P, "gi_bleed_57m")["passes"], "as written: L120 < L(T*)"
+    assert fc.fd_lac_05(normal, 60, KINETICS, 4.4, fc.params(fd05_normalized_exception=True), "gi_bleed_57m")["passes"]
+    lapse = trajectory(linear(5.0, 3.0), delivery=[1.1] * 100 + [0.6] * 21, controlled_at=60)
+    result = fc.fd_lac_05(lapse, 60, KINETICS, 4.4, P, "gi_bleed_57m")
+    assert result["status"] == fc.NOT_EVALUABLE and result["passes"]
+    assert fc.fd_lac_05(run_, None, KINETICS, 3.4, P, "gi_bleed_72f")["status"] == fc.NOT_EVALUABLE
+    rounded = trajectory(linear(5.0, 4.04), delivery=restored, controlled_at=60)
+    assert not fc.fd_lac_05(rounded, 60, KINETICS, 4.4, P, "gi_bleed_57m")["passes"]
+    assert fc.fd_lac_05(rounded, 60, KINETICS, 4.4, fc.params(fd05_display_decimals=1), "gi_bleed_57m")["passes"]
 
 
 def test_fd_lac_06_allows_falls_only_with_adequate_delivery():
