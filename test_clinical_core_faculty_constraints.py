@@ -362,3 +362,19 @@ def test_the_decision_record_is_generated_from_the_registry():
         "run python -m clinical_core.lactate_constraints --decisions docs/revision/P2I_DECISION_LACTATO_GI.md")
     for item in fc.FACULTY_CLINICAL_CONSTRAINTS:
         assert f"«{item.decision}»" in document and item.status in document
+
+
+def test_every_survivor_reports_its_30_min_reduction_and_meets_the_faculty_rule():
+    data = json.loads(DATA.read_text(encoding="utf-8"))
+    rows = data["survivor_reductions"]
+    assert [row["candidate"] for row in rows] == data["faculty_constrained_region"]
+    for row in rows:
+        for case in gi_reference.GI_CASES:
+            item = row[case]
+            if item["status"] == fc.PASS:
+                assert item["reduction"] > 0 and item["at_trigger_plus_30"] < item["at_trigger"]
+            else:
+                assert item["status"] in (fc.ALREADY_NORMALIZED, fc.NOT_EVALUABLE)
+    for row in data["sensitivity"]:
+        assert row["all_six"] <= data["admissible_candidates"]
+    assert data["settings"]["fd04_required_fall"] == 0.0, "no percentage threshold selects candidates"
