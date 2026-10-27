@@ -2428,3 +2428,58 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Transfusión:** el +82 % de L3 es la razón unidad/λ (0,36) actuando en una llegada infrallenada. No se corrige por
   separado.
 - **Gancho en tiempo de ejecución:** ninguno.
+
+## 23. P2I-2T · Estado hemorrágico compartido (2026-10-27)
+
+- **Base:** `8c2aaea`. La docencia aceptó P2I-2S, con su clasificación SHARED_HAEMORRHAGE_STATE_NEEDED, y decidió que dos
+  derivas independientes (`V -= fijo`, `Hb -= fijo`) no son aceptables. Informe:
+  `docs/revision/P2I2T_ESTADO_HEMORRAGICO_COMPARTIDO.md`; sondas A–K: `clinical_core/blood_probes.py` y
+  `docs/revision/P2I2T_blood_probes.json`.
+- **Estado compartido mínimo** (`state.BloodState`, `CoreState.blood`):
+  - acumulados de sangre perdida, glóbulos rojos perdidos, cristaloide que entra y que sale, transfusión (volumen y
+    contenido) y relleno plasmático;
+  - de ellos salen la desviación del volumen circulante C y el contenido de glóbulos rojos;
+  - se normaliza con B0 = `arrival_circulating_volume_ml`, provisional 4000 mL-eq, que no es un litro medido.
+- **Una sola fuente:** el módulo GI declara un flujo de sangre total (`blood_loss_ml_per_min`), modulado por el IBP y la
+  hemostasia; el integrador le quita los glóbulos rojos con la composición actual. Desaparecen `hb_loss_g_dl_per_min`,
+  `hb_dilution_g_dl_per_ml` y `hb_g_dl_per_unit`.
+- **Hb y V:**
+  - **Hb** = Hb de llegada × contenido × B0 / (B0 + C), por el acoplamiento `blood_composition`.
+  - **V** = κ × C (κ provisional 1), renombrado «Effective circulating volume / preload coordinate (V)».
+  - Sólo κ/λ es identificable desde la hemodinámica, y λ no se aprueba por separado.
+- **Procesos:**
+  - **relleno** (núcleo): meta 0,5 × lo perdido, capacidad 1000 mL-eq, τ 120 min, todos provisionales. Sólo actúa
+    mientras la circulación está bajo la llegada, sin glóbulos rojos, sin pasar la meta y continuando tras el sangrado;
+  - **cristaloide:** la cinética de fuga existente, como flujos; su dilución se revierte en parte;
+  - **unidad de GR:** 300 mL-eq a 20 g/dL provisional, una sola representación.
+- **Contabilidad** (`integration._check_blood`). Falla cerrado si:
+  - un campo no cambia exactamente según sus procesos;
+  - V no es κ × el volumen movido;
+  - la Hb se mueve sin un cambio de contenido o volumen;
+  - un registro no lleva los glóbulos rojos que da la composición.
+- **Escrituras directas.** Ningún módulo, orden ni proceso logístico puede escribir V o Hb directamente; sólo las sondas
+  declaradas, y lo que mueven queda contabilizado (`outside_v`, `outside_hb`).
+- **Identidades.** V = κ × C + `outside_v` y Hb = composición + `outside_hb` se comprueban cada minuto y al comenzar o
+  reanudar una corrida.
+- **Guardas.** Si el estado sanguíneo alcanza las guardas de V o Hb, la corrida se detiene; la de V va en volumen
+  circulante.
+- **Llegada:** estado sanguíneo cero, sin inferir pérdida previa desde la Hb. La tasa del sangrado queda como
+  CASE_OVERRIDES_FAMILY_DEFAULT probable, no aprobada (FD-22).
+- **Artefactos:**
+  - **golden GI:** regenerado con el antes / después completo. La Hb difiere del motor en todas las corridas; V,
+    donde actúa el relleno;
+  - **traza de Contracts v2:** lleva `core_blood_state`;
+  - **Contracts v2:** sigue idéntico a la sombra directa;
+  - **diferencia conocida P2I-2T:** nueva; KD-S3 queda `DORMANT`;
+  - **congelamiento de calibración:** re-registrado con su motivo; las reglas no cambian;
+  - **puerta de migración:** 11 bloqueos por caso;
+  - **P2G y P2I-1:** regenerados. En P2G, FD-22 pasa a la tasa de sangre total y FD-23 se retira (48 abiertas);
+  - **P2I-2R:** sigue PENDIENTE DE REFILTRADO, con su congelamiento;
+  - **P2I-2P, P2I-2Q y P2I-2S:** quedan como registros históricos que no se regeneran.
+- **Revisión adversarial:** 12 hallazgos, cada uno confirmado con una sonda.
+  - Corregidos: F1–F4, F6, F7, F9, F11 y F12.
+  - F8 y F10 quedan como limitaciones registradas.
+  - F5 (la sonda de banda de nivel 2 con dos derivas, en el arnés congelado) queda pendiente de autorización.
+- **Lectura:** con una sola fuente a 2,5 mL-eq/min la Hb apenas cae (0,09 g/dL en 2 h; la deriva heredada caía 1,08). Es
+  una consecuencia de valores TBD (tasa, B0, relleno, retención del cristaloide); no se corrigió hacia el motor.
+- **Gancho en tiempo de ejecución:** ninguno.
