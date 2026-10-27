@@ -24,11 +24,17 @@ from clinical_core.shadow import GOLDEN
 #: independent drifts with the shared blood state: bands and harness_sources (the registry: one
 #: whole-blood rate, no Hb rate, the provisional blood-state entries), migration_sources (the GI
 #: family parameters), input_adapter_sources (one blood-loss rate, no Hb literals, the provisional
-#: red-cell unit) and scenario_inputs (the materialized specs) changed; the rules did not.
+#: red-cell unit) and scenario_inputs (the materialized specs) changed; the rules did not. P2I-2U
+#: (§24) replaced the Level-2 haemorrhage probe's two independent V / Hb drifts, which the faculty
+#: retired, with one synthetic whole-blood flow through the shared blood state, and stated in the
+#: registry that no blood-state constant is decided on its own (preload_curve_scale_ml only as
+#: lambda / kappa), and marked the Hb of the probes that still write V outside the blood state: only
+#: harness_sources (bands.py and calibration.py) changed; the rules, bands and every other component
+#: did not.
 FROZEN_COMPONENTS = {
     "rules": "07f526f1cd9c65d4eb465f19c652a87d77adc678b2a706664b81c7237c59bc91",
     "bands": "99ca99f1b0d032056cfdabb90e1354683ef5ba093e896a0d5c10bc9c2ca192ca",
-    "harness_sources": "147e97485e15de3a64df3d8bc8cd281fdfce01b8f5e0470d229fd157d7af603d",
+    "harness_sources": "9189ec978b6d6b37c301329af6fdc4c44af42d4019c9c2336bb21eaa62646efd",
     "migration_sources": "4831949edabea361d5a0b2c0ee7e157551117c4cdc4b2f022833261e5a0f29a2",
     "authority_registries": "7a1473d2da2126d875ad21366a2ee93a288b3779cfbd4856baa46014872576fc",
     "gi_reference": "159fdc558c713a743261ab82075dc2574f7389f017a81a80f95f0d7207e0a9bd",
@@ -37,7 +43,7 @@ FROZEN_COMPONENTS = {
     "input_adapter_sources": "e83dca618fdaaa9239d861e1e1d6928dc703bfe33206a05cef44a5b0e9495bc5",
     "scenario_inputs": "afb2051e7fa04f1765aaf920c82f51dc6675d19bcbcb425c2ee581d8fa60d347",
 }
-FROZEN_DIGEST = "e40c43a37a3fd015a2935ed2c8037cbc13de8e6b516e2c305f712bbadc64c408"
+FROZEN_DIGEST = "eee140134e96590d4dfa0a31573aeef53933f41064fff58054ed5905ddf52494"
 
 
 # P2F-2 / P2F-5 -- repository truth, candidate inference, faculty decision ---------------------

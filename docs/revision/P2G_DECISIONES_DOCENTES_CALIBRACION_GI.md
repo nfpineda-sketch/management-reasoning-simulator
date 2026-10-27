@@ -4,7 +4,7 @@ Apoyo a decisiones, no decisiones. Nada de este documento aprueba un número, ma
 FACULTY_APPROVED, migra el GI, toca el tiempo de ejecución ni cambia lo que ve el residente. Todos los valores
 siguen CANDIDATE.
 
-- **Generado desde:** el congelamiento de calibración `e40c43a37a3fd015a2935ed2c8037cbc13de8e6b516e2c305f712bbadc64c408` y el paquete `c85448cc6fdc3778c73c87ec3d96c0657be8074e4c8a477b8de222ad071346d4`
+- **Generado desde:** el congelamiento de calibración `eee140134e96590d4dfa0a31573aeef53933f41064fff58054ed5905ddf52494` y el paquete `7c158dd5350799a308ed80920ad938627d6a0f26f35ed18bfb0db05381ae99ad`
   (`python -m clinical_core.decision_pack`; las tablas, con `python -m clinical_core.decision_pack_markdown`).
   Los números están en `docs/revision/P2G_decision_pack.json`. Una prueba falla si el código o las entradas cambian
   sin regenerarlos.
@@ -903,14 +903,14 @@ modelo); la evidencia del repositorio es lo que dicen los casos.
 | FD-05 | Cuánto puede bajar la FC bajo la taquicardia de llegada | `intrinsic_sinus_rate` 60–80–100 (piso) | FC en la recuperación | piso bajo: puede bajar mucho | piso alto: la FC no baja de la intrínseca | ninguna FC basal autorizada | §3 (la intrínseca fija sólo el piso) | | ABIERTA |
 | FD-06 | Rapidez de la resolución de la taquicardia | `sympathetic_decay_tau_min` 2–5–15; ganancias | curso de la FC | τ 2: la FC recorre la mitad de su caída en 28–29 min | τ 15: en 41 min; con intrínseca 100 en 72f, 21 y 32 min (la «mitad simpática» depende además de la intrínseca: §3) | ninguna | §3 (resolución por τ e intrínseca) | | ABIERTA |
 | FD-07 | ¿Intrínseca por caso o valor por defecto de familia? | por caso / familia GI | `intrinsic_sinus_rate` | — | — | ninguna FC basal ni betabloqueador autorizado | §3 | | ABIERTA |
-| FD-08 | Caída de la PA en 1 h sin tratamiento | `blood_loss_ml_per_min`; `preload_fraction`; `preload_curve_scale_ml` 600–833–1500; `sbp_per_pressure_deficit` 35–45–55 | PAS/PAM; conciencia; logística | PAS 80–81 a los 60 min (57m) | PAS 38–67 a los 60 min o detención | PAS 88 / 98; POCUS (`:154-156`) | §4 | | ABIERTA |
+| FD-08 | Caída de la PA en 1 h sin tratamiento | `blood_loss_ml_per_min`; `preload_fraction`; `preload_curve_scale_ml` 600–833–1500 (léase λ/κ, con κ = 1; la misma razón que acotan FD-BLD-02 a 04); `sbp_per_pressure_deficit` 35–45–55 | PAS/PAM; conciencia; logística | PAS 80–81 a los 60 min (57m) | PAS 38–67 a los 60 min o detención | PAS 88 / 98; POCUS (`:154-156`) | §4 | | ABIERTA |
 | FD-09 | Umbral de flujo bajo para el colapso | `collapse_output_threshold` 0,2–0,3–0,4 | paro | sólo el flujo muy bajo acumula | el flujo moderado ya acumula | ninguna | §5 | | ABIERTA |
 | FD-10 | Permanencia antes de la AESP o la asistolia | `collapse_burden_per_minute` 0,5–1–2; `collapse_burden_limit` 5–15–30 | paro | paro en minutos | paro en horas | ninguna | §5 (minutos exactos) | | ABIERTA |
 | FD-11 | Repago de la carga de colapso | `collapse_repayment_tau_min` 30–60–240 o sin repago | episodios repetidos | el segundo episodio no para | el segundo episodio para | ninguna | §5 | | ABIERTA |
 | FD-12 | Política del ritmo terminal | `collapse_terminal_rhythm`: según la causa o el estado / declarada (`pea`, `asystole`) | ritmo del paro | — | — | ninguna | §5 | | ABIERTA |
 | FD-13 | ¿Encender el colapso en las corridas GI? | apagado (hoy) / encendido con FD-09–FD-11 | final de la hemorragia sin tratar | detención en vez de paro | paro con la regla elegida | ninguna | §5, §11 | | ABIERTA |
-| FD-14 | Subida máxima de la PA con volumen solo | `preload_curve_scale_ml`; `preload_fraction`; ¿techo de presión? | PAS/PAM con volumen | en el diseño de P2F, PAS pico 122 (57m) y 121 (72f); fuera de él, 113 | en el diseño, 151 y 140; fuera de él, 186 (243 rechazado); no hay techo | ninguna | §6 | | ABIERTA |
-| FD-15 | Desde dónde el líquido se vuelve ineficaz | `preload_curve_scale_ml` | respuesta al volumen | escala corta: ineficaz pronto (0,16) | escala larga: sigue respondiendo (0,48) | ninguna | §6 | | ABIERTA |
+| FD-14 | Subida máxima de la PA con volumen solo | `preload_curve_scale_ml` (léase λ/κ; ver FD-08); `preload_fraction`; ¿techo de presión? | PAS/PAM con volumen | en el diseño de P2F, PAS pico 122 (57m) y 121 (72f); fuera de él, 113 | en el diseño, 151 y 140; fuera de él, 186 (243 rechazado); no hay techo | ninguna | §6 | | ABIERTA |
+| FD-15 | Desde dónde el líquido se vuelve ineficaz | `preload_curve_scale_ml` (léase λ/κ; ver FD-08) | respuesta al volumen | escala corta: ineficaz pronto (0,16) | escala larga: sigue respondiendo (0,48) | ninguna | §6 | | ABIERTA |
 | FD-16 | Congestión tolerada | `congestion_preload_knee` 0,75–0,85–0,92; `congestion_per_excess_preload` 0,02–0,05–0,1; `lung_water_clearance_tau_min`; `pump_reserve` | L (aún sin SpO2) | sin congestión | L hasta ~1,3 con reserva 0,7 | sin edema ni líneas B en la llegada | §6 | | ABIERTA |
 | FD-17 | Rango plausible de FR en el shock GI no complicado | sigue al lactato (FD-01–FD-03) | FR visible | 13–15 | 36–38 | FR 26 / 24 (`:881`, `:910`) | §7 | | ABIERTA |
 | FD-18 | Taquipnea metabólica máxima | `rr_metabolic_max` 15–25–30; `rr_per_lactate` 3–7,5–12; `lactate_drive_threshold_mmol_l` 1,5–2–2,5 | techo de la FR | máximo 15: techo teórico 27,5–36,3 (57m) y 27,3–36,5 (72f) | máximo 30: 35,4–50,8 (57m) y 38,0–51,4 (72f), recortado a 40 si `rr_max` es 40 | gasometría (`:901`, `:930`) | §7 (cotas del modelo) | | ABIERTA |
@@ -951,10 +951,18 @@ FD-49 (la puerta confiaba en la fuente declarada) quedó resuelta en P2H-0 por d
 (2026-10-23): ya no es una decisión abierta. La regla nueva está en §14. Su id no se reutiliza: la decisión siguiente
 es FD-50 (P2H-1).
 
-FD-23 (`hb_loss_g_dl_per_min`, la caída de Hb por minuto) quedó retirada en P2I-2T por decisión docente (2026-10-27): dos
-derivas independientes del volumen y de la Hb no son aceptables, y el estado hemorrágico compartido las reemplaza; la Hb
-ya no tiene una tasa propia que decidir. La tasa única de sangre total es FD-22. Su id no se reutiliza
-(`docs/revision/P2I2T_ESTADO_HEMORRAGICO_COMPARTIDO.md`).
+FD-23 (`hb_loss_g_dl_per_min`, registro `gi_hb_loss_g_dl_per_min`: la caída de Hb por minuto de sangrado sin tratar,
+0,009 g/dL/min de familia, el literal del motor en `family_engine.py:2170`, a decidir «coherente con FD-22»):
+**RETIRED — INVALIDATED BY SHARED HAEMORRHAGE STATE.**
+- Retirada en P2I-2T y confirmada por la docencia en P2I-2U (2026-10-27).
+- La Hb ahora resulta del contenido de glóbulos rojos y del volumen circulante, así que ya no queda ninguna deriva de Hb
+  del sangrado, fisiológicamente independiente, que aprobar.
+- No se reemplaza por otra decisión de Hb por minuto. La tasa única de sangre total es FD-22, y lo que la Hb haga se
+  juzga con las anclas de paciente FD-BLD (`docs/revision/P2I2U_ANCLAS_HEMORRAGIA_COMPARTIDA.md`).
+- Su id no se reutiliza.
+
+Las decisiones de anclas del estado hemorrágico compartido (FD-BLD-01 a FD-BLD-09, todas ABIERTAS) están en
+`docs/revision/P2I2U_ANCLAS_HEMORRAGIA_COMPARTIDA.md`, fuera de esta tabla.
 
 **Parámetros del registro fuera de esta tabla, con el motivo.** Cada nombre del registro está en la tabla o aquí; una
 prueba lo comprueba.
@@ -970,7 +978,10 @@ prueba lo comprueba.
   nunca valores de caso.
 - `arrival_circulating_volume_ml`, `volume_preload_kappa`, `plasma_refill_target_share`, `plasma_refill_tau_min`,
   `plasma_refill_capacity_ml`, `red_cell_unit_hb_g_dl`: estado hemorrágico compartido de P2I-2T, con valores provisionales
-  (SYNTHETIC/CANDIDATE) y sin banda; sus decisiones abiertas están en `docs/revision/P2I2T_ESTADO_HEMORRAGICO_COMPARTIDO.md`.
+  (SYNTHETIC/CANDIDATE) y sin banda. Ninguno se decide por separado: sólo se acotan a través de las anclas de paciente
+  FD-BLD (`docs/revision/P2I2U_ANCLAS_HEMORRAGIA_COMPARTIDA.md`). κ es sólo contabilidad: sólo λ/κ es identificable.
+  Por eso FD-08, FD-14 y FD-15 leen la escala de la curva de precarga como λ/κ: acotan la misma razón que FD-BLD-02
+  a 04, las respuestas se concilian y ninguna fija λ por sí sola (P2I-2U).
 
 ## 14. Puerta de migración (P2G-14, P2H-0, P2H-1, P2H-2)
 

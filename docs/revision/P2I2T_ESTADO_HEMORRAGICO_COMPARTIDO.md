@@ -12,6 +12,14 @@ aceptables. Se implementa el estado hemorrágico compartido mínimo, sin un mode
 - la Hb resulta de la masa de glóbulos rojos y del volumen circulante, que mueven el cristaloide, los glóbulos rojos
   transfundidos y el relleno plasmático.
 
+**Sustituido en parte por P2I-2U (2026-10-27).** Este documento registra P2I-2T tal como se cerró.
+- F5 (§7) y la sonda de banda pendiente de §8 se resolvieron en P2I-2U: la sonda es ahora un flujo sintético de sangre
+  total a través del estado compartido.
+- Los valores provisionales de §8 (B0, κ con λ, el relleno, la unidad de GR, la retención del cristaloide) ya no se
+  deciden por separado: los acotan las anclas de paciente FD-BLD-01 a 09.
+- FD-23 quedó RETIRED — INVALIDATED BY SHARED HAEMORRHAGE STATE.
+- Fuente: `docs/revision/P2I2U_ANCLAS_HEMORRAGIA_COMPARTIDA.md`.
+
 **Valores.** Todos los valores nuevos son PROVISIONALES (SYNTHETIC/CANDIDATE, TBD) y ninguno está aprobado. Las cifras
 de este documento salen del perfil canónico con esos valores. Los volúmenes son mL-eq de volumen circulante normalizado,
 no litros medidos.
@@ -182,7 +190,7 @@ el motor heredado.
 ## 4. Tablas (generado)
 
 <!-- generado:estado-sanguineo -->
-Generado desde las sondas `762cf32303815edb111ca884c82a373d0262c5ea690a63bdf33ec093f302113f` (`python -m clinical_core.blood_probes`). Llegada GI `gi_bleed_72f` del golden (anclas canónicas, parámetros de caso sin declarar) y perfil canónico: volumen circulante de llegada 4000 mL-eq, κ 1,0, escala de la curva 833 mL-eq, relleno: meta 50 % de lo perdido, τ 120 min, capacidad 1000 mL-eq; unidad de GR 300 mL-eq a 20 g/dL; reserva de extracción 1 (canónica). **Todos son valores PROVISIONALES (SYNTHETIC/CANDIDATE, TBD); ninguno está aprobado.** Los volúmenes son mL-eq de volumen circulante normalizado, no litros medidos; los GR, en unidades del contenido de llegada (llegada = 1).
+Generado desde las sondas `bbea8d96f8d5bb57afccc7f92f368738dfb8663f408efc475ae0c89e865c2e51` (`python -m clinical_core.blood_probes`). Llegada GI `gi_bleed_72f` del golden (anclas canónicas, parámetros de caso sin declarar) y perfil canónico: volumen circulante de llegada 4000 mL-eq, κ 1,0, escala de la curva 833 mL-eq, relleno: meta 50 % de lo perdido, τ 120 min, capacidad 1000 mL-eq; unidad de GR 300 mL-eq a 20 g/dL; reserva de extracción 1 (canónica). **Todos son valores PROVISIONALES (SYNTHETIC/CANDIDATE, TBD); ninguno está aprobado.** Los volúmenes son mL-eq de volumen circulante normalizado, no litros medidos; los GR, en unidades del contenido de llegada (llegada = 1).
 
 ### 4.1 Sondas A–K
 

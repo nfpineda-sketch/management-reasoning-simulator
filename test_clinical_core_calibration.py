@@ -450,12 +450,39 @@ def test_level_2_every_band_is_left_to_faculty_and_the_probes_are_deterministic(
 def test_level_2_probes_move_the_way_the_decisions_say():
     from clinical_core import bands
     haemorrhage = bands.probe("haemorrhage")
-    assert haemorrhage[-2]["map"] < haemorrhage[0]["map"] and haemorrhage[-2]["D"] > 0
-    # Before 60 minutes the ventricle empties: the probe stops there (P2D-2) and says so.
-    assert haemorrhage[-1]["minute"] <= 60 and "effective output reached zero" in haemorrhage[-1]["stopped"]
+    assert haemorrhage[-1]["map"] < haemorrhage[1]["map"] < haemorrhage[0]["map"] and haemorrhage[-1]["D"] > 0
+    # P2I-2U: one synthetic whole-blood flow through the shared blood state; plasma refill restores part of
+    # the shed volume, so the ventricle no longer empties within the hour, and Hb falls only by that dilution.
+    assert [row["minute"] for row in haemorrhage] == [0, 30, 60] and haemorrhage[-1]["shed_ml"] == 600.0
+    assert haemorrhage[-1]["V"] == pytest.approx(DEFAULT_PROFILE.volume_preload_kappa
+                                                 * haemorrhage[-1]["circulating_ml"])
+    assert haemorrhage[-1]["circulating_ml"] > -600.0
+    assert 12.5 < haemorrhage[-1]["hb"] < haemorrhage[0]["hb"] == 13.0
     overload = bands.probe("overload")
     assert overload[-1]["L"] > 0 and overload[-1]["output_rel"] - overload[1]["output_rel"] < 0.2
     assert bands.probe("opioid")[-1]["respiratory_rate"] < 10 < bands.probe("bronchospasm")[-1]["respiratory_rate"]
+
+
+def test_the_haemorrhage_band_probe_is_one_synthetic_whole_blood_flow():
+    """P2I-2U-1: the Level-2 haemorrhage probe moves neither V nor Hb itself and claims no clinical rate."""
+    from clinical_core import bands
+    from clinical_core.integration import run
+    family, drives, declared, contributors, minutes = bands.PROBES["haemorrhage"]
+    assert bands.PROBE_KINDS["haemorrhage"] == "SYNTHETIC_CROSS_FAMILY_HAEMORRHAGE_PROBE"
+    assert all(isinstance(item, bands.BloodLoss) for item in contributors)
+    assert "synthetic" in drives and "not a GI or trauma rate" in drives
+    trajectory = run(Anchors(**bands.ARRIVAL), contributors, max(minutes))
+    end = trajectory.states[-1]
+    assert end.blood.outside_v == 0.0 and end.blood.outside_hb == 0.0, "nothing moved V or Hb outside the blood state"
+    assert not any(delta.channel is Channel.HB and delta.source.kind is SourceKind.SCRIPTED_EVENT
+                   for record in trajectory.records for delta in record.deltas)
+    assert {c.process.value for record in trajectory.records for c in record.blood} == {"whole_blood_loss",
+                                                                                         "plasma_refill"}
+    # The probes that still write V directly say that their Hb does not follow that volume.
+    assert all(row["outside_v"] == 0.0 for row in bands.probe("haemorrhage"))
+    assert bands.probe("overload")[-1]["outside_v"] != 0.0
+    report = bands.report()
+    assert "†" in report and not any("†" in line for line in report.splitlines() if "haemorrhage" in line)
 
 
 # After the adversarial review of P2C ------------------------------------------------------

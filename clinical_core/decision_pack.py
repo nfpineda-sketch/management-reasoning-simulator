@@ -716,7 +716,8 @@ def reachability_analysis() -> dict:
 PACK_DIGEST_EXCLUDED = ("clinical_core/decision_pack_markdown.py", "clinical_core/lactate_slice.py",
                         "clinical_core/faculty_constraints.py", "clinical_core/lactate_constraints.py",
                         "clinical_core/oxygen_probes.py", "clinical_core/hemodynamic_probes.py",
-                        "clinical_core/haemorrhage_probes.py", "clinical_core/blood_probes.py")
+                        "clinical_core/haemorrhage_probes.py", "clinical_core/blood_probes.py",
+                        "clinical_core/blood_anchors.py")
 
 
 def pack_sources() -> dict[str, str]:

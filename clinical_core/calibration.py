@@ -144,7 +144,9 @@ REGISTRY: Mapping[str, RegistryEntry] = {entry.name: entry for entry in (
        ("HR",), ("AC1", "HR3"), 0.0),
     # Preload / pump
     _p("preload_curve_scale_ml", "preload", 600.0, 833.3333333333334, 1500.0, "mL-eq",
-       "scale of the saturating preload curve; the default keeps the legacy slope at position 0.5",
+       "scale of the saturating preload curve; the default keeps the legacy slope at position 0.5. Read in V units: "
+       "with kappa (P2I-2T) only the ratio scale / kappa is identifiable, so it is never decided alone: FD-08, FD-14, "
+       "FD-15 and FD-BLD-02..04 all constrain the same scale / kappa (P2I-2U)",
        ("output", "pressure", "congestion"), ("PL1", "PL2", "PL3", "PL4")),
     _p("arrival_preload_fraction", "preload", 0.3, 0.5, 0.7, "position (0-1)", "default arrival position",
        ("output",), ("PL1", "PL2", "PL3")),
@@ -203,20 +205,26 @@ REGISTRY: Mapping[str, RegistryEntry] = {entry.name: entry for entry in (
     _u("agitation_pain_demand_multiplier", "demand", "factor", "no band: no marked agitation or pain", ("D",)),
     _u("vasodilation_with_demand_probe_factor", "demand", "factor", "the Level-2 probe's 1.3",
        ("D",), target="probe", status=SYNTHETIC_ONLY, canonical=1.3, evidence=("bands.PROBES",)),
-    # Shared blood state (P2I-2T): provisional values, no band yet
+    # Shared blood state (P2I-2T): provisional values, no band. P2I-2U: none is put to faculty on its own;
+    # each is constrained only through the patient-level anchors FD-BLD-01..09
+    # (docs/revision/P2I2U_ANCLAS_HEMORRAGIA_COMPARTIDA.md).
     _p("arrival_circulating_volume_ml", "blood", None, None, None, "mL-eq",
-       "normalization of red-cell content and Hb; not inferred from the arrival Hb; TBD", ("Hb",), ()),
+       "normalization of red-cell content and Hb; not inferred from the arrival Hb; not decided directly: "
+       "constrained through FD-BLD anchors", ("Hb",), ()),
     _p("volume_preload_kappa", "blood", None, None, None, "V per mL-eq of circulating volume",
-       "V = kappa x circulating-volume deviation; only kappa / preload_curve_scale_ml is identifiable; TBD",
-       ("V", "output"), ()),
+       "V = kappa x circulating-volume deviation; bookkeeping only: only kappa / preload_curve_scale_ml is "
+       "identifiable, so kappa is never decided apart from the curve scale", ("V", "output"), ()),
     _p("plasma_refill_target_share", "blood", None, None, None, "share of the shed volume",
-       "how much of the shed volume plasma refill restores at most; TBD", ("V", "Hb"), ()),
-    _p("plasma_refill_tau_min", "blood", None, None, None, "min", "refill time constant; TBD", ("V", "Hb"), ()),
-    _p("plasma_refill_capacity_ml", "blood", None, None, None, "mL-eq", "finite interstitial reserve; TBD",
+       "how much of the shed volume plasma refill restores at most; not decided directly: FD-BLD-07..09",
        ("V", "Hb"), ()),
+    _p("plasma_refill_tau_min", "blood", None, None, None, "min", "refill time constant; not decided directly: "
+       "FD-BLD-07..09", ("V", "Hb"), ()),
+    _p("plasma_refill_capacity_ml", "blood", None, None, None, "mL-eq", "finite interstitial reserve; not decided "
+       "directly: FD-BLD-07..09", ("V", "Hb"), ()),
     _u("red_cell_unit_hb_g_dl", "blood", "g/dL", "haemoglobin concentration of one packed red-cell unit (P2I-2T); "
-       "not the legacy 0.85 g/dL step; TBD with the unit's volume", ("Hb",), status=CANDIDATE, canonical=20.0,
-       evidence=("legacy_adapter.PROVISIONAL_RED_CELL_UNIT_HB_G_DL",)),
+       "not the legacy 0.85 g/dL step; not decided directly: FD-BLD-01 (the output anchors FD-BLD-02/03 do not "
+       "depend on it)", ("Hb",), status=CANDIDATE,
+       canonical=20.0, evidence=("legacy_adapter.PROVISIONAL_RED_CELL_UNIT_HB_G_DL",)),
     # GI source parameters (family)
     RegistryEntry("gi_blood_loss_ml_per_min", "GI source", "family", 2.5, 2.5, 2.5, "mL-eq/min",
                   "family engine literal 0.003 circulation/min read as whole-blood loss, adopted for the comparison; "

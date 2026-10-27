@@ -19,16 +19,16 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from dataclasses import dataclass, replace
+from dataclasses import replace
 from pathlib import Path
 
 from . import calibration, gi_reference, lactate_slice
+from .bands import BloodLoss
 from .derived import (DEFAULT_PROFILE, blood_haemoglobin, derive, effective_delivery, oxygen_balance,
                       plasma_volume_deviation)
-from .integration import Contribution, Contributor, register, run
+from .integration import run
 from .legacy_adapter import PROVISIONAL_RED_CELL_UNIT_HB_G_DL
 from .logistics import EndoscopicHemostasis
-from .provenance import BloodFlow, BloodProcess, SourceKind
 
 CASE = "gi_bleed_72f"
 MINUTES = 240
@@ -40,24 +40,8 @@ NO_REFILL = {"plasma_refill_target_share": 0.0}
 HEMOSTASIS_AT = 120
 
 
-@register
-@dataclass(frozen=True)
-class ScriptedBloodLoss(Contributor):
-    """A declared whole-blood loss over an interval (probe only): one flow, as the GI module's."""
-
-    kind = SourceKind.SCRIPTED_EVENT
-    type_name = "blood_probe_loss"
-
-    id: str
-    start_minute: int
-    stop_minute: int
-    ml_per_min: float
-
-    def contribute(self, state, minute, signals, anchors, profile):
-        if not self.start_minute < minute <= self.stop_minute:
-            return Contribution()
-        return Contribution(blood=(BloodFlow(BloodProcess.WHOLE_BLOOD_LOSS, self.ml_per_min, self.source, minute,
-                                             "probe: declared whole-blood loss"),))
+#: The declared whole-blood loss of probes A and B: the calibration harness's own (P2I-2U).
+ScriptedBloodLoss = BloodLoss
 
 
 def inputs() -> dict:
