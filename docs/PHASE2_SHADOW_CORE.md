@@ -2483,3 +2483,44 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Lectura:** con una sola fuente a 2,5 mL-eq/min la Hb apenas cae (0,09 g/dL en 2 h; la deriva heredada caía 1,08). Es
   una consecuencia de valores TBD (tasa, B0, relleno, retención del cristaloide); no se corrigió hacia el motor.
 - **Gancho en tiempo de ejecución:** ninguno.
+
+## 24. P2I-2U · Arnés de calibración alineado y anclas docentes del estado hemorrágico compartido (2026-10-27)
+
+- **Base:** `94501f5`. La docencia aceptó y cerró P2I-2T, y confirmó:
+  - SHARED_HAEMORRHAGE_STATE_NEEDED;
+  - que la tasa independiente de Hb es obsoleta y que FD-23 queda retirada;
+  - que la sonda de nivel 2 «GI bleed / trauma» no puede conservar las dos derivas.
+  Informe: `docs/revision/P2I2U_ANCLAS_HEMORRAGIA_COMPARTIDA.md`; superficies: `clinical_core/blood_anchors.py` y
+  `docs/revision/P2I2U_blood_anchors.json`.
+- **Sonda F5:** pasa de V −10 mL/min y Hb −0,02 g/dL/min a un flujo sintético de sangre total (`bands.BloodLoss`,
+  10 mL-eq/min) a través de `BloodState`, rotulada SYNTHETIC_CROSS_FAMILY_HAEMORRHAGE_PROBE. No escribe V ni Hb.
+- **Recongelamiento:** sólo cambia `harness_sources` (`bands.py`, `calibration.py`). Las reglas no cambian y el motivo
+  queda registrado en la prueba. El paquete P2G, el corte P2I-1 y las sondas de P2I-2T se regeneran con las mismas cifras.
+  Las sondas de nivel 2 que todavía escriben V directamente (líquidos y fugas) marcan su Hb con «†»: esa Hb no sigue
+  al volumen. Si deben pasar por `BloodState` queda abierto.
+- **FD-23:** RETIRED — INVALIDATED BY SHARED HAEMORRHAGE STATE. Quedan 48 decisiones abiertas en P2G y 9 FD-BLD nuevas:
+  57 en total.
+- **Constantes internas:** B0, κ, λ, el relleno, la unidad de GR y la retención del cristaloide no se aprueban por
+  separado; las acotan las anclas de paciente FD-BLD-01 a 09 y A–D. κ es sólo contabilidad (λ/κ). En P2G, FD-08,
+  FD-14 y FD-15 ofrecen `preload_curve_scale_ml`: se leen como λ/κ y acotan la misma razón que FD-BLD-02 a 04, así que
+  las respuestas se concilian; ninguna fija λ.
+- **Superficies:**
+  - sangrado sin tratar en 57m y 72f. Las corridas que se detienen se cuentan (n por minuto) y se resumen
+    también con gasto 0;
+  - una y dos unidades de GR. Que la segunda unidad rinda menos gasto es estructural: con la curva exponencial,
+    Δ2/Δ1 = exp(−volumen de la unidad / (λ/κ)). No es un hallazgo;
+  - 1 y 2 L de cristaloide con sangrado continuo;
+  - relleno tras una pérdida aguda y tras la hemostasia;
+  - comparación de políticas de autoridad para la tasa de sangrado: las tres pedidas más FAMILY_ALLOWED_RANGE,
+    que lista P2G. Se evalúa CASE_OVERRIDES_FAMILY_DEFAULT como preferida, sin adoptarla y sin poblar registros;
+  - identificabilidad: κ, λ y ρ no son identificables por separado.
+- **Sin filtro FD-LAC:** el lactato sólo da contexto.
+- **Gancho en tiempo de ejecución:** ninguno.
+- **Revisión adversarial:** sin bloqueantes. Se corrigieron:
+  - el sesgo de supervivencia en las anclas sin tratar;
+  - las anclas de FD-BLD-04 y 05, que ahora coinciden con la evidencia mostrada;
+  - la cuadrícula del cristaloide, que ahora recorre la posición de llegada;
+  - la lectura de λ en P2G;
+  - la Hb de las sondas que escriben V directamente, ahora marcada;
+  - el resumen propio de las anclas;
+  - la redacción.
