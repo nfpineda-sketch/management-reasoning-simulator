@@ -2399,3 +2399,32 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Colapso:** la señal recomendada es el déficit crítico normalizado, con dosis propia, sin D y sin exigir gasto bajo.
 - **Estado mental:** debería leer el déficit crítico agudo, con D como persistencia; no se cambió.
 - **Gancho en tiempo de ejecución:** ninguno.
+
+## 22. P2I-2S · Restricciones de calibración de la escala hemorragia / precarga (2026-10-27)
+
+- **Base:** `ae2ebf7`. La docencia aceptó P2I-2Q (error de escala, no de forma).
+  - Fijó que V es una coordenada interna de precarga efectiva en mL-eq, no volumen de sangre.
+  - Exigió un proceso hemorrágico coherente para V, la Hb, el gasto y el DO2.
+  - Dejó λ 1500–2000 sin aprobar.
+- **Paquete de sólo lectura:**
+  - sondas en `clinical_core/haemorrhage_probes.py`; informe en `docs/revision/P2I2S_ESCALA_HEMORRAGIA_PRECARGA.md` y
+    `docs/revision/P2I2S_haemorrhage_probes.json`;
+  - ninguna fisiología, valor por defecto, banda, registro ni golden cambia;
+  - no se vuelve a filtrar.
+- **Hallazgos:**
+  - **dos derivas independientes:** el sangrado, la transfusión y el cristaloide mueven V y la Hb con constantes heredadas
+    propias. Para que un solo sangrado diera la caída de Hb harían falta 2,5–3,5 veces la pérdida de V, con un relleno
+    implícito que no se modela;
+  - **la dilución del cristaloide no se revierte** con la fuga.
+- **Clasificación:** SHARED_HAEMORRHAGE_STATE_NEEDED. Se propone, sin implementar, un balance de volumen circulante con la Hb
+  por mezcla, el relleno y un único mapeo V = κ × C.
+- **λ es una convención de unidades:** V entra sólo como V/λ, y duplicar λ y todas las entradas de V no cambia nada.
+  - Lo fisiológico son las razones sangrado/λ, unidad/λ y salino/λ, que hoy son los literales heredados, junto con p₀.
+  - No se propone ninguna región de λ.
+- **Cuadrícula de razones × posición:**
+  - regiones excluidas sólo según el criterio de la sonda;
+  - el resto requiere anclas docentes en términos de paciente: tolerancia al sangrado y respuesta a una unidad;
+  - decidir el mapeo antes que las razones.
+- **Transfusión:** el +82 % de L3 es la razón unidad/λ (0,36) actuando en una llegada infrallenada. No se corrige por
+  separado.
+- **Gancho en tiempo de ejecución:** ninguno.
