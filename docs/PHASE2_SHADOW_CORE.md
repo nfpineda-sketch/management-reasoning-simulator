@@ -2330,3 +2330,48 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - el corte de P2I-1 se regeneró con números idénticos;
   - el congelamiento de calibración no cambia.
 - **Gancho en tiempo de ejecución:** ninguno.
+
+## 20. P2I-2P · Fisiología de la entrega y la extracción de O2 (2026-10-27)
+
+- **Base:** `26ed9f5`. La docencia detuvo el refiltrado de P2I-2R y pidió revisar si el balance de O2 confundía:
+  - la entrega (DO2);
+  - la demanda metabólica (VO2);
+  - la entrega crítica.
+- **Defecto:**
+  - la demanda es un VO2 medido en «unidades de la entrega que la satisface»;
+  - esa entrega se usaba como la mínima adecuada (banda GI, FD-LAC) y como la normal (llegada neutra, P2F-6);
+  - sin reserva de extracción ambas coinciden, y toda entrega bajo lo normal acumulaba deuda.
+- **Corrección, en sombra:**
+  - índice de entrega = DO2 / DO2 normal;
+  - índice de demanda = VO2 / VO2 normal;
+  - reserva ρ = E_máx / E_normal (`oxygen_extraction_reserve`, PROVISIONAL, TBD);
+  - déficit efectivo = máx(0, demanda − ρ·entrega), que es lo único que D integra;
+  - estados ADEQUATE, COMPENSATED y CRITICAL (`derived.oxygen_balance`).
+- **Reserva canónica 1:**
+  - es el modelo previo, sin ninguna cifra canónica cambiada;
+  - el diff del golden GI son sólo las 4 líneas de metadatos del parámetro nuevo;
+  - Contracts v2 sigue IDÉNTICO.
+- **Hallazgo estructural:** a D y al lactato sólo llega el producto ρ × `arrival_delivery_ratio`.
+  - Leída como fue diseñada (en unidades de la entrega crítica, re-anclada como relación / ρ), la banda GI conserva
+    exactamente la dinámica actual.
+  - Leída como DO2 sobre lo normal (fija), una reserva hace bajar el lactato sin tratar, en contra de FD-LAC-01/02.
+  - Reserva y banda se deciden juntas.
+- **Hallazgos de P2I-2R:**
+  - L3 recuperándose bajo el umbral: REINTERPRETADO, como el estado en recuperación de FD-LAC-06;
+  - entrega sin tratar muy baja: SIGUE PRESENTE, por el mapeo volumen → gasto y el colapso apagado;
+  - índice tras transfusión de 1,1–2,2: REINTERPRETADO, porque está en unidades de la entrega crítica.
+  - Las dos reinterpretaciones dependen de adoptar la banda re-anclada, una decisión docente pendiente.
+- **Guardas:**
+  - `lactate_slice.slice_run` rehúsa una reserva distinta de 1 sin la lectura de la banda declarada;
+  - la bandera del recorte «sin crédito» (`shadow.acting_mechanisms`) usa ρ × entrega;
+  - `faculty_constraints.adequate` queda congelada hasta el refiltrado.
+- **Detalle:** sondas A–J, interfaz con el colapso y lectura propuesta de FD-LAC-01/06 en
+  `docs/revision/P2I2P_FISIOLOGIA_ENTREGA_O2.md` y `docs/revision/P2I2P_oxygen_probes.json`.
+- **Sin cambiar:**
+  - no se volvió a filtrar: P2I-2R queda PENDIENTE DE REFILTRADO;
+  - el colapso canónico GI sigue apagado;
+  - no se aprobó ningún valor.
+- **Digests:**
+  - el paquete P2G y el corte P2I-1 se regeneraron con cifras idénticas, y su digest cambia por las fuentes del núcleo;
+  - el congelamiento de calibración no cambia.
+- **Gancho en tiempo de ejecución:** ninguno.
