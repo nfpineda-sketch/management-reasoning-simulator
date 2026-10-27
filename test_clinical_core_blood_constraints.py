@@ -5,9 +5,12 @@ qualitative and not filtering), that the readings and the filter were frozen bef
 filtered (and each reported filter ran with its freeze), that V5 reads exactly what P2I-2V declared, that
 the primary uses one common bleed rate, that the blood reading's premise holds, that no lactate, legacy
 trajectory or direct V / Hb drift enters a constraint, and that no hidden parameter is approved. P2I-2V's
-own filter, diagnostic and document stay its historical record: they are not regenerated.
+own filter, diagnostic and document stay its historical record: they are not regenerated. P2I-2V-R is closed
+too (2026-10-27): its filter, sensitivity and document are its record, not regenerated; P2I-2W added clinical_core
+sources under its own freeze, so what P2I-2V-R froze is pinned as the constraints module byte for byte.
 """
 import ast
+import hashlib
 import itertools
 import json
 from pathlib import Path
@@ -30,8 +33,11 @@ FILTER = REVISION / "P2I2VR_blood_filter.json"
 #: transcribed decisions, the readings, the variants and every clinical_core source but the report. Its
 #: reason: the faculty withdrew U-HB's minimum and demoted FD-BLD-03 from filtering; V5 is implemented as
 #: declared; the common bleed rate is primary; the Level-2 direct-V probes are historical. A change needs a
-#: recorded reason, and the filter must be run again under the new freeze.
+#: recorded reason, and the filter must be run again under the new freeze. Its record keeps this digest.
 FROZEN_DIGEST = "a9ab10d8d809070e5e76bcb4557525924dcb918fbd86d9b2a62393687d53c893"
+#: clinical_core/blood_constraints.py as committed with that freeze (7c073ad): the faculty constraints, their
+#: readings, the variants and the filter, byte for byte. P2I-2W runs exactly this module.
+P2I2VR_CONSTRAINTS_SHA = "2d139733ed529a03f9c58cd4aa5eb70c8812bb25ba0737f90172546b4e2a65a8"
 #: P2I-2V's freeze (commit 3f86464): its filter, diagnostic and document are a historical record.
 P2I2V_DIGEST = "cfb8e508fbf3fe9c94b33ec141eee20c56edf188222e2a73a65cc9444486fd26"
 
@@ -40,8 +46,10 @@ def test_the_decisions_and_their_readings_are_frozen():
     assert bc.FREEZE_EXCLUDED == ("clinical_core/blood_filter_report.py",)
     assert "clinical_core/blood_constraints.py" in bc.freeze_sources()
     assert "clinical_core/blood_anchors.py" in bc.freeze_sources() and "clinical_core/bands.py" in bc.freeze_sources()
-    assert bc.freeze_digest() == FROZEN_DIGEST, (
-        "the frozen decisions, readings or a clinical_core source changed: record why, then refreeze and refilter")
+    # P2I-2V-R is closed: the live digest moved when P2I-2W added its sources (it has its own freeze); the module
+    # that holds the decisions, the readings, the variants and the filter has not changed by a byte.
+    assert hashlib.sha256((ROOT / "clinical_core" / "blood_constraints.py").read_bytes()).hexdigest() == (
+        P2I2VR_CONSTRAINTS_SHA), "the faculty constraints or their readings changed: record why, refreeze, refilter"
 
 
 def test_the_faculty_envelopes_are_transcribed_as_approved():
@@ -250,8 +258,11 @@ def test_the_sensitivity_was_computed_with_the_frozen_code_on_probes_only():
 
 
 def test_the_document_definitions_and_sensitivity_are_generated():
+    """The record is not regenerated: its definitions are today's, shown with the freeze the refilter ran with."""
     document = DOCUMENT.read_text(encoding="utf-8")
-    assert report.apply(document, "definiciones", report.render_definitions()) == document
+    definitions = report.render_definitions().replace(bc.freeze_digest(), FROZEN_DIGEST)
+    assert report.apply(document, "definiciones", definitions) == document
+    assert "Ampliado por P2I-2W" in document
     data = json.loads(SENSITIVITY.read_text(encoding="utf-8"))
     assert report.apply(document, "sensibilidad", report.render_sensitivity(data)) == document
 

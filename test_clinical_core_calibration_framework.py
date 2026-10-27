@@ -33,11 +33,14 @@ from clinical_core.shadow import GOLDEN
 #: did not. P2I-2V declared the faculty's authority policy for the GI bleed rate (the category only,
 #: no rate): migration_sources (migration_authority.py) and authority_registries changed; nothing else.
 #: P2I-2V-R moved the four Level-2 probes that wrote V directly out of the active harness, as
-#: HISTORICAL_PROBES (bands.py): only harness_sources changed; the rules and bands did not.
+#: HISTORICAL_PROBES (bands.py): only harness_sources changed; the rules and bands did not. P2I-2W-8 labelled the
+#: Level-1 checks that write V or Hb directly as SYNTHETIC_STATE_PERTURBATION (LEVEL1_DIRECT_WRITES) and renamed
+#: check_hr's "bleed" run to "volume_loss": the rules component (check_hr's source) and harness_sources
+#: (calibration.py) changed; no rule, probe size, assertion or band did.
 FROZEN_COMPONENTS = {
-    "rules": "07f526f1cd9c65d4eb465f19c652a87d77adc678b2a706664b81c7237c59bc91",
+    "rules": "9b3818ed3599a52a8a18a98c15882f1179bd1b63a5c1778744bec977979b396a",
     "bands": "99ca99f1b0d032056cfdabb90e1354683ef5ba093e896a0d5c10bc9c2ca192ca",
-    "harness_sources": "35f7304ffac039c4075886a0939ac9b173d81f46daab9508868e84e0e922eada",
+    "harness_sources": "ccf98f7dd55d885db3dc48da77956220cd4ed6bb658278bbb4e544d5859abdc6",
     "migration_sources": "6033f4437627ed1f78c2c2ea03764986572639d94596982963a44f5964a2cb29",
     "authority_registries": "e305793eefead76fb733761f3305148e3df85aa9074445d94f051cb5709d2314",
     "gi_reference": "159fdc558c713a743261ab82075dc2574f7389f017a81a80f95f0d7207e0a9bd",
@@ -46,7 +49,7 @@ FROZEN_COMPONENTS = {
     "input_adapter_sources": "e83dca618fdaaa9239d861e1e1d6928dc703bfe33206a05cef44a5b0e9495bc5",
     "scenario_inputs": "afb2051e7fa04f1765aaf920c82f51dc6675d19bcbcb425c2ee581d8fa60d347",
 }
-FROZEN_DIGEST = "5876aef242633c5f2305299e8e2d177ee5d5bf8bd2dbe521bdc6a166790810ad"
+FROZEN_DIGEST = "bd14a9ec1849d6866a9ca782a1a1e23cb4d37e711d2edaed95bc1c3671505de5"
 
 
 # P2F-2 / P2F-5 -- repository truth, candidate inference, faculty decision ---------------------
@@ -197,7 +200,7 @@ def test_the_rules_are_frozen():
 def test_the_hr_rules_read_the_candidates_full_declared_arrival():
     # Review finding: HR1-HR4 used to run on an arrival that declared only the intrinsic rate. A
     # 72f arrival debt of 60 with a 30-min repayment is above what any deficit can sustain, so the
-    # debt's share of the drive falls during the bleed and HR does not rise: the full arrival fails.
+    # debt's share of the drive falls during the synthetic volume loss and HR does not rise: the full arrival fails.
     profile = {"debt_clearance_tau_min": 30.0}
     failing = calibration.GICandidate(profile, debt="upper")
     arrivals = {case: gi_reference.candidate_anchors(case, calibration.case_values(case, failing))

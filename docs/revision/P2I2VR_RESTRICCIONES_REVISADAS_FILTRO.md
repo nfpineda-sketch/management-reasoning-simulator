@@ -11,6 +11,10 @@ Código: `clinical_core/blood_constraints.py` (decisiones, lecturas, variantes y
 (antes del congelamiento) y `docs/revision/P2I2VR_blood_filter.json` (el filtro). P2I-2V queda como registro
 histórico (`docs/revision/P2I2V_ANCLAS_APROBADAS_FILTRO.md`, congelamiento `cfb8e508…`).
 
+**Ampliado por P2I-2W (2026-10-27).** P2I-2V-R quedó aceptado y cerrado. Este documento es su registro, tal como
+corrió con el congelamiento `a9ab10d8…`, y ya no se regenera. P2I-2W extiende los bordes abiertos de la cuadrícula
+con las mismas restricciones: `docs/revision/P2I2W_EXTENSION_BORDES_AUDITORIA.md`.
+
 ## 1. Revisiones docentes que aplica (2026-10-27)
 
 - **U-HB: FACULTY_APPROVED v2.**

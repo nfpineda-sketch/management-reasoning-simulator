@@ -64,7 +64,8 @@ def p2f_rejection(candidate: GICandidate) -> str | None:
     if candidate.preload == "lower":
         return "HR1-HR4: the HR1 probe empties 57m's ventricle at preload position 0.2 (invalid state)"
     if candidate.profile.get("debt_clearance_tau_min") == 30.0 and candidate.debt == "upper":
-        return "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+        return ("HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the "
+                "probe's synthetic volume loss")
     return None
 
 
@@ -718,7 +719,8 @@ PACK_DIGEST_EXCLUDED = ("clinical_core/decision_pack_markdown.py", "clinical_cor
                         "clinical_core/oxygen_probes.py", "clinical_core/hemodynamic_probes.py",
                         "clinical_core/haemorrhage_probes.py", "clinical_core/blood_probes.py",
                         "clinical_core/blood_anchors.py", "clinical_core/blood_constraints.py",
-                        "clinical_core/blood_filter_report.py")
+                        "clinical_core/blood_filter_report.py", "clinical_core/blood_extension.py",
+                        "clinical_core/blood_extension_report.py")
 
 
 def pack_sources() -> dict[str, str]:

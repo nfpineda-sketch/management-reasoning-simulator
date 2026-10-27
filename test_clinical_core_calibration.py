@@ -490,6 +490,32 @@ def test_the_haemorrhage_band_probe_is_one_synthetic_whole_blood_flow():
                                                                                          "plasma_refill"}
 
 
+def test_every_level_1_direct_write_is_a_labelled_synthetic_perturbation():
+    """P2I-2W-8: every active Level-1 check that writes V or Hb directly is registered with its semantics; none
+    claims haemorrhage (that would have to go through the shared blood state), and none is worded as one."""
+    import inspect
+    import re
+    from clinical_core import calibration
+    writers = {}
+    for name, (function, _) in calibration.CHECKS.items():
+        source = inspect.getsource(function)
+        channels = {"Hb" if channel == "hb" else channel for channel in re.findall(r'Drift\("[^"]*", "(V|hb)"', source)}
+        channels |= {"V"} if re.search(r"\bV=", source) else set()
+        if channels:
+            writers[name] = (function.__name__, channels)
+    assert set(writers) == set(calibration.LEVEL1_DIRECT_WRITES) == {"RR1", "HR1-HR4", "PL1-PL3", "PL4", "DM1"}
+    for name, entry in calibration.LEVEL1_DIRECT_WRITES.items():
+        assert writers[name] == (entry["function"], {entry["writes"]}), name
+        assert entry["semantics"] == calibration.SYNTHETIC_STATE_PERTURBATION, name
+        assert entry["why"] and entry["how"], name
+    assert calibration.NOT_EVIDENCE_FOR == ("haemorrhage", "Hb", "DO2")
+    assert "bleed" not in inspect.getsource(calibration.check_hr)
+    worded = re.compile(r"bleed|haemorrh|hemorrh|blood loss", re.IGNORECASE)
+    for rule in ("RR1", "HR1", "HR2", "HR3", "HR4", "PL1", "PL2", "PL3", "PL4", "DM1"):
+        frozen = calibration.FROZEN_RULES[rule]
+        assert not worded.search(" ".join(str(part) for part in vars(frozen).values())), rule
+
+
 def test_no_active_level_2_probe_bypasses_the_shared_blood_state():
     """P2I-2V-R: every active probe moves V and Hb only through the shared blood state; the four that wrote V
     directly are HISTORICAL_PROBES, outside the active harness and its report table, each with its reason."""

@@ -2322,7 +2322,7 @@
    "pea": "pea"
   }
  },
- "freeze_digest": "5876aef242633c5f2305299e8e2d177ee5d5bf8bd2dbe521bdc6a166790810ad",
+ "freeze_digest": "bd14a9ec1849d6866a9ca782a1a1e23cb4d37e711d2edaed95bc1c3671505de5",
  "hr": {
   "gi_bleed_57m": {
    "arrival_hr": 124.0,
@@ -5009,7 +5009,7 @@
    }
   }
  },
- "pack_digest": "f34653102f57def9baa5446b0c3cdcb9ee03d96a6587fe66321b25c52b2babd3",
+ "pack_digest": "8c265d409ef9c1c32a00a5097a27b9ff6e0eef1dcc6998fa9340fdc124196c14",
  "pl2": {
   "rows": [
    {
@@ -6232,973 +6232,973 @@
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=2;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=2;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=2;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=2;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=2;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=2;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=2;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=2;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=2;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=2;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=2;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=2;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=2;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=2;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=2;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=2;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=2;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=2;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=2;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=2;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=2;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=2;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=2;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=2;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=2;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=2;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=2;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=2;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=2;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=2;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=2;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=2;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=2;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=2;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=2;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=2;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    },
    {
     "arrival_D": 60.0,
     "bound": 30.0,
     "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
-    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the bleed"
+    "p2f": "HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the probe's synthetic volume loss"
    }
   ]
  },

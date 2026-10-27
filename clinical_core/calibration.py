@@ -349,17 +349,20 @@ def _midpoint_arrivals() -> dict:
 
 
 def check_hr(profile: CoreProfile, arrivals: Mapping[str, Anchors] | None = None, **_):
-    """HR1-HR4 on each GI case's full declared arrival (the candidate's, or every band at its midpoint)."""
+    """HR1-HR4 on each GI case's full declared arrival (the candidate's, or every band at its midpoint).
+
+    The loss is a SYNTHETIC_STATE_PERTURBATION of the preload coordinate (``LEVEL1_DIRECT_WRITES``), not a
+    haemorrhage: it moves V alone, with no red cells, no refill and no Hb change."""
     for case, arrival in (arrivals or _midpoint_arrivals()).items():
         rate = arrival.intrinsic_sinus_rate if arrival.intrinsic_sinus_rate is not None else arrival.hr
-        bleed = run(arrival, (Drift("loss", "V", 0, 30, -8.0),), 30, profile)
-        rates = [item.pulse_rate_bpm for item in bleed.derived()]
+        volume_loss = run(arrival, (Drift("loss", "V", 0, 30, -8.0),), 30, profile)
+        rates = [item.pulse_rate_bpm for item in volume_loss.derived()]
         _expect(max(rates) > arrival.hr, f"HR1 ({case}): deterioration did not raise HR")
         recovered = run(arrival, (Drift("loss", "V", 0, 30, -8.0), Drift("restore", "V", 30, 31, 640.0)), 240,
                         profile)
         after = [item.pulse_rate_bpm for item in recovered.derived()]
         _expect(after[-1] < arrival.hr, f"HR2 ({case}): recovery did not take HR below the arrival HR")
-        for trajectory, values in ((bleed, rates), (recovered, after)):
+        for trajectory, values in ((volume_loss, rates), (recovered, after)):
             _expect(min(state.aux.sympathetic_drive for state in trajectory.states) >= 0,
                     f"HR3 ({case}): negative sympathetic drive")
             _expect(min(values) >= rate - 1e-9, f"HR4 ({case}): HR below intrinsic without a mechanism")
@@ -512,6 +515,41 @@ FROZEN_RULES: Mapping[str, Rule] = {
                 "leaves D or lactate above the untreated run; no negative D or excess; HR never below intrinsic",
                 "arrival-state consistency of a dynamically evolving arrival; steady state is not required",
                 "the sign and intrinsic parts by construction; the treatment comparison is not guaranteed"),
+}
+
+
+#: P2I-2W-8: what each active Level-1 check that writes V or Hb directly is. A SYNTHETIC_STATE_PERTURBATION
+#: perturbs the internal coordinate to test a downstream rule, independently of haemorrhage: it may keep writing
+#: it, and it is never evidence about haemorrhage, Hb or DO2 physiology (NOT_EVIDENCE_FOR). A
+#: PHYSIOLOGICAL_HAEMORRHAGE_PROBE claims blood loss and must go through the shared blood state; no active
+#: check is one. Labels only: no rule, probe size or assertion changed.
+SYNTHETIC_STATE_PERTURBATION = "SYNTHETIC_STATE_PERTURBATION"
+PHYSIOLOGICAL_HAEMORRHAGE_PROBE = "PHYSIOLOGICAL_HAEMORRHAGE_PROBE"
+NOT_EVIDENCE_FOR = ("haemorrhage", "Hb", "DO2")
+LEVEL1_DIRECT_WRITES: Mapping[str, Mapping[str, object]] = {
+    "RR1": {"function": "check_rr1", "writes": "V", "semantics": SYNTHETIC_STATE_PERTURBATION,
+            "how": "V -8 per minute for 40 min, then +900 at minute 40, from the synthetic probe arrival",
+            "why": "a generic shock and its correction on the preload coordinate, to test that clearing lactate "
+                   "never takes RR below its ventilatory floor; no GI case, no red cells, no refill, Hb unchanged"},
+    "HR1-HR4": {"function": "check_hr", "writes": "V", "semantics": SYNTHETIC_STATE_PERTURBATION,
+                "how": "V -8 per minute for 30 min, then +640 at minute 30, from each GI case's declared arrival",
+                "why": "the rules are the chronotropic answer to haemodynamic deterioration and recovery (KD-S2, "
+                       "P2E-1, P2D-3) and read HR and the sympathetic drive only; the loss moves V alone (no red "
+                       "cells, no refill, Hb unchanged) and the restoration is no product: a hypovolaemic "
+                       "perturbation of the preload coordinate, not a haemorrhage. Through the blood state it "
+                       "would need refill and arrival-volume values that are not approved"},
+    "PL1-PL3": {"function": "check_preload", "writes": "V", "semantics": SYNTHETIC_STATE_PERTURBATION,
+                "how": "V set to 0, 250, 500 and 750 at minute 0 of the neutral arrival (static readings)",
+                "why": "reads the shape of the preload curve and the limit a depressed pump sets; no loss and no "
+                       "fluid product"},
+    "PL4": {"function": "check_congestion", "writes": "V", "semantics": SYNTHETIC_STATE_PERTURBATION,
+            "how": "V +2900 within the first minute, from a synthetic arrival with pump reserve 0.3",
+            "why": "reachability of lung water under excess preload with limited reserve: a volume-load "
+                   "perturbation, not a fluid product (the crystalloid kinetics are not approved) nor a "
+                   "haemorrhage"},
+    "DM1": {"function": "check_demand", "writes": "Hb", "semantics": SYNTHETIC_STATE_PERTURBATION,
+            "how": "Hb -30 % at minute 0 of the neutral arrival",
+            "why": "an isolated anaemia that holds delivery fixed while demand changes; no blood loss"},
 }
 
 
