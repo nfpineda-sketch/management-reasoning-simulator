@@ -4,7 +4,7 @@ Apoyo a decisiones, no decisiones. Nada de este documento aprueba un número, ma
 FACULTY_APPROVED, migra el GI, toca el tiempo de ejecución ni cambia lo que ve el residente. Todos los valores
 siguen CANDIDATE.
 
-- **Generado desde:** el congelamiento de calibración `152abc6cf3e2812fcade237f60db0430df78749e09f4199b0a0fff13a0dd4338` y el paquete `e093323d9825fd2f5502699da0b322b08ea5b48aa02a7dbf08e4da1615c02496`
+- **Generado desde:** el congelamiento de calibración `152abc6cf3e2812fcade237f60db0430df78749e09f4199b0a0fff13a0dd4338` y el paquete `7e0c2a7b3cdeb56dc66e15492662463d8863089219326bc4f19d52d9a60300ca`
   (`python -m clinical_core.decision_pack`; las tablas, con `python -m clinical_core.decision_pack_markdown`).
   Los números están en `docs/revision/P2G_decision_pack.json`. Una prueba falla si el código o las entradas cambian
   sin regenerarlos.

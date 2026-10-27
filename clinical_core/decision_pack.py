@@ -711,12 +711,13 @@ def reachability_analysis() -> dict:
 # The pack ---------------------------------------------------------------------------------------
 
 #: Not hashed: modules the pack's numbers cannot depend on. The renderer only writes the pack into
-#: the faculty document; the P2I decision slices, the P2I-2 faculty constraints and the P2I-2P and
-#: P2I-2Q probes read the pack, never the other way round (a test runs the pack and checks that it
-#: never loads them).
+#: the faculty document; the P2I decision slices, the P2I-2 faculty constraints and the P2I-2P,
+#: P2I-2Q and P2I-2S probes read the pack, never the other way round (a test runs the pack and
+#: checks that it never loads them).
 PACK_DIGEST_EXCLUDED = ("clinical_core/decision_pack_markdown.py", "clinical_core/lactate_slice.py",
                         "clinical_core/faculty_constraints.py", "clinical_core/lactate_constraints.py",
-                        "clinical_core/oxygen_probes.py", "clinical_core/hemodynamic_probes.py")
+                        "clinical_core/oxygen_probes.py", "clinical_core/hemodynamic_probes.py",
+                        "clinical_core/haemorrhage_probes.py")
 
 
 def pack_sources() -> dict[str, str]:

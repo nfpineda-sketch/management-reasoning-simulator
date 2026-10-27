@@ -133,7 +133,7 @@ Estado anterior a P2I-2P, inferido del código y de su documentación, sin supon
 ## 4. Sondas y hallazgos (generado)
 
 <!-- generado:oxigeno -->
-Generado desde las sondas `a476b25abad51ed9d89f59f72ae83972c6fca967f8f4ea1746d9744e8e1d9e45` (`python -m clinical_core.oxygen_probes`). Reserva canónica 1 (neutra: el modelo previo); reserva ilustrativa 2,5, sintética y no propuesta. Colapso: sólo un cálculo sobre cada trayectoria, con un umbral de gasto sintético de 0,3 y un límite de carga sintético de 30 minutos a severidad plena; la regla del núcleo sigue apagada. Los lactatos de las sondas A–J usan las cinéticas por defecto del perfil (TBD): importa su dirección, no su magnitud.
+Generado desde las sondas `760627b365b161b166872b932b2bd5cf4fdba6b3507ad17a28215dfb2a8f1357` (`python -m clinical_core.oxygen_probes`). Reserva canónica 1 (neutra: el modelo previo); reserva ilustrativa 2,5, sintética y no propuesta. Colapso: sólo un cálculo sobre cada trayectoria, con un umbral de gasto sintético de 0,3 y un límite de carga sintético de 30 minutos a severidad plena; la regla del núcleo sigue apagada. Los lactatos de las sondas A–J usan las cinéticas por defecto del perfil (TBD): importa su dirección, no su magnitud.
 
 ### 4.1 Sondas A–J
 

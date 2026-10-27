@@ -113,7 +113,7 @@ Nota sobre P:
 ## 4. Tablas (generado)
 
 <!-- generado:hemodinamica -->
-Generado desde las sondas `a476b25abad51ed9d89f59f72ae83972c6fca967f8f4ea1746d9744e8e1d9e45` (`python -m clinical_core.hemodynamic_probes`). Oxígeno con la reserva candidata 2,5 (banda 2,0–3,0, no aprobada) y la banda de llegada re-anclada. Representante: `debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=midpoint;delivery=midpoint`, miembro de la región restringida comprometida de P2I-2R (leída, no refiltrada). Cargas de colapso sintéticas con los valores candidatos del registro: umbral de gasto 0,3, 1,0 por minuto a severidad plena, límites 5 / 15 / 30, repago τ 60 min; umbral de déficit profundo 0,5. La regla del núcleo sigue apagada.
+Generado desde las sondas `760627b365b161b166872b932b2bd5cf4fdba6b3507ad17a28215dfb2a8f1357` (`python -m clinical_core.hemodynamic_probes`). Oxígeno con la reserva candidata 2,5 (banda 2,0–3,0, no aprobada) y la banda de llegada re-anclada. Representante: `debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=midpoint;delivery=midpoint`, miembro de la región restringida comprometida de P2I-2R (leída, no refiltrada). Cargas de colapso sintéticas con los valores candidatos del registro: umbral de gasto 0,3, 1,0 por minuto a severidad plena, límites 5 / 15 / 30, repago τ 60 min; umbral de déficit profundo 0,5. La regla del núcleo sigue apagada.
 
 ### 4.1 Qué mueve V (mL-eq) en los escenarios GI
 
