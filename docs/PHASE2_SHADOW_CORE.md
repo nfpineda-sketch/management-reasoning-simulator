@@ -2375,3 +2375,27 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - el paquete P2G y el corte P2I-1 se regeneraron con cifras idénticas, y su digest cambia por las fuentes del núcleo;
   - el congelamiento de calibración no cambia.
 - **Gancho en tiempo de ejecución:** ninguno.
+
+## 21. P2I-2Q · Plausibilidad hemodinámica antes del refiltrado del lactato (2026-10-27)
+
+- **Base:** `dcf3c09`. La docencia aceptó P2I-2P:
+  - la semántica del oxígeno;
+  - los estados ADEQUATE, COMPENSATED y CRITICAL;
+  - FD-LAC-06 por trayectoria neta, sin orden de reanimación;
+  - ρ candidata 2,0–3,0 (2,5) con la banda re-anclada.
+
+  Pidió auditar la cadena V → precarga → gasto → presión → DO2 → déficit → colapso antes de volver a filtrar.
+- **Paquete de sólo lectura:**
+  - sondas en `clinical_core/hemodynamic_probes.py`; informe en `docs/revision/P2I2Q_PLAUSIBILIDAD_HEMODINAMICA.md` y
+    `docs/revision/P2I2Q_hemodynamic_probes.json`;
+  - ninguna fisiología, valor por defecto, banda, registro ni golden cambia;
+  - no se vuelve a filtrar.
+- **Hallazgo:** V es un desplazamiento de la precarga efectiva en mL-eq; su escala viene de una conversión heredada.
+  - La llegada GI queda a 359 mL-eq (57m) y 498 mL-eq (72f) del gasto cero.
+  - El sangrado de 2,5 mL-eq/min la consume en 2 h.
+  - Incluso la euvolemia llega al flujo cero tras unos 1000 mL-eq.
+- **Clasificación:** PARAMETER_SCALE_CALIBRATION_ERROR. La forma de la curva cumple los requisitos; λ candidata
+  1500–2000 mL-eq, para la docencia.
+- **Colapso:** la señal recomendada es el déficit crítico normalizado, con dosis propia, sin D y sin exigir gasto bajo.
+- **Estado mental:** debería leer el déficit crítico agudo, con D como persistencia; no se cambió.
+- **Gancho en tiempo de ejecución:** ninguno.
