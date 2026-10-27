@@ -215,7 +215,9 @@ def test_the_count_matches_brute_force_with_a_common_and_a_case_specific_rate():
         region[name] = tuple(sorted({p1[name], p2[name]}))
     table = bc.tables(region)
     sets = [(name,) for name in bc.READINGS] + [bc.CONSTRAINTS, ("U-OUT", "U-HB", "FD-BLD-03")]
-    for names in sets:
+    # V5 reads FD-BLD-04 from another table (the crystalloid run with and without the bag): counted the same way.
+    for variant, names in [(None, names) for names in sets] + [("V5_fd04_net_effect", ("FD-BLD-04",)),
+                                                               ("V5_fd04_net_effect", bc.CONSTRAINTS)]:
         specific = common = 0
         alone = {case: 0 for case in bc.CASES}
         for combination in itertools.product(*(region[n] for n in bc.SHARED)):
@@ -226,15 +228,16 @@ def test_the_count_matches_brute_force_with_a_common_and_a_case_specific_rate():
                 for bleed in region[bc.BLEED]:
                     for position in region[bc.POS]:
                         values = {**shared, bc.BLEED: bleed, bc.POS: position}
-                        if all(bc.passes(n, case, *bc._row(table, case, n, values, None)[:1], None,
-                                         bc._row(table, case, n, values, None)[1]) for n in names):
+                        if all(bc.passes(n, case, *bc._row(table, case, n, values, variant)[:1], variant,
+                                         bc._row(table, case, n, values, variant)[1]) for n in names):
                             ok[case].append(bleed)
                 alone[case] += len(ok[case])
             specific += len(ok[bc.CASES[0]]) * len(ok[bc.CASES[1]])
             common += sum(1 for a in ok[bc.CASES[0]] for b in ok[bc.CASES[1]] if a == b)
-        counted = bc.count(table, region, None, names)
-        assert (counted["joint"], counted["alone"]) == (common, alone), names
-        assert bc.count(table, region, bc.CASE_SPECIFIC, names)["joint"] == specific, names
+        counted = bc.count(table, region, variant, names)
+        assert (counted["joint"], counted["alone"]) == (common, alone), (variant, names)
+        if variant is None:
+            assert bc.count(table, region, bc.CASE_SPECIFIC, names)["joint"] == specific, names
     assert bc.region_size(region, common=True)["joint"] * 2 == bc.region_size(region)["joint"]
 
 
@@ -264,3 +267,65 @@ def test_the_p2i2v_record_is_kept_as_it_ran():
     diagnosed = json.loads((REVISION / "P2I2V_blood_diagnostic.json").read_text(encoding="utf-8"))
     assert p2i2v["primary"]["joint"] == 0 and diagnosed["dropped"] == "U-HB"
     assert diagnosed["count"]["joint"] == p2i2v["without"]["U-HB"]["joint"]
+
+
+# After the P2I-2V-R freeze: the refilter's record -------------------------------------------------------
+
+@pytest.fixture(scope="module")
+def refiltered():
+    return json.loads(FILTER.read_text(encoding="utf-8"))
+
+
+def test_the_refilter_ran_with_the_revised_freeze_on_the_same_grid(refiltered):
+    assert refiltered["freeze_digest"] == FROZEN_DIGEST and refiltered["revision"] == "P2I-2V-R"
+    assert refiltered["sizes"] == {"common_bleed": 3 ** 14, "case_specific": 3 ** 15, "alone": 3 ** 13}
+    assert refiltered["region"] == bc._plain({n: list(bc.REGION[n]) for n in bc.PARAMETERS})
+    p2i2v = json.loads((REVISION / "P2I2V_blood_filter.json").read_text(encoding="utf-8"))
+    assert refiltered["region"] == p2i2v["region"], "the grid did not change before the revised filter"
+    assert set(refiltered["single"]) == set(refiltered["without"]) == set(bc.CONSTRAINTS)
+    assert set(refiltered["variants"]) == set(bc.VARIANTS) and "FD-BLD-03" not in refiltered["single"]
+
+
+def test_the_refilter_counts_are_coherent(refiltered):
+    primary = refiltered["primary"]
+    for name in bc.CONSTRAINTS:
+        assert primary["joint"] <= refiltered["without"][name]["joint"] <= refiltered["sizes"]["common_bleed"]
+        assert primary["joint"] <= refiltered["single"][name]["joint"]
+    for name in ("SECOND-UNIT", "FD-BLD-08", "FD-BLD-09"):
+        assert refiltered["single"][name]["joint"] == refiltered["sizes"]["common_bleed"], name
+    # A common rate can only remove pairs that case-specific rates allow.
+    assert primary["joint"] <= refiltered["variants"][bc.CASE_SPECIFIC]["joint"]
+    # FD-BLD-03 only reports: its readings never add survivors, and V2 / V3 leave the filter's count unchanged.
+    for item in refiltered["fd_bld_03"].values():
+        assert item["joint"] <= primary["joint"]
+    for name in ("V2_fd03_both_midpoint", "V3_fd03_both_lower"):
+        assert refiltered["variants"][name]["joint"] == primary["joint"]
+    assert refiltered["conflicts"] == [] if primary["joint"] else refiltered["conflicts"]
+    assert sum(primary["marginal"][f"{bc.BLEED}|common"].values()) == primary["joint"]
+
+
+def test_the_representatives_are_live_survivors_with_one_common_rate(refiltered):
+    if not refiltered["primary"]["joint"]:
+        pytest.skip("no survivor")
+    for item in refiltered["representatives"].values():
+        values = item["values"]
+        assert values[bc.CASES[0]][bc.BLEED] == values[bc.CASES[1]][bc.BLEED]
+        assert values[bc.CASES[0]]["reserve"] == blood_anchors.REFERENCE["reserve"]
+        for case in bc.CASES:
+            candidate = {name: (float(v) if not isinstance(v, str) else v) for name, v in values[case].items()}
+            verdicts = bc.evaluate(case, candidate)["verdicts"]["primary"]
+            assert all(verdicts[name] for name in bc.CONSTRAINTS), (case, verdicts)
+
+
+def test_nothing_is_selected_or_approved_by_the_refilter(refiltered):
+    text = json.dumps(refiltered)
+    assert "FACULTY_APPROVED" not in text and "selected" not in text
+    assert refiltered["identifiability"]["basis"] in ("joint", "each case alone (no joint survivor)")
+    classes = refiltered["identifiability"]["classes"]
+    assert {classes[name]["class"] for name in ("volume_preload_kappa", "preload_curve_scale_ml", "reserve")} == {
+        bc.SEPARATELY}
+
+
+def test_the_document_filter_block_is_generated(refiltered):
+    document = DOCUMENT.read_text(encoding="utf-8")
+    assert report.apply(document, "filtro", report.render_filter(refiltered)) == document

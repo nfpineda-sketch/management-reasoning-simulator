@@ -459,8 +459,12 @@ def test_p2d7_lower_afterload_may_raise_output_but_does_not_normalize_pressure()
         "PHYSIOLOGICALLY_PLAUSIBLE_PENDING_MULTI_FAMILY_CALIBRATION"
 
 
-def test_p2d7_a_rise_in_output_is_not_automatic_in_sepsis_with_preload_loss():
+def test_historical_probe_record_p2d7_sepsis_with_preload_loss():
+    """Records what the `vasodilation_with_preload_loss` HISTORICAL_PROBE (P2I-2V-R) still produces for P2D-7. It
+    writes V directly, outside the shared blood state, so it does not validate the current circulating physiology."""
     from clinical_core import bands
+    assert "vasodilation_with_preload_loss" in bands.HISTORICAL_PROBES
+    assert bands.DIAGNOSTICS["vasodilation_with_preload_loss"]["status"].startswith(bands.HISTORICAL_PROBE)
     rows = bands.probe("vasodilation_with_preload_loss")
     arrival, late = rows[0], rows[-1]
     assert late["output_rel"] < arrival["output_rel"] and late["delivery_rel"] < arrival["delivery_rel"]

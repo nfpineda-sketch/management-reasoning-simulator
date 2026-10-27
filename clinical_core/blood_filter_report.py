@@ -246,7 +246,8 @@ def render_sensitivity(data: dict) -> str:
         "FD-BLD-05 (desde el inicio o desde el fin de la infusión), la línea de base de la reversión en FD-BLD-06, la "
         "velocidad de la infusión de 2 L y el reloj de FD-BLD-07. Cada uno tiene su variante declarada antes del filtro "
         "(V9, V6, V10), salvo la velocidad de 2 L, que se deja como la de P2I-2U (20 min) y se señala como limitación. "
-        "El efecto neto (V5) apenas difiere del retenido. La Hb sin tratar no sube en ningún minuto (U-HB v2).")
+        "En los puntos de prueba, el efecto neto (V5) difiere del retenido en menos de 0,01. La Hb sin tratar no sube "
+        "en ningún minuto (U-HB v2).")
     return "\n".join(lines)
 
 
@@ -336,12 +337,15 @@ def render_filter(data: dict, diagnostic_data: dict | None = None) -> str:
     add("### 5.3 FD-BLD-03, sólo diagnóstico\n")
     add("Cuántos sobrevivientes no llegarían a la referencia euvolémica tras una unidad, con cada lectura (la diferencia "
         "con el total son los que sí llegarían). Nadie se rechaza por esto.\n")
-    add("| Lectura de «normalizado» | 57m | 72f | conjunto | de un total de |")
-    add("|---|---|---|---|---|")
+    add("| Lectura de «normalizado» | 57m | 72f | conjunto |")
+    add("|---|---|---|---|")
     labels = {"primary": "57m ≥ 0,6, 72f ≥ 0,7", "V2_fd03_both_midpoint": "ambos ≥ 0,7", "V3_fd03_both_lower": "ambos ≥ 0,6"}
     for key, item in data["fd_bld_03"].items():
-        add(f"| {labels[key]} | " + " | ".join(_count_cells(item)) + f" | {_n(primary['joint'], 0)} |")
+        add(f"| {labels[key]} | " + " | ".join(_count_cells(item)) + " |")
+    add("| de un total de | " + " | ".join(_count_cells(primary)) + " |")
     add("")
+    add("En el conjunto, un candidato «llega» si llega en al menos uno de los dos casos. La lectura «ambos ≥ 0,6» es "
+        "degenerada en 72f: su posición de llegada superior (0,6) ya está en ese límite antes de la unidad.\n")
     joint = primary["joint"] > 0
     add("### 5.4 Región candidata restringida por la docencia (FACULTY-CONSTRAINED SHARED-BLOOD CANDIDATE REGION)\n")
     if joint:
@@ -389,6 +393,10 @@ def render_filter(data: dict, diagnostic_data: dict | None = None) -> str:
                    else PARAMETERS_ES.get(name, name) + (f" ({suffix})" if suffix else ""))
             left = None if item.get("left") is None else ", ".join(_value(v) for v in item["left"]) or "ninguno"
             edge = " (borde de la cuadrícula: la acota, no la identifica)" if item.get("grid_edge") else ""
+            explored = data["region"].get(name, [])
+            if (item["class"] == bc.PARTIAL and item.get("left") and explored
+                    and (item["left"][-1] == str(explored[-1]) or item["left"][0] == str(explored[0]))):
+                edge = " (abierto en el borde de la cuadrícula: ese lado lo acota la cuadrícula, no las restricciones)"
             detail = "; ".join(part for part in (left, item.get("why")) if part) or "—"
             add(f"| {tag} | {CLASSES_ES[item['class']]}{edge} | {detail} |")
     else:

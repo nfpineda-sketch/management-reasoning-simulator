@@ -461,9 +461,16 @@ def test_level_2_probes_move_the_way_the_decisions_say():
                                                  * haemorrhage[-1]["circulating_ml"])
     assert haemorrhage[-1]["circulating_ml"] > -600.0
     assert 12.5 < haemorrhage[-1]["hb"] < haemorrhage[0]["hb"] == 13.0
-    overload = bands.probe("overload")  # a HISTORICAL_PROBE since P2I-2V-R: still runnable, as a record
-    assert overload[-1]["L"] > 0 and overload[-1]["output_rel"] - overload[1]["output_rel"] < 0.2
     assert bands.probe("opioid")[-1]["respiratory_rate"] < 10 < bands.probe("bronchospasm")[-1]["respiratory_rate"]
+
+
+def test_historical_probe_record_overload():
+    """Records what the `overload` HISTORICAL_PROBE (P2I-2V-R) still produces. It writes V directly, outside the
+    shared blood state, so it does not validate the current circulating physiology; it only keeps the record."""
+    from clinical_core import bands
+    assert "overload" in bands.HISTORICAL_PROBES and "overload" not in bands.PROBES
+    overload = bands.probe("overload")
+    assert overload[-1]["L"] > 0 and overload[-1]["output_rel"] - overload[1]["output_rel"] < 0.2
 
 
 def test_the_haemorrhage_band_probe_is_one_synthetic_whole_blood_flow():
