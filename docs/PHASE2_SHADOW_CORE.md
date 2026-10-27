@@ -2555,3 +2555,26 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Identificabilidad:** no evaluable sin sobrevivientes. κ, λ y ρ siguen NON_IDENTIFIABLE_SEPARATELY.
 - **Sondas de nivel 2 de líquidos:** se informan, no se convierten, porque la conversión ampliaría el alcance.
 - **Sin filtro de lactato**, sin elección de parámetros ocultos y sin gancho en tiempo de ejecución.
+
+## 26. P2I-2V-R · Restricciones del estado sanguíneo compartido revisadas y nuevo filtro (2026-10-27)
+
+- **Base:** `7057cc9`. P2I-2V queda aceptado como filtro diagnóstico y como registro histórico, sin regenerar.
+  Informe: `docs/revision/P2I2VR_RESTRICCIONES_REVISADAS_FILTRO.md`.
+- **Revisiones aplicadas:**
+  - U-HB FACULTY_APPROVED v2: sin caída mínima de Hb sin tratar, y la Hb no sube por la hemorragia misma;
+  - FD-BLD-03 FACULTY_APPROVED_QUALITATIVE / NOT_YET_HARD_FILTER: se informa, no filtra;
+  - V5 implementada tal como se declaró;
+  - tasa de sangrado común como lectura primaria; tasas por caso como sensibilidad (V8);
+  - FD-BLD-07 sin cambios.
+- **Sondas de nivel 2:** las cuatro que escribían V directamente quedan como `HISTORICAL_PROBE`, fuera del arnés
+  activo. Cambia `harness_sources`, con el motivo registrado. Las comprobaciones de nivel 1 que escriben V siguen
+  siendo reglas congeladas, fuera de este encargo.
+- **Congelamiento antes del filtro:** commit `7c073ad`, resumen `a9ab10d8…`. Sólo se usaron puntos fuera de la
+  cuadrícula, y la cuadrícula no cambió.
+- **Resultado:**
+  - 4896 sobrevivientes conjuntos con tasa común (6030 con tasas por caso).
+  - U-HB v2 no acota; sí acotan U-OUT, FD-BLD-07, 05, 02, 01 y 06.
+  - La posición de llegada queda en el borde superior de cada banda.
+  - Según el diagnóstico de FD-BLD-03, 3402 sobrevivientes llegarían a la referencia euvolémica con una unidad, en
+    al menos uno de los dos casos.
+- **Sin elegir parámetros ocultos**, sin filtro de lactato y sin gancho en tiempo de ejecución.
