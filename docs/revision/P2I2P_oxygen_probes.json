@@ -1,0 +1,3282 @@
+{
+ "admissible_candidates": 1054,
+ "canonical_reserve": 1.0,
+ "probes": {
+  "A normal": {
+   "1": {
+    "collapse_limit_reached": {
+     "output": null,
+     "oxygen_deficit": null
+    },
+    "first_critical_minute": null,
+    "lactate_direction": [
+     "flat",
+     "flat",
+     "flat",
+     "flat",
+     "flat"
+    ],
+    "max_D": 0.0,
+    "points": {
+     "0": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 0,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "120": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 120,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "15": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 15,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "30": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 30,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "60": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 60,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "90": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 90,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     }
+    },
+    "reserve": 1.0,
+    "states_seen": [
+     "ADEQUATE"
+    ],
+    "what": "normal delivery, normal demand"
+   },
+   "2.5": {
+    "collapse_limit_reached": {
+     "output": null,
+     "oxygen_deficit": null
+    },
+    "first_critical_minute": null,
+    "lactate_direction": [
+     "flat",
+     "flat",
+     "flat",
+     "flat",
+     "flat"
+    ],
+    "max_D": 0.0,
+    "points": {
+     "0": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 0,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "120": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 120,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "15": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 15,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "30": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 30,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "60": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 60,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "90": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 90,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     }
+    },
+    "reserve": 2.5,
+    "states_seen": [
+     "ADEQUATE"
+    ],
+    "what": "normal delivery, normal demand"
+   }
+  },
+  "B compensated low delivery": {
+   "1": {
+    "collapse_limit_reached": {
+     "output": null,
+     "oxygen_deficit": 115
+    },
+    "first_critical_minute": 1,
+    "lactate_direction": [
+     "rises",
+     "rises",
+     "rises",
+     "rises",
+     "rises"
+    ],
+    "max_D": 14.858857011377381,
+    "points": {
+     "0": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 0,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "120": {
+      "D": 14.858857011377381,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 31.650000000000066,
+      "delivery": 0.6999999999999997,
+      "demand": 1.0,
+      "effective_deficit": 0.30000000000000027,
+      "hb": 13.0,
+      "lactate": 1.312068679519796,
+      "minute": 120,
+      "output_rel": 0.6999999999999997,
+      "required_extraction": 1.428571428571429,
+      "sbp": 106.49999999999999,
+      "state": "CRITICAL",
+      "supply_ratio": 0.6999999999999997
+     },
+     "15": {
+      "D": 0.9778230860451849,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 1.200000000000001,
+      "delivery": 0.8499999999999999,
+      "demand": 1.0,
+      "effective_deficit": 0.15000000000000013,
+      "hb": 13.0,
+      "lactate": 1.0022884013807962,
+      "minute": 15,
+      "output_rel": 0.8499999999999999,
+      "required_extraction": 1.1764705882352944,
+      "sbp": 113.25,
+      "state": "CRITICAL",
+      "supply_ratio": 0.8499999999999999
+     },
+     "30": {
+      "D": 3.7432940176123055,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 4.650000000000004,
+      "delivery": 0.6999999999999997,
+      "demand": 1.0,
+      "effective_deficit": 0.30000000000000027,
+      "hb": 13.0,
+      "lactate": 1.0180833415856614,
+      "minute": 30,
+      "output_rel": 0.6999999999999997,
+      "required_extraction": 1.428571428571429,
+      "sbp": 106.49999999999999,
+      "state": "CRITICAL",
+      "supply_ratio": 0.6999999999999997
+     },
+     "60": {
+      "D": 9.38922916950812,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 13.650000000000025,
+      "delivery": 0.6999999999999997,
+      "demand": 1.0,
+      "effective_deficit": 0.30000000000000027,
+      "hb": 13.0,
+      "lactate": 1.1025884817518719,
+      "minute": 60,
+      "output_rel": 0.6999999999999997,
+      "required_extraction": 1.428571428571429,
+      "sbp": 106.49999999999999,
+      "state": "CRITICAL",
+      "supply_ratio": 0.6999999999999997
+     },
+     "90": {
+      "D": 12.799263280953767,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 22.650000000000045,
+      "delivery": 0.6999999999999997,
+      "demand": 1.0,
+      "effective_deficit": 0.30000000000000027,
+      "hb": 13.0,
+      "lactate": 1.2114251175434996,
+      "minute": 90,
+      "output_rel": 0.6999999999999997,
+      "required_extraction": 1.428571428571429,
+      "sbp": 106.49999999999999,
+      "state": "CRITICAL",
+      "supply_ratio": 0.6999999999999997
+     }
+    },
+    "reserve": 1.0,
+    "states_seen": [
+     "ADEQUATE",
+     "CRITICAL"
+    ],
+    "what": "pump falls 30 % over 30 min, then holds"
+   },
+   "2.5": {
+    "collapse_limit_reached": {
+     "output": null,
+     "oxygen_deficit": null
+    },
+    "first_critical_minute": null,
+    "lactate_direction": [
+     "flat",
+     "flat",
+     "flat",
+     "flat",
+     "flat"
+    ],
+    "max_D": 0.0,
+    "points": {
+     "0": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 0,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "120": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 0.6999999999999997,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 120,
+      "output_rel": 0.6999999999999997,
+      "required_extraction": 1.428571428571429,
+      "sbp": 106.49999999999999,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.6999999999999997
+     },
+     "15": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 0.8499999999999999,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 15,
+      "output_rel": 0.8499999999999999,
+      "required_extraction": 1.1764705882352944,
+      "sbp": 113.25,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.8499999999999999
+     },
+     "30": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 0.6999999999999997,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 30,
+      "output_rel": 0.6999999999999997,
+      "required_extraction": 1.428571428571429,
+      "sbp": 106.49999999999999,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.6999999999999997
+     },
+     "60": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 0.6999999999999997,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 60,
+      "output_rel": 0.6999999999999997,
+      "required_extraction": 1.428571428571429,
+      "sbp": 106.49999999999999,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.6999999999999997
+     },
+     "90": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 0.6999999999999997,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 90,
+      "output_rel": 0.6999999999999997,
+      "required_extraction": 1.428571428571429,
+      "sbp": 106.49999999999999,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.6999999999999997
+     }
+    },
+    "reserve": 2.5,
+    "states_seen": [
+     "ADEQUATE",
+     "COMPENSATED"
+    ],
+    "what": "pump falls 30 % over 30 min, then holds"
+   }
+  },
+  "C delivery crossing the critical region": {
+   "1": {
+    "collapse_limit_reached": {
+     "output": null,
+     "oxygen_deficit": 87
+    },
+    "first_critical_minute": 1,
+    "lactate_direction": [
+     "rises",
+     "rises",
+     "rises",
+     "rises",
+     "rises"
+    ],
+    "max_D": 31.254299189593272,
+    "points": {
+     "0": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 0,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "120": {
+      "D": 31.254299189593272,
+      "burden_output": 8.920000000000076,
+      "burden_oxygen_deficit": 56.39999999999996,
+      "delivery": 0.1999999999999993,
+      "demand": 1.0,
+      "effective_deficit": 0.8000000000000007,
+      "hb": 13.0,
+      "lactate": 1.510929246621465,
+      "minute": 120,
+      "output_rel": 0.1999999999999993,
+      "required_extraction": 5.000000000000018,
+      "sbp": 38.99999999999986,
+      "state": "CRITICAL",
+      "supply_ratio": 0.1999999999999993
+     },
+     "15": {
+      "D": 0.782258468836148,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.9600000000000009,
+      "delivery": 0.8799999999999999,
+      "demand": 1.0,
+      "effective_deficit": 0.1200000000000001,
+      "hb": 13.0,
+      "lactate": 1.0018307211046371,
+      "minute": 15,
+      "output_rel": 0.8799999999999999,
+      "required_extraction": 1.1363636363636365,
+      "sbp": 114.6,
+      "state": "CRITICAL",
+      "supply_ratio": 0.8799999999999999
+     },
+     "30": {
+      "D": 2.994635214089844,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 3.7200000000000033,
+      "delivery": 0.7599999999999998,
+      "demand": 1.0,
+      "effective_deficit": 0.2400000000000002,
+      "hb": 13.0,
+      "lactate": 1.0144666732685292,
+      "minute": 30,
+      "output_rel": 0.7599999999999998,
+      "required_extraction": 1.3157894736842108,
+      "sbp": 109.19999999999999,
+      "state": "CRITICAL",
+      "supply_ratio": 0.7599999999999998
+     },
+     "60": {
+      "D": 10.506018549696343,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 14.640000000000008,
+      "delivery": 0.5199999999999996,
+      "demand": 1.0,
+      "effective_deficit": 0.4800000000000004,
+      "hb": 13.0,
+      "lactate": 1.0965374586700267,
+      "minute": 60,
+      "output_rel": 0.5199999999999996,
+      "required_extraction": 1.9230769230769247,
+      "sbp": 98.39999999999998,
+      "state": "CRITICAL",
+      "supply_ratio": 0.5199999999999996
+     },
+     "90": {
+      "D": 20.74542917445935,
+      "burden_output": 0.12000000000000621,
+      "burden_oxygen_deficit": 32.76000000000001,
+      "delivery": 0.27999999999999936,
+      "demand": 1.0,
+      "effective_deficit": 0.7200000000000006,
+      "hb": 13.0,
+      "lactate": 1.2656775527048263,
+      "minute": 90,
+      "output_rel": 0.27999999999999936,
+      "required_extraction": 3.5714285714285796,
+      "sbp": 54.59999999999987,
+      "state": "CRITICAL",
+      "supply_ratio": 0.27999999999999936
+     }
+    },
+    "reserve": 1.0,
+    "states_seen": [
+     "ADEQUATE",
+     "CRITICAL"
+    ],
+    "what": "pump falls steadily to 0.2 over 100 min"
+   },
+   "2.5": {
+    "collapse_limit_reached": {
+     "output": null,
+     "oxygen_deficit": null
+    },
+    "first_critical_minute": 75,
+    "lactate_direction": [
+     "flat",
+     "flat",
+     "flat",
+     "rises",
+     "rises"
+    ],
+    "max_D": 12.350573978003542,
+    "points": {
+     "0": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 0,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "120": {
+      "D": 12.350573978003542,
+      "burden_output": 8.920000000000076,
+      "burden_oxygen_deficit": 16.50000000000007,
+      "delivery": 0.1999999999999993,
+      "demand": 1.0,
+      "effective_deficit": 0.5000000000000018,
+      "hb": 13.0,
+      "lactate": 1.1012892842020159,
+      "minute": 120,
+      "output_rel": 0.1999999999999993,
+      "required_extraction": 5.000000000000018,
+      "sbp": 38.99999999999986,
+      "state": "CRITICAL",
+      "supply_ratio": 0.1999999999999993
+     },
+     "15": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 0.8799999999999999,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 15,
+      "output_rel": 0.8799999999999999,
+      "required_extraction": 1.1363636363636365,
+      "sbp": 114.6,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.8799999999999999
+     },
+     "30": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 0.7599999999999998,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 30,
+      "output_rel": 0.7599999999999998,
+      "required_extraction": 1.3157894736842108,
+      "sbp": 109.19999999999999,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.7599999999999998
+     },
+     "60": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 0.5199999999999996,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 60,
+      "output_rel": 0.5199999999999996,
+      "required_extraction": 1.9230769230769247,
+      "sbp": 98.39999999999998,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.5199999999999996
+     },
+     "90": {
+      "D": 1.9556461720903877,
+      "burden_output": 0.12000000000000621,
+      "burden_oxygen_deficit": 2.4000000000000234,
+      "delivery": 0.27999999999999936,
+      "demand": 1.0,
+      "effective_deficit": 0.3000000000000016,
+      "hb": 13.0,
+      "lactate": 1.0045768027615927,
+      "minute": 90,
+      "output_rel": 0.27999999999999936,
+      "required_extraction": 3.5714285714285796,
+      "sbp": 54.59999999999987,
+      "state": "CRITICAL",
+      "supply_ratio": 0.27999999999999936
+     }
+    },
+    "reserve": 2.5,
+    "states_seen": [
+     "ADEQUATE",
+     "COMPENSATED",
+     "CRITICAL"
+    ],
+    "what": "pump falls steadily to 0.2 over 100 min"
+   }
+  },
+  "D anaemia, output preserved": {
+   "1": {
+    "collapse_limit_reached": {
+     "output": null,
+     "oxygen_deficit": 106
+    },
+    "first_critical_minute": 1,
+    "lactate_direction": [
+     "rises",
+     "rises",
+     "rises",
+     "rises",
+     "rises"
+    ],
+    "max_D": 21.964192642781683,
+    "points": {
+     "0": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 0,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "120": {
+      "D": 21.964192642781683,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 39.09230769230785,
+      "delivery": 0.3538461538461512,
+      "demand": 1.0,
+      "effective_deficit": 0.6461538461538487,
+      "hb": 4.599999999999966,
+      "lactate": 1.3468584109850625,
+      "minute": 120,
+      "output_rel": 1.0,
+      "required_extraction": 2.82608695652176,
+      "sbp": 120.0,
+      "state": "CRITICAL",
+      "supply_ratio": 0.3538461538461512
+     },
+     "15": {
+      "D": 0.5265201232551013,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.6461538461538489,
+      "delivery": 0.9192307692307689,
+      "demand": 1.0,
+      "effective_deficit": 0.08076923076923115,
+      "hb": 11.949999999999996,
+      "lactate": 1.001232216128121,
+      "minute": 15,
+      "output_rel": 1.0,
+      "required_extraction": 1.0878661087866113,
+      "sbp": 120.0,
+      "state": "CRITICAL",
+      "supply_ratio": 0.9192307692307689
+     },
+     "30": {
+      "D": 2.015619855637402,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 2.5038461538461645,
+      "delivery": 0.8384615384615378,
+      "demand": 1.0,
+      "effective_deficit": 0.16153846153846219,
+      "hb": 10.899999999999991,
+      "lactate": 1.0097371839307407,
+      "minute": 30,
+      "output_rel": 1.0,
+      "required_extraction": 1.1926605504587164,
+      "sbp": 120.0,
+      "state": "CRITICAL",
+      "supply_ratio": 0.8384615384615378
+     },
+     "60": {
+      "D": 7.0713586392187135,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 9.853846153846195,
+      "delivery": 0.6769230769230756,
+      "demand": 1.0,
+      "effective_deficit": 0.32307692307692437,
+      "hb": 8.799999999999983,
+      "lactate": 1.0649771356432873,
+      "minute": 60,
+      "output_rel": 1.0,
+      "required_extraction": 1.4772727272727302,
+      "sbp": 120.0,
+      "state": "CRITICAL",
+      "supply_ratio": 0.6769230769230756
+     },
+     "90": {
+      "D": 13.963269636655378,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 22.05000000000009,
+      "delivery": 0.5153846153846134,
+      "demand": 1.0,
+      "effective_deficit": 0.48461538461538656,
+      "hb": 6.699999999999974,
+      "lactate": 1.178821429705172,
+      "minute": 90,
+      "output_rel": 1.0,
+      "required_extraction": 1.940298507462694,
+      "sbp": 120.0,
+      "state": "CRITICAL",
+      "supply_ratio": 0.5153846153846134
+     }
+    },
+    "reserve": 1.0,
+    "states_seen": [
+     "ADEQUATE",
+     "CRITICAL"
+    ],
+    "what": "Hb falls 0.07 g/dL per min (13 to 4.6 g/dL)"
+   },
+   "2.5": {
+    "collapse_limit_reached": {
+     "output": null,
+     "oxygen_deficit": null
+    },
+    "first_critical_minute": 112,
+    "lactate_direction": [
+     "flat",
+     "flat",
+     "flat",
+     "flat",
+     "rises"
+    ],
+    "max_D": 0.42268318156622975,
+    "points": {
+     "0": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 0,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "120": {
+      "D": 0.42268318156622975,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.5538461538462108,
+      "delivery": 0.3538461538461512,
+      "demand": 1.0,
+      "effective_deficit": 0.11538461538462197,
+      "hb": 4.599999999999966,
+      "lactate": 1.0005136242379666,
+      "minute": 120,
+      "output_rel": 1.0,
+      "required_extraction": 2.82608695652176,
+      "sbp": 120.0,
+      "state": "CRITICAL",
+      "supply_ratio": 0.3538461538461512
+     },
+     "15": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 0.9192307692307689,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 11.949999999999996,
+      "lactate": 1.0,
+      "minute": 15,
+      "output_rel": 1.0,
+      "required_extraction": 1.0878661087866113,
+      "sbp": 120.0,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.9192307692307689
+     },
+     "30": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 0.8384615384615378,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 10.899999999999991,
+      "lactate": 1.0,
+      "minute": 30,
+      "output_rel": 1.0,
+      "required_extraction": 1.1926605504587164,
+      "sbp": 120.0,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.8384615384615378
+     },
+     "60": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 0.6769230769230756,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 8.799999999999983,
+      "lactate": 1.0,
+      "minute": 60,
+      "output_rel": 1.0,
+      "required_extraction": 1.4772727272727302,
+      "sbp": 120.0,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.6769230769230756
+     },
+     "90": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 0.5153846153846134,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 6.699999999999974,
+      "lactate": 1.0,
+      "minute": 90,
+      "output_rel": 1.0,
+      "required_extraction": 1.940298507462694,
+      "sbp": 120.0,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.5153846153846134
+     }
+    },
+    "reserve": 2.5,
+    "states_seen": [
+     "ADEQUATE",
+     "COMPENSATED",
+     "CRITICAL"
+    ],
+    "what": "Hb falls 0.07 g/dL per min (13 to 4.6 g/dL)"
+   }
+  },
+  "E low output, Hb preserved": {
+   "1": {
+    "collapse_limit_reached": {
+     "output": null,
+     "oxygen_deficit": 73
+    },
+    "first_critical_minute": 1,
+    "lactate_direction": [
+     "rises",
+     "rises",
+     "rises",
+     "rises",
+     "rises"
+    ],
+    "max_D": 32.36000074202749,
+    "points": {
+     "0": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 0,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "120": {
+      "D": 32.36000074202749,
+      "burden_output": 0.40666666666699436,
+      "burden_oxygen_deficit": 63.53100000000002,
+      "delivery": 0.2979999999999984,
+      "demand": 1.0,
+      "effective_deficit": 0.7020000000000016,
+      "hb": 13.0,
+      "lactate": 1.6124877425640562,
+      "minute": 120,
+      "output_rel": 0.2979999999999984,
+      "required_extraction": 3.3557046979865954,
+      "sbp": 58.10999999999969,
+      "state": "CRITICAL",
+      "supply_ratio": 0.2979999999999984
+     },
+     "15": {
+      "D": 1.1440530106728697,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 1.4040000000000052,
+      "delivery": 0.8244999999999993,
+      "demand": 1.0,
+      "effective_deficit": 0.17550000000000066,
+      "hb": 13.0,
+      "lactate": 1.0026774296155316,
+      "minute": 15,
+      "output_rel": 0.8244999999999993,
+      "required_extraction": 1.212856276531232,
+      "sbp": 112.10249999999996,
+      "state": "CRITICAL",
+      "supply_ratio": 0.8244999999999993
+     },
+     "30": {
+      "D": 4.37965400060641,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 5.440500000000021,
+      "delivery": 0.6489999999999987,
+      "demand": 1.0,
+      "effective_deficit": 0.3510000000000013,
+      "hb": 13.0,
+      "lactate": 1.021157509655224,
+      "minute": 30,
+      "output_rel": 0.6489999999999987,
+      "required_extraction": 1.5408320493066288,
+      "sbp": 104.20499999999994,
+      "state": "CRITICAL",
+      "supply_ratio": 0.6489999999999987
+     },
+     "60": {
+      "D": 15.365052128930932,
+      "burden_output": 0.006666666666672039,
+      "burden_oxygen_deficit": 21.411000000000072,
+      "delivery": 0.2979999999999984,
+      "demand": 1.0,
+      "effective_deficit": 0.7020000000000016,
+      "hb": 13.0,
+      "lactate": 1.1411860333049142,
+      "minute": 60,
+      "output_rel": 0.2979999999999984,
+      "required_extraction": 3.3557046979865954,
+      "sbp": 58.10999999999969,
+      "state": "CRITICAL",
+      "supply_ratio": 0.2979999999999984
+     },
+     "90": {
+      "D": 25.96053616704045,
+      "burden_output": 0.2066666666668332,
+      "burden_oxygen_deficit": 42.471000000000075,
+      "delivery": 0.2979999999999984,
+      "demand": 1.0,
+      "effective_deficit": 0.7020000000000016,
+      "hb": 13.0,
+      "lactate": 1.367395911175585,
+      "minute": 90,
+      "output_rel": 0.2979999999999984,
+      "required_extraction": 3.3557046979865954,
+      "sbp": 58.10999999999969,
+      "state": "CRITICAL",
+      "supply_ratio": 0.2979999999999984
+     }
+    },
+    "reserve": 1.0,
+    "states_seen": [
+     "ADEQUATE",
+     "CRITICAL"
+    ],
+    "what": "pump falls to 0.3 over 60 min, then holds"
+   },
+   "2.5": {
+    "collapse_limit_reached": {
+     "output": null,
+     "oxygen_deficit": null
+    },
+    "first_critical_minute": 52,
+    "lactate_direction": [
+     "flat",
+     "flat",
+     "rises",
+     "rises",
+     "rises"
+    ],
+    "max_D": 10.065515309387777,
+    "points": {
+     "0": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 0,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "120": {
+      "D": 10.065515309387777,
+      "burden_output": 0.40666666666699436,
+      "burden_oxygen_deficit": 16.542000000000293,
+      "delivery": 0.2979999999999984,
+      "demand": 1.0,
+      "effective_deficit": 0.2550000000000041,
+      "hb": 13.0,
+      "lactate": 1.1469456304009393,
+      "minute": 120,
+      "output_rel": 0.2979999999999984,
+      "required_extraction": 3.3557046979865954,
+      "sbp": 58.10999999999969,
+      "state": "CRITICAL",
+      "supply_ratio": 0.2979999999999984
+     },
+     "15": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 0.8244999999999993,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 15,
+      "output_rel": 0.8244999999999993,
+      "required_extraction": 1.212856276531232,
+      "sbp": 112.10249999999996,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.8244999999999993
+     },
+     "30": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 0.6489999999999987,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 30,
+      "output_rel": 0.6489999999999987,
+      "required_extraction": 1.5408320493066288,
+      "sbp": 104.20499999999994,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.6489999999999987
+     },
+     "60": {
+      "D": 0.9507811806601159,
+      "burden_output": 0.006666666666672039,
+      "burden_oxygen_deficit": 1.2420000000000377,
+      "delivery": 0.2979999999999984,
+      "demand": 1.0,
+      "effective_deficit": 0.2550000000000041,
+      "hb": 13.0,
+      "lactate": 1.001178390761759,
+      "minute": 60,
+      "output_rel": 0.2979999999999984,
+      "required_extraction": 3.3557046979865954,
+      "sbp": 58.10999999999969,
+      "state": "CRITICAL",
+      "supply_ratio": 0.2979999999999984
+     },
+     "90": {
+      "D": 6.633353230223355,
+      "burden_output": 0.2066666666668332,
+      "burden_oxygen_deficit": 8.892000000000166,
+      "delivery": 0.2979999999999984,
+      "demand": 1.0,
+      "effective_deficit": 0.2550000000000041,
+      "hb": 13.0,
+      "lactate": 1.0557894081964774,
+      "minute": 90,
+      "output_rel": 0.2979999999999984,
+      "required_extraction": 3.3557046979865954,
+      "sbp": 58.10999999999969,
+      "state": "CRITICAL",
+      "supply_ratio": 0.2979999999999984
+     }
+    },
+    "reserve": 2.5,
+    "states_seen": [
+     "ADEQUATE",
+     "COMPENSATED",
+     "CRITICAL"
+    ],
+    "what": "pump falls to 0.3 over 60 min, then holds"
+   }
+  },
+  "F low output and anaemia": {
+   "1": {
+    "collapse_limit_reached": {
+     "output": null,
+     "oxygen_deficit": 65
+    },
+    "first_critical_minute": 1,
+    "lactate_direction": [
+     "rises",
+     "rises",
+     "rises",
+     "rises",
+     "rises"
+    ],
+    "max_D": 31.2556629315595,
+    "points": {
+     "0": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 0,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "120": {
+      "D": 31.2556629315595,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 65.3860000000001,
+      "delivery": 0.35999999999999843,
+      "demand": 1.0,
+      "effective_deficit": 0.6400000000000016,
+      "hb": 7.7999999999999705,
+      "lactate": 1.6424493533362385,
+      "minute": 120,
+      "output_rel": 0.5999999999999996,
+      "required_extraction": 2.7777777777777897,
+      "sbp": 101.99999999999999,
+      "state": "CRITICAL",
+      "supply_ratio": 0.35999999999999843
+     },
+     "15": {
+      "D": 1.859255644484143,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 2.276000000000007,
+      "delivery": 0.7224999999999991,
+      "demand": 1.0,
+      "effective_deficit": 0.27750000000000086,
+      "hb": 11.049999999999988,
+      "lactate": 1.0044129238465476,
+      "minute": 15,
+      "output_rel": 0.8499999999999999,
+      "required_extraction": 1.3840830449827006,
+      "sbp": 113.25,
+      "state": "CRITICAL",
+      "supply_ratio": 0.7224999999999991
+     },
+     "30": {
+      "D": 6.721107916183264,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 8.354500000000026,
+      "delivery": 0.48999999999999855,
+      "demand": 1.0,
+      "effective_deficit": 0.5100000000000015,
+      "hb": 9.099999999999977,
+      "lactate": 1.033417620362752,
+      "minute": 30,
+      "output_rel": 0.6999999999999997,
+      "required_extraction": 2.0408163265306185,
+      "sbp": 106.49999999999999,
+      "state": "CRITICAL",
+      "supply_ratio": 0.48999999999999855
+     },
+     "60": {
+      "D": 18.81532987993485,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 26.98600000000006,
+      "delivery": 0.35999999999999843,
+      "demand": 1.0,
+      "effective_deficit": 0.6400000000000016,
+      "hb": 7.7999999999999705,
+      "lactate": 1.1961785557567957,
+      "minute": 60,
+      "output_rel": 0.5999999999999996,
+      "required_extraction": 2.7777777777777897,
+      "sbp": 101.99999999999999,
+      "state": "CRITICAL",
+      "supply_ratio": 0.35999999999999843
+     },
+     "90": {
+      "D": 26.571243315041063,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 46.18600000000008,
+      "delivery": 0.35999999999999843,
+      "demand": 1.0,
+      "effective_deficit": 0.6400000000000016,
+      "hb": 7.7999999999999705,
+      "lactate": 1.4249057006496513,
+      "minute": 90,
+      "output_rel": 0.5999999999999996,
+      "required_extraction": 2.7777777777777897,
+      "sbp": 101.99999999999999,
+      "state": "CRITICAL",
+      "supply_ratio": 0.35999999999999843
+     }
+    },
+    "reserve": 1.0,
+    "states_seen": [
+     "ADEQUATE",
+     "CRITICAL"
+    ],
+    "what": "pump to 0.6 and Hb to 7.8 g/dL over 40 min"
+   },
+   "2.5": {
+    "collapse_limit_reached": {
+     "output": null,
+     "oxygen_deficit": null
+    },
+    "first_critical_minute": 37,
+    "lactate_direction": [
+     "flat",
+     "flat",
+     "rises",
+     "rises",
+     "rises"
+    ],
+    "max_D": 4.466218328703758,
+    "points": {
+     "0": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 0,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "120": {
+      "D": 4.466218328703758,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 8.216500000000336,
+      "delivery": 0.35999999999999843,
+      "demand": 1.0,
+      "effective_deficit": 0.10000000000000386,
+      "hb": 7.7999999999999705,
+      "lactate": 1.0785540085042062,
+      "minute": 120,
+      "output_rel": 0.5999999999999996,
+      "required_extraction": 2.7777777777777897,
+      "sbp": 101.99999999999999,
+      "state": "CRITICAL",
+      "supply_ratio": 0.35999999999999843
+     },
+     "15": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 0.7224999999999991,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 11.049999999999988,
+      "lactate": 1.0,
+      "minute": 15,
+      "output_rel": 0.8499999999999999,
+      "required_extraction": 1.3840830449827006,
+      "sbp": 113.25,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.7224999999999991
+     },
+     "30": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 0.48999999999999855,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 9.099999999999977,
+      "lactate": 1.0,
+      "minute": 30,
+      "output_rel": 0.6999999999999997,
+      "required_extraction": 2.0408163265306185,
+      "sbp": 106.49999999999999,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.48999999999999855
+     },
+     "60": {
+      "D": 1.7954660060434822,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 2.216500000000093,
+      "delivery": 0.35999999999999843,
+      "demand": 1.0,
+      "effective_deficit": 0.10000000000000386,
+      "hb": 7.7999999999999705,
+      "lactate": 1.0096083979254686,
+      "minute": 60,
+      "output_rel": 0.5999999999999996,
+      "required_extraction": 2.7777777777777897,
+      "sbp": 101.99999999999999,
+      "state": "CRITICAL",
+      "supply_ratio": 0.35999999999999843
+     },
+     "90": {
+      "D": 3.460543921176695,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 5.216500000000216,
+      "delivery": 0.35999999999999843,
+      "demand": 1.0,
+      "effective_deficit": 0.10000000000000386,
+      "hb": 7.7999999999999705,
+      "lactate": 1.0419655775900674,
+      "minute": 90,
+      "output_rel": 0.5999999999999996,
+      "required_extraction": 2.7777777777777897,
+      "sbp": 101.99999999999999,
+      "state": "CRITICAL",
+      "supply_ratio": 0.35999999999999843
+     }
+    },
+    "reserve": 2.5,
+    "states_seen": [
+     "ADEQUATE",
+     "COMPENSATED",
+     "CRITICAL"
+    ],
+    "what": "pump to 0.6 and Hb to 7.8 g/dL over 40 min"
+   }
+  },
+  "G high demand, delivery preserved": {
+   "1": {
+    "collapse_limit_reached": {
+     "output": null,
+     "oxygen_deficit": 91
+    },
+    "first_critical_minute": 1,
+    "lactate_direction": [
+     "rises",
+     "rises",
+     "rises",
+     "rises",
+     "rises"
+    ],
+    "max_D": 26.007797100457044,
+    "points": {
+     "0": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 0,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "120": {
+      "D": 26.007797100457044,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 40.00000000000001,
+      "delivery": 1.0,
+      "demand": 1.5,
+      "effective_deficit": 0.5,
+      "hb": 13.0,
+      "lactate": 1.5962687463174081,
+      "minute": 120,
+      "output_rel": 1.0,
+      "required_extraction": 1.5,
+      "sbp": 120.0,
+      "state": "CRITICAL",
+      "supply_ratio": 0.6666666666666666
+     },
+     "15": {
+      "D": 6.68514742829568,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 4.999999999999999,
+      "delivery": 1.0,
+      "demand": 1.5,
+      "effective_deficit": 0.5,
+      "hb": 13.0,
+      "lactate": 1.0252547512394803,
+      "minute": 15,
+      "output_rel": 1.0,
+      "required_extraction": 1.5,
+      "sbp": 120.0,
+      "state": "CRITICAL",
+      "supply_ratio": 0.6666666666666666
+     },
+     "30": {
+      "D": 11.88058831865642,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 10.0,
+      "delivery": 1.0,
+      "demand": 1.5,
+      "effective_deficit": 0.5,
+      "hb": 13.0,
+      "lactate": 1.088910938056735,
+      "minute": 30,
+      "output_rel": 1.0,
+      "required_extraction": 1.5,
+      "sbp": 120.0,
+      "state": "CRITICAL",
+      "supply_ratio": 0.6666666666666666
+     },
+     "60": {
+      "D": 19.056230677399657,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 19.999999999999996,
+      "delivery": 1.0,
+      "demand": 1.5,
+      "effective_deficit": 0.5,
+      "hb": 13.0,
+      "lactate": 1.2642324579720672,
+      "minute": 60,
+      "output_rel": 1.0,
+      "required_extraction": 1.5,
+      "sbp": 120.0,
+      "state": "CRITICAL",
+      "supply_ratio": 0.6666666666666666
+     },
+     "90": {
+      "D": 23.390177943271517,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 29.99999999999996,
+      "delivery": 1.0,
+      "demand": 1.5,
+      "effective_deficit": 0.5,
+      "hb": 13.0,
+      "lactate": 1.4435799511567553,
+      "minute": 90,
+      "output_rel": 1.0,
+      "required_extraction": 1.5,
+      "sbp": 120.0,
+      "state": "CRITICAL",
+      "supply_ratio": 0.6666666666666666
+     }
+    },
+    "reserve": 1.0,
+    "states_seen": [
+     "ADEQUATE",
+     "CRITICAL"
+    ],
+    "what": "demand x 1.5 throughout"
+   },
+   "2.5": {
+    "collapse_limit_reached": {
+     "output": null,
+     "oxygen_deficit": null
+    },
+    "first_critical_minute": null,
+    "lactate_direction": [
+     "flat",
+     "flat",
+     "flat",
+     "flat",
+     "flat"
+    ],
+    "max_D": 0.0,
+    "points": {
+     "0": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 0,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "120": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.5,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 120,
+      "output_rel": 1.0,
+      "required_extraction": 1.5,
+      "sbp": 120.0,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.6666666666666666
+     },
+     "15": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.5,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 15,
+      "output_rel": 1.0,
+      "required_extraction": 1.5,
+      "sbp": 120.0,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.6666666666666666
+     },
+     "30": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.5,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 30,
+      "output_rel": 1.0,
+      "required_extraction": 1.5,
+      "sbp": 120.0,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.6666666666666666
+     },
+     "60": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.5,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 60,
+      "output_rel": 1.0,
+      "required_extraction": 1.5,
+      "sbp": 120.0,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.6666666666666666
+     },
+     "90": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.5,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 90,
+      "output_rel": 1.0,
+      "required_extraction": 1.5,
+      "sbp": 120.0,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.6666666666666666
+     }
+    },
+    "reserve": 2.5,
+    "states_seen": [
+     "ADEQUATE",
+     "COMPENSATED"
+    ],
+    "what": "demand x 1.5 throughout"
+   }
+  },
+  "H resuscitation restores delivery": {
+   "1": {
+    "collapse_limit_reached": {
+     "output": null,
+     "oxygen_deficit": null
+    },
+    "first_critical_minute": 1,
+    "lactate_direction": [
+     "rises",
+     "rises",
+     "rises",
+     "rises",
+     "falls"
+    ],
+    "max_D": 15.22627337254914,
+    "points": {
+     "0": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 0,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "120": {
+      "D": 5.148984326059029,
+      "burden_output": 0.33333333333334375,
+      "burden_oxygen_deficit": 22.500000000000014,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.251608904940741,
+      "minute": 120,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "15": {
+      "D": 2.4445577151129627,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 3.000000000000002,
+      "delivery": 0.6249999999999997,
+      "demand": 1.0,
+      "effective_deficit": 0.37500000000000033,
+      "hb": 13.0,
+      "lactate": 1.0057210034519908,
+      "minute": 15,
+      "output_rel": 0.6249999999999997,
+      "required_extraction": 1.6000000000000008,
+      "sbp": 103.12499999999999,
+      "state": "CRITICAL",
+      "supply_ratio": 0.6249999999999997
+     },
+     "30": {
+      "D": 9.358235044030764,
+      "burden_output": 0.2500000000000063,
+      "burden_oxygen_deficit": 11.625000000000009,
+      "delivery": 0.24999999999999936,
+      "demand": 1.0,
+      "effective_deficit": 0.7500000000000007,
+      "hb": 13.0,
+      "lactate": 1.0452083539641537,
+      "minute": 30,
+      "output_rel": 0.24999999999999936,
+      "required_extraction": 4.000000000000011,
+      "sbp": 48.74999999999987,
+      "state": "CRITICAL",
+      "supply_ratio": 0.24999999999999936
+     },
+     "60": {
+      "D": 14.11483787973954,
+      "burden_output": 0.33333333333334375,
+      "burden_oxygen_deficit": 22.500000000000014,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.211262850415526,
+      "minute": 60,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "90": {
+      "D": 8.525085278614116,
+      "burden_output": 0.33333333333334375,
+      "burden_oxygen_deficit": 22.500000000000014,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.2720915894790688,
+      "minute": 90,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     }
+    },
+    "reserve": 1.0,
+    "states_seen": [
+     "ADEQUATE",
+     "CRITICAL"
+    ],
+    "what": "pump falls to 0.25 by 30 min, restored to 1.0 by 60 min"
+   },
+   "2.5": {
+    "collapse_limit_reached": {
+     "output": null,
+     "oxygen_deficit": null
+    },
+    "first_critical_minute": 24,
+    "lactate_direction": [
+     "flat",
+     "rises",
+     "rises",
+     "rises",
+     "falls"
+    ],
+    "max_D": 2.0703516055964983,
+    "points": {
+     "0": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 0,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "120": {
+      "D": 0.5045544643410889,
+      "burden_output": 0.33333333333334375,
+      "burden_oxygen_deficit": 2.250000000000019,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0253423099733734,
+      "minute": 120,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "15": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 0.6249999999999997,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 15,
+      "output_rel": 0.6249999999999997,
+      "required_extraction": 1.6000000000000008,
+      "sbp": 103.12499999999999,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.6249999999999997
+     },
+     "30": {
+      "D": 0.9169253520447614,
+      "burden_output": 0.2500000000000063,
+      "burden_oxygen_deficit": 1.3125000000000102,
+      "delivery": 0.24999999999999936,
+      "demand": 1.0,
+      "effective_deficit": 0.37500000000000155,
+      "hb": 13.0,
+      "lactate": 1.0006772563014403,
+      "minute": 30,
+      "output_rel": 0.24999999999999936,
+      "required_extraction": 4.000000000000011,
+      "sbp": 48.74999999999987,
+      "state": "CRITICAL",
+      "supply_ratio": 0.24999999999999936
+     },
+     "60": {
+      "D": 1.3831280141270426,
+      "burden_output": 0.33333333333334375,
+      "burden_oxygen_deficit": 2.250000000000019,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.022584820366017,
+      "minute": 60,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "90": {
+      "D": 0.8353821965322364,
+      "burden_output": 0.33333333333334375,
+      "burden_oxygen_deficit": 2.250000000000019,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0277998088789093,
+      "minute": 90,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     }
+    },
+    "reserve": 2.5,
+    "states_seen": [
+     "ADEQUATE",
+     "COMPENSATED",
+     "CRITICAL"
+    ],
+    "what": "pump falls to 0.25 by 30 min, restored to 1.0 by 60 min"
+   }
+  },
+  "I transfusion raises Hb and delivery": {
+   "1": {
+    "collapse_limit_reached": {
+     "output": null,
+     "oxygen_deficit": 62
+    },
+    "first_critical_minute": 1,
+    "lactate_direction": [
+     "rises",
+     "rises",
+     "rises",
+     "rises",
+     "rises"
+    ],
+    "max_D": 26.53625274822863,
+    "points": {
+     "0": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 0,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "120": {
+      "D": 26.53625274822863,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 59.63076923076912,
+      "delivery": 0.5076923076923078,
+      "demand": 1.0,
+      "effective_deficit": 0.4923076923076922,
+      "hb": 6.6000000000000005,
+      "lactate": 1.6010503298481464,
+      "minute": 120,
+      "output_rel": 1.0,
+      "required_extraction": 1.9696969696969693,
+      "sbp": 120.0,
+      "state": "CRITICAL",
+      "supply_ratio": 0.5076923076923078
+     },
+     "15": {
+      "D": 2.106080493020392,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 2.5846153846153785,
+      "delivery": 0.6769230769230776,
+      "demand": 1.0,
+      "effective_deficit": 0.3230769230769224,
+      "hb": 8.80000000000001,
+      "lactate": 1.0049288645124843,
+      "minute": 15,
+      "output_rel": 1.0,
+      "required_extraction": 1.4772727272727257,
+      "sbp": 120.0,
+      "state": "CRITICAL",
+      "supply_ratio": 0.6769230769230776
+     },
+     "30": {
+      "D": 8.06247942254956,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 10.015384615384598,
+      "delivery": 0.3538461538461544,
+      "demand": 1.0,
+      "effective_deficit": 0.6461538461538456,
+      "hb": 4.600000000000008,
+      "lactate": 1.038948735722963,
+      "minute": 30,
+      "output_rel": 1.0,
+      "required_extraction": 2.8260869565217344,
+      "sbp": 120.0,
+      "state": "CRITICAL",
+      "supply_ratio": 0.3538461538461544
+     },
+     "60": {
+      "D": 19.846869332000068,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 28.938461538461496,
+      "delivery": 0.4115384615384619,
+      "demand": 1.0,
+      "effective_deficit": 0.5884615384615381,
+      "hb": 5.350000000000005,
+      "lactate": 1.2200796524729558,
+      "minute": 60,
+      "output_rel": 1.0,
+      "required_extraction": 2.4299065420560724,
+      "sbp": 120.0,
+      "state": "CRITICAL",
+      "supply_ratio": 0.4115384615384619
+     },
+     "90": {
+      "D": 24.567755795309687,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 44.8615384615384,
+      "delivery": 0.5076923076923078,
+      "demand": 1.0,
+      "effective_deficit": 0.4923076923076922,
+      "hb": 6.6000000000000005,
+      "lactate": 1.4338025339530187,
+      "minute": 90,
+      "output_rel": 1.0,
+      "required_extraction": 1.9696969696969693,
+      "sbp": 120.0,
+      "state": "CRITICAL",
+      "supply_ratio": 0.5076923076923078
+     }
+    },
+    "reserve": 1.0,
+    "states_seen": [
+     "ADEQUATE",
+     "CRITICAL"
+    ],
+    "what": "Hb falls to 4.6 g/dL by 30 min; +2 g/dL from 45 to 85 min"
+   },
+   "2.5": {
+    "collapse_limit_reached": {
+     "output": null,
+     "oxygen_deficit": null
+    },
+    "first_critical_minute": 28,
+    "lactate_direction": [
+     "flat",
+     "rises",
+     "rises",
+     "rises",
+     "falls"
+    ],
+    "max_D": 2.011157982148049,
+    "points": {
+     "0": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 0,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "120": {
+      "D": 0.6828482377848257,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 2.549999999999963,
+      "delivery": 0.5076923076923078,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 6.6000000000000005,
+      "lactate": 1.030090433662679,
+      "minute": 120,
+      "output_rel": 1.0,
+      "required_extraction": 1.9696969696969693,
+      "sbp": 120.0,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.5076923076923078
+     },
+     "15": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 0.6769230769230776,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 8.80000000000001,
+      "lactate": 1.0,
+      "minute": 15,
+      "output_rel": 1.0,
+      "required_extraction": 1.4772727272727257,
+      "sbp": 120.0,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.6769230769230776
+     },
+     "30": {
+      "D": 0.06910256410256099,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.18461538461538007,
+      "delivery": 0.3538461538461544,
+      "demand": 1.0,
+      "effective_deficit": 0.11538461538461398,
+      "hb": 4.600000000000008,
+      "lactate": 1.0000042735042736,
+      "minute": 30,
+      "output_rel": 1.0,
+      "required_extraction": 2.8260869565217344,
+      "sbp": 120.0,
+      "state": "CRITICAL",
+      "supply_ratio": 0.3538461538461544
+     },
+     "60": {
+      "D": 1.871882212579134,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 2.549999999999963,
+      "delivery": 0.4115384615384619,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 5.350000000000005,
+      "lactate": 1.0190328457234463,
+      "minute": 60,
+      "output_rel": 1.0,
+      "required_extraction": 2.4299065420560724,
+      "sbp": 120.0,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.4115384615384619
+     },
+     "90": {
+      "D": 1.1305801476235207,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 2.549999999999963,
+      "delivery": 0.5076923076923078,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 6.6000000000000005,
+      "lactate": 1.0306578409544702,
+      "minute": 90,
+      "output_rel": 1.0,
+      "required_extraction": 1.9696969696969693,
+      "sbp": 120.0,
+      "state": "COMPENSATED",
+      "supply_ratio": 0.5076923076923078
+     }
+    },
+    "reserve": 2.5,
+    "states_seen": [
+     "ADEQUATE",
+     "COMPENSATED",
+     "CRITICAL"
+    ],
+    "what": "Hb falls to 4.6 g/dL by 30 min; +2 g/dL from 45 to 85 min"
+   }
+  },
+  "J severe sustained critical deficit": {
+   "1": {
+    "collapse_limit_reached": {
+     "output": 78,
+     "oxygen_deficit": 43
+    },
+    "first_critical_minute": 1,
+    "lactate_direction": [
+     "rises",
+     "rises",
+     "rises",
+     "rises",
+     "rises"
+    ],
+    "max_D": 42.707629486696085,
+    "points": {
+     "0": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 0,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "120": {
+      "D": 42.707629486696085,
+      "burden_output": 49.84000000000019,
+      "burden_oxygen_deficit": 94.92000000000026,
+      "delivery": 0.15999999999999964,
+      "demand": 1.0,
+      "effective_deficit": 0.8400000000000003,
+      "hb": 13.0,
+      "lactate": 1.9382008066707077,
+      "minute": 120,
+      "output_rel": 0.15999999999999964,
+      "required_extraction": 6.250000000000014,
+      "sbp": 31.199999999999932,
+      "state": "CRITICAL",
+      "supply_ratio": 0.15999999999999964
+     },
+     "15": {
+      "D": 5.475809281853035,
+      "burden_output": 0.8400000000000036,
+      "burden_oxygen_deficit": 6.720000000000006,
+      "delivery": 0.15999999999999964,
+      "demand": 1.0,
+      "effective_deficit": 0.8400000000000003,
+      "hb": 13.0,
+      "lactate": 1.0128150477324593,
+      "minute": 15,
+      "output_rel": 0.15999999999999964,
+      "required_extraction": 6.250000000000014,
+      "sbp": 31.199999999999932,
+      "state": "CRITICAL",
+      "supply_ratio": 0.15999999999999964
+     },
+     "30": {
+      "D": 15.486637216775867,
+      "burden_output": 7.840000000000019,
+      "burden_oxygen_deficit": 19.320000000000004,
+      "delivery": 0.15999999999999964,
+      "demand": 1.0,
+      "effective_deficit": 0.8400000000000003,
+      "hb": 13.0,
+      "lactate": 1.0884516651472445,
+      "minute": 30,
+      "output_rel": 0.15999999999999964,
+      "required_extraction": 6.250000000000014,
+      "sbp": 31.199999999999932,
+      "state": "CRITICAL",
+      "supply_ratio": 0.15999999999999964
+     },
+     "60": {
+      "D": 29.31301355168875,
+      "burden_output": 21.840000000000074,
+      "burden_oxygen_deficit": 44.52000000000005,
+      "delivery": 0.15999999999999964,
+      "demand": 1.0,
+      "effective_deficit": 0.8400000000000003,
+      "hb": 13.0,
+      "lactate": 1.361329467030158,
+      "minute": 60,
+      "output_rel": 0.15999999999999964,
+      "required_extraction": 6.250000000000014,
+      "sbp": 31.199999999999932,
+      "state": "CRITICAL",
+      "supply_ratio": 0.15999999999999964
+     },
+     "90": {
+      "D": 37.66387371413786,
+      "burden_output": 35.84000000000013,
+      "burden_oxygen_deficit": 69.72000000000016,
+      "delivery": 0.15999999999999964,
+      "demand": 1.0,
+      "effective_deficit": 0.8400000000000003,
+      "hb": 13.0,
+      "lactate": 1.6676823108174197,
+      "minute": 90,
+      "output_rel": 0.15999999999999964,
+      "required_extraction": 6.250000000000014,
+      "sbp": 31.199999999999932,
+      "state": "CRITICAL",
+      "supply_ratio": 0.15999999999999964
+     }
+    },
+    "reserve": 1.0,
+    "states_seen": [
+     "ADEQUATE",
+     "CRITICAL"
+    ],
+    "what": "pump falls to 0.16 by 15 min and stays"
+   },
+   "2.5": {
+    "collapse_limit_reached": {
+     "output": 78,
+     "oxygen_deficit": 63
+    },
+    "first_critical_minute": 11,
+    "lactate_direction": [
+     "rises",
+     "rises",
+     "rises",
+     "rises",
+     "rises"
+    ],
+    "max_D": 30.004680129036743,
+    "points": {
+     "0": {
+      "D": 0.0,
+      "burden_output": 0.0,
+      "burden_oxygen_deficit": 0.0,
+      "delivery": 1.0,
+      "demand": 1.0,
+      "effective_deficit": 0.0,
+      "hb": 13.0,
+      "lactate": 1.0,
+      "minute": 0,
+      "output_rel": 1.0,
+      "required_extraction": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE",
+      "supply_ratio": 1.0
+     },
+     "120": {
+      "D": 30.004680129036743,
+      "burden_output": 49.84000000000019,
+      "burden_oxygen_deficit": 64.60000000000014,
+      "delivery": 0.15999999999999964,
+      "demand": 1.0,
+      "effective_deficit": 0.6000000000000009,
+      "hb": 13.0,
+      "lactate": 1.6389445498081976,
+      "minute": 120,
+      "output_rel": 0.15999999999999964,
+      "required_extraction": 6.250000000000014,
+      "sbp": 31.199999999999932,
+      "state": "CRITICAL",
+      "supply_ratio": 0.15999999999999964
+     },
+     "15": {
+      "D": 0.9867498148148184,
+      "burden_output": 0.8400000000000036,
+      "burden_oxygen_deficit": 1.6000000000000045,
+      "delivery": 0.15999999999999964,
+      "demand": 1.0,
+      "effective_deficit": 0.6000000000000009,
+      "hb": 13.0,
+      "lactate": 1.0004389074074074,
+      "minute": 15,
+      "output_rel": 0.15999999999999964,
+      "required_extraction": 6.250000000000014,
+      "sbp": 31.199999999999932,
+      "state": "CRITICAL",
+      "supply_ratio": 0.15999999999999964
+     },
+     "30": {
+      "D": 8.789041129206963,
+      "burden_output": 7.840000000000019,
+      "burden_oxygen_deficit": 10.600000000000017,
+      "delivery": 0.15999999999999964,
+      "demand": 1.0,
+      "effective_deficit": 0.6000000000000009,
+      "hb": 13.0,
+      "lactate": 1.0371456528190521,
+      "minute": 30,
+      "output_rel": 0.15999999999999964,
+      "required_extraction": 6.250000000000014,
+      "sbp": 31.199999999999932,
+      "state": "CRITICAL",
+      "supply_ratio": 0.15999999999999964
+     },
+     "60": {
+      "D": 19.565114465866447,
+      "burden_output": 21.840000000000074,
+      "burden_oxygen_deficit": 28.60000000000006,
+      "delivery": 0.15999999999999964,
+      "demand": 1.0,
+      "effective_deficit": 0.6000000000000009,
+      "hb": 13.0,
+      "lactate": 1.2191013966651447,
+      "minute": 60,
+      "output_rel": 0.15999999999999964,
+      "required_extraction": 6.250000000000014,
+      "sbp": 31.199999999999932,
+      "state": "CRITICAL",
+      "supply_ratio": 0.15999999999999964
+     },
+     "90": {
+      "D": 26.073651435709223,
+      "burden_output": 35.84000000000013,
+      "burden_oxygen_deficit": 46.6000000000001,
+      "delivery": 0.15999999999999964,
+      "demand": 1.0,
+      "effective_deficit": 0.6000000000000009,
+      "hb": 13.0,
+      "lactate": 1.439313283612432,
+      "minute": 90,
+      "output_rel": 0.15999999999999964,
+      "required_extraction": 6.250000000000014,
+      "sbp": 31.199999999999932,
+      "state": "CRITICAL",
+      "supply_ratio": 0.15999999999999964
+     }
+    },
+    "reserve": 2.5,
+    "states_seen": [
+     "ADEQUATE",
+     "COMPENSATED",
+     "CRITICAL"
+    ],
+    "what": "pump falls to 0.16 by 15 min and stays"
+   }
+  }
+ },
+ "probes_digest": "87bb5dd93f15bec802ef4affa448a9ca164a7c36991724062161f0147899d582",
+ "revisit": {
+  "collapse_interface": {
+   "L1 gi_bleed_57m": {
+    "critical_at_end": 1054,
+    "earliest_by_output": null,
+    "earliest_by_oxygen_deficit": 57,
+    "reached_by_output": 0,
+    "reached_by_oxygen_deficit": 1054,
+    "runs": 1054,
+    "stopped_before_end": 0
+   },
+   "L1 gi_bleed_72f": {
+    "critical_at_end": 1054,
+    "earliest_by_output": null,
+    "earliest_by_oxygen_deficit": 61,
+    "reached_by_output": 0,
+    "reached_by_oxygen_deficit": 1054,
+    "runs": 1054,
+    "stopped_before_end": 0
+   },
+   "L2 gi_bleed_57m": {
+    "critical_at_end": 1054,
+    "earliest_by_output": null,
+    "earliest_by_oxygen_deficit": 65,
+    "reached_by_output": 0,
+    "reached_by_oxygen_deficit": 1054,
+    "runs": 1054,
+    "stopped_before_end": 0
+   },
+   "L2 gi_bleed_72f": {
+    "critical_at_end": 1054,
+    "earliest_by_output": null,
+    "earliest_by_oxygen_deficit": 62,
+    "reached_by_output": 0,
+    "reached_by_oxygen_deficit": 1054,
+    "runs": 1054,
+    "stopped_before_end": 0
+   },
+   "L3 gi_bleed_57m": {
+    "critical_at_end": 0,
+    "earliest_by_output": null,
+    "earliest_by_oxygen_deficit": null,
+    "reached_by_output": 0,
+    "reached_by_oxygen_deficit": 0,
+    "runs": 1054,
+    "stopped_before_end": 0
+   },
+   "L3 gi_bleed_72f": {
+    "critical_at_end": 0,
+    "earliest_by_output": null,
+    "earliest_by_oxygen_deficit": null,
+    "reached_by_output": 0,
+    "reached_by_oxygen_deficit": 0,
+    "runs": 1054,
+    "stopped_before_end": 0
+   }
+  },
+  "finding_1_recovering_subthreshold_delivery": {
+   "by_variant": {
+    "1": {
+     "all_of_them_recovering": 372,
+     "largest_D_or_lactate_change_vs_canonical": 0.0,
+     "pairs_with_a_critical_sustained_decline": 372,
+     "states_minutes_0_30": {
+      "CRITICAL": 11532
+     }
+    },
+    "2 fixed band": {
+     "all_of_them_recovering": 0,
+     "largest_D_or_lactate_change_vs_canonical": 7.507740305562177,
+     "pairs_with_a_critical_sustained_decline": 0,
+     "states_minutes_0_30": {
+      "COMPENSATED": 11532
+     }
+    },
+    "2 re-anchored band": {
+     "all_of_them_recovering": 372,
+     "largest_D_or_lactate_change_vs_canonical": 0.0,
+     "pairs_with_a_critical_sustained_decline": 372,
+     "states_minutes_0_30": {
+      "CRITICAL": 11532
+     }
+    },
+    "2.5 fixed band": {
+     "all_of_them_recovering": 0,
+     "largest_D_or_lactate_change_vs_canonical": 7.507740305562177,
+     "pairs_with_a_critical_sustained_decline": 0,
+     "states_minutes_0_30": {
+      "COMPENSATED": 11532
+     }
+    },
+    "2.5 re-anchored band": {
+     "all_of_them_recovering": 372,
+     "largest_D_or_lactate_change_vs_canonical": 7.105427357601002e-15,
+     "pairs_with_a_critical_sustained_decline": 372,
+     "states_minutes_0_30": {
+      "CRITICAL": 11532
+     }
+    },
+    "3 fixed band": {
+     "all_of_them_recovering": 0,
+     "largest_D_or_lactate_change_vs_canonical": 7.507740305562177,
+     "pairs_with_a_critical_sustained_decline": 0,
+     "states_minutes_0_30": {
+      "COMPENSATED": 11532
+     }
+    },
+    "3 re-anchored band": {
+     "all_of_them_recovering": 372,
+     "largest_D_or_lactate_change_vs_canonical": 7.105427357601002e-15,
+     "pairs_with_a_critical_sustained_decline": 372,
+     "states_minutes_0_30": {
+      "CRITICAL": 11532
+     }
+    }
+   },
+   "candidate_cases": 372,
+   "candidates": 207,
+   "instances": 372
+  },
+  "finding_2_untreated_low_delivery": {
+   "gi_bleed_57m": {
+    "by_variant": {
+     "1": {
+      "arrival_ratio": 0.6,
+      "collapse_limit_reached": {
+       "output": null,
+       "oxygen_deficit": 57
+      },
+      "largest_D_or_lactate_change_vs_canonical": 0.0,
+      "points": {
+       "0": {
+        "D": 0.0,
+        "V": 0.0,
+        "delivery": 0.6,
+        "effective_deficit": 0.4,
+        "hb_ratio": 1.0,
+        "lactate": 4.4,
+        "output_rel": 1.0,
+        "sbp": 88.0,
+        "state": "CRITICAL"
+       },
+       "120": {
+        "D": 23.14416842955759,
+        "V": -300.0,
+        "delivery": 0.09826379068940061,
+        "effective_deficit": 0.9017362093105994,
+        "hb_ratio": 0.8388059701492476,
+        "lactate": 6.786986149831371,
+        "output_rel": 0.195245372959368,
+        "sbp": 25.577143857677207,
+        "state": "CRITICAL"
+       },
+       "60": {
+        "D": 14.672735960985804,
+        "V": -150.0,
+        "delivery": 0.34959701784058017,
+        "effective_deficit": 0.6504029821594198,
+        "hb_ratio": 0.9194029850746238,
+        "lactate": 4.864729918393387,
+        "output_rel": 0.6337391827737812,
+        "sbp": 71.51826322482015,
+        "state": "CRITICAL"
+       }
+      },
+      "survivors_below_arrival_at_end": 3,
+      "survivors_outside_60_min_envelope": 0
+     },
+     "2 fixed band": {
+      "arrival_ratio": 0.6,
+      "collapse_limit_reached": {
+       "output": null,
+       "oxygen_deficit": 109
+      },
+      "largest_D_or_lactate_change_vs_canonical": 17.73292378866904,
+      "points": {
+       "0": {
+        "D": 0.0,
+        "V": 0.0,
+        "delivery": 0.6,
+        "effective_deficit": 0.0,
+        "hb_ratio": 1.0,
+        "lactate": 4.4,
+        "output_rel": 1.0,
+        "sbp": 88.0,
+        "state": "COMPENSATED"
+       },
+       "120": {
+        "D": 16.860287355123553,
+        "V": -300.0,
+        "delivery": 0.09826379068940061,
+        "effective_deficit": 0.8034724186211988,
+        "hb_ratio": 0.8388059701492476,
+        "lactate": 4.611735353292635,
+        "output_rel": 0.195245372959368,
+        "sbp": 25.577143857677207,
+        "state": "CRITICAL"
+       },
+       "60": {
+        "D": 3.7182138846385886,
+        "V": -150.0,
+        "delivery": 0.34959701784058017,
+        "effective_deficit": 0.30080596431883966,
+        "hb_ratio": 0.9194029850746238,
+        "lactate": 3.5957088199175957,
+        "output_rel": 0.6337391827737812,
+        "sbp": 71.51826322482015,
+        "state": "CRITICAL"
+       }
+      },
+      "survivors_below_arrival_at_end": 63,
+      "survivors_outside_60_min_envelope": 57
+     },
+     "2 re-anchored band": {
+      "arrival_ratio": 0.3,
+      "collapse_limit_reached": {
+       "output": null,
+       "oxygen_deficit": 57
+      },
+      "largest_D_or_lactate_change_vs_canonical": 0.0,
+      "points": {
+       "0": {
+        "D": 0.0,
+        "V": 0.0,
+        "delivery": 0.3,
+        "effective_deficit": 0.4,
+        "hb_ratio": 1.0,
+        "lactate": 4.4,
+        "output_rel": 1.0,
+        "sbp": 88.0,
+        "state": "CRITICAL"
+       },
+       "120": {
+        "D": 23.14416842955759,
+        "V": -300.0,
+        "delivery": 0.049131895344700305,
+        "effective_deficit": 0.9017362093105994,
+        "hb_ratio": 0.8388059701492476,
+        "lactate": 6.786986149831371,
+        "output_rel": 0.195245372959368,
+        "sbp": 25.577143857677207,
+        "state": "CRITICAL"
+       },
+       "60": {
+        "D": 14.672735960985804,
+        "V": -150.0,
+        "delivery": 0.17479850892029009,
+        "effective_deficit": 0.6504029821594198,
+        "hb_ratio": 0.9194029850746238,
+        "lactate": 4.864729918393387,
+        "output_rel": 0.6337391827737812,
+        "sbp": 71.51826322482015,
+        "state": "CRITICAL"
+       }
+      },
+      "survivors_below_arrival_at_end": 3,
+      "survivors_outside_60_min_envelope": 0
+     },
+     "2.5 fixed band": {
+      "arrival_ratio": 0.6,
+      "collapse_limit_reached": {
+       "output": null,
+       "oxygen_deficit": null
+      },
+      "largest_D_or_lactate_change_vs_canonical": 22.30634430786601,
+      "points": {
+       "0": {
+        "D": 0.0,
+        "V": 0.0,
+        "delivery": 0.6,
+        "effective_deficit": 0.0,
+        "hb_ratio": 1.0,
+        "lactate": 4.4,
+        "output_rel": 1.0,
+        "sbp": 88.0,
+        "state": "COMPENSATED"
+       },
+       "120": {
+        "D": 14.029946901570272,
+        "V": -300.0,
+        "delivery": 0.09826379068940061,
+        "effective_deficit": 0.7543405232764985,
+        "hb_ratio": 0.8388059701492476,
+        "lactate": 3.9765355936520006,
+        "output_rel": 0.195245372959368,
+        "sbp": 25.577143857677207,
+        "state": "CRITICAL"
+       },
+       "60": {
+        "D": 0.6232337797207811,
+        "V": -150.0,
+        "delivery": 0.34959701784058017,
+        "effective_deficit": 0.12600745539854952,
+        "hb_ratio": 0.9194029850746238,
+        "lactate": 3.4596914660404474,
+        "output_rel": 0.6337391827737812,
+        "sbp": 71.51826322482015,
+        "state": "CRITICAL"
+       }
+      },
+      "survivors_below_arrival_at_end": 72,
+      "survivors_outside_60_min_envelope": 57
+     },
+     "2.5 re-anchored band": {
+      "arrival_ratio": 0.24,
+      "collapse_limit_reached": {
+       "output": null,
+       "oxygen_deficit": 57
+      },
+      "largest_D_or_lactate_change_vs_canonical": 7.105427357601002e-15,
+      "points": {
+       "0": {
+        "D": 0.0,
+        "V": 0.0,
+        "delivery": 0.24,
+        "effective_deficit": 0.4,
+        "hb_ratio": 1.0,
+        "lactate": 4.4,
+        "output_rel": 1.0,
+        "sbp": 88.0,
+        "state": "CRITICAL"
+       },
+       "120": {
+        "D": 23.14416842955759,
+        "V": -300.0,
+        "delivery": 0.03930551627576024,
+        "effective_deficit": 0.9017362093105994,
+        "hb_ratio": 0.8388059701492476,
+        "lactate": 6.786986149831371,
+        "output_rel": 0.195245372959368,
+        "sbp": 25.577143857677207,
+        "state": "CRITICAL"
+       },
+       "60": {
+        "D": 14.672735960985804,
+        "V": -150.0,
+        "delivery": 0.13983880713623206,
+        "effective_deficit": 0.6504029821594198,
+        "hb_ratio": 0.9194029850746238,
+        "lactate": 4.864729918393387,
+        "output_rel": 0.6337391827737812,
+        "sbp": 71.51826322482015,
+        "state": "CRITICAL"
+       }
+      },
+      "survivors_below_arrival_at_end": 3,
+      "survivors_outside_60_min_envelope": 0
+     },
+     "3 fixed band": {
+      "arrival_ratio": 0.6,
+      "collapse_limit_reached": {
+       "output": null,
+       "oxygen_deficit": null
+      },
+      "largest_D_or_lactate_change_vs_canonical": 25.936598465439285,
+      "points": {
+       "0": {
+        "D": 0.0,
+        "V": 0.0,
+        "delivery": 0.6,
+        "effective_deficit": 0.0,
+        "hb_ratio": 1.0,
+        "lactate": 4.4,
+        "output_rel": 1.0,
+        "sbp": 88.0,
+        "state": "COMPENSATED"
+       },
+       "120": {
+        "D": 11.5396633114416,
+        "V": -300.0,
+        "delivery": 0.09826379068940061,
+        "effective_deficit": 0.7052086279317982,
+        "hb_ratio": 0.8388059701492476,
+        "lactate": 3.5833428110026584,
+        "output_rel": 0.195245372959368,
+        "sbp": 25.577143857677207,
+        "state": "CRITICAL"
+       },
+       "60": {
+        "D": 0.0,
+        "V": -150.0,
+        "delivery": 0.34959701784058017,
+        "effective_deficit": 0.0,
+        "hb_ratio": 0.9194029850746238,
+        "lactate": 3.452627168134498,
+        "output_rel": 0.6337391827737812,
+        "sbp": 71.51826322482015,
+        "state": "COMPENSATED"
+       }
+      },
+      "survivors_below_arrival_at_end": 72,
+      "survivors_outside_60_min_envelope": 57
+     },
+     "3 re-anchored band": {
+      "arrival_ratio": 0.19999999999999998,
+      "collapse_limit_reached": {
+       "output": null,
+       "oxygen_deficit": 57
+      },
+      "largest_D_or_lactate_change_vs_canonical": 3.552713678800501e-15,
+      "points": {
+       "0": {
+        "D": 0.0,
+        "V": 0.0,
+        "delivery": 0.19999999999999998,
+        "effective_deficit": 0.4,
+        "hb_ratio": 1.0,
+        "lactate": 4.4,
+        "output_rel": 1.0,
+        "sbp": 88.0,
+        "state": "CRITICAL"
+       },
+       "120": {
+        "D": 23.14416842955759,
+        "V": -300.0,
+        "delivery": 0.03275459689646687,
+        "effective_deficit": 0.9017362093105994,
+        "hb_ratio": 0.8388059701492476,
+        "lactate": 6.786986149831371,
+        "output_rel": 0.195245372959368,
+        "sbp": 25.577143857677207,
+        "state": "CRITICAL"
+       },
+       "60": {
+        "D": 14.672735960985804,
+        "V": -150.0,
+        "delivery": 0.1165323392801934,
+        "effective_deficit": 0.6504029821594198,
+        "hb_ratio": 0.9194029850746238,
+        "lactate": 4.864729918393387,
+        "output_rel": 0.6337391827737812,
+        "sbp": 71.51826322482015,
+        "state": "CRITICAL"
+       }
+      },
+      "survivors_below_arrival_at_end": 3,
+      "survivors_outside_60_min_envelope": 0
+     }
+    },
+    "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
+    "survivor_range_at_end": [
+     0.09826379068940061,
+     0.16377298448233435
+    ]
+   },
+   "gi_bleed_72f": {
+    "by_variant": {
+     "1": {
+      "arrival_ratio": 0.6,
+      "collapse_limit_reached": {
+       "output": null,
+       "oxygen_deficit": 61
+      },
+      "largest_D_or_lactate_change_vs_canonical": 0.0,
+      "points": {
+       "0": {
+        "D": 0.0,
+        "V": 0.0,
+        "delivery": 0.6,
+        "effective_deficit": 0.4,
+        "hb_ratio": 1.0,
+        "lactate": 3.4,
+        "output_rel": 1.0,
+        "sbp": 98.0,
+        "state": "CRITICAL"
+       },
+       "120": {
+        "D": 20.071304703585785,
+        "V": -300.0,
+        "delivery": 0.23459961104092408,
+        "effective_deficit": 0.7654003889590759,
+        "hb_ratio": 0.8312499999999936,
+        "lactate": 6.036554147849188,
+        "output_rel": 0.47037515998180635,
+        "sbp": 71.02664915725276,
+        "state": "CRITICAL"
+       },
+       "60": {
+        "D": 13.534363617331831,
+        "V": -150.0,
+        "delivery": 0.41695175805383305,
+        "effective_deficit": 0.5830482419461669,
+        "hb_ratio": 0.9156249999999968,
+        "lactate": 4.18542592163883,
+        "output_rel": 0.7589565561844542,
+        "sbp": 87.15304502830044,
+        "state": "CRITICAL"
+       }
+      },
+      "survivors_below_arrival_at_end": 0,
+      "survivors_outside_60_min_envelope": 0
+     },
+     "2 fixed band": {
+      "arrival_ratio": 0.6,
+      "collapse_limit_reached": {
+       "output": null,
+       "oxygen_deficit": null
+      },
+      "largest_D_or_lactate_change_vs_canonical": 20.173787164464247,
+      "points": {
+       "0": {
+        "D": 0.0,
+        "V": 0.0,
+        "delivery": 0.6,
+        "effective_deficit": 0.0,
+        "hb_ratio": 1.0,
+        "lactate": 3.4,
+        "output_rel": 1.0,
+        "sbp": 98.0,
+        "state": "COMPENSATED"
+       },
+       "120": {
+        "D": 10.744841047317646,
+        "V": -300.0,
+        "delivery": 0.23459961104092408,
+        "effective_deficit": 0.5308007779181518,
+        "hb_ratio": 0.8312499999999936,
+        "lactate": 3.523826065646033,
+        "output_rel": 0.47037515998180635,
+        "sbp": 71.02664915725276,
+        "state": "CRITICAL"
+       },
+       "60": {
+        "D": 1.6729780963919652,
+        "V": -150.0,
+        "delivery": 0.41695175805383305,
+        "effective_deficit": 0.1660964838923339,
+        "hb_ratio": 0.9156249999999968,
+        "lactate": 2.8951787035572045,
+        "output_rel": 0.7589565561844542,
+        "sbp": 87.15304502830044,
+        "state": "CRITICAL"
+       }
+      },
+      "survivors_below_arrival_at_end": 54,
+      "survivors_outside_60_min_envelope": 21
+     },
+     "2 re-anchored band": {
+      "arrival_ratio": 0.3,
+      "collapse_limit_reached": {
+       "output": null,
+       "oxygen_deficit": 61
+      },
+      "largest_D_or_lactate_change_vs_canonical": 0.0,
+      "points": {
+       "0": {
+        "D": 0.0,
+        "V": 0.0,
+        "delivery": 0.3,
+        "effective_deficit": 0.4,
+        "hb_ratio": 1.0,
+        "lactate": 3.4,
+        "output_rel": 1.0,
+        "sbp": 98.0,
+        "state": "CRITICAL"
+       },
+       "120": {
+        "D": 20.071304703585785,
+        "V": -300.0,
+        "delivery": 0.11729980552046204,
+        "effective_deficit": 0.7654003889590759,
+        "hb_ratio": 0.8312499999999936,
+        "lactate": 6.036554147849188,
+        "output_rel": 0.47037515998180635,
+        "sbp": 71.02664915725276,
+        "state": "CRITICAL"
+       },
+       "60": {
+        "D": 13.534363617331831,
+        "V": -150.0,
+        "delivery": 0.20847587902691653,
+        "effective_deficit": 0.5830482419461669,
+        "hb_ratio": 0.9156249999999968,
+        "lactate": 4.18542592163883,
+        "output_rel": 0.7589565561844542,
+        "sbp": 87.15304502830044,
+        "state": "CRITICAL"
+       }
+      },
+      "survivors_below_arrival_at_end": 0,
+      "survivors_outside_60_min_envelope": 0
+     },
+     "2.5 fixed band": {
+      "arrival_ratio": 0.6,
+      "collapse_limit_reached": {
+       "output": null,
+       "oxygen_deficit": null
+      },
+      "largest_D_or_lactate_change_vs_canonical": 25.268795630716937,
+      "points": {
+       "0": {
+        "D": 0.0,
+        "V": 0.0,
+        "delivery": 0.6,
+        "effective_deficit": 0.0,
+        "hb_ratio": 1.0,
+        "lactate": 3.4,
+        "output_rel": 1.0,
+        "sbp": 98.0,
+        "state": "COMPENSATED"
+       },
+       "120": {
+        "D": 6.658476657032523,
+        "V": -300.0,
+        "delivery": 0.23459961104092408,
+        "effective_deficit": 0.4135009723976898,
+        "hb_ratio": 0.8312499999999936,
+        "lactate": 2.907208425243052,
+        "output_rel": 0.47037515998180635,
+        "sbp": 71.02664915725276,
+        "state": "CRITICAL"
+       },
+       "60": {
+        "D": 0.0,
+        "V": -150.0,
+        "delivery": 0.41695175805383305,
+        "effective_deficit": 0.0,
+        "hb_ratio": 0.9156249999999968,
+        "lactate": 2.8473658480784567,
+        "output_rel": 0.7589565561844542,
+        "sbp": 87.15304502830044,
+        "state": "COMPENSATED"
+       }
+      },
+      "survivors_below_arrival_at_end": 66,
+      "survivors_outside_60_min_envelope": 21
+     },
+     "2.5 re-anchored band": {
+      "arrival_ratio": 0.24,
+      "collapse_limit_reached": {
+       "output": null,
+       "oxygen_deficit": 61
+      },
+      "largest_D_or_lactate_change_vs_canonical": 7.105427357601002e-15,
+      "points": {
+       "0": {
+        "D": 0.0,
+        "V": 0.0,
+        "delivery": 0.24,
+        "effective_deficit": 0.4,
+        "hb_ratio": 1.0,
+        "lactate": 3.4,
+        "output_rel": 1.0,
+        "sbp": 98.0,
+        "state": "CRITICAL"
+       },
+       "120": {
+        "D": 20.071304703585785,
+        "V": -300.0,
+        "delivery": 0.09383984441636964,
+        "effective_deficit": 0.7654003889590759,
+        "hb_ratio": 0.8312499999999936,
+        "lactate": 6.036554147849188,
+        "output_rel": 0.47037515998180635,
+        "sbp": 71.02664915725276,
+        "state": "CRITICAL"
+       },
+       "60": {
+        "D": 13.534363617331831,
+        "V": -150.0,
+        "delivery": 0.16678070322153324,
+        "effective_deficit": 0.5830482419461669,
+        "hb_ratio": 0.9156249999999968,
+        "lactate": 4.18542592163883,
+        "output_rel": 0.7589565561844542,
+        "sbp": 87.15304502830044,
+        "state": "CRITICAL"
+       }
+      },
+      "survivors_below_arrival_at_end": 0,
+      "survivors_outside_60_min_envelope": 0
+     },
+     "3 fixed band": {
+      "arrival_ratio": 0.6,
+      "collapse_limit_reached": {
+       "output": null,
+       "oxygen_deficit": null
+      },
+      "largest_D_or_lactate_change_vs_canonical": 29.285585900907268,
+      "points": {
+       "0": {
+        "D": 0.0,
+        "V": 0.0,
+        "delivery": 0.6,
+        "effective_deficit": 0.0,
+        "hb_ratio": 1.0,
+        "lactate": 3.4,
+        "output_rel": 1.0,
+        "sbp": 98.0,
+        "state": "COMPENSATED"
+       },
+       "120": {
+        "D": 3.4185394640205584,
+        "V": -300.0,
+        "delivery": 0.23459961104092408,
+        "effective_deficit": 0.29620116687722775,
+        "hb_ratio": 0.8312499999999936,
+        "lactate": 2.6314864262057442,
+        "output_rel": 0.47037515998180635,
+        "sbp": 71.02664915725276,
+        "state": "CRITICAL"
+       },
+       "60": {
+        "D": 0.0,
+        "V": -150.0,
+        "delivery": 0.41695175805383305,
+        "effective_deficit": 0.0,
+        "hb_ratio": 0.9156249999999968,
+        "lactate": 2.8473658480784567,
+        "output_rel": 0.7589565561844542,
+        "sbp": 87.15304502830044,
+        "state": "COMPENSATED"
+       }
+      },
+      "survivors_below_arrival_at_end": 66,
+      "survivors_outside_60_min_envelope": 21
+     },
+     "3 re-anchored band": {
+      "arrival_ratio": 0.19999999999999998,
+      "collapse_limit_reached": {
+       "output": null,
+       "oxygen_deficit": 61
+      },
+      "largest_D_or_lactate_change_vs_canonical": 7.105427357601002e-15,
+      "points": {
+       "0": {
+        "D": 0.0,
+        "V": 0.0,
+        "delivery": 0.19999999999999998,
+        "effective_deficit": 0.4,
+        "hb_ratio": 1.0,
+        "lactate": 3.4,
+        "output_rel": 1.0,
+        "sbp": 98.0,
+        "state": "CRITICAL"
+       },
+       "120": {
+        "D": 20.071304703585785,
+        "V": -300.0,
+        "delivery": 0.07819987034697469,
+        "effective_deficit": 0.7654003889590759,
+        "hb_ratio": 0.8312499999999936,
+        "lactate": 6.036554147849188,
+        "output_rel": 0.47037515998180635,
+        "sbp": 71.02664915725276,
+        "state": "CRITICAL"
+       },
+       "60": {
+        "D": 13.534363617331831,
+        "V": -150.0,
+        "delivery": 0.13898391935127768,
+        "effective_deficit": 0.5830482419461669,
+        "hb_ratio": 0.9156249999999968,
+        "lactate": 4.18542592163883,
+        "output_rel": 0.7589565561844542,
+        "sbp": 87.15304502830044,
+        "state": "CRITICAL"
+       }
+      },
+      "survivors_below_arrival_at_end": 0,
+      "survivors_outside_60_min_envelope": 0
+     }
+    },
+    "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
+    "survivor_range_at_end": [
+     0.23459961104092408,
+     0.3909993517348735
+    ]
+   }
+  },
+  "finding_3_post_transfusion_delivery": {
+   "gi_bleed_57m": {
+    "highest": {
+     "V": 481.7500000000001,
+     "arrival_ratio": 1.0,
+     "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
+     "delivery": 2.16062359465374,
+     "hb_ratio": 1.1901940298507454,
+     "minute": 60,
+     "output_rel": 1.815354085522249
+    },
+    "max_delivery_by_arrival_ratio": {
+     "0.6": [
+      1.296374156792244,
+      1.296374156792244,
+      18
+     ],
+     "0.85": [
+      1.8365300554556792,
+      1.8365300554556792,
+      51
+     ],
+     "1": [
+      2.16062359465374,
+      2.16062359465374,
+      3
+     ]
+    },
+    "re_anchored_peak": {
+     "2": {
+      "delivery": 1.08031179732687,
+      "state": "ADEQUATE"
+     },
+     "2.5": {
+      "delivery": 0.8642494378614961,
+      "state": "COMPENSATED"
+     },
+     "3": {
+      "delivery": 0.7202078648845801,
+      "state": "COMPENSATED"
+     }
+    }
+   },
+   "gi_bleed_72f": {
+    "highest": {
+     "V": 481.7500000000001,
+     "arrival_ratio": 1.0,
+     "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
+     "delivery": 1.842552127545807,
+     "hb_ratio": 1.199109374999999,
+     "minute": 60,
+     "output_rel": 1.536600552010369
+    },
+    "max_delivery_by_arrival_ratio": {
+     "0.6": [
+      1.105531276527484,
+      1.105531276527484,
+      18
+     ],
+     "0.85": [
+      1.5661693084139359,
+      1.5661693084139359,
+      51
+     ],
+     "1": [
+      1.842552127545807,
+      1.842552127545807,
+      3
+     ]
+    },
+    "re_anchored_peak": {
+     "2": {
+      "delivery": 0.9212760637729035,
+      "state": "COMPENSATED"
+     },
+     "2.5": {
+      "delivery": 0.7370208510183228,
+      "state": "COMPENSATED"
+     },
+     "3": {
+      "delivery": 0.614184042515269,
+      "state": "COMPENSATED"
+     }
+    }
+   }
+  },
+  "survivors": 72,
+  "variants": [
+   "1",
+   "2 fixed band",
+   "2 re-anchored band",
+   "2.5 fixed band",
+   "2.5 re-anchored band",
+   "3 fixed band",
+   "3 re-anchored band"
+  ]
+ },
+ "synthetic_burden_limit": 30.0,
+ "synthetic_output_threshold": 0.3,
+ "synthetic_reserve": 2.5
+}

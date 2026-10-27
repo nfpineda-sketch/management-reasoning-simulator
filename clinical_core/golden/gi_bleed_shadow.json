@@ -234,6 +234,10 @@
    "provisional",
    "slow clearance of lung water above arrival: TBD (P2D-6)"
   ],
+  "oxygen_extraction_reserve": [
+   "provisional",
+   "maximal over normal oxygen extraction, E_max / E_normal (P2I-2P): consumption stays supply-independent down to the critical delivery demand / reserve, and only the demand left unmet below it is a deficit D integrates. 1 is the pre-P2I-2P model kept as the neutral default (no reserve: any delivery below demand is a deficit), not a physiological value; the value above 1 is TBD. Only reserve x arrival_delivery_ratio reaches D: a reserve r keeps today's GI dynamics only with the arrival band read as ratio / r, a joint faculty decision"
+  ],
   "oxygen_levels": [
    "adopted",
    "family_engine._OXYGEN_LEVELS, same reservation"

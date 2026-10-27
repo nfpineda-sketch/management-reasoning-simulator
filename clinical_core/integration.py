@@ -32,9 +32,8 @@ from typing import Any, ClassVar, Iterable, Mapping, Sequence
 
 from .derived import (ADOPTED, AUXILIARY_SOURCES, COLLAPSE, DEFAULT_PROFILE, LUNG_WATER_CLEARANCE, PRELOAD_CONGESTION,
                       PROVISIONAL, CoreProfile, Derived, arrival_state, collapse_burden_after_minute, collapse_reached,
-                      congestion_rate, delivery_deficit, derive, effective_delivery, lactate_after_minute,
-                      lung_water_clearance,
-                      oxygen_demand, sympathetic_after_minute, terminal_rhythm)
+                      congestion_rate, derive, effective_delivery, effective_oxygen_deficit, lactate_after_minute,
+                      lung_water_clearance, oxygen_demand, sympathetic_after_minute, terminal_rhythm)
 from .provenance import (AuxiliaryChange, ChannelDelta, CoreEvent, DemandModifier, MinuteRecord, ProvenanceError,
                          RhythmTransition, SettingChange, Source, SourceKind)
 from .state import (AUXILIARY_FIELDS, Anchors, AuxiliaryState, Channel, CoreInvariantError, CoreState, FrozenRecord,
@@ -161,9 +160,11 @@ def _oxygen_debt(state: CoreState, anchors: Anchors, profile: CoreProfile, minut
                  modulators: tuple[Source, ...]) -> ChannelDelta:
     """D accumulates the deficit of oxygen delivery below demand and repays it slowly (P2E-2).
 
-    dD = g x max(0, demand - delivery) - D / tau, with delivery the effective delivery
+    dD = g x max(0, demand - reserve x delivery) - D / tau, with delivery the delivery index
     (arrival-relative delivery times the case's arrival delivery ratio, P2F-6) read at the
-    start of the minute, demand the one declared for it and g the deficit-to-debt gain. Delivery above demand is no credit: D only
+    start of the minute, demand the one declared for it, reserve the oxygen extraction reserve
+    (P2I-2P: only the demand left unmet once extraction is exhausted is a deficit; 1, the neutral
+    default, is the earlier no-reserve model) and g the deficit-to-debt gain. Delivery above demand is no credit: D only
     repays what it accrued, and never falls below 0. With the neutral demand baseline and no
     modifier, demand is 1, so arrival does not move; at a steady deficit s the debt settles
     at tau * s, which the lactate derivation reads (proposal C8). The sources that modified
@@ -172,11 +173,12 @@ def _oxygen_debt(state: CoreState, anchors: Anchors, profile: CoreProfile, minut
     """
     before = derive(state, anchors, profile)
     delivery = effective_delivery(before.delivery_rel, anchors)
-    deficit = delivery_deficit(demand, delivery)
-    changed = deficit != delivery_deficit(anchors.metabolic_demand_baseline, delivery)
+    reserve = profile.oxygen_extraction_reserve
+    deficit = effective_oxygen_deficit(demand, delivery, reserve)
+    changed = deficit != effective_oxygen_deficit(anchors.metabolic_demand_baseline, delivery, reserve)
     amount = profile.debt_per_delivery_deficit * deficit - state.D / profile.debt_clearance_tau_min
     return ChannelDelta(Channel.D, amount, OXYGEN_DEBT, minute,
-                        "oxygen-delivery deficit below metabolic demand, less first-order repayment",
+                        "oxygen demand left unmet once extraction is exhausted, less first-order repayment",
                         modulated_by=modulators if changed else ())
 
 

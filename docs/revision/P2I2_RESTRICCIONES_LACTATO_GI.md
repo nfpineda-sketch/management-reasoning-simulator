@@ -1,5 +1,14 @@
 # P2I-2R · Restricciones docentes del lactato GI, aclaradas, aplicadas a la región candidata
 
+> **PENDIENTE DE REFILTRADO (desde 2026-10-27).** Los resultados de §4 se filtraron con el núcleo anterior a P2I-2P
+> (filtro `58e988cf6b1c3d5bebab254305fdeec97ace1c11775db4753b458781a888d1bb`) y quedan tal como se comprometieron. La
+> docencia detuvo el filtrado («Do NOT continue filtering P2I-2R yet») hasta revisar la fisiología de entrega y extracción
+> de O2 (P2I-2P, `docs/revision/P2I2P_FISIOLOGIA_ENTREGA_O2.md`) y operacionalizar la decisión FD-LAC-06 sobre la
+> trayectoria (entrega persistente o en empeoramiento frente a recuperación todavía bajo el umbral). P2I-2P no cambia
+> ninguna cifra canónica (reserva de extracción neutra 1), pero sí las fuentes del núcleo: el resumen de filtrado actual ya
+> no coincide, y `python -m clinical_core.lactate_constraints` rehúsa producir resultados nuevos hasta que se autorice el
+> refiltrado (`RESULTS_PENDING_REFILTER`).
+
 Las decisiones FD-LAC-01 a FD-LAC-06 son **restricciones clínicas de comportamiento** aprobadas por la docencia
 (FACULTY_APPROVED). Restringen lo que puede hacer la trayectoria observable del lactato. **No aprueban ningún valor de
 parámetro oculto**:

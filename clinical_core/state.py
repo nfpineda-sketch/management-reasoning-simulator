@@ -290,17 +290,23 @@ class Anchors:
     - ``intrinsic_sinus_rate`` (bpm) is the sinus rate without sympathetic drive (P2E-1). The
       observed arrival HR is that rate plus the arrival sympathetic contribution. ``None``
       reads the arrival HR as intrinsic (no sympathetic share at arrival).
-    - ``metabolic_demand_baseline`` is the patient's reference oxygen demand, in units of the
-      delivery that meets it (P2E-2, P2F-1). 1, the neutral value, is that definition; above 1
-      only with explicit hypermetabolic evidence. It is not a free parameter for lactate.
+    - ``metabolic_demand_baseline`` is the patient's resting oxygen consumption demand relative
+      to normal resting consumption (a VO2 demand index; P2E-2, P2F-1, P2I-2P). 1, the neutral
+      value, is normal; above 1 only with explicit hypermetabolic evidence. It is not a free
+      parameter for lactate.
     - ``arrival_lactate_excess`` (mmol/L) is the share of the arrival lactate that can clear:
       the arrival lactate less its clearance baseline (P2E-2). 0, the neutral value, reads the
       arrival lactate as the baseline, so the core never clears lactate below arrival.
     - ``arrival_oxygen_debt`` (index-minutes) is the debt D already accrued before arrival
       (P2F-3). It is the arrival value of D; 0, the neutral value, is no pre-arrival debt.
-    - ``arrival_delivery_ratio`` is the effective oxygen delivery at arrival in units of the
-      delivery that meets the reference demand (P2F-1, P2F-6). 1, the neutral value, reads the
-      arrival delivery as adequate; below 1 the patient arrives in an ongoing deficit.
+    - ``arrival_delivery_ratio`` is the oxygen delivery at arrival relative to the patient's
+      normal resting delivery (a DO2 index; P2F-1, P2F-6, P2I-2P). 1, the neutral value, reads
+      arrival delivery as normal. Below 1 is a reduced delivery; whether it is a deficit depends
+      on the extraction reserve (``derived.effective_oxygen_deficit``): with the neutral reserve
+      of 1 any value below 1 is one, as before P2I-2P, and normal and critical delivery coincide.
+      Only its product with the reserve reaches D, so the GI band (0.6-1.0, "at or below
+      adequacy", i.e. in units of the critical delivery) keeps its dynamics under a reserve r only
+      when read as ratio / r (P2I-2P).
     - ``reference_preload_fraction`` is where the euvolemic patient would sit on the preload
       curve (physiological reference, P2F-1). With it the arrival volume deficit is explicit;
       no mechanism reads it yet. ``None`` leaves the deficit undeclared.

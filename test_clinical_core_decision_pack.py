@@ -172,7 +172,7 @@ def test_a_module_the_pack_digest_excludes_is_never_loaded_by_the_pack():
     ("clinical_core/derived.py", True), ("clinical_core/integration.py", True),
     ("clinical_core/decision_pack.py", True), ("clinical_core/decision_pack_markdown.py", False),
     ("clinical_core/lactate_slice.py", False), ("clinical_core/faculty_constraints.py", False),
-    ("clinical_core/lactate_constraints.py", False)])
+    ("clinical_core/lactate_constraints.py", False), ("clinical_core/oxygen_probes.py", False)])
 def test_the_pack_digest_covers_the_model_and_not_the_renderer(monkeypatch, path, changes):
     assert path in decision_pack.pack_sources() or path in decision_pack.PACK_DIGEST_EXCLUDED
     before = decision_pack.pack_digest()

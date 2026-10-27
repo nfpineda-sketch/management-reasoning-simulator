@@ -121,6 +121,11 @@ def slice_run(case: str, candidate: GICandidate, scenario: str, *, profile_extra
     values = {**calibration.case_values(case, candidate), **(case_extra or {})}
     anchors = gi_reference.candidate_anchors(case, values)
     profile = replace(DEFAULT_PROFILE, **{**candidate.profile, **(profile_extra or {})})
+    if profile.oxygen_extraction_reserve != 1.0 and "arrival_delivery_ratio" not in (case_extra or {}):
+        # P2I-2P: only reserve x arrival_delivery_ratio reaches D, and the GI band is in units of the
+        # critical delivery; a reserve needs the band's reading stated, never applied silently.
+        raise ValueError("an extraction reserve other than 1 needs arrival_delivery_ratio stated in case_extra "
+                         "(the GI band read as fixed, or re-anchored as ratio / reserve)")
     items = scenario_inputs(case, scenario)
     stopped = None
     try:

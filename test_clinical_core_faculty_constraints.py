@@ -324,9 +324,16 @@ def test_the_reporting_rules_are_pinned():
 # The artifacts ------------------------------------------------------------------------------------
 
 def test_the_results_document_is_generated_from_the_current_code():
+    """While a refilter is pending (P2I-2P) the committed results must be exactly the ones recorded as
+    pending: stale by construction, labelled so in the document, and never silently regenerated."""
     data = json.loads(DATA.read_text(encoding="utf-8"))
     document = DOCUMENT.read_text(encoding="utf-8")
-    assert data["filter_digest"] == lactate_constraints.filter_digest(), "the results are stale: regenerate them"
+    pending = lactate_constraints.RESULTS_PENDING_REFILTER
+    if pending is None:
+        assert data["filter_digest"] == lactate_constraints.filter_digest(), "the results are stale: regenerate them"
+    else:
+        assert data["filter_digest"] == pending["filter_digest"] != lactate_constraints.filter_digest()
+        assert "PENDIENTE DE REFILTRADO" in document and pending["since"] in document
     assert data["definitions_digest"] == lactate_constraints.FROZEN_DEFINITIONS_DIGEST
     assert data["pipeline_digest"] == lactate_constraints.FROZEN_PIPELINE_DIGEST
     assert data["freeze_digest"] == calibration.frozen_digest() and not data["quick"]
@@ -378,3 +385,11 @@ def test_every_survivor_reports_its_30_min_reduction_and_meets_the_faculty_rule(
     for row in data["sensitivity"]:
         assert row["all_six"] <= data["admissible_candidates"]
     assert data["settings"]["fd04_required_fall"] == 0.0, "no percentage threshold selects candidates"
+
+
+def test_the_filter_command_refuses_to_refilter_while_a_refilter_is_pending(capsys):
+    """P2I-2P: "Do NOT continue filtering P2I-2R yet"; rendering the committed results stays allowed."""
+    assert lactate_constraints.RESULTS_PENDING_REFILTER is not None
+    with pytest.raises(SystemExit):
+        lactate_constraints.main(["--quick"])
+    assert "pending a refilter" in capsys.readouterr().err

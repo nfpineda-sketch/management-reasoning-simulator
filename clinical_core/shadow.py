@@ -130,7 +130,8 @@ DECISIONS = {
 }
 
 #: Mechanisms on a variable's causal path only in the runs where they act (P2E). P2E-2: in a run
-#: where the delivery of some minute exceeded that minute's demand, the debt was not credited;
+#: where the delivery of some minute exceeded that minute's demand (times the extraction reserve's
+#: reach, P2I-2P: reserve x delivery against demand), the debt was not credited;
 #: that lies on the path of lactate and RR (through D and lactate kinetics) and of HR (through D
 #: and the sympathetic drive). In a run where delivery never exceeded demand it changes nothing.
 RUN_DEPENDENT = {"P2E-2": ("lactate_mmol_l", "respiratory_rate", "hr")}
@@ -139,9 +140,11 @@ RUN_DEPENDENT = {"P2E-2": ("lactate_mmol_l", "respiratory_rate", "hr")}
 def acting_mechanisms(core: Trajectory) -> tuple[str, ...]:
     """The run-dependent mechanisms that acted in this run (``RUN_DEPENDENT``)."""
     derived = core.derived()
-    # The debt of minute m reads the delivery at the start of the minute and the demand of the minute.
-    clipped = any(effective_delivery(derived[minute - 1].delivery_rel, core.anchors) > core.states[minute].aux.oxygen_demand
-                  for minute in range(1, len(core.states)))
+    # The debt of minute m reads the delivery at the start of the minute and the demand of the minute;
+    # the no-credit floor acts where the reserve's reach exceeds demand (P2I-2P; reserve 1 before).
+    reserve = core.profile.oxygen_extraction_reserve
+    clipped = any(reserve * effective_delivery(derived[minute - 1].delivery_rel, core.anchors)
+                  > core.states[minute].aux.oxygen_demand for minute in range(1, len(core.states)))
     return ("P2E-2",) if clipped else ()
 
 

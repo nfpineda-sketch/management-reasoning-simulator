@@ -42,6 +42,18 @@ SCENARIOS = (L1, L2, L3)
 TIMES = lactate_slice.TIMES
 KINETICS = ("debt_clearance_tau_min", "debt_per_delivery_deficit", "lactate_per_output_deficit",
             "lactate_clearance_tau_min")
+#: P2I-2P (2026-10-27): the committed results were filtered on the pre-P2I-2P core. The faculty
+#: stopped further filtering ("Do NOT continue filtering P2I-2R yet") until the oxygen-delivery
+#: review lands and FD-LAC-06 is operationalized; the results stay as committed, stale by
+#: construction, and this module's command refuses to produce new ones. None once a refilter is
+#: authorized and run.
+RESULTS_PENDING_REFILTER = {
+    "filter_digest": "58e988cf6b1c3d5bebab254305fdeec97ace1c11775db4753b458781a888d1bb",
+    "since": "2026-10-27",
+    "reason": "P2I-2P changed the shadow core's oxygen-debt formulation (neutral extraction reserve 1: canonical "
+              "numbers unchanged, sources changed) and FD-LAC-06's trajectory semantics (FD-LAC-06 faculty "
+              "decision, recorded in P2I-2P) are not yet operationalized; refiltering is not authorized",
+}
 
 
 # The pipeline (pinned by FROZEN_PIPELINE_DIGEST) -------------------------------------------------
@@ -816,6 +828,9 @@ def main(argv=None) -> int:
         data = json.loads(args.json.read_text(encoding="utf-8"))
         args.write.write_text(apply(args.write.read_text(encoding="utf-8"), render(data)), encoding="utf-8")
         return 0
+    if RESULTS_PENDING_REFILTER is not None:
+        parser.error("the P2I-2R results are pending a refilter that is not authorized yet "
+                     f"(since {RESULTS_PENDING_REFILTER['since']}): {RESULTS_PENDING_REFILTER['reason']}")
     text = json.dumps(report(args.quick), indent=1, sort_keys=True, default=str)
     if args.out:
         args.out.mkdir(parents=True, exist_ok=True)

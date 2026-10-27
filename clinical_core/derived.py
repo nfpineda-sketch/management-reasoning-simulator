@@ -83,6 +83,9 @@ class CoreProfile:
     lactate_floor: float = 0.8
     debt_clearance_tau_min: float = 60.0
     debt_per_delivery_deficit: float = 1.0
+    # P2I-2P: maximal over normal oxygen extraction. 1 is the pre-P2I-2P model (no reserve); the
+    # physiological value is above 1 and TBD.
+    oxygen_extraction_reserve: float = 1.0
     lactate_clearance_tau_min: float = 60.0
     rr_per_lactate: float = 7.5
     lactate_drive_threshold_mmol_l: float = 2.0
@@ -119,6 +122,9 @@ class CoreProfile:
             raise CoreInvariantError("afterload sensitivity is below 1, so output stays positive at any tone")
         if min(self.debt_per_delivery_deficit, self.collapse_burden_per_minute) <= 0.0:
             raise CoreInvariantError("the deficit-to-debt and collapse-burden gains are positive")
+        if self.oxygen_extraction_reserve < 1.0:
+            # Maximal extraction is never below normal extraction.
+            raise CoreInvariantError("the oxygen extraction reserve is at least 1")
         if min(self.debt_clearance_tau_min, self.lactate_clearance_tau_min) < 1.0:
             # D and lactate are integrated one minute at a time; a shorter time constant would
             # overshoot and take them negative.
@@ -186,6 +192,15 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
     "debt_per_delivery_deficit": (PROVISIONAL, "D accrued per unit of delivery deficit per minute (P2F-7): 1 by "
                                                "construction so far; only its product with the D -> lactate gain "
                                                "shows in lactate: TBD"),
+    "oxygen_extraction_reserve": (PROVISIONAL, "maximal over normal oxygen extraction, E_max / E_normal (P2I-2P): "
+                                               "consumption stays supply-independent down to the critical "
+                                               "delivery demand / reserve, and only the demand left unmet below "
+                                               "it is a deficit D integrates. 1 is the pre-P2I-2P model kept as "
+                                               "the neutral default (no reserve: any delivery below demand is a "
+                                               "deficit), not a physiological value; the value above 1 is TBD. "
+                                               "Only reserve x arrival_delivery_ratio reaches D: a reserve r keeps "
+                                               "today's GI dynamics only with the arrival band read as ratio / r, "
+                                               "a joint faculty decision"),
     "collapse_burden_per_minute": (PROVISIONAL, "collapse burden accrued per minute at full severity (P2F-7): 1 by "
                                                 "construction so far: TBD"),
     "debt_clearance_tau_min": (PROVISIONAL, "tau_D_recovery: TBD (KD-S1); 60 min is not approved. D repays "
@@ -376,11 +391,14 @@ def relative_delivery(output_rel: float, hb: float, spo2: float, anchors: Anchor
 
 
 def effective_delivery(delivery_rel: float, anchors: Anchors) -> float:
-    """Delivery in units of the delivery that meets the reference demand (P2F-1, P2F-6).
+    """The oxygen delivery index: DO2 relative to the patient's normal resting delivery (P2F-6, P2I-2P).
 
-    The arrival-relative delivery times the case's ``arrival_delivery_ratio``: 1 when the
-    arrival delivery is adequate (the neutral, undeclared value), below 1 when the patient
-    arrives in an ongoing deficit. Demand is in the same units.
+    The arrival-relative delivery times the case's ``arrival_delivery_ratio`` (arrival DO2 over
+    normal resting DO2; 1, the neutral value, reads arrival delivery as normal). At normal
+    extraction a delivery index of 1 meets a demand index of 1 (``oxygen_demand``, VO2 demand
+    over normal resting consumption): before P2I-2P this unit was described as "the delivery
+    that meets the reference demand", which conflated normal delivery with the minimum adequate
+    (critical) one. Which deficit is a debt is ``effective_oxygen_deficit``'s to say.
     """
     return anchors.arrival_delivery_ratio * delivery_rel
 
@@ -481,7 +499,8 @@ def arrival_layers(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> 
         arrival_preload(anchors, profile), arrival_volume_deficit(anchors, profile), anchors.arrival_oxygen_debt,
         anchors.arrival_lactate_excess, drive, anchors.hr - intrinsic_sinus_rate(anchors),
         anchors.arrival_delivery_ratio, anchors.metabolic_demand_baseline,
-        delivery_deficit(anchors.metabolic_demand_baseline, anchors.arrival_delivery_ratio),
+        effective_oxygen_deficit(anchors.metabolic_demand_baseline, anchors.arrival_delivery_ratio,
+                                 profile.oxygen_extraction_reserve),
         {name: source(name) for name in ("preload_fraction", "reference_preload_fraction", "arrival_oxygen_debt",
                                          "arrival_lactate_excess", "intrinsic_sinus_rate", "arrival_delivery_ratio",
                                          "metabolic_demand_baseline")})
@@ -505,18 +524,69 @@ def check_arrival_reconstruction(anchors: Anchors, profile: CoreProfile = DEFAUL
 
 
 def oxygen_demand(anchors: Anchors, modifiers) -> float:
-    """Metabolic oxygen demand for a minute, in units of the delivery that meets the reference demand.
+    """Metabolic oxygen demand for a minute: VO2 demand over normal resting consumption (P2E-2, P2I-2P).
 
     The case's baseline times every factor declared for the minute (disease or module, and
-    transient). No factor declared: the baseline. The factors and the normalization against
-    delivery are TBD; nothing here is a calibrated multiplier.
+    transient). No factor declared: the baseline. At normal extraction a delivery index of 1
+    meets a demand index of 1; how far extraction can rise is ``oxygen_extraction_reserve``
+    (before P2I-2P this unit was "the delivery that meets the reference demand"). The factors
+    are TBD; nothing here is a calibrated multiplier.
     """
     return anchors.metabolic_demand_baseline * math.prod(item.factor for item in modifiers)
 
 
 def delivery_deficit(demand: float, delivery_rel: float) -> float:
-    """The oxygen delivery that falls short of demand (P2E-2): max(0, demand - delivery), never a credit."""
+    """The delivery index below the demand index (P2E-2): max(0, demand - delivery), never a credit.
+
+    With no extraction reserve this is also the unmet demand; with one it is not (P2I-2P):
+    D integrates ``effective_oxygen_deficit``.
+    """
     return max(0.0, demand - delivery_rel)
+
+
+def effective_oxygen_deficit(demand: float, delivery: float, reserve: float) -> float:
+    """The oxygen demand left unmet once extraction is exhausted (P2I-2P): max(0, demand - reserve x delivery).
+
+    ``delivery`` is the delivery index (DO2 over normal resting DO2) and ``demand`` the demand
+    index (VO2 demand over normal resting VO2); at normal extraction delivery 1 meets demand 1.
+    Extraction can rise to ``reserve`` times normal (E_max / E_normal), so consumption is met down
+    to the critical delivery ``demand / reserve``; below it the unmet demand, in units of normal
+    resting consumption, is the deficit D integrates. ``reserve`` = 1 is the pre-P2I-2P model.
+    """
+    return max(0.0, demand - reserve * delivery)
+
+
+#: Oxygen-availability states (P2I-2P), from the supply-to-demand ratio delivery / demand.
+OXYGEN_ADEQUATE, OXYGEN_COMPENSATED, OXYGEN_CRITICAL = "ADEQUATE", "COMPENSATED", "CRITICAL"
+
+
+@dataclass(frozen=True)
+class OxygenBalance:
+    """One minute's oxygen availability (P2I-2P): read-only, it changes no state."""
+
+    delivery: float
+    demand: float
+    supply_ratio: float
+    required_extraction: float
+    critical_delivery: float
+    effective_deficit: float
+    state: str
+
+
+def oxygen_balance(delivery: float, demand: float, reserve: float) -> OxygenBalance:
+    """Delivery index, demand index and what extraction makes of them (P2I-2P).
+
+    - ADEQUATE: supply ratio >= 1, normal extraction meets demand;
+    - COMPENSATED: 1 / reserve <= ratio < 1, raised extraction meets it, no deficit;
+    - CRITICAL: ratio < 1 / reserve, extraction exhausted, the unmet demand is the deficit.
+    ``required_extraction`` is the extraction demand needs, relative to normal (capped at none).
+    With reserve 1 there is no COMPENSATED state (the pre-P2I-2P model).
+    """
+    ratio = delivery / demand
+    deficit = effective_oxygen_deficit(demand, delivery, reserve)
+    state = OXYGEN_ADEQUATE if ratio >= 1.0 else OXYGEN_CRITICAL if deficit > 0.0 else OXYGEN_COMPENSATED
+    return OxygenBalance(delivery, demand, ratio, math.inf if delivery <= 0.0 else 1.0 / ratio, demand / reserve,
+                         deficit, state)
 
 
 def arrival_state(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> CoreState:
