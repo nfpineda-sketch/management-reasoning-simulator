@@ -98,15 +98,20 @@ def test_the_second_units_smaller_output_gain_is_structural(data):
         assert reference["one"]["responsiveness"] < reference["before"]["responsiveness"]
 
 
-def test_the_worksheet_asks_patient_level_questions_and_answers_none():
+def test_the_worksheet_asks_patient_level_questions_and_records_only_the_faculty_selection():
+    """P2I-2V: FD-BLD-01..09 and the untreated anchors A and B are FACULTY_APPROVED as clinical behaviour /
+    envelopes (hidden parameters unapproved); C and D were not decided."""
     document = DOCUMENT.read_text(encoding="utf-8")
     rows = [[cell.strip() for cell in line.strip().strip("|").split("|")]
             for line in document.splitlines() if line.startswith("| FD-BLD-")]
     assert [row[0] for row in rows] == [f"FD-BLD-0{index}" for index in range(1, 10)]
-    assert all(row[4] == "" and row[5] == "ABIERTA" for row in rows)
+    assert all(row[4] and row[5] == "FACULTY_APPROVED" for row in rows)
+    assert "conducta clínica / envolvente aprobada; los parámetros ocultos del modelo siguen sin aprobar" in document
     untreated = [[cell.strip() for cell in line.strip().strip("|").split("|")]
                  for line in document.splitlines() if line[:4] in ("| A ", "| B ", "| C ", "| D ")]
-    assert [row[0] for row in untreated] == ["A", "B", "C", "D"] and all(row[4] == "" for row in untreated)
+    assert [row[0] for row in untreated] == ["A", "B", "C", "D"]
+    assert [row[5] for row in untreated] == ["FACULTY_APPROVED", "FACULTY_APPROVED", "ABIERTA", "ABIERTA"]
+    assert untreated[2][4] == untreated[3][4] == ""
     internal = ("B0", "κ", "λ", "τ del relleno", "meta del relleno", "capacidad del relleno", "Hb de la unidad",
                 "volumen de la unidad")
     assert not any(name in row[1] for row in rows for name in internal), "a question asks for an internal constant"
@@ -124,7 +129,10 @@ def test_no_internal_constant_is_approved_or_offered_alone_and_no_authority_is_p
     assert ba.PREFERRED_POLICY == "CASE_OVERRIDES_FAMILY_DEFAULT"
     assert set(ba.POLICY_COMPARISON) == {"CASE_OVERRIDES_FAMILY_DEFAULT", "CASE_REQUIRED", "FAMILY_FIXED_VALUE",
                                          "FAMILY_ALLOWED_RANGE"} == set(ba.POLICIES_ES)
-    assert migration_authority.AUTHORITY_POLICIES == () and migration_authority.APPROVED_FAMILY_DEFAULTS == ()
+    # P2I-2V: the bleed rate's policy category is decided; no family default (no rate) is approved.
+    assert [(p.family, p.parameter, p.policy) for p in migration_authority.AUTHORITY_POLICIES] == [
+        ("gi_bleed", "blood_loss_ml_per_min", "CASE_OVERRIDES_FAMILY_DEFAULT")]
+    assert migration_authority.APPROVED_FAMILY_DEFAULTS == ()
 
 
 def test_no_lactate_filter_runs_and_lactate_is_context_only():

@@ -174,7 +174,8 @@ def test_a_module_the_pack_digest_excludes_is_never_loaded_by_the_pack():
     ("clinical_core/lactate_slice.py", False), ("clinical_core/faculty_constraints.py", False),
     ("clinical_core/lactate_constraints.py", False), ("clinical_core/oxygen_probes.py", False),
     ("clinical_core/hemodynamic_probes.py", False), ("clinical_core/haemorrhage_probes.py", False),
-    ("clinical_core/blood_probes.py", False), ("clinical_core/blood_anchors.py", False)])
+    ("clinical_core/blood_probes.py", False), ("clinical_core/blood_anchors.py", False),
+    ("clinical_core/blood_constraints.py", False), ("clinical_core/blood_filter_report.py", False)])
 def test_the_pack_digest_covers_the_model_and_not_the_renderer(monkeypatch, path, changes):
     assert path in decision_pack.pack_sources() or path in decision_pack.PACK_DIGEST_EXCLUDED
     before = decision_pack.pack_digest()
@@ -207,7 +208,9 @@ def test_no_core_module_but_the_gate_and_its_vocabulary_names_a_migratable_sourc
 def test_nothing_is_faculty_approved_and_no_family_default_is_recorded():
     assert sum(entry.status == calibration.FACULTY_APPROVED for entry in calibration.REGISTRY.values()) == 0
     assert migration_authority.APPROVED_FAMILY_DEFAULTS == () and migration_authority.TRUSTED_CASE_MAPPINGS == ()
-    assert migration_authority.AUTHORITY_POLICIES == (), "no parameter's authority policy is chosen (FD-50)"
+    # P2I-2V: FD-50 decided for the GI bleed rate only (the policy category, no value).
+    assert [(p.family, p.parameter, p.policy) for p in migration_authority.AUTHORITY_POLICIES] == [
+        ("gi_bleed", "blood_loss_ml_per_min", "CASE_OVERRIDES_FAMILY_DEFAULT")]
 
 
 @pytest.mark.parametrize("case", gi_reference.GI_CASES)
@@ -328,4 +331,6 @@ def test_the_fd50_policy_matrix_covers_every_gi_parameter_and_approves_nothing()
     assert by_name["beta_blockade"][6] == "FACULTY_AUTHORING_DECISION_REQUIRED"
     assert {name for name, row in by_name.items() if row[6].startswith("Arquitectura")} == {
         "fraction_with_ppi", "fraction_after_hemostasis"}
-    assert migration_authority.AUTHORITY_POLICIES == (), "the matrix prepares FD-50; it declares no policy"
+    # The matrix prepares FD-50; the only policy declared is the faculty's for the GI bleed rate (P2I-2V).
+    assert [(p.family, p.parameter, p.policy) for p in migration_authority.AUTHORITY_POLICIES] == [
+        ("gi_bleed", "blood_loss_ml_per_min", "CASE_OVERRIDES_FAMILY_DEFAULT")]

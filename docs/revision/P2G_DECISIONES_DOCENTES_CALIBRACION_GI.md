@@ -4,7 +4,7 @@ Apoyo a decisiones, no decisiones. Nada de este documento aprueba un número, ma
 FACULTY_APPROVED, migra el GI, toca el tiempo de ejecución ni cambia lo que ve el residente. Todos los valores
 siguen CANDIDATE.
 
-- **Generado desde:** el congelamiento de calibración `eee140134e96590d4dfa0a31573aeef53933f41064fff58054ed5905ddf52494` y el paquete `7c158dd5350799a308ed80920ad938627d6a0f26f35ed18bfb0db05381ae99ad`
+- **Generado desde:** el congelamiento de calibración `272b98aafdebe9170ed3442a07aad39a731619680a884247a15cbe42a80c78db` y el paquete `e17b312cf04a4484c3b4c2746bfc8ad9a750c0723d1c02f5ef94a1fdf055f56d`
   (`python -m clinical_core.decision_pack`; las tablas, con `python -m clinical_core.decision_pack_markdown`).
   Los números están en `docs/revision/P2G_decision_pack.json`. Una prueba falla si el código o las entradas cambian
   sin regenerarlos.
@@ -943,7 +943,7 @@ modelo); la evidencia del repositorio es lo que dicen los casos.
 | FD-46 | Posición de precarga de las sondas neutras | `arrival_preload_fraction` 0,3–0,5–0,7 | reglas congeladas que leen la llegada neutra (PL2) | 0,3: PL2 falla su cláusula 2 con escala 600 u 833 (§9) | 0,5 y 0,7: PL2 se cumple | ninguna (no es un dato de caso) | §9 | | ABIERTA |
 | FD-47 | Lpm por unidad de impulso simpático | `hr_per_sympathetic_drive` 25 (banda de un punto: el literal del motor, adoptado en P2C) | escala de la parte simpática de la FC | — | — | literal del motor de familias | §3 | | ABIERTA |
 | FD-48 | Tope de seguridad de la FR | `rr_max` 40–60 | techo de la FR | 40: recorta el techo teórico cuando `rr_metabolic_max` ≥ 25 | 60: no recorta ningún punto de la cuadrícula | ninguna (no es fisiología) | §7 | | ABIERTA |
-| FD-50 | Política de autoridad de cada parámetro GI | por parámetro, una de: `FAMILY_FIXED_VALUE` (un valor exacto de familia, obligatorio) / `FAMILY_ALLOWED_RANGE` (rango de familia como envoltura de un valor del caso verificado) / `CASE_OVERRIDES_FAMILY_DEFAULT` (prevalece el caso; el valor de familia es respaldo) / `CASE_REQUIRED` (exige verdad del caso; sin respaldo). La matriz de §15 la prepara parámetro por parámetro | qué fuente de confianza puede autorizar cada uno de los 11 bloqueos de la puerta (12 antes de P2I-2T) | — | — | ninguna política declarada (`AUTHORITY_POLICIES` vacío): sin política, el parámetro cierra | §14 |  | ABIERTA |
+| FD-50 | Política de autoridad de cada parámetro GI | por parámetro, una de: `FAMILY_FIXED_VALUE` (un valor exacto de familia, obligatorio) / `FAMILY_ALLOWED_RANGE` (rango de familia como envoltura de un valor del caso verificado) / `CASE_OVERRIDES_FAMILY_DEFAULT` (prevalece el caso; el valor de familia es respaldo) / `CASE_REQUIRED` (exige verdad del caso; sin respaldo). La matriz de §15 la prepara parámetro por parámetro | qué fuente de confianza puede autorizar cada uno de los 11 bloqueos de la puerta (12 antes de P2I-2T) | — | — | una sola política declarada (P2I-2V, 2026-10-27): `blood_loss_ml_per_min` → `CASE_OVERRIDES_FAMILY_DEFAULT`, sólo la categoría, sin tasa ni valor de familia; los otros parámetros siguen sin política y cierran | §14 |  | ABIERTA |
 
 **Decisiones abiertas: 48.**
 
@@ -961,8 +961,21 @@ FD-23 (`hb_loss_g_dl_per_min`, registro `gi_hb_loss_g_dl_per_min`: la caída de 
   juzga con las anclas de paciente FD-BLD (`docs/revision/P2I2U_ANCLAS_HEMORRAGIA_COMPARTIDA.md`).
 - Su id no se reutiliza.
 
-Las decisiones de anclas del estado hemorrágico compartido (FD-BLD-01 a FD-BLD-09, todas ABIERTAS) están en
+Las decisiones de anclas del estado hemorrágico compartido (FD-BLD-01 a FD-BLD-09) están en
 `docs/revision/P2I2U_ANCLAS_HEMORRAGIA_COMPARTIDA.md`, fuera de esta tabla.
+- Desde P2I-2V (2026-10-27), las nueve son **FACULTY_APPROVED**: se aprueba la conducta clínica o la envolvente; los
+  parámetros ocultos del modelo siguen sin aprobar.
+- También se aprobaron las envolventes sin tratar de gasto y de caída de Hb de cada caso.
+- Cómo se leen y qué región candidata dejan: `docs/revision/P2I2V_ANCLAS_APROBADAS_FILTRO.md`.
+
+**FD-50, decidida en parte (P2I-2V, 2026-10-27).**
+- Para `blood_loss_ml_per_min`, la docencia aprobó la categoría `CASE_OVERRIDES_FAMILY_DEFAULT`:
+  1. gana la tasa o gravedad verificada del caso;
+  2. el valor de familia GI aprobado sólo es respaldo;
+  3. sin ninguno de los dos, la migración cierra.
+- No se aprobó ninguna tasa: FD-22 sigue abierta y `APPROVED_FAMILY_DEFAULTS` sigue vacío.
+- La política está declarada en `migration_authority.AUTHORITY_POLICIES`.
+- FD-50 sigue ABIERTA para los demás parámetros, así que el recuento de abiertas no cambia.
 
 **Parámetros del registro fuera de esta tabla, con el motivo.** Cada nombre del registro está en la tabla o aquí; una
 prueba lo comprueba.

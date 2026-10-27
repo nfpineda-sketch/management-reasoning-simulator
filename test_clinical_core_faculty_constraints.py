@@ -80,7 +80,10 @@ def test_the_constraints_stay_out_of_authority_provenance_and_the_registry():
     assert sum(entry.status == calibration.FACULTY_APPROVED for entry in calibration.REGISTRY.values()) == 0
     for parameter in fc.HIDDEN_PARAMETERS:
         assert calibration.REGISTRY[parameter].status != calibration.FACULTY_APPROVED
-    assert authority.AUTHORITY_POLICIES == () and authority.TRUSTED_CASE_MAPPINGS == ()
+    # P2I-2V: the faculty decided one policy (the GI bleed rate's category), no value.
+    assert [(p.family, p.parameter, p.policy) for p in authority.AUTHORITY_POLICIES] == [
+        ("gi_bleed", "blood_loss_ml_per_min", "CASE_OVERRIDES_FAMILY_DEFAULT")]
+    assert authority.TRUSTED_CASE_MAPPINGS == ()
     assert authority.APPROVED_FAMILY_DEFAULTS == ()
     for case in gi_reference.GI_CASES:
         assert gate_dry_run(case)["passes_gate"] is False

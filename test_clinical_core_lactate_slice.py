@@ -111,7 +111,10 @@ def test_repository_truth_is_cited_and_free_of_inference(quick):
 
 def test_nothing_is_approved_and_gi_still_fails_the_gate():
     assert sum(entry.status == calibration.FACULTY_APPROVED for entry in calibration.REGISTRY.values()) == 0
-    assert authority.AUTHORITY_POLICIES == () and authority.TRUSTED_CASE_MAPPINGS == ()
+    # P2I-2V: the faculty decided one policy (the GI bleed rate's category), no value.
+    assert [(p.family, p.parameter, p.policy) for p in authority.AUTHORITY_POLICIES] == [
+        ("gi_bleed", "blood_loss_ml_per_min", "CASE_OVERRIDES_FAMILY_DEFAULT")]
+    assert authority.TRUSTED_CASE_MAPPINGS == ()
     assert authority.APPROVED_FAMILY_DEFAULTS == ()
     for case in gi_reference.GI_CASES:
         assert gate_dry_run(case)["passes_gate"] is False

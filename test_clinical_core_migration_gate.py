@@ -703,10 +703,21 @@ def test_p2h1_7_an_undeclared_or_doubled_policy_fails_closed(trust):
             authority.AuthorityPolicy("gi_bleed", "pump_reserve", bad, "1", "test")
 
 
-def test_p2h1_production_declares_no_policy_so_every_gi_parameter_fails_closed():
-    assert authority.AUTHORITY_POLICIES == ()
+def test_p2h1_production_declares_one_policy_and_every_gi_parameter_still_fails_closed():
+    """P2I-2V: the faculty decided the GI bleed rate's policy category only (no rate, no default)."""
+    assert [(p.family, p.parameter, p.policy) for p in authority.AUTHORITY_POLICIES] == [
+        ("gi_bleed", "blood_loss_ml_per_min", authority.CASE_OVERRIDES_FAMILY_DEFAULT)]
+    assert authority.APPROVED_FAMILY_DEFAULTS == () and authority.TRUSTED_CASE_MAPPINGS == ()
     for name in GI_PARAMETERS:
-        assert authority.policy_for("gi_bleed", name) == (None, f"no authority policy is declared for gi_bleed/{name}")
+        if name != "blood_loss_ml_per_min":
+            assert authority.policy_for("gi_bleed", name) == (None, f"no authority policy is declared for gi_bleed/{name}")
+    # With neither a verified case rate nor an approved family default, the policy fails closed.
+    for case in ("gi_bleed_57m", "gi_bleed_72f"):
+        with pytest.raises(MigrationBlocked) as blocked_gate:
+            check_migration_gate("gi_bleed", real(case), FAMILY_APPROVED)
+        assert ("blood_loss_ml_per_min (approved_family_default: no trusted source confirms 1.0: no trusted source "
+                "holds this parameter: no registered case mapping and no approved family default)"
+                in str(blocked_gate.value))
 
 
 def test_p2h1_8_provenance_reports_the_authority_that_won(trust):

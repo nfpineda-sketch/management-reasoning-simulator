@@ -30,20 +30,21 @@ from clinical_core.shadow import GOLDEN
 #: registry that no blood-state constant is decided on its own (preload_curve_scale_ml only as
 #: lambda / kappa), and marked the Hb of the probes that still write V outside the blood state: only
 #: harness_sources (bands.py and calibration.py) changed; the rules, bands and every other component
-#: did not.
+#: did not. P2I-2V declared the faculty's authority policy for the GI bleed rate (the category only,
+#: no rate): migration_sources (migration_authority.py) and authority_registries changed; nothing else.
 FROZEN_COMPONENTS = {
     "rules": "07f526f1cd9c65d4eb465f19c652a87d77adc678b2a706664b81c7237c59bc91",
     "bands": "99ca99f1b0d032056cfdabb90e1354683ef5ba093e896a0d5c10bc9c2ca192ca",
     "harness_sources": "9189ec978b6d6b37c301329af6fdc4c44af42d4019c9c2336bb21eaa62646efd",
-    "migration_sources": "4831949edabea361d5a0b2c0ee7e157551117c4cdc4b2f022833261e5a0f29a2",
-    "authority_registries": "7a1473d2da2126d875ad21366a2ee93a288b3779cfbd4856baa46014872576fc",
+    "migration_sources": "6033f4437627ed1f78c2c2ea03764986572639d94596982963a44f5964a2cb29",
+    "authority_registries": "e305793eefead76fb733761f3305148e3df85aa9074445d94f051cb5709d2314",
     "gi_reference": "159fdc558c713a743261ab82075dc2574f7389f017a81a80f95f0d7207e0a9bd",
     "scenarios": "7380daec5536c8f9a23c857df2138c99a16d63eace51d62b295aa3f4ed100b58",
     "input_path_sources": "8bbff3d408efba2024917559156cfaa732c920b3bc7a45e0bac0e3e4838f65b9",
     "input_adapter_sources": "e83dca618fdaaa9239d861e1e1d6928dc703bfe33206a05cef44a5b0e9495bc5",
     "scenario_inputs": "afb2051e7fa04f1765aaf920c82f51dc6675d19bcbcb425c2ee581d8fa60d347",
 }
-FROZEN_DIGEST = "eee140134e96590d4dfa0a31573aeef53933f41064fff58054ed5905ddf52494"
+FROZEN_DIGEST = "272b98aafdebe9170ed3442a07aad39a731619680a884247a15cbe42a80c78db"
 
 
 # P2F-2 / P2F-5 -- repository truth, candidate inference, faculty decision ---------------------

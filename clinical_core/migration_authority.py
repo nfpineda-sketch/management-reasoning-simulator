@@ -32,8 +32,9 @@ the registry, the digest and the verification, not from the module that holds th
 rule must be a plain, deterministic function whose exact implementation the digest pins; when
 the registry cannot be fingerprinted reproducibly, every parameter fails closed.
 
-All three registries are empty: no policy is declared, no case parameter is mapped from case
-truth yet and no family default is approved.
+One policy is declared: the faculty approved CASE_OVERRIDES_FAMILY_DEFAULT for the GI bleed rate
+(2026-10-27, P2I-2V), the policy category only. No case parameter is mapped from case truth yet and no
+family default is approved, so that parameter, like every other one, still fails closed.
 
 Nothing the candidate supplies is trusted beyond exact primitive values: a value counts only
 as an exact ``int`` or ``float`` (never a subclass, whose ``__float__`` or ``__eq__`` the
@@ -201,9 +202,16 @@ class AuthorityPolicy:
             raise ValueError(f"an authority policy is one of {POLICIES}, not {self.policy!r}")
 
 
-#: Trusted registry of authority policies. Empty: choosing each parameter's policy is a
-#: methodological decision still open (P2H-1), so every parameter fails closed.
-AUTHORITY_POLICIES: tuple[AuthorityPolicy, ...] = ()
+#: Trusted registry of authority policies. Choosing each parameter's policy is a methodological
+#: decision (P2H-1, FD-50); the faculty has decided one: the GI bleed rate (P2I-2V). It approves the
+#: policy category only, no rate: with no verified case rate and no approved family default the
+#: parameter fails closed. Every parameter without a policy fails closed too.
+AUTHORITY_POLICIES: tuple[AuthorityPolicy, ...] = (
+    AuthorityPolicy("gi_bleed", "blood_loss_ml_per_min", CASE_OVERRIDES_FAMILY_DEFAULT, "1",
+                    "faculty decision 2026-10-27 (P2I-2V): a verified case-specific bleed rate or severity wins; an "
+                    "approved GI-family value is only a fallback; with neither, migration fails closed. The policy "
+                    "category only: no numeric bleed rate is approved"),
+)
 #: Trusted registry A. Empty: no case parameter is mapped from case truth yet (P2F-11).
 TRUSTED_CASE_MAPPINGS: tuple[CaseMapping, ...] = ()
 #: Trusted registry B. Empty: no family default is approved.

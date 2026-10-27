@@ -549,7 +549,8 @@ POLICY_COMPARISON = {
         "gate": "fails closed without a verified case rate, unless the approval defines a fallback",
     },
 }
-#: The policy the package asked to evaluate as the preferred one: not adopted; AUTHORITY_POLICIES stays empty.
+#: The policy P2I-2U was asked to evaluate as the preferred one, not adopted there; the faculty approved its
+#: category for the bleed rate in P2I-2V (migration_authority.AUTHORITY_POLICIES), no rate.
 PREFERRED_POLICY = "CASE_OVERRIDES_FAMILY_DEFAULT"
 
 
@@ -903,22 +904,31 @@ def render(data: dict) -> str:
         "de A.1 y A.3 resumen sólo las corridas que siguen perfundiendo (n en sus tablas), salvo donde se dice. "
         "«Qué acotaría» son los parámetros internos que mueven las anclas de la evidencia mostrada (A.5), en orden de "
         "efecto; ninguno se decide por separado.\n")
+    add("**Estado (P2I-2V, 2026-10-27).** La docencia aprobó FD-BLD-01 a 09 y las anclas sin tratar A y B. "
+        "FACULTY_APPROVED quiere decir: conducta clínica / envolvente aprobada; los parámetros ocultos del modelo "
+        "siguen sin aprobar. Las envolventes son envolventes clínicas, no objetivos exactos. Cómo se leen y qué región "
+        "dejan: `docs/revision/P2I2V_ANCLAS_APROBADAS_FILTRO.md`.\n")
     add("| ID | Pregunta | Lo que muestra el modelo (sólo modelo) | Qué acotaría | Selección docente | Estado |")
     add("|---|---|---|---|---|---|")
     for identifier, _, anchors in WORKSHEET:
         add(f"| {identifier} | {QUESTIONS_ES[identifier]} | {_worksheet_evidence(identifier, data)} | "
-            + ", ".join(PARAMETERS_ES[p] for p in _drivers(ident, anchors)) + " |  | ABIERTA |")
+            + ", ".join(PARAMETERS_ES[p] for p in _drivers(ident, anchors))
+            + f" | {_approved(identifier)} | {_approved_status(identifier)} |")
     add("")
     add("| Ancla sin tratar | Pregunta | Lo que muestra el modelo | Qué acotaría | Selección docente | Estado |")
     add("|---|---|---|---|---|---|")
     for letter, _, anchors in UNTREATED_QUESTIONS:
         add(f"| {letter} | {UNTREATED_ES[letter]} | {_untreated_evidence(letter, data)} | "
-            + ", ".join(PARAMETERS_ES[p] for p in _drivers(ident, anchors)) + " |  | ABIERTA |")
+            + ", ".join(PARAMETERS_ES[p] for p in _drivers(ident, anchors))
+            + f" | {_approved(letter)} | {_approved_status(letter)} |")
     add("")
+    add("C y D no se decidieron. D queda implícita en la envolvente de B a los 120 min (un gasto de 0,45–0,65 o "
+        "0,60–0,78 exige seguir perfundiendo), pero no se decidió por separado.\n")
     # Policies
     add("### A.7 Autoridad de la tasa de sangrado (P2I-2U-10)\n")
     add("`FAMILY_ALLOWED_RANGE` no está entre las tres que pide el encargo; se añade porque P2G la lista para "
-        "`blood_loss_ml_per_min` (FD-50). Ninguna se adopta: los registros de autoridad siguen vacíos.\n")
+        "`blood_loss_ml_per_min` (FD-50). En P2I-2U no se adoptó ninguna. **P2I-2V (2026-10-27):** la docencia aprobó "
+        "la categoría `CASE_OVERRIDES_FAMILY_DEFAULT` para esta tasa, sin aprobar ningún valor numérico.\n")
     add("| Política | Significado | Autoría | Consecuencia clínica | Riesgo | Puerta de migración |")
     add("|---|---|---|---|---|---|")
     for policy in data["policies"]:
@@ -935,6 +945,66 @@ def _drivers(ident: dict, anchors: tuple) -> list:
         for parameter in ident["drivers"][anchor]:
             shares[parameter] = max(shares.get(parameter, 0.0), ident["shares"][anchor][parameter])
     return sorted(shares, key=lambda parameter: -shares[parameter])
+
+
+def _range(pair, digits: int = 2) -> str:
+    return f"{_n(pair[0], digits)}–{_n(pair[1], digits)}"
+
+
+def _percent(pair) -> str:
+    return f"{_n(100 * pair[0], 0)}–{_n(100 * pair[1], 0)} %"
+
+
+def _approved(identifier: str) -> str:
+    """The faculty's selection (P2I-2V), written from blood_constraints.DECISIONS; blank while open."""
+    from . import blood_constraints  # imported here: it imports this module
+    d = blood_constraints.DECISIONS
+    cases = gi_reference.GI_CASES
+    if identifier == "FD-BLD-01":
+        return (f"≈ {_range(d['FD-BLD-01']['envelope'], 1)} g/dL por unidad; no es una regla fija de +1 g/dL; tras "
+                "mezcla razonable y sin una pérdida simultánea abrumadora")
+    if identifier == "FD-BLD-02":
+        return ("con respuesta a la precarga y llenado bajo: " + "; ".join(
+            f"{case} ≈ {_percent(d['FD-BLD-02'][case])}" for case in cases)
+            + " de aumento del gasto efectivo; envolventes de techo / conducta, no respuestas obligatorias")
+    if identifier == "FD-BLD-03":
+        return ("una unidad no debe normalizar de forma fiable el gasto efectivo en ninguno de los dos casos; 72f puede "
+                "acercarse a un estado adecuado si responde a la precarga; 57m no pasa de fisiología hemorrágica grave "
+                "a gasto normalizado / euvolémico con una sola unidad. Segunda unidad: beneficio ≤ el de la primera "
+                "(la razón ~0,70 no se aprueba)")
+    if identifier == "FD-BLD-04":
+        return (f"≈ {_percent(d['FD-BLD-04']['envelope'])} del volumen infundido (≈ 150–300 mL por litro); envolvente "
+                "clínica, no una conversión exacta")
+    if identifier == "FD-BLD-05":
+        return "; ".join(f"≈ {_percent(pair)} a los ~{minute} min"
+                         for minute, pair in d["FD-BLD-05"]["envelopes"].items())
+    if identifier == "FD-BLD-06":
+        return ("; ".join(f"{volume // 1000} L: descenso transitorio de ≈ {_range(pair, 1)} g/dL"
+                          for volume, pair in d["FD-BLD-06"]["envelopes"].items()) + "; con reversión parcial")
+    if identifier == "FD-BLD-07":
+        return "; ".join(f"≈ {_percent(pair)} a los ~{minute} min"
+                         for minute, pair in d["FD-BLD-07"]["envelopes"].items())
+    if identifier == "FD-BLD-08":
+        return "sí: sigue después de la hemostasia mientras quede déficit circulante y capacidad de relleno"
+    if identifier == "FD-BLD-09":
+        return ("aumenta el volumen plasmático / circulante, no la masa de GR, y diluye la Hb progresivamente; ningún "
+                "decremento fijo en g/dL: la magnitud sale del estado sanguíneo compartido")
+    if identifier == "A":
+        return "caída de Hb: " + "; ".join(
+            f"{case} " + ", ".join(f"{_range(pair, 1)} g/dL a los {minute} min"
+                                   for minute, pair in d["untreated_hb_fall"][case].items()) for case in cases)
+    if identifier == "B":
+        return "gasto efectivo relativo a la llegada: " + "; ".join(
+            f"{case} " + ", ".join(f"{_range(pair)} a los {minute} min"
+                                   for minute, pair in d["untreated_output"][case].items()) for case in cases)
+    return ""
+
+
+def _approved_status(identifier: str) -> str:
+    from . import blood_constraints
+    if identifier in blood_constraints.FD_BLD_STATUS:
+        return blood_constraints.FD_BLD_STATUS[identifier]
+    return "FACULTY_APPROVED" if identifier in ("A", "B") else "ABIERTA"
 
 
 def _worksheet_evidence(identifier: str, data: dict) -> str:
