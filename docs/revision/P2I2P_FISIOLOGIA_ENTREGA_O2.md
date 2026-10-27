@@ -37,6 +37,9 @@ Texto original de la docencia (2026-10-27), citado tal cual:
 En este paquete no se codifica en `faculty_constraints.py` ni se vuelve a filtrar. La propuesta de cómo leerla con el
 estado de oxigenación corregido está en §9.
 
+**2026-10-27:** la docencia aceptó P2I-2P y decidió la semántica, los estados, la lectura de FD-LAC-06 y la banda candidata
+de ρ (2,0–3,0). El registro está en `docs/revision/P2I2Q_PLAUSIBILIDAD_HEMODINAMICA.md` §0.
+
 ## 1. Auditoría de terminología y dimensiones (P2I-2P-1)
 
 Estado anterior a P2I-2P, inferido del código y de su documentación, sin suponer:
@@ -130,7 +133,7 @@ Estado anterior a P2I-2P, inferido del código y de su documentación, sin supon
 ## 4. Sondas y hallazgos (generado)
 
 <!-- generado:oxigeno -->
-Generado desde las sondas `87bb5dd93f15bec802ef4affa448a9ca164a7c36991724062161f0147899d582` (`python -m clinical_core.oxygen_probes`). Reserva canónica 1 (neutra: el modelo previo); reserva ilustrativa 2,5, sintética y no propuesta. Colapso: sólo un cálculo sobre cada trayectoria, con un umbral de gasto sintético de 0,3 y un límite de carga sintético de 30 minutos a severidad plena; la regla del núcleo sigue apagada. Los lactatos de las sondas A–J usan las cinéticas por defecto del perfil (TBD): importa su dirección, no su magnitud.
+Generado desde las sondas `a476b25abad51ed9d89f59f72ae83972c6fca967f8f4ea1746d9744e8e1d9e45` (`python -m clinical_core.oxygen_probes`). Reserva canónica 1 (neutra: el modelo previo); reserva ilustrativa 2,5, sintética y no propuesta. Colapso: sólo un cálculo sobre cada trayectoria, con un umbral de gasto sintético de 0,3 y un límite de carga sintético de 30 minutos a severidad plena; la regla del núcleo sigue apagada. Los lactatos de las sondas A–J usan las cinéticas por defecto del perfil (TBD): importa su dirección, no su magnitud.
 
 ### 4.1 Sondas A–J
 

@@ -1,0 +1,4195 @@
+{
+ "admissible_preload_levels": {
+  "midpoint": 1053,
+  "upper": 1
+ },
+ "audit": {
+  "gi_bleed_57m": {
+   "collapse_reached": {
+    "output": {
+     "15": null,
+     "30": null,
+     "5": null
+    },
+    "oxygen_deficit": {
+     "15": 51,
+     "30": 79,
+     "5": 24
+    }
+   },
+   "factors_at_end": {
+    "P": 1.0,
+    "afterload": 1.0,
+    "hb_ratio": 0.8388059701492476,
+    "output_rel": 0.195245372959368,
+    "preload_rel": 0.195245372959368,
+    "rhythm": 1.0,
+    "spo2_ratio": 1.0
+   },
+   "points": {
+    "0": {
+     "D": 20.0,
+     "P": 1.0,
+     "T": 1.0,
+     "V": 0.0,
+     "burden_output": 0.0,
+     "burden_oxygen_deficit": 0.0,
+     "consciousness": 0,
+     "dbp": 54.0,
+     "demand": 1.0,
+     "do2": 0.33999999999999997,
+     "effective_deficit": 0.15000000000000013,
+     "filling_ml": 358.9857634103785,
+     "hb": 6.7,
+     "hr": 124.0,
+     "lactate": 4.4,
+     "lost_ml": 0.0,
+     "map": 65.33333333333333,
+     "output_rel": 1.0,
+     "position": 0.35,
+     "preload_rel": 1.0,
+     "rhythm": "sinus",
+     "sbp": 88.0,
+     "state": "CRITICAL"
+    },
+    "120": {
+     "D": 34.60918091991708,
+     "P": 1.0,
+     "T": 1.0,
+     "V": -300.0,
+     "burden_output": 2.1494138795908513,
+     "burden_oxygen_deficit": 60.24062714868264,
+     "consciousness": 2,
+     "dbp": 16.205365955627546,
+     "demand": 1.0,
+     "do2": 0.055682814723993675,
+     "effective_deficit": 0.8607929631900157,
+     "filling_ml": 58.985763410378524,
+     "hb": 5.619999999999959,
+     "hr": 147.16244503433188,
+     "lactate": 5.314021339121453,
+     "lost_ml": 300.0,
+     "map": 19.329291922977433,
+     "output_rel": 0.195245372959368,
+     "position": 0.0683358805357788,
+     "preload_rel": 0.195245372959368,
+     "rhythm": "sinus",
+     "sbp": 25.577143857677207,
+     "state": "CRITICAL"
+    },
+    "15": {
+     "D": 18.124184331235845,
+     "P": 1.0,
+     "T": 1.0,
+     "V": -37.5,
+     "burden_output": 0.0,
+     "burden_oxygen_deficit": 2.8678639271681927,
+     "consciousness": 0,
+     "dbp": 51.86299221852386,
+     "demand": 1.0,
+     "do2": 0.30467155182666894,
+     "effective_deficit": 0.23832112043332765,
+     "filling_ml": 321.4857634103785,
+     "hb": 6.564999999999995,
+     "hr": 125.74621285048362,
+     "lactate": 4.446116784378207,
+     "lost_ml": 37.5,
+     "map": 62.626456810130215,
+     "output_rel": 0.9145196887409541,
+     "position": 0.32008189105933393,
+     "preload_rel": 0.9145196887409541,
+     "rhythm": "sinus",
+     "sbp": 84.15338599334294,
+     "state": "CRITICAL"
+    },
+    "30": {
+     "D": 17.849147861548843,
+     "P": 1.0,
+     "T": 1.0,
+     "V": -75.0,
+     "burden_output": 0.0,
+     "burden_oxygen_deficit": 7.062583345529892,
+     "consciousness": 0,
+     "dbp": 49.62762254225809,
+     "demand": 1.0,
+     "do2": 0.26923049792169884,
+     "effective_deficit": 0.3269237551957529,
+     "filling_ml": 283.9857634103785,
+     "hb": 6.42999999999999,
+     "hr": 127.92428326223126,
+     "lactate": 4.461338486090009,
+     "lost_ml": 75.0,
+     "map": 59.79498855352691,
+     "output_rel": 0.8251049016903236,
+     "position": 0.28878671559161323,
+     "preload_rel": 0.8251049016903236,
+     "rhythm": "sinus",
+     "sbp": 80.12972057606456,
+     "state": "CRITICAL"
+    },
+    "45": {
+     "D": 18.821571025421434,
+     "P": 1.0,
+     "T": 1.0,
+     "V": -112.5,
+     "burden_output": 0.0,
+     "burden_oxygen_deficit": 12.58798534558731,
+     "consciousness": 1,
+     "dbp": 47.28936358368897,
+     "demand": 1.0,
+     "do2": 0.2336998500189218,
+     "effective_deficit": 0.4157503749526955,
+     "filling_ml": 246.48576341037852,
+     "hb": 6.294999999999985,
+     "hr": 130.4651303799405,
+     "lactate": 4.48292697222011,
+     "lost_ml": 112.5,
+     "map": 56.833193872672695,
+     "output_rel": 0.7315745433475588,
+     "position": 0.25605109017164557,
+     "preload_rel": 0.7315745433475588,
+     "rhythm": "sinus",
+     "sbp": 75.92085445064015,
+     "state": "CRITICAL"
+    },
+    "60": {
+     "D": 20.766060230972126,
+     "P": 1.0,
+     "T": 1.0,
+     "V": -150.0,
+     "burden_output": 0.0,
+     "burden_oxygen_deficit": 19.44699333924811,
+     "consciousness": 1,
+     "dbp": 44.84347956934453,
+     "demand": 1.0,
+     "do2": 0.19810497677632877,
+     "effective_deficit": 0.5047375580591781,
+     "filling_ml": 208.98576341037852,
+     "hb": 6.15999999999998,
+     "hr": 133.316116312108,
+     "lactate": 4.536328456026794,
+     "lost_ml": 150.0,
+     "map": 53.73507412116974,
+     "output_rel": 0.6337391827737812,
+     "position": 0.22180871397082338,
+     "preload_rel": 0.6337391827737812,
+     "rhythm": "sinus",
+     "sbp": 71.51826322482015,
+     "state": "CRITICAL"
+    },
+    "90": {
+     "D": 26.75849590327025,
+     "P": 1.0,
+     "T": 1.0,
+     "V": -225.0,
+     "burden_output": 0.0,
+     "burden_oxygen_deficit": 37.17244829183797,
+     "consciousness": 2,
+     "dbp": 35.22119395126086,
+     "demand": 1.0,
+     "do2": 0.12683683331558107,
+     "effective_deficit": 0.6829079167110473,
+     "filling_ml": 133.98576341037852,
+     "hb": 5.8899999999999695,
+     "hr": 139.79922662103445,
+     "lactate": 4.79871802603404,
+     "lost_ml": 225.0,
+     "map": 42.01082170090151,
+     "output_rel": 0.4243517343525405,
+     "position": 0.14852310702338917,
+     "preload_rel": 0.4243517343525405,
+     "rhythm": "sinus",
+     "sbp": 55.590077200182805,
+     "state": "CRITICAL"
+    }
+   },
+   "zero_flow": {
+    "lower": {
+     "distance_ml": 185.95295942850814,
+     "minutes_at_bleed_rate": 74.38118377140326,
+     "position": 0.2
+    },
+    "midpoint": {
+     "distance_ml": 358.9857634103785,
+     "minutes_at_bleed_rate": 143.5943053641514,
+     "position": 0.35
+    },
+    "upper": {
+     "distance_ml": 577.622650466621,
+     "minutes_at_bleed_rate": 231.04906018664843,
+     "position": 0.5
+    }
+   }
+  },
+  "gi_bleed_72f": {
+   "collapse_reached": {
+    "output": {
+     "15": null,
+     "30": null,
+     "5": null
+    },
+    "oxygen_deficit": {
+     "15": 56,
+     "30": 89,
+     "5": 25
+    }
+   },
+   "factors_at_end": {
+    "P": 1.0,
+    "afterload": 1.0,
+    "hb_ratio": 0.8312499999999936,
+    "output_rel": 0.47037515998180635,
+    "preload_rel": 0.47037515998180635,
+    "rhythm": 1.0,
+    "spo2_ratio": 1.0
+   },
+   "points": {
+    "0": {
+     "D": 20.0,
+     "P": 1.0,
+     "T": 1.0,
+     "V": 0.0,
+     "burden_output": 0.0,
+     "burden_oxygen_deficit": 0.0,
+     "consciousness": 0,
+     "dbp": 62.0,
+     "demand": 1.0,
+     "do2": 0.33999999999999997,
+     "effective_deficit": 0.15000000000000013,
+     "filling_ml": 498.1975006296837,
+     "hb": 6.4,
+     "hr": 112.0,
+     "lactate": 3.4,
+     "lost_ml": 0.0,
+     "map": 74.0,
+     "output_rel": 1.0,
+     "position": 0.44999999999999996,
+     "preload_rel": 1.0,
+     "rhythm": "sinus",
+     "sbp": 98.0,
+     "state": "CRITICAL"
+    },
+    "120": {
+     "D": 28.080286747276425,
+     "P": 1.0,
+     "T": 1.0,
+     "V": -300.0,
+     "burden_output": 0.0,
+     "burden_oxygen_deficit": 48.84048776741029,
+     "consciousness": 1,
+     "dbp": 46.56714083819883,
+     "demand": 1.0,
+     "do2": 0.13293977958985698,
+     "effective_deficit": 0.6676505510253575,
+     "filling_ml": 198.1975006296837,
+     "hb": 5.319999999999959,
+     "hr": 126.92401407280408,
+     "lactate": 4.56662137082925,
+     "lost_ml": 300.0,
+     "map": 54.72031027788347,
+     "output_rel": 0.47037515998180635,
+     "position": 0.21166882199181283,
+     "preload_rel": 0.47037515998180635,
+     "rhythm": "sinus",
+     "sbp": 71.02664915725276,
+     "state": "CRITICAL"
+    },
+    "15": {
+     "D": 17.970675690919634,
+     "P": 1.0,
+     "T": 1.0,
+     "V": -37.5,
+     "burden_output": 0.0,
+     "burden_oxygen_deficit": 2.703033047796459,
+     "consciousness": 0,
+     "dbp": 60.59359316945587,
+     "demand": 1.0,
+     "do2": 0.31410445506411194,
+     "effective_deficit": 0.21473886233972017,
+     "filling_ml": 460.6975006296837,
+     "hb": 6.264999999999995,
+     "hr": 112.98363093281907,
+     "lactate": 3.56297788307277,
+     "lost_ml": 37.5,
+     "map": 72.21855134797744,
+     "output_rel": 0.9437437267782348,
+     "position": 0.42468467705020563,
+     "preload_rel": 0.9437437267782348,
+     "rhythm": "sinus",
+     "sbp": 95.46846770502057,
+     "state": "CRITICAL"
+    },
+    "30": {
+     "D": 17.259779269097322,
+     "P": 1.0,
+     "T": 1.0,
+     "V": -75.0,
+     "burden_output": 0.0,
+     "burden_oxygen_deficit": 6.377837211049032,
+     "consciousness": 0,
+     "dbp": 59.1224524423408,
+     "demand": 1.0,
+     "do2": 0.2881725961270413,
+     "effective_deficit": 0.27956850968239666,
+     "filling_ml": 423.1975006296837,
+     "hb": 6.12999999999999,
+     "hr": 114.30666823872116,
+     "lactate": 3.6743413586659446,
+     "lost_ml": 75.0,
+     "map": 70.35510642696501,
+     "output_rel": 0.8848980976936319,
+     "position": 0.3982041439621343,
+     "preload_rel": 0.8848980976936319,
+     "rhythm": "sinus",
+     "sbp": 92.82041439621344,
+     "state": "CRITICAL"
+    },
+    "45": {
+     "D": 17.574443682049516,
+     "P": 1.0,
+     "T": 1.0,
+     "V": -112.5,
+     "burden_output": 0.0,
+     "burden_oxygen_deficit": 11.025468716994794,
+     "consciousness": 0,
+     "dbp": 57.58359825593206,
+     "demand": 1.0,
+     "do2": 0.2622221770316638,
+     "effective_deficit": 0.34444455742084057,
+     "filling_ml": 385.6975006296837,
+     "hb": 5.994999999999985,
+     "hr": 115.91107751116158,
+     "lactate": 3.7678448761308094,
+     "lost_ml": 112.5,
+     "map": 68.4058911241806,
+     "output_rel": 0.8233439302372824,
+     "position": 0.370504768606777,
+     "preload_rel": 0.8233439302372824,
+     "rhythm": "sinus",
+     "sbp": 90.0504768606777,
+     "state": "CRITICAL"
+    },
+    "60": {
+     "D": 18.68644285909382,
+     "P": 1.0,
+     "T": 1.0,
+     "V": -150.0,
+     "burden_output": 0.0,
+     "burden_oxygen_deficit": 16.64628843838558,
+     "consciousness": 0,
+     "dbp": 55.97391390461136,
+     "demand": 1.0,
+     "do2": 0.23627266289717205,
+     "effective_deficit": 0.4093183427570699,
+     "filling_ml": 348.1975006296837,
+     "hb": 5.85999999999998,
+     "hr": 117.75242835769986,
+     "lactate": 3.867111091660112,
+     "lost_ml": 150.0,
+     "map": 66.36695761250772,
+     "output_rel": 0.7589565561844542,
+     "position": 0.3415304502830044,
+     "preload_rel": 0.7589565561844542,
+     "rhythm": "sinus",
+     "sbp": 87.15304502830044,
+     "state": "CRITICAL"
+    },
+    "90": {
+     "D": 22.62918334301572,
+     "P": 1.0,
+     "T": 1.0,
+     "V": -225.0,
+     "burden_output": 0.0,
+     "burden_oxygen_deficit": 30.80505712637771,
+     "consciousness": 0,
+     "dbp": 52.528864005373,
+     "demand": 1.0,
+     "do2": 0.1844634933038235,
+     "effective_deficit": 0.5388412667404412,
+     "filling_ml": 273.1975006296837,
+     "hb": 5.58999999999997,
+     "hr": 122.01888252442194,
+     "lactate": 4.141461003368889,
+     "lost_ml": 225.0,
+     "map": 62.00322774013913,
+     "output_rel": 0.62115456021492,
+     "position": 0.279519552096714,
+     "preload_rel": 0.62115456021492,
+     "rhythm": "sinus",
+     "sbp": 80.9519552096714,
+     "state": "CRITICAL"
+    }
+   },
+   "zero_flow": {
+    "lower": {
+     "distance_ml": 297.2291199489436,
+     "minutes_at_bleed_rate": 118.89164797957744,
+     "position": 0.3
+    },
+    "midpoint": {
+     "distance_ml": 498.1975006296837,
+     "minutes_at_bleed_rate": 199.27900025187347,
+     "position": 0.45
+    },
+    "upper": {
+     "distance_ml": 763.5756098951292,
+     "minutes_at_bleed_rate": 305.4302439580517,
+     "position": 0.6
+    }
+   }
+  }
+ },
+ "collapse": {
+  "limits": [
+   5.0,
+   15.0,
+   30.0
+  ],
+  "per_minute": 1.0,
+  "profound_deficit": 0.5,
+  "repayment_tau_min": 60.0,
+  "threshold": 0.3
+ },
+ "collapse_and_mental_status": {
+  "GI 57m held at arrival, no bleeding": {
+   "first_critical": 0,
+   "points": {
+    "0": {
+     "D": 20.0,
+     "consciousness": 0,
+     "deficit_fraction": 0.15000000000000013,
+     "do2": 0.33999999999999997,
+     "output_rel": 1.0,
+     "sbp": 88.0,
+     "spo2": 97.0,
+     "state": "CRITICAL"
+    },
+    "120": {
+     "D": 10.463807729832423,
+     "consciousness": 0,
+     "deficit_fraction": 0.15000000000000013,
+     "do2": 0.33999999999999997,
+     "output_rel": 1.0,
+     "sbp": 88.0,
+     "spo2": 97.0,
+     "state": "CRITICAL"
+    },
+    "30": {
+     "D": 15.643784283159317,
+     "consciousness": 0,
+     "deficit_fraction": 0.15000000000000013,
+     "do2": 0.33999999999999997,
+     "output_rel": 1.0,
+     "sbp": 88.0,
+     "spo2": 97.0,
+     "state": "CRITICAL"
+    },
+    "60": {
+     "D": 13.012715418286795,
+     "consciousness": 0,
+     "deficit_fraction": 0.15000000000000013,
+     "do2": 0.33999999999999997,
+     "output_rel": 1.0,
+     "sbp": 88.0,
+     "spo2": 97.0,
+     "state": "CRITICAL"
+    },
+    "90": {
+     "D": 11.423601420800447,
+     "consciousness": 0,
+     "deficit_fraction": 0.15000000000000013,
+     "do2": 0.33999999999999997,
+     "output_rel": 1.0,
+     "sbp": 88.0,
+     "spo2": 97.0,
+     "state": "CRITICAL"
+    }
+   },
+   "signals": {
+    "combined": {
+     "end": 18.000000000000014,
+     "peak": 18.000000000000014,
+     "reached": {
+      "15": 100,
+      "30": null,
+      "5": 34
+     }
+    },
+    "output": {
+     "end": 0.0,
+     "peak": 0.0,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    },
+    "oxygen_deficit": {
+     "end": 18.000000000000014,
+     "peak": 18.000000000000014,
+     "reached": {
+      "15": 100,
+      "30": null,
+      "5": 34
+     }
+    },
+    "profound_oxygen_deficit": {
+     "end": 0.0,
+     "peak": 0.0,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    }
+   }
+  },
+  "extreme hypoxaemia, output and Hb preserved: SpO2 97 to 30 % (outside the core)": {
+   "first_critical": 27,
+   "points": {
+    "0": {
+     "D": null,
+     "consciousness": null,
+     "deficit_fraction": 0.0,
+     "do2": 1.0,
+     "output_rel": 1.0,
+     "sbp": null,
+     "spo2": 97.0,
+     "state": "ADEQUATE"
+    },
+    "120": {
+     "D": null,
+     "consciousness": null,
+     "deficit_fraction": 0.22680412371134018,
+     "do2": 0.30927835051546393,
+     "output_rel": 1.0,
+     "sbp": null,
+     "spo2": 30.0,
+     "state": "CRITICAL"
+    },
+    "30": {
+     "D": null,
+     "consciousness": null,
+     "deficit_fraction": 0.22680412371134018,
+     "do2": 0.30927835051546393,
+     "output_rel": 1.0,
+     "sbp": null,
+     "spo2": 30.0,
+     "state": "CRITICAL"
+    },
+    "60": {
+     "D": null,
+     "consciousness": null,
+     "deficit_fraction": 0.22680412371134018,
+     "do2": 0.30927835051546393,
+     "output_rel": 1.0,
+     "sbp": null,
+     "spo2": 30.0,
+     "state": "CRITICAL"
+    },
+    "90": {
+     "D": null,
+     "consciousness": null,
+     "deficit_fraction": 0.22680412371134018,
+     "do2": 0.30927835051546393,
+     "output_rel": 1.0,
+     "sbp": null,
+     "spo2": 30.0,
+     "state": "CRITICAL"
+    }
+   },
+   "signals": {
+    "combined": {
+     "end": 20.747422680412328,
+     "peak": 20.747422680412328,
+     "reached": {
+      "15": 95,
+      "30": null,
+      "5": 51
+     }
+    },
+    "output": {
+     "end": 0.0,
+     "peak": 0.0,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    },
+    "oxygen_deficit": {
+     "end": 20.747422680412328,
+     "peak": 20.747422680412328,
+     "reached": {
+      "15": 95,
+      "30": null,
+      "5": 51
+     }
+    },
+    "profound_oxygen_deficit": {
+     "end": 0.0,
+     "peak": 0.0,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    }
+   }
+  },
+  "massive haemorrhage: healthy arrival, V -10 mL-eq/min": {
+   "first_critical": 73,
+   "points": {
+    "0": {
+     "D": 0.0,
+     "consciousness": 0,
+     "deficit_fraction": 0.0,
+     "do2": 1.0,
+     "output_rel": 1.0,
+     "sbp": 120.0,
+     "spo2": 97.0,
+     "state": "ADEQUATE"
+    },
+    "30": {
+     "D": 0.0,
+     "consciousness": 0,
+     "deficit_fraction": 0.0,
+     "do2": 0.8142873937598542,
+     "output_rel": 0.8142873937598542,
+     "sbp": 111.64293271919344,
+     "spo2": 97.0,
+     "state": "COMPENSATED"
+    },
+    "60": {
+     "D": 0.0,
+     "consciousness": 0,
+     "deficit_fraction": 0.0,
+     "do2": 0.548100052581191,
+     "output_rel": 0.548100052581191,
+     "sbp": 99.6645023661536,
+     "spo2": 97.0,
+     "state": "COMPENSATED"
+    },
+    "90": {
+     "D": 4.163516269299097,
+     "consciousness": 2,
+     "deficit_fraction": 0.58358523328449,
+     "do2": 0.16656590668620402,
+     "output_rel": 0.16656590668620402,
+     "sbp": 32.48035180380978,
+     "spo2": 97.0,
+     "state": "CRITICAL"
+    }
+   },
+   "signals": {
+    "combined": {
+     "end": 12.119600927524694,
+     "peak": 12.119600927524694,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": 91
+     }
+    },
+    "output": {
+     "end": 8.6235797573168,
+     "peak": 8.6235797573168,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": 96
+     }
+    },
+    "oxygen_deficit": {
+     "end": 12.119600927524694,
+     "peak": 12.119600927524694,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": 91
+     }
+    },
+    "profound_oxygen_deficit": {
+     "end": 5.321801835556087,
+     "peak": 5.321801835556087,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": 100
+     }
+    }
+   }
+  },
+  "partial treatment: GI 57m saline only": {
+   "first_critical": 0,
+   "points": {
+    "0": {
+     "D": 20.0,
+     "consciousness": 0,
+     "deficit_fraction": 0.15000000000000013,
+     "do2": 0.33999999999999997,
+     "output_rel": 1.0,
+     "sbp": 88.0,
+     "spo2": 97.0,
+     "state": "CRITICAL"
+    },
+    "120": {
+     "D": 28.386536770388428,
+     "consciousness": 1,
+     "deficit_fraction": 0.7156410422852628,
+     "do2": 0.11374358308589486,
+     "output_rel": 0.5071080693874775,
+     "sbp": 65.81986312243649,
+     "spo2": 97.0,
+     "state": "CRITICAL"
+    },
+    "30": {
+     "D": 15.01654394312277,
+     "consciousness": 0,
+     "deficit_fraction": 0.19434129114191523,
+     "do2": 0.3222634835432339,
+     "output_rel": 1.2142421210998022,
+     "sbp": 97.6408954494911,
+     "spo2": 97.0,
+     "state": "CRITICAL"
+    },
+    "60": {
+     "D": 16.387698303716952,
+     "consciousness": 0,
+     "deficit_fraction": 0.40146063314397107,
+     "do2": 0.23941574674241156,
+     "output_rel": 0.9511892215216803,
+     "sbp": 85.80351496847561,
+     "spo2": 97.0,
+     "state": "CRITICAL"
+    },
+    "90": {
+     "D": 21.564745165176934,
+     "consciousness": 1,
+     "deficit_fraction": 0.567842408219674,
+     "do2": 0.17286303671213038,
+     "output_rel": 0.7263152803030725,
+     "sbp": 75.68418761363826,
+     "spo2": 97.0,
+     "state": "CRITICAL"
+    }
+   },
+   "signals": {
+    "combined": {
+     "end": 46.358499538652005,
+     "peak": 46.358499538652005,
+     "reached": {
+      "15": 66,
+      "30": 95,
+      "5": 37
+     }
+    },
+    "output": {
+     "end": 0.0,
+     "peak": 0.0,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    },
+    "oxygen_deficit": {
+     "end": 46.358499538652005,
+     "peak": 46.358499538652005,
+     "reached": {
+      "15": 66,
+      "30": 95,
+      "5": 37
+     }
+    },
+    "profound_oxygen_deficit": {
+     "end": 9.22927098110207,
+     "peak": 9.22927098110207,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": 109
+     }
+    }
+   }
+  },
+  "recovery: GI 57m definitive management": {
+   "first_critical": 0,
+   "points": {
+    "0": {
+     "D": 20.0,
+     "consciousness": 0,
+     "deficit_fraction": 0.15000000000000013,
+     "do2": 0.33999999999999997,
+     "output_rel": 1.0,
+     "sbp": 88.0,
+     "spo2": 97.0,
+     "state": "CRITICAL"
+    },
+    "120": {
+     "D": 2.7621909538660354,
+     "consciousness": 0,
+     "deficit_fraction": 0.0,
+     "do2": 0.722032178616706,
+     "output_rel": 1.7964321006601514,
+     "sbp": 123.83944452970681,
+     "spo2": 97.0,
+     "state": "COMPENSATED"
+    },
+    "30": {
+     "D": 12.536756346054403,
+     "consciousness": 0,
+     "deficit_fraction": 0.0,
+     "do2": 0.5451325861990064,
+     "output_rel": 1.4647284715560662,
+     "sbp": 108.91278122002298,
+     "spo2": 97.0,
+     "state": "COMPENSATED"
+    },
+    "60": {
+     "D": 7.571954979428548,
+     "consciousness": 0,
+     "deficit_fraction": 0.0,
+     "do2": 0.7346120221822716,
+     "output_rel": 1.815354085522249,
+     "sbp": 124.6909338485012,
+     "spo2": 97.0,
+     "state": "COMPENSATED"
+    },
+    "90": {
+     "D": 4.573312316828845,
+     "consciousness": 0,
+     "deficit_fraction": 0.0,
+     "do2": 0.728326307416063,
+     "output_rel": 1.8059356672697644,
+     "sbp": 124.2671050271394,
+     "spo2": 97.0,
+     "state": "COMPENSATED"
+    }
+   },
+   "signals": {
+    "combined": {
+     "end": 0.11211141367205152,
+     "peak": 0.7130083573780026,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    },
+    "output": {
+     "end": 0.0,
+     "peak": 0.0,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    },
+    "oxygen_deficit": {
+     "end": 0.11211141367205152,
+     "peak": 0.7130083573780026,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    },
+    "profound_oxygen_deficit": {
+     "end": 0.0,
+     "peak": 0.0,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    }
+   }
+  },
+  "recovery: pump to 0.25 by 30 min, restored by 60": {
+   "first_critical": 24,
+   "points": {
+    "0": {
+     "D": 0.0,
+     "consciousness": 0,
+     "deficit_fraction": 0.0,
+     "do2": 1.0,
+     "output_rel": 1.0,
+     "sbp": 120.0,
+     "spo2": 97.0,
+     "state": "ADEQUATE"
+    },
+    "120": {
+     "D": 0.5045544643410889,
+     "consciousness": 0,
+     "deficit_fraction": 0.0,
+     "do2": 1.0,
+     "output_rel": 1.0,
+     "sbp": 120.0,
+     "spo2": 97.0,
+     "state": "ADEQUATE"
+    },
+    "30": {
+     "D": 0.9169253520447614,
+     "consciousness": 2,
+     "deficit_fraction": 0.37500000000000155,
+     "do2": 0.24999999999999936,
+     "output_rel": 0.24999999999999936,
+     "sbp": 48.74999999999987,
+     "spo2": 97.0,
+     "state": "CRITICAL"
+    },
+    "60": {
+     "D": 1.3831280141270426,
+     "consciousness": 0,
+     "deficit_fraction": 0.0,
+     "do2": 1.0,
+     "output_rel": 1.0,
+     "sbp": 120.0,
+     "spo2": 97.0,
+     "state": "ADEQUATE"
+    },
+    "90": {
+     "D": 0.8353821965322364,
+     "consciousness": 0,
+     "deficit_fraction": 0.0,
+     "do2": 1.0,
+     "output_rel": 1.0,
+     "sbp": 120.0,
+     "spo2": 97.0,
+     "state": "ADEQUATE"
+    }
+   },
+   "signals": {
+    "combined": {
+     "end": 0.5641680464771852,
+     "peak": 2.250000000000019,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    },
+    "output": {
+     "end": 0.07819009603126832,
+     "peak": 0.33333333333334375,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    },
+    "oxygen_deficit": {
+     "end": 0.5641680464771852,
+     "peak": 2.250000000000019,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    },
+    "profound_oxygen_deficit": {
+     "end": 0.0,
+     "peak": 0.0,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    }
+   }
+  },
+  "severe anaemia, output preserved: Hb 13 to 3 g/dL": {
+   "first_critical": 87,
+   "points": {
+    "0": {
+     "D": 0.0,
+     "consciousness": 0,
+     "deficit_fraction": 0.0,
+     "do2": 1.0,
+     "output_rel": 1.0,
+     "sbp": 120.0,
+     "spo2": 97.0,
+     "state": "ADEQUATE"
+    },
+    "120": {
+     "D": 7.306156306480359,
+     "consciousness": 0,
+     "deficit_fraction": 0.423076923076923,
+     "do2": 0.23076923076923078,
+     "output_rel": 1.0,
+     "sbp": 120.0,
+     "spo2": 97.0,
+     "state": "CRITICAL"
+    },
+    "30": {
+     "D": 0.0,
+     "consciousness": 0,
+     "deficit_fraction": 0.0,
+     "do2": 0.7923076923076926,
+     "output_rel": 1.0,
+     "sbp": 120.0,
+     "spo2": 97.0,
+     "state": "COMPENSATED"
+    },
+    "60": {
+     "D": 0.0,
+     "consciousness": 0,
+     "deficit_fraction": 0.0,
+     "do2": 0.5846153846153853,
+     "output_rel": 1.0,
+     "sbp": 120.0,
+     "spo2": 97.0,
+     "state": "COMPENSATED"
+    },
+    "90": {
+     "D": 0.06865544871794149,
+     "consciousness": 0,
+     "deficit_fraction": 0.05769230769230527,
+     "do2": 0.3769230769230779,
+     "output_rel": 1.0,
+     "sbp": 120.0,
+     "spo2": 97.0,
+     "state": "CRITICAL"
+    }
+   },
+   "signals": {
+    "combined": {
+     "end": 8.721153846153781,
+     "peak": 8.721153846153781,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": 112
+     }
+    },
+    "output": {
+     "end": 0.0,
+     "peak": 0.0,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    },
+    "oxygen_deficit": {
+     "end": 8.721153846153781,
+     "peak": 8.721153846153781,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": 112
+     }
+    },
+    "profound_oxygen_deficit": {
+     "end": 0.0,
+     "peak": 0.0,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    }
+   }
+  },
+  "severe haemorrhage: GI 57m untreated": {
+   "first_critical": 0,
+   "points": {
+    "0": {
+     "D": 20.0,
+     "consciousness": 0,
+     "deficit_fraction": 0.15000000000000013,
+     "do2": 0.33999999999999997,
+     "output_rel": 1.0,
+     "sbp": 88.0,
+     "spo2": 97.0,
+     "state": "CRITICAL"
+    },
+    "120": {
+     "D": 34.60918091991708,
+     "consciousness": 2,
+     "deficit_fraction": 0.8607929631900157,
+     "do2": 0.055682814723993675,
+     "output_rel": 0.195245372959368,
+     "sbp": 25.577143857677207,
+     "spo2": 97.0,
+     "state": "CRITICAL"
+    },
+    "30": {
+     "D": 17.849147861548843,
+     "consciousness": 0,
+     "deficit_fraction": 0.3269237551957529,
+     "do2": 0.26923049792169884,
+     "output_rel": 0.8251049016903236,
+     "sbp": 80.12972057606456,
+     "spo2": 97.0,
+     "state": "CRITICAL"
+    },
+    "60": {
+     "D": 20.766060230972126,
+     "consciousness": 1,
+     "deficit_fraction": 0.5047375580591781,
+     "do2": 0.19810497677632877,
+     "output_rel": 0.6337391827737812,
+     "sbp": 71.51826322482015,
+     "spo2": 97.0,
+     "state": "CRITICAL"
+    },
+    "90": {
+     "D": 26.75849590327025,
+     "consciousness": 2,
+     "deficit_fraction": 0.6829079167110473,
+     "do2": 0.12683683331558107,
+     "output_rel": 0.4243517343525405,
+     "sbp": 55.590077200182805,
+     "spo2": 97.0,
+     "state": "CRITICAL"
+    }
+   },
+   "signals": {
+    "combined": {
+     "end": 60.24062714868264,
+     "peak": 60.24062714868264,
+     "reached": {
+      "15": 51,
+      "30": 79,
+      "5": 24
+     }
+    },
+    "output": {
+     "end": 2.1494138795908513,
+     "peak": 2.1494138795908513,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    },
+    "oxygen_deficit": {
+     "end": 60.24062714868264,
+     "peak": 60.24062714868264,
+     "reached": {
+      "15": 51,
+      "30": 79,
+      "5": 24
+     }
+    },
+    "profound_oxygen_deficit": {
+     "end": 21.587267618869085,
+     "peak": 21.587267618869085,
+     "reached": {
+      "15": 110,
+      "30": null,
+      "5": 89
+     }
+    }
+   }
+  },
+  "severe haemorrhage: GI 72f untreated": {
+   "first_critical": 0,
+   "points": {
+    "0": {
+     "D": 20.0,
+     "consciousness": 0,
+     "deficit_fraction": 0.15000000000000013,
+     "do2": 0.33999999999999997,
+     "output_rel": 1.0,
+     "sbp": 98.0,
+     "spo2": 96.0,
+     "state": "CRITICAL"
+    },
+    "120": {
+     "D": 28.080286747276425,
+     "consciousness": 1,
+     "deficit_fraction": 0.6676505510253575,
+     "do2": 0.13293977958985698,
+     "output_rel": 0.47037515998180635,
+     "sbp": 71.02664915725276,
+     "spo2": 96.0,
+     "state": "CRITICAL"
+    },
+    "30": {
+     "D": 17.259779269097322,
+     "consciousness": 0,
+     "deficit_fraction": 0.27956850968239666,
+     "do2": 0.2881725961270413,
+     "output_rel": 0.8848980976936319,
+     "sbp": 92.82041439621344,
+     "spo2": 96.0,
+     "state": "CRITICAL"
+    },
+    "60": {
+     "D": 18.68644285909382,
+     "consciousness": 0,
+     "deficit_fraction": 0.4093183427570699,
+     "do2": 0.23627266289717205,
+     "output_rel": 0.7589565561844542,
+     "sbp": 87.15304502830044,
+     "spo2": 96.0,
+     "state": "CRITICAL"
+    },
+    "90": {
+     "D": 22.62918334301572,
+     "consciousness": 0,
+     "deficit_fraction": 0.5388412667404412,
+     "do2": 0.1844634933038235,
+     "output_rel": 0.62115456021492,
+     "sbp": 80.9519552096714,
+     "spo2": 96.0,
+     "state": "CRITICAL"
+    }
+   },
+   "signals": {
+    "combined": {
+     "end": 48.84048776741029,
+     "peak": 48.84048776741029,
+     "reached": {
+      "15": 56,
+      "30": 89,
+      "5": 25
+     }
+    },
+    "output": {
+     "end": 0.0,
+     "peak": 0.0,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    },
+    "oxygen_deficit": {
+     "end": 48.84048776741029,
+     "peak": 48.84048776741029,
+     "reached": {
+      "15": 56,
+      "30": 89,
+      "5": 25
+     }
+    },
+    "profound_oxygen_deficit": {
+     "end": 6.382030623708309,
+     "peak": 6.382030623708309,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": 116
+     }
+    }
+   }
+  },
+  "severe hypoxaemia, output and Hb preserved: SpO2 97 to 45 % (outside the core)": {
+   "first_critical": null,
+   "points": {
+    "0": {
+     "D": null,
+     "consciousness": null,
+     "deficit_fraction": 0.0,
+     "do2": 1.0,
+     "output_rel": 1.0,
+     "sbp": null,
+     "spo2": 97.0,
+     "state": "ADEQUATE"
+    },
+    "120": {
+     "D": null,
+     "consciousness": null,
+     "deficit_fraction": 0.0,
+     "do2": 0.4639175257731959,
+     "output_rel": 1.0,
+     "sbp": null,
+     "spo2": 45.0,
+     "state": "COMPENSATED"
+    },
+    "30": {
+     "D": null,
+     "consciousness": null,
+     "deficit_fraction": 0.0,
+     "do2": 0.4639175257731959,
+     "output_rel": 1.0,
+     "sbp": null,
+     "spo2": 45.0,
+     "state": "COMPENSATED"
+    },
+    "60": {
+     "D": null,
+     "consciousness": null,
+     "deficit_fraction": 0.0,
+     "do2": 0.4639175257731959,
+     "output_rel": 1.0,
+     "sbp": null,
+     "spo2": 45.0,
+     "state": "COMPENSATED"
+    },
+    "90": {
+     "D": null,
+     "consciousness": null,
+     "deficit_fraction": 0.0,
+     "do2": 0.4639175257731959,
+     "output_rel": 1.0,
+     "sbp": null,
+     "spo2": 45.0,
+     "state": "COMPENSATED"
+    }
+   },
+   "signals": {
+    "combined": {
+     "end": 0.0,
+     "peak": 0.0,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    },
+    "output": {
+     "end": 0.0,
+     "peak": 0.0,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    },
+    "oxygen_deficit": {
+     "end": 0.0,
+     "peak": 0.0,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    },
+    "profound_oxygen_deficit": {
+     "end": 0.0,
+     "peak": 0.0,
+     "reached": {
+      "15": null,
+      "30": null,
+      "5": null
+     }
+    }
+   }
+  }
+ },
+ "oxygen": {
+  "L1 gi_bleed_57m": {
+   "0": {
+    "D": 20.0,
+    "V": 0.0,
+    "do2": 0.33999999999999997,
+    "effective_deficit": 0.15000000000000013,
+    "hb": 6.7,
+    "lactate": 4.4,
+    "lost_ml": 0.0,
+    "map": 65.33333333333333,
+    "output_rel": 1.0,
+    "sbp": 88.0,
+    "state": "CRITICAL"
+   },
+   "120": {
+    "D": 34.60918091991708,
+    "V": -300.0,
+    "do2": 0.055682814723993675,
+    "effective_deficit": 0.8607929631900157,
+    "hb": 5.619999999999959,
+    "lactate": 5.314021339121453,
+    "lost_ml": 300.0,
+    "map": 19.329291922977433,
+    "output_rel": 0.195245372959368,
+    "sbp": 25.577143857677207,
+    "state": "CRITICAL"
+   },
+   "15": {
+    "D": 18.124184331235845,
+    "V": -37.5,
+    "do2": 0.30467155182666894,
+    "effective_deficit": 0.23832112043332765,
+    "hb": 6.564999999999995,
+    "lactate": 4.446116784378207,
+    "lost_ml": 37.5,
+    "map": 62.626456810130215,
+    "output_rel": 0.9145196887409541,
+    "sbp": 84.15338599334294,
+    "state": "CRITICAL"
+   },
+   "30": {
+    "D": 17.849147861548843,
+    "V": -75.0,
+    "do2": 0.26923049792169884,
+    "effective_deficit": 0.3269237551957529,
+    "hb": 6.42999999999999,
+    "lactate": 4.461338486090009,
+    "lost_ml": 75.0,
+    "map": 59.79498855352691,
+    "output_rel": 0.8251049016903236,
+    "sbp": 80.12972057606456,
+    "state": "CRITICAL"
+   },
+   "45": {
+    "D": 18.821571025421434,
+    "V": -112.5,
+    "do2": 0.2336998500189218,
+    "effective_deficit": 0.4157503749526955,
+    "hb": 6.294999999999985,
+    "lactate": 4.48292697222011,
+    "lost_ml": 112.5,
+    "map": 56.833193872672695,
+    "output_rel": 0.7315745433475588,
+    "sbp": 75.92085445064015,
+    "state": "CRITICAL"
+   },
+   "60": {
+    "D": 20.766060230972126,
+    "V": -150.0,
+    "do2": 0.19810497677632877,
+    "effective_deficit": 0.5047375580591781,
+    "hb": 6.15999999999998,
+    "lactate": 4.536328456026794,
+    "lost_ml": 150.0,
+    "map": 53.73507412116974,
+    "output_rel": 0.6337391827737812,
+    "sbp": 71.51826322482015,
+    "state": "CRITICAL"
+   },
+   "90": {
+    "D": 26.75849590327025,
+    "V": -225.0,
+    "do2": 0.12683683331558107,
+    "effective_deficit": 0.6829079167110473,
+    "hb": 5.8899999999999695,
+    "lactate": 4.79871802603404,
+    "lost_ml": 225.0,
+    "map": 42.01082170090151,
+    "output_rel": 0.4243517343525405,
+    "sbp": 55.590077200182805,
+    "state": "CRITICAL"
+   }
+  },
+  "L1 gi_bleed_72f": {
+   "0": {
+    "D": 20.0,
+    "V": 0.0,
+    "do2": 0.33999999999999997,
+    "effective_deficit": 0.15000000000000013,
+    "hb": 6.4,
+    "lactate": 3.4,
+    "lost_ml": 0.0,
+    "map": 74.0,
+    "output_rel": 1.0,
+    "sbp": 98.0,
+    "state": "CRITICAL"
+   },
+   "120": {
+    "D": 28.080286747276425,
+    "V": -300.0,
+    "do2": 0.13293977958985698,
+    "effective_deficit": 0.6676505510253575,
+    "hb": 5.319999999999959,
+    "lactate": 4.56662137082925,
+    "lost_ml": 300.0,
+    "map": 54.72031027788347,
+    "output_rel": 0.47037515998180635,
+    "sbp": 71.02664915725276,
+    "state": "CRITICAL"
+   },
+   "15": {
+    "D": 17.970675690919634,
+    "V": -37.5,
+    "do2": 0.31410445506411194,
+    "effective_deficit": 0.21473886233972017,
+    "hb": 6.264999999999995,
+    "lactate": 3.56297788307277,
+    "lost_ml": 37.5,
+    "map": 72.21855134797744,
+    "output_rel": 0.9437437267782348,
+    "sbp": 95.46846770502057,
+    "state": "CRITICAL"
+   },
+   "30": {
+    "D": 17.259779269097322,
+    "V": -75.0,
+    "do2": 0.2881725961270413,
+    "effective_deficit": 0.27956850968239666,
+    "hb": 6.12999999999999,
+    "lactate": 3.6743413586659446,
+    "lost_ml": 75.0,
+    "map": 70.35510642696501,
+    "output_rel": 0.8848980976936319,
+    "sbp": 92.82041439621344,
+    "state": "CRITICAL"
+   },
+   "45": {
+    "D": 17.574443682049516,
+    "V": -112.5,
+    "do2": 0.2622221770316638,
+    "effective_deficit": 0.34444455742084057,
+    "hb": 5.994999999999985,
+    "lactate": 3.7678448761308094,
+    "lost_ml": 112.5,
+    "map": 68.4058911241806,
+    "output_rel": 0.8233439302372824,
+    "sbp": 90.0504768606777,
+    "state": "CRITICAL"
+   },
+   "60": {
+    "D": 18.68644285909382,
+    "V": -150.0,
+    "do2": 0.23627266289717205,
+    "effective_deficit": 0.4093183427570699,
+    "hb": 5.85999999999998,
+    "lactate": 3.867111091660112,
+    "lost_ml": 150.0,
+    "map": 66.36695761250772,
+    "output_rel": 0.7589565561844542,
+    "sbp": 87.15304502830044,
+    "state": "CRITICAL"
+   },
+   "90": {
+    "D": 22.62918334301572,
+    "V": -225.0,
+    "do2": 0.1844634933038235,
+    "effective_deficit": 0.5388412667404412,
+    "hb": 5.58999999999997,
+    "lactate": 4.141461003368889,
+    "lost_ml": 225.0,
+    "map": 62.00322774013913,
+    "output_rel": 0.62115456021492,
+    "sbp": 80.9519552096714,
+    "state": "CRITICAL"
+   }
+  },
+  "L2 gi_bleed_57m": {
+   "0": {
+    "D": 20.0,
+    "V": 0.0,
+    "do2": 0.33999999999999997,
+    "effective_deficit": 0.15000000000000013,
+    "hb": 6.7,
+    "lactate": 4.4,
+    "lost_ml": 0.0,
+    "map": 65.33333333333333,
+    "output_rel": 1.0,
+    "sbp": 88.0,
+    "state": "CRITICAL"
+   },
+   "120": {
+    "D": 28.386536770388428,
+    "V": -196.15910245036494,
+    "do2": 0.11374358308589486,
+    "effective_deficit": 0.7156410422852628,
+    "hb": 4.419999999999967,
+    "lactate": 4.769714251408617,
+    "lost_ml": 300.0,
+    "map": 49.72508886393678,
+    "output_rel": 0.5071080693874775,
+    "sbp": 65.81986312243649,
+    "state": "CRITICAL"
+   },
+   "15": {
+    "D": 17.009119745538623,
+    "V": 124.56328866470508,
+    "do2": 0.36160293500163576,
+    "effective_deficit": 0.09599266249591065,
+    "hb": 5.665000000000001,
+    "lactate": 4.437314080146201,
+    "lost_ml": 37.5,
+    "map": 73.49849750420385,
+    "output_rel": 1.2578472896064377,
+    "sbp": 99.60312803228969,
+    "state": "CRITICAL"
+   },
+   "30": {
+    "D": 15.01654394312277,
+    "V": 102.14648955137469,
+    "do2": 0.3222634835432339,
+    "effective_deficit": 0.19434129114191523,
+    "hb": 5.229999999999998,
+    "lactate": 4.406616582725495,
+    "lost_ml": 75.0,
+    "map": 72.1176671681604,
+    "output_rel": 1.2142421210998022,
+    "sbp": 97.6408954494911,
+    "state": "CRITICAL"
+   },
+   "45": {
+    "D": 15.01123595479365,
+    "V": 34.2917112021091,
+    "do2": 0.2779101743439934,
+    "effective_deficit": 0.30522456414001653,
+    "hb": 5.094999999999993,
+    "lactate": 4.355676359342308,
+    "lost_ml": 112.5,
+    "map": 67.70423251745312,
+    "output_rel": 1.074870500551151,
+    "sbp": 91.3691725248018,
+    "state": "CRITICAL"
+   },
+   "60": {
+    "D": 16.387698303716952,
+    "V": -21.61939253550172,
+    "do2": 0.23941574674241156,
+    "effective_deficit": 0.40146063314397107,
+    "hb": 4.9599999999999875,
+    "lactate": 4.327294715419345,
+    "lost_ml": 150.0,
+    "map": 63.78765868151987,
+    "output_rel": 0.9511892215216803,
+    "sbp": 85.80351496847561,
+    "state": "CRITICAL"
+   },
+   "90": {
+    "D": 21.564745165176934,
+    "V": -114.55935798585425,
+    "do2": 0.17286303671213038,
+    "effective_deficit": 0.567842408219674,
+    "hb": 4.689999999999977,
+    "lactate": 4.423252440542212,
+    "lost_ml": 225.0,
+    "map": 56.666650542930626,
+    "output_rel": 0.7263152803030725,
+    "sbp": 75.68418761363826,
+    "state": "CRITICAL"
+   }
+  },
+  "L2 gi_bleed_72f": {
+   "0": {
+    "D": 20.0,
+    "V": 0.0,
+    "do2": 0.33999999999999997,
+    "effective_deficit": 0.15000000000000013,
+    "hb": 6.4,
+    "lactate": 3.4,
+    "lost_ml": 0.0,
+    "map": 74.0,
+    "output_rel": 1.0,
+    "sbp": 98.0,
+    "state": "CRITICAL"
+   },
+   "120": {
+    "D": 26.966818443873994,
+    "V": -196.15910245036494,
+    "do2": 0.14787591845224818,
+    "effective_deficit": 0.6303102038693795,
+    "hb": 4.119999999999967,
+    "lactate": 4.465642215429774,
+    "lost_ml": 300.0,
+    "map": 63.7279074859527,
+    "output_rel": 0.6756181311353484,
+    "sbp": 83.40281590109068,
+    "state": "CRITICAL"
+   },
+   "15": {
+    "D": 17.531141825941255,
+    "V": 124.56328866470508,
+    "do2": 0.3333811719481503,
+    "effective_deficit": 0.16654707012962422,
+    "hb": 5.365000000000001,
+    "lactate": 3.5592941659161124,
+    "lost_ml": 37.5,
+    "map": 79.3736550526242,
+    "output_rel": 1.1696943700828693,
+    "sbp": 105.63624665372912,
+    "state": "CRITICAL"
+   },
+   "30": {
+    "D": 16.40042152589335,
+    "V": 102.14648955137469,
+    "do2": 0.2988342328269718,
+    "effective_deficit": 0.2529144179325705,
+    "hb": 4.929999999999998,
+    "lactate": 3.6550876564233454,
+    "lost_ml": 75.0,
+    "map": 78.46490346394602,
+    "output_rel": 1.1409969514930323,
+    "sbp": 104.34486281718645,
+    "state": "CRITICAL"
+   },
+   "45": {
+    "D": 16.654475261153856,
+    "V": 34.2917112021091,
+    "do2": 0.26728609245824964,
+    "effective_deficit": 0.3317847688543759,
+    "hb": 4.794999999999993,
+    "lactate": 3.729452874970039,
+    "lost_ml": 112.5,
+    "map": 75.56033536048908,
+    "output_rel": 1.049273748225971,
+    "sbp": 100.2173186701687,
+    "state": "CRITICAL"
+   },
+   "60": {
+    "D": 17.83910044634897,
+    "V": -21.61939253550172,
+    "do2": 0.23960996741263177,
+    "effective_deficit": 0.40097508146842054,
+    "hb": 4.659999999999988,
+    "lactate": 3.8122636944120463,
+    "lost_ml": 150.0,
+    "map": 72.98276112658431,
+    "output_rel": 0.967876667155294,
+    "sbp": 96.55445002198823,
+    "state": "CRITICAL"
+   },
+   "90": {
+    "D": 21.846532256676603,
+    "V": -114.55935798585425,
+    "do2": 0.19121201980273428,
+    "effective_deficit": 0.5219699504931643,
+    "hb": 4.3899999999999775,
+    "lactate": 4.063703165841293,
+    "lost_ml": 225.0,
+    "map": 68.29628568494864,
+    "output_rel": 0.8198827058404836,
+    "sbp": 89.89472176282176,
+    "state": "CRITICAL"
+   }
+  },
+  "L3 gi_bleed_57m": {
+   "0": {
+    "D": 20.0,
+    "V": 0.0,
+    "do2": 0.33999999999999997,
+    "effective_deficit": 0.15000000000000013,
+    "hb": 6.7,
+    "lactate": 4.4,
+    "lost_ml": 0.0,
+    "map": 65.33333333333333,
+    "output_rel": 1.0,
+    "sbp": 88.0,
+    "state": "CRITICAL"
+   },
+   "120": {
+    "D": 2.7621909538660354,
+    "V": 466.7500000000001,
+    "do2": 0.722032178616706,
+    "effective_deficit": 0.0,
+    "hb": 7.920300000000013,
+    "lactate": 3.212296378048757,
+    "lost_ml": 133.25,
+    "map": 90.55368318757145,
+    "output_rel": 1.7964321006601514,
+    "sbp": 123.83944452970681,
+    "state": "COMPENSATED"
+   },
+   "15": {
+    "D": 16.13146337618634,
+    "V": 120.00000000000001,
+    "do2": 0.4447754854937958,
+    "effective_deficit": 0.0,
+    "hb": 7.016999999999999,
+    "lactate": 4.430320673084405,
+    "lost_ml": 30.0,
+    "map": 73.22041100699437,
+    "output_rel": 1.2490656107471907,
+    "sbp": 99.20795248362359,
+    "state": "COMPENSATED"
+   },
+   "30": {
+    "D": 12.536756346054403,
+    "V": 240.00000000000003,
+    "do2": 0.5451325861990064,
+    "effective_deficit": 0.0,
+    "hb": 7.333999999999997,
+    "lactate": 4.364013488687709,
+    "lost_ml": 60.0,
+    "map": 80.04973493260877,
+    "output_rel": 1.4647284715560662,
+    "sbp": 108.91278122002298,
+    "state": "COMPENSATED"
+   },
+   "45": {
+    "D": 9.743087531187896,
+    "V": 360.00000000000006,
+    "do2": 0.6411985893539477,
+    "effective_deficit": 0.0,
+    "hb": 7.650999999999995,
+    "lactate": 4.230130652386533,
+    "lost_ml": 90.0,
+    "map": 85.96316284732586,
+    "output_rel": 1.6514683004418693,
+    "sbp": 117.31607351988413,
+    "state": "COMPENSATED"
+   },
+   "60": {
+    "D": 7.571954979428548,
+    "V": 481.7500000000001,
+    "do2": 0.7346120221822716,
+    "effective_deficit": 0.0,
+    "hb": 7.974299999999994,
+    "lactate": 4.053445205122443,
+    "lost_ml": 118.25,
+    "map": 91.15287937487123,
+    "output_rel": 1.815354085522249,
+    "sbp": 124.6909338485012,
+    "state": "COMPENSATED"
+   },
+   "90": {
+    "D": 4.573312316828845,
+    "V": 474.2500000000001,
+    "do2": 0.728326307416063,
+    "effective_deficit": 0.0,
+    "hb": 7.947300000000004,
+    "lactate": 3.6390475205304447,
+    "lost_ml": 125.75,
+    "map": 90.85462946354254,
+    "output_rel": 1.8059356672697644,
+    "sbp": 124.2671050271394,
+    "state": "COMPENSATED"
+   }
+  },
+  "L3 gi_bleed_72f": {
+   "0": {
+    "D": 20.0,
+    "V": 0.0,
+    "do2": 0.33999999999999997,
+    "effective_deficit": 0.15000000000000013,
+    "hb": 6.4,
+    "lactate": 3.4,
+    "lost_ml": 0.0,
+    "map": 74.0,
+    "output_rel": 1.0,
+    "sbp": 98.0,
+    "state": "CRITICAL"
+   },
+   "120": {
+    "D": 2.8003094212996857,
+    "V": 466.7500000000001,
+    "do2": 0.6170183002534375,
+    "effective_deficit": 0.0,
+    "hb": 7.620300000000014,
+    "lactate": 2.8579708837226745,
+    "lost_ml": 133.25,
+    "map": 90.59800802372938,
+    "output_rel": 1.52414762180198,
+    "sbp": 121.5866429810891,
+    "state": "COMPENSATED"
+   },
+   "15": {
+    "D": 16.354078927258797,
+    "V": 120.00000000000001,
+    "do2": 0.41533214698109083,
+    "effective_deficit": 0.0,
+    "hb": 6.716999999999999,
+    "lactate": 3.551048411403348,
+    "lost_ml": 30.0,
+    "map": 79.19064086215299,
+    "output_rel": 1.1639149745943052,
+    "sbp": 105.37617385674373,
+    "state": "COMPENSATED"
+   },
+   "30": {
+    "D": 12.709764637835175,
+    "V": 240.00000000000003,
+    "do2": 0.48797051790126333,
+    "effective_deficit": 0.0,
+    "hb": 7.033999999999997,
+    "lactate": 3.593134012596766,
+    "lost_ml": 60.0,
+    "map": 83.68515318926673,
+    "output_rel": 1.3058469428189496,
+    "sbp": 111.76311242685273,
+    "state": "COMPENSATED"
+   },
+   "45": {
+    "D": 9.877542958406268,
+    "V": 360.00000000000006,
+    "do2": 0.5579558229380758,
+    "effective_deficit": 0.0,
+    "hb": 7.3509999999999955,
+    "lactate": 3.5538168943520807,
+    "lost_ml": 90.0,
+    "map": 87.5768963468156,
+    "output_rel": 1.4287440951625978,
+    "sbp": 117.29348428231691,
+    "state": "COMPENSATED"
+   },
+   "60": {
+    "D": 7.676448594863945,
+    "V": 481.7500000000001,
+    "do2": 0.6264677233655743,
+    "effective_deficit": 0.0,
+    "hb": 7.674299999999994,
+    "lactate": 3.459733071776051,
+    "lost_ml": 118.25,
+    "map": 90.99235081366169,
+    "output_rel": 1.536600552010369,
+    "sbp": 122.1470248404666,
+    "state": "COMPENSATED"
+   },
+   "90": {
+    "D": 4.636424411367044,
+    "V": 474.2500000000001,
+    "do2": 0.6217454637623,
+    "effective_deficit": 0.0,
+    "hb": 7.647300000000004,
+    "lactate": 3.1807846177326686,
+    "lost_ml": 125.75,
+    "map": 90.79606668398384,
+    "output_rel": 1.5304021058100161,
+    "sbp": 121.86809476145072,
+    "state": "COMPENSATED"
+   }
+  }
+ },
+ "pressure_as_perfusion": [
+  {
+   "P": 1.0,
+   "T": 1.0,
+   "consciousness": 0,
+   "do2": 1.0,
+   "map": 90.0,
+   "output_rel": 1.0,
+   "sbp": 120.0,
+   "state": "ADEQUATE"
+  },
+  {
+   "P": 0.35,
+   "T": 1.0,
+   "consciousness": 1,
+   "do2": 0.35,
+   "map": 51.916666666666664,
+   "output_rel": 0.35,
+   "sbp": 68.25,
+   "state": "CRITICAL"
+  },
+  {
+   "P": 0.25,
+   "T": 3.0,
+   "consciousness": 0,
+   "do2": 0.15625,
+   "map": 69.53125,
+   "output_rel": 0.15625,
+   "sbp": 91.40625,
+   "state": "CRITICAL"
+  }
+ ],
+ "pressure_form": {
+  "GI 57m": {
+   "implied_resistance": {
+    "0.2": 1.5153061224489797,
+    "0.3": 1.5153061224489797,
+    "0.5": 1.5153061224489797,
+    "0.75": 1.1717687074829932,
+    "1": 1.0
+   },
+   "sbp_slope_above_knee": 45.00000000007276,
+   "sbp_slope_below_knee": 130.99999999610645,
+   "slope_ratio": 2.911111111019881
+  },
+  "GI 72f": {
+   "implied_resistance": {
+    "0.2": 1.5720720720720722,
+    "0.3": 1.572072072072072,
+    "0.5": 1.572072072072072,
+    "0.75": 1.1906906906906904,
+    "1": 1.0
+   },
+   "sbp_slope_above_knee": 45.00000000007276,
+   "sbp_slope_below_knee": 151.00000000245473,
+   "slope_ratio": 3.3555555556046794
+  },
+  "neutral arrival": {
+   "implied_resistance": {
+    "0.2": 1.6481481481481484,
+    "0.3": 1.6481481481481484,
+    "0.5": 1.6481481481481484,
+    "0.75": 1.2160493827160495,
+    "1": 1.0
+   },
+   "sbp_slope_above_knee": 45.00000000007276,
+   "sbp_slope_below_knee": 194.9999999908414,
+   "slope_ratio": 4.333333333122802
+  }
+ },
+ "probes_digest": "a476b25abad51ed9d89f59f72ae83972c6fca967f8f4ea1746d9744e8e1d9e45",
+ "representative": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=midpoint;delivery=midpoint",
+ "reserve": 2.5,
+ "reserve_band": [
+  2.0,
+  2.5,
+  3.0
+ ],
+ "scale_candidates": {
+  "1500": {
+   "cases": {
+    "gi_bleed_57m": {
+     "definitive_peak_output": 1.5101527652190554,
+     "definitive_peak_sbp": 110.9568744348575,
+     "first_minute_output_half": null,
+     "untreated": {
+      "120": {
+       "deficit_fraction": 0.580177669179208,
+       "do2": 0.1679289323283168,
+       "map": 52.31274255581858,
+       "output_rel": 0.5888234491311131,
+       "sbp": 69.49705521090009,
+       "state": "CRITICAL"
+      },
+      "60": {
+       "deficit_fraction": 0.37114656826382275,
+       "do2": 0.2515413726944709,
+       "map": 59.14828172269406,
+       "output_rel": 0.8046825807166544,
+       "sbp": 79.21071613224944,
+       "state": "CRITICAL"
+      }
+     },
+     "zero_flow_ml": 646.1743741386813
+    },
+    "gi_bleed_72f": {
+     "definitive_peak_output": 1.3357415634347631,
+     "definitive_peak_sbp": 113.10837035456434,
+     "first_minute_output_half": null,
+     "untreated": {
+      "120": {
+       "deficit_fraction": 0.4846356943820034,
+       "do2": 0.20614572224719863,
+       "map": 65.43089324898602,
+       "output_rel": 0.729396628915348,
+       "sbp": 85.82284830119066,
+       "state": "CRITICAL"
+      },
+      "60": {
+       "deficit_fraction": 0.3217607599354678,
+       "do2": 0.2712956960258129,
+       "map": 69.92949594855364,
+       "output_rel": 0.8714577667964307,
+       "sbp": 92.21559950583938,
+       "state": "CRITICAL"
+      }
+     },
+     "zero_flow_ml": 896.7555011334306
+    }
+   },
+   "euvolaemic_loss_to_critical": 1313.2031060308495,
+   "euvolaemic_loss_to_half_output": 1159.7848323502226,
+   "euvolaemic_zero_flow_ml": 1805.9592064889039
+  },
+  "2000": {
+   "cases": {
+    "gi_bleed_57m": {
+     "definitive_peak_output": 1.397540254927609,
+     "definitive_peak_sbp": 105.8893114717424,
+     "first_minute_output_half": null,
+     "untreated": {
+      "120": {
+       "deficit_fraction": 0.5013020961123515,
+       "do2": 0.1994791615550594,
+       "map": 55.81593858240811,
+       "output_rel": 0.6994506920760456,
+       "sbp": 74.47528114342205,
+       "state": "CRITICAL"
+      },
+      "60": {
+       "deficit_fraction": 0.33154410197047357,
+       "do2": 0.2673823592118106,
+       "map": 60.753003507499045,
+       "output_rel": 0.8553580054999699,
+       "sbp": 81.49111024749864,
+       "state": "CRITICAL"
+      }
+     },
+     "zero_flow_ml": 861.5658321849085
+    },
+    "gi_bleed_72f": {
+     "definitive_peak_output": 1.2616290566617598,
+     "definitive_peak_sbp": 109.77330754977919,
+     "first_minute_output_half": null,
+     "untreated": {
+      "120": {
+       "deficit_fraction": 0.43319373093386315,
+       "do2": 0.22672250762645474,
+       "map": 67.73641542033126,
+       "output_rel": 0.8022025922209871,
+       "sbp": 89.09911664994442,
+       "state": "CRITICAL"
+      },
+      "60": {
+       "deficit_fraction": 0.29580469637361095,
+       "do2": 0.2816781214505556,
+       "map": 70.98559490094668,
+       "output_rel": 0.9048082600298948,
+       "sbp": 93.71637170134527,
+       "state": "CRITICAL"
+      }
+     },
+     "zero_flow_ml": 1195.6740015112407
+    }
+   },
+   "euvolaemic_loss_to_critical": 1750.9374747077995,
+   "euvolaemic_loss_to_half_output": 1546.379776466963,
+   "euvolaemic_zero_flow_ml": 2407.9456086518717
+  },
+  "833.333": {
+   "cases": {
+    "gi_bleed_57m": {
+     "definitive_peak_output": 1.815354085522249,
+     "definitive_peak_sbp": 124.6909338485012,
+     "first_minute_output_half": 80,
+     "untreated": {
+      "120": {
+       "deficit_fraction": 0.8607929631900157,
+       "do2": 0.055682814723993675,
+       "map": 19.329291922977433,
+       "output_rel": 0.195245372959368,
+       "sbp": 25.577143857677207,
+       "state": "CRITICAL"
+      },
+      "60": {
+       "deficit_fraction": 0.5047375580591781,
+       "do2": 0.19810497677632877,
+       "map": 53.73507412116974,
+       "output_rel": 0.6337391827737812,
+       "sbp": 71.51826322482015,
+       "state": "CRITICAL"
+      }
+     },
+     "zero_flow_ml": 358.9857634103785
+    },
+    "gi_bleed_72f": {
+     "definitive_peak_output": 1.536600552010369,
+     "definitive_peak_sbp": 122.1470248404666,
+     "first_minute_output_half": 115,
+     "untreated": {
+      "120": {
+       "deficit_fraction": 0.6676505510253575,
+       "do2": 0.13293977958985698,
+       "map": 54.72031027788347,
+       "output_rel": 0.47037515998180635,
+       "sbp": 71.02664915725276,
+       "state": "CRITICAL"
+      },
+      "60": {
+       "deficit_fraction": 0.4093183427570699,
+       "do2": 0.23627266289717205,
+       "map": 66.36695761250772,
+       "output_rel": 0.7589565561844542,
+       "sbp": 87.15304502830044,
+       "state": "CRITICAL"
+      }
+     },
+     "zero_flow_ml": 498.1975006296837
+    }
+   },
+   "euvolaemic_loss_to_critical": 729.5572811282498,
+   "euvolaemic_loss_to_half_output": 644.3249068612347,
+   "euvolaemic_zero_flow_ml": 1003.3106702716133
+  }
+ },
+ "transfusion": {
+  "gi_bleed_57m arrival ratio upper": {
+   "peak_do2": {
+    "2": 1.08031179732687,
+    "2.5": 0.8642494378614961,
+    "3": 0.72020786488458
+   },
+   "peak_output": 1.815354085522249,
+   "peak_sbp": 124.6909338485012,
+   "points": {
+    "0": {
+     "V": 0.0,
+     "dbp": 54.0,
+     "demand": 1.0,
+     "do2_2": 0.5,
+     "do2_2.5": 0.4,
+     "do2_3": 0.3333333333333333,
+     "effective_deficit": 0.0,
+     "hb": 6.7,
+     "hr": 124.0,
+     "map": 65.33333333333333,
+     "output_rel": 1.0,
+     "sbp": 88.0,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "120": {
+     "V": 466.7500000000001,
+     "dbp": 73.91080251650378,
+     "demand": 1.0,
+     "do2_2": 1.061812027377509,
+     "do2_2.5": 0.8494496219020071,
+     "do2_3": 0.7078746849183393,
+     "effective_deficit": 0.0,
+     "hb": 7.920300000000013,
+     "hr": 100.48709938709727,
+     "map": 90.55368318757145,
+     "output_rel": 1.7964321006601514,
+     "sbp": 123.83944452970681,
+     "state_2": "ADEQUATE",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "15": {
+     "V": 120.00000000000001,
+     "dbp": 60.226640268679766,
+     "demand": 1.0,
+     "do2_2": 0.6540815963144057,
+     "do2_2.5": 0.5232652770515246,
+     "do2_3": 0.43605439754293707,
+     "effective_deficit": 0.0,
+     "hb": 7.016999999999999,
+     "hr": 118.82214926376614,
+     "map": 73.22041100699437,
+     "output_rel": 1.2490656107471907,
+     "sbp": 99.20795248362359,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "30": {
+     "V": 240.00000000000003,
+     "dbp": 65.61821178890166,
+     "demand": 1.0,
+     "do2_2": 0.8016655679397153,
+     "do2_2.5": 0.6413324543517723,
+     "do2_3": 0.5344437119598102,
+     "effective_deficit": 0.0,
+     "hb": 7.333999999999997,
+     "hr": 112.51996194116774,
+     "map": 80.04973493260877,
+     "output_rel": 1.4647284715560662,
+     "sbp": 108.91278122002298,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "45": {
+     "V": 360.00000000000006,
+     "dbp": 70.28670751104673,
+     "demand": 1.0,
+     "do2_2": 0.9429391019910996,
+     "do2_2.5": 0.7543512815928798,
+     "do2_3": 0.6286260679940664,
+     "effective_deficit": 0.0,
+     "hb": 7.650999999999995,
+     "hr": 107.03731463784965,
+     "map": 85.96316284732586,
+     "output_rel": 1.6514683004418693,
+     "sbp": 117.31607351988413,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "60": {
+     "V": 481.7500000000001,
+     "dbp": 74.38385213805623,
+     "demand": 1.0,
+     "do2_2": 1.08031179732687,
+     "do2_2.5": 0.8642494378614961,
+     "do2_3": 0.72020786488458,
+     "effective_deficit": 0.0,
+     "hb": 7.974299999999994,
+     "hr": 102.32918500579032,
+     "map": 91.15287937487123,
+     "output_rel": 1.815354085522249,
+     "sbp": 124.6909338485012,
+     "state_2": "ADEQUATE",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "90": {
+     "V": 474.2500000000001,
+     "dbp": 74.1483916817441,
+     "demand": 1.0,
+     "do2_2": 1.071068099141269,
+     "do2_2.5": 0.8568544793130153,
+     "do2_3": 0.7140453994275127,
+     "effective_deficit": 0.0,
+     "hb": 7.947300000000004,
+     "hr": 100.64666643295291,
+     "map": 90.85462946354254,
+     "output_rel": 1.8059356672697644,
+     "sbp": 124.2671050271394,
+     "state_2": "ADEQUATE",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    }
+   }
+  },
+  "gi_bleed_57m representative": {
+   "peak_do2": {
+    "2": 0.9182650277278396,
+    "2.5": 0.7346120221822716,
+    "3": 0.612176685151893
+   },
+   "peak_output": 1.815354085522249,
+   "peak_sbp": 124.6909338485012,
+   "points": {
+    "0": {
+     "V": 0.0,
+     "dbp": 54.0,
+     "demand": 1.0,
+     "do2_2": 0.425,
+     "do2_2.5": 0.33999999999999997,
+     "do2_3": 0.2833333333333333,
+     "effective_deficit": 0.15000000000000013,
+     "hb": 6.7,
+     "hr": 124.0,
+     "map": 65.33333333333333,
+     "output_rel": 1.0,
+     "sbp": 88.0,
+     "state_2": "CRITICAL",
+     "state_2.5": "CRITICAL",
+     "state_3": "CRITICAL"
+    },
+    "120": {
+     "V": 466.7500000000001,
+     "dbp": 73.91080251650378,
+     "demand": 1.0,
+     "do2_2": 0.9025402232708826,
+     "do2_2.5": 0.722032178616706,
+     "do2_3": 0.6016934821805884,
+     "effective_deficit": 0.0,
+     "hb": 7.920300000000013,
+     "hr": 100.5098227645918,
+     "map": 90.55368318757145,
+     "output_rel": 1.7964321006601514,
+     "sbp": 123.83944452970681,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "15": {
+     "V": 120.00000000000001,
+     "dbp": 60.226640268679766,
+     "demand": 1.0,
+     "do2_2": 0.5559693568672448,
+     "do2_2.5": 0.4447754854937958,
+     "do2_3": 0.37064623791149653,
+     "effective_deficit": 0.0,
+     "hb": 7.016999999999999,
+     "hr": 118.94002777109364,
+     "map": 73.22041100699437,
+     "output_rel": 1.2490656107471907,
+     "sbp": 99.20795248362359,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "30": {
+     "V": 240.00000000000003,
+     "dbp": 65.61821178890166,
+     "demand": 1.0,
+     "do2_2": 0.681415732748758,
+     "do2_2.5": 0.5451325861990064,
+     "do2_3": 0.45427715516583866,
+     "effective_deficit": 0.0,
+     "hb": 7.333999999999997,
+     "hr": 112.6223582830348,
+     "map": 80.04973493260877,
+     "output_rel": 1.4647284715560662,
+     "sbp": 108.91278122002298,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "45": {
+     "V": 360.00000000000006,
+     "dbp": 70.28670751104673,
+     "demand": 1.0,
+     "do2_2": 0.8014982366924347,
+     "do2_2.5": 0.6411985893539477,
+     "do2_3": 0.5343321577949565,
+     "effective_deficit": 0.0,
+     "hb": 7.650999999999995,
+     "hr": 107.11743014544926,
+     "map": 85.96316284732586,
+     "output_rel": 1.6514683004418693,
+     "sbp": 117.31607351988413,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "60": {
+     "V": 481.7500000000001,
+     "dbp": 74.38385213805623,
+     "demand": 1.0,
+     "do2_2": 0.9182650277278396,
+     "do2_2.5": 0.7346120221822716,
+     "do2_3": 0.612176685151893,
+     "effective_deficit": 0.0,
+     "hb": 7.974299999999994,
+     "hr": 102.39147444908433,
+     "map": 91.15287937487123,
+     "output_rel": 1.815354085522249,
+     "sbp": 124.6909338485012,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "90": {
+     "V": 474.2500000000001,
+     "dbp": 74.1483916817441,
+     "demand": 1.0,
+     "do2_2": 0.9104078842700787,
+     "do2_2.5": 0.728326307416063,
+     "do2_3": 0.6069385895133859,
+     "effective_deficit": 0.0,
+     "hb": 7.947300000000004,
+     "hr": 100.6842891358846,
+     "map": 90.85462946354254,
+     "output_rel": 1.8059356672697644,
+     "sbp": 124.2671050271394,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    }
+   }
+  },
+  "gi_bleed_72f arrival ratio upper": {
+   "peak_do2": {
+    "2": 0.9212760637729035,
+    "2.5": 0.7370208510183228,
+    "3": 0.6141840425152689
+   },
+   "peak_output": 1.536600552010369,
+   "peak_sbp": 122.1470248404666,
+   "points": {
+    "0": {
+     "V": 0.0,
+     "dbp": 62.0,
+     "demand": 1.0,
+     "do2_2": 0.5,
+     "do2_2.5": 0.4,
+     "do2_3": 0.3333333333333333,
+     "effective_deficit": 0.0,
+     "hb": 6.4,
+     "hr": 112.0,
+     "map": 74.0,
+     "output_rel": 1.0,
+     "sbp": 98.0,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "120": {
+     "V": 466.7500000000001,
+     "dbp": 75.1036905450495,
+     "demand": 1.0,
+     "do2_2": 0.9073798533138788,
+     "do2_2.5": 0.7259038826511031,
+     "do2_3": 0.6049199022092525,
+     "effective_deficit": 0.0,
+     "hb": 7.620300000000014,
+     "hr": 95.3064745024719,
+     "map": 90.59800802372938,
+     "output_rel": 1.52414762180198,
+     "sbp": 121.5866429810891,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "15": {
+     "V": 120.00000000000001,
+     "dbp": 66.09787436485763,
+     "demand": 1.0,
+     "do2_2": 0.6107825690898395,
+     "do2_2.5": 0.48862605527187164,
+     "do2_3": 0.40718837939322633,
+     "effective_deficit": 0.0,
+     "hb": 6.716999999999999,
+     "hr": 108.3608175082944,
+     "map": 79.19064086215299,
+     "output_rel": 1.1639149745943052,
+     "sbp": 105.37617385674373,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "30": {
+     "V": 240.00000000000003,
+     "dbp": 69.64617357047374,
+     "demand": 1.0,
+     "do2_2": 0.7176037027959755,
+     "do2_2.5": 0.5740829622367805,
+     "do2_3": 0.4784024685306503,
+     "effective_deficit": 0.0,
+     "hb": 7.033999999999997,
+     "hr": 103.95166259374768,
+     "map": 83.68515318926673,
+     "output_rel": 1.3058469428189496,
+     "sbp": 111.76311242685273,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "45": {
+     "V": 360.00000000000006,
+     "dbp": 72.71860237906495,
+     "demand": 1.0,
+     "do2_2": 0.820523269026582,
+     "do2_2.5": 0.6564186152212657,
+     "do2_3": 0.547015512684388,
+     "effective_deficit": 0.0,
+     "hb": 7.3509999999999955,
+     "hr": 100.13608538589011,
+     "map": 87.5768963468156,
+     "output_rel": 1.4287440951625978,
+     "sbp": 117.29348428231691,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "60": {
+     "V": 481.7500000000001,
+     "dbp": 75.41501380025923,
+     "demand": 1.0,
+     "do2_2": 0.9212760637729035,
+     "do2_2.5": 0.7370208510183228,
+     "do2_3": 0.6141840425152689,
+     "effective_deficit": 0.0,
+     "hb": 7.674299999999994,
+     "hr": 96.87623428061572,
+     "map": 90.99235081366169,
+     "output_rel": 1.536600552010369,
+     "sbp": 122.1470248404666,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "90": {
+     "V": 474.2500000000001,
+     "dbp": 75.2600526452504,
+     "demand": 1.0,
+     "do2_2": 0.9143315643563237,
+     "do2_2.5": 0.731465251485059,
+     "do2_3": 0.609554376237549,
+     "effective_deficit": 0.0,
+     "hb": 7.647300000000004,
+     "hr": 95.54608600985497,
+     "map": 90.79606668398384,
+     "output_rel": 1.5304021058100161,
+     "sbp": 121.86809476145072,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    }
+   }
+  },
+  "gi_bleed_72f representative": {
+   "peak_do2": {
+    "2": 0.7830846542069679,
+    "2.5": 0.6264677233655743,
+    "3": 0.5220564361379786
+   },
+   "peak_output": 1.536600552010369,
+   "peak_sbp": 122.1470248404666,
+   "points": {
+    "0": {
+     "V": 0.0,
+     "dbp": 62.0,
+     "demand": 1.0,
+     "do2_2": 0.425,
+     "do2_2.5": 0.33999999999999997,
+     "do2_3": 0.2833333333333333,
+     "effective_deficit": 0.15000000000000013,
+     "hb": 6.4,
+     "hr": 112.0,
+     "map": 74.0,
+     "output_rel": 1.0,
+     "sbp": 98.0,
+     "state_2": "CRITICAL",
+     "state_2.5": "CRITICAL",
+     "state_3": "CRITICAL"
+    },
+    "120": {
+     "V": 466.7500000000001,
+     "dbp": 75.1036905450495,
+     "demand": 1.0,
+     "do2_2": 0.771272875316797,
+     "do2_2.5": 0.6170183002534375,
+     "do2_3": 0.5141819168778646,
+     "effective_deficit": 0.0,
+     "hb": 7.620300000000014,
+     "hr": 95.33779756304189,
+     "map": 90.59800802372938,
+     "output_rel": 1.52414762180198,
+     "sbp": 121.5866429810891,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "15": {
+     "V": 120.00000000000001,
+     "dbp": 66.09787436485763,
+     "demand": 1.0,
+     "do2_2": 0.5191651837263636,
+     "do2_2.5": 0.41533214698109083,
+     "do2_3": 0.3461101224842424,
+     "effective_deficit": 0.0,
+     "hb": 6.716999999999999,
+     "hr": 108.51641197824526,
+     "map": 79.19064086215299,
+     "output_rel": 1.1639149745943052,
+     "sbp": 105.37617385674373,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "30": {
+     "V": 240.00000000000003,
+     "dbp": 69.64617357047374,
+     "demand": 1.0,
+     "do2_2": 0.6099631473765792,
+     "do2_2.5": 0.48797051790126333,
+     "do2_3": 0.4066420982510528,
+     "effective_deficit": 0.0,
+     "hb": 7.033999999999997,
+     "hr": 104.09246763011339,
+     "map": 83.68515318926673,
+     "output_rel": 1.3058469428189496,
+     "sbp": 111.76311242685273,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "45": {
+     "V": 360.00000000000006,
+     "dbp": 72.71860237906495,
+     "demand": 1.0,
+     "do2_2": 0.6974447786725947,
+     "do2_2.5": 0.5579558229380758,
+     "do2_3": 0.4649631857817298,
+     "effective_deficit": 0.0,
+     "hb": 7.3509999999999955,
+     "hr": 100.24650358925699,
+     "map": 87.5768963468156,
+     "output_rel": 1.4287440951625978,
+     "sbp": 117.29348428231691,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "60": {
+     "V": 481.7500000000001,
+     "dbp": 75.41501380025923,
+     "demand": 1.0,
+     "do2_2": 0.7830846542069679,
+     "do2_2.5": 0.6264677233655743,
+     "do2_3": 0.5220564361379786,
+     "effective_deficit": 0.0,
+     "hb": 7.674299999999994,
+     "hr": 96.96209636998393,
+     "map": 90.99235081366169,
+     "output_rel": 1.536600552010369,
+     "sbp": 122.1470248404666,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    },
+    "90": {
+     "V": 474.2500000000001,
+     "dbp": 75.2600526452504,
+     "demand": 1.0,
+     "do2_2": 0.7771818297028751,
+     "do2_2.5": 0.6217454637623,
+     "do2_3": 0.5181212198019167,
+     "effective_deficit": 0.0,
+     "hb": 7.647300000000004,
+     "hr": 95.59794705715245,
+     "map": 90.79606668398384,
+     "output_rel": 1.5304021058100161,
+     "sbp": 121.86809476145072,
+     "state_2": "COMPENSATED",
+     "state_2.5": "COMPENSATED",
+     "state_3": "COMPENSATED"
+    }
+   }
+  }
+ },
+ "v_interpretation": {
+  "bleed_fraction_after_haemostasis": 0.1,
+  "bleed_fraction_with_ppi": 0.8,
+  "bleed_hb_g_dl_per_min": 0.009,
+  "bleed_ml_eq_per_min": 2.5,
+  "curve_scale_band": [
+   600.0,
+   833.3333333333334,
+   1500.0
+  ],
+  "curve_scale_ml_eq": 833.3333333333334,
+  "ml_eq_per_legacy_circulation_unit": 833.3333333333334,
+  "prbc_hb_g_dl_per_unit": 0.85,
+  "prbc_ml_eq_per_unit": 300.0,
+  "saline_effective_ml_eq_per_ml": 0.125,
+  "saline_leak_tau_min": 30.0,
+  "saline_transient_share": 0.6
+ },
+ "volume_loss": {
+  "critical_output_at_normal_arrival_do2": 0.4,
+  "pump_couplings_at_0_35": {
+   "0": {
+    "0.7": {
+     "loss_to_critical": 173.03280398187036,
+     "rows": [
+      {
+       "do2": 0.7,
+       "effective_deficit": 0.0,
+       "filling_ml": 358.9857634103785,
+       "lost_ml": 0,
+       "map": 80.5,
+       "no_output": false,
+       "output_rel": 0.7,
+       "position": 0.35,
+       "preload_rel": 1.0,
+       "sbp": 106.5,
+       "state": "COMPENSATED"
+      },
+      {
+       "do2": 0.5342540929468116,
+       "effective_deficit": 0.0,
+       "filling_ml": 258.9857634103785,
+       "lost_ml": 100,
+       "map": 75.25137960998238,
+       "no_output": false,
+       "output_rel": 0.5342540929468116,
+       "position": 0.2671270464734058,
+       "preload_rel": 0.7632201327811594,
+       "sbp": 99.04143418260652,
+       "state": "COMPENSATED"
+      },
+      {
+       "do2": 0.34737610458217383,
+       "effective_deficit": 0.13155973854456549,
+       "filling_ml": 158.98576341037852,
+       "lost_ml": 200,
+       "map": 51.52745551302245,
+       "no_output": false,
+       "output_rel": 0.34737610458217383,
+       "position": 0.17368805229108691,
+       "preload_rel": 0.49625157797453406,
+       "sbp": 67.7383403935239,
+       "state": "CRITICAL"
+      },
+      {
+       "do2": 0.1366717610715576,
+       "effective_deficit": 0.658320597321106,
+       "filling_ml": 58.985763410378524,
+       "lost_ml": 300,
+       "map": 20.272977892281045,
+       "no_output": false,
+       "output_rel": 0.1366717610715576,
+       "position": 0.0683358805357788,
+       "preload_rel": 0.195245372959368,
+       "sbp": 26.65099340895373,
+       "state": "CRITICAL"
+      },
+      {
+       "do2": 0.0,
+       "effective_deficit": 1.0,
+       "filling_ml": -41.014236589621476,
+       "lost_ml": 400,
+       "map": null,
+       "no_output": true,
+       "output_rel": 0.0,
+       "position": 0.0,
+       "preload_rel": 0.0,
+       "sbp": null,
+       "state": "CRITICAL"
+      },
+      {
+       "do2": 0.0,
+       "effective_deficit": 1.0,
+       "filling_ml": -141.01423658962148,
+       "lost_ml": 500,
+       "map": null,
+       "no_output": true,
+       "output_rel": 0.0,
+       "position": 0.0,
+       "preload_rel": 0.0,
+       "sbp": null,
+       "state": "CRITICAL"
+      },
+      {
+       "do2": 0.0,
+       "effective_deficit": 1.0,
+       "filling_ml": -391.0142365896215,
+       "lost_ml": 750,
+       "map": null,
+       "no_output": true,
+       "output_rel": 0.0,
+       "position": 0.0,
+       "preload_rel": 0.0,
+       "sbp": null,
+       "state": "CRITICAL"
+      },
+      {
+       "do2": 0.0,
+       "effective_deficit": 1.0,
+       "filling_ml": -641.0142365896215,
+       "lost_ml": 1000,
+       "map": null,
+       "no_output": true,
+       "output_rel": 0.0,
+       "position": 0.0,
+       "preload_rel": 0.0,
+       "sbp": null,
+       "state": "CRITICAL"
+      }
+     ]
+    },
+    "1": {
+     "loss_to_critical": 233.30002196489215,
+     "rows": [
+      {
+       "do2": 1.0,
+       "effective_deficit": 0.0,
+       "filling_ml": 358.9857634103785,
+       "lost_ml": 0,
+       "map": 90.0,
+       "no_output": false,
+       "output_rel": 1.0,
+       "position": 0.35,
+       "preload_rel": 1.0,
+       "sbp": 120.0,
+       "state": "ADEQUATE"
+      },
+      {
+       "do2": 0.7632201327811594,
+       "effective_deficit": 0.0,
+       "filling_ml": 258.9857634103785,
+       "lost_ml": 100,
+       "map": 82.50197087140339,
+       "no_output": false,
+       "output_rel": 0.7632201327811594,
+       "position": 0.2671270464734058,
+       "preload_rel": 0.7632201327811594,
+       "sbp": 109.34490597515217,
+       "state": "COMPENSATED"
+      },
+      {
+       "do2": 0.49625157797453406,
+       "effective_deficit": 0.0,
+       "filling_ml": 158.98576341037852,
+       "lost_ml": 200,
+       "map": 73.61065073288923,
+       "no_output": false,
+       "output_rel": 0.49625157797453406,
+       "position": 0.17368805229108691,
+       "preload_rel": 0.49625157797453406,
+       "sbp": 96.76905770503414,
+       "state": "COMPENSATED"
+      },
+      {
+       "do2": 0.195245372959368,
+       "effective_deficit": 0.51188656760158,
+       "filling_ml": 58.985763410378524,
+       "lost_ml": 300,
+       "map": 28.961396988972922,
+       "no_output": false,
+       "output_rel": 0.195245372959368,
+       "position": 0.0683358805357788,
+       "preload_rel": 0.195245372959368,
+       "sbp": 38.07284772707676,
+       "state": "CRITICAL"
+      },
+      {
+       "do2": 0.0,
+       "effective_deficit": 1.0,
+       "filling_ml": -41.014236589621476,
+       "lost_ml": 400,
+       "map": null,
+       "no_output": true,
+       "output_rel": 0.0,
+       "position": 0.0,
+       "preload_rel": 0.0,
+       "sbp": null,
+       "state": "CRITICAL"
+      },
+      {
+       "do2": 0.0,
+       "effective_deficit": 1.0,
+       "filling_ml": -141.01423658962148,
+       "lost_ml": 500,
+       "map": null,
+       "no_output": true,
+       "output_rel": 0.0,
+       "position": 0.0,
+       "preload_rel": 0.0,
+       "sbp": null,
+       "state": "CRITICAL"
+      },
+      {
+       "do2": 0.0,
+       "effective_deficit": 1.0,
+       "filling_ml": -391.0142365896215,
+       "lost_ml": 750,
+       "map": null,
+       "no_output": true,
+       "output_rel": 0.0,
+       "position": 0.0,
+       "preload_rel": 0.0,
+       "sbp": null,
+       "state": "CRITICAL"
+      },
+      {
+       "do2": 0.0,
+       "effective_deficit": 1.0,
+       "filling_ml": -641.0142365896215,
+       "lost_ml": 1000,
+       "map": null,
+       "no_output": true,
+       "output_rel": 0.0,
+       "position": 0.0,
+       "preload_rel": 0.0,
+       "sbp": null,
+       "state": "CRITICAL"
+      }
+     ]
+    }
+   },
+   "1": {
+    "0.7": {
+     "loss_to_critical": 181.27550494317921,
+     "rows": [
+      {
+       "do2": 0.7,
+       "effective_deficit": 0.0,
+       "filling_ml": 358.9857634103785,
+       "lost_ml": 0,
+       "map": 80.5,
+       "no_output": false,
+       "output_rel": 0.7,
+       "position": 0.45957756912480935,
+       "preload_rel": 1.0,
+       "sbp": 106.5,
+       "state": "COMPENSATED"
+      },
+      {
+       "do2": 0.5460737499202217,
+       "effective_deficit": 0.0,
+       "filling_ml": 258.9857634103785,
+       "lost_ml": 100,
+       "map": 75.6256687474737,
+       "no_output": false,
+       "output_rel": 0.5460737499202217,
+       "position": 0.358518923644578,
+       "preload_rel": 0.7801053570288883,
+       "sbp": 99.57331874640998,
+       "state": "COMPENSATED"
+      },
+      {
+       "do2": 0.3633633905063397,
+       "effective_deficit": 0.09159152373415069,
+       "filling_ml": 158.98576341037852,
+       "lost_ml": 200,
+       "map": 53.89890292510705,
+       "no_output": false,
+       "output_rel": 0.3633633905063397,
+       "position": 0.2385623767397892,
+       "preload_rel": 0.5190905578661996,
+       "sbp": 70.85586114873624,
+       "state": "CRITICAL"
+      },
+      {
+       "do2": 0.14648631190637432,
+       "effective_deficit": 0.6337842202340642,
+       "filling_ml": 58.985763410378524,
+       "lost_ml": 300,
+       "map": 21.72880293277886,
+       "no_output": false,
+       "output_rel": 0.14648631190637432,
+       "position": 0.09617403305141446,
+       "preload_rel": 0.20926615986624902,
+       "sbp": 28.56483082174299,
+       "state": "CRITICAL"
+      },
+      {
+       "do2": 0.0,
+       "effective_deficit": 1.0,
+       "filling_ml": -41.014236589621476,
+       "lost_ml": 400,
+       "map": null,
+       "no_output": true,
+       "output_rel": 0.0,
+       "position": 0.0,
+       "preload_rel": 0.0,
+       "sbp": null,
+       "state": "CRITICAL"
+      },
+      {
+       "do2": 0.0,
+       "effective_deficit": 1.0,
+       "filling_ml": -141.01423658962148,
+       "lost_ml": 500,
+       "map": null,
+       "no_output": true,
+       "output_rel": 0.0,
+       "position": 0.0,
+       "preload_rel": 0.0,
+       "sbp": null,
+       "state": "CRITICAL"
+      },
+      {
+       "do2": 0.0,
+       "effective_deficit": 1.0,
+       "filling_ml": -391.0142365896215,
+       "lost_ml": 750,
+       "map": null,
+       "no_output": true,
+       "output_rel": 0.0,
+       "position": 0.0,
+       "preload_rel": 0.0,
+       "sbp": null,
+       "state": "CRITICAL"
+      },
+      {
+       "do2": 0.0,
+       "effective_deficit": 1.0,
+       "filling_ml": -641.0142365896215,
+       "lost_ml": 1000,
+       "map": null,
+       "no_output": true,
+       "output_rel": 0.0,
+       "position": 0.0,
+       "preload_rel": 0.0,
+       "sbp": null,
+       "state": "CRITICAL"
+      }
+     ]
+    },
+    "1": {
+     "loss_to_critical": 233.30002196489215,
+     "rows": [
+      {
+       "do2": 1.0,
+       "effective_deficit": 0.0,
+       "filling_ml": 358.9857634103785,
+       "lost_ml": 0,
+       "map": 90.0,
+       "no_output": false,
+       "output_rel": 1.0,
+       "position": 0.35,
+       "preload_rel": 1.0,
+       "sbp": 120.0,
+       "state": "ADEQUATE"
+      },
+      {
+       "do2": 0.7632201327811594,
+       "effective_deficit": 0.0,
+       "filling_ml": 258.9857634103785,
+       "lost_ml": 100,
+       "map": 82.50197087140339,
+       "no_output": false,
+       "output_rel": 0.7632201327811594,
+       "position": 0.2671270464734058,
+       "preload_rel": 0.7632201327811594,
+       "sbp": 109.34490597515217,
+       "state": "COMPENSATED"
+      },
+      {
+       "do2": 0.49625157797453406,
+       "effective_deficit": 0.0,
+       "filling_ml": 158.98576341037852,
+       "lost_ml": 200,
+       "map": 73.61065073288923,
+       "no_output": false,
+       "output_rel": 0.49625157797453406,
+       "position": 0.17368805229108691,
+       "preload_rel": 0.49625157797453406,
+       "sbp": 96.76905770503414,
+       "state": "COMPENSATED"
+      },
+      {
+       "do2": 0.195245372959368,
+       "effective_deficit": 0.51188656760158,
+       "filling_ml": 58.985763410378524,
+       "lost_ml": 300,
+       "map": 28.961396988972922,
+       "no_output": false,
+       "output_rel": 0.195245372959368,
+       "position": 0.0683358805357788,
+       "preload_rel": 0.195245372959368,
+       "sbp": 38.07284772707676,
+       "state": "CRITICAL"
+      },
+      {
+       "do2": 0.0,
+       "effective_deficit": 1.0,
+       "filling_ml": -41.014236589621476,
+       "lost_ml": 400,
+       "map": null,
+       "no_output": true,
+       "output_rel": 0.0,
+       "position": 0.0,
+       "preload_rel": 0.0,
+       "sbp": null,
+       "state": "CRITICAL"
+      },
+      {
+       "do2": 0.0,
+       "effective_deficit": 1.0,
+       "filling_ml": -141.01423658962148,
+       "lost_ml": 500,
+       "map": null,
+       "no_output": true,
+       "output_rel": 0.0,
+       "position": 0.0,
+       "preload_rel": 0.0,
+       "sbp": null,
+       "state": "CRITICAL"
+      },
+      {
+       "do2": 0.0,
+       "effective_deficit": 1.0,
+       "filling_ml": -391.0142365896215,
+       "lost_ml": 750,
+       "map": null,
+       "no_output": true,
+       "output_rel": 0.0,
+       "position": 0.0,
+       "preload_rel": 0.0,
+       "sbp": null,
+       "state": "CRITICAL"
+      },
+      {
+       "do2": 0.0,
+       "effective_deficit": 1.0,
+       "filling_ml": -641.0142365896215,
+       "lost_ml": 1000,
+       "map": null,
+       "no_output": true,
+       "output_rel": 0.0,
+       "position": 0.0,
+       "preload_rel": 0.0,
+       "sbp": null,
+       "state": "CRITICAL"
+      }
+     ]
+    }
+   }
+  },
+  "scales_at_0_35": {
+   "1500": {
+    "loss_to_critical": 419.9400395368058,
+    "rows": [
+     {
+      "do2": 1.0,
+      "effective_deficit": 0.0,
+      "filling_ml": 646.1743741386813,
+      "lost_ml": 0,
+      "map": 90.0,
+      "no_output": false,
+      "output_rel": 1.0,
+      "position": 0.35,
+      "preload_rel": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE"
+     },
+     {
+      "do2": 0.8719702321836853,
+      "effective_deficit": 0.0,
+      "filling_ml": 546.1743741386813,
+      "lost_ml": 100,
+      "map": 85.94572401915003,
+      "no_output": false,
+      "output_rel": 0.8719702321836853,
+      "position": 0.30518958126428986,
+      "preload_rel": 0.8719702321836853,
+      "sbp": 114.23866044826583,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.7351142066650865,
+      "effective_deficit": 0.0,
+      "filling_ml": 446.1743741386813,
+      "lost_ml": 200,
+      "map": 81.61194987772774,
+      "no_output": false,
+      "output_rel": 0.7351142066650865,
+      "position": 0.2572899723327803,
+      "preload_rel": 0.7351142066650865,
+      "sbp": 108.08013929992889,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.5888234491311131,
+      "effective_deficit": 0.0,
+      "filling_ml": 346.1743741386813,
+      "lost_ml": 300,
+      "map": 76.97940922248524,
+      "no_output": false,
+      "output_rel": 0.5888234491311131,
+      "position": 0.20608820719588955,
+      "preload_rel": 0.5888234491311131,
+      "sbp": 101.49705521090009,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.43244753759366034,
+      "effective_deficit": 0.0,
+      "filling_ml": 246.1743741386813,
+      "lost_ml": 400,
+      "map": 64.14638474305961,
+      "no_output": false,
+      "output_rel": 0.43244753759366034,
+      "position": 0.1513566381577811,
+      "preload_rel": 0.43244753759366034,
+      "sbp": 84.32726983076377,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.265291210554405,
+      "effective_deficit": 0.3367719736139875,
+      "filling_ml": 146.1743741386813,
+      "lost_ml": 500,
+      "map": 39.35152956557008,
+      "no_output": false,
+      "output_rel": 0.265291210554405,
+      "position": 0.09285192369404174,
+      "preload_rel": 0.265291210554405,
+      "sbp": 51.73178605810898,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -103.82562586131871,
+      "lost_ml": 750,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -353.8256258613187,
+      "lost_ml": 1000,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     }
+    ],
+    "zero_flow_ml": 646.1743741386813
+   },
+   "600": {
+    "loss_to_critical": 167.97601581472236,
+    "rows": [
+     {
+      "do2": 1.0,
+      "effective_deficit": 0.0,
+      "filling_ml": 258.4697496554725,
+      "lost_ml": 0,
+      "map": 90.0,
+      "no_output": false,
+      "output_rel": 1.0,
+      "position": 0.35,
+      "preload_rel": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE"
+     },
+     {
+      "do2": 0.6631878046780859,
+      "effective_deficit": 0.0,
+      "filling_ml": 158.46974965547253,
+      "lost_ml": 100,
+      "map": 79.33428048147272,
+      "no_output": false,
+      "output_rel": 0.6631878046780859,
+      "position": 0.23211573163733007,
+      "preload_rel": 0.6631878046780859,
+      "sbp": 104.84345121051386,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.265291210554405,
+      "effective_deficit": 0.3367719736139875,
+      "filling_ml": 58.469749655472526,
+      "lost_ml": 200,
+      "map": 39.35152956557008,
+      "no_output": false,
+      "output_rel": 0.265291210554405,
+      "position": 0.09285192369404176,
+      "preload_rel": 0.265291210554405,
+      "sbp": 51.73178605810898,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -41.530250344527474,
+      "lost_ml": 300,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -141.53025034452747,
+      "lost_ml": 400,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -241.53025034452747,
+      "lost_ml": 500,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -491.5302503445275,
+      "lost_ml": 750,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -741.5302503445275,
+      "lost_ml": 1000,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     }
+    ],
+    "zero_flow_ml": 258.4697496554725
+   },
+   "833.333": {
+    "loss_to_critical": 233.30002196489215,
+    "rows": [
+     {
+      "do2": 1.0,
+      "effective_deficit": 0.0,
+      "filling_ml": 358.9857634103785,
+      "lost_ml": 0,
+      "map": 90.0,
+      "no_output": false,
+      "output_rel": 1.0,
+      "position": 0.35,
+      "preload_rel": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE"
+     },
+     {
+      "do2": 0.7632201327811594,
+      "effective_deficit": 0.0,
+      "filling_ml": 258.9857634103785,
+      "lost_ml": 100,
+      "map": 82.50197087140339,
+      "no_output": false,
+      "output_rel": 0.7632201327811594,
+      "position": 0.2671270464734058,
+      "preload_rel": 0.7632201327811594,
+      "sbp": 109.34490597515217,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.49625157797453406,
+      "effective_deficit": 0.0,
+      "filling_ml": 158.98576341037852,
+      "lost_ml": 200,
+      "map": 73.61065073288923,
+      "no_output": false,
+      "output_rel": 0.49625157797453406,
+      "position": 0.17368805229108691,
+      "preload_rel": 0.49625157797453406,
+      "sbp": 96.76905770503414,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.195245372959368,
+      "effective_deficit": 0.51188656760158,
+      "filling_ml": 58.985763410378524,
+      "lost_ml": 300,
+      "map": 28.961396988972922,
+      "no_output": false,
+      "output_rel": 0.195245372959368,
+      "position": 0.0683358805357788,
+      "preload_rel": 0.195245372959368,
+      "sbp": 38.07284772707676,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -41.014236589621476,
+      "lost_ml": 400,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -141.01423658962148,
+      "lost_ml": 500,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -391.0142365896215,
+      "lost_ml": 750,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -641.0142365896215,
+      "lost_ml": 1000,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     }
+    ],
+    "zero_flow_ml": 358.9857634103785
+   }
+  },
+  "tables": {
+   "GI 57m arrival (0.35); P 0.7": {
+    "loss_to_critical": 181.27550494317921,
+    "loss_to_own_output": {
+     "0.5": 206.68297408506947,
+     "0.75": 112.44782793416968
+    },
+    "position": 0.35,
+    "pump": 0.7,
+    "rows": [
+     {
+      "do2": 0.7,
+      "effective_deficit": 0.0,
+      "filling_ml": 358.9857634103785,
+      "lost_ml": 0,
+      "map": 80.5,
+      "no_output": false,
+      "output_rel": 0.7,
+      "position": 0.45957756912480935,
+      "preload_rel": 1.0,
+      "sbp": 106.5,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.5460737499202217,
+      "effective_deficit": 0.0,
+      "filling_ml": 258.9857634103785,
+      "lost_ml": 100,
+      "map": 75.6256687474737,
+      "no_output": false,
+      "output_rel": 0.5460737499202217,
+      "position": 0.358518923644578,
+      "preload_rel": 0.7801053570288883,
+      "sbp": 99.57331874640998,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.3633633905063397,
+      "effective_deficit": 0.09159152373415069,
+      "filling_ml": 158.98576341037852,
+      "lost_ml": 200,
+      "map": 53.89890292510705,
+      "no_output": false,
+      "output_rel": 0.3633633905063397,
+      "position": 0.2385623767397892,
+      "preload_rel": 0.5190905578661996,
+      "sbp": 70.85586114873624,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.14648631190637432,
+      "effective_deficit": 0.6337842202340642,
+      "filling_ml": 58.985763410378524,
+      "lost_ml": 300,
+      "map": 21.72880293277886,
+      "no_output": false,
+      "output_rel": 0.14648631190637432,
+      "position": 0.09617403305141446,
+      "preload_rel": 0.20926615986624902,
+      "sbp": 28.56483082174299,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -41.014236589621476,
+      "lost_ml": 400,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -141.01423658962148,
+      "lost_ml": 500,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -391.0142365896215,
+      "lost_ml": 750,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -641.0142365896215,
+      "lost_ml": 1000,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     }
+    ],
+    "zero_flow_ml": 358.9857634103785
+   },
+   "GI 57m arrival (0.35); P 1": {
+    "loss_to_critical": 233.30002196489215,
+    "loss_to_own_output": {
+     "0.5": 198.67585287083182,
+     "0.75": 105.24477110357671
+    },
+    "position": 0.35,
+    "pump": 1.0,
+    "rows": [
+     {
+      "do2": 1.0,
+      "effective_deficit": 0.0,
+      "filling_ml": 358.9857634103785,
+      "lost_ml": 0,
+      "map": 90.0,
+      "no_output": false,
+      "output_rel": 1.0,
+      "position": 0.35,
+      "preload_rel": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE"
+     },
+     {
+      "do2": 0.7632201327811594,
+      "effective_deficit": 0.0,
+      "filling_ml": 258.9857634103785,
+      "lost_ml": 100,
+      "map": 82.50197087140339,
+      "no_output": false,
+      "output_rel": 0.7632201327811594,
+      "position": 0.2671270464734058,
+      "preload_rel": 0.7632201327811594,
+      "sbp": 109.34490597515217,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.49625157797453406,
+      "effective_deficit": 0.0,
+      "filling_ml": 158.98576341037852,
+      "lost_ml": 200,
+      "map": 73.61065073288923,
+      "no_output": false,
+      "output_rel": 0.49625157797453406,
+      "position": 0.17368805229108691,
+      "preload_rel": 0.49625157797453406,
+      "sbp": 96.76905770503414,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.195245372959368,
+      "effective_deficit": 0.51188656760158,
+      "filling_ml": 58.985763410378524,
+      "lost_ml": 300,
+      "map": 28.961396988972922,
+      "no_output": false,
+      "output_rel": 0.195245372959368,
+      "position": 0.0683358805357788,
+      "preload_rel": 0.195245372959368,
+      "sbp": 38.07284772707676,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -41.014236589621476,
+      "lost_ml": 400,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -141.01423658962148,
+      "lost_ml": 500,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -391.0142365896215,
+      "lost_ml": 750,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -641.0142365896215,
+      "lost_ml": 1000,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     }
+    ],
+    "zero_flow_ml": 358.9857634103785
+   },
+   "GI 72f arrival (0.45); P 0.7": {
+    "loss_to_critical": 266.1686037399661,
+    "loss_to_own_output": {
+     "0.5": 300.74269696343447,
+     "0.75": 169.5417501184911
+    },
+    "position": 0.45,
+    "pump": 0.7,
+    "rows": [
+     {
+      "do2": 0.7,
+      "effective_deficit": 0.0,
+      "filling_ml": 498.1975006296837,
+      "lost_ml": 0,
+      "map": 80.5,
+      "no_output": false,
+      "output_rel": 0.7,
+      "position": 0.5743138146238651,
+      "preload_rel": 1.0,
+      "sbp": 106.5,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.6029761643159017,
+      "effective_deficit": 0.0,
+      "filling_ml": 398.1975006296837,
+      "lost_ml": 100,
+      "map": 77.42757853667023,
+      "no_output": false,
+      "output_rel": 0.6029761643159017,
+      "position": 0.4947107729364743,
+      "preload_rel": 0.8613945204512882,
+      "sbp": 102.13392739421558,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.48780893403278114,
+      "effective_deficit": 0.0,
+      "filling_ml": 298.1975006296837,
+      "lost_ml": 200,
+      "map": 72.35832521486253,
+      "no_output": false,
+      "output_rel": 0.48780893403278114,
+      "position": 0.4002220138742399,
+      "preload_rel": 0.696869905761116,
+      "sbp": 95.12274213639232,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.3511055060806004,
+      "effective_deficit": 0.12223623479849888,
+      "filling_ml": 198.1975006296837,
+      "lost_ml": 300,
+      "map": 52.0806500686224,
+      "no_output": false,
+      "output_rel": 0.3511055060806004,
+      "position": 0.2880639179037033,
+      "preload_rel": 0.5015792944008578,
+      "sbp": 68.46557368571709,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.18883862540685362,
+      "effective_deficit": 0.527903436482866,
+      "filling_ml": 98.1975006296837,
+      "lost_ml": 400,
+      "map": 28.011062768683285,
+      "no_output": false,
+      "output_rel": 0.18883862540685362,
+      "position": 0.1549323304367675,
+      "preload_rel": 0.26976946486693376,
+      "sbp": 36.82353195433645,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -1.8024993703162977,
+      "lost_ml": 500,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -251.8024993703163,
+      "lost_ml": 750,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -501.8024993703163,
+      "lost_ml": 1000,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     }
+    ],
+    "zero_flow_ml": 498.1975006296837
+   },
+   "GI 72f arrival (0.45); P 1": {
+    "loss_to_critical": 332.8217183598184,
+    "loss_to_own_output": {
+     "0.5": 285.78729260569196,
+     "0.75": 155.0852330282172
+    },
+    "position": 0.45,
+    "pump": 1.0,
+    "rows": [
+     {
+      "do2": 1.0,
+      "effective_deficit": 0.0,
+      "filling_ml": 498.1975006296837,
+      "lost_ml": 0,
+      "map": 90.0,
+      "no_output": false,
+      "output_rel": 1.0,
+      "position": 0.44999999999999996,
+      "preload_rel": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE"
+     },
+     {
+      "do2": 0.8441705147363188,
+      "effective_deficit": 0.0,
+      "filling_ml": 398.1975006296837,
+      "lost_ml": 100,
+      "map": 85.06539963331676,
+      "no_output": false,
+      "output_rel": 0.8441705147363188,
+      "position": 0.3798767316313434,
+      "preload_rel": 0.8441705147363188,
+      "sbp": 112.98767316313435,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.6684732607182832,
+      "effective_deficit": 0.0,
+      "filling_ml": 298.1975006296837,
+      "lost_ml": 200,
+      "map": 79.50165325607897,
+      "no_output": false,
+      "output_rel": 0.6684732607182832,
+      "position": 0.3008129673232274,
+      "preload_rel": 0.6684732607182832,
+      "sbp": 105.08129673232274,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.47037515998180635,
+      "effective_deficit": 0.0,
+      "filling_ml": 198.1975006296837,
+      "lost_ml": 300,
+      "map": 69.77231539730127,
+      "no_output": false,
+      "output_rel": 0.47037515998180635,
+      "position": 0.21166882199181283,
+      "preload_rel": 0.47037515998180635,
+      "sbp": 91.72315619645224,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.24702017509757476,
+      "effective_deficit": 0.3824495622560631,
+      "filling_ml": 98.1975006296837,
+      "lost_ml": 400,
+      "map": 36.641325972806925,
+      "no_output": false,
+      "output_rel": 0.24702017509757476,
+      "position": 0.11115907879390863,
+      "preload_rel": 0.24702017509757476,
+      "sbp": 48.16893414402708,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -1.8024993703162977,
+      "lost_ml": 500,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -251.8024993703163,
+      "lost_ml": 750,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.0,
+      "effective_deficit": 1.0,
+      "filling_ml": -501.8024993703163,
+      "lost_ml": 1000,
+      "map": null,
+      "no_output": true,
+      "output_rel": 0.0,
+      "position": 0.0,
+      "preload_rel": 0.0,
+      "sbp": null,
+      "state": "CRITICAL"
+     }
+    ],
+    "zero_flow_ml": 498.1975006296837
+   },
+   "euvolaemic reference (0.70); P 0.7": {
+    "loss_to_critical": 633.9535474496026,
+    "loss_to_own_output": {
+     "0.5": 695.0665131640285,
+     "0.75": 445.45779394719284
+    },
+    "position": 0.7,
+    "pump": 0.7,
+    "rows": [
+     {
+      "do2": 0.7,
+      "effective_deficit": 0.0,
+      "filling_ml": 1003.3106702716133,
+      "lost_ml": 0,
+      "map": 80.5,
+      "no_output": false,
+      "output_rel": 0.7,
+      "position": 0.8209268950610862,
+      "preload_rel": 1.0,
+      "sbp": 106.5,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.6714461925840356,
+      "effective_deficit": 0.0,
+      "filling_ml": 903.3106702716133,
+      "lost_ml": 100,
+      "map": 79.59579609849446,
+      "no_output": false,
+      "output_rel": 0.6714461925840356,
+      "position": 0.7874403401122865,
+      "preload_rel": 0.9592088465486224,
+      "sbp": 105.2150786662816,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.6375528416260173,
+      "effective_deficit": 0.0,
+      "filling_ml": 803.3106702716133,
+      "lost_ml": 200,
+      "map": 78.52250665149056,
+      "no_output": false,
+      "output_rel": 0.6375528416260173,
+      "position": 0.7476918210191699,
+      "preload_rel": 0.9107897737514534,
+      "sbp": 103.68987787317079,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.5973214559327341,
+      "effective_deficit": 0.0,
+      "filling_ml": 703.3106702716133,
+      "lost_ml": 300,
+      "map": 77.24851277120324,
+      "no_output": false,
+      "output_rel": 0.5973214559327341,
+      "position": 0.7005103545317526,
+      "preload_rel": 0.8533163656181916,
+      "sbp": 101.87946551697303,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.5495668271028329,
+      "effective_deficit": 0.0,
+      "filling_ml": 603.3106702716133,
+      "lost_ml": 400,
+      "map": 75.73628285825639,
+      "no_output": false,
+      "output_rel": 0.5495668271028329,
+      "position": 0.6445059842887163,
+      "preload_rel": 0.7850954672897613,
+      "sbp": 99.73050721962748,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.49288211352951095,
+      "effective_deficit": 0.0,
+      "filling_ml": 503.3106702716133,
+      "lost_ml": 500,
+      "map": 73.1108468402108,
+      "no_output": false,
+      "output_rel": 0.49288211352951095,
+      "position": 0.5780288329870389,
+      "preload_rel": 0.7041173050421585,
+      "sbp": 96.11201213825464,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.30035971639588926,
+      "effective_deficit": 0.2491007090102768,
+      "filling_ml": 253.31067027161328,
+      "lost_ml": 750,
+      "map": 44.55335793205691,
+      "no_output": false,
+      "output_rel": 0.30035971639588926,
+      "position": 0.35224767054615114,
+      "preload_rel": 0.42908530913698467,
+      "sbp": 58.57014469719841,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.004825706102925341,
+      "effective_deficit": 0.9879357347426867,
+      "filling_ml": 3.310670271613276,
+      "lost_ml": 1000,
+      "map": 0.7158130719339256,
+      "no_output": false,
+      "output_rel": 0.004825706102925341,
+      "position": 0.0056593598965026205,
+      "preload_rel": 0.006893865861321916,
+      "sbp": 0.9410126900704415,
+      "state": "CRITICAL"
+     }
+    ],
+    "zero_flow_ml": 1003.3106702716133
+   },
+   "euvolaemic reference (0.70); P 1": {
+    "loss_to_critical": 729.5572811282498,
+    "loss_to_own_output": {
+     "0.5": 644.3249068612347,
+     "0.75": 382.9436078153667
+    },
+    "position": 0.7,
+    "pump": 1.0,
+    "rows": [
+     {
+      "do2": 1.0,
+      "effective_deficit": 0.0,
+      "filling_ml": 1003.3106702716133,
+      "lost_ml": 0,
+      "map": 90.0,
+      "no_output": false,
+      "output_rel": 1.0,
+      "position": 0.7,
+      "preload_rel": 1.0,
+      "sbp": 120.0,
+      "state": "ADEQUATE"
+     },
+     {
+      "do2": 0.9453584921802675,
+      "effective_deficit": 0.0,
+      "filling_ml": 903.3106702716133,
+      "lost_ml": 100,
+      "map": 88.26968558570847,
+      "no_output": false,
+      "output_rel": 0.9453584921802675,
+      "position": 0.6617509445261872,
+      "preload_rel": 0.9453584921802675,
+      "sbp": 117.54113214811204,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.8837503641479695,
+      "effective_deficit": 0.0,
+      "filling_ml": 803.3106702716133,
+      "lost_ml": 200,
+      "map": 86.31876153135238,
+      "no_output": false,
+      "output_rel": 0.8837503641479695,
+      "position": 0.6186252549035786,
+      "preload_rel": 0.8837503641479695,
+      "sbp": 114.76876638665863,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.8142873937598542,
+      "effective_deficit": 0.0,
+      "filling_ml": 703.3106702716133,
+      "lost_ml": 300,
+      "map": 84.11910080239538,
+      "no_output": false,
+      "output_rel": 0.8142873937598542,
+      "position": 0.5700011756318979,
+      "preload_rel": 0.8142873937598542,
+      "sbp": 111.64293271919344,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.7359681133459028,
+      "effective_deficit": 0.0,
+      "filling_ml": 603.3106702716133,
+      "lost_ml": 400,
+      "map": 81.63899025595359,
+      "no_output": false,
+      "output_rel": 0.7359681133459028,
+      "position": 0.515177679342132,
+      "preload_rel": 0.7359681133459028,
+      "sbp": 108.11856510056563,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.6476633712612104,
+      "effective_deficit": 0.0,
+      "filling_ml": 503.3106702716133,
+      "lost_ml": 500,
+      "map": 78.84267342327166,
+      "no_output": false,
+      "output_rel": 0.6476633712612104,
+      "position": 0.4533643598828473,
+      "preload_rel": 0.6476633712612104,
+      "sbp": 104.14485170675447,
+      "state": "COMPENSATED"
+     },
+     {
+      "do2": 0.3744558095041644,
+      "effective_deficit": 0.06386047623958901,
+      "filling_ml": 253.31067027161328,
+      "lost_ml": 750,
+      "map": 55.54427840978439,
+      "no_output": false,
+      "output_rel": 0.3744558095041644,
+      "position": 0.26211906665291507,
+      "preload_rel": 0.3744558095041644,
+      "sbp": 73.01888285331206,
+      "state": "CRITICAL"
+     },
+     {
+      "do2": 0.005664175970050989,
+      "effective_deficit": 0.9858395600748725,
+      "filling_ml": 3.310670271613276,
+      "lost_ml": 1000,
+      "map": 0.8401861022242301,
+      "no_output": false,
+      "output_rel": 0.005664175970050989,
+      "position": 0.003964923179035692,
+      "preload_rel": 0.005664175970050989,
+      "sbp": 1.1045143141599427,
+      "state": "CRITICAL"
+     }
+    ],
+    "zero_flow_ml": 1003.3106702716133
+   }
+  }
+ }
+}
