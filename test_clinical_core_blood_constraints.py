@@ -146,3 +146,103 @@ def test_the_document_definitions_and_sensitivity_are_generated():
     assert report.apply(document, "definiciones", report.render_definitions()) == document
     data = json.loads(SENSITIVITY.read_text(encoding="utf-8"))
     assert report.apply(document, "sensibilidad", report.render_sensitivity(data)) == document
+
+
+# After the freeze: the filter's record (P2I-2V-2 to 5) --------------------------------------------------
+
+FILTER = ROOT / "docs" / "revision" / "P2I2V_blood_filter.json"
+DIAGNOSTIC = ROOT / "docs" / "revision" / "P2I2V_blood_diagnostic.json"
+
+
+@pytest.fixture(scope="module")
+def filtered():
+    return json.loads(FILTER.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="module")
+def diagnosed():
+    return json.loads(DIAGNOSTIC.read_text(encoding="utf-8"))
+
+
+def test_the_reported_filter_ran_with_the_frozen_rules_on_the_whole_region(filtered):
+    assert filtered["freeze_digest"] == FROZEN_DIGEST
+    assert filtered["sizes"] == {"joint": 3 ** 15, "common_bleed": 3 ** 14, "alone": 3 ** 13}
+    assert filtered["region"] == bc._plain({n: list(bc.REGION[n]) for n in bc.PARAMETERS})
+    assert set(filtered["single"]) == set(filtered["without"]) == set(bc.CONSTRAINTS)
+    assert set(filtered["variants"]) == set(bc.VARIANTS)
+
+
+def test_the_counts_are_coherent(filtered):
+    primary = filtered["primary"]
+    for name in bc.CONSTRAINTS:
+        assert primary["joint"] <= filtered["without"][name]["joint"] and primary["joint"] <= filtered["single"][name]["joint"]
+        for case in bc.CASES:
+            assert primary["alone"][case] <= filtered["without"][name]["alone"][case]
+            assert primary["alone"][case] <= filtered["single"][name]["alone"][case]
+    for name in ("SECOND-UNIT", "FD-BLD-08", "FD-BLD-09"):
+        assert filtered["single"][name]["joint"] == filtered["sizes"]["joint"], f"{name} is structural in this model"
+    if not any(primary["alone"].values()):
+        assert filtered["representatives"] == {case: {} for case in bc.CASES}
+
+
+def test_no_value_is_selected_and_nothing_is_approved_by_the_filter(filtered):
+    text = json.dumps(filtered)
+    assert "FACULTY_APPROVED" not in text and "selected" not in text
+    assert filtered["identifiability"]["basis"] in ("joint", "each case alone (no joint survivor)")
+
+
+def test_the_diagnostic_is_labelled_frozen_and_reproducible(diagnosed):
+    assert diagnosed["freeze_digest"] == FROZEN_DIGEST and diagnosed["dropped"] == report.DIAGNOSTIC_DROP == "U-HB"
+    for item in diagnosed["representatives"].values():
+        for case in bc.CASES:
+            values = item["values"][case]
+            live = bc.evaluate(case, {name: (float(v) if not isinstance(v, str) else v) for name, v in values.items()})
+            assert live["verdicts"]["primary"] == item["verdicts"][case]
+            assert {name for name, ok in item["verdicts"][case].items() if not ok} <= {"U-HB"}
+            fall = bc.untreated_blood(case, {**blood_anchors.REFERENCE, **values})["fall"]
+            assert {str(m): v for m, v in fall.items()} == pytest.approx(item["untreated_hb"][case]["fall"])
+
+
+def test_the_document_filter_block_is_generated(filtered, diagnosed):
+    document = DOCUMENT.read_text(encoding="utf-8")
+    assert report.apply(document, "filtro", report.render_filter(filtered, diagnosed)) == document
+    assert "NO es un resultado del filtro" in document
+
+
+def test_the_diagnostic_count_is_the_filters_own_leave_one_out(filtered, diagnosed):
+    """The diagnostic describes a set the frozen filter already counted; it adds no rule."""
+    left = filtered["without"][report.DIAGNOSTIC_DROP]
+    assert diagnosed["count"]["joint"] == left["joint"] and diagnosed["count"]["alone"] == left["alone"]
+    assert diagnosed["count"]["marginal"] == left["marginal"]
+
+
+def test_each_declared_variant_changes_a_reading_except_v5_which_the_frozen_code_does_not_implement():
+    """Found by the P2I-2V adversarial review: V5 was declared but passes() has no branch for it. The gap is
+    pinned here and stated in the report; implementing it would need a recorded refreeze and a new filter."""
+    m57, f72 = "gi_bleed_57m", "gi_bleed_72f"
+    out = {"output": {30: 0.955, 60: 0.80, 120: 0.50}}
+    assert not bc.passes("U-OUT", m57, out) and bc.passes("U-OUT", m57, out, "V1_envelope_tolerance")
+    assert not bc.passes("FD-BLD-03", m57, {"position": [0.4, 0.65, 0.7]})
+    assert bc.passes("FD-BLD-03", m57, {"position": [0.4, 0.65, 0.7]}, "V2_fd03_both_midpoint")
+    assert bc.passes("FD-BLD-03", f72, {"position": [0.4, 0.65, 0.7]})
+    assert not bc.passes("FD-BLD-03", f72, {"position": [0.4, 0.65, 0.7]}, "V3_fd03_both_lower")
+    weak = {"output": [1.0, 1.05, 1.08], "challenge_gain": 0.2}
+    assert bc.passes("FD-BLD-02", m57, weak)
+    assert not bc.passes("FD-BLD-02", m57, weak, "V4_fd02_lower_bound_when_responsive")
+    for early in (0.10, 0.20):
+        retained = {"early": early, "share": {}}
+        assert bc.passes("FD-BLD-04", m57, retained, "V5_fd04_net_effect") == bc.passes("FD-BLD-04", m57, retained)
+    dilution = {1000.0: {"peak": 0.3, "at_120": 0.1, "peak_from_arrival": 0.6, "from_arrival_120": 0.5},
+                2000.0: {"peak": 0.5, "at_120": 0.2, "peak_from_arrival": 0.6, "from_arrival_120": 0.5}}
+    assert bc.passes("FD-BLD-06", m57, dilution) and not bc.passes("FD-BLD-06", m57, dilution, "V6_fd06_from_arrival_hb")
+    retained = {"early": 0.2, "share": {30: 0.2, 60: 0.15, 120: 0.1, 50: 0.3, 80: 0.3, 140: 0.3}}
+    assert bc.passes("FD-BLD-05", m57, retained) and not bc.passes("FD-BLD-05", m57, retained,
+                                                                  "V9_fd05_from_end_of_infusion")
+    refill = {"share": {60: 0.2, 120: 0.3, 240: 0.4, 70: 0.5, 130: 0.5, 250: 0.5}}
+    assert bc.passes("FD-BLD-07", m57, refill) and not bc.passes("FD-BLD-07", m57, refill, "V10_fd07_from_end_of_loss")
+    key = (0.5, 120.0, 500.0, 4000.0)
+    table = {m57: {"acute_200": {key: "200"}, "acute_500": {key: "500"},
+                   "acute_off_200": {(4000.0,): "off200"}, "acute_off_500": {(4000.0,): "off500"}}}
+    values = dict(zip(bc.TABLE_KEYS["acute"], key))
+    assert bc._row(table, m57, "FD-BLD-07", values, None)[0] == "200"
+    assert bc._row(table, m57, "FD-BLD-07", values, "V7_fd07_500_ml")[0] == "500"

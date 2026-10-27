@@ -1,0 +1,2728 @@
+{
+ "classes": {
+  "arrival_circulating_volume_ml": {
+   "class": "POORLY_IDENTIFIED",
+   "left": [
+    "3000.0",
+    "4000.0",
+    "5000.0"
+   ]
+  },
+  "bleed_ml_per_min|gi_bleed_57m": {
+   "class": "WELL_CONSTRAINED",
+   "left": [
+    "5.0"
+   ]
+  },
+  "bleed_ml_per_min|gi_bleed_72f": {
+   "class": "PARTIALLY_CONSTRAINED",
+   "left": [
+    "2.5",
+    "5.0"
+   ]
+  },
+  "crystalloid_effective_ml_per_ml": {
+   "class": "PARTIALLY_CONSTRAINED",
+   "left": [
+    "0.2",
+    "0.3"
+   ]
+  },
+  "crystalloid_leak_tau_min": {
+   "class": "POORLY_IDENTIFIED",
+   "left": [
+    "15.0",
+    "30.0",
+    "60.0"
+   ]
+  },
+  "crystalloid_transient_share": {
+   "class": "POORLY_IDENTIFIED",
+   "left": [
+    "0.4",
+    "0.6",
+    "0.8"
+   ]
+  },
+  "plasma_refill_capacity_ml": {
+   "class": "POORLY_IDENTIFIED",
+   "left": [
+    "100.0",
+    "500.0",
+    "1000.0"
+   ]
+  },
+  "plasma_refill_target_share": {
+   "class": "PARTIALLY_CONSTRAINED",
+   "left": [
+    "0.5",
+    "0.75"
+   ]
+  },
+  "plasma_refill_tau_min": {
+   "class": "PARTIALLY_CONSTRAINED",
+   "left": [
+    "120.0",
+    "240.0"
+   ]
+  },
+  "preload_curve_scale_ml": {
+   "class": "NON_IDENTIFIABLE_SEPARATELY",
+   "left": null,
+   "why": "only lambda / kappa reaches any anchor"
+  },
+  "preload_fraction|gi_bleed_57m": {
+   "class": "WELL_CONSTRAINED",
+   "left": [
+    "upper"
+   ]
+  },
+  "preload_fraction|gi_bleed_72f": {
+   "class": "PARTIALLY_CONSTRAINED",
+   "left": [
+    "midpoint",
+    "upper"
+   ]
+  },
+  "preload_scale_over_kappa_ml": {
+   "class": "WELL_CONSTRAINED",
+   "left": [
+    "1500.0"
+   ]
+  },
+  "red_cell_unit_hb_g_dl": {
+   "class": "POORLY_IDENTIFIED",
+   "left": [
+    "18.0",
+    "20.0",
+    "22.0"
+   ]
+  },
+  "red_cell_unit_volume_ml": {
+   "class": "PARTIALLY_CONSTRAINED",
+   "left": [
+    "250.0",
+    "300.0"
+   ]
+  },
+  "reserve": {
+   "class": "NON_IDENTIFIABLE_SEPARATELY",
+   "left": [
+    "1.0",
+    "2.5",
+    "3.0"
+   ],
+   "why": "only rho x the arrival delivery ratio reaches D and the deficit; no constraint reads it"
+  },
+  "volume_preload_kappa": {
+   "class": "NON_IDENTIFIABLE_SEPARATELY",
+   "left": null,
+   "why": "only lambda / kappa reaches any anchor; Hb never reads kappa"
+  }
+ },
+ "count": {
+  "alone": {
+   "gi_bleed_57m": 1494,
+   "gi_bleed_72f": 3591
+  },
+  "alone_marginal": {
+   "gi_bleed_57m": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 288,
+     "4000.0": 720,
+     "5000.0": 486
+    },
+    "bleed_ml_per_min": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 1494
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 864,
+     "0.3": 630
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 144,
+     "30.0": 504,
+     "60.0": 846
+    },
+    "crystalloid_transient_share": {
+     "0.4": 432,
+     "0.6": 558,
+     "0.8": 504
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 498,
+     "1000.0": 498,
+     "500.0": 498
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 747,
+     "0.75": 747
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 996,
+     "240.0": 498,
+     "60.0": 0
+    },
+    "preload_fraction": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 1494
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 1494,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 288,
+     "20.0": 522,
+     "22.0": 684
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 666,
+     "300.0": 828,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 498,
+     "2.5": 498,
+     "3.0": 498
+    }
+   },
+   "gi_bleed_72f": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 432,
+     "4000.0": 1701,
+     "5000.0": 1458
+    },
+    "bleed_ml_per_min": {
+     "1.25": 0,
+     "2.5": 1197,
+     "5.0": 2394
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 1836,
+     "0.3": 1755
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 351,
+     "30.0": 1161,
+     "60.0": 2079
+    },
+    "crystalloid_transient_share": {
+     "0.4": 918,
+     "0.6": 1512,
+     "0.8": 1161
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 1197,
+     "1000.0": 1197,
+     "500.0": 1197
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 1596,
+     "0.75": 1995
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 1995,
+     "240.0": 1596,
+     "60.0": 0
+    },
+    "preload_fraction": {
+     "lower": 0,
+     "midpoint": 1197,
+     "upper": 2394
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 3591,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 945,
+     "20.0": 1323,
+     "22.0": 1323
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 1053,
+     "300.0": 1323,
+     "350.0": 1215
+    },
+    "reserve": {
+     "1.0": 1197,
+     "2.5": 1197,
+     "3.0": 1197
+    }
+   }
+  },
+  "joint": 2241,
+  "marginal": {
+   "arrival_circulating_volume_ml": {
+    "3000.0": 432,
+    "4000.0": 1080,
+    "5000.0": 729
+   },
+   "bleed_ml_per_min|gi_bleed_57m": {
+    "1.25": 0,
+    "2.5": 0,
+    "5.0": 2241
+   },
+   "bleed_ml_per_min|gi_bleed_72f": {
+    "1.25": 0,
+    "2.5": 747,
+    "5.0": 1494
+   },
+   "crystalloid_effective_ml_per_ml": {
+    "0.125": 0,
+    "0.2": 1296,
+    "0.3": 945
+   },
+   "crystalloid_leak_tau_min": {
+    "15.0": 216,
+    "30.0": 756,
+    "60.0": 1269
+   },
+   "crystalloid_transient_share": {
+    "0.4": 648,
+    "0.6": 837,
+    "0.8": 756
+   },
+   "plasma_refill_capacity_ml": {
+    "100.0": 747,
+    "1000.0": 747,
+    "500.0": 747
+   },
+   "plasma_refill_target_share": {
+    "0.25": 0,
+    "0.5": 996,
+    "0.75": 1245
+   },
+   "plasma_refill_tau_min": {
+    "120.0": 1245,
+    "240.0": 996,
+    "60.0": 0
+   },
+   "preload_fraction|gi_bleed_57m": {
+    "lower": 0,
+    "midpoint": 0,
+    "upper": 2241
+   },
+   "preload_fraction|gi_bleed_72f": {
+    "lower": 0,
+    "midpoint": 747,
+    "upper": 1494
+   },
+   "preload_scale_over_kappa_ml": {
+    "1500.0": 2241,
+    "600.0": 0,
+    "833.3333333333334": 0
+   },
+   "red_cell_unit_hb_g_dl": {
+    "18.0": 432,
+    "20.0": 783,
+    "22.0": 1026
+   },
+   "red_cell_unit_volume_ml": {
+    "250.0": 999,
+    "300.0": 1242,
+    "350.0": 0
+   },
+   "reserve": {
+    "1.0": 747,
+    "2.5": 747,
+    "3.0": 747
+   }
+  }
+ },
+ "dropped": "U-HB",
+ "freeze_digest": "cfb8e508fbf3fe9c94b33ec141eee20c56edf188222e2a73a65cc9444486fd26",
+ "largest_hb_fall": {
+  "gi_bleed_57m": {
+   "any": {
+    "120": 0.590773539382238,
+    "60": 0.18945327396498435
+   },
+   "with_fd_bld_07": {
+    "120": {
+     "fall": 0.27017849986102505,
+     "values": {
+      "arrival_circulating_volume_ml": 3000.0,
+      "bleed_ml_per_min": 5.0,
+      "plasma_refill_capacity_ml": 500.0,
+      "plasma_refill_target_share": 0.5,
+      "plasma_refill_tau_min": 120.0
+     }
+    },
+    "60": {
+     "fall": 0.07464020314272357,
+     "values": {
+      "arrival_circulating_volume_ml": 3000.0,
+      "bleed_ml_per_min": 5.0,
+      "plasma_refill_capacity_ml": 100.0,
+      "plasma_refill_target_share": 0.75,
+      "plasma_refill_tau_min": 120.0
+     }
+    }
+   }
+  },
+  "gi_bleed_72f": {
+   "any": {
+    "120": 0.5643209928427337,
+    "60": 0.18097029154864064
+   },
+   "with_fd_bld_07": {
+    "120": {
+     "fall": 0.2580809550911267,
+     "values": {
+      "arrival_circulating_volume_ml": 3000.0,
+      "bleed_ml_per_min": 5.0,
+      "plasma_refill_capacity_ml": 500.0,
+      "plasma_refill_target_share": 0.5,
+      "plasma_refill_tau_min": 120.0
+     }
+    },
+    "60": {
+     "fall": 0.07129810449454066,
+     "values": {
+      "arrival_circulating_volume_ml": 3000.0,
+      "bleed_ml_per_min": 5.0,
+      "plasma_refill_capacity_ml": 100.0,
+      "plasma_refill_target_share": 0.75,
+      "plasma_refill_tau_min": 120.0
+     }
+    }
+   }
+  }
+ },
+ "listed": 747,
+ "representatives": {
+  "high": {
+   "trajectories": {
+    "gi_bleed_57m": {
+     "crystalloid_1000": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.7,
+        "lactate": 4.4,
+        "map": 65.33333333333333,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.5,
+        "refill_ml": 0.0,
+        "sbp": 88.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 162.40136870659916,
+        "crystalloid_ml": 262.40136870659916,
+        "do2": 0.35601692440411004,
+        "effective_deficit": 0.10995768898972491,
+        "hb": 6.362731476234445,
+        "lactate": 4.157095601620675,
+        "map": 68.5827309987813,
+        "minute": 20,
+        "output_rel": 1.1026125578562518,
+        "position": 0.5513062789281259,
+        "refill_ml": 0.0,
+        "sbp": 92.61756510353133,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 81.32905970298319,
+        "crystalloid_ml": 231.3290597029832,
+        "do2": 0.34199459707332625,
+        "effective_deficit": 0.1450135073166844,
+        "hb": 6.401463502039701,
+        "lactate": 4.030362305501267,
+        "map": 67.00456420871615,
+        "minute": 30,
+        "output_rel": 1.0527757118541943,
+        "position": 0.5263878559270971,
+        "refill_ml": 0.0,
+        "sbp": 90.37490703343875,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -117.68784057211373,
+        "crystalloid_ml": 163.91632760959558,
+        "do2": 0.3012766408189367,
+        "effective_deficit": 0.2468083979526583,
+        "hb": 6.464549045196769,
+        "lactate": 3.671905840641579,
+        "map": 62.748746474819505,
+        "minute": 60,
+        "output_rel": 0.9183814676258789,
+        "position": 0.45919073381293946,
+        "refill_ml": 18.395831818290688,
+        "sbp": 84.32716604316455,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -400.12660428585,
+        "crystalloid_ml": 98.22868052960658,
+        "do2": 0.22689377259823468,
+        "effective_deficit": 0.4327655685044133,
+        "hb": 6.439926535778786,
+        "lactate": 3.242891869967615,
+        "map": 55.652346505121265,
+        "minute": 120,
+        "output_rel": 0.6942846264775135,
+        "position": 0.3471423132387568,
+        "refill_ml": 101.6447151845434,
+        "sbp": 74.24280819148811,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     },
+     "crystalloid_2000": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.7,
+        "lactate": 4.4,
+        "map": 65.33333333333333,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.5,
+        "refill_ml": 0.0,
+        "sbp": 88.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 424.8027374131983,
+        "crystalloid_ml": 524.8027374131983,
+        "do2": 0.38323364197641396,
+        "effective_deficit": 0.04191589505896509,
+        "hb": 6.057886682848807,
+        "lactate": 4.15325610598046,
+        "map": 73.14335540293693,
+        "minute": 20,
+        "output_rel": 1.2466322758822188,
+        "position": 0.6233161379411094,
+        "refill_ml": 0.0,
+        "sbp": 99.09845241469985,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 312.6581194059664,
+        "crystalloid_ml": 462.6581194059664,
+        "do2": 0.36950916789477606,
+        "effective_deficit": 0.0762270802630598,
+        "hb": 6.1284424198524174,
+        "lactate": 4.019209690707244,
+        "map": 71.29139253456425,
+        "minute": 30,
+        "output_rel": 1.188149237933608,
+        "position": 0.594074618966804,
+        "refill_ml": 0.0,
+        "sbp": 96.46671570701236,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 27.832655219191167,
+        "crystalloid_ml": 327.83265521919117,
+        "do2": 0.3250765793300761,
+        "effective_deficit": 0.18730855167480975,
+        "hb": 6.290280207475132,
+        "lactate": 3.6223289203228917,
+        "map": 65.91549388289758,
+        "minute": 60,
+        "output_rel": 1.01838401735466,
+        "position": 0.50919200867733,
+        "refill_ml": 0.0,
+        "sbp": 88.82728078095971,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -316.2169530600009,
+        "crystalloid_ml": 196.45736105921316,
+        "do2": 0.24647608207117486,
+        "effective_deficit": 0.3838097948220629,
+        "hb": 6.346397011873636,
+        "lactate": 3.107296484328309,
+        "map": 57.90182053255436,
+        "minute": 120,
+        "output_rel": 0.7653206483964536,
+        "position": 0.3826603241982268,
+        "refill_ml": 87.32568588078595,
+        "sbp": 77.43942917784041,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     },
+     "red_cells": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.7,
+        "lactate": 4.4,
+        "map": 65.33333333333333,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.5,
+        "refill_ml": 0.0,
+        "sbp": 88.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 300.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.45354618171035754,
+        "effective_deficit": 0.0,
+        "hb": 7.566037735849057,
+        "lactate": 4.011921073921872,
+        "map": 71.07352615253058,
+        "minute": 30,
+        "output_rel": 1.1812692469220183,
+        "position": 0.5906346234610091,
+        "refill_ml": 0.0,
+        "sbp": 96.15711611149082,
+        "state": "COMPENSATED"
+       },
+       {
+        "circulating_ml": 600.0000000000001,
+        "crystalloid_ml": 0.0,
+        "do2": 0.5627041127144489,
+        "effective_deficit": 0.0,
+        "hb": 8.339285714285715,
+        "lactate": 3.568036495863281,
+        "map": 75.77319854220475,
+        "minute": 60,
+        "output_rel": 1.329679953964361,
+        "position": 0.6648399769821804,
+        "refill_ml": 0.0,
+        "sbp": 102.83559792839624,
+        "state": "COMPENSATED"
+       }
+      ],
+      "stop": null
+     },
+     "stopped_bleed": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.7,
+        "lactate": 4.4,
+        "map": 65.33333333333333,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.5,
+        "refill_ml": 0.0,
+        "sbp": 88.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -263.5333218672721,
+        "crystalloid_ml": 0.0,
+        "do2": 0.2729081116493957,
+        "effective_deficit": 0.31772972087651075,
+        "hb": 6.656363811641691,
+        "lactate": 3.735358482027975,
+        "map": 59.25120766047769,
+        "minute": 60,
+        "output_rel": 0.8079328734887691,
+        "position": 0.40396643674438454,
+        "refill_ml": 31.466678132727893,
+        "sbp": 79.3569793069946,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -217.8777672608049,
+        "crystalloid_ml": 0.0,
+        "do2": 0.28225861054870827,
+        "effective_deficit": 0.2943534736282294,
+        "hb": 6.592814624336865,
+        "lactate": 3.3436915835795555,
+        "map": 60.38285959809923,
+        "minute": 120,
+        "output_rel": 0.8436692504662915,
+        "position": 0.42183462523314574,
+        "refill_ml": 77.12223273919511,
+        "sbp": 80.96511627098312,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -173.39053369079875,
+        "crystalloid_ml": 0.0,
+        "do2": 0.2908579759766277,
+        "effective_deficit": 0.27285506005843074,
+        "hb": 6.532048140923633,
+        "lactate": 2.951586603805854,
+        "map": 61.4529101528207,
+        "minute": 240,
+        "output_rel": 0.8774603206153905,
+        "position": 0.43873016030769524,
+        "refill_ml": 121.60946630920124,
+        "sbp": 82.48571442769257,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     },
+     "untreated": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.7,
+        "lactate": 4.4,
+        "map": 65.33333333333333,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.5,
+        "refill_ml": 0.0,
+        "sbp": 88.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -141.6366481257131,
+        "crystalloid_ml": 0.0,
+        "do2": 0.305808893458463,
+        "effective_deficit": 0.23547776635384243,
+        "hb": 6.688577922605416,
+        "lactate": 4.044521781736405,
+        "map": 62.197506552069264,
+        "minute": 30,
+        "output_rel": 0.9009738911179769,
+        "position": 0.45048694555898844,
+        "refill_ml": 8.363351874286911,
+        "sbp": 83.54382510030896,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -268.5333218672721,
+        "crystalloid_ml": 0.0,
+        "do2": 0.271563602831996,
+        "effective_deficit": 0.3210909929200101,
+        "hb": 6.656362369333335,
+        "lactate": 3.735358482027975,
+        "map": 59.12516840395474,
+        "minute": 60,
+        "output_rel": 0.8039526864406757,
+        "position": 0.4019763432203379,
+        "refill_ml": 31.466678132727893,
+        "sbp": 79.17787088983042,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -490.4274157773586,
+        "crystalloid_ml": 0.0,
+        "do2": 0.20366889500324228,
+        "effective_deficit": 0.4908277624918943,
+        "hb": 6.5444321382879265,
+        "lactate": 3.4132410177698627,
+        "map": 53.0867448803613,
+        "minute": 120,
+        "output_rel": 0.6132656278008832,
+        "position": 0.3066328139004416,
+        "refill_ml": 109.57258422264142,
+        "sbp": 70.59695325103975,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     }
+    },
+    "gi_bleed_72f": {
+     "crystalloid_1000": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.4,
+        "lactate": 3.4,
+        "map": 74.0,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.6,
+        "refill_ml": 0.0,
+        "sbp": 98.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 162.40136870659916,
+        "crystalloid_ml": 262.40136870659916,
+        "do2": 0.3449729098972531,
+        "effective_deficit": 0.13756772525686722,
+        "hb": 6.077833051925441,
+        "lactate": 3.3125813074887214,
+        "map": 76.16626511029865,
+        "minute": 20,
+        "output_rel": 1.068408371904168,
+        "position": 0.6410450231425007,
+        "refill_ml": 0.0,
+        "sbp": 101.07837673568756,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 81.32905970298319,
+        "crystalloid_ml": 231.3290597029832,
+        "do2": 0.3362798602724413,
+        "effective_deficit": 0.1593003493188968,
+        "hb": 6.11483080791852,
+        "lactate": 3.256439851722512,
+        "map": 75.11415391692188,
+        "minute": 30,
+        "output_rel": 1.0351838079027962,
+        "position": 0.6211102847416776,
+        "refill_ml": 0.0,
+        "sbp": 99.58327135562583,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -117.68784057211373,
+        "crystalloid_ml": 163.91632760959558,
+        "do2": 0.31020167474331606,
+        "effective_deficit": 0.22449581314170985,
+        "hb": 6.175091625262585,
+        "lactate": 3.0775365978087055,
+        "map": 72.27694209432411,
+        "minute": 60,
+        "output_rel": 0.9455876450839192,
+        "position": 0.5673525870503515,
+        "refill_ml": 18.395831818290688,
+        "sbp": 95.55144402877636,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -400.12660428585,
+        "crystalloid_ml": 98.22868052960658,
+        "do2": 0.2601965957702056,
+        "effective_deficit": 0.34950851057448595,
+        "hb": 6.1515716162663026,
+        "lactate": 2.8439028357714395,
+        "map": 67.54600878119196,
+        "minute": 120,
+        "output_rel": 0.796189750985009,
+        "position": 0.4777138505910054,
+        "refill_ml": 101.6447151845434,
+        "sbp": 88.82853879432541,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     },
+     "crystalloid_2000": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.4,
+        "lactate": 3.4,
+        "map": 74.0,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.6,
+        "refill_ml": 0.0,
+        "sbp": 98.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 424.8027374131983,
+        "crystalloid_ml": 524.8027374131983,
+        "do2": 0.357960809684206,
+        "effective_deficit": 0.10509797578948499,
+        "hb": 5.786638025407815,
+        "lactate": 3.310652184073472,
+        "map": 79.20668137973574,
+        "minute": 20,
+        "output_rel": 1.1644215172548127,
+        "position": 0.6986529103528876,
+        "refill_ml": 0.0,
+        "sbp": 105.39896827646658,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 312.6581194059664,
+        "crystalloid_ml": 462.6581194059664,
+        "do2": 0.3500046404248667,
+        "effective_deficit": 0.12498839893783331,
+        "hb": 5.854034550306787,
+        "lactate": 3.2509250932953653,
+        "map": 77.97203946748728,
+        "minute": 30,
+        "output_rel": 1.125432825289072,
+        "position": 0.6752596951734432,
+        "refill_ml": 0.0,
+        "sbp": 103.64447713800824,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 27.832655219191167,
+        "crystalloid_ml": 327.83265521919117,
+        "do2": 0.32312046933157035,
+        "effective_deficit": 0.19219882667107413,
+        "hb": 6.008625869826991,
+        "lactate": 3.052698582005029,
+        "map": 74.38810703304283,
+        "minute": 60,
+        "output_rel": 1.0122560115697734,
+        "position": 0.607353606941864,
+        "refill_ml": 0.0,
+        "sbp": 98.5515205206398,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -316.2169530600009,
+        "crystalloid_ml": 196.45736105921316,
+        "do2": 0.2716693773030238,
+        "effective_deficit": 0.3208265567424404,
+        "hb": 6.062229981491234,
+        "lactate": 2.772307364013534,
+        "map": 69.04565813281401,
+        "minute": 120,
+        "output_rel": 0.843547098930969,
+        "position": 0.5061282593585814,
+        "refill_ml": 87.32568588078595,
+        "sbp": 90.9596194518936,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     },
+     "red_cells": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.4,
+        "lactate": 3.4,
+        "map": 74.0,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.6,
+        "refill_ml": 0.0,
+        "sbp": 98.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 300.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.4336670125118821,
+        "effective_deficit": 0.0,
+        "hb": 7.283018867924527,
+        "lactate": 3.2368122101716286,
+        "map": 77.82679521279816,
+        "minute": 30,
+        "output_rel": 1.1208461646146788,
+        "position": 0.6725076987688072,
+        "refill_ml": 0.0,
+        "sbp": 103.43807740766054,
+        "state": "COMPENSATED"
+       },
+       {
+        "circulating_ml": 600.0000000000001,
+        "crystalloid_ml": 0.0,
+        "do2": 0.5230379749353476,
+        "effective_deficit": 0.0,
+        "hb": 8.07142857142857,
+        "lactate": 2.9682249550452573,
+        "map": 80.95991013924761,
+        "minute": 60,
+        "output_rel": 1.2197866359762406,
+        "position": 0.7318719815857443,
+        "refill_ml": 0.0,
+        "sbp": 107.89039861893083,
+        "state": "COMPENSATED"
+       }
+      ],
+      "stop": null
+     },
+     "stopped_bleed": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.4,
+        "lactate": 3.4,
+        "map": 74.0,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.6,
+        "refill_ml": 0.0,
+        "sbp": 98.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -263.5333218672721,
+        "crystalloid_ml": 0.0,
+        "do2": 0.29453394985373504,
+        "effective_deficit": 0.26366512536566233,
+        "hb": 6.358317670821914,
+        "lactate": 3.1112069013628956,
+        "map": 69.94524955142957,
+        "minute": 60,
+        "output_rel": 0.8719552489925125,
+        "position": 0.5231731493955075,
+        "refill_ml": 31.466678132727893,
+        "sbp": 92.23798620466306,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -217.8777672608049,
+        "crystalloid_ml": 0.0,
+        "do2": 0.29969265440931464,
+        "effective_deficit": 0.2507683639767134,
+        "hb": 6.297613969515811,
+        "lactate": 2.8905751068116405,
+        "map": 70.69968417651059,
+        "minute": 120,
+        "output_rel": 0.895779500310861,
+        "position": 0.5374677001865166,
+        "refill_ml": 77.12223273919511,
+        "sbp": 93.31007751398874,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -173.39053369079875,
+        "crystalloid_ml": 0.0,
+        "do2": 0.3043976739303903,
+        "effective_deficit": 0.2390058151740242,
+        "hb": 6.23956837341959,
+        "lactate": 2.6401167174915177,
+        "map": 71.41305121299158,
+        "minute": 240,
+        "output_rel": 0.9183068804102603,
+        "position": 0.5509841282461562,
+        "refill_ml": 121.60946630920124,
+        "sbp": 94.32380961846171,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     },
+     "untreated": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.4,
+        "lactate": 3.4,
+        "map": 74.0,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.6,
+        "refill_ml": 0.0,
+        "sbp": 98.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -141.6366481257131,
+        "crystalloid_ml": 0.0,
+        "do2": 0.31701271970294753,
+        "effective_deficit": 0.20746820074263117,
+        "hb": 6.389089358906666,
+        "lactate": 3.2638416839846713,
+        "map": 71.90944881249062,
+        "minute": 30,
+        "output_rel": 0.9339825940786511,
+        "position": 0.5603895564471907,
+        "refill_ml": 8.363351874286911,
+        "sbp": 95.0292167335393,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -268.5333218672721,
+        "crystalloid_ml": 0.0,
+        "do2": 0.29363758624487957,
+        "effective_deficit": 0.265906034387801,
+        "hb": 6.3583162930945285,
+        "lactate": 3.1112069013628956,
+        "map": 69.86122338041427,
+        "minute": 60,
+        "output_rel": 0.8693017909604505,
+        "position": 0.5215810745762702,
+        "refill_ml": 31.466678132727893,
+        "sbp": 92.11858059322027,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -490.4274157773586,
+        "crystalloid_ml": 0.0,
+        "do2": 0.24648110050056418,
+        "effective_deficit": 0.38379724874858956,
+        "hb": 6.251397863439213,
+        "lactate": 2.937333527489079,
+        "map": 65.83560769801863,
+        "minute": 120,
+        "output_rel": 0.7421770852005887,
+        "position": 0.4453062511203532,
+        "refill_ml": 109.57258422264142,
+        "sbp": 86.39796883402649,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     }
+    }
+   },
+   "untreated_hb": {
+    "gi_bleed_57m": {
+     "fall": {
+      "120": 0.1555678617120737,
+      "60": 0.04363763066666504
+     },
+     "hb": {
+      "120": 6.5444321382879265,
+      "60": 6.656362369333335
+     },
+     "hb0": 6.7
+    },
+    "gi_bleed_72f": {
+     "fall": {
+      "120": 0.14860213656078702,
+      "60": 0.04168370690547185
+     },
+     "hb": {
+      "120": 6.251397863439213,
+      "60": 6.3583162930945285
+     },
+     "hb0": 6.4
+    }
+   },
+   "values": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": 5000.0,
+     "bleed_ml_per_min": 5.0,
+     "crystalloid_effective_ml_per_ml": 0.3,
+     "crystalloid_leak_tau_min": 60.0,
+     "crystalloid_transient_share": 0.8,
+     "plasma_refill_capacity_ml": 500.0,
+     "plasma_refill_target_share": 0.5,
+     "plasma_refill_tau_min": 120.0,
+     "preload_fraction": "upper",
+     "preload_scale_over_kappa_ml": 1500.0,
+     "red_cell_unit_hb_g_dl": 22.0,
+     "red_cell_unit_volume_ml": 300.0,
+     "reserve": 2.5
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": 5000.0,
+     "bleed_ml_per_min": 5.0,
+     "crystalloid_effective_ml_per_ml": 0.3,
+     "crystalloid_leak_tau_min": 60.0,
+     "crystalloid_transient_share": 0.8,
+     "plasma_refill_capacity_ml": 500.0,
+     "plasma_refill_target_share": 0.5,
+     "plasma_refill_tau_min": 120.0,
+     "preload_fraction": "upper",
+     "preload_scale_over_kappa_ml": 1500.0,
+     "red_cell_unit_hb_g_dl": 22.0,
+     "red_cell_unit_volume_ml": 300.0,
+     "reserve": 2.5
+    }
+   },
+   "verdicts": {
+    "gi_bleed_57m": {
+     "FD-BLD-01": true,
+     "FD-BLD-02": true,
+     "FD-BLD-03": true,
+     "FD-BLD-04": true,
+     "FD-BLD-05": true,
+     "FD-BLD-06": true,
+     "FD-BLD-07": true,
+     "FD-BLD-08": true,
+     "FD-BLD-09": true,
+     "SECOND-UNIT": true,
+     "U-HB": false,
+     "U-OUT": true
+    },
+    "gi_bleed_72f": {
+     "FD-BLD-01": true,
+     "FD-BLD-02": true,
+     "FD-BLD-03": true,
+     "FD-BLD-04": true,
+     "FD-BLD-05": true,
+     "FD-BLD-06": true,
+     "FD-BLD-07": true,
+     "FD-BLD-08": true,
+     "FD-BLD-09": true,
+     "SECOND-UNIT": true,
+     "U-HB": false,
+     "U-OUT": true
+    }
+   }
+  },
+  "low": {
+   "trajectories": {
+    "gi_bleed_57m": {
+     "crystalloid_1000": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.7,
+        "lactate": 4.4,
+        "map": 65.33333333333333,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.5,
+        "refill_ml": 0.0,
+        "sbp": 88.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 77.42218633049205,
+        "crystalloid_ml": 177.42218633049205,
+        "do2": 0.33684477723052564,
+        "effective_deficit": 0.1578880569236859,
+        "hb": 6.319898692871089,
+        "lactate": 4.159427432345118,
+        "map": 66.92633679848488,
+        "minute": 20,
+        "output_rel": 1.0503053725837332,
+        "position": 0.5251526862918666,
+        "refill_ml": 0.0,
+        "sbp": 90.263741766268,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 11.144794427399809,
+        "crystalloid_ml": 161.1447944273998,
+        "do2": 0.3248181208801245,
+        "effective_deficit": 0.18795469779968865,
+        "hb": 6.353794791944709,
+        "lactate": 4.037482778793706,
+        "map": 65.56774044212642,
+        "minute": 30,
+        "output_rel": 1.0074023297513606,
+        "position": 0.5037011648756803,
+        "refill_ml": 0.0,
+        "sbp": 88.33310483881122,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -144.66082386816217,
+        "crystalloid_ml": 135.13632398106574,
+        "do2": 0.2903481802460283,
+        "effective_deficit": 0.27412954938492917,
+        "hb": 6.366096891478559,
+        "lactate": 3.7019839859697536,
+        "map": 62.12726986886116,
+        "minute": 60,
+        "output_rel": 0.8987558905956159,
+        "position": 0.44937794529780795,
+        "refill_ml": 20.202852150772102,
+        "sbp": 83.44401507680271,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -426.3509380350401,
+        "crystalloid_ml": 122.04847869313866,
+        "do2": 0.2153862168001024,
+        "effective_deficit": 0.461534457999744,
+        "hb": 6.32303318885074,
+        "lactate": 3.3141609153365494,
+        "map": 54.923114091205015,
+        "minute": 120,
+        "output_rel": 0.671256234459106,
+        "position": 0.335628117229553,
+        "refill_ml": 51.60058327182124,
+        "sbp": 73.20653055065976,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     },
+     "crystalloid_2000": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.7,
+        "lactate": 4.4,
+        "map": 65.33333333333333,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.5,
+        "refill_ml": 0.0,
+        "sbp": 88.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 254.8443726609841,
+        "crystalloid_ml": 354.8443726609841,
+        "do2": 0.3509255654581588,
+        "effective_deficit": 0.1226860863546031,
+        "hb": 5.9808103597633355,
+        "lactate": 4.157530708281801,
+        "map": 70.2811754985429,
+        "minute": 20,
+        "output_rel": 1.156247647322407,
+        "position": 0.5781238236612035,
+        "refill_ml": 0.0,
+        "sbp": 95.03114412950832,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 172.2895888547996,
+        "crystalloid_ml": 322.2895888547996,
+        "do2": 0.33986360933870136,
+        "effective_deficit": 0.15034097665324664,
+        "hb": 6.041731225525791,
+        "lactate": 4.031859230854403,
+        "map": 68.76944570517527,
+        "minute": 30,
+        "output_rel": 1.1085088117423771,
+        "position": 0.5542544058711886,
+        "refill_ml": 0.0,
+        "sbp": 92.88289652840697,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -26.44896208606913,
+        "crystalloid_ml": 270.2726479621315,
+        "do2": 0.3059335245387511,
+        "effective_deficit": 0.23516618865312222,
+        "hb": 6.137876819970967,
+        "lactate": 3.6755628611044044,
+        "map": 64.77001455197717,
+        "minute": 60,
+        "output_rel": 0.9822109858519105,
+        "position": 0.49110549292595523,
+        "refill_ml": 3.27838995179941,
+        "sbp": 87.19949436333597,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -314.5676645647258,
+        "crystalloid_ml": 244.09695738627732,
+        "do2": 0.2377756605908572,
+        "effective_deficit": 0.405560848522857,
+        "hb": 6.111538964189917,
+        "lactate": 3.2259178567190965,
+        "map": 57.94478635893258,
+        "minute": 120,
+        "output_rel": 0.7666774639662919,
+        "position": 0.38333873198314594,
+        "refill_ml": 41.33537804899684,
+        "sbp": 77.50048587848313,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     },
+     "red_cells": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.7,
+        "lactate": 4.4,
+        "map": 65.33333333333333,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.5,
+        "refill_ml": 0.0,
+        "sbp": 88.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 250.00000000000014,
+        "crystalloid_ml": 0.0,
+        "do2": 0.44307815628082214,
+        "effective_deficit": 0.0,
+        "hb": 7.569230769230768,
+        "lactate": 4.013324013388851,
+        "map": 70.19474537846389,
+        "minute": 30,
+        "output_rel": 1.153518275109386,
+        "position": 0.576759137554693,
+        "refill_ml": 0.0,
+        "sbp": 94.90832237992237,
+        "state": "COMPENSATED"
+       },
+       {
+        "circulating_ml": 500.00000000000045,
+        "crystalloid_ml": 0.0,
+        "do2": 0.5415197958713401,
+        "effective_deficit": 0.0,
+        "hb": 8.314285714285711,
+        "lactate": 3.570639657035402,
+        "map": 74.30984183183001,
+        "minute": 60,
+        "output_rel": 1.283468689426211,
+        "position": 0.6417343447131055,
+        "refill_ml": 0.0,
+        "sbp": 100.7560910241795,
+        "state": "COMPENSATED"
+       }
+      ],
+      "stop": null
+     },
+     "stopped_bleed": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.7,
+        "lactate": 4.4,
+        "map": 65.33333333333333,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.5,
+        "refill_ml": 0.0,
+        "sbp": 88.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -267.2856749660949,
+        "crystalloid_ml": 0.0,
+        "do2": 0.27100808619333167,
+        "effective_deficit": 0.3224797845166708,
+        "hb": 6.634539643300115,
+        "lactate": 3.736008453720923,
+        "map": 59.156658250251816,
+        "minute": 60,
+        "output_rel": 0.8049471026395312,
+        "position": 0.4024735513197656,
+        "refill_ml": 27.714325033905105,
+        "sbp": 79.22261961877891,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -238.84347812495855,
+        "crystalloid_ml": 0.0,
+        "do2": 0.275695869005641,
+        "effective_deficit": 0.31076032748589744,
+        "hb": 6.566198395351982,
+        "lactate": 3.354413622152977,
+        "map": 59.86746318579939,
+        "minute": 120,
+        "output_rel": 0.8273935742884017,
+        "position": 0.41369678714420083,
+        "refill_ml": 56.156521875041456,
+        "sbp": 80.23271084297808,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -211.12911423162208,
+        "crystalloid_ml": 0.0,
+        "do2": 0.28003789823872943,
+        "effective_deficit": 0.2999052544031764,
+        "hb": 6.500946894232564,
+        "lactate": 3.0191479756204713,
+        "map": 60.54723380299881,
+        "minute": 240,
+        "output_rel": 0.8488600148315412,
+        "position": 0.4244300074157706,
+        "refill_ml": 83.87088576837792,
+        "sbp": 81.19870066741936,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     },
+     "untreated": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.7,
+        "lactate": 4.4,
+        "map": 65.33333333333333,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.5,
+        "refill_ml": 0.0,
+        "sbp": 88.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -141.6366481257131,
+        "crystalloid_ml": 0.0,
+        "do2": 0.3054494096497594,
+        "effective_deficit": 0.2363764758756015,
+        "hb": 6.6807153799591354,
+        "lactate": 4.044565706391495,
+        "map": 62.197506552069264,
+        "minute": 30,
+        "output_rel": 0.9009738911179769,
+        "position": 0.45048694555898844,
+        "refill_ml": 8.363351874286911,
+        "sbp": 83.54382510030896,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -272.2856749660949,
+        "crystalloid_ml": 0.0,
+        "do2": 0.26966457841223057,
+        "effective_deficit": 0.3258385539694235,
+        "hb": 6.6345369507385925,
+        "lactate": 3.736008453720923,
+        "map": 59.03030330316949,
+        "minute": 60,
+        "output_rel": 0.8009569464158786,
+        "position": 0.4004784732079393,
+        "refill_ml": 27.714325033905105,
+        "sbp": 79.04306258871453,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -543.8434781249586,
+        "crystalloid_ml": 0.0,
+        "do2": 0.18748484722036854,
+        "effective_deficit": 0.5312878819490787,
+        "hb": 6.562342404409165,
+        "lactate": 3.4282105024050886,
+        "map": 51.49478559572128,
+        "minute": 120,
+        "output_rel": 0.5629932293385671,
+        "position": 0.28149661466928355,
+        "refill_ml": 56.156521875041456,
+        "sbp": 68.33469532023551,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     }
+    },
+    "gi_bleed_72f": {
+     "crystalloid_1000": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.4,
+        "lactate": 3.4,
+        "map": 74.0,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.6,
+        "refill_ml": 0.0,
+        "sbp": 98.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 77.42218633049205,
+        "crystalloid_ml": 177.42218633049205,
+        "do2": 0.3314669438042395,
+        "effective_deficit": 0.17133264048940122,
+        "hb": 6.036918154384324,
+        "lactate": 3.314213035181531,
+        "map": 75.06200231010104,
+        "minute": 20,
+        "output_rel": 1.0335369150558222,
+        "position": 0.6201221490334933,
+        "refill_ml": 0.0,
+        "sbp": 99.509161177512,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 11.144794427399809,
+        "crystalloid_ml": 161.1447944273998,
+        "do2": 0.3240225397539736,
+        "effective_deficit": 0.18994365061506602,
+        "hb": 6.069296517678529,
+        "lactate": 3.2614382097418826,
+        "map": 74.15627140586206,
+        "minute": 30,
+        "output_rel": 1.004934886500907,
+        "position": 0.6029609319005441,
+        "refill_ml": 0.0,
+        "sbp": 98.22206989254082,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -144.66082386816217,
+        "crystalloid_ml": 135.13632398106574,
+        "do2": 0.3012506745472383,
+        "effective_deficit": 0.24687331363190423,
+        "hb": 6.081047776934744,
+        "lactate": 3.099126739767463,
+        "map": 71.86262435701856,
+        "minute": 60,
+        "output_rel": 0.9325039270637439,
+        "position": 0.5595023562382463,
+        "refill_ml": 20.202852150772102,
+        "sbp": 94.96267671786848,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -426.3509380350401,
+        "crystalloid_ml": 122.04847869313866,
+        "do2": 0.2505475915089862,
+        "effective_deficit": 0.37363102122753444,
+        "hb": 6.039912299797721,
+        "lactate": 2.8991320493617523,
+        "map": 67.05985383858113,
+        "minute": 120,
+        "output_rel": 0.7808374896394039,
+        "position": 0.46850249378364234,
+        "refill_ml": 51.60058327182124,
+        "sbp": 88.13768703377318,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     },
+     "crystalloid_2000": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.4,
+        "lactate": 3.4,
+        "map": 74.0,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.6,
+        "refill_ml": 0.0,
+        "sbp": 98.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 254.8443726609841,
+        "crystalloid_ml": 354.8443726609841,
+        "do2": 0.3351183134059135,
+        "effective_deficit": 0.1622042164852162,
+        "hb": 5.713012880967963,
+        "lactate": 3.313648056547915,
+        "map": 77.29856144347303,
+        "minute": 20,
+        "output_rel": 1.104165098214938,
+        "position": 0.6624990589289628,
+        "refill_ml": 0.0,
+        "sbp": 102.68742941967221,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 172.2895888547996,
+        "crystalloid_ml": 322.2895888547996,
+        "do2": 0.3287741781998691,
+        "effective_deficit": 0.1780645545003272,
+        "hb": 5.771205946770906,
+        "lactate": 3.2598243660621375,
+        "map": 76.29074158122796,
+        "minute": 30,
+        "output_rel": 1.0723392078282514,
+        "position": 0.6434035246969508,
+        "refill_ml": 0.0,
+        "sbp": 101.25526435227131,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -26.44896208606913,
+        "crystalloid_ml": 270.2726479621315,
+        "do2": 0.30778046505519374,
+        "effective_deficit": 0.2305488373620157,
+        "hb": 5.863046514599134,
+        "lactate": 3.09079384192758,
+        "map": 73.62445414576256,
+        "minute": 60,
+        "output_rel": 0.9881406572346069,
+        "position": 0.5928843943407641,
+        "refill_ml": 3.27838995179941,
+        "sbp": 97.46632957555731,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -314.5676645647258,
+        "crystalloid_ml": 244.09695738627732,
+        "do2": 0.2618963731214954,
+        "effective_deficit": 0.34525906719626154,
+        "hb": 5.837887965793353,
+        "lactate": 2.8643240622850024,
+        "map": 69.07430201706616,
+        "minute": 120,
+        "output_rel": 0.8444516426441945,
+        "position": 0.5066709855865167,
+        "refill_ml": 41.33537804899684,
+        "sbp": 91.00032391898876,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     },
+     "red_cells": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.4,
+        "lactate": 3.4,
+        "map": 74.0,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.6,
+        "refill_ml": 0.0,
+        "sbp": 98.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 250.00000000000014,
+        "crystalloid_ml": 0.0,
+        "do2": 0.4270528929753664,
+        "effective_deficit": 0.0,
+        "hb": 7.292307692307692,
+        "lactate": 3.2379110881118023,
+        "map": 77.24094136342036,
+        "minute": 30,
+        "output_rel": 1.1023455167395908,
+        "position": 0.6614073100437544,
+        "refill_ml": 0.0,
+        "sbp": 102.60554825328158,
+        "state": "COMPENSATED"
+       },
+       {
+        "circulating_ml": 500.00000000000045,
+        "crystalloid_ml": 0.0,
+        "do2": 0.5089255295898366,
+        "effective_deficit": 0.0,
+        "hb": 8.057142857142857,
+        "lactate": 2.9704570156290675,
+        "map": 79.98433899899779,
+        "minute": 60,
+        "output_rel": 1.1889791262841407,
+        "position": 0.7133874757704843,
+        "refill_ml": 0.0,
+        "sbp": 106.50406068278633,
+        "state": "COMPENSATED"
+       }
+      ],
+      "stop": null
+     },
+     "stopped_bleed": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.4,
+        "lactate": 3.4,
+        "map": 74.0,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.6,
+        "refill_ml": 0.0,
+        "sbp": 98.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -267.2856749660949,
+        "crystalloid_ml": 0.0,
+        "do2": 0.29289810117973536,
+        "effective_deficit": 0.2677547470506616,
+        "hb": 6.33747070404787,
+        "lactate": 3.111867763678453,
+        "map": 69.88221661127899,
+        "minute": 60,
+        "output_rel": 0.8699647350930206,
+        "position": 0.5219788410558124,
+        "refill_ml": 27.714325033905105,
+        "sbp": 92.14841307918593,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -238.84347812495855,
+        "crystalloid_ml": 0.0,
+        "do2": 0.2948672686117046,
+        "effective_deficit": 0.2628318284707385,
+        "hb": 6.272189511978012,
+        "lactate": 2.8992341366666423,
+        "map": 70.3560865683107,
+        "minute": 120,
+        "output_rel": 0.8849290495256011,
+        "position": 0.5309574297153606,
+        "refill_ml": 56.156521875041456,
+        "sbp": 92.82180722865205,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -211.12911423162208,
+        "crystalloid_ml": 0.0,
+        "do2": 0.2966581980317436,
+        "effective_deficit": 0.25835450492064105,
+        "hb": 6.2098597198639425,
+        "lactate": 2.6897349071360566,
+        "map": 70.80926697977698,
+        "minute": 240,
+        "output_rel": 0.899240009887694,
+        "position": 0.5395440059326164,
+        "refill_ml": 83.87088576837792,
+        "sbp": 93.46580044494623,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     },
+     "untreated": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.4,
+        "lactate": 3.4,
+        "map": 74.0,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.6,
+        "refill_ml": 0.0,
+        "sbp": 98.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -141.6366481257131,
+        "crystalloid_ml": 0.0,
+        "do2": 0.31664006559666075,
+        "effective_deficit": 0.2083998360083481,
+        "hb": 6.381578870408727,
+        "lactate": 3.263886535463495,
+        "map": 71.90944881249062,
+        "minute": 30,
+        "output_rel": 0.9339825940786511,
+        "position": 0.5603895564471907,
+        "refill_ml": 8.363351874286911,
+        "sbp": 95.0292167335393,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -272.2856749660949,
+        "crystalloid_ml": 0.0,
+        "do2": 0.2920023837798513,
+        "effective_deficit": 0.2699940405503717,
+        "hb": 6.337468132048805,
+        "lactate": 3.111867763678453,
+        "map": 69.79797997989077,
+        "minute": 60,
+        "output_rel": 0.8673046309439191,
+        "position": 0.5203827785663514,
+        "refill_ml": 27.714325033905105,
+        "sbp": 92.02870839247636,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -543.8434781249586,
+        "crystalloid_ml": 0.0,
+        "do2": 0.23599469503741563,
+        "effective_deficit": 0.41001326240646097,
+        "hb": 6.268506177346069,
+        "lactate": 2.948465836573916,
+        "map": 64.77430150825863,
+        "minute": 120,
+        "output_rel": 0.708662152892378,
+        "position": 0.4251972917354268,
+        "refill_ml": 56.156521875041456,
+        "sbp": 84.88979688015701,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     }
+    }
+   },
+   "untreated_hb": {
+    "gi_bleed_57m": {
+     "fall": {
+      "120": 0.13765759559083524,
+      "60": 0.06546304926140767
+     },
+     "hb": {
+      "120": 6.562342404409165,
+      "60": 6.6345369507385925
+     },
+     "hb0": 6.7
+    },
+    "gi_bleed_72f": {
+     "fall": {
+      "120": 0.1314938226539315,
+      "60": 0.06253186795119525
+     },
+     "hb": {
+      "120": 6.268506177346069,
+      "60": 6.337468132048805
+     },
+     "hb0": 6.4
+    }
+   },
+   "values": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": 3000.0,
+     "bleed_ml_per_min": 5.0,
+     "crystalloid_effective_ml_per_ml": 0.2,
+     "crystalloid_leak_tau_min": 30.0,
+     "crystalloid_transient_share": 0.4,
+     "plasma_refill_capacity_ml": 100.0,
+     "plasma_refill_target_share": 0.5,
+     "plasma_refill_tau_min": 120.0,
+     "preload_fraction": "upper",
+     "preload_scale_over_kappa_ml": 1500.0,
+     "red_cell_unit_hb_g_dl": 18.0,
+     "red_cell_unit_volume_ml": 250.0,
+     "reserve": 2.5
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": 3000.0,
+     "bleed_ml_per_min": 5.0,
+     "crystalloid_effective_ml_per_ml": 0.2,
+     "crystalloid_leak_tau_min": 30.0,
+     "crystalloid_transient_share": 0.4,
+     "plasma_refill_capacity_ml": 100.0,
+     "plasma_refill_target_share": 0.5,
+     "plasma_refill_tau_min": 120.0,
+     "preload_fraction": "upper",
+     "preload_scale_over_kappa_ml": 1500.0,
+     "red_cell_unit_hb_g_dl": 18.0,
+     "red_cell_unit_volume_ml": 250.0,
+     "reserve": 2.5
+    }
+   },
+   "verdicts": {
+    "gi_bleed_57m": {
+     "FD-BLD-01": true,
+     "FD-BLD-02": true,
+     "FD-BLD-03": true,
+     "FD-BLD-04": true,
+     "FD-BLD-05": true,
+     "FD-BLD-06": true,
+     "FD-BLD-07": true,
+     "FD-BLD-08": true,
+     "FD-BLD-09": true,
+     "SECOND-UNIT": true,
+     "U-HB": false,
+     "U-OUT": true
+    },
+    "gi_bleed_72f": {
+     "FD-BLD-01": true,
+     "FD-BLD-02": true,
+     "FD-BLD-03": true,
+     "FD-BLD-04": true,
+     "FD-BLD-05": true,
+     "FD-BLD-06": true,
+     "FD-BLD-07": true,
+     "FD-BLD-08": true,
+     "FD-BLD-09": true,
+     "SECOND-UNIT": true,
+     "U-HB": false,
+     "U-OUT": true
+    }
+   }
+  },
+  "middle": {
+   "trajectories": {
+    "gi_bleed_57m": {
+     "crystalloid_1000": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.7,
+        "lactate": 4.4,
+        "map": 65.33333333333333,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.5,
+        "refill_ml": 0.0,
+        "sbp": 88.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 81.20068435329958,
+        "crystalloid_ml": 181.20068435329958,
+        "do2": 0.34527561506521476,
+        "effective_deficit": 0.1368109623369631,
+        "hb": 6.4633753998989745,
+        "lactate": 4.158485507964722,
+        "map": 67.00199698248912,
+        "minute": 20,
+        "output_rel": 1.052694641552288,
+        "position": 0.526347320776144,
+        "refill_ml": 0.0,
+        "sbp": 90.37125886985297,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 15.664529851491594,
+        "crystalloid_ml": 165.66452985149158,
+        "do2": 0.33242139938386495,
+        "effective_deficit": 0.16894650154033763,
+        "hb": 6.483304011386719,
+        "lactate": 4.034503836072954,
+        "map": 65.66230822810833,
+        "minute": 30,
+        "output_rel": 1.0103886808876315,
+        "position": 0.5051943404438157,
+        "refill_ml": 0.0,
+        "sbp": 88.46749063994342,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -149.58653902146932,
+        "crystalloid_ml": 131.95816380479778,
+        "do2": 0.29540905169060844,
+        "effective_deficit": 0.2614773707734789,
+        "hb": 6.503270085639606,
+        "lactate": 3.68887835324536,
+        "map": 62.01256621593263,
+        "minute": 60,
+        "output_rel": 0.89513366997682,
+        "position": 0.44756683498841,
+        "refill_ml": 18.455297173732898,
+        "sbp": 83.2810151489569,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -411.2371678227513,
+        "crystalloid_ml": 99.11434026480329,
+        "do2": 0.22407435656374775,
+        "effective_deficit": 0.43981410859063064,
+        "hb": 6.450087314840687,
+        "lactate": 3.28066987094575,
+        "map": 55.34494562405266,
+        "minute": 120,
+        "output_rel": 0.684577230233242,
+        "position": 0.342288615116621,
+        "refill_ml": 89.64849191244542,
+        "sbp": 73.80597536049589,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     },
+     "crystalloid_2000": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.7,
+        "lactate": 4.4,
+        "map": 65.33333333333333,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.5,
+        "refill_ml": 0.0,
+        "sbp": 88.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 262.40136870659916,
+        "crystalloid_ml": 362.40136870659916,
+        "do2": 0.36764963799533157,
+        "effective_deficit": 0.08087590501167108,
+        "hb": 6.2429442522579945,
+        "lactate": 4.15564601293201,
+        "map": 70.41544635383745,
+        "minute": 20,
+        "output_rel": 1.160487779594867,
+        "position": 0.5802438897974335,
+        "refill_ml": 0.0,
+        "sbp": 95.22195008176901,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 181.3290597029832,
+        "crystalloid_ml": 331.32905970298316,
+        "do2": 0.3549860919028245,
+        "effective_deficit": 0.11253477024293879,
+        "hb": 6.280216879327877,
+        "lactate": 4.025918063930286,
+        "map": 68.93906029818658,
+        "minute": 30,
+        "output_rel": 1.113865062047997,
+        "position": 0.5569325310239985,
+        "refill_ml": 0.0,
+        "sbp": 93.12392779215986,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -31.675969347970767,
+        "crystalloid_ml": 263.91632760959556,
+        "do2": 0.31578629988822626,
+        "effective_deficit": 0.2105342502794343,
+        "hb": 6.358550986759001,
+        "lactate": 3.6493685689406936,
+        "map": 64.65750772917227,
+        "minute": 60,
+        "output_rel": 0.9786581388159662,
+        "position": 0.4893290694079831,
+        "refill_ml": 4.407703042433648,
+        "sbp": 87.03961624671848,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -323.0631048676731,
+        "crystalloid_ml": 198.22868052960658,
+        "do2": 0.2446609343788884,
+        "effective_deficit": 0.388347664052779,
+        "hb": 6.34649689304543,
+        "lactate": 3.1648968665907584,
+        "map": 57.72296463680366,
+        "minute": 120,
+        "output_rel": 0.7596725674780103,
+        "position": 0.37983628373900513,
+        "refill_ml": 78.70821460272033,
+        "sbp": 77.18526553651046,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     },
+     "red_cells": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.7,
+        "lactate": 4.4,
+        "map": 65.33333333333333,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.5,
+        "refill_ml": 0.0,
+        "sbp": 88.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 300.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.4467599545525966,
+        "effective_deficit": 0.0,
+        "hb": 7.452830188679245,
+        "lactate": 4.012765903852896,
+        "map": 71.07352615253058,
+        "minute": 30,
+        "output_rel": 1.1812692469220183,
+        "position": 0.5906346234610091,
+        "refill_ml": 0.0,
+        "sbp": 96.15711611149082,
+        "state": "COMPENSATED"
+       },
+       {
+        "circulating_ml": 600.0000000000001,
+        "crystalloid_ml": 0.0,
+        "do2": 0.548244906392022,
+        "effective_deficit": 0.0,
+        "hb": 8.125000000000002,
+        "lactate": 3.5695940961597383,
+        "map": 75.77319854220475,
+        "minute": 60,
+        "output_rel": 1.329679953964361,
+        "position": 0.6648399769821804,
+        "refill_ml": 0.0,
+        "sbp": 102.83559792839624,
+        "state": "COMPENSATED"
+       }
+      ],
+      "stop": null
+     },
+     "stopped_bleed": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.7,
+        "lactate": 4.4,
+        "map": 65.33333333333333,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.5,
+        "refill_ml": 0.0,
+        "sbp": 88.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -269.4943317872071,
+        "crystalloid_ml": 0.0,
+        "do2": 0.27163929800927095,
+        "effective_deficit": 0.3209017549768226,
+        "hb": 6.6645720255428005,
+        "lactate": 3.7359574017001353,
+        "map": 59.10089523661369,
+        "minute": 60,
+        "output_rel": 0.803186165366748,
+        "position": 0.401593082683374,
+        "refill_ml": 25.505668212792898,
+        "sbp": 79.14337744150366,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -226.19583887766578,
+        "crystalloid_ml": 0.0,
+        "do2": 0.2805878578682397,
+        "effective_deficit": 0.29853035532940075,
+        "hb": 6.6041242327859955,
+        "lactate": 3.3490704938939446,
+        "map": 60.17923954699557,
+        "minute": 120,
+        "output_rel": 0.8372391435893337,
+        "position": 0.41861957179466686,
+        "refill_ml": 68.80416112233424,
+        "sbp": 80.67576146152001,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -166.21307522491648,
+        "crystalloid_ml": 0.0,
+        "do2": 0.2921917997898856,
+        "effective_deficit": 0.2695205005252861,
+        "hb": 6.522173242981656,
+        "lactate": 2.961584832635463,
+        "map": 61.622595699381215,
+        "minute": 240,
+        "output_rel": 0.8828188115594069,
+        "position": 0.44140940577970345,
+        "refill_ml": 128.78692477508352,
+        "sbp": 82.72684652017331,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     },
+     "untreated": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.7,
+        "lactate": 4.4,
+        "map": 65.33333333333333,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.5,
+        "refill_ml": 0.0,
+        "sbp": 88.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -143.4732589802985,
+        "crystalloid_ml": 0.0,
+        "do2": 0.3054661886845903,
+        "effective_deficit": 0.2363345282885243,
+        "hb": 6.691081997319429,
+        "lactate": 4.044562342214277,
+        "map": 62.15486802911604,
+        "minute": 30,
+        "output_rel": 0.8996274114457697,
+        "position": 0.44981370572288487,
+        "refill_ml": 6.5267410197014915,
+        "sbp": 83.48323351505964,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -274.4943317872071,
+        "crystalloid_ml": 0.0,
+        "do2": 0.2702877806379296,
+        "effective_deficit": 0.32428054840517606,
+        "hb": 6.664570806989577,
+        "lactate": 3.7359574017001353,
+        "map": 58.974354102680216,
+        "minute": 60,
+        "output_rel": 0.7991901295583224,
+        "position": 0.3995950647791612,
+        "refill_ml": 25.505668212792898,
+        "sbp": 78.9635558301245,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -504.86067360139066,
+        "crystalloid_ml": 0.0,
+        "do2": 0.19982063347915738,
+        "effective_deficit": 0.5004484163021066,
+        "hb": 6.564291915017915,
+        "lactate": 3.419927055897607,
+        "map": 52.66216457518568,
+        "minute": 120,
+        "output_rel": 0.5998578286900741,
+        "position": 0.29992891434503705,
+        "refill_ml": 95.13932639860937,
+        "sbp": 69.99360229105334,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     }
+    },
+    "gi_bleed_72f": {
+     "crystalloid_1000": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.4,
+        "lactate": 3.4,
+        "map": 74.0,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.6,
+        "refill_ml": 0.0,
+        "sbp": 98.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 81.20068435329958,
+        "crystalloid_ml": 181.20068435329958,
+        "do2": 0.33951447153430486,
+        "effective_deficit": 0.15121382116423787,
+        "hb": 6.173970531246781,
+        "lactate": 3.3132983139920773,
+        "map": 75.11244243277052,
+        "minute": 20,
+        "output_rel": 1.0351297610348584,
+        "position": 0.6210778566209151,
+        "refill_ml": 0.0,
+        "sbp": 99.58083924656863,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 15.664529851491594,
+        "crystalloid_ml": 165.66452985149158,
+        "do2": 0.3312820953042425,
+        "effective_deficit": 0.17179476173939368,
+        "hb": 6.1930068168470145,
+        "lactate": 3.258567544960895,
+        "map": 74.21931659651666,
+        "minute": 30,
+        "output_rel": 1.006925787258421,
+        "position": 0.6041554723550525,
+        "refill_ml": 0.0,
+        "sbp": 98.31166042662895,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -149.58653902146932,
+        "crystalloid_ml": 131.95816380479778,
+        "do2": 0.3069449314314239,
+        "effective_deficit": 0.23263767142144032,
+        "hb": 6.212078887775147,
+        "lactate": 3.0863693513480075,
+        "map": 71.7861552550662,
+        "minute": 60,
+        "output_rel": 0.93008911331788,
+        "position": 0.558053467990728,
+        "refill_ml": 18.455297173732898,
+        "sbp": 94.8540100993046,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -411.2371678227513,
+        "crystalloid_ml": 99.11434026480329,
+        "do2": 0.2584888589552265,
+        "effective_deficit": 0.35377785261193373,
+        "hb": 6.161277435071701,
+        "lactate": 2.8642524086918244,
+        "map": 67.34107486047955,
+        "minute": 120,
+        "output_rel": 0.7897181534888279,
+        "position": 0.4738308920932967,
+        "refill_ml": 89.64849191244542,
+        "sbp": 88.53731690699726,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     },
+     "crystalloid_2000": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.4,
+        "lactate": 3.4,
+        "map": 74.0,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.6,
+        "refill_ml": 0.0,
+        "sbp": 98.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 262.40136870659916,
+        "crystalloid_ml": 362.40136870659916,
+        "do2": 0.35070180074155044,
+        "effective_deficit": 0.12324549814612396,
+        "hb": 5.9634094349927125,
+        "lactate": 3.311843726111885,
+        "map": 77.38807534700275,
+        "minute": 20,
+        "output_rel": 1.1069918530632448,
+        "position": 0.6641951118379468,
+        "refill_ml": 0.0,
+        "sbp": 102.81463338784602,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 181.3290597029832,
+        "crystalloid_ml": 331.32905970298316,
+        "do2": 0.3428899189288222,
+        "effective_deficit": 0.14277520267794452,
+        "hb": 5.99901313846245,
+        "lactate": 3.254202186864093,
+        "map": 76.40381797656882,
+        "minute": 30,
+        "output_rel": 1.0759100413653313,
+        "position": 0.6455460248191988,
+        "refill_ml": 0.0,
+        "sbp": 101.41595186143991,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -31.675969347970767,
+        "crystalloid_ml": 263.91632760959556,
+        "do2": 0.3180817788059847,
+        "effective_deficit": 0.20479555298503826,
+        "hb": 6.073839748545911,
+        "lactate": 3.066019421433826,
+        "map": 73.54944959722594,
+        "minute": 60,
+        "output_rel": 0.9857720925439775,
+        "position": 0.5914632555263865,
+        "refill_ml": 4.407703042433648,
+        "sbp": 97.35974416447898,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -323.0631048676731,
+        "crystalloid_ml": 198.22868052960658,
+        "do2": 0.2704609683737587,
+        "effective_deficit": 0.32384757906560324,
+        "hb": 6.062325390371754,
+        "lactate": 2.802032545347936,
+        "map": 68.92642086898022,
+        "minute": 120,
+        "output_rel": 0.8397817116520068,
+        "position": 0.5038690269912041,
+        "refill_ml": 78.70821460272033,
+        "sbp": 90.79017702434031,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     },
+     "red_cells": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.4,
+        "lactate": 3.4,
+        "map": 74.0,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.6,
+        "refill_ml": 0.0,
+        "sbp": 98.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": 300.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.4269260744935628,
+        "effective_deficit": 0.0,
+        "hb": 7.169811320754718,
+        "lactate": 3.237967169572304,
+        "map": 77.82679521279816,
+        "minute": 30,
+        "output_rel": 1.1208461646146788,
+        "position": 0.6725076987688072,
+        "refill_ml": 0.0,
+        "sbp": 103.43807740766054,
+        "state": "COMPENSATED"
+       },
+       {
+        "circulating_ml": 600.0000000000001,
+        "crystalloid_ml": 0.0,
+        "do2": 0.5091520109990112,
+        "effective_deficit": 0.0,
+        "hb": 7.857142857142859,
+        "lactate": 2.970568619725988,
+        "map": 80.95991013924761,
+        "minute": 60,
+        "output_rel": 1.2197866359762406,
+        "position": 0.7318719815857443,
+        "refill_ml": 0.0,
+        "sbp": 107.89039861893083,
+        "state": "COMPENSATED"
+       }
+      ],
+      "stop": null
+     },
+     "stopped_bleed": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.4,
+        "lactate": 3.4,
+        "map": 74.0,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.6,
+        "refill_ml": 0.0,
+        "sbp": 98.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -269.4943317872071,
+        "crystalloid_ml": 0.0,
+        "do2": 0.29382691950292444,
+        "effective_deficit": 0.2654327012426889,
+        "hb": 6.366158352757302,
+        "lactate": 3.1115342174643326,
+        "map": 69.84504126885356,
+        "minute": 60,
+        "output_rel": 0.8687907769111652,
+        "position": 0.5212744661466991,
+        "refill_ml": 25.505668212792898,
+        "sbp": 92.09558496100243,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -226.19583887766578,
+        "crystalloid_ml": 0.0,
+        "do2": 0.29877012609858955,
+        "effective_deficit": 0.2530746847535261,
+        "hb": 6.308417177586622,
+        "lactate": 2.8935519279206305,
+        "map": 70.56393747577482,
+        "minute": 120,
+        "output_rel": 0.8914927623928891,
+        "position": 0.5348956574357334,
+        "refill_ml": 68.80416112233424,
+        "sbp": 93.11717430768002,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -166.21307522491648,
+        "crystalloid_ml": 0.0,
+        "do2": 0.30511985173125517,
+        "effective_deficit": 0.23720037067186206,
+        "hb": 6.230135635086954,
+        "lactate": 2.6456567689712505,
+        "map": 71.5261749106986,
+        "minute": 240,
+        "output_rel": 0.9218792077062712,
+        "position": 0.5531275246237627,
+        "refill_ml": 128.78692477508352,
+        "sbp": 94.48456434678221,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     },
+     "untreated": {
+      "rows": [
+       {
+        "circulating_ml": 0.0,
+        "crystalloid_ml": 0.0,
+        "do2": 0.33999999999999997,
+        "effective_deficit": 0.15000000000000013,
+        "hb": 6.4,
+        "lactate": 3.4,
+        "map": 74.0,
+        "minute": 0,
+        "output_rel": 1.0,
+        "position": 0.6,
+        "refill_ml": 0.0,
+        "sbp": 98.0,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -143.4732589802985,
+        "crystalloid_ml": 0.0,
+        "do2": 0.31682660733642365,
+        "effective_deficit": 0.20793348165894088,
+        "hb": 6.39148131087229,
+        "lactate": 3.2638634185714914,
+        "map": 71.8810231305218,
+        "minute": 30,
+        "output_rel": 0.9330849409638464,
+        "position": 0.5598509645783079,
+        "refill_ml": 6.5267410197014915,
+        "sbp": 94.98882234337309,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -274.4943317872071,
+        "crystalloid_ml": 0.0,
+        "do2": 0.29292588730968716,
+        "effective_deficit": 0.2676852817257821,
+        "hb": 6.366157188766163,
+        "lactate": 3.1115342174643326,
+        "map": 69.76068051289792,
+        "minute": 60,
+        "output_rel": 0.8661267530388815,
+        "position": 0.5196760518233289,
+        "refill_ml": 25.505668212792898,
+        "sbp": 91.97570388674967,
+        "state": "CRITICAL"
+       },
+       {
+        "circulating_ml": -504.86067360139066,
+        "crystalloid_ml": 0.0,
+        "do2": 0.24425152933964173,
+        "effective_deficit": 0.3893711766508957,
+        "hb": 6.270368396435024,
+        "lactate": 2.9411025511783495,
+        "map": 65.55255416123488,
+        "minute": 120,
+        "output_rel": 0.7332385524600492,
+        "position": 0.43994313147602954,
+        "refill_ml": 95.13932639860937,
+        "sbp": 85.99573486070221,
+        "state": "CRITICAL"
+       }
+      ],
+      "stop": null
+     }
+    }
+   },
+   "untreated_hb": {
+    "gi_bleed_57m": {
+     "fall": {
+      "120": 0.13570808498208553,
+      "60": 0.035429193010423354
+     },
+     "hb": {
+      "120": 6.564291915017915,
+      "60": 6.664570806989577
+     },
+     "hb0": 6.7
+    },
+    "gi_bleed_72f": {
+     "fall": {
+      "120": 0.1296316035649765,
+      "60": 0.03384281123383737
+     },
+     "hb": {
+      "120": 6.270368396435024,
+      "60": 6.366157188766163
+     },
+     "hb0": 6.4
+    }
+   },
+   "values": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": 5000.0,
+     "bleed_ml_per_min": 5.0,
+     "crystalloid_effective_ml_per_ml": 0.2,
+     "crystalloid_leak_tau_min": 60.0,
+     "crystalloid_transient_share": 0.6,
+     "plasma_refill_capacity_ml": 1000.0,
+     "plasma_refill_target_share": 0.75,
+     "plasma_refill_tau_min": 240.0,
+     "preload_fraction": "upper",
+     "preload_scale_over_kappa_ml": 1500.0,
+     "red_cell_unit_hb_g_dl": 20.0,
+     "red_cell_unit_volume_ml": 300.0,
+     "reserve": 2.5
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": 5000.0,
+     "bleed_ml_per_min": 5.0,
+     "crystalloid_effective_ml_per_ml": 0.2,
+     "crystalloid_leak_tau_min": 60.0,
+     "crystalloid_transient_share": 0.6,
+     "plasma_refill_capacity_ml": 1000.0,
+     "plasma_refill_target_share": 0.75,
+     "plasma_refill_tau_min": 240.0,
+     "preload_fraction": "upper",
+     "preload_scale_over_kappa_ml": 1500.0,
+     "red_cell_unit_hb_g_dl": 20.0,
+     "red_cell_unit_volume_ml": 300.0,
+     "reserve": 2.5
+    }
+   },
+   "verdicts": {
+    "gi_bleed_57m": {
+     "FD-BLD-01": true,
+     "FD-BLD-02": true,
+     "FD-BLD-03": true,
+     "FD-BLD-04": true,
+     "FD-BLD-05": true,
+     "FD-BLD-06": true,
+     "FD-BLD-07": true,
+     "FD-BLD-08": true,
+     "FD-BLD-09": true,
+     "SECOND-UNIT": true,
+     "U-HB": false,
+     "U-OUT": true
+    },
+    "gi_bleed_72f": {
+     "FD-BLD-01": true,
+     "FD-BLD-02": true,
+     "FD-BLD-03": true,
+     "FD-BLD-04": true,
+     "FD-BLD-05": true,
+     "FD-BLD-06": true,
+     "FD-BLD-07": true,
+     "FD-BLD-08": true,
+     "FD-BLD-09": true,
+     "SECOND-UNIT": true,
+     "U-HB": false,
+     "U-OUT": true
+    }
+   }
+  }
+ }
+}

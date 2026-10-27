@@ -1,0 +1,8178 @@
+{
+ "decided": "2026-10-27",
+ "freeze_digest": "cfb8e508fbf3fe9c94b33ec141eee20c56edf188222e2a73a65cc9444486fd26",
+ "identifiability": {
+  "basis": "each case alone (no joint survivor)",
+  "classes": {
+   "gi_bleed_57m": {
+    "arrival_circulating_volume_ml": {
+     "class": null,
+     "left": []
+    },
+    "bleed_ml_per_min": {
+     "class": null,
+     "left": []
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "class": null,
+     "left": []
+    },
+    "crystalloid_leak_tau_min": {
+     "class": null,
+     "left": []
+    },
+    "crystalloid_transient_share": {
+     "class": null,
+     "left": []
+    },
+    "plasma_refill_capacity_ml": {
+     "class": null,
+     "left": []
+    },
+    "plasma_refill_target_share": {
+     "class": null,
+     "left": []
+    },
+    "plasma_refill_tau_min": {
+     "class": null,
+     "left": []
+    },
+    "preload_curve_scale_ml": {
+     "class": "NON_IDENTIFIABLE_SEPARATELY",
+     "left": null,
+     "why": "only lambda / kappa reaches any anchor"
+    },
+    "preload_fraction": {
+     "class": null,
+     "left": []
+    },
+    "preload_scale_over_kappa_ml": {
+     "class": null,
+     "left": []
+    },
+    "red_cell_unit_hb_g_dl": {
+     "class": null,
+     "left": []
+    },
+    "red_cell_unit_volume_ml": {
+     "class": null,
+     "left": []
+    },
+    "reserve": {
+     "class": "NON_IDENTIFIABLE_SEPARATELY",
+     "left": [],
+     "why": "only rho x the arrival delivery ratio reaches D and the deficit; no constraint reads it"
+    },
+    "volume_preload_kappa": {
+     "class": "NON_IDENTIFIABLE_SEPARATELY",
+     "left": null,
+     "why": "only lambda / kappa reaches any anchor; Hb never reads kappa"
+    }
+   },
+   "gi_bleed_72f": {
+    "arrival_circulating_volume_ml": {
+     "class": null,
+     "left": []
+    },
+    "bleed_ml_per_min": {
+     "class": null,
+     "left": []
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "class": null,
+     "left": []
+    },
+    "crystalloid_leak_tau_min": {
+     "class": null,
+     "left": []
+    },
+    "crystalloid_transient_share": {
+     "class": null,
+     "left": []
+    },
+    "plasma_refill_capacity_ml": {
+     "class": null,
+     "left": []
+    },
+    "plasma_refill_target_share": {
+     "class": null,
+     "left": []
+    },
+    "plasma_refill_tau_min": {
+     "class": null,
+     "left": []
+    },
+    "preload_curve_scale_ml": {
+     "class": "NON_IDENTIFIABLE_SEPARATELY",
+     "left": null,
+     "why": "only lambda / kappa reaches any anchor"
+    },
+    "preload_fraction": {
+     "class": null,
+     "left": []
+    },
+    "preload_scale_over_kappa_ml": {
+     "class": null,
+     "left": []
+    },
+    "red_cell_unit_hb_g_dl": {
+     "class": null,
+     "left": []
+    },
+    "red_cell_unit_volume_ml": {
+     "class": null,
+     "left": []
+    },
+    "reserve": {
+     "class": "NON_IDENTIFIABLE_SEPARATELY",
+     "left": [],
+     "why": "only rho x the arrival delivery ratio reaches D and the deficit; no constraint reads it"
+    },
+    "volume_preload_kappa": {
+     "class": "NON_IDENTIFIABLE_SEPARATELY",
+     "left": null,
+     "why": "only lambda / kappa reaches any anchor; Hb never reads kappa"
+    }
+   }
+  }
+ },
+ "metrics": {
+  "gi_bleed_57m": {
+   "crystalloid_early": {
+    "max": 0.28120068435329953,
+    "median": 0.16613327949573806,
+    "min": 0.07840966160659027,
+    "n": 27
+   },
+   "crystalloid_peak_dilution": {
+    "1000": {
+     "max": 0.5809237925273543,
+     "median": 0.2589806192208437,
+     "min": 0.09670484984298788,
+     "n": 6561
+    },
+    "2000": {
+     "max": 1.0702477568093416,
+     "median": 0.5037921521784146,
+     "min": 0.19104427992130635,
+     "n": 6561
+    }
+   },
+   "crystalloid_retained": {
+    "120": {
+     "max": 0.19911434026480326,
+     "median": 0.08008156512881445,
+     "min": 0.025067970940678662,
+     "n": 27
+    },
+    "30": {
+     "max": 0.2656645298514916,
+     "median": 0.1417171916410997,
+     "min": 0.05242143459056122,
+     "n": 27
+    },
+    "60": {
+     "max": 0.23195816380479778,
+     "median": 0.10270448597159854,
+     "min": 0.028711087617067862,
+     "n": 27
+    }
+   },
+   "one_unit_hb_gain": {
+    "max": 1.5985074626865687,
+    "median": 0.9091954022988489,
+    "min": 0.5380952380952397,
+    "n": 729
+   },
+   "one_unit_position": {
+    "max": 0.7209824271149765,
+    "median": 0.5535718833839623,
+    "min": 0.32281462008750883,
+    "n": 729
+   },
+   "one_unit_relative_output_gain": {
+    "max": 1.7678594169198116,
+    "median": 0.561458251582371,
+    "min": 0.15351827510938598,
+    "n": 729
+   },
+   "refill_after_haemostasis_ml": {
+    "max": 135.21418226471002,
+    "median": 34.42708552076355,
+    "min": 8.606771380190887,
+    "n": 243
+   },
+   "refill_share": {
+    "120": {
+     "max": 0.6386269431464761,
+     "median": 0.2845235583510254,
+     "min": 0.09484118611700841,
+     "n": 81
+    },
+    "240": {
+     "max": 0.7349272958058012,
+     "median": 0.4291384570839288,
+     "min": 0.15589142225531938,
+     "n": 81
+    },
+    "60": {
+     "max": 0.44725664337512966,
+     "median": 0.15231641805334806,
+     "min": 0.050772139351116026,
+     "n": 81
+    }
+   },
+   "second_over_first": {
+    "max": 0.8464817248906155,
+    "median": 0.6976763260710308,
+    "min": 0.5580351457700469,
+    "n": 729
+   },
+   "untreated_hb_fall": {
+    "120": {
+     "max": 0.590773539382238,
+     "median": 0.07871410532519718,
+     "min": 0.010821133371787361,
+     "n": 243
+    },
+    "60": {
+     "max": 0.18945327396498435,
+     "median": 0.023661517582425518,
+     "min": 0.0028758929336190064,
+     "n": 243
+    }
+   },
+   "untreated_output": {
+    "120": {
+     "max": 0.9406072303296211,
+     "median": 0.3646193402476014,
+     "min": 0.0,
+     "n": 6561
+    },
+    "30": {
+     "max": 0.9786468140302265,
+     "median": 0.8277556883096385,
+     "min": 0.0,
+     "n": 6561
+    },
+    "60": {
+     "max": 0.9629267042237186,
+     "median": 0.6591841286373377,
+     "min": 0.0,
+     "n": 6561
+    }
+   },
+   "untreated_stopped": 2061
+  },
+  "gi_bleed_72f": {
+   "crystalloid_early": {
+    "max": 0.28120068435329953,
+    "median": 0.16613327949573806,
+    "min": 0.07840966160659027,
+    "n": 27
+   },
+   "crystalloid_peak_dilution": {
+    "1000": {
+     "max": 0.5549122794291144,
+     "median": 0.24738447209155368,
+     "min": 0.09237478193957127,
+     "n": 6561
+    },
+    "2000": {
+     "max": 1.0223262154596693,
+     "median": 0.48123429461818823,
+     "min": 0.18249005843229327,
+     "n": 6561
+    }
+   },
+   "crystalloid_retained": {
+    "120": {
+     "max": 0.19911434026480326,
+     "median": 0.08008156512881445,
+     "min": 0.025067970940678662,
+     "n": 27
+    },
+    "30": {
+     "max": 0.2656645298514916,
+     "median": 0.1417171916410997,
+     "min": 0.05242143459056122,
+     "n": 27
+    },
+    "60": {
+     "max": 0.23195816380479778,
+     "median": 0.10270448597159854,
+     "min": 0.028711087617067862,
+     "n": 27
+    }
+   },
+   "one_unit_hb_gain": {
+    "max": 1.629850746268657,
+    "median": 0.9333333333333345,
+    "min": 0.5523809523809522,
+    "n": 729
+   },
+   "one_unit_position": {
+    "max": 0.7767859416919811,
+    "median": 0.6162780206609328,
+    "min": 0.40746279257657014,
+    "n": 729
+   },
+   "one_unit_relative_output_gain": {
+    "max": 1.031251326536557,
+    "median": 0.3582093085885669,
+    "min": 0.1023455167395908,
+    "n": 729
+   },
+   "refill_after_haemostasis_ml": {
+    "max": 135.21418226471002,
+    "median": 34.42708552076355,
+    "min": 8.606771380190887,
+    "n": 243
+   },
+   "refill_share": {
+    "120": {
+     "max": 0.6386269431464761,
+     "median": 0.2845235583510254,
+     "min": 0.09484118611700841,
+     "n": 81
+    },
+    "240": {
+     "max": 0.7349272958058012,
+     "median": 0.4291384570839288,
+     "min": 0.15589142225531938,
+     "n": 81
+    },
+    "60": {
+     "max": 0.44725664337512966,
+     "median": 0.15231641805334806,
+     "min": 0.050772139351116026,
+     "n": 81
+    }
+   },
+   "second_over_first": {
+    "max": 0.8464817248906161,
+    "median": 0.6976763260710324,
+    "min": 0.5580351457700469,
+    "n": 729
+   },
+   "untreated_hb_fall": {
+    "120": {
+     "max": 0.5643209928427337,
+     "median": 0.07518959314645723,
+     "min": 0.01033660501185718,
+     "n": 243
+    },
+    "60": {
+     "max": 0.18097029154864064,
+     "median": 0.02260204664589871,
+     "min": 0.002747121608233982,
+     "n": 243
+    }
+   },
+   "untreated_output": {
+    "120": {
+     "max": 0.9604048202197474,
+     "median": 0.5961865005164264,
+     "min": 0.0,
+     "n": 6561
+    },
+    "30": {
+     "max": 0.9857645426868175,
+     "median": 0.8929973489037645,
+     "min": 0.3481179688307794,
+     "n": 6561
+    },
+    "60": {
+     "max": 0.975284469482479,
+     "median": 0.7932504118657578,
+     "min": 0.0,
+     "n": 6561
+    }
+   },
+   "untreated_stopped": 1269
+  }
+ },
+ "primary": {
+  "alone": {
+   "gi_bleed_57m": 0,
+   "gi_bleed_72f": 0
+  },
+  "alone_marginal": {
+   "gi_bleed_57m": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   },
+   "gi_bleed_72f": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "joint": 0,
+  "marginal": {
+   "arrival_circulating_volume_ml": {
+    "3000.0": 0,
+    "4000.0": 0,
+    "5000.0": 0
+   },
+   "bleed_ml_per_min|gi_bleed_57m": {
+    "1.25": 0,
+    "2.5": 0,
+    "5.0": 0
+   },
+   "bleed_ml_per_min|gi_bleed_72f": {
+    "1.25": 0,
+    "2.5": 0,
+    "5.0": 0
+   },
+   "crystalloid_effective_ml_per_ml": {
+    "0.125": 0,
+    "0.2": 0,
+    "0.3": 0
+   },
+   "crystalloid_leak_tau_min": {
+    "15.0": 0,
+    "30.0": 0,
+    "60.0": 0
+   },
+   "crystalloid_transient_share": {
+    "0.4": 0,
+    "0.6": 0,
+    "0.8": 0
+   },
+   "plasma_refill_capacity_ml": {
+    "100.0": 0,
+    "1000.0": 0,
+    "500.0": 0
+   },
+   "plasma_refill_target_share": {
+    "0.25": 0,
+    "0.5": 0,
+    "0.75": 0
+   },
+   "plasma_refill_tau_min": {
+    "120.0": 0,
+    "240.0": 0,
+    "60.0": 0
+   },
+   "preload_fraction|gi_bleed_57m": {
+    "lower": 0,
+    "midpoint": 0,
+    "upper": 0
+   },
+   "preload_fraction|gi_bleed_72f": {
+    "lower": 0,
+    "midpoint": 0,
+    "upper": 0
+   },
+   "preload_scale_over_kappa_ml": {
+    "1500.0": 0,
+    "600.0": 0,
+    "833.3333333333334": 0
+   },
+   "red_cell_unit_hb_g_dl": {
+    "18.0": 0,
+    "20.0": 0,
+    "22.0": 0
+   },
+   "red_cell_unit_volume_ml": {
+    "250.0": 0,
+    "300.0": 0,
+    "350.0": 0
+   },
+   "reserve": {
+    "1.0": 0,
+    "2.5": 0,
+    "3.0": 0
+   }
+  }
+ },
+ "region": {
+  "arrival_circulating_volume_ml": [
+   3000.0,
+   4000.0,
+   5000.0
+  ],
+  "bleed_ml_per_min": [
+   1.25,
+   2.5,
+   5.0
+  ],
+  "crystalloid_effective_ml_per_ml": [
+   0.125,
+   0.2,
+   0.3
+  ],
+  "crystalloid_leak_tau_min": [
+   15.0,
+   30.0,
+   60.0
+  ],
+  "crystalloid_transient_share": [
+   0.4,
+   0.6,
+   0.8
+  ],
+  "plasma_refill_capacity_ml": [
+   100.0,
+   500.0,
+   1000.0
+  ],
+  "plasma_refill_target_share": [
+   0.25,
+   0.5,
+   0.75
+  ],
+  "plasma_refill_tau_min": [
+   60.0,
+   120.0,
+   240.0
+  ],
+  "preload_fraction": [
+   "lower",
+   "midpoint",
+   "upper"
+  ],
+  "preload_scale_over_kappa_ml": [
+   600.0,
+   833.3333333333334,
+   1500.0
+  ],
+  "red_cell_unit_hb_g_dl": [
+   18.0,
+   20.0,
+   22.0
+  ],
+  "red_cell_unit_volume_ml": [
+   250.0,
+   300.0,
+   350.0
+  ],
+  "reserve": [
+   1.0,
+   2.5,
+   3.0
+  ]
+ },
+ "representatives": {
+  "gi_bleed_57m": {},
+  "gi_bleed_72f": {}
+ },
+ "single": {
+  "FD-BLD-01": {
+   "alone": {
+    "gi_bleed_57m": 1062882,
+    "gi_bleed_72f": 1003833
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 295245,
+      "4000.0": 413343,
+      "5000.0": 354294
+     },
+     "bleed_ml_per_min": {
+      "1.25": 354294,
+      "2.5": 354294,
+      "5.0": 354294
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 354294,
+      "0.2": 354294,
+      "0.3": 354294
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 354294,
+      "30.0": 354294,
+      "60.0": 354294
+     },
+     "crystalloid_transient_share": {
+      "0.4": 354294,
+      "0.6": 354294,
+      "0.8": 354294
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 354294,
+      "1000.0": 354294,
+      "500.0": 354294
+     },
+     "plasma_refill_target_share": {
+      "0.25": 354294,
+      "0.5": 354294,
+      "0.75": 354294
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 354294,
+      "240.0": 354294,
+      "60.0": 354294
+     },
+     "preload_fraction": {
+      "lower": 354294,
+      "midpoint": 354294,
+      "upper": 354294
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 354294,
+      "600.0": 354294,
+      "833.3333333333334": 354294
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 354294,
+      "20.0": 354294,
+      "22.0": 354294
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 354294,
+      "300.0": 354294,
+      "350.0": 354294
+     },
+     "reserve": {
+      "1.0": 354294,
+      "2.5": 354294,
+      "3.0": 354294
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 236196,
+      "4000.0": 413343,
+      "5000.0": 354294
+     },
+     "bleed_ml_per_min": {
+      "1.25": 334611,
+      "2.5": 334611,
+      "5.0": 334611
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 334611,
+      "0.2": 334611,
+      "0.3": 334611
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 334611,
+      "30.0": 334611,
+      "60.0": 334611
+     },
+     "crystalloid_transient_share": {
+      "0.4": 334611,
+      "0.6": 334611,
+      "0.8": 334611
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 334611,
+      "1000.0": 334611,
+      "500.0": 334611
+     },
+     "plasma_refill_target_share": {
+      "0.25": 334611,
+      "0.5": 334611,
+      "0.75": 334611
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 334611,
+      "240.0": 334611,
+      "60.0": 334611
+     },
+     "preload_fraction": {
+      "lower": 334611,
+      "midpoint": 334611,
+      "upper": 334611
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 334611,
+      "600.0": 334611,
+      "833.3333333333334": 334611
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 295245,
+      "20.0": 354294,
+      "22.0": 354294
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 354294,
+      "300.0": 354294,
+      "350.0": 295245
+     },
+     "reserve": {
+      "1.0": 334611,
+      "2.5": 334611,
+      "3.0": 334611
+     }
+    }
+   },
+   "joint": 9034497,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 2125764,
+     "4000.0": 3720087,
+     "5000.0": 3188646
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 3011499,
+     "2.5": 3011499,
+     "5.0": 3011499
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 3011499,
+     "2.5": 3011499,
+     "5.0": 3011499
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 3011499,
+     "0.2": 3011499,
+     "0.3": 3011499
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 3011499,
+     "30.0": 3011499,
+     "60.0": 3011499
+    },
+    "crystalloid_transient_share": {
+     "0.4": 3011499,
+     "0.6": 3011499,
+     "0.8": 3011499
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 3011499,
+     "1000.0": 3011499,
+     "500.0": 3011499
+    },
+    "plasma_refill_target_share": {
+     "0.25": 3011499,
+     "0.5": 3011499,
+     "0.75": 3011499
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 3011499,
+     "240.0": 3011499,
+     "60.0": 3011499
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 3011499,
+     "midpoint": 3011499,
+     "upper": 3011499
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 3011499,
+     "midpoint": 3011499,
+     "upper": 3011499
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 3011499,
+     "600.0": 3011499,
+     "833.3333333333334": 3011499
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 2657205,
+     "20.0": 3188646,
+     "22.0": 3188646
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 3188646,
+     "300.0": 3188646,
+     "350.0": 2657205
+    },
+    "reserve": {
+     "1.0": 3011499,
+     "2.5": 3011499,
+     "3.0": 3011499
+    }
+   }
+  },
+  "FD-BLD-02": {
+   "alone": {
+    "gi_bleed_57m": 649539,
+    "gi_bleed_72f": 708588
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 216513,
+      "4000.0": 216513,
+      "5000.0": 216513
+     },
+     "bleed_ml_per_min": {
+      "1.25": 216513,
+      "2.5": 216513,
+      "5.0": 216513
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 216513,
+      "0.2": 216513,
+      "0.3": 216513
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 216513,
+      "30.0": 216513,
+      "60.0": 216513
+     },
+     "crystalloid_transient_share": {
+      "0.4": 216513,
+      "0.6": 216513,
+      "0.8": 216513
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 216513,
+      "1000.0": 216513,
+      "500.0": 216513
+     },
+     "plasma_refill_target_share": {
+      "0.25": 216513,
+      "0.5": 216513,
+      "0.75": 216513
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 216513,
+      "240.0": 216513,
+      "60.0": 216513
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 177147,
+      "upper": 472392
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 354294,
+      "600.0": 118098,
+      "833.3333333333334": 177147
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 216513,
+      "20.0": 216513,
+      "22.0": 216513
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 236196,
+      "300.0": 236196,
+      "350.0": 177147
+     },
+     "reserve": {
+      "1.0": 216513,
+      "2.5": 216513,
+      "3.0": 216513
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 236196,
+      "4000.0": 236196,
+      "5000.0": 236196
+     },
+     "bleed_ml_per_min": {
+      "1.25": 236196,
+      "2.5": 236196,
+      "5.0": 236196
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 236196,
+      "0.2": 236196,
+      "0.3": 236196
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 236196,
+      "30.0": 236196,
+      "60.0": 236196
+     },
+     "crystalloid_transient_share": {
+      "0.4": 236196,
+      "0.6": 236196,
+      "0.8": 236196
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 236196,
+      "1000.0": 236196,
+      "500.0": 236196
+     },
+     "plasma_refill_target_share": {
+      "0.25": 236196,
+      "0.5": 236196,
+      "0.75": 236196
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 236196,
+      "240.0": 236196,
+      "60.0": 236196
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 177147,
+      "upper": 531441
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 354294,
+      "600.0": 177147,
+      "833.3333333333334": 177147
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 236196,
+      "20.0": 236196,
+      "22.0": 236196
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 236196,
+      "300.0": 236196,
+      "350.0": 236196
+     },
+     "reserve": {
+      "1.0": 236196,
+      "2.5": 236196,
+      "3.0": 236196
+     }
+    }
+   },
+   "joint": 3011499,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 1003833,
+     "4000.0": 1003833,
+     "5000.0": 1003833
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 1003833,
+     "2.5": 1003833,
+     "5.0": 1003833
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 1003833,
+     "2.5": 1003833,
+     "5.0": 1003833
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 1003833,
+     "0.2": 1003833,
+     "0.3": 1003833
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 1003833,
+     "30.0": 1003833,
+     "60.0": 1003833
+    },
+    "crystalloid_transient_share": {
+     "0.4": 1003833,
+     "0.6": 1003833,
+     "0.8": 1003833
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 1003833,
+     "1000.0": 1003833,
+     "500.0": 1003833
+    },
+    "plasma_refill_target_share": {
+     "0.25": 1003833,
+     "0.5": 1003833,
+     "0.75": 1003833
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 1003833,
+     "240.0": 1003833,
+     "60.0": 1003833
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 1062882,
+     "upper": 1948617
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 1062882,
+     "upper": 1948617
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 2125764,
+     "600.0": 354294,
+     "833.3333333333334": 531441
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 1003833,
+     "20.0": 1003833,
+     "22.0": 1003833
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 1062882,
+     "300.0": 1062882,
+     "350.0": 885735
+    },
+    "reserve": {
+     "1.0": 1003833,
+     "2.5": 1003833,
+     "3.0": 1003833
+    }
+   }
+  },
+  "FD-BLD-03": {
+   "alone": {
+    "gi_bleed_57m": 1062882,
+    "gi_bleed_72f": 1240029
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 354294,
+      "4000.0": 354294,
+      "5000.0": 354294
+     },
+     "bleed_ml_per_min": {
+      "1.25": 354294,
+      "2.5": 354294,
+      "5.0": 354294
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 354294,
+      "0.2": 354294,
+      "0.3": 354294
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 354294,
+      "30.0": 354294,
+      "60.0": 354294
+     },
+     "crystalloid_transient_share": {
+      "0.4": 354294,
+      "0.6": 354294,
+      "0.8": 354294
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 354294,
+      "1000.0": 354294,
+      "500.0": 354294
+     },
+     "plasma_refill_target_share": {
+      "0.25": 354294,
+      "0.5": 354294,
+      "0.75": 354294
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 354294,
+      "240.0": 354294,
+      "60.0": 354294
+     },
+     "preload_fraction": {
+      "lower": 531441,
+      "midpoint": 413343,
+      "upper": 118098
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 472392,
+      "600.0": 236196,
+      "833.3333333333334": 354294
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 354294,
+      "20.0": 354294,
+      "22.0": 354294
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 413343,
+      "300.0": 354294,
+      "350.0": 295245
+     },
+     "reserve": {
+      "1.0": 354294,
+      "2.5": 354294,
+      "3.0": 354294
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 413343,
+      "4000.0": 413343,
+      "5000.0": 413343
+     },
+     "bleed_ml_per_min": {
+      "1.25": 413343,
+      "2.5": 413343,
+      "5.0": 413343
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 413343,
+      "0.2": 413343,
+      "0.3": 413343
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 413343,
+      "30.0": 413343,
+      "60.0": 413343
+     },
+     "crystalloid_transient_share": {
+      "0.4": 413343,
+      "0.6": 413343,
+      "0.8": 413343
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 413343,
+      "1000.0": 413343,
+      "500.0": 413343
+     },
+     "plasma_refill_target_share": {
+      "0.25": 413343,
+      "0.5": 413343,
+      "0.75": 413343
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 413343,
+      "240.0": 413343,
+      "60.0": 413343
+     },
+     "preload_fraction": {
+      "lower": 531441,
+      "midpoint": 531441,
+      "upper": 177147
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 531441,
+      "600.0": 354294,
+      "833.3333333333334": 354294
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 413343,
+      "20.0": 413343,
+      "22.0": 413343
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 413343,
+      "300.0": 413343,
+      "350.0": 413343
+     },
+     "reserve": {
+      "1.0": 413343,
+      "2.5": 413343,
+      "3.0": 413343
+     }
+    }
+   },
+   "joint": 7794468,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 2598156,
+     "4000.0": 2598156,
+     "5000.0": 2598156
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 2598156,
+     "2.5": 2598156,
+     "5.0": 2598156
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 2598156,
+     "2.5": 2598156,
+     "5.0": 2598156
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 2598156,
+     "0.2": 2598156,
+     "0.3": 2598156
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 2598156,
+     "30.0": 2598156,
+     "60.0": 2598156
+    },
+    "crystalloid_transient_share": {
+     "0.4": 2598156,
+     "0.6": 2598156,
+     "0.8": 2598156
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 2598156,
+     "1000.0": 2598156,
+     "500.0": 2598156
+    },
+    "plasma_refill_target_share": {
+     "0.25": 2598156,
+     "0.5": 2598156,
+     "0.75": 2598156
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 2598156,
+     "240.0": 2598156,
+     "60.0": 2598156
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 3720087,
+     "midpoint": 3011499,
+     "upper": 1062882
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 3188646,
+     "midpoint": 3188646,
+     "upper": 1417176
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 4251528,
+     "600.0": 1417176,
+     "833.3333333333334": 2125764
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 2598156,
+     "20.0": 2598156,
+     "22.0": 2598156
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 3011499,
+     "300.0": 2657205,
+     "350.0": 2125764
+    },
+    "reserve": {
+     "1.0": 2598156,
+     "2.5": 2598156,
+     "3.0": 2598156
+    }
+   }
+  },
+  "FD-BLD-04": {
+   "alone": {
+    "gi_bleed_57m": 944784,
+    "gi_bleed_72f": 944784
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 314928,
+      "4000.0": 314928,
+      "5000.0": 314928
+     },
+     "bleed_ml_per_min": {
+      "1.25": 314928,
+      "2.5": 314928,
+      "5.0": 314928
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 413343,
+      "0.3": 531441
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 236196,
+      "30.0": 354294,
+      "60.0": 354294
+     },
+     "crystalloid_transient_share": {
+      "0.4": 354294,
+      "0.6": 295245,
+      "0.8": 295245
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 314928,
+      "1000.0": 314928,
+      "500.0": 314928
+     },
+     "plasma_refill_target_share": {
+      "0.25": 314928,
+      "0.5": 314928,
+      "0.75": 314928
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 314928,
+      "240.0": 314928,
+      "60.0": 314928
+     },
+     "preload_fraction": {
+      "lower": 314928,
+      "midpoint": 314928,
+      "upper": 314928
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 314928,
+      "600.0": 314928,
+      "833.3333333333334": 314928
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 314928,
+      "20.0": 314928,
+      "22.0": 314928
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 314928,
+      "300.0": 314928,
+      "350.0": 314928
+     },
+     "reserve": {
+      "1.0": 314928,
+      "2.5": 314928,
+      "3.0": 314928
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 314928,
+      "4000.0": 314928,
+      "5000.0": 314928
+     },
+     "bleed_ml_per_min": {
+      "1.25": 314928,
+      "2.5": 314928,
+      "5.0": 314928
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 413343,
+      "0.3": 531441
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 236196,
+      "30.0": 354294,
+      "60.0": 354294
+     },
+     "crystalloid_transient_share": {
+      "0.4": 354294,
+      "0.6": 295245,
+      "0.8": 295245
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 314928,
+      "1000.0": 314928,
+      "500.0": 314928
+     },
+     "plasma_refill_target_share": {
+      "0.25": 314928,
+      "0.5": 314928,
+      "0.75": 314928
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 314928,
+      "240.0": 314928,
+      "60.0": 314928
+     },
+     "preload_fraction": {
+      "lower": 314928,
+      "midpoint": 314928,
+      "upper": 314928
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 314928,
+      "600.0": 314928,
+      "833.3333333333334": 314928
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 314928,
+      "20.0": 314928,
+      "22.0": 314928
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 314928,
+      "300.0": 314928,
+      "350.0": 314928
+     },
+     "reserve": {
+      "1.0": 314928,
+      "2.5": 314928,
+      "3.0": 314928
+     }
+    }
+   },
+   "joint": 8503056,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 2834352,
+     "4000.0": 2834352,
+     "5000.0": 2834352
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 2834352,
+     "2.5": 2834352,
+     "5.0": 2834352
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 2834352,
+     "2.5": 2834352,
+     "5.0": 2834352
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 3720087,
+     "0.3": 4782969
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 2125764,
+     "30.0": 3188646,
+     "60.0": 3188646
+    },
+    "crystalloid_transient_share": {
+     "0.4": 3188646,
+     "0.6": 2657205,
+     "0.8": 2657205
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 2834352,
+     "1000.0": 2834352,
+     "500.0": 2834352
+    },
+    "plasma_refill_target_share": {
+     "0.25": 2834352,
+     "0.5": 2834352,
+     "0.75": 2834352
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 2834352,
+     "240.0": 2834352,
+     "60.0": 2834352
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 2834352,
+     "midpoint": 2834352,
+     "upper": 2834352
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 2834352,
+     "midpoint": 2834352,
+     "upper": 2834352
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 2834352,
+     "600.0": 2834352,
+     "833.3333333333334": 2834352
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 2834352,
+     "20.0": 2834352,
+     "22.0": 2834352
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 2834352,
+     "300.0": 2834352,
+     "350.0": 2834352
+    },
+    "reserve": {
+     "1.0": 2834352,
+     "2.5": 2834352,
+     "3.0": 2834352
+    }
+   }
+  },
+  "FD-BLD-05": {
+   "alone": {
+    "gi_bleed_57m": 531441,
+    "gi_bleed_72f": 531441
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 177147,
+      "4000.0": 177147,
+      "5000.0": 177147
+     },
+     "bleed_ml_per_min": {
+      "1.25": 177147,
+      "2.5": 177147,
+      "5.0": 177147
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 236196,
+      "0.3": 295245
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 59049,
+      "30.0": 177147,
+      "60.0": 295245
+     },
+     "crystalloid_transient_share": {
+      "0.4": 118098,
+      "0.6": 236196,
+      "0.8": 177147
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 177147,
+      "1000.0": 177147,
+      "500.0": 177147
+     },
+     "plasma_refill_target_share": {
+      "0.25": 177147,
+      "0.5": 177147,
+      "0.75": 177147
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 177147,
+      "240.0": 177147,
+      "60.0": 177147
+     },
+     "preload_fraction": {
+      "lower": 177147,
+      "midpoint": 177147,
+      "upper": 177147
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 177147,
+      "600.0": 177147,
+      "833.3333333333334": 177147
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 177147,
+      "20.0": 177147,
+      "22.0": 177147
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 177147,
+      "300.0": 177147,
+      "350.0": 177147
+     },
+     "reserve": {
+      "1.0": 177147,
+      "2.5": 177147,
+      "3.0": 177147
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 177147,
+      "4000.0": 177147,
+      "5000.0": 177147
+     },
+     "bleed_ml_per_min": {
+      "1.25": 177147,
+      "2.5": 177147,
+      "5.0": 177147
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 236196,
+      "0.3": 295245
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 59049,
+      "30.0": 177147,
+      "60.0": 295245
+     },
+     "crystalloid_transient_share": {
+      "0.4": 118098,
+      "0.6": 236196,
+      "0.8": 177147
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 177147,
+      "1000.0": 177147,
+      "500.0": 177147
+     },
+     "plasma_refill_target_share": {
+      "0.25": 177147,
+      "0.5": 177147,
+      "0.75": 177147
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 177147,
+      "240.0": 177147,
+      "60.0": 177147
+     },
+     "preload_fraction": {
+      "lower": 177147,
+      "midpoint": 177147,
+      "upper": 177147
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 177147,
+      "600.0": 177147,
+      "833.3333333333334": 177147
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 177147,
+      "20.0": 177147,
+      "22.0": 177147
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 177147,
+      "300.0": 177147,
+      "350.0": 177147
+     },
+     "reserve": {
+      "1.0": 177147,
+      "2.5": 177147,
+      "3.0": 177147
+     }
+    }
+   },
+   "joint": 4782969,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 1594323,
+     "4000.0": 1594323,
+     "5000.0": 1594323
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 1594323,
+     "2.5": 1594323,
+     "5.0": 1594323
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 1594323,
+     "2.5": 1594323,
+     "5.0": 1594323
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 2125764,
+     "0.3": 2657205
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 531441,
+     "30.0": 1594323,
+     "60.0": 2657205
+    },
+    "crystalloid_transient_share": {
+     "0.4": 1062882,
+     "0.6": 2125764,
+     "0.8": 1594323
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 1594323,
+     "1000.0": 1594323,
+     "500.0": 1594323
+    },
+    "plasma_refill_target_share": {
+     "0.25": 1594323,
+     "0.5": 1594323,
+     "0.75": 1594323
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 1594323,
+     "240.0": 1594323,
+     "60.0": 1594323
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 1594323,
+     "midpoint": 1594323,
+     "upper": 1594323
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 1594323,
+     "midpoint": 1594323,
+     "upper": 1594323
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 1594323,
+     "600.0": 1594323,
+     "833.3333333333334": 1594323
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 1594323,
+     "20.0": 1594323,
+     "22.0": 1594323
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 1594323,
+     "300.0": 1594323,
+     "350.0": 1594323
+    },
+    "reserve": {
+     "1.0": 1594323,
+     "2.5": 1594323,
+     "3.0": 1594323
+    }
+   }
+  },
+  "FD-BLD-06": {
+   "alone": {
+    "gi_bleed_57m": 924372,
+    "gi_bleed_72f": 906147
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 330966,
+      "4000.0": 298890,
+      "5000.0": 294516
+     },
+     "bleed_ml_per_min": {
+      "1.25": 309096,
+      "2.5": 309096,
+      "5.0": 306180
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 134136,
+      "0.2": 451980,
+      "0.3": 338256
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 274104,
+      "30.0": 331695,
+      "60.0": 318573
+     },
+     "crystalloid_transient_share": {
+      "0.4": 333153,
+      "0.6": 298890,
+      "0.8": 292329
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 308124,
+      "1000.0": 308124,
+      "500.0": 308124
+     },
+     "plasma_refill_target_share": {
+      "0.25": 308367,
+      "0.5": 309096,
+      "0.75": 306909
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 307638,
+      "240.0": 308367,
+      "60.0": 308367
+     },
+     "preload_fraction": {
+      "lower": 308124,
+      "midpoint": 308124,
+      "upper": 308124
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 308124,
+      "600.0": 308124,
+      "833.3333333333334": 308124
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 308124,
+      "20.0": 308124,
+      "22.0": 308124
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 308124,
+      "300.0": 308124,
+      "350.0": 308124
+     },
+     "reserve": {
+      "1.0": 308124,
+      "2.5": 308124,
+      "3.0": 308124
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 313470,
+      "4000.0": 334611,
+      "5000.0": 258066
+     },
+     "bleed_ml_per_min": {
+      "1.25": 301806,
+      "2.5": 302535,
+      "5.0": 301806
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 115182,
+      "0.2": 415530,
+      "0.3": 375435
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 255150,
+      "30.0": 296703,
+      "60.0": 354294
+     },
+     "crystalloid_transient_share": {
+      "0.4": 332424,
+      "0.6": 298161,
+      "0.8": 275562
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 302049,
+      "1000.0": 302049,
+      "500.0": 302049
+     },
+     "plasma_refill_target_share": {
+      "0.25": 303993,
+      "0.5": 301077,
+      "0.75": 301077
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 302535,
+      "240.0": 303264,
+      "60.0": 300348
+     },
+     "preload_fraction": {
+      "lower": 302049,
+      "midpoint": 302049,
+      "upper": 302049
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 302049,
+      "600.0": 302049,
+      "833.3333333333334": 302049
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 302049,
+      "20.0": 302049,
+      "22.0": 302049
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 302049,
+      "300.0": 302049,
+      "350.0": 302049
+     },
+     "reserve": {
+      "1.0": 302049,
+      "2.5": 302049,
+      "3.0": 302049
+     }
+    }
+   },
+   "joint": 7818525,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 2805921,
+     "4000.0": 2690010,
+     "5000.0": 2322594
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 2602530,
+     "2.5": 2609091,
+     "5.0": 2606904
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 2606904,
+     "2.5": 2609091,
+     "5.0": 2602530
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 1034451,
+     "0.2": 3739770,
+     "0.3": 3044304
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 2281041,
+     "30.0": 2670327,
+     "60.0": 2867157
+    },
+    "crystalloid_transient_share": {
+     "0.4": 2812482,
+     "0.6": 2525985,
+     "0.8": 2480058
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 2606175,
+     "1000.0": 2606175,
+     "500.0": 2606175
+    },
+    "plasma_refill_target_share": {
+     "0.25": 2617839,
+     "0.5": 2604717,
+     "0.75": 2595969
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 2604717,
+     "240.0": 2611278,
+     "60.0": 2602530
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 2606175,
+     "midpoint": 2606175,
+     "upper": 2606175
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 2606175,
+     "midpoint": 2606175,
+     "upper": 2606175
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 2606175,
+     "600.0": 2606175,
+     "833.3333333333334": 2606175
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 2606175,
+     "20.0": 2606175,
+     "22.0": 2606175
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 2606175,
+     "300.0": 2606175,
+     "350.0": 2606175
+    },
+    "reserve": {
+     "1.0": 2606175,
+     "2.5": 2606175,
+     "3.0": 2606175
+    }
+   }
+  },
+  "FD-BLD-07": {
+   "alone": {
+    "gi_bleed_57m": 354294,
+    "gi_bleed_72f": 354294
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 118098,
+      "4000.0": 118098,
+      "5000.0": 118098
+     },
+     "bleed_ml_per_min": {
+      "1.25": 118098,
+      "2.5": 118098,
+      "5.0": 118098
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 118098,
+      "0.2": 118098,
+      "0.3": 118098
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 118098,
+      "30.0": 118098,
+      "60.0": 118098
+     },
+     "crystalloid_transient_share": {
+      "0.4": 118098,
+      "0.6": 118098,
+      "0.8": 118098
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 118098,
+      "1000.0": 118098,
+      "500.0": 118098
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 177147,
+      "0.75": 177147
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 236196,
+      "240.0": 118098,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 118098,
+      "midpoint": 118098,
+      "upper": 118098
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 118098,
+      "600.0": 118098,
+      "833.3333333333334": 118098
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 118098,
+      "20.0": 118098,
+      "22.0": 118098
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 118098,
+      "300.0": 118098,
+      "350.0": 118098
+     },
+     "reserve": {
+      "1.0": 118098,
+      "2.5": 118098,
+      "3.0": 118098
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 118098,
+      "4000.0": 118098,
+      "5000.0": 118098
+     },
+     "bleed_ml_per_min": {
+      "1.25": 118098,
+      "2.5": 118098,
+      "5.0": 118098
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 118098,
+      "0.2": 118098,
+      "0.3": 118098
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 118098,
+      "30.0": 118098,
+      "60.0": 118098
+     },
+     "crystalloid_transient_share": {
+      "0.4": 118098,
+      "0.6": 118098,
+      "0.8": 118098
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 118098,
+      "1000.0": 118098,
+      "500.0": 118098
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 177147,
+      "0.75": 177147
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 236196,
+      "240.0": 118098,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 118098,
+      "midpoint": 118098,
+      "upper": 118098
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 118098,
+      "600.0": 118098,
+      "833.3333333333334": 118098
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 118098,
+      "20.0": 118098,
+      "22.0": 118098
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 118098,
+      "300.0": 118098,
+      "350.0": 118098
+     },
+     "reserve": {
+      "1.0": 118098,
+      "2.5": 118098,
+      "3.0": 118098
+     }
+    }
+   },
+   "joint": 3188646,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 1062882,
+     "4000.0": 1062882,
+     "5000.0": 1062882
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 1062882,
+     "2.5": 1062882,
+     "5.0": 1062882
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 1062882,
+     "2.5": 1062882,
+     "5.0": 1062882
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 1062882,
+     "0.2": 1062882,
+     "0.3": 1062882
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 1062882,
+     "30.0": 1062882,
+     "60.0": 1062882
+    },
+    "crystalloid_transient_share": {
+     "0.4": 1062882,
+     "0.6": 1062882,
+     "0.8": 1062882
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 1062882,
+     "1000.0": 1062882,
+     "500.0": 1062882
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 1594323,
+     "0.75": 1594323
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 2125764,
+     "240.0": 1062882,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 1062882,
+     "midpoint": 1062882,
+     "upper": 1062882
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 1062882,
+     "midpoint": 1062882,
+     "upper": 1062882
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 1062882,
+     "600.0": 1062882,
+     "833.3333333333334": 1062882
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 1062882,
+     "20.0": 1062882,
+     "22.0": 1062882
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 1062882,
+     "300.0": 1062882,
+     "350.0": 1062882
+    },
+    "reserve": {
+     "1.0": 1062882,
+     "2.5": 1062882,
+     "3.0": 1062882
+    }
+   }
+  },
+  "FD-BLD-08": {
+   "alone": {
+    "gi_bleed_57m": 1594323,
+    "gi_bleed_72f": 1594323
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 531441,
+      "4000.0": 531441,
+      "5000.0": 531441
+     },
+     "bleed_ml_per_min": {
+      "1.25": 531441,
+      "2.5": 531441,
+      "5.0": 531441
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 531441,
+      "0.2": 531441,
+      "0.3": 531441
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 531441,
+      "30.0": 531441,
+      "60.0": 531441
+     },
+     "crystalloid_transient_share": {
+      "0.4": 531441,
+      "0.6": 531441,
+      "0.8": 531441
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 531441,
+      "1000.0": 531441,
+      "500.0": 531441
+     },
+     "plasma_refill_target_share": {
+      "0.25": 531441,
+      "0.5": 531441,
+      "0.75": 531441
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 531441,
+      "240.0": 531441,
+      "60.0": 531441
+     },
+     "preload_fraction": {
+      "lower": 531441,
+      "midpoint": 531441,
+      "upper": 531441
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 531441,
+      "600.0": 531441,
+      "833.3333333333334": 531441
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 531441,
+      "20.0": 531441,
+      "22.0": 531441
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 531441,
+      "300.0": 531441,
+      "350.0": 531441
+     },
+     "reserve": {
+      "1.0": 531441,
+      "2.5": 531441,
+      "3.0": 531441
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 531441,
+      "4000.0": 531441,
+      "5000.0": 531441
+     },
+     "bleed_ml_per_min": {
+      "1.25": 531441,
+      "2.5": 531441,
+      "5.0": 531441
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 531441,
+      "0.2": 531441,
+      "0.3": 531441
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 531441,
+      "30.0": 531441,
+      "60.0": 531441
+     },
+     "crystalloid_transient_share": {
+      "0.4": 531441,
+      "0.6": 531441,
+      "0.8": 531441
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 531441,
+      "1000.0": 531441,
+      "500.0": 531441
+     },
+     "plasma_refill_target_share": {
+      "0.25": 531441,
+      "0.5": 531441,
+      "0.75": 531441
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 531441,
+      "240.0": 531441,
+      "60.0": 531441
+     },
+     "preload_fraction": {
+      "lower": 531441,
+      "midpoint": 531441,
+      "upper": 531441
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 531441,
+      "600.0": 531441,
+      "833.3333333333334": 531441
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 531441,
+      "20.0": 531441,
+      "22.0": 531441
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 531441,
+      "300.0": 531441,
+      "350.0": 531441
+     },
+     "reserve": {
+      "1.0": 531441,
+      "2.5": 531441,
+      "3.0": 531441
+     }
+    }
+   },
+   "joint": 14348907,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 4782969,
+     "4000.0": 4782969,
+     "5000.0": 4782969
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 4782969,
+     "2.5": 4782969,
+     "5.0": 4782969
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 4782969,
+     "2.5": 4782969,
+     "5.0": 4782969
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 4782969,
+     "0.2": 4782969,
+     "0.3": 4782969
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 4782969,
+     "30.0": 4782969,
+     "60.0": 4782969
+    },
+    "crystalloid_transient_share": {
+     "0.4": 4782969,
+     "0.6": 4782969,
+     "0.8": 4782969
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 4782969,
+     "1000.0": 4782969,
+     "500.0": 4782969
+    },
+    "plasma_refill_target_share": {
+     "0.25": 4782969,
+     "0.5": 4782969,
+     "0.75": 4782969
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 4782969,
+     "240.0": 4782969,
+     "60.0": 4782969
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 4782969,
+     "midpoint": 4782969,
+     "upper": 4782969
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 4782969,
+     "midpoint": 4782969,
+     "upper": 4782969
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 4782969,
+     "600.0": 4782969,
+     "833.3333333333334": 4782969
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 4782969,
+     "20.0": 4782969,
+     "22.0": 4782969
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 4782969,
+     "300.0": 4782969,
+     "350.0": 4782969
+    },
+    "reserve": {
+     "1.0": 4782969,
+     "2.5": 4782969,
+     "3.0": 4782969
+    }
+   }
+  },
+  "FD-BLD-09": {
+   "alone": {
+    "gi_bleed_57m": 1594323,
+    "gi_bleed_72f": 1594323
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 531441,
+      "4000.0": 531441,
+      "5000.0": 531441
+     },
+     "bleed_ml_per_min": {
+      "1.25": 531441,
+      "2.5": 531441,
+      "5.0": 531441
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 531441,
+      "0.2": 531441,
+      "0.3": 531441
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 531441,
+      "30.0": 531441,
+      "60.0": 531441
+     },
+     "crystalloid_transient_share": {
+      "0.4": 531441,
+      "0.6": 531441,
+      "0.8": 531441
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 531441,
+      "1000.0": 531441,
+      "500.0": 531441
+     },
+     "plasma_refill_target_share": {
+      "0.25": 531441,
+      "0.5": 531441,
+      "0.75": 531441
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 531441,
+      "240.0": 531441,
+      "60.0": 531441
+     },
+     "preload_fraction": {
+      "lower": 531441,
+      "midpoint": 531441,
+      "upper": 531441
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 531441,
+      "600.0": 531441,
+      "833.3333333333334": 531441
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 531441,
+      "20.0": 531441,
+      "22.0": 531441
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 531441,
+      "300.0": 531441,
+      "350.0": 531441
+     },
+     "reserve": {
+      "1.0": 531441,
+      "2.5": 531441,
+      "3.0": 531441
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 531441,
+      "4000.0": 531441,
+      "5000.0": 531441
+     },
+     "bleed_ml_per_min": {
+      "1.25": 531441,
+      "2.5": 531441,
+      "5.0": 531441
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 531441,
+      "0.2": 531441,
+      "0.3": 531441
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 531441,
+      "30.0": 531441,
+      "60.0": 531441
+     },
+     "crystalloid_transient_share": {
+      "0.4": 531441,
+      "0.6": 531441,
+      "0.8": 531441
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 531441,
+      "1000.0": 531441,
+      "500.0": 531441
+     },
+     "plasma_refill_target_share": {
+      "0.25": 531441,
+      "0.5": 531441,
+      "0.75": 531441
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 531441,
+      "240.0": 531441,
+      "60.0": 531441
+     },
+     "preload_fraction": {
+      "lower": 531441,
+      "midpoint": 531441,
+      "upper": 531441
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 531441,
+      "600.0": 531441,
+      "833.3333333333334": 531441
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 531441,
+      "20.0": 531441,
+      "22.0": 531441
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 531441,
+      "300.0": 531441,
+      "350.0": 531441
+     },
+     "reserve": {
+      "1.0": 531441,
+      "2.5": 531441,
+      "3.0": 531441
+     }
+    }
+   },
+   "joint": 14348907,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 4782969,
+     "4000.0": 4782969,
+     "5000.0": 4782969
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 4782969,
+     "2.5": 4782969,
+     "5.0": 4782969
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 4782969,
+     "2.5": 4782969,
+     "5.0": 4782969
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 4782969,
+     "0.2": 4782969,
+     "0.3": 4782969
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 4782969,
+     "30.0": 4782969,
+     "60.0": 4782969
+    },
+    "crystalloid_transient_share": {
+     "0.4": 4782969,
+     "0.6": 4782969,
+     "0.8": 4782969
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 4782969,
+     "1000.0": 4782969,
+     "500.0": 4782969
+    },
+    "plasma_refill_target_share": {
+     "0.25": 4782969,
+     "0.5": 4782969,
+     "0.75": 4782969
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 4782969,
+     "240.0": 4782969,
+     "60.0": 4782969
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 4782969,
+     "midpoint": 4782969,
+     "upper": 4782969
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 4782969,
+     "midpoint": 4782969,
+     "upper": 4782969
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 4782969,
+     "600.0": 4782969,
+     "833.3333333333334": 4782969
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 4782969,
+     "20.0": 4782969,
+     "22.0": 4782969
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 4782969,
+     "300.0": 4782969,
+     "350.0": 4782969
+    },
+    "reserve": {
+     "1.0": 4782969,
+     "2.5": 4782969,
+     "3.0": 4782969
+    }
+   }
+  },
+  "SECOND-UNIT": {
+   "alone": {
+    "gi_bleed_57m": 1594323,
+    "gi_bleed_72f": 1594323
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 531441,
+      "4000.0": 531441,
+      "5000.0": 531441
+     },
+     "bleed_ml_per_min": {
+      "1.25": 531441,
+      "2.5": 531441,
+      "5.0": 531441
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 531441,
+      "0.2": 531441,
+      "0.3": 531441
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 531441,
+      "30.0": 531441,
+      "60.0": 531441
+     },
+     "crystalloid_transient_share": {
+      "0.4": 531441,
+      "0.6": 531441,
+      "0.8": 531441
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 531441,
+      "1000.0": 531441,
+      "500.0": 531441
+     },
+     "plasma_refill_target_share": {
+      "0.25": 531441,
+      "0.5": 531441,
+      "0.75": 531441
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 531441,
+      "240.0": 531441,
+      "60.0": 531441
+     },
+     "preload_fraction": {
+      "lower": 531441,
+      "midpoint": 531441,
+      "upper": 531441
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 531441,
+      "600.0": 531441,
+      "833.3333333333334": 531441
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 531441,
+      "20.0": 531441,
+      "22.0": 531441
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 531441,
+      "300.0": 531441,
+      "350.0": 531441
+     },
+     "reserve": {
+      "1.0": 531441,
+      "2.5": 531441,
+      "3.0": 531441
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 531441,
+      "4000.0": 531441,
+      "5000.0": 531441
+     },
+     "bleed_ml_per_min": {
+      "1.25": 531441,
+      "2.5": 531441,
+      "5.0": 531441
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 531441,
+      "0.2": 531441,
+      "0.3": 531441
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 531441,
+      "30.0": 531441,
+      "60.0": 531441
+     },
+     "crystalloid_transient_share": {
+      "0.4": 531441,
+      "0.6": 531441,
+      "0.8": 531441
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 531441,
+      "1000.0": 531441,
+      "500.0": 531441
+     },
+     "plasma_refill_target_share": {
+      "0.25": 531441,
+      "0.5": 531441,
+      "0.75": 531441
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 531441,
+      "240.0": 531441,
+      "60.0": 531441
+     },
+     "preload_fraction": {
+      "lower": 531441,
+      "midpoint": 531441,
+      "upper": 531441
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 531441,
+      "600.0": 531441,
+      "833.3333333333334": 531441
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 531441,
+      "20.0": 531441,
+      "22.0": 531441
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 531441,
+      "300.0": 531441,
+      "350.0": 531441
+     },
+     "reserve": {
+      "1.0": 531441,
+      "2.5": 531441,
+      "3.0": 531441
+     }
+    }
+   },
+   "joint": 14348907,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 4782969,
+     "4000.0": 4782969,
+     "5000.0": 4782969
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 4782969,
+     "2.5": 4782969,
+     "5.0": 4782969
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 4782969,
+     "2.5": 4782969,
+     "5.0": 4782969
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 4782969,
+     "0.2": 4782969,
+     "0.3": 4782969
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 4782969,
+     "30.0": 4782969,
+     "60.0": 4782969
+    },
+    "crystalloid_transient_share": {
+     "0.4": 4782969,
+     "0.6": 4782969,
+     "0.8": 4782969
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 4782969,
+     "1000.0": 4782969,
+     "500.0": 4782969
+    },
+    "plasma_refill_target_share": {
+     "0.25": 4782969,
+     "0.5": 4782969,
+     "0.75": 4782969
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 4782969,
+     "240.0": 4782969,
+     "60.0": 4782969
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 4782969,
+     "midpoint": 4782969,
+     "upper": 4782969
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 4782969,
+     "midpoint": 4782969,
+     "upper": 4782969
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 4782969,
+     "600.0": 4782969,
+     "833.3333333333334": 4782969
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 4782969,
+     "20.0": 4782969,
+     "22.0": 4782969
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 4782969,
+     "300.0": 4782969,
+     "350.0": 4782969
+    },
+    "reserve": {
+     "1.0": 4782969,
+     "2.5": 4782969,
+     "3.0": 4782969
+    }
+   }
+  },
+  "U-HB": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 65610
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 39366,
+      "4000.0": 13122,
+      "5000.0": 13122
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 65610
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 21870,
+      "0.2": 21870,
+      "0.3": 21870
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 21870,
+      "30.0": 21870,
+      "60.0": 21870
+     },
+     "crystalloid_transient_share": {
+      "0.4": 21870,
+      "0.6": 21870,
+      "0.8": 21870
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 32805,
+      "500.0": 32805
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 13122,
+      "0.75": 52488
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 13122,
+      "240.0": 0,
+      "60.0": 52488
+     },
+     "preload_fraction": {
+      "lower": 21870,
+      "midpoint": 21870,
+      "upper": 21870
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 21870,
+      "600.0": 21870,
+      "833.3333333333334": 21870
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 21870,
+      "20.0": 21870,
+      "22.0": 21870
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 21870,
+      "300.0": 21870,
+      "350.0": 21870
+     },
+     "reserve": {
+      "1.0": 21870,
+      "2.5": 21870,
+      "3.0": 21870
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "U-OUT": {
+   "alone": {
+    "gi_bleed_57m": 225261,
+    "gi_bleed_72f": 282123
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 75087,
+      "4000.0": 75087,
+      "5000.0": 75087
+     },
+     "bleed_ml_per_min": {
+      "1.25": 85293,
+      "2.5": 94041,
+      "5.0": 45927
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 75087,
+      "0.2": 75087,
+      "0.3": 75087
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 75087,
+      "30.0": 75087,
+      "60.0": 75087
+     },
+     "crystalloid_transient_share": {
+      "0.4": 75087,
+      "0.6": 75087,
+      "0.8": 75087
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 80919,
+      "1000.0": 72171,
+      "500.0": 72171
+     },
+     "plasma_refill_target_share": {
+      "0.25": 98415,
+      "0.5": 69984,
+      "0.75": 56862
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 69984,
+      "240.0": 98415,
+      "60.0": 56862
+     },
+     "preload_fraction": {
+      "lower": 32805,
+      "midpoint": 78732,
+      "upper": 113724
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 100602,
+      "600.0": 85293,
+      "833.3333333333334": 39366
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 75087,
+      "20.0": 75087,
+      "22.0": 75087
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 75087,
+      "300.0": 75087,
+      "350.0": 75087
+     },
+     "reserve": {
+      "1.0": 75087,
+      "2.5": 75087,
+      "3.0": 75087
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 94041,
+      "4000.0": 94041,
+      "5000.0": 94041
+     },
+     "bleed_ml_per_min": {
+      "1.25": 91854,
+      "2.5": 135594,
+      "5.0": 54675
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 94041,
+      "0.2": 94041,
+      "0.3": 94041
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 94041,
+      "30.0": 94041,
+      "60.0": 94041
+     },
+     "crystalloid_transient_share": {
+      "0.4": 94041,
+      "0.6": 94041,
+      "0.8": 94041
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 98415,
+      "1000.0": 91854,
+      "500.0": 91854
+     },
+     "plasma_refill_target_share": {
+      "0.25": 111537,
+      "0.5": 87480,
+      "0.75": 83106
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 96228,
+      "240.0": 104976,
+      "60.0": 80919
+     },
+     "preload_fraction": {
+      "lower": 32805,
+      "midpoint": 100602,
+      "upper": 148716
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 102789,
+      "600.0": 104976,
+      "833.3333333333334": 74358
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 94041,
+      "20.0": 94041,
+      "22.0": 94041
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 94041,
+      "300.0": 94041,
+      "350.0": 94041
+     },
+     "reserve": {
+      "1.0": 94041,
+      "2.5": 94041,
+      "3.0": 94041
+     }
+    }
+   },
+   "joint": 441774,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 147258,
+     "4000.0": 147258,
+     "5000.0": 147258
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 177147,
+     "2.5": 170586,
+     "5.0": 94041
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 133407,
+     "2.5": 207765,
+     "5.0": 100602
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 147258,
+     "0.2": 147258,
+     "0.3": 147258
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 147258,
+     "30.0": 147258,
+     "60.0": 147258
+    },
+    "crystalloid_transient_share": {
+     "0.4": 147258,
+     "0.6": 147258,
+     "0.8": 147258
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 153090,
+     "1000.0": 144342,
+     "500.0": 144342
+    },
+    "plasma_refill_target_share": {
+     "0.25": 216513,
+     "0.5": 124659,
+     "0.75": 100602
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 144342,
+     "240.0": 196830,
+     "60.0": 100602
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 78732,
+     "midpoint": 164025,
+     "upper": 199017
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 43740,
+     "midpoint": 183708,
+     "upper": 214326
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 229635,
+     "600.0": 161838,
+     "833.3333333333334": 50301
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 147258,
+     "20.0": 147258,
+     "22.0": 147258
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 147258,
+     "300.0": 147258,
+     "350.0": 147258
+    },
+    "reserve": {
+     "1.0": 147258,
+     "2.5": 147258,
+     "3.0": 147258
+    }
+   }
+  }
+ },
+ "sizes": {
+  "alone": 1594323,
+  "common_bleed": 4782969,
+  "joint": 14348907
+ },
+ "survivors_listed": 0,
+ "variants": {
+  "V10_fd07_from_end_of_loss": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 0
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "V1_envelope_tolerance": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 0
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "V2_fd03_both_midpoint": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 0
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "V3_fd03_both_lower": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 0
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "V4_fd02_lower_bound_when_responsive": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 0
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "V5_fd04_net_effect": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 0
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "V6_fd06_from_arrival_hb": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 0
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "V7_fd07_500_ml": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 0
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "V8_common_bleed_rate": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 0
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "V9_fd05_from_end_of_infusion": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 0
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  }
+ },
+ "without": {
+  "FD-BLD-01": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 0
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "FD-BLD-02": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 0
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "FD-BLD-03": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 0
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "FD-BLD-04": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 0
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "FD-BLD-05": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 0
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "FD-BLD-06": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 0
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "FD-BLD-07": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 192
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 192,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 192
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 192,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 48,
+      "60.0": 144
+     },
+     "crystalloid_transient_share": {
+      "0.4": 96,
+      "0.6": 48,
+      "0.8": 48
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 96,
+      "500.0": 96
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 96,
+      "0.75": 96
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 96,
+      "240.0": 0,
+      "60.0": 96
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 192
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 192,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 96,
+      "20.0": 48,
+      "22.0": 48
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 144,
+      "300.0": 48,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 64,
+      "2.5": 64,
+      "3.0": 64
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "FD-BLD-08": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 0
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "FD-BLD-09": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 0
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "SECOND-UNIT": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 0
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  },
+  "U-HB": {
+   "alone": {
+    "gi_bleed_57m": 1494,
+    "gi_bleed_72f": 3591
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 288,
+      "4000.0": 720,
+      "5000.0": 486
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 1494
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 864,
+      "0.3": 630
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 144,
+      "30.0": 504,
+      "60.0": 846
+     },
+     "crystalloid_transient_share": {
+      "0.4": 432,
+      "0.6": 558,
+      "0.8": 504
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 498,
+      "1000.0": 498,
+      "500.0": 498
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 747,
+      "0.75": 747
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 996,
+      "240.0": 498,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 1494
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 1494,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 288,
+      "20.0": 522,
+      "22.0": 684
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 666,
+      "300.0": 828,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 498,
+      "2.5": 498,
+      "3.0": 498
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 432,
+      "4000.0": 1701,
+      "5000.0": 1458
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 1197,
+      "5.0": 2394
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 1836,
+      "0.3": 1755
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 351,
+      "30.0": 1161,
+      "60.0": 2079
+     },
+     "crystalloid_transient_share": {
+      "0.4": 918,
+      "0.6": 1512,
+      "0.8": 1161
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 1197,
+      "1000.0": 1197,
+      "500.0": 1197
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 1596,
+      "0.75": 1995
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 1995,
+      "240.0": 1596,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 1197,
+      "upper": 2394
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 3591,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 945,
+      "20.0": 1323,
+      "22.0": 1323
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 1053,
+      "300.0": 1323,
+      "350.0": 1215
+     },
+     "reserve": {
+      "1.0": 1197,
+      "2.5": 1197,
+      "3.0": 1197
+     }
+    }
+   },
+   "joint": 2241,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 432,
+     "4000.0": 1080,
+     "5000.0": 729
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 2241
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 747,
+     "5.0": 1494
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 1296,
+     "0.3": 945
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 216,
+     "30.0": 756,
+     "60.0": 1269
+    },
+    "crystalloid_transient_share": {
+     "0.4": 648,
+     "0.6": 837,
+     "0.8": 756
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 747,
+     "1000.0": 747,
+     "500.0": 747
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 996,
+     "0.75": 1245
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 1245,
+     "240.0": 996,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 2241
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 747,
+     "upper": 1494
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 2241,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 432,
+     "20.0": 783,
+     "22.0": 1026
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 999,
+     "300.0": 1242,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 747,
+     "2.5": 747,
+     "3.0": 747
+    }
+   }
+  },
+  "U-OUT": {
+   "alone": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 0
+   },
+   "alone_marginal": {
+    "gi_bleed_57m": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    },
+    "gi_bleed_72f": {
+     "arrival_circulating_volume_ml": {
+      "3000.0": 0,
+      "4000.0": 0,
+      "5000.0": 0
+     },
+     "bleed_ml_per_min": {
+      "1.25": 0,
+      "2.5": 0,
+      "5.0": 0
+     },
+     "crystalloid_effective_ml_per_ml": {
+      "0.125": 0,
+      "0.2": 0,
+      "0.3": 0
+     },
+     "crystalloid_leak_tau_min": {
+      "15.0": 0,
+      "30.0": 0,
+      "60.0": 0
+     },
+     "crystalloid_transient_share": {
+      "0.4": 0,
+      "0.6": 0,
+      "0.8": 0
+     },
+     "plasma_refill_capacity_ml": {
+      "100.0": 0,
+      "1000.0": 0,
+      "500.0": 0
+     },
+     "plasma_refill_target_share": {
+      "0.25": 0,
+      "0.5": 0,
+      "0.75": 0
+     },
+     "plasma_refill_tau_min": {
+      "120.0": 0,
+      "240.0": 0,
+      "60.0": 0
+     },
+     "preload_fraction": {
+      "lower": 0,
+      "midpoint": 0,
+      "upper": 0
+     },
+     "preload_scale_over_kappa_ml": {
+      "1500.0": 0,
+      "600.0": 0,
+      "833.3333333333334": 0
+     },
+     "red_cell_unit_hb_g_dl": {
+      "18.0": 0,
+      "20.0": 0,
+      "22.0": 0
+     },
+     "red_cell_unit_volume_ml": {
+      "250.0": 0,
+      "300.0": 0,
+      "350.0": 0
+     },
+     "reserve": {
+      "1.0": 0,
+      "2.5": 0,
+      "3.0": 0
+     }
+    }
+   },
+   "joint": 0,
+   "marginal": {
+    "arrival_circulating_volume_ml": {
+     "3000.0": 0,
+     "4000.0": 0,
+     "5000.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_57m": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "bleed_ml_per_min|gi_bleed_72f": {
+     "1.25": 0,
+     "2.5": 0,
+     "5.0": 0
+    },
+    "crystalloid_effective_ml_per_ml": {
+     "0.125": 0,
+     "0.2": 0,
+     "0.3": 0
+    },
+    "crystalloid_leak_tau_min": {
+     "15.0": 0,
+     "30.0": 0,
+     "60.0": 0
+    },
+    "crystalloid_transient_share": {
+     "0.4": 0,
+     "0.6": 0,
+     "0.8": 0
+    },
+    "plasma_refill_capacity_ml": {
+     "100.0": 0,
+     "1000.0": 0,
+     "500.0": 0
+    },
+    "plasma_refill_target_share": {
+     "0.25": 0,
+     "0.5": 0,
+     "0.75": 0
+    },
+    "plasma_refill_tau_min": {
+     "120.0": 0,
+     "240.0": 0,
+     "60.0": 0
+    },
+    "preload_fraction|gi_bleed_57m": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_fraction|gi_bleed_72f": {
+     "lower": 0,
+     "midpoint": 0,
+     "upper": 0
+    },
+    "preload_scale_over_kappa_ml": {
+     "1500.0": 0,
+     "600.0": 0,
+     "833.3333333333334": 0
+    },
+    "red_cell_unit_hb_g_dl": {
+     "18.0": 0,
+     "20.0": 0,
+     "22.0": 0
+    },
+    "red_cell_unit_volume_ml": {
+     "250.0": 0,
+     "300.0": 0,
+     "350.0": 0
+    },
+    "reserve": {
+     "1.0": 0,
+     "2.5": 0,
+     "3.0": 0
+    }
+   }
+  }
+ }
+}
