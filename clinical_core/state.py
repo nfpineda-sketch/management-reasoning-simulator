@@ -34,7 +34,7 @@ class UnresolvedBoundary(CoreInvariantError):
 class Channel(str, Enum):
     """The nine physiological channels and the three chemistry values (proposal §7.2)."""
 
-    V = "V"            # C1 intravascular volume, mL-equivalent deviation from arrival
+    V = "V"            # C1 effective circulating volume / preload coordinate, mL-eq deviation from arrival
     T = "T"            # C2 vascular tone, multiplier (arrival = 1)
     P = "P"            # C3 pump performance, multiplier (arrival = 1)
     R = "R"            # C4 rhythm and pulse state: a state machine, changed only by transitions
@@ -52,7 +52,9 @@ SCALAR_CHANNELS = tuple(channel for channel in Channel if channel is not Channel
 
 #: What each channel means, in the proposal's own words, and the unit the core keeps it in.
 CHANNEL_DEFINITIONS: Mapping[Channel, tuple[str, str, str]] = {
-    Channel.V: ("C1", "mL-equivalent deviation from arrival", "Intravascular volume"),
+    Channel.V: ("C1", "internal preload coordinate, mL-equivalent deviation from arrival: kappa x the circulating-"
+                      "volume deviation of the shared blood state (P2I-2T); not a measured blood volume",
+                "Effective circulating volume / preload coordinate (V)"),
     Channel.T: ("C2", "multiplier, arrival = 1", "Vascular tone"),
     Channel.P: ("C3", "multiplier, arrival = 1", "Pump performance"),
     Channel.R: ("C4", "state machine: code, rate, effective-output factor, pulse", "Rhythm and pulse state"),
@@ -468,6 +470,90 @@ class AuxiliaryState:
 ARRIVAL_AUXILIARY = AuxiliaryState()
 
 
+#: The shared haemorrhage / circulating-blood state (P2I-2T), by field: what has entered or left
+#: the circulation since arrival, by process. Every field is cumulative, so none ever falls.
+#: Volumes are mL-equivalent of circulating volume, read against the profile's arrival circulating
+#: volume (a provisional normalization, not a measured litre); red cells are in units of the
+#: arrival red-cell content (arrival = 1). Only the integrator changes it, each change a
+#: ``provenance.BloodChange`` that names its process and its source. It is never shown to a resident.
+BLOOD_FIELDS: Mapping[str, str] = {
+    "shed_ml": "whole blood lost since arrival, from every haemorrhage source",
+    "shed_red_cells": "red-cell content lost with that blood, at the composition the blood had when it left",
+    "crystalloid_in_ml": "crystalloid that entered the circulation (each order's intravascular share)",
+    "crystalloid_out_ml": "crystalloid that redistributed out of the circulation again",
+    "transfused_ml": "circulating volume that packed red cells added",
+    "transfused_red_cells": "red-cell content that packed red cells added",
+    "refill_ml": "plasma refilled into the circulation from the interstitium (it carries no red cells)",
+}
+#: What moved V and Hb outside the blood state since arrival: declared probes (scripted events) and the
+#: integrator's bounds. They keep the identities V = kappa x C + outside_v and Hb = composition +
+#: outside_hb checkable every minute, also after a resume; with no probe and no bound acting both are 0.
+BLOOD_OFFSETS: Mapping[str, str] = {
+    "outside_v": "V moved by declared probes and bounds, outside the blood state (V units)",
+    "outside_hb": "Hb moved by declared probes and bounds, outside the blood state (g/dL)",
+}
+#: Floating-point noise only, as the integrator's conservation tolerance; not a clinical tolerance.
+_BLOOD_TOLERANCE = 1e-9
+
+
+@dataclass(frozen=True)
+class BloodState:
+    """Typed, serializable shared blood state owned by the common core (P2I-2T); see ``BLOOD_FIELDS``.
+
+    One haemorrhage process takes whole blood -- volume and red cells together -- out of it;
+    crystalloid, packed red cells and plasma refill put volume (and, for red cells, content) in.
+    From it the core derives the circulating-volume deviation (``volume_ml``), which V maps by
+    one explicit conversion, and the red-cell content (``red_cells``), which with the volume
+    gives haemoglobin as a concentration (``derived.blood_haemoglobin``). ``BLOOD_OFFSETS``
+    account for what probes and bounds moved outside it.
+    """
+
+    shed_ml: float = 0.0
+    shed_red_cells: float = 0.0
+    crystalloid_in_ml: float = 0.0
+    crystalloid_out_ml: float = 0.0
+    transfused_ml: float = 0.0
+    transfused_red_cells: float = 0.0
+    refill_ml: float = 0.0
+    outside_v: float = 0.0
+    outside_hb: float = 0.0
+
+    def __post_init__(self):
+        for name in BLOOD_FIELDS:
+            if _finite(getattr(self, name), name) < 0:
+                raise CoreInvariantError(f"the cumulative {name} is never negative")
+        for name in BLOOD_OFFSETS:
+            _finite(getattr(self, name), name)
+        if self.crystalloid_out_ml > self.crystalloid_in_ml + _BLOOD_TOLERANCE * max(1.0, self.crystalloid_in_ml):
+            raise CoreInvariantError("no more crystalloid leaves the circulation than entered it")
+        if self.red_cells <= 0:
+            raise CoreInvariantError("the circulation keeps some red-cell content")
+
+    @property
+    def volume_ml(self) -> float:
+        """Circulating-volume deviation from arrival (mL-equivalent): what entered less what left."""
+        return math.fsum((-self.shed_ml, self.crystalloid_in_ml, -self.crystalloid_out_ml, self.transfused_ml,
+                          self.refill_ml))
+
+    @property
+    def red_cells(self) -> float:
+        """Red-cell content in units of the arrival content (arrival = 1)."""
+        return math.fsum((1.0, -self.shed_red_cells, self.transfused_red_cells))
+
+    def to_dict(self) -> dict:
+        return {name: getattr(self, name) for name in (*BLOOD_FIELDS, *BLOOD_OFFSETS)}
+
+    @classmethod
+    def from_dict(cls, data: Mapping) -> "BloodState":
+        names = (*BLOOD_FIELDS, *BLOOD_OFFSETS)
+        if set(data) != set(names):
+            raise CoreInvariantError(f"the blood state names exactly {sorted(names)}, not {sorted(data)}")
+        return cls(**{name: data[name] for name in names})
+
+
+ARRIVAL_BLOOD = BloodState()
+
+
 @dataclass(frozen=True)
 class CoreState:
     """The whole physiological state at the end of ``minute`` (0 = arrival).
@@ -475,7 +561,8 @@ class CoreState:
     ``internal`` holds each contributor's own state under its source key ("kind:id");
     only that contributor's contribution can replace it. ``aux`` is the core's own memory
     (``AuxiliaryState``), which only the integrator changes. ``fio2`` is a support setting,
-    not a channel: proposal §7.3 makes SpO2 a function of G, L, W and FiO2.
+    not a channel: proposal §7.3 makes SpO2 a function of G, L, W and FiO2. ``blood`` is the
+    shared blood state (``BloodState``, P2I-2T), which only the integrator changes.
     ``terminal_since`` is the minute the rhythm stopped perfusing; resuscitation is not
     modelled (proposal Appendix A5), so it is never cleared.
     """
@@ -497,6 +584,7 @@ class CoreState:
     terminal_since: int | None = None
     internal: FrozenRecord = field(default=EMPTY)
     aux: AuxiliaryState = field(default=ARRIVAL_AUXILIARY)
+    blood: BloodState = field(default=ARRIVAL_BLOOD)
 
     def __post_init__(self):
         if isinstance(self.minute, bool) or not isinstance(self.minute, int) or self.minute < 0:
@@ -519,6 +607,8 @@ class CoreState:
             raise CoreInvariantError("internal state is a FrozenRecord")
         if not isinstance(self.aux, AuxiliaryState):
             raise CoreInvariantError("the core's auxiliary state is an AuxiliaryState")
+        if not isinstance(self.blood, BloodState):
+            raise CoreInvariantError("the shared blood state is a BloodState")
         if any(key.startswith("core_coupling:") for key in self.internal):
             # Before P2D-1 the core kept its memory here; it now lives only in ``aux``.
             raise CoreInvariantError("internal holds contributors' records only; the core's memory is aux")
@@ -538,7 +628,7 @@ class CoreState:
     def to_dict(self) -> dict:
         data = {"minute": self.minute, "R": self.R.to_dict(), "fio2": self.fio2,
                 "terminal_since": self.terminal_since, "internal": self.internal.to_dict(),
-                "aux": self.aux.to_dict()}
+                "aux": self.aux.to_dict(), "blood": self.blood.to_dict()}
         for channel in SCALAR_CHANNELS:
             data[_attribute(channel)] = getattr(self, _attribute(channel))
         return data
@@ -555,6 +645,13 @@ class CoreState:
             values["aux"] = ARRIVAL_AUXILIARY
         else:
             values["aux"] = AuxiliaryState.from_dict(values["aux"])
+        if "blood" not in values:
+            if values.get("minute") != 0:
+                raise CoreInvariantError("a state after arrival carries its shared blood state (P2I-2T); this one "
+                                         "does not, so it cannot be resumed")
+            values["blood"] = ARRIVAL_BLOOD
+        else:
+            values["blood"] = BloodState.from_dict(values["blood"])
         return cls(**values)
 
     def digest(self) -> str:

@@ -23,7 +23,7 @@ from clinical_core.state import UnresolvedBoundary
 BLEEDING = Anchors(case_id="synthetic_gi", sbp=88.0, dbp=54.0, hr=124.0, spo2=97.0, respiratory_rate=26.0,
                    crt_s=5.0, lactate=4.4, hb=6.7, glucose=118.0, k=4.1, fio2=0.21,
                    rhythm=RhythmState.sinus(124.0), consciousness_level=0)
-BLEED = GIHaemorrhage("gi_haemorrhage", 2.5, 0.009, 0.8, 0.1)
+BLEED = GIHaemorrhage("gi_haemorrhage", 2.5, 0.8, 0.1)
 
 
 @dataclass(frozen=True)
@@ -46,9 +46,13 @@ class Step(Contributor):
 
 @dataclass(frozen=True)
 class Loss(Contributor):
-    """Volume lost at a constant rate until it stops, without changing Hb (test only)."""
+    """Volume lost at a constant rate until it stops, without changing Hb (test only).
 
-    kind = SourceKind.DISEASE_MODULE
+    A scripted probe of the preload coordinate alone: since P2I-2T only a probe may move V
+    directly; a disease module loses whole blood through the shared blood state.
+    """
+
+    kind = SourceKind.SCRIPTED_EVENT
     type_name = "test_loss"
     id: str
     per_minute: float
@@ -200,7 +204,7 @@ def test_kd_s1_bradypnoea_comes_only_from_an_explicit_ventilation_mechanism():
 HEMOSTASIS = EndoscopicHemostasis("endoscopy", 30)
 #: A brisker bleed than BLEED, so that 30 minutes give a clear shock (the thresholds below are
 #: relative to the rise it causes, not to any provisional gain).
-BRISK = GIHaemorrhage("gi_haemorrhage", 10.0, 0.02, 0.8, 0.1)
+BRISK = GIHaemorrhage("gi_haemorrhage", 10.0, 0.8, 0.1)
 
 
 def _rates(trajectory):
@@ -208,13 +212,18 @@ def _rates(trajectory):
 
 
 def test_kd_s2_hemostasis_never_writes_the_rate_it_acts_only_through_volume_and_haemoglobin():
-    """The same V and Hb changes, replayed without any bleeding module, give the same rate every minute."""
+    """The same V and Hb changes, replayed without any bleeding module, give the same rate every minute.
+
+    Since P2I-2T the module moves V through the shared blood state, refill moves V too and Hb is
+    the blood composition's: every V and Hb change of the run is replayed.
+    """
     bleeding = run(BLEEDING, (BLEED, HEMOSTASIS), 120)
     for record in bleeding.records:
-        assert {d.channel for d in record.deltas if d.source == BLEED.source} <= {Channel.V, Channel.HB}
-    changes = tuple((record.minute, sum(d.amount for d in record.deltas if d.source == BLEED.source
-                                        and d.channel is Channel.V),
-                     sum(d.amount for d in record.deltas if d.source == BLEED.source and d.channel is Channel.HB))
+        assert {d.channel for d in record.deltas if d.source == BLEED.source} <= {Channel.V}
+        assert {d.source.key for d in record.deltas if d.channel in (Channel.V, Channel.HB)} <= {
+            BLEED.source.key, "core_coupling:plasma_refill", "core_coupling:blood_composition"}
+    changes = tuple((record.minute, sum(d.amount for d in record.deltas if d.channel is Channel.V),
+                     sum(d.amount for d in record.deltas if d.channel is Channel.HB))
                     for record in bleeding.records)
     replayed = run(BLEEDING, (Replay("replay", changes),), 120)
     assert _rates(replayed) == pytest.approx(_rates(bleeding), abs=1e-9)
@@ -307,9 +316,9 @@ def test_kd_s2_a_rate_the_rhythm_owns_does_not_answer_to_the_drive():
 
 @dataclass(frozen=True)
 class Infuse(Contributor):
-    """Volume given at a constant rate until it stops (test only)."""
+    """Volume given at a constant rate until it stops (test only; a scripted probe of V, as ``Loss``)."""
 
-    kind = SourceKind.INTERVENTION
+    kind = SourceKind.SCRIPTED_EVENT
     type_name = "test_infuse"
     id: str
     per_minute: float

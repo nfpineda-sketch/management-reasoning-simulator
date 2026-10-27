@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Iterable, Mapping
 
-from .state import AUXILIARY_FIELDS, Channel, CoreInvariantError, RhythmState, SCALAR_CHANNELS
+from .state import AUXILIARY_FIELDS, BLOOD_FIELDS, Channel, CoreInvariantError, RhythmState, SCALAR_CHANNELS
 
 
 class ProvenanceError(CoreInvariantError):
@@ -261,6 +261,137 @@ class AuxiliaryChange:
                 "source": self.source.to_dict(), "minute": self.minute, "description": self.description}
 
 
+class BloodProcess(str, Enum):
+    """The processes that move volume or red cells into or out of the circulation (P2I-2T)."""
+
+    WHOLE_BLOOD_LOSS = "whole_blood_loss"            # out: volume and red cells, at the current composition
+    CRYSTALLOID_IN = "crystalloid_in"                # in: volume, no red cells
+    CRYSTALLOID_OUT = "crystalloid_out"              # out: crystalloid redistributing out, no red cells
+    RED_CELL_TRANSFUSION = "red_cell_transfusion"    # in: volume and red cells, at the unit's composition
+    PLASMA_REFILL = "plasma_refill"                  # in: plasma from the interstitium, no red cells
+
+
+#: Which way each process moves the circulation, the ``BloodState`` fields it adds to (volume,
+#: red cells) and the source kinds that may declare it. Plasma refill is the core's own coupling.
+BLOOD_PROCESSES: Mapping[BloodProcess, tuple[int, str, str | None, frozenset]] = {
+    BloodProcess.WHOLE_BLOOD_LOSS: (-1, "shed_ml", "shed_red_cells",
+                                    frozenset({SourceKind.DISEASE_MODULE, SourceKind.SCRIPTED_EVENT})),
+    BloodProcess.CRYSTALLOID_IN: (1, "crystalloid_in_ml", None,
+                                  frozenset({SourceKind.INTERVENTION, SourceKind.SCRIPTED_EVENT})),
+    BloodProcess.CRYSTALLOID_OUT: (-1, "crystalloid_out_ml", None,
+                                   frozenset({SourceKind.INTERVENTION, SourceKind.SCRIPTED_EVENT})),
+    BloodProcess.RED_CELL_TRANSFUSION: (1, "transfused_ml", "transfused_red_cells",
+                                        frozenset({SourceKind.INTERVENTION, SourceKind.SCRIPTED_EVENT})),
+    BloodProcess.PLASMA_REFILL: (1, "refill_ml", None, frozenset({SourceKind.CORE_COUPLING})),
+}
+if {name for _, volume, cells, _ in BLOOD_PROCESSES.values() for name in (volume, cells) if name} != set(BLOOD_FIELDS):
+    raise ProvenanceError("every blood-state field is owned by exactly the processes that change it")
+
+
+def _positive_volume(value: Any) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
+        raise ProvenanceError(f"a blood flow moves a finite positive volume, not {value!r}")
+    return float(value)
+
+
+@dataclass(frozen=True)
+class BloodFlow:
+    """What one source declares moves into or out of the circulation in one minute (P2I-2T).
+
+    A source declares only the volume and the process. The red cells it carries are resolved
+    by the integrator: whole blood leaves at the composition the blood has at the start of the
+    minute; a red-cell transfusion brings the haemoglobin concentration of its unit
+    (``hb_g_dl``, the only process that declares one); crystalloid and refill bring none. So
+    no source writes haemoglobin, and no bleed has a separate volume rate and Hb rate.
+    """
+
+    process: BloodProcess
+    volume_ml: float
+    source: Source
+    minute: int
+    description: str
+    modulated_by: tuple[Source, ...] = ()
+    hb_g_dl: float | None = None
+
+    def __post_init__(self):
+        if not isinstance(self.process, BloodProcess):
+            object.__setattr__(self, "process", BloodProcess(self.process))
+        object.__setattr__(self, "volume_ml", _positive_volume(self.volume_ml))
+        if not isinstance(self.source, Source):
+            raise ProvenanceError("every blood flow names its Source")
+        if self.source.kind not in BLOOD_PROCESSES[self.process][3]:
+            raise ProvenanceError(f"a {self.source.kind.value} source does not declare {self.process.value}")
+        _minute(self.minute)
+        _description(self.description)
+        object.__setattr__(self, "modulated_by", tuple(self.modulated_by))
+        if any(not isinstance(item, Source) for item in self.modulated_by):
+            raise ProvenanceError("modulators are Sources")
+        if self.process is BloodProcess.RED_CELL_TRANSFUSION:
+            if isinstance(self.hb_g_dl, bool) or not isinstance(self.hb_g_dl, (int, float)) \
+                    or not math.isfinite(self.hb_g_dl) or self.hb_g_dl <= 0:
+                raise ProvenanceError("a red-cell transfusion declares the haemoglobin concentration of its unit")
+            object.__setattr__(self, "hb_g_dl", float(self.hb_g_dl))
+        elif self.hb_g_dl is not None:
+            raise ProvenanceError(f"{self.process.value} declares no haemoglobin: whole blood leaves at the current "
+                                  "composition, and crystalloid and plasma carry none")
+
+
+@dataclass(frozen=True)
+class BloodChange:
+    """One flow applied to the shared blood state, with the red cells it carried (P2I-2T).
+
+    The integrator writes one for every ``BloodFlow`` and for the core's plasma refill, so the
+    blood state can be replayed and audited: each of its fields changes by exactly the sum of
+    the changes of the process that owns it. ``hb_g_dl`` is the haemoglobin concentration the
+    flow carried (the current one for whole blood, the unit's for a transfusion, 0 otherwise).
+    """
+
+    process: BloodProcess
+    volume_ml: float
+    red_cells: float
+    hb_g_dl: float
+    source: Source
+    minute: int
+    description: str
+    modulated_by: tuple[Source, ...] = ()
+
+    def __post_init__(self):
+        if not isinstance(self.process, BloodProcess):
+            object.__setattr__(self, "process", BloodProcess(self.process))
+        object.__setattr__(self, "volume_ml", _positive_volume(self.volume_ml))
+        for name in ("red_cells", "hb_g_dl"):
+            value = getattr(self, name)
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0:
+                raise ProvenanceError(f"{name} of a blood change is a finite non-negative number")
+            object.__setattr__(self, name, float(value))
+        if BLOOD_PROCESSES[self.process][2] is None and (self.red_cells or self.hb_g_dl):
+            raise ProvenanceError(f"{self.process.value} carries no red cells")
+        if not isinstance(self.source, Source) or self.source.kind not in BLOOD_PROCESSES[self.process][3]:
+            raise ProvenanceError(f"{self.process.value} is not written by this source")
+        _minute(self.minute)
+        _description(self.description)
+        object.__setattr__(self, "modulated_by", tuple(self.modulated_by))
+
+    @property
+    def direction(self) -> int:
+        return BLOOD_PROCESSES[self.process][0]
+
+    @property
+    def signed_volume_ml(self) -> float:
+        """The change of the circulating-volume deviation: + into the circulation, - out of it."""
+        return self.direction * self.volume_ml
+
+    @property
+    def signed_red_cells(self) -> float:
+        return self.direction * self.red_cells
+
+    def to_dict(self) -> dict:
+        return {"type": "blood", "process": self.process.value, "volume_ml": self.volume_ml,
+                "red_cells": self.red_cells, "hb_g_dl": self.hb_g_dl, "source": self.source.to_dict(),
+                "minute": self.minute, "description": self.description,
+                "modulated_by": [item.to_dict() for item in self.modulated_by]}
+
+
 @dataclass(frozen=True)
 class MinuteRecord:
     """Everything applied in one minute, in a deterministic order."""
@@ -273,10 +404,12 @@ class MinuteRecord:
     internal_updates: tuple[str, ...] = field(default=())
     auxiliary: tuple[AuxiliaryChange, ...] = field(default=())
     demand: tuple[DemandModifier, ...] = field(default=())
+    blood: tuple[BloodChange, ...] = field(default=())
 
     def __post_init__(self):
         _minute(self.minute)
-        for item in self.deltas + self.transitions + self.settings + self.events + self.auxiliary + self.demand:
+        for item in (self.deltas + self.transitions + self.settings + self.events + self.auxiliary + self.demand
+                     + self.blood):
             if item.minute != self.minute:
                 raise ProvenanceError("a record holds only changes applied in its own minute")
 
@@ -297,7 +430,8 @@ class MinuteRecord:
                 "events": [item.to_dict() for item in self.events],
                 "internal_updates": list(self.internal_updates),
                 "auxiliary": [item.to_dict() for item in self.auxiliary],
-                "demand": [item.to_dict() for item in self.demand]}
+                "demand": [item.to_dict() for item in self.demand],
+                "blood": [item.to_dict() for item in self.blood]}
 
 
 def attribution(records: Iterable[MinuteRecord], channel: Channel) -> dict[str, float]:
@@ -308,3 +442,14 @@ def attribution(records: Iterable[MinuteRecord], channel: Channel) -> dict[str, 
             if delta.channel is channel:
                 totals.setdefault(delta.source.key, []).append(delta.amount)
     return {key: math.fsum(values) for key, values in sorted(totals.items())}
+
+
+def blood_attribution(records: Iterable[MinuteRecord]) -> dict[str, dict[str, float]]:
+    """Signed volume and red cells moved per (process, source) over a run (P2I-2T)."""
+    totals: dict[str, dict[str, list[float]]] = {}
+    for record in records:
+        for change in record.blood:
+            entry = totals.setdefault(f"{change.process.value} {change.source.key}", {"volume_ml": [], "red_cells": []})
+            entry["volume_ml"].append(change.signed_volume_ml)
+            entry["red_cells"].append(change.signed_red_cells)
+    return {key: {name: math.fsum(values) for name, values in entry.items()} for key, entry in sorted(totals.items())}

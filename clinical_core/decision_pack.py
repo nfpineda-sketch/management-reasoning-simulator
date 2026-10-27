@@ -108,8 +108,7 @@ def scenario_contributors(case: str, scenario: str, source_scale: float = 1.0) -
         _INPUTS[key] = contributors_from_legacy(calibration._legacy_run(case, DECISION_SCENARIOS[scenario]))
     if source_scale == 1.0:
         return _INPUTS[key]
-    return tuple(replace(item, volume_loss_ml_per_min=item.volume_loss_ml_per_min * source_scale,
-                         hb_loss_g_dl_per_min=item.hb_loss_g_dl_per_min * source_scale)
+    return tuple(replace(item, blood_loss_ml_per_min=item.blood_loss_ml_per_min * source_scale)
                  if isinstance(item, GIHaemorrhage) else item for item in _INPUTS[key])
 
 
@@ -717,7 +716,7 @@ def reachability_analysis() -> dict:
 PACK_DIGEST_EXCLUDED = ("clinical_core/decision_pack_markdown.py", "clinical_core/lactate_slice.py",
                         "clinical_core/faculty_constraints.py", "clinical_core/lactate_constraints.py",
                         "clinical_core/oxygen_probes.py", "clinical_core/hemodynamic_probes.py",
-                        "clinical_core/haemorrhage_probes.py")
+                        "clinical_core/haemorrhage_probes.py", "clinical_core/blood_probes.py")
 
 
 def pack_sources() -> dict[str, str]:

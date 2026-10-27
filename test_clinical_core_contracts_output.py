@@ -21,7 +21,7 @@ from clinical_core.modules.rhythm_events import ScriptedRhythmEvent
 ARRIVAL = Anchors(case_id="gi_bleed_72f", sbp=98.0, dbp=62.0, hr=112.0, spo2=96.0, respiratory_rate=24.0, crt_s=4.0,
                   lactate=3.4, hb=6.4, glucose=130.0, k=4.1, fio2=0.21, rhythm=RhythmState.sinus(112.0),
                   consciousness_level=0)
-BLEED = GIHaemorrhage("gi_haemorrhage", 2.5, 0.009, 0.8, 0.1)
+BLEED = GIHaemorrhage("gi_haemorrhage", 2.5, 0.8, 0.1)
 TABLES = {"gi_bleed": family_engine.GI_BLEED, "devices": family_engine._DEVICES}
 
 

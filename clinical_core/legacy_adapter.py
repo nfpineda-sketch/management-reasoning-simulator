@@ -53,6 +53,14 @@ LEGACY_LITERALS = {
     "untimed_fluid_ml_per_min": (50.0, "family_engine._minute: min(50, pending_fluid_ml)"),
     "untimed_blood_units_per_min": (1 / 30, "family_engine._minute: min(1 / 30, pending_blood_units)"),
 }
+#: P2I-2T: legacy literals kept as references only. The family engine moves Hb by a fixed drift
+#: with the bleed and a fixed step per unit; the core derives Hb from the shared blood state and
+#: reads neither (nor GI_BLEED['hemodilution_g_dl_per_ml']).
+REFERENCE_ONLY = frozenset({"gi_bleeding_hemoglobin_per_min", "blood_hemoglobin_per_unit"})
+#: P2I-2T: the haemoglobin concentration of one packed red-cell unit, from which the shared blood
+#: state takes the unit's red cells. Not a legacy literal and not fitted to the legacy 0.85 g/dL
+#: step: SYNTHETIC/CANDIDATE, a typical unit (haematocrit about 0.6), TBD with the unit's volume.
+PROVISIONAL_RED_CELL_UNIT_HB_G_DL = 20.0
 
 
 class UnsupportedScenario(ValueError):
@@ -205,8 +213,7 @@ def haemorrhage_from_legacy(state: Mapping) -> GIHaemorrhage:
         raise UnsupportedScenario("anticoagulant exposure is not modelled in the shadow haemorrhage module")
     return GIHaemorrhage(
         "gi_haemorrhage",
-        volume_loss_ml_per_min=LEGACY_LITERALS["gi_bleeding_circulation_per_min"][0] * LEGACY_ML_PER_CIRCULATION_UNIT,
-        hb_loss_g_dl_per_min=LEGACY_LITERALS["gi_bleeding_hemoglobin_per_min"][0],
+        blood_loss_ml_per_min=LEGACY_LITERALS["gi_bleeding_circulation_per_min"][0] * LEGACY_ML_PER_CIRCULATION_UNIT,
         fraction_with_ppi=float(engine.GI_BLEED["bleeding_with_ppi"]),
         fraction_after_hemostasis=float(engine.GI_BLEED["bleeding_after_hemostasis"]))
 
@@ -313,13 +320,12 @@ def _build(item: Delivery, engine_gi_bleed: Mapping, stop_minute, stopped_by, ah
             effective_ml_per_ml=float(engine_gi_bleed["crystalloid_per_ml"]) * LEGACY_ML_PER_CIRCULATION_UNIT,
             transient_share=float(engine_gi_bleed["crystalloid_transient"]),
             leak_tau_min=float(engine_gi_bleed["crystalloid_leak_tau_min"]),
-            hb_dilution_g_dl_per_ml=float(engine_gi_bleed["hemodilution_g_dl_per_ml"]),
             stop_minute=stop_minute, stopped_by=stopped_by, queued_ahead_ml=ahead)
     return PackedRedCells(
         item.order_id, item.start, float(item.action["units"]), _duration(item.action),
         untimed_units_per_min=LEGACY_LITERALS["untimed_blood_units_per_min"][0],
         volume_ml_per_unit=LEGACY_LITERALS["blood_circulation_per_unit"][0] * LEGACY_ML_PER_CIRCULATION_UNIT,
-        hb_g_dl_per_unit=LEGACY_LITERALS["blood_hemoglobin_per_unit"][0], queued_ahead_units=ahead)
+        unit_hb_g_dl=PROVISIONAL_RED_CELL_UNIT_HB_G_DL, queued_ahead_units=ahead)
 
 
 def _duration(action: Mapping):

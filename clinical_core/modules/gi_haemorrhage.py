@@ -1,10 +1,13 @@
 """Upper gastrointestinal haemorrhage as a shadow module (proposal §8.2, cluster V / Hb / D).
 
-The module owns the bleeding source: its untreated rate (a case parameter), the
-slowing a proton-pump inhibitor brings before endoscopy, and the residual rate once
-the source is treated. It writes only V- and Hb-. Pressure, rate, refill, lactate and
-breathing follow from those channels in the core (``derived``); this module never
-writes an observable, which is the main change from the family engine (§8.1 point 3).
+The module owns the bleeding source: its untreated rate of whole-blood loss (a case
+parameter), the slowing a proton-pump inhibitor brings before endoscopy, and the residual
+rate once the source is treated. It declares one flow, whole blood leaving the circulation
+(P2I-2T): the shared blood state takes volume and red cells out together, at the blood's
+current composition, so one rate drives both the preload consequence (V) and the red-cell
+consequence (Hb), and there is no separate Hb drift. Plasma refill, pressure, rate, lactate
+and breathing follow in the core (``integration``, ``derived``); this module never writes an
+observable, which is the main change from the family engine (§8.1 point 3).
 
 It does not decide when the endoscopy happens: that is a logistic process whose
 completion arrives as a signal (§10.3). It does not model anticoagulation; a scenario
@@ -16,8 +19,8 @@ from dataclasses import dataclass
 
 from .. import signals as names
 from ..integration import Contribution, Contributor, register
-from ..provenance import ChannelDelta, CoreEvent, SourceKind
-from ..state import Channel, CoreInvariantError
+from ..provenance import BloodFlow, BloodProcess, CoreEvent, SourceKind
+from ..state import CoreInvariantError
 
 
 @register
@@ -28,13 +31,12 @@ class GIHaemorrhage(Contributor):
     responds_to = frozenset({names.PPI, names.ENDOSCOPIC_HEMOSTASIS})
 
     id: str
-    volume_loss_ml_per_min: float
-    hb_loss_g_dl_per_min: float
+    blood_loss_ml_per_min: float
     fraction_with_ppi: float
     fraction_after_hemostasis: float
 
     def __post_init__(self):
-        if self.volume_loss_ml_per_min < 0 or self.hb_loss_g_dl_per_min < 0:
+        if self.blood_loss_ml_per_min < 0:
             raise CoreInvariantError("a bleeding rate is not negative")
         for name in ("fraction_with_ppi", "fraction_after_hemostasis"):
             if not 0.0 <= getattr(self, name) <= 1.0:
@@ -51,17 +53,14 @@ class GIHaemorrhage(Contributor):
         else:
             fraction, modulators, why = 1.0, (), "untreated"
         by = tuple(signal.source for signal in modulators)
-        deltas = (
-            ChannelDelta(Channel.V, -self.volume_loss_ml_per_min * fraction, self.source, minute,
-                         f"blood lost from the upper GI source ({why})", by),
-            ChannelDelta(Channel.HB, -self.hb_loss_g_dl_per_min * fraction, self.source, minute,
-                         f"haemoglobin falling with the bleeding ({why})", by),
-        )
+        lost = self.blood_loss_ml_per_min * fraction
+        blood = (BloodFlow(BloodProcess.WHOLE_BLOOD_LOSS, lost, self.source, minute,
+                           f"whole blood lost from the upper GI source ({why})", by),) if lost > 0 else ()
         controlled_at = own.get("controlled_at")
         events = ()
         if hemostasis and controlled_at is None:
             controlled_at = minute
             events = (CoreEvent("source_controlled", self.source, minute, "significant", "logistic_process",
                                 "not applicable", "bleeding source controlled; residual bleeding continues"),)
-        return Contribution(deltas=deltas, events=events,
+        return Contribution(blood=blood, events=events,
                             internal=own.updated(controlled_at=controlled_at, bleeding_fraction=fraction))

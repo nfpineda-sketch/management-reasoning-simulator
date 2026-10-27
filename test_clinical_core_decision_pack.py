@@ -173,7 +173,8 @@ def test_a_module_the_pack_digest_excludes_is_never_loaded_by_the_pack():
     ("clinical_core/decision_pack.py", True), ("clinical_core/decision_pack_markdown.py", False),
     ("clinical_core/lactate_slice.py", False), ("clinical_core/faculty_constraints.py", False),
     ("clinical_core/lactate_constraints.py", False), ("clinical_core/oxygen_probes.py", False),
-    ("clinical_core/hemodynamic_probes.py", False), ("clinical_core/haemorrhage_probes.py", False)])
+    ("clinical_core/hemodynamic_probes.py", False), ("clinical_core/haemorrhage_probes.py", False),
+    ("clinical_core/blood_probes.py", False)])
 def test_the_pack_digest_covers_the_model_and_not_the_renderer(monkeypatch, path, changes):
     assert path in decision_pack.pack_sources() or path in decision_pack.PACK_DIGEST_EXCLUDED
     before = decision_pack.pack_digest()
@@ -226,7 +227,7 @@ def test_gi_still_fails_the_gate_however_its_candidates_are_declared(case):
     assert not any(rows[name]["migratable"] for name in family)
     # The registry's status words are not provenance sources.
     with pytest.raises(MigrationBlocked):
-        migration_gate("gi_bleed", anchors, {"volume_loss_ml_per_min": (2.5, calibration.CANDIDATE)})
+        migration_gate("gi_bleed", anchors, {"blood_loss_ml_per_min": (2.5, calibration.CANDIDATE)})
 
 
 # The faculty document --------------------------------------------------------------------------
@@ -258,8 +259,9 @@ def test_the_master_table_leaves_every_decision_open_and_covers_every_gate_block
     document, _ = _document()
     rows = _rows(document, "FD-")
     ids = [row[0] for row in rows]
-    # Retired ids are never reused: FD-49 was resolved in P2H-0 and left the table.
-    retired = {"FD-49"}
+    # Retired ids are never reused: FD-49 was resolved in P2H-0 and left the table; FD-23 (the separate
+    # Hb rate) was retired by P2I-2T's shared blood state.
+    retired = {"FD-49", "FD-23"}
     numbered = [f"FD-{number:02d}" for number in range(1, len(rows) + len(retired) + 1)]
     assert ids == [item for item in numbered if item not in retired]
     assert not retired & set(ids) and all(f"{item} (" in document for item in retired)

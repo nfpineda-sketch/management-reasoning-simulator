@@ -30,9 +30,13 @@ def anchors(**changes):
 @register
 @dataclass(frozen=True)
 class Drift(Contributor):
-    """A constant per-minute change of one channel between two minutes (test only)."""
+    """A constant per-minute change of one channel between two minutes (test only).
 
-    kind = SourceKind.DISEASE_MODULE
+    A scripted probe: since P2I-2T only a probe may still move V and Hb directly; a disease
+    module or an order moves them through the shared blood state.
+    """
+
+    kind = SourceKind.SCRIPTED_EVENT
     type_name = "test_drift"
     id: str
     channel: str
@@ -185,7 +189,7 @@ def test_every_change_has_a_source_and_the_sources_add_up_to_the_change():
     for channel in SCALAR_CHANNELS:
         total = math.fsum(attribution(trajectory.records, channel).values())
         assert last.value(channel) - first.value(channel) == pytest.approx(total, abs=1e-9)
-    assert attribution(trajectory.records, Channel.V) == {"disease_module:bleed": pytest.approx(-200.0)}
+    assert attribution(trajectory.records, Channel.V) == {"scripted_event:bleed": pytest.approx(-200.0)}
 
 
 def test_a_bound_that_acts_is_recorded_as_a_clamp():
@@ -216,7 +220,7 @@ def test_changes_without_a_valid_source_fail_closed():
         id: str
 
         def contribute(self, state, minute, signals, anchors, profile):
-            return Contribution(deltas=(ChannelDelta(Channel.V, 100.0, Source(SourceKind.DISEASE_MODULE, "bleed"),
+            return Contribution(deltas=(ChannelDelta(Channel.T, 0.1, Source(SourceKind.DISEASE_MODULE, "bleed"),
                                                      minute, "attributed to someone else"),))
 
     with pytest.raises(ProvenanceError):
@@ -381,8 +385,8 @@ def test_a_scenario_rebuilds_in_a_fresh_process_without_prior_imports():
     from clinical_core.interventions import Crystalloid, Oxygen, PackedRedCells, ProtonPumpInhibitor
     from clinical_core.logistics import EndoscopicHemostasis
     from clinical_core.modules import GIHaemorrhage, ScriptedRhythmEvent
-    contributors = (GIHaemorrhage("bleed", 2.5, .009, .8, .1), Crystalloid("c", 0, 500.0, 20.0, 50.0, .125, .6, 30.0, .0006),
-                    PackedRedCells("b", 0, 1.0, None, 1 / 30, 300.0, .85), Oxygen("o", 1, .4),
+    contributors = (GIHaemorrhage("bleed", 2.5, .8, .1), Crystalloid("c", 0, 500.0, 20.0, 50.0, .125, .6, 30.0),
+                    PackedRedCells("b", 0, 1.0, None, 1 / 30, 300.0, 20.0), Oxygen("o", 1, .4),
                     ProtonPumpInhibitor("p", 0), EndoscopicHemostasis("e", 30),
                     ScriptedRhythmEvent("r", 40, RhythmState.asystole(), preventability="not preventable"))
     stored = json.dumps(scenario_to_dict(anchors(), contributors, 45))
@@ -403,5 +407,5 @@ def test_reloading_a_contributor_module_does_not_break_the_registry():
     import clinical_core.interventions.fluids as fluids
     importlib.reload(fluids)
     from clinical_core.integration import from_spec
-    spec = fluids.Crystalloid("x", 0, 100.0, None, 50.0, .125, .6, 30.0, .0006).to_spec()
+    spec = fluids.Crystalloid("x", 0, 100.0, None, 50.0, .125, .6, 30.0).to_spec()
     assert from_spec(spec).to_spec() == spec

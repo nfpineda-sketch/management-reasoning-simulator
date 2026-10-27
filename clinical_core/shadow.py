@@ -89,6 +89,17 @@ DIFFERENCES = {
               "lactate at arrival instead of clearing it below, and RR and the drive follow; the family engine "
               "lowers lactate below arrival as soon as circulation improves", "TBD: demand baseline and modifiers, "
               "oxygen-delivery normalization, the GI family's arrival references (P2E-6 migration gate)"),
+    "P2I-2T": ("shared haemorrhage state (faculty decision, P2I-2T): one bleeding source takes whole blood -- "
+               "circulating volume and red cells together -- out of a shared blood state; plasma refill restores "
+               "part of the shed volume without red cells; crystalloid and packed red cells act through the same "
+               "state; Hb is red-cell content over circulating volume, and V is kappa x the circulating-volume "
+               "deviation. The family engine moves circulation and Hb by two independent drifts, dilutes Hb by a "
+               "fixed amount per mL of crystalloid that never reverses and raises it by a fixed 0.85 g/dL per "
+               "unit. So V differs wherever refill acts (every bleeding run) and Hb wherever blood is lost, "
+               "refilled, diluted or transfused, and both reach output, delivery, D, lactate, RR and HR",
+               "TBD: bleed rate (case or family), arrival circulating volume, kappa (only kappa / curve scale "
+               "is identifiable), refill target, capacity and tau, red-cell unit content and volume, crystalloid "
+               "retention and redistribution"),
 }
 #: Candidate causes of each expected difference (P2D-9): the decided mechanisms on the variable's
 #: causal path in that run. They are candidates, not a measure of how much each contributes;
@@ -98,23 +109,38 @@ DIFFERENCES = {
 #: - SBP, DBP, MAP and CRT: KD-S4 (output and pressure from the preload curve);
 #: - V: KD-S4 (no clamp on volume);
 #: - consciousness: KD-S3 and/or KD-S4, minute by minute (``consciousness_attribution``).
-#: Every run bleeds, so V leaves arrival and KD-S4 lies on every path through output.
-_STRUCTURAL = {"lactate_mmol_l": ("KD-S1", "KD-S4"), "respiratory_rate": ("KD-S1", "KD-S4"),
-               "hr": ("KD-S2", "KD-S4"), "sbp": ("KD-S4",), "dbp": ("KD-S4",), "map": ("KD-S4",),
-               "crt_s": ("KD-S4",)}
+#: Every run bleeds, so V leaves arrival and KD-S4 lies on every path through output. Every run
+#: bleeds, so plasma refill acts on V and the shared blood state on Hb (P2I-2T), and through them
+#: on every variable downstream of output or delivery.
+_STRUCTURAL = {"lactate_mmol_l": ("KD-S1", "KD-S4", "P2I-2T"), "respiratory_rate": ("KD-S1", "KD-S4", "P2I-2T"),
+               "hr": ("KD-S2", "KD-S4", "P2I-2T"), "sbp": ("KD-S4", "P2I-2T"), "dbp": ("KD-S4", "P2I-2T"),
+               "map": ("KD-S4", "P2I-2T"), "crt_s": ("KD-S4", "P2I-2T"), "V_ml_eq": ("P2I-2T",),
+               "hb_g_dl": ("P2I-2T",)}
 EXPECTED_DIFFERENCES = {
     f"{variant}/{scenario}": dict(_STRUCTURAL) for variant in VARIANTS for scenario in SCENARIOS}
-# The oxygen runs last 20 minutes and V moves only with the bleeding, so the curve changes the
-# pressures by one display step at most, and not every one of them.
-del EXPECTED_DIFFERENCES["gi_bleed_57m/oxygen_non_rebreather"]["crt_s"]
-for _name in ("map", "crt_s"):
+# The oxygen runs last 20 minutes and V moves only with the bleeding (less what refill restores,
+# P2I-2T), so the core's displayed pressures and CRT stay those of the engine; in the 72f run the
+# rate does too.
+for _name in ("sbp", "dbp", "map", "crt_s"):
+    del EXPECTED_DIFFERENCES["gi_bleed_57m/oxygen_non_rebreather"][_name]
+for _name in ("sbp", "dbp", "map", "crt_s", "hr"):
     del EXPECTED_DIFFERENCES["gi_bleed_72f/oxygen_non_rebreather"][_name]
 for _variant in VARIANTS:
     # Past the engine's circulation clamp the core's V keeps rising (KD-S4).
-    EXPECTED_DIFFERENCES[f"{_variant}/aggressive_volume"]["V_ml_eq"] = ("KD-S4",)
-# The 80 mmHg threshold, read on the core's raw SBP (KD-S3, unchanged) and on a pressure that the
-# preload curve lowers by under 1 mmHg (KD-S4): see consciousness_attribution, minute by minute.
-EXPECTED_DIFFERENCES["gi_bleed_57m/untreated_60"]["consciousness_level"] = ("KD-S3", "KD-S4")
+    EXPECTED_DIFFERENCES[f"{_variant}/aggressive_volume"]["V_ml_eq"] = ("KD-S4", "P2I-2T")
+    # Refill acts only while the circulation is below arrival (P2I-2T): where the orders keep it at or
+    # above arrival from the start, refill never acts and V keeps the engine's arithmetic.
+    for _scenario in ("definitive_management", "prbc_2u_over_60", "queued_timed_bags", "saline_then_blood",
+                      "untimed_shared_line"):
+        del EXPECTED_DIFFERENCES[f"{_variant}/{_scenario}"]["V_ml_eq"]
+# Before P2I-2T the 57m untreated hour crossed the 80 mmHg threshold differently (KD-S3 / KD-S4);
+# with plasma refill the core's raw SBP no longer reaches it, so consciousness matches and no
+# consciousness difference is expected in any run (consciousness_attribution stays for when one is).
+
+#: Registered differences no golden run produces at present, and why. Each stays registered
+#: because its mechanism is still in the core and a later run may produce it again.
+DORMANT = {"KD-S3": "since P2I-2T plasma refill keeps the 57m untreated hour's raw SBP above the 80 mmHg threshold, "
+                    "so no run reads that threshold differently"}
 
 #: The decision behind each known difference. "approved" means its physiological direction is
 #: approved (P2C); its magnitude is not, until the Level-2 bands and the Appendix A9 tolerances
@@ -127,6 +153,9 @@ DECISIONS = {
     "KD-S4": ("approved", "REVISE CORE: one smooth, saturating preload curve; no clamp"),
     "P2E-2": ("approved", "STRUCTURE: D integrates the delivery deficit below metabolic demand, never a credit; demand "
                           "multipliers and the arrival references are TBD"),
+    "P2I-2T": ("approved", "STRUCTURE: one haemorrhage source drives circulating volume and red-cell mass; Hb is a "
+                           "concentration; refill, crystalloid and red cells act through the shared state; every "
+                           "value is TBD"),
 }
 
 #: Mechanisms on a variable's causal path only in the runs where they act (P2E). P2E-2: in a run

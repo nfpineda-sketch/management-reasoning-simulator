@@ -43,7 +43,7 @@
    -3000.0,
    3000.0,
    "provisional",
-   "guard only; the family engine's circulation clamp [.25, 1.9] is deliberately not adopted"
+   "guard only, in mL-eq of circulating volume (applied to V scaled by kappa, so it never separates kappa from the curve scale); the family engine's circulation clamp [.25, 1.9] is deliberately not adopted"
   ],
   "W": [
    -10.0,
@@ -91,6 +91,10 @@
   "P2E-2": [
    "approved",
    "STRUCTURE: D integrates the delivery deficit below metabolic demand, never a credit; demand multipliers and the arrival references are TBD"
+  ],
+  "P2I-2T": [
+   "approved",
+   "STRUCTURE: one haemorrhage source drives circulating volume and red-cell mass; Hb is a concentration; refill, crystalloid and red cells act through the shared state; every value is TBD"
   ]
  },
  "differences": {
@@ -113,6 +117,10 @@
   "P2E-2": [
    "oxygen debt against demand (structure approved, P2E-2): D integrates max(0, demand - delivery), so delivery above demand is no credit and D repays only what it accrued. With the GI defaults unmapped (demand baseline 1, no clearable arrival lactate), a run whose delivery rises above arrival keeps lactate at arrival instead of clearing it below, and RR and the drive follow; the family engine lowers lactate below arrival as soon as circulation improves",
    "TBD: demand baseline and modifiers, oxygen-delivery normalization, the GI family's arrival references (P2E-6 migration gate)"
+  ],
+  "P2I-2T": [
+   "shared haemorrhage state (faculty decision, P2I-2T): one bleeding source takes whole blood -- circulating volume and red cells together -- out of a shared blood state; plasma refill restores part of the shed volume without red cells; crystalloid and packed red cells act through the same state; Hb is red-cell content over circulating volume, and V is kappa x the circulating-volume deviation. The family engine moves circulation and Hb by two independent drifts, dilutes Hb by a fixed amount per mL of crystalloid that never reverses and raises it by a fixed 0.85 g/dL per unit. So V differs wherever refill acts (every bleeding run) and Hb wherever blood is lost, refilled, diluted or transfused, and both reach output, delivery, D, lactate, RR and HR",
+   "TBD: bleed rate (case or family), arrival circulating volume, kappa (only kappa / curve scale is identifiable), refill target, capacity and tau, red-cell unit content and volume, crystalloid retention and redistribution"
   ]
  },
  "legacy": {
@@ -149,6 +157,10 @@
   "afterload_sensitivity": [
    "provisional",
    "how much tone above arrival lowers output, 1 / (1 + a (T - 1)): TBD (KD-S4)"
+  ],
+  "arrival_circulating_volume_ml": [
+   "provisional",
+   "SYNTHETIC/CANDIDATE normalization of the shared blood state (P2I-2T): the circulating volume at arrival, in mL-equivalent, against which red-cell content and haemoglobin are read. Not a measured litre and not inferred from the arrival Hb: TBD"
   ],
   "arrival_preload_fraction": [
    "provisional",
@@ -242,6 +254,18 @@
    "adopted",
    "family_engine._OXYGEN_LEVELS, same reservation"
   ],
+  "plasma_refill_capacity_ml": [
+   "provisional",
+   "SYNTHETIC/CANDIDATE finite interstitial reserve: the most plasma refill can add in an encounter (P2I-2T): TBD"
+  ],
+  "plasma_refill_target_share": [
+   "provisional",
+   "SYNTHETIC/CANDIDATE share of the shed volume plasma refill restores at most (P2I-2T), and only while the circulation is below arrival; refill carries no red cells: TBD"
+  ],
+  "plasma_refill_tau_min": [
+   "provisional",
+   "SYNTHETIC/CANDIDATE time constant of plasma refill toward its target (P2I-2T): TBD"
+  ],
   "preload_curve_scale_ml": [
    "provisional",
    "scale of the saturating preload curve 1 - exp(-x / scale): TBD (KD-S4). Its value keeps, at the default arrival position 0.5, the family engine's slope at arrival: 300 mL per red-cell unit / 0.36 circulation per unit (family_engine.TRANSFUSION note; _minute)"
@@ -301,6 +325,10 @@
   "sympathetic_per_pressure_deficit": [
    "provisional",
    "MAP/output deficit -> sympathetic drive gain: TBD (KD-S2)"
+  ],
+  "volume_preload_kappa": [
+   "provisional",
+   "SYNTHETIC/CANDIDATE conversion V = kappa x circulating-volume deviation (P2I-2T). Output reads V only as V / preload_curve_scale_ml, so only kappa / scale is identifiable from the haemodynamics: neither is approved alone. 1 keeps V in mL-equivalent of circulating volume: TBD"
   ]
  },
  "scenarios": {
@@ -367,7 +395,8 @@
    "classification": {
     "V_ml_eq": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -381,13 +410,15 @@
     },
     "crt_s": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "dbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -404,13 +435,16 @@
      "classification": "MATCH"
     },
     "hb_g_dl": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "hr": {
      "candidate_causes": [
       "KD-S2",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -423,13 +457,15 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -441,6 +477,7 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -451,7 +488,8 @@
     },
     "sbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -462,21 +500,20 @@
    },
    "core_inputs": [
     {
+     "blood_loss_ml_per_min": 2.5,
      "fraction_after_hemostasis": 0.1,
      "fraction_with_ppi": 0.8,
-     "hb_loss_g_dl_per_min": 0.009,
      "id": "gi_haemorrhage",
-     "type": "gi_haemorrhage",
-     "volume_loss_ml_per_min": 2.5
+     "type": "gi_haemorrhage"
     },
     {
      "duration_min": 60.0,
-     "hb_g_dl_per_unit": 0.85,
      "id": "m000-0-blood",
      "queued_ahead_units": 0.0,
      "start_minute": 0.0,
      "stop_minute": null,
      "type": "packed_red_cells",
+     "unit_hb_g_dl": 20.0,
      "units": 4.0,
      "untimed_units_per_min": 0.03333333333333333,
      "volume_ml_per_unit": 300.0
@@ -484,7 +521,6 @@
     {
      "duration_min": 30.0,
      "effective_ml_per_ml": 0.125,
-     "hb_dilution_g_dl_per_ml": 0.0006,
      "id": "m000-1-fluid",
      "leak_tau_min": 30.0,
      "queued_ahead_ml": 0.0,
@@ -503,48 +539,58 @@
      "arrival_lactate_excess",
      "arrival_oxygen_debt",
      "beta_blockade",
+     "blood_loss_ml_per_min",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
-     "hb_loss_g_dl_per_min",
      "intrinsic_sinus_rate",
      "metabolic_demand_baseline",
      "preload_fraction",
-     "pump_reserve",
-     "volume_loss_ml_per_min"
+     "pump_reserve"
     ],
     "migratable": false
    },
    "minutes": 90,
    "mismatching": {
     "V_ml_eq": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "crt_s": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "dbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
+    ],
+    "hb_g_dl": [
+     "P2I-2T"
     ],
     "hr": [
      "KD-S2",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "map": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "respiratory_rate": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "sbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ]
    },
    "orders": {
@@ -901,43 +947,43 @@
       ],
       "1": [
        null,
-       1.031513
+       1.038404
       ],
       "10": [
        null,
-       1.273724
+       1.354427
       ],
       "15": [
        null,
-       1.382277
+       1.509909
       ],
       "20": [
        null,
-       1.476561
+       1.653227
       ],
       "30": [
        null,
-       1.631797
+       1.908627
       ],
       "45": [
        null,
-       1.91455
+       2.225014
       ],
       "5": [
        null,
-       1.147691
+       1.18513
       ],
       "60": [
        null,
-       2.194272
+       2.510214
       ],
       "75": [
        null,
-       2.140134
+       2.494984
       ],
       "90": [
        null,
-       2.087542
+       2.47825
       ]
      },
      "tolerance": "not compared",
@@ -1113,10 +1159,10 @@
     },
     "hb_g_dl": {
      "compared": 91,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 1,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 1.514139,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -1125,43 +1171,43 @@
       ],
       "1": [
        6.707667,
-       6.707667
+       6.752479
       ],
       "10": [
        6.776667,
-       6.776667
+       7.206035
       ],
       "15": [
        6.815,
-       6.815
+       7.444259
       ],
       "20": [
        6.853333,
-       6.853333
+       7.673313
       ],
       "30": [
        6.93,
-       6.93
+       8.105654
       ],
       "45": [
        7.645,
-       7.645
+       8.884714
       ],
       "5": [
        6.738333,
-       6.738333
+       6.958142
       ],
       "60": [
        8.36,
-       8.36
+       9.563714
       ],
       "75": [
        8.225,
-       8.225
+       9.588768
       ],
       "90": [
        8.09,
-       8.09
+       9.604139
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -1860,13 +1906,15 @@
     },
     "crt_s": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "dbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -1883,13 +1931,16 @@
      "classification": "MATCH"
     },
     "hb_g_dl": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "hr": {
      "candidate_causes": [
       "KD-S2",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -1902,13 +1953,15 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -1920,6 +1973,7 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -1930,7 +1984,8 @@
     },
     "sbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -1941,21 +1996,20 @@
    },
    "core_inputs": [
     {
+     "blood_loss_ml_per_min": 2.5,
      "fraction_after_hemostasis": 0.1,
      "fraction_with_ppi": 0.8,
-     "hb_loss_g_dl_per_min": 0.009,
      "id": "gi_haemorrhage",
-     "type": "gi_haemorrhage",
-     "volume_loss_ml_per_min": 2.5
+     "type": "gi_haemorrhage"
     },
     {
      "duration_min": 60.0,
-     "hb_g_dl_per_unit": 0.85,
      "id": "m000-0-blood",
      "queued_ahead_units": 0.0,
      "start_minute": 0.0,
      "stop_minute": null,
      "type": "packed_red_cells",
+     "unit_hb_g_dl": 20.0,
      "units": 2.0,
      "untimed_units_per_min": 0.03333333333333333,
      "volume_ml_per_unit": 300.0
@@ -1978,45 +2032,54 @@
      "arrival_lactate_excess",
      "arrival_oxygen_debt",
      "beta_blockade",
+     "blood_loss_ml_per_min",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
-     "hb_loss_g_dl_per_min",
      "intrinsic_sinus_rate",
      "metabolic_demand_baseline",
      "preload_fraction",
-     "pump_reserve",
-     "volume_loss_ml_per_min"
+     "pump_reserve"
     ],
     "migratable": false
    },
    "minutes": 120,
    "mismatching": {
     "crt_s": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "dbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
+    ],
+    "hb_g_dl": [
+     "P2I-2T"
     ],
     "hr": [
      "KD-S2",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "map": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "respiratory_rate": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "sbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ]
    },
    "orders": {
@@ -2421,51 +2484,51 @@
       ],
       "1": [
        null,
-       1.012738
+       1.014554
       ],
       "10": [
        null,
-       1.125966
+       1.144526
       ],
       "105": [
        null,
-       1.695006
+       1.806806
       ],
       "120": [
        null,
-       1.68909
+       1.803569
       ],
       "15": [
        null,
-       1.187771
+       1.215796
       ],
       "20": [
        null,
-       1.248798
+       1.286284
       ],
       "30": [
        null,
-       1.368545
+       1.424619
       ],
       "45": [
        null,
-       1.542522
+       1.624687
       ],
       "5": [
        null,
-       1.063376
+       1.07256
       ],
       "60": [
        null,
-       1.712733
+       1.81643
       ],
       "75": [
        null,
-       1.706827
+       1.813236
       ],
       "90": [
        null,
-       1.700918
+       1.810028
       ]
      },
      "tolerance": "not compared",
@@ -2665,10 +2728,10 @@
     },
     "hb_g_dl": {
      "compared": 121,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 1,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 0.5368,
+     "mismatched": 120,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -2677,51 +2740,51 @@
       ],
       "1": [
        6.721133,
-       6.721133
+       6.733184
       ],
       "10": [
        6.911333,
-       6.911333
+       7.025257
       ],
       "105": [
        7.9338,
-       7.9338
+       8.4571
       ],
       "120": [
        7.9203,
-       7.9203
+       8.4571
       ],
       "15": [
        7.017,
-       7.017
+       7.182564
       ],
       "20": [
        7.122667,
-       7.122667
+       7.336471
       ],
       "30": [
        7.334,
-       7.334
+       7.634502
       ],
       "45": [
        7.651,
-       7.651
+       8.058543
       ],
       "5": [
        6.805667,
-       6.805667
+       6.86444
       ],
       "60": [
        7.9743,
-       7.9743
+       8.4571
       ],
       "75": [
        7.9608,
-       7.9608
+       8.4571
       ],
       "90": [
        7.9473,
-       7.9473
+       8.4571
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -3495,8 +3558,10 @@
    },
    "classification": {
     "V_ml_eq": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "blood_delivered_units": {
      "candidate_causes": [],
@@ -3511,10 +3576,8 @@
      "classification": "MATCH"
     },
     "dbp": {
-     "candidate_causes": [
-      "KD-S4"
-     ],
-     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+     "candidate_causes": [],
+     "classification": "MATCH"
     },
     "fio2": {
      "candidate_causes": [],
@@ -3529,13 +3592,16 @@
      "classification": "MATCH"
     },
     "hb_g_dl": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "hr": {
      "candidate_causes": [
       "KD-S2",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -3548,15 +3614,14 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
-     "candidate_causes": [
-      "KD-S4"
-     ],
-     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+     "candidate_causes": [],
+     "classification": "MATCH"
     },
     "pulse_present": {
      "candidate_causes": [],
@@ -3566,6 +3631,7 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -3575,10 +3641,8 @@
      "classification": "MATCH"
     },
     "sbp": {
-     "candidate_causes": [
-      "KD-S4"
-     ],
-     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+     "candidate_causes": [],
+     "classification": "MATCH"
     },
     "spo2": {
      "candidate_causes": [],
@@ -3587,12 +3651,11 @@
    },
    "core_inputs": [
     {
+     "blood_loss_ml_per_min": 2.5,
      "fraction_after_hemostasis": 0.1,
      "fraction_with_ppi": 0.8,
-     "hb_loss_g_dl_per_min": 0.009,
      "id": "gi_haemorrhage",
-     "type": "gi_haemorrhage",
-     "volume_loss_ml_per_min": 2.5
+     "type": "gi_haemorrhage"
     },
     {
      "fio2": 0.85,
@@ -3608,42 +3671,41 @@
      "arrival_lactate_excess",
      "arrival_oxygen_debt",
      "beta_blockade",
+     "blood_loss_ml_per_min",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
-     "hb_loss_g_dl_per_min",
      "intrinsic_sinus_rate",
      "metabolic_demand_baseline",
      "preload_fraction",
-     "pump_reserve",
-     "volume_loss_ml_per_min"
+     "pump_reserve"
     ],
     "migratable": false
    },
    "minutes": 20,
    "mismatching": {
-    "dbp": [
-     "KD-S4"
+    "V_ml_eq": [
+     "P2I-2T"
+    ],
+    "hb_g_dl": [
+     "P2I-2T"
     ],
     "hr": [
      "KD-S2",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
-    ],
-    "map": [
-     "KD-S4"
     ],
     "respiratory_rate": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
-    ],
-    "sbp": [
-     "KD-S4"
     ]
    },
    "orders": {
@@ -3668,15 +3730,15 @@
       ],
       "10": [
        null,
-       0.014674
+       0.0
       ],
       "15": [
        null,
-       0.124829
+       0.030355
       ],
       "20": [
        null,
-       0.33469
+       0.132794
       ],
       "5": [
        null,
@@ -3688,10 +3750,10 @@
     },
     "V_ml_eq": {
      "compared": 21,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 2,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 1.876177,
+     "mismatched": 19,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -3704,19 +3766,19 @@
       ],
       "10": [
        -25.0,
-       -25.0
+       -24.543379
       ],
       "15": [
        -37.5,
-       -37.5
+       -36.449006
       ],
       "20": [
        -50.0,
-       -50.0
+       -48.123823
       ],
       "5": [
        -12.5,
-       -12.5
+       -12.397123
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -3832,10 +3894,10 @@
     },
     "dbp": {
      "compared": 21,
-     "first_mismatch_minute": 20,
+     "first_mismatch_minute": null,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 1,
+     "max_abs_diff": 0.0,
+     "mismatched": 0,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -3856,7 +3918,7 @@
       ],
       "20": [
        53,
-       52
+       53
       ],
       "5": [
        54,
@@ -3880,23 +3942,23 @@
       ],
       "1": [
        null,
-       1.02645
+       1.02783
       ],
       "10": [
        null,
-       0.986105
+       0.999999
       ],
       "15": [
        null,
-       0.96366
+       0.984575
       ],
       "20": [
        null,
-       0.941195
+       0.969182
       ],
       "5": [
        null,
-       1.008528
+       1.01545
       ]
      },
      "tolerance": "not compared",
@@ -4012,10 +4074,10 @@
     },
     "hb_g_dl": {
      "compared": 21,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 1,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 0.176831,
+     "mismatched": 20,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -4024,23 +4086,23 @@
       ],
       "1": [
        6.691,
-       6.691
+       6.7
       ],
       "10": [
        6.61,
-       6.61
+       6.699232
       ],
       "15": [
        6.565,
-       6.565
+       6.698228
       ],
       "20": [
        6.52,
-       6.52
+       6.696831
       ],
       "5": [
        6.655,
-       6.655
+       6.699827
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -4084,10 +4146,10 @@
     },
     "hr": {
      "compared": 21,
-     "first_mismatch_minute": 19,
+     "first_mismatch_minute": 20,
      "kind": "display",
      "max_abs_diff": 1.0,
-     "mismatched": 2,
+     "mismatched": 1,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -4192,10 +4254,10 @@
     },
     "map": {
      "compared": 20,
-     "first_mismatch_minute": 20,
+     "first_mismatch_minute": null,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 1,
+     "max_abs_diff": 0.0,
+     "mismatched": 0,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -4216,7 +4278,7 @@
       ],
       "20": [
        64,
-       63
+       64
       ],
       "5": [
        65,
@@ -4336,10 +4398,10 @@
     },
     "sbp": {
      "compared": 21,
-     "first_mismatch_minute": 11,
+     "first_mismatch_minute": null,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 1,
+     "max_abs_diff": 0.0,
+     "mismatched": 0,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -4519,13 +4581,15 @@
     },
     "crt_s": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "dbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -4542,13 +4606,16 @@
      "classification": "MATCH"
     },
     "hb_g_dl": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "hr": {
      "candidate_causes": [
       "KD-S2",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -4561,13 +4628,15 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -4579,6 +4648,7 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -4589,7 +4659,8 @@
     },
     "sbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -4600,21 +4671,20 @@
    },
    "core_inputs": [
     {
+     "blood_loss_ml_per_min": 2.5,
      "fraction_after_hemostasis": 0.1,
      "fraction_with_ppi": 0.8,
-     "hb_loss_g_dl_per_min": 0.009,
      "id": "gi_haemorrhage",
-     "type": "gi_haemorrhage",
-     "volume_loss_ml_per_min": 2.5
+     "type": "gi_haemorrhage"
     },
     {
      "duration_min": 60.0,
-     "hb_g_dl_per_unit": 0.85,
      "id": "m000-0-blood",
      "queued_ahead_units": 0.0,
      "start_minute": 0.0,
      "stop_minute": null,
      "type": "packed_red_cells",
+     "unit_hb_g_dl": 20.0,
      "units": 2.0,
      "untimed_units_per_min": 0.03333333333333333,
      "volume_ml_per_unit": 300.0
@@ -4626,45 +4696,54 @@
      "arrival_lactate_excess",
      "arrival_oxygen_debt",
      "beta_blockade",
+     "blood_loss_ml_per_min",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
-     "hb_loss_g_dl_per_min",
      "intrinsic_sinus_rate",
      "metabolic_demand_baseline",
      "preload_fraction",
-     "pump_reserve",
-     "volume_loss_ml_per_min"
+     "pump_reserve"
     ],
     "migratable": false
    },
    "minutes": 90,
    "mismatching": {
     "crt_s": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "dbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
+    ],
+    "hb_g_dl": [
+     "P2I-2T"
     ],
     "hr": [
      "KD-S2",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "map": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "respiratory_rate": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "sbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ]
    },
    "orders": {
@@ -5021,43 +5100,43 @@
       ],
       "1": [
        null,
-       1.011871
+       1.013957
       ],
       "10": [
        null,
-       1.117408
+       1.138828
       ],
       "15": [
        null,
-       1.175034
+       1.207482
       ],
       "20": [
        null,
-       1.231948
+       1.275512
       ],
       "30": [
        null,
-       1.343671
+       1.40941
       ],
       "45": [
        null,
-       1.506117
+       1.604005
       ],
       "5": [
        null,
-       1.059065
+       1.069635
       ],
       "60": [
        null,
-       1.662627
+       1.79014
       ],
       "75": [
        null,
-       1.603144
+       1.75626
       ],
       "90": [
        null,
-       1.543344
+       1.72082
       ]
      },
      "tolerance": "not compared",
@@ -5233,10 +5312,10 @@
     },
     "hb_g_dl": {
      "compared": 91,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 1,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 0.872812,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -5245,43 +5324,43 @@
       ],
       "1": [
        6.719333,
-       6.719333
+       6.733188
       ],
       "10": [
        6.893333,
-       6.893333
+       7.025475
       ],
       "15": [
        6.99,
-       6.99
+       7.183027
       ],
       "20": [
        7.086667,
-       7.086667
+       7.337262
       ],
       "30": [
        7.28,
-       7.28
+       7.63617
       ],
       "45": [
        7.57,
-       7.57
+       8.062001
       ],
       "5": [
        6.796667,
-       6.796667
+       6.864501
       ],
       "60": [
        7.86,
-       7.86
+       8.462812
       ],
       "75": [
        7.725,
-       7.725
+       8.462812
       ],
       "90": [
        7.59,
-       7.59
+       8.462812
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -5906,7 +5985,9 @@
    }
   },
   "gi_bleed_57m/queued_timed_bags": {
-   "acting_mechanisms": [],
+   "acting_mechanisms": [
+    "P2E-2"
+   ],
    "case_parameters": {
     "arrival_delivery_ratio": {
      "calibrated": false,
@@ -5978,13 +6059,15 @@
     },
     "crt_s": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "dbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -6001,13 +6084,17 @@
      "classification": "MATCH"
     },
     "hb_g_dl": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "hr": {
      "candidate_causes": [
       "KD-S2",
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -6018,13 +6105,16 @@
     "lactate_mmol_l": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -6035,7 +6125,9 @@
     "respiratory_rate": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -6045,7 +6137,8 @@
     },
     "sbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -6056,17 +6149,15 @@
    },
    "core_inputs": [
     {
+     "blood_loss_ml_per_min": 2.5,
      "fraction_after_hemostasis": 0.1,
      "fraction_with_ppi": 0.8,
-     "hb_loss_g_dl_per_min": 0.009,
      "id": "gi_haemorrhage",
-     "type": "gi_haemorrhage",
-     "volume_loss_ml_per_min": 2.5
+     "type": "gi_haemorrhage"
     },
     {
      "duration_min": 15.0,
      "effective_ml_per_ml": 0.125,
-     "hb_dilution_g_dl_per_ml": 0.0006,
      "id": "m000-0-fluid",
      "leak_tau_min": 30.0,
      "queued_ahead_ml": 0.0,
@@ -6081,7 +6172,6 @@
     {
      "duration_min": 15.0,
      "effective_ml_per_ml": 0.125,
-     "hb_dilution_g_dl_per_ml": 0.0006,
      "id": "m000-1-fluid",
      "leak_tau_min": 30.0,
      "queued_ahead_ml": 0.0,
@@ -6100,42 +6190,54 @@
      "arrival_lactate_excess",
      "arrival_oxygen_debt",
      "beta_blockade",
+     "blood_loss_ml_per_min",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
-     "hb_loss_g_dl_per_min",
      "intrinsic_sinus_rate",
      "metabolic_demand_baseline",
      "preload_fraction",
-     "pump_reserve",
-     "volume_loss_ml_per_min"
+     "pump_reserve"
     ],
     "migratable": false
    },
    "minutes": 45,
    "mismatching": {
     "crt_s": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "dbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
+    ],
+    "hb_g_dl": [
+     "P2I-2T"
     ],
     "hr": [
      "KD-S2",
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T",
+     "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T",
+     "P2E-2"
     ],
     "map": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "respiratory_rate": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T",
+     "P2E-2"
     ],
     "sbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ]
    },
    "orders": {
@@ -6160,27 +6262,27 @@
       ],
       "10": [
        null,
-       0.060586
+       0.0
       ],
       "15": [
        null,
-       0.181946
+       0.0
       ],
       "20": [
        null,
-       0.39176
+       0.0
       ],
       "30": [
        null,
-       1.122269
+       0.0
       ],
       "45": [
        null,
-       2.988793
+       0.0
       ],
       "5": [
        null,
-       0.008925
+       0.0
       ]
      },
      "tolerance": "not compared",
@@ -6420,31 +6522,31 @@
       ],
       "1": [
        null,
-       0.999417
+       1.004727
       ],
       "10": [
        null,
-       0.980998
+       1.038822
       ],
       "15": [
        null,
-       0.962561
+       1.0526
       ],
       "20": [
        null,
-       0.939698
+       1.063653
       ],
       "30": [
        null,
-       0.883861
+       1.079664
       ],
       "45": [
        null,
-       0.799607
+       1.011679
       ],
       "5": [
        null,
-       0.993938
+       1.021604
       ]
      },
      "tolerance": "not compared",
@@ -6584,10 +6686,10 @@
     },
     "hb_g_dl": {
      "compared": 46,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 1,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 1.351297,
+     "mismatched": 45,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -6596,31 +6698,31 @@
       ],
       "1": [
        6.651,
-       6.651
+       6.686336
       ],
       "10": [
        6.21,
-       6.21
+       6.576042
       ],
       "15": [
        5.965,
-       5.965
+       6.522969
       ],
       "20": [
        5.72,
-       5.72
+       6.474523
       ],
       "30": [
        5.23,
-       5.23
+       6.388607
       ],
       "45": [
        5.095,
-       5.095
+       6.446297
       ],
       "5": [
        6.455,
-       6.455
+       6.634673
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -7174,8 +7276,10 @@
    },
    "classification": {
     "V_ml_eq": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "blood_delivered_units": {
      "candidate_causes": [],
@@ -7187,13 +7291,15 @@
     },
     "crt_s": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "dbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -7210,13 +7316,16 @@
      "classification": "MATCH"
     },
     "hb_g_dl": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "hr": {
      "candidate_causes": [
       "KD-S2",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -7229,13 +7338,15 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -7247,6 +7358,7 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -7257,7 +7369,8 @@
     },
     "sbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -7268,17 +7381,15 @@
    },
    "core_inputs": [
     {
+     "blood_loss_ml_per_min": 2.5,
      "fraction_after_hemostasis": 0.1,
      "fraction_with_ppi": 0.8,
-     "hb_loss_g_dl_per_min": 0.009,
      "id": "gi_haemorrhage",
-     "type": "gi_haemorrhage",
-     "volume_loss_ml_per_min": 2.5
+     "type": "gi_haemorrhage"
     },
     {
      "duration_min": 20.0,
      "effective_ml_per_ml": 0.125,
-     "hb_dilution_g_dl_per_ml": 0.0006,
      "id": "m000-0-fluid",
      "leak_tau_min": 30.0,
      "queued_ahead_ml": 0.0,
@@ -7297,45 +7408,57 @@
      "arrival_lactate_excess",
      "arrival_oxygen_debt",
      "beta_blockade",
+     "blood_loss_ml_per_min",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
-     "hb_loss_g_dl_per_min",
      "intrinsic_sinus_rate",
      "metabolic_demand_baseline",
      "preload_fraction",
-     "pump_reserve",
-     "volume_loss_ml_per_min"
+     "pump_reserve"
     ],
     "migratable": false
    },
    "minutes": 60,
    "mismatching": {
+    "V_ml_eq": [
+     "P2I-2T"
+    ],
     "crt_s": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "dbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
+    ],
+    "hb_g_dl": [
+     "P2I-2T"
     ],
     "hr": [
      "KD-S2",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "map": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "respiratory_rate": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "sbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ]
    },
    "orders": {
@@ -7360,23 +7483,23 @@
       ],
       "10": [
        null,
-       0.021857
+       0.0
       ],
       "15": [
        null,
-       0.127762
+       0.0
       ],
       "20": [
        null,
-       0.356888
+       0.0
       ],
       "30": [
        null,
-       1.207708
+       0.0
       ],
       "45": [
        null,
-       3.199082
+       0.0
       ],
       "5": [
        null,
@@ -7384,7 +7507,7 @@
       ],
       "60": [
        null,
-       5.745622
+       0.344044
       ]
      },
      "tolerance": "not compared",
@@ -7392,10 +7515,10 @@
     },
     "V_ml_eq": {
      "compared": 61,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 55,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 3.230743,
+     "mismatched": 6,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -7432,7 +7555,7 @@
       ],
       "60": [
        -21.619393,
-       -21.619393
+       -18.38865
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -7539,7 +7662,7 @@
      "first_mismatch_minute": 11,
      "kind": "display",
      "max_abs_diff": 0.1,
-     "mismatched": 11,
+     "mismatched": 12,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -7587,7 +7710,7 @@
      "first_mismatch_minute": 10,
      "kind": "display",
      "max_abs_diff": 1.0,
-     "mismatched": 10,
+     "mismatched": 11,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -7644,35 +7767,35 @@
       ],
       "1": [
        null,
-       1.001218
+       1.008545
       ],
       "10": [
        null,
-       0.986642
+       1.069672
       ],
       "15": [
        null,
-       0.962915
+       1.094294
       ],
       "20": [
        null,
-       0.930904
+       1.114179
       ],
       "30": [
        null,
-       0.870648
+       1.067855
       ],
       "45": [
        null,
-       0.791105
+       1.003464
       ],
       "5": [
        null,
-       0.999951
+       1.038893
       ],
       "60": [
        null,
-       0.720841
+       0.946632
       ]
      },
      "tolerance": "not compared",
@@ -7824,10 +7947,10 @@
     },
     "hb_g_dl": {
      "compared": 61,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 1,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 1.527174,
+     "mismatched": 60,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -7836,35 +7959,35 @@
       ],
       "1": [
        6.631,
-       6.631
+       6.679524
       ],
       "10": [
        6.01,
-       6.01
+       6.515769
       ],
       "15": [
        5.665,
-       5.665
+       6.437921
       ],
       "20": [
        5.32,
-       5.32
+       6.367393
       ],
       "30": [
        5.23,
-       5.23
+       6.41463
       ],
       "45": [
        5.095,
-       5.095
+       6.462669
       ],
       "5": [
        6.355,
-       6.355
+       6.602484
       ],
       "60": [
        4.96,
-       4.96
+       6.487174
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -7923,7 +8046,7 @@
      "first_mismatch_minute": 2,
      "kind": "display",
      "max_abs_diff": 5.0,
-     "mismatched": 58,
+     "mismatched": 48,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -7960,7 +8083,7 @@
       ],
       "60": [
        125,
-       126
+       125
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -8067,7 +8190,7 @@
      "first_mismatch_minute": 10,
      "kind": "display",
      "max_abs_diff": 1.0,
-     "mismatched": 13,
+     "mismatched": 14,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -8475,13 +8598,15 @@
     },
     "crt_s": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "dbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -8498,13 +8623,16 @@
      "classification": "MATCH"
     },
     "hb_g_dl": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "hr": {
      "candidate_causes": [
       "KD-S2",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -8517,13 +8645,15 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -8535,6 +8665,7 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -8545,7 +8676,8 @@
     },
     "sbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -8556,17 +8688,15 @@
    },
    "core_inputs": [
     {
+     "blood_loss_ml_per_min": 2.5,
      "fraction_after_hemostasis": 0.1,
      "fraction_with_ppi": 0.8,
-     "hb_loss_g_dl_per_min": 0.009,
      "id": "gi_haemorrhage",
-     "type": "gi_haemorrhage",
-     "volume_loss_ml_per_min": 2.5
+     "type": "gi_haemorrhage"
     },
     {
      "duration_min": null,
      "effective_ml_per_ml": 0.125,
-     "hb_dilution_g_dl_per_ml": 0.0006,
      "id": "m000-0-fluid",
      "leak_tau_min": 30.0,
      "queued_ahead_ml": 0.0,
@@ -8580,12 +8710,12 @@
     },
     {
      "duration_min": null,
-     "hb_g_dl_per_unit": 0.85,
      "id": "m030-0-blood",
      "queued_ahead_units": 0.0,
      "start_minute": 30,
      "stop_minute": null,
      "type": "packed_red_cells",
+     "unit_hb_g_dl": 20.0,
      "units": 2.0,
      "untimed_units_per_min": 0.03333333333333333,
      "volume_ml_per_unit": 300.0
@@ -8603,45 +8733,54 @@
      "arrival_lactate_excess",
      "arrival_oxygen_debt",
      "beta_blockade",
+     "blood_loss_ml_per_min",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
-     "hb_loss_g_dl_per_min",
      "intrinsic_sinus_rate",
      "metabolic_demand_baseline",
      "preload_fraction",
-     "pump_reserve",
-     "volume_loss_ml_per_min"
+     "pump_reserve"
     ],
     "migratable": false
    },
    "minutes": 120,
    "mismatching": {
     "crt_s": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "dbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
+    ],
+    "hb_g_dl": [
+     "P2I-2T"
     ],
     "hr": [
      "KD-S2",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "map": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "respiratory_rate": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "sbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ]
    },
    "orders": {
@@ -8667,47 +8806,47 @@
       ],
       "10": [
        null,
-       0.087305
+       0.0
       ],
       "105": [
        null,
-       0.553686
+       0.002254
       ],
       "120": [
        null,
-       0.430304
+       0.001752
       ],
       "15": [
        null,
-       0.226613
+       0.0
       ],
       "20": [
        null,
-       0.444852
+       0.0
       ],
       "30": [
        null,
-       1.182293
+       0.001894
       ],
       "45": [
        null,
-       1.517813
+       0.006179
       ],
       "5": [
        null,
-       0.016811
+       0.0
       ],
       "60": [
        null,
-       1.179586
+       0.004802
       ],
       "75": [
        null,
-       0.916729
+       0.003732
       ],
       "90": [
        null,
-       0.712447
+       0.0029
       ]
      },
      "tolerance": "not compared",
@@ -9047,51 +9186,51 @@
       ],
       "1": [
        null,
-       0.998497
+       1.002806
       ],
       "10": [
        null,
-       0.976576
+       1.022479
       ],
       "105": [
        null,
-       1.462456
+       1.755447
       ],
       "120": [
        null,
-       1.416383
+       1.727312
       ],
       "15": [
        null,
-       0.95914
+       1.029933
       ],
       "20": [
        null,
-       0.938857
+       1.035511
       ],
       "30": [
        null,
-       0.884207
+       0.994044
       ],
       "45": [
        null,
-       1.038975
+       1.194359
       ],
       "5": [
        null,
-       0.990484
+       1.012697
       ],
       "60": [
        null,
-       1.196756
+       1.395754
       ],
       "75": [
        null,
-       1.354068
+       1.592977
       ],
       "90": [
        null,
-       1.508966
+       1.782891
       ]
      },
      "tolerance": "not compared",
@@ -9291,10 +9430,10 @@
     },
     "hb_g_dl": {
      "compared": 121,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 1,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 1.510758,
+     "mismatched": 120,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -9303,51 +9442,51 @@
       ],
       "1": [
        6.661,
-       6.661
+       6.689746
       ],
       "10": [
        6.31,
-       6.31
+       6.606599
       ],
       "105": [
        6.99,
-       6.99
+       8.390388
       ],
       "120": [
        6.882,
-       6.882
+       8.392758
       ],
       "15": [
        6.115,
-       6.115
+       6.566342
       ],
       "20": [
        5.92,
-       5.92
+       6.529455
       ],
       "30": [
        5.83,
-       5.83
+       6.554207
       ],
       "45": [
        6.147,
-       6.147
+       7.066316
       ],
       "5": [
        6.505,
-       6.505
+       6.650885
       ],
       "60": [
        6.464,
-       6.464
+       7.538841
       ],
       "75": [
        6.781,
-       6.781
+       7.977427
       ],
       "90": [
        7.098,
-       7.098
+       8.386512
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -10121,8 +10260,10 @@
    },
    "classification": {
     "V_ml_eq": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "blood_delivered_units": {
      "candidate_causes": [],
@@ -10134,13 +10275,15 @@
     },
     "crt_s": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "dbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -10157,13 +10300,16 @@
      "classification": "MATCH"
     },
     "hb_g_dl": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "hr": {
      "candidate_causes": [
       "KD-S2",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -10176,13 +10322,15 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -10194,6 +10342,7 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -10204,7 +10353,8 @@
     },
     "sbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -10215,17 +10365,15 @@
    },
    "core_inputs": [
     {
+     "blood_loss_ml_per_min": 2.5,
      "fraction_after_hemostasis": 0.1,
      "fraction_with_ppi": 0.8,
-     "hb_loss_g_dl_per_min": 0.009,
      "id": "gi_haemorrhage",
-     "type": "gi_haemorrhage",
-     "volume_loss_ml_per_min": 2.5
+     "type": "gi_haemorrhage"
     },
     {
      "duration_min": 60.0,
      "effective_ml_per_ml": 0.125,
-     "hb_dilution_g_dl_per_ml": 0.0006,
      "id": "m000-0-fluid",
      "leak_tau_min": 30.0,
      "queued_ahead_ml": 0.0,
@@ -10240,7 +10388,6 @@
     {
      "duration_min": null,
      "effective_ml_per_ml": 0.125,
-     "hb_dilution_g_dl_per_ml": 0.0006,
      "id": "m000-1-fluid",
      "leak_tau_min": 30.0,
      "queued_ahead_ml": 0.0,
@@ -10259,45 +10406,57 @@
      "arrival_lactate_excess",
      "arrival_oxygen_debt",
      "beta_blockade",
+     "blood_loss_ml_per_min",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
-     "hb_loss_g_dl_per_min",
      "intrinsic_sinus_rate",
      "metabolic_demand_baseline",
      "preload_fraction",
-     "pump_reserve",
-     "volume_loss_ml_per_min"
+     "pump_reserve"
     ],
     "migratable": false
    },
    "minutes": 60,
    "mismatching": {
+    "V_ml_eq": [
+     "P2I-2T"
+    ],
     "crt_s": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "dbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
+    ],
+    "hb_g_dl": [
+     "P2I-2T"
     ],
     "hr": [
      "KD-S2",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "map": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "respiratory_rate": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "sbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ]
    },
    "orders": {
@@ -10323,31 +10482,31 @@
       ],
       "10": [
        null,
-       0.03747
+       0.0
       ],
       "15": [
        null,
-       0.147885
+       0.0
       ],
       "20": [
        null,
-       0.361624
+       0.0
       ],
       "30": [
        null,
-       1.148973
+       0.0
       ],
       "45": [
        null,
-       3.046095
+       0.032005
       ],
       "5": [
        null,
-       0.001885
+       0.0
       ],
       "60": [
        null,
-       5.512392
+       0.627694
       ]
      },
      "tolerance": "not compared",
@@ -10355,10 +10514,10 @@
     },
     "V_ml_eq": {
      "compared": 61,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 49,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 6.375808,
+     "mismatched": 12,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -10395,7 +10554,7 @@
       ],
       "60": [
        -43.01616,
-       -43.01616
+       -36.640352
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -10502,7 +10661,7 @@
      "first_mismatch_minute": 11,
      "kind": "display",
      "max_abs_diff": 0.1,
-     "mismatched": 6,
+     "mismatched": 7,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -10607,35 +10766,35 @@
       ],
       "1": [
        null,
-       1.000324
+       1.00664
       ],
       "10": [
        null,
-       0.984343
+       1.054547
       ],
       "15": [
        null,
-       0.963789
+       1.074035
       ],
       "20": [
        null,
-       0.936984
+       1.08984
       ],
       "30": [
        null,
-       0.878085
+       1.044726
       ],
       "45": [
        null,
-       0.799563
+       0.981681
       ],
       "5": [
        null,
-       0.997093
+       1.030335
       ],
       "60": [
        null,
-       0.729351
+       0.928776
       ]
      },
      "tolerance": "not compared",
@@ -10787,10 +10946,10 @@
     },
     "hb_g_dl": {
      "compared": 61,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 1,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 1.355676,
+     "mismatched": 60,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -10799,35 +10958,35 @@
       ],
       "1": [
        6.641,
-       6.641
+       6.682928
       ],
       "10": [
        6.11,
-       6.11
+       6.545767
       ],
       "15": [
        5.815,
-       5.815
+       6.480165
       ],
       "20": [
        5.52,
-       5.52
+       6.42051
       ],
       "30": [
        5.43,
-       5.43
+       6.46049
       ],
       "45": [
        5.295,
-       5.295
+       6.501053
       ],
       "5": [
        6.405,
-       6.405
+       6.618539
       ],
       "60": [
        5.16,
-       5.16
+       6.515676
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -10886,7 +11045,7 @@
      "first_mismatch_minute": 3,
      "kind": "display",
      "max_abs_diff": 4.0,
-     "mismatched": 54,
+     "mismatched": 41,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -10923,7 +11082,7 @@
       ],
       "60": [
        125,
-       126
+       125
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -11222,7 +11381,7 @@
      "first_mismatch_minute": 13,
      "kind": "display",
      "max_abs_diff": 1.0,
-     "mismatched": 7,
+     "mismatched": 8,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -11438,13 +11597,15 @@
     },
     "crt_s": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "dbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -11461,13 +11622,16 @@
      "classification": "MATCH"
     },
     "hb_g_dl": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "hr": {
      "candidate_causes": [
       "KD-S2",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -11480,13 +11644,15 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -11498,6 +11664,7 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -11508,7 +11675,8 @@
     },
     "sbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -11519,17 +11687,15 @@
    },
    "core_inputs": [
     {
+     "blood_loss_ml_per_min": 2.5,
      "fraction_after_hemostasis": 0.1,
      "fraction_with_ppi": 0.8,
-     "hb_loss_g_dl_per_min": 0.009,
      "id": "gi_haemorrhage",
-     "type": "gi_haemorrhage",
-     "volume_loss_ml_per_min": 2.5
+     "type": "gi_haemorrhage"
     },
     {
      "duration_min": null,
      "effective_ml_per_ml": 0.125,
-     "hb_dilution_g_dl_per_ml": 0.0006,
      "id": "m000-0-fluid",
      "leak_tau_min": 30.0,
      "queued_ahead_ml": 0.0,
@@ -11544,7 +11710,6 @@
     {
      "duration_min": null,
      "effective_ml_per_ml": 0.125,
-     "hb_dilution_g_dl_per_ml": 0.0006,
      "id": "m005-0-fluid",
      "leak_tau_min": 30.0,
      "queued_ahead_ml": 750.0,
@@ -11558,24 +11723,24 @@
     },
     {
      "duration_min": null,
-     "hb_g_dl_per_unit": 0.85,
      "id": "m010-0-blood",
      "queued_ahead_units": 0.0,
      "start_minute": 10,
      "stop_minute": null,
      "type": "packed_red_cells",
+     "unit_hb_g_dl": 20.0,
      "units": 1.0,
      "untimed_units_per_min": 0.03333333333333333,
      "volume_ml_per_unit": 300.0
     },
     {
      "duration_min": null,
-     "hb_g_dl_per_unit": 0.85,
      "id": "m020-0-blood",
      "queued_ahead_units": 0.6666666666666667,
      "start_minute": 20,
      "stop_minute": null,
      "type": "packed_red_cells",
+     "unit_hb_g_dl": 20.0,
      "units": 1.0,
      "untimed_units_per_min": 0.03333333333333333,
      "volume_ml_per_unit": 300.0
@@ -11587,45 +11752,54 @@
      "arrival_lactate_excess",
      "arrival_oxygen_debt",
      "beta_blockade",
+     "blood_loss_ml_per_min",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
-     "hb_loss_g_dl_per_min",
      "intrinsic_sinus_rate",
      "metabolic_demand_baseline",
      "preload_fraction",
-     "pump_reserve",
-     "volume_loss_ml_per_min"
+     "pump_reserve"
     ],
     "migratable": false
    },
    "minutes": 90,
    "mismatching": {
     "crt_s": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "dbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
+    ],
+    "hb_g_dl": [
+     "P2I-2T"
     ],
     "hr": [
      "KD-S2",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "map": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "respiratory_rate": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "sbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ]
    },
    "orders": {
@@ -11653,39 +11827,39 @@
       ],
       "10": [
        null,
-       0.087305
+       0.0
       ],
       "15": [
        null,
-       0.113092
+       0.0
       ],
       "20": [
        null,
-       0.103977
+       0.0
       ],
       "30": [
        null,
-       0.087891
+       0.0
       ],
       "45": [
        null,
-       0.068306
+       0.0
       ],
       "5": [
        null,
-       0.016811
+       0.0
       ],
       "60": [
        null,
-       0.053085
+       0.0
       ],
       "75": [
        null,
-       0.041255
+       0.0
       ],
       "90": [
        null,
-       0.032062
+       0.0
       ]
      },
      "tolerance": "not compared",
@@ -11985,43 +12159,43 @@
       ],
       "1": [
        null,
-       0.998497
+       1.002806
       ],
       "10": [
        null,
-       0.976576
+       1.022479
       ],
       "15": [
        null,
-       1.032974
+       1.111159
       ],
       "20": [
        null,
-       1.081938
+       1.195224
       ],
       "30": [
        null,
-       1.161727
+       1.351801
       ],
       "45": [
        null,
-       1.259121
+       1.550113
       ],
       "5": [
        null,
-       0.990484
+       1.012697
       ],
       "60": [
        null,
-       1.376009
+       1.716472
       ],
       "75": [
        null,
-       1.43703
+       1.816322
       ],
       "90": [
        null,
-       1.377972
+       1.782409
       ]
      },
      "tolerance": "not compared",
@@ -12197,10 +12371,10 @@
     },
     "hb_g_dl": {
      "compared": 91,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 1,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 1.875477,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -12209,43 +12383,43 @@
       ],
       "1": [
        6.661,
-       6.661
+       6.689746
       ],
       "10": [
        6.31,
-       6.31
+       6.606599
       ],
       "15": [
        6.256667,
-       6.256667
+       6.730225
       ],
       "20": [
        6.203333,
-       6.203333
+       6.852862
       ],
       "30": [
        6.096667,
-       6.096667
+       7.094159
       ],
       "45": [
        6.086667,
-       6.086667
+       7.493342
       ],
       "5": [
        6.505,
-       6.505
+       6.650885
       ],
       "60": [
        6.376667,
-       6.376667
+       7.95443
       ],
       "75": [
        6.525,
-       6.525
+       8.247219
       ],
       "90": [
        6.39,
-       6.39
+       8.265477
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -12929,113 +13103,30 @@
    },
    "classification": {
     "V_ml_eq": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "blood_delivered_units": {
      "candidate_causes": [],
      "classification": "MATCH"
     },
     "consciousness_level": {
-     "by_minute": [
-      {
-       "candidate_causes": [
-        "KD-S3",
-        "KD-S4"
-       ],
-       "core": 1,
-       "core_displayed_sbp": 80,
-       "core_raw_sbp": 79.927,
-       "legacy": 0,
-       "legacy_displayed_sbp": 81,
-       "legacy_raw_sbp": 80.575,
-       "minute": 55,
-       "mode": "jointly_necessary"
-      },
-      {
-       "candidate_causes": [
-        "KD-S3",
-        "KD-S4"
-       ],
-       "core": 1,
-       "core_displayed_sbp": 80,
-       "core_raw_sbp": 79.768,
-       "legacy": 0,
-       "legacy_displayed_sbp": 80,
-       "legacy_raw_sbp": 80.44,
-       "minute": 56,
-       "mode": "jointly_necessary"
-      },
-      {
-       "candidate_causes": [
-        "KD-S3",
-        "KD-S4"
-       ],
-       "core": 1,
-       "core_displayed_sbp": 80,
-       "core_raw_sbp": 79.608,
-       "legacy": 0,
-       "legacy_displayed_sbp": 80,
-       "legacy_raw_sbp": 80.305,
-       "minute": 57,
-       "mode": "jointly_necessary"
-      },
-      {
-       "candidate_causes": [
-        "KD-S4"
-       ],
-       "core": 1,
-       "core_displayed_sbp": 79,
-       "core_raw_sbp": 79.447,
-       "legacy": 0,
-       "legacy_displayed_sbp": 80,
-       "legacy_raw_sbp": 80.17,
-       "minute": 58,
-       "mode": "sufficient_alone"
-      },
-      {
-       "candidate_causes": [
-        "KD-S4"
-       ],
-       "core": 1,
-       "core_displayed_sbp": 79,
-       "core_raw_sbp": 79.287,
-       "legacy": 0,
-       "legacy_displayed_sbp": 80,
-       "legacy_raw_sbp": 80.035,
-       "minute": 59,
-       "mode": "sufficient_alone"
-      },
-      {
-       "candidate_causes": [
-        "KD-S3",
-        "KD-S4"
-       ],
-       "core": 1,
-       "core_displayed_sbp": 79,
-       "core_raw_sbp": 79.125,
-       "legacy": 0,
-       "legacy_displayed_sbp": 80,
-       "legacy_raw_sbp": 79.9,
-       "minute": 60,
-       "mode": "each_sufficient"
-      }
-     ],
-     "candidate_causes": [
-      "KD-S3",
-      "KD-S4"
-     ],
-     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+     "candidate_causes": [],
+     "classification": "MATCH"
     },
     "crt_s": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "dbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -13052,13 +13143,16 @@
      "classification": "MATCH"
     },
     "hb_g_dl": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "hr": {
      "candidate_causes": [
       "KD-S2",
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -13069,13 +13163,15 @@
     "lactate_mmol_l": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -13086,7 +13182,8 @@
     "respiratory_rate": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -13096,7 +13193,8 @@
     },
     "sbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -13107,12 +13205,11 @@
    },
    "core_inputs": [
     {
+     "blood_loss_ml_per_min": 2.5,
      "fraction_after_hemostasis": 0.1,
      "fraction_with_ppi": 0.8,
-     "hb_loss_g_dl_per_min": 0.009,
      "id": "gi_haemorrhage",
-     "type": "gi_haemorrhage",
-     "volume_loss_ml_per_min": 2.5
+     "type": "gi_haemorrhage"
     }
    ],
    "migration_gate": {
@@ -13121,46 +13218,54 @@
      "arrival_lactate_excess",
      "arrival_oxygen_debt",
      "beta_blockade",
+     "blood_loss_ml_per_min",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
-     "hb_loss_g_dl_per_min",
      "intrinsic_sinus_rate",
      "metabolic_demand_baseline",
      "preload_fraction",
-     "pump_reserve",
-     "volume_loss_ml_per_min"
+     "pump_reserve"
     ],
     "migratable": false
    },
    "minutes": 60,
    "mismatching": {
-    "consciousness_level": [
-     "KD-S3",
-     "KD-S4"
+    "V_ml_eq": [
+     "P2I-2T"
     ],
     "crt_s": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "dbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
+    ],
+    "hb_g_dl": [
+     "P2I-2T"
     ],
     "hr": [
      "KD-S2",
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "lactate_mmol_l": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "map": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "respiratory_rate": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "sbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ]
    },
    "orders": {},
@@ -13183,31 +13288,31 @@
       ],
       "10": [
        null,
-       0.187136
+       0.129254
       ],
       "15": [
        null,
-       0.425133
+       0.293363
       ],
       "20": [
        null,
-       0.749274
+       0.516539
       ],
       "30": [
        null,
-       1.629139
+       1.120854
       ],
       "45": [
        null,
-       3.440605
+       2.359662
       ],
       "5": [
        null,
-       0.042729
+       0.029539
       ],
       "60": [
        null,
-       5.725807
+       3.913979
       ]
      },
      "tolerance": "not compared",
@@ -13215,10 +13320,10 @@
     },
     "V_ml_eq": {
      "compared": 61,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 2,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 15.733339,
+     "mismatched": 59,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -13231,31 +13336,31 @@
       ],
       "10": [
        -25.0,
-       -25.0
+       -24.543379
       ],
       "15": [
        -37.5,
-       -37.5
+       -36.449006
       ],
       "20": [
        -50.0,
-       -50.0
+       -48.123823
       ],
       "30": [
        -75.0,
-       -75.0
+       -70.818324
       ],
       "45": [
        -112.5,
-       -112.5
+       -103.352324
       ],
       "5": [
        -12.5,
-       -12.5
+       -12.397123
       ],
       "60": [
        -150.0,
-       -150.0
+       -134.266661
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -13311,10 +13416,10 @@
     },
     "consciousness_level": {
      "compared": 61,
-     "first_mismatch_minute": 55,
+     "first_mismatch_minute": null,
      "kind": "categorical",
-     "max_abs_diff": 1.0,
-     "mismatched": 6,
+     "max_abs_diff": 0.0,
+     "mismatched": 0,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -13351,7 +13456,7 @@
       ],
       "60": [
        0,
-       1
+       0
       ]
      },
      "tolerance": "categorical equality",
@@ -13359,10 +13464,10 @@
     },
     "crt_s": {
      "compared": 61,
-     "first_mismatch_minute": 28,
+     "first_mismatch_minute": 21,
      "kind": "display",
      "max_abs_diff": 0.1,
-     "mismatched": 14,
+     "mismatched": 4,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -13391,7 +13496,7 @@
       ],
       "45": [
        5.5,
-       5.6
+       5.5
       ],
       "5": [
        5.1,
@@ -13399,7 +13504,7 @@
       ],
       "60": [
        5.7,
-       5.8
+       5.7
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -13407,10 +13512,10 @@
     },
     "dbp": {
      "compared": 61,
-     "first_mismatch_minute": 20,
+     "first_mismatch_minute": 47,
      "kind": "display",
      "max_abs_diff": 1.0,
-     "mismatched": 11,
+     "mismatched": 1,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -13431,7 +13536,7 @@
       ],
       "20": [
        53,
-       52
+       53
       ],
       "30": [
        52,
@@ -13439,7 +13544,7 @@
       ],
       "45": [
        51,
-       50
+       51
       ],
       "5": [
        54,
@@ -13447,7 +13552,7 @@
       ],
       "60": [
        50,
-       49
+       50
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -13467,35 +13572,35 @@
       ],
       "1": [
        null,
-       0.995656
+       0.996995
       ],
       "10": [
        null,
-       0.956522
+       0.969999
       ],
       "15": [
        null,
-       0.93475
+       0.955038
       ],
       "20": [
        null,
-       0.912959
+       0.940107
       ],
       "30": [
        null,
-       0.869322
+       0.910339
       ],
       "45": [
        null,
-       0.803752
+       0.86594
       ],
       "5": [
        null,
-       0.978272
+       0.984987
       ],
       "60": [
        null,
-       0.738081
+       0.821859
       ]
      },
      "tolerance": "not compared",
@@ -13647,10 +13752,10 @@
     },
     "hb_g_dl": {
      "compared": 61,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 1,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 0.51308,
+     "mismatched": 60,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -13659,35 +13764,35 @@
       ],
       "1": [
        6.691,
-       6.691
+       6.7
       ],
       "10": [
        6.61,
-       6.61
+       6.699232
       ],
       "15": [
        6.565,
-       6.565
+       6.698228
       ],
       "20": [
        6.52,
-       6.52
+       6.696831
       ],
       "30": [
        6.43,
-       6.43
+       6.692912
       ],
       "45": [
        6.295,
-       6.295
+       6.684418
       ],
       "5": [
        6.655,
-       6.655
+       6.699827
       ],
       "60": [
        6.16,
-       6.16
+       6.67308
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -13743,10 +13848,10 @@
     },
     "hr": {
      "compared": 61,
-     "first_mismatch_minute": 18,
+     "first_mismatch_minute": 19,
      "kind": "display",
-     "max_abs_diff": 2.0,
-     "mismatched": 31,
+     "max_abs_diff": 1.0,
+     "mismatched": 18,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -13771,7 +13876,7 @@
       ],
       "30": [
        126,
-       127
+       126
       ],
       "45": [
        127,
@@ -13783,7 +13888,7 @@
       ],
       "60": [
        128,
-       130
+       129
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -13841,7 +13946,7 @@
      "compared": 61,
      "first_mismatch_minute": 9,
      "kind": "display",
-     "max_abs_diff": 0.3,
+     "max_abs_diff": 0.4,
      "mismatched": 52,
      "rounding_tie_minutes": [],
      "samples": {
@@ -13879,7 +13984,7 @@
       ],
       "60": [
        4.8,
-       4.5
+       4.4
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -13887,10 +13992,10 @@
     },
     "map": {
      "compared": 60,
-     "first_mismatch_minute": 20,
+     "first_mismatch_minute": 41,
      "kind": "display",
      "max_abs_diff": 1.0,
-     "mismatched": 14,
+     "mismatched": 2,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -13911,7 +14016,7 @@
       ],
       "20": [
        64,
-       63
+       64
       ],
       "30": [
        63,
@@ -13919,7 +14024,7 @@
       ],
       "45": [
        61,
-       60
+       61
       ],
       "5": [
        65,
@@ -13927,7 +14032,7 @@
       ],
       "60": [
        60,
-       59
+       60
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -14079,10 +14184,10 @@
     },
     "sbp": {
      "compared": 61,
-     "first_mismatch_minute": 11,
+     "first_mismatch_minute": 26,
      "kind": "display",
      "max_abs_diff": 1.0,
-     "mismatched": 17,
+     "mismatched": 5,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -14111,7 +14216,7 @@
       ],
       "45": [
        82,
-       81
+       82
       ],
       "5": [
        87,
@@ -14119,7 +14224,7 @@
       ],
       "60": [
        80,
-       79
+       80
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -14286,7 +14391,8 @@
    "classification": {
     "V_ml_eq": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -14300,13 +14406,15 @@
     },
     "crt_s": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "dbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -14323,13 +14431,16 @@
      "classification": "MATCH"
     },
     "hb_g_dl": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "hr": {
      "candidate_causes": [
       "KD-S2",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -14342,13 +14453,15 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -14360,6 +14473,7 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -14370,7 +14484,8 @@
     },
     "sbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -14381,21 +14496,20 @@
    },
    "core_inputs": [
     {
+     "blood_loss_ml_per_min": 2.5,
      "fraction_after_hemostasis": 0.1,
      "fraction_with_ppi": 0.8,
-     "hb_loss_g_dl_per_min": 0.009,
      "id": "gi_haemorrhage",
-     "type": "gi_haemorrhage",
-     "volume_loss_ml_per_min": 2.5
+     "type": "gi_haemorrhage"
     },
     {
      "duration_min": 60.0,
-     "hb_g_dl_per_unit": 0.85,
      "id": "m000-0-blood",
      "queued_ahead_units": 0.0,
      "start_minute": 0.0,
      "stop_minute": null,
      "type": "packed_red_cells",
+     "unit_hb_g_dl": 20.0,
      "units": 4.0,
      "untimed_units_per_min": 0.03333333333333333,
      "volume_ml_per_unit": 300.0
@@ -14403,7 +14517,6 @@
     {
      "duration_min": 30.0,
      "effective_ml_per_ml": 0.125,
-     "hb_dilution_g_dl_per_ml": 0.0006,
      "id": "m000-1-fluid",
      "leak_tau_min": 30.0,
      "queued_ahead_ml": 0.0,
@@ -14422,48 +14535,58 @@
      "arrival_lactate_excess",
      "arrival_oxygen_debt",
      "beta_blockade",
+     "blood_loss_ml_per_min",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
-     "hb_loss_g_dl_per_min",
      "intrinsic_sinus_rate",
      "metabolic_demand_baseline",
      "preload_fraction",
-     "pump_reserve",
-     "volume_loss_ml_per_min"
+     "pump_reserve"
     ],
     "migratable": false
    },
    "minutes": 90,
    "mismatching": {
     "V_ml_eq": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "crt_s": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "dbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
+    ],
+    "hb_g_dl": [
+     "P2I-2T"
     ],
     "hr": [
      "KD-S2",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "map": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "respiratory_rate": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "sbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ]
    },
    "orders": {
@@ -14820,43 +14943,43 @@
       ],
       "1": [
        null,
-       1.031568
+       1.03912
       ],
       "10": [
        null,
-       1.2744
+       1.362697
       ],
       "15": [
        null,
-       1.38337
+       1.522907
       ],
       "20": [
        null,
-       1.47811
+       1.671129
       ],
       "30": [
        null,
-       1.634336
+       1.936473
       ],
       "45": [
        null,
-       1.925643
+       2.267252
       ],
       "5": [
        null,
-       1.147997
+       1.188994
       ],
       "60": [
        null,
-       2.214696
+       2.56631
       ],
       "75": [
        null,
-       2.158734
+       2.55074
       ],
       "90": [
        null,
-       2.104355
+       2.533632
       ]
      },
      "tolerance": "not compared",
@@ -15032,10 +15155,10 @@
     },
     "hb_g_dl": {
      "compared": 91,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 1,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 1.589119,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -15044,43 +15167,43 @@
       ],
       "1": [
        6.407667,
-       6.407667
+       6.454579
       ],
       "10": [
        6.476667,
-       6.476667
+       6.925404
       ],
       "15": [
        6.515,
-       6.515
+       7.17215
       ],
       "20": [
        6.553333,
-       6.553333
+       7.409101
       ],
       "30": [
        6.63,
-       6.63
+       7.855676
       ],
       "45": [
        7.345,
-       7.345
+       8.648002
       ],
       "5": [
        6.438333,
-       6.438333
+       6.668257
       ],
       "60": [
        8.06,
-       8.06
+       9.33964
       ],
       "75": [
        7.925,
-       7.925
+       9.364107
       ],
       "90": [
        7.79,
-       7.79
+       9.379119
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -15779,13 +15902,15 @@
     },
     "crt_s": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "dbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -15802,13 +15927,16 @@
      "classification": "MATCH"
     },
     "hb_g_dl": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "hr": {
      "candidate_causes": [
       "KD-S2",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -15821,13 +15949,15 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -15839,6 +15969,7 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -15849,7 +15980,8 @@
     },
     "sbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -15860,21 +15992,20 @@
    },
    "core_inputs": [
     {
+     "blood_loss_ml_per_min": 2.5,
      "fraction_after_hemostasis": 0.1,
      "fraction_with_ppi": 0.8,
-     "hb_loss_g_dl_per_min": 0.009,
      "id": "gi_haemorrhage",
-     "type": "gi_haemorrhage",
-     "volume_loss_ml_per_min": 2.5
+     "type": "gi_haemorrhage"
     },
     {
      "duration_min": 60.0,
-     "hb_g_dl_per_unit": 0.85,
      "id": "m000-0-blood",
      "queued_ahead_units": 0.0,
      "start_minute": 0.0,
      "stop_minute": null,
      "type": "packed_red_cells",
+     "unit_hb_g_dl": 20.0,
      "units": 2.0,
      "untimed_units_per_min": 0.03333333333333333,
      "volume_ml_per_unit": 300.0
@@ -15897,45 +16028,54 @@
      "arrival_lactate_excess",
      "arrival_oxygen_debt",
      "beta_blockade",
+     "blood_loss_ml_per_min",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
-     "hb_loss_g_dl_per_min",
      "intrinsic_sinus_rate",
      "metabolic_demand_baseline",
      "preload_fraction",
-     "pump_reserve",
-     "volume_loss_ml_per_min"
+     "pump_reserve"
     ],
     "migratable": false
    },
    "minutes": 120,
    "mismatching": {
     "crt_s": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "dbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
+    ],
+    "hb_g_dl": [
+     "P2I-2T"
     ],
     "hr": [
      "KD-S2",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "map": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "respiratory_rate": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "sbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ]
    },
    "orders": {
@@ -16340,51 +16480,51 @@
       ],
       "1": [
        null,
-       1.012888
+       1.014907
       ],
       "10": [
        null,
-       1.127579
+       1.148261
       ],
       "105": [
        null,
-       1.707362
+       1.833267
       ],
       "120": [
        null,
-       1.701289
+       1.829982
       ],
       "15": [
        null,
-       1.190286
+       1.221554
       ],
       "20": [
        null,
-       1.252272
+       1.29415
       ],
       "30": [
        null,
-       1.37409
+       1.436911
       ],
       "45": [
        null,
-       1.55151
+       1.643994
       ],
       "5": [
        null,
-       1.06415
+       1.074371
       ],
       "60": [
        null,
-       1.725563
+       1.843032
       ],
       "75": [
        null,
-       1.719499
+       1.839791
       ],
       "90": [
        null,
-       1.713432
+       1.836536
       ]
      },
      "tolerance": "not compared",
@@ -16584,10 +16724,10 @@
     },
     "hb_g_dl": {
      "compared": 121,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 1,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 0.576434,
+     "mismatched": 120,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -16596,51 +16736,51 @@
       ],
       "1": [
        6.421133,
-       6.421133
+       6.433932
       ],
       "10": [
        6.611333,
-       6.611333
+       6.732594
       ],
       "105": [
        7.6338,
-       7.6338
+       8.196734
       ],
       "120": [
        7.6203,
-       7.6203
+       8.196734
       ],
       "15": [
        6.717,
-       6.717
+       6.893449
       ],
       "20": [
        6.822667,
-       6.822667
+       7.050828
       ],
       "30": [
        7.034,
-       7.034
+       7.355581
       ],
       "45": [
        7.351,
-       7.351
+       7.789187
       ],
       "5": [
        6.505667,
-       6.505667
+       6.56815
       ],
       "60": [
        7.6743,
-       7.6743
+       8.196734
       ],
       "75": [
        7.6608,
-       7.6608
+       8.196734
       ],
       "90": [
        7.6473,
-       7.6473
+       8.196734
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -17414,8 +17554,10 @@
    },
    "classification": {
     "V_ml_eq": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "blood_delivered_units": {
      "candidate_causes": [],
@@ -17430,10 +17572,8 @@
      "classification": "MATCH"
     },
     "dbp": {
-     "candidate_causes": [
-      "KD-S4"
-     ],
-     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+     "candidate_causes": [],
+     "classification": "MATCH"
     },
     "fio2": {
      "candidate_causes": [],
@@ -17448,16 +17588,14 @@
      "classification": "MATCH"
     },
     "hb_g_dl": {
-     "candidate_causes": [],
-     "classification": "MATCH"
-    },
-    "hr": {
      "candidate_causes": [
-      "KD-S2",
-      "KD-S4",
-      "P2E-2"
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "hr": {
+     "candidate_causes": [],
+     "classification": "MATCH"
     },
     "k_mmol_l": {
      "candidate_causes": [],
@@ -17467,6 +17605,7 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -17483,6 +17622,7 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -17492,10 +17632,8 @@
      "classification": "MATCH"
     },
     "sbp": {
-     "candidate_causes": [
-      "KD-S4"
-     ],
-     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+     "candidate_causes": [],
+     "classification": "MATCH"
     },
     "spo2": {
      "candidate_causes": [],
@@ -17504,12 +17642,11 @@
    },
    "core_inputs": [
     {
+     "blood_loss_ml_per_min": 2.5,
      "fraction_after_hemostasis": 0.1,
      "fraction_with_ppi": 0.8,
-     "hb_loss_g_dl_per_min": 0.009,
      "id": "gi_haemorrhage",
-     "type": "gi_haemorrhage",
-     "volume_loss_ml_per_min": 2.5
+     "type": "gi_haemorrhage"
     },
     {
      "fio2": 0.85,
@@ -17525,39 +17662,35 @@
      "arrival_lactate_excess",
      "arrival_oxygen_debt",
      "beta_blockade",
+     "blood_loss_ml_per_min",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
-     "hb_loss_g_dl_per_min",
      "intrinsic_sinus_rate",
      "metabolic_demand_baseline",
      "preload_fraction",
-     "pump_reserve",
-     "volume_loss_ml_per_min"
+     "pump_reserve"
     ],
     "migratable": false
    },
    "minutes": 20,
    "mismatching": {
-    "dbp": [
-     "KD-S4"
+    "V_ml_eq": [
+     "P2I-2T"
     ],
-    "hr": [
-     "KD-S2",
-     "KD-S4",
-     "P2E-2"
+    "hb_g_dl": [
+     "P2I-2T"
     ],
     "lactate_mmol_l": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "respiratory_rate": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
-    ],
-    "sbp": [
-     "KD-S4"
     ]
    },
    "orders": {
@@ -17586,11 +17719,11 @@
       ],
       "15": [
        null,
-       0.065796
+       0.002054
       ],
       "20": [
        null,
-       0.237448
+       0.057491
       ],
       "5": [
        null,
@@ -17602,10 +17735,10 @@
     },
     "V_ml_eq": {
      "compared": 21,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 2,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 1.876177,
+     "mismatched": 19,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -17618,19 +17751,19 @@
       ],
       "10": [
        -25.0,
-       -25.0
+       -24.543379
       ],
       "15": [
        -37.5,
-       -37.5
+       -36.449006
       ],
       "20": [
        -50.0,
-       -50.0
+       -48.123823
       ],
       "5": [
        -12.5,
-       -12.5
+       -12.397123
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -17746,10 +17879,10 @@
     },
     "dbp": {
      "compared": 21,
-     "first_mismatch_minute": 20,
+     "first_mismatch_minute": null,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 1,
+     "max_abs_diff": 0.0,
+     "mismatched": 0,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -17770,7 +17903,7 @@
       ],
       "20": [
        61,
-       60
+       61
       ],
       "5": [
        62,
@@ -17794,23 +17927,23 @@
       ],
       "1": [
        null,
-       1.037077
+       1.038537
       ],
       "10": [
        null,
-       0.995741
+       1.010415
       ],
       "15": [
        null,
-       0.97276
+       0.994831
       ],
       "20": [
        null,
-       0.949768
+       0.979278
       ],
       "5": [
        null,
-       1.01871
+       1.026028
       ]
      },
      "tolerance": "not compared",
@@ -17926,10 +18059,10 @@
     },
     "hb_g_dl": {
      "compared": 21,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 1,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 0.176973,
+     "mismatched": 20,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -17938,23 +18071,23 @@
       ],
       "1": [
        6.391,
-       6.391
+       6.4
       ],
       "10": [
        6.31,
-       6.31
+       6.399266
       ],
       "15": [
        6.265,
-       6.265
+       6.398308
       ],
       "20": [
        6.22,
-       6.22
+       6.396973
       ],
       "5": [
        6.355,
-       6.355
+       6.399835
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -17998,10 +18131,10 @@
     },
     "hr": {
      "compared": 21,
-     "first_mismatch_minute": 19,
+     "first_mismatch_minute": null,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 2,
+     "max_abs_diff": 0.0,
+     "mismatched": 0,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -18022,7 +18155,7 @@
       ],
       "20": [
        113,
-       114
+       113
       ],
       "5": [
        112,
@@ -18250,10 +18383,10 @@
     },
     "sbp": {
      "compared": 21,
-     "first_mismatch_minute": 11,
+     "first_mismatch_minute": null,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 1,
+     "max_abs_diff": 0.0,
+     "mismatched": 0,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -18433,13 +18566,15 @@
     },
     "crt_s": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "dbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -18456,13 +18591,16 @@
      "classification": "MATCH"
     },
     "hb_g_dl": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "hr": {
      "candidate_causes": [
       "KD-S2",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -18475,13 +18613,15 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -18493,6 +18633,7 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -18503,7 +18644,8 @@
     },
     "sbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -18514,21 +18656,20 @@
    },
    "core_inputs": [
     {
+     "blood_loss_ml_per_min": 2.5,
      "fraction_after_hemostasis": 0.1,
      "fraction_with_ppi": 0.8,
-     "hb_loss_g_dl_per_min": 0.009,
      "id": "gi_haemorrhage",
-     "type": "gi_haemorrhage",
-     "volume_loss_ml_per_min": 2.5
+     "type": "gi_haemorrhage"
     },
     {
      "duration_min": 60.0,
-     "hb_g_dl_per_unit": 0.85,
      "id": "m000-0-blood",
      "queued_ahead_units": 0.0,
      "start_minute": 0.0,
      "stop_minute": null,
      "type": "packed_red_cells",
+     "unit_hb_g_dl": 20.0,
      "units": 2.0,
      "untimed_units_per_min": 0.03333333333333333,
      "volume_ml_per_unit": 300.0
@@ -18540,45 +18681,54 @@
      "arrival_lactate_excess",
      "arrival_oxygen_debt",
      "beta_blockade",
+     "blood_loss_ml_per_min",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
-     "hb_loss_g_dl_per_min",
      "intrinsic_sinus_rate",
      "metabolic_demand_baseline",
      "preload_fraction",
-     "pump_reserve",
-     "volume_loss_ml_per_min"
+     "pump_reserve"
     ],
     "migratable": false
    },
    "minutes": 90,
    "mismatching": {
     "crt_s": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "dbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
+    ],
+    "hb_g_dl": [
+     "P2I-2T"
     ],
     "hr": [
      "KD-S2",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "map": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "respiratory_rate": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "sbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ]
    },
    "orders": {
@@ -18935,43 +19085,43 @@
       ],
       "1": [
        null,
-       1.012008
+       1.01431
       ],
       "10": [
        null,
-       1.118877
+       1.142547
       ],
       "15": [
        null,
-       1.177319
+       1.213206
       ],
       "20": [
        null,
-       1.235099
+       1.28332
       ],
       "30": [
        null,
-       1.348689
+       1.421589
       ],
       "45": [
        null,
-       1.514231
+       1.623106
       ],
       "5": [
        null,
-       1.059771
+       1.071442
       ],
       "60": [
        null,
-       1.674129
+       1.816424
       ],
       "75": [
        null,
-       1.613115
+       1.782047
       ],
       "90": [
        null,
-       1.551827
+       1.746087
       ]
      },
      "tolerance": "not compared",
@@ -19147,10 +19297,10 @@
     },
     "hb_g_dl": {
      "compared": 91,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 1,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 0.912575,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -19159,43 +19309,43 @@
       ],
       "1": [
        6.419333,
-       6.419333
+       6.433936
       ],
       "10": [
        6.593333,
-       6.593333
+       6.732816
       ],
       "15": [
        6.69,
-       6.69
+       6.893923
       ],
       "20": [
        6.786667,
-       6.786667
+       7.051636
       ],
       "30": [
        6.98,
-       6.98
+       7.357286
       ],
       "45": [
        7.27,
-       7.27
+       7.792722
       ],
       "5": [
        6.496667,
-       6.496667
+       6.568212
       ],
       "60": [
        7.56,
-       7.56
+       8.202575
       ],
       "75": [
        7.425,
-       7.425
+       8.202575
       ],
       "90": [
        7.29,
-       7.29
+       8.202575
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -19820,7 +19970,9 @@
    }
   },
   "gi_bleed_72f/queued_timed_bags": {
-   "acting_mechanisms": [],
+   "acting_mechanisms": [
+    "P2E-2"
+   ],
    "case_parameters": {
     "arrival_delivery_ratio": {
      "calibrated": false,
@@ -19892,13 +20044,15 @@
     },
     "crt_s": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "dbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -19915,13 +20069,17 @@
      "classification": "MATCH"
     },
     "hb_g_dl": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "hr": {
      "candidate_causes": [
       "KD-S2",
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -19932,13 +20090,16 @@
     "lactate_mmol_l": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -19949,7 +20110,9 @@
     "respiratory_rate": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -19959,7 +20122,8 @@
     },
     "sbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -19970,17 +20134,15 @@
    },
    "core_inputs": [
     {
+     "blood_loss_ml_per_min": 2.5,
      "fraction_after_hemostasis": 0.1,
      "fraction_with_ppi": 0.8,
-     "hb_loss_g_dl_per_min": 0.009,
      "id": "gi_haemorrhage",
-     "type": "gi_haemorrhage",
-     "volume_loss_ml_per_min": 2.5
+     "type": "gi_haemorrhage"
     },
     {
      "duration_min": 15.0,
      "effective_ml_per_ml": 0.125,
-     "hb_dilution_g_dl_per_ml": 0.0006,
      "id": "m000-0-fluid",
      "leak_tau_min": 30.0,
      "queued_ahead_ml": 0.0,
@@ -19995,7 +20157,6 @@
     {
      "duration_min": 15.0,
      "effective_ml_per_ml": 0.125,
-     "hb_dilution_g_dl_per_ml": 0.0006,
      "id": "m000-1-fluid",
      "leak_tau_min": 30.0,
      "queued_ahead_ml": 0.0,
@@ -20014,42 +20175,54 @@
      "arrival_lactate_excess",
      "arrival_oxygen_debt",
      "beta_blockade",
+     "blood_loss_ml_per_min",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
-     "hb_loss_g_dl_per_min",
      "intrinsic_sinus_rate",
      "metabolic_demand_baseline",
      "preload_fraction",
-     "pump_reserve",
-     "volume_loss_ml_per_min"
+     "pump_reserve"
     ],
     "migratable": false
    },
    "minutes": 45,
    "mismatching": {
     "crt_s": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "dbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
+    ],
+    "hb_g_dl": [
+     "P2I-2T"
     ],
     "hr": [
      "KD-S2",
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T",
+     "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T",
+     "P2E-2"
     ],
     "map": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "respiratory_rate": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T",
+     "P2E-2"
     ],
     "sbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ]
    },
    "orders": {
@@ -20074,27 +20247,27 @@
       ],
       "10": [
        null,
-       0.075925
+       0.0
       ],
       "15": [
        null,
-       0.217371
+       0.0
       ],
       "20": [
        null,
-       0.455106
+       0.0
       ],
       "30": [
        null,
-       1.263403
+       0.0
       ],
       "45": [
        null,
-       3.25525
+       0.0
       ],
       "5": [
        null,
-       0.012362
+       0.0
       ]
      },
      "tolerance": "not compared",
@@ -20334,31 +20507,31 @@
       ],
       "1": [
        null,
-       0.999072
+       1.004727
       ],
       "10": [
        null,
-       0.97737
+       1.038822
       ],
       "15": [
        null,
-       0.957002
+       1.0526
       ],
       "20": [
        null,
-       0.932151
+       1.063653
       ],
       "30": [
        null,
-       0.872216
+       1.079664
       ],
       "45": [
        null,
-       0.7878
+       1.011679
       ],
       "5": [
        null,
-       0.99217
+       1.021604
       ]
      },
      "tolerance": "not compared",
@@ -20498,10 +20671,10 @@
     },
     "hb_g_dl": {
      "compared": 46,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 1,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 1.362657,
+     "mismatched": 45,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -20510,31 +20683,31 @@
       ],
       "1": [
        6.351,
-       6.351
+       6.386947
       ],
       "10": [
        5.91,
-       5.91
+       6.281592
       ],
       "15": [
        5.665,
-       5.665
+       6.230896
       ],
       "20": [
        5.42,
-       5.42
+       6.184619
       ],
       "30": [
        4.93,
-       4.93
+       6.10255
       ],
       "45": [
        4.795,
-       4.795
+       6.157657
       ],
       "5": [
        6.155,
-       6.155
+       6.337598
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -21088,8 +21261,10 @@
    },
    "classification": {
     "V_ml_eq": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "blood_delivered_units": {
      "candidate_causes": [],
@@ -21101,13 +21276,15 @@
     },
     "crt_s": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "dbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -21124,13 +21301,16 @@
      "classification": "MATCH"
     },
     "hb_g_dl": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "hr": {
      "candidate_causes": [
       "KD-S2",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -21143,13 +21323,15 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -21161,6 +21343,7 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -21171,7 +21354,8 @@
     },
     "sbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -21182,17 +21366,15 @@
    },
    "core_inputs": [
     {
+     "blood_loss_ml_per_min": 2.5,
      "fraction_after_hemostasis": 0.1,
      "fraction_with_ppi": 0.8,
-     "hb_loss_g_dl_per_min": 0.009,
      "id": "gi_haemorrhage",
-     "type": "gi_haemorrhage",
-     "volume_loss_ml_per_min": 2.5
+     "type": "gi_haemorrhage"
     },
     {
      "duration_min": 20.0,
      "effective_ml_per_ml": 0.125,
-     "hb_dilution_g_dl_per_ml": 0.0006,
      "id": "m000-0-fluid",
      "leak_tau_min": 30.0,
      "queued_ahead_ml": 0.0,
@@ -21211,45 +21393,57 @@
      "arrival_lactate_excess",
      "arrival_oxygen_debt",
      "beta_blockade",
+     "blood_loss_ml_per_min",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
-     "hb_loss_g_dl_per_min",
      "intrinsic_sinus_rate",
      "metabolic_demand_baseline",
      "preload_fraction",
-     "pump_reserve",
-     "volume_loss_ml_per_min"
+     "pump_reserve"
     ],
     "migratable": false
    },
    "minutes": 60,
    "mismatching": {
+    "V_ml_eq": [
+     "P2I-2T"
+    ],
     "crt_s": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "dbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
+    ],
+    "hb_g_dl": [
+     "P2I-2T"
     ],
     "hr": [
      "KD-S2",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "map": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "respiratory_rate": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "sbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ]
    },
    "orders": {
@@ -21274,31 +21468,31 @@
       ],
       "10": [
        null,
-       0.040343
+       0.0
       ],
       "15": [
        null,
-       0.176153
+       0.0
       ],
       "20": [
        null,
-       0.447257
+       0.0
       ],
       "30": [
        null,
-       1.389822
+       0.0
       ],
       "45": [
        null,
-       3.49539
+       0.0
       ],
       "5": [
        null,
-       0.000888
+       0.0
       ],
       "60": [
        null,
-       6.133265
+       0.344044
       ]
      },
      "tolerance": "not compared",
@@ -21306,10 +21500,10 @@
     },
     "V_ml_eq": {
      "compared": 61,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 55,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 3.230743,
+     "mismatched": 6,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -21346,7 +21540,7 @@
       ],
       "60": [
        -21.619393,
-       -21.619393
+       -18.38865
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -21453,7 +21647,7 @@
      "first_mismatch_minute": 11,
      "kind": "display",
      "max_abs_diff": 0.1,
-     "mismatched": 11,
+     "mismatched": 12,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -21501,7 +21695,7 @@
      "first_mismatch_minute": 10,
      "kind": "display",
      "max_abs_diff": 1.0,
-     "mismatched": 10,
+     "mismatched": 11,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -21558,35 +21752,35 @@
       ],
       "1": [
        null,
-       1.00073
+       1.008545
       ],
       "10": [
        null,
-       0.981332
+       1.069672
       ],
       "15": [
        null,
-       0.954669
+       1.094294
       ],
       "20": [
        null,
-       0.919585
+       1.114179
       ],
       "30": [
        null,
-       0.859177
+       1.067855
       ],
       "45": [
        null,
-       0.779423
+       1.003464
       ],
       "5": [
        null,
-       0.997407
+       1.038893
       ],
       "60": [
        null,
-       0.708988
+       0.946632
       ]
      },
      "tolerance": "not compared",
@@ -21738,10 +21932,10 @@
     },
     "hb_g_dl": {
      "compared": 61,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 1,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 1.536703,
+     "mismatched": 60,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -21750,35 +21944,35 @@
       ],
       "1": [
        6.331,
-       6.331
+       6.380441
       ],
       "10": [
        5.71,
-       5.71
+       6.224018
       ],
       "15": [
        5.365,
-       5.365
+       6.149656
       ],
       "20": [
        5.02,
-       5.02
+       6.082286
       ],
       "30": [
        4.93,
-       4.93
+       6.127407
       ],
       "45": [
        4.795,
-       4.795
+       6.173295
       ],
       "5": [
        6.055,
-       6.055
+       6.306851
       ],
       "60": [
        4.66,
-       4.66
+       6.196703
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -21837,7 +22031,7 @@
      "first_mismatch_minute": 2,
      "kind": "display",
      "max_abs_diff": 5.0,
-     "mismatched": 58,
+     "mismatched": 48,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -21874,7 +22068,7 @@
       ],
       "60": [
        113,
-       114
+       113
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -21933,7 +22127,7 @@
      "first_mismatch_minute": 3,
      "kind": "display",
      "max_abs_diff": 0.4,
-     "mismatched": 46,
+     "mismatched": 47,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -21970,7 +22164,7 @@
       ],
       "60": [
        3.5,
-       3.5
+       3.4
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -21981,7 +22175,7 @@
      "first_mismatch_minute": 5,
      "kind": "display",
      "max_abs_diff": 1.0,
-     "mismatched": 11,
+     "mismatched": 12,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -22389,13 +22583,15 @@
     },
     "crt_s": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "dbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -22412,13 +22608,16 @@
      "classification": "MATCH"
     },
     "hb_g_dl": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "hr": {
      "candidate_causes": [
       "KD-S2",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -22431,13 +22630,15 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -22449,6 +22650,7 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -22459,7 +22661,8 @@
     },
     "sbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -22470,17 +22673,15 @@
    },
    "core_inputs": [
     {
+     "blood_loss_ml_per_min": 2.5,
      "fraction_after_hemostasis": 0.1,
      "fraction_with_ppi": 0.8,
-     "hb_loss_g_dl_per_min": 0.009,
      "id": "gi_haemorrhage",
-     "type": "gi_haemorrhage",
-     "volume_loss_ml_per_min": 2.5
+     "type": "gi_haemorrhage"
     },
     {
      "duration_min": null,
      "effective_ml_per_ml": 0.125,
-     "hb_dilution_g_dl_per_ml": 0.0006,
      "id": "m000-0-fluid",
      "leak_tau_min": 30.0,
      "queued_ahead_ml": 0.0,
@@ -22494,12 +22695,12 @@
     },
     {
      "duration_min": null,
-     "hb_g_dl_per_unit": 0.85,
      "id": "m030-0-blood",
      "queued_ahead_units": 0.0,
      "start_minute": 30,
      "stop_minute": null,
      "type": "packed_red_cells",
+     "unit_hb_g_dl": 20.0,
      "units": 2.0,
      "untimed_units_per_min": 0.03333333333333333,
      "volume_ml_per_unit": 300.0
@@ -22517,45 +22718,54 @@
      "arrival_lactate_excess",
      "arrival_oxygen_debt",
      "beta_blockade",
+     "blood_loss_ml_per_min",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
-     "hb_loss_g_dl_per_min",
      "intrinsic_sinus_rate",
      "metabolic_demand_baseline",
      "preload_fraction",
-     "pump_reserve",
-     "volume_loss_ml_per_min"
+     "pump_reserve"
     ],
     "migratable": false
    },
    "minutes": 120,
    "mismatching": {
     "crt_s": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "dbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
+    ],
+    "hb_g_dl": [
+     "P2I-2T"
     ],
     "hr": [
      "KD-S2",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "map": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "respiratory_rate": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "sbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ]
    },
    "orders": {
@@ -22581,47 +22791,47 @@
       ],
       "10": [
        null,
-       0.099346
+       0.0
       ],
       "105": [
        null,
-       0.602298
+       0.002254
       ],
       "120": [
        null,
-       0.468083
+       0.001752
       ],
       "15": [
        null,
-       0.25425
+       0.0
       ],
       "20": [
        null,
-       0.493999
+       0.0
       ],
       "30": [
        null,
-       1.279354
+       0.001894
       ],
       "45": [
        null,
-       1.651072
+       0.006179
       ],
       "5": [
        null,
-       0.019528
+       0.0
       ],
       "60": [
        null,
-       1.28315
+       0.004802
       ],
       "75": [
        null,
-       0.997215
+       0.003732
       ],
       "90": [
        null,
-       0.774997
+       0.0029
       ]
      },
      "tolerance": "not compared",
@@ -22961,51 +23171,51 @@
       ],
       "1": [
        null,
-       0.998223
+       1.002806
       ],
       "10": [
        null,
-       0.973746
+       1.022479
       ],
       "105": [
        null,
-       1.4653
+       1.781486
       ],
       "120": [
        null,
-       1.418139
+       1.752934
       ],
       "15": [
        null,
-       0.954838
+       1.029933
       ],
       "20": [
        null,
-       0.933058
+       1.035511
       ],
       "30": [
        null,
-       0.878022
+       0.994044
       ],
       "45": [
        null,
-       1.034594
+       1.200111
       ],
       "5": [
        null,
-       0.989092
+       1.012697
       ],
       "60": [
        null,
-       1.194708
+       1.407981
       ],
       "75": [
        null,
-       1.354826
+       1.612171
       ],
       "90": [
        null,
-       1.512932
+       1.809338
       ]
      },
      "tolerance": "not compared",
@@ -23205,10 +23415,10 @@
     },
     "hb_g_dl": {
      "compared": 121,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 1,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 1.553881,
+     "mismatched": 120,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -23217,51 +23427,51 @@
       ],
       "1": [
        6.361,
-       6.361
+       6.390206
       ],
       "10": [
        6.01,
-       6.01
+       6.310781
       ],
       "105": [
        6.69,
-       6.69
+       8.133585
       ],
       "120": [
        6.582,
-       6.582
+       8.135881
       ],
       "15": [
        5.815,
-       5.815
+       6.272327
       ],
       "20": [
        5.62,
-       5.62
+       6.237091
       ],
       "30": [
        5.53,
-       5.53
+       6.260735
       ],
       "45": [
        5.847,
-       5.847
+       6.782419
       ],
       "5": [
        6.205,
-       6.205
+       6.353084
       ],
       "60": [
        6.164,
-       6.164
+       7.264363
       ],
       "75": [
        6.481,
-       6.481
+       7.712046
       ],
       "90": [
        6.798,
-       6.798
+       8.129827
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -23974,7 +24184,9 @@
    }
   },
   "gi_bleed_72f/stop_fluids": {
-   "acting_mechanisms": [],
+   "acting_mechanisms": [
+    "P2E-2"
+   ],
    "case_parameters": {
     "arrival_delivery_ratio": {
      "calibrated": false,
@@ -24033,8 +24245,10 @@
    },
    "classification": {
     "V_ml_eq": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "blood_delivered_units": {
      "candidate_causes": [],
@@ -24046,13 +24260,15 @@
     },
     "crt_s": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "dbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -24069,13 +24285,17 @@
      "classification": "MATCH"
     },
     "hb_g_dl": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "hr": {
      "candidate_causes": [
       "KD-S2",
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -24086,13 +24306,16 @@
     "lactate_mmol_l": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -24103,7 +24326,9 @@
     "respiratory_rate": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -24113,7 +24338,8 @@
     },
     "sbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -24124,17 +24350,15 @@
    },
    "core_inputs": [
     {
+     "blood_loss_ml_per_min": 2.5,
      "fraction_after_hemostasis": 0.1,
      "fraction_with_ppi": 0.8,
-     "hb_loss_g_dl_per_min": 0.009,
      "id": "gi_haemorrhage",
-     "type": "gi_haemorrhage",
-     "volume_loss_ml_per_min": 2.5
+     "type": "gi_haemorrhage"
     },
     {
      "duration_min": 60.0,
      "effective_ml_per_ml": 0.125,
-     "hb_dilution_g_dl_per_ml": 0.0006,
      "id": "m000-0-fluid",
      "leak_tau_min": 30.0,
      "queued_ahead_ml": 0.0,
@@ -24149,7 +24373,6 @@
     {
      "duration_min": null,
      "effective_ml_per_ml": 0.125,
-     "hb_dilution_g_dl_per_ml": 0.0006,
      "id": "m000-1-fluid",
      "leak_tau_min": 30.0,
      "queued_ahead_ml": 0.0,
@@ -24168,42 +24391,57 @@
      "arrival_lactate_excess",
      "arrival_oxygen_debt",
      "beta_blockade",
+     "blood_loss_ml_per_min",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
-     "hb_loss_g_dl_per_min",
      "intrinsic_sinus_rate",
      "metabolic_demand_baseline",
      "preload_fraction",
-     "pump_reserve",
-     "volume_loss_ml_per_min"
+     "pump_reserve"
     ],
     "migratable": false
    },
    "minutes": 60,
    "mismatching": {
+    "V_ml_eq": [
+     "P2I-2T"
+    ],
     "crt_s": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "dbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
+    ],
+    "hb_g_dl": [
+     "P2I-2T"
     ],
     "hr": [
      "KD-S2",
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T",
+     "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T",
+     "P2E-2"
     ],
     "map": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "respiratory_rate": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T",
+     "P2E-2"
     ],
     "sbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ]
    },
    "orders": {
@@ -24229,31 +24467,31 @@
       ],
       "10": [
        null,
-       0.055753
+       0.0
       ],
       "15": [
        null,
-       0.190961
+       0.0
       ],
       "20": [
        null,
-       0.439391
+       0.0
       ],
       "30": [
        null,
-       1.302899
+       0.0
       ],
       "45": [
        null,
-       3.296565
+       0.032005
       ],
       "5": [
        null,
-       0.005576
+       0.0
       ],
       "60": [
        null,
-       5.841777
+       0.627694
       ]
      },
      "tolerance": "not compared",
@@ -24261,10 +24499,10 @@
     },
     "V_ml_eq": {
      "compared": 61,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 49,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 6.375808,
+     "mismatched": 12,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -24301,7 +24539,7 @@
       ],
       "60": [
        -43.01616,
-       -43.01616
+       -36.640352
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -24408,7 +24646,7 @@
      "first_mismatch_minute": 11,
      "kind": "display",
      "max_abs_diff": 0.1,
-     "mismatched": 6,
+     "mismatched": 7,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -24513,35 +24751,35 @@
       ],
       "1": [
        null,
-       0.999908
+       1.00664
       ],
       "10": [
        null,
-       0.979888
+       1.054547
       ],
       "15": [
        null,
-       0.956914
+       1.074035
       ],
       "20": [
        null,
-       0.927595
+       1.08984
       ],
       "30": [
        null,
-       0.868459
+       1.044726
       ],
       "45": [
        null,
-       0.789618
+       0.981681
       ],
       "5": [
        null,
-       0.99494
+       1.030335
       ],
       "60": [
        null,
-       0.719147
+       0.928776
       ]
      },
      "tolerance": "not compared",
@@ -24693,10 +24931,10 @@
     },
     "hb_g_dl": {
      "compared": 61,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 1,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 1.363929,
+     "mismatched": 60,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -24705,35 +24943,35 @@
       ],
       "1": [
        6.341,
-       6.341
+       6.383693
       ],
       "10": [
        5.81,
-       5.81
+       6.252673
       ],
       "15": [
        5.515,
-       5.515
+       6.190009
       ],
       "20": [
        5.22,
-       5.22
+       6.133025
       ],
       "30": [
        5.13,
-       5.13
+       6.171214
       ],
       "45": [
        4.995,
-       4.995
+       6.209961
       ],
       "5": [
        6.105,
-       6.105
+       6.322187
       ],
       "60": [
        4.86,
-       4.86
+       6.223929
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -24792,7 +25030,7 @@
      "first_mismatch_minute": 3,
      "kind": "display",
      "max_abs_diff": 4.0,
-     "mismatched": 56,
+     "mismatched": 41,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -24829,7 +25067,7 @@
       ],
       "60": [
        113,
-       115
+       113
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -25128,7 +25366,7 @@
      "first_mismatch_minute": 13,
      "kind": "display",
      "max_abs_diff": 1.0,
-     "mismatched": 7,
+     "mismatched": 8,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -25344,13 +25582,15 @@
     },
     "crt_s": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "dbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -25367,13 +25607,16 @@
      "classification": "MATCH"
     },
     "hb_g_dl": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "hr": {
      "candidate_causes": [
       "KD-S2",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -25386,13 +25629,15 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -25404,6 +25649,7 @@
      "candidate_causes": [
       "KD-S1",
       "KD-S4",
+      "P2I-2T",
       "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
@@ -25414,7 +25660,8 @@
     },
     "sbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -25425,17 +25672,15 @@
    },
    "core_inputs": [
     {
+     "blood_loss_ml_per_min": 2.5,
      "fraction_after_hemostasis": 0.1,
      "fraction_with_ppi": 0.8,
-     "hb_loss_g_dl_per_min": 0.009,
      "id": "gi_haemorrhage",
-     "type": "gi_haemorrhage",
-     "volume_loss_ml_per_min": 2.5
+     "type": "gi_haemorrhage"
     },
     {
      "duration_min": null,
      "effective_ml_per_ml": 0.125,
-     "hb_dilution_g_dl_per_ml": 0.0006,
      "id": "m000-0-fluid",
      "leak_tau_min": 30.0,
      "queued_ahead_ml": 0.0,
@@ -25450,7 +25695,6 @@
     {
      "duration_min": null,
      "effective_ml_per_ml": 0.125,
-     "hb_dilution_g_dl_per_ml": 0.0006,
      "id": "m005-0-fluid",
      "leak_tau_min": 30.0,
      "queued_ahead_ml": 750.0,
@@ -25464,24 +25708,24 @@
     },
     {
      "duration_min": null,
-     "hb_g_dl_per_unit": 0.85,
      "id": "m010-0-blood",
      "queued_ahead_units": 0.0,
      "start_minute": 10,
      "stop_minute": null,
      "type": "packed_red_cells",
+     "unit_hb_g_dl": 20.0,
      "units": 1.0,
      "untimed_units_per_min": 0.03333333333333333,
      "volume_ml_per_unit": 300.0
     },
     {
      "duration_min": null,
-     "hb_g_dl_per_unit": 0.85,
      "id": "m020-0-blood",
      "queued_ahead_units": 0.6666666666666667,
      "start_minute": 20,
      "stop_minute": null,
      "type": "packed_red_cells",
+     "unit_hb_g_dl": 20.0,
      "units": 1.0,
      "untimed_units_per_min": 0.03333333333333333,
      "volume_ml_per_unit": 300.0
@@ -25493,45 +25737,54 @@
      "arrival_lactate_excess",
      "arrival_oxygen_debt",
      "beta_blockade",
+     "blood_loss_ml_per_min",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
-     "hb_loss_g_dl_per_min",
      "intrinsic_sinus_rate",
      "metabolic_demand_baseline",
      "preload_fraction",
-     "pump_reserve",
-     "volume_loss_ml_per_min"
+     "pump_reserve"
     ],
     "migratable": false
    },
    "minutes": 90,
    "mismatching": {
     "crt_s": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "dbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
+    ],
+    "hb_g_dl": [
+     "P2I-2T"
     ],
     "hr": [
      "KD-S2",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "map": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "respiratory_rate": [
      "KD-S1",
      "KD-S4",
+     "P2I-2T",
      "P2E-2"
     ],
     "sbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ]
    },
    "orders": {
@@ -25559,39 +25812,39 @@
       ],
       "10": [
        null,
-       0.099346
+       0.0
       ],
       "15": [
        null,
-       0.132471
+       0.0
       ],
       "20": [
        null,
-       0.121794
+       0.0
       ],
       "30": [
        null,
-       0.102952
+       0.0
       ],
       "45": [
        null,
-       0.08001
+       0.0
       ],
       "5": [
        null,
-       0.019528
+       0.0
       ],
       "60": [
        null,
-       0.062181
+       0.0
       ],
       "75": [
        null,
-       0.048324
+       0.0
       ],
       "90": [
        null,
-       0.037556
+       0.0
       ]
      },
      "tolerance": "not compared",
@@ -25891,43 +26144,43 @@
       ],
       "1": [
        null,
-       0.998223
+       1.002806
       ],
       "10": [
        null,
-       0.973746
+       1.022479
       ],
       "15": [
        null,
-       1.029543
+       1.113047
       ],
       "20": [
        null,
-       1.077878
+       1.19915
       ],
       "30": [
        null,
-       1.156338
+       1.360121
       ],
       "45": [
        null,
-       1.253174
+       1.565366
       ],
       "5": [
        null,
-       0.989092
+       1.012697
       ],
       "60": [
        null,
-       1.372739
+       1.738678
       ],
       "75": [
        null,
-       1.435223
+       1.843097
       ],
       "90": [
        null,
-       1.374838
+       1.808684
       ]
      },
      "tolerance": "not compared",
@@ -26103,10 +26356,10 @@
     },
     "hb_g_dl": {
      "compared": 91,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 1,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 1.921769,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -26115,43 +26368,43 @@
       ],
       "1": [
        6.361,
-       6.361
+       6.390206
       ],
       "10": [
        6.01,
-       6.01
+       6.310781
       ],
       "15": [
        5.956667,
-       5.956667
+       6.439797
       ],
       "20": [
        5.903333,
-       5.903333
+       6.567518
       ],
       "30": [
        5.796667,
-       5.796667
+       6.818219
       ],
       "45": [
        5.786667,
-       5.786667
+       7.228251
       ],
       "5": [
        6.205,
-       6.205
+       6.353084
       ],
       "60": [
        6.076667,
-       6.076667
+       7.696561
       ],
       "75": [
        6.225,
-       6.225
+       7.994073
       ],
       "90": [
        6.09,
-       6.09
+       8.011769
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -26835,8 +27088,10 @@
    },
    "classification": {
     "V_ml_eq": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "blood_delivered_units": {
      "candidate_causes": [],
@@ -26848,13 +27103,15 @@
     },
     "crt_s": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "dbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -26871,13 +27128,16 @@
      "classification": "MATCH"
     },
     "hb_g_dl": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "P2I-2T"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "hr": {
      "candidate_causes": [
       "KD-S2",
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -26888,13 +27148,15 @@
     "lactate_mmol_l": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -26905,7 +27167,8 @@
     "respiratory_rate": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -26915,7 +27178,8 @@
     },
     "sbp": {
      "candidate_causes": [
-      "KD-S4"
+      "KD-S4",
+      "P2I-2T"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -26926,12 +27190,11 @@
    },
    "core_inputs": [
     {
+     "blood_loss_ml_per_min": 2.5,
      "fraction_after_hemostasis": 0.1,
      "fraction_with_ppi": 0.8,
-     "hb_loss_g_dl_per_min": 0.009,
      "id": "gi_haemorrhage",
-     "type": "gi_haemorrhage",
-     "volume_loss_ml_per_min": 2.5
+     "type": "gi_haemorrhage"
     }
    ],
    "migration_gate": {
@@ -26940,42 +27203,54 @@
      "arrival_lactate_excess",
      "arrival_oxygen_debt",
      "beta_blockade",
+     "blood_loss_ml_per_min",
      "fraction_after_hemostasis",
      "fraction_with_ppi",
-     "hb_loss_g_dl_per_min",
      "intrinsic_sinus_rate",
      "metabolic_demand_baseline",
      "preload_fraction",
-     "pump_reserve",
-     "volume_loss_ml_per_min"
+     "pump_reserve"
     ],
     "migratable": false
    },
    "minutes": 60,
    "mismatching": {
+    "V_ml_eq": [
+     "P2I-2T"
+    ],
     "crt_s": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "dbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
+    ],
+    "hb_g_dl": [
+     "P2I-2T"
     ],
     "hr": [
      "KD-S2",
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "lactate_mmol_l": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "map": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "respiratory_rate": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ],
     "sbp": [
-     "KD-S4"
+     "KD-S4",
+     "P2I-2T"
     ]
    },
    "orders": {},
@@ -26998,31 +27273,31 @@
       ],
       "10": [
        null,
-       0.189795
+       0.129254
       ],
       "15": [
        null,
-       0.431105
+       0.293363
       ],
       "20": [
        null,
-       0.759678
+       0.516539
       ],
       "30": [
        null,
-       1.651212
+       1.120854
       ],
       "45": [
        null,
-       3.485398
+       2.359662
       ],
       "5": [
        null,
-       0.043342
+       0.029539
       ],
       "60": [
        null,
-       5.797117
+       3.913979
       ]
      },
      "tolerance": "not compared",
@@ -27030,10 +27305,10 @@
     },
     "V_ml_eq": {
      "compared": 61,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 2,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 15.733339,
+     "mismatched": 59,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -27046,31 +27321,31 @@
       ],
       "10": [
        -25.0,
-       -25.0
+       -24.543379
       ],
       "15": [
        -37.5,
-       -37.5
+       -36.449006
       ],
       "20": [
        -50.0,
-       -50.0
+       -48.123823
       ],
       "30": [
        -75.0,
-       -75.0
+       -70.818324
       ],
       "45": [
        -112.5,
-       -112.5
+       -103.352324
       ],
       "5": [
        -12.5,
-       -12.5
+       -12.397123
       ],
       "60": [
        -150.0,
-       -150.0
+       -134.266661
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -27174,10 +27449,10 @@
     },
     "crt_s": {
      "compared": 61,
-     "first_mismatch_minute": 28,
+     "first_mismatch_minute": 21,
      "kind": "display",
      "max_abs_diff": 0.1,
-     "mismatched": 14,
+     "mismatched": 4,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -27206,7 +27481,7 @@
       ],
       "45": [
        4.5,
-       4.6
+       4.5
       ],
       "5": [
        4.1,
@@ -27214,7 +27489,7 @@
       ],
       "60": [
        4.7,
-       4.8
+       4.7
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -27222,10 +27497,10 @@
     },
     "dbp": {
      "compared": 61,
-     "first_mismatch_minute": 20,
+     "first_mismatch_minute": 47,
      "kind": "display",
      "max_abs_diff": 1.0,
-     "mismatched": 11,
+     "mismatched": 1,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -27246,7 +27521,7 @@
       ],
       "20": [
        61,
-       60
+       61
       ],
       "30": [
        60,
@@ -27254,7 +27529,7 @@
       ],
       "45": [
        59,
-       58
+       59
       ],
       "5": [
        62,
@@ -27262,7 +27537,7 @@
       ],
       "60": [
        58,
-       57
+       58
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -27282,35 +27557,35 @@
       ],
       "1": [
        null,
-       0.995593
+       0.996995
       ],
       "10": [
        null,
-       0.955911
+       0.969999
       ],
       "15": [
        null,
-       0.933849
+       0.955038
       ],
       "20": [
        null,
-       0.911778
+       0.940107
       ],
       "30": [
        null,
-       0.867611
+       0.910339
       ],
       "45": [
        null,
-       0.801328
+       0.86594
       ],
       "5": [
        null,
-       0.977962
+       0.984987
       ],
       "60": [
        null,
-       0.735048
+       0.821859
       ]
      },
      "tolerance": "not compared",
@@ -27462,10 +27737,10 @@
     },
     "hb_g_dl": {
      "compared": 61,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 1,
      "kind": "exact",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 0.514285,
+     "mismatched": 60,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -27474,35 +27749,35 @@
       ],
       "1": [
        6.391,
-       6.391
+       6.4
       ],
       "10": [
        6.31,
-       6.31
+       6.399266
       ],
       "15": [
        6.265,
-       6.265
+       6.398308
       ],
       "20": [
        6.22,
-       6.22
+       6.396973
       ],
       "30": [
        6.13,
-       6.13
+       6.39323
       ],
       "45": [
        5.995,
-       5.995
+       6.385116
       ],
       "5": [
        6.355,
-       6.355
+       6.399835
       ],
       "60": [
        5.86,
-       5.86
+       6.374285
       ]
      },
      "tolerance": "float noise 1e-09",
@@ -27558,10 +27833,10 @@
     },
     "hr": {
      "compared": 61,
-     "first_mismatch_minute": 18,
+     "first_mismatch_minute": 19,
      "kind": "display",
-     "max_abs_diff": 2.0,
-     "mismatched": 31,
+     "max_abs_diff": 1.0,
+     "mismatched": 18,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -27586,7 +27861,7 @@
       ],
       "30": [
        114,
-       115
+       114
       ],
       "45": [
        115,
@@ -27598,7 +27873,7 @@
       ],
       "60": [
        116,
-       118
+       117
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -27656,7 +27931,7 @@
      "compared": 61,
      "first_mismatch_minute": 9,
      "kind": "display",
-     "max_abs_diff": 0.3,
+     "max_abs_diff": 0.4,
      "mismatched": 52,
      "rounding_tie_minutes": [],
      "samples": {
@@ -27694,7 +27969,7 @@
       ],
       "60": [
        3.8,
-       3.5
+       3.4
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -27702,10 +27977,10 @@
     },
     "map": {
      "compared": 60,
-     "first_mismatch_minute": 25,
+     "first_mismatch_minute": 26,
      "kind": "display",
      "max_abs_diff": 1.0,
-     "mismatched": 11,
+     "mismatched": 2,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -27734,7 +28009,7 @@
       ],
       "45": [
        70,
-       69
+       70
       ],
       "5": [
        74,
@@ -27742,7 +28017,7 @@
       ],
       "60": [
        69,
-       68
+       69
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -27894,10 +28169,10 @@
     },
     "sbp": {
      "compared": 61,
-     "first_mismatch_minute": 11,
+     "first_mismatch_minute": 26,
      "kind": "display",
      "max_abs_diff": 1.0,
-     "mismatched": 17,
+     "mismatched": 5,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -27926,7 +28201,7 @@
       ],
       "45": [
        92,
-       91
+       92
       ],
       "5": [
        97,
@@ -27934,7 +28209,7 @@
       ],
       "60": [
        90,
-       89
+       90
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",

@@ -296,6 +296,17 @@ def revisit(reserves=SYNTHETIC_RESERVES) -> dict:
 
 # The report ----------------------------------------------------------------------------------------
 
+
+#: P2I-2T (2026-10-27): this audit describes the shadow core before the shared blood state replaced
+#: the GI module's independent V and Hb drifts. Its committed JSON and document stay as the historical
+#: record they were accepted as (probes digest below) and are not regenerated: the command refuses to
+#: produce new results, and only re-renders the committed JSON. None for an authorized re-audit.
+HISTORICAL = {"probes_digest": "760627b365b161b166872b932b2bd5cf4fdba6b3507ad17a28215dfb2a8f1357",
+              "since": "2026-10-27",
+              "reason": "P2I-2T replaced the independent haemorrhage drifts with the shared blood state; this audit "
+                        "is the record of the core before it"}
+
+
 def probes_digest() -> str:
     text = json.dumps({"sources": lactate_slice.slice_sources(), "freeze": calibration.frozen_digest()}, sort_keys=True)
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
@@ -497,6 +508,9 @@ def main(argv=None) -> int:
         data = json.loads(args.json.read_text(encoding="utf-8"))
         args.write.write_text(apply(args.write.read_text(encoding="utf-8"), render(data)), encoding="utf-8")
         return 0
+    if HISTORICAL is not None:
+        parser.error(f"a historical record since {HISTORICAL['since']} ({HISTORICAL['reason']}): its results are not "
+                     "regenerated without authorization")
     text = json.dumps(report(), indent=1, sort_keys=True, default=str)
     if args.out:
         args.out.mkdir(parents=True, exist_ok=True)

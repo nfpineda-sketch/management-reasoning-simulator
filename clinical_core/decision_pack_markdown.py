@@ -48,7 +48,7 @@ FRACTION = {"untreated 60 min above arrival": "sin tratamiento, 60′ por encima
             "untreated 60 min more than 1 mmol/L above arrival": "sin tratamiento, 60′ más de 1 mmol/L por encima",
             "definitive 30 min below arrival": "manejo definitivo, 30′ por debajo de la llegada",
             "definitive 120 min below arrival": "manejo definitivo, 120′ por debajo de la llegada"}
-FACTOR = {"bleeding source (x rate)": "`volume_loss_ml_per_min` y `hb_loss_g_dl_per_min` (× tasa)"}
+FACTOR = {"bleeding source (x rate)": "`blood_loss_ml_per_min` (× tasa; volumen y glóbulos rojos de una sola fuente)"}
 PATTERN = {"transient moderate low flow (0.25 for 10 min)": "flujo moderado transitorio (0,25 durante 10 min)",
            "sustained moderate low flow (0.25)": "flujo moderado sostenido (0,25)",
            "profound low flow (0.1)": "flujo profundo sostenido (0,1)",

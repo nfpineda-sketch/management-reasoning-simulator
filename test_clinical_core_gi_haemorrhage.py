@@ -1,8 +1,9 @@
 """Phase 2 shadow core, WP2-2: the GI haemorrhage module and the scripted rhythm/pump events.
 
 Magnitudes are the family engine's (family_engine._minute and GI_BLEED), converted to the
-core's units: 0.003 circulation/min x 833.3 mL per unit = 2.5 mL-equivalent/min; 0.009
-g/dL/min; 80 % of the rate with a proton-pump inhibitor; 10 % after hemostasis.
+core's units: 0.003 circulation/min x 833.3 mL per unit = 2.5 mL-equivalent/min of whole blood;
+80 % of the rate with a proton-pump inhibitor; 10 % after hemostasis. Since P2I-2T the module
+declares one whole-blood flow: Hb follows from the shared blood state, not from a drift of its own.
 """
 from dataclasses import dataclass
 
@@ -10,6 +11,8 @@ import pytest
 
 from clinical_core import (Anchors, Channel, Contribution, Contributor, CoreInvariantError, RhythmCode, RhythmState,
                            Signal, SourceKind, attribution, run)
+from clinical_core.derived import DEFAULT_PROFILE, blood_haemoglobin
+from clinical_core.provenance import BloodProcess
 from clinical_core import signals as names
 from clinical_core.integration import register
 from clinical_core.logistics import EndoscopicHemostasis
@@ -18,8 +21,8 @@ from clinical_core.modules import GIHaemorrhage, ScriptedPumpChange, ScriptedRhy
 ARRIVAL = Anchors(case_id="gi_bleed_57m", sbp=88.0, dbp=54.0, hr=124.0, spo2=97.0, respiratory_rate=26.0, crt_s=5.0,
                   lactate=4.4, hb=6.7, glucose=118.0, k=4.1, fio2=0.21, rhythm=RhythmState.sinus(124.0),
                   consciousness_level=0)
-BLEED = GIHaemorrhage("gi_haemorrhage", volume_loss_ml_per_min=2.5, hb_loss_g_dl_per_min=0.009,
-                      fraction_with_ppi=0.8, fraction_after_hemostasis=0.1)
+BLEED = GIHaemorrhage("gi_haemorrhage", blood_loss_ml_per_min=2.5, fraction_with_ppi=0.8,
+                      fraction_after_hemostasis=0.1)
 
 
 @register
@@ -44,8 +47,14 @@ def deltas_of(trajectory, channel, source_kind=SourceKind.DISEASE_MODULE):
 def test_untreated_bleeding_is_the_same_loss_every_minute():
     trajectory = run(ARRIVAL, (BLEED,), 120)
     assert deltas_of(trajectory, Channel.V) == [-2.5] * 120
-    assert deltas_of(trajectory, Channel.HB) == [-0.009] * 120
-    assert trajectory.states[60].V == pytest.approx(-150.0) and trajectory.states[60].hb == pytest.approx(6.16)
+    assert deltas_of(trajectory, Channel.HB) == [0.0] * 120, "the module has no Hb drift of its own (P2I-2T)"
+    flows = [[(c.process, c.volume_ml) for c in record.blood if c.source == BLEED.source]
+             for record in trajectory.records]
+    assert flows == [[(BloodProcess.WHOLE_BLOOD_LOSS, 2.5)]] * 120
+    sixty = trajectory.states[60]
+    assert sixty.blood.shed_ml == pytest.approx(150.0)
+    assert sixty.V == pytest.approx(sixty.blood.volume_ml) and sixty.V > -150.0, "refill restores part of it"
+    assert sixty.hb == pytest.approx(blood_haemoglobin(sixty.blood, ARRIVAL, DEFAULT_PROFILE)) and sixty.hb < 6.7
     assert run(ARRIVAL, (BLEED,), 120).digest() == trajectory.digest()
 
 
@@ -61,7 +70,11 @@ def test_bleeding_reaches_perfusion_through_the_core():
 
 def test_only_the_module_and_the_core_coupling_change_anything():
     trajectory = run(ARRIVAL, (BLEED,), 60)
-    assert attribution(trajectory.records, Channel.V) == {"disease_module:gi_haemorrhage": pytest.approx(-150.0)}
+    volume = attribution(trajectory.records, Channel.V)
+    assert set(volume) == {"disease_module:gi_haemorrhage", "core_coupling:plasma_refill"}
+    assert volume["disease_module:gi_haemorrhage"] == pytest.approx(-150.0)
+    assert volume["core_coupling:plasma_refill"] == pytest.approx(trajectory.states[-1].blood.refill_ml)
+    assert set(attribution(trajectory.records, Channel.HB)) == {"core_coupling:blood_composition"}
     assert set(attribution(trajectory.records, Channel.D)) == {"core_coupling:oxygen_debt"}
     untouched = (Channel.T, Channel.P, Channel.L, Channel.G, Channel.W, Channel.N, Channel.GLUCOSE, Channel.K)
     assert all(attribution(trajectory.records, channel) == {} for channel in untouched)
@@ -72,8 +85,11 @@ def test_a_proton_pump_inhibitor_slows_the_bleeding_from_the_minute_after_it_sta
     assert deltas_of(trajectory, Channel.V)[:10] == [-2.5] * 10
     assert deltas_of(trajectory, Channel.V)[10:] == [pytest.approx(-2.0)] * 20
     slowed = [d for d in trajectory.records[10].deltas if d.source.kind is SourceKind.DISEASE_MODULE]
-    assert all(d.modulated_by == (PPIStub("order-ppi", 10).source,) for d in slowed)
-    assert all(d.modulated_by == () for record in trajectory.records[:10] for d in record.deltas)
+    assert slowed and all(d.modulated_by == (PPIStub("order-ppi", 10).source,) for d in slowed)
+    assert all(c.modulated_by == (PPIStub("order-ppi", 10).source,) for c in trajectory.records[10].blood
+               if c.source == BLEED.source)
+    assert all(d.modulated_by == () for record in trajectory.records[:10] for d in record.deltas
+               if d.source.kind is SourceKind.DISEASE_MODULE)
 
 
 def test_hemostasis_takes_effect_in_the_minute_the_procedure_completes():
@@ -93,16 +109,16 @@ def test_the_module_never_writes_an_observable_or_the_rhythm():
     trajectory = run(ARRIVAL, (BLEED,), 30)
     assert all(not record.transitions and not record.settings for record in trajectory.records)
     assert {d.channel for record in trajectory.records for d in record.deltas
-            if d.source.kind is SourceKind.DISEASE_MODULE} == {Channel.V, Channel.HB}
+            if d.source.kind is SourceKind.DISEASE_MODULE} == {Channel.V}
+    assert {c.process for record in trajectory.records for c in record.blood
+            if c.source.kind is SourceKind.DISEASE_MODULE} == {BloodProcess.WHOLE_BLOOD_LOSS}
 
 
 def test_an_impossible_bleeding_specification_is_refused():
     with pytest.raises(CoreInvariantError):
-        GIHaemorrhage("x", volume_loss_ml_per_min=-1.0, hb_loss_g_dl_per_min=0.0, fraction_with_ppi=.8,
-                      fraction_after_hemostasis=.1)
+        GIHaemorrhage("x", blood_loss_ml_per_min=-1.0, fraction_with_ppi=.8, fraction_after_hemostasis=.1)
     with pytest.raises(CoreInvariantError):
-        GIHaemorrhage("x", volume_loss_ml_per_min=1.0, hb_loss_g_dl_per_min=0.0, fraction_with_ppi=1.2,
-                      fraction_after_hemostasis=.1)
+        GIHaemorrhage("x", blood_loss_ml_per_min=1.0, fraction_with_ppi=1.2, fraction_after_hemostasis=.1)
     with pytest.raises(CoreInvariantError):
         EndoscopicHemostasis("x", completes_at_minute=0)
 

@@ -18,8 +18,8 @@ from typing import Mapping
 from .provenance import Source, SourceKind
 from dataclasses import replace
 
-from .state import (CASE_PARAMETERS, UNMAPPED, Anchors, AuxiliaryState, CoreInvariantError, CoreState, RhythmCode,
-                    RhythmState, UnresolvedBoundary, anchored_state)
+from .state import (CASE_PARAMETERS, UNMAPPED, Anchors, AuxiliaryState, BloodState, CoreInvariantError, CoreState,
+                    RhythmCode, RhythmState, UnresolvedBoundary, anchored_state)
 
 ADOPTED = "adopted"
 PROVISIONAL = "provisional"
@@ -30,7 +30,8 @@ OUTPUT_EPSILON = 1e-9
 
 #: One unit of packed red cells is about 300 mL (family_engine TRANSFUSION note) and moves
 #: the family engine's circulation variable by 0.36 (family_engine._minute): one unit of
-#: that variable is therefore 300 / 0.36 mL-equivalent of intravascular volume.
+#: that variable is therefore 300 / 0.36 mL-equivalent of the preload coordinate V (with kappa 1,
+#: of circulating volume; P2I-2T).
 LEGACY_ML_PER_CIRCULATION_UNIT = 300.0 / 0.36
 
 #: The sources of the changes to the core's auxiliary dynamic state (``CoreState.aux``, P2D-1):
@@ -52,6 +53,13 @@ COLLAPSE = Source(SourceKind.CORE_COUPLING, "collapse")
 AUXILIARY_SOURCES["collapse_burden"] = COLLAPSE
 #: The rhythms the collapse rule may end in (P2E-3). Which one, and when, is TBD.
 TERMINAL_RHYTHMS = ("pea", "asystole")
+#: The shared blood state's two core couplings (P2I-2T): plasma refill into the circulation, and
+#: haemoglobin as the concentration of red-cell content in the circulating volume.
+PLASMA_REFILL = Source(SourceKind.CORE_COUPLING, "plasma_refill")
+BLOOD_COMPOSITION = Source(SourceKind.CORE_COUPLING, "blood_composition")
+#: Mean haemoglobin concentration inside red cells (g/dL of red cells), used only to report the
+#: plasma part of the circulating-volume deviation (``plasma_volume_deviation``); no mechanism reads it.
+RED_CELL_HB_G_DL = 33.0
 
 
 @dataclass(frozen=True)
@@ -101,6 +109,12 @@ class CoreProfile:
     collapse_repayment_tau_min: float | None = None
     collapse_terminal_rhythm: str = "pea"
     collapse_burden_per_minute: float = 1.0
+    # P2I-2T: the shared blood state. Every value is PROVISIONAL (SYNTHETIC/CANDIDATE) and TBD.
+    arrival_circulating_volume_ml: float = 4000.0
+    volume_preload_kappa: float = 1.0
+    plasma_refill_target_share: float = 0.5
+    plasma_refill_tau_min: float = 120.0
+    plasma_refill_capacity_ml: float = 1000.0
 
     def __post_init__(self):
         for item in fields(self):
@@ -144,6 +158,14 @@ class CoreProfile:
             raise CoreInvariantError("a collapse repayment needs a collapse rule")
         if self.collapse_terminal_rhythm not in TERMINAL_RHYTHMS:
             raise CoreInvariantError(f"the collapse rule ends in one of {TERMINAL_RHYTHMS}")
+        if min(self.arrival_circulating_volume_ml, self.volume_preload_kappa) <= 0:
+            raise CoreInvariantError("the arrival circulating volume and the volume-to-preload conversion are positive")
+        if not 0.0 <= self.plasma_refill_target_share <= 1.0:
+            # Refill restores part of the shed volume, never more than all of it.
+            raise CoreInvariantError("the plasma refill target is a share of the shed volume, between 0 and 1")
+        if self.plasma_refill_tau_min < 1.0:
+            # Integrated one minute at a time: a shorter time constant would pass the target.
+            raise CoreInvariantError("the plasma refill time constant is at least one minute (the step)")
 
     def to_dict(self) -> dict:
         return {item.name: (list(map(list, getattr(self, item.name))) if isinstance(getattr(self, item.name), tuple)
@@ -224,6 +246,21 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
                                                 "holds the burden"),
     "collapse_terminal_rhythm": (PROVISIONAL, "the pulseless rhythm the collapse rule ends in (P2E-3): the selection "
                                               "rule is TBD"),
+    "arrival_circulating_volume_ml": (PROVISIONAL, "SYNTHETIC/CANDIDATE normalization of the shared blood state "
+                                                   "(P2I-2T): the circulating volume at arrival, in mL-equivalent, "
+                                                   "against which red-cell content and haemoglobin are read. Not a "
+                                                   "measured litre and not inferred from the arrival Hb: TBD"),
+    "volume_preload_kappa": (PROVISIONAL, "SYNTHETIC/CANDIDATE conversion V = kappa x circulating-volume deviation "
+                                          "(P2I-2T). Output reads V only as V / preload_curve_scale_ml, so only "
+                                          "kappa / scale is identifiable from the haemodynamics: neither is "
+                                          "approved alone. 1 keeps V in mL-equivalent of circulating volume: TBD"),
+    "plasma_refill_target_share": (PROVISIONAL, "SYNTHETIC/CANDIDATE share of the shed volume plasma refill restores "
+                                                "at most (P2I-2T), and only while the circulation is below arrival; "
+                                                "refill carries no red cells: TBD"),
+    "plasma_refill_tau_min": (PROVISIONAL, "SYNTHETIC/CANDIDATE time constant of plasma refill toward its target "
+                                           "(P2I-2T): TBD"),
+    "plasma_refill_capacity_ml": (PROVISIONAL, "SYNTHETIC/CANDIDATE finite interstitial reserve: the most plasma "
+                                               "refill can add in an encounter (P2I-2T): TBD"),
 }
 
 
@@ -606,6 +643,62 @@ def arrival_state(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> C
     return state.evolve(aux=AuxiliaryState(lactate_excess_mmol_l=anchors.arrival_lactate_excess,
                                            sympathetic_drive=arrival_sympathetic_drive(anchors, profile),
                                            oxygen_demand=anchors.metabolic_demand_baseline))
+
+
+def circulating_volume(blood: BloodState, profile: CoreProfile) -> float:
+    """The circulating volume (mL-equivalent): the arrival normalization plus the blood state's deviation.
+
+    It must stay positive; a state that empties the circulation cannot exist (fail closed).
+    """
+    volume = profile.arrival_circulating_volume_ml + blood.volume_ml
+    if not volume > 0:
+        raise CoreInvariantError(f"the circulating volume reached {volume!r} mL-equivalent: it stays positive")
+    return volume
+
+
+def blood_haemoglobin(blood: BloodState, anchors: Anchors, profile: CoreProfile) -> float:
+    """Haemoglobin as a concentration (P2I-2T): red-cell content over circulating volume.
+
+    At arrival it is the authored Hb (content 1 in the arrival volume). Losing whole blood takes
+    content and volume in the same proportion, so it leaves the concentration where it was;
+    volume without red cells (refill, crystalloid) dilutes it; red cells raise it.
+    """
+    return anchors.hb * blood.red_cells * profile.arrival_circulating_volume_ml / circulating_volume(blood, profile)
+
+
+def red_cell_content(volume_ml: float, hb_g_dl: float, anchors: Anchors, profile: CoreProfile) -> float:
+    """Red-cell content, in units of the arrival content, of ``volume_ml`` of fluid at ``hb_g_dl``."""
+    return volume_ml * hb_g_dl / (anchors.hb * profile.arrival_circulating_volume_ml)
+
+
+def plasma_refill(blood: BloodState, profile: CoreProfile) -> float:
+    """Plasma refilled into the circulation in one minute (mL-eq), from the blood state at its start (P2I-2T).
+
+    Minimal model: refill restores part of the circulating-volume deficit the haemorrhage left.
+    Its target is ``plasma_refill_target_share`` x the shed volume, never more than
+    ``plasma_refill_capacity_ml`` (the interstitial reserve is finite); it approaches that target
+    first order with ``plasma_refill_tau_min``, and only while the circulation is below arrival:
+    a minute's refill never exceeds the deficit C < 0 at its start, so it never takes the
+    circulation above arrival, and with fluids or red cells already above arrival it stops. So it
+    is gradual, never passes its target, never runs backwards, carries no red cells (it dilutes)
+    and continues after the bleeding stops while a deficit and a gap to the target remain. How
+    far fluids damp it below arrival is not modelled. All three values are provisional and TBD.
+    """
+    target = min(profile.plasma_refill_capacity_ml, profile.plasma_refill_target_share * blood.shed_ml)
+    gap, deficit = target - blood.refill_ml, -blood.volume_ml
+    if gap <= 0 or deficit <= 0:
+        return 0.0
+    return min(gap * -math.expm1(-1.0 / profile.plasma_refill_tau_min), deficit)
+
+
+def plasma_volume_deviation(blood: BloodState, anchors: Anchors, profile: CoreProfile) -> float:
+    """Plasma part of the circulating-volume deviation (mL-eq), for reports only (P2I-2T).
+
+    The circulating-volume deviation less the change of red-cell volume, read through a mean
+    red-cell haemoglobin concentration (``RED_CELL_HB_G_DL``). No mechanism reads it.
+    """
+    arrival_red_cell_ml = anchors.hb * profile.arrival_circulating_volume_ml / RED_CELL_HB_G_DL
+    return blood.volume_ml - (blood.red_cells - 1.0) * arrival_red_cell_ml
 
 
 def arrival_preload(anchors: Anchors, profile: CoreProfile) -> float:

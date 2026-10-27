@@ -71,7 +71,7 @@ DIAGNOSTIC_ONLY = frozenset({"reference_preload_fraction"})
 FAMILY_GATES: Mapping[str, FamilyGate] = {
     "gi_bleed": FamilyGate(
         "gi_bleed", tuple(name for name in CASE_PARAMETERS if name not in DIAGNOSTIC_ONLY),
-        ("volume_loss_ml_per_min", "hb_loss_g_dl_per_min", "fraction_with_ppi", "fraction_after_hemostasis"),
+        ("blood_loss_ml_per_min", "fraction_with_ppi", "fraction_after_hemostasis"),
         "shadow baseline only: the golden runs every case parameter default_unmapped, and the haemorrhage module "
         "takes the family engine's literals (adopted for the comparison, not approved for migration)"),
 }
@@ -264,8 +264,9 @@ GI_DRY_RUN: Mapping[str, tuple[str, str]] = {
     "arrival_delivery_ratio": (FACULTY, "declared directly by faculty as part of the arrival state; no pre-arrival "
                                         "history is reconstructed, and the case does not measure delivery"),
     "reference_preload_fraction": (NOT_REQUIRED, "no GI mechanism reads it; it only makes the volume deficit explicit"),
-    "volume_loss_ml_per_min": (FAMILY_DEFAULT, "the family engine's literal, adopted for the comparison only"),
-    "hb_loss_g_dl_per_min": (FAMILY_DEFAULT, "the family engine's literal, adopted for the comparison only"),
+    "blood_loss_ml_per_min": (FAMILY_DEFAULT, "the family engine's circulation literal as whole-blood loss, adopted "
+                                              "for the comparison only; one rate drives volume and red cells "
+                                              "(P2I-2T)"),
     "fraction_with_ppi": (FAMILY_DEFAULT, "family_engine.GI_BLEED['bleeding_with_ppi']"),
     "fraction_after_hemostasis": (FAMILY_DEFAULT, "family_engine.GI_BLEED['bleeding_after_hemostasis']"),
 }

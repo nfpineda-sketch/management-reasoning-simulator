@@ -7,16 +7,18 @@ agreed (proposal Appendix A9): any displayed difference is reported, none is abs
 """
 import json
 from copy import deepcopy
+from dataclasses import replace
 
 import pytest
 
 from clinical_core.comparison import TBD, VARIABLES, compare, mismatching, summarize
+from clinical_core.derived import DEFAULT_PROFILE
 from clinical_core.integration import run
 from clinical_core.legacy_adapter import (anchors_from_legacy, bank_case, contributors_from_legacy, run_legacy)
 from clinical_core.modules import GIHaemorrhage
-from clinical_core.shadow import (DECISIONS, DIFFERENCES, EXPECTED_DIFFERENCES, GOLDEN, SCENARIOS, VARIANTS,
-                                  acting_mechanisms, classify, consciousness_attribution, expected_causes,
-                                  golden_report, run_shadow)
+from clinical_core.shadow import (DECISIONS, DIFFERENCES, DORMANT, EXPECTED_DIFFERENCES, GOLDEN, SCENARIOS, VARIANTS,
+                                  ShadowResult, acting_mechanisms, classify, consciousness_attribution,
+                                  expected_causes, golden_report, run_shadow)
 
 EXACT = [variable.name for variable in VARIABLES if variable.kind == "exact"]
 
@@ -24,6 +26,21 @@ EXACT = [variable.name for variable in VARIABLES if variable.kind == "exact"]
 @pytest.fixture(scope="module")
 def results():
     return {f"{v}/{s}": run_shadow(v, s) for v in VARIANTS for s in SCENARIOS}
+
+
+NO_REFILL = replace(DEFAULT_PROFILE, plasma_refill_target_share=0.0)
+
+
+def _without_refill(result) -> ShadowResult:
+    """The same run with plasma refill off (P2I-2T): V then moves only with the bleed and the orders."""
+    core = run(result.core.anchors, result.core.contributors, len(result.core.states) - 1, NO_REFILL)
+    rows = compare(result.legacy.snapshots, core.states, core.derived())
+    return ShadowResult(result.variant_id, result.scenario, result.legacy, core, rows, summarize(rows))
+
+
+@pytest.fixture(scope="module")
+def without_refill(results):
+    return {key: _without_refill(result) for key, result in results.items()}
 
 
 def test_the_committed_golden_report_is_the_one_the_engines_produce(results):
@@ -38,7 +55,7 @@ def test_every_difference_is_explained_and_every_explanation_still_applies(resul
     # Run-dependent mechanisms (P2E-2) count where they acted.
     used = {cause for key, result in results.items()
             for causes in expected_causes(key, acting_mechanisms(result.core)).values() for cause in causes}
-    assert used == set(DIFFERENCES)
+    assert used == set(DIFFERENCES) - set(DORMANT) and set(DORMANT) <= set(DIFFERENCES)
 
 
 def test_the_core_reproduces_the_engine_exactly_where_it_adopts_its_arithmetic(results):
@@ -52,12 +69,17 @@ def test_the_core_reproduces_the_engine_exactly_where_it_adopts_its_arithmetic(r
             assert entry["mismatched"] == 0 and entry["compared"] == len(result.legacy.snapshots), (key, name)
 
 
-def test_the_only_exact_quantity_allowed_to_differ_is_volume_past_the_engine_clamp(results):
+def test_the_only_exact_quantities_allowed_to_differ_are_the_shared_blood_states(results, without_refill):
+    """V and Hb come from the shared blood state (P2I-2T); glucose, K, FiO2 and delivered amounts
+    keep the engine's arithmetic. With refill off, V follows the engine's circulation exactly,
+    except past the engine's clamp (KD-S4)."""
     for key, result in results.items():
         differing = set(mismatching(result.summary)) & set(EXACT)
-        assert differing <= {"V_ml_eq"}, (key, differing)
-        if differing:
-            first = result.summary["V_ml_eq"]["first_mismatch_minute"]
+        assert differing <= {"V_ml_eq", "hb_g_dl"}, (key, differing)
+        alone = without_refill[key].summary
+        if "V_ml_eq" in mismatching(alone):
+            first = alone["V_ml_eq"]["first_mismatch_minute"]
+            assert key.endswith("aggressive_volume"), key
             assert result.legacy.snapshots[first]["circulation"] == pytest.approx(0.25)
 
 
@@ -77,15 +99,23 @@ def test_rounding_ties_are_reported_separately_never_as_matches(results):
 
 
 def test_the_comparison_catches_a_core_that_drifts():
-    """Control: a core bleeding 10 % faster than the engine must be reported, not absorbed."""
+    """Control: a core bleeding 10 % faster than the engine must be reported, not absorbed.
+
+    Since P2I-2T refill and the blood composition move V and Hb away from the engine in every
+    bleeding run, so the control switches refill off: the core's V then follows the engine's
+    circulation exactly, and only the faster bleed can move it.
+    """
     legacy = run_legacy("gi_bleed_57m", {}, 30)
+    anchors, no_refill = anchors_from_legacy(legacy.arrival), replace(DEFAULT_PROFILE, plasma_refill_target_share=0.0)
     contributors = list(contributors_from_legacy(legacy))
+    same = run(anchors, contributors, 30, no_refill)
+    assert "V_ml_eq" not in mismatching(summarize(compare(legacy.snapshots, same.states, same.derived())))
     bleed = contributors[0]
-    contributors[0] = GIHaemorrhage(bleed.id, bleed.volume_loss_ml_per_min * 1.1, bleed.hb_loss_g_dl_per_min * 1.1,
-                                    bleed.fraction_with_ppi, bleed.fraction_after_hemostasis)
-    core = run(anchors_from_legacy(legacy.arrival), contributors, 30)
+    contributors[0] = GIHaemorrhage(bleed.id, bleed.blood_loss_ml_per_min * 1.1, bleed.fraction_with_ppi,
+                                    bleed.fraction_after_hemostasis)
+    core = run(anchors, contributors, 30, no_refill)
     summary = summarize(compare(legacy.snapshots, core.states, core.derived()))
-    assert {"V_ml_eq", "hb_g_dl"} <= set(mismatching(summary))
+    assert "V_ml_eq" in mismatching(summary)
 
 
 def test_one_minute_steps_do_not_change_the_family_engine():
@@ -165,26 +195,28 @@ def test_no_class_claims_an_approved_magnitude():
 
 
 def test_a_difference_without_an_approved_decision_stays_unresolved(results):
-    result = results["gi_bleed_57m/untreated_60"]
+    result = results["gi_bleed_72f/oxygen_non_rebreather"]
     summary = {name: dict(entry) for name, entry in result.summary.items()}
     summary["spo2"]["mismatched"] = 1              # a difference no decision explains
-    summary["V_ml_eq"]["mismatched"] = 1           # an expected variable elsewhere, but not in this run
+    summary["hr"]["mismatched"] = 1                # an expected variable elsewhere, but not in this run
     classes = classify(result.key, summary)
     assert classes["spo2"] == {"classification": "UNRESOLVED", "candidate_causes": []}
-    assert classes["V_ml_eq"]["classification"] == "UNRESOLVED"
+    assert classes["hr"]["classification"] == "UNRESOLVED"
 
 
-def test_the_mental_status_difference_is_attributed_minute_by_minute(results):
-    """57m untreated, minutes 55-60: the raw reading (KD-S3) and the lower pressure (KD-S4)."""
-    rows = {row["minute"]: row for row in consciousness_attribution(results["gi_bleed_57m/untreated_60"])}
+def test_the_mental_status_difference_is_attributed_minute_by_minute(without_refill):
+    """57m untreated with refill off (the pressure path before P2I-2T), minutes 55-60: the raw
+    reading (KD-S3) and the lower pressure (KD-S4). The golden run no longer crosses the threshold
+    (``DORMANT``), so the attribution is exercised here."""
+    result = without_refill["gi_bleed_57m/untreated_60"]
+    rows = {row["minute"]: row for row in consciousness_attribution(result)}
     assert sorted(rows) == [55, 56, 57, 58, 59, 60]
     assert {m: rows[m]["mode"] for m in rows} == {55: "jointly_necessary", 56: "jointly_necessary",
                                                  57: "jointly_necessary", 58: "sufficient_alone",
                                                  59: "sufficient_alone", 60: "each_sufficient"}
     assert rows[58]["candidate_causes"] == rows[59]["candidate_causes"] == ["KD-S4"]
     assert all(rows[m]["candidate_causes"] == ["KD-S3", "KD-S4"] for m in (55, 56, 57, 60))
-    entry = classify("gi_bleed_57m/untreated_60", results["gi_bleed_57m/untreated_60"].summary,
-                     list(rows.values()))["consciousness_level"]
+    entry = classify("gi_bleed_57m/untreated_60", result.summary, list(rows.values()))["consciousness_level"]
     assert entry["candidate_causes"] == ["KD-S3", "KD-S4"] and len(entry["by_minute"]) == 6
 
 
@@ -223,8 +255,12 @@ def test_an_unknown_legacy_label_is_a_mismatch_not_silence(results):
     assert rows["rhythm"][10]["status"] == "mismatch" and rows["consciousness_level"][11]["status"] == "mismatch"
 
 
-def test_untimed_orders_queued_bags_and_stops_follow_the_engine_exactly(results):
+def test_untimed_orders_queued_bags_and_stops_follow_the_engine_exactly(results, without_refill):
+    """Delivered amounts always; and with refill off, V too (Hb is the blood state's, P2I-2T)."""
     for variant in VARIANTS:
         for scenario in ("untimed_shared_line", "queued_timed_bags", "stop_fluids"):
-            summary = results[f"{variant}/{scenario}"].summary
-            assert all(summary[name]["mismatched"] == 0 for name in EXACT), (variant, scenario)
+            key = f"{variant}/{scenario}"
+            assert all(results[key].summary[name]["mismatched"] == 0 for name in EXACT
+                       if name not in ("V_ml_eq", "hb_g_dl")), key
+            assert all(without_refill[key].summary[name]["mismatched"] == 0 for name in EXACT
+                       if name != "hb_g_dl"), key

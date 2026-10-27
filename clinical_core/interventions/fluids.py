@@ -1,8 +1,14 @@
-"""Crystalloid and packed red cells: volume (C1) and haemoglobin (C10).
+"""Crystalloid and packed red cells, through the shared blood state (P2I-2T).
+
+Neither order writes V or Hb. Each declares what enters (or leaves) the circulation as a
+``BloodFlow``; the core moves V by kappa x that volume and Hb by the change of red-cell
+content over circulating volume. Crystalloid brings volume without red cells, so it dilutes,
+and the dilution reverses as far as its volume leaves again; a red-cell unit brings volume and
+red cells from one unit composition.
 
 The magnitudes are parameters of each order, supplied by whoever builds the scenario.
 The shadow comparison supplies the family engine's own (GI_BLEED and _minute), converted
-to mL-equivalents; nothing here is fitted to a trajectory.
+to mL-equivalents, and a provisional unit composition; nothing here is fitted to a trajectory.
 """
 from __future__ import annotations
 
@@ -10,8 +16,8 @@ import math
 from dataclasses import dataclass
 
 from ..integration import Contribution, Contributor, register
-from ..provenance import ChannelDelta, SourceKind
-from ..state import Channel, CoreInvariantError
+from ..provenance import BloodFlow, BloodProcess, SourceKind
+from ..state import CoreInvariantError
 from .timing import check_queue, check_window, given_in
 
 
@@ -30,9 +36,10 @@ def _duration(value):
 class Crystalloid(Contributor):
     """Expands volume on delivery; part of the expansion then leaves the vessels.
 
-    Per mL delivered: V rises by ``effective_ml_per_ml``; ``transient_share`` of that
-    rise enters a pool that redistributes out of the circulation with time constant
-    ``leak_tau_min``; Hb falls by ``hb_dilution_g_dl_per_ml``. ``queued_ahead_ml`` is the
+    Per mL delivered, ``effective_ml_per_ml`` enters the circulation; ``transient_share`` of
+    that enters a pool that redistributes out of the circulation with time constant
+    ``leak_tau_min``. Both are blood flows without red cells: the dilution they cause is
+    the blood state's, and reverses as far as the pool leaves. ``queued_ahead_ml`` is the
     untimed crystalloid still running when an untimed order is given.
     """
 
@@ -47,7 +54,6 @@ class Crystalloid(Contributor):
     effective_ml_per_ml: float
     transient_share: float
     leak_tau_min: float
-    hb_dilution_g_dl_per_ml: float
     stop_minute: int | None = None
     stopped_by: str | None = None          # the id of the order that stopped it
     queued_ahead_ml: float = 0.0
@@ -62,8 +68,8 @@ class Crystalloid(Contributor):
         for name in ("volume_ml", "untimed_rate_ml_per_min", "effective_ml_per_ml", "leak_tau_min"):
             _positive(getattr(self, name), name)
         _duration(self.duration_min)
-        if not 0.0 <= self.transient_share <= 1.0 or self.hb_dilution_g_dl_per_ml < 0:
-            raise CoreInvariantError("the transient share is between 0 and 1 and dilution is not negative")
+        if not 0.0 <= self.transient_share <= 1.0:
+            raise CoreInvariantError("the transient share is between 0 and 1")
 
     def delivery(self) -> dict:
         return dict(amount=self.volume_ml, start_minute=self.start_minute, duration_min=self.duration_min,
@@ -83,22 +89,26 @@ class Crystalloid(Contributor):
         pool += gain * self.transient_share
         leak = pool * (1 - math.exp(-1 / self.leak_tau_min))
         pool -= leak
-        deltas = []
-        if given:
-            deltas += [ChannelDelta(Channel.V, gain, self.source, minute, "crystalloid delivered into the circulation"),
-                       ChannelDelta(Channel.HB, -given * self.hb_dilution_g_dl_per_ml, self.source, minute,
-                                    "haemoglobin diluted by crystalloid")]
+        blood = []
+        if gain:
+            blood.append(BloodFlow(BloodProcess.CRYSTALLOID_IN, gain, self.source, minute,
+                                   "crystalloid delivered into the circulation"))
         if leak:
-            deltas.append(ChannelDelta(Channel.V, -leak, self.source, minute,
-                                       "crystalloid redistributing out of the circulation"))
+            blood.append(BloodFlow(BloodProcess.CRYSTALLOID_OUT, leak, self.source, minute,
+                                   "crystalloid redistributing out of the circulation"))
         delivered = float(own.get("delivered_ml", 0.0)) + given
-        return Contribution(deltas=tuple(deltas), internal=own.updated(pool_ml=pool, delivered_ml=delivered))
+        return Contribution(blood=tuple(blood), internal=own.updated(pool_ml=pool, delivered_ml=delivered))
 
 
 @register
 @dataclass(frozen=True)
 class PackedRedCells(Contributor):
-    """Each unit delivered adds volume that stays in the vessels and oxygen-carrying capacity.
+    """Each unit delivered adds circulating volume and red-cell content, both from one unit.
+
+    A unit is ``volume_ml_per_unit`` of circulating volume at the haemoglobin concentration
+    ``unit_hb_g_dl``: the blood state takes its red cells from that composition, so how far Hb
+    rises depends on the circulation it enters (its content and volume), not on a fixed step.
+    Both values are provisional and TBD.
 
     Transfusion overload (the family engine's TRANSFUSION rule) acts on lung water (C5),
     which no module writes yet: it is not modelled here, and the comparison says so.
@@ -113,7 +123,7 @@ class PackedRedCells(Contributor):
     duration_min: float | None
     untimed_units_per_min: float
     volume_ml_per_unit: float
-    hb_g_dl_per_unit: float
+    unit_hb_g_dl: float
     stop_minute: int | None = None
     queued_ahead_units: float = 0.0
 
@@ -122,7 +132,7 @@ class PackedRedCells(Contributor):
         check_queue(self.queued_ahead_units)
         if self.duration_min is not None and self.queued_ahead_units:
             raise CoreInvariantError("a timed transfusion is queued by its start, not by an amount ahead")
-        for name in ("units", "untimed_units_per_min", "volume_ml_per_unit", "hb_g_dl_per_unit"):
+        for name in ("units", "untimed_units_per_min", "volume_ml_per_unit", "unit_hb_g_dl"):
             _positive(getattr(self, name), name)
         _duration(self.duration_min)
 
@@ -137,8 +147,6 @@ class PackedRedCells(Contributor):
             return Contribution()
         own = self.own(state)
         return Contribution(
-            deltas=(ChannelDelta(Channel.V, given * self.volume_ml_per_unit, self.source, minute,
-                                 "packed red cells delivered into the circulation"),
-                    ChannelDelta(Channel.HB, given * self.hb_g_dl_per_unit, self.source, minute,
-                                 "haemoglobin raised by transfusion")),
+            blood=(BloodFlow(BloodProcess.RED_CELL_TRANSFUSION, given * self.volume_ml_per_unit, self.source, minute,
+                             "packed red cells delivered into the circulation", hb_g_dl=self.unit_hb_g_dl),),
             internal=own.updated(delivered_units=float(own.get("delivered_units", 0.0)) + given))

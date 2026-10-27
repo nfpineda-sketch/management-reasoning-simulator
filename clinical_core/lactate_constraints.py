@@ -46,13 +46,18 @@ KINETICS = ("debt_clearance_tau_min", "debt_per_delivery_deficit", "lactate_per_
 #: stopped further filtering ("Do NOT continue filtering P2I-2R yet") until the oxygen-delivery
 #: review lands and FD-LAC-06 is operationalized; the results stay as committed, stale by
 #: construction, and this module's command refuses to produce new ones. None once a refilter is
-#: authorized and run.
+#: authorized and run. P2I-2T (2026-10-27) then replaced the GI module's two independent drifts
+#: with the shared blood state, which changed the GI trajectories and the calibration freeze: the
+#: results also keep the freeze they were filtered under (``freeze_digest``).
 RESULTS_PENDING_REFILTER = {
     "filter_digest": "58e988cf6b1c3d5bebab254305fdeec97ace1c11775db4753b458781a888d1bb",
+    "freeze_digest": "152abc6cf3e2812fcade237f60db0430df78749e09f4199b0a0fff13a0dd4338",
     "since": "2026-10-27",
     "reason": "P2I-2P changed the shadow core's oxygen-debt formulation (neutral extraction reserve 1: canonical "
               "numbers unchanged, sources changed) and FD-LAC-06's trajectory semantics (FD-LAC-06 faculty "
-              "decision, recorded in P2I-2P) are not yet operationalized; refiltering is not authorized",
+              "decision, recorded in P2I-2P) are not yet operationalized; P2I-2T then replaced the two "
+              "independent haemorrhage drifts with the shared blood state (GI trajectories and the calibration "
+              "freeze changed); refiltering is not authorized",
 }
 
 

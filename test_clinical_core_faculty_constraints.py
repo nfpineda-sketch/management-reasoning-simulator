@@ -334,9 +334,13 @@ def test_the_results_document_is_generated_from_the_current_code():
     else:
         assert data["filter_digest"] == pending["filter_digest"] != lactate_constraints.filter_digest()
         assert "PENDIENTE DE REFILTRADO" in document and pending["since"] in document
+        # P2I-2T changed the calibration freeze after the results were filtered: they keep theirs.
+        assert data["freeze_digest"] == pending["freeze_digest"] != calibration.frozen_digest()
+        assert "P2I-2T" in document
     assert data["definitions_digest"] == lactate_constraints.FROZEN_DEFINITIONS_DIGEST
     assert data["pipeline_digest"] == lactate_constraints.FROZEN_PIPELINE_DIGEST
-    assert data["freeze_digest"] == calibration.frozen_digest() and not data["quick"]
+    assert pending is not None or data["freeze_digest"] == calibration.frozen_digest()
+    assert not data["quick"]
     assert data["admissible_candidates"] == len(decision_pack.admissible()) == data["counts"]["before"]
     assert data["settings"] == fc.PRIMARY
     for digest in ("filter_digest", "definitions_digest", "pipeline_digest", "freeze_digest"):

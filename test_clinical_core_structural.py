@@ -16,12 +16,12 @@ from clinical_core.derived import DEFAULT_PROFILE, LACTATE_KINETICS, SYMPATHETIC
 from clinical_core.integration import step
 from clinical_core.modules import GIHaemorrhage
 from clinical_core.provenance import AuxiliaryChange, MinuteRecord, ProvenanceError, Source
-from clinical_core.state import AUXILIARY_FIELDS, AuxiliaryState, CoreState, UnresolvedBoundary
+from clinical_core.state import AUXILIARY_FIELDS, AuxiliaryState, BloodState, CoreState, UnresolvedBoundary
 
 BLEEDING = Anchors(case_id="synthetic_gi", sbp=88.0, dbp=54.0, hr=124.0, spo2=97.0, respiratory_rate=26.0,
                    crt_s=5.0, lactate=4.4, hb=6.7, glucose=118.0, k=4.1, fio2=0.21,
                    rhythm=RhythmState.sinus(124.0), consciousness_level=0)
-BLEED = GIHaemorrhage("gi_haemorrhage", 2.5, 0.009, 0.8, 0.1)
+BLEED = GIHaemorrhage("gi_haemorrhage", 2.5, 0.8, 0.1)
 
 
 @dataclass(frozen=True)
@@ -120,11 +120,16 @@ def test_p2d1_the_shadow_trace_carries_it_as_non_authoritative_core_state():
     assert block["authoritative"] is False and block["layer"] == "core_internal_state"
     assert set(block["end"]) == set(AUXILIARY_FIELDS) and block["arrival"] == AuxiliaryState().to_dict()
     assert any(change["type"] == "auxiliary" for minute in payload["minutes"] for change in minute["auxiliary"])
+    # P2I-2T: the shared blood state travels the same way, with every minute's blood changes.
+    blood = payload["core_blood_state"]
+    assert blood["authoritative"] is False and blood["layer"] == "core_internal_state"
+    assert blood["arrival"] == BloodState().to_dict() and blood["end"]["shed_ml"] > 0
+    assert any(change["type"] == "blood" for minute in payload["minutes"] for change in minute["blood"])
 
 
 # P2D-2 -- no pulse without output; no pressure without output --------------------------------
 
-BRISK = GIHaemorrhage("gi_haemorrhage", 10.0, 0.02, 0.8, 0.1)
+BRISK = GIHaemorrhage("gi_haemorrhage", 10.0, 0.8, 0.1)
 
 
 def _derived_with_pulse():
@@ -165,8 +170,12 @@ def test_p2d2_pea_keeps_electrical_activity_without_a_pulse():
 
 
 def test_p2d2_a_run_that_empties_the_ventricle_fails_closed_at_that_minute():
-    with pytest.raises(UnresolvedBoundary, match="minute 5[0-9]"):
+    # Plasma refill (P2I-2T) restores part of the shed volume, so the ventricle empties later
+    # than with the bleed alone.
+    with pytest.raises(UnresolvedBoundary, match="minute 6[0-9]"):
         run(BLEEDING, (BRISK,), 90)
+    with pytest.raises(UnresolvedBoundary, match="minute 5[0-9]"):
+        run(BLEEDING, (BRISK,), 90, replace(DEFAULT_PROFILE, plasma_refill_target_share=0.0))
 
 
 def test_p2d2_an_explicit_terminal_transition_is_used_when_one_applies():
@@ -240,9 +249,13 @@ def test_p2d3_no_golden_run_puts_a_sinus_rate_below_its_intrinsic_rate():
 
 @dataclass(frozen=True)
 class Window(Contributor):
-    """Volume lost at a constant rate within (start, stop], Hb untouched (test only)."""
+    """Volume lost at a constant rate within (start, stop], Hb untouched (test only).
 
-    kind = SourceKind.DISEASE_MODULE
+    A scripted probe of the preload coordinate alone: since P2I-2T only a probe may move V
+    directly; a disease module loses whole blood through the shared blood state.
+    """
+
+    kind = SourceKind.SCRIPTED_EVENT
     type_name = "test_window_loss"
     id: str
     per_minute: float
@@ -491,8 +504,14 @@ def test_review_m2_the_mental_status_attribution_survives_a_pulseless_minute_and
 
 
 def test_review_m2_a_difference_the_pressure_does_not_explain_is_not_attributed_to_it():
+    from clinical_core.comparison import compare, summarize
     from clinical_core.shadow import consciousness_attribution, run_shadow
     result = run_shadow("gi_bleed_57m", "untreated_60")
+    # With refill off (the pressure path before P2I-2T) the run still crosses the 80 mmHg threshold.
+    core = run(result.core.anchors, result.core.contributors, 60,
+               replace(DEFAULT_PROFILE, plasma_refill_target_share=0.0))
+    rows = compare(result.legacy.snapshots, core.states, core.derived())
+    result = replace(result, core=core, rows=rows, summary=summarize(rows))
     snapshots = [dict(snap) for snap in result.legacy.snapshots]
     snapshots[55]["spo2"] = 80          # the engines no longer read the same oxygen level
     probe = replace(result, legacy=replace(result.legacy, snapshots=tuple(snapshots)))

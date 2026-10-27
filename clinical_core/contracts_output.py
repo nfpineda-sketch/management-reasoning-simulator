@@ -35,7 +35,7 @@ from contracts_v2.trace import TraceProvenance
 from . import AUTHORITATIVE_ENGINE, CORE_VERSION
 from .derived import case_parameter_provenance, derive
 from .integration import Trajectory
-from .state import AUXILIARY_FIELDS, SCALAR_CHANNELS, digest
+from .state import AUXILIARY_FIELDS, BLOOD_FIELDS, BLOOD_OFFSETS, SCALAR_CHANNELS, digest
 
 SHADOW_NAMESPACE = "clinical_core_shadow"
 #: Keys that carry what a resident sees in the Phase-0/Phase-1 records. None may appear here.
@@ -127,6 +127,12 @@ def shadow_trace(trajectory: Trajectory, adapted) -> TraceProvenance:
                                  "quantities": dict(AUXILIARY_FIELDS),
                                  "arrival": trajectory.states[0].aux.to_dict(),
                                  "end": trajectory.states[-1].aux.to_dict()},
+        # The shared blood state (P2I-2T), the same way: never authoritative; each minute's blood
+        # changes are in "minutes" above.
+        "core_blood_state": {"layer": "core_internal_state", "authoritative": False,
+                             "quantities": {**BLOOD_FIELDS, **BLOOD_OFFSETS},
+                             "arrival": trajectory.states[0].blood.to_dict(),
+                             "end": trajectory.states[-1].blood.to_dict()},
     }
     check_shadow_payload(payload)
     return TraceProvenance(payload=payload)

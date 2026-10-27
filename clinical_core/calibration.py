@@ -203,12 +203,25 @@ REGISTRY: Mapping[str, RegistryEntry] = {entry.name: entry for entry in (
     _u("agitation_pain_demand_multiplier", "demand", "factor", "no band: no marked agitation or pain", ("D",)),
     _u("vasodilation_with_demand_probe_factor", "demand", "factor", "the Level-2 probe's 1.3",
        ("D",), target="probe", status=SYNTHETIC_ONLY, canonical=1.3, evidence=("bands.PROBES",)),
+    # Shared blood state (P2I-2T): provisional values, no band yet
+    _p("arrival_circulating_volume_ml", "blood", None, None, None, "mL-eq",
+       "normalization of red-cell content and Hb; not inferred from the arrival Hb; TBD", ("Hb",), ()),
+    _p("volume_preload_kappa", "blood", None, None, None, "V per mL-eq of circulating volume",
+       "V = kappa x circulating-volume deviation; only kappa / preload_curve_scale_ml is identifiable; TBD",
+       ("V", "output"), ()),
+    _p("plasma_refill_target_share", "blood", None, None, None, "share of the shed volume",
+       "how much of the shed volume plasma refill restores at most; TBD", ("V", "Hb"), ()),
+    _p("plasma_refill_tau_min", "blood", None, None, None, "min", "refill time constant; TBD", ("V", "Hb"), ()),
+    _p("plasma_refill_capacity_ml", "blood", None, None, None, "mL-eq", "finite interstitial reserve; TBD",
+       ("V", "Hb"), ()),
+    _u("red_cell_unit_hb_g_dl", "blood", "g/dL", "haemoglobin concentration of one packed red-cell unit (P2I-2T); "
+       "not the legacy 0.85 g/dL step; TBD with the unit's volume", ("Hb",), status=CANDIDATE, canonical=20.0,
+       evidence=("legacy_adapter.PROVISIONAL_RED_CELL_UNIT_HB_G_DL",)),
     # GI source parameters (family)
-    RegistryEntry("gi_volume_loss_ml_per_min", "GI source", "family", 2.5, 2.5, 2.5, "mL-eq/min",
-                  "family engine literal 0.003 circulation/min, adopted for the comparison", (
-                      "legacy_adapter.LEGACY_LITERALS",), ("V",), (), CANDIDATE, 2.5),
-    RegistryEntry("gi_hb_loss_g_dl_per_min", "GI source", "family", 0.009, 0.009, 0.009, "g/dL/min",
-                  "family engine literal", ("legacy_adapter.LEGACY_LITERALS",), ("Hb",), (), CANDIDATE, 0.009),
+    RegistryEntry("gi_blood_loss_ml_per_min", "GI source", "family", 2.5, 2.5, 2.5, "mL-eq/min",
+                  "family engine literal 0.003 circulation/min read as whole-blood loss, adopted for the comparison; "
+                  "one rate drives volume and red cells through the shared blood state (P2I-2T)", (
+                      "legacy_adapter.LEGACY_LITERALS",), ("V", "Hb"), (), CANDIDATE, 2.5),
     RegistryEntry("gi_fraction_with_ppi", "GI source", "family", 0.8, 0.8, 0.8, "share of the bleed",
                   "family_engine.GI_BLEED['bleeding_with_ppi']", ("family_engine.py:202",), ("V", "Hb"), (), CANDIDATE,
                   0.8),

@@ -1,5 +1,11 @@
 # P2I-2P · Fisiología de la entrega y la extracción de O2: revisión y corrección estructural
 
+> **REGISTRO HISTÓRICO, anterior a P2I-2T (2026-10-27).** Esta auditoría describe el núcleo en sombra antes de que el
+> estado hemorrágico compartido (P2I-2T, `docs/revision/P2I2T_ESTADO_HEMORRAGICO_COMPARTIDO.md`) reemplazara las derivas
+> independientes de V y Hb del sangrado GI. Sus cifras y su JSON (sondas
+> `760627b365b161b166872b932b2bd5cf4fdba6b3507ad17a28215dfb2a8f1357`) quedan tal como se aceptaron y no se regeneran; las
+> trayectorias GI actuales son otras.
+
 Este paquete trabaja sólo en sombra. No aprueba ningún valor numérico, no cambia lo que ve el residente, no migra GI ni
 otra familia y no vuelve a filtrar el lactato. Los resultados de P2I-2R quedan **PENDIENTES DE REFILTRADO** tal como se
 comprometieron (`docs/revision/P2I2_RESTRICCIONES_LACTATO_GI.md`).

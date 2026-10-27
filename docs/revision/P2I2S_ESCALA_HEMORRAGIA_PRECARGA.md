@@ -1,5 +1,11 @@
 # P2I-2S · Restricciones de calibración de la escala hemorragia / precarga
 
+> **REGISTRO HISTÓRICO, anterior a P2I-2T (2026-10-27).** Esta auditoría describe el núcleo en sombra antes de que el
+> estado hemorrágico compartido (P2I-2T, `docs/revision/P2I2T_ESTADO_HEMORRAGICO_COMPARTIDO.md`) reemplazara las derivas
+> independientes de V y Hb del sangrado GI. Sus cifras y su JSON (sondas
+> `760627b365b161b166872b932b2bd5cf4fdba6b3507ad17a28215dfb2a8f1357`) quedan tal como se aceptaron y no se regeneran; las
+> trayectorias GI actuales son otras.
+
 Este paquete es una auditoría en sombra **de sólo lectura**:
 - no cambia la fisiología, ningún valor por defecto, banda, registro, golden ni regla;
 - no aprueba ningún valor de λ ni de posición;

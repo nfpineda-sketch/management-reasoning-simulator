@@ -19,7 +19,7 @@ from clinical_core.modules import GIHaemorrhage
 BASE = dict(case_id="synthetic", sbp=88.0, dbp=54.0, hr=124.0, spo2=97.0, respiratory_rate=26.0, crt_s=5.0,
             lactate=4.4, hb=6.7, glucose=118.0, k=4.1, fio2=0.21, rhythm=RhythmState.sinus(124.0),
             consciousness_level=0)
-BLEED = GIHaemorrhage("gi_haemorrhage", 2.5, 0.009, 0.8, 0.1)
+BLEED = GIHaemorrhage("gi_haemorrhage", 2.5, 0.8, 0.1)
 
 
 def case(**declared):

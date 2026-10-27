@@ -20,20 +20,24 @@ from clinical_core.shadow import GOLDEN
 #: the materialized inputs and the harness files whole (docs/PHASE2_SHADOW_CORE.md §13.1; P2F's
 #: c7b2f4bb... covered less), P2H-0 added the migration gate and its trusted registries (§14.6), and
 #: P2H-1 added the authority registries as loaded, policies included (§15.6), and P2H-2 the policy
-#: vocabulary and each approval's fallback (§16.6).
+#: vocabulary and each approval's fallback (§16.6). P2I-2T (§23) replaced the GI module's two
+#: independent drifts with the shared blood state: bands and harness_sources (the registry: one
+#: whole-blood rate, no Hb rate, the provisional blood-state entries), migration_sources (the GI
+#: family parameters), input_adapter_sources (one blood-loss rate, no Hb literals, the provisional
+#: red-cell unit) and scenario_inputs (the materialized specs) changed; the rules did not.
 FROZEN_COMPONENTS = {
     "rules": "07f526f1cd9c65d4eb465f19c652a87d77adc678b2a706664b81c7237c59bc91",
-    "bands": "e9de8e613ecd46dfa3b02071ad2542d78bf3b2c543c6c096abead0eede16674a",
-    "harness_sources": "91e43dbfbac39e8a3598c70aa4bc4aca10a1a28174fea2d3f76eef7b895cb29d",
-    "migration_sources": "c0ecedd5c19a8cfca63a7e81f39a70facc1618420d7f1a119d00a4d4429d9984",
+    "bands": "99ca99f1b0d032056cfdabb90e1354683ef5ba093e896a0d5c10bc9c2ca192ca",
+    "harness_sources": "147e97485e15de3a64df3d8bc8cd281fdfce01b8f5e0470d229fd157d7af603d",
+    "migration_sources": "4831949edabea361d5a0b2c0ee7e157551117c4cdc4b2f022833261e5a0f29a2",
     "authority_registries": "7a1473d2da2126d875ad21366a2ee93a288b3779cfbd4856baa46014872576fc",
     "gi_reference": "159fdc558c713a743261ab82075dc2574f7389f017a81a80f95f0d7207e0a9bd",
     "scenarios": "7380daec5536c8f9a23c857df2138c99a16d63eace51d62b295aa3f4ed100b58",
     "input_path_sources": "8bbff3d408efba2024917559156cfaa732c920b3bc7a45e0bac0e3e4838f65b9",
-    "input_adapter_sources": "2f4f3b2db115a2aa6209991caa8a50095015892b716ddbf71c2841e694b4d97e",
-    "scenario_inputs": "06ef96d1dc6be7a476ea58142ecd98942694241a8a637cc260f83f35b709362c",
+    "input_adapter_sources": "e83dca618fdaaa9239d861e1e1d6928dc703bfe33206a05cef44a5b0e9495bc5",
+    "scenario_inputs": "afb2051e7fa04f1765aaf920c82f51dc6675d19bcbcb425c2ee581d8fa60d347",
 }
-FROZEN_DIGEST = "152abc6cf3e2812fcade237f60db0430df78749e09f4199b0a0fff13a0dd4338"
+FROZEN_DIGEST = "e40c43a37a3fd015a2935ed2c8037cbc13de8e6b516e2c305f712bbadc64c408"
 
 
 # P2F-2 / P2F-5 -- repository truth, candidate inference, faculty decision ---------------------
@@ -276,13 +280,14 @@ def test_the_gi_dry_run_classifies_every_parameter_and_never_migrates(case):
     for name in ("intrinsic_sinus_rate", "arrival_oxygen_debt", "arrival_lactate_excess", "arrival_delivery_ratio",
                  "metabolic_demand_baseline", "preload_fraction"):
         assert categories[name] == FACULTY
-    for name in ("pump_reserve", "volume_loss_ml_per_min", "fraction_with_ppi"):
+    for name in ("pump_reserve", "blood_loss_ml_per_min", "fraction_with_ppi"):
         assert categories[name] == FAMILY_DEFAULT
     # P2H-1: whether 0 needs a complete medication reconciliation or a family default is faculty's choice.
     assert categories["beta_blockade"] == FACULTY_AUTHORING_DECISION_REQUIRED
     reason = result["parameters"]["beta_blockade"]["path"]
     assert "absence of mention is not evidence of 0" in reason and "Undecided" in reason
     assert result["not_required"]["reference_preload_fraction"]["category"] == NOT_REQUIRED
-    assert len(result["blockers"]) == 12 and set(result["blockers"]) == set(result["parameters"])
+    # P2I-2T: one whole-blood rate; the separate Hb rate is gone, so 11 blockers instead of 12.
+    assert len(result["blockers"]) == 11 and set(result["blockers"]) == set(result["parameters"])
     assert "hr" in result["anchors_from_case_truth"] and result["anchors_from_bank_defaults"] == ["k", "rhythm", "fio2"]
     assert not {"rhythm", "fio2"} & set(result["anchors_from_case_truth"])

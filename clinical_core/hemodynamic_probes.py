@@ -26,6 +26,7 @@ from .calibration import REGISTRY
 from .derived import (DEFAULT_PROFILE, LEGACY_ML_PER_CIRCULATION_UNIT, arrival_filling, arterial_pressures, derive,
                       effective_delivery, oxygen_balance, preload_position)
 from .integration import run
+from .legacy_adapter import LEGACY_LITERALS
 from .modules import GIHaemorrhage
 from .state import Anchors, Channel, UnresolvedBoundary, anchored_state
 
@@ -219,12 +220,15 @@ def v_interpretation() -> dict:
              for item in lactate_slice.scenario_inputs(CASES[0], scenario)}
     bleed, saline, blood = items["GIHaemorrhage"], items["Crystalloid"], items["PackedRedCells"]
     return {"ml_eq_per_legacy_circulation_unit": LEGACY_ML_PER_CIRCULATION_UNIT,
-            "bleed_ml_eq_per_min": bleed.volume_loss_ml_per_min, "bleed_hb_g_dl_per_min": bleed.hb_loss_g_dl_per_min,
+            "bleed_ml_eq_per_min": bleed.blood_loss_ml_per_min,
+            # P2I-2T: the module's former Hb drift and the unit's former Hb step, kept as legacy references.
+            "bleed_hb_g_dl_per_min": LEGACY_LITERALS["gi_bleeding_hemoglobin_per_min"][0],
             "bleed_fraction_with_ppi": bleed.fraction_with_ppi,
             "bleed_fraction_after_haemostasis": bleed.fraction_after_hemostasis,
             "saline_effective_ml_eq_per_ml": saline.effective_ml_per_ml, "saline_transient_share": saline.transient_share,
             "saline_leak_tau_min": saline.leak_tau_min, "prbc_ml_eq_per_unit": blood.volume_ml_per_unit,
-            "prbc_hb_g_dl_per_unit": blood.hb_g_dl_per_unit, "curve_scale_ml_eq": DEFAULT_PROFILE.preload_curve_scale_ml,
+            "prbc_hb_g_dl_per_unit": LEGACY_LITERALS["blood_hemoglobin_per_unit"][0],
+            "curve_scale_ml_eq": DEFAULT_PROFILE.preload_curve_scale_ml,
             "curve_scale_band": list(SCALES)}
 
 
@@ -420,6 +424,17 @@ def collapse_and_mental_status() -> dict:
 
 
 # The report ----------------------------------------------------------------------------------------
+
+
+#: P2I-2T (2026-10-27): this audit describes the shadow core before the shared blood state replaced
+#: the GI module's independent V and Hb drifts. Its committed JSON and document stay as the historical
+#: record they were accepted as (probes digest below) and are not regenerated: the command refuses to
+#: produce new results, and only re-renders the committed JSON. None for an authorized re-audit.
+HISTORICAL = {"probes_digest": "760627b365b161b166872b932b2bd5cf4fdba6b3507ad17a28215dfb2a8f1357",
+              "since": "2026-10-27",
+              "reason": "P2I-2T replaced the independent haemorrhage drifts with the shared blood state; this audit "
+                        "is the record of the core before it"}
+
 
 def probes_digest() -> str:
     text = json.dumps({"sources": lactate_slice.slice_sources(), "freeze": calibration.frozen_digest()}, sort_keys=True)
@@ -688,6 +703,9 @@ def main(argv=None) -> int:
         data = json.loads(args.json.read_text(encoding="utf-8"))
         args.write.write_text(apply(args.write.read_text(encoding="utf-8"), render(data)), encoding="utf-8")
         return 0
+    if HISTORICAL is not None:
+        parser.error(f"a historical record since {HISTORICAL['since']} ({HISTORICAL['reason']}): its results are not "
+                     "regenerated without authorization")
     text = json.dumps(report(), indent=1, sort_keys=True, default=str)
     if args.out:
         args.out.mkdir(parents=True, exist_ok=True)

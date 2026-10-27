@@ -101,8 +101,8 @@ def test_every_case_parameter_a_mechanism_reads_is_required_for_the_gi_family():
     from clinical_core.migration import DIAGNOSTIC_ONLY
     assert GI.case_parameters == tuple(name for name in CASE_PARAMETERS if name not in DIAGNOSTIC_ONLY)
     assert len(GI.case_parameters) == 8 and DIAGNOSTIC_ONLY == {"reference_preload_fraction"}
-    assert set(GI.family_parameters) == {"volume_loss_ml_per_min", "hb_loss_g_dl_per_min", "fraction_with_ppi",
-                                         "fraction_after_hemostasis"}
+    # P2I-2T: one whole-blood rate drives volume and red cells; there is no separate Hb rate.
+    assert set(GI.family_parameters) == {"blood_loss_ml_per_min", "fraction_with_ppi", "fraction_after_hemostasis"}
 
 
 def test_a_case_passes_only_when_trusted_sources_confirm_every_value(trust):
@@ -186,7 +186,7 @@ def test_unknown_families_parameters_sources_and_claims_are_refused():
     with pytest.raises(MigrationBlocked, match="unknown source"):
         migration_gate("gi_bleed", declared(), {**FAMILY, "fraction_with_ppi": (0.8, calibration.CANDIDATE)})
     with pytest.raises(MigrationBlocked, match="not case parameters"):
-        migration_gate("gi_bleed", declared(), FAMILY, claims={"volume_loss_ml_per_min": ProvenanceClaim("explicit_case")})
+        migration_gate("gi_bleed", declared(), FAMILY, claims={"blood_loss_ml_per_min": ProvenanceClaim("explicit_case")})
     with pytest.raises(MigrationBlocked, match="ProvenanceClaim"):
         migration_gate("gi_bleed", declared(), FAMILY, claims={"beta_blockade": "explicit_case"})
     for bad in ({"source": ""}, {"source": "explicit_case", "mapping_id": ""}, {"source": "explicit_case", "case_id": 7}):
@@ -218,7 +218,7 @@ def test_the_golden_reports_every_gi_run_as_blocked():
                                    (True, "explicit_case"), 2.5, (2.5,), (2.5, "explicit_case", "extra"), (2.5, 3)])
 def test_review_f2_a_family_parameter_needs_a_finite_value_and_a_source(entry):
     with pytest.raises(MigrationBlocked):
-        migration_gate("gi_bleed", declared(), {**FAMILY, "volume_loss_ml_per_min": entry})
+        migration_gate("gi_bleed", declared(), {**FAMILY, "blood_loss_ml_per_min": entry})
 
 
 # P2H-0: where authority lives -------------------------------------------------------------------
@@ -443,7 +443,8 @@ def test_review_n6_relabelling_every_candidate_explicit_case_no_longer_passes():
 @pytest.mark.parametrize("case", gi_reference.GI_CASES)
 def test_gi_still_fails_and_nothing_is_approved(case):
     result = gate_dry_run(case)
-    assert result["passes_gate"] is False and len(result["blockers"]) == 12
+    # Eight case parameters and three family parameters (P2I-2T removed the separate Hb rate).
+    assert result["passes_gate"] is False and len(result["blockers"]) == 11
     assert sum(entry.status == calibration.FACULTY_APPROVED for entry in calibration.REGISTRY.values()) == 0
     assert authority.APPROVED_FAMILY_DEFAULTS == () and authority.TRUSTED_CASE_MAPPINGS == ()
 

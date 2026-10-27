@@ -1,39 +1,41 @@
 """Phase 2 shadow core, P2I-2S: haemorrhage / preload scale calibration constraints (read-only).
 
 V stays an internal effective-preload coordinate; these tests pin what the probes report about the
-current haemorrhage, transfusion and crystalloid mappings and about the scale / position grid.
+haemorrhage, transfusion and crystalloid mappings and about the scale / position grid.
+
+Since P2I-2T the committed probes are the historical record of the core before the shared blood
+state: what they recorded about the old drifts is checked on the committed JSON, and the current
+core's opposite behaviour in test_clinical_core_shared_haemorrhage.py.
 """
 import ast
 import json
+import math
 from pathlib import Path
 
 import pytest
 
-from clinical_core import haemorrhage_probes as hz, hemodynamic_probes as hp, lactate_slice
+from clinical_core import haemorrhage_probes as hz, hemodynamic_probes as hp
 from clinical_core.derived import DEFAULT_PROFILE, OXYGEN_CRITICAL
-from clinical_core.integration import run
-from clinical_core.modules import GIHaemorrhage
-from clinical_core.state import Channel
 
 ROOT = Path(__file__).resolve().parent
 DOCUMENT = ROOT / "docs" / "revision" / "P2I2S_ESCALA_HEMORRAGIA_PRECARGA.md"
 DATA = ROOT / "docs" / "revision" / "P2I2S_haemorrhage_probes.json"
 
 
-def test_the_gi_bleed_is_two_independent_drifts_sharing_only_the_activity_fraction():
-    case = hz.CASES[0]
-    anchors, profile = hz.gi_anchors(case), hz.gi_profile(hz.CURRENT_SCALE)
-    fractions = set()
-    for scenario in ("L1", "L3"):
-        items = lactate_slice.scenario_inputs(case, scenario)
-        bleed = next(item for item in items if isinstance(item, GIHaemorrhage))
-        for record in run(anchors, items, 120, profile).records:
-            deltas = {delta.channel: delta.amount for delta in record.deltas if delta.source == bleed.source}
-            fraction = -deltas[Channel.V] / bleed.volume_loss_ml_per_min
-            fractions.add(round(fraction, 9))
-            # The Hb fall is the fixed literal times the same fraction, whatever Hb or volume is.
-            assert deltas[Channel.HB] == pytest.approx(-bleed.hb_loss_g_dl_per_min * fraction, abs=1e-12)
-    assert fractions == {1.0, 0.8, 0.1}
+def _recorded():
+    return json.loads(DATA.read_text(encoding="utf-8"))
+
+
+def test_the_audit_recorded_two_independent_drifts_before_p2i2t():
+    """The record: the pre-P2I-2T bleed moved V and Hb by two fixed literals sharing only the fraction."""
+    for case in hz.CASES:
+        bleed = _recorded()["audit"][case]["bleed"]
+        assert (bleed["v_ml_eq_per_min"], bleed["hb_g_dl_per_min"]) == (2.5, 0.009)
+        assert bleed["hb_per_v"] == pytest.approx(0.009 / 2.5)
+        assert (bleed["fraction_with_ppi"], bleed["fraction_after_haemostasis"]) == (0.8, 0.1)
+        assert bleed["v_loss"] == pytest.approx(300.0) and bleed["hb_fall"] == pytest.approx(1.08)
+    # Those literals are references only now: the module has no Hb rate of its own.
+    assert hz.LEGACY_HB_PER_MIN == 0.009 and not hasattr(hz._inputs()["bleed"], "hb_loss_g_dl_per_min")
 
 
 @pytest.mark.parametrize("mixing", hz.MIXING_VOLUMES)
@@ -45,11 +47,11 @@ def test_the_discussion_analogue_reproduces_both_drifts_from_one_bleed(mixing):
     assert implied["blood_loss_over_v_loss"] > 2.0
 
 
-def test_crystalloid_dilution_does_not_reverse_when_the_volume_leaks():
-    rows = hz._gi_run(hz.CASES[0], hz.CURRENT_SCALE, (hz.replace(hz._inputs()["saline"], id="saline", start_minute=0,
-                                                                  volume_ml=2000.0, duration_min=20.0),))
-    assert rows[120]["V"] < rows[20]["V"] and rows[120]["hb"] == pytest.approx(rows[20]["hb"])
-    assert max(row["output_rel"] for row in rows) > 1.0 and rows[120]["do2"] <= rows[0]["do2"] + 0.01
+def test_the_audit_recorded_a_crystalloid_dilution_that_did_not_reverse():
+    for case in hz.CASES:
+        saline = _recorded()["audit"][case]["saline_2l"]
+        assert saline["dilution_independent_of_leak"] is True and saline["hb_fall"] == pytest.approx(1.2)
+        assert saline["v_retained_ml_eq"] < saline["v_peak_in_run_ml_eq"] < saline["v_gross_gain_ml_eq"]
 
 
 def test_the_grid_is_ordered_and_its_regions_follow_their_criteria():
@@ -60,7 +62,7 @@ def test_the_grid_is_ordered_and_its_regions_follow_their_criteria():
     for position in hz.POSITIONS:
         halves = [row["minutes_to_output"]["0.5"] for row in rows if row["position"] == position]
         assert halves == sorted(halves)
-    rate = hz._inputs()["bleed"].volume_loss_ml_per_min
+    rate = hz._inputs()["bleed"].blood_loss_ml_per_min
     for row in rows:
         small = row["points"]["small"]["output_rel"]
         sensitive = (small < hz.CLEARLY_TOO_SENSITIVE["output_below"]
@@ -72,8 +74,8 @@ def test_the_grid_is_ordered_and_its_regions_follow_their_criteria():
         assert row["bleed_over_scale_per_min"] == pytest.approx(rate / row["scale"])
 
 
-def test_the_response_requirements_on_trajectories():
-    data = hz.trajectories()
+def test_the_response_requirements_on_the_recorded_trajectories():
+    data = _recorded()["trajectories"]
     for scale in hz.TRAJECTORY_SCALES:
         normal, under = (data[f"{name}; {scale:g}"] for name in ("normal preload (0.70)", "underfilled (0.35)"))
         assert (normal["first_half_output"] or 10**6) > under["first_half_output"]           # requirement 5
@@ -83,14 +85,35 @@ def test_the_response_requirements_on_trajectories():
         assert weak["first_critical"] < under["first_critical"]
 
 
-def test_lambda_is_a_unit_convention_for_v():
-    gauge = hz.gauge()
+def test_the_response_requirements_still_hold_on_the_current_core():
+    """Requirements 5 and 6 on today's core (with refill, P2I-2T): a run that never reaches the
+    threshold within the window counts as later than any that does."""
+    data = hz.trajectories()
+
+    def at(value):
+        return math.inf if value is None else value
+    for scale in hz.TRAJECTORY_SCALES:
+        normal, under = (data[f"{name}; {scale:g}"] for name in ("normal preload (0.70)", "underfilled (0.35)"))
+        weak = data[f"depressed pump (0.35, P to 0.7 by 10 min); {scale:g}"]
+        assert at(normal["first_half_output"]) >= at(under["first_half_output"])                 # requirement 5
+        assert at(weak["first_critical"]) <= at(under["first_critical"])                       # requirement 6
+        if under["first_half_output"] is not None:
+            assert at(normal["first_half_output"]) > under["first_half_output"]
+    canonical = hz.TRAJECTORY_SCALES[0]
+    assert data[f"underfilled (0.35); {canonical:g}"]["first_half_output"] is not None, "the check is not vacuous"
+
+
+def test_the_audit_recorded_lambda_as_a_unit_convention_for_v():
+    """Recorded before P2I-2T. Since then V = kappa x the circulating-volume deviation, and the
+    gauge is kappa together with lambda (test_clinical_core_shared_haemorrhage.py): scaling only the
+    V inputs also changes the circulating volume and so Hb."""
+    gauge = _recorded()["gauge"]
     assert gauge["largest_change_when_doubled"] == 0.0
     assert gauge["bleed_over_scale_per_min"] == pytest.approx(0.003)
     assert gauge["unit_over_scale"] == pytest.approx(0.36)
     # At a fixed distance to zero flow the loss response barely moves with lambda; the transfusion
     # response does (it reads the curvature).
-    fixed = hz.fixed_zero_flow()
+    fixed = _recorded()["fixed_zero_flow"]
     halves = [item["minutes_to_half_output"] for item in fixed.values()]
     units = [item["output_after_two_units"] for item in fixed.values()]
     assert max(halves) - min(halves) < 10.0 and max(units) - min(units) > 0.5
@@ -129,10 +152,15 @@ def test_the_probes_run_no_fd_lac_rule_and_change_nothing_canonical():
     assert DEFAULT_PROFILE.oxygen_extraction_reserve == 1.0
 
 
-def test_the_probe_document_is_generated_from_the_current_code():
+def test_the_probe_document_is_the_historical_record_before_p2i2t():
+    """P2I-2T: the committed probes are the accepted record of the core before the shared blood
+    state; they are stale by construction, labelled so, and never silently regenerated."""
     data = json.loads(DATA.read_text(encoding="utf-8"))
     document = DOCUMENT.read_text(encoding="utf-8")
-    assert data["probes_digest"] == hz.probes_digest(), "the probes are stale: regenerate them"
-    assert data["probes_digest"] in document
+    assert data["probes_digest"] == hz.HISTORICAL["probes_digest"] != hz.probes_digest()
+    assert data["probes_digest"] in document and "REGISTRO HISTÓRICO, anterior a P2I-2T" in document
     assert hz.apply(document, hz.render(data)) == document, (
-        "the document differs from the probes: run python -m clinical_core.haemorrhage_probes --write")
+        "the document differs from the committed probes: run python -m clinical_core.haemorrhage_probes --write")
+    with pytest.raises(SystemExit):
+        hz.main(["--out", str(DATA.parent / "never-written")])
+    assert not (DATA.parent / "never-written").exists()

@@ -122,10 +122,15 @@ def test_the_probes_run_no_fd_lac_rule_and_change_nothing_canonical():
     assert DEFAULT_PROFILE.preload_curve_scale_ml == pytest.approx(300.0 / 0.36)
 
 
-def test_the_probe_document_is_generated_from_the_current_code():
+def test_the_probe_document_is_the_historical_record_before_p2i2t():
+    """P2I-2T: the committed probes are the accepted record of the core before the shared blood
+    state; they are stale by construction, labelled so, and never silently regenerated."""
     data = json.loads(DATA.read_text(encoding="utf-8"))
     document = DOCUMENT.read_text(encoding="utf-8")
-    assert data["probes_digest"] == hp.probes_digest(), "the probes are stale: regenerate them"
-    assert data["probes_digest"] in document
+    assert data["probes_digest"] == hp.HISTORICAL["probes_digest"] != hp.probes_digest()
+    assert data["probes_digest"] in document and "REGISTRO HISTÓRICO, anterior a P2I-2T" in document
     assert hp.apply(document, hp.render(data)) == document, (
-        "the document differs from the probes: run python -m clinical_core.hemodynamic_probes --write")
+        "the document differs from the committed probes: run python -m clinical_core.hemodynamic_probes --write")
+    with pytest.raises(SystemExit):
+        hp.main(["--out", str(DATA.parent / "never-written")])
+    assert not (DATA.parent / "never-written").exists()

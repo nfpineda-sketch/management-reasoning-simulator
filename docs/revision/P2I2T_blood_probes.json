@@ -1,0 +1,3530 @@
+{
+ "case": "gi_bleed_72f",
+ "golden": {
+  "after_sha256": "af2c4a34921f475a9b63ab913d5624a2eb876fb9c725b1606d48c127c881e18d",
+  "before_sha256": "d087bde147a1254c6d81c883dbea09670dd97b0316d1e26e93e3364bde822833",
+  "runs": {
+   "gi_bleed_57m/aggressive_volume": {
+    "minutes": 90,
+    "mismatching_after": [
+     "V_ml_eq",
+     "crt_s",
+     "dbp",
+     "hb_g_dl",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "mismatching_before": [
+     "V_ml_eq",
+     "crt_s",
+     "dbp",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "variables": {
+     "V_ml_eq": {
+      "after": 1087.61955,
+      "before": 1087.61955,
+      "legacy": 528.316057,
+      "max_abs_diff_after": 559.303493,
+      "max_abs_diff_before": 559.303493
+     },
+     "crt_s": {
+      "after": 2.1,
+      "before": 2.1,
+      "legacy": 2.5,
+      "max_abs_diff_after": 0.9,
+      "max_abs_diff_before": 0.9
+     },
+     "hb_g_dl": {
+      "after": 9.604139,
+      "before": 8.09,
+      "legacy": 8.09,
+      "max_abs_diff_after": 1.514139,
+      "max_abs_diff_before": 0.0
+     },
+     "hr": {
+      "after": 124,
+      "before": 124,
+      "legacy": 108,
+      "max_abs_diff_after": 19.0,
+      "max_abs_diff_before": 19.0
+     },
+     "lactate_mmol_l": {
+      "after": 4.4,
+      "before": 4.4,
+      "legacy": 3.1,
+      "max_abs_diff_after": 1.5,
+      "max_abs_diff_before": 1.5
+     },
+     "respiratory_rate": {
+      "after": 26,
+      "before": 26,
+      "legacy": 16,
+      "max_abs_diff_after": 11.0,
+      "max_abs_diff_before": 11.0
+     },
+     "sbp": {
+      "after": 121,
+      "before": 121,
+      "legacy": 117,
+      "max_abs_diff_after": 10.0,
+      "max_abs_diff_before": 10.0
+     }
+    }
+   },
+   "gi_bleed_57m/definitive_management": {
+    "minutes": 120,
+    "mismatching_after": [
+     "crt_s",
+     "dbp",
+     "hb_g_dl",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "mismatching_before": [
+     "crt_s",
+     "dbp",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "variables": {
+     "V_ml_eq": {
+      "after": 466.75,
+      "before": 466.75,
+      "legacy": 466.75,
+      "max_abs_diff_after": 0.0,
+      "max_abs_diff_before": 0.0
+     },
+     "crt_s": {
+      "after": 3.3,
+      "before": 3.3,
+      "legacy": 2.8,
+      "max_abs_diff_after": 0.6,
+      "max_abs_diff_before": 0.6
+     },
+     "hb_g_dl": {
+      "after": 8.4571,
+      "before": 7.9203,
+      "legacy": 7.9203,
+      "max_abs_diff_after": 0.5368,
+      "max_abs_diff_before": 0.0
+     },
+     "hr": {
+      "after": 124,
+      "before": 124,
+      "legacy": 95,
+      "max_abs_diff_after": 29.0,
+      "max_abs_diff_before": 29.0
+     },
+     "lactate_mmol_l": {
+      "after": 4.4,
+      "before": 4.4,
+      "legacy": 3.3,
+      "max_abs_diff_after": 1.2,
+      "max_abs_diff_before": 1.2
+     },
+     "respiratory_rate": {
+      "after": 26,
+      "before": 26,
+      "legacy": 18,
+      "max_abs_diff_after": 9.0,
+      "max_abs_diff_before": 9.0
+     },
+     "sbp": {
+      "after": 107,
+      "before": 107,
+      "legacy": 113,
+      "max_abs_diff_after": 7.0,
+      "max_abs_diff_before": 7.0
+     }
+    }
+   },
+   "gi_bleed_57m/oxygen_non_rebreather": {
+    "minutes": 20,
+    "mismatching_after": [
+     "V_ml_eq",
+     "hb_g_dl",
+     "hr",
+     "lactate_mmol_l",
+     "respiratory_rate"
+    ],
+    "mismatching_before": [
+     "dbp",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "variables": {
+     "V_ml_eq": {
+      "after": -48.123823,
+      "before": -50.0,
+      "legacy": -50.0,
+      "max_abs_diff_after": 1.876177,
+      "max_abs_diff_before": 0.0
+     },
+     "crt_s": {
+      "after": 5.2,
+      "before": 5.2,
+      "legacy": 5.2,
+      "max_abs_diff_after": 0.0,
+      "max_abs_diff_before": 0.0
+     },
+     "hb_g_dl": {
+      "after": 6.696831,
+      "before": 6.52,
+      "legacy": 6.52,
+      "max_abs_diff_after": 0.176831,
+      "max_abs_diff_before": 0.0
+     },
+     "hr": {
+      "after": 126,
+      "before": 126,
+      "legacy": 125,
+      "max_abs_diff_after": 1.0,
+      "max_abs_diff_before": 1.0
+     },
+     "lactate_mmol_l": {
+      "after": 4.4,
+      "before": 4.4,
+      "legacy": 4.5,
+      "max_abs_diff_after": 0.1,
+      "max_abs_diff_before": 0.1
+     },
+     "respiratory_rate": {
+      "after": 26,
+      "before": 26,
+      "legacy": 27,
+      "max_abs_diff_after": 1.0,
+      "max_abs_diff_before": 1.0
+     },
+     "sbp": {
+      "after": 85,
+      "before": 85,
+      "legacy": 85,
+      "max_abs_diff_after": 0.0,
+      "max_abs_diff_before": 1.0
+     }
+    }
+   },
+   "gi_bleed_57m/prbc_2u_over_60": {
+    "minutes": 90,
+    "mismatching_after": [
+     "crt_s",
+     "dbp",
+     "hb_g_dl",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "mismatching_before": [
+     "crt_s",
+     "dbp",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "variables": {
+     "V_ml_eq": {
+      "after": 375.0,
+      "before": 375.0,
+      "legacy": 375.0,
+      "max_abs_diff_after": 0.0,
+      "max_abs_diff_before": 0.0
+     },
+     "crt_s": {
+      "after": 3.6,
+      "before": 3.6,
+      "legacy": 3.2,
+      "max_abs_diff_after": 0.5,
+      "max_abs_diff_before": 0.5
+     },
+     "hb_g_dl": {
+      "after": 8.462812,
+      "before": 7.59,
+      "legacy": 7.59,
+      "max_abs_diff_after": 0.872812,
+      "max_abs_diff_before": 0.0
+     },
+     "hr": {
+      "after": 124,
+      "before": 124,
+      "legacy": 113,
+      "max_abs_diff_after": 14.0,
+      "max_abs_diff_before": 14.0
+     },
+     "lactate_mmol_l": {
+      "after": 4.4,
+      "before": 4.4,
+      "legacy": 3.5,
+      "max_abs_diff_after": 1.1,
+      "max_abs_diff_before": 1.1
+     },
+     "respiratory_rate": {
+      "after": 26,
+      "before": 26,
+      "legacy": 19,
+      "max_abs_diff_after": 8.0,
+      "max_abs_diff_before": 8.0
+     },
+     "sbp": {
+      "after": 104,
+      "before": 104,
+      "legacy": 108,
+      "max_abs_diff_after": 6.0,
+      "max_abs_diff_before": 6.0
+     }
+    }
+   },
+   "gi_bleed_57m/queued_timed_bags": {
+    "minutes": 45,
+    "mismatching_after": [
+     "crt_s",
+     "dbp",
+     "hb_g_dl",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "mismatching_before": [
+     "crt_s",
+     "dbp",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "variables": {
+     "V_ml_eq": {
+      "after": 44.056899,
+      "before": 44.056899,
+      "legacy": 44.056899,
+      "max_abs_diff_after": 0.0,
+      "max_abs_diff_before": 0.0
+     },
+     "crt_s": {
+      "after": 4.8,
+      "before": 4.8,
+      "legacy": 4.8,
+      "max_abs_diff_after": 0.1,
+      "max_abs_diff_before": 0.1
+     },
+     "hb_g_dl": {
+      "after": 6.446297,
+      "before": 5.095,
+      "legacy": 5.095,
+      "max_abs_diff_after": 1.351297,
+      "max_abs_diff_before": 0.0
+     },
+     "hr": {
+      "after": 124,
+      "before": 124,
+      "legacy": 123,
+      "max_abs_diff_after": 4.0,
+      "max_abs_diff_before": 4.0
+     },
+     "lactate_mmol_l": {
+      "after": 4.4,
+      "before": 4.4,
+      "legacy": 4.3,
+      "max_abs_diff_after": 0.3,
+      "max_abs_diff_before": 0.3
+     },
+     "respiratory_rate": {
+      "after": 26,
+      "before": 26,
+      "legacy": 25,
+      "max_abs_diff_after": 2.0,
+      "max_abs_diff_before": 2.0
+     },
+     "sbp": {
+      "after": 90,
+      "before": 90,
+      "legacy": 90,
+      "max_abs_diff_after": 1.0,
+      "max_abs_diff_before": 1.0
+     }
+    }
+   },
+   "gi_bleed_57m/saline_2l_over_20": {
+    "minutes": 60,
+    "mismatching_after": [
+     "V_ml_eq",
+     "crt_s",
+     "dbp",
+     "hb_g_dl",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "mismatching_before": [
+     "crt_s",
+     "dbp",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "variables": {
+     "V_ml_eq": {
+      "after": -18.38865,
+      "before": -21.619393,
+      "legacy": -21.619393,
+      "max_abs_diff_after": 3.230743,
+      "max_abs_diff_before": 0.0
+     },
+     "crt_s": {
+      "after": 5.1,
+      "before": 5.1,
+      "legacy": 5.1,
+      "max_abs_diff_after": 0.1,
+      "max_abs_diff_before": 0.1
+     },
+     "hb_g_dl": {
+      "after": 6.487174,
+      "before": 4.96,
+      "legacy": 4.96,
+      "max_abs_diff_after": 1.527174,
+      "max_abs_diff_before": 0.0
+     },
+     "hr": {
+      "after": 125,
+      "before": 126,
+      "legacy": 125,
+      "max_abs_diff_after": 5.0,
+      "max_abs_diff_before": 5.0
+     },
+     "lactate_mmol_l": {
+      "after": 4.4,
+      "before": 4.4,
+      "legacy": 4.5,
+      "max_abs_diff_after": 0.4,
+      "max_abs_diff_before": 0.4
+     },
+     "respiratory_rate": {
+      "after": 26,
+      "before": 26,
+      "legacy": 26,
+      "max_abs_diff_after": 3.0,
+      "max_abs_diff_before": 3.0
+     },
+     "sbp": {
+      "after": 87,
+      "before": 87,
+      "legacy": 87,
+      "max_abs_diff_after": 1.0,
+      "max_abs_diff_before": 1.0
+     }
+    }
+   },
+   "gi_bleed_57m/saline_then_blood": {
+    "minutes": 120,
+    "mismatching_after": [
+     "crt_s",
+     "dbp",
+     "hb_g_dl",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "mismatching_before": [
+     "crt_s",
+     "dbp",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "variables": {
+     "V_ml_eq": {
+      "after": 396.920449,
+      "before": 396.920449,
+      "legacy": 396.920449,
+      "max_abs_diff_after": 0.0,
+      "max_abs_diff_before": 0.0
+     },
+     "crt_s": {
+      "after": 3.5,
+      "before": 3.5,
+      "legacy": 3.1,
+      "max_abs_diff_after": 0.5,
+      "max_abs_diff_before": 0.5
+     },
+     "hb_g_dl": {
+      "after": 8.392758,
+      "before": 6.882,
+      "legacy": 6.882,
+      "max_abs_diff_after": 1.510758,
+      "max_abs_diff_before": 0.0
+     },
+     "hr": {
+      "after": 124,
+      "before": 124,
+      "legacy": 112,
+      "max_abs_diff_after": 14.0,
+      "max_abs_diff_before": 14.0
+     },
+     "lactate_mmol_l": {
+      "after": 4.4,
+      "before": 4.4,
+      "legacy": 3.4,
+      "max_abs_diff_after": 1.1,
+      "max_abs_diff_before": 1.1
+     },
+     "respiratory_rate": {
+      "after": 26,
+      "before": 26,
+      "legacy": 19,
+      "max_abs_diff_after": 8.0,
+      "max_abs_diff_before": 8.0
+     },
+     "sbp": {
+      "after": 105,
+      "before": 105,
+      "legacy": 109,
+      "max_abs_diff_after": 6.0,
+      "max_abs_diff_before": 6.0
+     }
+    }
+   },
+   "gi_bleed_57m/stop_fluids": {
+    "minutes": 60,
+    "mismatching_after": [
+     "V_ml_eq",
+     "crt_s",
+     "dbp",
+     "hb_g_dl",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "mismatching_before": [
+     "crt_s",
+     "dbp",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "variables": {
+     "V_ml_eq": {
+      "after": -36.640352,
+      "before": -43.01616,
+      "legacy": -43.01616,
+      "max_abs_diff_after": 6.375808,
+      "max_abs_diff_before": 0.0
+     },
+     "crt_s": {
+      "after": 5.2,
+      "before": 5.2,
+      "legacy": 5.2,
+      "max_abs_diff_after": 0.1,
+      "max_abs_diff_before": 0.1
+     },
+     "hb_g_dl": {
+      "after": 6.515676,
+      "before": 5.16,
+      "legacy": 5.16,
+      "max_abs_diff_after": 1.355676,
+      "max_abs_diff_before": 0.0
+     },
+     "hr": {
+      "after": 125,
+      "before": 126,
+      "legacy": 125,
+      "max_abs_diff_after": 4.0,
+      "max_abs_diff_before": 4.0
+     },
+     "lactate_mmol_l": {
+      "after": 4.4,
+      "before": 4.4,
+      "legacy": 4.5,
+      "max_abs_diff_after": 0.3,
+      "max_abs_diff_before": 0.3
+     },
+     "respiratory_rate": {
+      "after": 26,
+      "before": 26,
+      "legacy": 27,
+      "max_abs_diff_after": 2.0,
+      "max_abs_diff_before": 2.0
+     },
+     "sbp": {
+      "after": 86,
+      "before": 86,
+      "legacy": 86,
+      "max_abs_diff_after": 1.0,
+      "max_abs_diff_before": 1.0
+     }
+    }
+   },
+   "gi_bleed_57m/untimed_shared_line": {
+    "minutes": 90,
+    "mismatching_after": [
+     "crt_s",
+     "dbp",
+     "hb_g_dl",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "mismatching_before": [
+     "crt_s",
+     "dbp",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "variables": {
+     "V_ml_eq": {
+      "after": 490.388118,
+      "before": 490.388118,
+      "legacy": 490.388118,
+      "max_abs_diff_after": 0.0,
+      "max_abs_diff_before": 0.0
+     },
+     "crt_s": {
+      "after": 3.2,
+      "before": 3.2,
+      "legacy": 2.6,
+      "max_abs_diff_after": 0.8,
+      "max_abs_diff_before": 0.8
+     },
+     "hb_g_dl": {
+      "after": 8.265477,
+      "before": 6.39,
+      "legacy": 6.39,
+      "max_abs_diff_after": 1.875477,
+      "max_abs_diff_before": 0.0
+     },
+     "hr": {
+      "after": 124,
+      "before": 124,
+      "legacy": 109,
+      "max_abs_diff_after": 17.0,
+      "max_abs_diff_before": 17.0
+     },
+     "lactate_mmol_l": {
+      "after": 4.4,
+      "before": 4.4,
+      "legacy": 3.2,
+      "max_abs_diff_after": 1.3,
+      "max_abs_diff_before": 1.3
+     },
+     "respiratory_rate": {
+      "after": 26,
+      "before": 26,
+      "legacy": 17,
+      "max_abs_diff_after": 10.0,
+      "max_abs_diff_before": 10.0
+     },
+     "sbp": {
+      "after": 108,
+      "before": 108,
+      "legacy": 114,
+      "max_abs_diff_after": 8.0,
+      "max_abs_diff_before": 8.0
+     }
+    }
+   },
+   "gi_bleed_57m/untreated_60": {
+    "minutes": 60,
+    "mismatching_after": [
+     "V_ml_eq",
+     "crt_s",
+     "dbp",
+     "hb_g_dl",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "mismatching_before": [
+     "consciousness_level",
+     "crt_s",
+     "dbp",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "variables": {
+     "V_ml_eq": {
+      "after": -134.266661,
+      "before": -150.0,
+      "legacy": -150.0,
+      "max_abs_diff_after": 15.733339,
+      "max_abs_diff_before": 0.0
+     },
+     "crt_s": {
+      "after": 5.7,
+      "before": 5.8,
+      "legacy": 5.7,
+      "max_abs_diff_after": 0.1,
+      "max_abs_diff_before": 0.1
+     },
+     "hb_g_dl": {
+      "after": 6.67308,
+      "before": 6.16,
+      "legacy": 6.16,
+      "max_abs_diff_after": 0.51308,
+      "max_abs_diff_before": 0.0
+     },
+     "hr": {
+      "after": 129,
+      "before": 130,
+      "legacy": 128,
+      "max_abs_diff_after": 1.0,
+      "max_abs_diff_before": 2.0
+     },
+     "lactate_mmol_l": {
+      "after": 4.4,
+      "before": 4.5,
+      "legacy": 4.8,
+      "max_abs_diff_after": 0.4,
+      "max_abs_diff_before": 0.3
+     },
+     "respiratory_rate": {
+      "after": 26,
+      "before": 26,
+      "legacy": 29,
+      "max_abs_diff_after": 3.0,
+      "max_abs_diff_before": 3.0
+     },
+     "sbp": {
+      "after": 80,
+      "before": 79,
+      "legacy": 80,
+      "max_abs_diff_after": 1.0,
+      "max_abs_diff_before": 1.0
+     }
+    }
+   },
+   "gi_bleed_72f/aggressive_volume": {
+    "minutes": 90,
+    "mismatching_after": [
+     "V_ml_eq",
+     "crt_s",
+     "dbp",
+     "hb_g_dl",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "mismatching_before": [
+     "V_ml_eq",
+     "crt_s",
+     "dbp",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "variables": {
+     "V_ml_eq": {
+      "after": 1087.61955,
+      "before": 1087.61955,
+      "legacy": 528.316057,
+      "max_abs_diff_after": 559.303493,
+      "max_abs_diff_before": 559.303493
+     },
+     "crt_s": {
+      "after": 2,
+      "before": 2,
+      "legacy": 2,
+      "max_abs_diff_after": 0.4,
+      "max_abs_diff_before": 0.4
+     },
+     "hb_g_dl": {
+      "after": 9.379119,
+      "before": 7.79,
+      "legacy": 7.79,
+      "max_abs_diff_after": 1.589119,
+      "max_abs_diff_before": 0.0
+     },
+     "hr": {
+      "after": 112,
+      "before": 112,
+      "legacy": 96,
+      "max_abs_diff_after": 19.0,
+      "max_abs_diff_before": 19.0
+     },
+     "lactate_mmol_l": {
+      "after": 3.4,
+      "before": 3.4,
+      "legacy": 2.1,
+      "max_abs_diff_after": 1.5,
+      "max_abs_diff_before": 1.5
+     },
+     "respiratory_rate": {
+      "after": 24,
+      "before": 24,
+      "legacy": 14,
+      "max_abs_diff_after": 10.0,
+      "max_abs_diff_before": 10.0
+     },
+     "sbp": {
+      "after": 131,
+      "before": 131,
+      "legacy": 127,
+      "max_abs_diff_after": 10.0,
+      "max_abs_diff_before": 10.0
+     }
+    }
+   },
+   "gi_bleed_72f/definitive_management": {
+    "minutes": 120,
+    "mismatching_after": [
+     "crt_s",
+     "dbp",
+     "hb_g_dl",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "mismatching_before": [
+     "crt_s",
+     "dbp",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "variables": {
+     "V_ml_eq": {
+      "after": 466.75,
+      "before": 466.75,
+      "legacy": 466.75,
+      "max_abs_diff_after": 0.0,
+      "max_abs_diff_before": 0.0
+     },
+     "crt_s": {
+      "after": 2.3,
+      "before": 2.3,
+      "legacy": 2,
+      "max_abs_diff_after": 0.5,
+      "max_abs_diff_before": 0.5
+     },
+     "hb_g_dl": {
+      "after": 8.196734,
+      "before": 7.6203,
+      "legacy": 7.6203,
+      "max_abs_diff_after": 0.576434,
+      "max_abs_diff_before": 0.0
+     },
+     "hr": {
+      "after": 112,
+      "before": 112,
+      "legacy": 83,
+      "max_abs_diff_after": 29.0,
+      "max_abs_diff_before": 29.0
+     },
+     "lactate_mmol_l": {
+      "after": 3.4,
+      "before": 3.4,
+      "legacy": 2.3,
+      "max_abs_diff_after": 1.2,
+      "max_abs_diff_before": 1.2
+     },
+     "respiratory_rate": {
+      "after": 24,
+      "before": 24,
+      "legacy": 16,
+      "max_abs_diff_after": 9.0,
+      "max_abs_diff_before": 9.0
+     },
+     "sbp": {
+      "after": 117,
+      "before": 117,
+      "legacy": 123,
+      "max_abs_diff_after": 7.0,
+      "max_abs_diff_before": 7.0
+     }
+    }
+   },
+   "gi_bleed_72f/oxygen_non_rebreather": {
+    "minutes": 20,
+    "mismatching_after": [
+     "V_ml_eq",
+     "hb_g_dl",
+     "lactate_mmol_l",
+     "respiratory_rate"
+    ],
+    "mismatching_before": [
+     "dbp",
+     "hr",
+     "lactate_mmol_l",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "variables": {
+     "V_ml_eq": {
+      "after": -48.123823,
+      "before": -50.0,
+      "legacy": -50.0,
+      "max_abs_diff_after": 1.876177,
+      "max_abs_diff_before": 0.0
+     },
+     "crt_s": {
+      "after": 4.2,
+      "before": 4.2,
+      "legacy": 4.2,
+      "max_abs_diff_after": 0.0,
+      "max_abs_diff_before": 0.0
+     },
+     "hb_g_dl": {
+      "after": 6.396973,
+      "before": 6.22,
+      "legacy": 6.22,
+      "max_abs_diff_after": 0.176973,
+      "max_abs_diff_before": 0.0
+     },
+     "hr": {
+      "after": 113,
+      "before": 114,
+      "legacy": 113,
+      "max_abs_diff_after": 0.0,
+      "max_abs_diff_before": 1.0
+     },
+     "lactate_mmol_l": {
+      "after": 3.4,
+      "before": 3.4,
+      "legacy": 3.5,
+      "max_abs_diff_after": 0.1,
+      "max_abs_diff_before": 0.1
+     },
+     "respiratory_rate": {
+      "after": 24,
+      "before": 24,
+      "legacy": 25,
+      "max_abs_diff_after": 1.0,
+      "max_abs_diff_before": 1.0
+     },
+     "sbp": {
+      "after": 95,
+      "before": 95,
+      "legacy": 95,
+      "max_abs_diff_after": 0.0,
+      "max_abs_diff_before": 1.0
+     }
+    }
+   },
+   "gi_bleed_72f/prbc_2u_over_60": {
+    "minutes": 90,
+    "mismatching_after": [
+     "crt_s",
+     "dbp",
+     "hb_g_dl",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "mismatching_before": [
+     "crt_s",
+     "dbp",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "variables": {
+     "V_ml_eq": {
+      "after": 375.0,
+      "before": 375.0,
+      "legacy": 375.0,
+      "max_abs_diff_after": 0.0,
+      "max_abs_diff_before": 0.0
+     },
+     "crt_s": {
+      "after": 2.6,
+      "before": 2.6,
+      "legacy": 2.2,
+      "max_abs_diff_after": 0.5,
+      "max_abs_diff_before": 0.5
+     },
+     "hb_g_dl": {
+      "after": 8.202575,
+      "before": 7.29,
+      "legacy": 7.29,
+      "max_abs_diff_after": 0.912575,
+      "max_abs_diff_before": 0.0
+     },
+     "hr": {
+      "after": 112,
+      "before": 112,
+      "legacy": 101,
+      "max_abs_diff_after": 14.0,
+      "max_abs_diff_before": 14.0
+     },
+     "lactate_mmol_l": {
+      "after": 3.4,
+      "before": 3.4,
+      "legacy": 2.5,
+      "max_abs_diff_after": 1.1,
+      "max_abs_diff_before": 1.1
+     },
+     "respiratory_rate": {
+      "after": 24,
+      "before": 24,
+      "legacy": 17,
+      "max_abs_diff_after": 8.0,
+      "max_abs_diff_before": 8.0
+     },
+     "sbp": {
+      "after": 114,
+      "before": 114,
+      "legacy": 118,
+      "max_abs_diff_after": 6.0,
+      "max_abs_diff_before": 6.0
+     }
+    }
+   },
+   "gi_bleed_72f/queued_timed_bags": {
+    "minutes": 45,
+    "mismatching_after": [
+     "crt_s",
+     "dbp",
+     "hb_g_dl",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "mismatching_before": [
+     "crt_s",
+     "dbp",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "variables": {
+     "V_ml_eq": {
+      "after": 44.056899,
+      "before": 44.056899,
+      "legacy": 44.056899,
+      "max_abs_diff_after": 0.0,
+      "max_abs_diff_before": 0.0
+     },
+     "crt_s": {
+      "after": 3.8,
+      "before": 3.8,
+      "legacy": 3.8,
+      "max_abs_diff_after": 0.1,
+      "max_abs_diff_before": 0.1
+     },
+     "hb_g_dl": {
+      "after": 6.157657,
+      "before": 4.795,
+      "legacy": 4.795,
+      "max_abs_diff_after": 1.362657,
+      "max_abs_diff_before": 0.0
+     },
+     "hr": {
+      "after": 112,
+      "before": 112,
+      "legacy": 111,
+      "max_abs_diff_after": 4.0,
+      "max_abs_diff_before": 4.0
+     },
+     "lactate_mmol_l": {
+      "after": 3.4,
+      "before": 3.4,
+      "legacy": 3.3,
+      "max_abs_diff_after": 0.3,
+      "max_abs_diff_before": 0.3
+     },
+     "respiratory_rate": {
+      "after": 24,
+      "before": 24,
+      "legacy": 23,
+      "max_abs_diff_after": 2.0,
+      "max_abs_diff_before": 2.0
+     },
+     "sbp": {
+      "after": 100,
+      "before": 100,
+      "legacy": 100,
+      "max_abs_diff_after": 1.0,
+      "max_abs_diff_before": 1.0
+     }
+    }
+   },
+   "gi_bleed_72f/saline_2l_over_20": {
+    "minutes": 60,
+    "mismatching_after": [
+     "V_ml_eq",
+     "crt_s",
+     "dbp",
+     "hb_g_dl",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "mismatching_before": [
+     "crt_s",
+     "dbp",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "variables": {
+     "V_ml_eq": {
+      "after": -18.38865,
+      "before": -21.619393,
+      "legacy": -21.619393,
+      "max_abs_diff_after": 3.230743,
+      "max_abs_diff_before": 0.0
+     },
+     "crt_s": {
+      "after": 4.1,
+      "before": 4.1,
+      "legacy": 4.1,
+      "max_abs_diff_after": 0.1,
+      "max_abs_diff_before": 0.1
+     },
+     "hb_g_dl": {
+      "after": 6.196703,
+      "before": 4.66,
+      "legacy": 4.66,
+      "max_abs_diff_after": 1.536703,
+      "max_abs_diff_before": 0.0
+     },
+     "hr": {
+      "after": 113,
+      "before": 114,
+      "legacy": 113,
+      "max_abs_diff_after": 5.0,
+      "max_abs_diff_before": 5.0
+     },
+     "lactate_mmol_l": {
+      "after": 3.4,
+      "before": 3.5,
+      "legacy": 3.5,
+      "max_abs_diff_after": 0.4,
+      "max_abs_diff_before": 0.4
+     },
+     "respiratory_rate": {
+      "after": 24,
+      "before": 24,
+      "legacy": 24,
+      "max_abs_diff_after": 3.0,
+      "max_abs_diff_before": 3.0
+     },
+     "sbp": {
+      "after": 97,
+      "before": 97,
+      "legacy": 97,
+      "max_abs_diff_after": 1.0,
+      "max_abs_diff_before": 1.0
+     }
+    }
+   },
+   "gi_bleed_72f/saline_then_blood": {
+    "minutes": 120,
+    "mismatching_after": [
+     "crt_s",
+     "dbp",
+     "hb_g_dl",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "mismatching_before": [
+     "crt_s",
+     "dbp",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "variables": {
+     "V_ml_eq": {
+      "after": 396.920449,
+      "before": 396.920449,
+      "legacy": 396.920449,
+      "max_abs_diff_after": 0.0,
+      "max_abs_diff_before": 0.0
+     },
+     "crt_s": {
+      "after": 2.5,
+      "before": 2.5,
+      "legacy": 2.1,
+      "max_abs_diff_after": 0.5,
+      "max_abs_diff_before": 0.5
+     },
+     "hb_g_dl": {
+      "after": 8.135881,
+      "before": 6.582,
+      "legacy": 6.582,
+      "max_abs_diff_after": 1.553881,
+      "max_abs_diff_before": 0.0
+     },
+     "hr": {
+      "after": 112,
+      "before": 112,
+      "legacy": 100,
+      "max_abs_diff_after": 14.0,
+      "max_abs_diff_before": 14.0
+     },
+     "lactate_mmol_l": {
+      "after": 3.4,
+      "before": 3.4,
+      "legacy": 2.4,
+      "max_abs_diff_after": 1.1,
+      "max_abs_diff_before": 1.1
+     },
+     "respiratory_rate": {
+      "after": 24,
+      "before": 24,
+      "legacy": 17,
+      "max_abs_diff_after": 8.0,
+      "max_abs_diff_before": 8.0
+     },
+     "sbp": {
+      "after": 115,
+      "before": 115,
+      "legacy": 119,
+      "max_abs_diff_after": 6.0,
+      "max_abs_diff_before": 6.0
+     }
+    }
+   },
+   "gi_bleed_72f/stop_fluids": {
+    "minutes": 60,
+    "mismatching_after": [
+     "V_ml_eq",
+     "crt_s",
+     "dbp",
+     "hb_g_dl",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "mismatching_before": [
+     "crt_s",
+     "dbp",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "variables": {
+     "V_ml_eq": {
+      "after": -36.640352,
+      "before": -43.01616,
+      "legacy": -43.01616,
+      "max_abs_diff_after": 6.375808,
+      "max_abs_diff_before": 0.0
+     },
+     "crt_s": {
+      "after": 4.2,
+      "before": 4.2,
+      "legacy": 4.2,
+      "max_abs_diff_after": 0.1,
+      "max_abs_diff_before": 0.1
+     },
+     "hb_g_dl": {
+      "after": 6.223929,
+      "before": 4.86,
+      "legacy": 4.86,
+      "max_abs_diff_after": 1.363929,
+      "max_abs_diff_before": 0.0
+     },
+     "hr": {
+      "after": 113,
+      "before": 115,
+      "legacy": 113,
+      "max_abs_diff_after": 4.0,
+      "max_abs_diff_before": 4.0
+     },
+     "lactate_mmol_l": {
+      "after": 3.4,
+      "before": 3.4,
+      "legacy": 3.5,
+      "max_abs_diff_after": 0.3,
+      "max_abs_diff_before": 0.3
+     },
+     "respiratory_rate": {
+      "after": 24,
+      "before": 24,
+      "legacy": 25,
+      "max_abs_diff_after": 2.0,
+      "max_abs_diff_before": 2.0
+     },
+     "sbp": {
+      "after": 96,
+      "before": 96,
+      "legacy": 96,
+      "max_abs_diff_after": 1.0,
+      "max_abs_diff_before": 1.0
+     }
+    }
+   },
+   "gi_bleed_72f/untimed_shared_line": {
+    "minutes": 90,
+    "mismatching_after": [
+     "crt_s",
+     "dbp",
+     "hb_g_dl",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "mismatching_before": [
+     "crt_s",
+     "dbp",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "variables": {
+     "V_ml_eq": {
+      "after": 490.388118,
+      "before": 490.388118,
+      "legacy": 490.388118,
+      "max_abs_diff_after": 0.0,
+      "max_abs_diff_before": 0.0
+     },
+     "crt_s": {
+      "after": 2.2,
+      "before": 2.2,
+      "legacy": 2,
+      "max_abs_diff_after": 0.5,
+      "max_abs_diff_before": 0.5
+     },
+     "hb_g_dl": {
+      "after": 8.011769,
+      "before": 6.09,
+      "legacy": 6.09,
+      "max_abs_diff_after": 1.921769,
+      "max_abs_diff_before": 0.0
+     },
+     "hr": {
+      "after": 112,
+      "before": 112,
+      "legacy": 97,
+      "max_abs_diff_after": 17.0,
+      "max_abs_diff_before": 17.0
+     },
+     "lactate_mmol_l": {
+      "after": 3.4,
+      "before": 3.4,
+      "legacy": 2.2,
+      "max_abs_diff_after": 1.3,
+      "max_abs_diff_before": 1.3
+     },
+     "respiratory_rate": {
+      "after": 24,
+      "before": 24,
+      "legacy": 15,
+      "max_abs_diff_after": 10.0,
+      "max_abs_diff_before": 10.0
+     },
+     "sbp": {
+      "after": 118,
+      "before": 118,
+      "legacy": 124,
+      "max_abs_diff_after": 8.0,
+      "max_abs_diff_before": 8.0
+     }
+    }
+   },
+   "gi_bleed_72f/untreated_60": {
+    "minutes": 60,
+    "mismatching_after": [
+     "V_ml_eq",
+     "crt_s",
+     "dbp",
+     "hb_g_dl",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "mismatching_before": [
+     "crt_s",
+     "dbp",
+     "hr",
+     "lactate_mmol_l",
+     "map",
+     "respiratory_rate",
+     "sbp"
+    ],
+    "variables": {
+     "V_ml_eq": {
+      "after": -134.266661,
+      "before": -150.0,
+      "legacy": -150.0,
+      "max_abs_diff_after": 15.733339,
+      "max_abs_diff_before": 0.0
+     },
+     "crt_s": {
+      "after": 4.7,
+      "before": 4.8,
+      "legacy": 4.7,
+      "max_abs_diff_after": 0.1,
+      "max_abs_diff_before": 0.1
+     },
+     "hb_g_dl": {
+      "after": 6.374285,
+      "before": 5.86,
+      "legacy": 5.86,
+      "max_abs_diff_after": 0.514285,
+      "max_abs_diff_before": 0.0
+     },
+     "hr": {
+      "after": 117,
+      "before": 118,
+      "legacy": 116,
+      "max_abs_diff_after": 1.0,
+      "max_abs_diff_before": 2.0
+     },
+     "lactate_mmol_l": {
+      "after": 3.4,
+      "before": 3.5,
+      "legacy": 3.8,
+      "max_abs_diff_after": 0.4,
+      "max_abs_diff_before": 0.3
+     },
+     "respiratory_rate": {
+      "after": 24,
+      "before": 24,
+      "legacy": 27,
+      "max_abs_diff_after": 3.0,
+      "max_abs_diff_before": 3.0
+     },
+     "sbp": {
+      "after": 90,
+      "before": 89,
+      "legacy": 90,
+      "max_abs_diff_after": 1.0,
+      "max_abs_diff_before": 1.0
+     }
+    }
+   }
+  }
+ },
+ "identifiability": {
+  "arrival_volumes": {
+   "3000": {
+    "V_120": -245.2137078886793,
+    "hb_120": 6.277390896132722,
+    "output_120": 0.657871952441016
+   },
+   "4000": {
+    "V_120": -245.2137078886793,
+    "hb_120": 6.309163248710999,
+    "output_120": 0.657871952441016
+   },
+   "5000": {
+    "V_120": -245.2137078886793,
+    "hb_120": 6.327856191212165,
+    "output_120": 0.657871952441016
+   }
+  },
+  "pairs": {
+   "0.5/416.667": {
+    "V_120": -122.60685394433965,
+    "circulating_120": -245.2137078886793,
+    "hb_120": 6.309163248710999,
+    "output_120": 0.657871952441016
+   },
+   "1/833.333": {
+    "V_120": -245.2137078886793,
+    "circulating_120": -245.2137078886793,
+    "hb_120": 6.309163248710999,
+    "output_120": 0.657871952441016
+   },
+   "2/1666.67": {
+    "V_120": -490.4274157773586,
+    "circulating_120": -245.2137078886793,
+    "hb_120": 6.309163248710999,
+    "output_120": 0.657871952441016
+   }
+  }
+ },
+ "minutes": 240,
+ "probes": {
+  "A": {
+   "description": "acute loss of 300 mL in 10 min, refill off",
+   "hb_highest": 6.400000000000001,
+   "hb_lowest": 6.4,
+   "points": {
+    "0": {
+     "V": 0.0,
+     "circulating_ml": 0.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.0,
+     "effective_deficit": 0.0,
+     "hb": 6.4,
+     "hb_from_blood": 6.4,
+     "minute": 0,
+     "output_rel": 1.0,
+     "plasma_ml": 0.0,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 98.0,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "10": {
+     "V": -300.0,
+     "circulating_ml": -300.0,
+     "crystalloid_ml": 0.0,
+     "do2": 0.5666705854396598,
+     "effective_deficit": 0.43332941456034024,
+     "hb": 6.400000000000001,
+     "hb_from_blood": 6.400000000000001,
+     "minute": 10,
+     "output_rel": 0.5666705854396596,
+     "plasma_ml": -241.81818181818187,
+     "red_cells": 0.925,
+     "refill_ml": 0.0,
+     "sbp": 78.50017634478468,
+     "shed_ml": 300.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "120": {
+     "V": -300.0,
+     "circulating_ml": -300.0,
+     "crystalloid_ml": 0.0,
+     "do2": 0.5666705854396598,
+     "effective_deficit": 0.43332941456034024,
+     "hb": 6.400000000000001,
+     "hb_from_blood": 6.400000000000001,
+     "minute": 120,
+     "output_rel": 0.5666705854396596,
+     "plasma_ml": -241.81818181818187,
+     "red_cells": 0.925,
+     "refill_ml": 0.0,
+     "sbp": 78.50017634478468,
+     "shed_ml": 300.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "180": {
+     "V": -300.0,
+     "circulating_ml": -300.0,
+     "crystalloid_ml": 0.0,
+     "do2": 0.5666705854396598,
+     "effective_deficit": 0.43332941456034024,
+     "hb": 6.400000000000001,
+     "hb_from_blood": 6.400000000000001,
+     "minute": 180,
+     "output_rel": 0.5666705854396596,
+     "plasma_ml": -241.81818181818187,
+     "red_cells": 0.925,
+     "refill_ml": 0.0,
+     "sbp": 78.50017634478468,
+     "shed_ml": 300.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "20": {
+     "V": -300.0,
+     "circulating_ml": -300.0,
+     "crystalloid_ml": 0.0,
+     "do2": 0.5666705854396598,
+     "effective_deficit": 0.43332941456034024,
+     "hb": 6.400000000000001,
+     "hb_from_blood": 6.400000000000001,
+     "minute": 20,
+     "output_rel": 0.5666705854396596,
+     "plasma_ml": -241.81818181818187,
+     "red_cells": 0.925,
+     "refill_ml": 0.0,
+     "sbp": 78.50017634478468,
+     "shed_ml": 300.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "240": {
+     "V": -300.0,
+     "circulating_ml": -300.0,
+     "crystalloid_ml": 0.0,
+     "do2": 0.5666705854396598,
+     "effective_deficit": 0.43332941456034024,
+     "hb": 6.400000000000001,
+     "hb_from_blood": 6.400000000000001,
+     "minute": 240,
+     "output_rel": 0.5666705854396596,
+     "plasma_ml": -241.81818181818187,
+     "red_cells": 0.925,
+     "refill_ml": 0.0,
+     "sbp": 78.50017634478468,
+     "shed_ml": 300.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "30": {
+     "V": -300.0,
+     "circulating_ml": -300.0,
+     "crystalloid_ml": 0.0,
+     "do2": 0.5666705854396598,
+     "effective_deficit": 0.43332941456034024,
+     "hb": 6.400000000000001,
+     "hb_from_blood": 6.400000000000001,
+     "minute": 30,
+     "output_rel": 0.5666705854396596,
+     "plasma_ml": -241.81818181818187,
+     "red_cells": 0.925,
+     "refill_ml": 0.0,
+     "sbp": 78.50017634478468,
+     "shed_ml": 300.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "60": {
+     "V": -300.0,
+     "circulating_ml": -300.0,
+     "crystalloid_ml": 0.0,
+     "do2": 0.5666705854396598,
+     "effective_deficit": 0.43332941456034024,
+     "hb": 6.400000000000001,
+     "hb_from_blood": 6.400000000000001,
+     "minute": 60,
+     "output_rel": 0.5666705854396596,
+     "plasma_ml": -241.81818181818187,
+     "red_cells": 0.925,
+     "refill_ml": 0.0,
+     "sbp": 78.50017634478468,
+     "shed_ml": 300.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "90": {
+     "V": -300.0,
+     "circulating_ml": -300.0,
+     "crystalloid_ml": 0.0,
+     "do2": 0.5666705854396598,
+     "effective_deficit": 0.43332941456034024,
+     "hb": 6.400000000000001,
+     "hb_from_blood": 6.400000000000001,
+     "minute": 90,
+     "output_rel": 0.5666705854396596,
+     "plasma_ml": -241.81818181818187,
+     "red_cells": 0.925,
+     "refill_ml": 0.0,
+     "sbp": 78.50017634478468,
+     "shed_ml": 300.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    }
+   },
+   "profile_changes": {
+    "plasma_refill_target_share": 0.0
+   },
+   "v_highest": 0.0,
+   "v_lowest": -300.0
+  },
+  "B": {
+   "description": "acute loss of 300 mL in 10 min, with refill",
+   "hb_highest": 6.4,
+   "hb_lowest": 6.184992217890119,
+   "points": {
+    "0": {
+     "V": 0.0,
+     "circulating_ml": 0.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.0,
+     "effective_deficit": 0.0,
+     "hb": 6.4,
+     "hb_from_blood": 6.4,
+     "minute": 0,
+     "output_rel": 1.0,
+     "plasma_ml": 0.0,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 98.0,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "10": {
+     "V": -294.5205534272152,
+     "circulating_ml": -294.5205534272152,
+     "crystalloid_ml": 0.0,
+     "do2": 0.5752303334009117,
+     "effective_deficit": 0.4247696665990883,
+     "hb": 6.390734843593399,
+     "hb_from_blood": 6.390734843593399,
+     "minute": 10,
+     "output_rel": 0.5760642905496931,
+     "plasma_ml": -236.36105680393874,
+     "red_cells": 0.9250287738840577,
+     "refill_ml": 5.479446572784795,
+     "sbp": 78.9228930747362,
+     "shed_ml": 300.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "120": {
+     "V": -207.78649333359823,
+     "circulating_ml": -207.786493333598,
+     "crystalloid_ml": 0.0,
+     "do2": 0.6994081446175199,
+     "effective_deficit": 0.3005918553824801,
+     "hb": 6.244568395161052,
+     "hb_from_blood": 6.244568395161052,
+     "minute": 120,
+     "output_rel": 0.7168168946665341,
+     "plasma_ml": -149.62699671032155,
+     "red_cells": 0.9250287738840577,
+     "refill_ml": 92.21350666640198,
+     "sbp": 85.25676025999404,
+     "shed_ml": 300.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "180": {
+     "V": -185.04927992410717,
+     "circulating_ml": -185.04927992410688,
+     "crystalloid_ml": 0.0,
+     "do2": 0.7287379010648486,
+     "effective_deficit": 0.2712620989351514,
+     "hb": 6.207350592188196,
+     "hb_from_blood": 6.207350592188196,
+     "minute": 180,
+     "output_rel": 0.7513547845492193,
+     "plasma_ml": -126.88978330083043,
+     "red_cells": 0.9250287738840577,
+     "refill_ml": 114.9507200758931,
+     "sbp": 86.81096530471487,
+     "shed_ml": 300.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "20": {
+     "V": -282.9653279798481,
+     "circulating_ml": -282.96532797984804,
+     "crystalloid_ml": 0.0,
+     "do2": 0.5929612627331218,
+     "effective_deficit": 0.4070387372668782,
+     "hb": 6.370867829048729,
+     "hb_from_blood": 6.370867829048729,
+     "minute": 20,
+     "output_rel": 0.595672706344408,
+     "plasma_ml": -224.8058313565716,
+     "red_cells": 0.9250287738840577,
+     "refill_ml": 17.03467202015195,
+     "sbp": 79.80527178549836,
+     "shed_ml": 300.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "240": {
+     "V": -171.25846287482162,
+     "circulating_ml": -171.25846287482128,
+     "crystalloid_ml": 0.0,
+     "do2": 0.7459183210234739,
+     "effective_deficit": 0.2540816789765261,
+     "hb": 6.184992217890119,
+     "hb_from_blood": 6.184992217890119,
+     "minute": 240,
+     "output_rel": 0.7718485466710485,
+     "plasma_ml": -113.09896625154482,
+     "red_cells": 0.9250287738840577,
+     "refill_ml": 128.74153712517872,
+     "sbp": 87.73318460019718,
+     "shed_ml": 300.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "30": {
+     "V": -272.3340073472154,
+     "circulating_ml": -272.3340073472153,
+     "crystalloid_ml": 0.0,
+     "do2": 0.6089405886265504,
+     "effective_deficit": 0.3910594113734496,
+     "hb": 6.352698084567265,
+     "hb_from_blood": 6.352698084567265,
+     "minute": 30,
+     "output_rel": 0.6134747339366742,
+     "plasma_ml": -214.17451072393882,
+     "red_cells": 0.9250287738840577,
+     "refill_ml": 27.665992652784727,
+     "sbp": 80.60636302715034,
+     "shed_ml": 300.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "60": {
+     "V": -245.2738207182744,
+     "circulating_ml": -245.27382071827424,
+     "crystalloid_ml": 0.0,
+     "do2": 0.6482080414422939,
+     "effective_deficit": 0.35179195855770606,
+     "hb": 6.306914400869033,
+     "hb_from_blood": 6.306914400869033,
+     "minute": 60,
+     "output_rel": 0.657775134011499,
+     "plasma_ml": -187.11432409499778,
+     "red_cells": 0.9250287738840577,
+     "refill_ml": 54.726179281725756,
+     "sbp": 82.59988103051745,
+     "shed_ml": 300.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "90": {
+     "V": -224.19932618159683,
+     "circulating_ml": -224.1993261815966,
+     "crystalloid_ml": 0.0,
+     "do2": 0.677436653677966,
+     "effective_deficit": 0.322563346322034,
+     "hb": 6.271712586852194,
+     "hb_from_blood": 6.271712586852194,
+     "minute": 90,
+     "output_rel": 0.6912935698979535,
+     "plasma_ml": -166.03982955832015,
+     "red_cells": 0.9250287738840577,
+     "refill_ml": 75.8006738184034,
+     "sbp": 84.10821064540791,
+     "shed_ml": 300.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    }
+   },
+   "profile_changes": {},
+   "v_highest": 0.0,
+   "v_lowest": -294.5205534272152
+  },
+  "C": {
+   "description": "ongoing GI bleeding (untreated) with refill",
+   "hb_highest": 6.400000000000001,
+   "hb_lowest": 6.113671926356543,
+   "points": {
+    "0": {
+     "V": 0.0,
+     "circulating_ml": 0.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.0,
+     "effective_deficit": 0.0,
+     "hb": 6.4,
+     "hb_from_blood": 6.4,
+     "minute": 0,
+     "output_rel": 1.0,
+     "plasma_ml": 0.0,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 98.0,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "10": {
+     "V": -24.54337945226793,
+     "circulating_ml": -24.543379452267935,
+     "crystalloid_ml": 0.0,
+     "do2": 0.9699987044616494,
+     "effective_deficit": 0.030001295538350625,
+     "hb": 6.399266135296268,
+     "hb_from_blood": 6.399266135296268,
+     "minute": 10,
+     "output_rel": 0.9701099434376226,
+     "plasma_ml": -19.695043822281576,
+     "red_cells": 0.9937501923519707,
+     "refill_ml": 0.4566205477320663,
+     "sbp": 96.65494745469302,
+     "shed_ml": 25.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "120": {
+     "V": -245.2137078886793,
+     "circulating_ml": -245.2137078886793,
+     "crystalloid_ml": 0.0,
+     "do2": 0.6485346163591575,
+     "effective_deficit": 0.35146538364084245,
+     "hb": 6.309163248710999,
+     "hb_from_blood": 6.309163248710999,
+     "minute": 120,
+     "output_rel": 0.657871952441016,
+     "plasma_ml": -187.32157700845457,
+     "red_cells": 0.9253734250372103,
+     "refill_ml": 54.78629211132071,
+     "sbp": 82.60423785984572,
+     "shed_ml": 300.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "180": {
+     "V": -342.0166939930429,
+     "circulating_ml": -342.0166939930426,
+     "crystalloid_ml": 0.0,
+     "do2": 0.4786315126925513,
+     "effective_deficit": 0.5213684873074487,
+     "hb": 6.2191591695162804,
+     "hb_from_blood": 6.2191591695162804,
+     "minute": 180,
+     "output_rel": 0.4925491690656607,
+     "plasma_ml": -255.6403430685167,
+     "red_cells": 0.8886554851363533,
+     "refill_ml": 107.98330600695739,
+     "sbp": 74.37492452891476,
+     "shed_ml": 450.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "20": {
+     "V": -48.123823450588596,
+     "circulating_ml": -48.1238234505886,
+     "crystalloid_ml": 0.0,
+     "do2": 0.9401065727290299,
+     "effective_deficit": 0.059893427270970134,
+     "hb": 6.396973193440598,
+     "hb_from_blood": 6.396973193440598,
+     "minute": 20,
+     "output_rel": 0.9405513957187199,
+     "plasma_ml": -38.42824663795545,
+     "red_cells": 0.9875017955149651,
+     "refill_ml": 1.8761765494113956,
+     "sbp": 95.3248128073424,
+     "shed_ml": 50.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "240": {
+     "V": -430.240873538628,
+     "circulating_ml": -430.2408735386275,
+     "crystalloid_ml": 0.0,
+     "do2": 0.3096982787737381,
+     "effective_deficit": 0.6903017212262619,
+     "hb": 6.113671926356543,
+     "hb_from_blood": 6.113671926356543,
+     "minute": 240,
+     "output_rel": 0.32420270633218995,
+     "plasma_ml": -315.8268176386866,
+     "red_cells": 0.8525131310664824,
+     "refill_ml": 169.75912646137246,
+     "sbp": 48.95460865616068,
+     "shed_ml": 600.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "30": {
+     "V": -70.81832406285653,
+     "circulating_ml": -70.81832406285655,
+     "crystalloid_ml": 0.0,
+     "do2": 0.9103385078037748,
+     "effective_deficit": 0.08966149219622521,
+     "hb": 6.393229669083154,
+     "hb_from_blood": 6.393229669083154,
+     "minute": 30,
+     "output_rel": 0.9113025421437242,
+     "plasma_ml": -56.27774423919633,
+     "red_cells": 0.981256283821063,
+     "refill_ml": 4.1816759371434555,
+     "sbp": 94.00861439646759,
+     "shed_ml": 75.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "60": {
+     "V": -134.26666093363605,
+     "circulating_ml": -134.26666093363605,
+     "crystalloid_ml": 0.0,
+     "do2": 0.8218585939671916,
+     "effective_deficit": 0.17814140603280837,
+     "hb": 6.374285379839509,
+     "hb_from_blood": 6.374285379839509,
+     "minute": 60,
+     "output_rel": 0.8251740686141762,
+     "plasma_ml": -105.21476716299631,
+     "red_cells": 0.9625502931862847,
+     "refill_ml": 15.733339066363946,
+     "sbp": 90.13283308763793,
+     "shed_ml": 150.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "90": {
+     "V": -191.97524600799971,
+     "circulating_ml": -191.97524600799974,
+     "crystalloid_ml": 0.0,
+     "do2": 0.7346359105624302,
+     "effective_deficit": 0.26536408943756984,
+     "hb": 6.345599983351432,
+     "hb_from_blood": 6.345599983351432,
+     "minute": 90,
+     "output_rel": 0.740933850216692,
+     "plasma_ml": -148.4662101150748,
+     "red_cells": 0.9439141334192764,
+     "refill_ml": 33.02475399200026,
+     "sbp": 86.34202325975114,
+     "shed_ml": 225.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    }
+   },
+   "profile_changes": {},
+   "v_highest": 0.0,
+   "v_lowest": -430.240873538628
+  },
+  "D": {
+   "description": "GI bleeding stopped at 120 min; refill continues",
+   "hb_highest": 6.400000000000001,
+   "hb_lowest": 6.2109789724895945,
+   "points": {
+    "0": {
+     "V": 0.0,
+     "circulating_ml": 0.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.0,
+     "effective_deficit": 0.0,
+     "hb": 6.4,
+     "hb_from_blood": 6.4,
+     "minute": 0,
+     "output_rel": 1.0,
+     "plasma_ml": 0.0,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 98.0,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "10": {
+     "V": -24.54337945226793,
+     "circulating_ml": -24.543379452267935,
+     "crystalloid_ml": 0.0,
+     "do2": 0.9699987044616494,
+     "effective_deficit": 0.030001295538350625,
+     "hb": 6.399266135296268,
+     "hb_from_blood": 6.399266135296268,
+     "minute": 10,
+     "output_rel": 0.9701099434376226,
+     "plasma_ml": -19.695043822281576,
+     "red_cells": 0.9937501923519707,
+     "refill_ml": 0.4566205477320663,
+     "sbp": 96.65494745469302,
+     "shed_ml": 25.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "120": {
+     "V": -242.7137078886793,
+     "circulating_ml": -242.7137078886793,
+     "crystalloid_ml": 0.0,
+     "do2": 0.6524979960870249,
+     "effective_deficit": 0.34750200391297514,
+     "hb": 6.309164128002621,
+     "hb_from_blood": 6.309164128002621,
+     "minute": 120,
+     "output_rel": 0.6618923030425282,
+     "plasma_ml": -185.29964403488296,
+     "red_cells": 0.9259896833134657,
+     "refill_ml": 54.78629211132071,
+     "sbp": 82.78515363691378,
+     "shed_ml": 297.5,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "180": {
+     "V": -205.74186973476577,
+     "circulating_ml": -205.74186973476583,
+     "crystalloid_ml": 0.0,
+     "do2": 0.7028270550878591,
+     "effective_deficit": 0.29717294491214086,
+     "hb": 6.247686656776728,
+     "hb_from_blood": 6.247686656776728,
+     "minute": 180,
+     "output_rel": 0.7199613872573645,
+     "plasma_ml": -148.3278058809695,
+     "red_cells": 0.9259896833134657,
+     "refill_ml": 91.75813026523419,
+     "sbp": 85.3982624265814,
+     "shed_ml": 297.5,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "20": {
+     "V": -48.123823450588596,
+     "circulating_ml": -48.1238234505886,
+     "crystalloid_ml": 0.0,
+     "do2": 0.9401065727290299,
+     "effective_deficit": 0.059893427270970134,
+     "hb": 6.396973193440598,
+     "hb_from_blood": 6.396973193440598,
+     "minute": 20,
+     "output_rel": 0.9405513957187199,
+     "plasma_ml": -38.42824663795545,
+     "red_cells": 0.9875017955149651,
+     "refill_ml": 1.8761765494113956,
+     "sbp": 95.3248128073424,
+     "shed_ml": 50.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "240": {
+     "V": -183.31731634848396,
+     "circulating_ml": -183.31731634848398,
+     "crystalloid_ml": 0.0,
+     "do2": 0.7316797383042729,
+     "effective_deficit": 0.2683202616957271,
+     "hb": 6.2109789724895945,
+     "hb_from_blood": 6.2109789724895945,
+     "minute": 240,
+     "output_rel": 0.7539472192529939,
+     "plasma_ml": -125.90325249468765,
+     "red_cells": 0.9259896833134657,
+     "refill_ml": 114.182683651516,
+     "sbp": 86.92762486638472,
+     "shed_ml": 297.5,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "30": {
+     "V": -70.81832406285653,
+     "circulating_ml": -70.81832406285655,
+     "crystalloid_ml": 0.0,
+     "do2": 0.9103385078037748,
+     "effective_deficit": 0.08966149219622521,
+     "hb": 6.393229669083154,
+     "hb_from_blood": 6.393229669083154,
+     "minute": 30,
+     "output_rel": 0.9113025421437242,
+     "plasma_ml": -56.27774423919633,
+     "red_cells": 0.981256283821063,
+     "refill_ml": 4.1816759371434555,
+     "sbp": 94.00861439646759,
+     "shed_ml": 75.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "60": {
+     "V": -134.26666093363605,
+     "circulating_ml": -134.26666093363605,
+     "crystalloid_ml": 0.0,
+     "do2": 0.8218585939671916,
+     "effective_deficit": 0.17814140603280837,
+     "hb": 6.374285379839509,
+     "hb_from_blood": 6.374285379839509,
+     "minute": 60,
+     "output_rel": 0.8251740686141762,
+     "plasma_ml": -105.21476716299631,
+     "red_cells": 0.9625502931862847,
+     "refill_ml": 15.733339066363946,
+     "sbp": 90.13283308763793,
+     "shed_ml": 150.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "90": {
+     "V": -191.97524600799971,
+     "circulating_ml": -191.97524600799974,
+     "crystalloid_ml": 0.0,
+     "do2": 0.7346359105624302,
+     "effective_deficit": 0.26536408943756984,
+     "hb": 6.345599983351432,
+     "hb_from_blood": 6.345599983351432,
+     "minute": 90,
+     "output_rel": 0.740933850216692,
+     "plasma_ml": -148.4662101150748,
+     "red_cells": 0.9439141334192764,
+     "refill_ml": 33.02475399200026,
+     "sbp": 86.34202325975114,
+     "shed_ml": 225.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    }
+   },
+   "profile_changes": {},
+   "v_highest": 0.0,
+   "v_lowest": -243.50001049826784
+  },
+  "E": {
+   "description": "1 L crystalloid over 20 min, no bleeding",
+   "hb_highest": 6.4,
+   "hb_lowest": 6.238070148211432,
+   "points": {
+    "0": {
+     "V": 0.0,
+     "circulating_ml": 0.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.0,
+     "effective_deficit": 0.0,
+     "hb": 6.4,
+     "hb_from_blood": 6.4,
+     "minute": 0,
+     "output_rel": 1.0,
+     "plasma_ml": 0.0,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 98.0,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "10": {
+     "V": 56.36167651194274,
+     "circulating_ml": 56.36167651194274,
+     "crystalloid_ml": 56.36167651194274,
+     "do2": 1.0505942226184926,
+     "effective_deficit": 0.0,
+     "hb": 6.311074317715522,
+     "hb_from_blood": 6.311074317715522,
+     "minute": 10,
+     "output_rel": 1.0653975355486276,
+     "plasma_ml": 56.36167651194274,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 100.94288909968824,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "120": {
+     "V": 51.92044877481751,
+     "circulating_ml": 51.92044877481746,
+     "crystalloid_ml": 51.92044877481746,
+     "do2": 1.0468155173207943,
+     "effective_deficit": 0.0,
+     "hb": 6.317991758140438,
+     "hb_from_blood": 6.317991758140438,
+     "minute": 120,
+     "output_rel": 1.0604033001817288,
+     "plasma_ml": 51.92044877481746,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 100.71814850817779,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "180": {
+     "V": 50.25990447888139,
+     "circulating_ml": 50.25990447888131,
+     "crystalloid_ml": 50.25990447888131,
+     "do2": 1.0453937951295136,
+     "effective_deficit": 0.0,
+     "hb": 6.320582037634391,
+     "hb_from_blood": 6.320582037634391,
+     "minute": 180,
+     "output_rel": 1.0585291432010198,
+     "plasma_ml": 50.25990447888131,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 100.63381144404589,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "20": {
+     "V": 103.8332996848363,
+     "circulating_ml": 103.83329968483629,
+     "crystalloid_ml": 103.83329968483629,
+     "do2": 1.0888843779137989,
+     "effective_deficit": 0.0,
+     "hb": 6.238070148211432,
+     "hb_from_blood": 6.238070148211432,
+     "minute": 20,
+     "output_rel": 1.117149992397314,
+     "plasma_ml": 103.83329968483629,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 103.27174965787913,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "240": {
+     "V": 50.03517424626392,
+     "circulating_ml": 50.03517424626391,
+     "crystalloid_ml": 50.03517424626391,
+     "do2": 1.0452010129052167,
+     "effective_deficit": 0.0,
+     "hb": 6.320932757025823,
+     "hb_from_blood": 6.320932757025823,
+     "minute": 240,
+     "output_rel": 1.058275216605988,
+     "plasma_ml": 50.03517424626391,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 100.62238474726945,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "30": {
+     "V": 88.57324477568733,
+     "circulating_ml": 88.5732447756873,
+     "crystalloid_ml": 88.5732447756873,
+     "do2": 1.076986212516451,
+     "effective_deficit": 0.0,
+     "hb": 6.261352913931838,
+     "hb_from_blood": 6.261352913931838,
+     "minute": 30,
+     "output_rel": 1.100834253371766,
+     "plasma_ml": 88.5732447756873,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 102.53754140172947,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "60": {
+     "V": 64.1903037322491,
+     "circulating_ml": 64.1903037322491,
+     "crystalloid_ml": 64.1903037322491,
+     "do2": 1.0571713705607457,
+     "effective_deficit": 0.0,
+     "hb": 6.298917640862159,
+     "hb_from_blood": 6.298917640862159,
+     "minute": 60,
+     "output_rel": 1.0741364084040788,
+     "plasma_ml": 64.1903037322491,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 101.33613837818355,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "90": {
+     "V": 55.22032100707284,
+     "circulating_ml": 55.2203210070728,
+     "crystalloid_ml": 55.2203210070728,
+     "do2": 1.0496264251143534,
+     "effective_deficit": 0.0,
+     "hb": 6.312850590974179,
+     "hb_from_blood": 6.312850590974179,
+     "minute": 90,
+     "output_rel": 1.0641166021474338,
+     "plasma_ml": 55.2203210070728,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 100.88524709663452,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    }
+   },
+   "profile_changes": {},
+   "v_highest": 103.8332996848363,
+   "v_lowest": 0.0
+  },
+  "F": {
+   "description": "2 L crystalloid over 20 min, no bleeding",
+   "hb_highest": 6.4,
+   "hb_lowest": 6.084132237053905,
+   "points": {
+    "0": {
+     "V": 0.0,
+     "circulating_ml": 0.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.0,
+     "effective_deficit": 0.0,
+     "hb": 6.4,
+     "hb_from_blood": 6.4,
+     "minute": 0,
+     "output_rel": 1.0,
+     "plasma_ml": 0.0,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 98.0,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "10": {
+     "V": 112.72335302388548,
+     "circulating_ml": 112.72335302388548,
+     "crystalloid_ml": 112.72335302388548,
+     "do2": 1.095642120069318,
+     "effective_deficit": 0.0,
+     "hb": 6.224585950129022,
+     "hb_from_blood": 6.224585950129022,
+     "minute": 10,
+     "output_rel": 1.126518233441421,
+     "plasma_ml": 112.72335302388548,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 103.69332050486395,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "120": {
+     "V": 103.84089754963502,
+     "circulating_ml": 103.84089754963492,
+     "crystalloid_ml": 103.84089754963492,
+     "do2": 1.0888902075688738,
+     "effective_deficit": 0.0,
+     "hb": 6.238058599027443,
+     "hb_from_blood": 6.238058599027443,
+     "minute": 120,
+     "output_rel": 1.1171580416906137,
+     "plasma_ml": 103.84089754963492,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 103.27211187607762,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "180": {
+     "V": 100.51980895776278,
+     "circulating_ml": 100.51980895776262,
+     "crystalloid_ml": 100.51980895776262,
+     "do2": 1.0863331262201592,
+     "effective_deficit": 0.0,
+     "hb": 6.243110920736365,
+     "hb_from_blood": 6.243110920736365,
+     "minute": 180,
+     "output_rel": 1.113632625798194,
+     "plasma_ml": 100.51980895776262,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 103.11346816091873,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "20": {
+     "V": 207.6665993696726,
+     "circulating_ml": 207.66659936967258,
+     "crystalloid_ml": 207.66659936967258,
+     "do2": 1.1603351503741148,
+     "effective_deficit": 0.0,
+     "hb": 6.084132237053905,
+     "hb_from_blood": 6.084132237053905,
+     "minute": 20,
+     "output_rel": 1.2205758640759372,
+     "plasma_ml": 207.66659936967258,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 107.92591388341717,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "240": {
+     "V": 100.07034849252784,
+     "circulating_ml": 100.07034849252781,
+     "crystalloid_ml": 100.07034849252781,
+     "do2": 1.0859856907096965,
+     "effective_deficit": 0.0,
+     "hb": 6.243795306929879,
+     "hb_from_blood": 6.243795306929879,
+     "minute": 240,
+     "output_rel": 1.113154432341501,
+     "plasma_ml": 100.07034849252781,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 103.09194945536754,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "30": {
+     "V": 177.14648955137466,
+     "circulating_ml": 177.1464895513746,
+     "crystalloid_ml": 177.1464895513746,
+     "do2": 1.140971199426102,
+     "effective_deficit": 0.0,
+     "hb": 6.128585641905376,
+     "hb_from_blood": 6.128585641905376,
+     "minute": 30,
+     "output_rel": 1.191500960090491,
+     "plasma_ml": 177.1464895513746,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 106.61754320407209,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "60": {
+     "V": 128.3806074644982,
+     "circulating_ml": 128.3806074644982,
+     "crystalloid_ml": 128.3806074644982,
+     "do2": 1.1072395870582807,
+     "effective_deficit": 0.0,
+     "hb": 6.200978648555999,
+     "hb_from_blood": 6.200978648555999,
+     "minute": 60,
+     "output_rel": 1.1427766097571013,
+     "plasma_ml": 128.3806074644982,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 104.42494743906956,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "90": {
+     "V": 110.44064201414568,
+     "circulating_ml": 110.4406420141456,
+     "crystalloid_ml": 110.4406420141456,
+     "do2": 1.0939189868199697,
+     "effective_deficit": 0.0,
+     "hb": 6.228042740316964,
+     "hb_from_blood": 6.228042740316964,
+     "minute": 90,
+     "output_rel": 1.1241222656239351,
+     "plasma_ml": 110.4406420141456,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 103.58550195307708,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    }
+   },
+   "profile_changes": {},
+   "v_highest": 207.6665993696726,
+   "v_lowest": 0.0
+  },
+  "G": {
+   "description": "1 unit of packed red cells over 30 min, no bleeding",
+   "hb_highest": 7.348837209302325,
+   "hb_lowest": 6.4,
+   "points": {
+    "0": {
+     "V": 0.0,
+     "circulating_ml": 0.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.0,
+     "effective_deficit": 0.0,
+     "hb": 6.4,
+     "hb_from_blood": 6.4,
+     "minute": 0,
+     "output_rel": 1.0,
+     "plasma_ml": 0.0,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 98.0,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "10": {
+     "V": 100.0,
+     "circulating_ml": 100.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.1707696625993311,
+     "effective_deficit": 0.0,
+     "hb": 6.7317073170731705,
+     "hb_from_blood": 6.7317073170731705,
+     "minute": 10,
+     "output_rel": 1.1130795632828425,
+     "plasma_ml": 39.39393939393939,
+     "red_cells": 1.078125,
+     "refill_ml": 0.0,
+     "sbp": 103.08858034772791,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 100.0,
+     "transfused_red_cells": 0.078125
+    },
+    "120": {
+     "V": 300.0,
+     "circulating_ml": 300.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.4954007302382055,
+     "effective_deficit": 0.0,
+     "hb": 7.348837209302325,
+     "hb_from_blood": 7.348837209302325,
+     "minute": 120,
+     "output_rel": 1.302323673928969,
+     "plasma_ml": 118.18181818181819,
+     "red_cells": 1.234375,
+     "refill_ml": 0.0,
+     "sbp": 111.60456532680361,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 300.0,
+     "transfused_red_cells": 0.23437500000000003
+    },
+    "180": {
+     "V": 300.0,
+     "circulating_ml": 300.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.4954007302382055,
+     "effective_deficit": 0.0,
+     "hb": 7.348837209302325,
+     "hb_from_blood": 7.348837209302325,
+     "minute": 180,
+     "output_rel": 1.302323673928969,
+     "plasma_ml": 118.18181818181819,
+     "red_cells": 1.234375,
+     "refill_ml": 0.0,
+     "sbp": 111.60456532680361,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 300.0,
+     "transfused_red_cells": 0.23437500000000003
+    },
+    "20": {
+     "V": 200.0,
+     "circulating_ml": 200.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.3361538434683784,
+     "effective_deficit": 0.0,
+     "hb": 7.0476190476190474,
+     "hb_from_blood": 7.0476190476190474,
+     "minute": 20,
+     "output_rel": 1.2133721389334464,
+     "plasma_ml": 78.78787878787878,
+     "red_cells": 1.15625,
+     "refill_ml": 0.0,
+     "sbp": 107.60174625200509,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 200.0,
+     "transfused_red_cells": 0.15625
+    },
+    "240": {
+     "V": 300.0,
+     "circulating_ml": 300.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.4954007302382055,
+     "effective_deficit": 0.0,
+     "hb": 7.348837209302325,
+     "hb_from_blood": 7.348837209302325,
+     "minute": 240,
+     "output_rel": 1.302323673928969,
+     "plasma_ml": 118.18181818181819,
+     "red_cells": 1.234375,
+     "refill_ml": 0.0,
+     "sbp": 111.60456532680361,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 300.0,
+     "transfused_red_cells": 0.23437500000000003
+    },
+    "30": {
+     "V": 300.0,
+     "circulating_ml": 300.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.4954007302382055,
+     "effective_deficit": 0.0,
+     "hb": 7.348837209302325,
+     "hb_from_blood": 7.348837209302325,
+     "minute": 30,
+     "output_rel": 1.302323673928969,
+     "plasma_ml": 118.18181818181819,
+     "red_cells": 1.234375,
+     "refill_ml": 0.0,
+     "sbp": 111.60456532680361,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 300.0,
+     "transfused_red_cells": 0.23437500000000003
+    },
+    "60": {
+     "V": 300.0,
+     "circulating_ml": 300.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.4954007302382055,
+     "effective_deficit": 0.0,
+     "hb": 7.348837209302325,
+     "hb_from_blood": 7.348837209302325,
+     "minute": 60,
+     "output_rel": 1.302323673928969,
+     "plasma_ml": 118.18181818181819,
+     "red_cells": 1.234375,
+     "refill_ml": 0.0,
+     "sbp": 111.60456532680361,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 300.0,
+     "transfused_red_cells": 0.23437500000000003
+    },
+    "90": {
+     "V": 300.0,
+     "circulating_ml": 300.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.4954007302382055,
+     "effective_deficit": 0.0,
+     "hb": 7.348837209302325,
+     "hb_from_blood": 7.348837209302325,
+     "minute": 90,
+     "output_rel": 1.302323673928969,
+     "plasma_ml": 118.18181818181819,
+     "red_cells": 1.234375,
+     "refill_ml": 0.0,
+     "sbp": 111.60456532680361,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 300.0,
+     "transfused_red_cells": 0.23437500000000003
+    }
+   },
+   "profile_changes": {},
+   "v_highest": 300.0,
+   "v_lowest": 0.0
+  },
+  "H": {
+   "description": "2 units of packed red cells over 60 min, no bleeding",
+   "hb_highest": 8.173913043478262,
+   "hb_lowest": 6.4,
+   "points": {
+    "0": {
+     "V": 0.0,
+     "circulating_ml": 0.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.0,
+     "effective_deficit": 0.0,
+     "hb": 6.4,
+     "hb_from_blood": 6.4,
+     "minute": 0,
+     "output_rel": 1.0,
+     "plasma_ml": 0.0,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 98.0,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "10": {
+     "V": 100.0,
+     "circulating_ml": 100.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.1707696625993311,
+     "effective_deficit": 0.0,
+     "hb": 6.7317073170731705,
+     "hb_from_blood": 6.7317073170731705,
+     "minute": 10,
+     "output_rel": 1.1130795632828425,
+     "plasma_ml": 39.39393939393939,
+     "red_cells": 1.078125,
+     "refill_ml": 0.0,
+     "sbp": 103.08858034772791,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 100.0,
+     "transfused_red_cells": 0.078125
+    },
+    "120": {
+     "V": 600.0000000000001,
+     "circulating_ml": 600.0000000000001,
+     "crystalloid_ml": 0.0,
+     "do2": 1.9326805426598188,
+     "effective_deficit": 0.0,
+     "hb": 8.173913043478262,
+     "hb_from_blood": 8.173913043478262,
+     "minute": 120,
+     "output_rel": 1.5132477440400283,
+     "plasma_ml": 236.3636363636365,
+     "red_cells": 1.46875,
+     "refill_ml": 0.0,
+     "sbp": 121.09614848180127,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 600.0000000000001,
+     "transfused_red_cells": 0.46875
+    },
+    "180": {
+     "V": 600.0000000000001,
+     "circulating_ml": 600.0000000000001,
+     "crystalloid_ml": 0.0,
+     "do2": 1.9326805426598188,
+     "effective_deficit": 0.0,
+     "hb": 8.173913043478262,
+     "hb_from_blood": 8.173913043478262,
+     "minute": 180,
+     "output_rel": 1.5132477440400283,
+     "plasma_ml": 236.3636363636365,
+     "red_cells": 1.46875,
+     "refill_ml": 0.0,
+     "sbp": 121.09614848180127,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 600.0000000000001,
+     "transfused_red_cells": 0.46875
+    },
+    "20": {
+     "V": 200.0,
+     "circulating_ml": 200.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.3361538434683784,
+     "effective_deficit": 0.0,
+     "hb": 7.0476190476190474,
+     "hb_from_blood": 7.0476190476190474,
+     "minute": 20,
+     "output_rel": 1.2133721389334464,
+     "plasma_ml": 78.78787878787878,
+     "red_cells": 1.15625,
+     "refill_ml": 0.0,
+     "sbp": 107.60174625200509,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 200.0,
+     "transfused_red_cells": 0.15625
+    },
+    "240": {
+     "V": 600.0000000000001,
+     "circulating_ml": 600.0000000000001,
+     "crystalloid_ml": 0.0,
+     "do2": 1.9326805426598188,
+     "effective_deficit": 0.0,
+     "hb": 8.173913043478262,
+     "hb_from_blood": 8.173913043478262,
+     "minute": 240,
+     "output_rel": 1.5132477440400283,
+     "plasma_ml": 236.3636363636365,
+     "red_cells": 1.46875,
+     "refill_ml": 0.0,
+     "sbp": 121.09614848180127,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 600.0000000000001,
+     "transfused_red_cells": 0.46875
+    },
+    "30": {
+     "V": 300.0,
+     "circulating_ml": 300.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.4954007302382055,
+     "effective_deficit": 0.0,
+     "hb": 7.348837209302325,
+     "hb_from_blood": 7.348837209302325,
+     "minute": 30,
+     "output_rel": 1.302323673928969,
+     "plasma_ml": 118.18181818181819,
+     "red_cells": 1.234375,
+     "refill_ml": 0.0,
+     "sbp": 111.60456532680361,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 300.0,
+     "transfused_red_cells": 0.23437500000000003
+    },
+    "60": {
+     "V": 600.0000000000001,
+     "circulating_ml": 600.0000000000001,
+     "crystalloid_ml": 0.0,
+     "do2": 1.9326805426598188,
+     "effective_deficit": 0.0,
+     "hb": 8.173913043478262,
+     "hb_from_blood": 8.173913043478262,
+     "minute": 60,
+     "output_rel": 1.5132477440400283,
+     "plasma_ml": 236.3636363636365,
+     "red_cells": 1.46875,
+     "refill_ml": 0.0,
+     "sbp": 121.09614848180127,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 600.0000000000001,
+     "transfused_red_cells": 0.46875
+    },
+    "90": {
+     "V": 600.0000000000001,
+     "circulating_ml": 600.0000000000001,
+     "crystalloid_ml": 0.0,
+     "do2": 1.9326805426598188,
+     "effective_deficit": 0.0,
+     "hb": 8.173913043478262,
+     "hb_from_blood": 8.173913043478262,
+     "minute": 90,
+     "output_rel": 1.5132477440400283,
+     "plasma_ml": 236.3636363636365,
+     "red_cells": 1.46875,
+     "refill_ml": 0.0,
+     "sbp": 121.09614848180127,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 600.0000000000001,
+     "transfused_red_cells": 0.46875
+    }
+   },
+   "profile_changes": {},
+   "v_highest": 600.0000000000001,
+   "v_lowest": 0.0
+  },
+  "I": {
+   "description": "2 units over 60 min during ongoing GI bleeding",
+   "hb_highest": 8.20257481738245,
+   "hb_lowest": 6.4,
+   "points": {
+    "0": {
+     "V": 0.0,
+     "circulating_ml": 0.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.0,
+     "effective_deficit": 0.0,
+     "hb": 6.4,
+     "hb_from_blood": 6.4,
+     "minute": 0,
+     "output_rel": 1.0,
+     "plasma_ml": 0.0,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 98.0,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "10": {
+     "V": 75.0,
+     "circulating_ml": 75.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.1425471438940042,
+     "effective_deficit": 0.0,
+     "hb": 6.732816209945001,
+     "hb_from_blood": 6.732816209945001,
+     "minute": 10,
+     "output_rel": 1.0860688147287718,
+     "plasma_ml": 19.356786196185674,
+     "red_cells": 1.0717275802939794,
+     "refill_ml": 0.0,
+     "sbp": 101.87309666279474,
+     "shed_ml": 25.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 100.0,
+     "transfused_red_cells": 0.078125
+    },
+    "120": {
+     "V": 300.0000000000001,
+     "circulating_ml": 300.0000000000001,
+     "crystalloid_ml": 0.0,
+     "do2": 1.6691261518516793,
+     "effective_deficit": 0.0,
+     "hb": 8.202574817382446,
+     "hb_from_blood": 8.202574817382446,
+     "minute": 120,
+     "output_rel": 1.302323673928969,
+     "plasma_ml": 6.937220765317818,
+     "red_cells": 1.3777762388572077,
+     "refill_ml": 0.0,
+     "sbp": 111.60456532680361,
+     "shed_ml": 300.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 600.0000000000001,
+     "transfused_red_cells": 0.46875
+    },
+    "180": {
+     "V": 150.0000000000001,
+     "circulating_ml": 150.0000000000001,
+     "crystalloid_ml": 0.0,
+     "do2": 1.4927786301457937,
+     "effective_deficit": 0.0,
+     "hb": 8.202574817382446,
+     "hb_from_blood": 8.202574817382446,
+     "minute": 180,
+     "output_rel": 1.164729788588728,
+     "plasma_ml": -105.7783482465804,
+     "red_cells": 1.3297142770366077,
+     "refill_ml": 0.0,
+     "sbp": 105.41284048649275,
+     "shed_ml": 450.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 600.0000000000001,
+     "transfused_red_cells": 0.46875
+    },
+    "20": {
+     "V": 150.0,
+     "circulating_ml": 150.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.2833204590246374,
+     "effective_deficit": 0.0,
+     "hb": 7.051636369418746,
+     "hb_from_blood": 7.051636369418746,
+     "minute": 20,
+     "output_rel": 1.164729788588728,
+     "plasma_ml": 38.96088081552135,
+     "red_cells": 1.143136364573742,
+     "refill_ml": 0.0,
+     "sbp": 105.41284048649275,
+     "shed_ml": 50.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 200.0,
+     "transfused_red_cells": 0.15625
+    },
+    "240": {
+     "V": 1.1368683772161603e-13,
+     "circulating_ml": 1.1368683772161603e-13,
+     "crystalloid_ml": 0.0,
+     "do2": 1.2816523152160069,
+     "effective_deficit": 0.0,
+     "hb": 8.202574817382445,
+     "hb_from_blood": 8.202574817382445,
+     "minute": 240,
+     "output_rel": 1.0,
+     "plasma_ml": -218.49391725847795,
+     "red_cells": 1.2816523152160069,
+     "refill_ml": 0.0,
+     "sbp": 98.0,
+     "shed_ml": 600.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 600.0000000000001,
+     "transfused_red_cells": 0.46875
+    },
+    "30": {
+     "V": 225.00000000000003,
+     "circulating_ml": 225.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.4215892575030047,
+     "effective_deficit": 0.0,
+     "hb": 7.357286415964993,
+     "hb_from_blood": 7.357286415964993,
+     "minute": 30,
+     "output_rel": 1.2366205056631467,
+     "plasma_ml": 58.80196644084552,
+     "red_cells": 1.2142396526348476,
+     "refill_ml": 0.0,
+     "sbp": 108.6479227548416,
+     "shed_ml": 75.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 300.0,
+     "transfused_red_cells": 0.23437500000000003
+    },
+    "60": {
+     "V": 450.0000000000001,
+     "circulating_ml": 450.0000000000001,
+     "crystalloid_ml": 0.0,
+     "do2": 1.8164239835888079,
+     "effective_deficit": 0.0,
+     "hb": 8.202574817382445,
+     "hb_from_blood": 8.202574817382445,
+     "minute": 60,
+     "output_rel": 1.4172517476260102,
+     "plasma_ml": 119.65278977721584,
+     "red_cells": 1.4258382006778079,
+     "refill_ml": 0.0,
+     "sbp": 116.77632864317046,
+     "shed_ml": 150.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 600.0000000000001,
+     "transfused_red_cells": 0.46875
+    },
+    "90": {
+     "V": 375.0000000000001,
+     "circulating_ml": 375.0000000000001,
+     "crystalloid_ml": 0.0,
+     "do2": 1.746087033659065,
+     "effective_deficit": 0.0,
+     "hb": 8.202574817382445,
+     "hb_from_blood": 8.202574817382445,
+     "minute": 90,
+     "output_rel": 1.3623718483782268,
+     "plasma_ml": 63.2950052712668,
+     "red_cells": 1.4018072197675078,
+     "refill_ml": 0.0,
+     "sbp": 114.3067331770202,
+     "shed_ml": 225.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 600.0000000000001,
+     "transfused_red_cells": 0.46875
+    }
+   },
+   "profile_changes": {},
+   "v_highest": 450.0000000000001,
+   "v_lowest": 0.0
+  },
+  "J": {
+   "description": "2 L crystalloid over 20 min during ongoing GI bleeding",
+   "hb_highest": 6.4,
+   "hb_lowest": 5.977814106686796,
+   "points": {
+    "0": {
+     "V": 0.0,
+     "circulating_ml": 0.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.0,
+     "effective_deficit": 0.0,
+     "hb": 6.4,
+     "hb_from_blood": 6.4,
+     "minute": 0,
+     "output_rel": 1.0,
+     "plasma_ml": 0.0,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 98.0,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "10": {
+     "V": 87.72335302388548,
+     "circulating_ml": 87.72335302388548,
+     "crystalloid_ml": 112.72335302388548,
+     "do2": 1.0696721883005835,
+     "effective_deficit": 0.0,
+     "hb": 6.2240183035990615,
+     "hb_from_blood": 6.2240183035990615,
+     "minute": 10,
+     "output_rel": 1.0999167533239849,
+     "plasma_ml": 92.50926304600692,
+     "red_cells": 0.9938306628621091,
+     "refill_ml": 0.0,
+     "sbp": 102.49625389957932,
+     "shed_ml": 25.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "120": {
+     "V": -148.95601817321187,
+     "circulating_ml": -148.956018173212,
+     "crystalloid_ml": 103.84089754963492,
+     "do2": 0.7748385413417357,
+     "effective_deficit": 0.2251614586582643,
+     "hb": 6.165709870882193,
+     "hb_from_blood": 6.165709870882193,
+     "minute": 120,
+     "output_rel": 0.8042815455858576,
+     "plasma_ml": -92.72631792929954,
+     "red_cells": 0.9275164020293316,
+     "refill_ml": 47.203084277153096,
+     "sbp": 89.1926695513636,
+     "shed_ml": 300.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "180": {
+     "V": -246.09633308567567,
+     "circulating_ml": -246.09633308567578,
+     "crystalloid_ml": 100.51980895776262,
+     "do2": 0.6236760720104463,
+     "effective_deficit": 0.3763239279895537,
+     "hb": 6.080476474161071,
+     "hb_from_blood": 6.080476474161071,
+     "minute": 180,
+     "output_rel": 0.6564496841372239,
+     "plasma_ml": -162.0212704474796,
+     "red_cells": 0.8916219895679502,
+     "refill_ml": 103.3838579565616,
+     "sbp": 82.54023578617507,
+     "shed_ml": 450.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "20": {
+     "V": 157.6665993696726,
+     "circulating_ml": 157.66659936967258,
+     "crystalloid_ml": 207.66659936967258,
+     "do2": 1.114178750614116,
+     "effective_deficit": 0.0,
+     "hb": 6.082285850676466,
+     "hb_from_blood": 6.082285850676466,
+     "minute": 20,
+     "output_rel": 1.1723789672162923,
+     "plasma_ml": 167.11760757645143,
+     "red_cells": 0.9878170597334491,
+     "refill_ml": 0.0,
+     "sbp": 105.75705352473315,
+     "shed_ml": 50.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "240": {
+     "V": -332.9602313064203,
+     "circulating_ml": -332.96023130642027,
+     "crystalloid_ml": 100.07034849252781,
+     "do2": 0.47527645613185615,
+     "effective_deficit": 0.5247235438681439,
+     "hb": 5.977814106686796,
+     "hb_from_blood": 5.977814106686796,
+     "minute": 240,
+     "output_rel": 0.5088430762410878,
+     "plasma_ml": -221.4718088542373,
+     "red_cells": 0.8562844554327329,
+     "refill_ml": 166.96942020105192,
+     "sbp": 75.89793843084895,
+     "shed_ml": 600.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "30": {
+     "V": 102.14648955137469,
+     "circulating_ml": 102.14648955137461,
+     "crystalloid_ml": 177.1464895513746,
+     "do2": 1.0678550256431696,
+     "effective_deficit": 0.0,
+     "hb": 6.127407443172037,
+     "hb_from_blood": 6.127407443172037,
+     "minute": 30,
+     "output_rel": 1.1153611421306626,
+     "plasma_ml": 116.22155218594635,
+     "red_cells": 0.9818563645726224,
+     "refill_ml": 0.0,
+     "sbp": 103.19125139587982,
+     "shed_ml": 75.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "60": {
+     "V": -18.38864952546978,
+     "circulating_ml": -18.388649525469834,
+     "crystalloid_ml": 128.3806074644982,
+     "do2": 0.9466319972321842,
+     "effective_deficit": 0.053368002767815836,
+     "hb": 6.1967034146864854,
+     "hb_from_blood": 6.1967034146864854,
+     "minute": 60,
+     "output_rel": 0.9776883573170814,
+     "plasma_ml": 9.70636103695476,
+     "red_cells": 0.9637837754468745,
+     "refill_ml": 3.230743010031941,
+     "sbp": 96.99597607926866,
+     "shed_ml": 150.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "90": {
+     "V": -91.27163559295083,
+     "circulating_ml": -91.27163559295096,
+     "crystalloid_ml": 110.4406420141456,
+     "do2": 0.8556956310408937,
+     "effective_deficit": 0.14430436895910626,
+     "hb": 6.193323249471383,
+     "hb_from_blood": 6.193323249471383,
+     "minute": 90,
+     "output_rel": 0.8842509615704542,
+     "plasma_ml": -49.09037059750925,
+     "red_cells": 0.9456257130918134,
+     "refill_ml": 23.28772239290344,
+     "sbp": 92.79129327067044,
+     "shed_ml": 225.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    }
+   },
+   "profile_changes": {},
+   "v_highest": 157.6665993696726,
+   "v_lowest": -332.9602313064203
+  },
+  "K": {
+   "description": "endoscopic haemostasis at 120 min after accumulated loss (10 % residual)",
+   "hb_highest": 6.400000000000001,
+   "hb_lowest": 6.201570223861959,
+   "points": {
+    "0": {
+     "V": 0.0,
+     "circulating_ml": 0.0,
+     "crystalloid_ml": 0.0,
+     "do2": 1.0,
+     "effective_deficit": 0.0,
+     "hb": 6.4,
+     "hb_from_blood": 6.4,
+     "minute": 0,
+     "output_rel": 1.0,
+     "plasma_ml": 0.0,
+     "red_cells": 1.0,
+     "refill_ml": 0.0,
+     "sbp": 98.0,
+     "shed_ml": 0.0,
+     "state": "ADEQUATE",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "10": {
+     "V": -24.54337945226793,
+     "circulating_ml": -24.543379452267935,
+     "crystalloid_ml": 0.0,
+     "do2": 0.9699987044616494,
+     "effective_deficit": 0.030001295538350625,
+     "hb": 6.399266135296268,
+     "hb_from_blood": 6.399266135296268,
+     "minute": 10,
+     "output_rel": 0.9701099434376226,
+     "plasma_ml": -19.695043822281576,
+     "red_cells": 0.9937501923519707,
+     "refill_ml": 0.4566205477320663,
+     "sbp": 96.65494745469302,
+     "shed_ml": 25.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "120": {
+     "V": -242.9637078886793,
+     "circulating_ml": -242.9637078886793,
+     "crystalloid_ml": 0.0,
+     "do2": 0.6521021928999692,
+     "effective_deficit": 0.3478978071000308,
+     "hb": 6.3091640401261175,
+     "hb_from_blood": 6.3091640401261175,
+     "minute": 120,
+     "output_rel": 0.6614908105125726,
+     "plasma_ml": -185.5018373322401,
+     "red_cells": 0.9259280574858401,
+     "refill_ml": 54.78629211132071,
+     "sbp": 82.76708647306577,
+     "shed_ml": 297.75,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "180": {
+     "V": -219.36935216059348,
+     "circulating_ml": -219.3693521605935,
+     "crystalloid_ml": 0.0,
+     "do2": 0.681919569658366,
+     "effective_deficit": 0.318080430341634,
+     "hb": 6.244891543334749,
+     "hb_from_blood": 6.244891543334749,
+     "minute": 180,
+     "output_rel": 0.6988568521212508,
+     "plasma_ml": -159.05506007466855,
+     "red_cells": 0.9222511078579874,
+     "refill_ml": 93.38064783940648,
+     "sbp": 84.44855834545629,
+     "shed_ml": 312.75,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "20": {
+     "V": -48.123823450588596,
+     "circulating_ml": -48.1238234505886,
+     "crystalloid_ml": 0.0,
+     "do2": 0.9401065727290299,
+     "effective_deficit": 0.059893427270970134,
+     "hb": 6.396973193440598,
+     "hb_from_blood": 6.396973193440598,
+     "minute": 20,
+     "output_rel": 0.9405513957187199,
+     "plasma_ml": -38.42824663795545,
+     "red_cells": 0.9875017955149651,
+     "refill_ml": 1.8761765494113956,
+     "sbp": 95.3248128073424,
+     "shed_ml": 50.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "240": {
+     "V": -208.0096720674983,
+     "circulating_ml": -208.0096720674984,
+     "crystalloid_ml": 0.0,
+     "do2": 0.6942591912181172,
+     "effective_deficit": 0.3057408087818828,
+     "hb": 6.201570223861959,
+     "hb_from_blood": 6.201570223861959,
+     "minute": 240,
+     "output_rel": 0.7164731936275585,
+     "plasma_ml": -144.86707530624835,
+     "red_cells": 0.9186052463624511,
+     "refill_ml": 119.7403279325016,
+     "sbp": 85.24129371324013,
+     "shed_ml": 327.75,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "30": {
+     "V": -70.81832406285653,
+     "circulating_ml": -70.81832406285655,
+     "crystalloid_ml": 0.0,
+     "do2": 0.9103385078037748,
+     "effective_deficit": 0.08966149219622521,
+     "hb": 6.393229669083154,
+     "hb_from_blood": 6.393229669083154,
+     "minute": 30,
+     "output_rel": 0.9113025421437242,
+     "plasma_ml": -56.27774423919633,
+     "red_cells": 0.981256283821063,
+     "refill_ml": 4.1816759371434555,
+     "sbp": 94.00861439646759,
+     "shed_ml": 75.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "60": {
+     "V": -134.26666093363605,
+     "circulating_ml": -134.26666093363605,
+     "crystalloid_ml": 0.0,
+     "do2": 0.8218585939671916,
+     "effective_deficit": 0.17814140603280837,
+     "hb": 6.374285379839509,
+     "hb_from_blood": 6.374285379839509,
+     "minute": 60,
+     "output_rel": 0.8251740686141762,
+     "plasma_ml": -105.21476716299631,
+     "red_cells": 0.9625502931862847,
+     "refill_ml": 15.733339066363946,
+     "sbp": 90.13283308763793,
+     "shed_ml": 150.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    },
+    "90": {
+     "V": -191.97524600799971,
+     "circulating_ml": -191.97524600799974,
+     "crystalloid_ml": 0.0,
+     "do2": 0.7346359105624302,
+     "effective_deficit": 0.26536408943756984,
+     "hb": 6.345599983351432,
+     "hb_from_blood": 6.345599983351432,
+     "minute": 90,
+     "output_rel": 0.740933850216692,
+     "plasma_ml": -148.4662101150748,
+     "red_cells": 0.9439141334192764,
+     "refill_ml": 33.02475399200026,
+     "sbp": 86.34202325975114,
+     "shed_ml": 225.0,
+     "state": "CRITICAL",
+     "transfused_ml": 0.0,
+     "transfused_red_cells": 0.0
+    }
+   },
+   "profile_changes": {},
+   "v_highest": 0.0,
+   "v_lowest": -243.50001049826784
+  }
+ },
+ "probes_digest": "762cf32303815edb111ca884c82a373d0262c5ea690a63bdf33ec093f302113f",
+ "profile": {
+  "arrival_circulating_volume_ml": 4000.0,
+  "oxygen_extraction_reserve": 1.0,
+  "plasma_refill_capacity_ml": 1000.0,
+  "plasma_refill_target_share": 0.5,
+  "plasma_refill_tau_min": 120.0,
+  "preload_curve_scale_ml": 833.3333333333334,
+  "volume_preload_kappa": 1.0
+ },
+ "red_cell_unit": {
+  "hb_g_dl": 20.0,
+  "volume_ml": 300.0
+ },
+ "times": [
+  0,
+  10,
+  20,
+  30,
+  60,
+  90,
+  120,
+  180,
+  240
+ ]
+}

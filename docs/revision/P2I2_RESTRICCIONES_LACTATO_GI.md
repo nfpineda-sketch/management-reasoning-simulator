@@ -8,6 +8,10 @@
 > ninguna cifra canónica (reserva de extracción neutra 1), pero sí las fuentes del núcleo: el resumen de filtrado actual ya
 > no coincide, y `python -m clinical_core.lactate_constraints` rehúsa producir resultados nuevos hasta que se autorice el
 > refiltrado (`RESULTS_PENDING_REFILTER`).
+>
+> **P2I-2T (2026-10-27).** Después, el estado hemorrágico compartido reemplazó las dos derivas independientes del sangrado
+> (V y Hb) y cambió las trayectorias GI y el congelamiento de calibración. Estos resultados conservan el congelamiento con
+> el que se filtraron (`152abc6cf3e2812fcade237f60db0430df78749e09f4199b0a0fff13a0dd4338`) y siguen sin refiltrarse.
 
 Las decisiones FD-LAC-01 a FD-LAC-06 son **restricciones clínicas de comportamiento** aprobadas por la docencia
 (FACULTY_APPROVED). Restringen lo que puede hacer la trayectoria observable del lactato. **No aprueban ningún valor de

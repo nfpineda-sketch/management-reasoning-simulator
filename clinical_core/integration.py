@@ -8,17 +8,23 @@ One ``step`` integrates one minute:
 2. every contributor computes its contribution from the *same* state at the start of
    the minute, plus those signals -- so the order in which contributors are listed can
    never change the result (proposal §14.1, T3);
-3. the core adds its own coupling: the oxygen-delivery debt, from the deficit of delivery
+3. the shared blood state (P2I-2T) applies every declared blood flow and the core's plasma
+   refill, from the blood state at the start of the minute: whole blood leaves at its current
+   composition, a red-cell unit brings its own, crystalloid and refill bring none. V moves by
+   kappa x each flow's volume, attributed to the flow's source, and Hb by the change of the
+   red-cell concentration (a core coupling); no contributor writes V or Hb itself;
+4. the core adds its own coupling: the oxygen-delivery debt, from the deficit of delivery
    (flow, haemoglobin and saturation) below the metabolic demand that the case's baseline and
    the minute's declared modifiers give (KD-S1, P2E-2); lung water from excess preload on a
    pump without reserve (KD-S4); and it updates its own memory: lactate kinetics, from that
    debt, the common sympathetic drive, from the state the minute ends in (KD-S2), the
    demand of the minute and the collapse burden; when a declared collapse criterion is met,
    it moves the rhythm to a pulseless one (P2E-3);
-4. the deltas are summed per channel, the declared bounds are enforced and every clipped
+5. the deltas are summed per channel, the declared bounds are enforced and every clipped
    amount is recorded as a clamp delta, rhythm transitions and setting changes are
    applied, and the new state is checked: the change in every channel must equal the sum
-   of the deltas recorded for it.
+   of the deltas recorded for it, and the blood state, V and Hb must match the blood
+   changes recorded for the minute.
 
 Nothing reads a clock or a random generator. A contributor is a frozen specification:
 whatever it must remember between minutes lives in ``CoreState.internal`` under its own
@@ -27,23 +33,26 @@ source key, so a trajectory is a pure function of (anchors, contributors, minute
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, fields, is_dataclass
+from dataclasses import dataclass, fields, is_dataclass, replace
 from typing import Any, ClassVar, Iterable, Mapping, Sequence
 
-from .derived import (ADOPTED, AUXILIARY_SOURCES, COLLAPSE, DEFAULT_PROFILE, LUNG_WATER_CLEARANCE, PRELOAD_CONGESTION,
-                      PROVISIONAL, CoreProfile, Derived, arrival_state, collapse_burden_after_minute, collapse_reached,
-                      congestion_rate, derive, effective_delivery, effective_oxygen_deficit, lactate_after_minute,
-                      lung_water_clearance, oxygen_demand, sympathetic_after_minute, terminal_rhythm)
-from .provenance import (AuxiliaryChange, ChannelDelta, CoreEvent, DemandModifier, MinuteRecord, ProvenanceError,
-                         RhythmTransition, SettingChange, Source, SourceKind)
-from .state import (AUXILIARY_FIELDS, Anchors, AuxiliaryState, Channel, CoreInvariantError, CoreState, FrozenRecord,
-                    SCALAR_CHANNELS, digest, initial_state)
+from .derived import (ADOPTED, AUXILIARY_SOURCES, BLOOD_COMPOSITION, COLLAPSE, DEFAULT_PROFILE, LUNG_WATER_CLEARANCE,
+                      PLASMA_REFILL, PRELOAD_CONGESTION, PROVISIONAL, CoreProfile, Derived, arrival_state,
+                      blood_haemoglobin, collapse_burden_after_minute, collapse_reached, congestion_rate, derive,
+                      effective_delivery, effective_oxygen_deficit, lactate_after_minute, lung_water_clearance,
+                      oxygen_demand, plasma_refill, red_cell_content, sympathetic_after_minute, terminal_rhythm)
+from .provenance import (BLOOD_PROCESSES, AuxiliaryChange, BloodChange, BloodFlow, BloodProcess, ChannelDelta,
+                         CoreEvent, DemandModifier, MinuteRecord, ProvenanceError, RhythmTransition, SettingChange,
+                         Source, SourceKind)
+from .state import (AUXILIARY_FIELDS, BLOOD_FIELDS, Anchors, AuxiliaryState, BloodState, Channel, CoreInvariantError,
+                    CoreState, FrozenRecord, SCALAR_CHANNELS, UnresolvedBoundary, digest, initial_state)
 
 #: (lower, upper, status, why). A bound is a safety constraint, not physiology: every time one
 #: acts, the clipped amount is recorded as a clamp delta, so it is never silent.
 CHANNEL_BOUNDS: Mapping[Channel, tuple[float, float, str, str]] = {
-    Channel.V: (-3000.0, 3000.0, PROVISIONAL, "guard only; the family engine's circulation clamp [.25, 1.9] "
-                                              "is deliberately not adopted"),
+    Channel.V: (-3000.0, 3000.0, PROVISIONAL, "guard only, in mL-eq of circulating volume (applied to V scaled by "
+                                              "kappa, so it never separates kappa from the curve scale); the family "
+                                              "engine's circulation clamp [.25, 1.9] is deliberately not adopted"),
     Channel.T: (0.1, 3.0, PROVISIONAL, "guard only"),
     Channel.P: (0.1, 3.0, PROVISIONAL, "guard only"),
     Channel.L: (-10.0, 10.0, PROVISIONAL, "guard only; only the core's congestion and clearance write L yet"),
@@ -58,6 +67,29 @@ CHANNEL_BOUNDS: Mapping[Channel, tuple[float, float, str, str]] = {
 
 OXYGEN_DEBT = Source(SourceKind.CORE_COUPLING, "oxygen_debt")
 CONSERVATION_TOLERANCE = 1e-9   # floating-point noise only; not a clinical tolerance
+#: Channels only the shared blood state moves (P2I-2T): V by kappa x the circulating-volume
+#: change, Hb by the change of the red-cell concentration. A disease module, order or logistic
+#: process declares a ``BloodFlow`` instead; only a scripted probe still moves them directly.
+BLOOD_CHANNELS = frozenset({Channel.V, Channel.HB})
+#: Sources whose V and Hb deltas are not the blood state's: scripted probes and the bounds. What
+#: they move is accounted in ``BloodState.outside_v`` / ``outside_hb``.
+_OUTSIDE_BLOOD = frozenset({SourceKind.SCRIPTED_EVENT, SourceKind.CLAMP})
+
+
+def check_blood_identity(state: CoreState, anchors: Anchors, profile: CoreProfile) -> None:
+    """V = kappa x C + outside_v and Hb = composition + outside_hb (P2I-2T), or the state cannot exist.
+
+    Every state the core produces satisfies both; a state assembled or edited by hand, or resumed
+    under another kappa or arrival circulating volume, is refused here instead of carried forward.
+    """
+    blood = state.blood
+    volume = profile.volume_preload_kappa * blood.volume_ml + blood.outside_v
+    hb = blood_haemoglobin(blood, anchors, profile) + blood.outside_hb
+    if abs(state.V - volume) > CONSERVATION_TOLERANCE * max(1.0, abs(state.V), abs(volume)) \
+            or abs(state.hb - hb) > CONSERVATION_TOLERANCE * max(1.0, abs(state.hb), abs(hb)):
+        raise CoreInvariantError(f"minute {state.minute}: V {state.V!r} and Hb {state.hb!r} do not match the blood "
+                                 f"state ({volume!r}, {hb!r}): the state's V or Hb is not explained by its blood "
+                                 "state under this profile")
 
 
 @dataclass(frozen=True, order=True)
@@ -80,6 +112,7 @@ class Contribution:
     events: tuple[CoreEvent, ...] = ()
     internal: FrozenRecord | None = None     # the contributor's own internal state after this minute
     demand: tuple[DemandModifier, ...] = ()  # factors on metabolic oxygen demand for this minute (P2E-2)
+    blood: tuple[BloodFlow, ...] = ()        # what enters or leaves the circulation this minute (P2I-2T)
 
 
 NOTHING = Contribution()
@@ -182,14 +215,66 @@ def _oxygen_debt(state: CoreState, anchors: Anchors, profile: CoreProfile, minut
                         modulated_by=modulators if changed else ())
 
 
+def _blood_minute(state: CoreState, flows: Sequence[BloodFlow], anchors: Anchors, profile: CoreProfile,
+                  minute: int) -> tuple[BloodState, tuple[BloodChange, ...], list[ChannelDelta]]:
+    """The shared blood state over one minute (P2I-2T): the flows declared, then the core's refill.
+
+    Everything is read from the blood state at the start of the minute: the composition whole
+    blood leaves with, and the refill's distance from its target. Each change moves the
+    circulating volume; V moves by kappa x that volume, attributed to the change's source, and
+    Hb by the change of red-cell content over circulating volume, under the core's composition
+    coupling, modulated by the sources that changed it.
+    """
+    before = state.blood
+    current_hb = blood_haemoglobin(before, anchors, profile)
+    changes = []
+    for flow in flows:
+        carries_cells = BLOOD_PROCESSES[flow.process][2] is not None
+        hb = (current_hb if flow.process is BloodProcess.WHOLE_BLOOD_LOSS else flow.hb_g_dl) if carries_cells else 0.0
+        changes.append(BloodChange(flow.process, flow.volume_ml,
+                                   red_cell_content(flow.volume_ml, hb, anchors, profile) if carries_cells else 0.0,
+                                   hb, flow.source, minute, flow.description, flow.modulated_by))
+    refill = plasma_refill(before, profile)
+    if refill > 0:
+        changes.append(BloodChange(BloodProcess.PLASMA_REFILL, refill, 0.0, 0.0, PLASMA_REFILL, minute,
+                                   "plasma refilling part of the shed volume from the interstitium"))
+    after = _blood_after(before, changes)
+    deltas = [ChannelDelta(Channel.V, profile.volume_preload_kappa * change.signed_volume_ml, change.source, minute,
+                           change.description, change.modulated_by) for change in changes]
+    if changes:
+        hb_change = blood_haemoglobin(after, anchors, profile) - current_hb
+        if hb_change:
+            deltas.append(ChannelDelta(Channel.HB, hb_change, BLOOD_COMPOSITION, minute,
+                                       "haemoglobin concentration: red-cell content over circulating volume",
+                                       modulated_by=tuple(sorted({change.source for change in changes}))))
+    return after, tuple(changes), deltas
+
+
+def _blood_after(before: BloodState, changes: Sequence[BloodChange]) -> BloodState:
+    """Each blood-state field plus the changes of the process that owns it."""
+    added = {name: [getattr(before, name)] for name in BLOOD_FIELDS}
+    for change in changes:
+        _, volume, cells, _ = BLOOD_PROCESSES[change.process]
+        added[volume].append(change.volume_ml)
+        if cells is not None:
+            added[cells].append(change.red_cells)
+    return replace(before, **{name: math.fsum(values) for name, values in added.items()})
+
+
 def _check_owned(contributor: Contributor, contribution: Contribution, minute: int) -> None:
     if not isinstance(contribution, Contribution):
         raise ProvenanceError(f"{contributor.source.key} must return a Contribution")
     if not isinstance(contribution.demand, tuple) or any(not isinstance(item, DemandModifier)
                                                          for item in contribution.demand):
         raise ProvenanceError(f"{contributor.source.key}: demand is modified only by a tuple of DemandModifier records")
+    if not isinstance(contribution.blood, tuple) or any(not isinstance(item, BloodFlow) for item in contribution.blood):
+        raise ProvenanceError(f"{contributor.source.key}: the circulation changes only by a tuple of BloodFlow records")
+    if contributor.source.kind is not SourceKind.SCRIPTED_EVENT and any(delta.channel in BLOOD_CHANNELS
+                                                                         for delta in contribution.deltas):
+        raise ProvenanceError(f"{contributor.source.key} wrote V or Hb directly: volume and red cells move only "
+                              "through the shared blood state (a BloodFlow, P2I-2T)")
     for item in (contribution.deltas + contribution.transitions + contribution.settings + contribution.events
-                 + contribution.demand):
+                 + contribution.demand + contribution.blood):
         if item.source != contributor.source:
             raise ProvenanceError(f"{contributor.source.key} wrote a change attributed to {item.source.key}")
         if item.minute != minute:
@@ -220,6 +305,7 @@ def _ordered(contributors: Sequence[Contributor]) -> tuple[Contributor, ...]:
 def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors,
          profile: CoreProfile = DEFAULT_PROFILE) -> tuple[CoreState, MinuteRecord]:
     """Integrate minute ``state.minute + 1``. Returns the new state and what was applied."""
+    check_blood_identity(state, anchors, profile)
     minute = state.minute + 1
     ordered = _ordered(contributors)
     signals = []
@@ -238,7 +324,7 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
     if clearance:
         deltas.append(ChannelDelta(Channel.L, -clearance, LUNG_WATER_CLEARANCE, minute,
                                    "lung water above arrival clearing slowly"))
-    transitions, settings, events, modifiers = [], [], [], []
+    transitions, settings, events, modifiers, flows = [], [], [], [], []
     internal = {}
     for contributor in ordered:
         # A contributor sees only the signals it declares it responds to.
@@ -250,8 +336,13 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
         settings.extend(contribution.settings)
         events.extend(contribution.events)
         modifiers.extend(contribution.demand)
+        flows.extend(contribution.blood)
         if contribution.internal is not None:
             internal[contributor.source.key] = contribution.internal
+    # V and Hb written directly this minute: only a scripted probe may (``_check_owned``).
+    direct = {channel: [delta.amount for delta in deltas if delta.channel is channel] for channel in BLOOD_CHANNELS}
+    blood, blood_changes, blood_deltas = _blood_minute(state, flows, anchors, profile, minute)
+    deltas.extend(blood_deltas)
     # The minute's demand: the case's baseline times every declared factor (P2E-2). The debt
     # stays the first delta of the minute, as it was before demand had a state.
     demand = oxygen_demand(anchors, modifiers)
@@ -274,17 +365,32 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
         before = state.value(channel)
         proposed = before + math.fsum(delta.amount for delta in deltas if delta.channel is channel)
         lower, upper, _, why = CHANNEL_BOUNDS[channel]
+        if channel is Channel.V:
+            lower, upper = lower * profile.volume_preload_kappa, upper * profile.volume_preload_kappa
         bounded = min(upper, max(lower, proposed))
         if bounded != proposed:
+            if channel in BLOOD_CHANNELS and any(delta.channel is channel and delta.source.kind not in _OUTSIDE_BLOOD
+                                                 for delta in deltas):
+                # A bound on V or Hb is a guard, not physiology: cutting what the blood state moved
+                # would part the channel from it, so the run stops (P2I-2T, as P2D-2).
+                raise UnresolvedBoundary(f"minute {minute}: the shared blood state takes {channel.value} to "
+                                         f"{proposed!r}, outside its guard [{lower:g}, {upper:g}] ({why}); no rule "
+                                         "for that boundary is decided")
             deltas.append(ChannelDelta(channel, bounded - proposed, Source(SourceKind.CLAMP, f"bounds:{channel.value}"),
                                        minute, f"held within [{lower:g}, {upper:g}] ({why})"))
         values[channel.value] = bounded
+    outside = {channel: math.fsum(direct[channel] + [delta.amount for delta in deltas if delta.channel is channel
+                                                     and delta.source.kind is SourceKind.CLAMP])
+               for channel in BLOOD_CHANNELS}
+    if any(outside.values()):
+        blood = replace(blood, outside_v=math.fsum((blood.outside_v, outside[Channel.V])),
+                        outside_hb=math.fsum((blood.outside_hb, outside[Channel.HB])))
     rhythm = _rhythm_after(state, transitions)
     fio2 = _setting_after(state.fio2, "fio2", settings)
     terminal = state.terminal_since if state.terminal_since is not None else (None if rhythm.pulse_present else minute)
     new_internal = state.internal.updated(**internal) if internal else state.internal
     new_state = state.evolve(minute=minute, R=rhythm, fio2=fio2, terminal_since=terminal, internal=new_internal,
-                             **values)
+                             blood=blood, **values)
     # The core's auxiliary state (P2D-1). Lactate follows the debt of the minute before; the
     # drive answers to the state the minute ends in, so a fall in pressure raises the rate in
     # the same minute and only its decay is lagged.
@@ -297,8 +403,9 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
                     for name in AUXILIARY_FIELDS if getattr(aux, name) != getattr(state.aux, name))
     record = MinuteRecord(minute=minute, deltas=tuple(deltas), transitions=tuple(transitions),
                           settings=tuple(settings), events=tuple(events), internal_updates=tuple(sorted(internal)),
-                          auxiliary=changes, demand=tuple(modifiers))
+                          auxiliary=changes, demand=tuple(modifiers), blood=blood_changes)
     _check_conservation(state, new_state, record)
+    _check_blood(state, new_state, record, anchors, profile)
     derive(new_state, anchors, profile)   # the observation invariants hold, or this minute fails
     return new_state, record
 
@@ -341,6 +448,76 @@ def _check_conservation(before: CoreState, after: CoreState, record: MinuteRecor
             raise ProvenanceError(f"{channel.value} changed by {change!r} but its recorded deltas sum to {total!r}")
 
 
+def _check_blood(before: CoreState, after: CoreState, record: MinuteRecord, anchors: Anchors,
+                 profile: CoreProfile) -> None:
+    """The shared blood state, V and Hb are accounted for by the minute's blood changes (P2I-2T).
+
+    - every blood-state field changed by exactly the changes of the process that owns it, and no
+      field ever fell (they are cumulative);
+    - the V deltas of every source but scripted probes and bounds sum to kappa x the circulating
+      volume those sources moved: no bleed, fluid or refill moves V outside the blood state, and
+      none twice;
+    - the Hb deltas of every source but scripted probes and bounds are the composition coupling's,
+      and sum to the change of red-cell content over circulating volume: Hb never moves without a
+      red-cell or volume change to explain it;
+    - every change carries the red cells the composition gives, and refill is what the blood
+      state at the start of the minute gives;
+    - what probes and bounds moved is accounted in ``outside_v`` / ``outside_hb``, so V = kappa x C
+      + outside_v and Hb = composition + outside_hb hold after every minute.
+    """
+    current = blood_haemoglobin(before.blood, anchors, profile)
+    for change in record.blood:
+        # Each record carries the composition the core resolved: the current Hb for whole blood, the
+        # unit's for a transfusion, none for crystalloid and refill.
+        hb = (current if change.process is BloodProcess.WHOLE_BLOOD_LOSS else change.hb_g_dl) \
+            if BLOOD_PROCESSES[change.process][2] is not None else 0.0
+        cells = red_cell_content(change.volume_ml, hb, anchors, profile) if hb else 0.0
+        if abs(change.hb_g_dl - hb) > CONSERVATION_TOLERANCE * max(1.0, hb) \
+                or abs(change.red_cells - cells) > CONSERVATION_TOLERANCE * max(1.0, cells):
+            raise ProvenanceError(f"{change.process.value} from {change.source.key} carries red cells the "
+                                  "composition does not give")
+    refill = math.fsum(c.volume_ml for c in record.blood if c.process is BloodProcess.PLASMA_REFILL)
+    if abs(refill - plasma_refill(before.blood, profile)) > CONSERVATION_TOLERANCE * max(1.0, refill):
+        raise ProvenanceError("plasma refill differs from what the blood state at the start of the minute gives")
+    expected = _blood_after(before.blood, record.blood)
+    for name in BLOOD_FIELDS:
+        old, new, want = getattr(before.blood, name), getattr(after.blood, name), getattr(expected, name)
+        if new < old or abs(new - want) > CONSERVATION_TOLERANCE * max(1.0, abs(want)):
+            raise ProvenanceError(f"blood {name} changed from {old!r} to {new!r} but its recorded changes give {want!r}")
+    volume = profile.volume_preload_kappa * math.fsum(change.signed_volume_ml for change in record.blood
+                                                      if change.source.kind not in _OUTSIDE_BLOOD)
+    moved = math.fsum(delta.amount for delta in record.deltas
+                      if delta.channel is Channel.V and delta.source.kind not in _OUTSIDE_BLOOD)
+    if abs(moved - volume) > CONSERVATION_TOLERANCE * max(1.0, abs(before.V), abs(after.V)):
+        raise ProvenanceError(f"V moved by {moved!r} outside probes and bounds, but kappa x the circulating-volume "
+                              f"change is {volume!r}")
+    hb_deltas = [delta for delta in record.deltas
+                 if delta.channel is Channel.HB and delta.source.kind not in _OUTSIDE_BLOOD]
+    if any(delta.source != BLOOD_COMPOSITION for delta in hb_deltas):
+        raise ProvenanceError("only the blood composition moves Hb outside probes and bounds")
+    concentration = blood_haemoglobin(after.blood, anchors, profile) - blood_haemoglobin(before.blood, anchors, profile)
+    if abs(math.fsum(delta.amount for delta in hb_deltas) - concentration) > CONSERVATION_TOLERANCE * max(
+            1.0, before.hb, after.hb):
+        raise ProvenanceError("Hb moved without the red-cell or volume change that explains it")
+    # The V delta of every blood change, as _blood_minute writes it; the rest of the probes' and the
+    # bounds' V and Hb deltas moved those channels outside the blood state.
+    mapped = [(c.source, c.description, profile.volume_preload_kappa * c.signed_volume_ml) for c in record.blood]
+    outside = {Channel.V: [], Channel.HB: []}
+    for delta in record.deltas:
+        if delta.channel not in BLOOD_CHANNELS or delta.source.kind not in _OUTSIDE_BLOOD:
+            continue
+        key = (delta.source, delta.description, delta.amount)
+        if delta.channel is Channel.V and key in mapped:
+            mapped.remove(key)
+        else:
+            outside[delta.channel].append(delta.amount)
+    for channel, name in ((Channel.V, "outside_v"), (Channel.HB, "outside_hb")):
+        moved = math.fsum([getattr(before.blood, name)] + outside[channel])
+        if abs(getattr(after.blood, name) - moved) > CONSERVATION_TOLERANCE * max(1.0, abs(moved)):
+            raise ProvenanceError(f"blood {name} is not what probes and bounds moved")
+    check_blood_identity(after, anchors, profile)
+
+
 @dataclass(frozen=True)
 class Trajectory:
     anchors: Anchors
@@ -372,6 +549,7 @@ def run(anchors: Anchors, contributors: Sequence[Contributor], minutes: int,
         raise CoreInvariantError("a minute-0 initial state is the case's arrival (derived.arrival_state); this one "
                                  "is not, so the run would start from a different patient")
     state = arrival if initial is None else initial
+    check_blood_identity(state, anchors, profile)
     derive(state, anchors, profile)
     ordered = _ordered(tuple(contributors))
     states, records = [state], []

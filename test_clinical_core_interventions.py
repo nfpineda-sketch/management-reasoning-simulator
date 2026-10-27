@@ -1,14 +1,18 @@
 """Phase 2 shadow core, WP2-3: interventions keep their order's identity and their timing.
 
 Fluid magnitudes are the family engine's GI_BLEED values converted to mL-equivalents
-(0.00015 circulation/mL x 833.3 = 0.125 mL-eq/mL; 60 % transient, tau 30 min; 0.0006 g/dL
-per mL), and one red-cell unit is 300 mL-eq and 0.85 g/dL (family_engine._minute).
+(0.00015 circulation/mL x 833.3 = 0.125 mL-eq/mL; 60 % transient, tau 30 min), and one
+red-cell unit is 300 mL-eq (family_engine._minute) at a provisional 20 g/dL. Since P2I-2T
+neither order writes Hb: both declare blood flows, and Hb is the shared blood state's
+red-cell content over circulating volume, so the delivery is read from the flows.
 """
 import json
 
 import pytest
 
 from clinical_core import Anchors, Channel, CoreInvariantError, RhythmState, SourceKind, attribution, run
+from clinical_core.derived import DEFAULT_PROFILE, blood_haemoglobin
+from clinical_core.provenance import BloodProcess
 from clinical_core.integration import scenario_from_dict, scenario_to_dict
 from clinical_core.interventions import Crystalloid, Oxygen, PackedRedCells, ProtonPumpInhibitor
 from clinical_core.modules import GIHaemorrhage
@@ -16,23 +20,30 @@ from clinical_core.modules import GIHaemorrhage
 ARRIVAL = Anchors(case_id="gi_bleed_72f", sbp=98.0, dbp=62.0, hr=112.0, spo2=96.0, respiratory_rate=24.0, crt_s=4.0,
                   lactate=3.4, hb=6.4, glucose=130.0, k=4.1, fio2=0.21, rhythm=RhythmState.sinus(112.0),
                   consciousness_level=0)
-BLEED = GIHaemorrhage("gi_haemorrhage", 2.5, 0.009, 0.8, 0.1)
+BLEED = GIHaemorrhage("gi_haemorrhage", 2.5, 0.8, 0.1)
+B0 = DEFAULT_PROFILE.arrival_circulating_volume_ml
 
 
 def saline(order_id="order-saline", start=0, volume=1000.0, duration=None, stop=None, ahead=0.0):
     return Crystalloid(order_id, start, volume, duration, untimed_rate_ml_per_min=50.0, effective_ml_per_ml=0.125,
-                       transient_share=0.6, leak_tau_min=30.0, hb_dilution_g_dl_per_ml=0.0006, stop_minute=stop,
+                       transient_share=0.6, leak_tau_min=30.0, stop_minute=stop,
                        stopped_by=None if stop is None else "order-stop", queued_ahead_ml=ahead)
 
 
 def blood(order_id="order-prbc", start=0, units=2.0, duration=None, stop=None):
     return PackedRedCells(order_id, start, units, duration, untimed_units_per_min=1 / 30, volume_ml_per_unit=300.0,
-                          hb_g_dl_per_unit=0.85, stop_minute=stop)
+                          unit_hb_g_dl=20.0, stop_minute=stop)
 
 
 def from_order(trajectory, order_id, channel):
     return [sum(d.amount for d in record.deltas if d.channel is channel and d.source.id == order_id)
             for record in trajectory.records]
+
+
+def given(trajectory, order_id):
+    """mL of crystalloid given per minute, read from the volume each order brought into the circulation."""
+    return [sum(c.volume_ml for c in record.blood if c.source.id == order_id
+                and c.process is BloodProcess.CRYSTALLOID_IN) / 0.125 for record in trajectory.records]
 
 
 def delivered(trajectory, order_id, field="delivered_ml"):
@@ -41,8 +52,8 @@ def delivered(trajectory, order_id, field="delivered_ml"):
 
 def test_an_order_acts_only_from_the_minute_after_it_is_given():
     trajectory = run(ARRIVAL, (saline(start=5, duration=20.0),), 40)
-    hb = from_order(trajectory, "order-saline", Channel.HB)
-    assert hb[:5] == [0.0] * 5 and all(value == pytest.approx(-0.03) for value in hb[5:25]) and hb[25:] == [0.0] * 15
+    rate = given(trajectory, "order-saline")
+    assert rate[:5] == [0.0] * 5 and all(value == pytest.approx(50.0) for value in rate[5:25]) and rate[25:] == [0.0] * 15
     assert delivered(trajectory, "order-saline") == pytest.approx(1000.0)
     volume = from_order(trajectory, "order-saline", Channel.V)
     assert volume[:5] == [0.0] * 5 and volume[5] > 0
@@ -51,27 +62,36 @@ def test_an_order_acts_only_from_the_minute_after_it_is_given():
 
 def test_an_untimed_litre_runs_at_the_default_rate():
     trajectory = run(ARRIVAL, (saline(),), 30)
-    hb = from_order(trajectory, "order-saline", Channel.HB)
-    assert all(value == pytest.approx(-0.03) for value in hb[:20]) and hb[20:] == [0.0] * 10
+    rate = given(trajectory, "order-saline")
+    assert all(value == pytest.approx(50.0) for value in rate[:20]) and rate[20:] == [0.0] * 10
 
 
 def test_a_stopped_bag_keeps_what_it_delivered():
     trajectory = run(ARRIVAL, (saline(start=5, duration=20.0, stop=10),), 30)
     assert delivered(trajectory, "order-saline") == pytest.approx(250.0)
-    assert from_order(trajectory, "order-saline", Channel.HB)[10:] == [0.0] * 20
+    assert given(trajectory, "order-saline")[10:] == [0.0] * 20
 
 
 def test_crystalloid_dilutes_and_redistributes():
     trajectory = run(ARRIVAL, (saline(),), 240)
-    assert trajectory.states[-1].hb == pytest.approx(6.4 - 0.6)
     retained = trajectory.states[-1].V
     assert retained == pytest.approx(1000 * 0.125 * 0.4, rel=1e-3), "40 % of the expansion stays"
     assert attribution(trajectory.records, Channel.V) == {"intervention:order-saline": pytest.approx(retained)}
+    # Dilution is the blood state's: no red cells in, volume in; it reverses as far as the volume leaves.
+    assert trajectory.states[-1].hb == pytest.approx(6.4 * B0 / (B0 + retained))
+    lowest = min(state.hb for state in trajectory.states)
+    peak = max(state.V for state in trajectory.states)
+    assert lowest == pytest.approx(6.4 * B0 / (B0 + peak)) and lowest < trajectory.states[-1].hb < 6.4
+    assert trajectory.states[-1].blood.red_cells == 1.0
 
 
 def test_blood_stays_in_the_vessels_and_carries_oxygen():
     trajectory = run(ARRIVAL, (blood(units=1.0),), 40)
-    assert trajectory.states[-1].V == pytest.approx(300.0) and trajectory.states[-1].hb == pytest.approx(6.4 + 0.85)
+    content = 1 + 300.0 * 20.0 / (6.4 * B0)
+    assert trajectory.states[-1].V == pytest.approx(300.0)
+    assert trajectory.states[-1].hb == pytest.approx(6.4 * content * B0 / (B0 + 300.0))
+    assert trajectory.states[-1].hb > 6.4 + 0.5
+    assert trajectory.states[-1].blood.red_cells == pytest.approx(content)
     assert delivered(trajectory, "order-prbc", "delivered_units") == pytest.approx(1.0)
     assert from_order(trajectory, "order-prbc", Channel.V)[30:] == [0.0] * 10
 
@@ -111,8 +131,10 @@ def test_every_change_names_the_order_that_caused_it():
               ProtonPumpInhibitor("order-d", 0))
     trajectory = run(ARRIVAL, (BLEED,) + orders, 60)
     sources = {d.source.key for record in trajectory.records for d in record.deltas}
-    assert sources == {"core_coupling:oxygen_debt", "disease_module:gi_haemorrhage", "intervention:order-a",
-                       "intervention:order-b"}
+    named = {"core_coupling:oxygen_debt", "disease_module:gi_haemorrhage", "intervention:order-a",
+             "intervention:order-b", "core_coupling:blood_composition"}
+    # Refill acts only while the circulation is below arrival (P2I-2T), which these orders may prevent.
+    assert named <= sources <= named | {"core_coupling:plasma_refill"}
     volume = attribution(trajectory.records, Channel.V)
     assert volume["intervention:order-b"] == pytest.approx(300.0)
     assert sum(volume.values()) == pytest.approx(trajectory.states[-1].V)
@@ -135,7 +157,7 @@ def test_a_scenario_with_orders_replays_from_its_serialized_form():
 def test_impossible_orders_are_refused():
     for build in (lambda: saline(volume=-1.0), lambda: saline(duration=0.0), lambda: saline(stop=-1),
                   lambda: saline(ahead=-5.0), lambda: saline(duration=20.0, ahead=100.0),
-                  lambda: Crystalloid("x", 0, 500.0, None, 50.0, .125, .6, 30.0, .0006, stop_minute=4),
+                  lambda: Crystalloid("x", 0, 500.0, None, 50.0, .125, .6, 30.0, stop_minute=4),
                   lambda: blood(units=0.0), lambda: Oxygen("o", 0, 0.1), lambda: Oxygen("o", -1, 0.4),
                   lambda: Oxygen("o", 5, 0.4, stop_minute=5), lambda: Oxygen("o", 1.5, 0.4),
                   lambda: ProtonPumpInhibitor("p", 3, 2)):
@@ -147,16 +169,15 @@ def test_untimed_orders_share_one_line():
     """A second untimed litre given at minute 5 waits for the 750 mL still running: 50 mL/min in all."""
     first, second = saline("order-a"), saline("order-b", start=5, ahead=750.0)
     trajectory = run(ARRIVAL, (first, second), 50)
-    total = [-(a + b) / 0.0006 for a, b in zip(from_order(trajectory, "order-a", Channel.HB),
-                                                 from_order(trajectory, "order-b", Channel.HB))]
+    total = [a + b for a, b in zip(given(trajectory, "order-a"), given(trajectory, "order-b"))]
     assert all(value == pytest.approx(50.0) for value in total[:40]) and total[40:] == [0.0] * 10
-    assert from_order(trajectory, "order-b", Channel.HB)[:20] == [0.0] * 20
+    assert given(trajectory, "order-b")[:20] == [0.0] * 20
 
 
 def test_a_queued_bag_starts_where_its_receipt_says_even_mid_minute():
     trajectory = run(ARRIVAL, (saline("order-q", start=7.5, duration=10.0),), 20)
-    hb = from_order(trajectory, "order-q", Channel.HB)
-    assert hb[:7] == [0.0] * 7 and hb[7] == pytest.approx(-0.0006 * 50.0) and hb[8] == pytest.approx(-0.0006 * 100.0)
+    rate = given(trajectory, "order-q")
+    assert rate[:7] == [0.0] * 7 and rate[7] == pytest.approx(50.0) and rate[8] == pytest.approx(100.0)
     assert delivered(trajectory, "order-q") == pytest.approx(1000.0)
 
 

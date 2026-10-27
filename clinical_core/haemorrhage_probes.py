@@ -25,6 +25,8 @@ from . import hemodynamic_probes as hp
 from .bands import Drift
 from .derived import DEFAULT_PROFILE, arrival_state
 from .interventions.fluids import Crystalloid, PackedRedCells
+from . import legacy_adapter
+from .legacy_adapter import LEGACY_LITERALS
 from .modules import GIHaemorrhage
 
 RESERVE = hp.RESERVE
@@ -86,6 +88,16 @@ def _saline_peak(case: str) -> float:
     return max(row["V"] for row in _gi_run(case, CURRENT_SCALE, (bag,)))
 
 
+#: P2I-2T: the Hb drifts this audit describes are no longer in the core (they were the GI module's,
+#: the crystalloid's and the red-cell order's own); they stay here as the legacy references they were.
+LEGACY_HB_PER_MIN = LEGACY_LITERALS["gi_bleeding_hemoglobin_per_min"][0]
+LEGACY_HB_PER_UNIT = LEGACY_LITERALS["blood_hemoglobin_per_unit"][0]
+
+
+def _legacy_dilution_per_ml() -> float:
+    return float(legacy_adapter._engine().GI_BLEED["hemodilution_g_dl_per_ml"])
+
+
 def audit() -> dict:
     out = {}
     for case in CASES:
@@ -93,10 +105,10 @@ def audit() -> dict:
         bleed, saline, prbc = inputs["bleed"], inputs["saline"], inputs["prbc"]
         anchors = gi_reference.canonical_anchors(case)
         bands = gi_reference.case_bands(case)
-        two_hours = {"v_loss": bleed.volume_loss_ml_per_min * 120, "hb_fall": bleed.hb_loss_g_dl_per_min * 120}
+        two_hours = {"v_loss": bleed.blood_loss_ml_per_min * 120, "hb_fall": LEGACY_HB_PER_MIN * 120}
         saline_given = 2000.0
         saline_peak = saline_given * saline.effective_ml_per_ml
-        saline_fall = saline_given * saline.hb_dilution_g_dl_per_ml
+        saline_fall = saline_given * _legacy_dilution_per_ml()
         out[case] = {
             "arrival": {"V": 0.0, "hb": anchors.hb, "preload_fraction_band": [bands["preload_fraction"].lower,
                                                                                bands["preload_fraction"].midpoint,
@@ -104,15 +116,15 @@ def audit() -> dict:
                         "reference_preload_fraction_band": [bands["reference_preload_fraction"].lower,
                                                             bands["reference_preload_fraction"].midpoint,
                                                             bands["reference_preload_fraction"].upper]},
-            "bleed": {"v_ml_eq_per_min": bleed.volume_loss_ml_per_min, "hb_g_dl_per_min": bleed.hb_loss_g_dl_per_min,
-                      "hb_per_v": bleed.hb_loss_g_dl_per_min / bleed.volume_loss_ml_per_min,
+            "bleed": {"v_ml_eq_per_min": bleed.blood_loss_ml_per_min, "hb_g_dl_per_min": LEGACY_HB_PER_MIN,
+                      "hb_per_v": LEGACY_HB_PER_MIN / bleed.blood_loss_ml_per_min,
                       "fraction_with_ppi": bleed.fraction_with_ppi,
                       "fraction_after_haemostasis": bleed.fraction_after_hemostasis, **two_hours,
                       "relative_hb_fall": two_hours["hb_fall"] / anchors.hb,
                       "implied": [implied_bleed(anchors.hb, two_hours["hb_fall"], two_hours["v_loss"], mixing)
                                   for mixing in MIXING_VOLUMES]},
-            "prbc": {"v_ml_eq_per_unit": prbc.volume_ml_per_unit, "hb_g_dl_per_unit": prbc.hb_g_dl_per_unit,
-                     "implied_unit_hb_g_dl": [implied_prbc_hb(anchors.hb, prbc.hb_g_dl_per_unit, prbc.volume_ml_per_unit,
+            "prbc": {"v_ml_eq_per_unit": prbc.volume_ml_per_unit, "hb_g_dl_per_unit": LEGACY_HB_PER_UNIT,
+                     "implied_unit_hb_g_dl": [implied_prbc_hb(anchors.hb, LEGACY_HB_PER_UNIT, prbc.volume_ml_per_unit,
                                                               mixing) for mixing in MIXING_VOLUMES]},
             "saline_2l": {"v_gross_gain_ml_eq": saline_peak, "v_peak_in_run_ml_eq": _saline_peak(case),
                           "v_retained_ml_eq": saline_peak * (1 - saline.transient_share),
@@ -165,8 +177,8 @@ def anchor_scenarios() -> dict:
         for scale in TRAJECTORY_SCALES:
             profile = gi_profile(scale)
             out[f"{case} {scale:g}"] = {
-                name: static_row(anchors, profile, bleed.volume_loss_ml_per_min * minutes,
-                                 bleed.hb_loss_g_dl_per_min * minutes) for name, minutes in ANCHORS.items()}
+                name: static_row(anchors, profile, bleed.blood_loss_ml_per_min * minutes,
+                                 LEGACY_HB_PER_MIN * minutes) for name, minutes in ANCHORS.items()}
     return out
 
 
@@ -192,24 +204,24 @@ def grid() -> list:
     """Every scale x position from the 57m arrival (its Hb, re-anchored DO2), the GI bleed applied as
     V and Hb at each anchor; plus the loss to the critical boundary from a normal-DO2 arrival."""
     bleed, prbc = _inputs()["bleed"], _inputs()["prbc"]
-    losses = {name: bleed.volume_loss_ml_per_min * minutes for name, minutes in ANCHORS.items()}
+    losses = {name: bleed.blood_loss_ml_per_min * minutes for name, minutes in ANCHORS.items()}
     rows = []
     for scale in SCALES:
         for position in POSITIONS:
             anchors, profile = gi_anchors(CASES[0], position), gi_profile(scale)
-            points = {name: static_row(anchors, profile, losses[name], bleed.hb_loss_g_dl_per_min * minutes)
+            points = {name: static_row(anchors, profile, losses[name], LEGACY_HB_PER_MIN * minutes)
                       for name, minutes in ANCHORS.items()}
             outputs = {name: point["output_rel"] for name, point in points.items()}
             zero_flow = hp.zero_flow_distance(position, scale)
             to = {f"{level:g}": hp.loss_to(position, 1.0, level, relative=True, preload_curve_scale_ml=scale)
                   for level in (0.75, 0.5)}
-            minutes = {level: (None if loss is None else loss / bleed.volume_loss_ml_per_min)
+            minutes = {level: (None if loss is None else loss / bleed.blood_loss_ml_per_min)
                        for level, loss in to.items()}
             rows.append({"scale": scale, "position": position, "zero_flow_ml": zero_flow,
-                         "bleed_over_scale_per_min": bleed.volume_loss_ml_per_min / scale,
+                         "bleed_over_scale_per_min": bleed.blood_loss_ml_per_min / scale,
                          "unit_over_scale": prbc.volume_ml_per_unit / scale,
                          "zero_flow_over_scale": zero_flow / scale,
-                         "zero_flow_minutes": zero_flow / bleed.volume_loss_ml_per_min,
+                         "zero_flow_minutes": zero_flow / bleed.blood_loss_ml_per_min,
                          "minutes_to_output": minutes, "example_window": _example(minutes["0.5"]),
                          "points": {name: {key: point[key] for key in ("output_rel", "do2", "deficit_fraction",
                                                                        "perfusing")}
@@ -218,7 +230,7 @@ def grid() -> list:
                                                                             preload_curve_scale_ml=scale),
                          # A second, independent anchor: the output after one unit's volume (static).
                          "output_after_one_unit": static_row(anchors, profile, -prbc.volume_ml_per_unit,
-                                                             -prbc.hb_g_dl_per_unit)["output_rel"],
+                                                             -LEGACY_HB_PER_UNIT)["output_rel"],
                          "region": _region(outputs, zero_flow, losses)})
     return rows
 
@@ -339,7 +351,7 @@ def _scaled_inputs(items: tuple, volume: float = 1.0, bleed: float = 1.0, unit: 
     out = []
     for item in items:
         if isinstance(item, GIHaemorrhage):
-            item = replace(item, volume_loss_ml_per_min=item.volume_loss_ml_per_min * bleed * volume)
+            item = replace(item, blood_loss_ml_per_min=item.blood_loss_ml_per_min * bleed * volume)
         elif isinstance(item, PackedRedCells):
             item = replace(item, volume_ml_per_unit=item.volume_ml_per_unit * unit * volume)
         elif isinstance(item, Crystalloid):
@@ -362,7 +374,7 @@ def gauge() -> dict:
                           + [abs(a[name] - b[name]) for a, b in zip(base, doubled) for name in ("output_rel", "do2", "D")])
     inputs = _inputs()
     return {"largest_change_when_doubled": largest,
-            "bleed_over_scale_per_min": inputs["bleed"].volume_loss_ml_per_min / CURRENT_SCALE,
+            "bleed_over_scale_per_min": inputs["bleed"].blood_loss_ml_per_min / CURRENT_SCALE,
             "unit_over_scale": inputs["prbc"].volume_ml_per_unit / CURRENT_SCALE,
             "saline_over_scale_per_ml": inputs["saline"].effective_ml_per_ml / CURRENT_SCALE}
 
@@ -380,12 +392,12 @@ def fixed_zero_flow() -> dict:
     for scale in FIXED_ZERO_FLOW_SCALES:
         position = -math.expm1(-FIXED_ZERO_FLOW / scale)
         anchors, profile = gi_anchors(CASES[0], position), gi_profile(scale)
-        loss = {name: static_row(anchors, profile, bleed.volume_loss_ml_per_min * minutes,
-                                 bleed.hb_loss_g_dl_per_min * minutes)["output_rel"] for name, minutes in ANCHORS.items()}
+        loss = {name: static_row(anchors, profile, bleed.blood_loss_ml_per_min * minutes,
+                                 LEGACY_HB_PER_MIN * minutes)["output_rel"] for name, minutes in ANCHORS.items()}
         half = hp.loss_to(position, 1.0, 0.5, relative=True, preload_curve_scale_ml=scale)
-        two_units = static_row(anchors, profile, -2 * prbc.volume_ml_per_unit, -2 * prbc.hb_g_dl_per_unit)["output_rel"]
+        two_units = static_row(anchors, profile, -2 * prbc.volume_ml_per_unit, -2 * LEGACY_HB_PER_UNIT)["output_rel"]
         out[f"{scale:g}"] = {"position": position, "loss_outputs": loss,
-                             "minutes_to_half_output": half / bleed.volume_loss_ml_per_min,
+                             "minutes_to_half_output": half / bleed.blood_loss_ml_per_min,
                              "output_after_two_units": two_units}
     return out
 
@@ -449,6 +461,17 @@ def envelopes() -> dict:
 
 
 # The report ----------------------------------------------------------------------------------------
+
+
+#: P2I-2T (2026-10-27): this audit describes the shadow core before the shared blood state replaced
+#: the GI module's independent V and Hb drifts. Its committed JSON and document stay as the historical
+#: record they were accepted as (probes digest below) and are not regenerated: the command refuses to
+#: produce new results, and only re-renders the committed JSON. None for an authorized re-audit.
+HISTORICAL = {"probes_digest": "760627b365b161b166872b932b2bd5cf4fdba6b3507ad17a28215dfb2a8f1357",
+              "since": "2026-10-27",
+              "reason": "P2I-2T replaced the independent haemorrhage drifts with the shared blood state; this audit "
+                        "is the record of the core before it"}
+
 
 def probes_digest() -> str:
     text = json.dumps({"sources": lactate_slice.slice_sources(), "freeze": calibration.frozen_digest()}, sort_keys=True)
@@ -696,6 +719,9 @@ def main(argv=None) -> int:
         data = json.loads(args.json.read_text(encoding="utf-8"))
         args.write.write_text(apply(args.write.read_text(encoding="utf-8"), render(data)), encoding="utf-8")
         return 0
+    if HISTORICAL is not None:
+        parser.error(f"a historical record since {HISTORICAL['since']} ({HISTORICAL['reason']}): its results are not "
+                     "regenerated without authorization")
     text = json.dumps(report(), indent=1, sort_keys=True, default=str)
     if args.out:
         args.out.mkdir(parents=True, exist_ok=True)
