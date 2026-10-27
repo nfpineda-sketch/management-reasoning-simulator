@@ -2524,3 +2524,34 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - la Hb de las sondas que escriben V directamente, ahora marcada;
   - el resumen propio de las anclas;
   - la redacción.
+
+## 25. P2I-2V · Anclas docentes aprobadas del estado sanguíneo compartido y filtro de la región candidata (2026-10-27)
+
+- **Base:** `898b4d6` (P2I-2U, aceptado y cerrado). Informe: `docs/revision/P2I2V_ANCLAS_APROBADAS_FILTRO.md`.
+  Código: `clinical_core/blood_constraints.py` (congelado) y `clinical_core/blood_filter_report.py` (sólo informe).
+- **Decisiones aplicadas:**
+  - las envolventes sin tratar de gasto y de caída de Hb de cada caso;
+  - FD-BLD-01 a 09 FACULTY_APPROVED: conducta clínica o envolvente aprobada, con los parámetros ocultos sin aprobar;
+  - la regla de la segunda unidad, sin aprobar la razón ~0,70;
+  - FD-23 sigue retirada;
+  - la categoría `CASE_OVERRIDES_FAMILY_DEFAULT` para la tasa de sangrado, declarada en
+    `migration_authority.AUTHORITY_POLICIES` sin tasa ni valor de familia: la tasa sigue cerrando la migración.
+- **Decisiones abiertas:** 48, las de P2G. FD-50 sigue abierta para los demás parámetros.
+- **Congelamiento antes del filtro** (commit `3f86464`, resumen `cfb8e508…`):
+  - fija las decisiones transcritas, las lecturas operativas, diez variantes declaradas de antemano, las reglas de
+    identificabilidad y de representativos, y todas las fuentes de `clinical_core` salvo el informe;
+  - la sensibilidad y las pruebas de humo usaron sólo puntos fuera de la cuadrícula;
+  - el conteo se verificó contra fuerza bruta.
+- **Recongelamiento de calibración:** cambian `migration_sources` y `authority_registries` (la política), con motivo
+  registrado. Las reglas no cambian.
+- **Resultado del filtro:** ningún candidato sobrevive, ni en el conjunto (3^15), ni por caso (3^13), ni en ninguna
+  de las nueve variantes evaluadas. V5 quedó declarada pero sin implementar; su recuento sería 0 igualmente.
+  - Lo decide la caída de Hb sin tratar: la mayor caída que alcanza 57m a los 60 min en toda la cuadrícula es
+    0,189 g/dL, y la envolvente pide 0,2–0,5.
+  - Sin esa restricción quedan 2241 candidatos conjuntos.
+  - El diagnóstico de §5.7 del informe, rotulado como tal, muestra ese conjunto y sus representativos.
+  - En 57m el conflicto entre la caída de Hb y el relleno de FD-BLD-07 es estructural. En 72f se debe al rango
+    explorado: con tasas más altas y λ/κ mayor se cumplen ambas (exploración de revisión, no del filtro).
+- **Identificabilidad:** no evaluable sin sobrevivientes. κ, λ y ρ siguen NON_IDENTIFIABLE_SEPARATELY.
+- **Sondas de nivel 2 de líquidos:** se informan, no se convierten, porque la conversión ampliaría el alcance.
+- **Sin filtro de lactato**, sin elección de parámetros ocultos y sin gancho en tiempo de ejecución.
