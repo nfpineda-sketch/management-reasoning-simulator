@@ -907,7 +907,9 @@ def render(data: dict) -> str:
     add("**Estado (P2I-2V, 2026-10-27).** La docencia aprobó FD-BLD-01 a 09 y las anclas sin tratar A y B. "
         "FACULTY_APPROVED quiere decir: conducta clínica / envolvente aprobada; los parámetros ocultos del modelo "
         "siguen sin aprobar. Las envolventes son envolventes clínicas, no objetivos exactos. Cómo se leen y qué región "
-        "dejan: `docs/revision/P2I2V_ANCLAS_APROBADAS_FILTRO.md`.\n")
+        "dejan: `docs/revision/P2I2V_ANCLAS_APROBADAS_FILTRO.md`. **P2I-2V-R:** A pasa a v2, sin caída mínima de Hb; "
+        "FD-BLD-03 queda FACULTY_APPROVED_QUALITATIVE / NOT_YET_HARD_FILTER (se informa, no filtra): "
+        "`docs/revision/P2I2VR_RESTRICCIONES_REVISADAS_FILTRO.md`.\n")
     add("| ID | Pregunta | Lo que muestra el modelo (sólo modelo) | Qué acotaría | Selección docente | Estado |")
     add("|---|---|---|---|---|---|")
     for identifier, _, anchors in WORKSHEET:
@@ -990,9 +992,10 @@ def _approved(identifier: str) -> str:
         return ("aumenta el volumen plasmático / circulante, no la masa de GR, y diluye la Hb progresivamente; ningún "
                 "decremento fijo en g/dL: la magnitud sale del estado sanguíneo compartido")
     if identifier == "A":
-        return "caída de Hb: " + "; ".join(
+        return "v2 (P2I-2V-R), sin caída mínima: caída de Hb " + "; ".join(
             f"{case} " + ", ".join(f"{_range(pair, 1)} g/dL a los {minute} min"
-                                   for minute, pair in d["untreated_hb_fall"][case].items()) for case in cases)
+                                   for minute, pair in d["untreated_hb_fall"][case].items()) for case in cases) + (
+            "; con hemorragia en curso y sin fuente de GR, la Hb no sube por la hemorragia misma")
     if identifier == "B":
         return "gasto efectivo relativo a la llegada: " + "; ".join(
             f"{case} " + ", ".join(f"{_range(pair)} a los {minute} min"
@@ -1004,7 +1007,7 @@ def _approved_status(identifier: str) -> str:
     from . import blood_constraints
     if identifier in blood_constraints.FD_BLD_STATUS:
         return blood_constraints.FD_BLD_STATUS[identifier]
-    return "FACULTY_APPROVED" if identifier in ("A", "B") else "ABIERTA"
+    return {"A": blood_constraints.U_HB_STATUS, "B": "FACULTY_APPROVED"}.get(identifier, "ABIERTA")
 
 
 def _worksheet_evidence(identifier: str, data: dict) -> str:

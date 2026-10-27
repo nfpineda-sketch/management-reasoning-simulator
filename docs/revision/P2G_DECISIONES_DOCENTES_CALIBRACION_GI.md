@@ -4,7 +4,7 @@ Apoyo a decisiones, no decisiones. Nada de este documento aprueba un número, ma
 FACULTY_APPROVED, migra el GI, toca el tiempo de ejecución ni cambia lo que ve el residente. Todos los valores
 siguen CANDIDATE.
 
-- **Generado desde:** el congelamiento de calibración `272b98aafdebe9170ed3442a07aad39a731619680a884247a15cbe42a80c78db` y el paquete `e17b312cf04a4484c3b4c2746bfc8ad9a750c0723d1c02f5ef94a1fdf055f56d`
+- **Generado desde:** el congelamiento de calibración `5876aef242633c5f2305299e8e2d177ee5d5bf8bd2dbe521bdc6a166790810ad` y el paquete `f34653102f57def9baa5446b0c3cdcb9ee03d96a6587fe66321b25c52b2babd3`
   (`python -m clinical_core.decision_pack`; las tablas, con `python -m clinical_core.decision_pack_markdown`).
   Los números están en `docs/revision/P2G_decision_pack.json`. Una prueba falla si el código o las entradas cambian
   sin regenerarlos.
@@ -966,6 +966,9 @@ Las decisiones de anclas del estado hemorrágico compartido (FD-BLD-01 a FD-BLD-
 - Desde P2I-2V (2026-10-27), las nueve son **FACULTY_APPROVED**: se aprueba la conducta clínica o la envolvente; los
   parámetros ocultos del modelo siguen sin aprobar.
 - También se aprobaron las envolventes sin tratar de gasto y de caída de Hb de cada caso.
+- P2I-2V-R (2026-10-27): FD-BLD-03 pasa a FACULTY_APPROVED_QUALITATIVE / NOT_YET_HARD_FILTER (se informa, no filtra),
+  y la envolvente de caída de Hb sin tratar pasa a v2, sin caída mínima. Las demás FD-BLD no cambian:
+  `docs/revision/P2I2VR_RESTRICCIONES_REVISADAS_FILTRO.md`.
 - Cómo se leen y qué región candidata dejan: `docs/revision/P2I2V_ANCLAS_APROBADAS_FILTRO.md`.
 
 **FD-50, decidida en parte (P2I-2V, 2026-10-27).**

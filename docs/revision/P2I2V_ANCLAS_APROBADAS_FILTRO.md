@@ -18,6 +18,15 @@ Código: `clinical_core/blood_constraints.py` (decisiones, lecturas, variantes y
 El documento se escribe con `python -m clinical_core.blood_filter_report --write … --sensitivity … --filter …
 --diagnostic …`.
 
+**Sustituido en parte por P2I-2V-R (2026-10-27).** Este documento es el registro histórico de P2I-2V, tal como
+corrió con el congelamiento `cfb8e508…`, y ya no se regenera. Después, la docencia:
+- retiró la caída mínima de Hb sin tratar (U-HB v2);
+- dejó FD-BLD-03 como cualitativa, sin filtrar;
+- pidió implementar V5 y usar como lectura primaria una tasa de sangrado común.
+
+Además, las cuatro sondas de nivel 2 que escribían V directamente pasaron a `HISTORICAL_PROBE`. Fuente:
+`docs/revision/P2I2VR_RESTRICCIONES_REVISADAS_FILTRO.md`.
+
 ## 1. Decisiones docentes que aplica (2026-10-27)
 
 - **Envolventes sin tratar** (gasto relativo a la llegada de cada caso y caída de Hb): envolventes clínicas de

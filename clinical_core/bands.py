@@ -11,9 +11,13 @@ set the plausible band each probe must fall in. Each family probes the chain the
   synthetic, not a GI or trauma rate;
 - sepsis: D, T and a declared factor on oxygen demand (P2E-2: a synthetic factor; no sepsis
   module is migrated, and the multipliers are TBD; see ``DIAGNOSTICS``);
-- ACS, RV and PE: preload and P;
-- pulmonary oedema: overload and L;
 - asthma and opioids: W and RR.
+
+P2I-2V-R: no active probe writes the volume coordinate V (or Hb) directly any more. The four
+probes that did (sepsis with preload loss, ACS with a bolus, RV infarct / PE, pulmonary oedema)
+tested circulating-volume physiology while bypassing the shared blood state, and none can be
+expressed through it without new physiology or new numerical choices; they are kept, runnable,
+only as ``HISTORICAL_PROBES``, outside the active calibration harness (``HISTORICAL_REASONS``).
 
 No band is set here. Every band is TBD and no test compares a value with one: Level 2 is
 prepared, not finalized, and the AI does not set clinical bands. Nothing is tuned to these
@@ -113,13 +117,20 @@ PROBES = {
                     (BloodLoss("blood_loss", 0, 60, 10.0),), (0, 30, 60)),
     "vasodilation": ("sepsis", "T -0.01/min for 40 min (to 0.6)", {},
                      (Drift("tone", "T", 0, 40, -0.01),), (0, 20, 40, 60)),
-    "vasodilation_with_preload_loss": ("sepsis", "T -0.01/min and V -5 mL/min for 40 min (venous pooling, leak)",
-                                       {}, (Drift("tone", "T", 0, 40, -0.01), Drift("leak", "V", 0, 40, -5.0)),
-                                       (0, 20, 40, 60)),
     "vasodilation_with_demand": ("sepsis", "T -0.01/min for 40 min and oxygen demand x1.3 for 60 min (a synthetic "
                                  "factor, not a sepsis multiplier), then demand back to baseline",
                                  {}, (Drift("tone", "T", 0, 40, -0.01), Demand("demand", 0, 60, 1.3)),
                                  (0, 20, 40, 60, 120)),
+    "bronchospasm": ("asthma", "W +0.5 at minute 1", {}, (Drift("work", "W", 0, 1, 0.5),), (0, 1, 30)),
+    "opioid": ("opioid", "W -0.7 at minute 1", {}, (Drift("drive", "W", 0, 1, -0.7),), (0, 1, 30)),
+}
+
+#: P2I-2V-R: probes that wrote V directly, outside the shared blood state. Not in the active
+#: calibration harness (no band, not in the report's table); kept, runnable, as a record.
+HISTORICAL_PROBES = {
+    "vasodilation_with_preload_loss": ("sepsis", "T -0.01/min and V -5 mL/min for 40 min (venous pooling, leak)",
+                                       {}, (Drift("tone", "T", 0, 40, -0.01), Drift("leak", "V", 0, 40, -5.0)),
+                                       (0, 20, 40, 60)),
     "pump_failure_then_bolus": ("ACS", "P -0.01/min for 30 min (to 0.7), then 500 mL at minute 40", {},
                                 (Drift("pump", "P", 0, 30, -0.01), _bolus("bolus", 40, 500.0)), (0, 30, 40, 60)),
     "preload_dependent": ("RV infarct / PE", "preload position 0.25: 200 mL lost at minute 1, 250 mL given at 20",
@@ -128,11 +139,22 @@ PROBES = {
     "overload": ("pulmonary oedema", "preload position 0.8, pump reserve 0.3, P -0.3 at minute 1, then V +20 "
                  "mL/min for 100 min", {"preload_fraction": 0.8, "pump_reserve": 0.3},
                  (Drift("pump", "P", 0, 1, -0.3), Drift("fluid", "V", 1, 101, 20.0)), (0, 1, 50, 100)),
-    "bronchospasm": ("asthma", "W +0.5 at minute 1", {}, (Drift("work", "W", 0, 1, 0.5),), (0, 1, 30)),
-    "opioid": ("opioid", "W -0.7 at minute 1", {}, (Drift("drive", "W", 0, 1, -0.7),), (0, 1, 30)),
 }
-
-#: The plausible band for each probe: set by faculty, never here (Level 2, prepared only).
+HISTORICAL_PROBE = "HISTORICAL_PROBE"
+HISTORICAL_REASONS = {
+    "vasodilation_with_preload_loss": "V -5 mL/min stands for venous pooling and capillary leak: pooling is a shift of "
+                                      "effective preload, not circulating volume lost, and the shared blood state "
+                                      "has no plasma-leak process; expressing it needs new physiology",
+    "pump_failure_then_bolus": "the 500 mL bolus is fluid given, which the shared blood state governs (Crystalloid), "
+                               "but only with an effective share, leak time and transient share: choosing them is a "
+                               "new numerical (hidden-parameter) assumption, and keeping 500 mL-eq fully effective "
+                               "would contradict FD-BLD-04 and 05",
+    "preload_dependent": "the 200 mL 'loss' is RV infarct / PE preload loss, not blood shed (new physiology); the 250 mL "
+                         "bolus needs the same crystalloid choices as above",
+    "overload": "the +20 mL/min infusion is fluid given and needs the same crystalloid choices (a new numerical "
+                "assumption)",
+}
+#: The plausible band for each active probe: set by faculty, never here (Level 2, prepared only).
 BANDS = {name: None for name in PROBES}
 #: What a probe is, where its kind needs saying (P2I-2U). Until P2I-2U the haemorrhage probe moved V
 #: (-10 mL/min) and Hb (-0.02 g/dL/min) by two independent scripted drifts, the physiology the faculty
@@ -153,6 +175,7 @@ DIAGNOSTICS = {
         "gap": "oxygen extraction has no state; the sepsis demand multiplier is TBD and no sepsis module is migrated",
     },
     "vasodilation_with_preload_loss": {
+        "status": "HISTORICAL_PROBE since P2I-2V-R: not in the active harness (HISTORICAL_REASONS)",
         "classification": "PHYSIOLOGICALLY_PLAUSIBLE_PENDING_MULTI_FAMILY_CALIBRATION",
         "shows": "with venous pooling or leak, output, delivery and MAP fall and D rises: a rise in output is "
                  "not automatic",
@@ -172,7 +195,7 @@ COLUMNS = ("map", "pulse_rate_bpm", "respiratory_rate", "lactate", "crt_s", "out
 def probe(name: str) -> list[dict]:
     """The readings at the probe's minutes. A probe that reaches an unresolved boundary (P2D-2)
     stops there, and its last row says so instead of carrying an impossible state forward."""
-    family, drives, declared, contributors, minutes = PROBES[name]
+    family, drives, declared, contributors, minutes = (PROBES[name] if name in PROBES else HISTORICAL_PROBES[name])
     anchors = Anchors(**{**ARRIVAL, **declared, "declared": {name: "synthetic_probe" for name in declared}})
     states, stopped = [arrival_state(anchors)], None
     for _ in range(max(minutes)):
@@ -213,9 +236,12 @@ def report() -> str:
                       "TBD" if BANDS[name] is None else str(BANDS[name])]
             lines.append("| " + " | ".join(head + tuple(values)) + " |")
     lines.append("")
-    lines.append("† V written directly by a scripted probe, outside the shared blood state: this Hb does not follow "
-                 "that volume, neither diluted nor concentrated (P2I-2U; routing these probes through the blood state "
-                 "is open).")
+    lines.append("† V written directly by a scripted probe, outside the shared blood state (no active probe does so "
+                 "since P2I-2V-R).")
+    lines.append("")
+    lines.append(f"{HISTORICAL_PROBE}S, outside the active harness (P2I-2V-R):")
+    for name, (family, drives, _, _, _) in HISTORICAL_PROBES.items():
+        lines.append(f"- {name} ({family}; {drives}): {HISTORICAL_REASONS[name]}")
     return "\n".join(lines)
 
 

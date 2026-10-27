@@ -32,10 +32,12 @@ from clinical_core.shadow import GOLDEN
 #: harness_sources (bands.py and calibration.py) changed; the rules, bands and every other component
 #: did not. P2I-2V declared the faculty's authority policy for the GI bleed rate (the category only,
 #: no rate): migration_sources (migration_authority.py) and authority_registries changed; nothing else.
+#: P2I-2V-R moved the four Level-2 probes that wrote V directly out of the active harness, as
+#: HISTORICAL_PROBES (bands.py): only harness_sources changed; the rules and bands did not.
 FROZEN_COMPONENTS = {
     "rules": "07f526f1cd9c65d4eb465f19c652a87d77adc678b2a706664b81c7237c59bc91",
     "bands": "99ca99f1b0d032056cfdabb90e1354683ef5ba093e896a0d5c10bc9c2ca192ca",
-    "harness_sources": "9189ec978b6d6b37c301329af6fdc4c44af42d4019c9c2336bb21eaa62646efd",
+    "harness_sources": "35f7304ffac039c4075886a0939ac9b173d81f46daab9508868e84e0e922eada",
     "migration_sources": "6033f4437627ed1f78c2c2ea03764986572639d94596982963a44f5964a2cb29",
     "authority_registries": "e305793eefead76fb733761f3305148e3df85aa9074445d94f051cb5709d2314",
     "gi_reference": "159fdc558c713a743261ab82075dc2574f7389f017a81a80f95f0d7207e0a9bd",
@@ -44,7 +46,7 @@ FROZEN_COMPONENTS = {
     "input_adapter_sources": "e83dca618fdaaa9239d861e1e1d6928dc703bfe33206a05cef44a5b0e9495bc5",
     "scenario_inputs": "afb2051e7fa04f1765aaf920c82f51dc6675d19bcbcb425c2ee581d8fa60d347",
 }
-FROZEN_DIGEST = "272b98aafdebe9170ed3442a07aad39a731619680a884247a15cbe42a80c78db"
+FROZEN_DIGEST = "5876aef242633c5f2305299e8e2d177ee5d5bf8bd2dbe521bdc6a166790810ad"
 
 
 # P2F-2 / P2F-5 -- repository truth, candidate inference, faculty decision ---------------------

@@ -1,4 +1,4 @@
-"""P2I-2V: the faculty's shared-blood anchors as operational constraints, frozen before any filtering.
+"""P2I-2V / P2I-2V-R: the faculty's shared-blood anchors as operational constraints, frozen before filtering.
 
     python -m clinical_core.blood_constraints --sensitivity [--out <directory outside the repository>]
     python -m clinical_core.blood_constraints --filter --out <directory outside the repository>
@@ -18,6 +18,14 @@ inside one, and nothing is fitted to its midpoint. No lactate, no legacy traject
 no direct V or Hb write enters any constraint: every Hb and volume reading comes from the shared blood
 state. The survivors are a FACULTY-CONSTRAINED SHARED-BLOOD CANDIDATE REGION, never approved parameter
 values; no value is chosen among them, by frequency or otherwise.
+
+P2I-2V-R (2026-10-27, refrozen before the refilter): the faculty withdrew the minimum untreated Hb
+fall (U-HB v2: 0 to an upper bound, plus the invariant that untreated haemorrhage never raises Hb);
+FD-BLD-03 is FACULTY_APPROVED_QUALITATIVE and NOT_YET_HARD_FILTER (reported, never filtering); V5 is
+implemented exactly as declared in P2I-2V; the primary reading uses one common GI-family bleed rate
+for both cases, case-specific rates being the sensitivity variant V8. The grid is unchanged. The
+P2I-2V filter (freeze cfb8e508...) stays its historical record. V4's +250 mL-eq challenge is a
+counterfactual reading of the preload curve, not a trajectory: no trajectory writes V or Hb directly.
 """
 from __future__ import annotations
 
@@ -50,8 +58,19 @@ DECISIONS = {
         "note": "clinical calibration envelopes, not legacy targets; SBP / MAP stay context only",
     },
     "untreated_hb_fall": {
-        "meaning": "Hb fall (g/dL) by the minute, untreated active bleeding: a concentration change arising "
-                   "from shared blood-state physiology; no direct Hb/min drift may be recreated to meet it",
+        "version": "v2 (P2I-2V-R): the mandatory minimum decline is withdrawn",
+        "meaning": "Hb fall (g/dL) by the minute, untreated active bleeding: a concentration envelope arising from "
+                   "shared blood-state physiology, with no minimum (whole-blood loss takes red cells and plasma "
+                   "together, so Hb may change little at first; its later decline follows refill, fluid, "
+                   "redistribution, ongoing loss and mixing); no Hb/min drift may be recreated",
+        "gi_bleed_57m": {60: (0.0, 0.5), 120: (0.0, 0.9)},
+        "gi_bleed_72f": {60: (0.0, 0.4), 120: (0.0, 0.7)},
+        "invariant": "with ongoing haemorrhage and no red-cell source, Hb must not rise because of the haemorrhage "
+                     "process itself; any rise needs an explicit volume / red-cell explanation",
+    },
+    "untreated_hb_fall_v1_withdrawn": {
+        "meaning": "P2I-2V's envelopes, withdrawn by the faculty in P2I-2V-R (too restrictive: Hb is a "
+                   "concentration, not an instantaneous measure of blood loss)",
         "gi_bleed_57m": {60: (0.2, 0.5), 120: (0.4, 0.9)},
         "gi_bleed_72f": {60: (0.1, 0.4), 120: (0.3, 0.7)},
     },
@@ -71,6 +90,10 @@ DECISIONS = {
         "meaning": "one unit must not reliably normalize effective output in either GI case; 72f may approach an "
                    "adequate state when appropriately preload responsive; 57m should not move from severe "
                    "haemorrhagic physiology to fully normalized / euvolaemic output from one unit alone",
+        "revision": "P2I-2V-R: the clinical decision stands, but the preload positions 0.6 / 0.7 come from candidate "
+                    "internal bands, not from a faculty-approved definition of normalization: reported "
+                    "diagnostically, never used to reject a candidate, until BP / HR / output-reference calibration "
+                    "defines normalization; FD-BLD-02 stays the quantitative bound on the one-unit response",
     },
     "second_unit": {
         "meaning": "as preload responsiveness is exhausted, the haemodynamic benefit of unit 2 is at most that of "
@@ -112,9 +135,17 @@ DECISIONS = {
                    "category only: no numeric bleed rate is approved",
         "family": "gi_bleed", "parameter": "blood_loss_ml_per_min", "policy": "CASE_OVERRIDES_FAMILY_DEFAULT",
     },
+    "bleed_rate_analysis": {
+        "meaning": "P2I-2V-R: for this calibration analysis the primary uses one common GI-family candidate rate for "
+                   "both cases (no case declares a verified rate, and case differences are not to be explained "
+                   "prematurely by separate rates); case-specific rates are the sensitivity variant. The production "
+                   "authority policy is unchanged and no family default is populated",
+    },
 }
 #: FD-BLD decisions: clinical behaviour / envelope approved; hidden model parameters remain unapproved.
 FD_BLD_STATUS = {f"FD-BLD-0{index}": "FACULTY_APPROVED" for index in range(1, 10)}
+FD_BLD_STATUS["FD-BLD-03"] = "FACULTY_APPROVED_QUALITATIVE / NOT_YET_HARD_FILTER"
+U_HB_STATUS = "FACULTY_APPROVED v2"
 APPROVAL_SCOPE = "clinical behavior/envelope approved; hidden model parameters remain unapproved"
 
 # How each decision is read (the implementation choices the faculty did not supply) --------------------
@@ -138,13 +169,19 @@ REFILL_MINUTES = (60, 120, 240)
 HAEMOSTASIS_AT, CONTINUE_MINUTES, REFILL_END = 60, tuple(range(61, 71)), 240
 CHALLENGE_ML, RESPONSIVE_GAIN = 250.0, 0.10
 TOLERANCE = 0.10
+#: U-HB v2 invariant: the largest minute-to-minute Hb rise tolerated in the untreated run is numerical only
+#: (whole-blood loss leaves Hb unchanged in exact arithmetic; refill lowers it).
+HB_RISE_TOLERANCE = 1e-9
 
 IMPLEMENTATION = {
     "envelopes": "inclusive, compared on the unrounded model value; nothing is fitted to a midpoint",
     "untreated": "the case's GI bleed at the candidate's rate from minute 0, no treatment, the candidate's own "
                  "haemodynamics; output relative to arrival read at minutes 30, 60 and 120; a run whose output "
                  "reached zero with a pulse stops there and reads output 0 afterwards, which fails the envelope",
-    "untreated_hb": "Hb fall = authored arrival Hb - Hb at minutes 60 and 120, read from the shared blood state",
+    "untreated_hb": "U-HB v2: Hb fall = authored arrival Hb - Hb at minutes 60 and 120, read from the shared blood "
+                    "state, inside [0, the case's upper bound]: no minimum decline; and in the untreated run (ongoing "
+                    "haemorrhage, no red-cell source, no fluid) Hb never rises from one minute to the next over "
+                    "minutes 0-120 by more than a numerical 1e-9 g/dL",
     "blood_reading": "every Hb, circulating-volume, refill and crystalloid quantity is read from the shared blood "
                      "state with lambda / kappa 1500 and the case's upper position, where no surface stops: blood "
                      "quantities do not depend on lambda / kappa, position or rho (verified on off-grid points, "
@@ -155,15 +192,16 @@ IMPLEMENTATION = {
     "FD-BLD-02": "(output at 30 - output at 0) / output at 0 must not exceed the case's upper bound; the lower "
                  "bound is not enforced (the faculty: not mandatory; a less preload-responsive state may respond "
                  "less); every grid position lies in the case band below the euvolaemic reference (underfilled)",
-    "FD-BLD-03": "normalized = preload position after one unit at or above the case's euvolaemic reference point "
-                 "(reference_preload_fraction band 0.6-0.7-0.8): 57m must stay below its lower bound (no entry into "
-                 "the euvolaemic range), 72f below its midpoint (it may approach, not reach, the euvolaemic "
-                 "reference); one deterministic run per candidate, so 'reliably' is read per candidate",
+    "FD-BLD-03": "DIAGNOSTIC ONLY since P2I-2V-R (never filters): how many survivors would reach the case's "
+                 "euvolaemic reference after one unit, read as preload position at or above a point of the candidate "
+                 "reference_preload_fraction band (0.6-0.7-0.8): 57m its lower bound and 72f its midpoint, and the "
+                 "readings V2 (both midpoint) and V3 (both lower)",
     "second_unit": "output gain of unit 2 (30 to 60) <= output gain of unit 1 (0 to 30), in each case",
     "crystalloid": "the case's GI bleed continues at the candidate's rate; the bag runs over 20 min from minute 0 "
                    "(P2I-2U); compared with the same run without it",
     "FD-BLD-04": "early contribution = the largest retained intravascular crystalloid (in - out) over minutes "
-                 "0-30, over the volume infused (1 L)",
+                 "0-30, over the volume infused (1 L); V5 reads instead the largest net effect on C over minutes "
+                 "0-30 (C with the bag - C without it, same bleeding), over the volume infused",
     "FD-BLD-05": "retained intravascular crystalloid at minutes 30, 60 and 120 from the start of the infusion, "
                  "over the volume infused (1 L)",
     "FD-BLD-06": "dilution = Hb without the bag - Hb with it, same bleeding; its peak over minutes 0-120 inside "
@@ -175,9 +213,8 @@ IMPLEMENTATION = {
                  "minute 61-70 and larger at 240 than at 60; refill never exceeds the capacity",
     "FD-BLD-09": "the acute loss with and without refill: wherever refill > 0 at 60, 120 and 240, Hb with refill "
                  "< Hb without; no refill change carries red cells; red-cell content never rises",
-    "joint": "the shared model parameters are common to both cases; the bleed rate and the arrival position are "
-             "per case (the position is a case band; a case-specific rate is admissible under the approved "
-             "CASE_OVERRIDES_FAMILY_DEFAULT, but no case declares one today, so V8 requires one common rate)",
+    "joint": "P2I-2V-R primary: every model parameter and the bleed rate are common to both cases (one GI-family "
+             "candidate rate); the arrival position is per case (a case band). V8 lets the rate differ by case",
     "rho": "no constraint reads rho: it stays in the region and only changes the extraction-state label",
     "region": "the P2I-2U exploration grid, three values per parameter (blood_anchors.EXPLORATION); feasibility "
               "between grid points is not assessed",
@@ -187,14 +224,15 @@ IMPLEMENTATION = {
 #: the primary reading, never in its place.
 VARIANTS = {
     "V1_envelope_tolerance": "every numeric envelope widened by 10 % of its width at each end",
-    "V2_fd03_both_midpoint": "FD-BLD-03: both cases must stay below the euvolaemic midpoint",
-    "V3_fd03_both_lower": "FD-BLD-03: both cases must stay below the euvolaemic lower bound",
+    "V2_fd03_both_midpoint": "FD-BLD-03 diagnostic read with both cases below the euvolaemic midpoint",
+    "V3_fd03_both_lower": "FD-BLD-03 diagnostic read with both cases below the euvolaemic lower bound",
     "V4_fd02_lower_bound_when_responsive": "FD-BLD-02: the lower bound also enforced where a +250 mL-eq "
                                            "circulating challenge at arrival raises output by >= 10 %",
     "V5_fd04_net_effect": "FD-BLD-04: early contribution read as the bag's net effect on C (with - without)",
     "V6_fd06_from_arrival_hb": "FD-BLD-06: dilution read as arrival Hb - Hb with the bag",
     "V7_fd07_500_ml": "FD-BLD-07: acute loss of 500 mL-eq over 10 min",
-    "V8_common_bleed_rate": "one bleed rate common to both cases (the family-default path)",
+    "V8_case_specific_bleed_rate": "the bleed rate may differ by case (P2I-2V's primary; P2I-2V-R makes the "
+                                   "common rate primary)",
     "V9_fd05_from_end_of_infusion": "FD-BLD-05 read 30, 60 and 120 min after the end of the infusion "
                                     "(minutes 50, 80 and 140)",
     "V10_fd07_from_end_of_loss": "FD-BLD-07 read 60, 120 and 240 min after the end of the acute loss "
@@ -207,8 +245,14 @@ PARAMETERS = blood_anchors.PARAMETERS
 REGION = {name: tuple(blood_anchors.EXPLORATION[name]) for name in PARAMETERS}
 CASE_DIMS = ("bleed_ml_per_min", "preload_fraction")
 SHARED = tuple(name for name in PARAMETERS if name not in CASE_DIMS)
-CONSTRAINTS = ("U-OUT", "U-HB", "FD-BLD-01", "FD-BLD-02", "FD-BLD-03", "SECOND-UNIT", "FD-BLD-04", "FD-BLD-05",
+#: The constraints that filter (P2I-2V-R: FD-BLD-03 is reported, never filters); READINGS adds the diagnostic.
+CONSTRAINTS = ("U-OUT", "U-HB", "FD-BLD-01", "FD-BLD-02", "SECOND-UNIT", "FD-BLD-04", "FD-BLD-05",
                "FD-BLD-06", "FD-BLD-07", "FD-BLD-08", "FD-BLD-09")
+DIAGNOSTIC_ONLY = ("FD-BLD-03",)
+READINGS = CONSTRAINTS + DIAGNOSTIC_ONLY
+CASE_SPECIFIC = "V8_case_specific_bleed_rate"
+#: With an empty region, the minimal sets of constraints with no joint survivor, searched up to this size.
+CONFLICT_SIZE = 3
 B0, LK, POS, BLEED = ("arrival_circulating_volume_ml", "preload_scale_over_kappa_ml", "preload_fraction",
                       "bleed_ml_per_min")
 REFILL = ("plasma_refill_target_share", "plasma_refill_tau_min", "plasma_refill_capacity_ml")
@@ -293,10 +337,15 @@ def untreated(case: str, values: dict) -> dict:
     return {"output": output, "hb": hb, "stop": stop}
 
 
+def _max_rise(states, minutes: int) -> float:
+    """The largest minute-to-minute Hb rise over minutes 0..minutes (U-HB v2's invariant)."""
+    return max(states[m + 1].hb - states[m].hb for m in range(minutes))
+
+
 def untreated_blood(case: str, values: dict) -> dict:
     anchors, _, _, states, _ = _run(case, values, "untreated", max(MINUTES_HB), blood=True)
     return {"hb0": states[0].hb, "fall": {m: states[0].hb - states[m].hb for m in MINUTES_HB},
-            "hb": {m: states[m].hb for m in MINUTES_HB}}
+            "hb": {m: states[m].hb for m in MINUTES_HB}, "max_rise": _max_rise(states, max(MINUTES_HB))}
 
 
 def red_cells(case: str, values: dict) -> dict:
@@ -392,7 +441,8 @@ def passes(name: str, case: str, row: dict, variant: str | None = None, off: dic
     if name == "U-OUT":
         return all(_inside(row["output"][m], DECISIONS["untreated_output"][case][m], variant) for m in MINUTES_OUTPUT)
     if name == "U-HB":
-        return all(_inside(row["fall"][m], DECISIONS["untreated_hb_fall"][case][m], variant) for m in MINUTES_HB)
+        return (all(_inside(row["fall"][m], DECISIONS["untreated_hb_fall"][case][m], variant) for m in MINUTES_HB)
+                and row["max_rise"] <= HB_RISE_TOLERANCE)
     if name == "FD-BLD-01":
         return _inside(row["hb"][1] - row["hb"][0], DECISIONS["FD-BLD-01"]["envelope"], variant)
     if name == "FD-BLD-02":
@@ -408,7 +458,9 @@ def passes(name: str, case: str, row: dict, variant: str | None = None, off: dic
     if name == "SECOND-UNIT":
         return row["output"][2] - row["output"][1] <= row["output"][1] - row["output"][0]
     if name == "FD-BLD-04":
-        return _inside(row["early"], DECISIONS["FD-BLD-04"]["envelope"], variant)
+        # V5 (declared in P2I-2V, implemented in P2I-2V-R): the bag's net effect on C, from the crystalloid row.
+        value = row[1000.0]["net_early"] if variant == "V5_fd04_net_effect" else row["early"]
+        return _inside(value, DECISIONS["FD-BLD-04"]["envelope"], variant)
     if name == "FD-BLD-05":
         shift = 20 if variant == "V9_fd05_from_end_of_infusion" else 0
         return all(_inside(row["share"][m + shift], bounds, variant)
@@ -456,7 +508,8 @@ def tables(region: dict = REGION, cases=CASES, progress=None) -> dict:
             states = _run(case, values, "untreated", CRYSTALLOID_MINUTES, blood=True)[3]
             baselines[key] = states
             item["untreated_blood"][key] = {"hb0": states[0].hb, "hb": {m: states[m].hb for m in MINUTES_HB},
-                                            "fall": {m: states[0].hb - states[m].hb for m in MINUTES_HB}}
+                                            "fall": {m: states[0].hb - states[m].hb for m in MINUTES_HB},
+                                            "max_rise": _max_rise(states, max(MINUTES_HB))}
         names = TABLE_KEYS["untreated"]
         for key, row in item["untreated"].items():
             values = dict(zip(names, key))
@@ -490,9 +543,14 @@ def tables(region: dict = REGION, cases=CASES, progress=None) -> dict:
     return out
 
 
+def _source(name: str, variant: str | None) -> str:
+    """The table a constraint reads: V5 reads FD-BLD-04 from the crystalloid table (with and without the bag)."""
+    return "crystalloid" if name == "FD-BLD-04" and variant == "V5_fd04_net_effect" else READS[name]
+
+
 def _row(table: dict, case: str, name: str, values: dict, variant: str | None):
     """The row constraint ``name`` reads for a candidate (and the refill-off row for FD-BLD-09)."""
-    source = READS[name]
+    source = _source(name, variant)
     keys = TABLE_KEYS[source]
     if source == "acute":
         loss = 500 if variant == "V7_fd07_500_ml" else int(ACUTE_LOSS_ML)
@@ -501,9 +559,9 @@ def _row(table: dict, case: str, name: str, values: dict, variant: str | None):
     return table[case][source][tuple(values[n] for n in keys)], None
 
 
-def _depends(name: str) -> tuple:
-    keys = TABLE_KEYS[READS[name]]
-    return keys + ((B0,) if READS[name] == "acute" else ())
+def _depends(name: str, variant: str | None = None) -> tuple:
+    source = _source(name, variant)
+    return TABLE_KEYS[source] + ((B0,) if source == "acute" else ())
 
 
 def masks(table: dict, region: dict, variant: str | None, names=CONSTRAINTS) -> dict:
@@ -513,7 +571,7 @@ def masks(table: dict, region: dict, variant: str | None, names=CONSTRAINTS) -> 
     for case in table:
         out[case] = {}
         for name in names:
-            shared = tuple(n for n in SHARED if n in _depends(name))
+            shared = tuple(n for n in SHARED if n in _depends(name, variant))
             table_name = {}
             for key, values in _grid(region, shared):
                 mask = 0
@@ -536,11 +594,16 @@ ROWS = tuple(sum(1 << (3 * b + p) for p in range(3)) for b in range(3))
 COLUMNS = tuple(sum(1 << (3 * b + p) for b in range(3)) for p in range(3))
 
 
-def count(table: dict, region: dict, variant: str | None = None, names=CONSTRAINTS, survivors: bool = False) -> dict:
-    """Survivors over the region: joint (bleed and position per case), with one common bleed rate (V8),
-    and each case alone; marginal counts of every explored value; optionally the joint survivors."""
-    common = variant == "V8_common_bleed_rate"
-    built = masks(table, region, None if common else variant, names)
+def count(table: dict, region: dict, variant: str | None = None, names=CONSTRAINTS, survivors: bool = False,
+          built: dict | None = None) -> dict:
+    """Survivors over the region: joint with one common bleed rate (the P2I-2V-R primary) or with case-specific
+    rates (V8), and each case alone; marginal counts of every explored value; optionally the joint survivors.
+    ``built``: masks already computed for this reading (any superset of ``names``)."""
+    common = variant != CASE_SPECIFIC
+    reading = None if variant == CASE_SPECIFIC else variant
+    if built is None:
+        built = masks(table, region, reading, names)
+    built = {case: {name: built[case][name] for name in names} for case in built}
     cases = list(table)
     index = {n: i for i, n in enumerate(SHARED)}
     projections = {case: [(tuple(index[n] for n in shared), lookup) for shared, lookup in built[case].values()]
@@ -593,11 +656,11 @@ def count(table: dict, region: dict, variant: str | None = None, names=CONSTRAIN
                 part = (sum(_popcount(mine & ROWS[r] & COLUMNS[pi]) * _popcount(other & ROWS[r]) for r in range(3))
                         if common else _popcount(mine & COLUMNS[pi]) * _popcount(other))
                 marginal[f"{POS}|{case}"][str(value)] += part
-        if survivors and combination[index["reserve"]] == blood_anchors.REFERENCE["reserve"] and not common:
+        if survivors and combination[index["reserve"]] == blood_anchors.REFERENCE["reserve"]:
             for bit_a in range(9):
                 if a >> bit_a & 1:
                     for bit_b in range(9):
-                        if b >> bit_b & 1:
+                        if b >> bit_b & 1 and (not common or bit_a // 3 == bit_b // 3):
                             found.append((combination, bit_a, bit_b))
                             if len(found) > REPRESENTATIVE_LIMIT:
                                 raise AssertionError("too many joint survivors to order: refused (frozen limit)")
@@ -631,8 +694,10 @@ def classify(marginal: dict, region: dict, keys: dict) -> dict:
         elif not left:
             out[label] = {"class": None, "left": []}
         else:
+            # A single value left at the edge of the explored grid is bounded by the grid, not identified.
             out[label] = {"class": WELL if len(left) == 1 else PARTIAL if len(left) < len(region[parameter]) else POOR,
-                          "left": [str(v) for v in left]}
+                          "left": [str(v) for v in left],
+                          "grid_edge": len(left) == 1 and left[0] in (region[parameter][0], region[parameter][-1])}
     for name, why in STRUCTURAL.items():
         out.setdefault(name, {"class": SEPARATELY, "left": None, "why": why})
         out[name]["why"] = why
@@ -643,8 +708,9 @@ def classify(marginal: dict, region: dict, keys: dict) -> dict:
 
 def _reading(state, anchors, profile) -> dict:
     item = blood_anchors.reading(state, anchors, profile)
-    return {name: item[name] for name in ("minute", "hb", "circulating_ml", "position", "output_rel", "do2", "state",
-                                          "effective_deficit", "lactate", "sbp", "map", "refill_ml", "crystalloid_ml")}
+    return {name: item[name] for name in ("minute", "hb", "red_cells_change", "circulating_ml", "position",
+                                          "output_rel", "do2", "state", "effective_deficit", "lactate", "sbp", "map",
+                                          "refill_ml", "crystalloid_ml")}
 
 
 def trajectories(case: str, values: dict) -> dict:
@@ -677,15 +743,16 @@ def evaluate(case: str, values: dict) -> dict:
         rows[f"acute_off_{int(loss)}"] = acute(case, full, loss, refill=False)
     verdicts = {}
     for variant in (None, *VARIANTS):
-        if variant == "V8_common_bleed_rate":
+        if variant == CASE_SPECIFIC:
             continue
         loss = 500 if variant == "V7_fd07_500_ml" else int(ACUTE_LOSS_ML)
-        source = {"U-OUT": rows["untreated"], "U-HB": rows["untreated_blood"], "FD-BLD-04": rows["retained"],
+        source = {"U-OUT": rows["untreated"], "U-HB": rows["untreated_blood"],
+                  "FD-BLD-04": rows["crystalloid"] if variant == "V5_fd04_net_effect" else rows["retained"],
                   "FD-BLD-05": rows["retained"], "FD-BLD-06": rows["crystalloid"], "FD-BLD-07": rows[f"acute_{loss}"],
                   "FD-BLD-08": rows["stopped"], "FD-BLD-09": rows[f"acute_{loss}"]}
         verdicts[variant or "primary"] = {
             name: passes(name, case, source.get(name, rows["red_cells"]), variant,
-                         rows[f"acute_off_{loss}"] if name == "FD-BLD-09" else None) for name in CONSTRAINTS}
+                         rows[f"acute_off_{loss}"] if name == "FD-BLD-09" else None) for name in READINGS}
     return {"rows": rows, "verdicts": verdicts}
 
 
@@ -734,6 +801,7 @@ def sensitivity() -> dict:
                                         for m in (25, 30, 35, 55, 60, 65, 115, 120, 125)}
             blood = _run(case, values, "untreated", 125, blood=True)[3]
             item["untreated_hb_fall"] = {m: blood[0].hb - blood[m].hb for m in (55, 60, 65, 115, 120, 125)}
+            item["untreated_hb_max_rise"] = _max_rise(blood, 120)
             anchors, profile, _, states, _ = _run(case, values, "one_unit", 60)
             item["one_unit"] = {m: {"hb_gain": states[m].hb - states[0].hb,
                                     "output_gain": _output(states[m], anchors, profile) - 1.0,
@@ -812,16 +880,42 @@ def freeze_digest() -> str:
 
 # The filter (P2I-2V-2 to 5) ---------------------------------------------------------------------------------
 
+def minimal_conflicts(table: dict, region: dict, built: dict, size: int = CONFLICT_SIZE) -> list:
+    """The minimal sets of filtering constraints (up to ``size``) with no joint survivor (primary reading)."""
+    found = []
+    for k in range(1, size + 1):
+        for subset in itertools.combinations(CONSTRAINTS, k):
+            if any(set(item["constraints"]) <= set(subset) for item in found):
+                continue
+            counted = count(table, region, None, subset, built=built)
+            if counted["joint"] == 0:
+                found.append({"constraints": list(subset), "alone": counted["alone"]})
+    return found
+
+
 def run_filter(region: dict = REGION, progress=None) -> dict:
+    """P2I-2V-R: the primary reading uses one common bleed rate; FD-BLD-03 is reported, never filters; V5 is
+    real; with an empty region, the minimal unsatisfied sets are searched. The grid is P2I-2U's."""
     table = tables(region, CASES, progress)
-    sizes = {"joint": region_size(region)["joint"], "common_bleed": region_size(region, common=True)["joint"],
-             "alone": region_size(region)["alone"]}
-    primary = count(table, region, None, CONSTRAINTS, survivors=True)
+    sizes = {"common_bleed": region_size(region, common=True)["joint"],
+             "case_specific": region_size(region)["joint"], "alone": region_size(region)["alone"]}
+    built = {variant: masks(table, region, variant, READINGS)
+             for variant in (None, *VARIANTS) if variant != CASE_SPECIFIC}
+    primary = count(table, region, None, CONSTRAINTS, survivors=True, built=built[None])
     found = primary.pop("found")
-    single = {name: count(table, region, None, (name,)) for name in CONSTRAINTS}
-    without = {name: count(table, region, None, tuple(n for n in CONSTRAINTS if n != name)) for name in CONSTRAINTS}
-    variants = {variant: count(table, region, variant) for variant in VARIANTS}
-    keys = {f"{n}|{case}": n for n in CASE_DIMS for case in CASES}
+    single = {name: count(table, region, None, (name,), built=built[None]) for name in CONSTRAINTS}
+    without = {name: count(table, region, None, tuple(n for n in CONSTRAINTS if n != name), built=built[None])
+               for name in CONSTRAINTS}
+    variants = {variant: count(table, region, variant, CONSTRAINTS,
+                               built=built[None] if variant == CASE_SPECIFIC else built[variant])
+                for variant in VARIANTS}
+    fd_bld_03 = {reading or "primary": count(table, region, reading, CONSTRAINTS + DIAGNOSTIC_ONLY,
+                                             built=built[reading])
+                 for reading in (None, "V2_fd03_both_midpoint", "V3_fd03_both_lower")}
+    conflicts = minimal_conflicts(table, region, built[None]) if primary["joint"] == 0 else []
+    primary["marginal"][f"{BLEED}|common"] = dict(primary["marginal"][f"{BLEED}|{CASES[0]}"])
+    keys = {f"{POS}|{case}": POS for case in CASES}
+    keys[f"{BLEED}|common"] = BLEED
     keys.update({n: n for n in SHARED})
     if primary["joint"]:
         basis, classes = "joint", classify(primary["marginal"], region, keys)
@@ -846,10 +940,12 @@ def run_filter(region: dict = REGION, progress=None) -> dict:
     else:
         representatives = _case_representatives(table, region)
     metrics = _metric_envelopes(table, region)
-    return {"freeze_digest": freeze_digest(), "decided": DECIDED, "region": {n: list(region[n]) for n in PARAMETERS},
-            "sizes": sizes, "primary": primary, "single": single, "without": without, "variants": variants,
-            "identifiability": {"basis": basis, "classes": classes}, "representatives": representatives,
-            "metrics": metrics, "survivors_listed": len(found)}
+    return {"freeze_digest": freeze_digest(), "decided": DECIDED, "revision": "P2I-2V-R",
+            "primary_reading": "one common GI-family candidate bleed rate for both cases",
+            "region": {n: list(region[n]) for n in PARAMETERS}, "sizes": sizes, "primary": primary,
+            "single": single, "without": without, "variants": variants, "fd_bld_03": fd_bld_03,
+            "conflicts": conflicts, "identifiability": {"basis": basis, "classes": classes},
+            "representatives": representatives, "metrics": metrics, "survivors_listed": len(found)}
 
 
 def _case_representatives(table: dict, region: dict) -> dict:
@@ -902,6 +998,8 @@ def _metric_envelopes(table: dict, region: dict) -> dict:
             "untreated_output": {m: _envelope([r["output"][m] for r in t["untreated"].values()]) for m in MINUTES_OUTPUT},
             "untreated_stopped": sum(1 for r in t["untreated"].values() if r["stop"] is not None),
             "untreated_hb_fall": {m: _envelope([r["fall"][m] for r in t["untreated_blood"].values()]) for m in MINUTES_HB},
+            "untreated_hb_max_rise": _envelope([r["max_rise"] for r in t["untreated_blood"].values()]),
+            "crystalloid_net_early": _envelope([r[1000.0]["net_early"] for r in t["crystalloid"].values()]),
             "one_unit_hb_gain": _envelope([r["hb"][1] - r["hb"][0] for r in t["red_cells"].values()]),
             "one_unit_relative_output_gain": _envelope([r["output"][1] / r["output"][0] - 1 for r in t["red_cells"].values()]),
             "one_unit_position": _envelope([r["position"][1] for r in t["red_cells"].values()]),

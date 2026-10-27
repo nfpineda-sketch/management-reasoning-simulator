@@ -105,12 +105,14 @@ def test_the_worksheet_asks_patient_level_questions_and_records_only_the_faculty
     rows = [[cell.strip() for cell in line.strip().strip("|").split("|")]
             for line in document.splitlines() if line.startswith("| FD-BLD-")]
     assert [row[0] for row in rows] == [f"FD-BLD-0{index}" for index in range(1, 10)]
-    assert all(row[4] and row[5] == "FACULTY_APPROVED" for row in rows)
+    assert all(row[4] for row in rows)
+    assert [row[5] for row in rows] == ["FACULTY_APPROVED"] * 2 + [
+        "FACULTY_APPROVED_QUALITATIVE / NOT_YET_HARD_FILTER"] + ["FACULTY_APPROVED"] * 6  # P2I-2V-R
     assert "conducta clínica / envolvente aprobada; los parámetros ocultos del modelo siguen sin aprobar" in document
     untreated = [[cell.strip() for cell in line.strip().strip("|").split("|")]
                  for line in document.splitlines() if line[:4] in ("| A ", "| B ", "| C ", "| D ")]
     assert [row[0] for row in untreated] == ["A", "B", "C", "D"]
-    assert [row[5] for row in untreated] == ["FACULTY_APPROVED", "FACULTY_APPROVED", "ABIERTA", "ABIERTA"]
+    assert [row[5] for row in untreated] == ["FACULTY_APPROVED v2", "FACULTY_APPROVED", "ABIERTA", "ABIERTA"]
     assert untreated[2][4] == untreated[3][4] == ""
     internal = ("B0", "κ", "λ", "τ del relleno", "meta del relleno", "capacidad del relleno", "Hb de la unidad",
                 "volumen de la unidad")

@@ -442,9 +442,12 @@ def test_level_2_every_band_is_left_to_faculty_and_the_probes_are_deterministic(
     from clinical_core import bands
     assert set(bands.BANDS) == set(bands.PROBES) and all(band is None for band in bands.BANDS.values())
     assert bands.report() == bands.report()
-    assert {family for family, *_ in bands.PROBES.values()} >= {"GI bleed / trauma", "sepsis", "ACS",
-                                                               "RV infarct / PE", "pulmonary oedema", "asthma",
-                                                               "opioid"}
+    assert {family for family, *_ in bands.PROBES.values()} >= {"GI bleed / trauma", "sepsis", "asthma", "opioid"}
+    # P2I-2V-R: the probes that wrote V directly are historical, outside the active harness.
+    assert {family for family, *_ in bands.HISTORICAL_PROBES.values()} == {"sepsis", "ACS", "RV infarct / PE",
+                                                                          "pulmonary oedema"}
+    assert not set(bands.HISTORICAL_PROBES) & set(bands.PROBES) and set(bands.HISTORICAL_REASONS) == set(
+        bands.HISTORICAL_PROBES)
 
 
 def test_level_2_probes_move_the_way_the_decisions_say():
@@ -458,7 +461,7 @@ def test_level_2_probes_move_the_way_the_decisions_say():
                                                  * haemorrhage[-1]["circulating_ml"])
     assert haemorrhage[-1]["circulating_ml"] > -600.0
     assert 12.5 < haemorrhage[-1]["hb"] < haemorrhage[0]["hb"] == 13.0
-    overload = bands.probe("overload")
+    overload = bands.probe("overload")  # a HISTORICAL_PROBE since P2I-2V-R: still runnable, as a record
     assert overload[-1]["L"] > 0 and overload[-1]["output_rel"] - overload[1]["output_rel"] < 0.2
     assert bands.probe("opioid")[-1]["respiratory_rate"] < 10 < bands.probe("bronchospasm")[-1]["respiratory_rate"]
 
@@ -478,11 +481,23 @@ def test_the_haemorrhage_band_probe_is_one_synthetic_whole_blood_flow():
                    for record in trajectory.records for delta in record.deltas)
     assert {c.process.value for record in trajectory.records for c in record.blood} == {"whole_blood_loss",
                                                                                          "plasma_refill"}
-    # The probes that still write V directly say that their Hb does not follow that volume.
-    assert all(row["outside_v"] == 0.0 for row in bands.probe("haemorrhage"))
-    assert bands.probe("overload")[-1]["outside_v"] != 0.0
+
+
+def test_no_active_level_2_probe_bypasses_the_shared_blood_state():
+    """P2I-2V-R: every active probe moves V and Hb only through the shared blood state; the four that wrote V
+    directly are HISTORICAL_PROBES, outside the active harness and its report table, each with its reason."""
+    from clinical_core import bands
+    for name, (_, _, _, contributors, _) in bands.PROBES.items():
+        assert not any(isinstance(item, bands.Drift) and item.channel in ("V", "HB", "Hb") for item in contributors), name
+        assert all(row.get("outside_v", 0.0) == 0.0 for row in bands.probe(name)), name
+    for name in bands.HISTORICAL_PROBES:
+        assert any(row.get("outside_v", 0.0) != 0.0 for row in bands.probe(name)), name
+        assert bands.HISTORICAL_REASONS[name]
     report = bands.report()
-    assert "†" in report and not any("†" in line for line in report.splitlines() if "haemorrhage" in line)
+    table = [line for line in report.splitlines() if line.startswith("| ")]
+    assert not any("†" in line for line in table)
+    assert not any(line.startswith(f"| {name} ") for name in bands.HISTORICAL_PROBES for line in table)
+    assert all(f"- {name} (" in report for name in bands.HISTORICAL_PROBES)
 
 
 # After the adversarial review of P2C ------------------------------------------------------

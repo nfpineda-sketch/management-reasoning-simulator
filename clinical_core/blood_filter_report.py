@@ -38,23 +38,26 @@ OPERATIONAL_ES = {
     "U-OUT": "Sangrado GI del caso a la tasa del candidato desde el minuto 0, sin tratamiento y con la hemodinámica "
              "propia del candidato. Gasto relativo a la llegada en los minutos 30, 60 y 120. Una corrida cuyo gasto "
              "llega a 0 con pulso se detiene y lee gasto 0 desde entonces: no cumple la envolvente.",
-    "U-HB": "Caída de Hb = Hb de llegada del caso − Hb a los 60 y 120 min, leída del estado sanguíneo compartido. "
-            "Ninguna deriva directa de Hb.",
+    "U-HB": "v2 (P2I-2V-R): caída de Hb = Hb de llegada del caso − Hb a los 60 y 120 min, leída del estado sanguíneo "
+            "compartido, dentro de [0, techo del caso]: no se exige caída mínima. Además, en la corrida sin tratar "
+            "(hemorragia en curso, sin fuente de GR ni líquidos) la Hb no sube de un minuto al siguiente en 0–120 min "
+            "(tolerancia numérica de 1e-9 g/dL). Ninguna deriva directa de Hb.",
     "FD-BLD-01": "Sangrado controlado; unidad 1 en 0–30 min. Hb a los 30 min − Hb a los 0, en cada caso. El modelo "
                  "mezcla al instante: leerla a los 45 o 60 min da lo mismo (sensibilidad).",
     "FD-BLD-02": "(gasto a los 30 − gasto a los 0) / gasto a los 0 no supera el techo del caso. El piso no se exige "
                  "(la docencia: no son respuestas obligatorias); V4 lo exige donde el estado responde a la precarga. "
                  "Todas las posiciones de la cuadrícula están bajo el punto medio euvolémico (0,7); la superior de 72f "
                  "(0,6) coincide con el límite inferior de esa banda, así que «con llenado bajo» es dudoso en ese punto.",
-    "FD-BLD-03": "«Normalizado» = posición de precarga tras una unidad en o sobre la referencia euvolémica del caso "
-                 "(banda 0,6–0,7–0,8). 57m debe quedar bajo su límite inferior (no entra en el rango euvolémico); "
-                 "72f bajo su punto medio (puede acercarse, no llegar). Una corrida determinista por candidato: "
-                 "«de forma fiable» se lee por candidato. Esa banda es CANDIDATA y era «sólo diagnóstica» "
-                 "(gi_reference): aquí se usa como umbral operativo sin estar aprobada.",
+    "FD-BLD-03": "**Sólo diagnóstico desde P2I-2V-R: no rechaza ningún candidato.** Se informa cuántos sobrevivientes "
+                 "llegarían a la referencia euvolémica tras una unidad, leída como posición de precarga en o sobre un "
+                 "punto de la banda candidata `reference_preload_fraction` (0,6–0,7–0,8): 57m su límite inferior y 72f "
+                 "su punto medio, y las lecturas V2 (ambos el medio) y V3 (ambos el inferior). Esa banda es CANDIDATA, "
+                 "no una definición aprobada de normalización.",
     "SECOND-UNIT": "Δgasto de la unidad 2 (30 → 60 min) ≤ Δgasto de la unidad 1 (0 → 30 min), en cada caso.",
     "FD-BLD-04": "Sangrado del caso en curso; 1 L en 20 min desde el minuto 0. Contribución inicial = el mayor "
                  "cristaloide intravascular retenido (entrado − salido) en 0–30 min, sobre el volumen infundido: lo que "
-                 "aporta la bolsa, no el cambio neto de C (eso iba a ser V5, que no quedó implementada).",
+                 "aporta la bolsa. V5 (implementada en P2I-2V-R tal como se declaró) lee en su lugar el mayor efecto "
+                 "neto sobre C en 0–30 min: C con la bolsa − C sin ella, mismo sangrado, sobre el volumen infundido.",
     "FD-BLD-05": "Cristaloide intravascular retenido a los 30, 60 y 120 min desde el inicio de la infusión, sobre el "
                  "volumen infundido (1 L).",
     "FD-BLD-06": "Dilución = Hb sin la bolsa − Hb con ella, mismo sangrado. Su pico en 0–120 min dentro de la "
@@ -70,16 +73,17 @@ OPERATIONAL_ES = {
 }
 VARIANTS_ES = {
     "V1_envelope_tolerance": "cada envolvente numérica, ensanchada un 10 % de su ancho en cada extremo",
-    "V2_fd03_both_midpoint": "FD-BLD-03: los dos casos bajo el punto medio euvolémico",
-    "V3_fd03_both_lower": "FD-BLD-03: los dos casos bajo el límite inferior euvolémico",
+    "V2_fd03_both_midpoint": "diagnóstico de FD-BLD-03 con los dos casos bajo el punto medio euvolémico (no filtra)",
+    "V3_fd03_both_lower": "diagnóstico de FD-BLD-03 con los dos casos bajo el límite inferior euvolémico (no filtra)",
     "V4_fd02_lower_bound_when_responsive": "FD-BLD-02: también el piso, donde un reto de +250 mL-eq a la llegada sube "
                                           "el gasto ≥ 10 % (el reto es una lectura contrafáctica de la curva en "
                                           "V + κ·250, no una trayectoria ni una escritura en el estado)",
-    "V5_fd04_net_effect": "FD-BLD-04: efecto neto sobre C (con − sin bolsa) en vez del retenido. **Declarada pero no "
-                          "implementada** en el código congelado: su recuento es el de la lectura primaria",
+    "V5_fd04_net_effect": "FD-BLD-04: efecto neto sobre C (con − sin bolsa) en vez del retenido (implementada en "
+                          "P2I-2V-R tal como se declaró en P2I-2V)",
     "V6_fd06_from_arrival_hb": "FD-BLD-06: dilución = Hb de llegada − Hb con la bolsa",
     "V7_fd07_500_ml": "FD-BLD-07: pérdida aguda de 500 mL-eq en 10 min",
-    "V8_common_bleed_rate": "una sola tasa de sangrado para los dos casos (camino del valor de familia)",
+    "V8_case_specific_bleed_rate": "la tasa de sangrado puede diferir por caso (la lectura primaria de P2I-2V; en "
+                                   "P2I-2V-R la primaria es la tasa común)",
     "V9_fd05_from_end_of_infusion": "FD-BLD-05 a los 30, 60 y 120 min desde el fin de la infusión (minutos 50, 80 y 140)",
     "V10_fd07_from_end_of_loss": "FD-BLD-07 a los 60, 120 y 240 min desde el fin de la pérdida (minutos 70, 130 y 250)",
 }
@@ -122,10 +126,11 @@ def _envelopes(case: str) -> dict:
     d = bc.DECISIONS
     return {
         "U-OUT": ", ".join(f"{m}′ {_pair(p)}" for m, p in d["untreated_output"][case].items()),
-        "U-HB": ", ".join(f"{m}′ {_pair(p, 1)} g/dL" for m, p in d["untreated_hb_fall"][case].items()),
+        "U-HB": ", ".join(f"{m}′ {_pair(p, 1)} g/dL" for m, p in d["untreated_hb_fall"][case].items())
+                + "; la Hb no sube sin tratar",
         "FD-BLD-01": f"{_pair(d['FD-BLD-01']['envelope'], 1)} g/dL",
         "FD-BLD-02": f"≤ {_n(d['FD-BLD-02'][case][1], 2)} (piso {_n(d['FD-BLD-02'][case][0], 2)}, no exigido)",
-        "FD-BLD-03": f"posición < {_n(bc._normalized_at(case, None), 1)}",
+        "FD-BLD-03": f"diagnóstico: posición ≥ {_n(bc._normalized_at(case, None), 1)} se informa (no filtra)",
         "SECOND-UNIT": "Δ2 ≤ Δ1",
         "FD-BLD-04": _pair(d["FD-BLD-04"]["envelope"]),
         "FD-BLD-05": ", ".join(f"{m}′ {_pair(p)}" for m, p in d["FD-BLD-05"]["envelopes"].items()),
@@ -146,14 +151,16 @@ def render_definitions() -> str:
     add("| Restricción | Envolvente 57m | Envolvente 72f | Lectura operativa |")
     add("|---|---|---|---|")
     e57, e72 = _envelopes(bc.CASES[0]), _envelopes(bc.CASES[1])
-    for name in bc.CONSTRAINTS:
+    for name in bc.READINGS:
         add(f"| {name}: {CONSTRAINTS_ES[name]} | {e57[name]} | {e72[name]} | {OPERATIONAL_ES[name]} |")
     add("")
-    add("**Estructura de la región.** Los parámetros del modelo son comunes a los dos casos; la tasa de sangrado y la "
-        "posición de llegada son de cada caso. La posición es una banda del caso; una tasa propia del caso es admisible "
-        "con `CASE_OVERRIDES_FAMILY_DEFAULT`, pero hoy ningún caso la declara: V8 exige una tasa común. Se informan "
-        "también los sobrevivientes de cada caso por separado (todo libre por caso). Ninguna restricción lee ρ: queda "
-        "en la región y sólo cambia la etiqueta del estado de extracción.\n")
+    add("**Estructura de la región (P2I-2V-R).** La lectura primaria usa una sola tasa de sangrado candidata de "
+        "familia GI para los dos casos: ningún caso declara una tasa verificada, y las diferencias entre casos no se "
+        "explican antes de tiempo ajustando tasas separadas. La variante V8 deja que la tasa difiera por caso. Los demás "
+        "parámetros del modelo son comunes; la posición de llegada es de cada caso (una banda del caso). Se informan "
+        "también los sobrevivientes de cada caso por separado (todo libre por caso). Ninguna restricción lee ρ: queda en "
+        "la región y sólo cambia la etiqueta del estado de extracción. La política de autoridad de producción no cambia "
+        "(`CASE_OVERRIDES_FAMILY_DEFAULT`) y no se puebla ningún valor de familia.\n")
     add("**Lectura de la sangre.** Hb, volumen circulante, relleno y cristaloide no dependen de λ/κ, de la posición ni de "
         "ρ. Verificado en los puntos de prueba (Hb, volumen y relleno, cuatro superficies) y, en el filtro, en la Hb a "
         "los 60 y 120 min de cada candidato sin tratar que no se detiene. Se leen con λ/κ 1500 y la posición superior "
@@ -172,13 +179,14 @@ def render_definitions() -> str:
     for name in bc.VARIANTS:
         add(f"| `{name}` | {VARIANTS_ES[name]} |")
     add("")
-    add("Nota posterior al congelamiento (revisión adversarial): V5 quedó declarada, pero `passes()` no tiene su rama, "
-        "así que su recuento es el de la lectura primaria. Se informa así; implementarla exigiría recongelar y volver "
-        "a filtrar.\n")
+    add("V2 y V3 sólo cambian el diagnóstico de FD-BLD-03, que ya no filtra: su recuento de sobrevivientes es el de la "
+        "lectura primaria. Con la región vacía, se buscan los conjuntos mínimos de restricciones sin sobreviviente "
+        f"conjunto, hasta {bc.CONFLICT_SIZE} restricciones.\n")
     add("**Identificabilidad tras el filtro** (regla congelada, a la resolución de la cuadrícula): un solo valor "
         "explorado entre los sobrevivientes = WELL_CONSTRAINED; alguno excluido = PARTIALLY_CONSTRAINED; ninguno "
-        "excluido = POORLY_IDENTIFIED; κ, λ y ρ = NON_IDENTIFIABLE_SEPARATELY (estructural). Sobre los sobrevivientes "
-        "conjuntos; si no hay, sobre los de cada caso. Ningún valor se elige por su frecuencia.\n")
+        "excluido = POORLY_IDENTIFIED; κ, λ y ρ = NON_IDENTIFIABLE_SEPARATELY (estructural). Un único valor en el borde "
+        "de la cuadrícula se marca: lo acota la cuadrícula, no lo identifica. Sobre los sobrevivientes conjuntos; si no "
+        "hay, sobre los de cada caso. Ningún valor se elige por su frecuencia.\n")
     add("**Candidatos representativos** (regla congelada): ρ en su referencia; ordenados por el gasto de 57m a los "
         "120 min, luego el de 72f, luego los valores; bajo / medio / alto = el primero, el ⌊n/2⌋-ésimo y el último. Sin "
         "sobrevivientes conjuntos, los de cada caso del mismo modo; sin ninguno, no hay representativo.\n")
@@ -213,6 +221,8 @@ def render_sensitivity(data: dict) -> str:
     row("gasto sin tratar", "minuto 115 / 120 / 125", lambda i: " / ".join(_n(i["untreated_output"][m]) for m in ("115", "120", "125")))
     row("caída de Hb", "minuto 55 / 60 / 65", lambda i: " / ".join(_n(i["untreated_hb_fall"][m], 3) for m in ("55", "60", "65")))
     row("caída de Hb", "minuto 115 / 120 / 125", lambda i: " / ".join(_n(i["untreated_hb_fall"][m], 3) for m in ("115", "120", "125")))
+    if "untreated_hb_max_rise" in items[0]:
+        row("U-HB v2: mayor subida de Hb sin tratar", "minuto a minuto, 0–120", lambda i: _n(i["untreated_hb_max_rise"], 12))
     row("ΔHb de una unidad (mezcla)", "minuto 30 / 45 / 60", lambda i: " / ".join(_n(i["one_unit"][m]["hb_gain"], 3) for m in ("30", "45", "60")))
     row("aumento del gasto con una unidad", "minuto 30 / 60", lambda i: " / ".join(_n(i["one_unit"][m]["output_gain"], 3) for m in ("30", "60")))
     row("posición tras una unidad", "frente a 0,6 / 0,7 / 0,8", lambda i: _n(i["one_unit"]["30"]["position"], 3))
@@ -234,9 +244,9 @@ def render_sensitivity(data: dict) -> str:
     add("Lectura de la tabla: el minuto exacto mueve el gasto unos 0,02 por cada 5 min y la caída de Hb menos de 0,01 "
         "g/dL; la mezcla no importa (el modelo mezcla al instante). Cambian la métrica de forma material: el reloj de "
         "FD-BLD-05 (desde el inicio o desde el fin de la infusión), la línea de base de la reversión en FD-BLD-06, la "
-        "velocidad de la infusión de 2 L, el reloj de FD-BLD-07 y el umbral de FD-BLD-03. Cada uno tiene su variante "
-        "declarada antes del filtro (V9, V6, V10, V2/V3), salvo la velocidad de 2 L, que se deja como la de P2I-2U "
-        "(20 min) y se señala como limitación.")
+        "velocidad de la infusión de 2 L y el reloj de FD-BLD-07. Cada uno tiene su variante declarada antes del filtro "
+        "(V9, V6, V10), salvo la velocidad de 2 L, que se deja como la de P2I-2U (20 min) y se señala como limitación. "
+        "El efecto neto (V5) apenas difiere del retenido. La Hb sin tratar no sube en ningún minuto (U-HB v2).")
     return "\n".join(lines)
 
 
@@ -255,10 +265,12 @@ def _range(counts: dict, region: list) -> str:
     return _value(left[0]) if len(left) == 1 else f"{_value(left[0])} – {_value(left[-1])}"
 
 
-ROWS_ES = (("hb", "Hb (g/dL)", 2), ("circulating_ml", "volumen circulante C (mL-eq)", 0),
+ROWS_ES = (("red_cells_change", "contenido de GR (cambio relativo)", 3), ("hb", "Hb (g/dL)", 2),
+           ("circulating_ml", "volumen circulante C (mL-eq)", 0),
            ("position", "precarga (posición)", 2), ("output_rel", "gasto relativo", 2), ("do2", "DO2", 2),
            ("state", "estado de extracción", None), ("effective_deficit", "déficit crítico efectivo", 2),
-           ("refill_ml", "relleno acumulado (mL-eq)", 0), ("lactate", "lactato (sólo contexto)", 1))
+           ("refill_ml", "relleno acumulado (mL-eq)", 0), ("sbp", "PAS (sólo contexto)", 0),
+           ("lactate", "lactato (sólo contexto)", 1))
 STATES_ES = {"ADEQUATE": "adecuada", "COMPENSATED": "compensada", "CRITICAL": "crítica"}
 
 
@@ -266,6 +278,8 @@ def _trajectory_table(rows: list, label: str, minutes_label=None) -> list:
     out = [f"| {label} | " + " | ".join(minutes_label or [f"{row['minute']}′" for row in rows]) + " |",
            "|---|" + "---|" * len(rows)]
     for key, name, digits in ROWS_ES:
+        if any(key not in row for row in rows):
+            continue
         cells = [STATES_ES.get(row[key], row[key]) if digits is None else _n(row[key], digits) for row in rows]
         out.append(f"| {name} | " + " | ".join(cells) + " |")
     return out
@@ -291,108 +305,113 @@ def _representative(lines: list, label: str, item: dict, cases) -> None:
 
 
 def render_filter(data: dict, diagnostic_data: dict | None = None) -> str:
+    """The P2I-2V-R filter (common bleed rate primary). The P2I-2V record is not regenerated."""
     lines = []
     add = lines.append
-    region = data["region"]
-    sizes = data["sizes"]
+    region, sizes, primary = data["region"], data["sizes"], data["primary"]
     add(f"Filtro corrido con el congelamiento `{data['freeze_digest']}`, el mismo que fija la prueba. Región: la "
-        f"cuadrícula de P2I-2U, tres valores por parámetro. Candidatos antes del filtro: {_n(sizes['joint'], 0)} "
-        f"conjuntos (parámetros comunes, tasa y posición por caso), {_n(sizes['common_bleed'], 0)} con una tasa común "
-        f"(V8) y {_n(sizes['alone'], 0)} por caso solo.\n")
+        "cuadrícula de P2I-2U, sin cambios (tres valores por parámetro). Lectura primaria: una tasa de sangrado común. "
+        f"Candidatos antes del filtro: {_n(sizes['common_bleed'], 0)} conjuntos con tasa común (primaria), "
+        f"{_n(sizes['case_specific'], 0)} con tasa por caso (V8) y {_n(sizes['alone'], 0)} por caso solo.\n")
     add("### 5.1 Sobrevivientes por restricción\n")
-    add("«Sola»: sólo esa restricción. «Todas menos ésta»: el resto, sin ella; muestra qué restricción decide el "
-        "resultado. Las cifras cuentan candidatos de la cuadrícula, no pacientes.\n")
+    add("«Sola»: sólo esa restricción. «Todas menos ésta»: el resto, sin ella. Conjunto = los dos casos con la tasa "
+        "común. Las cifras cuentan candidatos de la cuadrícula, no pacientes.\n")
     add("| Restricción | sola: 57m | sola: 72f | sola: conjunto | todas menos ésta: 57m | todas menos ésta: 72f | "
         "todas menos ésta: conjunto |")
     add("|---|---|---|---|---|---|---|")
     for name in bc.CONSTRAINTS:
         add(f"| {name}: {CONSTRAINTS_ES[name]} | " + " | ".join(_count_cells(data["single"][name]))
             + " | " + " | ".join(_count_cells(data["without"][name])) + " |")
-    primary = data["primary"]
-    add(f"| **Todas** | " + " | ".join(_count_cells(primary)) + " | | | |")
+    add("| **Todas (las que filtran)** | " + " | ".join(_count_cells(primary)) + " | | | |")
     add("")
-    add("### 5.2 Variantes declaradas antes del filtro\n")
-    add("| Variante | 57m | 72f | conjunto |")
+    add("FD-BLD-03 no filtra (FACULTY_APPROVED_QUALITATIVE / NOT_YET_HARD_FILTER); su diagnóstico está en §5.3.\n")
+    add("### 5.2 Lectura primaria y variantes declaradas antes del filtro\n")
+    add("| Lectura | 57m | 72f | conjunto |")
     add("|---|---|---|---|")
-    add("| primaria | " + " | ".join(_count_cells(primary)) + " |")
+    add("| **primaria: tasa común** | " + " | ".join(_count_cells(primary)) + " |")
     for name in bc.VARIANTS:
-        add(f"| `{name}`: {VARIANTS_ES[name]} | " + " | ".join(_count_cells(data["variants"][name])) + " |")
+        note = " — sólo cambia el diagnóstico de FD-BLD-03" if name in ("V2_fd03_both_midpoint", "V3_fd03_both_lower") else ""
+        add(f"| `{name}`: {VARIANTS_ES[name]}{note} | " + " | ".join(_count_cells(data["variants"][name])) + " |")
     add("")
-    add("V5 no se evaluó: su fila repite la lectura primaria. No puede cambiar el resultado: U-HB sola vacía 57m, y U-HB "
-        "con FD-BLD-07 vacía 72f; ninguna de las dos lee FD-BLD-04. Quedan evaluadas nueve variantes.\n")
-    add("### 5.3 Región candidata restringida por la docencia (FACULTY-CONSTRAINED SHARED-BLOOD CANDIDATE REGION)\n")
-    add("No son valores aprobados ni se elige ninguno por su frecuencia: cada celda dice cuántos sobrevivientes tienen "
-        "ese valor explorado.\n")
+    add("### 5.3 FD-BLD-03, sólo diagnóstico\n")
+    add("Cuántos sobrevivientes no llegarían a la referencia euvolémica tras una unidad, con cada lectura (la diferencia "
+        "con el total son los que sí llegarían). Nadie se rechaza por esto.\n")
+    add("| Lectura de «normalizado» | 57m | 72f | conjunto | de un total de |")
+    add("|---|---|---|---|---|")
+    labels = {"primary": "57m ≥ 0,6, 72f ≥ 0,7", "V2_fd03_both_midpoint": "ambos ≥ 0,7", "V3_fd03_both_lower": "ambos ≥ 0,6"}
+    for key, item in data["fd_bld_03"].items():
+        add(f"| {labels[key]} | " + " | ".join(_count_cells(item)) + f" | {_n(primary['joint'], 0)} |")
+    add("")
     joint = primary["joint"] > 0
+    add("### 5.4 Región candidata restringida por la docencia (FACULTY-CONSTRAINED SHARED-BLOOD CANDIDATE REGION)\n")
     if joint:
-        add("| Parámetro | Sobrevivientes conjuntos por valor | Rango que sobrevive |")
+        add("No son valores aprobados ni se elige ninguno por su frecuencia: cada celda dice cuántos sobrevivientes "
+            "conjuntos (tasa común) tienen ese valor explorado.\n")
+        add("| Parámetro | Sobrevivientes por valor | Rango que sobrevive |")
         add("|---|---|---|")
-        for name in bc.PARAMETERS:
-            labels = [f"{name}|{case}" for case in bc.CASES] if name in bc.CASE_DIMS else [name]
-            for label in labels:
-                tag = f"{PARAMETERS_ES[name]}" + (f" ({label.split('|')[1]})" if "|" in label else "")
-                add(f"| {tag} | {_marginal(primary['marginal'][label], region[name])} | "
-                    f"{_range(primary['marginal'][label], region[name])} |")
+        rows = [(f"{bc.BLEED}|common", bc.BLEED, "tasa de sangrado común (mL-eq/min)")]
+        rows += [(f"{bc.POS}|{case}", bc.POS, f"posición de precarga de llegada ({case})") for case in bc.CASES]
+        rows += [(n, n, PARAMETERS_ES[n]) for n in bc.SHARED]
+        for label, name, tag in rows:
+            add(f"| {tag} | {_marginal(primary['marginal'][label], region[name])} | "
+                f"{_range(primary['marginal'][label], region[name])} |")
         add("")
-    elif any(primary["alone"].values()):
-        add("**Ningún candidato cumple a la vez todas las restricciones en los dos casos.** Por caso:\n")
     else:
-        add("**Ningún candidato cumple todas las restricciones, ni en el conjunto ni en ninguno de los dos casos por "
-            "separado, ni en ninguna de las nueve variantes evaluadas.** La región candidata restringida por la docencia está vacía "
-            "dentro de la cuadrícula explorada. Qué restricción lo decide: §5.1 y el diagnóstico de §5.7.\n")
-    if any(primary["alone"].values()):
-        add("| Parámetro | " + " | ".join(f"{case}: sobrevivientes por valor" for case in bc.CASES) + " |")
-        add("|---|" + "---|" * len(bc.CASES))
-        for name in bc.PARAMETERS:
-            add(f"| {PARAMETERS_ES[name]} | " + " | ".join(
-                _marginal(primary["alone_marginal"][case][name], region[name]) for case in bc.CASES) + " |")
-        add("")
-    add("### 5.4 Identificabilidad tras el filtro (P2I-2V-4)\n")
+        add("**Ningún candidato cumple a la vez todas las restricciones que filtran**, con la tasa común. "
+            + ("Por caso solo sí hay: ver la tabla siguiente." if any(primary["alone"].values()) else
+               "Tampoco por caso solo.") + "\n")
+        if any(primary["alone"].values()):
+            add("| Parámetro | " + " | ".join(f"{case}: sobrevivientes por valor" for case in bc.CASES) + " |")
+            add("|---|" + "---|" * len(bc.CASES))
+            for name in bc.PARAMETERS:
+                add(f"| {PARAMETERS_ES[name]} | " + " | ".join(
+                    _marginal(primary["alone_marginal"][case][name], region[name]) for case in bc.CASES) + " |")
+            add("")
+        if data["conflicts"]:
+            add(f"**Conjuntos mínimos sin sobreviviente conjunto** (búsqueda declarada hasta {bc.CONFLICT_SIZE}):\n")
+            for item in data["conflicts"]:
+                add(f"- {', '.join(item['constraints'])} (por caso: "
+                    + ", ".join(f"{c} {_n(n, 0)}" for c, n in item["alone"].items()) + ")")
+            add("")
+    add("### 5.5 Identificabilidad tras el filtro\n")
     ident = data["identifiability"]
-    add(f"Base: {'los sobrevivientes conjuntos' if ident['basis'] == 'joint' else 'los sobrevivientes de cada caso (no hay conjuntos)'}.\n")
     if ident["basis"] == "joint":
+        add("Base: los sobrevivientes conjuntos con la tasa común. A la resolución de la cuadrícula.\n")
         add("| Parámetro | Clase | Valores que quedan |")
         add("|---|---|---|")
-        for label, item in ident["classes"].items():
+        order = [f"{bc.BLEED}|common"] + [f"{bc.POS}|{case}" for case in bc.CASES] + list(bc.SHARED)
+        order += [label for label in ident["classes"] if label not in order]
+        for label in order:
+            item = ident["classes"][label]
             name = label.split("|")[0]
-            tag = PARAMETERS_ES.get(name, name) + (f" ({label.split('|')[1]})" if "|" in label else "")
-            left = "—" if item.get("left") is None else ", ".join(_value(v) for v in item["left"]) or "ninguno"
-            add(f"| {tag} | {CLASSES_ES[item['class']]} | {left}{' — ' + item['why'] if item.get('why') else ''} |")
-    elif not any(primary["alone"].values()):
-        add("No evaluable con la regla congelada: no hay sobrevivientes en ningún caso, así que ningún parámetro queda "
-            "acotado por la región filtrada (ninguna clase WELL / PARTIALLY / POORLY se puede asignar). Siguen "
-            "NON_IDENTIFIABLE_SEPARATELY por estructura: κ y λ (sólo λ/κ) y ρ (sólo ρ × la entrega de llegada; ninguna "
-            "ancla de este paquete la lee). Las nuevas restricciones no rompen la simetría κ/λ: ninguna lee V fuera de "
-            "V/λ ni la Hb lee κ. El diagnóstico de §5.7 aplica la misma regla, sólo como diagnóstico, al conjunto que "
-            "cumple todo salvo U-HB.\n")
+            suffix = label.split("|")[1] if "|" in label else ""
+            tag = ("tasa de sangrado común (mL-eq/min)" if suffix == "common"
+                   else PARAMETERS_ES.get(name, name) + (f" ({suffix})" if suffix else ""))
+            left = None if item.get("left") is None else ", ".join(_value(v) for v in item["left"]) or "ninguno"
+            edge = " (borde de la cuadrícula: la acota, no la identifica)" if item.get("grid_edge") else ""
+            detail = "; ".join(part for part in (left, item.get("why")) if part) or "—"
+            add(f"| {tag} | {CLASSES_ES[item['class']]}{edge} | {detail} |")
     else:
-        add("| Parámetro | " + " | ".join(bc.CASES) + " |")
-        add("|---|" + "---|" * len(bc.CASES))
-        names = list(ident["classes"][bc.CASES[0]])
-        for name in names:
-            cells = []
-            for case in bc.CASES:
-                item = ident["classes"][case][name]
-                left = "" if item.get("left") is None else " (" + (", ".join(_value(v) for v in item["left"]) or "ninguno") + ")"
-                cells.append(CLASSES_ES[item["class"]] + left)
-            add(f"| {PARAMETERS_ES.get(name, name)} | " + " | ".join(cells) + " |")
+        add("No evaluable con la regla congelada sobre sobrevivientes conjuntos. κ, λ y ρ siguen "
+            "NON_IDENTIFIABLE_SEPARATELY por estructura.\n")
     add("")
-    add("### 5.5 Candidatos representativos (P2I-2V-5)\n")
+    add("### 5.6 Candidatos representativos\n")
     reps = data["representatives"]
-    if not reps or all(not v for v in reps.values()):
-        add("No hay sobreviviente del que mostrar trayectorias.\n")
-    elif joint:
+    if joint and reps:
+        add("Regla congelada: ρ en su referencia; ordenados por el gasto de 57m a los 120 min, luego el de 72f, luego "
+            "los valores; bajo / medio / alto = el primero, el ⌊n/2⌋-ésimo y el último. La PAS y el lactato son sólo "
+            "contexto. No son una selección: son tres puntos de la región.\n")
         for label in ("low", "middle", "high"):
             _representative(lines, {"low": "Bajo", "middle": "Medio", "high": "Alto"}[label], reps[label], bc.CASES)
-    else:
+    elif reps and any(reps.values()):
         for case in bc.CASES:
-            if not reps.get(case):
-                add(f"**{case}:** ningún sobreviviente propio.\n")
-                continue
-            for label in ("low", "middle", "high"):
-                _representative(lines, {"low": "Bajo", "middle": "Medio", "high": "Alto"}[label] + " (sólo este caso)",
-                                reps[case][label], (case,))
-    add("### 5.6 Lo que leen las restricciones, en toda su tabla (contexto)\n")
+            if reps.get(case):
+                for label in ("low", "middle", "high"):
+                    _representative(lines, {"low": "Bajo", "middle": "Medio", "high": "Alto"}[label]
+                                    + " (sólo este caso)", reps[case][label], (case,))
+    else:
+        add("No hay sobreviviente del que mostrar trayectorias.\n")
+    add("### 5.7 Lo que leen las restricciones, en toda su tabla (contexto)\n")
     add("Mediana (mínimo–máximo) de cada lectura sobre la cuadrícula de su superficie, junto a la envolvente "
         "docente. No se ajusta nada a estas cifras.\n")
     add("| Lectura | Envolvente docente | " + " | ".join(bc.CASES) + " |")
@@ -408,15 +427,18 @@ def render_filter(data: dict, diagnostic_data: dict | None = None) -> str:
     add("| corridas sin tratar que se detienen antes de 120′ | — | " + " | ".join(
         f"{_n(m[c]['untreated_stopped'], 0)} de {_n(m[c]['untreated_output']['120']['n'], 0)}" for c in bc.CASES) + " |")
     for minute in ("60", "120"):
-        add(f"| caída de Hb sin tratar a {minute}′ | " + " / ".join(_pair(d["untreated_hb_fall"][c][int(minute)], 1) for c in bc.CASES)
+        add(f"| caída de Hb sin tratar a {minute}′ (v2) | " + " / ".join(_pair(d["untreated_hb_fall"][c][int(minute)], 1) for c in bc.CASES)
             + " | " + " | ".join(env(m[c]["untreated_hb_fall"][minute], 3) for c in bc.CASES) + " |")
+    add("| mayor subida de Hb sin tratar, minuto a minuto | ≤ 1e-9 | " + " | ".join(
+        env(m[c]["untreated_hb_max_rise"], 12) for c in bc.CASES) + " |")
     add("| ΔHb de una unidad | " + _pair(d["FD-BLD-01"]["envelope"], 1) + " | " + " | ".join(env(m[c]["one_unit_hb_gain"]) for c in bc.CASES) + " |")
     add("| aumento relativo del gasto con una unidad | techo " + " / ".join(_n(d["FD-BLD-02"][c][1]) for c in bc.CASES) + " | "
         + " | ".join(env(m[c]["one_unit_relative_output_gain"]) for c in bc.CASES) + " |")
-    add("| posición tras una unidad | < " + " / ".join(_n(bc._normalized_at(c, None), 1) for c in bc.CASES) + " | "
+    add("| posición tras una unidad (FD-BLD-03, diagnóstico) | — | "
         + " | ".join(env(m[c]["one_unit_position"]) for c in bc.CASES) + " |")
     add("| Δgasto 2.ª / 1.ª unidad | ≤ 1 | " + " | ".join(env(m[c]["second_over_first"]) for c in bc.CASES) + " |")
-    add("| 1 L: contribución inicial | " + _pair(d["FD-BLD-04"]["envelope"]) + " | " + " | ".join(env(m[c]["crystalloid_early"], 3) for c in bc.CASES) + " |")
+    add("| 1 L: contribución inicial (retenido) | " + _pair(d["FD-BLD-04"]["envelope"]) + " | " + " | ".join(env(m[c]["crystalloid_early"], 3) for c in bc.CASES) + " |")
+    add("| 1 L: efecto neto inicial sobre C (V5) | " + _pair(d["FD-BLD-04"]["envelope"]) + " | " + " | ".join(env(m[c]["crystalloid_net_early"], 3) for c in bc.CASES) + " |")
     for minute, pair in d["FD-BLD-05"]["envelopes"].items():
         add(f"| 1 L: retenido a {minute}′ | {_pair(pair)} | " + " | ".join(env(m[c]["crystalloid_retained"][str(minute)], 3) for c in bc.CASES) + " |")
     for volume, pair in d["FD-BLD-06"]["envelopes"].items():
@@ -424,74 +446,7 @@ def render_filter(data: dict, diagnostic_data: dict | None = None) -> str:
     for minute, pair in d["FD-BLD-07"]["envelopes"].items():
         add(f"| relleno: fracción repuesta a {minute}′ | {_pair(pair)} | " + " | ".join(env(m[c]["refill_share"][str(minute)], 3) for c in bc.CASES) + " |")
     add("| relleno tras la hemostasia, 60 → 240′ (mL-eq) | > 0 | " + " | ".join(env(m[c]["refill_after_haemostasis_ml"], 0) for c in bc.CASES) + " |")
-    if diagnostic_data:
-        add("")
-        _render_diagnostic(lines, data, diagnostic_data)
     return "\n".join(lines)
-
-
-def _render_diagnostic(lines: list, data: dict, diag: dict) -> None:
-    add = lines.append
-    region = data["region"]
-    drop = diag["dropped"]
-    add(f"### 5.7 Diagnóstico: el conjunto que cumple todo salvo {drop} (NO es un resultado del filtro)\n")
-    add(f"Calculado después del filtro con el mismo congelamiento (`{diag['freeze_digest']}`) y sólo con funciones "
-        "congeladas: no cambia ninguna regla ni ninguna lectura. Su conjunto es el «todas menos ésta» de §5.1, que el "
-        "filtro ya contó; aquí se describe para que la docencia vea qué exige la restricción que vacía la región.\n")
-    largest = diag["largest_hb_fall"]
-    add("**Mayor caída de Hb sin tratar que alcanza la región** (g/dL):\n")
-    add("| Caso | Envolvente docente 60′ / 120′ | Mayor caída en toda la cuadrícula 60′ / 120′ | Mayor caída donde el relleno "
-        "cumple FD-BLD-07, 60′ / 120′ | Dónde se alcanza (con FD-BLD-07, a los 60′) |")
-    add("|---|---|---|---|---|")
-    for case in bc.CASES:
-        item = largest[case]
-        best = item["with_fd_bld_07"]
-        where = best["60"]["values"] if best["60"] else {}
-        add(f"| {case} | " + " / ".join(_pair(bc.DECISIONS["untreated_hb_fall"][case][m], 1) for m in bc.MINUTES_HB)
-            + " | " + " / ".join(_n(item["any"][str(m)], 3) for m in bc.MINUTES_HB)
-            + " | " + " / ".join(_n(best[str(m)]["fall"], 3) if best[str(m)] else "—" for m in bc.MINUTES_HB)
-            + " | " + "; ".join(f"{PARAMETERS_ES[n]} {_value(v)}" for n, v in where.items()) + " |")
-    add("")
-    count = diag["count"]
-    add(f"**El conjunto.** {_n(count['joint'], 0)} candidatos conjuntos ({', '.join(f'{c}: {_n(n, 0)} por caso solo' for c, n in count['alone'].items())}). "
-        "Sobrevivientes por valor:\n")
-    add("| Parámetro | Por valor | Clase (regla congelada, sólo diagnóstico) |")
-    add("|---|---|---|")
-    classes = diag["classes"] or {}
-    for name in bc.PARAMETERS:
-        labels = [f"{name}|{case}" for case in bc.CASES] if name in bc.CASE_DIMS else [name]
-        for label in labels:
-            tag = PARAMETERS_ES[name] + (f" ({label.split('|')[1]})" if "|" in label else "")
-            left = [v for v in region[name] if count["marginal"][label][str(v)] > 0]
-            edge = (len(left) == 1 and name not in bc.STRUCTURAL
-                    and left[0] in (region[name][0], region[name][-1]))
-            add(f"| {tag} | {_marginal(count['marginal'][label], region[name])} | "
-                f"{CLASSES_ES[classes[label]['class']] if label in classes else '—'}"
-                f"{' (borde de la cuadrícula: no lo identifica)' if edge else ''} |")
-    add("")
-    reps = diag["representatives"]
-    if not reps:
-        return
-    add("**Sus representativos** (la regla congelada de §2 aplicada a este conjunto). Cumplen todas las restricciones "
-        f"salvo {drop}; su caída de Hb sin tratar frente a la envolvente:\n")
-    add("| Representativo | " + " | ".join(f"{c}: caída 60′ / 120′ (envolvente)" for c in bc.CASES) + " | Restricciones que no cumple |")
-    add("|---|" + "---|" * len(bc.CASES) + "---|")
-    names_es = {"low": "Bajo", "middle": "Medio", "high": "Alto"}
-    for label in ("low", "middle", "high"):
-        item = reps[label]
-        cells = []
-        for case in bc.CASES:
-            fall = item["untreated_hb"][case]["fall"]
-            cells.append(" / ".join(_n(fall[str(m)], 3) for m in bc.MINUTES_HB) + " ("
-                         + " / ".join(_pair(bc.DECISIONS["untreated_hb_fall"][case][m], 1) for m in bc.MINUTES_HB) + ")")
-        failing = sorted({f"{name} ({case})" for case in bc.CASES for name, ok in item["verdicts"][case].items() if not ok})
-        add(f"| {names_es[label]} | " + " | ".join(cells) + " | " + (", ".join(failing) or "ninguna") + " |")
-    add("")
-    add("En estas trayectorias el lactato (sólo contexto) baja mientras el déficit crítico crece: con la cinética del "
-        "punto medio de P2F la depuración domina. No es coherente clínicamente y no se corrige aquí: P2I-2R sigue en "
-        "pausa.\n")
-    for label in ("low", "middle", "high"):
-        _representative(lines, f"Diagnóstico, {names_es[label].lower()}", reps[label], bc.CASES)
 
 
 #: The constraint whose leave-one-out set the diagnostic shows: the one that alone empties the region.
@@ -499,7 +454,8 @@ DIAGNOSTIC_DROP = "U-HB"
 
 
 def diagnostic(region: dict = bc.REGION, progress=None) -> dict:
-    """NOT a filter result. Every constraint but DIAGNOSTIC_DROP (a set the frozen filter already counted),
+    """P2I-2V's diagnostic (its JSON is that package's historical record; rerunning it now applies the P2I-2V-R
+    readings). NOT a filter result. Every constraint but DIAGNOSTIC_DROP (a set the frozen filter already counted),
     its low / middle / high members by the frozen representative rule, their trajectories and their reading
     of the dropped constraint; and, per case, the largest untreated Hb fall the region reaches among rows
     whose refill also meets FD-BLD-07."""
