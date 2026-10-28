@@ -337,8 +337,8 @@ fisiología actual y no usa la región histórica de P2F de 1054 conjuntos.
   - la revisión adversarial probó que el código congelado omitía, para la tasa 2,5, los sobrevivientes de las cajas
     de P2I-2W dentro de la banda;
   - recongelamiento en `0b90ddf`: sólo esas claves y ese soporte, más tres detalles de código (la monotonía también
-    sobre la dilución a los 120′, todas las columnas en la comprobación del nivel de entrega y un docstring mal
-    ubicado);
+    sobre la dilución a los 120′, todas las columnas menos `delivery_rel` en la comprobación del nivel de entrega,
+    que en la sonda de la revisión también resultó invariante, y un docstring mal ubicado);
   - nueva corrida y nuevo commit ejecutable.
 - **Resultado de la nueva corrida:**
   - todo lo de τ es idéntico a la primera: diseño, veredictos, región, bordes, límite, trayectorias y clasificación
