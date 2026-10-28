@@ -2578,3 +2578,44 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - Según el diagnóstico de FD-BLD-03, 3402 sobrevivientes llegarían a la referencia euvolémica con una unidad, en
     al menos uno de los dos casos.
 - **Sin elegir parámetros ocultos**, sin filtro de lactato y sin gancho en tiempo de ejecución.
+
+## 27. P2I-2W · Extensión de los bordes abiertos y auditoría semántica del arnés (2026-10-27)
+
+- **Base:** `ce1c0fb`. P2I-2V-R queda aceptado y cerrado: su filtro, su sensibilidad y su documento son su registro
+  (`a9ab10d8…`), sin regenerar, y `blood_constraints.py` queda fijado byte a byte. Informe:
+  `docs/revision/P2I2W_EXTENSION_BORDES_AUDITORIA.md`.
+- **Qué se extendió:** sólo las dimensiones que P2I-2V-R señaló abiertas, por su lado superior:
+  - la tasa común (10 y 20);
+  - la meta del relleno (1,0; 1,25 queda fuera del dominio);
+  - la τ del relleno (480 y 960);
+  - la posición de 57m (0,65 y 0,8) y la de 72f (0,75 y 0,9).
+
+  La regla sigue el paso de cada dimensión y no lee recuentos. La fracción retenida del cristaloide tiene una
+  continuación ambigua: no se extendió y queda para la docencia.
+- **Diseño disperso:** 43 cajas (42 con algún punto extendido) y 2 375 082 candidatos extendidos (menos del 5 % de la
+  cuadrícula extendida):
+  - la caja superviviente, que reproduce los 4896;
+  - cada punto solo;
+  - los diez pares;
+  - la esquina de los primeros pasos.
+- **Congelamiento antes de evaluar:** commit `6a0d3b8`, resumen `5257b233…`. Las filas ilegibles nunca cuentan como
+  cota. Ningún candidato conjunto quedó ilegible; por caso, 1944 de 57m (tasa 10, 0,65) y 1836 de 72f (tasa 20, 0,9).
+- **Resultado:**
+  - **Tasa común:** 10 y 20 rechazadas por U-OUT en todo el diseño, sin que el relleno las rescate. Borde INTERIOR,
+    2,5–5, sólo dentro del diseño: la terna «tasa 10, 57m 0,65 y 72f 0,75» no se evaluó. Con 10 y 20, la lectura
+    sanguínea congelada se detiene (5514 filas ilegibles).
+  - **Posición:** 0,8 (57m) y 0,9 (72f) rechazadas por U-OUT por arriba. 0,65 y 0,75 sobreviven sólo juntas (2268, con
+    tasa 5 y λ/κ 833), dentro de la banda euvolémica y fuera de la banda POCUS de cada caso. Borde INTERIOR, con una
+    interacción fuerte.
+  - **τ del relleno:** 960 rechazada por FD-BLD-07; 480 sólo con la meta en 1,0. Borde INTERIOR.
+  - **Meta del relleno:** 1,0 sobrevive (663 sola, 1512 con τ 480). Sigue OPEN_UPPER, en el límite de su dominio.
+  - Las dimensiones no señaladas siguen OPEN_BOTH sin extender.
+- **Estado de borde:** INTERIOR / OPEN_LOWER / OPEN_UPPER / OPEN_BOTH, aparte de la clase de identificabilidad
+  congelada.
+- **Nivel 1:** RR1, HR1–HR4, PL1–PL3, PL4 (V) y DM1 (Hb) quedan rotuladas como SYNTHETIC_STATE_PERTURBATION en
+  `calibration.LEVEL1_DIRECT_WRITES`. Ninguna es una sonda de hemorragia, así que ninguna se convierte a BloodState.
+  La variable de HR1–HR4 deja de llamarse `bleed`. Cambian los componentes `rules` y `harness_sources` del congelamiento
+  de calibración; ninguna regla.
+- **Sondas de bolo:** siguen históricas y fuera de toda evidencia y recuento.
+- **Sin elegir parámetros ocultos**, sin cambiar restricciones, sin filtro de lactato y sin gancho en tiempo de
+  ejecución.
