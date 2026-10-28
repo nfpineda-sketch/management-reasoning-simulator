@@ -4,7 +4,7 @@ Apoyo a decisiones, no decisiones. Nada de este documento aprueba un número, ma
 FACULTY_APPROVED, migra el GI, toca el tiempo de ejecución ni cambia lo que ve el residente. Todos los valores
 siguen CANDIDATE.
 
-- **Generado desde:** el congelamiento de calibración `23b064e9bba1d6edcdcc4bb6aa39bf9949ddc469fbaf838c42afbeae2ed4ac14` y el paquete `0b33b685e115af870411732b15b83982231fca8e4047c2b54ca02e6e8bc637e9`
+- **Generado desde:** el congelamiento de calibración `a8f00e04320823d24d5d1d802ae2eae14564fb970da4d7c0d44c65368fc9a8b0` y el paquete `5bb33da5a018030069d060583dc1c327464af09b56f8f5b0f31793772ea9caed`
   (`python -m clinical_core.decision_pack`; las tablas, con `python -m clinical_core.decision_pack_markdown`).
   Los números están en `docs/revision/P2G_decision_pack.json`. Una prueba falla si el código o las entradas cambian
   sin regenerarlos.
@@ -64,89 +64,89 @@ D → lactato (G); lo que se aclara depende de τ_L.
 
 | Corrida | 0′ | 30′ | 60′ | 120′ |
 |---|---|---|---|---|
-| sin tratamiento | 4,40 – 4,40 – 4,40 | 2,64 – 4,03 – 8,34 | 1,78 – 3,79 – 9,50 | 1,30 – 3,77 – 10,01 |
-| manejo definitivo (GR + IBP + endoscopia) | 4,40 – 4,40 – 4,40 | 2,63 – 4,00 – 8,11 | 1,73 – 3,64 – 8,19 | 1,04 – 2,98 – 5,97 |
+| sin tratamiento | 4,40 – 4,40 – 4,40 | 2,64 – 4,09 – 9,79 | 1,79 – 3,96 – 14,02 | 1,37 – 4,61 – 21,97 |
+| manejo definitivo (GR + IBP + endoscopia) | 4,40 – 4,40 – 4,40 | 2,63 – 4,02 – 9,53 | 1,73 – 3,66 – 10,83 | 1,04 – 3,04 – 7,65 |
 
 Representantes (posición del lactato a los 60 min sin tratamiento; no son preferencias):
 
 | Región | Conjunto | Corrida | 0′ | 30′ | 60′ | 120′ |
 |---|---|---|---|---|---|---|
-| bajo | τ_D 120 · τ_L 45 · G 2 · exceso sup. · intrínseca inf. · D inf. · entrega sup. | sin tratamiento | 4,40 | 2,64 | 1,78 | 1,30 |
+| bajo | τ_D 120 · τ_L 45 · G 2 · exceso sup. · intrínseca inf. · D inf. · entrega sup. | sin tratamiento | 4,40 | 2,64 | 1,79 | 1,37 |
 | bajo | τ_D 120 · τ_L 45 · G 2 · exceso sup. · intrínseca inf. · D inf. · entrega sup. | manejo definitivo (GR + IBP + endoscopia) | 4,40 | 2,63 | 1,73 | 1,04 |
-| medio | τ_D 60 · τ_L 120 · G 6 · resto medio | sin tratamiento | 4,40 | 4,05 | 3,77 | 3,63 |
-| medio | τ_D 60 · τ_L 120 · G 6 · resto medio | manejo definitivo (GR + IBP + endoscopia) | 4,40 | 4,00 | 3,55 | 2,73 |
-| alto | τ_D 60 · τ_L 45 · G 12 · exceso inf. · intrínseca sup. · D sup. · entrega inf. | sin tratamiento | 4,40 | 8,34 | 9,50 | 10,01 |
-| alto | τ_D 60 · τ_L 45 · G 12 · exceso inf. · intrínseca sup. · D sup. · entrega inf. | manejo definitivo (GR + IBP + endoscopia) | 4,40 | 8,11 | 8,19 | 5,67 |
-
-Proporción de la región admisible a cada lado de las preguntas docentes (sólo modelo):
-
-| Lectura | Conjuntos | Proporción |
-|---|---|---|
-| sin tratamiento, 60′ por encima de la llegada | 1054 | 25 % |
-| sin tratamiento, 60′ más de 1 mmol/L por encima | 1054 | 8 % |
-| manejo definitivo, 30′ por debajo de la llegada | 1054 | 79 % |
-| manejo definitivo, 120′ por debajo de la llegada | 1054 | 91 % |
-
-Efecto de cada factor alrededor del punto medio:
-
-| Factor | Nivel | Estado | sin trat. 30′ | sin trat. 60′ | sin trat. 120′ | definitivo 30′ | definitivo 60′ | definitivo 120′ |
-|---|---|---|---|---|---|---|---|---|
-| `arrival_oxygen_debt` | inf. | admisible · fuera del diseño de P2F | 3,70 | 3,29 | 3,16 | 3,66 | 3,07 | 2,26 |
-| `arrival_oxygen_debt` | medio | admisible | 4,05 | 3,77 | 3,63 | 4,00 | 3,55 | 2,73 |
-| `arrival_oxygen_debt` | sup. | admisible · fuera del diseño de P2F | 4,75 | 4,73 | 4,56 | 4,70 | 4,52 | 3,66 |
-| `arrival_lactate_excess` | inf. | admisible | 4,27 | 4,17 | 4,26 | 4,23 | 3,95 | 3,36 |
-| `arrival_lactate_excess` | medio | admisible | 4,05 | 3,77 | 3,63 | 4,00 | 3,55 | 2,73 |
-| `arrival_lactate_excess` | sup. | admisible | 4,01 | 3,69 | 3,50 | 3,96 | 3,48 | 2,60 |
-| `lactate_per_output_deficit` | 2 | admisible | 3,78 | 3,30 | 2,71 | 3,76 | 3,22 | 2,41 |
-| `lactate_per_output_deficit` | 6 | admisible | 4,05 | 3,77 | 3,63 | 4,00 | 3,55 | 2,73 |
-| `lactate_per_output_deficit` | 12 | admisible | 4,45 | 4,49 | 5,01 | 4,36 | 4,05 | 3,21 |
-| `lactate_clearance_tau_min` | 45 | admisible | 3,62 | 3,22 | 3,41 | 3,51 | 2,75 | 1,77 |
-| `lactate_clearance_tau_min` | 120 | admisible | 4,05 | 3,77 | 3,63 | 4,00 | 3,55 | 2,73 |
-| `lactate_clearance_tau_min` | 240 | admisible | 4,21 | 4,05 | 3,90 | 4,19 | 3,93 | 3,39 |
-
-**gi_bleed_72f** — lactato (mmol/L), mínimo – mediana – máximo en la región admisible:
-
-| Corrida | 0′ | 30′ | 60′ | 120′ |
-|---|---|---|---|---|
-| sin tratamiento | 3,40 – 3,40 – 3,40 | 2,13 – 3,21 – 7,82 | 1,51 – 3,10 – 9,14 | 1,14 – 3,14 – 9,44 |
-| manejo definitivo (GR + IBP + endoscopia) | 3,40 – 3,40 – 3,40 | 2,12 – 3,18 – 7,64 | 1,48 – 2,95 – 8,09 | 0,98 – 2,51 – 5,74 |
-
-Representantes (posición del lactato a los 60 min sin tratamiento; no son preferencias):
-
-| Región | Conjunto | Corrida | 0′ | 30′ | 60′ | 120′ |
-|---|---|---|---|---|---|---|
-| bajo | τ_D 120 · τ_L 45 · G 2 · exceso sup. · intrínseca inf. · D inf. · entrega sup. | sin tratamiento | 3,40 | 2,13 | 1,51 | 1,14 |
-| bajo | τ_D 120 · τ_L 45 · G 2 · exceso sup. · intrínseca inf. · D inf. · entrega sup. | manejo definitivo (GR + IBP + endoscopia) | 3,40 | 2,12 | 1,48 | 0,98 |
-| medio | τ_D 60 · τ_L 120 · G 6 · resto medio | sin tratamiento | 3,40 | 3,27 | 3,14 | 3,07 |
-| medio | τ_D 60 · τ_L 120 · G 6 · resto medio | manejo definitivo (GR + IBP + endoscopia) | 3,40 | 3,23 | 2,95 | 2,37 |
-| alto | τ_D 60 · τ_L 45 · G 12 · exceso inf. · intrínseca sup. · D sup. · entrega inf. | sin tratamiento | 3,40 | 7,82 | 9,14 | 9,44 |
-| alto | τ_D 60 · τ_L 45 · G 12 · exceso inf. · intrínseca sup. · D sup. · entrega inf. | manejo definitivo (GR + IBP + endoscopia) | 3,40 | 7,64 | 8,09 | 5,74 |
+| medio | τ_D 60 · τ_L 120 · G 6 · resto medio | sin tratamiento | 4,40 | 4,15 | 4,16 | 5,04 |
+| medio | τ_D 60 · τ_L 120 · G 6 · resto medio | manejo definitivo (GR + IBP + endoscopia) | 4,40 | 4,05 | 3,62 | 2,79 |
+| alto | τ_D 60 · τ_L 45 · G 12 · exceso inf. · intrínseca sup. · D sup. · entrega inf. | sin tratamiento | 4,40 | 9,79 | 14,02 | 21,97 |
+| alto | τ_D 60 · τ_L 45 · G 12 · exceso inf. · intrínseca sup. · D sup. · entrega inf. | manejo definitivo (GR + IBP + endoscopia) | 4,40 | 9,53 | 10,83 | 7,65 |
 
 Proporción de la región admisible a cada lado de las preguntas docentes (sólo modelo):
 
 | Lectura | Conjuntos | Proporción |
 |---|---|---|
 | sin tratamiento, 60′ por encima de la llegada | 1054 | 33 % |
-| sin tratamiento, 60′ más de 1 mmol/L por encima | 1054 | 11 % |
-| manejo definitivo, 30′ por debajo de la llegada | 1054 | 69 % |
-| manejo definitivo, 120′ por debajo de la llegada | 1054 | 84 % |
+| sin tratamiento, 60′ más de 1 mmol/L por encima | 1054 | 19 % |
+| manejo definitivo, 30′ por debajo de la llegada | 1054 | 77 % |
+| manejo definitivo, 120′ por debajo de la llegada | 1054 | 89 % |
 
 Efecto de cada factor alrededor del punto medio:
 
 | Factor | Nivel | Estado | sin trat. 30′ | sin trat. 60′ | sin trat. 120′ | definitivo 30′ | definitivo 60′ | definitivo 120′ |
 |---|---|---|---|---|---|---|---|---|
-| `arrival_oxygen_debt` | inf. | admisible · fuera del diseño de P2F | 2,92 | 2,65 | 2,61 | 2,88 | 2,47 | 1,90 |
-| `arrival_oxygen_debt` | medio | admisible | 3,27 | 3,14 | 3,07 | 3,23 | 2,95 | 2,37 |
-| `arrival_oxygen_debt` | sup. | admisible · fuera del diseño de P2F | 3,96 | 4,10 | 4,01 | 3,92 | 3,92 | 3,30 |
-| `arrival_lactate_excess` | inf. | admisible | 3,49 | 3,53 | 3,71 | 3,45 | 3,35 | 3,00 |
-| `arrival_lactate_excess` | medio | admisible | 3,27 | 3,14 | 3,07 | 3,23 | 2,95 | 2,37 |
-| `arrival_lactate_excess` | sup. | admisible | 3,22 | 3,06 | 2,95 | 3,18 | 2,87 | 2,24 |
-| `lactate_per_output_deficit` | 2 | admisible | 3,00 | 2,68 | 2,28 | 2,99 | 2,62 | 2,04 |
-| `lactate_per_output_deficit` | 6 | admisible | 3,27 | 3,14 | 3,07 | 3,23 | 2,95 | 2,37 |
-| `lactate_per_output_deficit` | 12 | admisible | 3,67 | 3,82 | 4,27 | 3,59 | 3,45 | 2,85 |
-| `lactate_clearance_tau_min` | 45 | admisible | 3,10 | 2,89 | 2,98 | 3,01 | 2,50 | 1,71 |
-| `lactate_clearance_tau_min` | 120 | admisible | 3,27 | 3,14 | 3,07 | 3,23 | 2,95 | 2,37 |
-| `lactate_clearance_tau_min` | 240 | admisible | 3,33 | 3,25 | 3,19 | 3,31 | 3,16 | 2,78 |
+| `arrival_oxygen_debt` | inf. | admisible · fuera del diseño de P2F | 3,71 | 3,37 | 3,77 | 3,66 | 3,07 | 2,26 |
+| `arrival_oxygen_debt` | medio | admisible | 4,15 | 4,16 | 5,04 | 4,05 | 3,62 | 2,79 |
+| `arrival_oxygen_debt` | sup. | admisible · fuera del diseño de P2F | 5,04 | 5,74 | 7,57 | 4,83 | 4,71 | 3,85 |
+| `arrival_lactate_excess` | inf. | admisible | 4,38 | 4,55 | 5,67 | 4,27 | 4,01 | 3,43 |
+| `arrival_lactate_excess` | medio | admisible | 4,15 | 4,16 | 5,04 | 4,05 | 3,62 | 2,79 |
+| `arrival_lactate_excess` | sup. | admisible | 4,11 | 4,08 | 4,91 | 4,00 | 3,54 | 2,67 |
+| `lactate_per_output_deficit` | 2 | admisible | 3,81 | 3,42 | 3,18 | 3,78 | 3,24 | 2,43 |
+| `lactate_per_output_deficit` | 6 | admisible | 4,15 | 4,16 | 5,04 | 4,05 | 3,62 | 2,79 |
+| `lactate_per_output_deficit` | 12 | admisible | 4,66 | 5,25 | 7,83 | 4,45 | 4,18 | 3,34 |
+| `lactate_clearance_tau_min` | 45 | admisible | 3,87 | 4,03 | 5,94 | 3,61 | 2,87 | 1,85 |
+| `lactate_clearance_tau_min` | 120 | admisible | 4,15 | 4,16 | 5,04 | 4,05 | 3,62 | 2,79 |
+| `lactate_clearance_tau_min` | 240 | admisible | 4,27 | 4,26 | 4,71 | 4,21 | 3,97 | 3,43 |
+
+**gi_bleed_72f** — lactato (mmol/L), mínimo – mediana – máximo en la región admisible:
+
+| Corrida | 0′ | 30′ | 60′ | 120′ |
+|---|---|---|---|---|
+| sin tratamiento | 3,40 – 3,40 – 3,40 | 2,13 – 3,25 – 9,27 | 1,51 – 3,29 – 13,63 | 1,19 – 3,93 – 21,10 |
+| manejo definitivo (GR + IBP + endoscopia) | 3,40 – 3,40 – 3,40 | 2,12 – 3,20 – 9,07 | 1,48 – 3,04 – 11,59 | 0,98 – 2,57 – 8,66 |
+
+Representantes (posición del lactato a los 60 min sin tratamiento; no son preferencias):
+
+| Región | Conjunto | Corrida | 0′ | 30′ | 60′ | 120′ |
+|---|---|---|---|---|---|---|
+| bajo | τ_D 120 · τ_L 45 · G 2 · exceso sup. · intrínseca inf. · D inf. · entrega sup. | sin tratamiento | 3,40 | 2,13 | 1,51 | 1,19 |
+| bajo | τ_D 120 · τ_L 45 · G 2 · exceso sup. · intrínseca inf. · D inf. · entrega sup. | manejo definitivo (GR + IBP + endoscopia) | 3,40 | 2,12 | 1,48 | 0,98 |
+| medio | τ_D 60 · τ_L 120 · G 6 · resto medio | sin tratamiento | 3,40 | 3,37 | 3,51 | 4,38 |
+| medio | τ_D 60 · τ_L 120 · G 6 · resto medio | manejo definitivo (GR + IBP + endoscopia) | 3,40 | 3,28 | 3,04 | 2,46 |
+| alto | τ_D 60 · τ_L 45 · G 12 · exceso inf. · intrínseca sup. · D sup. · entrega inf. | sin tratamiento | 3,40 | 9,27 | 13,63 | 21,10 |
+| alto | τ_D 60 · τ_L 45 · G 12 · exceso inf. · intrínseca sup. · D sup. · entrega inf. | manejo definitivo (GR + IBP + endoscopia) | 3,40 | 9,07 | 11,59 | 8,66 |
+
+Proporción de la región admisible a cada lado de las preguntas docentes (sólo modelo):
+
+| Lectura | Conjuntos | Proporción |
+|---|---|---|
+| sin tratamiento, 60′ por encima de la llegada | 1054 | 46 % |
+| sin tratamiento, 60′ más de 1 mmol/L por encima | 1054 | 24 % |
+| manejo definitivo, 30′ por debajo de la llegada | 1054 | 68 % |
+| manejo definitivo, 120′ por debajo de la llegada | 1054 | 81 % |
+
+Efecto de cada factor alrededor del punto medio:
+
+| Factor | Nivel | Estado | sin trat. 30′ | sin trat. 60′ | sin trat. 120′ | definitivo 30′ | definitivo 60′ | definitivo 120′ |
+|---|---|---|---|---|---|---|---|---|
+| `arrival_oxygen_debt` | inf. | admisible · fuera del diseño de P2F | 2,93 | 2,72 | 3,11 | 2,88 | 2,48 | 1,90 |
+| `arrival_oxygen_debt` | medio | admisible | 3,37 | 3,51 | 4,38 | 3,28 | 3,04 | 2,46 |
+| `arrival_oxygen_debt` | sup. | admisible · fuera del diseño de P2F | 4,26 | 5,09 | 6,91 | 4,09 | 4,17 | 3,56 |
+| `arrival_lactate_excess` | inf. | admisible | 3,59 | 3,91 | 5,01 | 3,51 | 3,44 | 3,09 |
+| `arrival_lactate_excess` | medio | admisible | 3,37 | 3,51 | 4,38 | 3,28 | 3,04 | 2,46 |
+| `arrival_lactate_excess` | sup. | admisible | 3,33 | 3,43 | 4,25 | 3,24 | 2,96 | 2,33 |
+| `lactate_per_output_deficit` | 2 | admisible | 3,04 | 2,81 | 2,71 | 3,01 | 2,65 | 2,07 |
+| `lactate_per_output_deficit` | 6 | admisible | 3,37 | 3,51 | 4,38 | 3,28 | 3,04 | 2,46 |
+| `lactate_per_output_deficit` | 12 | admisible | 3,88 | 4,57 | 6,88 | 3,70 | 3,63 | 3,03 |
+| `lactate_clearance_tau_min` | 45 | admisible | 3,35 | 3,68 | 5,31 | 3,14 | 2,66 | 1,82 |
+| `lactate_clearance_tau_min` | 120 | admisible | 3,37 | 3,51 | 4,38 | 3,28 | 3,04 | 2,46 |
+| `lactate_clearance_tau_min` | 240 | admisible | 3,38 | 3,46 | 3,94 | 3,34 | 3,20 | 2,84 |
 <!-- /generado:lactato -->
 
 **Preguntas para la docencia**
@@ -198,93 +198,93 @@ no depende de la intrínseca:
 
 | Corrida | Intrínseca | 30′ (FC = intr. + simp.) | 60′ | 120′ | Región admisible (mín – mediana – máx) |
 |---|---|---|---|---|---|
-| manejo definitivo (GR + IBP + endoscopia) | intrínseca inf. | 112,6 = 60 + 52,6 | 102,4 = 60 + 42,4 | 100,5 = 60 + 40,5 |  |
-| manejo definitivo (GR + IBP + endoscopia) | intrínseca sup. | 112,6 = 100 + 12,6 | 102,4 = 100 + 2,4 | 100,5 = 100 + 0,5 |  |
-| manejo definitivo (GR + IBP + endoscopia) | medio | 112,6 = 80 + 32,6 | 102,4 = 80 + 22,4 | 100,5 = 80 + 20,5 | 30′ 109,3 – 113,6 – 117,3; 60′ 97,3 – 104,1 – 111,3; 120′ 93,4 – 102,8 – 109,7 |
-| sólo cristaloides (2 L en 20 min) | intrínseca inf. | 117,1 = 60 + 57,1 | 123,1 = 60 + 63,1 | — |  |
-| sólo cristaloides (2 L en 20 min) | intrínseca sup. | 117,1 = 100 + 17,1 | 123,1 = 100 + 23,1 | — |  |
-| sólo cristaloides (2 L en 20 min) | medio | 117,1 = 80 + 37,1 | 123,1 = 80 + 43,1 | — | 30′ 113,5 – 118,3 – 121,0; 60′ 117,2 – 124,6 – 129,0 |
-| sólo GR (2 U en 60 min) | intrínseca inf. | 113,2 = 60 + 53,2 | 103,3 = 60 + 43,3 | — |  |
-| sólo GR (2 U en 60 min) | intrínseca sup. | 113,2 = 100 + 13,2 | 103,3 = 100 + 3,3 | — |  |
-| sólo GR (2 U en 60 min) | medio | 113,2 = 80 + 33,2 | 103,3 = 80 + 23,3 | — | 30′ 109,9 – 114,2 – 117,6; 60′ 98,2 – 105,1 – 111,8 |
-| sin tratamiento | intrínseca inf. | 127,6 = 60 + 67,6 | 131,9 = 60 + 71,9 | 141,8 = 60 + 81,8 |  |
-| sin tratamiento | intrínseca sup. | 127,6 = 100 + 27,6 | 131,9 = 100 + 31,9 | 141,8 = 100 + 41,8 |  |
-| sin tratamiento | medio | 127,6 = 80 + 47,6 | 131,9 = 80 + 51,9 | 141,8 = 80 + 61,8 | 30′ 123,6 – 128,3 – 131,8; 60′ 125,7 – 132,8 – 137,9; 120′ 132,7 – 142,3 – 148,5 |
+| manejo definitivo (GR + IBP + endoscopia) | intrínseca inf. | 113,0 = 60 + 53,0 | 102,6 = 60 + 42,6 | 100,6 = 60 + 40,6 |  |
+| manejo definitivo (GR + IBP + endoscopia) | intrínseca sup. | 113,0 = 100 + 13,0 | 102,6 = 100 + 2,6 | 100,6 = 100 + 0,6 |  |
+| manejo definitivo (GR + IBP + endoscopia) | medio | 113,0 = 80 + 33,0 | 102,6 = 80 + 22,6 | 100,6 = 80 + 20,6 | 30′ 109,6 – 114,0 – 118,0; 60′ 97,3 – 104,2 – 111,7; 120′ 93,4 – 102,8 – 109,9 |
+| sólo cristaloides (2 L en 20 min) | intrínseca inf. | 117,7 = 60 + 57,7 | 124,9 = 60 + 64,9 | — |  |
+| sólo cristaloides (2 L en 20 min) | intrínseca sup. | 117,7 = 100 + 17,7 | 124,9 = 100 + 24,9 | — |  |
+| sólo cristaloides (2 L en 20 min) | medio | 117,7 = 80 + 37,7 | 124,9 = 80 + 44,9 | — | 30′ 113,7 – 118,6 – 122,4; 60′ 118,0 – 125,2 – 133,5 |
+| sólo GR (2 U en 60 min) | intrínseca inf. | 113,6 = 60 + 53,6 | 103,6 = 60 + 43,6 | — |  |
+| sólo GR (2 U en 60 min) | intrínseca sup. | 113,6 = 100 + 13,6 | 103,6 = 100 + 3,6 | — |  |
+| sólo GR (2 U en 60 min) | medio | 113,6 = 80 + 33,6 | 103,6 = 80 + 23,6 | — | 30′ 110,2 – 114,5 – 118,3; 60′ 98,2 – 105,2 – 112,2 |
+| sin tratamiento | intrínseca inf. | 129,5 = 60 + 69,5 | 135,7 = 60 + 75,7 | 150,5 = 60 + 90,5 |  |
+| sin tratamiento | intrínseca sup. | 129,5 = 100 + 29,5 | 135,7 = 100 + 35,7 | 150,5 = 100 + 50,5 |  |
+| sin tratamiento | medio | 129,5 = 80 + 49,5 | 135,7 = 80 + 55,7 | 150,5 = 80 + 70,5 | 30′ 127,4 – 129,5 – 133,7; 60′ 131,2 – 135,2 – 144,6; 120′ 140,0 – 147,9 – 169,6 |
 
 Velocidad de resolución con manejo definitivo, por decaimiento simpático (τ) e intrínseca: minuto en que la parte simpática cae a la mitad de la de llegada («mitad simpática», depende de la intrínseca) y minuto en que la FC recorre la mitad de su propia caída hasta los 120′ («mitad de la caída»):
 
 | τ simpático (min) | Intrínseca | Mitad simpática (min) | Mitad de la caída (min) | FC 120′ | Caída (lpm) | Parte simpática 120′ (lpm) |
 |---|---|---|---|---|---|---|
-| 2 | inf. | nunca | 28 | 100,5 | 23,5 | 40,5 |
-| 2 | medio | 59 | 28 | 100,5 | 23,5 | 20,5 |
-| 2 | sup. | 29 | 28 | 100,5 | 23,5 | 0,5 |
-| 5 | inf. | nunca | 31 | 100,5 | 23,5 | 40,5 |
-| 5 | medio | 62 | 31 | 100,5 | 23,5 | 20,5 |
-| 5 | sup. | 32 | 31 | 100,5 | 23,5 | 0,5 |
-| 15 | inf. | nunca | 41 | 100,6 | 23,4 | 40,6 |
-| 15 | medio | 82 | 41 | 100,6 | 23,4 | 20,6 |
-| 15 | sup. | 42 | 41 | 100,6 | 23,4 | 0,6 |
+| 2 | inf. | nunca | 29 | 100,6 | 23,4 | 40,6 |
+| 2 | medio | 60 | 29 | 100,6 | 23,4 | 20,6 |
+| 2 | sup. | 30 | 29 | 100,6 | 23,4 | 0,6 |
+| 5 | inf. | nunca | 32 | 100,6 | 23,4 | 40,6 |
+| 5 | medio | 63 | 32 | 100,6 | 23,4 | 20,6 |
+| 5 | sup. | 33 | 32 | 100,6 | 23,4 | 0,6 |
+| 15 | inf. | nunca | 42 | 100,8 | 23,2 | 40,8 |
+| 15 | medio | 84 | 42 | 100,8 | 23,2 | 20,8 |
+| 15 | sup. | 43 | 42 | 100,8 | 23,2 | 0,8 |
 
 | Factor | Nivel | Estado | sin trat. 30′ | sin trat. 60′ | sin trat. 120′ | definitivo 30′ | definitivo 60′ | definitivo 120′ |
 |---|---|---|---|---|---|---|---|---|
-| `intrinsic_sinus_rate` | inf. | admisible | 127,6 | 131,9 | 141,8 | 112,6 | 102,4 | 100,5 |
-| `intrinsic_sinus_rate` | medio | admisible | 127,6 | 131,9 | 141,8 | 112,6 | 102,4 | 100,5 |
-| `intrinsic_sinus_rate` | sup. | admisible | 127,6 | 131,9 | 141,8 | 112,6 | 102,4 | 100,5 |
-| `sympathetic_decay_tau_min` | 2 | admisible · fuera del diseño de P2F | 127,6 | 131,9 | 141,8 | 111,4 | 101,5 | 100,5 |
-| `sympathetic_decay_tau_min` | 5 | admisible | 127,6 | 131,9 | 141,8 | 112,6 | 102,4 | 100,5 |
-| `sympathetic_decay_tau_min` | 15 | admisible · fuera del diseño de P2F | 127,6 | 131,9 | 141,8 | 116,1 | 105,7 | 100,6 |
-| `sympathetic_per_pressure_deficit` | 0,5 | admisible · fuera del diseño de P2F | 125,5 | 127,9 | 133,9 | 117,6 | 112,0 | 110,5 |
-| `sympathetic_per_pressure_deficit` | 1 | admisible | 127,6 | 131,9 | 141,8 | 112,6 | 102,4 | 100,5 |
-| `sympathetic_per_pressure_deficit` | 2 | admisible · fuera del diseño de P2F | 131,7 | 140,1 | 157,7 | 102,6 | 83,2 | 80,6 |
-| `sympathetic_per_debt` | 0,25 | admisible · fuera del diseño de P2F | 127,8 | 132,0 | 140,8 | 113,3 | 103,6 | 102,3 |
-| `sympathetic_per_debt` | 0,5 | admisible | 127,6 | 131,9 | 141,8 | 112,6 | 102,4 | 100,5 |
-| `sympathetic_per_debt` | 1 | admisible · fuera del diseño de P2F | 127,0 | 131,8 | 143,7 | 111,3 | 99,9 | 97,0 |
+| `intrinsic_sinus_rate` | inf. | admisible | 129,5 | 135,7 | 150,5 | 113,0 | 102,6 | 100,6 |
+| `intrinsic_sinus_rate` | medio | admisible | 129,5 | 135,7 | 150,5 | 113,0 | 102,6 | 100,6 |
+| `intrinsic_sinus_rate` | sup. | admisible | 129,5 | 135,7 | 150,5 | 113,0 | 102,6 | 100,6 |
+| `sympathetic_decay_tau_min` | 2 | admisible · fuera del diseño de P2F | 129,5 | 135,7 | 150,5 | 111,8 | 101,7 | 100,6 |
+| `sympathetic_decay_tau_min` | 5 | admisible | 129,5 | 135,7 | 150,5 | 113,0 | 102,6 | 100,6 |
+| `sympathetic_decay_tau_min` | 15 | admisible · fuera del diseño de P2F | 129,5 | 135,7 | 150,5 | 116,5 | 105,9 | 100,8 |
+| `sympathetic_per_pressure_deficit` | 0,5 | admisible · fuera del diseño de P2F | 127,4 | 131,7 | 142,5 | 118,0 | 112,2 | 110,6 |
+| `sympathetic_per_pressure_deficit` | 1 | admisible | 129,5 | 135,7 | 150,5 | 113,0 | 102,6 | 100,6 |
+| `sympathetic_per_pressure_deficit` | 2 | admisible · fuera del diseño de P2F | 133,6 | 143,8 | 166,4 | 103,0 | 83,5 | 80,7 |
+| `sympathetic_per_debt` | 0,25 | admisible · fuera del diseño de P2F | 128,8 | 133,9 | 145,2 | 113,5 | 103,7 | 102,3 |
+| `sympathetic_per_debt` | 0,5 | admisible | 129,5 | 135,7 | 150,5 | 113,0 | 102,6 | 100,6 |
+| `sympathetic_per_debt` | 1 | admisible · fuera del diseño de P2F | 130,8 | 139,3 | 161,1 | 112,1 | 100,4 | 97,1 |
 
 **gi_bleed_72f** — FC de llegada 112 lpm = intrínseca 60–100 (medio 80) + parte simpática 12–52 (medio 32); betabloqueo 0 (factor 1 − β = 1); ninguna otra fuente cronotrópica en estas corridas.
 
 | Corrida | Intrínseca | 30′ (FC = intr. + simp.) | 60′ | 120′ | Región admisible (mín – mediana – máx) |
 |---|---|---|---|---|---|
-| manejo definitivo (GR + IBP + endoscopia) | intrínseca inf. | 104,1 = 60 + 44,1 | 97,0 = 60 + 37,0 | 95,3 = 60 + 35,3 |  |
-| manejo definitivo (GR + IBP + endoscopia) | intrínseca sup. | 104,1 = 100 + 4,1 | 100,0 = 100 + 0,0 | 100,0 = 100 + 0,0 |  |
-| manejo definitivo (GR + IBP + endoscopia) | medio | 104,1 = 80 + 24,1 | 97,0 = 80 + 17,0 | 95,3 = 80 + 15,3 | 30′ 100,8 – 105,1 – 107,2; 60′ 91,8 – 99,4 – 102,7; 120′ 88,2 – 98,9 – 101,3 |
-| sólo cristaloides (2 L en 20 min) | intrínseca inf. | 107,1 = 60 + 47,1 | 110,9 = 60 + 50,9 | — |  |
-| sólo cristaloides (2 L en 20 min) | intrínseca sup. | 107,1 = 100 + 7,1 | 110,9 = 100 + 10,9 | — |  |
-| sólo cristaloides (2 L en 20 min) | medio | 107,1 = 80 + 27,1 | 110,9 = 80 + 30,9 | — | 30′ 103,6 – 108,2 – 111,2; 60′ 104,8 – 112,4 – 116,8 |
-| sólo GR (2 U en 60 min) | intrínseca inf. | 104,4 = 60 + 44,4 | 97,6 = 60 + 37,6 | — |  |
-| sólo GR (2 U en 60 min) | intrínseca sup. | 104,4 = 100 + 4,4 | 100,0 = 100 + 0,0 | — |  |
-| sólo GR (2 U en 60 min) | medio | 104,4 = 80 + 24,4 | 97,6 = 80 + 17,6 | — | 30′ 101,2 – 105,4 – 107,6; 60′ 92,4 – 100,0 – 103,1 |
-| sin tratamiento | intrínseca inf. | 114,0 = 60 + 54,0 | 116,7 = 60 + 56,7 | 123,1 = 60 + 63,1 |  |
-| sin tratamiento | intrínseca sup. | 114,0 = 100 + 14,0 | 116,7 = 100 + 16,7 | 123,1 = 100 + 23,1 |  |
-| sin tratamiento | medio | 114,0 = 80 + 34,0 | 116,7 = 80 + 36,7 | 123,1 = 80 + 43,1 | 30′ 110,2 – 114,8 – 118,2; 60′ 110,4 – 117,7 – 122,6; 120′ 114,7 – 124,0 – 129,8 |
+| manejo definitivo (GR + IBP + endoscopia) | intrínseca inf. | 104,6 = 60 + 44,6 | 97,3 = 60 + 37,3 | 95,5 = 60 + 35,5 |  |
+| manejo definitivo (GR + IBP + endoscopia) | intrínseca sup. | 104,6 = 100 + 4,6 | 100,0 = 100 + 0,0 | 100,0 = 100 + 0,0 |  |
+| manejo definitivo (GR + IBP + endoscopia) | medio | 104,6 = 80 + 24,6 | 97,3 = 80 + 17,3 | 95,5 = 80 + 15,5 | 30′ 101,1 – 105,4 – 108,3; 60′ 91,8 – 99,4 – 103,2; 120′ 88,2 – 98,9 – 101,5 |
+| sólo cristaloides (2 L en 20 min) | intrínseca inf. | 108,9 = 60 + 48,9 | 114,0 = 60 + 54,0 | — |  |
+| sólo cristaloides (2 L en 20 min) | intrínseca sup. | 108,9 = 100 + 8,9 | 114,0 = 100 + 14,0 | — |  |
+| sólo cristaloides (2 L en 20 min) | medio | 108,9 = 80 + 28,9 | 114,0 = 80 + 34,0 | — | 30′ 103,6 – 108,9 – 112,8; 60′ 105,8 – 114,0 – 121,8 |
+| sólo GR (2 U en 60 min) | intrínseca inf. | 105,0 = 60 + 45,0 | 97,9 = 60 + 37,9 | — |  |
+| sólo GR (2 U en 60 min) | intrínseca sup. | 105,0 = 100 + 5,0 | 100,1 = 100 + 0,1 | — |  |
+| sólo GR (2 U en 60 min) | medio | 105,0 = 80 + 25,0 | 97,9 = 80 + 17,9 | — | 30′ 101,4 – 105,8 – 108,7; 60′ 92,4 – 100,0 – 103,6 |
+| sin tratamiento | intrínseca inf. | 115,9 = 60 + 55,9 | 120,4 = 60 + 60,4 | 130,7 = 60 + 70,7 |  |
+| sin tratamiento | intrínseca sup. | 115,9 = 100 + 15,9 | 120,4 = 100 + 20,4 | 130,7 = 100 + 30,7 |  |
+| sin tratamiento | medio | 115,9 = 80 + 35,9 | 120,4 = 80 + 40,4 | 130,7 = 80 + 50,7 | 30′ 114,6 – 115,9 – 120,1; 60′ 117,4 – 120,2 – 129,0; 120′ 124,0 – 129,1 – 148,9 |
 
 Velocidad de resolución con manejo definitivo, por decaimiento simpático (τ) e intrínseca: minuto en que la parte simpática cae a la mitad de la de llegada («mitad simpática», depende de la intrínseca) y minuto en que la FC recorre la mitad de su propia caída hasta los 120′ («mitad de la caída»):
 
 | τ simpático (min) | Intrínseca | Mitad simpática (min) | Mitad de la caída (min) | FC 120′ | Caída (lpm) | Parte simpática 120′ (lpm) |
 |---|---|---|---|---|---|---|
-| 2 | inf. | nunca | 29 | 95,3 | 16,7 | 35,3 |
-| 2 | medio | 64 | 29 | 95,3 | 16,7 | 15,3 |
-| 2 | sup. | 21 | 21 | 100,0 | 12,0 | 0,0 |
-| 5 | inf. | nunca | 32 | 95,3 | 16,7 | 35,3 |
-| 5 | medio | 71 | 32 | 95,3 | 16,7 | 15,3 |
-| 5 | sup. | 24 | 24 | 100,0 | 12,0 | 0,0 |
-| 15 | inf. | nunca | 41 | 95,5 | 16,5 | 35,5 |
-| 15 | medio | 94 | 41 | 95,5 | 16,5 | 15,5 |
-| 15 | sup. | 32 | 32 | 100,0 | 12,0 | 0,0 |
+| 2 | inf. | nunca | 31 | 95,4 | 16,6 | 35,4 |
+| 2 | medio | 76 | 31 | 95,4 | 16,6 | 15,4 |
+| 2 | sup. | 23 | 23 | 100,0 | 12,0 | 0,0 |
+| 5 | inf. | nunca | 34 | 95,5 | 16,5 | 35,5 |
+| 5 | medio | 80 | 34 | 95,5 | 16,5 | 15,5 |
+| 5 | sup. | 26 | 26 | 100,0 | 12,0 | 0,0 |
+| 15 | inf. | nunca | 43 | 95,6 | 16,4 | 35,6 |
+| 15 | medio | 102 | 43 | 95,6 | 16,4 | 15,6 |
+| 15 | sup. | 34 | 34 | 100,0 | 12,0 | 0,0 |
 
 | Factor | Nivel | Estado | sin trat. 30′ | sin trat. 60′ | sin trat. 120′ | definitivo 30′ | definitivo 60′ | definitivo 120′ |
 |---|---|---|---|---|---|---|---|---|
-| `intrinsic_sinus_rate` | inf. | admisible | 114,0 | 116,7 | 123,1 | 104,1 | 97,0 | 95,3 |
-| `intrinsic_sinus_rate` | medio | admisible | 114,0 | 116,7 | 123,1 | 104,1 | 97,0 | 95,3 |
-| `intrinsic_sinus_rate` | sup. | admisible | 114,0 | 116,7 | 123,1 | 104,1 | 100,0 | 100,0 |
-| `sympathetic_decay_tau_min` | 2 | admisible · fuera del diseño de P2F | 114,0 | 116,7 | 123,1 | 103,2 | 96,3 | 95,3 |
-| `sympathetic_decay_tau_min` | 5 | admisible | 114,0 | 116,7 | 123,1 | 104,1 | 97,0 | 95,3 |
-| `sympathetic_decay_tau_min` | 15 | admisible · fuera del diseño de P2F | 114,0 | 116,7 | 123,1 | 106,5 | 99,2 | 95,5 |
-| `sympathetic_per_pressure_deficit` | 0,5 | admisible · fuera del diseño de P2F | 112,7 | 114,1 | 117,8 | 107,4 | 103,3 | 101,9 |
-| `sympathetic_per_pressure_deficit` | 1 | admisible | 114,0 | 116,7 | 123,1 | 104,1 | 97,0 | 95,3 |
-| `sympathetic_per_pressure_deficit` | 2 | admisible · fuera del diseño de P2F | 116,8 | 122,1 | 133,5 | 97,5 | 84,3 | 82,2 |
-| `sympathetic_per_debt` | 0,25 | admisible · fuera del diseño de P2F | 114,4 | 117,0 | 122,8 | 104,7 | 98,2 | 97,1 |
-| `sympathetic_per_debt` | 0,5 | admisible | 114,0 | 116,7 | 123,1 | 104,1 | 97,0 | 95,3 |
-| `sympathetic_per_debt` | 1 | admisible · fuera del diseño de P2F | 113,4 | 116,1 | 123,7 | 102,8 | 94,5 | 91,8 |
+| `intrinsic_sinus_rate` | inf. | admisible | 115,9 | 120,4 | 130,7 | 104,6 | 97,3 | 95,5 |
+| `intrinsic_sinus_rate` | medio | admisible | 115,9 | 120,4 | 130,7 | 104,6 | 97,3 | 95,5 |
+| `intrinsic_sinus_rate` | sup. | admisible | 115,9 | 120,4 | 130,7 | 104,6 | 100,0 | 100,0 |
+| `sympathetic_decay_tau_min` | 2 | admisible · fuera del diseño de P2F | 115,9 | 120,4 | 130,7 | 103,8 | 96,7 | 95,4 |
+| `sympathetic_decay_tau_min` | 5 | admisible | 115,9 | 120,4 | 130,7 | 104,6 | 97,3 | 95,5 |
+| `sympathetic_decay_tau_min` | 15 | admisible · fuera del diseño de P2F | 115,9 | 120,4 | 130,7 | 107,0 | 99,6 | 95,6 |
+| `sympathetic_per_pressure_deficit` | 0,5 | admisible · fuera del diseño de P2F | 114,6 | 117,7 | 125,5 | 107,9 | 103,6 | 102,0 |
+| `sympathetic_per_pressure_deficit` | 1 | admisible | 115,9 | 120,4 | 130,7 | 104,6 | 97,3 | 95,5 |
+| `sympathetic_per_pressure_deficit` | 2 | admisible · fuera del diseño de P2F | 118,6 | 125,7 | 141,2 | 98,0 | 84,7 | 82,3 |
+| `sympathetic_per_debt` | 0,25 | admisible · fuera del diseño de P2F | 115,3 | 118,8 | 126,6 | 105,0 | 98,3 | 97,2 |
+| `sympathetic_per_debt` | 0,5 | admisible | 115,9 | 120,4 | 130,7 | 104,6 | 97,3 | 95,5 |
+| `sympathetic_per_debt` | 1 | admisible · fuera del diseño de P2F | 117,1 | 123,4 | 139,0 | 103,9 | 95,2 | 92,0 |
 <!-- /generado:fc -->
 
 **Preguntas para la docencia**
@@ -530,7 +530,7 @@ vuelve mayormente ineficaz.
 | inf. | 833 | 1088 | 98 → 178 | 130 | 2,77 | 0,30 → 0,81 | 0,27 | 80 | 0,000 – 0,326 | rechazado por las reglas congeladas | sí |
 | inf. | 1500 | 1088 | 98 → 155 | 114 | 2,27 | 0,30 → 0,66 | 0,48 | 80 | 0,000 – 0,000 | admisible | no |
 | medio | 600 | 1088 | 98 → 145 | 107 | 2,05 | 0,45 → 0,91 | 0,16 | 83 | 0,000 – 1,005 | admisible | no |
-| medio | 833 | 1088 | 98 → 140 | 103 | 1,93 | 0,45 → 0,85 | 0,27 | 86 | 0,000 – 0,582 | admisible | sí |
+| medio | 833 | 1088 | 98 → 140 | 103 | 1,93 | 0,45 → 0,85 | 0,27 | 87 | 0,000 – 0,582 | admisible | sí |
 | medio | 1500 | 1088 | 98 → 128 | 95 | 1,67 | 0,45 → 0,73 | 0,48 | 93 | 0,000 – 0,000 | admisible | no |
 | sup. | 600 | 1088 | 98 → 124 | 92 | 1,57 | 0,60 → 0,93 | 0,16 | 95 | 0,000 – 1,255 | admisible | no |
 | sup. | 833 | 1088 | 98 → 121 | 90 | 1,51 | 0,60 → 0,89 | 0,27 | 97 | 0,000 – 0,910 | admisible | sí |
@@ -587,36 +587,36 @@ En GI no hay mecanismo W ni N, así que la parte ventilatoria es constante y fij
 | 25 | 32,2 – 40,0 | 32,2 – 45,9 | 10,0 – 20,9 |
 | 30 | 35,4 – 40,0 | 35,4 – 50,8 | 10,0 – 20,8 |
 
-En las corridas del paquete, FR observada entre 13,2 y 35,9. Mínimo – mediana – máximo en la región admisible:
+En las corridas del paquete, FR observada entre 13,2 y 38,1. Mínimo – mediana – máximo en la región admisible:
 
 | Corrida | 0′ | 30′ | 60′ | 120′ |
 |---|---|---|---|---|
-| sin tratamiento | 26,0 – 26,0 – 26,0 | 17,5 – 24,6 – 34,4 | 13,2 – 23,5 – 35,5 | 13,2 – 23,5 – 35,9 |
-| manejo definitivo (GR + IBP + endoscopia) | 26,0 – 26,0 – 26,0 | 17,5 – 24,4 – 34,2 | 13,2 – 22,9 – 34,3 | 13,2 – 19,6 – 30,6 |
+| sin tratamiento | 26,0 – 26,0 – 26,0 | 17,5 – 24,8 – 35,8 | 13,2 – 24,3 – 37,5 | 13,2 – 26,8 – 38,1 |
+| manejo definitivo (GR + IBP + endoscopia) | 26,0 – 26,0 – 26,0 | 17,5 – 24,5 – 35,6 | 13,2 – 23,0 – 36,4 | 13,2 – 19,9 – 33,6 |
 
 | Shock | Corrida | 0′ (FR = ventilatoria + metabólica) | 30′ | 60′ | 120′ |
 |---|---|---|---|---|---|
-| leve (D 0, entrega 1,0) | sin tratamiento | 26,0 = 13,2 + 12,8 | 23,0 = 13,2 + 9,8 | 20,6 = 13,2 + 7,4 | 19,1 = 13,2 + 5,9 |
+| leve (D 0, entrega 1,0) | sin tratamiento | 26,0 = 13,2 + 12,8 | 23,0 = 13,2 + 9,8 | 20,7 = 13,2 + 7,5 | 21,0 = 13,2 + 7,9 |
 | leve (D 0, entrega 1,0) | mejoría (manejo definitivo) | 26,0 = 13,2 + 12,8 | 22,9 = 13,2 + 9,7 | 20,0 = 13,2 + 6,8 | 14,9 = 13,2 + 1,8 |
-| moderado (D 20, entrega 0,85) | sin tratamiento | 26,0 = 13,2 + 12,8 | 24,7 = 13,2 + 11,5 | 23,5 = 13,2 + 10,3 | 22,8 = 13,2 + 9,6 |
-| moderado (D 20, entrega 0,85) | mejoría (manejo definitivo) | 26,0 = 13,2 + 12,8 | 24,5 = 13,2 + 11,3 | 22,5 = 13,2 + 9,3 | 18,1 = 13,2 + 4,9 |
-| grave (D 60, entrega 0,6) | sin tratamiento | 26,0 = 13,2 + 12,8 | 27,4 = 13,2 + 14,3 | 27,8 = 13,2 + 14,6 | 28,0 = 13,2 + 14,8 |
-| grave (D 60, entrega 0,6) | mejoría (manejo definitivo) | 26,0 = 13,2 + 12,8 | 27,3 = 13,2 + 14,1 | 26,8 = 13,2 + 13,7 | 23,6 = 13,2 + 10,4 |
+| moderado (D 20, entrega 0,85) | sin tratamiento | 26,0 = 13,2 + 12,8 | 25,1 = 13,2 + 11,9 | 25,1 = 13,2 + 11,9 | 28,1 = 13,2 + 14,9 |
+| moderado (D 20, entrega 0,85) | mejoría (manejo definitivo) | 26,0 = 13,2 + 12,8 | 24,6 = 13,2 + 11,5 | 22,8 = 13,2 + 9,6 | 18,5 = 13,2 + 5,3 |
+| grave (D 60, entrega 0,6) | sin tratamiento | 26,0 = 13,2 + 12,8 | 28,4 = 13,2 + 15,2 | 30,7 = 13,2 + 17,5 | 34,5 = 13,2 + 21,4 |
+| grave (D 60, entrega 0,6) | mejoría (manejo definitivo) | 26,0 = 13,2 + 12,8 | 28,2 = 13,2 + 15,0 | 28,9 = 13,2 + 15,8 | 26,6 = 13,2 + 13,4 |
 
 | Factor | Nivel | Estado | sin trat. 30′ | sin trat. 60′ | sin trat. 120′ | definitivo 30′ | definitivo 60′ | definitivo 120′ |
 |---|---|---|---|---|---|---|---|---|
-| `rr_per_lactate` | 3 | admisible · fuera del diseño de P2F | 25,2 | 24,5 | 24,2 | 25,1 | 24,0 | 21,8 |
-| `rr_per_lactate` | 7,5 | admisible | 24,7 | 23,5 | 22,8 | 24,5 | 22,5 | 18,1 |
-| `rr_per_lactate` | 12 | admisible · fuera del diseño de P2F | 24,8 | 23,7 | 23,1 | 24,6 | 22,8 | 18,0 |
-| `rr_metabolic_max` | 15 | admisible · fuera del diseño de P2F | 25,1 | 24,3 | 23,9 | 25,0 | 23,6 | 20,1 |
-| `rr_metabolic_max` | 25 | admisible | 24,7 | 23,5 | 22,8 | 24,5 | 22,5 | 18,1 |
-| `rr_metabolic_max` | 30 | admisible · fuera del diseño de P2F | 24,5 | 23,2 | 22,5 | 24,3 | 22,1 | 17,5 |
-| `rr_ventilatory_floor` | 10 | admisible · fuera del diseño de P2F | 24,7 | 23,5 | 22,8 | 24,5 | 22,5 | 18,1 |
-| `rr_ventilatory_floor` | 12 | admisible | 24,7 | 23,5 | 22,8 | 24,5 | 22,5 | 18,1 |
-| `rr_ventilatory_floor` | 14 | admisible · fuera del diseño de P2F | 24,7 | 23,6 | 23,0 | 24,6 | 22,7 | 18,6 |
-| `lactate_drive_threshold_mmol_l` | 1,5 | admisible · fuera del diseño de P2F | 24,9 | 23,9 | 23,4 | 24,7 | 23,1 | 19,4 |
-| `lactate_drive_threshold_mmol_l` | 2 | admisible | 24,7 | 23,5 | 22,8 | 24,5 | 22,5 | 18,1 |
-| `lactate_drive_threshold_mmol_l` | 2,5 | admisible · fuera del diseño de P2F | 24,4 | 23,1 | 22,3 | 24,2 | 21,9 | 16,8 |
+| `rr_per_lactate` | 3 | admisible · fuera del diseño de P2F | 25,4 | 25,4 | 27,4 | 25,2 | 24,2 | 22,0 |
+| `rr_per_lactate` | 7,5 | admisible | 25,1 | 25,1 | 28,1 | 24,6 | 22,8 | 18,5 |
+| `rr_per_lactate` | 12 | admisible · fuera del diseño de P2F | 25,2 | 25,2 | 28,1 | 24,8 | 23,1 | 18,5 |
+| `rr_metabolic_max` | 15 | admisible · fuera del diseño de P2F | 25,4 | 25,4 | 27,2 | 25,1 | 23,8 | 20,4 |
+| `rr_metabolic_max` | 25 | admisible | 25,1 | 25,1 | 28,1 | 24,6 | 22,8 | 18,5 |
+| `rr_metabolic_max` | 30 | admisible · fuera del diseño de P2F | 25,0 | 25,0 | 28,4 | 24,5 | 22,4 | 17,9 |
+| `rr_ventilatory_floor` | 10 | admisible · fuera del diseño de P2F | 25,1 | 25,1 | 28,1 | 24,6 | 22,8 | 18,5 |
+| `rr_ventilatory_floor` | 12 | admisible | 25,1 | 25,1 | 28,1 | 24,6 | 22,8 | 18,5 |
+| `rr_ventilatory_floor` | 14 | admisible · fuera del diseño de P2F | 25,1 | 25,1 | 28,1 | 24,7 | 23,0 | 18,9 |
+| `lactate_drive_threshold_mmol_l` | 1,5 | admisible · fuera del diseño de P2F | 25,2 | 25,2 | 27,8 | 24,9 | 23,3 | 19,7 |
+| `lactate_drive_threshold_mmol_l` | 2 | admisible | 25,1 | 25,1 | 28,1 | 24,6 | 22,8 | 18,5 |
+| `lactate_drive_threshold_mmol_l` | 2,5 | admisible · fuera del diseño de P2F | 24,9 | 24,9 | 28,5 | 24,4 | 22,3 | 17,2 |
 
 **gi_bleed_72f** — FR de llegada 24 resp/min con lactato 3,4 mmol/L. Cotas del modelo sobre la cuadrícula de bandas de FR (`rr_per_lactate` × `lactate_drive_threshold_mmol_l` × `rr_ventilatory_floor`, por `rr_metabolic_max`): techo con lactato sin límite, antes y después de `rr_max`, y piso con lactato bajo el umbral (mínimo – máximo):
 
@@ -626,36 +626,36 @@ En las corridas del paquete, FR observada entre 13,2 y 35,9. Mínimo – mediana
 | 25 | 34,0 – 40,0 | 34,0 – 46,4 | 10,0 – 21,4 |
 | 30 | 38,0 – 40,0 | 38,0 – 51,4 | 10,0 – 21,4 |
 
-En las corridas del paquete, FR observada entre 15,4 y 37,7. Mínimo – mediana – máximo en la región admisible:
+En las corridas del paquete, FR observada entre 15,4 y 40,3. Mínimo – mediana – máximo en la región admisible:
 
 | Corrida | 0′ | 30′ | 60′ | 120′ |
 |---|---|---|---|---|
-| sin tratamiento | 24,0 – 24,0 – 24,0 | 16,4 – 23,0 – 36,1 | 15,4 – 22,5 – 37,5 | 15,4 – 22,7 – 37,7 |
-| manejo definitivo (GR + IBP + endoscopia) | 24,0 – 24,0 – 24,0 | 16,3 – 22,9 – 35,8 | 15,4 – 21,6 – 36,4 | 15,4 – 19,0 – 32,3 |
+| sin tratamiento | 24,0 – 24,0 – 24,0 | 16,4 – 23,2 – 37,6 | 15,4 – 23,4 – 39,7 | 15,4 – 26,4 – 40,3 |
+| manejo definitivo (GR + IBP + endoscopia) | 24,0 – 24,0 – 24,0 | 16,3 – 23,0 – 37,4 | 15,4 – 22,1 – 39,0 | 15,4 – 19,4 – 37,0 |
 
 | Shock | Corrida | 0′ (FR = ventilatoria + metabólica) | 30′ | 60′ | 120′ |
 |---|---|---|---|---|---|
-| leve (D 0, entrega 1,0) | sin tratamiento | 24,0 = 15,4 + 8,6 | 21,2 = 15,4 + 5,8 | 19,1 = 15,4 + 3,7 | 17,6 = 15,4 + 2,2 |
+| leve (D 0, entrega 1,0) | sin tratamiento | 24,0 = 15,4 + 8,6 | 21,2 = 15,4 + 5,8 | 19,2 = 15,4 + 3,8 | 19,2 = 15,4 + 3,8 |
 | leve (D 0, entrega 1,0) | mejoría (manejo definitivo) | 24,0 = 15,4 + 8,6 | 21,2 = 15,4 + 5,7 | 18,6 = 15,4 + 3,2 | 15,4 = 15,4 + 0,0 |
-| moderado (D 20, entrega 0,85) | sin tratamiento | 24,0 = 15,4 + 8,6 | 23,3 = 15,4 + 7,9 | 22,6 = 15,4 + 7,2 | 22,3 = 15,4 + 6,9 |
-| moderado (D 20, entrega 0,85) | mejoría (manejo definitivo) | 24,0 = 15,4 + 8,6 | 23,1 = 15,4 + 7,7 | 21,6 = 15,4 + 6,2 | 18,0 = 15,4 + 2,6 |
-| grave (D 60, entrega 0,6) | sin tratamiento | 24,0 = 15,4 + 8,6 | 26,8 = 15,4 + 11,4 | 27,9 = 15,4 + 12,5 | 28,6 = 15,4 + 13,2 |
-| grave (D 60, entrega 0,6) | mejoría (manejo definitivo) | 24,0 = 15,4 + 8,6 | 26,7 = 15,4 + 11,3 | 27,0 = 15,4 + 11,6 | 24,4 = 15,4 + 8,9 |
+| moderado (D 20, entrega 0,85) | sin tratamiento | 24,0 = 15,4 + 8,6 | 23,9 = 15,4 + 8,4 | 24,5 = 15,4 + 9,1 | 28,2 = 15,4 + 12,8 |
+| moderado (D 20, entrega 0,85) | mejoría (manejo definitivo) | 24,0 = 15,4 + 8,6 | 23,4 = 15,4 + 8,0 | 22,1 = 15,4 + 6,7 | 18,6 = 15,4 + 3,2 |
+| grave (D 60, entrega 0,6) | sin tratamiento | 24,0 = 15,4 + 8,6 | 28,0 = 15,4 + 12,6 | 31,4 = 15,4 + 15,9 | 36,1 = 15,4 + 20,7 |
+| grave (D 60, entrega 0,6) | mejoría (manejo definitivo) | 24,0 = 15,4 + 8,6 | 27,9 = 15,4 + 12,5 | 30,1 = 15,4 + 14,6 | 28,9 = 15,4 + 13,5 |
 
 | Factor | Nivel | Estado | sin trat. 30′ | sin trat. 60′ | sin trat. 120′ | definitivo 30′ | definitivo 60′ | definitivo 120′ |
 |---|---|---|---|---|---|---|---|---|
-| `rr_per_lactate` | 3 | admisible · fuera del diseño de P2F | 23,7 | 23,3 | 23,2 | 23,6 | 22,8 | 21,2 |
-| `rr_per_lactate` | 7,5 | admisible | 23,3 | 22,6 | 22,3 | 23,1 | 21,6 | 18,0 |
-| `rr_per_lactate` | 12 | admisible · fuera del diseño de P2F | 23,2 | 22,3 | 21,9 | 22,9 | 21,0 | 16,0 |
-| `rr_metabolic_max` | 15 | admisible · fuera del diseño de P2F | 23,5 | 22,9 | 22,7 | 23,3 | 22,1 | 19,0 |
-| `rr_metabolic_max` | 25 | admisible | 23,3 | 22,6 | 22,3 | 23,1 | 21,6 | 18,0 |
-| `rr_metabolic_max` | 30 | admisible · fuera del diseño de P2F | 23,3 | 22,6 | 22,2 | 23,1 | 21,5 | 17,8 |
-| `rr_ventilatory_floor` | 10 | admisible · fuera del diseño de P2F | 23,3 | 22,6 | 22,3 | 23,1 | 21,6 | 18,0 |
-| `rr_ventilatory_floor` | 12 | admisible | 23,3 | 22,6 | 22,3 | 23,1 | 21,6 | 18,0 |
-| `rr_ventilatory_floor` | 14 | admisible · fuera del diseño de P2F | 23,3 | 22,6 | 22,3 | 23,1 | 21,6 | 18,0 |
-| `lactate_drive_threshold_mmol_l` | 1,5 | admisible · fuera del diseño de P2F | 23,4 | 22,8 | 22,5 | 23,3 | 22,0 | 18,9 |
-| `lactate_drive_threshold_mmol_l` | 2 | admisible | 23,3 | 22,6 | 22,3 | 23,1 | 21,6 | 18,0 |
-| `lactate_drive_threshold_mmol_l` | 2,5 | admisible · fuera del diseño de P2F | 23,2 | 22,4 | 22,0 | 23,0 | 21,3 | 18,1 |
+| `rr_per_lactate` | 3 | admisible · fuera del diseño de P2F | 23,9 | 24,3 | 26,3 | 23,7 | 23,1 | 21,5 |
+| `rr_per_lactate` | 7,5 | admisible | 23,9 | 24,5 | 28,2 | 23,4 | 22,1 | 18,6 |
+| `rr_per_lactate` | 12 | admisible · fuera del diseño de P2F | 23,8 | 24,7 | 28,8 | 23,3 | 21,6 | 16,8 |
+| `rr_metabolic_max` | 15 | admisible · fuera del diseño de P2F | 23,9 | 24,4 | 26,9 | 23,6 | 22,5 | 19,5 |
+| `rr_metabolic_max` | 25 | admisible | 23,9 | 24,5 | 28,2 | 23,4 | 22,1 | 18,6 |
+| `rr_metabolic_max` | 30 | admisible · fuera del diseño de P2F | 23,8 | 24,6 | 28,6 | 23,4 | 22,0 | 18,4 |
+| `rr_ventilatory_floor` | 10 | admisible · fuera del diseño de P2F | 23,9 | 24,5 | 28,2 | 23,4 | 22,1 | 18,6 |
+| `rr_ventilatory_floor` | 12 | admisible | 23,9 | 24,5 | 28,2 | 23,4 | 22,1 | 18,6 |
+| `rr_ventilatory_floor` | 14 | admisible · fuera del diseño de P2F | 23,9 | 24,5 | 28,2 | 23,4 | 22,1 | 18,6 |
+| `lactate_drive_threshold_mmol_l` | 1,5 | admisible · fuera del diseño de P2F | 23,9 | 24,5 | 27,6 | 23,5 | 22,4 | 19,4 |
+| `lactate_drive_threshold_mmol_l` | 2 | admisible | 23,9 | 24,5 | 28,2 | 23,4 | 22,1 | 18,6 |
+| `lactate_drive_threshold_mmol_l` | 2,5 | admisible · fuera del diseño de P2F | 23,8 | 24,6 | 28,9 | 23,3 | 21,8 | 18,1 |
 <!-- /generado:fr -->
 
 **Preguntas para la docencia**
@@ -793,7 +793,7 @@ imposible en un paciente real.
 | 120 | 1,0 | 120 | ninguno |
 | 120 | 2,0 | 240 | ninguno |
 
-En el diseño GI de P2F (g = 1) la cota excluiría 162 conjuntos; todos son los que P2F ya rechazó por HR1.
+En el diseño GI de P2F (g = 1) la cota excluiría 162 conjuntos; todos son los que P2F ya rechazó por HR1. Desde P2I-2AC la deuda no se devuelve mientras dura el déficit, así que ninguna deuda de llegada baja durante un déficit y esta cota ya no describe el modelo: queda como registro del análisis de P2G.
 <!-- /generado:alcanzabilidad -->
 
 ## 11. El borde de precarga 0,2 en 57m (P2G-11)

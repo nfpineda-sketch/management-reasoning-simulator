@@ -63,7 +63,8 @@ def test_the_balance_states_follow_the_supply_ratio_and_the_reserve():
                                   "J severe sustained critical deficit"])
 def test_debt_integrates_only_the_effective_deficit(name):
     """Delivery at 70 % of normal, or demand x 1.5: compensated with a reserve, so no debt; with
-    none, debt accrues. Each minute integrates the delivery at its start against its own demand."""
+    none, debt accrues. Each minute integrates the delivery at its start against its own demand;
+    while a deficit lasts the debt accrues and is not repaid, without one it repays (P2I-2AC)."""
     contributors = op.PROBES[name][1]
     for reserve in (1.0, 2.5):
         profile = replace(DEFAULT_PROFILE, oxygen_extraction_reserve=reserve)
@@ -72,8 +73,10 @@ def test_debt_integrates_only_the_effective_deficit(name):
         assert [row["D"] for row in rows] == [state.D for state in states]
         for before, after in zip(rows, rows[1:]):
             deficit = effective_oxygen_deficit(after["demand"], before["delivery"], reserve)
-            expected = before["D"] + profile.debt_per_delivery_deficit * deficit - before["D"] / profile.debt_clearance_tau_min
+            expected = (before["D"] + profile.debt_per_delivery_deficit * deficit if deficit > 0.0
+                        else before["D"] - before["D"] / profile.debt_clearance_tau_min)
             assert after["D"] == pytest.approx(max(0.0, expected), abs=1e-12)
+            assert after["D"] >= before["D"] or deficit == 0.0, "no repayment while a deficit lasts"
         compensated = name != "J severe sustained critical deficit" and reserve > 1.0
         assert (states[-1].D == 0.0) is compensated
 

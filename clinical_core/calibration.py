@@ -16,7 +16,6 @@ from __future__ import annotations
 import argparse
 import itertools
 import json
-import math
 from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Any, Callable, Mapping
@@ -253,14 +252,15 @@ def delivery_probes(anchors: Anchors = NEUTRAL) -> list[dict]:
     cases = {"isolated low output": (0.6, 1.0, 1.0), "isolated anaemia": (1.0, 0.6, 1.0),
              "isolated hypoxaemia": (1.0, 1.0, 0.85), "low output + anaemia": (0.6, 0.6, 1.0),
              "anaemia + hypoxaemia": (1.0, 0.6, 0.85), "all three": (0.6, 0.6, 0.85)}
-    tau = DEFAULT_PROFILE.debt_clearance_tau_min
+    gain = DEFAULT_PROFILE.debt_per_delivery_deficit
     rows = []
     for name, (output, hb, spo2) in cases.items():
         delivery = relative_delivery(output, hb * anchors.hb, spo2 * anchors.spo2, anchors)
         deficits = {demand: delivery_deficit(demand, delivery) for demand in (1.0, 1.2)}
         rows.append({"probe": name, "output_rel": output, "hb_ratio": hb, "spo2_ratio": spo2, "delivery": delivery,
                      "deficit_at_demand_1": deficits[1.0], "deficit_at_demand_1_2": deficits[1.2],
-                     "debt_after_60_min": deficits[1.0] * tau * -math.expm1(-60.0 / tau)})
+                     # P2I-2AC: while a deficit lasts the debt accrues and is not repaid.
+                     "debt_after_60_min": deficits[1.0] * gain * 60.0})
     return rows
 
 

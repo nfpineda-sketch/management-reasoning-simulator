@@ -22,12 +22,14 @@ physiology:
   L1-L3 are engine-produced trajectories; L4 is labelled counterfactual wherever it appears and
   is never pooled with them.
 
-The lactate model is linear given the path of the delivery deficit s (KD-S1, P2E-2):
-D' = g s - D / tau_D and X' = k D - X / tau_L with k = G / (tau_D tau_L), lactate = baseline + X.
-So, given s, the excess X splits exactly into what is left of the arrival excess, what the
-arrival debt still produces and what the deficit since arrival produced. The split is exact
-for these recurrences; it is not a causal attribution between parameters, which interact
-through s (the deficit depends on the haemodynamics the parameters move).
+The lactate model is linear given the path of the delivery deficit s (KD-S1, P2E-2, with the
+P2I-2AC debt semantics): D' = g s while s > 0 (accrued, never repaid), D' = -D / tau_D while
+s = 0, and X' = k D - X / tau_L with k = G / (tau_D tau_L), lactate = baseline + X. So, given s,
+the excess X splits exactly into what is left of the arrival excess, what the arrival debt
+still produces (the arrival debt is repaid only in the minutes without a deficit) and what the
+deficit since arrival produced. The split is exact for these recurrences; it is not a causal
+attribution between parameters, which interact through s (the deficit depends on the
+haemodynamics the parameters move).
 
 Thresholds such as 0.5 and 2 mmol/L are presentation bins for the tables, not criteria.
 """
@@ -42,7 +44,7 @@ from pathlib import Path
 from . import calibration, decision_pack, gi_reference
 from .calibration import REGISTRY, GICandidate
 from .decision_pack import MIDDLE
-from .derived import DEFAULT_PROFILE, derive, effective_delivery, lactate_baseline
+from .derived import DEFAULT_PROFILE, derive, effective_delivery, effective_oxygen_deficit, lactate_baseline
 from .integration import run
 from .legacy_adapter import contributors_from_legacy
 from .logistics import EndoscopicHemostasis
@@ -292,11 +294,11 @@ def decomposition(case: str, candidate: GICandidate, scenario: str) -> dict:
         profile.lactate_per_output_deficit
     g, k = profile.debt_per_delivery_deficit, gain / (tau_d * tau_l)
     a, b = 1.0 - 1.0 / tau_l, 1.0 - 1.0 / tau_d
-    debt0, excess0 = states[0].D, states[0].aux.lactate_excess_mmol_l
+    anchors, reserve = run_["anchors"], profile.oxygen_extraction_reserve
+    arrival_debt_left, excess0 = states[0].D, states[0].aux.lactate_excess_mmol_l
     from_arrival_debt, from_new_deficit, accrued, repaid = 0.0, 0.0, 0.0, 0.0
     rows = {}
     for minute, state in enumerate(states):
-        arrival_debt_left = debt0 * b ** minute
         excess = state.aux.lactate_excess_mmol_l
         arrival_excess_left = excess0 * a ** minute
         if abs(arrival_excess_left + from_arrival_debt + from_new_deficit - excess) > 1e-9:
@@ -312,10 +314,19 @@ def decomposition(case: str, candidate: GICandidate, scenario: str) -> dict:
                 "delivery": point["delivery"], "demand": point["demand"],
                 "deficit": max(0.0, point["demand"] - point["delivery"])}
         if minute + 1 < len(states):
-            accrued += states[minute + 1].D - state.D * b
-            repaid += state.D / tau_d
+            # The core's minute (P2I-2AC): with a deficit the debt accrues and nothing is repaid, the arrival
+            # debt included; without one it all repays first-order.
+            delivery = effective_delivery(derive(state, anchors, profile).delivery_rel, anchors)
+            deficit = effective_oxygen_deficit(states[minute + 1].aux.oxygen_demand, delivery, reserve)
+            if deficit > 0.0:
+                accrued += states[minute + 1].D - state.D
+                next_left = arrival_debt_left
+            else:
+                repaid += state.D - states[minute + 1].D
+                next_left = arrival_debt_left * b
             from_arrival_debt = from_arrival_debt * a + k * arrival_debt_left
             from_new_deficit = from_new_deficit * a + k * (state.D - arrival_debt_left)
+            arrival_debt_left = next_left
     return {"candidate": candidate.key(), "stopped_at": run_["stopped_at"],
             "parameters": {"debt_clearance_tau_min": tau_d, "debt_per_delivery_deficit": g,
                            "lactate_per_output_deficit": gain, "lactate_clearance_tau_min": tau_l,
@@ -494,7 +505,8 @@ def legacy_reference() -> dict:
 DOWNSTREAM_REPORTS = ("clinical_core/blood_filter_report.py", "clinical_core/blood_extension_report.py",
                       "clinical_core/blood_rate_report.py", "clinical_core/blood_fluid_report.py",
                       "clinical_core/blood_fluid_readiness_report.py",
-                      "clinical_core/blood_fluid_tau_closure_report.py", "clinical_core/lactate_rebuild_report.py")
+                      "clinical_core/blood_fluid_tau_closure_report.py", "clinical_core/lactate_rebuild_report.py",
+                      "clinical_core/lactate_adequacy_report.py")
 
 
 def slice_sources() -> dict[str, str]:

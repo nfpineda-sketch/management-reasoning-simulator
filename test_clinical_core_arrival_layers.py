@@ -73,10 +73,13 @@ def test_an_ongoing_arrival_deficit_accrues_and_adequate_delivery_repays_without
     untreated = run(shocked(arrival_oxygen_debt=5.0), (), 600)
     debts = [state.D for state in untreated.states]
     assert all(later > earlier for earlier, later in zip(debts, debts[1:])), "deficit 0.2 continues"
-    tau = DEFAULT_PROFILE.debt_clearance_tau_min
-    assert debts[-1] == pytest.approx(tau * 0.2, rel=1e-3), "toward tau x deficit"
-    # An arrival debt above what the arrival deficit sustains falls toward it, still never below 0.
-    assert run(shocked(arrival_oxygen_debt=60.0), (), 600).states[-1].D == pytest.approx(tau * 0.2, rel=1e-3)
+    # P2I-2AC: while the deficit lasts the debt accrues at g x deficit and is not repaid; it no longer settles.
+    gain = DEFAULT_PROFILE.debt_per_delivery_deficit
+    assert debts[-1] == pytest.approx(5.0 + gain * 0.2 * 600, rel=1e-9), "g x deficit per minute, no repayment"
+    # Any arrival debt, however large, is kept while the deficit lasts.
+    large = [state.D for state in run(shocked(arrival_oxygen_debt=60.0), (), 600).states]
+    assert all(later >= earlier for earlier, later in zip(large, large[1:]))
+    assert large[-1] == pytest.approx(60.0 + gain * 0.2 * 600, rel=1e-9)
     # Haemoglobin up by a third: effective delivery 0.8 x 1.33 > 1, the deficit stops.
     treated = run(shocked(), (Drift("blood", "hb", 0, 1, SHOCKED["hb"] / 3),), 600)
     debts = [state.D for state in treated.states]

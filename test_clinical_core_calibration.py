@@ -13,8 +13,9 @@ import pytest
 
 from clinical_core import (Anchors, Channel, ChannelDelta, Contribution, Contributor, RhythmCode, RhythmState,
                            SourceKind, run)
-from clinical_core.derived import (DEFAULT_PROFILE, PRELOAD_CONGESTION, SYMPATHETIC_DRIVE, derive, lactate_excess,
-                                   preload_position, sympathetic_drive)
+from clinical_core.derived import (DEFAULT_PROFILE, PRELOAD_CONGESTION, SYMPATHETIC_DRIVE, derive,
+                                   effective_delivery, effective_oxygen_deficit, lactate_excess, preload_position,
+                                   sympathetic_drive)
 from clinical_core.logistics import EndoscopicHemostasis
 from clinical_core.modules import GIHaemorrhage
 from clinical_core.provenance import SettingChange
@@ -254,8 +255,17 @@ def test_kd_s2_c_hemostasis_and_resuscitation_bring_the_rate_down_gradually_thro
     trajectory = run(BLEEDING, (BRISK, HEMOSTASIS, Restore("transfusion", 30, restore_hb=True)), 120)
     rates, derived, states = _rates(trajectory), trajectory.derived(), trajectory.states
     assert derived[30].map > derived[29].map, "output and pressure improve"
+    # P2I-2AC: in this reserve-1 probe a small deficit remains after the transfusion, so the debt stops
+    # growing fast but is not repaid; its share of the drive no longer rises as it did during the bleed.
+    profile = trajectory.profile
+    deficits = [effective_oxygen_deficit(after.aux.oxygen_demand,
+                                         effective_delivery(derive(before, BLEEDING, profile).delivery_rel, BLEEDING),
+                                         profile.oxygen_extraction_reserve)
+                for before, after in zip(states[30:59], states[31:60])]
     debts = [state.D for state in states[30:60]]
-    assert debts[0] > 0 and all(later < earlier for earlier, later in zip(debts, debts[1:])), "D repays gradually"
+    assert all(d > 0.0 for d in deficits) and max(deficits) < 0.01, "a small deficit remains"
+    assert all(later >= earlier for earlier, later in zip(debts, debts[1:])), "D is not repaid while it lasts"
+    assert debts[-1] - debts[0] < (debts[0] - states[0].D) / 10, "and accrues far more slowly than during the bleed"
     drives = [sympathetic_drive(state, BLEEDING, trajectory.profile) for state in states[29:45]]
     assert all(later < earlier for earlier, later in zip(drives, drives[1:])), "the drive falls"
     fall = rates[29] - rates[44]

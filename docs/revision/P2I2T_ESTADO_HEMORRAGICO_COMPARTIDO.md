@@ -190,7 +190,7 @@ el motor heredado.
 ## 4. Tablas (generado)
 
 <!-- generado:estado-sanguineo -->
-Generado desde las sondas `279d80286f700900044489b1b079613778d3615ed8cc4e53d9b41d31ddcbf277` (`python -m clinical_core.blood_probes`). Llegada GI `gi_bleed_72f` del golden (anclas canónicas, parámetros de caso sin declarar) y perfil canónico: volumen circulante de llegada 4000 mL-eq, κ 1,0, escala de la curva 833 mL-eq, relleno: meta 50 % de lo perdido, τ 120 min, capacidad 1000 mL-eq; unidad de GR 300 mL-eq a 20 g/dL; reserva de extracción 1 (canónica). **Todos son valores PROVISIONALES (SYNTHETIC/CANDIDATE, TBD); ninguno está aprobado.** Los volúmenes son mL-eq de volumen circulante normalizado, no litros medidos; los GR, en unidades del contenido de llegada (llegada = 1).
+Generado desde las sondas `f1608b49a37d07b4726545764a1d00a9ed890465dd968b811bd13226652d4e7e` (`python -m clinical_core.blood_probes`). Llegada GI `gi_bleed_72f` del golden (anclas canónicas, parámetros de caso sin declarar) y perfil canónico: volumen circulante de llegada 4000 mL-eq, κ 1,0, escala de la curva 833 mL-eq, relleno: meta 50 % de lo perdido, τ 120 min, capacidad 1000 mL-eq; unidad de GR 300 mL-eq a 20 g/dL; reserva de extracción 1 (canónica). **Todos son valores PROVISIONALES (SYNTHETIC/CANDIDATE, TBD); ninguno está aprobado.** Los volúmenes son mL-eq de volumen circulante normalizado, no litros medidos; los GR, en unidades del contenido de llegada (llegada = 1).
 
 ### 4.1 Sondas A–K
 
@@ -366,7 +366,7 @@ Columnas: perdido (mL-eq) · GR (contenido) · desviación circulante C · desvi
 
 ### 4.3 Golden GI: antes / después
 
-Antes: `d087bde147a1254c6d81c883dbea09670dd97b0316d1e26e93e3364bde822833`; después: `af2c4a34921f475a9b63ab913d5624a2eb876fb9c725b1606d48c127c881e18d` (sha256 de `clinical_core/golden/gi_bleed_shadow.json`). Cada celda: motor heredado · núcleo antes → núcleo después, en el último minuto de la corrida.
+Antes: `d087bde147a1254c6d81c883dbea09670dd97b0316d1e26e93e3364bde822833`; después: `b7e6a03915b3a6907b5fc73e9827c5784dc42697ea5823231a693433919b399d` (sha256 de `clinical_core/golden/gi_bleed_shadow.json`). Cada celda: motor heredado · núcleo antes → núcleo después, en el último minuto de la corrida.
 
 | Corrida | min | V | Hb | PAS | FC | lactato | FR | llenado capilar | Variables distintas del heredado: antes → después |
 |---|---|---|---|---|---|---|---|---|---|

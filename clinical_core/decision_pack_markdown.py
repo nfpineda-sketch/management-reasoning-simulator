@@ -315,7 +315,10 @@ def reachability(pack: dict) -> str:
     return (table(["τ_D (min)", "g", "Cota g × 1 × τ_D", "Niveles de D de llegada (0 / 20 / 60) excluidos"], rows)
             + f"\n\nEn el diseño GI de P2F (g = 1) la cota excluiría {data['excluded_design_points']} conjuntos; "
             + ("todos son los que P2F ya rechazó por HR1." if data["all_rejected_by_p2f"]
-               else "algunos no los rechazó P2F."))
+               else "algunos no los rechazó P2F.")
+            + " Desde P2I-2AC la deuda no se devuelve mientras dura el déficit, así que ninguna deuda de llegada "
+              "baja durante un déficit y esta cota ya no describe el modelo: queda como registro del análisis de "
+              "P2G.")
 
 
 def preload_edge(pack: dict) -> str:

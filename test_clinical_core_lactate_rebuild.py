@@ -33,6 +33,9 @@ FROZEN_DIGEST = "15d05c321b38d2e2512642bf2e3be64bc4382ad639ad05ea445c9050091d7cc
 P2I2VR_CONSTRAINTS_SHA = "2d139733ed529a03f9c58cd4aa5eb70c8812bb25ba0737f90172546b4e2a65a8"
 P2I2AA_MODULE_SHA = "c16a56a77c3957ae1186f4e2b016ddbadd8fee7bae0d405414fb031af735621b"
 FACULTY_CONSTRAINTS_SHA = "092c32cf5a20cbf62e3e9df32a47896ccdef701f97170634740a8f8399d7982a"
+#: Closed by P2I-2AC, whose debt correction changes the core sources the freeze digest reads: the module and the
+#: record are pinned instead, and the live checks below read only what the correction left unchanged.
+P2I2AB_MODULE_SHA = "d969a8c89b678204b4b258c35731f64b0e87ef3cf97b80ef5b92b073ccc9733f"
 CASES = lr.CASES
 
 
@@ -68,7 +71,10 @@ def test_the_rebuild_is_frozen():
     assert {"clinical_core/lactate_rebuild.py", "clinical_core/faculty_constraints.py",
             "clinical_core/integration.py", "clinical_core/derived.py"} <= set(sources)
     assert not set(lactate_slice.DOWNSTREAM_REPORTS) & set(sources)
-    assert lr.freeze_digest() == FROZEN_DIGEST, "a source, the design, a rule or the policy changed after the freeze"
+    # P2I-2AC corrected the core's debt (no repayment while a deficit lasts): the P2I-2AB module stays byte for byte
+    # the frozen one and its record keeps the digest it ran with.
+    assert _sha("clinical_core/lactate_rebuild.py") == P2I2AB_MODULE_SHA, "the P2I-2AB module changed"
+    assert json.loads(RESULT.read_text(encoding="utf-8"))["freeze_digest"] == FROZEN_DIGEST
 
 
 def test_readiness_is_the_faculty_s_and_lifts_only_the_tau_blocker():
@@ -233,9 +239,12 @@ OFF_GRID_POINTS = ((45.0, 1.5, 4.0, 90.0, "upper", "upper", "lower"), (20.0, 3.0
 
 
 @pytest.mark.parametrize("scenario", [lr.L1, lr.L2, lr.L3])
-def test_d_and_lactate_post_process_exactly_as_the_core_on_off_grid_points(scenario):
-    """No candidate: blood, crystalloid and lactate-side points off every grid. Exact at reserve 2.5 (any intrinsic),
-    within 1e-9 with the same verdicts at reserve 1 and 3; the P1 trajectory serves L1 and L2."""
+def test_the_haemodynamics_still_agree_with_the_core_and_only_the_debt_semantics_changed(scenario):
+    """No candidate: blood, crystalloid and lactate-side points off every grid. P2I-2AB's post-process was exact
+    against the core it ran on (its record); since P2I-2AC the core's D is not repaid while a deficit lasts, so the
+    P2I-2AB D and lactate no longer describe it. What P2I-2AB read from the core stays exact: deficit, haemostasis
+    and stop (exact at reserve 2.5, within 1e-9 at 1 and 3), and the old D differs only through repayment during a
+    deficit (P2I-2AC's own test checks the corrected post-process)."""
     arrivals = lr.arrival_table()
     entry = {**OFF_GRID, **OFF_GRID_UNIT}
     bag = bf.bag(0.22, 0.07, 75.0) if scenario == lr.L2 else None
@@ -248,11 +257,12 @@ def test_d_and_lactate_post_process_exactly_as_the_core_on_off_grid_points(scena
             for reserve, intrinsic in ((lr.RESERVE, "midpoint"), (1.0, "midpoint"), (3.0, "midpoint"),
                                        (lr.RESERVE, "lower"), (lr.RESERVE, "upper")):
                 full = lr.full_run(entry, case, scenario, point, bag, reserve, intrinsic)
-                result = lr.compare(full, lr.factorized(haemodynamic, arrivals[case], point), haemodynamic, case,
-                                    scenario, point, reserve)
-                assert result["agrees"], (case, point, reserve, intrinsic, result)
-                if reserve == lr.RESERVE:
-                    assert result["exact"]
+                _, old, context = lr.factorized(haemodynamic, arrivals[case], point)
+                assert full["controlled_at"] == haemodynamic["controlled_at"] and full["stop"] is None
+                gap = lr._gap(context.deficit, full["deficit"])
+                assert gap == 0.0 if reserve == lr.RESERVE else gap <= lr.TOLERANCE, (case, point, reserve)
+                repaid_in_deficit = any(e > 0.0 and old[m] > 0.0 for m, e in enumerate(context.debt_input))
+                assert (old != full["D"]) == repaid_in_deficit or reserve != lr.RESERVE, (case, point)
 
 
 def test_only_g_times_gain_and_g_times_arrival_debt_reach_lactate():
@@ -502,11 +512,16 @@ def test_the_factorization_agreed_exactly_and_agrees_again_live(result, arrivals
     source, support = result["source"], result["crystalloid_support"]
     picked = [sample[0], sample[-1]] + [next(r for r in sample if r["scenario"] == s and r["reserve"] != lr.RESERVE)
                                         for s in (lr.L2, lr.L3)]
+    # Live, only what the P2I-2AC debt correction left unchanged: the deficit and the events (see the off-grid test).
     for item in picked:
         _, haemodynamic = lr._haemodynamic(lr._sample_task(item, source, support))
         bag = support[item["support"]]["bag"] if item["scenario"] == lr.L2 else None
-        live = lr._validate_one((item, source["p3"][item["q"]], bag, haemodynamic, arrivals[item["case"]]))
-        assert live["agrees"] and live["exact"] == item["exact"] and live["gaps"] == item["gaps"]
+        point = lr.LAMBDAS[item["lambda"]]
+        full = lr.full_run(source["p3"][item["q"]], item["case"], item["scenario"], point, bag, item["reserve"],
+                           item["intrinsic"])
+        live = lr.compare(full, lr.factorized(haemodynamic, arrivals[item["case"]], point), haemodynamic,
+                          item["case"], item["scenario"], point, item["reserve"])
+        assert live["events"] and live["adequacy_is_no_deficit"] and live["gaps"]["deficit"] == item["gaps"]["deficit"]
 
 
 def test_the_stages_chain_and_the_region_is_its_inline_units(result):
@@ -616,7 +631,9 @@ def test_the_representatives_follow_the_frozen_rule_and_rerun_live(result):
     pick = representatives["HIGH"]["pick"]
     full = lr.full_run(result["source"]["p3"][pick["p3"]], "gi_bleed_57m", lr.L3, lr.LAMBDAS[pick["lambda"]])
     rows = representatives["HIGH"]["runs"]["gi_bleed_57m|L3"]["rows"]
-    assert [full["lactate"][m] for m in lr.TIMES] == [row["lactate"] for row in rows]
+    # Since P2I-2AC the core's D (and lactate) differ from this record; its haemodynamics do not.
+    assert [full["deficit"][m] for m in lr.TIMES] == [row["effective_deficit"] for row in rows]
+    assert [row["lactate"] for row in rows] != [full["lactate"][m] for m in lr.TIMES]
     flags = {(tag, key): run["flags"] for tag, item in representatives.items() for key, run in item["runs"].items()}
     assert [k for k, f in flags.items() if f["WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL"]] == [("HIGH",
                                                                                                "gi_bleed_57m|L3")]

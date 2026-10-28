@@ -312,9 +312,9 @@ def lactate_baseline(anchors: Anchors) -> float:
 def lactate_after_minute(state: CoreState, profile: CoreProfile) -> float:
     """One minute of lactate kinetics (KD-S1): production from the debt D, first-order clearance.
 
-    dX = k * D - X / tau_lactate, with k = gain / (tau_D * tau_lactate). At a steady delivery
-    shortfall s, D settles at tau_D * s and X at gain * s, the family engine's lactate; on
-    the way, lactate lags D, and after perfusion is restored it clears more slowly than D.
+    dX = k * D - X / tau_lactate, with k = gain / (tau_D * tau_lactate). D accrues while a
+    shortfall lasts and repays only without one (P2I-2AC), so under a steady shortfall D and X
+    keep rising; lactate lags D, and after perfusion is restored it clears more slowly than D.
     X starts at the arrival excess the case declares (0 undeclared) and is read above the
     clearance baseline (``lactate_baseline``).
     """

@@ -695,8 +695,10 @@ def pl2_analysis() -> dict:
 def reachability_analysis() -> dict:
     """What arrival_D <= gain x demand x tau_D would exclude. It is not a rule: nothing applies it.
 
-    In the model, dD/dt = gain x max(0, demand - delivery) - D / tau_D, so above that bound D
-    falls whatever the delivery, even at none; below it, a sustained deficit can reach it.
+    P2G's analysis, kept as its record: in the model of that time, dD/dt = gain x max(0, demand -
+    delivery) - D / tau_D, so above that bound D fell whatever the delivery. Since P2I-2AC the debt
+    is not repaid while a deficit lasts, so no arrival debt falls during a deficit and the bound no
+    longer describes the model.
     """
     design = calibration.gi_candidates()
     demand = 1.0
@@ -738,7 +740,8 @@ PACK_DIGEST_EXCLUDED = ("clinical_core/decision_pack_markdown.py", "clinical_cor
                         "clinical_core/blood_fluid_report.py", "clinical_core/blood_fluid_readiness.py",
                         "clinical_core/blood_fluid_readiness_report.py", "clinical_core/blood_fluid_tau_closure.py",
                         "clinical_core/blood_fluid_tau_closure_report.py", "clinical_core/lactate_rebuild.py",
-                        "clinical_core/lactate_rebuild_report.py")
+                        "clinical_core/lactate_rebuild_report.py", "clinical_core/lactate_adequacy.py",
+                        "clinical_core/lactate_adequacy_report.py")
 
 
 def pack_sources() -> dict[str, str]:

@@ -191,28 +191,32 @@ def from_spec(spec: Mapping[str, Any]) -> Contributor:
 
 def _oxygen_debt(state: CoreState, anchors: Anchors, profile: CoreProfile, minute: int, demand: float,
                  modulators: tuple[Source, ...]) -> ChannelDelta:
-    """D accumulates the deficit of oxygen delivery below demand and repays it slowly (P2E-2).
+    """D is the accumulated oxygen-delivery debt (P2E-2; semantics corrected by the faculty in P2I-2AC).
 
-    dD = g x max(0, demand - reserve x delivery) - D / tau, with delivery the delivery index
+    With deficit = max(0, demand - reserve x delivery), delivery the delivery index
     (arrival-relative delivery times the case's arrival delivery ratio, P2F-6) read at the
     start of the minute, demand the one declared for it, reserve the oxygen extraction reserve
     (P2I-2P: only the demand left unmet once extraction is exhausted is a deficit; 1, the neutral
-    default, is the earlier no-reserve model) and g the deficit-to-debt gain. Delivery above demand is no credit: D only
-    repays what it accrued, and never falls below 0. With the neutral demand baseline and no
-    modifier, demand is 1, so arrival does not move; at a steady deficit s the debt settles
-    at tau * s, which the lactate derivation reads (proposal C8). The sources that modified
-    demand are named as modulators of the debt only when they changed it: when the deficit
-    against the modified demand differs from the deficit against the case's baseline.
+    default, is the earlier no-reserve model) and g the deficit-to-debt gain:
+    - while deficit > 0 the debt accrues, dD = g x deficit, and is not repaid (dD >= 0);
+    - with deficit == 0 nothing accrues and the debt repays first-order, dD = -D / tau.
+    Delivery above demand is no credit: D only repays what it accrued, and never falls below 0.
+    Under a steady deficit D keeps rising at g x deficit per minute; it no longer settles. The
+    sources that modified demand are named as modulators of the debt only when they changed it:
+    when the deficit against the modified demand differs from the deficit against the case's
+    baseline.
     """
     before = derive(state, anchors, profile)
     delivery = effective_delivery(before.delivery_rel, anchors)
     reserve = profile.oxygen_extraction_reserve
     deficit = effective_oxygen_deficit(demand, delivery, reserve)
     changed = deficit != effective_oxygen_deficit(anchors.metabolic_demand_baseline, delivery, reserve)
-    amount = profile.debt_per_delivery_deficit * deficit - state.D / profile.debt_clearance_tau_min
-    return ChannelDelta(Channel.D, amount, OXYGEN_DEBT, minute,
-                        "oxygen demand left unmet once extraction is exhausted, less first-order repayment",
-                        modulated_by=modulators if changed else ())
+    if deficit > 0.0:
+        amount, why = (profile.debt_per_delivery_deficit * deficit,
+                       "oxygen demand left unmet once extraction is exhausted: accrued, not repaid")
+    else:
+        amount, why = -state.D / profile.debt_clearance_tau_min, "no unmet demand: first-order repayment"
+    return ChannelDelta(Channel.D, amount, OXYGEN_DEBT, minute, why, modulated_by=modulators if changed else ())
 
 
 def _blood_minute(state: CoreState, flows: Sequence[BloodFlow], anchors: Anchors, profile: CoreProfile,

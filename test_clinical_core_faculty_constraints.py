@@ -212,13 +212,26 @@ def test_fd_lac_04_already_normalized_and_not_evaluable():
 
 
 def test_fd_lac_05_debt_memory_is_the_core_s_own_arrival_debt_term():
+    # The coefficient repays the arrival debt from arrival. Since P2I-2AC the core repays no debt while a deficit
+    # lasts, so it is the core's arrival-debt term exactly when there is no deficit, and a lower bound otherwise
+    # (FD-LAC-05 only reports it; it never filters). The faculty_constraints module stays frozen.
+    from clinical_core import oxygen_probes
+    from clinical_core.derived import DEFAULT_PROFILE
+    from clinical_core.integration import run
+    arrival = replace(oxygen_probes.NEUTRAL, arrival_oxygen_debt=20.0,
+                      declared={**dict(oxygen_probes.NEUTRAL.declared), "arrival_oxygen_debt": "synthetic_probe"})
+    for tau_d, tau_l, gain in ((60.0, 120.0, 6.0), (30.0, 45.0, 12.0)):
+        profile = replace(DEFAULT_PROFILE, debt_clearance_tau_min=tau_d, lactate_clearance_tau_min=tau_l,
+                          lactate_per_output_deficit=gain)
+        excess = run(arrival, (), 120, profile).states[-1].aux.lactate_excess_mmol_l
+        assert excess == pytest.approx(20.0 * fc.debt_memory_coefficient(tau_d, tau_l, gain, 120), rel=1e-12)
     for case in gi_reference.GI_CASES:
         split = lactate_slice.decomposition(case, MIDDLE, "L3")
         p = split["parameters"]
         assert p["arrival_oxygen_debt"] > 0
         coefficient = fc.debt_memory_coefficient(p["debt_clearance_tau_min"], p["lactate_clearance_tau_min"],
                                                  p["lactate_per_output_deficit"], 120)
-        assert abs(coefficient * p["arrival_oxygen_debt"] - split["rows"][120]["from_arrival_debt"]) < 1e-9
+        assert split["rows"][120]["from_arrival_debt"] >= coefficient * p["arrival_oxygen_debt"] - 1e-12
 
 
 KINETICS = {"debt_clearance_tau_min": 60.0, "lactate_clearance_tau_min": 120.0, "lactate_per_output_deficit": 6.0}

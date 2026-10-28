@@ -37,20 +37,23 @@ from clinical_core.shadow import GOLDEN
 #: Level-1 checks that write V or Hb directly as SYNTHETIC_STATE_PERTURBATION (LEVEL1_DIRECT_WRITES) and renamed
 #: check_hr's "bleed" run to "volume_loss": the rules component (check_hr's source) and harness_sources
 #: (calibration.py) changed; no rule, probe size, assertion or band did. P2I-2X widened NOT_EVIDENCE_FOR to the
-#: faculty's list (2026-10-28): only harness_sources (calibration.py) changed.
+#: faculty's list (2026-10-28): only harness_sources (calibration.py) changed. P2I-2AC corrected the debt
+#: semantics in the core (no repayment while a deficit lasts): harness_sources (calibration.py's delivery
+#: probes) and gi_reference (the pre-arrival plausibility probe's recurrence) changed; no rule, band or
+#: assertion did.
 FROZEN_COMPONENTS = {
     "rules": "9b3818ed3599a52a8a18a98c15882f1179bd1b63a5c1778744bec977979b396a",
     "bands": "99ca99f1b0d032056cfdabb90e1354683ef5ba093e896a0d5c10bc9c2ca192ca",
-    "harness_sources": "1277fd58c497f946b098455b1773270f7e92290d43d2532f19f5efff4f5db56a",
+    "harness_sources": "412d7801d0de5f60c4ac3a5f2dccb6fc36980db1dc3ab945edda380a514568f8",
     "migration_sources": "6033f4437627ed1f78c2c2ea03764986572639d94596982963a44f5964a2cb29",
     "authority_registries": "e305793eefead76fb733761f3305148e3df85aa9074445d94f051cb5709d2314",
-    "gi_reference": "159fdc558c713a743261ab82075dc2574f7389f017a81a80f95f0d7207e0a9bd",
+    "gi_reference": "af3265d0b8a24eeff0747b851413012bf9e358bedb497cae418d8d9ab014aabb",
     "scenarios": "7380daec5536c8f9a23c857df2138c99a16d63eace51d62b295aa3f4ed100b58",
     "input_path_sources": "8bbff3d408efba2024917559156cfaa732c920b3bc7a45e0bac0e3e4838f65b9",
     "input_adapter_sources": "e83dca618fdaaa9239d861e1e1d6928dc703bfe33206a05cef44a5b0e9495bc5",
     "scenario_inputs": "afb2051e7fa04f1765aaf920c82f51dc6675d19bcbcb425c2ee581d8fa60d347",
 }
-FROZEN_DIGEST = "23b064e9bba1d6edcdcc4bb6aa39bf9949ddc469fbaf838c42afbeae2ed4ac14"
+FROZEN_DIGEST = "a8f00e04320823d24d5d1d802ae2eae14564fb970da4d7c0d44c65368fc9a8b0"
 
 
 # P2F-2 / P2F-5 -- repository truth, candidate inference, faculty decision ---------------------
@@ -199,17 +202,39 @@ def test_the_rules_are_frozen():
 
 
 def test_the_hr_rules_read_the_candidates_full_declared_arrival():
-    # Review finding: HR1-HR4 used to run on an arrival that declared only the intrinsic rate. A
-    # 72f arrival debt of 60 with a 30-min repayment is above what any deficit can sustain, so the
-    # debt's share of the drive falls during the synthetic volume loss and HR does not rise: the full arrival fails.
+    # Review finding: HR1-HR4 used to run on an arrival that declared only the intrinsic rate. Under the
+    # P2F semantics a 72f arrival debt of 60 with a 30-min repayment failed HR1 (decision_pack.p2f_rejection
+    # keeps that written outcome). Since P2I-2AC the debt is not repaid while a deficit lasts, so that
+    # rejection no longer occurs live; what stays protected is that every HR run starts from the candidate's
+    # full declared arrival (its debt, drive and intrinsic rate), not a midpoint or partial one.
     profile = {"debt_clearance_tau_min": 30.0}
-    failing = calibration.GICandidate(profile, debt="upper")
-    arrivals = {case: gi_reference.candidate_anchors(case, calibration.case_values(case, failing))
+    candidate = calibration.GICandidate(profile, debt="upper")
+    arrivals = {case: gi_reference.candidate_anchors(case, calibration.case_values(case, candidate))
                 for case in gi_reference.GI_CASES}
-    with pytest.raises(calibration.Failed, match=r"HR1 \(gi_bleed_72f\)"):
+    seen = []
+    original = calibration.run
+
+    def spy(anchors, *args, **kwargs):
+        seen.append(anchors)
+        return original(anchors, *args, **kwargs)
+
+    calibration.run = spy
+    try:
         calibration.check_hr(replace(DEFAULT_PROFILE, **profile), arrivals=arrivals)
-    assert "HR1-HR4" in calibration.gi_physiology(failing)["failed"]
-    assert "HR1-HR4" not in calibration.gi_physiology(calibration.GICandidate(profile))["failed"]
+        hr_runs, seen[:] = list(seen), []
+        calibration.gi_physiology(candidate)
+    finally:
+        calibration.run = original
+    assert hr_runs and all(any(a == arrival for arrival in arrivals.values()) for a in hr_runs)
+    assert {a.case_id for a in hr_runs} == set(gi_reference.GI_CASES)
+    assert all(arrival in seen for arrival in arrivals.values())
+    # The full arrival changes the 72f HR course relative to the midpoint arrival: the input is read, not ignored.
+    midpoint = calibration._midpoint_arrivals()["gi_bleed_72f"]
+    assert midpoint.arrival_oxygen_debt != 60.0
+    loss = (calibration.Drift("loss", "V", 0, 30, -8.0),)
+    rates = [[item.pulse_rate_bpm for item in calibration.run(arrival, loss, 30, replace(DEFAULT_PROFILE, **profile))
+              .derived()] for arrival in (arrivals["gi_bleed_72f"], midpoint)]
+    assert rates[0] != rates[1]
 
 
 def test_dm1_runs_through_the_integrator_and_reads_the_profile():
