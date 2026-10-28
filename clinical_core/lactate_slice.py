@@ -492,7 +492,8 @@ def legacy_reference() -> dict:
 #: downstream: no other clinical_core module imports them (a test checks every module's imports), so they cannot
 #: change the slice or any artifact hashed with these sources; each keeps its own generated-document test.
 DOWNSTREAM_REPORTS = ("clinical_core/blood_filter_report.py", "clinical_core/blood_extension_report.py",
-                      "clinical_core/blood_rate_report.py", "clinical_core/blood_fluid_report.py")
+                      "clinical_core/blood_rate_report.py", "clinical_core/blood_fluid_report.py",
+                      "clinical_core/blood_fluid_readiness_report.py")
 
 
 def slice_sources() -> dict[str, str]:
