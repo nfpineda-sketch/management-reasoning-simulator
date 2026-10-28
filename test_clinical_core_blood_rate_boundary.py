@@ -68,10 +68,9 @@ def test_the_exact_prefilter_reads_only_rate_independent_constraints():
         assert bc.BLEED not in bc._depends(name), name
     for name in rb.RATE_DEPENDENT:
         assert bc.BLEED in bc._depends(name), name
-    values = {name: kept[0] for name, kept in rb.region().items() if name in bc.SHARED}
-    for name in rb.RATE_INDEPENDENT:
-        keys = {rate: tuple({**values, bc.BLEED: rate, bc.POS: 0.5}[n] for n in bc._depends(name)) for rate in rb.RATES}
-        assert len(set(keys.values())) == 1, "the same reading at every rate"
+    # The retained-crystalloid reading runs with the reference bleeding; blood_constraints.tables cross-checks that it
+    # does not depend on the bleeding (P2I-2V-R), and the scan repeats that cross-check on every row it computes.
+    assert bc.READS["FD-BLD-04"] == bc.READS["FD-BLD-05"] == "retained" and bc.BLEED not in bc.TABLE_KEYS["retained"]
 
 
 def test_case_truth_is_the_committed_pocus_grounded_band():
@@ -159,3 +158,112 @@ def test_the_render_only_reports_are_strictly_downstream():
     assert set(decision_pack.PACK_DIGEST_EXCLUDED) >= {"clinical_core/blood_rate_boundary.py",
                                                          "clinical_core/blood_rate_report.py"}
 
+
+
+# After the freeze commit: the scan's record -------------------------------------------------------------------------
+
+RESULT = ROOT / "docs" / "revision" / "P2I2X_blood_rate_boundary.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2I2X_CIERRE_BORDES_TASA.md"
+
+
+def _plain(value):
+    return json.loads(json.dumps(value, sort_keys=True, default=str))
+
+
+@pytest.fixture(scope="module")
+def result():
+    return json.loads(RESULT.read_text(encoding="utf-8"))
+
+
+def test_the_scan_record_carries_the_frozen_digest_and_design(result):
+    assert result["freeze_digest"] == FROZEN_DIGEST and result["revision"] == "P2I-2X"
+    assert result["records"] == {"P2I-2V-R": be.P2I2VR_DIGEST, "P2I-2W": rb.P2I2W_DIGEST}
+    assert result["design"] == _plain(rb.design()) and result["policy"] == rb.POLICY
+    assert sorted(float(rate) for rate in result["scan"]["rates"]) == list(rb.RATES)
+    assert result["contradictions"] == []
+
+
+def test_the_scan_reproduces_the_records_at_rates_5_and_10(result):
+    record = be.record()
+    assert result["scan"]["rates"]["5.0"]["survives"] == record["primary"]["marginal"][be.COMMON]["5.0"] == 2268
+    p2i2w = json.loads(rb.P2I2W_RECORD.read_text(encoding="utf-8"))
+    assert result["scan"]["rates"]["10.0"]["survives"] == p2i2w["boxes"]["bleed_ml_per_min|common=10"]["survives"] == 0
+
+
+def test_the_scan_counts_are_coherent(result):
+    scan = result["scan"]
+    for rate, item in scan["rates"].items():
+        assert item["candidates"] == scan["candidates"] == 52_488, rate
+        assert item["simulated"] == scan["candidates"] - scan["rate_independent_rejected"], rate
+        assert item["survives"] + item["rejected"] + item["unreadable"] == item["candidates"], rate
+        assert item["survives"] <= min(item["alone"].values()), rate
+        assert all(item["u_out_fail"][c] <= item["simulated"] - item["alone"][c] for c in bc.CASES), rate
+        assert all(item["u_out_fail"][c] == item["first_failure"][c].get("U-OUT", 0) for c in bc.CASES), rate
+    assert sum(scan["rate_independent_first_failure"].values()) == scan["rate_independent_rejected"]
+    interval = result["interval"]
+    assert interval["label"] == "FACULTY-CONSTRAINED BLEED-RATE CANDIDATE INTERVAL"
+    assert interval == _plain(rb.interval(scan))
+
+
+def test_57m_fails_u_out_at_rate_7_wherever_the_scan_simulates(result):
+    """The boundary, recomputed live: among the combinations that pass the exact pre-filter in both cases, every
+    untreated reading of 57m at rate 7 leaves U-OUT (read with blood_constraints.untreated directly, not through the
+    scan's cache), so no joint candidate survives at 7."""
+    import itertools
+    values = rb.region()
+    positions = {case: values[be.POSITION[case]][0] for case in bc.CASES}
+    rows, caches = rb.Rows(), {case: {} for case in bc.CASES}
+    kept = set()
+    for combination in itertools.product(*(values[n] for n in bc.SHARED)):
+        combination = dict(zip(bc.SHARED, combination))
+        if not any(rb._independent(rows, case, rb._values(combination, case, 7.0, positions[case]), caches[case])
+                   for case in bc.CASES):
+            v = rb._values(combination, "gi_bleed_57m", 7.0, positions["gi_bleed_57m"])
+            kept.add(tuple(v[n] for n in bc.TABLE_KEYS["untreated"]))
+    assert kept and len(kept) == 162
+    assert not any(bc.passes("U-OUT", "gi_bleed_57m", bc.untreated("gi_bleed_57m", dict(zip(bc.TABLE_KEYS["untreated"], key))))
+                   for key in kept)
+    assert result["scan"]["rates"]["7.0"]["u_out_fail"]["gi_bleed_57m"] == result["scan"]["rates"]["7.0"]["simulated"]
+
+
+def test_the_edges_are_recomputed_and_the_bounds_are_not_identification(result):
+    p2i2w = json.loads(rb.P2I2W_RECORD.read_text(encoding="utf-8"))
+    assert result["edges"] == _plain(rb.edges(be.record(), p2i2w, result["scan"]))
+    edges = result["edges"]
+    assert edges["plasma_refill_target_share"]["edge"] == rb.DOMAIN_UPPER
+    for case in bc.CASES:
+        assert edges[be.POSITION[case]]["edge"] == rb.CASE_TRUTH_BOUND
+        assert edges[be.POSITION[case]]["identified"] is False
+    assert all(item.get("identified") is not True for item in edges.values() if item.get("edge") != be.INTERIOR)
+
+
+def test_the_moved_representatives_are_the_frozen_evaluation(result):
+    record = be.record()
+    for rate, item in result["representatives"].items():
+        middle = item["middle"]
+        for case in bc.CASES:
+            values = {**record["representatives"]["middle"]["values"][case], bc.BLEED: float(rate)}
+            values[bc.POS] = be.positions(case)[values[bc.POS]]
+            if None in middle["verdicts"][case].values():
+                continue
+            live = bc.evaluate(case, values)["verdicts"]["primary"]
+            assert {n: live[n] for n in bc.CONSTRAINTS} == middle["verdicts"][case], (rate, case)
+
+
+def test_nothing_is_selected_approved_or_lactate_filtered(result):
+    from clinical_core import migration_authority
+    text = json.dumps(result)
+    assert "FACULTY_APPROVED" not in text and "selected" not in text
+    assert migration_authority.APPROVED_FAMILY_DEFAULTS == () and migration_authority.TRUSTED_CASE_MAPPINGS == ()
+    import inspect
+    source = inspect.getsource(rb)
+    assert "lactate_constraints" not in source and "FD-LAC" not in source and "faculty_constraints" not in source
+
+
+def test_the_document_blocks_are_generated(result):
+    from clinical_core import blood_rate_report as report
+    document = DOCUMENT.read_text(encoding="utf-8")
+    for block, render in (("verdad", report.render_truth), ("tasa", report.render_rate),
+                          ("representativos", report.render_representatives), ("bordes", report.render_edges)):
+        assert report.apply(document, block, render(result)) == document, block
+    assert report.apply(document, "auditoria", report.render_audit()) == document
