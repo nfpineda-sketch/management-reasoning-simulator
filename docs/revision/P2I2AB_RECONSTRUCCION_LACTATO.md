@@ -112,8 +112,12 @@ Claves de sangre del espacio: 72; fuera de las certificadas para el cristaloide:
   - las posiciones inferiores no entran con ninguna tasa.
 - **Claves:** las 72 claves de sangre del espacio son claves en las que el soporte del cristaloide está certificado
   (las de los sobrevivientes de P2I-2Y en 5 y 6; las de la tasa 2,5 que comprobó P2I-2AA, sin exclusiones).
-- **ρ:** el espacio se simula con ρ 2,5 y lleva la multiplicidad de ρ (1; 2,5; 3): todos los conjuntos sobreviven con
-  las tres reservas, y ρ se cancela en el déficit, D, el lactato y la adecuación (§4).
+- **ρ:**
+  - el espacio se simula con ρ 2,5 y lleva la multiplicidad de los valores de ρ de la grilla de sangre (1; 2,5; 3);
+  - todos los conjuntos sobreviven con los tres valores, y ρ se cancela en el déficit, D, el lactato y la adecuación
+    (§4): los veredictos son idénticos con ρ 1 y 3;
+  - ρ 1 queda fuera de la banda [2; 3] que registró P2I-2AA, y con ρ 1 no existe el estado COMPENSATED. Por eso las
+    lecturas de «adecuación por compensación» y de la DO2 relativa a la normal (§7.1 y §9.1) valen para ρ 2,5.
 - **Hemostasia y L3:** la endoscopía es la del propio motor, en el minuto 60 de los dos casos. Los modificadores de L3
   quedan fijos (0,8 y 0,1).
 
@@ -127,9 +131,18 @@ Claves de sangre del espacio: 72; fuera de las certificadas para el cristaloide:
   - exceso de lactato de llegada: los tres niveles de la banda de cada caso;
   - deuda y entrega de llegada: los cinco pares (deuda, entrega) de P2F, sin cambios.
   - Son 1215 puntos.
-- **Demanda basal:** no es variable. El registro no tiene puntos candidatos («nunca un parámetro libre para el
-  lactato») y `calibration.case_values` la fija en 1,0. El borrador de P2I-2AA mencionaba una sensibilidad 0,9 / 1,1,
-  que no es un rango del registro; no se aplicó, y queda como decisión si se quiere explorar.
+- **Demanda basal:** no es variable.
+  - El registro no tiene puntos candidatos («nunca un parámetro libre para el lactato») y `calibration.case_values` la
+    fija en 1,0.
+  - El borrador de P2I-2AA preveía una sensibilidad de 0,9 / 1,1 sobre los sobrevivientes. Las dos fuentes no dicen lo
+    mismo: el paquete siguió el registro, no la aplicó en la región congelada y lo deja como decisión (§14).
+  - **Sensibilidad posterior, sólo informativa** (fuera del congelamiento; no filtra nada):
+    - mismo filtro congelado, con la demanda escalada en el posproceso;
+    - equivale exactamente al núcleo completo con la demanda basal escalada (diferencia 0,0 en corridas completas
+      fuera de la región), y con ×1,0 reproduce la región exacta;
+    - con ×0,9 sobreviven 274 960 (se conservan 216 407 de los 439 291);
+    - con ×1,1 sobreviven 674 108 (se conservan 382 934 y entran 291 174);
+    - la pertenencia a la región depende mucho de este supuesto, porque la demanda entra directo en el déficit.
 - **Frecuencia intrínseca:** queda en el punto medio de la banda, porque no llega a la hemodinámica, a D ni al lactato
   (lo comprueba la validación, con los niveles inferior y superior).
 
@@ -171,7 +184,9 @@ Estados FD-LAC que ejerció la muestra: L1 FD-LAC-01 FAIL 81; L1 FD-LAC-01 PASS 
     el punto canónico;
   - coinciden exactamente con ρ 2,5 en el lactato, D, el déficit, la hemostasia y la detención, minuto a minuto;
   - con ρ 1 y 3 la diferencia máxima es de 7e-15, con los mismos veredictos;
-  - la muestra ejerció PASS, FAIL y NOT_EVALUABLE de todas las restricciones;
+  - la muestra ejerció PASS y FAIL de FD-LAC-01, 02/03, 04 y 05 y de FD-LAC-06 en L1 y L2, y NOT_EVALUABLE de 04 y
+    05. No ejerció FD-LAC-06 FAIL en L3 (ningún candidato lo tuvo en todo el filtro), ni NOT_APPLICABLE ni
+    ALREADY_NORMALIZED;
   - si hubiera fallado, la corrida se detenía sin recurrir a un cartesiano.
 - **Qué llega al lactato:** sólo G × g y G × D0, dados τ_D y τ_L (álgebra de las recurrencias, comprobada
   numéricamente). Por eso g y G no son identificables por separado.
@@ -196,6 +211,9 @@ Estados FD-LAC que ejerció la muestra: L1 FD-LAC-01 FAIL 81; L1 FD-LAC-01 PASS 
     con comparación exacta y sin tolerancia; si es igual o mayor, PERSISTENT_OR_WORSENING_CRITICAL. Sólo esta última
     viola la restricción.
   - **FD-LAC-01** lee L1 antes del minuto 60. **FD-LAC-06** lee las tres corridas completas.
+  - La lectura de recuperación se aplica también a FD-LAC-01, como pide el encargo para esa restricción. El texto
+    docente registrado en el módulo sólo nombra FD-LAC-06 (TD-90). En L1 no cambia nada: sin tratamiento el déficit
+    nunca baja, y la revisión no encontró diferencias con la función congelada en 211 410 evaluaciones.
 - **FD-LAC-02 a 05:** son las funciones congeladas.
   - **FD-LAC-02/03:** L60 de L1 dentro del sobre del caso, inclusive.
   - **FD-LAC-04:**
@@ -244,8 +262,8 @@ Candidatos: 6 677 640; sobrevivientes: **439 291** (6,6 %); con la multiplicidad
 - **L1:**
   - FD-LAC-02 en 57m explica el 90 % de los rechazos como primer fallo: L60 debe quedar en 4,4–7,0, es decir, no
     puede bajar de la llegada;
-  - por ejemplo, el par (deuda inferior, entrega superior), sin deuda y con entrega normal, no deja ningún
-    sobreviviente.
+  - por ejemplo, el par (deuda inferior, entrega superior), sin deuda y con la entrega de llegada justo en el umbral
+    crítico (DO2 de 0,40 de la normal con ρ 2,5; déficit 0 al llegar), no deja ningún sobreviviente.
 - **L3:** domina FD-LAC-05 en 57m (L120 fuera de 1,5–4,0 o no por debajo de L(T*)).
 - **L2:** FD-LAC-06 en 57m rechaza 126 356 candidatos. Son caídas sostenidas del lactato con un déficit crítico
   persistente mientras el cristaloide entra con el sangrado activo.
@@ -300,6 +318,10 @@ Candidatos: 6 677 640; sobrevivientes: **439 291** (6,6 %); con la multiplicidad
     docente (§14).
 - **T*:** cuando existe, es siempre el minuto 60. En L3 la adecuación o ya estaba antes de la hemostasia y se sostiene,
   o no llega dentro del horizonte.
+- **NOT_EVALUABLE con T*:** en 72f, 2079 sobrevivientes tienen T* y FD-LAC-04 PASS, pero FD-LAC-05 NOT_EVALUABLE,
+  porque pierden la adecuación después de T* + 30. De ellos, 336 terminan con L120 por encima del sobre de 72f (máximo
+  3,83 contra 3,5). Todos tienen la entrega de llegada inferior y están dentro de los 304 176 de arriba (cálculo
+  posterior, confirmado con una sonda propia).
 - **Compensación:** 158 172 sobrevivientes tienen algún minuto COMPENSATED (déficit 0 con la DO2 por debajo de la
   normal) entre T* y T* + 30, el mismo número que tiene T* en 57m. La adecuación que habilita FD-LAC-04/05 es
   compensada (en los representativos, DO2 de 0,42 a 0,62 de la normal); con la lectura previa a la decisión docente
@@ -357,7 +379,16 @@ Candidatos: 6 677 640; sobrevivientes: **439 291** (6,6 %); con la multiplicidad
   - el par de llegada: queda afuera (deuda inferior, entrega superior).
 - **Mal identificadas, con los dos bordes abiertos:** τ_D, τ_L, el exceso de llegada, la deuda y la entrega de llegada,
   y todas las de sangre. Las restricciones FD-LAC no acotan ninguna cinética del lactato dentro de la grilla.
-- **No identificables por separado:** g y G (sólo llegan G × g y G × D0), y ρ (se cancela).
+- **No identificables por separado:**
+  - g y G: sólo llegan G × g y G × D0;
+  - la deuda de llegada D0, por la misma razón: (G, g, D0) y (cG, g/c, D0/c) dan el mismo lactato. La tabla la muestra
+    como mal identificada, pero estructuralmente tampoco se identifica por separado (TD-90);
+  - ρ, que se cancela.
+- **Qué significa «abierto»:** los bordes se leen sobre la grilla del espacio de origen, después del filtro de sangre.
+  Fuera de esa grilla sí hay límites:
+  - las posiciones 0,2 y 0,3 las rechazó la sangre, y 0,5 y 0,6 son el límite de la banda del caso;
+  - las tasas de 7 o más las excluyó la docencia;
+  - τ del cristaloide tiene tope en 240.
 - **Cristaloide:** sobreviven los 12 puntos, con pesos casi iguales (36 017 a 38 070). El lactato no distingue τ del
   cristaloide, y la incertidumbre del fluido se propaga entera.
 - **Ningún valor se elige por su frecuencia.**
@@ -568,6 +599,11 @@ Próximo dominio: Recommended next domain (not started; needs its own authorizat
 - **Qué no dice:** que la región esté bien identificada (§8), ni que el 69 % que cumple FD-LAC-04/05 sin evaluarlas
   sea aceptable (§7.1), ni que las caídas posteriores a la hemostasia (16 %) sean fisiológicas. Esas preguntas quedan
   en §14.
+- **Código y texto del veredicto:** el texto exige FD-LAC-04/05 evaluadas en los dos casos en un mismo candidato; el
+  código lo comprueba en cada caso por separado (TD-90). Con este registro da lo mismo: 135 115 candidatos las tienen
+  evaluadas en ambos casos, y una prueba lo fija.
+- **Demanda basal:** con la demanda ±10 % la región cambia mucho (§3). El veredicto se mantendría, porque sigue
+  habiendo sobrevivientes evaluados, pero la pertenencia a la región no es robusta a ese supuesto.
 - **Próximo dominio recomendado, sin empezar:** la calibración de la presión arterial y la frecuencia cardíaca del
   núcleo en sombra sobre esta región, antes del colapso, de la migración de GI o de cualquier integración. Necesita
   su propia autorización.
@@ -589,6 +625,17 @@ Próximo dominio: Recommended next domain (not started; needs its own authorizat
   del legado). El registro es el del módulo; sólo el mapeo fue paralelo, y `--run` lo reproduce en un solo proceso.
 - **Entrega:** un commit ejecutable (código del informe, pruebas, JSON e informes), sobre el que corre la certificación
   completa, y uno posterior sólo de documentación, si hace falta.
+- **Revisión adversarial (una sola):**
+  - sin BLOCKER: reprodujo la región, las etapas y la factorización, y juzgó 83 candidatos al azar con corridas
+    completas del núcleo, sin diferencias;
+  - no encontró fugas de la región de P2F ni del legado;
+  - su hallazgo MAJOR, la sensibilidad a la demanda basal, se informa en §3 y queda como decisión docente;
+  - tres detalles de código sin efecto en el registro quedan como TD-90:
+    - la regla de reproducción toma de P2I-2Y sólo los pares con sobrevivientes, y su cláusula de celdas no cubiertas
+      es vacía por construcción (sin efecto, porque nada queda fuera de lo explorado con las tasas 5 y 6);
+    - el veredicto comprueba cada caso por separado;
+    - la etiqueta de la deuda de llegada;
+  - el resto son precisiones de este informe.
 
 ## 13. Qué no hace
 
@@ -621,7 +668,9 @@ Próximo dominio: Recommended next domain (not started; needs its own authorizat
 - **Posiciones medias con la tasa 2,5 y el relleno (1; 480):** entraron por la regla de precarga; confirmar.
 - **Identificabilidad:** con las seis FD-LAC no se acota ninguna cinética del lactato. Para identificarlas harían falta
   otras anclas (por ejemplo, sobres a los 30 o 90 min).
+- **Demanda basal:** el registro la fija en 1,0 y el borrador de P2I-2AA preveía 0,9 / 1,1. Con ±10 % la región pasa
+  de 439 291 a 274 960 o 674 108 sobrevivientes (§3). ¿Se fija en 1,0, se explora como incertidumbre o se acota con
+  otra evidencia?
 - **Siguen abiertas:**
   - FD-24 y FD-25;
-  - la sensibilidad de la demanda basal, que no está en el registro;
   - la autorización del próximo dominio.

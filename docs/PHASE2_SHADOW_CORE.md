@@ -2817,6 +2817,9 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - τ_D, τ_L, el exceso y la sangre quedan mal identificados, con los bordes abiertos;
   - g y G, y ρ, no son identificables por separado;
   - sobreviven los 12 puntos del cristaloide.
+- **Revisión adversarial:** sin BLOCKER. Su hallazgo MAJOR, la sensibilidad a la demanda basal, se informa como cálculo
+  posterior: con ×0,9 sobreviven 274 960 y con ×1,1, 674 108; queda como decisión docente. Los detalles de código sin
+  efecto en el registro quedan como TD-90.
 - **Veredicto: LACTATE_CALIBRATION_CONSTRAINTS_SATISFIED**, según la regla congelada. Las salvedades y las decisiones
   docentes están en el informe (§7.1 y §14). Próximo dominio recomendado, sin empezar: la calibración de la presión y
   la FC.
