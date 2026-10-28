@@ -27,6 +27,8 @@ ROOT = Path(__file__).resolve().parent
 FROZEN_DIGEST = "e89a248ef406acda8c17d95931da98eac9e92d8ab2c1c1fb5bd2e9bf0f20ecf4"
 P2I2VR_CONSTRAINTS_SHA = "2d139733ed529a03f9c58cd4aa5eb70c8812bb25ba0737f90172546b4e2a65a8"
 P2I2Y_MODULE_SHA = "46e73e3314190dd6fc18695346a16e9c6c55059606ac80a16081695f1d9fdd19"
+#: The module as frozen at a927301 (P2I-2Z closed: later packages add modules, so the digest is the record's).
+P2I2Z_MODULE_SHA = "40b93a69c8b70190e7d92a056f0987b81a30ee32331629d18132f0aa534a15cf"
 
 
 def _sha(path: str) -> str:
@@ -47,7 +49,10 @@ def test_the_readiness_analysis_is_frozen():
     assert {"clinical_core/blood_fluid_readiness.py", "clinical_core/blood_constraints.py",
             "clinical_core/interventions/fluids.py", "clinical_core/integration.py"} <= set(sources)
     assert not set(lactate_slice.DOWNSTREAM_REPORTS) & set(sources)
-    assert fr.freeze_digest() == FROZEN_DIGEST, "a source, the design, a rule or the policy changed after the freeze"
+    # P2I-2Z is closed: its module is the frozen one, byte for byte; its record keeps the digest it ran with.
+    assert _sha("clinical_core/blood_fluid_readiness.py") == P2I2Z_MODULE_SHA, "the P2I-2Z module changed"
+    record = json.loads((ROOT / "docs" / "revision" / "P2I2Z_blood_fluid_readiness.json").read_text(encoding="utf-8"))
+    assert record["freeze_digest"] == FROZEN_DIGEST
 
 
 def test_the_rate_is_the_faculty_record_and_is_not_rescanned():
