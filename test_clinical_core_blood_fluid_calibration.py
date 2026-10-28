@@ -121,3 +121,119 @@ def test_the_reports_stay_downstream():
     assert {"clinical_core/blood_fluid_calibration.py", "clinical_core/blood_fluid_report.py"} <= set(
         decision_pack.PACK_DIGEST_EXCLUDED)
     assert "clinical_core/blood_fluid_calibration.py" in lactate_slice.slice_sources()
+
+
+# After the freeze commit: the analysis's record --------------------------------------------------------------------
+
+RESULT = ROOT / "docs" / "revision" / "P2I2Y_blood_fluid_calibration.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2I2Y_CRISTALOIDE_Y_TASA.md"
+
+
+def _plain(value):
+    return json.loads(json.dumps(value, sort_keys=True, default=str))
+
+
+@pytest.fixture(scope="module")
+def result():
+    return json.loads(RESULT.read_text(encoding="utf-8"))
+
+
+def test_the_record_carries_the_frozen_digest_and_designs(result):
+    assert result["freeze_digest"] == FROZEN_DIGEST and result["revision"] == "P2I-2Y"
+    assert result["records"] == {"P2I-2V-R": be.P2I2VR_DIGEST, "P2I-2X": fc.P2I2X_DIGEST}
+    assert result["robustness_design"] == _plain(fc.robustness_design()) and result["grid"] == _plain(fc.grid())
+    assert result["policy"] == fc.POLICY and result["contradictions"] == []
+
+
+def test_the_robustness_reproduces_p2i2x_and_its_counts_are_coherent(result):
+    import itertools
+    p2i2x = json.loads(fc.P2I2X_RECORD.read_text(encoding="utf-8"))
+    region = rb.region()
+    old = {f"{t:g}|{u:g}" for t, u in itertools.product(region[fc.TARGET], region[fc.TAU])}
+    robust = result["robustness"]
+    for rate, item in robust["rates"].items():
+        assert sum(n for pair, n in item["by_refill"].items() if pair in old) == p2i2x["scan"]["rates"][rate]["survives"]
+        assert item["joint"] == sum(item["by_refill"].values()) == sum(item["survivor_keys"].values()), rate
+        for case in bc.CASES:
+            assert sum(item["by_position"][case].values()) == item["joint"], (rate, case)
+            assert item["simulated"][case] + robust["analytic_rejection"][case] == (
+                robust["case_candidates_per_rate"][case]), (rate, case)
+    rate7 = robust["rates"][str(fc.FIRST_TESTED_NONVIABLE_RATE)]
+    assert robust["conclusion"] == (fc.ROBUST if rate7["joint"] == 0 and rate7["joint_unreadable"] == 0
+                                    else fc.DEPENDS)
+
+
+def test_fd_bld_04_and_05_are_recomputed_live_on_the_bag_alone(result):
+    for key, entry in result["crystalloid"].items():
+        f0, finf, tau = (float(v) for v in key.split("|"))
+        if entry["status"] == fc.ANALYTIC_REJECTION:
+            assert finf > f0
+            continue
+        values = fc.bag(f0, finf, tau)
+        for case in bc.CASES:
+            row = bc.retained(case, values)
+            assert {n: bc.passes(n, case, row) for n in ("FD-BLD-04", "FD-BLD-05")} == entry["verdicts"][case], key
+    assert result["counts"]["analytic_rejection"] == 3 and result["counts"]["evaluated"] == 72
+    keys = [f"{p['F0']:g}|{p['Finf']:g}|{p['tau']:g}" for p in fc.grid()]
+    in_grid_order = {k: result["crystalloid"][k] for k in keys}      # the record's JSON sorts keys; the run did not
+    assert _plain(fc.crystalloid_counts(in_grid_order, result["probes"])) == result["counts"]
+
+
+def test_the_probes_are_certified_survivors(result):
+    from clinical_core import blood_anchors
+    probes = result["probes"]
+    assert probes["REFERENCE"] == [float(blood_anchors.REFERENCE[n]) for n in fc.PROBE_KEYS]
+    keys = {k for rate in ("5.0", "6.0") for k in result["robustness"]["rates"][rate]["survivor_keys"]}
+    for name, key in probes.items():
+        if name.startswith("BOUNDARY"):
+            assert "|".join(f"{v:g}" for v in key) in keys, name
+    assert len(probes) <= 1 + 3 + 2 * len(fc.PROBE_KEYS)
+
+
+def test_the_surface_edges_and_representatives_follow_the_frozen_rules(result):
+    survivors = result["counts"]["survivors"]
+    for basis in ("primary", "robust"):
+        assert result["edges"][basis] == _plain(fc.surface_edges(survivors[basis]))
+        for item in result["edges"][basis].values():
+            assert item["identified"] is (item["class"] == bc.WELL and item["edge"] == be.INTERIOR)
+    assert result["representatives"] == _plain(fc.crystalloid_representatives(result["crystalloid"],
+                                                                               survivors["primary"]))
+
+
+def test_nothing_is_selected_or_approved(result):
+    from clinical_core import migration_authority
+    text = json.dumps(result)
+    assert "FACULTY_APPROVED" not in text and "selected" not in text
+    assert migration_authority.APPROVED_FAMILY_DEFAULTS == () and migration_authority.TRUSTED_CASE_MAPPINGS == ()
+
+
+def test_the_document_blocks_are_generated(result):
+    from clinical_core import blood_fluid_report as report
+    document = DOCUMENT.read_text(encoding="utf-8")
+    for name, render in report.RENDERERS.items():
+        assert report.apply(document, name, render(result)) == document, name
+    assert "1054" in document and "fisiología actual" in document
+
+
+def test_the_robust_crystalloid_set_holds_over_the_certified_blood_keys(result):
+    """A verification after the freeze (P2I-2Y-9's stop condition), outside the frozen inference. FD-BLD-06 reads only
+    the probe keys and the robust set can only shrink as keys are added, so it is unchanged over the certified region
+    iff its points pass FD-BLD-06 at every key: the joint survivors' keys at rates 5 and 6, and the P2I-2V-R region's
+    keys at its other surviving rate, 2.5 (a superset of its survivors)."""
+    import itertools
+    box = be.base_box(be.record())
+    keys = {tuple(float(v) for v in k.split("|"))
+            for rate in ("5.0", "6.0") for k in result["robustness"]["rates"][rate]["survivor_keys"]}
+    assert len(keys) == 45
+    other = sorted(set(box[be.COMMON]) - {5.0, 6.0})
+    assert other == [2.5]
+    keys |= {(b0, rate, target, tau, cap) for rate in other for b0, target, tau, cap in itertools.product(
+        box[fc.B0], box[fc.TARGET], box[fc.TAU], box[fc.CAP])}
+    assert len(keys) == 45 + 36
+    rows = rb.Rows()
+    for key in result["counts"]["survivors"]["robust"]:
+        f0, finf, tau = (float(v) for v in key.split("|"))
+        point = {"F0": f0, "Finf": finf, "tau": tau}
+        for probe in sorted(keys):
+            for case in bc.CASES:
+                assert rows.verdict(case, "FD-BLD-06", fc._crystalloid_values(point, probe)) is True, (key, probe, case)
