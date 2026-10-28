@@ -152,3 +152,98 @@ def test_the_report_stays_downstream():
     assert {"clinical_core/blood_fluid_readiness.py", "clinical_core/blood_fluid_readiness_report.py"} <= set(
         decision_pack.PACK_DIGEST_EXCLUDED)
     assert "clinical_core/blood_fluid_readiness.py" in lactate_slice.slice_sources()
+
+
+# After the freeze commit: the analysis's record --------------------------------------------------------------------
+
+RESULT = ROOT / "docs" / "revision" / "P2I2Z_blood_fluid_readiness.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2I2Z_TAU_Y_PREPARACION_LACTATO.md"
+
+
+def _plain(value):
+    return json.loads(json.dumps(value, sort_keys=True, default=str))
+
+
+@pytest.fixture(scope="module")
+def result():
+    return json.loads(RESULT.read_text(encoding="utf-8"))
+
+
+def test_the_record_carries_the_frozen_digest_and_design(result):
+    assert result["freeze_digest"] == FROZEN_DIGEST and result["revision"] == "P2I-2Z"
+    assert result["record"] == {"P2I-2Y": fr.P2I2Y_DIGEST}
+    assert result["design"] == _plain(fr.design()) and result["rule"] == fr.RULE and result["policy"] == fr.POLICY
+    assert result["contradictions"] == [] and result["keys"]["distinct"] == 48
+
+
+def test_the_classification_region_edges_and_tau_follow_the_frozen_rules(result):
+    p2i2y = fr.record_p2i2y()
+    keys = fr.blood_keys(p2i2y)
+    assert fr.reproduces_p2i2y(result["evaluated"], p2i2y) == []
+    assert result["classified"] == _plain(fr.classify(result["evaluated"], keys))
+    assert result["region"] == fr.robust_region(result["classified"])
+    assert result["edges"] == _plain(fr.region_edges(result["region"]))
+    assert result["tau"] == _plain(fr.tau_result(result["classified"], result["edges"]))
+    for item in result["edges"].values():
+        assert item["identified"] is (item["class"] == bc.WELL and item["edge"] == "INTERIOR")
+    assert all(fr.calibration_status(*(float(v) for v in k.split("|")[:2])) == fr.ACTIVE for k in result["region"])
+
+
+def test_fd_bld_04_and_05_are_recomputed_live_on_the_bag_alone(result):
+    for key, entry in result["evaluated"].items():
+        f0, finf, tau = (float(v) for v in key.split("|"))
+        for case in bc.CASES:
+            row = bc.retained(case, fc.bag(f0, finf, tau))
+            assert {n: bc.passes(n, case, row) for n in ("FD-BLD-04", "FD-BLD-05")} == entry["verdicts"][case], key
+
+
+def test_fd_bld_06_is_recomputed_live_at_the_smallest_margins(result):
+    """For each new tau point, the key with the lowest 1 L peak and the key with the highest 2 L peak (the readings
+    closest to the envelope), in both cases."""
+    from clinical_core import blood_rate_boundary as rb
+    rows = rb.Rows()
+    for point in fr.design():
+        if not point["new"]:
+            continue
+        key = f"{point['F0']:g}|{point['Finf']:g}|{point['tau']:g}"
+        fd06 = result["evaluated"][key]["fd06"]
+        low = min(fd06, key=lambda b: min(fd06[b][c]["reading"]["1000"]["peak"] for c in bc.CASES))
+        high = max(fd06, key=lambda b: max(fd06[b][c]["reading"]["2000"]["peak"] for c in bc.CASES))
+        for label in {low, high}:
+            values = fc._crystalloid_values(point, tuple(float(v) for v in label.split("|")))
+            for case in bc.CASES:
+                assert rows.verdict(case, "FD-BLD-06", values) is fd06[label][case]["pass"] is True, (key, label, case)
+
+
+def test_tau_stays_open_at_120_and_readiness_names_that_blocker(result):
+    assert result["tau"]["tau_90_survives"] and result["tau"]["tau_120_survives"]
+    assert result["tau"]["upper_status"] == "OPEN_UPPER_GRID_EDGE" and result["tau"]["stop"] == fr.OPEN_EDGE_STOP
+    assert result["readiness"]["verdict"] == fr.NOT_READY
+    assert result["readiness"]["blockers"] == ["crystalloid candidate region characterized"]
+    assert result["lactate_input_space"]["status"].startswith("DRAFT")
+
+
+def test_readiness_and_the_input_space_are_recomputed_from_the_record(result):
+    p2i2y = fr.record_p2i2y()
+    summary = result["structural"]["summary"]
+    ready = fr.readiness(p2i2y, result["region"], result["edges"], result["tau"], summary,
+                         result["structural"]["checks"])
+    assert _plain(ready) == result["readiness"]
+    assert _plain(fr.lactate_input_space(p2i2y, result["region"], summary, False)) == result["lactate_input_space"]
+    assert result["lactate_input_space"]["factorization_valid"] is True
+
+
+def test_nothing_is_approved_selected_or_lactate_filtered(result):
+    from clinical_core import calibration, migration_authority
+    assert sum(entry.status == calibration.FACULTY_APPROVED for entry in calibration.REGISTRY.values()) == 0
+    assert migration_authority.APPROVED_FAMILY_DEFAULTS == () and migration_authority.TRUSTED_CASE_MAPPINGS == ()
+    text = json.dumps(result)
+    assert "selected" not in text and "best" not in text and "FD-LAC" not in text
+
+
+def test_the_document_blocks_are_generated(result):
+    from clinical_core import blood_fluid_readiness_report as report
+    document = DOCUMENT.read_text(encoding="utf-8")
+    for name, render in report.RENDERERS.items():
+        assert report.apply(document, name, render(result)) == document, name
+    assert "1054" in document and "fisiología actual" in document and "OPEN_UPPER_GRID_EDGE" in document
