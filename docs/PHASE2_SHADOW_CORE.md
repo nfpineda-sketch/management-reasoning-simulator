@@ -2774,3 +2774,51 @@ Ninguno. `clinical_core` sigue sólo en sombra.
     simulaciones del producto ingenuo.
 - **Sin elegir parámetros ocultos**, sin filtro de lactato y sin gancho en tiempo de ejecución. TD-88 y TD-89 siguen
   abiertas.
+
+## 32. P2I-2AB · Reconstrucción del lactato GI con la fisiología actual (2026-10-28)
+
+- **Base:** `4d45757`. P2I-2AA queda aceptado y cerrado (`5087cf02…`); su prueba de congelamiento fija el módulo byte a
+  byte y el resumen del registro. Informe: `docs/revision/P2I2AB_RECONSTRUCCION_LACTATO.md`; números:
+  `docs/revision/P2I2AB_lactate_rebuild.json`.
+- **Decisión docente:** el borde abierto de τ no bloquea. La preparación pasa a
+  READY_FOR_CURRENT_PHYSIOLOGY_LACTATE_REBUILD_WITH_PROPAGATED_FLUID_UNCERTAINTY; τ no se aprueba y los 12 puntos del
+  cristaloide se propagan sin un τ preferido. La adecuación es déficit efectivo = 0, y FD-LAC-01 y 06 admiten la caída
+  del lactato con un déficit crítico en recuperación.
+- **Congelamiento antes de evaluar:**
+  - `e234a54`: su propia comprobación detuvo la corrida dentro de la fuente de sangre, antes de cualquier lactato.
+    Comparaba las tres posiciones con un conteo de P2I-2W que sólo exploró la superior.
+  - Recongelamiento en `68b92de` (resumen `15d05c32…`): cada conteo certificado se compara donde se exploró; no cambió
+    ninguna regla FD-LAC, ningún rango ni el orden del filtro.
+- **Espacio de origen, sólo con la fisiología actual (la guarda impide leer la región de P2F):**
+  - 87 conjuntos P1 y 458 conjuntos P3, con las tasas 2,5, 5 y 6;
+  - 12 puntos del cristaloide y 1215 puntos del lado del lactato: 6 677 640 candidatos (×3 con ρ);
+  - reproduce exactamente 3648, 3423 y 2268 conjuntos certificados;
+  - con la tasa 2,5 y el relleno (1; 480) entran también las posiciones medias (0,35 / 0,45), que nadie había
+    explorado y cumplen todas las restricciones de sangre vigentes.
+- **Factorización:**
+  - 3178 trayectorias del núcleo, contra 40 millones de corridas ingenuas;
+  - 720 corridas completas coinciden exactamente con ρ 2,5, y con ρ 1 y 3 dentro de 7e-15 y con los mismos
+    veredictos.
+- **Filtro (L1 → L3 → L2):**
+  - 439 291 sobrevivientes (6,6 %);
+  - L1 rechaza 5 551 008, sobre todo por FD-LAC-02 en 57m;
+  - L3 rechaza 558 936, sobre todo por FD-LAC-05;
+  - L2 rechaza 128 405, por FD-LAC-06 en 57m;
+  - ANALYTIC_REJECTION 0 y ninguna trayectoria detenida.
+- **Sesgo de supervivencia:**
+  - el 69 % de los sobrevivientes cumple FD-LAC-04/05 como NOT_EVALUABLE en al menos un caso; todos tienen la entrega
+    de llegada inferior, con la que 2 unidades y la hemostasia no devuelven el déficit a 0 dentro de 120 min;
+  - 135 115 (30,8 %) las cumplen evaluadas en los dos casos (cálculo posterior, fijado por una prueba);
+  - el 16 % tiene una caída sostenida del lactato con déficit crítico persistente después de la hemostasia, que
+    FD-LAC-06 no juzga.
+- **Identificabilidad:**
+  - ninguna dimensión queda bien acotada;
+  - G × g y el par de llegada quedan parcialmente acotados;
+  - τ_D, τ_L, el exceso y la sangre quedan mal identificados, con los bordes abiertos;
+  - g y G, y ρ, no son identificables por separado;
+  - sobreviven los 12 puntos del cristaloide.
+- **Veredicto: LACTATE_CALIBRATION_CONSTRAINTS_SATISFIED**, según la regla congelada. Las salvedades y las decisiones
+  docentes están en el informe (§7.1 y §14). Próximo dominio recomendado, sin empezar: la calibración de la presión y
+  la FC.
+- **Sin elegir parámetros ocultos**, sin calibrar la presión ni la FC, sin colapso, sin migración y sin gancho en tiempo
+  de ejecución. TD-88 y TD-89 siguen abiertas.
