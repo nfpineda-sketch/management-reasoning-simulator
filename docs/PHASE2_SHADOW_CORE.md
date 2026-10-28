@@ -2653,3 +2653,51 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   sondas P2I-2T y las anclas P2I-2U), con una prueba de que ningún otro módulo los importa.
 - **Sin elegir parámetros ocultos**, sin cambiar restricciones, sin filtro de lactato y sin gancho en tiempo de
   ejecución.
+
+## 29. P2I-2Y · Superficie de calibración del cristaloide y robustez de la tasa de sangrado (2026-10-28)
+
+- **Base:** `d233e27`. P2I-2X queda aceptado y cerrado como registro (`668bad99…`), sin regenerar. Informe:
+  `docs/revision/P2I2Y_CRISTALOIDE_Y_TASA.md`; números: `docs/revision/P2I2Y_blood_fluid_calibration.json`.
+- **Registro docente de la tasa:** TESTED_VIABLE_RATE_REGION = {5, 6}; FIRST_TESTED_NONVIABLE_RATE = 7. No es una tasa
+  aprobada y no se densificó entre 6 y 7.
+- **Congelamiento antes de evaluar:** commit `5ae6d70`, resumen `67e5b80a…`. Incluye el diseño de robustez, la grilla,
+  las restricciones y las reglas de bordes.
+- **Robustez de la tasa:**
+  - **Diseño:** tasas 5, 6 y 7, cruzadas con la meta {0,5; 0,75; 1} y τ {120; 240; 480}, es decir, 9 pares (5
+    nuevos). El resto de la sangre va en sus valores supervivientes de P2I-2V-R, en las posiciones compatibles de cada
+    caso. Son 118 098 conjuntos compartidos; el prefiltro exacto de P2I-2X rechaza analíticamente 338 256 candidatos
+    de 57m y 337 770 de 72f.
+  - **Resultado:** sobreviven en conjunto 3423 con 5, 2268 con 6 y 0 con 7, con 0 ilegibles.
+    - La tasa 6 conserva sus dos pares y gana 1|480.
+    - 57m falla U-OUT con 7 en todas sus combinaciones.
+  - **Conclusión: ROBUST_BOUNDARY.** Es condicional a la región de P2I-2V-R, a la banda compatible y a los puntos
+    explorados. El límite lo pone U-OUT, que no lleva bolsa, así que no depende del cristaloide.
+- **Cristaloide:**
+  - **Superficie F0 / Finf / τ** (fracción circulante efectiva inicial, retenida a largo plazo y constante de
+    redistribución):
+    - se mapea exacto a `effective_ml_per_ml = F0`, `transient_share = 1 − Finf/F0` y `leak_tau_min = τ`;
+    - Finf > F0 queda `ANALYTIC_REJECTION` (3 de 75).
+  - **Filtro, sin cambiar FD-BLD-04, 05 ni 06:** quedan 54 con FD-BLD-04 y 17 con FD-BLD-05.
+    - **Primario: 17 puntos (15 bolsas)**, con F0 0,15–0,35, Finf 0–0,15 y τ 15–60.
+    - **Robusto: 3**, con F0 0,2, Finf 0,05–0,1 y τ 30–60.
+    - **Aislado: 15.**
+  - **FD-BLD-06 separa por B0:** la bolsa de menor F0 (aporte inicial 0,15) diluye de menos con B0 5000, y las de F0 ≥ 0,25 diluyen
+    de más con B0 3000.
+  - **Sin producto completo con la sangre:** el primario es igual a FD-BLD-04 ∧ 05 y no puede cambiar. Hay dos
+    verificaciones posteriores al congelamiento, fuera de la inferencia; las dos dan los mismos 3 robustos:
+    - una de la sesión, en el scratchpad: 17 puntos con las 45 claves certificadas de las tasas 5 y 6;
+    - una prueba comprometida: los 3 robustos con esas 45 claves y con las 36 de la región de P2I-2V-R con tasa 2,5.
+- **Bordes:**
+  - F0 sólo queda acotado en el criterio robusto (0,2, interior).
+  - Finf tiene el lado inferior en DOMAIN_LOWER_BOUND.
+  - τ queda abierto: en el primario, a ambos lados; en el robusto, en el borde superior.
+  - Nada se llama «identificado» por estar en un borde de la grilla.
+- **Trayectorias y estado** (sólo contexto):
+  - el aporte inicial va de 0,15 a 0,30 y la dilución pico con 1 L, de 0,23 a 0,46 g/dL;
+  - la misma bolsa sube el gasto mucho más en la posición inferior que en la superior (con 1 L, entre 2 % y 49 %);
+  - no se calibra ninguna regla fija de 1 L → X %.
+- **Lactato:** el refiltrado futuro debe regenerarse desde la fisiología actual (BloodState compartido, DO2 y
+  extracción corregidas, región de sangre docente, superficie del cristaloide y precarga compatible). No debe reutilizar
+  la región histórica de P2F de 1054 conjuntos.
+- **Sin elegir parámetros ocultos**, sin cambiar restricciones, sin filtro de lactato y sin gancho en tiempo de
+  ejecución. TD-88 sigue abierta.
