@@ -2825,3 +2825,44 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   la FC.
 - **Sin elegir parámetros ocultos**, sin calibrar la presión ni la FC, sin colapso, sin migración y sin gancho en tiempo
   de ejecución. TD-88 y TD-89 siguen abiertas.
+
+## 33. P2I-2AC · Deuda de oxígeno acumulada y adecuación de la reanimación L3 (2026-10-28)
+
+- **Base:** `37e5df6`. P2I-2AB queda aceptado como reconstrucción técnicamente válida; su módulo y su registro
+  (`15d05c32…`) quedan fijados por sus pruebas. Informe: `docs/revision/P2I2AC_DEUDA_Y_ADECUACION_L3.md`; números:
+  `docs/revision/P2I2AC_lactate_adequacy.json`.
+- **Decisiones docentes:**
+  - D es deuda de entrega de O2 acumulada: con déficit > 0 no baja; sólo se devuelve, con τ_D, sin déficit;
+  - L3_RESUSCITATION_ADEQUACY: la adecuación sostenida empieza a más tardar en el minuto 90; si no, es un rechazo
+    propio, nunca un fallo de FD-LAC-04;
+  - el sangrado en curso se lee por flujo real; tras la hemostasia el sangrado residual conserva la protección de
+    FD-LAC-06;
+  - la demanda 0,9 / 1,0 / 1,1 es incertidumbre informada, no un filtro;
+  - ρ: banda 2,0–3,0 con 2,5 representativo, y 1 sólo como referencia sintética; no se cuenta;
+  - FD-LAC-04 y 05 sin cambios.
+- **Núcleo:**
+  - corrección mínima en `integration._oxygen_debt`, con 7 invariantes (`test_clinical_core_debt_semantics.py`);
+  - golden, paquete, corte, sondas y anclas regenerados; Contracts v2 IDENTICAL.
+- **Congelamiento antes de evaluar:** `2a9129e`, un solo commit. La factorización se validó antes: 936 corridas
+  completas, exactas con ρ 2,5 y demanda 0,9 / 1,0 / 1,1, y dentro de 2,1e-14 con ρ 1, 2 y 3.
+- **Auditoría de P2I-2AB:**
+  - las 71 661 caídas tras la hemostasia violarían FD-LAC-06 con el sangrado leído por flujo real;
+  - con la D corregida, sólo 120 sobrevivientes de P2I-2AB lo harían.
+- **Filtro (demanda 1,0):**
+  - 345 490 sobrevivientes (5,2 %);
+  - la adecuación L3 rechaza sola 375 720 candidatos;
+  - frente a P2I-2AB se mantienen 42 225, salen 397 066 y entran 303 265;
+  - ANALYTIC_REJECTION 0.
+- **Región:**
+  - todos los sobrevivientes recuperan la adecuación en el minuto 60 y pasan FD-LAC-04;
+  - FD-LAC-05 queda NOT_EVALUABLE en 1512 sobrevivientes de 72f, porque la adecuación se pierde antes de los 120 min
+    con el sangrado residual; 1008 de ellos tienen L120 sobre la envolvente.
+- **Demanda:** de la región, 71 079 candidatos son ROBUST y 274 411 DEMAND-SENSITIVE. Sobreviven 404 371 con ×0,9 y
+  367 703 con ×1,1.
+- **Identificabilidad:** la D corregida no la mejora. G × g pasa a mal identificado y ninguna dimensión queda bien
+  acotada; ρ es invariante.
+- **Representativos:** D nunca baja con déficit leído por el núcleo; sin marcas de inverosimilitud.
+- **Veredicto: LACTATE_PHYSIOLOGY_NOT_READY** — FD-LAC-04/05 se cumplen sólo como NOT_EVALUABLE en algunos
+  sobrevivientes (los 1512 de 72f). No se recomienda ni se empieza otro dominio.
+- **Sin elegir parámetros ocultos**, sin calibrar la presión ni la FC, sin colapso, sin migración y sin gancho en tiempo
+  de ejecución. TD-91 registra la memoria de deuda de FD-LAC-05 y la clase heredada de la deuda de llegada.
