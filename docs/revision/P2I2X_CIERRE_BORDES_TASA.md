@@ -11,6 +11,10 @@ evaluación; congelado antes de evaluar) y `clinical_core/blood_rate_report.py` 
 `docs/revision/P2I2X_blood_rate_boundary.json`. Registros de partida, cerrados: P2I-2V-R (`a9ab10d8…`) y P2I-2W
 (`5257b233…`).
 
+**Ampliado por P2I-2Y (2026-10-28).** P2I-2X quedó aceptado y cerrado; este documento es su registro (`668bad99…`) y
+ya no se regenera. P2I-2Y comprueba la robustez del límite de la tasa frente a la extensión del relleno y calibra el
+cristaloide en F0 / Finf / τ: `docs/revision/P2I2Y_CRISTALOIDE_Y_TASA.md`.
+
 ## 1. Compatibilidad con la verdad del caso (decisiones docentes 1 y 2)
 
 <!-- generado:verdad -->

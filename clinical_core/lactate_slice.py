@@ -488,11 +488,11 @@ def legacy_reference() -> dict:
 
 # The slice ------------------------------------------------------------------------------------
 
-#: P2I-2X-4: render-only reports of later, separate artifacts (P2I-2V-R, P2I-2W, P2I-2X). They are strictly
+#: P2I-2X-4: render-only reports of later, separate artifacts (P2I-2V-R, P2I-2W, P2I-2X, P2I-2Y). They are strictly
 #: downstream: no other clinical_core module imports them (a test checks every module's imports), so they cannot
 #: change the slice or any artifact hashed with these sources; each keeps its own generated-document test.
 DOWNSTREAM_REPORTS = ("clinical_core/blood_filter_report.py", "clinical_core/blood_extension_report.py",
-                      "clinical_core/blood_rate_report.py")
+                      "clinical_core/blood_rate_report.py", "clinical_core/blood_fluid_report.py")
 
 
 def slice_sources() -> dict[str, str]:

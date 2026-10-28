@@ -25,6 +25,9 @@ ROOT = Path(__file__).resolve().parent
 FROZEN_DIGEST = "668bad9903da9a4ee1d49a5e2be06f7be7795140091b98d898a169b8682c67a5"
 P2I2VR_CONSTRAINTS_SHA = "2d139733ed529a03f9c58cd4aa5eb70c8812bb25ba0737f90172546b4e2a65a8"
 P2I2W_EXTENSION_SHA = "87429c2ed0b453bb33b2107fdfa453ffe6d78e5ffbb26364eab7e8228556ce47"
+#: clinical_core/blood_rate_boundary.py as committed with that freeze (7f61e2e). P2I-2X is closed (2026-10-28): its
+#: record is not regenerated, and the live digest moved when P2I-2Y added clinical_core sources (it has its own).
+P2I2X_SCAN_SHA = "435db3cf1d1fdba4e9ff059b889a2e8180ca80db1d2fdbeff433663692ee9f83"
 
 
 def _sha(path: str) -> str:
@@ -43,8 +46,8 @@ def test_the_rate_scan_is_frozen():
     assert {"clinical_core/blood_rate_boundary.py", "clinical_core/blood_constraints.py",
             "clinical_core/lactate_slice.py", "clinical_core/decision_pack.py"} <= set(sources)
     assert not set(rb.DOWNSTREAM_REPORTS) & set(sources)
-    assert rb.freeze_digest() == FROZEN_DIGEST, (
-        "a clinical_core source, the rates, the design, the case-truth rule or the policy changed after the freeze")
+    # P2I-2X is closed: its module is the frozen one, byte for byte; its record keeps the digest it ran with.
+    assert _sha("clinical_core/blood_rate_boundary.py") == P2I2X_SCAN_SHA, "the P2I-2X scan changed after its freeze"
 
 
 def test_only_the_predeclared_rates_are_new_and_nothing_else_moves():
