@@ -2701,3 +2701,39 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   la región histórica de P2F de 1054 conjuntos.
 - **Sin elegir parámetros ocultos**, sin cambiar restricciones, sin filtro de lactato y sin gancho en tiempo de
   ejecución. TD-88 sigue abierta.
+
+## 30. P2I-2Z · Borde de τ del cristaloide y preparación del lactato con la fisiología actual (2026-10-28)
+
+- **Base:** `5c949d6`. P2I-2Y queda aceptado y cerrado como registro (`67e5b80a…`); su prueba de congelamiento pasa a
+  fijar el módulo byte a byte y el resumen del registro. Informe: `docs/revision/P2I2Z_TAU_Y_PREPARACION_LACTATO.md`;
+  números: `docs/revision/P2I2Z_blood_fluid_readiness.json`.
+- **Decisiones docentes:**
+  - la tasa queda ROBUST_BOUNDARY ({5, 6}; 7), información candidata, sin volver a simularla;
+  - la región ROBUST de P2I-2Y es la base candidata preferida del cristaloide;
+  - Finf < F0 para los candidatos activos del cristaloide isotónico estándar: Finf = F0 queda REFERENCE_ONLY.
+- **Congelamiento antes de evaluar:** commit `a927301`, resumen `e89a248e…`. Incluye el diseño, la regla, el criterio
+  robusto, la regla de parada, las comprobaciones estructurales, los criterios de preparación y las reglas del espacio
+  de entrada.
+- **τ:** F0 0,2 × Finf {0,05; 0,1} × τ {60; 90; 120}, con τ 60 reproduciendo P2I-2Y.
+  - FD-BLD-06 se lee en 48 claves de sangre (las 14 sondas de P2I-2Y y las 45 claves certificadas de las tasas 5 y 6),
+    en los dos casos.
+    - Es exhaustivo sólo sobre las 5 claves que lee FD-BLD-06, no el producto con los 5691 conjuntos de sangre.
+    - Son 576 filas: una interpretación declarada de «estados representativos y de borde».
+  - **Resultado:** los 6 puntos son robustos y τ 120 sobrevive: τ queda **OPEN_UPPER_GRID_EDGE** y la extensión se
+    detiene a la espera de la docencia.
+  - **Región candidata:** 7 puntos, con F0 0,2, Finf 0,05–0,1 y τ 30–120.
+- **Comprobaciones estructurales, en 6 estados fijos:**
+  - la cinética del lactato y la de la deuda no mueven la hemodinámica;
+  - la frecuencia intrínseca no mueve nada de lo que se lee;
+  - ρ se cancela en D y en el lactato con la banda re-anclada, y sólo mueve el índice de entrega que lee la adecuación.
+- **Preparación: NOT_READY**, con un único bloqueo: la región del cristaloide tiene el lado superior de τ abierto. Los
+  otros seis criterios se cumplen.
+- **Espacio de entrada del lactato:** queda como borrador, sin ejecutar y sin la región de 1054 de P2F.
+  - Se preparó aunque el veredicto es NOT_READY: es una desviación declarada, y la docencia decide si queda.
+  - Recuentos: de 1 020 600 a 10 333 575 candidatos.
+  - Diseño factorizado: de 2880 a 13 770 simulaciones del núcleo, contra 18 a 186 millones con el producto ingenuo.
+  - Los mínimos son holgados: el mínimo ajustado da al menos 1 913 625 candidatos y 3510 simulaciones.
+- **Prueba permanente:** no se agrega; la comprobación de 17 × 45 del scratchpad fue corroborativa.
+- **Dependencias:** la carga transitiva viene del arnés de sangre, que usa esos módulos; quitar la importación directa
+  no descarga nada. Queda registrada como deuda (TD-89).
+- **Sin elegir parámetros ocultos**, sin filtro de lactato y sin gancho en tiempo de ejecución. TD-88 sigue abierta.
