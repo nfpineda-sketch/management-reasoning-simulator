@@ -2737,3 +2737,35 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Dependencias:** la carga transitiva viene del arnés de sangre, que usa esos módulos; quitar la importación directa
   no descarga nada. Queda registrada como deuda (TD-89).
 - **Sin elegir parámetros ocultos**, sin filtro de lactato y sin gancho en tiempo de ejecución. TD-88 sigue abierta.
+
+## 31. P2I-2AA · Cierre del borde de τ del cristaloide y semántica de la preparación del lactato (2026-10-28)
+
+- **Base:** `a109c19`. P2I-2Z queda aceptado y cerrado (`e89a248e…`), con su NOT_READY; su prueba de congelamiento
+  fija el módulo byte a byte y el resumen del registro. Informe: `docs/revision/P2I2AA_CIERRE_TAU_Y_SEMANTICA_LACTATO.md`;
+  números: `docs/revision/P2I2AA_blood_fluid_tau_closure.json`.
+- **Decisiones docentes registradas, sin aplicarlas a ningún filtro:**
+  - la adecuación del oxígeno para el lactato es déficit efectivo = 0 (ADEQUATE y COMPENSATED), sin exigir la entrega
+    normal;
+  - el futuro espacio del lactato incluye las tasas 2,5, 5 y 6;
+  - los modificadores de L3 (0,8 y 0,1) quedan FIXED_PROVISIONAL_FOR_PRIMARY_LACTATE_ANALYSIS y
+    FACULTY_DECISION_PENDING (FD-24 y FD-25), sin rango inventado.
+- **Congelamiento antes de evaluar:** commit `83996c5`, resumen `263efaba…`.
+- **τ:** F0 0,2 × Finf {0,05; 0,1} × τ {120…240}; τ 120 reproduce P2I-2Z.
+  - Con Finf 0,1 sobreviven 120 y 150; desde 180 falla FD-BLD-05 a los 120 min.
+  - Con Finf 0,05 sobrevive hasta 240, con un margen de 0,005.
+  - Resultado: **TAU_REMAINS_OPEN_AT_240**, y la extensión se detiene.
+- **Identificabilidad práctica: CONSTRAINT_BOUNDED_BEYOND_TESTED_DOMAIN.** El límite τ → ∞ (Finf = F0) falla
+  FD-BLD-05, así que existe una cota finita más allá de 240. Dentro del horizonte, Finf y τ se confunden: lo que acotan
+  las restricciones es la curva de lo retenido.
+- **Soporte del cristaloide:** 12 puntos, con F0 0,2, Finf 0,05–0,1 y τ 30–240.
+  - Todos pasan FD-BLD-06 en las 36 claves de la tasa 2,5.
+  - La sustitución no omite ninguna de las 288 claves exploradas.
+- **Preparación: NOT_READY**, con un único bloqueo: el soporte del cristaloide, porque τ queda abierto con una
+  restricción que depende de una cota más allá de 240. Los otros siete criterios se cumplen.
+- **Espacio de origen del lactato:** DRAFT — NOT EXECUTABLE UNTIL BLOOD/FLUID READINESS = READY, protegido por
+  `certified_input`.
+  - Recuentos: de 1 569 780 a 10 628 820 candidatos.
+  - Diseño factorizado: de 2102 a 10 692 trayectorias hemodinámicas únicas, contra 84,8 a 574 millones de
+    simulaciones del producto ingenuo.
+- **Sin elegir parámetros ocultos**, sin filtro de lactato y sin gancho en tiempo de ejecución. TD-88 y TD-89 siguen
+  abiertas.

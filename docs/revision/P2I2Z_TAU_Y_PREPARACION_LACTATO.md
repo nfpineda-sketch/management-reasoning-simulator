@@ -223,6 +223,10 @@ Tres representativos de P2I-2V-R × dos casos, posición superior, 120 min sin t
 
 ## 6. Espacio de entrada del próximo paquete del lactato (P2I-2Z-8, borrador)
 
+**DRAFT — NOT EXECUTABLE UNTIL BLOOD/FLUID READINESS = READY** (decisión docente, P2I-2AA). No es una entrada
+certificada: el espacio vigente está en `docs/revision/P2I2AA_CIERRE_TAU_Y_SEMANTICA_LACTATO.md`, y sólo puede leerse
+como entrada con `blood_fluid_tau_closure.certified_input`, que lo rechaza mientras el veredicto no sea READY.
+
 <!-- generado:lactato -->
 Estado: **BORRADOR (no se cumple la preparación)**. No se ejecuta.
 
