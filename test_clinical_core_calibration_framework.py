@@ -36,11 +36,12 @@ from clinical_core.shadow import GOLDEN
 #: HISTORICAL_PROBES (bands.py): only harness_sources changed; the rules and bands did not. P2I-2W-8 labelled the
 #: Level-1 checks that write V or Hb directly as SYNTHETIC_STATE_PERTURBATION (LEVEL1_DIRECT_WRITES) and renamed
 #: check_hr's "bleed" run to "volume_loss": the rules component (check_hr's source) and harness_sources
-#: (calibration.py) changed; no rule, probe size, assertion or band did.
+#: (calibration.py) changed; no rule, probe size, assertion or band did. P2I-2X widened NOT_EVIDENCE_FOR to the
+#: faculty's list (2026-10-28): only harness_sources (calibration.py) changed.
 FROZEN_COMPONENTS = {
     "rules": "9b3818ed3599a52a8a18a98c15882f1179bd1b63a5c1778744bec977979b396a",
     "bands": "99ca99f1b0d032056cfdabb90e1354683ef5ba093e896a0d5c10bc9c2ca192ca",
-    "harness_sources": "ccf98f7dd55d885db3dc48da77956220cd4ed6bb658278bbb4e544d5859abdc6",
+    "harness_sources": "1277fd58c497f946b098455b1773270f7e92290d43d2532f19f5efff4f5db56a",
     "migration_sources": "6033f4437627ed1f78c2c2ea03764986572639d94596982963a44f5964a2cb29",
     "authority_registries": "e305793eefead76fb733761f3305148e3df85aa9074445d94f051cb5709d2314",
     "gi_reference": "159fdc558c713a743261ab82075dc2574f7389f017a81a80f95f0d7207e0a9bd",
@@ -49,7 +50,7 @@ FROZEN_COMPONENTS = {
     "input_adapter_sources": "e83dca618fdaaa9239d861e1e1d6928dc703bfe33206a05cef44a5b0e9495bc5",
     "scenario_inputs": "afb2051e7fa04f1765aaf920c82f51dc6675d19bcbcb425c2ee581d8fa60d347",
 }
-FROZEN_DIGEST = "bd14a9ec1849d6866a9ca782a1a1e23cb4d37e711d2edaed95bc1c3671505de5"
+FROZEN_DIGEST = "23b064e9bba1d6edcdcc4bb6aa39bf9949ddc469fbaf838c42afbeae2ed4ac14"
 
 
 # P2F-2 / P2F-5 -- repository truth, candidate inference, faculty decision ---------------------

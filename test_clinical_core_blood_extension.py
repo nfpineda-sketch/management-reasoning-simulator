@@ -21,6 +21,9 @@ ROOT = Path(__file__).resolve().parent
 #: The P2I-2W freeze: the extension points, the design, the evaluation policy and every clinical_core source but
 #: the two reports, committed before any extended candidate was evaluated.
 FROZEN_DIGEST = "5257b2336caa76819bdc1f5f3a946dc440dbff88c9e101d9ed25c38287772f6e"
+#: clinical_core/blood_extension.py as committed with that freeze (6a0d3b8). P2I-2W is closed (2026-10-28): its
+#: record is not regenerated, and the live digest moved when P2I-2X added clinical_core sources (it has its own).
+P2I2W_EXTENSION_SHA = "87429c2ed0b453bb33b2107fdfa453ffe6d78e5ffbb26364eab7e8228556ce47"
 #: clinical_core/blood_constraints.py as P2I-2V-R froze it (7c073ad).
 P2I2VR_CONSTRAINTS_SHA = "2d139733ed529a03f9c58cd4aa5eb70c8812bb25ba0737f90172546b4e2a65a8"
 COMMON, POS57, POS72 = be.COMMON, be.POSITION["gi_bleed_57m"], be.POSITION["gi_bleed_72f"]
@@ -46,8 +49,10 @@ def test_the_extension_is_frozen():
     assert {"clinical_core/blood_constraints.py", "clinical_core/blood_extension.py",
             "clinical_core/calibration.py"} <= set(sources)
     assert not set(be.FREEZE_EXCLUDED) & set(sources)
-    assert be.freeze_digest() == FROZEN_DIGEST, (
-        "a clinical_core source, the extension, the design or the policy changed after the freeze: record why")
+    # P2I-2W is closed: the module that holds its rule, points, design and policy is the frozen one, byte for byte;
+    # its record (below) keeps the digest it ran with.
+    assert hashlib.sha256((ROOT / "clinical_core" / "blood_extension.py").read_bytes()).hexdigest() == (
+        P2I2W_EXTENSION_SHA), "the P2I-2W extension changed after its freeze: record why"
 
 
 def test_the_record_is_the_committed_p2i2vr_filter(data):
@@ -263,9 +268,11 @@ def test_nothing_is_selected_approved_or_lactate_filtered(result):
 
 
 def test_the_document_blocks_are_generated(result):
+    """The record's numbers stay generated from its JSON; its Level-1 audit block is the record as it ran (the live
+    registry moved on in P2I-2X, which owns the current audit)."""
     from clinical_core import blood_extension_report as report, calibration
     document = DOCUMENT.read_text(encoding="utf-8")
-    for block, rendered in (("regla", report.render_rule(result)), ("extension", report.render_extension(result)),
-                            ("auditoria", report.render_audit())):
+    for block, rendered in (("regla", report.render_rule(result)), ("extension", report.render_extension(result))):
         assert report.apply(document, block, rendered) == document, block
     assert set(report.AUDIT_ES) == set(calibration.LEVEL1_DIRECT_WRITES)
+    assert "Ampliado por P2I-2X" in document and FROZEN_DIGEST in document

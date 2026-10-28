@@ -522,10 +522,11 @@ FROZEN_RULES: Mapping[str, Rule] = {
 #: perturbs the internal coordinate to test a downstream rule, independently of haemorrhage: it may keep writing
 #: it, and it is never evidence about haemorrhage, Hb or DO2 physiology (NOT_EVIDENCE_FOR). A
 #: PHYSIOLOGICAL_HAEMORRHAGE_PROBE claims blood loss and must go through the shared blood state; no active
-#: check is one. Labels only: no rule, probe size or assertion changed.
+#: check is one. Labels only: no rule, probe size or assertion changed. P2I-2X: the faculty confirmed the label
+#: (2026-10-28) and listed what these checks are never evidence about.
 SYNTHETIC_STATE_PERTURBATION = "SYNTHETIC_STATE_PERTURBATION"
 PHYSIOLOGICAL_HAEMORRHAGE_PROBE = "PHYSIOLOGICAL_HAEMORRHAGE_PROBE"
-NOT_EVIDENCE_FOR = ("haemorrhage", "Hb", "DO2")
+NOT_EVIDENCE_FOR = ("blood loss", "haemorrhage severity", "Hb", "DO2", "refill", "PRBC", "clinical case calibration")
 LEVEL1_DIRECT_WRITES: Mapping[str, Mapping[str, object]] = {
     "RR1": {"function": "check_rr1", "writes": "V", "semantics": SYNTHETIC_STATE_PERTURBATION,
             "how": "V -8 per minute for 40 min, then +900 at minute 40, from the synthetic probe arrival",

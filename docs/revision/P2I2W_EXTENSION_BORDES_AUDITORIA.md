@@ -10,6 +10,11 @@ Código: `clinical_core/blood_extension.py` (regla, puntos, diseño, política y
 y `clinical_core/blood_extension_report.py` (sólo este informe). Números: `docs/revision/P2I2W_blood_extension.json`.
 Registro de partida: `docs/revision/P2I2VR_RESTRICCIONES_REVISADAS_FILTRO.md` (P2I-2V-R, cerrado, `a9ab10d8…`).
 
+**Ampliado por P2I-2X (2026-10-28).** P2I-2W quedó aceptado y cerrado. Este documento es su registro, tal como corrió
+con el congelamiento `5257b233…`, y ya no se regenera. P2I-2X aplica la compatibilidad con la verdad del caso a las
+posiciones 0,65 / 0,75, densifica la tasa común entre 5 y 10 y amplía la taxonomía de bordes:
+`docs/revision/P2I2X_CIERRE_BORDES_TASA.md`.
+
 ## 1. Encargo docente (2026-10-27)
 
 - P2I-2V-R queda aceptado y cerrado: con la tasa común sobreviven 4896 candidatos.

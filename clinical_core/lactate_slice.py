@@ -488,12 +488,20 @@ def legacy_reference() -> dict:
 
 # The slice ------------------------------------------------------------------------------------
 
+#: P2I-2X-4: render-only reports of later, separate artifacts (P2I-2V-R, P2I-2W, P2I-2X). They are strictly
+#: downstream: no other clinical_core module imports them (a test checks every module's imports), so they cannot
+#: change the slice or any artifact hashed with these sources; each keeps its own generated-document test.
+DOWNSTREAM_REPORTS = ("clinical_core/blood_filter_report.py", "clinical_core/blood_extension_report.py",
+                      "clinical_core/blood_rate_report.py")
+
+
 def slice_sources() -> dict[str, str]:
-    """Every shadow-core source, by hash, with no exclusion: the core, the harness, the pack it
-    reuses, this module and the renderers. A change to any of them makes the slice stale."""
+    """Every shadow-core source, by hash: the core, the harness, the pack it reuses, this module and its own
+    renderers. Only DOWNSTREAM_REPORTS are left out. A change to any other makes the slice stale."""
     package = calibration.REPOSITORY / "clinical_core"
     paths = sorted(path.relative_to(calibration.REPOSITORY).as_posix() for path in package.rglob("*.py")
-                   if "__pycache__" not in path.parts and path.is_file() and not path.name.startswith("."))
+                   if "__pycache__" not in path.parts and path.is_file() and not path.name.startswith(".")
+                   and path.relative_to(calibration.REPOSITORY).as_posix() not in DOWNSTREAM_REPORTS)
     return {path: hashlib.sha256(calibration._source_bytes(path)).hexdigest() for path in paths}
 
 

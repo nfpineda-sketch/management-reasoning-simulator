@@ -509,7 +509,8 @@ def test_every_level_1_direct_write_is_a_labelled_synthetic_perturbation():
         assert writers[name] == (entry["function"], {entry["writes"]}), name
         assert entry["semantics"] == calibration.SYNTHETIC_STATE_PERTURBATION, name
         assert entry["why"] and entry["how"], name
-    assert calibration.NOT_EVIDENCE_FOR == ("haemorrhage", "Hb", "DO2")
+    assert calibration.NOT_EVIDENCE_FOR == ("blood loss", "haemorrhage severity", "Hb", "DO2", "refill", "PRBC",
+                                            "clinical case calibration")
     assert "bleed" not in inspect.getsource(calibration.check_hr)
     worded = re.compile(r"bleed|haemorrh|hemorrh|blood loss", re.IGNORECASE)
     for rule in ("RR1", "HR1", "HR2", "HR3", "HR4", "PL1", "PL2", "PL3", "PL4", "DM1"):

@@ -62,11 +62,24 @@ def p2f_rejection(candidate: GICandidate) -> str | None:
     the frozen acceptance on both kinds of rejection and on admissible points.
     """
     if candidate.preload == "lower":
-        return "HR1-HR4: the HR1 probe empties 57m's ventricle at preload position 0.2 (invalid state)"
+        return ("HR1-HR4: the HR1 probe empties 57m's ventricle at preload position 0.2 (invalid state); a "
+                "structural harness outcome of a SYNTHETIC_STATE_PERTURBATION, not clinical case evidence")
     if candidate.profile.get("debt_clearance_tau_min") == 30.0 and candidate.debt == "upper":
         return ("HR1 (gi_bleed_72f): an arrival debt of 60 with a 30-min repayment; HR falls during the "
                 "probe's synthetic volume loss")
     return None
+
+
+#: P2I-2X-3: what a P2F rejection is evidence of. Both rest on HR1, a SYNTHETIC_STATE_PERTURBATION (V alone: no red
+#: cells, no blood-state haemorrhage, no refill, no Hb change): they are structural outcomes of the frozen harness,
+#: never clinical case-calibration evidence (calibration.NOT_EVIDENCE_FOR). They still define P2F's structurally
+#: admissible design (nothing is readmitted); whether 57m's position 0.2 is clinically excluded is read elsewhere.
+STRUCTURAL_HARNESS_OUTCOME = "STRUCTURAL_HARNESS_OUTCOME"
+
+
+def p2f_evidence(candidate: GICandidate) -> str | None:
+    """The kind of evidence a P2F rejection is (None: not rejected)."""
+    return STRUCTURAL_HARNESS_OUTCOME if p2f_rejection(candidate) else None
 
 
 def admissible(quick: bool = False) -> list[GICandidate]:
@@ -720,7 +733,8 @@ PACK_DIGEST_EXCLUDED = ("clinical_core/decision_pack_markdown.py", "clinical_cor
                         "clinical_core/haemorrhage_probes.py", "clinical_core/blood_probes.py",
                         "clinical_core/blood_anchors.py", "clinical_core/blood_constraints.py",
                         "clinical_core/blood_filter_report.py", "clinical_core/blood_extension.py",
-                        "clinical_core/blood_extension_report.py")
+                        "clinical_core/blood_extension_report.py", "clinical_core/blood_rate_boundary.py",
+                        "clinical_core/blood_rate_report.py")
 
 
 def pack_sources() -> dict[str, str]:
