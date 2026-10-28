@@ -56,8 +56,13 @@ Espacio fuente reutilizado de P2I-2AB: 87 conjuntos P1, 458 conjuntos P3, 12 pun
   - siempre dentro del límite del canal (nunca negativa).
 - **Convención temporal, sin cambios:** cada minuto lee el déficit que lee el integrador, es decir, la entrega al
   inicio del minuto contra la demanda del minuto. Como la demanda es constante en estos casos, en el primer minuto de
-  un tramo crítico D todavía puede devolver un paso: ese minuto empezó sin déficit. Se informa en §8 y no aparece en
-  ningún otro minuto.
+  un tramo crítico D todavía puede devolver un paso: ese minuto empezó sin déficit. En ningún otro minuto D baja con
+  déficit (§8).
+- **Alcance del retardo de inicio** (revisión adversarial, comprobado en los representativos):
+  - toda llegada con la entrega «superior» empieza exactamente en la entrega crítica (déficit 0 en el empate);
+  - en el minuto 1, D devuelve D0 / τ_D (60 → 58 en HIGH) y después acumula;
+  - en L1, D queda por debajo de su valor de llegada durante 17 a 38 minutos críticos, sin bajar nunca en ellos;
+  - en la región son 95 698 de 345 490 candidatos (27,7 %).
 - **Siete pruebas de invariantes** (`test_clinical_core_debt_semantics.py`, con ρ 1 y 2,5):
   - con déficit crítico que empeora, estable o que mejora sin dejar de ser crítico, D no baja;
   - con déficit 0 puede devolverse, y con adecuación sostenida baja en forma gradual con τ_D;
@@ -69,7 +74,8 @@ Espacio fuente reutilizado de P2I-2AB: 87 conjuntos P1, 458 conjuntos P3, 12 pun
   - golden, paquete, corte, sondas y anclas regenerados; el golden por Contracts v2 sigue IDENTICAL;
   - las pruebas vivas de P2I-2AB leen ahora sólo lo que la corrección no tocó.
 - **Reevaluación de la factorización:**
-  - la hemodinámica no lee D, τ_D ni las ganancias;
+  - la entrega, la demanda, la hemostasia, el flujo y la detención no leen D, τ_D ni las ganancias;
+  - la FC y la FR sí la leen (el impulso simpático lee D, y la FR lee el lactato), pero FD-LAC no las lee (§2.1);
   - las trayectorias se simulan una vez por escenario y entrada de sangre, ahora con el flujo real de sangrado de
     cada minuto (el volumen perdido del estado de sangre compartido);
   - D y el lactato se posprocesan con la recurrencia corregida;
@@ -97,6 +103,25 @@ Estados que ejerció la muestra: L1 FD-LAC-01 FAIL 27; L1 FD-LAC-01 PASS 207; L1
 | Filas de sangre reutilizadas de P2I-2AB (no recalculadas) | 5 226 |
 | Rechazos analíticos | 0 |
 <!-- /generado:deuda -->
+
+### 2.1 Lectura: la nueva D cambia la FC y la FR
+
+La revisión adversarial lo encontró, y se comprobó con los representativos (núcleo nuevo contra la D anterior en
+memoria). El texto congelado de `lactate_adequacy.py` dice «haemodynamics do not read D»: vale para lo que la
+factorización usa, no para la FC (TD-91).
+
+- **La entrega es idéntica** en las 12 corridas, así que la factorización sigue valiendo.
+- **En L1 la FC sube**, porque la deuda ya no se devuelve con déficit:
+  - HIGH 57m a los 120′: 149,2 contra 117,5 lpm (diferencia máxima 31,8);
+  - HIGH 72f: 128,6 contra 99,5;
+  - MID: hasta 15.
+- **En L1 la FR sube hasta 10,4/min** (HIGH 72f: 35,7 contra 25,3).
+- **En L3 casi no cambian** (≤ 0,2 lpm).
+- **HR1:** el rechazo histórico de P2F (deuda de llegada 60 con τ_D 30) ya no se reproduce en vivo;
+  `decision_pack.p2f_rejection` queda como registro escrito de P2F.
+- **Tablas de FC de P2G §3, regeneradas:** sin tratamiento en 57m, la mediana de la FC a 120′ pasa de 142,3 a 147,9 y
+  el máximo de 148,5 a 169,6.
+- **Alcance:** nada de esto se calibra ni se juzga aquí. Hay que tenerlo en cuenta antes de abrir el dominio de la FC.
 
 ## 3. Auditoría de las 71 661 caídas tras la hemostasia (P2I-2AC-2)
 
@@ -341,8 +366,12 @@ Filtro con demanda ×1,1 (sólo informa):
   - motivo: la entrega deja de ser adecuada antes de los 120 min, con sangrado residual;
   - 1008 de ellos tienen L120 por encima de la envolvente de 72f (3,5 mmol/L);
   - es el único bloqueo del veredicto (§10).
-- **Toda la adecuación tras T* incluye minutos COMPENSATED:** la extracción con ρ 2,5 sostiene la demanda con una
-  entrega de 0,5 a 0,8.
+- **Toda la adecuación tras T* incluye minutos COMPENSATED:** la extracción con ρ 2,5 sostiene la demanda. La entrega va
+  de 0,40 a 0,83 entre los minutos 60 y 90 de L3, sobre los pares (conjunto P3, nivel de entrega) presentes en la región
+  (sonda de la revisión).
+- **Vía latente sin casos:** una L3 adecuada con FD-LAC-04/05 NOT_EVALUABLE puede darse si el primer tramo adecuado
+  que sigue en curso en la hemostasia se corta antes de 30 min y otro empieza antes del minuto 90. En el registro no
+  hay ninguno (T* = inicio = 60 en todos), y la comprobación del veredicto lo detectaría.
 - **Caída a los 30 min de T*:** mediana del 8,1 % (57m) y del 6,4 % (72f). Los umbrales de 5, 10 y 15 % son sólo
   diagnóstico.
 - **Frente a P2I-2AB** se mantienen 42 225 candidatos, salen 397 066 y entran 303 265. La corrección de D reordena la
@@ -389,9 +418,9 @@ Filtro con demanda ×1,1 (sólo informa):
   - todo lo demás conserva su clase.
 - **Siguen mal identificados:** τ_D, τ_L, el exceso y la deuda de llegada.
 - **Par de llegada:** sigue parcialmente acotado; no sobrevive deuda inferior con entrega superior.
+- **La demanda queda mal identificada:** sobreviven los tres factores.
 - **No identificables por separado:**
   - g y G (sólo llegan como G × g y G × D0);
-  - la demanda: sobreviven los tres factores;
   - ρ, que es invariante (se cancela con la razón de llegada reanclada) y no se cuenta como candidato. Se comprobó con
     corridas completas con ρ 2,0 y 3,0, y con 1 como referencia sintética.
 
@@ -514,7 +543,9 @@ medio y el último. Cada uno se vuelve a correr con el núcleo completo (57m y 7
 
 - **D:** en ningún representativo D baja en un minuto en el que el núcleo leyó déficit. Las únicas excepciones con
   la lectura del estado final son el minuto 1 de L1 en HIGH y MID: llegan COMPENSATED en la entrega crítica y el
-  minuto 1 empezó sin déficit.
+  minuto 1 empezó sin déficit. Después, D queda por debajo de su valor de llegada durante 17 a 38 minutos críticos
+  (§2).
+- **FC y FR:** cambian en L1 por la nueva D (§2.1); este paquete no las juzga.
 - **Cada corrida completa coincide exactamente con la factorización.**
 - **No aparece ninguna marca de inverosimilitud:** ni déficit crítico que empeora con caída grande del lactato, ni
   normalización instantánea, ni valores incompatibles con la supervivencia.
@@ -602,8 +633,16 @@ Próximo dominio: ninguno (el veredicto no es READY)
   sin desacuerdos).
 - **Corrida:** sobre `2a9129e`, 83 s con 4 procesos, cada uno con la guarda P2F y el bloqueo del legado. El registro
   es el del módulo; sólo el mapeo fue paralelo, y `--run` lo reproduce en un solo proceso.
-- **Entrega:** un commit ejecutable (informe, pruebas sobre el registro, JSON y documentación), sobre el que corre la
-  certificación completa.
+- **Entrega:** un commit ejecutable (`1f9e645`: informe, pruebas sobre el registro, JSON y documentación), sobre el
+  que corrió la certificación completa, y uno posterior sólo de documentación y de una prueba.
+- **Revisión adversarial (una sola):**
+  - sin BLOCKER; reprodujo el JSON en un solo proceso, idéntico, y confirmó la semántica de D, la adecuación L3, el
+    flujo real, la demanda, ρ y las guardas;
+  - su hallazgo MAJOR es de divulgación: la nueva D cambia la FC y la FR en L1 (§2.1);
+  - sus MINOR (alcance del retardo de inicio y textos del estado estacionario) quedan en §2, §13 y TD-91;
+  - sus NIT (rango de la entrega, clase de la demanda, vía latente sin casos y rama inalcanzable) quedan corregidos
+    en este informe o en TD-91;
+  - se restauró la comprobación HR1 que una adaptación de prueba había quitado sin decirlo.
 
 ## 12. Qué no hace
 
@@ -621,8 +660,16 @@ Próximo dominio: ninguno (el veredicto no es READY)
   - evaluar FD-LAC-05 igual (1008 caerían fuera de la envolvente);
   - aceptar NOT_EVALUABLE en ese caso.
 - **Convención temporal de D:** en el primer minuto de un tramo crítico D puede devolver un paso, porque el minuto
-  empezó sin déficit. ¿Basta así, o la docencia quiere otra convención? Cambiarla tocaría la definición del déficit
-  que lee D.
+  empezó sin déficit.
+  - Las llegadas con entrega «superior» empiezan en el empate exacto: D queda bajo su valor de llegada 17 a 38
+    minutos críticos.
+  - Afecta al 27,7 % de la región.
+  - ¿Basta así, o la docencia quiere otra convención? Cambiarla tocaría la definición del déficit que lee D.
+- **FC y FR con la nueva D:** en L1 la FC sube hasta 31,8 lpm y la FR hasta 10,4/min; el rechazo HR1 de P2F ya no
+  se reproduce (§2.1). ¿Se acepta antes de abrir el dominio de la FC?
+- **Papel de τ_D:** sin estado estacionario de D, τ_D ya sólo fija la devolución y divide la producción de lactato
+  (k = G / (τ_D τ_L)). Con la misma D, a mayor τ_D, menos lactato. ¿Debe seguir dividiéndola? Los textos de
+  procedencia que suponían el estado estacionario quedan en TD-91.
 - **Memoria de deuda de FD-LAC-05** (`debt_memory_coefficient`, sólo informativa): supone devolución desde la
   llegada. Con la D corregida es una cota inferior cuando hay déficit (TD-91).
 - **Demanda:** la región depende fuertemente de ±10 %; sólo 71 079 candidatos son robustos.

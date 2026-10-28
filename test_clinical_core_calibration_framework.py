@@ -235,6 +235,7 @@ def test_the_hr_rules_read_the_candidates_full_declared_arrival():
     rates = [[item.pulse_rate_bpm for item in calibration.run(arrival, loss, 30, replace(DEFAULT_PROFILE, **profile))
               .derived()] for arrival in (arrivals["gi_bleed_72f"], midpoint)]
     assert rates[0] != rates[1]
+    assert "HR1-HR4" not in calibration.gi_physiology(calibration.GICandidate(profile))["failed"]
 
 
 def test_dm1_runs_through_the_integrator_and_reads_the_profile():

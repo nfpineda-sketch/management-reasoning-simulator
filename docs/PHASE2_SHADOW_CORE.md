@@ -2864,5 +2864,10 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Representativos:** D nunca baja con déficit leído por el núcleo; sin marcas de inverosimilitud.
 - **Veredicto: LACTATE_PHYSIOLOGY_NOT_READY** — FD-LAC-04/05 se cumplen sólo como NOT_EVALUABLE en algunos
   sobrevivientes (los 1512 de 72f). No se recomienda ni se empieza otro dominio.
+- **Revisión adversarial:** sin BLOCKER. Su hallazgo MAJOR, que la nueva D cambia la FC y la FR en L1 (hasta +31,8
+  lpm y +10,4/min, con la entrega idéntica), queda informado; el rechazo HR1 de P2F ya no se reproduce en vivo. El
+  retardo de inicio (27,7 % de la región) y los textos que suponían el estado estacionario de D quedan en el informe y
+  en TD-91.
 - **Sin elegir parámetros ocultos**, sin calibrar la presión ni la FC, sin colapso, sin migración y sin gancho en tiempo
-  de ejecución. TD-91 registra la memoria de deuda de FD-LAC-05 y la clase heredada de la deuda de llegada.
+  de ejecución. TD-91 registra la memoria de deuda de FD-LAC-05, la clase heredada de la deuda de llegada y los textos
+  congelados que la nueva D dejó desactualizados.

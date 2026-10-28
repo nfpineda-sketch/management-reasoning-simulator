@@ -776,7 +776,7 @@ imposible en un paciente real.
 
 | Opción | Consecuencia |
 |---|---|
-| `NO_REACHABILITY_RULE` | se aceptan llegadas que el modelo no habría producido; en ellas la deuda se repaga durante el sangrado y la FC baja (HR1 las sigue rechazando) |
+| `NO_REACHABILITY_RULE` | se aceptan llegadas que el modelo no habría producido; en ellas la deuda se repaga durante el sangrado y la FC baja (HR1 las rechazaba; desde P2I-2AC la deuda no se repaga con déficit y HR1 ya no las rechaza en vivo) |
 | `MODEL_REACHABILITY_RULE` | se excluyen de antemano por consistencia con la dinámica del modelo; acopla la banda de D de llegada a τ_D y g |
 | `REVISE_FORMULATION` | por ejemplo, un repago que dependa del exceso de entrega; desaparece la cota, pero cambia la dinámica de D y exige reabrir las reglas y los barridos |
 
