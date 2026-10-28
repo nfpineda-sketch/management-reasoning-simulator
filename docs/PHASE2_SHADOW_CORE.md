@@ -2619,3 +2619,37 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Sondas de bolo:** siguen históricas y fuera de toda evidencia y recuento.
 - **Sin elegir parámetros ocultos**, sin cambiar restricciones, sin filtro de lactato y sin gancho en tiempo de
   ejecución.
+
+## 28. P2I-2X · Cierre de los bordes de verdad del caso y de dominio, y tasa densificada (2026-10-28)
+
+- **Base:** `20fdcbe`. P2I-2W queda aceptado y cerrado como registro (`5257b233…`), sin regenerar. Informe:
+  `docs/revision/P2I2X_CIERRE_BORDES_TASA.md`.
+- **Verdad del caso:** la posición de llegada debe quedar en la banda candidata comprometida de cada caso, que fundan
+  las líneas POCUS (57m 0,2–0,5; 72f 0,3–0,6). No se endurece ni se infiere un número exacto. 0,65 / 0,75 (y 0,8 /
+  0,9) quedan `REJECTED_BY_CASE_TRUTH_COMPATIBILITY`, junto con los 2268 sobrevivientes de P2I-2W que las usaban. La
+  terna «tasa 10, 57m 0,65, 72f 0,75» no se evaluó, porque ya no responde la pregunta clínica.
+- **Congelamiento antes de evaluar:** commit `7f61e2e`, resumen `668bad99…`. Tasas 5–10, nuevas 6, 7, 8 y 9.
+- **Diseño:** la región superviviente de P2I-2V-R, en sus posiciones compatibles. Un prefiltro exacto aplica las
+  restricciones que no dependen de la tasa y rechaza 45 036 de 52 488 combinaciones sin simular.
+- **Resultado:**
+  - sobrevivientes conjuntos: 5 → 2268, 6 → 1512, y 0 con 7, 8, 9 y 10;
+  - FACULTY-CONSTRAINED BLEED-RATE CANDIDATE INTERVAL: el límite queda entre 6 y 7, y lo pone U-OUT en 57m. Es
+    condicional a la región de P2I-2V-R (meta ≤ 0,75; τ ≤ 240) y a la posición en el borde superior de la banda;
+  - las otras posiciones de la banda no abren ninguna tasa.
+- **Bordes:** taxonomía con DOMAIN_* y CASE_TRUTH_BOUND, aparte de la clase:
+  - meta del relleno: DOMAIN_UPPER_BOUND (1,0 es el límite exacto del núcleo);
+  - posición: CASE_TRUTH_BOUND, no identificada;
+  - tasa y τ: INTERIOR;
+  - cristaloide: OPEN_UPPER.
+- **Cristaloide:** `effective_ml_per_ml` es la fracción intravascular inicial; FD-BLD-04 y 05 leen la retenida. Se
+  propone una grilla interpretable (f₀, f∞, τ), sin evaluarla.
+- **Deuda registrada (TD-88):** `blood_filter_report.py` también calcula el diagnóstico histórico de P2I-2V, aunque
+  figura como informe de sólo presentación; hay comentarios inexactos en archivos congelados.
+- **Nivel 1 y HR1:**
+  - SYNTHETIC_STATE_PERTURBATION confirmada, y `NOT_EVIDENCE_FOR` con la lista docente;
+  - los rechazos de P2F por HR1 quedan como STRUCTURAL_HARNESS_OUTCOME, sin readmitir nada;
+  - 0,2 en 57m sigue excluida por FD-BLD-02, en la cuadrícula explorada de P2I-2V-R.
+- **Higiene de resúmenes:** los informes de P2I-2V-R, P2I-2W y P2I-2X salen del corte P2I-1 (y por tanto de las
+  sondas P2I-2T y las anclas P2I-2U), con una prueba de que ningún otro módulo los importa.
+- **Sin elegir parámetros ocultos**, sin cambiar restricciones, sin filtro de lactato y sin gancho en tiempo de
+  ejecución.
