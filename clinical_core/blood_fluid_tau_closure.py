@@ -199,8 +199,7 @@ def practical(evaluated: dict, limit: dict, keys: dict, p2i2z: dict, boundary: d
         series = [evaluated[_key({"F0": F0, "Finf": finf, "tau": tau})] for tau in TAU]
         readings = [_readings(entry) for entry in series]
         names = sorted(readings[0])
-        monotone = all(readings[i][n] <= readings[i + 1][n] + 1e-12 for n in names if not n.startswith("at120")
-                       for i in range(len(readings) - 1))
+        monotone = all(readings[i][n] <= readings[i + 1][n] + 1e-12 for n in names for i in range(len(readings) - 1))
         last, previous, top = readings[-1], readings[-2], _readings(limit)
         per[f"{finf:g}"] = {
             "monotone_in_tau": monotone,
@@ -312,11 +311,23 @@ def l3_audit() -> dict:
 
 # 4. Blood-key checks the lactate space needs --------------------------------------------------------------------------
 
+def p2i2w_boxes() -> list[tuple[dict, dict, dict]]:
+    """P2I-2W's extension boxes inside the case bands (rb.p2i2w_case_truth), but its base (P2I-2V-R's surviving box):
+    each with its values and its survivors per common rate."""
+    record = json.loads(rb.P2I2W_RECORD.read_text(encoding="utf-8"))
+    if record["freeze_digest"] != rb.P2I2W_DIGEST:
+        raise AssertionError("the P2I-2W record is not the committed one")
+    outside, base = rb.p2i2w_case_truth(record), be.base_box(be.record())
+    return [(box, be._box_values(box, base), record["boxes"][box["name"]]["marginal"][be.COMMON])
+            for box in record["design"] if box["name"] != "base" and box["name"] not in outside]
+
+
 def rate25_keys() -> list[tuple]:
-    """Every rate-2.5 FD-BLD-06 key built from P2I-2V-R's surviving values: a superset of its survivors' keys."""
-    box = be.base_box(be.record())
-    return sorted((b0, 2.5, target, tau, cap) for b0, target, tau, cap in itertools.product(
-        box[fc.B0], box[fc.TARGET], box[fc.TAU], box[fc.CAP]))
+    """Every rate-2.5 FD-BLD-06 key built from the certified surviving values: P2I-2V-R's surviving box and P2I-2W's
+    in-band extension boxes with rate-2.5 survivors (a superset of the rate's survivors' keys)."""
+    boxes = [be.base_box(be.record())] + [values for _, values, rates in p2i2w_boxes() if rates.get("2.5", 0)]
+    return sorted({(b0, 2.5, target, tau, cap) for box in boxes for b0, target, tau, cap in itertools.product(
+        box[fc.B0], box[fc.TARGET], box[fc.TAU], box[fc.CAP])})
 
 
 def compatibility(rows: rb.Rows, region_keys: list[str], blood: list[tuple]) -> dict:
@@ -355,6 +366,11 @@ def explored_keys() -> dict:
     for rate in (5.0, 6.0):
         for b0, target, tau, cap in itertools.product(shared[fc.B0], shared[fc.TARGET], shared[fc.TAU], shared[fc.CAP]):
             out.setdefault((b0, rate, target, tau, cap), "P2I-2Y")
+    for _, values, _ in p2i2w_boxes():                        # P2I-2W explored its boxes with the surviving bag
+        for rate in sorted(set(values[be.COMMON]) & set(LACTATE_RATES)):
+            for b0, target, tau, cap in itertools.product(values[fc.B0], values[fc.TARGET], values[fc.TAU],
+                                                          values[fc.CAP]):
+                out.setdefault((b0, rate, target, tau, cap), "P2I-2Y")
     return out
 
 
@@ -413,12 +429,12 @@ def structural_checks() -> dict:
                         "adequacy_flips": sum(oxygen_adequate(x[0]) != oxygen_adequate(y[0]) for x, y in zip(d, d0))
                         + abs(len(d) - len(d0))}
             a0, p0, s0, _ = fr._run(case, values, "untreated")
-            ref = [row[:6] for row in fr._haemodynamics(a0, p0, s0)]
+            ref = [row[:6] + row[7:] for row in fr._haemodynamics(a0, p0, s0)]       # all but delivery_rel
             d0 = _deficits(a0, p0, s0)
             for level in DELIVERY_LEVELS:
                 a, p, st, _ = fr._run(case, values, "untreated", candidate_changes={"delivery": level})
                 checks[f"arrival delivery={level}"] = {
-                    "haemodynamics": fr._gap([row[:6] for row in fr._haemodynamics(a, p, st)], ref),
+                    "haemodynamics": fr._gap([row[:6] + row[7:] for row in fr._haemodynamics(a, p, st)], ref),
                     "deficit": fr._gap(_deficits(a, p, st), d0)}
             out[f"{tag} {case}"] = checks
     return out
@@ -466,10 +482,12 @@ def readiness(p2i2z: dict, p2i2y: dict, region_keys: list[str], edges: dict, bou
         labels[case] and all(rb.case_truth_compatible(case, be.positions(case)[label]) for label in labels[case])
         for case in CASES)
     rate25 = be.record()["primary"]["marginal"]["bleed_ml_per_min|common"].get("2.5", 0)
+    extension25 = {box["name"]: rates.get("2.5", 0) for box, _, rates in p2i2w_boxes() if rates.get("2.5", 0)}
     criteria[RATE_CRITERION] = {
         "passed": base["criteria"]["bleed-rate boundary characterized"]["passed"] and rate25 > 0,
         "evidence": {**base["criteria"]["bleed-rate boundary characterized"]["evidence"],
-                     "rate_2_5_joint_survivors_p2i2vr": rate25, "rates": list(LACTATE_RATES)}}
+                     "rate_2_5_joint_survivors_p2i2vr": rate25, "rate_2_5_joint_survivors_p2i2w": extension25,
+                     "rates": list(LACTATE_RATES)}}
     tau_ok = boundary["status"] == CLOSED or practical_item["classification"] == INDISTINGUISHABLE
     criteria[CRYSTALLOID_CRITERION] = {
         "passed": bool(region_keys) and all(fr.calibration_status(*(float(v) for v in k.split("|")[:2])) == fr.ACTIVE
@@ -495,9 +513,9 @@ def _bounds(counts: dict, per_projection: int) -> tuple[int, int]:
 
 def source_space(p2i2y: dict, region_keys: list[str], complete: dict, summary: dict, summary_z: dict,
                  ready: bool, compat: dict | None = None) -> dict:
-    compat = compat or {}
     """P2I-2AA-6, 7: the next lactate package's source space from current physiology, counted before any simulation.
     Never the historical P2F candidate region. Not run here."""
+    compat = compat or {}
     passing = complete["grids_passing_fd04_05"]
     reserves = len(be.base_box(be.record())["reserve"])
     p3, p1 = {}, {}
@@ -505,7 +523,8 @@ def source_space(p2i2y: dict, region_keys: list[str], complete: dict, summary: d
         keys = p2i2y["robustness"]["rates"][rate]["survivor_keys"]
         p3[rate] = _bounds(keys, passing["P2I-2Y"] * reserves)
         p1[rate] = (len(keys), 3 * len(keys))
-    joint25 = be.record()["primary"]["marginal"]["bleed_ml_per_min|common"].get("2.5", 0)
+    extension25 = sum(rates.get("2.5", 0) for _, _, rates in p2i2w_boxes())
+    joint25 = be.record()["primary"]["marginal"]["bleed_ml_per_min|common"].get("2.5", 0) + extension25
     k25 = len(rate25_keys())
     low25 = math.ceil(joint25 / (passing["P2I-2V-R"] * reserves))
     p3["2.5"] = (low25, min(k25 * 27, joint25))
@@ -523,9 +542,11 @@ def source_space(p2i2y: dict, region_keys: list[str], complete: dict, summary: d
              and summary["delivery_level_never_reaches_haemodynamics"])
     return {
         "status": CERTIFIED_STATUS if ready else DRAFT_STATUS,
-        "A_blood": {"rates": {"2.5": "P2I-2V-R joint survivors (refill target <= 0.75, tau <= 240)",
+        "A_blood": {"rates": {"2.5": "P2I-2V-R joint survivors and P2I-2W's in-band extension boxes (refill target "
+                                     "1.0; target 1.0 with tau 480)",
                               "5.0": "P2I-2Y joint survivors (with the refill extension)",
                               "6.0": "P2I-2Y joint survivors (with the refill extension)"},
+                    "joint_2_5_extension": extension25,
                     "joint": {"2.5": joint25, **{r: sum(p2i2y["robustness"]["rates"][r]["survivor_keys"].values())
                                                 for r in ("5.0", "6.0")}},
                     "P1_bounds": {r: list(v) for r, v in p1.items()}, "P3_bounds": {r: list(v) for r, v in p3.items()},

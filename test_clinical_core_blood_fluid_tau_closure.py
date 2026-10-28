@@ -27,7 +27,7 @@ ROOT = Path(__file__).resolve().parent
 #: The P2I-2AA freeze: design, limit, stop rule, practical-identifiability rule, adequacy, rates, L3 status, readiness
 #: criteria, draft status, policy and every clinical_core source but the downstream reports, committed before any new
 #: outcome was evaluated.
-FROZEN_DIGEST = "263efababa2cee8110d682bc2f4a22d6218bce642cef6c3d3444a6de45dfdf16"
+FROZEN_DIGEST = "5087cf022f928fed5d3893a00a4907578e7f91b3543ee10c6ba3786abde01001"
 P2I2VR_CONSTRAINTS_SHA = "2d139733ed529a03f9c58cd4aa5eb70c8812bb25ba0737f90172546b4e2a65a8"
 P2I2Z_MODULE_SHA = "40b93a69c8b70190e7d92a056f0987b81a30ee32331629d18132f0aa534a15cf"
 
@@ -98,9 +98,14 @@ def test_the_lactate_rates_keep_2_5_and_the_l3_modifiers_stay_fixed():
 
 
 def test_the_blood_key_checks_cover_the_explored_region_only():
-    assert len(tc.rate25_keys()) == 36 and {k[1] for k in tc.rate25_keys()} == {2.5}
+    # Rate 2.5 keeps P2I-2W's in-band extension survivors (refill target 1.0; 1.0 with tau 480): never pre-eliminated.
+    boxes = {box["name"]: rates for box, _, rates in tc.p2i2w_boxes() if any(rates.values())}
+    assert boxes == {"plasma_refill_target_share=1": {"2.5": 264, "5.0": 399},
+                     "plasma_refill_target_share=1 & plasma_refill_tau_min=480": {"2.5": 756, "5.0": 756}}
+    assert len(tc.rate25_keys()) == 63 and {k[1] for k in tc.rate25_keys()} == {2.5}
+    assert {(k[2], k[3]) for k in tc.rate25_keys()} >= {(1.0, 120.0), (1.0, 240.0), (1.0, 480.0)}
     keys = tc.explored_keys()
-    assert len(keys) == 288 and {k[1] for k in keys} == {2.5, 5.0, 6.0}
+    assert len(keys) == 387 and {k[1] for k in keys} == {2.5, 5.0, 6.0}
     assert len(tc._old_crystalloids("P2I-2V-R")) == 27 and len(tc._old_crystalloids("P2I-2Y")) == 18
 
 
@@ -239,8 +244,8 @@ def test_the_substitution_witnesses_and_rate_2_5_compatibility_hold_live(result)
     from clinical_core import blood_rate_boundary as rb
     rows = rb.Rows()
     complete = result["completeness"]
-    assert complete["keys"] == 288 and complete["without_witness"] == []
-    for label in sorted(complete["witness"])[::96]:         # three keys, one per stretch of the explored set
+    assert complete["keys"] == 387 and complete["without_witness"] == []
+    for label in sorted(complete["witness"])[::129]:        # three keys, one per stretch of the explored set
         effective, leak, transient = complete["witness"][label]
         values = {fc.EFFECTIVE: effective, fc.LEAK: leak, fc.TRANSIENT: transient,
                   **dict(zip(fc.PROBE_KEYS, (float(v) for v in label.split("|"))))}
