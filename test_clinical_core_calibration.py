@@ -501,6 +501,7 @@ def test_every_level_1_direct_write_is_a_labelled_synthetic_perturbation():
         source = inspect.getsource(function)
         channels = {"Hb" if channel == "hb" else channel for channel in re.findall(r'Drift\("[^"]*", "(V|hb)"', source)}
         channels |= {"V"} if re.search(r"\bV=", source) else set()
+        channels |= {"Hb"} if re.search(r"\bhb=", source) else set()
         if channels:
             writers[name] = (function.__name__, channels)
     assert set(writers) == set(calibration.LEVEL1_DIRECT_WRITES) == {"RR1", "HR1-HR4", "PL1-PL3", "PL4", "DM1"}

@@ -134,7 +134,9 @@ def test_every_verdict_is_a_frozen_reading_and_no_probe_is_read():
                           "acute_off_200", "stopped")
 
 
-def test_a_row_the_frozen_functions_cannot_read_is_unreadable_never_a_bound(monkeypatch):
+def test_a_row_the_frozen_functions_cannot_read_is_recorded_as_unreadable(monkeypatch):
+    """A row the frozen functions cannot read is UNREADABLE with its message, and its verdict is None (never False).
+    How candidates and edges treat it is pinned on the run's record (test_no_joint_candidate_is_unreadable...)."""
     def stops(*_, **__):
         raise AssertionError("the blood reading's haemodynamics stopped at 3")
     monkeypatch.setattr(bc, "untreated_blood", stops)
@@ -157,3 +159,113 @@ def test_the_extension_rows_are_the_frozen_tables_rows():
         (key, row), = frozen[source].items()
         key = tuple(numeric if value == "upper" else value for value in key)
         assert be._compute((case, source, key))[1] == row, source
+
+
+# After the freeze commit: the extension's record ---------------------------------------------------------------
+
+RESULT = ROOT / "docs" / "revision" / "P2I2W_blood_extension.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2I2W_EXTENSION_BORDES_AUDITORIA.md"
+
+
+def _plain(value):
+    return json.loads(json.dumps(value, sort_keys=True, default=str))
+
+
+@pytest.fixture(scope="module")
+def result():
+    return json.loads(RESULT.read_text(encoding="utf-8"))
+
+
+def test_the_extension_ran_with_the_frozen_code_on_the_declared_design(result, data):
+    assert result["freeze_digest"] == FROZEN_DIGEST and result["record_digest"] == be.P2I2VR_DIGEST
+    assert result["revision"] == "P2I-2W" and result["open_edges"] == be.OPEN_EDGES == result["reported_open_edges"]
+    assert result["extension"] == _plain(be.extension(data)) and result["design"] == _plain(be.design(data))
+    assert result["base"] == _plain({label: list(values) for label, values in be.base_box(data).items()})
+    assert set(result["boxes"]) == {box["name"] for box in result["design"]}
+    assert result["candidates"] == {"extended": 2_375_082, "base": 104_976}
+    assert result["policy"] == be.POLICY and result["rule"] == be.RULE
+
+
+def test_the_surviving_box_reproduces_the_frozen_filter(result, data):
+    base = result["boxes"]["base"]
+    assert base["survives"] == data["primary"]["joint"] == 4896 and base["unreadable"] == 0
+    for label in be.COORDS:
+        parameter = label.partition("|")[0]
+        for value, raw in zip(be.explored(data, label), data["region"][parameter]):
+            if value in result["base"][label]:
+                assert base["marginal"][label][str(value)] == data["primary"]["marginal"][label][str(raw)], label
+    assert base["with_fd_bld_03"] == data["fd_bld_03"]["primary"]["joint"]
+
+
+def test_no_joint_candidate_is_unreadable_and_each_case_s_unreadables_are_reported(result):
+    """The edge table counts survivors only: a value whose candidates were all UNREADABLE would read as a bound,
+    against the policy. In this run no joint candidate is UNREADABLE, so the table is not affected; each case's own
+    UNREADABLE candidates (sensitivity) are reported in the document, never as a rejection."""
+    assert all(stats["unreadable"] == 0 for stats in result["boxes"].values())
+    unreadable = {(name, case): n for name, stats in result["boxes"].items()
+                  for case, n in stats["alone_unreadable"].items() if n}
+    assert unreadable == {("bleed_ml_per_min|common=10 & preload_fraction|gi_bleed_57m=0.65", "gi_bleed_57m"): 1944,
+                          ("bleed_ml_per_min|common=20 & preload_fraction|gi_bleed_72f=0.9", "gi_bleed_72f"): 1836}
+    assert sum(result["unreadable_rows"].values()) == 5514
+    document = DOCUMENT.read_text(encoding="utf-8")
+    assert "0 (+1944 ilegibles)" in document and "0 (+1836 ilegibles)" in document
+
+
+def test_the_counts_are_coherent(result):
+    assert result["contradictions"] == []
+    for name, stats in result["boxes"].items():
+        assert stats["survives"] + stats["rejected"] + stats["unreadable"] == stats["size"], name
+        assert stats["survives"] <= min(stats["alone"].values()), name
+        assert sum(stats["marginal"][be.COMMON].values()) == stats["survives"], name
+        assert stats["with_fd_bld_03"] <= stats["survives"], name
+        assert max(stats["failing"].values()) <= stats["rejected"] <= sum(stats["failing"].values()), name
+        assert all(stats["sole"][n] <= stats["failing"][n] for n in bc.CONSTRAINTS), name
+
+
+def test_the_edge_table_is_recomputed_from_the_boxes(result, data):
+    assert result["edges"] == _plain(be.edges(data, result["extension"], result["boxes"]))
+    for label in be.COORDS:
+        item = result["edges"][label]
+        assert item["edge"] == be.edge_status(item["explored"], item["left"])
+        assert item["class"] == be.identifiability(label.partition("|")[0], item["explored"], item["left"])
+
+
+def test_the_moved_representatives_are_the_frozen_evaluation(result, data):
+    """Each moved representative differs from its P2I-2V-R original in one coordinate, and the design's cached
+    verdicts for the middle one are the frozen blood_constraints.evaluate verdicts, run live."""
+    for point, item in result["representatives"].items():
+        label, _, value = point.rpartition("=")
+        parameter, case_of = label.partition("|")[0], label.partition("|")[2]
+        for tag, entry in item.items():
+            original = data["representatives"][tag]["values"]
+            for case in bc.CASES:
+                before = {**original[case], bc.POS: be.positions(case)[original[case][bc.POS]]}
+                changed = {n for n in before if before[n] != entry["values"][case][n]}
+                expected = {parameter} if case_of in ("common", "", case) and float(value) != before[parameter] else set()
+                assert changed == expected, (point, tag, case)
+        middle = item["middle"]
+        for case in bc.CASES:
+            if None in middle["verdicts"][case].values():
+                with pytest.raises(Exception):  # an UNREADABLE row: the frozen evaluation cannot read it either
+                    bc.evaluate(case, middle["values"][case])
+                continue
+            live = bc.evaluate(case, middle["values"][case])["verdicts"]["primary"]
+            assert {n: live[n] for n in be.READINGS} == middle["verdicts"][case], (point, case)
+
+
+def test_nothing_is_selected_approved_or_lactate_filtered(result):
+    from clinical_core import migration_authority
+    text = json.dumps(result)
+    assert "FACULTY_APPROVED" not in text and "selected" not in text
+    assert migration_authority.APPROVED_FAMILY_DEFAULTS == () and migration_authority.TRUSTED_CASE_MAPPINGS == ()
+    source = inspect.getsource(be)
+    assert "lactate_constraints" not in source and "FD-LAC" not in source and "faculty_constraints" not in source
+
+
+def test_the_document_blocks_are_generated(result):
+    from clinical_core import blood_extension_report as report, calibration
+    document = DOCUMENT.read_text(encoding="utf-8")
+    for block, rendered in (("regla", report.render_rule(result)), ("extension", report.render_extension(result)),
+                            ("auditoria", report.render_audit())):
+        assert report.apply(document, block, rendered) == document, block
+    assert set(report.AUDIT_ES) == set(calibration.LEVEL1_DIRECT_WRITES)
