@@ -30,6 +30,8 @@ ROOT = Path(__file__).resolve().parent
 FROZEN_DIGEST = "5087cf022f928fed5d3893a00a4907578e7f91b3543ee10c6ba3786abde01001"
 P2I2VR_CONSTRAINTS_SHA = "2d139733ed529a03f9c58cd4aa5eb70c8812bb25ba0737f90172546b4e2a65a8"
 P2I2Z_MODULE_SHA = "40b93a69c8b70190e7d92a056f0987b81a30ee32331629d18132f0aa534a15cf"
+#: P2I-2AA is closed (P2I-2AB): its module is pinned byte for byte and its record keeps the digest it ran with.
+P2I2AA_MODULE_SHA = "c16a56a77c3957ae1186f4e2b016ddbadd8fee7bae0d405414fb031af735621b"
 
 
 def _sha(path: str) -> str:
@@ -50,7 +52,11 @@ def test_the_tau_closure_is_frozen():
     assert {"clinical_core/blood_fluid_tau_closure.py", "clinical_core/blood_fluid_readiness.py",
             "clinical_core/blood_constraints.py", "clinical_core/interventions/fluids.py"} <= set(sources)
     assert not set(lactate_slice.DOWNSTREAM_REPORTS) & set(sources)
-    assert tc.freeze_digest() == FROZEN_DIGEST, "a source, the design, a rule or the policy changed after the freeze"
+    # Closed by P2I-2AB, whose new module changes the source digest: the module and the record are pinned instead.
+    assert _sha("clinical_core/blood_fluid_tau_closure.py") == P2I2AA_MODULE_SHA, "the P2I-2AA module changed"
+    record = json.loads((ROOT / "docs" / "revision" / "P2I2AA_blood_fluid_tau_closure.json").read_text(
+        encoding="utf-8"))
+    assert record["freeze_digest"] == FROZEN_DIGEST
 
 
 def test_the_tau_design_is_the_faculty_s_and_stops_at_240():

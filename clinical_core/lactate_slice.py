@@ -494,7 +494,7 @@ def legacy_reference() -> dict:
 DOWNSTREAM_REPORTS = ("clinical_core/blood_filter_report.py", "clinical_core/blood_extension_report.py",
                       "clinical_core/blood_rate_report.py", "clinical_core/blood_fluid_report.py",
                       "clinical_core/blood_fluid_readiness_report.py",
-                      "clinical_core/blood_fluid_tau_closure_report.py")
+                      "clinical_core/blood_fluid_tau_closure_report.py", "clinical_core/lactate_rebuild_report.py")
 
 
 def slice_sources() -> dict[str, str]:

@@ -737,7 +737,8 @@ PACK_DIGEST_EXCLUDED = ("clinical_core/decision_pack_markdown.py", "clinical_cor
                         "clinical_core/blood_rate_report.py", "clinical_core/blood_fluid_calibration.py",
                         "clinical_core/blood_fluid_report.py", "clinical_core/blood_fluid_readiness.py",
                         "clinical_core/blood_fluid_readiness_report.py", "clinical_core/blood_fluid_tau_closure.py",
-                        "clinical_core/blood_fluid_tau_closure_report.py")
+                        "clinical_core/blood_fluid_tau_closure_report.py", "clinical_core/lactate_rebuild.py",
+                        "clinical_core/lactate_rebuild_report.py")
 
 
 def pack_sources() -> dict[str, str]:
