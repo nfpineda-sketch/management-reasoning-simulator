@@ -29,7 +29,7 @@ SOURCE = ROOT / "clinical_core" / "lactate_rebuild.py"
 #: The P2I-2AB freeze: faculty decisions, readiness, source-space design, lactate side, current FD-LAC rules,
 #: factorization method, filter order, validation sample, reporting rules, verdict rule, policy and every clinical_core
 #: source but the downstream reports, committed before any candidate was evaluated.
-FROZEN_DIGEST = "37b9ac952f3b2c50df018c171c441063dee9e8a766837152b7f7bf64d6854d6a"
+FROZEN_DIGEST = "15d05c321b38d2e2512642bf2e3be64bc4382ad639ad05ea445c9050091d7cc4"
 P2I2VR_CONSTRAINTS_SHA = "2d139733ed529a03f9c58cd4aa5eb70c8812bb25ba0737f90172546b4e2a65a8"
 P2I2AA_MODULE_SHA = "c16a56a77c3957ae1186f4e2b016ddbadd8fee7bae0d405414fb031af735621b"
 FACULTY_CONSTRAINTS_SHA = "092c32cf5a20cbf62e3e9df32a47896ccdef701f97170634740a8f8399d7982a"
@@ -120,6 +120,13 @@ def test_the_certified_counts_the_source_must_reproduce():
     assert parts["P2I-2V-R"] == 2628 and sum(parts.values()) == 3648
     assert parts["P2I-2W plasma_refill_target_share=1"] == 264
     assert parts["P2I-2W plasma_refill_target_share=1 & plasma_refill_tau_min=480"] == 756
+    # Each count is compared only where its run explored: P2I-2W's boxes fixed the upper positions.
+    upper = {"gi_bleed_57m": [0.5], "gi_bleed_72f": [0.6]}
+    every = {"gi_bleed_57m": [0.2, 0.35, 0.5], "gi_bleed_72f": [0.3, 0.45, 0.6]}
+    for rate, item in counts.items():
+        for name, part in item["parts"].items():
+            assert part["positions"] == (upper if name.startswith("P2I-2W") else every), (rate, name)
+    assert "beyond the certified exploration" in lr.REPRODUCTION_RULE
 
 
 def test_the_lactate_side_is_the_registry_s_and_the_demand_is_not_variable():

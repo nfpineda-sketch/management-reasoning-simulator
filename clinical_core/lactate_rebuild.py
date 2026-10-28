@@ -12,7 +12,9 @@ nothing above 240 is added, and the whole certified crystalloid support (P2I-2Y 
 1. Source space (P2I-2AB-1), from current certified physiology only. Blood: P2I-2Y's robustness region (P2I-2V-R's
    surviving values with P2I-2W's refill extension) at the rates 2.5, 5 and 6 and at every case-band position, kept
    where the current blood constraints that do not read the crystalloid hold in both cases; the enumeration must
-   reproduce the certified joint survivor counts. Crystalloid: the P2I-2AA support. Reserve, haemostasis (the
+   reproduce the certified joint survivor counts at the positions each certified run explored, and a position no
+   certified run explored enters only by surviving (the faculty's preload rule), reported apart. Crystalloid: the
+   P2I-2AA support. Reserve, haemostasis (the
    engine's own endoscopy) and the fixed L3 modifiers as recorded. The historical P2F candidate region is never read:
    the run executes inside ``P2FGuard``.
 2. Lactate side (P2I-2AB-2): the registry candidate points of tau_D, the deficit-to-D gain, the D-to-lactate gain and
@@ -33,7 +35,9 @@ nothing above 240 is added, and the whole certified crystalloid support (P2I-2Y 
    LACTATE REGION.
 
 The definitions, rules, factorization method, filter order and reporting rules were frozen and committed before any
-candidate was evaluated (``freeze_digest``).
+candidate was evaluated (``freeze_digest``). Refrozen once, before any lactate was evaluated: the first freeze compared
+the source's three positions with P2I-2W's counts, which explored the upper positions only, and its own stop fired
+inside the blood source, before the factorization check or any FD-LAC test ran (``REPRODUCTION_RULE``).
 """
 from __future__ import annotations
 
@@ -152,26 +156,39 @@ def blood_design() -> dict:
 
 
 def certified_counts() -> dict:
-    """The certified joint survivor counts per rate (crystalloid bag and reserve included) and the refill pairs each
-    certified count covers: P2I-2V-R and P2I-2W's in-band boxes at 2.5, P2I-2Y's robustness at 5 and 6."""
-    base = be.base_box(be.record())
-    vr = be.record()["primary"]["marginal"]["bleed_ml_per_min|common"]["2.5"]
+    """The certified joint survivor counts per rate (crystalloid bag and reserve included), with the refill pairs and
+    the positions each certified count explored: P2I-2V-R (every case-band position) and P2I-2W's in-band boxes (the
+    upper positions only) at 2.5, P2I-2Y's robustness (every position) at 5 and 6."""
+    data = be.record()
+    base = be.base_box(data)
+    every = {case: sorted(be.positions(case)[label] for label in data["region"][bc.POS]) for case in CASES}
+    vr = data["primary"]["marginal"]["bleed_ml_per_min|common"]["2.5"]
     parts = {"P2I-2V-R": {"pairs": [f"{t:g}|{u:g}" for t, u in itertools.product(base[bf.TARGET], base[bf.TAU])],
-                          "count": vr}}
+                          "positions": every, "count": vr}}
     for box, values, rates in tc.p2i2w_boxes():
         if bf.TARGET in box["fixed"] or bf.TAU in box["fixed"]:
             if set(box["fixed"]) - {bf.TARGET, bf.TAU}:
                 continue
             parts[f"P2I-2W {box['name']}"] = {
                 "pairs": [f"{t:g}|{u:g}" for t, u in itertools.product(values[bf.TARGET], values[bf.TAU])],
+                "positions": {case: sorted(values[be.POSITION[case]]) for case in CASES},
                 "count": rates.get("2.5", 0)}
     out = {"2.5": {"total": sum(p["count"] for p in parts.values()), "parts": parts}}
     robustness = fr.record_p2i2y()["robustness"]["rates"]
+    positions = {case: sorted(v) for case, v in bf.robustness_region(data)["positions"].items()}
     for rate in ("5.0", "6.0"):
         out[rate] = {"total": robustness[rate]["joint"],
-                     "parts": {f"P2I-2Y {pair}": {"pairs": [pair], "count": n}
+                     "parts": {f"P2I-2Y {pair}": {"pairs": [pair], "positions": positions, "count": n}
                                for pair, n in robustness[rate]["by_refill"].items()}}
     return out
+
+
+REPRODUCTION_RULE = (
+    "Each certified count is compared only with the source's survivors at the refill pairs and the positions that "
+    "certified run explored (P2I-2W's boxes fixed the upper positions). It must agree exactly; and no survivor may lie "
+    "at an explored (rate, refill pair, positions) cell that no certified count covers. Survivors at positions a "
+    "certified run never explored enter by the faculty's preload rule (they meet every current blood constraint) and "
+    "are reported apart as beyond the certified exploration.")
 
 
 def _row_tasks(case: str, names, values: dict) -> list:
@@ -275,28 +292,39 @@ def blood_source(rows, map_=map, progress=None) -> dict:
         combo = combos[index]
         label = _key_label({**combo, bc.BLEED: rate})
         pair = f"{combo[bf.TARGET]:g}|{combo[bf.TAU]:g}"
-        count = math.prod(len(v) for v in kept.values()) * multiplicity[label]
-        reproduced[f"{rate:g}"][pair] = reproduced[f"{rate:g}"].get(pair, 0) + count
+        for positions_ in itertools.product(*(kept[case] for case in CASES)):
+            cell = (pair, *positions_)
+            reproduced[f"{rate:g}"][cell] = reproduced[f"{rate:g}"].get(cell, 0) + multiplicity[label]
     certified = certified_counts()
     comparison, agree = {}, True
     for rate, item in certified.items():
         mine = reproduced[f"{float(rate):g}"]
-        rows_ = {}
+        rows_, covered = {}, set()
         for name, part in item["parts"].items():
-            got = sum(mine.get(pair, 0) for pair in part["pairs"])
+            cells = {cell for cell in mine if cell[0] in part["pairs"]
+                     and all(p in part["positions"][case] for p, case in zip(cell[1:], CASES))}
+            covered |= cells
+            got = sum(mine[cell] for cell in cells)
             rows_[name] = {"certified": part["count"], "reproduced": got}
             agree &= got == part["count"]
-        covered = {pair for part in item["parts"].values() for pair in part["pairs"]}
-        stray = {pair: n for pair, n in mine.items() if pair not in covered and n}
-        agree &= not stray and sum(mine.values()) == item["total"]
-        comparison[rate] = {"total": {"certified": item["total"], "reproduced": sum(mine.values())}, "parts": rows_,
-                            "uncovered_pairs": stray}
+        explored = {(pair, *positions_) for part in item["parts"].values() for pair in part["pairs"]
+                    for positions_ in itertools.product(*(part["positions"][case] for case in CASES))}
+        stray = {"|".join(f"{v}" for v in cell): n for cell, n in mine.items()
+                 if cell not in covered and cell in explored and n}
+        beyond = {f"{cell[0]} @ " + " / ".join(f"{p:g}" for p in cell[1:]): n for cell, n in sorted(mine.items())
+                  if cell not in covered and cell not in explored and n}
+        inside = sum(mine[cell] for cell in covered)
+        agree &= not stray and inside == item["total"]
+        comparison[rate] = {"total": {"certified": item["total"], "reproduced": inside},
+                            "parts": rows_, "uncovered_explored_cells": stray,
+                            "beyond_certified_exploration": beyond}
     if not agree:
         raise AssertionError(f"the blood source space does not reproduce the certified joint counts: {comparison}")
     sets = _sets(combos, alive, multiplicity)
     return {"design": {k: v for k, v in design.items() if k != "old_bags"}, "old_bags": len(design["old_bags"]),
             "old_bags_passing_fd04_05": len(bags), "by_position": by_position, "unreadable": unreadable,
-            "multiplicity": multiplicity, "reproduction": comparison, "reproduced": agree, **sets}
+            "multiplicity": multiplicity, "reproduction": comparison, "reproduction_rule": REPRODUCTION_RULE,
+            "reproduced": agree, **sets}
 
 
 def _sets(combos: list, alive: dict, multiplicity: dict) -> dict:
@@ -1538,7 +1566,8 @@ def design() -> dict:
             "lactate_side": {"points": kinetic_points(), "levels": list(LEVELS),
                              "arrival_pairs": [list(p) for p in ARRIVAL_PAIRS], "size": len(LAMBDAS),
                              "demand": DEMAND_RULE, "intrinsic": INTRINSIC_RULE},
-            "rules": CURRENT_RULES, "settings": SETTINGS, "factorization": FACTORIZATION,
+            "reproduction": REPRODUCTION_RULE, "rules": CURRENT_RULES, "settings": SETTINGS,
+            "factorization": FACTORIZATION,
             "filter_order": [[s, list(n)] for s, n in FILTER_ORDER], "cost": COST_RATIONALE,
             "rejections": REJECTION_RULE, "validation": VALIDATION_RULE, "identifiability": IDENTIFIABILITY_RULE,
             "representatives": REPRESENTATIVE_RULE, "flags": FLAG_RULES, "legacy": LEGACY_RULE,
