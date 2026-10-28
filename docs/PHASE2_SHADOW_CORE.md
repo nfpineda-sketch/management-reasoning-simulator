@@ -2749,7 +2749,11 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - el futuro espacio del lactato incluye las tasas 2,5, 5 y 6;
   - los modificadores de L3 (0,8 y 0,1) quedan FIXED_PROVISIONAL_FOR_PRIMARY_LACTATE_ANALYSIS y
     FACULTY_DECISION_PENDING (FD-24 y FD-25), sin rango inventado.
-- **Congelamiento antes de evaluar:** commit `83996c5`, resumen `263efaba…`.
+- **Congelamiento antes de evaluar:** commit `83996c5` (resumen `263efaba…`).
+  - La revisión adversarial probó que omitía, para la tasa 2,5, los sobrevivientes de las cajas de P2I-2W dentro de
+    la banda (meta 1,0: 264; meta 1,0 con τ 480: 756).
+  - Se recongeló en `0b90ddf` (resumen `5087cf02…`) sin cambiar el diseño de τ ni ninguna regla, y todo lo de τ se
+    reprodujo idéntico.
 - **τ:** F0 0,2 × Finf {0,05; 0,1} × τ {120…240}; τ 120 reproduce P2I-2Z.
   - Con Finf 0,1 sobreviven 120 y 150; desde 180 falla FD-BLD-05 a los 120 min.
   - Con Finf 0,05 sobrevive hasta 240, con un margen de 0,005.
@@ -2758,14 +2762,15 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   FD-BLD-05, así que existe una cota finita más allá de 240. Dentro del horizonte, Finf y τ se confunden: lo que acotan
   las restricciones es la curva de lo retenido.
 - **Soporte del cristaloide:** 12 puntos, con F0 0,2, Finf 0,05–0,1 y τ 30–240.
-  - Todos pasan FD-BLD-06 en las 36 claves de la tasa 2,5.
-  - La sustitución no omite ninguna de las 288 claves exploradas.
+  - Todos pasan FD-BLD-06 en las 63 claves de la tasa 2,5.
+  - La sustitución no omite ninguna de las 387 claves exploradas.
 - **Preparación: NOT_READY**, con un único bloqueo: el soporte del cristaloide, porque τ queda abierto con una
   restricción que depende de una cota más allá de 240. Los otros siete criterios se cumplen.
 - **Espacio de origen del lactato:** DRAFT — NOT EXECUTABLE UNTIL BLOOD/FLUID READINESS = READY, protegido por
   `certified_input`.
-  - Recuentos: de 1 569 780 a 10 628 820 candidatos.
-  - Diseño factorizado: de 2102 a 10 692 trayectorias hemodinámicas únicas, contra 84,8 a 574 millones de
+  - La tasa 2,5 aporta 3648 conjuntos (P2I-2V-R y P2I-2W).
+  - Recuentos: de 1 754 460 a 14 171 760 candidatos.
+  - Diseño factorizado: de 2308 a 14 256 trayectorias hemodinámicas únicas, contra 94,7 a 765 millones de
     simulaciones del producto ingenuo.
 - **Sin elegir parámetros ocultos**, sin filtro de lactato y sin gancho en tiempo de ejecución. TD-88 y TD-89 siguen
   abiertas.

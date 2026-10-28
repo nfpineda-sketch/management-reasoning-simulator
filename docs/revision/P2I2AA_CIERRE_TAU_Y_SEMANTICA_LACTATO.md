@@ -9,14 +9,14 @@ Este paquete funciona sólo en sombra:
   P2I-2Z.
 
 Código: `clinical_core/blood_fluid_tau_closure.py` (diseño, semántica, criterios y evaluación; congelado en `83996c5`
-antes de evaluar) y `clinical_core/blood_fluid_tau_closure_report.py` (sólo este informe). Números:
+antes de evaluar y recongelado en `0b90ddf` por un hallazgo de la revisión, §9) y `clinical_core/blood_fluid_tau_closure_report.py` (sólo este informe). Números:
 `docs/revision/P2I2AA_blood_fluid_tau_closure.json`. Registro de partida, cerrado: P2I-2Z (`e89a248e…`), cuyo veredicto
 NOT_READY quedó aceptado.
 
 ## 1. Borde de τ (P2I-2AA-1 a 3)
 
 <!-- generado:tau -->
-Congelamiento de P2I-2AA: `263efababa2cee8110d682bc2f4a22d6218bce642cef6c3d3444a6de45dfdf16`, comprometido antes de evaluar (una prueba lo fija). Registros de partida: P2I-2Z `e89a248ef406acda8c17d95931da98eac9e92d8ab2c1c1fb5bd2e9bf0f20ecf4`, P2I-2Y `67e5b80a5a96f526fc2f9e5b2c721026f3ac71ba612fe9cb3e06f23106f4a8d4`.
+Congelamiento de P2I-2AA: `5087cf022f928fed5d3893a00a4907578e7f91b3543ee10c6ba3786abde01001`, comprometido antes de evaluar (una prueba lo fija). Registros de partida: P2I-2Z `e89a248ef406acda8c17d95931da98eac9e92d8ab2c1c1fb5bd2e9bf0f20ecf4`, P2I-2Y `67e5b80a5a96f526fc2f9e5b2c721026f3ac71ba612fe9cb3e06f23106f4a8d4`.
 
 Diseño: F0 0,2; Finf 0,05 y 0,1; τ 120, 150, 180, 210 y 240 min (10 puntos; τ 120 reproduce P2I-2Z; nada por encima de 240). Criterio robusto de P2I-2Z: FD-BLD-06 en las 48 claves de sangre, en los dos casos.
 
@@ -56,7 +56,7 @@ Mayor τ con sobreviviente: **240**. Primer τ probado sin sobreviviente: **ning
   0,05), y no hay ningún τ probado sin sobreviviente. Según la regla congelada, la extensión se detiene y no se agrega
   nada por encima de 240.
 - **Lo que se observa sin extrapolar:** con Finf 0,05, cada paso de 30 min acerca la lectura al techo cada vez menos
-  (+0,012, +0,009, +0,008, +0,006), y el margen que queda en 240 (0,005) es menor que el último paso. No dice en qué τ
+  (+0,012, +0,009, +0,007, +0,006), y el margen que queda en 240 (0,005) es menor que el último paso. No dice en qué τ
   fallaría.
 
 ## 2. Soporte candidato del cristaloide
@@ -139,6 +139,8 @@ Diferencias en el horizonte (representativo medio de sangre, 1 L y 2 L, minutos 
 
   En 120 min, τ no es identificable en la práctica por separado de Finf. Lo que las restricciones acotan es la curva de
   lo retenido, no cada parámetro.
+- **Nota de lectura de la tabla:** la columna «cualquier lectura» mezcla unidades (fracciones de lo retenido y
+  diluciones en g/dL). Su 0,204 es una dilución.
 
 ## 4. Decisiones docentes registradas
 
@@ -161,9 +163,12 @@ Diferencias en el horizonte (representativo medio de sangre, 1 L y 2 L, minutos 
   - `faculty_constraints.adequate` sigue congelada (lee entrega ≥ demanda con tolerancia, es decir, la entrega normal):
     el paquete del lactato debe aplicar esta regla.
 - **Tasas:** el futuro espacio del lactato incluye 2,5, 5 y 6.
-  - La 2,5 sobrevivió en P2I-2V-R (2628 conjuntos, en la posición superior de la banda), y ninguna restricción vigente
-    la excluye.
-  - Su relleno está acotado a meta ≤ 0,75 y τ ≤ 240: la extensión a la meta 1,0 y τ 480 sólo se probó con 5 a 7.
+  - La 2,5 sobrevivió en P2I-2V-R (2628 conjuntos) y en las cajas de extensión de P2I-2W dentro de la banda (meta 1,0:
+    264; meta 1,0 con τ 480: 756), siempre en la posición superior de la banda. Son 3648 conjuntos, y ninguna
+    restricción vigente la excluye.
+  - P2I-2W extendió el relleno sobre las tasas 2,5 y 5. La primera versión congelada de este paquete omitía esas
+    cajas para la 2,5 y el informe decía, en falso, que la extensión sólo se había probado con 5 a 7. La revisión lo
+    detectó y se recongeló (§9).
 - **Modificadores de L3:** el registro no tiene un rango comprometido, porque el inferior, el medio y el superior son
   el mismo valor.
   - Quedan FIXED_PROVISIONAL_FOR_PRIMARY_LACTATE_ANALYSIS y FACULTY_DECISION_PENDING (FD-24 y FD-25, abiertas en P2G).
@@ -173,9 +178,9 @@ Diferencias en el horizonte (representativo medio de sangre, 1 L y 2 L, minutos 
 ## 5. Claves de sangre y comprobaciones estructurales
 
 <!-- generado:claves -->
-Tasa 2,5: FD-BLD-06 de los 12 puntos del soporte en las 36 claves de la tasa 2,5 (superconjunto de las de sus sobrevivientes), en los dos casos: todos pasan.
+Tasa 2,5: FD-BLD-06 de los 12 puntos del soporte en las 63 claves de la tasa 2,5 (superconjunto de las de sus sobrevivientes, de P2I-2V-R y de P2I-2W), en los dos casos: todos pasan.
 
-Completitud de la sustitución: 288 claves exploradas de las tasas 2,5, 5 y 6; cristaloides viejos que cumplen FD-BLD-04 y 05: 9 de la grilla de P2I-2V-R y 9 de los valores de P2I-2Y. Claves sin testigo (excluidas sólo por el cristaloide viejo): **0**.
+Completitud de la sustitución: 387 claves exploradas de las tasas 2,5, 5 y 6; cristaloides viejos que cumplen FD-BLD-04 y 05: 9 de la grilla de P2I-2V-R y 9 de los valores de P2I-2Y. Claves sin testigo (excluidas sólo por el cristaloide viejo): **0**.
 
 | Comprobación estructural | Resultado |
 |---|---|
@@ -187,10 +192,11 @@ Completitud de la sustitución: 288 claves exploradas de las tasas 2,5, 5 y 6; c
 
 ### 5.1 Lectura
 
-- **Tasa 2,5:** los 12 puntos del soporte pasan FD-BLD-06 en las 36 claves de la tasa 2,5, en los dos casos. No hay
-  pares a excluir.
-- **Completitud de la sustitución:** en las 288 claves exploradas de las tasas 2,5, 5 y 6, algún cristaloide viejo
-  que cumple FD-BLD-04 y 05 pasa FD-BLD-06 en los dos casos.
+- **Tasa 2,5:** los 12 puntos del soporte pasan FD-BLD-06 en las 63 claves de la tasa 2,5, en los dos casos: 36 de
+  P2I-2V-R y 27 de las cajas de P2I-2W. No hay pares a excluir.
+- **Completitud de la sustitución:** en las 387 claves exploradas de las tasas 2,5, 5 y 6, que incluyen las de todas
+  las cajas de P2I-2W dentro de la banda, algún cristaloide viejo que cumple FD-BLD-04 y 05 pasa FD-BLD-06 en los dos
+  casos.
   - Así, ninguna clave quedó fuera sólo por el cristaloide viejo: FD-BLD-06 no lee la posición, y ninguna otra
     restricción lee la bolsa.
   - Reemplazar el cristaloide por el soporte nuevo no pierde candidatos de sangre.
@@ -222,23 +228,31 @@ Completitud de la sustitución: 288 claves exploradas de las tasas 2,5, 5 y 6; c
 **NOT_READY — soporte candidato del cristaloide caracterizado.** Los otros siete criterios se cumplen, incluida la
 semántica de la adecuación.
 
-**Por qué el borde abierto bloquea esta vez.** La docencia admitió que un borde abierto no obliga a NOT_READY si se
-cumplen tres condiciones. La regla congelada las lee así:
+**Qué dice la regla congelada.** No mide diferencias en el horizonte: sólo mira si el límite τ → ∞ cumple las
+restricciones.
+- Si las cumple: CONSTRAINT_INDISTINGUISHABLE_BEYOND_240, el rango se propaga y el criterio pasa.
+- Si falla alguna: CONSTRAINT_BOUNDED_BEYOND_TESTED_DOMAIN y el criterio no pasa.
 
-1. **Incertidumbre prácticamente no identificable en el horizonte: no se cumple del todo.** Entre τ probados vecinos
-   las diferencias son pequeñas, pero lo que queda hasta el límite no lo es (retenido 0,055) y cruza FD-BLD-05.
-2. **El rango que sobrevive se puede propagar: sí, en lo probado.** Con Finf 0,05 es τ 60–240 y con Finf 0,1, τ
-   30–150. Por encima de 240 no se probó nada.
+El límite falla FD-BLD-05 a los 120 min (margen −0,05), así que el veredicto es NOT_READY. No se fuerza un cierre
+numérico para obtener READY.
+
+**Las tres condiciones de la docencia, leídas aparte** (es una lectura, no la regla):
+1. **Incertidumbre prácticamente no identificable en el horizonte: pequeña.** Cualquier τ > 240 que sobreviva debe
+   dejar lo retenido a los 120 min entre 0,145 (τ 240) y el techo de 0,15. Lo que queda por resolver en esa lectura es
+   ≤ 0,005. Entre τ 210 y 240 el resto del horizonte también cambia poco (§3). La distancia al límite (0,055) no mide
+   esa incertidumbre, porque el límite está excluido por la propia FD-BLD-05.
+2. **El rango que sobrevive se puede propagar: en lo probado, sí.** Con Finf 0,05 es τ 60–240 y con Finf 0,1, τ
+   30–150. La regla sólo certifica la propagación de τ > 240 cuando el límite cumple las restricciones, y aquí no las
+   cumple.
 3. **Ninguna restricción depende de una cota más precisa: no se cumple.** FD-BLD-05 a los 120 min acota τ con
-   Finf 0,05 en algún valor finito más allá de 240, porque el límite la falla.
-
-No se fuerza un cierre numérico para obtener READY.
+   Finf 0,05 en algún valor finito más allá de 240.
 
 **Qué lo destraba (decisión docente):**
 - aceptar τ ≤ 240 como soporte con Finf 0,05, con la cota de FD-BLD-05 declarada más allá de 240; el margen que queda
   es de 0,005;
 - o autorizar un valor más de τ, congelado antes de evaluar;
 - o tratar Finf y τ como una sola curva de lo retenido para el lactato, dado que dentro del horizonte se confunden (§3).
+  Con τ ≥ 90 no se probó ningún vecino de Finf (0 ni 0,15): esta opción tendría que decir qué hacer con ellos.
 
 ## 7. Espacio de origen del próximo paquete del lactato (P2I-2AA-6 y 7)
 
@@ -247,7 +261,7 @@ Estado: **DRAFT — NOT EXECUTABLE UNTIL BLOOD/FLUID READINESS = READY (borrador
 
 | Tasa | Fuente | Sobrevivientes conjuntos | P1 (L1, L2) | P3 (L3) |
 |---|---|---|---|---|
-| 2,5 | sobrevivientes conjuntos de P2I-2V-R (meta del relleno ≤ 0,75; τ ≤ 240) | 2628 | 11–108 | 98–972 |
+| 2,5 | sobrevivientes conjuntos de P2I-2V-R y de las cajas de extensión de P2I-2W dentro de la banda (meta del relleno 1,0; 1,0 con τ 480) | 3648 | 16–189 | 136–1701 |
 | 5 | sobrevivientes conjuntos de P2I-2Y (con la extensión del relleno) | 3423 | 27–81 | 135–729 |
 | 6 | sobrevivientes conjuntos de P2I-2Y (con la extensión del relleno) | 2268 | 18–54 | 90–486 |
 
@@ -255,11 +269,11 @@ Posición: 57m 0,5; 72f 0,6. Cristaloide: 12 puntos. ρ: banda 2,0–3,0, simula
 
 | Recuento (antes de simular) | Mínimo | Máximo |
 |---|---|---|
-| Candidatos (conjuntos) | 1569780 | 10628820 |
-| Trayectorias hemodinámicas únicas (simulaciones del núcleo, diseño factorizado) | 2102 | 10692 |
+| Candidatos (conjuntos) | 1754460 | 14171760 |
+| Trayectorias hemodinámicas únicas (simulaciones del núcleo, diseño factorizado) | 2308 | 14256 |
 | Posprocesos por trayectoria hemodinámica (sin simular) | 405 | 405 |
-| Simulaciones del producto ingenuo | 84768120 | 573956280 |
-| Simulaciones evitadas | 84766018 | 573945588 |
+| Simulaciones del producto ingenuo | 94740840 | 765275040 |
+| Simulaciones evitadas | 94738532 | 765260784 |
 
 Factorización válida según las comprobaciones estructurales: **sí**.
 <!-- /generado:espacio -->
@@ -272,15 +286,16 @@ fisiología actual y no usa la región histórica de P2F de 1054 conjuntos.
 
 - **A. Sangre:**
   - **Tasas 5 y 6:** los sobrevivientes conjuntos de P2I-2Y.
-  - **Tasa 2,5:** los de P2I-2V-R (2628), con su relleno.
-  - **Proyecciones:** P1 (tasa, B0, λ/κ y relleno; basta para L1 y L2) entre 56 y 243 conjuntos; P3 (P1 × la unidad
-    de glóbulos rojos; para L3) entre 323 y 2187.
+  - **Tasa 2,5:** los de P2I-2V-R (2628) y los de las cajas de extensión de P2I-2W dentro de la banda (1020): 3648.
+  - **Proyecciones:** P1 (tasa, B0, λ/κ y relleno; basta para L1 y L2) entre 61 y 324 conjuntos; P3 (P1 × la unidad
+    de glóbulos rojos; para L3) entre 361 y 2916.
   - **Enumeración exacta:** una sola vez, en el próximo paquete, con las lógicas congeladas.
 - **B. Posición:** 57m 0,5 y 72f 0,6, las únicas con sobrevivientes conjuntos en las tres tasas.
 - **C. Tasas:** 2,5, 5 y 6.
 - **D. Cristaloide:** los 12 puntos de §2. Entra sólo en L2 y depende de la decisión sobre τ.
 - **E. Extracción de O2:** ρ con banda 2,0–3,0. Como el lactato, D, el déficit y la adecuación no dependen de ρ, se
-  simula sólo con 2,5 y no se multiplica nada por ρ.
+  simula sólo con 2,5 y no se multiplica nada por ρ. Que ρ tampoco mueve la hemodinámica no está persistido: la
+  revisión lo sondeó (0,0) y el diseño no depende de ello.
 - **F. Modificadores de L3:** fijos (0,8 y 0,1).
 - **G. Parámetros propios del lactato:**
   - **Explorados:** τ de la deuda 30/60/120; ganancia 2/6/12; τ del lactato 45/120/240; exceso de llegada
@@ -288,15 +303,16 @@ fisiología actual y no usa la región histórica de P2F de 1054 conjuntos.
   - **Con sensibilidad sólo sobre los sobrevivientes:** la deuda por déficit y la demanda basal.
   - **Fuera:** la frecuencia intrínseca.
 - **Recuentos antes de simular:**
-  - candidatos: de 1 569 780 a 10 628 820;
-  - trayectorias hemodinámicas únicas, las únicas simulaciones del núcleo: de 2102 a 10 692, con 405 posprocesos por
+  - candidatos: de 1 754 460 a 14 171 760;
+  - trayectorias hemodinámicas únicas, las únicas simulaciones del núcleo: de 2308 a 14 256, con 405 posprocesos por
     trayectoria;
-  - producto ingenuo: de 84,8 a 574 millones de simulaciones;
-  - simulaciones evitadas: entre 84,8 y 574 millones.
+  - producto ingenuo: de 94,7 a 765 millones de simulaciones;
+  - simulaciones evitadas: entre 94,7 y 765 millones.
 - **Diseño factorizado, en orden:**
   1. Enumerar P1 y P3 una vez.
   2. Simular por caso L1 (P1), L2 (P1 × D) y L3 (P3), una vez cada uno: la hemodinámica no depende del nivel de
-     entrega de llegada, ni de la cinética de la deuda o del lactato, ni de ρ.
+     entrega de llegada ni de la cinética de la deuda o del lactato (persistido), y lo que leen las FD-LAC tampoco
+     depende de ρ.
   3. Calcular el déficit de los 3 niveles de entrega como posproceso.
   4. Calcular D y el lactato como posproceso, con la recursión del núcleo, para los 5 pares de llegada × 81
      combinaciones de cinética y exceso.
@@ -311,15 +327,27 @@ fisiología actual y no usa la región histórica de P2F de 1054 conjuntos.
   - D y el lactato, en P2I-2Z;
   - el déficit y la adecuación, en este paquete.
 - **«La sustitución de D no omite claves»:** sí era material, porque la completitud de A depende de ella. Ahora está
-  en el registro congelado (288 claves, cada una con su testigo), y una prueba recalcula en vivo algunos testigos.
+  en el registro congelado (387 claves, cada una con su testigo), y una prueba recalcula en vivo algunos testigos.
 
-## 9. Ejecución en el HEAD final
+## 9. Recongelamiento por la revisión y ejecución en el HEAD final
 
-El paquete se entrega en dos commits:
-- uno ejecutable (código, pruebas, JSON e informes), sobre el que corre la suite completa;
-- uno posterior, sólo de documentación, si hace falta.
-
-La equivalencia del árbol ejecutable se prueba con el diff entre los dos.
+- **Historia:**
+  - congelamiento en `83996c5`;
+  - corrida y commit ejecutable en `3a9aa10`, con la suite completa verde sobre ese SHA;
+  - la revisión adversarial probó que el código congelado omitía, para la tasa 2,5, los sobrevivientes de las cajas
+    de P2I-2W dentro de la banda;
+  - recongelamiento en `0b90ddf`: sólo esas claves y ese soporte, más tres detalles de código (la monotonía también
+    sobre la dilución a los 120′, todas las columnas en la comprobación del nivel de entrega y un docstring mal
+    ubicado);
+  - nueva corrida y nuevo commit ejecutable.
+- **Resultado de la nueva corrida:**
+  - todo lo de τ es idéntico a la primera: diseño, veredictos, región, bordes, límite, trayectorias y clasificación
+    práctica;
+  - cambian el soporte de la 2,5, sus claves, la completitud y los recuentos del espacio;
+  - el veredicto no cambia.
+- **Entrega en dos commits:** uno ejecutable (código, pruebas, JSON e informes), sobre el que corre la suite completa,
+  y uno posterior sólo de documentación, si hace falta. La equivalencia del árbol ejecutable se prueba con el diff
+  entre los dos.
 
 ## 10. Qué no hace
 
@@ -336,6 +364,8 @@ La equivalencia del árbol ejecutable se prueba con el diff entre los dos.
 
 - **τ con Finf 0,05**, para destrabar la preparación: aceptar τ ≤ 240 con la cota de FD-BLD-05 declarada más allá,
   autorizar un valor más, o tratar Finf y τ como una sola curva de lo retenido.
-- **Relleno de la tasa 2,5:** su soporte está acotado a meta ≤ 0,75 y τ ≤ 240. ¿Hace falta extenderlo como en las
-  tasas 5 y 6?
+- **Relleno de la tasa 2,5:** con P2I-2W, su soporte incluye la meta 1,0 y τ 480. Las cajas con τ 960 no dejaron
+  sobrevivientes. No queda nada pendiente de extender.
+- **Vecinos de Finf con τ ≥ 90:** si se elige la opción de una sola curva Finf–τ, qué hacer con Finf 0 y 0,15, que no
+  se probaron.
 - **FD-24 y FD-25** (modificadores de L3): siguen abiertas.

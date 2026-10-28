@@ -16,6 +16,7 @@ from .blood_extension_report import SHORT
 from .blood_filter_report import CLASSES_ES, _n, _value
 from .blood_fluid_readiness_report import CRITERIA_ES as BASE_CRITERIA_ES, YES, _blood, _point
 from .blood_fluid_report import SIDES_ES
+from .blood_fluid_tau_closure import rate25_keys
 
 MARKERS = {name: (f"<!-- generado:{name} -->\n", f"<!-- /generado:{name} -->")
            for name in ("tau", "region", "practico", "semantica", "claves", "preparacion", "espacio")}
@@ -37,6 +38,9 @@ FIELDS_ES = {"retained_share": "retenido", "dilution": "dilución de Hb (g/dL)",
              "do2": "DO2", "effective_deficit": "déficit crítico"}
 SOURCES_ES = {"P2I-2V-R joint survivors (refill target <= 0.75, tau <= 240)":
                   "sobrevivientes conjuntos de P2I-2V-R (meta del relleno ≤ 0,75; τ ≤ 240)",
+              "P2I-2V-R joint survivors and P2I-2W's in-band extension boxes (refill target 1.0; target 1.0 with tau "
+              "480)": "sobrevivientes conjuntos de P2I-2V-R y de las cajas de extensión de P2I-2W dentro de la banda "
+                      "(meta del relleno 1,0; 1,0 con τ 480)",
               "P2I-2Y joint survivors (with the refill extension)":
                   "sobrevivientes conjuntos de P2I-2Y (con la extensión del relleno)"}
 STATUS_ES = {"CERTIFIED_SOURCE_SPACE (not executed)": "ESPACIO DE ORIGEN CERTIFICADO (sin ejecutar)",
@@ -153,8 +157,9 @@ def render_keys(data: dict) -> str:
     add = lines.append
     compat = data["rate25_compatibility"]
     failing = {k: v for k, v in compat.items() if v}
-    add(f"Tasa 2,5: FD-BLD-06 de los {len(compat)} puntos del soporte en las 36 claves de la tasa 2,5 (superconjunto de las "
-        f"de sus sobrevivientes), en los dos casos: "
+    keys25 = len(rate25_keys())
+    add(f"Tasa 2,5: FD-BLD-06 de los {len(compat)} puntos del soporte en las {keys25} claves de la tasa 2,5 (superconjunto "
+        f"de las de sus sobrevivientes, de P2I-2V-R y de P2I-2W), en los dos casos: "
         + ("todos pasan." if not failing else "fallan " + "; ".join(f"{_point(k)} en {len(v)} claves" for k, v in failing.items()) + "."))
     add("")
     c = data["completeness"]
