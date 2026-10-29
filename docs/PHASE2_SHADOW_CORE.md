@@ -3173,8 +3173,10 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - La intrínseca es propia de cada paciente (60 / 80 / 100), sin identificar ni aprobar.
   - Son comunes las ganancias, la saturación y los techos totales 150 / 175 / 200. La presión sigue DEFERRED y la
     tolerancia en ±5 lpm.
-- **Severidad:** 7 de 25 combinaciones son admisibles (18 rechazos analíticos). Una guarda sobre el árbol sintáctico
-  prueba que el constructor no lee ninguna magnitud de FC.
+- **Severidad:** 7 de 25 combinaciones son admisibles (18 rechazos analíticos).
+  - El constructor lee sólo las bandas de deuda y de entrega de llegada. Una prueba lo registra y comprueba que el orden
+    no cambia con la FC registrada + 50 lpm.
+  - La guarda sobre el árbol sintáctico sólo ve los nombres que lee directamente (TD-95).
 - **Recertificación:**
   - La maquinaria de P2I-2AD, sin cambios, filtra cada caso con su par. La factorización coincide (936 corridas, 0
     desacuerdos) y los pares atados reproducen exactamente la región de P2I-2AD (`9ddbcf24…`).

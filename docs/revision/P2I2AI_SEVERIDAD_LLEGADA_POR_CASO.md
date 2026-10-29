@@ -23,8 +23,10 @@ P2I-2AF (`adb3767b…`) y P2I-2AG (`94c94584…`). El módulo de P2I-2AG queda f
   - La regla de orden se congeló antes de cualquier conteo: D0 de 57m ≥ D0 de 72f, entrega de 57m ≤ entrega de 72f, al
     menos una estricta.
   - De 25 combinaciones, **7 son admisibles**; las otras 18 son rechazos analíticos (5 de ellas por idénticas).
-  - Una guarda sobre el árbol sintáctico prueba que el constructor no lee ningún nombre de FC, tolerancia, ganancia,
-    techo ni del motor heredado.
+  - El constructor lee sólo las bandas de deuda y de entrega de llegada de cada caso. Una prueba lo registra y
+    comprueba que el orden no cambia con la FC registrada + 50 lpm.
+  - Una guarda sobre el árbol sintáctico comprueba además que el constructor no nombra ninguna FC, tolerancia,
+    ganancia, techo ni el motor heredado. La guarda sólo ve los nombres que lee directamente.
 - **Recertificación de D y lactato.** Se usó la maquinaria de P2I-2AD sin cambios: cada caso se filtra con su propio par
   y un candidato sobrevive si pasan los dos casos.
   - La factorización coincide con el núcleo completo: 936 corridas, 0 desacuerdos.
@@ -42,9 +44,11 @@ P2I-2AF (`adb3767b…`) y P2I-2AG (`94c94584…`). El módulo de P2I-2AG queda f
   como en P2I-2AD.
   - El par con 72f medio no tiene sobrevivientes con 0,9.
   - El par con 72f mixto tiene sobrevivientes con 0,9 (8184) y con 1,1 (8631), pero ninguno común a las dos demandas.
-  - Comprobación aparte, con un script de diagnóstico fuera del registro y el mismo módulo congelado:
+  - Comprobación aparte, fuera del registro. Se hizo con un script de diagnóstico no commiteado que usa el mismo
+    módulo congelado, y la revisión adversarial la reprodujo con sus propias sondas:
     - el mismo cálculo sobre los pares atados da 63 859 robustos, igual que P2I-2AD;
-    - cada caso por separado sí tiene candidatos robustos (57m: 9420; 72f: 123 686 y 164 461);
+    - cada caso por separado sí tiene candidatos robustos: 57m, 9420; 72f, 164 461 en el par medio y 123 686 en el
+      mixto;
     - un candidato conjunto exige el mismo conjunto P3, el mismo punto de cristaloide y el mismo λ base para los dos
       casos, y ninguno pasa con las tres demandas.
 - **Superficie de llegada de la FC.** Se recorrieron 2 pares compatibles × 9 pares de intrínseca × 25 ganancias × 3
@@ -67,10 +71,11 @@ P2I-2AF (`adb3767b…`) y P2I-2AG (`94c94584…`). El módulo de P2I-2AG queda f
   - La FC máxima de 57m es 171 lpm, y algún candidato queda a 1 lpm de su techo.
   - La taquicardia diferida a los 120 en L3 es pequeña: mediana de 1 a 5 lpm sobre la intrínseca en 57m y de 0 a 1 en
     72f; máximo 21.
-  - Con intrínseca 60, varias trayectorias de L3 vuelven cerca de la intrínseca: en 57m, con 72f en el par mixto, la
-    mediana a los 120 es 67 lpm (mínimo 61).
-  - En 72f con entrega completa, el cristaloide y los GR dan la misma FC hasta los minutos 67–96. Lo comprobó el script
-    de diagnóstico: la FC sólo lee el déficit y D, y ninguno de los dos cambia antes.
+  - En L3 varias trayectorias vuelven cerca de su intrínseca. En 57m, con 72f en el par mixto, la FC a los 120 va de 61
+    a 105 lpm (mediana 67) sobre lecturas que mezclan intrínsecas de 60 y de 100. El mínimo, 61, está 1,4 lpm sobre
+    la intrínseca 60.
+  - En 72f con entrega completa, el cristaloide y los GR dan la misma FC hasta los minutos 67–96. Lo comprobó el mismo
+    script de diagnóstico (fuera del registro): la FC sólo lee el déficit y D, y ninguno de los dos cambia antes.
 - **Veredicto: HR_NUMERIC_DECISION_SURFACE_READY_FOR_FACULTY.** Se cumplen las 8 comprobaciones congeladas.
   - La presión sigue DEFERRED, la tolerancia en ±5 lpm, y las ganancias y los techos son comunes.
   - La FC no eligió la severidad.
@@ -127,7 +132,7 @@ Regla congelada: A (57m pair, 72f pair) of the existing support is CLINICALLY_AD
 ## 4. La severidad no lee la FC (P2I-2AI-3)
 
 <!-- generado:lectura -->
-El constructor de severidad (`pair_values`, `case_pairs`, `admissible`) lee: `57m`, `72f`, `ADMISSIBLE`, `ANALYTIC_REJECTION`, `C57`, `C72`, `D0`, `D57_BELOW_D72`, `DELIVERY57_ABOVE_DELIVERY72`, `Every (57m pair, 72f pair) of the existing support with the frozen ordinal verdict (no physiology run).`, `IDENTICAL`, `PAIRS`, `RESERVE`, `The arrival values of one existing pair for one case, from the case bands only.`, `_level`, `a`, `append`, `arrival_delivery_ratio`, `arrival_oxygen_debt`, `b`, `band`, `bands`, `case`, `case_bands`, `case_pairs`, `debt`, `delivery`, `delivery_reanchored`, `derived`, `dict`, `effective_oxygen_deficit`, `first`, `float`, `gi_reference`, `item`, `level`, `list`, `lower`, `midpoint`, `out`, `pair`, `pair_values`, `ratio`, `reanchored`, `reasons`, `second`, `status`, `str`, `tuple`, `upper`, `x0`. Ninguno es una magnitud de FC (prohibidos: hr, pulse, sympathetic, ceiling, tolerance, authored, legacy, intrinsic, acute, gain, hp, hk, hs, heart).
+El constructor de severidad (`pair_values`, `case_pairs`, `admissible`) lee: `57m`, `72f`, `ADMISSIBLE`, `ANALYTIC_REJECTION`, `C57`, `C72`, `D0`, `D57_BELOW_D72`, `DELIVERY57_ABOVE_DELIVERY72`, `Every (57m pair, 72f pair) of the existing support with the frozen ordinal verdict (no physiology run).`, `IDENTICAL`, `PAIRS`, `RESERVE`, `The arrival values of one existing pair for one case, from the case bands only.`, `_level`, `a`, `append`, `arrival_delivery_ratio`, `arrival_oxygen_debt`, `b`, `band`, `bands`, `case`, `case_bands`, `case_pairs`, `debt`, `delivery`, `delivery_reanchored`, `derived`, `dict`, `effective_oxygen_deficit`, `first`, `float`, `gi_reference`, `item`, `level`, `list`, `lower`, `midpoint`, `out`, `pair`, `pair_values`, `ratio`, `reanchored`, `reasons`, `second`, `status`, `str`, `tuple`, `upper`, `x0`. Ninguno es una magnitud de FC (prohibidos: hr, pulse, sympathetic, ceiling, tolerance, authored, legacy, intrinsic, acute, gain, hp, hk, hs, heart). Esta guarda mira sólo los nombres que el constructor lee directamente: `case_bands` construye todas las bandas del caso, también las de FC. Una prueba registra que el constructor lee sólo `arrival_oxygen_debt` y `arrival_delivery_ratio`, y que el orden y los 7 admisibles no cambian con la FC registrada + 50 lpm.
 <!-- /generado:lectura -->
 
 ## 5. Factorización y equivalencia con P2I-2AD (P2I-2AI-4)
@@ -287,6 +292,20 @@ Aprobado: no.
 Regla congelada: HR_NUMERIC_DECISION_SURFACE_READY_FOR_FACULTY when: (1) the arrival severity is case-specific without HR (severity_reads() names no HR quantity) and at least one case pair is admissible; (2) the D / lactate recertification passes: the factorization agrees with the full core, the tied pairs reproduce P2I-2AD exactly, and at least one admissible pair is LACTATE_COMPATIBLE; (3) the intrinsic rate is declared per case (explicit; no fallback); (4) the gains are common (by construction); (5) at least one jointly arrival-compatible candidate exists (else ARRIVAL_HR_MODEL_REMAINS_STRUCTURALLY_UNRESOLVED); (6) the pressure contribution is 0 in the primary profile; (7) no D / lactate / RR regression (tied equivalence, the core unchanged); (8) no structural contradiction (the HR reconstruction equals the full core on the representatives). The suite criterion is the final certification's. Otherwise HR_NUMERIC_DECISION_SURFACE_NOT_READY with the first blocker. Nothing is approved.
 <!-- /generado:veredicto -->
 
+Alcance de las comprobaciones (revisión adversarial):
+- `explicit_intrinsic` y `common_gains` valen sí por construcción. La protección real está en otros dos lugares:
+  `hp.require_explicit_intrinsic`, que detiene la tabla si falta la intrínseca, y el código, que usa las mismas
+  ganancias y techos para los dos casos (una prueba lo fija).
+- `pressure_deferred` comprueba la constante del modo primario.
+- `no_regression` repite la equivalencia de los pares atados y no evalúa la FR. La no regresión de D, lactato y FR la da
+  la certificación final.
+- En la clasificación:
+  - `adequate_through_120` no puede fallar después del filtro L3, que ya descarta INADEQUATE y LOST;
+  - `fd04_05_evaluated` casi tampoco.
+  - Las dos son heredadas de P2I-2AD, y lo que discrimina es `survivors`.
+- La regla de trayectorias dice que la corrida se detiene si una relectura difiere. El código no se detiene: la marca
+  como contradicción estructural y bloquea el veredicto. En esta corrida, las 12 fueron exactas.
+
 ## 12. Decisiones que necesita la docencia
 
 Ninguna de estas decisiones la toma el análisis; la docencia las confirma o las reemplaza.
@@ -314,5 +333,5 @@ Ninguna de estas decisiones la toma el análisis; la docencia las confirma o las
 ## 13. Eficiencia
 
 <!-- generado:eficiencia -->
-Trayectorias hemodinámicas: 3178; corridas completas de validación: 936; de representantes: 24; de trayectorias de FC: 48; unidades posprocesadas por caso (demanda 0,9: L1 352350, L3 288179, L2 301800; demanda 1: L1 352350, L3 303405, L2 306900; demanda 1,1: L1 352350, L3 315393, L2 275316); combinaciones de pares: 25; rechazos analíticos: 18; pares admisibles no compatibles con el lactato: 5; descomposiciones de llegada analíticas: 2250; barrido cartesiano: no; motor heredado leído: no.
+Trayectorias hemodinámicas: 3178; corridas completas de validación: 936; de representantes: 24; de trayectorias de FC: 48; unidades posprocesadas, suma de los dos casos (demanda 0,9: L1 352350, L3 288179, L2 301800; demanda 1: L1 352350, L3 303405, L2 306900; demanda 1,1: L1 352350, L3 315393, L2 275316); combinaciones de pares: 25; rechazos analíticos: 18; pares admisibles no compatibles con el lactato: 5; descomposiciones de llegada analíticas: 2250; barrido cartesiano: no; motor heredado leído: no.
 <!-- /generado:eficiencia -->

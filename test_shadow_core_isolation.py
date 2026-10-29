@@ -36,8 +36,12 @@ LEGACY_READERS = {"legacy_adapter.py": {"family_engine", "family_parser", "cogni
                   "migration_authority.py": {"clinical_cases"}}
 #: The live runtime: the page, the engine, the reader, the submission guard and the order path.
 RUNTIME_ROOTS = ("app", "family_engine", "family_parser", "submission_guard", "order_pipeline")
-STDLIB = {"__future__", "argparse", "copy", "dataclasses", "enum", "functools", "hashlib", "inspect", "itertools",
-          "json", "math", "pathlib", "typing"}
+STDLIB = {"__future__", "argparse", "ast", "copy", "dataclasses", "enum", "functools", "hashlib", "inspect",
+          "itertools", "json", "math", "pathlib", "typing"}
+#: Standard-library modules one offline analysis file may use besides STDLIB.
+ANALYSIS_ONLY = {
+    # P2I-2AI: the offline analysis CLI parallelizes its run (--workers); nothing the application runs imports it.
+    "arrival_severity.py": {"multiprocessing"}}
 
 
 def _imports(path):
@@ -61,7 +65,7 @@ def test_no_runtime_module_imports_the_core():
 def test_the_core_imports_only_what_a_shadow_needs():
     for path in PACKAGE.rglob("*.py"):
         imported = _imports(path) - STDLIB - {""}
-        allowed = LEGACY_READERS.get(path.name, set())
+        allowed = LEGACY_READERS.get(path.name, set()) | ANALYSIS_ONLY.get(path.name, set())
         assert imported <= allowed, (path.relative_to(ROOT), imported - allowed)
     assert SHADOW_ONLY is True and AUTHORITATIVE_ENGINE == "family_engine"
 

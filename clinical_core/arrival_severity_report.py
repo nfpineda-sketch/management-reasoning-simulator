@@ -115,7 +115,10 @@ def render_pares(data: dict) -> str:
 def render_lectura(data: dict) -> str:
     reads = data["severity_reads"]
     return (f"El constructor de severidad (`pair_values`, `case_pairs`, `admissible`) lee: {', '.join(f'`{r}`' for r in reads)}. "
-            f"Ninguno es una magnitud de FC (prohibidos: {', '.join(asv.HR_NAMES)}).")
+            f"Ninguno es una magnitud de FC (prohibidos: {', '.join(asv.HR_NAMES)}). Esta guarda mira sólo los "
+            "nombres que el constructor lee directamente: `case_bands` construye todas las bandas del caso, también "
+            "las de FC. Una prueba registra que el constructor lee sólo `arrival_oxygen_debt` y "
+            "`arrival_delivery_ratio`, y que el orden y los 7 admisibles no cambian con la FC registrada + 50 lpm.")
 
 
 def render_equivalencia(data: dict) -> str:
@@ -229,7 +232,7 @@ def render_eficiencia(data: dict) -> str:
                       for f, u in sorted(e["post_processed_units"].items(), key=lambda kv: float(kv[0])))
     return (f"Trayectorias hemodinámicas: {e['haemodynamic_trajectories']}; corridas completas de validación: "
             f"{e['validation_full_runs']}; de representantes: {e['representative_full_runs']}; de trayectorias de FC: "
-            f"{e['trajectory_full_runs']}; unidades posprocesadas por caso ({units}); combinaciones de pares: "
+            f"{e['trajectory_full_runs']}; unidades posprocesadas, suma de los dos casos ({units}); combinaciones de pares: "
             f"{e['case_pairs']}; rechazos analíticos: {e['analytic_rejections']}; pares admisibles no compatibles con el "
             f"lactato: {e['simulation_rejections']}; descomposiciones de llegada analíticas: "
             f"{e['arrival_hr_decompositions']}; barrido cartesiano: {_yes(e['cartesian_sweep'])}; motor heredado leído: "

@@ -77,7 +77,24 @@ def test_the_faculty_ordering_is_applied_analytically():
             b["D0"], b["delivery"])
 
 
-def test_the_severity_constructor_reads_no_hr_quantity():
+def test_the_severity_constructor_reads_no_hr_quantity(monkeypatch):
+    # The AST guard sees only the names the constructor reads directly. case_bands builds every band of a case,
+    # the HR bands included, so the constructor's band reads are recorded and the HR is shifted to show no effect.
+    seen, case_bands, authored = set(), gi_reference.case_bands, gi_reference.authored
+
+    class Recording(dict):
+        def __getitem__(self, key):
+            seen.add(key)
+            return dict.__getitem__(self, key)
+
+    baseline = asv.case_pairs()
+    monkeypatch.setattr(gi_reference, "case_bands", lambda case: Recording(case_bands(case)))
+    assert asv.case_pairs() == baseline and seen == {"arrival_oxygen_debt", "arrival_delivery_ratio"}
+    monkeypatch.setattr(gi_reference, "authored",
+                        lambda case, item: authored(case, item) + (50 if item == "hr" else 0))
+    assert gi_reference.authored(C57, "hr") == authored(C57, "hr") + 50
+    assert asv.case_pairs() == baseline and len(asv.admissible()) == 7
+    monkeypatch.undo()
     reads = {name.lower() for name in asv.severity_reads()}
     assert not [name for name in reads for word in asv.HR_NAMES if word in name]
     assert {"case_bands", "arrival_oxygen_debt", "arrival_delivery_ratio"} <= reads
@@ -133,9 +150,14 @@ def test_the_arrival_hr_uses_each_case_pair_explicit_intrinsic_and_the_primary_m
 
 
 def test_the_rules_are_declared_before_any_count():
-    for rule in (asv.ORDERING_RULE, asv.EQUIVALENCE, asv.COMPATIBILITY_RULE, asv.HR_RULE, asv.COMPARISON_RULE,
-                 asv.TRAJECTORY_RULE, asv.VERDICT_RULE):
-        assert rule
+    assert "D0(57m) >= D0(72f) AND delivery(57m) <= delivery(72f) AND at least one inequality is strict" in (
+        asv.ORDERING_RULE) and "Ordinal only" in asv.ORDERING_RULE
+    assert "reproduce P2I-2AD's committed region exactly" in asv.EQUIVALENCE
+    assert "|HR57 - 124| <= 5 and |HR72 - 112| <= 5" in asv.HR_RULE and "pressure 0" in asv.HR_RULE
+    assert "the common ceilings 150 / 175 / 200" in asv.HR_RULE and "No best candidate" in asv.HR_RULE
+    assert "Gains and ceilings common in all four" in asv.COMPARISON_RULE
+    assert "Robustness across demand is reported, never a filter" in asv.COMPATIBILITY_RULE
+    assert "Nothing is approved" in asv.VERDICT_RULE
     assert asv.UNRESOLVED in asv.VERDICT_RULE and "No pair is approved" in asv.COMPATIBILITY_RULE
     assert "No envelope filters anything" in asv.TRAJECTORY_RULE
 
@@ -161,17 +183,38 @@ def test_statistics_representatives_review_and_classification_on_a_tied_subset()
         tasks = lc.haemodynamic_tasks(mini, support)
         store = lc.haemodynamics(tasks)
         per = asv.per_case_filter(mini, support, arrivals, tasks, store, 1.0)
-        units = next(u for u in (asv.combine(per, mini, len(support), p, p) for p in asv.PAIRS) if u)
+        by_pair = {p: asv.combine(per, mini, len(support), p, p) for p in asv.PAIRS}
+        units = next(u for u in by_pair.values() if u)
         stats = asv.statistics(per, units)
         picks = asv.representatives(per, mini, units)
         reviewed = asv.review(mini, support, arrivals, tasks, store, picks)
+        # Cross-check against P2I-2AD's own survivor statistics and representative rule on the same tied units.
+        reference = lc.filter_(mini, support, arrivals, tasks, store, 1.0)
+        reference_stats = lc.survivor_statistics(mini, support, arrivals, tasks, store, reference)
+    tied = [u for p in asv.PAIRS for u in by_pair[p]]
+    mine = asv.statistics(per, tied)
+    assert reference["survivors"] == asv._survivors(tied) > 0
+    assert mine["evaluated_both"] == reference_stats["fd04_and_05_evaluated_in_both_cases"]
+    assert mine["trigger_is_onset"] == reference_stats["trigger_is_adequacy_onset"]
+    assert mine["debt_coherent"] == reference["survivors"] - reference_stats["debt_incoherent_l3"]
+    lc_units = [(i, a, r, d) for i, a, _, r, d in units]
+    theirs = lr.representatives(mini, support, {"units": lc_units, "survivors": asv._survivors(units)},
+                                reference_stats["_l60"])
+    assert {tag: {"p1": p["p1"], "lambda": p["lambda_57m"], "p3": p["p3"], "support": p["support"], "rank": p["rank"]}
+            for tag, p in picks.items()} == theirs
+    assert all(p["lambda_57m"] == p["lambda_72f"] for p in picks.values())
     assert set(picks) == {"LOW", "MID", "HIGH"} and set(stats) == {"evaluated_both", "trigger_is_onset",
                                                                    "debt_coherent", "adequate_through_120"}
     assert all(run_["rerun_equals_factorized"] for item in reviewed.values() for run_ in item["runs"].values())
-    status, checks, _ = asv.classify(asv._survivors(units), stats, reviewed)
-    assert status in (asv.LACTATE_COMPATIBLE, asv.LACTATE_INCOMPATIBLE) and set(checks) == {
-        "survivors", "adequate_through_120", "fd04_05_evaluated", "trigger_is_onset", "debt_coherent", "patient_like",
-        "reruns_exact"}
+    status, checks, first = asv.classify(asv._survivors(units), stats, reviewed)
+    assert set(checks) == {"survivors", "adequate_through_120", "fd04_05_evaluated", "trigger_is_onset",
+                           "debt_coherent", "patient_like", "reruns_exact"}
+    assert checks["survivors"] and checks["reruns_exact"]
+    assert (status == asv.LACTATE_COMPATIBLE) == all(checks.values()) and (first is None) == all(checks.values())
+    # A case pair without survivors fails first on 'survivors', never vacuously.
+    assert asv.classify(0, dict.fromkeys(stats, 0), {}) == (
+        asv.LACTATE_INCOMPATIBLE, {**dict.fromkeys(checks, True), "survivors": False, "patient_like": False,
+                                   "reruns_exact": False}, "survivors")
 
 
 def test_the_trajectory_machinery_reproduces_the_core_on_a_synthetic_survivor():
