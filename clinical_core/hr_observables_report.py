@@ -314,7 +314,7 @@ def render_eficiencia(data: dict) -> str:
     e = data["efficiency"]
     runs = "; ".join(f"demanda {_d(k)}: {v} (sin compartir L1 y L3: {e['trajectory_full_runs_without_sharing'][k]})"
                      for k, v in sorted(e["trajectory_full_runs"].items(), key=lambda kv: float(kv[0])))
-    return (f"Rechazos por verdad del caso: {e['case_truth_rejections']} par por caso ({e['case_truth_rejected_lactate_survivors']} "
+    return (f"Rechazos por verdad del caso: {e['case_truth_rejections']} par de casos ({e['case_truth_rejected_lactate_survivors']} "
             f"sobrevivientes de lactato que no se simulan); trayectorias hemodinámicas: {e['haemodynamic_trajectories']}; "
             f"puntos de lactato por caso: {e['lactate_side_points_per_case']} de {e['of_lactate_side_points_per_case_in_p2i2ai']}; "
             f"descomposiciones de llegada analíticas: {e['arrival_decompositions']}; corridas de validación: "

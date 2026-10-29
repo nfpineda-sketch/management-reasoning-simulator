@@ -33,9 +33,16 @@ módulo queda fijado byte a byte). El núcleo, BloodState, el gasto, el DO2, el 
 - **Reutilización exacta.**
   - Las filas del par retenido se reconstruyeron con los chequeos de unidad de P2I-2AD, sólo para sus 405 puntos de
     lactato por caso.
-  - Reproducen el digest de unidades de P2I-2AI (`06f6d5c8…`) y sus sobrevivientes: 0 / 216 / 1092 con demanda 0,9 / 1,0
-    / 1,1.
-  - Las dependencias ejecutables son idénticas a las de `12346cb`.
+  - Con demanda 1,0 reproducen byte a byte el digest de unidades de P2I-2AI (`06f6d5c8…`).
+  - Con 0,9 y 1,1, P2I-2AI sólo guardó los conteos (0 y 1092), y coinciden. El módulo congelado no comprueba más
+    (TD-96).
+  - Las filas de 1,1 se recertifican con una prueba del repositorio, que repite sobre la fuente completa el filtro por
+    caso, la estadística y la revisión de representantes de P2I-2AI con esa demanda:
+    - las cuatro comprobaciones de la estadística dan 1092 de 1092;
+    - los representantes no tienen banderas, D es coherente y la relectura es exacta;
+    - el digest de unidades es `515a157e…`.
+  - Todo `clinical_core` es idéntico al de `12346cb`, salvo este paquete y dos archivos que sólo cambian una tupla de
+    exclusión (verificado sobre git). Fuera de `clinical_core` sólo cambiaron documentos y pruebas.
 - **Demanda (AJ-3).**
   - Con 0,9 el par es CURRENTLY_INCOMPATIBLE. Superan L1 202 140 candidatos y L3 los elimina a todos; el primer fallo
     siempre es de 57m: FD-LAC-04 (95 580), L3 inadecuada (53 136), FD-LAC-05 (46 944) y adecuación perdida (6480).
@@ -49,8 +56,8 @@ módulo queda fijado byte a byte). El núcleo, BloodState, el gasto, el DO2, el 
     100 / 100, aguda 1,46, deuda 0,0103, techo 150 o 175.
   - **Demanda 1,1:** 45, 78 y **13 conjuntos**: intrínseca 60 / 80 (7) o 100 / 100 (6), aguda 0,382–5,58, cuatro
     ganancias de deuda y los tres techos.
-  - En 1,1 vuelve a aparecer la intrínseca 80 de 72f, que P2I-2AI no veía con 1,0. Por eso no se quitó de la
-    superficie.
+  - La intrínseca 80 sigue en la superficie por decisión docente, sin condiciones. Con 1,1 hay candidatos conjuntos
+    con 72f en 80; en P2I-2AI no había ninguno, con ningún par.
 - **Identificabilidad (AJ-6).** Hay dos observaciones de llegada y cinco latentes.
   - En la unión, las intrínsecas, la ganancia aguda y el techo quedan POORLY_IDENTIFIED. La ganancia de deuda es
     NON_IDENTIFIABLE (sólo llega como ganancia × D).
@@ -60,17 +67,18 @@ módulo queda fijado byte a byte). El núcleo, BloodState, el gasto, el DO2, el 
   - Se recorrieron todos los sobrevivientes por todos los candidatos: 432 lecturas por caso con 1,0 y 14 196 con 1,1.
   - Las 360 relecturas de validación son exactas, y en el minuto 0 coinciden con la llegada analítica.
   - Sin tratamiento, la FC sube de forma sostenida: mediana +22 lpm a los 120 con 1,0.
-  - Con el cristaloide cae poco al terminar la infusión (−2 a −3 lpm), toca su mínimo hacia el minuto 21–24 y rebota de
-    +13 a +17 lpm.
+  - Con el cristaloide y demanda 1,0, la FC cae poco al terminar la infusión (medianas −2 a −3 lpm), toca su mínimo
+    hacia el minuto 21–24 y rebota de +13 a +17 lpm. Con 1,1 el rango es mucho más amplio: el cambio va de +0,4 a
+    −17,8 lpm, el mínimo cae entre los minutos 7 y 27 y el rebote va de 4 a 35 lpm.
   - Con los GR baja en cada unidad. Con 1,0, 57m baja −5 lpm con la unidad 1 y −11 con la unidad 2, que coincide con la
-    hemostasia; 72f baja −7 y −2.
+    hemostasia; 72f baja −7 y −2. Con 1,1 la unidad 1 baja de −0,6 a −31,5 lpm en 57m y de −1,9 a −30,1 en 72f.
   - La adecuación sostenida empieza en el minuto 60. A los 120, la taquicardia residual es de 0,2 a 1,5 lpm con 1,0 y de
     hasta 9,5 lpm con 1,1.
 - **72f, cristaloide frente a GR (AJ-8).** Con el estado retenido, las trayectorias sí se distinguen.
   - Divergen desde el minuto 1 y superan 1 lpm hacia los minutos 9–13 con 1,0.
   - La primera entrada en cambiar es la señal aguda: con entrega 0,85 hay déficit en la llegada.
-  - La mayor diferencia llega a los 120, con la FC de los GR 18–25 lpm más baja. Ese tramo incluye la hemostasia del
-    minuto 60 en L3, así que no es una firma específica del tratamiento.
+  - La mayor diferencia llega a los 120, con la FC de los GR 18–25 lpm más baja con 1,0 y 10–54 lpm más baja con 1,1.
+    Ese tramo incluye la hemostasia del minuto 60 en L3, así que no es una firma específica del tratamiento.
 - **Propuestas de envolventes A–G (AJ-9).** Se escribieron antes de leer las distribuciones. Ninguna se aplica ni se
   aprueba.
 - **Veredicto: HR_OBSERVABLE_DECISION_PACK_READY.** Se cumplen las 8 comprobaciones.
@@ -419,9 +427,12 @@ Regla: Each proposal is shown with the current survivors' LOW / median / HIGH, b
 - **Parámetros ocultos:** ninguno se aprueba.
 - **No regresión:**
   - El núcleo no cambia: no se tocó `clinical_core` fuera de este análisis y de dos tuplas de exclusión.
-  - Las filas de D y lactato del par retenido reproducen las de P2I-2AI byte a byte (digest de unidades).
-  - Las corridas por demanda igualan a `lactate_closure.full_run` en lactato y D, y con demanda 1,0 a `hr_shock.full_run`
-    fila por fila: BloodState, gasto, DO2, déficit, D, lactato y FR.
+  - Las filas de D y lactato del par retenido reproducen las de P2I-2AI byte a byte con demanda 1,0. Con 1,1 las
+    recertifica la prueba descrita arriba.
+  - En los tres sobrevivientes de validación de cada demanda (primero, central y último), las corridas por demanda
+    igualan a `lactate_closure.full_run` en lactato y D. Con demanda 1,0 igualan además a `hr_shock.full_run` fila por
+    fila: BloodState, gasto, DO2, déficit, D, lactato y FR. La revisión adversarial repitió las lecturas con 1,1 en
+    otras 8 combinaciones con corridas completas independientes, sin diferencias.
   - La certificación final repite el golden directo y Contracts v2.
 
 ## 14. Veredicto (P2I-2AJ-12)
@@ -471,5 +482,5 @@ colapso, la migración y la integración.
 ## 16. Eficiencia
 
 <!-- generado:eficiencia -->
-Rechazos por verdad del caso: 1 par por caso (25613 sobrevivientes de lactato que no se simulan); trayectorias hemodinámicas: 3178; puntos de lactato por caso: 405 de 2025; descomposiciones de llegada analíticas: 900; corridas de validación: 360; corridas de trayectoria: demanda 1,0: 504 (sin compartir L1 y L3: 1296); demanda 1,1: 2548 (sin compartir L1 y L3: 6552); lecturas de FC posprocesadas: 29256; barrido cartesiano: no; motor heredado leído: no.
+Rechazos por verdad del caso: 1 par de casos (25613 sobrevivientes de lactato que no se simulan); trayectorias hemodinámicas: 3178; puntos de lactato por caso: 405 de 2025; descomposiciones de llegada analíticas: 900; corridas de validación: 360; corridas de trayectoria: demanda 1,0: 504 (sin compartir L1 y L3: 1296); demanda 1,1: 2548 (sin compartir L1 y L3: 6552); lecturas de FC posprocesadas: 29256; barrido cartesiano: no; motor heredado leído: no.
 <!-- /generado:eficiencia -->

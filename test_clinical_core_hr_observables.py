@@ -350,3 +350,58 @@ def test_the_document_is_generated_from_the_record(tmp_path):
     copy.write_text(DOCUMENT.read_text(encoding="utf-8"), encoding="utf-8")
     hr_observables_report.main(["--write", str(copy), "--data", str(RECORD)])
     assert copy.read_text(encoding="utf-8") == DOCUMENT.read_text(encoding="utf-8"), "regenerate the document"
+
+
+# The retained rows at every demand, recertified live on the full source (adversarial review, MEDIA-2) -----------------
+
+#: The retained pair's units digest at demand 1.1: P2I-2AI kept only its count (1092), so these rows are recertified
+#: here with P2I-2AI's own per-case filter, statistics and representative review at that demand.
+UNITS_AT_1_1 = "515a157e21181013c631d4ff879dcb18986b9be89d40ad44654105781f1e2db0"
+BAD_FLAGS = ("WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL", "INSTANT_NORMALIZATION", "INCOMPATIBLE_WITH_SURVIVAL")
+
+
+@pytest.fixture(scope="module")
+def full_physiology():
+    with lr.P2FGuard(), lr.LegacyLock():
+        source_record = la.record_p2i2ab()
+        source, support = la.source_space(source_record), source_record["crystalloid_support"]
+        arrivals = lr.arrival_table()
+        tasks = lc.haemodynamic_tasks(source, support)
+        store = lc.haemodynamics(tasks)
+    return source, support, arrivals, tasks, store
+
+
+def test_the_retained_rows_are_recertified_at_every_demand_on_the_full_source(record, full_physiology):
+    source, support, arrivals, tasks, store = full_physiology
+    with lr.P2FGuard(), lr.LegacyLock():
+        for factor, key in ((0.9, "0.9"), (1.0, "1"), (1.1, "1.1")):
+            region = ho.retained_region(source, support, arrivals, tasks, store, factor)
+            assert region["survivors"] == record["reuse"]["survivors"][key]
+            assert _json(region["stages"]) == record["demand"][key]["stages"], key
+            if not region["survivors"]:
+                continue
+            per = asv.per_case_filter(source, support, arrivals, tasks, store, factor)
+            units = asv.combine(per, source, len(support), *ho.RETAINED)
+            assert units == region["units"], key
+            assert set(asv.statistics(per, units).values()) == {region["survivors"]}, key
+            for pick in asv.representatives(per, source, units).values():
+                entry = source["p3"][pick["p3"]]
+                for case, index in ((C57, pick["lambda_57m"]), (C72, pick["lambda_72f"])):
+                    point = ho.LAMBDAS[index]
+                    for scenario in (ho.L1, ho.L3):
+                        full = lc.full_run(entry, case, scenario, point, factor=factor)
+                        unit = entry["p1"] if scenario == ho.L1 else pick["p3"]
+                        lactate, debt, _ = lc.factorized(store[tasks[(scenario, unit, case)]], arrivals[case], point,
+                                                         factor)
+                        series = {"lactate": full["lactate"], "deficit": full["deficit"], "D": full["D"],
+                                  "stop": full["stop"], "output": full["output"],
+                                  "hb": [state.hb for state, _ in full["views"]]}
+                        flags, checks = lr._flags(series, scenario), lc.debt_checks(full)
+                        assert not any(flags[name] for name in BAD_FLAGS), (key, case, scenario)
+                        assert not checks["falls_outside_adequate_minutes"]
+                        assert checks["critical_minutes_below_arrival"] == 0
+                        assert lactate == full["lactate"] and debt == full["D"]
+            if factor == 1.0:
+                assert region["digest"] == ho.P2I2AI_RETAINED_UNITS
+            if factor == 1.1:
+                assert region["digest"] == UNITS_AT_1_1

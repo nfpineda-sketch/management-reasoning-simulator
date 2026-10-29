@@ -3206,15 +3206,17 @@ Ninguno. `clinical_core` sigue sólo en sombra.
     GI ni una escala de D aprobada;
   - la robustez a la demanda es diagnóstica, no un filtro, y la demanda 1,0 no se aprueba por ser la central;
   - la intrínseca es por paciente (60 / 80 / 100), y el 80 sigue en el soporte.
-- **Reutilización:** las filas de D y lactato del par retenido, reconstruidas con los chequeos de P2I-2AD, reproducen
-  P2I-2AI byte a byte (unidades `06f6d5c8…`; 0 / 216 / 1092 sobrevivientes con demanda 0,9 / 1,0 / 1,1), sobre las
-  mismas dependencias ejecutables.
+- **Reutilización:** las filas de D y lactato del par retenido se reconstruyen con los chequeos de P2I-2AD.
+  - Con demanda 1,0 reproducen P2I-2AI byte a byte (`06f6d5c8…`).
+  - Con 0,9 y 1,1 coinciden los conteos (0 y 1092), y una prueba recertifica 1,1 sobre la fuente completa con el filtro,
+    la estadística y la revisión de representantes de P2I-2AI (`515a157e…`). El módulo congelado sólo comparaba los
+    conteos (TD-96).
 - **Demanda:** 0,9 es CURRENTLY_INCOMPATIBLE (L3 elimina a los 202 140 que superan L1, siempre por 57m); 1,0 y 1,1 son
   CURRENTLY_COMPATIBLE. Ninguna se aprueba.
 - **Llegada de la FC:**
   - La llegada depende de la demanda, así que se lee en cada demanda compatible: 2 candidatos conjuntos con 1,0 (los de
     P2I-2AI) y 13 con 1,1.
-  - Con 1,1 vuelve a aparecer la intrínseca 80 de 72f.
+  - Con 1,1 hay candidatos conjuntos con 72f en 80. La docencia lo mantiene en el soporte sin condiciones.
   - En la unión, todas las latentes quedan POORLY_IDENTIFIED, salvo la ganancia de deuda, que es NON_IDENTIFIABLE.
 - **Trayectorias:** se recorrieron todos los sobrevivientes por todos los candidatos, con 360 relecturas exactas, y se
   informan como distribuciones H1–H4 y H6.
