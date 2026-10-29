@@ -1,0 +1,2553 @@
+{
+ "admissible": [
+  [
+   [
+    "midpoint",
+    "midpoint"
+   ],
+   [
+    "lower",
+    "upper"
+   ]
+  ],
+  [
+   [
+    "upper",
+    "lower"
+   ],
+   [
+    "lower",
+    "upper"
+   ]
+  ],
+  [
+   [
+    "upper",
+    "lower"
+   ],
+   [
+    "midpoint",
+    "midpoint"
+   ]
+  ],
+  [
+   [
+    "upper",
+    "lower"
+   ],
+   [
+    "lower",
+    "lower"
+   ]
+  ],
+  [
+   [
+    "upper",
+    "lower"
+   ],
+   [
+    "upper",
+    "upper"
+   ]
+  ],
+  [
+   [
+    "lower",
+    "lower"
+   ],
+   [
+    "lower",
+    "upper"
+   ]
+  ],
+  [
+   [
+    "upper",
+    "upper"
+   ],
+   [
+    "lower",
+    "upper"
+   ]
+  ]
+ ],
+ "analytic_rejections": {
+  "D57_BELOW_D72": 8,
+  "DELIVERY57_ABOVE_DELIVERY72": 8,
+  "IDENTICAL": 5
+ },
+ "case_pairs": [
+  {
+   "57m": [
+    "lower",
+    "upper"
+   ],
+   "72f": [
+    "lower",
+    "upper"
+   ],
+   "reasons": [
+    "IDENTICAL"
+   ],
+   "status": "ANALYTIC_REJECTION"
+  },
+  {
+   "57m": [
+    "lower",
+    "upper"
+   ],
+   "72f": [
+    "midpoint",
+    "midpoint"
+   ],
+   "reasons": [
+    "D57_BELOW_D72",
+    "DELIVERY57_ABOVE_DELIVERY72"
+   ],
+   "status": "ANALYTIC_REJECTION"
+  },
+  {
+   "57m": [
+    "lower",
+    "upper"
+   ],
+   "72f": [
+    "upper",
+    "lower"
+   ],
+   "reasons": [
+    "D57_BELOW_D72",
+    "DELIVERY57_ABOVE_DELIVERY72"
+   ],
+   "status": "ANALYTIC_REJECTION"
+  },
+  {
+   "57m": [
+    "lower",
+    "upper"
+   ],
+   "72f": [
+    "lower",
+    "lower"
+   ],
+   "reasons": [
+    "DELIVERY57_ABOVE_DELIVERY72"
+   ],
+   "status": "ANALYTIC_REJECTION"
+  },
+  {
+   "57m": [
+    "lower",
+    "upper"
+   ],
+   "72f": [
+    "upper",
+    "upper"
+   ],
+   "reasons": [
+    "D57_BELOW_D72"
+   ],
+   "status": "ANALYTIC_REJECTION"
+  },
+  {
+   "57m": [
+    "midpoint",
+    "midpoint"
+   ],
+   "72f": [
+    "lower",
+    "upper"
+   ],
+   "reasons": [],
+   "status": "CLINICALLY_ADMISSIBLE"
+  },
+  {
+   "57m": [
+    "midpoint",
+    "midpoint"
+   ],
+   "72f": [
+    "midpoint",
+    "midpoint"
+   ],
+   "reasons": [
+    "IDENTICAL"
+   ],
+   "status": "ANALYTIC_REJECTION"
+  },
+  {
+   "57m": [
+    "midpoint",
+    "midpoint"
+   ],
+   "72f": [
+    "upper",
+    "lower"
+   ],
+   "reasons": [
+    "D57_BELOW_D72",
+    "DELIVERY57_ABOVE_DELIVERY72"
+   ],
+   "status": "ANALYTIC_REJECTION"
+  },
+  {
+   "57m": [
+    "midpoint",
+    "midpoint"
+   ],
+   "72f": [
+    "lower",
+    "lower"
+   ],
+   "reasons": [
+    "DELIVERY57_ABOVE_DELIVERY72"
+   ],
+   "status": "ANALYTIC_REJECTION"
+  },
+  {
+   "57m": [
+    "midpoint",
+    "midpoint"
+   ],
+   "72f": [
+    "upper",
+    "upper"
+   ],
+   "reasons": [
+    "D57_BELOW_D72"
+   ],
+   "status": "ANALYTIC_REJECTION"
+  },
+  {
+   "57m": [
+    "upper",
+    "lower"
+   ],
+   "72f": [
+    "lower",
+    "upper"
+   ],
+   "reasons": [],
+   "status": "CLINICALLY_ADMISSIBLE"
+  },
+  {
+   "57m": [
+    "upper",
+    "lower"
+   ],
+   "72f": [
+    "midpoint",
+    "midpoint"
+   ],
+   "reasons": [],
+   "status": "CLINICALLY_ADMISSIBLE"
+  },
+  {
+   "57m": [
+    "upper",
+    "lower"
+   ],
+   "72f": [
+    "upper",
+    "lower"
+   ],
+   "reasons": [
+    "IDENTICAL"
+   ],
+   "status": "ANALYTIC_REJECTION"
+  },
+  {
+   "57m": [
+    "upper",
+    "lower"
+   ],
+   "72f": [
+    "lower",
+    "lower"
+   ],
+   "reasons": [],
+   "status": "CLINICALLY_ADMISSIBLE"
+  },
+  {
+   "57m": [
+    "upper",
+    "lower"
+   ],
+   "72f": [
+    "upper",
+    "upper"
+   ],
+   "reasons": [],
+   "status": "CLINICALLY_ADMISSIBLE"
+  },
+  {
+   "57m": [
+    "lower",
+    "lower"
+   ],
+   "72f": [
+    "lower",
+    "upper"
+   ],
+   "reasons": [],
+   "status": "CLINICALLY_ADMISSIBLE"
+  },
+  {
+   "57m": [
+    "lower",
+    "lower"
+   ],
+   "72f": [
+    "midpoint",
+    "midpoint"
+   ],
+   "reasons": [
+    "D57_BELOW_D72"
+   ],
+   "status": "ANALYTIC_REJECTION"
+  },
+  {
+   "57m": [
+    "lower",
+    "lower"
+   ],
+   "72f": [
+    "upper",
+    "lower"
+   ],
+   "reasons": [
+    "D57_BELOW_D72"
+   ],
+   "status": "ANALYTIC_REJECTION"
+  },
+  {
+   "57m": [
+    "lower",
+    "lower"
+   ],
+   "72f": [
+    "lower",
+    "lower"
+   ],
+   "reasons": [
+    "IDENTICAL"
+   ],
+   "status": "ANALYTIC_REJECTION"
+  },
+  {
+   "57m": [
+    "lower",
+    "lower"
+   ],
+   "72f": [
+    "upper",
+    "upper"
+   ],
+   "reasons": [
+    "D57_BELOW_D72"
+   ],
+   "status": "ANALYTIC_REJECTION"
+  },
+  {
+   "57m": [
+    "upper",
+    "upper"
+   ],
+   "72f": [
+    "lower",
+    "upper"
+   ],
+   "reasons": [],
+   "status": "CLINICALLY_ADMISSIBLE"
+  },
+  {
+   "57m": [
+    "upper",
+    "upper"
+   ],
+   "72f": [
+    "midpoint",
+    "midpoint"
+   ],
+   "reasons": [
+    "DELIVERY57_ABOVE_DELIVERY72"
+   ],
+   "status": "ANALYTIC_REJECTION"
+  },
+  {
+   "57m": [
+    "upper",
+    "upper"
+   ],
+   "72f": [
+    "upper",
+    "lower"
+   ],
+   "reasons": [
+    "DELIVERY57_ABOVE_DELIVERY72"
+   ],
+   "status": "ANALYTIC_REJECTION"
+  },
+  {
+   "57m": [
+    "upper",
+    "upper"
+   ],
+   "72f": [
+    "lower",
+    "lower"
+   ],
+   "reasons": [
+    "DELIVERY57_ABOVE_DELIVERY72"
+   ],
+   "status": "ANALYTIC_REJECTION"
+  },
+  {
+   "57m": [
+    "upper",
+    "upper"
+   ],
+   "72f": [
+    "upper",
+    "upper"
+   ],
+   "reasons": [
+    "IDENTICAL"
+   ],
+   "status": "ANALYTIC_REJECTION"
+  }
+ ],
+ "comparison": {
+  "A": {
+   "distinct_predictions": 0,
+   "joint": 0,
+   "of": 1125
+  },
+  "B": {
+   "distinct_predictions": 7,
+   "joint": 7,
+   "of": 450
+  },
+  "C": {
+   "distinct_predictions": 5,
+   "joint": 9,
+   "of": 3375
+  },
+  "D": {
+   "distinct_predictions": 10,
+   "joint": 10,
+   "of": 1350
+  },
+  "both_contribute_confirmed": true,
+  "case_intrinsic_restores": true,
+  "case_severity_restores": true,
+  "rule": "A: the same pair for both cases (the five tied pairs, all valid in P2I-2AD) and the same intrinsic level; B: the LACTATE_COMPATIBLE case pairs, the same intrinsic level; C: the tied pairs, intrinsic per case; D: the LACTATE_COMPATIBLE case pairs, intrinsic per case. Gains and ceilings common in all four; analytic on the same arrival decompositions. A change restores compatibility when its joint count exceeds A's; BOTH_CONTRIBUTE is confirmed when case severity (B) and patient-specific intrinsic (C) each restore it."
+ },
+ "decided": "2026-10-29",
+ "efficiency": {
+  "analytic_rejections": 18,
+  "arrival_hr_decompositions": 2250,
+  "cartesian_sweep": false,
+  "case_pairs": 25,
+  "haemodynamic_trajectories": 3178,
+  "legacy_read": false,
+  "post_processed_units": {
+   "0.9": {
+    "L1": 352350,
+    "L2": 301800,
+    "L3": 288179
+   },
+   "1": {
+    "L1": 352350,
+    "L2": 306900,
+    "L3": 303405
+   },
+   "1.1": {
+    "L1": 352350,
+    "L2": 275316,
+    "L3": 315393
+   }
+  },
+  "representative_full_runs": 24,
+  "simulation_rejections": 5,
+  "trajectory_full_runs": 48,
+  "validation_full_runs": 936
+ },
+ "equivalence": {
+  "equal": true,
+  "recorded_digest": "9ddbcf24e6d2a80c404036895fc0ce1512b6e124e7243db771d0bad6dcc8d2a7",
+  "recorded_survivors": {
+   "0.9": 351738,
+   "1": 353302,
+   "1.1": 405740
+  },
+  "region_digest": "9ddbcf24e6d2a80c404036895fc0ce1512b6e124e7243db771d0bad6dcc8d2a7",
+  "rule": "Each case is filtered at every lactate-side point with P2I-2AD's own series and checks (L1: FD-LAC-02/03, FD-LAC-01, FD-LAC-06; L3: adequacy INADEQUATE / LOST, FD-LAC-04 FAIL, FD-LAC-05 FAIL, FD-LAC-06 active and residual; L2: FD-LAC-06; a stopped or uncontrolled run fails), L1 then L3 then L2, per demand factor. A case-pair candidate (P3 set, crystalloid point, kinetics, excess, 57m pair, 72f pair) survives when both cases pass every unit it projects to. The tied pairs (the same pair for both cases) must reproduce P2I-2AD's committed region exactly at demand 1.0 (its region digest) and its survivor counts at 0.9 and 1.1, else the run stops.",
+  "survivors": {
+   "0.9": 351738,
+   "1": 353302,
+   "1.1": 405740
+  }
+ },
+ "faculty": {
+  "common": "acute and debt gains, the smooth saturation law and the total sinus ceilings 150 / 175 / 200 stay common; pressure stays DEFERRED (diagnostic only); arrival tolerance +-5 bpm",
+  "decided": "2026-10-29",
+  "intrinsic": "intrinsic HR is patient-specific: 60 / 80 / 100 per case, candidate uncertainty, never identified or approved, no extra value",
+  "no_hr": "the arrival HR (124 / 112) never chooses D0, delivery, a level or a pair; the pairing is frozen before any lactate or HR count",
+  "ordering": "the non-HR perfusion phenotype (57m: BP 88/54, lactate 4.4, CRT 5 s, IVC 0.9 cm near-complete collapse, near-obliterated LV, HCO3 17.3; 72f: 98/62, 3.4, 4 s, 1.1 cm > 50 %, hyperdynamic LV, 19.8) makes 57m more severe; the slightly lower Hb of 72f does not reverse it; no exact severity is derived from a single observation",
+  "recertification": "D / lactate recertified on the current physiology with P2I-2AD's machinery; D and D -> lactate semantics, FD-LAC constraints, blood / fluid ranges, demand values, rho handling and L3 adequacy unchanged; only the arrival case-pair assignment changes",
+  "scope": "shadow only; no HR latent selection, no trajectory envelope, no pressure / RR calibration, collapse, migration or runtime integration",
+  "severity": "arrival D0 and arrival delivery are patient-state initial conditions: each case may take its own EXISTING certified arrival pair; no new D0 or delivery value, no interpolation, no case-specific sympathetic gain"
+ },
+ "freeze_digest": "805eff4efb562b19f1d280bdd48bbc1d458d0055f104b66f7bc7dca7ea61a861",
+ "hr_surface": {
+  "compatible_57m": 66,
+  "compatible_72f": 84,
+  "compatible_decompositions": {
+   "gi_bleed_57m": 11,
+   "gi_bleed_72f": 28
+  },
+  "decompositions": 675,
+  "distinct_case_pairs": 2,
+  "distinct_predictions": 10,
+  "joint": 10,
+  "joint_candidates": 1350,
+  "rule": "Arrival HR is analytic (derived.heart_rate_decomposition at the case's own arrival pair, P2I-2AG's primary profile: pressure 0): 57m intrinsic 60 / 80 / 100 x 72f intrinsic 60 / 80 / 100 x the five common acute gains x the five common debt gains x the common ceilings 150 / 175 / 200, on the LACTATE_COMPATIBLE case pairs only. JOINT when |HR57 - 124| <= 5 and |HR72 - 112| <= 5. No best candidate.",
+  "support": {
+   "acute": {
+    "0.1": 0,
+    "0.3822350547713923": 1,
+    "1.4610363709608927": 6,
+    "21.346272772705746": 0,
+    "5.58459317277233": 3
+   },
+   "case_pairs": {
+    "upper/lower|midpoint/midpoint": 2,
+    "upper/lower|upper/upper": 8
+   },
+   "ceiling": {
+    "150": 4,
+    "175": 4,
+    "200": 2
+   },
+   "debt": {
+    "0.0006666666666666666": 0,
+    "0.0026243840235588385": 0,
+    "0.010331087254666317": 8,
+    "0.040669110505707935": 2,
+    "0.16009704579529324": 0
+   },
+   "intrinsic_pairs": {
+    "lower|lower": 2,
+    "lower|midpoint": 0,
+    "lower|upper": 3,
+    "midpoint|lower": 0,
+    "midpoint|midpoint": 0,
+    "midpoint|upper": 0,
+    "upper|lower": 0,
+    "upper|midpoint": 0,
+    "upper|upper": 5
+   }
+  },
+  "survivors": [
+   {
+    "acute": 1.4610363709608927,
+    "ceiling": 150.0,
+    "debt": 0.010331087254666317,
+    "intrinsic": [
+     "upper",
+     "upper"
+    ],
+    "mismatch": [
+     2.928525810061018,
+     -1.5135146565395843
+    ],
+    "pair_57m": [
+     "upper",
+     "lower"
+    ],
+    "pair_72f": [
+     "midpoint",
+     "midpoint"
+    ],
+    "predicted": [
+     126.92852581006102,
+     110.48648534346042
+    ]
+   },
+   {
+    "acute": 1.4610363709608927,
+    "ceiling": 175.0,
+    "debt": 0.010331087254666317,
+    "intrinsic": [
+     "upper",
+     "upper"
+    ],
+    "mismatch": [
+     4.587671234027141,
+     -1.4264687389044042
+    ],
+    "pair_57m": [
+     "upper",
+     "lower"
+    ],
+    "pair_72f": [
+     "midpoint",
+     "midpoint"
+    ],
+    "predicted": [
+     128.58767123402714,
+     110.5735312610956
+    ]
+   },
+   {
+    "acute": 1.4610363709608927,
+    "ceiling": 150.0,
+    "debt": 0.040669110505707935,
+    "intrinsic": [
+     "lower",
+     "lower"
+    ],
+    "mismatch": [
+     -2.2697542624591875,
+     1.108943042172669
+    ],
+    "pair_57m": [
+     "upper",
+     "lower"
+    ],
+    "pair_72f": [
+     "upper",
+     "upper"
+    ],
+    "predicted": [
+     121.73024573754081,
+     113.10894304217267
+    ]
+   },
+   {
+    "acute": 1.4610363709608927,
+    "ceiling": 175.0,
+    "debt": 0.040669110505707935,
+    "intrinsic": [
+     "lower",
+     "lower"
+    ],
+    "mismatch": [
+     2.3212066120791945,
+     3.8598385116134466
+    ],
+    "pair_57m": [
+     "upper",
+     "lower"
+    ],
+    "pair_72f": [
+     "upper",
+     "upper"
+    ],
+    "predicted": [
+     126.3212066120792,
+     115.85983851161345
+    ]
+   },
+   {
+    "acute": 5.58459317277233,
+    "ceiling": 150.0,
+    "debt": 0.010331087254666317,
+    "intrinsic": [
+     "lower",
+     "upper"
+    ],
+    "mismatch": [
+     -4.6060193782653585,
+     3.0187897821797947
+    ],
+    "pair_57m": [
+     "upper",
+     "lower"
+    ],
+    "pair_72f": [
+     "upper",
+     "upper"
+    ],
+    "predicted": [
+     119.39398062173464,
+     115.0187897821798
+    ]
+   },
+   {
+    "acute": 5.58459317277233,
+    "ceiling": 175.0,
+    "debt": 0.010331087254666317,
+    "intrinsic": [
+     "lower",
+     "upper"
+    ],
+    "mismatch": [
+     -0.5906482099232733,
+     3.279802702846851
+    ],
+    "pair_57m": [
+     "upper",
+     "lower"
+    ],
+    "pair_72f": [
+     "upper",
+     "upper"
+    ],
+    "predicted": [
+     123.40935179007673,
+     115.27980270284685
+    ]
+   },
+   {
+    "acute": 5.58459317277233,
+    "ceiling": 200.0,
+    "debt": 0.010331087254666317,
+    "intrinsic": [
+     "lower",
+     "upper"
+    ],
+    "mismatch": [
+     1.7475667937037969,
+     3.373762755421737
+    ],
+    "pair_57m": [
+     "upper",
+     "lower"
+    ],
+    "pair_72f": [
+     "upper",
+     "upper"
+    ],
+    "predicted": [
+     125.7475667937038,
+     115.37376275542174
+    ]
+   },
+   {
+    "acute": 0.3822350547713923,
+    "ceiling": 200.0,
+    "debt": 0.010331087254666317,
+    "intrinsic": [
+     "upper",
+     "upper"
+    ],
+    "mismatch": [
+     -4.9178268731419195,
+     3.373762755421737
+    ],
+    "pair_57m": [
+     "upper",
+     "lower"
+    ],
+    "pair_72f": [
+     "upper",
+     "upper"
+    ],
+    "predicted": [
+     119.08217312685808,
+     115.37376275542174
+    ]
+   },
+   {
+    "acute": 1.4610363709608927,
+    "ceiling": 150.0,
+    "debt": 0.010331087254666317,
+    "intrinsic": [
+     "upper",
+     "upper"
+    ],
+    "mismatch": [
+     2.928525810061018,
+     3.0187897821797947
+    ],
+    "pair_57m": [
+     "upper",
+     "lower"
+    ],
+    "pair_72f": [
+     "upper",
+     "upper"
+    ],
+    "predicted": [
+     126.92852581006102,
+     115.0187897821798
+    ]
+   },
+   {
+    "acute": 1.4610363709608927,
+    "ceiling": 175.0,
+    "debt": 0.010331087254666317,
+    "intrinsic": [
+     "upper",
+     "upper"
+    ],
+    "mismatch": [
+     4.587671234027141,
+     3.279802702846851
+    ],
+    "pair_57m": [
+     "upper",
+     "lower"
+    ],
+    "pair_72f": [
+     "upper",
+     "upper"
+    ],
+    "predicted": [
+     128.58767123402714,
+     115.27980270284685
+    ]
+   }
+  ]
+ },
+ "inventory": [
+  {
+   "D0": 0.0,
+   "delivery": 1.0,
+   "delivery_reanchored": 0.4,
+   "label": "none: no debt, full delivery",
+   "p2i2ad_tied_survivors": 6696,
+   "pair": [
+    "lower",
+    "upper"
+   ],
+   "provenance": "blood_fluid_readiness.ARRIVAL_PAIRS ('the P2F arrival (debt, delivery) pairs, unchanged (calibration.gi_candidates)'), carried by lactate_rebuild / lactate_closure (P2I-2AB..AD); values from gi_reference.arrival_debt_band and delivery_ratio_band; delivery re-anchored by the extraction reserve 2.5 as the core builds the arrival",
+   "same_values_both_cases": true,
+   "valid_after_p2i2ad": true,
+   "x0": 0.0
+  },
+  {
+   "D0": 20.0,
+   "delivery": 0.85,
+   "delivery_reanchored": 0.33999999999999997,
+   "label": "middle",
+   "p2i2ad_tied_survivors": 155777,
+   "pair": [
+    "midpoint",
+    "midpoint"
+   ],
+   "provenance": "blood_fluid_readiness.ARRIVAL_PAIRS ('the P2F arrival (debt, delivery) pairs, unchanged (calibration.gi_candidates)'), carried by lactate_rebuild / lactate_closure (P2I-2AB..AD); values from gi_reference.arrival_debt_band and delivery_ratio_band; delivery re-anchored by the extraction reserve 2.5 as the core builds the arrival",
+   "same_values_both_cases": true,
+   "valid_after_p2i2ad": true,
+   "x0": 0.15000000000000013
+  },
+  {
+   "D0": 60.0,
+   "delivery": 0.6,
+   "delivery_reanchored": 0.24,
+   "label": "severe: debt and low delivery",
+   "p2i2ad_tied_survivors": 11916,
+   "pair": [
+    "upper",
+    "lower"
+   ],
+   "provenance": "blood_fluid_readiness.ARRIVAL_PAIRS ('the P2F arrival (debt, delivery) pairs, unchanged (calibration.gi_candidates)'), carried by lactate_rebuild / lactate_closure (P2I-2AB..AD); values from gi_reference.arrival_debt_band and delivery_ratio_band; delivery re-anchored by the extraction reserve 2.5 as the core builds the arrival",
+   "same_values_both_cases": true,
+   "valid_after_p2i2ad": true,
+   "x0": 0.4
+  },
+  {
+   "D0": 0.0,
+   "delivery": 0.6,
+   "delivery_reanchored": 0.24,
+   "label": "mixed: no debt, low delivery",
+   "p2i2ad_tied_survivors": 20640,
+   "pair": [
+    "lower",
+    "lower"
+   ],
+   "provenance": "blood_fluid_readiness.ARRIVAL_PAIRS ('the P2F arrival (debt, delivery) pairs, unchanged (calibration.gi_candidates)'), carried by lactate_rebuild / lactate_closure (P2I-2AB..AD); values from gi_reference.arrival_debt_band and delivery_ratio_band; delivery re-anchored by the extraction reserve 2.5 as the core builds the arrival",
+   "same_values_both_cases": true,
+   "valid_after_p2i2ad": true,
+   "x0": 0.4
+  },
+  {
+   "D0": 60.0,
+   "delivery": 1.0,
+   "delivery_reanchored": 0.4,
+   "label": "mixed: debt, full delivery",
+   "p2i2ad_tied_survivors": 158273,
+   "pair": [
+    "upper",
+    "upper"
+   ],
+   "provenance": "blood_fluid_readiness.ARRIVAL_PAIRS ('the P2F arrival (debt, delivery) pairs, unchanged (calibration.gi_candidates)'), carried by lactate_rebuild / lactate_closure (P2I-2AB..AD); values from gi_reference.arrival_debt_band and delivery_ratio_band; delivery re-anchored by the extraction reserve 2.5 as the core builds the arrival",
+   "same_values_both_cases": true,
+   "valid_after_p2i2ad": true,
+   "x0": 0.0
+  }
+ ],
+ "lactate_compatible": [
+  [
+   [
+    "upper",
+    "lower"
+   ],
+   [
+    "midpoint",
+    "midpoint"
+   ]
+  ],
+  [
+   [
+    "upper",
+    "lower"
+   ],
+   [
+    "upper",
+    "upper"
+   ]
+  ]
+ ],
+ "policy": "Shadow only. P2I-2AB's current source space and P2I-2AD's machinery (its committed records), never the P2F historical region (P2FGuard); legacy never read (LegacyLock). Existing arrival pairs only, ordered without HR before any count; haemodynamics simulated once, D and lactate post-processed per case (validated, else stop); arrival HR analytic; trajectories post-processed and validated; no Cartesian product with blood, fluid, lactate and HR; nothing selected or approved.",
+ "recertification": {
+  "lower/lower|lower/upper": {
+   "candidates": 2225880,
+   "checks": {
+    "adequate_through_120": true,
+    "debt_coherent": true,
+    "fd04_05_evaluated": true,
+    "patient_like": false,
+    "reruns_exact": false,
+    "survivors": false,
+    "trigger_is_onset": true
+   },
+   "digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "first_failure": "survivors",
+   "pair_57m": [
+    "lower",
+    "lower"
+   ],
+   "pair_72f": [
+    "lower",
+    "upper"
+   ],
+   "representatives": {},
+   "robust_across_demand": 0,
+   "statistics": {
+    "adequate_through_120": 0,
+    "debt_coherent": 0,
+    "evaluated_both": 0,
+    "trigger_is_onset": 0
+   },
+   "status": "LACTATE_INCOMPATIBLE",
+   "survivors": 0,
+   "survivors_by_demand": {
+    "0.9": 0,
+    "1": 0,
+    "1.1": 0
+   },
+   "units": 0
+  },
+  "midpoint/midpoint|lower/upper": {
+   "candidates": 2225880,
+   "checks": {
+    "adequate_through_120": true,
+    "debt_coherent": true,
+    "fd04_05_evaluated": true,
+    "patient_like": false,
+    "reruns_exact": false,
+    "survivors": false,
+    "trigger_is_onset": true
+   },
+   "digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "first_failure": "survivors",
+   "pair_57m": [
+    "midpoint",
+    "midpoint"
+   ],
+   "pair_72f": [
+    "lower",
+    "upper"
+   ],
+   "representatives": {},
+   "robust_across_demand": 0,
+   "statistics": {
+    "adequate_through_120": 0,
+    "debt_coherent": 0,
+    "evaluated_both": 0,
+    "trigger_is_onset": 0
+   },
+   "status": "LACTATE_INCOMPATIBLE",
+   "survivors": 0,
+   "survivors_by_demand": {
+    "0.9": 0,
+    "1": 0,
+    "1.1": 168
+   },
+   "units": 0
+  },
+  "upper/lower|lower/lower": {
+   "candidates": 2225880,
+   "checks": {
+    "adequate_through_120": true,
+    "debt_coherent": true,
+    "fd04_05_evaluated": true,
+    "patient_like": false,
+    "reruns_exact": false,
+    "survivors": false,
+    "trigger_is_onset": true
+   },
+   "digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "first_failure": "survivors",
+   "pair_57m": [
+    "upper",
+    "lower"
+   ],
+   "pair_72f": [
+    "lower",
+    "lower"
+   ],
+   "representatives": {},
+   "robust_across_demand": 0,
+   "statistics": {
+    "adequate_through_120": 0,
+    "debt_coherent": 0,
+    "evaluated_both": 0,
+    "trigger_is_onset": 0
+   },
+   "status": "LACTATE_INCOMPATIBLE",
+   "survivors": 0,
+   "survivors_by_demand": {
+    "0.9": 0,
+    "1": 0,
+    "1.1": 0
+   },
+   "units": 0
+  },
+  "upper/lower|lower/upper": {
+   "candidates": 2225880,
+   "checks": {
+    "adequate_through_120": true,
+    "debt_coherent": true,
+    "fd04_05_evaluated": true,
+    "patient_like": false,
+    "reruns_exact": false,
+    "survivors": false,
+    "trigger_is_onset": true
+   },
+   "digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "first_failure": "survivors",
+   "pair_57m": [
+    "upper",
+    "lower"
+   ],
+   "pair_72f": [
+    "lower",
+    "upper"
+   ],
+   "representatives": {},
+   "robust_across_demand": 0,
+   "statistics": {
+    "adequate_through_120": 0,
+    "debt_coherent": 0,
+    "evaluated_both": 0,
+    "trigger_is_onset": 0
+   },
+   "status": "LACTATE_INCOMPATIBLE",
+   "survivors": 0,
+   "survivors_by_demand": {
+    "0.9": 0,
+    "1": 0,
+    "1.1": 0
+   },
+   "units": 0
+  },
+  "upper/lower|midpoint/midpoint": {
+   "candidates": 2225880,
+   "checks": {
+    "adequate_through_120": true,
+    "debt_coherent": true,
+    "fd04_05_evaluated": true,
+    "patient_like": true,
+    "reruns_exact": true,
+    "survivors": true,
+    "trigger_is_onset": true
+   },
+   "digest": "06f6d5c82fa3047643c4073bf77614e88499575de51ef9b22aa5514bca18488b",
+   "first_failure": null,
+   "pair_57m": [
+    "upper",
+    "lower"
+   ],
+   "pair_72f": [
+    "midpoint",
+    "midpoint"
+   ],
+   "representatives": {
+    "HIGH": {
+     "pick": {
+      "lambda_57m": 612,
+      "lambda_72f": 611,
+      "p1": 5,
+      "p3": 21,
+      "rank": 215,
+      "support": 11
+     },
+     "runs": {
+      "gi_bleed_57m|L1": {
+       "D_end": 193.40961536900477,
+       "L120": 9.370540909454162,
+       "L60": 6.048929888914127,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": []
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "lower",
+        "arrival_lactate_excess": "upper",
+        "arrival_oxygen_debt": "upper",
+        "debt_clearance_tau_min": 30.0,
+        "debt_per_delivery_deficit": 2.0,
+        "debt_to_lactate_gain": 0.0007290686958381995,
+        "lactate_clearance_tau_min": 120.0
+       },
+       "rerun_equals_factorized": true
+      },
+      "gi_bleed_57m|L3": {
+       "D_end": 4.8253131894671,
+       "L120": 3.9629815631739342,
+       "L60": 5.18246096831564,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": [],
+        "l3_adequacy": {
+         "lost_at": null,
+         "onset": 60,
+         "status": "L3_RESUSCITATION_ADEQUATE_THROUGH_120"
+        }
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "lower",
+        "arrival_lactate_excess": "upper",
+        "arrival_oxygen_debt": "upper",
+        "debt_clearance_tau_min": 30.0,
+        "debt_per_delivery_deficit": 2.0,
+        "debt_to_lactate_gain": 0.0007290686958381995,
+        "lactate_clearance_tau_min": 120.0
+       },
+       "rerun_equals_factorized": true
+      },
+      "gi_bleed_72f|L1": {
+       "D_end": 91.7143838706394,
+       "L120": 4.823428293363527,
+       "L60": 3.5038633122356497,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": []
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "midpoint",
+        "arrival_lactate_excess": "upper",
+        "arrival_oxygen_debt": "midpoint",
+        "debt_clearance_tau_min": 30.0,
+        "debt_per_delivery_deficit": 2.0,
+        "debt_to_lactate_gain": 0.0007290686958381995,
+        "lactate_clearance_tau_min": 120.0
+       },
+       "rerun_equals_factorized": true
+      },
+      "gi_bleed_72f|L3": {
+       "D_end": 0.5834538451390118,
+       "L120": 2.075233552265818,
+       "L60": 2.804940084383196,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": [],
+        "l3_adequacy": {
+         "lost_at": null,
+         "onset": 60,
+         "status": "L3_RESUSCITATION_ADEQUATE_THROUGH_120"
+        }
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "midpoint",
+        "arrival_lactate_excess": "upper",
+        "arrival_oxygen_debt": "midpoint",
+        "debt_clearance_tau_min": 30.0,
+        "debt_per_delivery_deficit": 2.0,
+        "debt_to_lactate_gain": 0.0007290686958381995,
+        "lactate_clearance_tau_min": 120.0
+       },
+       "rerun_equals_factorized": true
+      }
+     }
+    },
+    "LOW": {
+     "pick": {
+      "lambda_57m": 612,
+      "lambda_72f": 611,
+      "p1": 40,
+      "p3": 196,
+      "rank": 0,
+      "support": 0
+     },
+     "runs": {
+      "gi_bleed_57m|L1": {
+       "D_end": 182.26054578895463,
+       "L120": 9.123980535988496,
+       "L60": 6.01760913531756,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": []
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "lower",
+        "arrival_lactate_excess": "upper",
+        "arrival_oxygen_debt": "upper",
+        "debt_clearance_tau_min": 30.0,
+        "debt_per_delivery_deficit": 2.0,
+        "debt_to_lactate_gain": 0.0007290686958381995,
+        "lactate_clearance_tau_min": 120.0
+       },
+       "rerun_equals_factorized": true
+      },
+      "gi_bleed_57m|L3": {
+       "D_end": 4.854741476234109,
+       "L120": 3.971915850479201,
+       "L60": 5.192078641623549,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": [],
+        "l3_adequacy": {
+         "lost_at": null,
+         "onset": 60,
+         "status": "L3_RESUSCITATION_ADEQUATE_THROUGH_120"
+        }
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "lower",
+        "arrival_lactate_excess": "upper",
+        "arrival_oxygen_debt": "upper",
+        "debt_clearance_tau_min": 30.0,
+        "debt_per_delivery_deficit": 2.0,
+        "debt_to_lactate_gain": 0.0007290686958381995,
+        "lactate_clearance_tau_min": 120.0
+       },
+       "rerun_equals_factorized": true
+      },
+      "gi_bleed_72f|L1": {
+       "D_end": 80.64790042050099,
+       "L120": 4.579302203062934,
+       "L60": 3.4730127076529516,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": []
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "midpoint",
+        "arrival_lactate_excess": "upper",
+        "arrival_oxygen_debt": "midpoint",
+        "debt_clearance_tau_min": 30.0,
+        "debt_per_delivery_deficit": 2.0,
+        "debt_to_lactate_gain": 0.0007290686958381995,
+        "lactate_clearance_tau_min": 120.0
+       },
+       "rerun_equals_factorized": true
+      },
+      "gi_bleed_72f|L3": {
+       "D_end": 0.5873560877567535,
+       "L120": 2.0770354782770455,
+       "L60": 2.8072351689322907,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": [],
+        "l3_adequacy": {
+         "lost_at": null,
+         "onset": 60,
+         "status": "L3_RESUSCITATION_ADEQUATE_THROUGH_120"
+        }
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "midpoint",
+        "arrival_lactate_excess": "upper",
+        "arrival_oxygen_debt": "midpoint",
+        "debt_clearance_tau_min": 30.0,
+        "debt_per_delivery_deficit": 2.0,
+        "debt_to_lactate_gain": 0.0007290686958381995,
+        "lactate_clearance_tau_min": 120.0
+       },
+       "rerun_equals_factorized": true
+      }
+     }
+    },
+    "MID": {
+     "pick": {
+      "lambda_57m": 612,
+      "lambda_72f": 611,
+      "p1": 15,
+      "p3": 65,
+      "rank": 108,
+      "support": 0
+     },
+     "runs": {
+      "gi_bleed_57m|L1": {
+       "D_end": 192.3376379487747,
+       "L120": 9.349972816344117,
+       "L60": 6.047381974600247,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": []
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "lower",
+        "arrival_lactate_excess": "upper",
+        "arrival_oxygen_debt": "upper",
+        "debt_clearance_tau_min": 30.0,
+        "debt_per_delivery_deficit": 2.0,
+        "debt_to_lactate_gain": 0.0007290686958381995,
+        "lactate_clearance_tau_min": 120.0
+       },
+       "rerun_equals_factorized": true
+      },
+      "gi_bleed_57m|L3": {
+       "D_end": 4.652604157650625,
+       "L120": 3.9274479525858945,
+       "L60": 5.153938536172181,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": [],
+        "l3_adequacy": {
+         "lost_at": null,
+         "onset": 60,
+         "status": "L3_RESUSCITATION_ADEQUATE_THROUGH_120"
+        }
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "lower",
+        "arrival_lactate_excess": "upper",
+        "arrival_oxygen_debt": "upper",
+        "debt_clearance_tau_min": 30.0,
+        "debt_per_delivery_deficit": 2.0,
+        "debt_to_lactate_gain": 0.0007290686958381995,
+        "lactate_clearance_tau_min": 120.0
+       },
+       "rerun_equals_factorized": true
+      },
+      "gi_bleed_72f|L1": {
+       "D_end": 90.65745231869123,
+       "L120": 4.80332802343101,
+       "L60": 3.5023776248773544,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": []
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "midpoint",
+        "arrival_lactate_excess": "upper",
+        "arrival_oxygen_debt": "midpoint",
+        "debt_clearance_tau_min": 30.0,
+        "debt_per_delivery_deficit": 2.0,
+        "debt_to_lactate_gain": 0.0007290686958381995,
+        "lactate_clearance_tau_min": 120.0
+       },
+       "rerun_equals_factorized": true
+      },
+      "gi_bleed_72f|L3": {
+       "D_end": 0.563703144843654,
+       "L120": 2.066948234444897,
+       "L60": 2.794703211746148,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": [],
+        "l3_adequacy": {
+         "lost_at": null,
+         "onset": 60,
+         "status": "L3_RESUSCITATION_ADEQUATE_THROUGH_120"
+        }
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "midpoint",
+        "arrival_lactate_excess": "upper",
+        "arrival_oxygen_debt": "midpoint",
+        "debt_clearance_tau_min": 30.0,
+        "debt_per_delivery_deficit": 2.0,
+        "debt_to_lactate_gain": 0.0007290686958381995,
+        "lactate_clearance_tau_min": 120.0
+       },
+       "rerun_equals_factorized": true
+      }
+     }
+    }
+   },
+   "robust_across_demand": 0,
+   "statistics": {
+    "adequate_through_120": 216,
+    "debt_coherent": 216,
+    "evaluated_both": 216,
+    "trigger_is_onset": 216
+   },
+   "status": "LACTATE_COMPATIBLE",
+   "survivors": 216,
+   "survivors_by_demand": {
+    "0.9": 0,
+    "1": 216,
+    "1.1": 1092
+   },
+   "units": 18
+  },
+  "upper/lower|upper/upper": {
+   "candidates": 2225880,
+   "checks": {
+    "adequate_through_120": true,
+    "debt_coherent": true,
+    "fd04_05_evaluated": true,
+    "patient_like": true,
+    "reruns_exact": true,
+    "survivors": true,
+    "trigger_is_onset": true
+   },
+   "digest": "bbfac7edbadc5bc93da2d9aa16bf17f87a9fd1fb37a37dd6e2ffb0064affb2c7",
+   "first_failure": null,
+   "pair_57m": [
+    "upper",
+    "lower"
+   ],
+   "pair_72f": [
+    "upper",
+    "upper"
+   ],
+   "representatives": {
+    "HIGH": {
+     "pick": {
+      "lambda_57m": 612,
+      "lambda_72f": 614,
+      "p1": 19,
+      "p3": 85,
+      "rank": 25612,
+      "support": 11
+     },
+     "runs": {
+      "gi_bleed_57m|L1": {
+       "D_end": 193.28145734441134,
+       "L120": 9.367973281420584,
+       "L60": 6.048718417708324,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": []
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "lower",
+        "arrival_lactate_excess": "upper",
+        "arrival_oxygen_debt": "upper",
+        "debt_clearance_tau_min": 30.0,
+        "debt_per_delivery_deficit": 2.0,
+        "debt_to_lactate_gain": 0.0007290686958381995,
+        "lactate_clearance_tau_min": 120.0
+       },
+       "rerun_equals_factorized": true
+      },
+      "gi_bleed_57m|L3": {
+       "D_end": 4.652604157650625,
+       "L120": 3.9274479525858945,
+       "L60": 5.153938536172181,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": [],
+        "l3_adequacy": {
+         "lost_at": null,
+         "onset": 60,
+         "status": "L3_RESUSCITATION_ADEQUATE_THROUGH_120"
+        }
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "lower",
+        "arrival_lactate_excess": "upper",
+        "arrival_oxygen_debt": "upper",
+        "debt_clearance_tau_min": 30.0,
+        "debt_per_delivery_deficit": 2.0,
+        "debt_to_lactate_gain": 0.0007290686958381995,
+        "lactate_clearance_tau_min": 120.0
+       },
+       "rerun_equals_factorized": true
+      },
+      "gi_bleed_72f|L1": {
+       "D_end": 101.75834944645828,
+       "L120": 6.024828933264207,
+       "L60": 4.572411676325931,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": []
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "upper",
+        "arrival_lactate_excess": "upper",
+        "arrival_oxygen_debt": "upper",
+        "debt_clearance_tau_min": 30.0,
+        "debt_per_delivery_deficit": 2.0,
+        "debt_to_lactate_gain": 0.0007290686958381995,
+        "lactate_clearance_tau_min": 120.0
+       },
+       "rerun_equals_factorized": true
+      },
+      "gi_bleed_72f|L3": {
+       "D_end": 1.026503493866517,
+       "L120": 2.3635627048091585,
+       "L60": 3.2038768438769845,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": [],
+        "l3_adequacy": {
+         "lost_at": null,
+         "onset": 60,
+         "status": "L3_RESUSCITATION_ADEQUATE_THROUGH_120"
+        }
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": true,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "upper",
+        "arrival_lactate_excess": "upper",
+        "arrival_oxygen_debt": "upper",
+        "debt_clearance_tau_min": 30.0,
+        "debt_per_delivery_deficit": 2.0,
+        "debt_to_lactate_gain": 0.0007290686958381995,
+        "lactate_clearance_tau_min": 120.0
+       },
+       "rerun_equals_factorized": true
+      }
+     }
+    },
+    "LOW": {
+     "pick": {
+      "lambda_57m": 362,
+      "lambda_72f": 364,
+      "p1": 35,
+      "p3": 161,
+      "rank": 0,
+      "support": 3
+     },
+     "runs": {
+      "gi_bleed_57m|L1": {
+       "D_end": 120.6881698584234,
+       "L120": 5.233066456855979,
+       "L60": 4.464126093473974,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": []
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "lower",
+        "arrival_lactate_excess": "lower",
+        "arrival_oxygen_debt": "upper",
+        "debt_clearance_tau_min": 30.0,
+        "debt_per_delivery_deficit": 1.0,
+        "debt_to_lactate_gain": 0.0007290686958381995,
+        "lactate_clearance_tau_min": 45.0
+       },
+       "rerun_equals_factorized": true
+      },
+      "gi_bleed_57m|L3": {
+       "D_end": 6.040761719917099,
+       "L120": 2.9556817840866962,
+       "L60": 4.176571638894894,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": [],
+        "l3_adequacy": {
+         "lost_at": null,
+         "onset": 60,
+         "status": "L3_RESUSCITATION_ADEQUATE_THROUGH_120"
+        }
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "lower",
+        "arrival_lactate_excess": "lower",
+        "arrival_oxygen_debt": "upper",
+        "debt_clearance_tau_min": 30.0,
+        "debt_per_delivery_deficit": 1.0,
+        "debt_to_lactate_gain": 0.0007290686958381995,
+        "lactate_clearance_tau_min": 45.0
+       },
+       "rerun_equals_factorized": true
+      },
+      "gi_bleed_72f|L1": {
+       "D_end": 74.24983139919166,
+       "L120": 4.167276359731591,
+       "L60": 3.858162975182687,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": []
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "upper",
+        "arrival_lactate_excess": "lower",
+        "arrival_oxygen_debt": "upper",
+        "debt_clearance_tau_min": 30.0,
+        "debt_per_delivery_deficit": 1.0,
+        "debt_to_lactate_gain": 0.0007290686958381995,
+        "lactate_clearance_tau_min": 45.0
+       },
+       "rerun_equals_factorized": true
+      },
+      "gi_bleed_72f|L3": {
+       "D_end": 1.026503493866517,
+       "L120": 2.292488841378743,
+       "L60": 2.8708608454096556,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": [],
+        "l3_adequacy": {
+         "lost_at": null,
+         "onset": 60,
+         "status": "L3_RESUSCITATION_ADEQUATE_THROUGH_120"
+        }
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "upper",
+        "arrival_lactate_excess": "lower",
+        "arrival_oxygen_debt": "upper",
+        "debt_clearance_tau_min": 30.0,
+        "debt_per_delivery_deficit": 1.0,
+        "debt_to_lactate_gain": 0.0007290686958381995,
+        "lactate_clearance_tau_min": 45.0
+       },
+       "rerun_equals_factorized": true
+      }
+     }
+    },
+    "MID": {
+     "pick": {
+      "lambda_57m": 1232,
+      "lambda_72f": 1234,
+      "p1": 18,
+      "p3": 80,
+      "rank": 12806,
+      "support": 0
+     },
+     "runs": {
+      "gi_bleed_57m|L1": {
+       "D_end": 193.28145734441134,
+       "L120": 5.318507263905261,
+       "L60": 4.485586613874858,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": []
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "lower",
+        "arrival_lactate_excess": "lower",
+        "arrival_oxygen_debt": "upper",
+        "debt_clearance_tau_min": 60.0,
+        "debt_per_delivery_deficit": 2.0,
+        "debt_to_lactate_gain": 0.00024532669073132904,
+        "lactate_clearance_tau_min": 120.0
+       },
+       "rerun_equals_factorized": true
+      },
+      "gi_bleed_57m|L3": {
+       "D_end": 18.900164622347372,
+       "L120": 3.7180721190995003,
+       "L60": 4.232577168006987,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": [],
+        "l3_adequacy": {
+         "lost_at": null,
+         "onset": 60,
+         "status": "L3_RESUSCITATION_ADEQUATE_THROUGH_120"
+        }
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "lower",
+        "arrival_lactate_excess": "lower",
+        "arrival_oxygen_debt": "upper",
+        "debt_clearance_tau_min": 60.0,
+        "debt_per_delivery_deficit": 2.0,
+        "debt_to_lactate_gain": 0.00024532669073132904,
+        "lactate_clearance_tau_min": 120.0
+       },
+       "rerun_equals_factorized": true
+      },
+      "gi_bleed_72f|L1": {
+       "D_end": 101.75834944645828,
+       "L120": 3.9504918716422317,
+       "L60": 3.5872243941223987,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": []
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "upper",
+        "arrival_lactate_excess": "lower",
+        "arrival_oxygen_debt": "upper",
+        "debt_clearance_tau_min": 60.0,
+        "debt_per_delivery_deficit": 2.0,
+        "debt_to_lactate_gain": 0.00024532669073132904,
+        "lactate_clearance_tau_min": 120.0
+       },
+       "rerun_equals_factorized": true
+      },
+      "gi_bleed_72f|L3": {
+       "D_end": 7.984405799085898,
+       "L120": 2.9249109200925454,
+       "L60": 3.2721188052632915,
+       "debt": {
+        "critical_minutes_below_arrival": 0,
+        "falls_outside_adequate_minutes": [],
+        "l3_adequacy": {
+         "lost_at": null,
+         "onset": 60,
+         "status": "L3_RESUSCITATION_ADEQUATE_THROUGH_120"
+        }
+       },
+       "flags": {
+        "ADEQUATE_WITH_DELAYED_CLEARANCE": false,
+        "INCOMPATIBLE_WITH_SURVIVAL": false,
+        "INSTANT_NORMALIZATION": false,
+        "PERSISTENT_HIGH_D": false,
+        "WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL": false
+       },
+       "lambda": {
+        "arrival_delivery_ratio": "upper",
+        "arrival_lactate_excess": "lower",
+        "arrival_oxygen_debt": "upper",
+        "debt_clearance_tau_min": 60.0,
+        "debt_per_delivery_deficit": 2.0,
+        "debt_to_lactate_gain": 0.00024532669073132904,
+        "lactate_clearance_tau_min": 120.0
+       },
+       "rerun_equals_factorized": true
+      }
+     }
+    }
+   },
+   "robust_across_demand": 0,
+   "statistics": {
+    "adequate_through_120": 25613,
+    "debt_coherent": 25613,
+    "evaluated_both": 25613,
+    "trigger_is_onset": 25613
+   },
+   "status": "LACTATE_COMPATIBLE",
+   "survivors": 25613,
+   "survivors_by_demand": {
+    "0.9": 8184,
+    "1": 25613,
+    "1.1": 8631
+   },
+   "units": 716
+  },
+  "upper/upper|lower/upper": {
+   "candidates": 2225880,
+   "checks": {
+    "adequate_through_120": true,
+    "debt_coherent": true,
+    "fd04_05_evaluated": true,
+    "patient_like": false,
+    "reruns_exact": false,
+    "survivors": false,
+    "trigger_is_onset": true
+   },
+   "digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "first_failure": "survivors",
+   "pair_57m": [
+    "upper",
+    "upper"
+   ],
+   "pair_72f": [
+    "lower",
+    "upper"
+   ],
+   "representatives": {},
+   "robust_across_demand": 0,
+   "statistics": {
+    "adequate_through_120": 0,
+    "debt_coherent": 0,
+    "evaluated_both": 0,
+    "trigger_is_onset": 0
+   },
+   "status": "LACTATE_INCOMPATIBLE",
+   "survivors": 0,
+   "survivors_by_demand": {
+    "0.9": 0,
+    "1": 0,
+    "1.1": 0
+   },
+   "units": 0
+  }
+ },
+ "records": {
+  "P2I-2AD": "5cb48163da4ff081e752b7684f4b036dbcf3e2acb4f94ee1603aaec742fe7fcf",
+  "P2I-2AG": "94c94584009449c43b15bd3bb8673bccbead3db86fcf71fa10f508b674ccf763"
+ },
+ "revision": "P2I-2AI",
+ "severity_reads": [
+  "57m",
+  "72f",
+  "ADMISSIBLE",
+  "ANALYTIC_REJECTION",
+  "C57",
+  "C72",
+  "D0",
+  "D57_BELOW_D72",
+  "DELIVERY57_ABOVE_DELIVERY72",
+  "Every (57m pair, 72f pair) of the existing support with the frozen ordinal verdict (no physiology run).",
+  "IDENTICAL",
+  "PAIRS",
+  "RESERVE",
+  "The arrival values of one existing pair for one case, from the case bands only.",
+  "_level",
+  "a",
+  "append",
+  "arrival_delivery_ratio",
+  "arrival_oxygen_debt",
+  "b",
+  "band",
+  "bands",
+  "case",
+  "case_bands",
+  "case_pairs",
+  "debt",
+  "delivery",
+  "delivery_reanchored",
+  "derived",
+  "dict",
+  "effective_oxygen_deficit",
+  "first",
+  "float",
+  "gi_reference",
+  "item",
+  "level",
+  "list",
+  "lower",
+  "midpoint",
+  "out",
+  "pair",
+  "pair_values",
+  "ratio",
+  "reanchored",
+  "reasons",
+  "second",
+  "status",
+  "str",
+  "tuple",
+  "upper",
+  "x0"
+ ],
+ "trajectories": {
+  "by_case_pair": {
+   "upper/lower|midpoint/midpoint": {
+    "readings": {
+     "gi_bleed_57m": {
+      "H1_change_0_120": {
+       "max": 29.030241004494144,
+       "median": 26.17020802992002,
+       "min": 17.267619393595737,
+       "n": 6
+      },
+      "H1_max": {
+       "max": 157.61791223852128,
+       "median": 154.75787926394716,
+       "min": 144.19614520365676,
+       "n": 6
+      },
+      "H1_untreated@0": {
+       "max": 128.58767123402714,
+       "median": 128.58767123402714,
+       "min": 126.92852581006102,
+       "n": 6
+      },
+      "H1_untreated@120": {
+       "max": 157.61791223852128,
+       "median": 154.75787926394716,
+       "min": 144.19614520365676,
+       "n": 6
+      },
+      "H1_untreated@30": {
+       "max": 136.3508983946382,
+       "median": 135.63825873610526,
+       "min": 132.49436931592112,
+       "n": 6
+      },
+      "H1_untreated@60": {
+       "max": 144.07768178917513,
+       "median": 142.534682802112,
+       "min": 137.32318929625853,
+       "n": 6
+      },
+      "H2_crystalloid@0": {
+       "max": 128.58767123402714,
+       "median": 128.58767123402714,
+       "min": 126.92852581006102,
+       "n": 6
+      },
+      "H2_crystalloid@120": {
+       "max": 149.19808408233365,
+       "median": 145.55451547683703,
+       "min": 139.2289372713335,
+       "n": 6
+      },
+      "H2_crystalloid@15": {
+       "max": 127.38371465480037,
+       "median": 126.72147831446516,
+       "min": 125.35948108637747,
+       "n": 6
+      },
+      "H2_crystalloid@30": {
+       "max": 128.86474190485058,
+       "median": 127.96418291272886,
+       "min": 126.40850448739928,
+       "n": 6
+      },
+      "H3_prbc@0": {
+       "max": 128.58767123402714,
+       "median": 128.58767123402714,
+       "min": 126.92852581006102,
+       "n": 6
+      },
+      "H3_prbc@30": {
+       "max": 123.06246111058226,
+       "median": 122.60616453792399,
+       "min": 121.77296300862314,
+       "n": 6
+      },
+      "H3_prbc@60": {
+       "max": 111.23521746395977,
+       "median": 111.1308652607539,
+       "min": 110.68741598425136,
+       "n": 6
+      },
+      "H4_change_60_120": {
+       "max": -9.264458062434798,
+       "median": -9.588872755246499,
+       "min": -9.750230716443937,
+       "n": 6
+      },
+      "H4_definitive@120": {
+       "max": 101.48498674751583,
+       "median": 101.47598743646331,
+       "min": 101.42295792181656,
+       "n": 6
+      },
+      "H4_definitive@60": {
+       "max": 111.23521746395977,
+       "median": 111.1308652607539,
+       "min": 110.68741598425136,
+       "n": 6
+      },
+      "H4_definitive@90": {
+       "max": 104.1023663341292,
+       "median": 104.07754534199366,
+       "min": 103.92739087026969,
+       "n": 6
+      },
+      "delayed_tachycardia_120": {
+       "max": 1.4849867475158334,
+       "median": 1.4759874364633134,
+       "min": 1.422957921816561,
+       "n": 6
+      },
+      "distance_from_ceiling": {
+       "max": 20.24212073605284,
+       "median": 17.382087761478715,
+       "min": 4.5301827169453475,
+       "n": 6
+      },
+      "max_saturated_hr": {
+       "max": 157.61791223852128,
+       "median": 154.75787926394716,
+       "min": 144.19614520365676,
+       "n": 6
+      }
+     },
+     "gi_bleed_72f": {
+      "H1_change_0_120": {
+       "max": 26.272074097941854,
+       "median": 22.89927860975233,
+       "min": 18.979102223692095,
+       "n": 6
+      },
+      "H1_max": {
+       "max": 136.84560535903745,
+       "median": 133.38576395321275,
+       "min": 129.4655875671525,
+       "n": 6
+      },
+      "H1_untreated@0": {
+       "max": 110.5735312610956,
+       "median": 110.5735312610956,
+       "min": 110.48648534346042,
+       "n": 6
+      },
+      "H1_untreated@120": {
+       "max": 136.84560535903745,
+       "median": 133.38576395321275,
+       "min": 129.4655875671525,
+       "n": 6
+      },
+      "H1_untreated@30": {
+       "max": 115.92385893374603,
+       "median": 115.62873987678876,
+       "min": 114.8014786125978,
+       "n": 6
+      },
+      "H1_untreated@60": {
+       "max": 122.26917860238845,
+       "median": 121.4720684831658,
+       "min": 119.56868442735646,
+       "n": 6
+      },
+      "H2_crystalloid@0": {
+       "max": 110.5735312610956,
+       "median": 110.5735312610956,
+       "min": 110.48648534346042,
+       "n": 6
+      },
+      "H2_crystalloid@120": {
+       "max": 124.21205838387397,
+       "median": 123.15210057002487,
+       "min": 119.49934773630409,
+       "n": 6
+      },
+      "H2_crystalloid@15": {
+       "max": 108.50639382959332,
+       "median": 108.26617336190094,
+       "min": 107.80624971892891,
+       "n": 6
+      },
+      "H2_crystalloid@30": {
+       "max": 108.28357279356187,
+       "median": 107.89015203569207,
+       "min": 107.41085396593144,
+       "n": 6
+      },
+      "H3_prbc@0": {
+       "max": 110.5735312610956,
+       "median": 110.5735312610956,
+       "min": 110.48648534346042,
+       "n": 6
+      },
+      "H3_prbc@30": {
+       "max": 103.81483860643172,
+       "median": 103.78335349506065,
+       "min": 103.65806286646759,
+       "n": 6
+      },
+      "H3_prbc@60": {
+       "max": 101.37365294903556,
+       "median": 101.36451341159231,
+       "min": 101.31817818074849,
+       "n": 6
+      },
+      "H4_change_60_120": {
+       "max": -1.1457286447458017,
+       "median": -1.1858335677507057,
+       "min": -1.193967074367066,
+       "n": 6
+      },
+      "H4_definitive@120": {
+       "max": 100.1796858746685,
+       "median": 100.17849209241008,
+       "min": 100.17244953600269,
+       "n": 6
+      },
+      "H4_definitive@60": {
+       "max": 101.37365294903556,
+       "median": 101.36451341159231,
+       "min": 101.31817818074849,
+       "n": 6
+      },
+      "H4_definitive@90": {
+       "max": 100.49682818548254,
+       "median": 100.49352744445524,
+       "min": 100.47681334029323,
+       "n": 6
+      },
+      "delayed_tachycardia_120": {
+       "max": 0.17968587466849328,
+       "median": 0.17849209241008168,
+       "min": 0.17244953600268786,
+       "n": 6
+      },
+      "distance_from_ceiling": {
+       "max": 43.291393794246005,
+       "median": 38.15439464096255,
+       "min": 16.614236046787255,
+       "n": 6
+      },
+      "max_saturated_hr": {
+       "max": 136.84560535903745,
+       "median": 133.38576395321275,
+       "min": 129.4655875671525,
+       "n": 6
+      }
+     }
+    },
+    "survivors": 2
+   },
+   "upper/lower|upper/upper": {
+    "readings": {
+     "gi_bleed_57m": {
+      "H1_change_0_120": {
+       "max": 44.8806426391255,
+       "median": 28.998061885696302,
+       "min": 12.610801727019634,
+       "n": 24
+      },
+      "H1_max": {
+       "max": 170.6282094328293,
+       "median": 151.37069949572884,
+       "min": 135.45062554271615,
+       "n": 24
+      },
+      "H1_untreated@0": {
+       "max": 128.58767123402714,
+       "median": 125.7475667937038,
+       "min": 119.08217312685808,
+       "n": 24
+      },
+      "H1_untreated@120": {
+       "max": 170.6282094328293,
+       "median": 151.37069949572884,
+       "min": 135.45062554271615,
+       "n": 24
+      },
+      "H1_untreated@30": {
+       "max": 143.12623734991166,
+       "median": 133.85253707994266,
+       "min": 122.72886125715908,
+       "n": 24
+      },
+      "H1_untreated@60": {
+       "max": 156.2760023493274,
+       "median": 141.5168801384581,
+       "min": 126.68875430796176,
+       "n": 24
+      },
+      "H2_crystalloid@0": {
+       "max": 128.58767123402714,
+       "median": 125.7475667937038,
+       "min": 119.08217312685808,
+       "n": 24
+      },
+      "H2_crystalloid@120": {
+       "max": 164.30938331667124,
+       "median": 141.45722083945938,
+       "min": 128.80885602034294,
+       "n": 24
+      },
+      "H2_crystalloid@15": {
+       "max": 129.32198029223986,
+       "median": 122.26165015142166,
+       "min": 110.44499464146848,
+       "n": 24
+      },
+      "H2_crystalloid@30": {
+       "max": 133.98417339263972,
+       "median": 124.20801989197021,
+       "min": 107.41370843518075,
+       "n": 24
+      },
+      "H3_prbc@0": {
+       "max": 128.58767123402714,
+       "median": 125.7475667937038,
+       "min": 119.08217312685808,
+       "n": 24
+      },
+      "H3_prbc@30": {
+       "max": 128.47123878041702,
+       "median": 121.3000874893122,
+       "min": 94.04753894577756,
+       "n": 24
+      },
+      "H3_prbc@60": {
+       "max": 114.37427129513922,
+       "median": 110.41682965892326,
+       "min": 70.85300156370897,
+       "n": 24
+      },
+      "H4_change_60_120": {
+       "max": -8.829061373449477,
+       "median": -9.460771095993692,
+       "min": -43.51355582338533,
+       "n": 24
+      },
+      "H4_definitive@120": {
+       "max": 105.28123643506461,
+       "median": 67.26514806858364,
+       "min": 61.42322393316449,
+       "n": 24
+      },
+      "H4_definitive@60": {
+       "max": 114.37427129513922,
+       "median": 110.41682965892326,
+       "min": 70.85300156370897,
+       "n": 24
+      },
+      "H4_definitive@90": {
+       "max": 108.72987662133653,
+       "median": 79.90978084041662,
+       "min": 63.93311832991938,
+       "n": 24
+      },
+      "delayed_tachycardia_120": {
+       "max": 20.58516404752035,
+       "median": 5.266547348077651,
+       "min": 1.422957921816561,
+       "n": 24
+      },
+      "distance_from_ceiling": {
+       "max": 64.54937445728385,
+       "median": 15.754318026307487,
+       "min": 1.2669631328125206,
+       "n": 24
+      },
+      "max_saturated_hr": {
+       "max": 170.6282094328293,
+       "median": 151.37069949572884,
+       "min": 135.45062554271615,
+       "n": 24
+      }
+     },
+     "gi_bleed_72f": {
+      "H1_change_0_120": {
+       "max": 48.786720986116066,
+       "median": 24.31452334555074,
+       "min": 5.8039488747104855,
+       "n": 24
+      },
+      "H1_max": {
+       "max": 164.1604837415378,
+       "median": 137.4234663877234,
+       "min": 121.17771163013222,
+       "n": 24
+      },
+      "H1_untreated@0": {
+       "max": 115.85983851161345,
+       "median": 115.27980270284685,
+       "min": 113.10894304217267,
+       "n": 24
+      },
+      "H1_untreated@120": {
+       "max": 164.1604837415378,
+       "median": 137.4234663877234,
+       "min": 121.17771163013222,
+       "n": 24
+      },
+      "H1_untreated@30": {
+       "max": 127.34420786646967,
+       "median": 118.83979391553135,
+       "min": 115.07174686941812,
+       "n": 24
+      },
+      "H1_untreated@60": {
+       "max": 140.0426155652887,
+       "median": 123.63994062918476,
+       "min": 117.3714141021106,
+       "n": 24
+      },
+      "H2_crystalloid@0": {
+       "max": 115.85983851161345,
+       "median": 115.27980270284685,
+       "min": 113.10894304217267,
+       "n": 24
+      },
+      "H2_crystalloid@120": {
+       "max": 132.5924717857895,
+       "median": 109.49064076107793,
+       "min": 66.78775112529189,
+       "n": 24
+      },
+      "H2_crystalloid@15": {
+       "max": 112.90545127099017,
+       "median": 110.8202891175397,
+       "min": 99.91661708686904,
+       "n": 24
+      },
+      "H2_crystalloid@30": {
+       "max": 110.09785730742593,
+       "median": 106.61413906950874,
+       "min": 85.39662158284392,
+       "n": 24
+      },
+      "H3_prbc@0": {
+       "max": 115.85983851161345,
+       "median": 115.27980270284685,
+       "min": 113.10894304217267,
+       "n": 24
+      },
+      "H3_prbc@30": {
+       "max": 110.09785730742593,
+       "median": 106.61413906950874,
+       "min": 85.39662158284392,
+       "n": 24
+      },
+      "H3_prbc@60": {
+       "max": 106.1140449202024,
+       "median": 102.40003540382101,
+       "min": 69.41655997198886,
+       "n": 24
+      },
+      "H4_change_60_120": {
+       "max": -2.0849839319077006,
+       "median": -2.086363119524478,
+       "min": -14.977950203385149,
+       "n": 24
+      },
+      "H4_definitive@120": {
+       "max": 102.23277369872005,
+       "median": 100.31403003498698,
+       "min": 61.23613259551888,
+       "n": 24
+      },
+      "H4_definitive@60": {
+       "max": 106.1140449202024,
+       "median": 102.40003540382101,
+       "min": 69.41655997198886,
+       "n": 24
+      },
+      "H4_definitive@90": {
+       "max": 103.69569577273786,
+       "median": 100.8682644215303,
+       "min": 63.416499093270836,
+       "n": 24
+      },
+      "delayed_tachycardia_120": {
+       "max": 8.773861015345872,
+       "median": 1.2361325955188818,
+       "min": 0.3140277410709871,
+       "n": 24
+      },
+      "distance_from_ceiling": {
+       "max": 78.82228836986778,
+       "median": 26.796558859427847,
+       "min": 4.549515701366431,
+       "n": 24
+      },
+      "max_saturated_hr": {
+       "max": 164.1604837415378,
+       "median": 137.4234663877234,
+       "min": 121.17771163013222,
+       "n": 24
+      }
+     }
+    },
+    "survivors": 8
+   }
+  },
+  "exact": true,
+  "full_runs": 48,
+  "rule": "For each LACTATE_COMPATIBLE case pair with joint arrival survivors: its LOW / MID / HIGH lactate representatives, each case run once by the full core with its own pair (L1, L2 at the representative's crystalloid point, L3), and the primary HR (pressure 0) post-processed for every joint survivor of that pair; distributions (min / median / max) per case over representatives x survivors. One survivor per representative and case is re-run by the full core at L3 (exact HR, else the run stops). No envelope filters anything.",
+  "validation_reruns": 12
+ },
+ "validation": {
+  "agree": true,
+  "debt_coherent": true,
+  "demands": [
+   0.9,
+   1.0,
+   1.1
+  ],
+  "disagreements": 0,
+  "exact_at_reserve_2_5": true,
+  "max_gap_other_reserves": 2.1316282072803006e-14,
+  "reserves": [
+   1.0,
+   2.0,
+   2.5,
+   3.0
+  ],
+  "rule": "P2I-2AC's sample rule on this lactate side (per rate the first, middle and last P3 set; lactate-side indices 0, n/4, n/2, 3n/4, n-1 and the canonical point; L1, L3 and L2 at the first and last crystalloid point; both cases) at reserve 2.5, demand 1.0 and intrinsic midpoint: exact equality of every minute's lactate, D, deficit and actual flow, of haemostasis and stop, and of every verdict (FD-LAC, L3 adequacy, active and residual FD-LAC-06). On the canonical point also demand 0.9 and 1.1 and intrinsic lower / upper (exact), and reserve 2.0, 3.0 and the synthetic reference 1 (within 1e-9, identical verdicts). Any disagreement stops the run.",
+  "runs": 936,
+  "verdicts_seen": {
+   "L1 FD-LAC-01 FAIL": 189,
+   "L1 FD-LAC-01 PASS": 45,
+   "L1 FD-LAC-02/03 False": 234,
+   "L1 FD-LAC-06 (residual bleeding) True": 234,
+   "L1 FD-LAC-06 False": 189,
+   "L1 FD-LAC-06 True": 45,
+   "L2 FD-LAC-06 (residual bleeding) True": 468,
+   "L2 FD-LAC-06 False": 371,
+   "L2 FD-LAC-06 True": 97,
+   "L3 FD-LAC-04 ALREADY_NORMALIZED": 18,
+   "L3 FD-LAC-04 FAIL": 18,
+   "L3 FD-LAC-04 NOT_EVALUABLE": 28,
+   "L3 FD-LAC-04 PASS": 170,
+   "L3 FD-LAC-05 FAIL": 36,
+   "L3 FD-LAC-05 NOT_EVALUABLE": 28,
+   "L3 FD-LAC-05 PASS": 170,
+   "L3 FD-LAC-06 (residual bleeding) True": 234,
+   "L3 FD-LAC-06 True": 234,
+   "L3 L3 adequacy L3_RESUSCITATION_ADEQUATE_THROUGH_120": 206,
+   "L3 L3 adequacy L3_RESUSCITATION_INADEQUATE": 28
+  }
+ },
+ "verdict": {
+  "approved": false,
+  "blockers": [],
+  "checks": {
+   "common_gains": true,
+   "explicit_intrinsic": true,
+   "joint_arrival": true,
+   "no_regression": true,
+   "pressure_deferred": true,
+   "recertification": true,
+   "severity_without_hr": true,
+   "structural": true
+  },
+  "rule": "HR_NUMERIC_DECISION_SURFACE_READY_FOR_FACULTY when: (1) the arrival severity is case-specific without HR (severity_reads() names no HR quantity) and at least one case pair is admissible; (2) the D / lactate recertification passes: the factorization agrees with the full core, the tied pairs reproduce P2I-2AD exactly, and at least one admissible pair is LACTATE_COMPATIBLE; (3) the intrinsic rate is declared per case (explicit; no fallback); (4) the gains are common (by construction); (5) at least one jointly arrival-compatible candidate exists (else ARRIVAL_HR_MODEL_REMAINS_STRUCTURALLY_UNRESOLVED); (6) the pressure contribution is 0 in the primary profile; (7) no D / lactate / RR regression (tied equivalence, the core unchanged); (8) no structural contradiction (the HR reconstruction equals the full core on the representatives). The suite criterion is the final certification's. Otherwise HR_NUMERIC_DECISION_SURFACE_NOT_READY with the first blocker. Nothing is approved.",
+  "verdict": "HR_NUMERIC_DECISION_SURFACE_READY_FOR_FACULTY"
+ }
+}

@@ -216,3 +216,99 @@ def test_the_surface_and_comparison_count_joint_compatibility_with_common_gains(
     comparison = asv.comparison(table, compatible)
     assert (comparison["A"]["joint"], comparison["B"]["joint"], comparison["C"]["joint"]) == (0, 3 * 75, 0)
     assert comparison["case_severity_restores"] and not comparison["case_intrinsic_restores"]
+
+
+# The evaluation, on the frozen package (after the freeze commit 2b82a71) ---------------------------------------------
+
+RECORD = ROOT / "docs" / "revision" / "P2I2AI_arrival_severity.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2I2AI_SEVERIDAD_LLEGADA_POR_CASO.md"
+COMPATIBLE = [[["upper", "lower"], ["midpoint", "midpoint"]], [["upper", "lower"], ["upper", "upper"]]]
+
+
+@pytest.fixture(scope="module")
+def record():
+    return json.loads(RECORD.read_text(encoding="utf-8"))
+
+
+def _json(value):
+    return json.loads(json.dumps(value, sort_keys=True, default=str))
+
+
+def test_the_record_comes_from_the_frozen_package_and_its_analytic_part_is_reproduced_live(record):
+    assert record["freeze_digest"] == FROZEN_DIGEST
+    # The filter (minutes of physiology) is not re-run here; the analytic parts are, on the committed inputs.
+    assert record["inventory"] == _json(asv.inventory(asv.p2i2ad_region()["region"]["inline"]))
+    assert record["case_pairs"] == _json(asv.case_pairs()) and record["admissible"] == _json(asv.admissible())
+    assert record["severity_reads"] == sorted(asv.severity_reads())
+    compatible = [tuple(map(tuple, combo)) for combo in record["lactate_compatible"]]
+    table = asv.arrival_hr_table()
+    assert record["hr_surface"] == _json(asv.hr_surface(table, compatible))
+    assert record["comparison"] == _json(asv.comparison(table, compatible))
+
+
+def test_the_recertification_the_report_states(record):
+    assert record["validation"]["agree"] and record["validation"]["disagreements"] == 0
+    assert record["validation"]["runs"] == 936
+    eq = record["equivalence"]
+    assert eq["equal"] and eq["region_digest"] == asv.P2I2AD_REGION_DIGEST
+    assert eq["survivors"] == {"0.9": 351738, "1": 353302, "1.1": 405740}
+    assert record["lactate_compatible"] == COMPATIBLE
+    recert = record["recertification"]
+    assert {key: item["survivors"] for key, item in recert.items()} == {
+        "lower/lower|lower/upper": 0, "midpoint/midpoint|lower/upper": 0, "upper/lower|lower/lower": 0,
+        "upper/lower|lower/upper": 0, "upper/lower|midpoint/midpoint": 216, "upper/lower|upper/upper": 25613,
+        "upper/upper|lower/upper": 0}
+    assert recert["midpoint/midpoint|lower/upper"]["survivors_by_demand"] == {"0.9": 0, "1": 0, "1.1": 168}
+    # Reported, never a filter: no case-pair candidate survives at every demand factor.
+    assert all(item["robust_across_demand"] == 0 for item in recert.values())
+    for key in ("upper/lower|midpoint/midpoint", "upper/lower|upper/upper"):
+        item = recert[key]
+        assert item["status"] == asv.LACTATE_COMPATIBLE and all(item["checks"].values())
+        assert set(item["statistics"].values()) == {item["survivors"]}
+        assert set(item["representatives"]) == {"LOW", "MID", "HIGH"}
+    assert all(item["status"] == asv.LACTATE_INCOMPATIBLE and item["first_failure"] == "survivors"
+               for item in recert.values() if item["survivors"] == 0)
+
+
+def test_the_arrival_hr_comparison_and_trajectories_the_report_states(record):
+    surface = record["hr_surface"]
+    assert (surface["joint_candidates"], surface["compatible_57m"], surface["compatible_72f"], surface["joint"]) == (
+        1350, 66, 84, 10)
+    assert surface["support"]["intrinsic_pairs"] == {
+        "lower|lower": 2, "lower|midpoint": 0, "lower|upper": 3, "midpoint|lower": 0, "midpoint|midpoint": 0,
+        "midpoint|upper": 0, "upper|lower": 0, "upper|midpoint": 0, "upper|upper": 5}
+    assert surface["support"]["ceiling"] == {"150": 4, "175": 4, "200": 2}
+    assert all(abs(s["mismatch"][0]) <= hp.TOLERANCE_BPM and abs(s["mismatch"][1]) <= hp.TOLERANCE_BPM
+               for s in surface["survivors"])
+    comparison = record["comparison"]
+    assert [comparison[k]["joint"] for k in "ABCD"] == [0, 7, 9, 10] and comparison["both_contribute_confirmed"]
+    trajectories = record["trajectories"]
+    assert trajectories["exact"] and trajectories["validation_reruns"] == 12 and trajectories["full_runs"] == 48
+    assert set(trajectories["by_case_pair"]) == {"upper/lower|midpoint/midpoint", "upper/lower|upper/upper"}
+
+
+def test_the_verdict_is_ready_for_faculty_and_nothing_is_approved(record):
+    verdict = record["verdict"]
+    assert verdict["verdict"] == asv.READY and not verdict["blockers"] and all(verdict["checks"].values())
+    assert not verdict["approved"]
+    assert not record["efficiency"]["cartesian_sweep"] and not record["efficiency"]["legacy_read"]
+    # The only "rank" keys are the representatives' positions under P2I-2AD's LOW / MID / HIGH rule (0, n // 2, n - 1).
+    picks = [rep["pick"] for item in record["recertification"].values() for rep in item["representatives"].values()]
+    assert picks and all(set(pick) == {"p1", "lambda_57m", "lambda_72f", "p3", "support", "rank"} for pick in picks)
+    stripped = json.loads(json.dumps(record))
+    for item in stripped["recertification"].values():
+        for rep in item["representatives"].values():
+            del rep["pick"]["rank"]
+    text = json.dumps(stripped, default=str).lower()
+    found = [word for word in ("faculty_approved", "\"best", "\"selected", "\"recommended", "\"preferred", "\"rank")
+             if word in text]
+    assert not found
+
+
+def test_the_document_is_generated_from_the_record(tmp_path):
+    from clinical_core import arrival_severity_report
+    assert "clinical_core/arrival_severity_report.py" in lactate_slice.DOWNSTREAM_REPORTS
+    copy = tmp_path / "document.md"
+    copy.write_text(DOCUMENT.read_text(encoding="utf-8"), encoding="utf-8")
+    arrival_severity_report.main(["--write", str(copy), "--data", str(RECORD)])
+    assert copy.read_text(encoding="utf-8") == DOCUMENT.read_text(encoding="utf-8"), "regenerate the document"

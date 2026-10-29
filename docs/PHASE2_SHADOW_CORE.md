@@ -3159,3 +3159,33 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - No se implementa ni se certifica nada, no hay revisión adversarial y no hay push.
 - HR1 y HR2 sin cambios. La presión sigue DEFERRED, la tolerancia en ±5, las ganancias comunes, y 150 / 175 / 200 siguen
   siendo techos sinusales totales.
+
+## 39. P2I-2AI · Severidad de llegada por caso y recertificación de D y lactato (2026-10-29)
+
+- **Base local:** `0fa8cf9` (P2I-2AH). Congelamiento: `2b82a71` (digest `805eff4e…`), antes de cualquier conteo nuevo de
+  lactato o de FC. P2I-2AG queda cerrado: su módulo, fijado byte a byte, y su registro (`94c94584…`), por su digest.
+  Informe: `docs/revision/P2I2AI_SEVERIDAD_LLEGADA_POR_CASO.md`; números: `docs/revision/P2I2AI_arrival_severity.json`.
+- **Decisiones docentes:**
+  - D0 y la entrega de llegada son condiciones iniciales del paciente, y cada caso puede tomar su propio par EXISTENTE.
+    No hay valores nuevos, interpolación ni ganancias por caso.
+  - Orden ordinal, congelado antes de contar: D0 57m ≥ D0 72f y entrega 57m ≤ entrega 72f, con al menos una estricta.
+  - La FC nunca elige la severidad.
+  - La intrínseca es propia de cada paciente (60 / 80 / 100), sin identificar ni aprobar.
+  - Son comunes las ganancias, la saturación y los techos totales 150 / 175 / 200. La presión sigue DEFERRED y la
+    tolerancia en ±5 lpm.
+- **Severidad:** 7 de 25 combinaciones son admisibles (18 rechazos analíticos). Una guarda sobre el árbol sintáctico
+  prueba que el constructor no lee ninguna magnitud de FC.
+- **Recertificación:**
+  - La maquinaria de P2I-2AD, sin cambios, filtra cada caso con su par. La factorización coincide (936 corridas, 0
+    desacuerdos) y los pares atados reproducen exactamente la región de P2I-2AD (`9ddbcf24…`).
+  - Hay dos pares LACTATE_COMPATIBLE, con 57m grave (60 / 0,6):
+    - 72f medio (20 / 0,85): 216 sobrevivientes;
+    - 72f mixto (60 / 1,0): 25 613 sobrevivientes.
+  - Robustos a la demanda: 0 en ambos. Se informa y no filtra.
+- **FC de llegada:**
+  - De 1350 candidatos, 10 son conjuntamente compatibles: intrínseca 100 / 100, 60 / 100 o 60 / 60, nunca 80. Los techos
+    150, 175 y 200 aparecen los tres.
+  - A / B / C / D = 0 / 7 / 9 / 10: BOTH_CONTRIBUTE, confirmado.
+  - Trayectorias: 12 relecturas de FC exactas; distribuciones informadas, sin envolventes.
+- **Veredicto: HR_NUMERIC_DECISION_SURFACE_READY_FOR_FACULTY.** Nada se aprobó. Siguen detenidos la selección latente de
+  la FC, las envolventes, la presión, la FR, el colapso, la migración y la integración.
