@@ -20,7 +20,8 @@ from clinical_core import decision_pack, lactate_slice
 from clinical_core import faculty_constraints as fd
 from clinical_core import lactate_adequacy as la
 from clinical_core import lactate_rebuild as lr
-from test_clinical_core_lactate_rebuild import OFF_GRID, OFF_GRID_POINTS, OFF_GRID_UNIT
+from test_clinical_core_lactate_rebuild import (OFF_GRID, OFF_GRID_POINTS, OFF_GRID_UNIT,
+                                              full_run_or_inconsistent)
 
 ROOT = la.ROOT
 SOURCE = ROOT / "clinical_core" / "lactate_adequacy.py"
@@ -109,7 +110,10 @@ def test_d_and_lactate_post_process_exactly_as_the_corrected_core_on_off_grid_po
         assert all(flow > 0.0 for flow in haemodynamic["bleed"]), "the bleed never stops: residual after haemostasis"
         for point in OFF_GRID_POINTS:
             for reserve, intrinsic, factor in variants:
-                full = la.full_run(entry, case, scenario, point, bag, reserve, intrinsic, factor)
+                full = full_run_or_inconsistent(lambda: la.full_run(entry, case, scenario, point, bag, reserve,
+                                                                    intrinsic, factor), case, intrinsic, point[5])
+                if full is None:
+                    continue
                 _, old, context = la.factorized(haemodynamic, arrivals[case], point, factor)
                 assert full["controlled_at"] == haemodynamic["controlled_at"] and full["stop"] is None
                 assert context.bleed == full["bleed"]

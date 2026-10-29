@@ -1,0 +1,313 @@
+"""Phase 2 shadow core, P2I-2AE: HR / sympathetic-response structure.
+
+These tests pin the faculty decisions as frozen before evaluation: tau_D no longer reaches the drive (the debt-driven
+drive is debt_to_sympathetic_gain x D, 0 at D = 0, never decreasing in D, never derived from tau_D); the arrival HR is
+the intrinsic rate plus a non-negative sympathetic contribution and an arrival that would need a negative one stops
+the core; the rhythm stays authoritative; HR reaches no output, delivery, D, lactate or RR; the gain range, the
+analytic rejection, the flags, the invariants and the verdict rule were frozen before any HR outcome; the intrinsic
+band is not HR1 evidence; the P2F region is never read and the legacy HR only after the verdict.
+"""
+import ast
+import hashlib
+import inspect
+import json
+import math
+from dataclasses import replace
+
+import pytest
+
+from clinical_core import blood_fluid_calibration as bf
+from clinical_core import derived, gi_reference, lactate_slice
+from clinical_core import hr_structure as hs
+from clinical_core import lactate_rebuild as lr
+from clinical_core.bands import Drift
+from clinical_core.derived import DEFAULT_PROFILE, CoreProfile, derive
+from clinical_core.integration import run
+from clinical_core.modules.rhythm_events import ScriptedRhythmEvent
+from clinical_core.state import CoreInvariantError, RhythmCode, RhythmState
+from test_clinical_core_lactate_rebuild import OFF_GRID, OFF_GRID_UNIT
+
+ROOT = hs.ROOT
+SOURCE = ROOT / "clinical_core" / "hr_structure.py"
+#: The P2I-2AE freeze: faculty decisions, the P2I-2AD record, the audit, the gain range, the analytic rule, the
+#: scenarios, the factorization, the scan, the flags, the invariants, identifiability, the legacy and verdict rules, the
+#: policy and every clinical_core source but the downstream reports, committed before any HR outcome was evaluated.
+FROZEN_DIGEST = "398ab8179b9ea0b94343335ca68a9af34b7222cbb3f6be3fcee339d1bc126fc2"
+CASES = hs.CASES
+FALLING = (Drift("pump", "P", 0, 90, -0.005),)
+
+
+def _anchors(case=CASES[0], intrinsic="midpoint", debt="midpoint"):
+    return hs.case_anchors(case, intrinsic, debt)
+
+
+def _profile(**changes):
+    return replace(DEFAULT_PROFILE, **changes)
+
+
+# The frozen inputs ------------------------------------------------------------------------------------------------
+
+def test_the_p2i2ad_record_is_the_committed_one():
+    record = hs.p2i2ad_record()
+    assert record["freeze_digest"] == hs.P2I2AD_DIGEST and set(record["representatives"]) == {"LOW", "MID", "HIGH"}
+
+
+def test_the_package_is_frozen():
+    sources = bf.freeze_sources()
+    assert {"clinical_core/hr_structure.py", "clinical_core/derived.py", "clinical_core/integration.py",
+            "clinical_core/lactate_closure.py"} <= set(sources)
+    assert "clinical_core/hr_structure_report.py" in lactate_slice.DOWNSTREAM_REPORTS
+    assert not set(lactate_slice.DOWNSTREAM_REPORTS) & set(sources)
+    assert hs.freeze_digest() == FROZEN_DIGEST, "a source, the design, a rule or the policy changed after the freeze"
+
+
+def test_the_faculty_decisions_are_recorded():
+    assert set(hs.FACULTY) == {"decided", "td_92", "arrival", "lactate", "scope"}
+    assert "never derived from tau_D" in hs.FACULTY["td_92"] and "non-negative" in hs.FACULTY["arrival"]
+    assert "not calibration evidence" in hs.FACULTY["arrival"]
+
+
+# The core: the debt-driven drive (P2I-2AE-2) ------------------------------------------------------------------------
+
+def test_the_gain_is_its_own_parameter_and_provisional():
+    assert CoreProfile().debt_to_sympathetic_gain == 1.0 / 120.0 == 0.5 / 60.0
+    status, text = derived.PARAMETERS["debt_to_sympathetic_gain"]
+    assert status == derived.PROVISIONAL and "independent of tau_D" in text and "not a calibrated value" in text
+    assert "does not read it" in derived.PARAMETERS["sympathetic_per_debt"][1]
+    # Changing tau_D changes no gain: the gain is a field of its own, never computed from tau_D.
+    assert replace(DEFAULT_PROFILE, debt_clearance_tau_min=30.0).debt_to_sympathetic_gain == (
+        DEFAULT_PROFILE.debt_to_sympathetic_gain)
+
+
+def test_tau_d_at_fixed_d_changes_no_drive_and_no_hr():
+    for case in CASES:
+        anchors = _anchors(case)
+        arrival = derived.arrival_state(anchors)
+        for debt in (0.0, 7.0, anchors.arrival_oxygen_debt, 55.0, 300.0):
+            state = arrival.evolve(D=debt)
+            readings = set()
+            for tau in (1.0, 7.5, 30.0, 60.0, 120.0, 480.0):
+                profile = _profile(debt_clearance_tau_min=tau)
+                drive = derived.sympathetic_after_minute(arrival, state, anchors, profile)
+                readings.add((derived.sympathetic_target(state, anchors, profile), drive,
+                              derive(state.evolve(aux=replace(state.aux, sympathetic_drive=drive)), anchors,
+                                     profile).pulse_rate_bpm))
+            assert len(readings) == 1, (case, debt)
+
+
+def test_the_target_reads_the_gain_and_neither_tau_d_nor_the_retired_coefficient():
+    audit = hs.live_audit()
+    assert audit["no_tau_d_in_hr"] and audit["reads"]["sinus_rate_reads_drive"]
+    assert not audit["acute_oxygen_deficit_term"]
+    # The retired coefficient reaches nothing: a run with it at 0 or 10 is the same run.
+    states = [run(_anchors(), FALLING, 60, _profile(sympathetic_per_debt=value)).states for value in (0.0, 0.5, 10.0)]
+    assert states[0] == states[1] == states[2]
+
+
+def test_the_debt_driven_drive_is_gain_times_d_and_zero_at_zero():
+    anchors = _anchors()
+    arrival = derived.arrival_state(anchors)
+    for gain in (0.0, 1e-3, 1.0 / 120.0, 0.05):
+        profile = _profile(debt_to_sympathetic_gain=gain)
+        rest = derived.arrival_non_debt_drive(anchors, profile)
+        base = derived.sympathetic_target(arrival.evolve(D=0.0), anchors, profile)
+        for debt in (0.0, 1.0, 20.0, 64.0, 500.0):
+            target = derived.sympathetic_target(arrival.evolve(D=debt), anchors, profile)
+            assert target - base == pytest.approx(gain * debt, rel=1e-12, abs=1e-15)
+        assert derived.arrival_debt_drive(anchors, profile) == gain * anchors.arrival_oxygen_debt
+        assert rest + derived.arrival_debt_drive(anchors, profile) == pytest.approx(
+            derived.arrival_sympathetic_drive(anchors, profile), rel=1e-15)
+
+
+def test_more_debt_never_lowers_the_drive_or_hr():
+    for case in CASES:
+        anchors = _anchors(case)
+        arrival = derived.arrival_state(anchors)
+        for gain in (*hs.GAINS[:3], 0.0):
+            profile = _profile(debt_to_sympathetic_gain=gain)
+            if derived.arrival_debt_drive(anchors, profile) > derived.arrival_sympathetic_drive(anchors, profile):
+                continue
+            debts = [0.0, 0.5, 3.0, 20.0, 21.0, 60.0, 240.0, 1000.0]
+            drives = [derived.sympathetic_after_minute(arrival, arrival.evolve(D=d), anchors, profile) for d in debts]
+            rates = [derive(arrival.evolve(D=d, aux=replace(arrival.aux, sympathetic_drive=r)), anchors,
+                            profile).pulse_rate_bpm for d, r in zip(debts, drives)]
+            assert drives == sorted(drives) and rates == sorted(rates), (case, gain)
+
+
+def test_an_arrival_debt_needing_a_negative_contribution_stops_the_core():
+    anchors = _anchors(CASES[1], "upper", "upper")            # 72f: HR 112, intrinsic 100, D0 60
+    assert derived.arrival_sympathetic_drive(anchors, DEFAULT_PROFILE) == pytest.approx(0.48)
+    with pytest.raises(CoreInvariantError, match="negative sympathetic contribution"):
+        derived.arrival_state(anchors)
+    with pytest.raises(CoreInvariantError, match="negative sympathetic contribution"):
+        derived.heart_rate_decomposition(anchors)
+    # At a gain the arrival can hold, the same declaration runs and reproduces the arrival HR exactly.
+    profile = _profile(debt_to_sympathetic_gain=0.48 / 60.0 / 2)
+    assert derive(derived.arrival_state(anchors, profile), anchors, profile).pulse_rate_bpm == anchors.hr
+    # An undeclared intrinsic rate carries no sympathetic share: any arrival debt then needs a positive gain of 0.
+    plain = replace(gi_reference.candidate_anchors(CASES[0], {}), arrival_oxygen_debt=5.0,
+                    declared={"arrival_oxygen_debt": "synthetic_probe"})
+    with pytest.raises(CoreInvariantError):
+        derived.arrival_state(plain)
+    assert derived.arrival_state(plain, _profile(debt_to_sympathetic_gain=0.0)).aux.sympathetic_drive == 0.0
+
+
+def test_every_consistent_decomposition_reproduces_the_arrival_hr_and_splits_non_negatively():
+    analytic = hs.arrival_decompositions()
+    assert analytic["arrival_reproduced_exactly"]
+    for table in analytic["table"].values():
+        for row in table.values():
+            if row["status"] == hs.ANALYTIC_REJECTION:
+                assert row["gain"] * row["D0"] > 0.0
+                continue
+            assert row["debt_bpm"] >= 0.0 and row["non_debt_bpm"] >= 0.0
+            assert row["debt_bpm"] + row["non_debt_bpm"] == pytest.approx(row["sympathetic_bpm"], abs=1e-9)
+
+
+def test_the_drive_is_never_negative_and_the_sinus_rate_never_below_intrinsic():
+    anchors = _anchors()
+    # A synthetic relief far beyond arrival: the target reaches 0 and the drive decays toward it, never below.
+    relieved = run(anchors, (Drift("pump", "P", 0, 40, 0.05),), 120, _profile())
+    rates = [item.pulse_rate_bpm for item in relieved.derived()]
+    assert min(state.aux.sympathetic_drive for state in relieved.states) >= 0.0
+    assert min(rates) >= anchors.intrinsic_sinus_rate and rates[-1] == pytest.approx(anchors.intrinsic_sinus_rate,
+                                                                                     abs=1e-3)
+
+
+def test_the_rhythm_stays_authoritative():
+    anchors = _anchors()
+    paced = run(anchors, FALLING + (ScriptedRhythmEvent("paced", 10, RhythmState(RhythmCode.PACED, 70.0, 1.0, True),
+                                                        "probe"),), 40, _profile())
+    assert {item.pulse_rate_bpm for item in paced.derived()[10:]} == {70.0}
+    arrest = run(anchors, FALLING + (ScriptedRhythmEvent("pea", 10, RhythmState.pea(40.0), "probe"),), 20, _profile())
+    assert all(item.pulse_rate_bpm is None for item in arrest.derived()[10:])
+    assert all(state.aux.sympathetic_drive == 0.0 for state in arrest.states[10:])
+
+
+def test_hr_feeds_back_into_no_output_delivery_debt_lactate_or_rr():
+    anchors = _anchors()
+    runs = [run(anchors, FALLING, 90, _profile(debt_to_sympathetic_gain=gain)) for gain in (0.0, 1e-3, 0.05)]
+    readings = [[(v.output_rel, v.delivery_rel, v.lactate, v.respiratory_rate, s.D)
+                 for s, v in zip(r.states, r.derived())] for r in runs]
+    assert readings[0] == readings[1] == readings[2]
+    assert [v.pulse_rate_bpm for v in runs[0].derived()] != [v.pulse_rate_bpm for v in runs[2].derived()]
+
+
+# The design (P2I-2AE-1, 3, 4, 6, 7) ---------------------------------------------------------------------------------
+
+def test_the_audit_names_every_tau_d_path_with_its_class():
+    classes = {path["class"] for path in hs.TAU_D_PATHS}
+    assert classes <= {hs.VALID_CAUSAL_PATH, hs.SEMANTIC_LEAK, hs.LEGACY_ARTIFACT, hs.CASE_SPECIFIC_ARTIFACT}
+    assert [p["class"] for p in hs.TAU_D_PATHS].count(hs.SEMANTIC_LEAK) == 1
+    assert hs.TAU_D_PATHS[0]["status"] == "removed (P2I-2AE)"
+    assert set(hs.CONTRIBUTORS) >= {"intrinsic_rate", "sympathetic", "debt", "direct_deficit", "drugs_interventions",
+                                    "rhythm", "caps_floors", "case_specific"}
+    assert hs.DEFICIT_AUDIT["A_instantaneous_effective_oxygen_deficit"] is False
+    assert hs.DEFICIT_AUDIT["B_accumulated_D"] is True and hs.DEFICIT_AUDIT["new_acute_term_needed"] is False
+
+
+def test_the_anchors_are_authored_only():
+    table = hs.anchors_table()
+    assert table["gi_bleed_57m"]["arrival_hr"]["value"] == 124 and table["gi_bleed_72f"]["arrival_hr"]["value"] == 112
+    for case in CASES:
+        assert table[case]["arrival_hr"]["label"] == hs.AUTHORED_OBSERVATION
+        assert table[case]["later_hr"]["value"] == "not authored"
+        assert table[case]["family_engine_hr"]["label"] == hs.LEGACY_REFERENCE
+        assert table[case]["core_hr_after_arrival"]["label"] == hs.MODEL_DERIVED
+
+
+def test_the_intrinsic_band_is_still_valid_and_not_hr1_evidence():
+    audit = hs.intrinsic_audit()
+    assert audit["status"] == hs.STILL_VALID and not audit["derived_from_hr1"]
+    assert audit["band"] == {"gi_bleed_57m": [60.0, 80.0, 100.0], "gi_bleed_72f": [60.0, 80.0, 100.0]}
+
+
+def test_the_gain_range_follows_its_rule_and_never_reads_tau_d():
+    design = hs.gain_design()
+    assert design["old_status"] == hs.OLD_RANGE_STATUS == "OLD_SYMPATHETIC_PER_DEBT_RANGE_SEMANTICALLY_INVALID"
+    assert design["low"] == 1.0 / (25.0 * 60.0) and design["high"] == (124.0 - 60.0) / (25.0 * 20.0)
+    points = design["points"]
+    assert len(points) == 5 and points[0] == design["low"] and points[-1] == design["high"] and hs.GAINS == points
+    ratios = [b / a for a, b in zip(points, points[1:])]
+    assert max(ratios) - min(ratios) < 1e-12
+    assert hs.GAIN_ANCHOR == points[2] and hs.GAIN_SCAN == points + (0.0,)
+    assert design["every_declared_arrival_consistent_below"] == pytest.approx(0.48 / 60.0)
+    body = inspect.getsource(hs.gain_design).split('"""')[-1].split("old = ")[0]
+    for word in ("debt_clearance_tau_min", "legacy", "trajectory", "sympathetic_per_debt", "run("):
+        assert word not in body
+
+
+def test_the_analytic_rejections_are_exactly_the_arrivals_the_core_refuses():
+    analytic = hs.arrival_decompositions()
+    assert hs.refused_by_core(analytic) == {"agree": True, "mismatches": []}
+    expected = 0
+    for case in CASES:
+        for intrinsic, rate in hs.intrinsic_levels(case).items():
+            for debt in hs.LEVELS:
+                d0 = gi_reference.arrival_debt_band(case).__getattribute__(debt)
+                for gain in hs.GAIN_SCAN:
+                    expected += gain * d0 > (gi_reference.authored(case, "hr") - rate) / 25.0
+    assert analytic["analytic_rejections"] == expected and analytic["combinations"] == 2 * 3 * 3 * 6
+
+
+# The factorization (off-grid physiology only) --------------------------------------------------------------------
+
+@pytest.mark.parametrize("scenario", [hs.L1, hs.L2, hs.L3])
+def test_hr_post_processes_exactly_as_the_core_on_an_off_grid_physiology(scenario):
+    point = (45.0, 1.5, 4e-4, 90.0, "upper", "midpoint", "lower")
+    inputs = {"entry": {**OFF_GRID, **OFF_GRID_UNIT}, "bag": bf.bag(0.22, 0.07, 75.0), "point": point}
+    for case in CASES:
+        base = hs.full_run(inputs, case, scenario)
+        for level, gain in (("midpoint", 0.0), ("lower", 2e-3), ("upper", 1.7e-2), ("midpoint", 0.11)):
+            rate = hs.intrinsic_levels(case)[level]
+            try:
+                series = hs.hr_series(base, rate, gain)
+            except CoreInvariantError:
+                with pytest.raises(CoreInvariantError):
+                    hs.full_run(inputs, case, scenario, level, gain)
+                continue
+            full = hs.full_run(inputs, case, scenario, level, gain)
+            assert [p["drive"] for p in series] == [r["drive"] for r in full["rows"]], (case, level, gain)
+            assert [p["hr"] for p in series] == [r["hr"] for r in full["rows"]]
+            assert [r["rr"] for r in full["rows"]] == [r["rr"] for r in base["rows"]]
+            for point_ in series:
+                parts = hs.contributions(point_)
+                if parts.get("hr") is not None:
+                    assert sum(v for k, v in parts.items() if k.endswith("_bpm")) + parts["intrinsic"] == (
+                        pytest.approx(parts["hr"], abs=1e-9))
+
+
+# Policy ------------------------------------------------------------------------------------------------------------
+
+def test_the_flags_invariants_and_verdict_rule_are_declared_before_any_run():
+    assert set(hs.FLAG_RULES) == {"ARRIVAL_NOT_REPRODUCED", "HR_BELOW_INTRINSIC", "NEGATIVE_CONTRIBUTION",
+                                  "DRIVE_FALLS_AGAINST_ITS_TARGET", "INSTANT_NORMALIZATION_AT_HAEMOSTASIS",
+                                  "NO_DEBT_RECOVERY_AFTER_ADEQUACY"}
+    assert sorted(hs.INVARIANTS) == list(range(1, 11))
+    assert "No bpm threshold" in hs.FLAG_POLICY and "No numeric HR band is required" in hs.VERDICT_RULE
+    assert hs.READY == "HR_STRUCTURE_READY_FOR_NUMERIC_FACULTY_CALIBRATION"
+
+
+def test_the_legacy_hr_is_read_only_after_the_verdict_and_the_p2f_region_never():
+    tree = ast.parse(SOURCE.read_text(encoding="utf-8"))
+    readers = {node.name for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
+               and "_legacy_run" in ast.unparse(node)}
+    assert readers == {"legacy_reference"}
+    with lr.LegacyLock():
+        with pytest.raises(AssertionError, match="only after the verdict"):
+            hs.legacy_reference({})
+    run_source = inspect.getsource(hs.run)
+    assert run_source.index("legacy_reference(") > run_source.index("verdict(audit")
+    assert "with lr.P2FGuard(), lr.LegacyLock():" in run_source
+    called = {ast.unparse(node.func) for node in ast.walk(tree) if isinstance(node, ast.Call)}
+    for name in ("gi_candidates", "admissible", "region_runs", "p2f_rejection"):
+        assert not any(name in call for call in called), name
+
+
+def test_nothing_is_selected_or_approved():
+    text = json.dumps(hs.design(), default=str).lower()
+    for word in ("faculty_approved", "\"best", "\"selected", "\"recommended", "\"preferred", "\"rank"):
+        assert word not in text
+    assert DEFAULT_PROFILE == CoreProfile() and DEFAULT_PROFILE.collapse_output_threshold is None
+    for word in ("sbp_per_pressure_deficit=", "rr_per_lactate=", "sympathetic_per_pressure_deficit="):
+        assert word not in SOURCE.read_text(encoding="utf-8")

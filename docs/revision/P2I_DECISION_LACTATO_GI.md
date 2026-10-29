@@ -8,7 +8,7 @@ no se migra y el golden canónico no cambia. Su aplicación a la región candida
 
 - **Generado desde:** el congelamiento de calibración
   `c3fd2dd7de4b1621d6a772b24946812ddbf68a023cdea27c65018061b7d8c7ad` y el corte
-  `4fff72395c7145bc40ea2dfbf83b04659d7e19496ffc6fb49e327d8dad51f04f` (`python -m clinical_core.lactate_slice`).
+  `f0c83d876d2bba7e604f36fb12514cca1262ff702481d897a3f8db32579f95a5` (`python -m clinical_core.lactate_slice`).
   Los números están en `docs/revision/P2I_lactate_slice.json`. Una prueba falla si el código o las entradas cambian
   sin regenerarlos.
 - **Base:** la región estructuralmente admisible de P2F que P2G ya usa: 1054 conjuntos (`decision_pack.admissible`).
@@ -87,52 +87,52 @@ Las cuatro corren 120 min con órdenes y tipos de entrada que ya existen; no se 
 
 | Caso | min | n | mínimo | p10 | mediana | p90 | máximo | sube | baja | cambia > 1 | cambia > 2 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| gi_bleed_57m | 0 | 1054 | 4,40 | 4,40 | 4,40 | 4,40 | 4,40 | 0 % | 0 % | 0 % | 0 % |
-| gi_bleed_57m | 15 | 1054 | 3,37 | 3,45 | 4,16 | 4,67 | 4,76 | 23 % | 77 % | 5 % | 0 % |
-| gi_bleed_57m | 30 | 1054 | 2,65 | 2,82 | 3,98 | 4,93 | 5,16 | 23 % | 77 % | 22 % | 0 % |
-| gi_bleed_57m | 60 | 1054 | 1,81 | 2,20 | 3,75 | 5,47 | 6,06 | 28 % | 72 % | 50 % | 13 % |
-| gi_bleed_57m | 90 | 1054 | 1,51 | 2,10 | 3,72 | 6,13 | 7,14 | 31 % | 69 % | 53 % | 22 % |
-| gi_bleed_57m | 120 | 1054 | 1,54 | 2,22 | 3,98 | 6,97 | 8,42 | 43 % | 57 % | 53 % | 25 % |
-| gi_bleed_72f | 0 | 1054 | 3,40 | 3,40 | 3,40 | 3,40 | 3,40 | 0 % | 0 % | 0 % | 0 % |
-| gi_bleed_72f | 15 | 1054 | 2,66 | 2,73 | 3,26 | 3,73 | 3,82 | 34 % | 66 % | 0 % | 0 % |
-| gi_bleed_72f | 30 | 1054 | 2,13 | 2,31 | 3,16 | 4,07 | 4,27 | 34 % | 66 % | 10 % | 0 % |
-| gi_bleed_72f | 60 | 1054 | 1,53 | 1,92 | 3,08 | 4,71 | 5,27 | 37 % | 63 % | 31 % | 0 % |
-| gi_bleed_72f | 90 | 1054 | 1,30 | 1,90 | 3,18 | 5,37 | 6,39 | 44 % | 56 % | 42 % | 11 % |
-| gi_bleed_72f | 120 | 1054 | 1,30 | 2,01 | 3,42 | 6,11 | 7,66 | 51 % | 49 % | 50 % | 20 % |
+| gi_bleed_57m | 0 | 946 | 4,40 | 4,40 | 4,40 | 4,40 | 4,40 | 0 % | 0 % | 0 % | 0 % |
+| gi_bleed_57m | 15 | 946 | 3,37 | 3,45 | 4,14 | 4,59 | 4,76 | 18 % | 82 % | 6 % | 0 % |
+| gi_bleed_57m | 30 | 946 | 2,65 | 2,82 | 3,96 | 4,77 | 5,16 | 18 % | 82 % | 24 % | 0 % |
+| gi_bleed_57m | 60 | 946 | 1,81 | 2,20 | 3,71 | 5,13 | 6,06 | 24 % | 76 % | 48 % | 14 % |
+| gi_bleed_57m | 90 | 946 | 1,51 | 2,10 | 3,66 | 5,61 | 7,14 | 27 % | 73 % | 51 % | 22 % |
+| gi_bleed_57m | 120 | 946 | 1,54 | 2,22 | 3,82 | 6,36 | 8,42 | 39 % | 61 % | 51 % | 23 % |
+| gi_bleed_72f | 0 | 946 | 3,40 | 3,40 | 3,40 | 3,40 | 3,40 | 0 % | 0 % | 0 % | 0 % |
+| gi_bleed_72f | 15 | 946 | 2,66 | 2,73 | 3,26 | 3,71 | 3,82 | 29 % | 71 % | 0 % | 0 % |
+| gi_bleed_72f | 30 | 946 | 2,13 | 2,31 | 3,13 | 3,99 | 4,27 | 29 % | 71 % | 11 % | 0 % |
+| gi_bleed_72f | 60 | 946 | 1,53 | 1,92 | 3,03 | 4,49 | 5,27 | 32 % | 68 % | 29 % | 0 % |
+| gi_bleed_72f | 90 | 946 | 1,30 | 1,90 | 3,16 | 5,07 | 6,39 | 41 % | 59 % | 40 % | 9 % |
+| gi_bleed_72f | 120 | 946 | 1,30 | 2,01 | 3,35 | 5,86 | 7,66 | 48 % | 52 % | 48 % | 16 % |
 
 **L2 · reanimación transitoria y parcial (2 L de salina en 20 min; el sangrado sigue)**
 
 | Caso | min | n | mínimo | p10 | mediana | p90 | máximo | sube | baja | cambia > 1 | cambia > 2 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| gi_bleed_57m | 0 | 1054 | 4,40 | 4,40 | 4,40 | 4,40 | 4,40 | 0 % | 0 % | 0 % | 0 % |
-| gi_bleed_57m | 15 | 1054 | 3,37 | 3,45 | 4,16 | 4,61 | 4,76 | 22 % | 78 % | 5 % | 0 % |
-| gi_bleed_57m | 30 | 1054 | 2,63 | 2,80 | 3,94 | 4,81 | 5,13 | 20 % | 80 % | 24 % | 0 % |
-| gi_bleed_57m | 60 | 1054 | 1,74 | 2,10 | 3,60 | 4,98 | 5,93 | 19 % | 81 % | 47 % | 16 % |
-| gi_bleed_57m | 90 | 1054 | 1,31 | 1,78 | 3,31 | 5,23 | 6,84 | 18 % | 82 % | 62 % | 26 % |
-| gi_bleed_57m | 120 | 1054 | 1,18 | 1,82 | 3,37 | 5,78 | 7,90 | 22 % | 78 % | 66 % | 31 % |
-| gi_bleed_72f | 0 | 1054 | 3,40 | 3,40 | 3,40 | 3,40 | 3,40 | 0 % | 0 % | 0 % | 0 % |
-| gi_bleed_72f | 15 | 1054 | 2,66 | 2,73 | 3,26 | 3,70 | 3,82 | 31 % | 69 % | 0 % | 0 % |
-| gi_bleed_72f | 30 | 1054 | 2,12 | 2,29 | 3,14 | 3,93 | 4,26 | 32 % | 68 % | 13 % | 0 % |
-| gi_bleed_72f | 60 | 1054 | 1,48 | 1,86 | 2,97 | 4,27 | 5,18 | 34 % | 66 % | 31 % | 0 % |
-| gi_bleed_72f | 90 | 1054 | 1,17 | 1,73 | 2,99 | 4,80 | 6,20 | 33 % | 67 % | 40 % | 12 % |
-| gi_bleed_72f | 120 | 1054 | 1,07 | 1,77 | 3,04 | 5,45 | 7,34 | 41 % | 59 % | 41 % | 15 % |
+| gi_bleed_57m | 0 | 946 | 4,40 | 4,40 | 4,40 | 4,40 | 4,40 | 0 % | 0 % | 0 % | 0 % |
+| gi_bleed_57m | 15 | 946 | 3,37 | 3,45 | 4,14 | 4,54 | 4,76 | 17 % | 83 % | 6 % | 0 % |
+| gi_bleed_57m | 30 | 946 | 2,63 | 2,80 | 3,91 | 4,61 | 5,13 | 15 % | 85 % | 25 % | 0 % |
+| gi_bleed_57m | 60 | 946 | 1,74 | 2,06 | 3,50 | 4,83 | 5,93 | 15 % | 85 % | 48 % | 18 % |
+| gi_bleed_57m | 90 | 946 | 1,31 | 1,73 | 3,28 | 5,08 | 6,84 | 14 % | 86 % | 63 % | 26 % |
+| gi_bleed_57m | 120 | 946 | 1,18 | 1,82 | 3,25 | 5,28 | 7,90 | 19 % | 81 % | 66 % | 30 % |
+| gi_bleed_72f | 0 | 946 | 3,40 | 3,40 | 3,40 | 3,40 | 3,40 | 0 % | 0 % | 0 % | 0 % |
+| gi_bleed_72f | 15 | 946 | 2,66 | 2,73 | 3,25 | 3,65 | 3,82 | 26 % | 74 % | 0 % | 0 % |
+| gi_bleed_72f | 30 | 946 | 2,12 | 2,29 | 3,12 | 3,83 | 4,26 | 28 % | 72 % | 14 % | 0 % |
+| gi_bleed_72f | 60 | 946 | 1,48 | 1,86 | 2,97 | 4,21 | 5,18 | 30 % | 70 % | 30 % | 0 % |
+| gi_bleed_72f | 90 | 946 | 1,17 | 1,73 | 2,93 | 4,41 | 6,20 | 29 % | 71 % | 38 % | 11 % |
+| gi_bleed_72f | 120 | 946 | 1,07 | 1,77 | 3,02 | 4,66 | 7,34 | 38 % | 62 % | 39 % | 13 % |
 
 **L3 · control definitivo y reanimación adecuada (2 unidades en 60 min, IBP y endoscopia)**
 
 | Caso | min | n | mínimo | p10 | mediana | p90 | máximo | sube | baja | cambia > 1 | cambia > 2 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| gi_bleed_57m | 0 | 1054 | 4,40 | 4,40 | 4,40 | 4,40 | 4,40 | 0 % | 0 % | 0 % | 0 % |
-| gi_bleed_57m | 15 | 1054 | 3,37 | 3,45 | 4,15 | 4,61 | 4,76 | 22 % | 78 % | 5 % | 0 % |
-| gi_bleed_57m | 30 | 1054 | 2,63 | 2,79 | 3,93 | 4,81 | 5,12 | 20 % | 80 % | 24 % | 0 % |
-| gi_bleed_57m | 60 | 1054 | 1,73 | 1,97 | 3,56 | 4,96 | 5,67 | 17 % | 83 % | 47 % | 16 % |
-| gi_bleed_57m | 90 | 1054 | 1,28 | 1,50 | 3,22 | 4,76 | 5,96 | 15 % | 85 % | 63 % | 26 % |
-| gi_bleed_57m | 120 | 1054 | 1,04 | 1,26 | 2,88 | 4,43 | 6,05 | 10 % | 90 % | 73 % | 39 % |
-| gi_bleed_72f | 0 | 1054 | 3,40 | 3,40 | 3,40 | 3,40 | 3,40 | 0 % | 0 % | 0 % | 0 % |
-| gi_bleed_72f | 15 | 1054 | 2,66 | 2,73 | 3,25 | 3,70 | 3,82 | 31 % | 69 % | 0 % | 0 % |
-| gi_bleed_72f | 30 | 1054 | 2,12 | 2,28 | 3,12 | 3,93 | 4,25 | 27 % | 73 % | 13 % | 0 % |
-| gi_bleed_72f | 60 | 1054 | 1,48 | 1,73 | 2,87 | 4,19 | 5,00 | 24 % | 76 % | 31 % | 0 % |
-| gi_bleed_72f | 90 | 1054 | 1,14 | 1,41 | 2,66 | 4,21 | 5,46 | 21 % | 79 % | 47 % | 10 % |
-| gi_bleed_72f | 120 | 1054 | 0,98 | 1,22 | 2,45 | 4,11 | 5,68 | 18 % | 82 % | 54 % | 16 % |
+| gi_bleed_57m | 0 | 946 | 4,40 | 4,40 | 4,40 | 4,40 | 4,40 | 0 % | 0 % | 0 % | 0 % |
+| gi_bleed_57m | 15 | 946 | 3,37 | 3,45 | 4,14 | 4,54 | 4,76 | 17 % | 83 % | 6 % | 0 % |
+| gi_bleed_57m | 30 | 946 | 2,63 | 2,79 | 3,89 | 4,59 | 5,12 | 15 % | 85 % | 25 % | 0 % |
+| gi_bleed_57m | 60 | 946 | 1,73 | 1,96 | 3,45 | 4,66 | 5,67 | 13 % | 87 % | 48 % | 18 % |
+| gi_bleed_57m | 90 | 946 | 1,28 | 1,48 | 3,13 | 4,52 | 5,96 | 11 % | 89 % | 66 % | 26 % |
+| gi_bleed_57m | 120 | 946 | 1,04 | 1,23 | 2,88 | 4,24 | 6,05 | 8 % | 92 % | 75 % | 41 % |
+| gi_bleed_72f | 0 | 946 | 3,40 | 3,40 | 3,40 | 3,40 | 3,40 | 0 % | 0 % | 0 % | 0 % |
+| gi_bleed_72f | 15 | 946 | 2,66 | 2,73 | 3,25 | 3,65 | 3,82 | 26 % | 74 % | 0 % | 0 % |
+| gi_bleed_72f | 30 | 946 | 2,12 | 2,28 | 3,11 | 3,82 | 4,25 | 22 % | 78 % | 14 % | 0 % |
+| gi_bleed_72f | 60 | 946 | 1,48 | 1,73 | 2,85 | 4,07 | 5,00 | 19 % | 81 % | 30 % | 0 % |
+| gi_bleed_72f | 90 | 946 | 1,14 | 1,36 | 2,65 | 3,99 | 5,46 | 16 % | 84 % | 47 % | 11 % |
+| gi_bleed_72f | 120 | 946 | 0,98 | 1,16 | 2,44 | 3,72 | 5,68 | 14 % | 86 % | 55 % | 17 % |
 
 **L4 · hemostasia sin recuperar la perfusión (IBP y endoscopia sin volumen) — COMPOSICIÓN CONTRAFACTUAL MANUAL: la hemostasia se agregó a mano en el minuto de L3; el motor no la produce**
 
@@ -140,18 +140,18 @@ Las cuatro corren 120 min con órdenes y tipos de entrada que ya existen; no se 
 
 | Caso | min | n | mínimo | p10 | mediana | p90 | máximo | sube | baja | cambia > 1 | cambia > 2 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| gi_bleed_57m | 0 | 1054 | 4,40 | 4,40 | 4,40 | 4,40 | 4,40 | 0 % | 0 % | 0 % | 0 % |
-| gi_bleed_57m | 15 | 1054 | 3,37 | 3,45 | 4,16 | 4,67 | 4,76 | 23 % | 77 % | 5 % | 0 % |
-| gi_bleed_57m | 30 | 1054 | 2,64 | 2,82 | 3,98 | 4,93 | 5,16 | 23 % | 77 % | 22 % | 0 % |
-| gi_bleed_57m | 60 | 1054 | 1,80 | 2,19 | 3,73 | 5,45 | 6,05 | 26 % | 74 % | 50 % | 13 % |
-| gi_bleed_57m | 90 | 1054 | 1,45 | 2,05 | 3,66 | 6,09 | 7,09 | 31 % | 69 % | 57 % | 22 % |
-| gi_bleed_57m | 120 | 1054 | 1,37 | 2,08 | 3,79 | 6,73 | 8,27 | 40 % | 60 % | 54 % | 27 % |
-| gi_bleed_72f | 0 | 1054 | 3,40 | 3,40 | 3,40 | 3,40 | 3,40 | 0 % | 0 % | 0 % | 0 % |
-| gi_bleed_72f | 15 | 1054 | 2,66 | 2,73 | 3,26 | 3,73 | 3,82 | 34 % | 66 % | 0 % | 0 % |
-| gi_bleed_72f | 30 | 1054 | 2,13 | 2,31 | 3,16 | 4,07 | 4,27 | 34 % | 66 % | 10 % | 0 % |
-| gi_bleed_72f | 60 | 1054 | 1,52 | 1,91 | 3,07 | 4,69 | 5,26 | 37 % | 63 % | 29 % | 0 % |
-| gi_bleed_72f | 90 | 1054 | 1,26 | 1,87 | 3,13 | 5,32 | 6,36 | 44 % | 56 % | 40 % | 11 % |
-| gi_bleed_72f | 120 | 1054 | 1,19 | 1,92 | 3,29 | 5,95 | 7,56 | 49 % | 51 % | 50 % | 20 % |
+| gi_bleed_57m | 0 | 946 | 4,40 | 4,40 | 4,40 | 4,40 | 4,40 | 0 % | 0 % | 0 % | 0 % |
+| gi_bleed_57m | 15 | 946 | 3,37 | 3,45 | 4,14 | 4,59 | 4,76 | 18 % | 82 % | 6 % | 0 % |
+| gi_bleed_57m | 30 | 946 | 2,64 | 2,82 | 3,96 | 4,76 | 5,16 | 18 % | 82 % | 24 % | 0 % |
+| gi_bleed_57m | 60 | 946 | 1,80 | 2,19 | 3,69 | 5,11 | 6,05 | 21 % | 79 % | 48 % | 14 % |
+| gi_bleed_57m | 90 | 946 | 1,45 | 2,05 | 3,58 | 5,56 | 7,09 | 27 % | 73 % | 55 % | 22 % |
+| gi_bleed_57m | 120 | 946 | 1,37 | 2,08 | 3,69 | 6,23 | 8,27 | 36 % | 64 % | 52 % | 26 % |
+| gi_bleed_72f | 0 | 946 | 3,40 | 3,40 | 3,40 | 3,40 | 3,40 | 0 % | 0 % | 0 % | 0 % |
+| gi_bleed_72f | 15 | 946 | 2,66 | 2,73 | 3,26 | 3,71 | 3,82 | 29 % | 71 % | 0 % | 0 % |
+| gi_bleed_72f | 30 | 946 | 2,13 | 2,31 | 3,12 | 3,98 | 4,27 | 29 % | 71 % | 11 % | 0 % |
+| gi_bleed_72f | 60 | 946 | 1,52 | 1,91 | 3,03 | 4,48 | 5,26 | 32 % | 68 % | 27 % | 0 % |
+| gi_bleed_72f | 90 | 946 | 1,26 | 1,87 | 3,12 | 5,04 | 6,36 | 41 % | 59 % | 38 % | 9 % |
+| gi_bleed_72f | 120 | 946 | 1,19 | 1,92 | 3,23 | 5,77 | 7,56 | 45 % | 55 % | 48 % | 17 % |
 
 ## 4. Clases de comportamiento (conteos sobre la región; ninguna se declara correcta)
 
@@ -159,59 +159,59 @@ Las cuatro corren 120 min con órdenes y tipos de entrada que ya existen; no se 
 
 | Escenario y lectura | Clase | n | Dónde se concentra (mayor proporción por factor) |
 |---|---|---|---|
-| L1 a los 60 min | A baja | 604 | `arrival_delivery_ratio` superior (45 %); `arrival_lactate_excess` medio (37 %); `arrival_oxygen_debt` inferior (63 %); `debt_clearance_tau_min` 60 (36 %); `lactate_clearance_tau_min` 45 (55 %); `lactate_per_output_deficit` 6 (33 %) |
-| L1 a los 60 min | B aproximadamente estable | 270 | `arrival_delivery_ratio` medio (40 %); `arrival_lactate_excess` inferior (47 %); `arrival_oxygen_debt` inferior (40 %); `debt_clearance_tau_min` 120 (37 %); `lactate_clearance_tau_min` 240 (70 %); `lactate_per_output_deficit` 12 (33 %) |
-| L1 a los 60 min | C sube moderadamente | 180 | `arrival_delivery_ratio` inferior (60 %); `arrival_lactate_excess` inferior (40 %); `arrival_oxygen_debt` superior (100 %); `debt_clearance_tau_min` 120 (50 %); `lactate_clearance_tau_min` 240 (60 %); `lactate_per_output_deficit` 12 (33 %) |
-| L1 a los 60 min | de las que bajan: con la entrega de O2 cayendo | 604 | |
-| L1 a los 120 min | A baja | 505 | `arrival_delivery_ratio` superior (50 %); `arrival_lactate_excess` medio (39 %); `arrival_oxygen_debt` inferior (70 %); `debt_clearance_tau_min` 60 (36 %); `lactate_clearance_tau_min` 45 (62 %); `lactate_per_output_deficit` 6 (33 %) |
-| L1 a los 120 min | B aproximadamente estable | 225 | `arrival_delivery_ratio` inferior (44 %); `arrival_lactate_excess` inferior (52 %); `arrival_oxygen_debt` inferior (48 %); `debt_clearance_tau_min` 120 (36 %); `lactate_clearance_tau_min` 120 (48 %); `lactate_per_output_deficit` 12 (33 %) |
-| L1 a los 120 min | C sube moderadamente | 198 | `arrival_delivery_ratio` medio (41 %); `arrival_lactate_excess` inferior (36 %); `arrival_oxygen_debt` superior (45 %); `debt_clearance_tau_min` 120 (41 %); `lactate_clearance_tau_min` 240 (55 %); `lactate_per_output_deficit` 12 (33 %) |
-| L1 a los 120 min | D sube sustancialmente | 126 | `arrival_delivery_ratio` inferior (57 %); `arrival_lactate_excess` inferior (43 %); `arrival_oxygen_debt` superior (100 %); `debt_clearance_tau_min` 120 (50 %); `lactate_clearance_tau_min` 240 (86 %); `lactate_per_output_deficit` 12 (33 %) |
-| L1 a los 120 min | de las que bajan: con la entrega de O2 cayendo | 505 | |
-| L2 a los 60 min | A baja | 667 | `arrival_delivery_ratio` superior (45 %); `arrival_lactate_excess` superior (38 %); `arrival_oxygen_debt` inferior (65 %); `debt_clearance_tau_min` 60 (35 %); `lactate_clearance_tau_min` 45 (50 %); `lactate_per_output_deficit` 6 (33 %) |
-| L2 a los 60 min | B aproximadamente estable | 261 | `arrival_delivery_ratio` medio (38 %); `arrival_lactate_excess` inferior (41 %); `arrival_oxygen_debt` superior (41 %); `debt_clearance_tau_min` 60 (45 %); `lactate_clearance_tau_min` 240 (59 %); `lactate_per_output_deficit` 12 (33 %) |
-| L2 a los 60 min | C sube moderadamente | 126 | `arrival_delivery_ratio` inferior (71 %); `arrival_lactate_excess` inferior (43 %); `arrival_oxygen_debt` superior (100 %); `debt_clearance_tau_min` 120 (57 %); `lactate_clearance_tau_min` 240 (71 %); `lactate_per_output_deficit` 12 (33 %) |
-| L2 a los 60 min | de las que bajan: con la entrega de O2 cayendo | 667 | |
-| L2 a los 120 min | A baja | 631 | `arrival_delivery_ratio` superior (50 %); `arrival_lactate_excess` medio (37 %); `arrival_oxygen_debt` inferior (60 %); `debt_clearance_tau_min` 60 (37 %); `lactate_clearance_tau_min` 45 (53 %); `lactate_per_output_deficit` 6 (33 %) |
-| L2 a los 120 min | B aproximadamente estable | 279 | `arrival_delivery_ratio` inferior (45 %); `arrival_lactate_excess` inferior (48 %); `arrival_oxygen_debt` inferior (39 %); `debt_clearance_tau_min` 120 (39 %); `lactate_clearance_tau_min` 240 (65 %); `lactate_per_output_deficit` 12 (33 %) |
-| L2 a los 120 min | C sube moderadamente | 72 | `arrival_delivery_ratio` inferior (50 %); `arrival_lactate_excess` medio (38 %); `arrival_oxygen_debt` superior (100 %); `debt_clearance_tau_min` 120 (62 %); `lactate_clearance_tau_min` 120 (50 %); `lactate_per_output_deficit` 12 (33 %) |
-| L2 a los 120 min | D sube sustancialmente | 72 | `arrival_delivery_ratio` inferior (100 %); `arrival_lactate_excess` inferior (50 %); `arrival_oxygen_debt` superior (100 %); `debt_clearance_tau_min` 120 (50 %); `lactate_clearance_tau_min` 240 (75 %); `lactate_per_output_deficit` 12 (33 %) |
-| L2 a los 120 min | de las que bajan: con la entrega de O2 cayendo | 631 | |
-| L3 en 120 min | E baja claramente en 30 min | 504 | `arrival_delivery_ratio` superior (43 %); `arrival_lactate_excess` superior (39 %); `arrival_oxygen_debt` inferior (59 %); `debt_clearance_tau_min` 120 (36 %); `lactate_clearance_tau_min` 45 (66 %); `lactate_per_output_deficit` 12 (33 %) |
-| L3 en 120 min | E' baja claramente después de 30 min | 379 | `arrival_delivery_ratio` inferior (38 %); `arrival_lactate_excess` inferior (38 %); `arrival_oxygen_debt` inferior (50 %); `debt_clearance_tau_min` 60 (41 %); `lactate_clearance_tau_min` 240 (59 %); `lactate_per_output_deficit` 6 (34 %) |
-| L3 en 120 min | F sigue elevado con la entrega restaurada | 171 | `arrival_delivery_ratio` inferior (53 %); `arrival_lactate_excess` inferior (47 %); `arrival_oxygen_debt` superior (89 %); `debt_clearance_tau_min` 120 (58 %); `lactate_clearance_tau_min` 240 (74 %); `lactate_per_output_deficit` 12 (33 %) |
-| L4 (contrafactual) en 120 min | E baja claramente en 30 min | 450 | `arrival_delivery_ratio` superior (44 %); `arrival_lactate_excess` medio (38 %); `arrival_oxygen_debt` inferior (66 %); `debt_clearance_tau_min` 120 (36 %); `lactate_clearance_tau_min` 45 (70 %); `lactate_per_output_deficit` 12 (33 %) |
-| L4 (contrafactual) en 120 min | E' baja claramente después de 30 min | 181 | `arrival_delivery_ratio` superior (55 %); `arrival_lactate_excess` inferior (40 %); `arrival_oxygen_debt` inferior (60 %); `debt_clearance_tau_min` 60 (35 %); `lactate_clearance_tau_min` 120 (45 %); `lactate_per_output_deficit` 6 (34 %) |
-| L4 (contrafactual) en 120 min | F' sigue elevado sin restaurar la entrega | 423 | `arrival_delivery_ratio` inferior (49 %); `arrival_lactate_excess` inferior (40 %); `arrival_oxygen_debt` superior (55 %); `debt_clearance_tau_min` 120 (43 %); `lactate_clearance_tau_min` 240 (64 %); `lactate_per_output_deficit` 12 (33 %) |
+| L1 a los 60 min | A baja | 574 | `arrival_delivery_ratio` superior (44 %); `arrival_lactate_excess` medio (37 %); `arrival_oxygen_debt` inferior (66 %); `debt_clearance_tau_min` 60 (35 %); `lactate_clearance_tau_min` 45 (53 %); `lactate_per_output_deficit` 6 (33 %) |
+| L1 a los 60 min | B aproximadamente estable | 252 | `arrival_delivery_ratio` medio (43 %); `arrival_lactate_excess` inferior (48 %); `arrival_oxygen_debt` inferior (43 %); `debt_clearance_tau_min` 120 (36 %); `lactate_clearance_tau_min` 240 (75 %); `lactate_per_output_deficit` 12 (33 %) |
+| L1 a los 60 min | C sube moderadamente | 120 | `arrival_delivery_ratio` inferior (60 %); `arrival_lactate_excess` inferior (40 %); `arrival_oxygen_debt` superior (100 %); `debt_clearance_tau_min` 120 (50 %); `lactate_clearance_tau_min` 240 (60 %); `lactate_per_output_deficit` 12 (33 %) |
+| L1 a los 60 min | de las que bajan: con la entrega de O2 cayendo | 574 | |
+| L1 a los 120 min | A baja | 481 | `arrival_delivery_ratio` superior (50 %); `arrival_lactate_excess` medio (39 %); `arrival_oxygen_debt` inferior (73 %); `debt_clearance_tau_min` 60 (35 %); `lactate_clearance_tau_min` 45 (60 %); `lactate_per_output_deficit` 6 (33 %) |
+| L1 a los 120 min | B aproximadamente estable | 213 | `arrival_delivery_ratio` inferior (44 %); `arrival_lactate_excess` inferior (49 %); `arrival_oxygen_debt` inferior (51 %); `debt_clearance_tau_min` 120 (35 %); `lactate_clearance_tau_min` 120 (51 %); `lactate_per_output_deficit` 12 (33 %) |
+| L1 a los 120 min | C sube moderadamente | 168 | `arrival_delivery_ratio` medio (48 %); `arrival_lactate_excess` inferior (39 %); `arrival_oxygen_debt` medio (48 %); `debt_clearance_tau_min` 120 (39 %); `lactate_clearance_tau_min` 240 (64 %); `lactate_per_output_deficit` 12 (33 %) |
+| L1 a los 120 min | D sube sustancialmente | 84 | `arrival_delivery_ratio` inferior (57 %); `arrival_lactate_excess` inferior (43 %); `arrival_oxygen_debt` superior (100 %); `debt_clearance_tau_min` 120 (50 %); `lactate_clearance_tau_min` 240 (86 %); `lactate_per_output_deficit` 12 (33 %) |
+| L1 a los 120 min | de las que bajan: con la entrega de O2 cayendo | 481 | |
+| L2 a los 60 min | A baja | 637 | `arrival_delivery_ratio` superior (44 %); `arrival_lactate_excess` superior (38 %); `arrival_oxygen_debt` inferior (68 %); `debt_clearance_tau_min` 60 (35 %); `lactate_clearance_tau_min` 45 (48 %); `lactate_per_output_deficit` 6 (33 %) |
+| L2 a los 60 min | B aproximadamente estable | 225 | `arrival_delivery_ratio` medio (44 %); `arrival_lactate_excess` inferior (43 %); `arrival_oxygen_debt` medio (44 %); `debt_clearance_tau_min` 60 (43 %); `lactate_clearance_tau_min` 240 (65 %); `lactate_per_output_deficit` 12 (33 %) |
+| L2 a los 60 min | C sube moderadamente | 84 | `arrival_delivery_ratio` inferior (71 %); `arrival_lactate_excess` inferior (43 %); `arrival_oxygen_debt` superior (100 %); `debt_clearance_tau_min` 120 (57 %); `lactate_clearance_tau_min` 240 (71 %); `lactate_per_output_deficit` 12 (33 %) |
+| L2 a los 60 min | de las que bajan: con la entrega de O2 cayendo | 637 | |
+| L2 a los 120 min | A baja | 595 | `arrival_delivery_ratio` superior (49 %); `arrival_lactate_excess` medio (37 %); `arrival_oxygen_debt` inferior (64 %); `debt_clearance_tau_min` 60 (36 %); `lactate_clearance_tau_min` 45 (51 %); `lactate_per_output_deficit` 6 (33 %) |
+| L2 a los 120 min | B aproximadamente estable | 255 | `arrival_delivery_ratio` inferior (47 %); `arrival_lactate_excess` inferior (48 %); `arrival_oxygen_debt` inferior (42 %); `debt_clearance_tau_min` 120 (38 %); `lactate_clearance_tau_min` 240 (68 %); `lactate_per_output_deficit` 12 (33 %) |
+| L2 a los 120 min | C sube moderadamente | 48 | `arrival_delivery_ratio` inferior (50 %); `arrival_lactate_excess` medio (38 %); `arrival_oxygen_debt` superior (100 %); `debt_clearance_tau_min` 120 (62 %); `lactate_clearance_tau_min` 120 (50 %); `lactate_per_output_deficit` 12 (33 %) |
+| L2 a los 120 min | D sube sustancialmente | 48 | `arrival_delivery_ratio` inferior (100 %); `arrival_lactate_excess` inferior (50 %); `arrival_oxygen_debt` superior (100 %); `debt_clearance_tau_min` 120 (50 %); `lactate_clearance_tau_min` 240 (75 %); `lactate_per_output_deficit` 12 (33 %) |
+| L2 a los 120 min | de las que bajan: con la entrega de O2 cayendo | 595 | |
+| L3 en 120 min | E baja claramente en 30 min | 474 | `arrival_delivery_ratio` superior (42 %); `arrival_lactate_excess` superior (39 %); `arrival_oxygen_debt` inferior (63 %); `debt_clearance_tau_min` 120 (35 %); `lactate_clearance_tau_min` 45 (64 %); `lactate_per_output_deficit` 12 (33 %) |
+| L3 en 120 min | E' baja claramente después de 30 min | 352 | `arrival_delivery_ratio` inferior (38 %); `arrival_lactate_excess` inferior (38 %); `arrival_oxygen_debt` inferior (54 %); `debt_clearance_tau_min` 60 (39 %); `lactate_clearance_tau_min` 240 (64 %); `lactate_per_output_deficit` 6 (34 %) |
+| L3 en 120 min | F sigue elevado con la entrega restaurada | 120 | `arrival_delivery_ratio` inferior (50 %); `arrival_lactate_excess` inferior (50 %); `arrival_oxygen_debt` superior (85 %); `debt_clearance_tau_min` 120 (57 %); `lactate_clearance_tau_min` 240 (75 %); `lactate_per_output_deficit` 12 (33 %) |
+| L4 (contrafactual) en 120 min | E baja claramente en 30 min | 426 | `arrival_delivery_ratio` superior (44 %); `arrival_lactate_excess` medio (37 %); `arrival_oxygen_debt` inferior (70 %); `debt_clearance_tau_min` 120 (35 %); `lactate_clearance_tau_min` 45 (68 %); `lactate_per_output_deficit` 12 (33 %) |
+| L4 (contrafactual) en 120 min | E' baja claramente después de 30 min | 175 | `arrival_delivery_ratio` superior (53 %); `arrival_lactate_excess` inferior (38 %); `arrival_oxygen_debt` inferior (62 %); `debt_clearance_tau_min` 60 (35 %); `lactate_clearance_tau_min` 120 (47 %); `lactate_per_output_deficit` 6 (34 %) |
+| L4 (contrafactual) en 120 min | F' sigue elevado sin restaurar la entrega | 345 | `arrival_delivery_ratio` inferior (48 %); `arrival_lactate_excess` inferior (41 %); `arrival_oxygen_debt` superior (45 %); `debt_clearance_tau_min` 120 (41 %); `lactate_clearance_tau_min` 240 (68 %); `lactate_per_output_deficit` 12 (33 %) |
 
 **gi_bleed_72f**
 
 | Escenario y lectura | Clase | n | Dónde se concentra (mayor proporción por factor) |
 |---|---|---|---|
-| L1 a los 60 min | A baja | 432 | `arrival_delivery_ratio` superior (46 %); `arrival_lactate_excess` superior (46 %); `arrival_oxygen_debt` inferior (69 %); `debt_clearance_tau_min` 120 (35 %); `lactate_clearance_tau_min` 45 (69 %); `lactate_per_output_deficit` 12 (33 %) |
-| L1 a los 60 min | B aproximadamente estable | 406 | `arrival_delivery_ratio` medio (40 %); `arrival_lactate_excess` inferior (49 %); `arrival_oxygen_debt` inferior (47 %); `debt_clearance_tau_min` 60 (36 %); `lactate_clearance_tau_min` 240 (53 %); `lactate_per_output_deficit` 6 (33 %) |
-| L1 a los 60 min | C sube moderadamente | 216 | `arrival_delivery_ratio` inferior (50 %); `arrival_lactate_excess` inferior (33 %); `arrival_oxygen_debt` superior (100 %); `debt_clearance_tau_min` 120 (50 %); `lactate_clearance_tau_min` 120 (50 %); `lactate_per_output_deficit` 12 (33 %) |
-| L1 a los 60 min | de las que bajan: con la entrega de O2 cayendo | 432 | |
-| L1 a los 120 min | A baja | 306 | `arrival_delivery_ratio` superior (65 %); `arrival_lactate_excess` superior (50 %); `arrival_oxygen_debt` inferior (71 %); `debt_clearance_tau_min` 120 (35 %); `lactate_clearance_tau_min` 45 (74 %); `lactate_per_output_deficit` 12 (33 %) |
-| L1 a los 120 min | B aproximadamente estable | 298 | `arrival_delivery_ratio` inferior (39 %); `arrival_lactate_excess` inferior (42 %); `arrival_oxygen_debt` inferior (54 %); `debt_clearance_tau_min` 60 (37 %); `lactate_clearance_tau_min` 120 (46 %); `lactate_per_output_deficit` 6 (34 %) |
-| L1 a los 120 min | C sube moderadamente | 270 | `arrival_delivery_ratio` inferior (47 %); `arrival_lactate_excess` inferior (47 %); `arrival_oxygen_debt` inferior (40 %); `debt_clearance_tau_min` 120 (37 %); `lactate_clearance_tau_min` 240 (60 %); `lactate_per_output_deficit` 12 (33 %) |
-| L1 a los 120 min | D sube sustancialmente | 180 | `arrival_delivery_ratio` inferior (60 %); `arrival_lactate_excess` inferior (40 %); `arrival_oxygen_debt` superior (100 %); `debt_clearance_tau_min` 120 (50 %); `lactate_clearance_tau_min` 240 (60 %); `lactate_per_output_deficit` 12 (33 %) |
-| L1 a los 120 min | de las que bajan: con la entrega de O2 cayendo | 306 | |
-| L2 a los 60 min | A baja | 486 | `arrival_delivery_ratio` superior (52 %); `arrival_lactate_excess` superior (41 %); `arrival_oxygen_debt` inferior (72 %); `debt_clearance_tau_min` 120 (35 %); `lactate_clearance_tau_min` 45 (61 %); `lactate_per_output_deficit` 12 (33 %) |
-| L2 a los 60 min | B aproximadamente estable | 397 | `arrival_delivery_ratio` medio (41 %); `arrival_lactate_excess` inferior (45 %); `arrival_oxygen_debt` medio (41 %); `debt_clearance_tau_min` 60 (39 %); `lactate_clearance_tau_min` 240 (48 %); `lactate_per_output_deficit` 6 (34 %) |
-| L2 a los 60 min | C sube moderadamente | 171 | `arrival_delivery_ratio` inferior (63 %); `arrival_lactate_excess` inferior (37 %); `arrival_oxygen_debt` superior (100 %); `debt_clearance_tau_min` 120 (53 %); `lactate_clearance_tau_min` 240 (63 %); `lactate_per_output_deficit` 12 (33 %) |
-| L2 a los 60 min | de las que bajan: con la entrega de O2 cayendo | 486 | |
-| L2 a los 120 min | A baja | 423 | `arrival_delivery_ratio` superior (62 %); `arrival_lactate_excess` medio (36 %); `arrival_oxygen_debt` inferior (70 %); `debt_clearance_tau_min` 60 (36 %); `lactate_clearance_tau_min` 45 (68 %); `lactate_per_output_deficit` 12 (33 %) |
-| L2 a los 120 min | B aproximadamente estable | 325 | `arrival_delivery_ratio` inferior (53 %); `arrival_lactate_excess` medio (36 %); `arrival_oxygen_debt` inferior (50 %); `debt_clearance_tau_min` 120 (39 %); `lactate_clearance_tau_min` 120 (61 %); `lactate_per_output_deficit` 6 (34 %) |
-| L2 a los 120 min | C sube moderadamente | 198 | `arrival_delivery_ratio` medio (41 %); `arrival_lactate_excess` inferior (55 %); `arrival_oxygen_debt` superior (45 %); `debt_clearance_tau_min` 120 (41 %); `lactate_clearance_tau_min` 240 (82 %); `lactate_per_output_deficit` 12 (33 %) |
-| L2 a los 120 min | D sube sustancialmente | 108 | `arrival_delivery_ratio` inferior (100 %); `arrival_lactate_excess` inferior (33 %); `arrival_oxygen_debt` superior (100 %); `debt_clearance_tau_min` 120 (50 %); `lactate_clearance_tau_min` 120 (50 %); `lactate_per_output_deficit` 12 (33 %) |
-| L2 a los 120 min | de las que bajan: con la entrega de O2 cayendo | 423 | |
-| L3 en 120 min | E baja claramente en 30 min | 333 | `arrival_delivery_ratio` superior (51 %); `arrival_lactate_excess` superior (46 %); `arrival_oxygen_debt` inferior (73 %); `debt_clearance_tau_min` 120 (35 %); `lactate_clearance_tau_min` 45 (76 %); `lactate_per_output_deficit` 12 (33 %) |
-| L3 en 120 min | E' baja claramente después de 30 min | 415 | `arrival_delivery_ratio` inferior (35 %); `arrival_lactate_excess` medio (35 %); `arrival_oxygen_debt` inferior (52 %); `debt_clearance_tau_min` 60 (39 %); `lactate_clearance_tau_min` 120 (41 %); `lactate_per_output_deficit` 6 (33 %) |
-| L3 en 120 min | F sigue elevado con la entrega restaurada | 306 | `arrival_delivery_ratio` inferior (50 %); `arrival_lactate_excess` inferior (50 %); `arrival_oxygen_debt` superior (71 %); `debt_clearance_tau_min` 120 (53 %); `lactate_clearance_tau_min` 240 (62 %); `lactate_per_output_deficit` 12 (33 %) |
-| L4 (contrafactual) en 120 min | E baja claramente en 30 min | 288 | `arrival_delivery_ratio` superior (53 %); `arrival_lactate_excess` superior (44 %); `arrival_oxygen_debt` inferior (75 %); `debt_clearance_tau_min` 120 (34 %); `lactate_clearance_tau_min` 45 (81 %); `lactate_per_output_deficit` 12 (33 %) |
-| L4 (contrafactual) en 120 min | E' baja claramente después de 30 min | 198 | `arrival_delivery_ratio` superior (50 %); `arrival_lactate_excess` medio (36 %); `arrival_oxygen_debt` inferior (68 %); `debt_clearance_tau_min` 120 (36 %); `lactate_clearance_tau_min` 120 (41 %); `lactate_per_output_deficit` 12 (33 %) |
-| L4 (contrafactual) en 120 min | F' sigue elevado sin restaurar la entrega | 568 | `arrival_delivery_ratio` inferior (44 %); `arrival_lactate_excess` inferior (43 %); `arrival_oxygen_debt` superior (48 %); `debt_clearance_tau_min` 60 (41 %); `lactate_clearance_tau_min` 240 (52 %); `lactate_per_output_deficit` 6 (33 %) |
+| L1 a los 60 min | A baja | 414 | `arrival_delivery_ratio` superior (45 %); `arrival_lactate_excess` superior (45 %); `arrival_oxygen_debt` inferior (72 %); `debt_clearance_tau_min` 120 (35 %); `lactate_clearance_tau_min` 45 (67 %); `lactate_per_output_deficit` 12 (33 %) |
+| L1 a los 60 min | B aproximadamente estable | 388 | `arrival_delivery_ratio` medio (42 %); `arrival_lactate_excess` inferior (48 %); `arrival_oxygen_debt` inferior (49 %); `debt_clearance_tau_min` 60 (35 %); `lactate_clearance_tau_min` 240 (56 %); `lactate_per_output_deficit` 6 (34 %) |
+| L1 a los 60 min | C sube moderadamente | 144 | `arrival_delivery_ratio` inferior (50 %); `arrival_lactate_excess` inferior (33 %); `arrival_oxygen_debt` superior (100 %); `debt_clearance_tau_min` 120 (50 %); `lactate_clearance_tau_min` 120 (50 %); `lactate_per_output_deficit` 12 (33 %) |
+| L1 a los 60 min | de las que bajan: con la entrega de O2 cayendo | 414 | |
+| L1 a los 120 min | A baja | 294 | `arrival_delivery_ratio` superior (63 %); `arrival_lactate_excess` superior (50 %); `arrival_oxygen_debt` inferior (73 %); `debt_clearance_tau_min` 120 (35 %); `lactate_clearance_tau_min` 45 (72 %); `lactate_per_output_deficit` 12 (33 %) |
+| L1 a los 120 min | B aproximadamente estable | 280 | `arrival_delivery_ratio` inferior (38 %); `arrival_lactate_excess` inferior (43 %); `arrival_oxygen_debt` inferior (58 %); `debt_clearance_tau_min` 60 (36 %); `lactate_clearance_tau_min` 120 (49 %); `lactate_per_output_deficit` 6 (34 %) |
+| L1 a los 120 min | C sube moderadamente | 252 | `arrival_delivery_ratio` inferior (48 %); `arrival_lactate_excess` inferior (48 %); `arrival_oxygen_debt` inferior (43 %); `debt_clearance_tau_min` 120 (36 %); `lactate_clearance_tau_min` 240 (64 %); `lactate_per_output_deficit` 12 (33 %) |
+| L1 a los 120 min | D sube sustancialmente | 120 | `arrival_delivery_ratio` inferior (60 %); `arrival_lactate_excess` inferior (40 %); `arrival_oxygen_debt` superior (100 %); `debt_clearance_tau_min` 120 (50 %); `lactate_clearance_tau_min` 240 (60 %); `lactate_per_output_deficit` 12 (33 %) |
+| L1 a los 120 min | de las que bajan: con la entrega de O2 cayendo | 294 | |
+| L2 a los 60 min | A baja | 468 | `arrival_delivery_ratio` superior (51 %); `arrival_lactate_excess` superior (40 %); `arrival_oxygen_debt` inferior (75 %); `debt_clearance_tau_min` 120 (35 %); `lactate_clearance_tau_min` 45 (60 %); `lactate_per_output_deficit` 12 (33 %) |
+| L2 a los 60 min | B aproximadamente estable | 364 | `arrival_delivery_ratio` medio (45 %); `arrival_lactate_excess` inferior (45 %); `arrival_oxygen_debt` medio (45 %); `debt_clearance_tau_min` 60 (37 %); `lactate_clearance_tau_min` 240 (52 %); `lactate_per_output_deficit` 6 (34 %) |
+| L2 a los 60 min | C sube moderadamente | 114 | `arrival_delivery_ratio` inferior (63 %); `arrival_lactate_excess` inferior (37 %); `arrival_oxygen_debt` superior (100 %); `debt_clearance_tau_min` 120 (53 %); `lactate_clearance_tau_min` 240 (63 %); `lactate_per_output_deficit` 12 (33 %) |
+| L2 a los 60 min | de las que bajan: con la entrega de O2 cayendo | 468 | |
+| L2 a los 120 min | A baja | 408 | `arrival_delivery_ratio` superior (60 %); `arrival_lactate_excess` medio (36 %); `arrival_oxygen_debt` inferior (73 %); `debt_clearance_tau_min` 60 (35 %); `lactate_clearance_tau_min` 45 (67 %); `lactate_per_output_deficit` 12 (33 %) |
+| L2 a los 120 min | B aproximadamente estable | 298 | `arrival_delivery_ratio` inferior (53 %); `arrival_lactate_excess` medio (36 %); `arrival_oxygen_debt` inferior (54 %); `debt_clearance_tau_min` 120 (37 %); `lactate_clearance_tau_min` 120 (63 %); `lactate_per_output_deficit` 6 (34 %) |
+| L2 a los 120 min | C sube moderadamente | 168 | `arrival_delivery_ratio` medio (48 %); `arrival_lactate_excess` inferior (54 %); `arrival_oxygen_debt` medio (48 %); `debt_clearance_tau_min` 120 (39 %); `lactate_clearance_tau_min` 240 (86 %); `lactate_per_output_deficit` 12 (33 %) |
+| L2 a los 120 min | D sube sustancialmente | 72 | `arrival_delivery_ratio` inferior (100 %); `arrival_lactate_excess` inferior (33 %); `arrival_oxygen_debt` superior (100 %); `debt_clearance_tau_min` 120 (50 %); `lactate_clearance_tau_min` 120 (50 %); `lactate_per_output_deficit` 12 (33 %) |
+| L2 a los 120 min | de las que bajan: con la entrega de O2 cayendo | 408 | |
+| L3 en 120 min | E baja claramente en 30 min | 321 | `arrival_delivery_ratio` superior (50 %); `arrival_lactate_excess` superior (46 %); `arrival_oxygen_debt` inferior (76 %); `debt_clearance_tau_min` 120 (35 %); `lactate_clearance_tau_min` 45 (75 %); `lactate_per_output_deficit` 12 (33 %) |
+| L3 en 120 min | E' baja claramente después de 30 min | 391 | `arrival_delivery_ratio` inferior (34 %); `arrival_lactate_excess` inferior (35 %); `arrival_oxygen_debt` inferior (55 %); `debt_clearance_tau_min` 60 (38 %); `lactate_clearance_tau_min` 120 (42 %); `lactate_per_output_deficit` 6 (34 %) |
+| L3 en 120 min | F sigue elevado con la entrega restaurada | 234 | `arrival_delivery_ratio` inferior (47 %); `arrival_lactate_excess` inferior (53 %); `arrival_oxygen_debt` superior (62 %); `debt_clearance_tau_min` 120 (53 %); `lactate_clearance_tau_min` 240 (65 %); `lactate_per_output_deficit` 12 (33 %) |
+| L4 (contrafactual) en 120 min | E baja claramente en 30 min | 282 | `arrival_delivery_ratio` superior (52 %); `arrival_lactate_excess` superior (43 %); `arrival_oxygen_debt` inferior (77 %); `debt_clearance_tau_min` 120 (34 %); `lactate_clearance_tau_min` 45 (81 %); `lactate_per_output_deficit` 12 (33 %) |
+| L4 (contrafactual) en 120 min | E' baja claramente después de 30 min | 186 | `arrival_delivery_ratio` superior (50 %); `arrival_lactate_excess` medio (35 %); `arrival_oxygen_debt` inferior (73 %); `debt_clearance_tau_min` 120 (35 %); `lactate_clearance_tau_min` 120 (44 %); `lactate_per_output_deficit` 12 (33 %) |
+| L4 (contrafactual) en 120 min | F' sigue elevado sin restaurar la entrega | 478 | `arrival_delivery_ratio` inferior (43 %); `arrival_lactate_excess` inferior (43 %); `arrival_oxygen_debt` superior (38 %); `debt_clearance_tau_min` 60 (40 %); `lactate_clearance_tau_min` 240 (55 %); `lactate_per_output_deficit` 6 (33 %) |
 
 ## 5. Descomposición del mecanismo (exacta dada la trayectoria del déficit)
 
@@ -353,14 +353,14 @@ Exceso de lactato = lo que queda del exceso de llegada + lo que produce la D de 
 
 | Caso | Patrón | corridas | de | ejemplos (D desde → hasta; lactato desde → hasta) |
 |---|---|---|---|---|
-| gi_bleed_57m | L1, 0–60 min: D sube mientras el lactato baja | 757 | 1054 | D 0,0→9,7, lactato 4,40→1,81; D 0,0→29,8, lactato 4,40→3,37; D 0,0→29,8, lactato 4,40→4,29 |
-| gi_bleed_57m | L1, 0–120 min: D sube mientras el lactato baja | 604 | 1054 | D 0,0→38,7, lactato 4,40→1,54; D 0,0→71,2, lactato 4,40→3,24; D 0,0→38,7, lactato 4,40→4,21 |
-| gi_bleed_57m | L3, 0–120 min: D baja mientras el lactato sigue a menos de 0,5 mmol/L de la llegada o por encima | 171 | 1054 | D 60,0→8,0, lactato 4,40→4,72; D 60,0→22,0, lactato 4,40→4,90; D 20,0→8,1, lactato 4,40→4,16 |
-| gi_bleed_57m | L4 (contrafactual), 0–120 min: D sigue igual o por encima de la llegada mientras el lactato se mueve menos de 0,5 mmol/L | 180 | 1054 | D 0,0→22,6, lactato 4,40→3,97; D 0,0→61,6, lactato 4,40→4,33; D 60,0→121,6, lactato 4,40→4,54 |
-| gi_bleed_72f | L1, 0–60 min: D sube mientras el lactato baja | 667 | 1054 | D 0,0→6,4, lactato 3,40→1,53; D 0,0→27,9, lactato 3,40→2,83; D 0,0→27,9, lactato 3,40→3,27 |
-| gi_bleed_72f | L1, 0–120 min: D sube mientras el lactato baja | 514 | 1054 | D 0,0→25,7, lactato 3,40→1,30; D 60,0→85,7, lactato 3,40→2,70; D 20,0→50,1, lactato 3,40→3,38 |
-| gi_bleed_72f | L3, 0–120 min: D baja mientras el lactato sigue a menos de 0,5 mmol/L de la llegada o por encima | 279 | 1054 | D 60,0→8,0, lactato 3,40→3,45; D 60,0→22,0, lactato 3,40→3,36; D 20,0→8,4, lactato 3,40→3,10 |
-| gi_bleed_72f | L4 (contrafactual), 0–120 min: D sigue igual o por encima de la llegada mientras el lactato se mueve menos de 0,5 mmol/L | 271 | 1054 | D 0,0→15,0, lactato 3,40→3,19; D 60,0→117,0, lactato 3,40→3,47; D 0,0→57,0, lactato 3,40→3,11 |
+| gi_bleed_57m | L1, 0–60 min: D sube mientras el lactato baja | 721 | 946 | D 0,0→9,7, lactato 4,40→1,81; D 0,0→29,8, lactato 4,40→3,37; D 0,0→29,8, lactato 4,40→4,29 |
+| gi_bleed_57m | L1, 0–120 min: D sube mientras el lactato baja | 574 | 946 | D 0,0→38,7, lactato 4,40→1,54; D 0,0→71,2, lactato 4,40→3,24; D 0,0→38,7, lactato 4,40→4,21 |
+| gi_bleed_57m | L3, 0–120 min: D baja mientras el lactato sigue a menos de 0,5 mmol/L de la llegada o por encima | 120 | 946 | D 60,0→8,0, lactato 4,40→4,72; D 60,0→22,0, lactato 4,40→5,37; D 20,0→8,1, lactato 4,40→4,16 |
+| gi_bleed_57m | L4 (contrafactual), 0–120 min: D sigue igual o por encima de la llegada mientras el lactato se mueve menos de 0,5 mmol/L | 174 | 946 | D 0,0→22,6, lactato 4,40→3,97; D 0,0→61,6, lactato 4,40→4,65; D 60,0→121,6, lactato 4,40→4,54 |
+| gi_bleed_72f | L1, 0–60 min: D sube mientras el lactato baja | 643 | 946 | D 0,0→6,4, lactato 3,40→1,53; D 0,0→27,9, lactato 3,40→2,83; D 0,0→27,9, lactato 3,40→3,27 |
+| gi_bleed_72f | L1, 0–120 min: D sube mientras el lactato baja | 496 | 946 | D 0,0→25,7, lactato 3,40→1,30; D 60,0→85,7, lactato 3,40→2,70; D 20,0→50,1, lactato 3,40→3,38 |
+| gi_bleed_72f | L3, 0–120 min: D baja mientras el lactato sigue a menos de 0,5 mmol/L de la llegada o por encima | 207 | 946 | D 60,0→8,0, lactato 3,40→3,45; D 60,0→35,2, lactato 3,40→3,21; D 20,0→8,4, lactato 3,40→3,10 |
+| gi_bleed_72f | L4 (contrafactual), 0–120 min: D sigue igual o por encima de la llegada mientras el lactato se mueve menos de 0,5 mmol/L | 253 | 946 | D 0,0→15,0, lactato 3,40→3,19; D 60,0→117,0, lactato 3,40→3,47; D 0,0→57,0, lactato 3,40→3,11 |
 
 ## 7. Impacto de cada parámetro en las lecturas de las decisiones
 
@@ -370,37 +370,37 @@ ALTO ≥ 1 mmol/L (o ≥ 30 min), MEDIO ≥ 0,3 mmol/L (o ≥ 10 min), BAJO por 
 
 | Parámetro | Impacto | Dirección (de bajo a alto) | Valor por nivel | Rango | Origen |
 |---|---|---|---|---|---|
-| `lactate_clearance_tau_min` | ALTO | la aumenta | 45: -1,70, 120: -0,61, 240: 0,01 | 1,71 | efecto principal sobre la región admisible |
+| `lactate_clearance_tau_min` | ALTO | la aumenta | 45: -1,98, 120: -0,69, 240: -0,11 | 1,87 | efecto principal sobre la región admisible |
 | `arrival_oxygen_debt` | ALTO | la aumenta | inferior: -1,03, medio: -0,61, superior: 0,63 | 1,66 | efecto principal sobre la región admisible |
-| `arrival_delivery_ratio` | MEDIO | la disminuye | inferior: -0,37, medio: -0,61, superior: -0,70 | 0,32 | efecto principal sobre la región admisible |
+| `arrival_lactate_excess` | MEDIO | la disminuye | inferior: -0,43, medio: -0,95, superior: -1,03 | 0,60 | efecto principal sobre la región admisible |
 | `debt_per_delivery_deficit` | MEDIO | la aumenta | 0,5: -0,71, 1: -0,61, 2: -0,40 | 0,31 | sonda de a uno alrededor del candidato medio (la región no lo varía) |
-| `debt_clearance_tau_min` | BAJO | la aumenta | 30: -0,85, 60: -0,59, 120: -0,59 | 0,27 | efecto principal sobre la región admisible |
-| `arrival_lactate_excess` | BAJO | la disminuye | inferior: -0,43, medio: -0,65, superior: -0,70 | 0,27 | efecto principal sobre la región admisible |
+| `arrival_delivery_ratio` | BAJO | la disminuye | inferior: -0,55, medio: -0,61, superior: -0,85 | 0,30 | efecto principal sobre la región admisible |
+| `debt_clearance_tau_min` | BAJO | la aumenta | 30: -0,85, 60: -0,65, 120: -0,65 | 0,20 | efecto principal sobre la región admisible |
 | `metabolic_demand_baseline` | BAJO | la aumenta | 0,9: -0,69, 1: -0,61, 1,1: -0,53 | 0,17 | sonda de a uno alrededor del candidato medio (la región no lo varía) |
-| `lactate_per_output_deficit` | BAJO | sin efecto | 2: -0,65, 6: -0,65, 12: -0,65 | 0,00 | efecto principal sobre la región admisible |
+| `lactate_per_output_deficit` | BAJO | sin efecto | 2: -0,69, 6: -0,69, 12: -0,69 | 0,00 | efecto principal sobre la región admisible |
 
 **gi_bleed_57m · L3: primera caída clara (min; 121 = no en 120)**
 
 | Parámetro | Impacto | Dirección (de bajo a alto) | Valor por nivel | Rango | Origen |
 |---|---|---|---|---|---|
 | `arrival_oxygen_debt` | ALTO | la aumenta | inferior: 20, medio: 31, superior: 114 | 94 | efecto principal sobre la región admisible |
-| `lactate_clearance_tau_min` | ALTO | la aumenta | 45: 11, 120: 31, 240: 76 | 65 | efecto principal sobre la región admisible |
-| `arrival_lactate_excess` | MEDIO | la disminuye | inferior: 47, medio: 30, superior: 27 | 20 | efecto principal sobre la región admisible |
-| `arrival_delivery_ratio` | MEDIO | la disminuye | inferior: 42, medio: 31, superior: 28 | 14 | efecto principal sobre la región admisible |
-| `debt_clearance_tau_min` | BAJO | la aumenta | 30: 27, 60: 36, 120: 36 | 9 | efecto principal sobre la región admisible |
+| `lactate_clearance_tau_min` | ALTO | la aumenta | 45: 9, 120: 30, 240: 72 | 63 | efecto principal sobre la región admisible |
+| `arrival_lactate_excess` | MEDIO | la disminuye | inferior: 43, medio: 21, superior: 19 | 24 | efecto principal sobre la región admisible |
+| `debt_clearance_tau_min` | BAJO | la aumenta | 30: 27, 60: 33, 120: 33 | 6 | efecto principal sobre la región admisible |
+| `arrival_delivery_ratio` | BAJO | la disminuye | inferior: 33, medio: 31, superior: 28 | 5 | efecto principal sobre la región admisible |
 | `metabolic_demand_baseline` | BAJO | la aumenta | 0,9: 30, 1: 31, 1,1: 33 | 3 | sonda de a uno alrededor del candidato medio (la región no lo varía) |
+| `lactate_per_output_deficit` | BAJO | sin efecto | 2: 30, 6: 31, 12: 30 | 1 | efecto principal sobre la región admisible |
 | `debt_per_delivery_deficit` | BAJO | la aumenta | 0,5: 31, 1: 31, 2: 32 | 1 | sonda de a uno alrededor del candidato medio (la región no lo varía) |
-| `lactate_per_output_deficit` | BAJO | sin efecto | 2: 33, 6: 33, 12: 33 | 0 | efecto principal sobre la región admisible |
 
 **gi_bleed_57m · L3: lactato a los 120 min (mmol/L)**
 
 | Parámetro | Impacto | Dirección (de bajo a alto) | Valor por nivel | Rango | Origen |
 |---|---|---|---|---|---|
-| `lactate_clearance_tau_min` | ALTO | la aumenta | 45: 1,62, 120: 2,88, 240: 3,57 | 1,95 | efecto principal sobre la región admisible |
+| `lactate_clearance_tau_min` | ALTO | la aumenta | 45: 1,44, 120: 2,79, 240: 3,47 | 2,04 | efecto principal sobre la región admisible |
 | `arrival_oxygen_debt` | ALTO | la aumenta | inferior: 2,29, medio: 2,66, superior: 3,81 | 1,52 | efecto principal sobre la región admisible |
-| `arrival_lactate_excess` | MEDIO | la disminuye | inferior: 3,16, medio: 2,45, superior: 2,32 | 0,84 | efecto principal sobre la región admisible |
-| `debt_clearance_tau_min` | MEDIO | la aumenta | 30: 2,33, 60: 2,98, 120: 3,05 | 0,72 | efecto principal sobre la región admisible |
-| `arrival_delivery_ratio` | MEDIO | no monótona | inferior: 3,05, medio: 2,66, superior: 2,88 | 0,39 | efecto principal sobre la región admisible |
+| `arrival_lactate_excess` | MEDIO | la disminuye | inferior: 3,08, medio: 2,42, superior: 2,29 | 0,79 | efecto principal sobre la región admisible |
+| `debt_clearance_tau_min` | MEDIO | la aumenta | 30: 2,33, 60: 2,88, 120: 2,98 | 0,65 | efecto principal sobre la región admisible |
+| `arrival_delivery_ratio` | MEDIO | no monótona | inferior: 3,01, medio: 2,66, superior: 2,88 | 0,35 | efecto principal sobre la región admisible |
 | `metabolic_demand_baseline` | BAJO | la aumenta | 0,9: 2,57, 1: 2,61, 1,1: 2,66 | 0,08 | sonda de a uno alrededor del candidato medio (la región no lo varía) |
 | `debt_per_delivery_deficit` | BAJO | la aumenta | 0,5: 2,60, 1: 2,61, 2: 2,62 | 0,02 | sonda de a uno alrededor del candidato medio (la región no lo varía) |
 | `lactate_per_output_deficit` | BAJO | sin efecto | 2: 2,88, 6: 2,88, 12: 2,88 | 0,00 | efecto principal sobre la región admisible |
@@ -410,39 +410,39 @@ ALTO ≥ 1 mmol/L (o ≥ 30 min), MEDIO ≥ 0,3 mmol/L (o ≥ 10 min), BAJO por 
 | Parámetro | Impacto | Dirección (de bajo a alto) | Valor por nivel | Rango | Origen |
 |---|---|---|---|---|---|
 | `arrival_oxygen_debt` | ALTO | la aumenta | inferior: -0,65, medio: -0,24, superior: 1,01 | 1,66 | efecto principal sobre la región admisible |
-| `lactate_clearance_tau_min` | ALTO | la aumenta | 45: -0,98, 120: -0,24, 240: 0,21 | 1,19 | efecto principal sobre la región admisible |
-| `arrival_lactate_excess` | MEDIO | la disminuye | inferior: 0,09, medio: -0,47, superior: -0,51 | 0,60 | efecto principal sobre la región admisible |
-| `arrival_delivery_ratio` | MEDIO | la disminuye | inferior: -0,17, medio: -0,24, superior: -0,49 | 0,32 | efecto principal sobre la región admisible |
-| `debt_clearance_tau_min` | BAJO | la aumenta | 30: -0,51, 60: -0,24, 120: -0,24 | 0,27 | efecto principal sobre la región admisible |
+| `lactate_clearance_tau_min` | ALTO | la aumenta | 45: -1,26, 120: -0,32, 240: 0,09 | 1,35 | efecto principal sobre la región admisible |
+| `arrival_lactate_excess` | MEDIO | la disminuye | inferior: -0,18, medio: -0,47, superior: -0,52 | 0,34 | efecto principal sobre la región admisible |
+| `arrival_delivery_ratio` | MEDIO | la disminuye | inferior: -0,18, medio: -0,24, superior: -0,51 | 0,33 | efecto principal sobre la región admisible |
 | `debt_per_delivery_deficit` | BAJO | la aumenta | 0,5: -0,33, 1: -0,24, 2: -0,06 | 0,27 | sonda de a uno alrededor del candidato medio (la región no lo varía) |
+| `debt_clearance_tau_min` | BAJO | la aumenta | 30: -0,51, 60: -0,32, 120: -0,32 | 0,19 | efecto principal sobre la región admisible |
 | `metabolic_demand_baseline` | BAJO | la aumenta | 0,9: -0,33, 1: -0,24, 1,1: -0,16 | 0,17 | sonda de a uno alrededor del candidato medio (la región no lo varía) |
-| `lactate_per_output_deficit` | BAJO | sin efecto | 2: -0,32, 6: -0,32, 12: -0,32 | 0,00 | efecto principal sobre la región admisible |
+| `lactate_per_output_deficit` | BAJO | sin efecto | 2: -0,37, 6: -0,37, 12: -0,37 | 0,00 | efecto principal sobre la región admisible |
 
 **gi_bleed_72f · L3: primera caída clara (min; 121 = no en 120)**
 
 | Parámetro | Impacto | Dirección (de bajo a alto) | Valor por nivel | Rango | Origen |
 |---|---|---|---|---|---|
-| `lactate_clearance_tau_min` | ALTO | la aumenta | 45: 20, 120: 55, 240: 121 | 101 | efecto principal sobre la región admisible |
+| `lactate_clearance_tau_min` | ALTO | la aumenta | 45: 14, 120: 53, 240: 119 | 105 | efecto principal sobre la región admisible |
 | `arrival_oxygen_debt` | ALTO | la aumenta | inferior: 30, medio: 55, superior: 121 | 91 | efecto principal sobre la región admisible |
-| `arrival_lactate_excess` | ALTO | la disminuye | inferior: 106, medio: 49, superior: 44 | 62 | efecto principal sobre la región admisible |
-| `debt_clearance_tau_min` | ALTO | la aumenta | 30: 44, 60: 70, 120: 80 | 36 | efecto principal sobre la región admisible |
-| `arrival_delivery_ratio` | MEDIO | la disminuye | inferior: 80, medio: 55, superior: 53 | 27 | efecto principal sobre la región admisible |
+| `arrival_lactate_excess` | ALTO | la disminuye | inferior: 106, medio: 49, superior: 33 | 73 | efecto principal sobre la región admisible |
+| `arrival_delivery_ratio` | MEDIO | la disminuye | inferior: 77, medio: 55, superior: 52 | 25 | efecto principal sobre la región admisible |
+| `debt_clearance_tau_min` | MEDIO | la aumenta | 30: 44, 60: 55, 120: 56 | 12 | efecto principal sobre la región admisible |
 | `metabolic_demand_baseline` | MEDIO | la aumenta | 0,9: 51, 1: 55, 1,1: 61 | 10 | sonda de a uno alrededor del candidato medio (la región no lo varía) |
 | `debt_per_delivery_deficit` | BAJO | la aumenta | 0,5: 54, 1: 55, 2: 57 | 3 | sonda de a uno alrededor del candidato medio (la región no lo varía) |
-| `lactate_per_output_deficit` | BAJO | sin efecto | 2: 56, 6: 56, 12: 56 | 0 | efecto principal sobre la región admisible |
+| `lactate_per_output_deficit` | BAJO | sin efecto | 2: 53, 6: 53, 12: 53 | 0 | efecto principal sobre la región admisible |
 
 **gi_bleed_72f · L3: lactato a los 120 min (mmol/L)**
 
 | Parámetro | Impacto | Dirección (de bajo a alto) | Valor por nivel | Rango | Origen |
 |---|---|---|---|---|---|
+| `lactate_clearance_tau_min` | ALTO | la aumenta | 45: 1,37, 120: 2,44, 240: 2,89 | 1,52 | efecto principal sobre la región admisible |
 | `arrival_oxygen_debt` | ALTO | la aumenta | inferior: 2,12, medio: 2,37, superior: 3,64 | 1,51 | efecto principal sobre la región admisible |
-| `lactate_clearance_tau_min` | ALTO | la aumenta | 45: 1,56, 120: 2,51, 240: 3,03 | 1,48 | efecto principal sobre la región admisible |
-| `arrival_lactate_excess` | MEDIO | la disminuye | inferior: 2,85, medio: 2,26, superior: 2,09 | 0,76 | efecto principal sobre la región admisible |
-| `debt_clearance_tau_min` | MEDIO | la aumenta | 30: 2,15, 60: 2,51, 120: 2,68 | 0,53 | efecto principal sobre la región admisible |
-| `arrival_delivery_ratio` | BAJO | no monótona | inferior: 2,65, medio: 2,37, superior: 2,45 | 0,28 | efecto principal sobre la región admisible |
+| `arrival_lactate_excess` | MEDIO | la disminuye | inferior: 2,85, medio: 2,12, superior: 2,00 | 0,85 | efecto principal sobre la región admisible |
+| `debt_clearance_tau_min` | MEDIO | la aumenta | 30: 2,15, 60: 2,45, 120: 2,45 | 0,30 | efecto principal sobre la región admisible |
+| `arrival_delivery_ratio` | BAJO | no monótona | inferior: 2,62, medio: 2,37, superior: 2,38 | 0,26 | efecto principal sobre la región admisible |
 | `metabolic_demand_baseline` | BAJO | la aumenta | 0,9: 2,21, 1: 2,26, 1,1: 2,33 | 0,12 | sonda de a uno alrededor del candidato medio (la región no lo varía) |
 | `debt_per_delivery_deficit` | BAJO | la aumenta | 0,5: 2,26, 1: 2,26, 2: 2,28 | 0,02 | sonda de a uno alrededor del candidato medio (la región no lo varía) |
-| `lactate_per_output_deficit` | BAJO | sin efecto | 2: 2,45, 6: 2,45, 12: 2,45 | 0,00 | efecto principal sobre la región admisible |
+| `lactate_per_output_deficit` | BAJO | sin efecto | 2: 2,44, 6: 2,44, 12: 2,44 | 0,00 | efecto principal sobre la región admisible |
 
 ## 8. Lo que el modelo ofrece para cada pregunta (sólo modelo)
 
@@ -450,17 +450,17 @@ Sólo trayectorias producidas por el motor: L1 para FD-LAC-02/03/06 y L3 para FD
 
 **gi_bleed_57m** (lactato de llegada 4,4)
 
-- Sin tratar, a los 60 min (FD-LAC-02/03): mínimo 1,81, p10 2,20, mediana 3,75, p90 5,47, máximo 6,06 (1054 corridas).
-- Primera caída clara (≥ 0,5 mmol/L bajo la llegada) tras el manejo definitivo (FD-LAC-04): en 15 min: 30 %, 15–30 min: 18 %, 30–60 min: 21 %, después de 60 min: 15 %, no en 120 min: 16 %.
-- A los 120 min tras el manejo definitivo (FD-LAC-05): de 1,04 a 6,05, mediana 2,88; mediana sobre la basal candidata 1,45; mediana según la deuda de llegada: inferior 2,29, medio 2,66, superior 3,81.
-- Sin tratar, con la entrega bajo la demanda a los 0, 15, 30 y 60 min (FD-LAC-06): 649 corridas; en 460 el lactato baja.
+- Sin tratar, a los 60 min (FD-LAC-02/03): mínimo 1,81, p10 2,20, mediana 3,71, p90 5,13, máximo 6,06 (946 corridas).
+- Primera caída clara (≥ 0,5 mmol/L bajo la llegada) tras el manejo definitivo (FD-LAC-04): en 15 min: 31 %, 15–30 min: 19 %, 30–60 min: 23 %, después de 60 min: 14 %, no en 120 min: 13 %.
+- A los 120 min tras el manejo definitivo (FD-LAC-05): de 1,04 a 6,05, mediana 2,88; mediana sobre la basal candidata 1,42; mediana según la deuda de llegada: inferior 2,29, medio 2,66, superior 3,81.
+- Sin tratar, con la entrega bajo la demanda a los 0, 15, 30 y 60 min (FD-LAC-06): 595 corridas; en 442 el lactato baja.
 
 **gi_bleed_72f** (lactato de llegada 3,4)
 
-- Sin tratar, a los 60 min (FD-LAC-02/03): mínimo 1,53, p10 1,92, mediana 3,08, p90 4,71, máximo 5,27 (1054 corridas).
-- Primera caída clara (≥ 0,5 mmol/L bajo la llegada) tras el manejo definitivo (FD-LAC-04): en 15 min: 15 %, 15–30 min: 16 %, 30–60 min: 21 %, después de 60 min: 19 %, no en 120 min: 29 %.
-- A los 120 min tras el manejo definitivo (FD-LAC-05): de 0,98 a 5,68, mediana 2,45; mediana sobre la basal candidata 1,10; mediana según la deuda de llegada: inferior 2,12, medio 2,37, superior 3,64.
-- Sin tratar, con la entrega bajo la demanda a los 0, 15, 30 y 60 min (FD-LAC-06): 649 corridas; en 388 el lactato baja.
+- Sin tratar, a los 60 min (FD-LAC-02/03): mínimo 1,53, p10 1,92, mediana 3,03, p90 4,49, máximo 5,27 (946 corridas).
+- Primera caída clara (≥ 0,5 mmol/L bajo la llegada) tras el manejo definitivo (FD-LAC-04): en 15 min: 17 %, 15–30 min: 17 %, 30–60 min: 22 %, después de 60 min: 20 %, no en 120 min: 25 %.
+- A los 120 min tras el manejo definitivo (FD-LAC-05): de 0,98 a 5,68, mediana 2,44; mediana sobre la basal candidata 1,07; mediana según la deuda de llegada: inferior 2,12, medio 2,37, superior 3,64.
+- Sin tratar, con la entrega bajo la demanda a los 0, 15, 30 y 60 min (FD-LAC-06): 595 corridas; en 376 el lactato baja.
 
 ## 9. REFERENCIA HEREDADA — NO ES OBJETIVO DE CALIBRACIÓN
 

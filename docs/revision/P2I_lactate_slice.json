@@ -8,64 +8,64 @@
       "A falls": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.33861386138613864,
-         "midpoint": 0.16237623762376238,
-         "upper": 0.499009900990099
+         "lower": 0.3305613305613306,
+         "midpoint": 0.1704781704781705,
+         "upper": 0.498960498960499
         },
         "arrival_lactate_excess": {
-         "lower": 0.21386138613861386,
-         "midpoint": 0.3940594059405941,
-         "upper": 0.3920792079207921
+         "lower": 0.22453222453222454,
+         "midpoint": 0.3887733887733888,
+         "upper": 0.3866943866943867
         },
         "arrival_oxygen_debt": {
-         "lower": 0.695049504950495,
-         "midpoint": 0.16237623762376238,
-         "upper": 0.14257425742574256
+         "lower": 0.7297297297297297,
+         "midpoint": 0.1704781704781705,
+         "upper": 0.0997920997920998
         },
         "debt_clearance_tau_min": {
-         "120": 0.3564356435643564,
-         "30": 0.2851485148514851,
-         "60": 0.3584158415841584
+         "120": 0.3492723492723493,
+         "30": 0.2993762993762994,
+         "60": 0.35135135135135137
         },
         "lactate_clearance_tau_min": {
-         "120": 0.2693069306930693,
-         "240": 0.10693069306930693,
-         "45": 0.6237623762376238
+         "120": 0.28274428274428276,
+         "240": 0.11226611226611227,
+         "45": 0.604989604989605
         },
         "lactate_per_output_deficit": {
-         "12": 0.3326732673267327,
-         "2": 0.3326732673267327,
-         "6": 0.3346534653465347
+         "12": 0.33264033264033266,
+         "2": 0.33264033264033266,
+         "6": 0.33471933471933474
         }
        },
-       "n": 505
+       "n": 481
       },
       "B approximately flat": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.44,
-         "midpoint": 0.36,
-         "upper": 0.2
+         "lower": 0.43661971830985913,
+         "midpoint": 0.38028169014084506,
+         "upper": 0.18309859154929578
         },
         "arrival_lactate_excess": {
-         "lower": 0.52,
-         "midpoint": 0.24,
-         "upper": 0.24
+         "lower": 0.49295774647887325,
+         "midpoint": 0.2535211267605634,
+         "upper": 0.2535211267605634
         },
         "arrival_oxygen_debt": {
-         "lower": 0.48,
-         "midpoint": 0.36,
-         "upper": 0.16
+         "lower": 0.5070422535211268,
+         "midpoint": 0.38028169014084506,
+         "upper": 0.11267605633802817
         },
         "debt_clearance_tau_min": {
-         "120": 0.36,
-         "30": 0.28,
-         "60": 0.36
+         "120": 0.352112676056338,
+         "30": 0.29577464788732394,
+         "60": 0.352112676056338
         },
         "lactate_clearance_tau_min": {
-         "120": 0.48,
-         "240": 0.36,
-         "45": 0.16
+         "120": 0.5070422535211268,
+         "240": 0.38028169014084506,
+         "45": 0.11267605633802817
         },
         "lactate_per_output_deficit": {
          "12": 0.3333333333333333,
@@ -73,33 +73,33 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 225
+       "n": 213
       },
       "C rises modestly": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.3181818181818182,
-         "midpoint": 0.4090909090909091,
-         "upper": 0.2727272727272727
+         "lower": 0.30357142857142855,
+         "midpoint": 0.48214285714285715,
+         "upper": 0.21428571428571427
         },
         "arrival_lactate_excess": {
-         "lower": 0.36363636363636365,
-         "midpoint": 0.3181818181818182,
-         "upper": 0.3181818181818182
+         "lower": 0.39285714285714285,
+         "midpoint": 0.30357142857142855,
+         "upper": 0.30357142857142855
         },
         "arrival_oxygen_debt": {
-         "lower": 0.13636363636363635,
-         "midpoint": 0.4090909090909091,
-         "upper": 0.45454545454545453
+         "lower": 0.16071428571428573,
+         "midpoint": 0.48214285714285715,
+         "upper": 0.35714285714285715
         },
         "debt_clearance_tau_min": {
-         "120": 0.4090909090909091,
-         "30": 0.18181818181818182,
-         "60": 0.4090909090909091
+         "120": 0.39285714285714285,
+         "30": 0.21428571428571427,
+         "60": 0.39285714285714285
         },
         "lactate_clearance_tau_min": {
-         "120": 0.45454545454545453,
-         "240": 0.5454545454545454
+         "120": 0.35714285714285715,
+         "240": 0.6428571428571429
         },
         "lactate_per_output_deficit": {
          "12": 0.3333333333333333,
@@ -107,7 +107,7 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 198
+       "n": 168
       },
       "D rises substantially": {
        "composition": {
@@ -137,74 +137,74 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 126
+       "n": 84
       }
      },
-     "falls_while_delivery_fell": 505
+     "falls_while_delivery_fell": 481
     },
     "L1 at 60 min": {
      "classes": {
       "A falls": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.32781456953642385,
-         "midpoint": 0.2251655629139073,
-         "upper": 0.4470198675496689
+         "lower": 0.3240418118466899,
+         "midpoint": 0.23693379790940766,
+         "upper": 0.43902439024390244
         },
         "arrival_lactate_excess": {
-         "lower": 0.2533112582781457,
-         "midpoint": 0.3741721854304636,
-         "upper": 0.37251655629139074
+         "lower": 0.25609756097560976,
+         "midpoint": 0.37282229965156793,
+         "upper": 0.3710801393728223
         },
         "arrival_oxygen_debt": {
-         "lower": 0.6258278145695364,
-         "midpoint": 0.2251655629139073,
-         "upper": 0.1490066225165563
+         "lower": 0.6585365853658537,
+         "midpoint": 0.23693379790940766,
+         "upper": 0.10452961672473868
         },
         "debt_clearance_tau_min": {
-         "120": 0.3576158940397351,
-         "30": 0.28311258278145696,
-         "60": 0.35927152317880795
+         "120": 0.3501742160278746,
+         "30": 0.2979094076655052,
+         "60": 0.3519163763066202
         },
         "lactate_clearance_tau_min": {
-         "120": 0.35927152317880795,
-         "240": 0.08940397350993377,
-         "45": 0.5513245033112583
+         "120": 0.3780487804878049,
+         "240": 0.09407665505226481,
+         "45": 0.5278745644599303
         },
         "lactate_per_output_deficit": {
-         "12": 0.33278145695364236,
-         "2": 0.33278145695364236,
-         "6": 0.3344370860927152
+         "12": 0.3327526132404181,
+         "2": 0.3327526132404181,
+         "6": 0.3344947735191638
         }
        },
-       "n": 604
+       "n": 574
       },
       "B approximately flat": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.36666666666666664,
-         "midpoint": 0.4,
-         "upper": 0.23333333333333334
+         "lower": 0.36904761904761907,
+         "midpoint": 0.42857142857142855,
+         "upper": 0.20238095238095238
         },
         "arrival_lactate_excess": {
-         "lower": 0.4666666666666667,
-         "midpoint": 0.26666666666666666,
-         "upper": 0.26666666666666666
+         "lower": 0.47619047619047616,
+         "midpoint": 0.2619047619047619,
+         "upper": 0.2619047619047619
         },
         "arrival_oxygen_debt": {
-         "lower": 0.4,
-         "midpoint": 0.4,
-         "upper": 0.2
+         "lower": 0.42857142857142855,
+         "midpoint": 0.42857142857142855,
+         "upper": 0.14285714285714285
         },
         "debt_clearance_tau_min": {
-         "120": 0.36666666666666664,
-         "30": 0.26666666666666666,
-         "60": 0.36666666666666664
+         "120": 0.35714285714285715,
+         "30": 0.2857142857142857,
+         "60": 0.35714285714285715
         },
         "lactate_clearance_tau_min": {
-         "120": 0.23333333333333334,
-         "240": 0.7,
-         "45": 0.06666666666666667
+         "120": 0.20238095238095238,
+         "240": 0.75,
+         "45": 0.047619047619047616
         },
         "lactate_per_output_deficit": {
          "12": 0.3333333333333333,
@@ -212,7 +212,7 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 270
+       "n": 252
       },
       "C rises modestly": {
        "composition": {
@@ -242,74 +242,74 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 180
+       "n": 120
       }
      },
-     "falls_while_delivery_fell": 604
+     "falls_while_delivery_fell": 574
     },
     "L2 at 120 min": {
      "classes": {
       "A falls": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.27099841521394613,
-         "midpoint": 0.22979397781299524,
-         "upper": 0.49920760697305866
+         "lower": 0.2672268907563025,
+         "midpoint": 0.24369747899159663,
+         "upper": 0.4890756302521008
         },
         "arrival_lactate_excess": {
-         "lower": 0.25673534072900156,
-         "midpoint": 0.3724247226624406,
-         "upper": 0.37083993660855785
+         "lower": 0.26218487394957984,
+         "midpoint": 0.3697478991596639,
+         "upper": 0.3680672268907563
         },
         "arrival_oxygen_debt": {
-         "lower": 0.5990491283676703,
-         "midpoint": 0.22979397781299524,
-         "upper": 0.17115689381933438
+         "lower": 0.6352941176470588,
+         "midpoint": 0.24369747899159663,
+         "upper": 0.12100840336134454
         },
         "debt_clearance_tau_min": {
-         "120": 0.34231378763866877,
-         "30": 0.28526148969889065,
-         "60": 0.3724247226624406
+         "120": 0.3378151260504202,
+         "30": 0.3025210084033613,
+         "60": 0.3596638655462185
         },
         "lactate_clearance_tau_min": {
-         "120": 0.3438985736925515,
-         "240": 0.12836767036450078,
-         "45": 0.5277337559429477
+         "120": 0.3546218487394958,
+         "240": 0.1361344537815126,
+         "45": 0.5092436974789916
         },
         "lactate_per_output_deficit": {
-         "12": 0.3328050713153724,
-         "2": 0.3328050713153724,
-         "6": 0.33438985736925514
+         "12": 0.33277310924369746,
+         "2": 0.33277310924369746,
+         "6": 0.334453781512605
         }
        },
-       "n": 631
+       "n": 595
       },
       "B approximately flat": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.45161290322580644,
-         "midpoint": 0.3548387096774194,
-         "upper": 0.1935483870967742
+         "lower": 0.47058823529411764,
+         "midpoint": 0.38823529411764707,
+         "upper": 0.1411764705882353
         },
         "arrival_lactate_excess": {
-         "lower": 0.4838709677419355,
-         "midpoint": 0.25806451612903225,
-         "upper": 0.25806451612903225
+         "lower": 0.4823529411764706,
+         "midpoint": 0.25882352941176473,
+         "upper": 0.25882352941176473
         },
         "arrival_oxygen_debt": {
-         "lower": 0.3870967741935484,
-         "midpoint": 0.3548387096774194,
-         "upper": 0.25806451612903225
+         "lower": 0.4235294117647059,
+         "midpoint": 0.38823529411764707,
+         "upper": 0.18823529411764706
         },
         "debt_clearance_tau_min": {
-         "120": 0.3870967741935484,
-         "30": 0.22580645161290322,
-         "60": 0.3870967741935484
+         "120": 0.3764705882352941,
+         "30": 0.24705882352941178,
+         "60": 0.3764705882352941
         },
         "lactate_clearance_tau_min": {
-         "120": 0.2903225806451613,
-         "240": 0.6451612903225806,
-         "45": 0.06451612903225806
+         "120": 0.27058823529411763,
+         "240": 0.6823529411764706,
+         "45": 0.047058823529411764
         },
         "lactate_per_output_deficit": {
          "12": 0.3333333333333333,
@@ -317,7 +317,7 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 279
+       "n": 255
       },
       "C rises modestly": {
        "composition": {
@@ -347,7 +347,7 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 72
+       "n": 48
       },
       "D rises substantially": {
        "composition": {
@@ -376,74 +376,74 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 72
+       "n": 48
       }
      },
-     "falls_while_delivery_fell": 631
+     "falls_while_delivery_fell": 595
     },
     "L2 at 60 min": {
      "classes": {
       "A falls": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.3373313343328336,
-         "midpoint": 0.21739130434782608,
-         "upper": 0.4452773613193403
+         "lower": 0.33437990580847726,
+         "midpoint": 0.22762951334379905,
+         "upper": 0.4379905808477237
         },
         "arrival_lactate_excess": {
-         "lower": 0.28335832083958024,
-         "midpoint": 0.33883058470764615,
-         "upper": 0.3778110944527736
+         "lower": 0.28728414442700156,
+         "midpoint": 0.3359497645211931,
+         "upper": 0.37676609105180536
         },
         "arrival_oxygen_debt": {
-         "lower": 0.6476761619190404,
-         "midpoint": 0.21739130434782608,
-         "upper": 0.13493253373313344
+         "lower": 0.6781789638932496,
+         "midpoint": 0.22762951334379905,
+         "upper": 0.09419152276295134
         },
         "debt_clearance_tau_min": {
-         "120": 0.35082458770614694,
-         "30": 0.29685157421289354,
-         "60": 0.3523238380809595
+         "120": 0.34379905808477235,
+         "30": 0.3108320251177394,
+         "60": 0.3453689167974882
         },
         "lactate_clearance_tau_min": {
-         "120": 0.33883058470764615,
-         "240": 0.1619190404797601,
-         "45": 0.4992503748125937
+         "120": 0.35478806907378335,
+         "240": 0.1695447409733124,
+         "45": 0.47566718995290425
         },
         "lactate_per_output_deficit": {
-         "12": 0.3328335832083958,
-         "2": 0.3328335832083958,
-         "6": 0.3343328335832084
+         "12": 0.3328100470957614,
+         "2": 0.3328100470957614,
+         "6": 0.33437990580847726
         }
        },
-       "n": 667
+       "n": 637
       },
       "B approximately flat": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.3448275862068966,
-         "midpoint": 0.3793103448275862,
-         "upper": 0.27586206896551724
+         "lower": 0.3466666666666667,
+         "midpoint": 0.44,
+         "upper": 0.21333333333333335
         },
         "arrival_lactate_excess": {
-         "lower": 0.41379310344827586,
-         "midpoint": 0.3103448275862069,
-         "upper": 0.27586206896551724
+         "lower": 0.4266666666666667,
+         "midpoint": 0.32,
+         "upper": 0.25333333333333335
         },
         "arrival_oxygen_debt": {
-         "lower": 0.20689655172413793,
-         "midpoint": 0.3793103448275862,
-         "upper": 0.41379310344827586
+         "lower": 0.24,
+         "midpoint": 0.44,
+         "upper": 0.32
         },
         "debt_clearance_tau_min": {
-         "120": 0.3793103448275862,
-         "30": 0.1724137931034483,
-         "60": 0.4482758620689655
+         "120": 0.37333333333333335,
+         "30": 0.2,
+         "60": 0.4266666666666667
         },
         "lactate_clearance_tau_min": {
-         "120": 0.3448275862068966,
-         "240": 0.5862068965517241,
-         "45": 0.06896551724137931
+         "120": 0.29333333333333333,
+         "240": 0.6533333333333333,
+         "45": 0.05333333333333334
         },
         "lactate_per_output_deficit": {
          "12": 0.3333333333333333,
@@ -451,7 +451,7 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 261
+       "n": 225
       },
       "C rises modestly": {
        "composition": {
@@ -481,38 +481,38 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 126
+       "n": 84
       }
      },
-     "falls_while_delivery_fell": 667
+     "falls_while_delivery_fell": 637
     },
     "L3 over 120 min": {
      "classes": {
       "E falls clearly within 30 min": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.3392857142857143,
-         "midpoint": 0.23214285714285715,
-         "upper": 0.42857142857142855
+         "lower": 0.33544303797468356,
+         "midpoint": 0.2468354430379747,
+         "upper": 0.4177215189873418
         },
         "arrival_lactate_excess": {
-         "lower": 0.25,
-         "midpoint": 0.35714285714285715,
-         "upper": 0.39285714285714285
+         "lower": 0.25316455696202533,
+         "midpoint": 0.35443037974683544,
+         "upper": 0.3924050632911392
         },
         "arrival_oxygen_debt": {
-         "lower": 0.5892857142857143,
-         "midpoint": 0.23214285714285715,
-         "upper": 0.17857142857142858
+         "lower": 0.6265822784810127,
+         "midpoint": 0.2468354430379747,
+         "upper": 0.12658227848101267
         },
         "debt_clearance_tau_min": {
-         "120": 0.35714285714285715,
-         "30": 0.2857142857142857,
-         "60": 0.35714285714285715
+         "120": 0.34810126582278483,
+         "30": 0.3037974683544304,
+         "60": 0.34810126582278483
         },
         "lactate_clearance_tau_min": {
-         "120": 0.3392857142857143,
-         "45": 0.6607142857142857
+         "120": 0.36075949367088606,
+         "45": 0.6392405063291139
         },
         "lactate_per_output_deficit": {
          "12": 0.3333333333333333,
@@ -520,66 +520,66 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 504
+       "n": 474
       },
       "E' falls clearly after 30 min": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.37994722955145116,
-         "midpoint": 0.287598944591029,
-         "upper": 0.3324538258575198
+         "lower": 0.375,
+         "midpoint": 0.3096590909090909,
+         "upper": 0.3153409090909091
         },
         "arrival_lactate_excess": {
-         "lower": 0.37994722955145116,
-         "midpoint": 0.33509234828496043,
-         "upper": 0.2849604221635884
+         "lower": 0.3835227272727273,
+         "midpoint": 0.3352272727272727,
+         "upper": 0.28125
         },
         "arrival_oxygen_debt": {
-         "lower": 0.49868073878627966,
-         "midpoint": 0.287598944591029,
-         "upper": 0.21372031662269128
+         "lower": 0.5369318181818182,
+         "midpoint": 0.3096590909090909,
+         "upper": 0.1534090909090909
         },
         "debt_clearance_tau_min": {
-         "120": 0.3324538258575198,
-         "30": 0.2612137203166227,
-         "60": 0.40633245382585753
+         "120": 0.33238636363636365,
+         "30": 0.28125,
+         "60": 0.38636363636363635
         },
         "lactate_clearance_tau_min": {
-         "120": 0.35883905013192613,
-         "240": 0.5936675461741425,
-         "45": 0.047493403693931395
+         "120": 0.32670454545454547,
+         "240": 0.6392045454545454,
+         "45": 0.03409090909090909
         },
         "lactate_per_output_deficit": {
-         "12": 0.3324538258575198,
-         "2": 0.3324538258575198,
-         "6": 0.33509234828496043
+         "12": 0.33238636363636365,
+         "2": 0.33238636363636365,
+         "6": 0.3352272727272727
         }
        },
-       "n": 379
+       "n": 352
       },
       "F stays elevated with delivery restored": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.5263157894736842,
-         "midpoint": 0.10526315789473684,
-         "upper": 0.3684210526315789
+         "lower": 0.5,
+         "midpoint": 0.15,
+         "upper": 0.35
         },
         "arrival_lactate_excess": {
-         "lower": 0.47368421052631576,
-         "midpoint": 0.2631578947368421,
-         "upper": 0.2631578947368421
+         "lower": 0.5,
+         "midpoint": 0.25,
+         "upper": 0.25
         },
         "arrival_oxygen_debt": {
-         "midpoint": 0.10526315789473684,
-         "upper": 0.8947368421052632
+         "midpoint": 0.15,
+         "upper": 0.85
         },
         "debt_clearance_tau_min": {
-         "120": 0.5789473684210527,
-         "60": 0.42105263157894735
+         "120": 0.575,
+         "60": 0.425
         },
         "lactate_clearance_tau_min": {
-         "120": 0.2631578947368421,
-         "240": 0.7368421052631579
+         "120": 0.25,
+         "240": 0.75
         },
         "lactate_per_output_deficit": {
          "12": 0.3333333333333333,
@@ -587,7 +587,7 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 171
+       "n": 120
       }
      }
     },
@@ -596,28 +596,28 @@
       "E falls clearly within 30 min": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.38,
-         "midpoint": 0.18,
-         "upper": 0.44
+         "lower": 0.3732394366197183,
+         "midpoint": 0.19014084507042253,
+         "upper": 0.43661971830985913
         },
         "arrival_lactate_excess": {
-         "lower": 0.24,
-         "midpoint": 0.38,
-         "upper": 0.38
+         "lower": 0.2535211267605634,
+         "midpoint": 0.3732394366197183,
+         "upper": 0.3732394366197183
         },
         "arrival_oxygen_debt": {
-         "lower": 0.66,
-         "midpoint": 0.18,
-         "upper": 0.16
+         "lower": 0.6971830985915493,
+         "midpoint": 0.19014084507042253,
+         "upper": 0.11267605633802817
         },
         "debt_clearance_tau_min": {
-         "120": 0.36,
-         "30": 0.28,
-         "60": 0.36
+         "120": 0.352112676056338,
+         "30": 0.29577464788732394,
+         "60": 0.352112676056338
         },
         "lactate_clearance_tau_min": {
-         "120": 0.3,
-         "45": 0.7
+         "120": 0.31690140845070425,
+         "45": 0.6830985915492958
         },
         "lactate_per_output_deficit": {
          "12": 0.3333333333333333,
@@ -625,69 +625,69 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 450
+       "n": 426
       },
       "E' falls clearly after 30 min": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.14917127071823205,
-         "midpoint": 0.30386740331491713,
-         "upper": 0.5469613259668509
+         "lower": 0.15428571428571428,
+         "midpoint": 0.3142857142857143,
+         "upper": 0.5314285714285715
         },
         "arrival_lactate_excess": {
-         "lower": 0.39779005524861877,
-         "midpoint": 0.30386740331491713,
-         "upper": 0.2983425414364641
+         "lower": 0.37714285714285717,
+         "midpoint": 0.3142857142857143,
+         "upper": 0.30857142857142855
         },
         "arrival_oxygen_debt": {
-         "lower": 0.5966850828729282,
-         "midpoint": 0.30386740331491713,
-         "upper": 0.09944751381215469
+         "lower": 0.6171428571428571,
+         "midpoint": 0.3142857142857143,
+         "upper": 0.06857142857142857
         },
         "debt_clearance_tau_min": {
-         "120": 0.34806629834254144,
-         "30": 0.2983425414364641,
-         "60": 0.35359116022099446
+         "120": 0.34285714285714286,
+         "30": 0.30857142857142855,
+         "60": 0.3485714285714286
         },
         "lactate_clearance_tau_min": {
-         "120": 0.4530386740331492,
-         "240": 0.44751381215469616,
-         "45": 0.09944751381215469
+         "120": 0.4685714285714286,
+         "240": 0.46285714285714286,
+         "45": 0.06857142857142857
         },
         "lactate_per_output_deficit": {
-         "12": 0.3314917127071823,
-         "2": 0.3314917127071823,
-         "6": 0.3370165745856354
+         "12": 0.3314285714285714,
+         "2": 0.3314285714285714,
+         "6": 0.33714285714285713
         }
        },
-       "n": 181
+       "n": 175
       },
       "F' stays elevated with delivery not restored": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.48936170212765956,
-         "midpoint": 0.2553191489361702,
-         "upper": 0.2553191489361702
+         "lower": 0.4782608695652174,
+         "midpoint": 0.3130434782608696,
+         "upper": 0.20869565217391303
         },
         "arrival_lactate_excess": {
-         "lower": 0.40425531914893614,
-         "midpoint": 0.2978723404255319,
-         "upper": 0.2978723404255319
+         "lower": 0.40869565217391307,
+         "midpoint": 0.2956521739130435,
+         "upper": 0.2956521739130435
         },
         "arrival_oxygen_debt": {
-         "lower": 0.19148936170212766,
-         "midpoint": 0.2553191489361702,
-         "upper": 0.5531914893617021
+         "lower": 0.23478260869565218,
+         "midpoint": 0.3130434782608696,
+         "upper": 0.45217391304347826
         },
         "debt_clearance_tau_min": {
-         "120": 0.425531914893617,
-         "30": 0.14893617021276595,
-         "60": 0.425531914893617
+         "120": 0.40869565217391307,
+         "30": 0.1826086956521739,
+         "60": 0.40869565217391307
         },
         "lactate_clearance_tau_min": {
-         "120": 0.3191489361702128,
-         "240": 0.6382978723404256,
-         "45": 0.0425531914893617
+         "120": 0.28695652173913044,
+         "240": 0.6782608695652174,
+         "45": 0.034782608695652174
         },
         "lactate_per_output_deficit": {
          "12": 0.3333333333333333,
@@ -695,7 +695,7 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 423
+       "n": 345
       }
      }
     }
@@ -713,7 +713,7 @@
       {
        "D_from": 0.0,
        "D_to": 29.84057681127254,
-       "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=2;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
+       "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
        "lactate_from": 4.4,
        "lactate_to": 3.3719086675853944
       },
@@ -725,8 +725,8 @@
        "lactate_to": 4.2909887925507215
       }
      ],
-     "n": 757,
-     "of": 1054,
+     "n": 721,
+     "of": 946,
      "pattern": "L1 0-60 min: D rises while lactate falls"
     },
     {
@@ -741,7 +741,7 @@
       {
        "D_from": 0.0,
        "D_to": 71.2070597481609,
-       "candidate": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
+       "candidate": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=lower;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
        "lactate_from": 4.4,
        "lactate_to": 3.2385295075732197
       },
@@ -753,8 +753,8 @@
        "lactate_to": 4.210855516554492
       }
      ],
-     "n": 604,
-     "of": 1054,
+     "n": 574,
+     "of": 946,
      "pattern": "L1 0-120 min: D rises while lactate falls"
     },
     {
@@ -769,9 +769,9 @@
       {
        "D_from": 60.0,
        "D_to": 21.980475933358843,
-       "candidate": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
+       "candidate": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
        "lactate_from": 4.4,
-       "lactate_to": 4.8976800312674555
+       "lactate_to": 5.370603118607255
       },
       {
        "D_from": 20.0,
@@ -781,8 +781,8 @@
        "lactate_to": 4.156789098204514
       }
      ],
-     "n": 171,
-     "of": 1054,
+     "n": 120,
+     "of": 946,
      "pattern": "L3 0-120 min: D falls while lactate stays within 0.5 mmol/L of arrival or above"
     },
     {
@@ -797,27 +797,27 @@
       {
        "D_from": 0.0,
        "D_to": 61.555063117074674,
-       "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
+       "candidate": "debt_clearance_tau_min=30,lactate_clearance_tau_min=240,lactate_per_output_deficit=2;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
        "lactate_from": 4.4,
-       "lactate_to": 4.326139925502686
+       "lactate_to": 4.646006499819564
       },
       {
        "D_from": 60.0,
        "D_to": 121.55506311707471,
-       "candidate": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+       "candidate": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
        "lactate_from": 4.4,
        "lactate_to": 4.536044106250861
       }
      ],
-     "n": 180,
-     "of": 1054,
+     "n": 174,
+     "of": 946,
      "pattern": "L4 0-120 min: D stays at or above arrival while lactate moves less than 0.5 mmol/L"
     }
    ],
    "representatives": {
     "high": {
      "L1": {
-      "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "parameters": {
        "arrival_delivery_ratio": 0.6,
        "arrival_lactate_excess": 2.4,
@@ -924,7 +924,7 @@
       "stopped_at": null
      },
      "L3": {
-      "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "parameters": {
        "arrival_delivery_ratio": 0.6,
        "arrival_lactate_excess": 2.4,
@@ -1471,12 +1471,12 @@
       "factor": "lactate_clearance_tau_min",
       "impact": "HIGH",
       "levels": {
-       "120": -0.6099597919441475,
-       "240": 0.013606811961674126,
-       "45": -1.6982986910370683
+       "120": -0.68890752793294,
+       "240": -0.10901120744927884,
+       "45": -1.9801757654123637
       },
       "source": "main effect over the admissible region",
-      "spread": 1.7119055029987424
+      "spread": 1.871164557963085
      },
      {
       "direction": "increases it",
@@ -1492,15 +1492,15 @@
      },
      {
       "direction": "decreases it",
-      "factor": "arrival_delivery_ratio",
+      "factor": "arrival_lactate_excess",
       "impact": "MEDIUM",
       "levels": {
-       "lower": -0.3749382471339473,
-       "midpoint": -0.6099597919441475,
-       "upper": -0.6987845159042219
+       "lower": -0.4328574762195512,
+       "midpoint": -0.949143596425813,
+       "upper": -1.028091332414606
       },
       "source": "main effect over the admissible region",
-      "spread": 0.32384626877027456
+      "spread": 0.5952338561950548
      },
      {
       "direction": "increases it",
@@ -1515,28 +1515,28 @@
       "spread": 0.30875021991005624
      },
      {
+      "direction": "decreases it",
+      "factor": "arrival_delivery_ratio",
+      "impact": "LOW",
+      "levels": {
+       "lower": -0.5544049164818521,
+       "midpoint": -0.6099597919441475,
+       "upper": -0.8538200131916369
+      },
+      "source": "main effect over the admissible region",
+      "spread": 0.29941509670978483
+     },
+     {
       "direction": "increases it",
       "factor": "debt_clearance_tau_min",
       "impact": "LOW",
       "levels": {
-       "120": -0.5877929150504002,
+       "120": -0.6544633426234436,
        "30": -0.8538200131916369,
-       "60": -0.5877929150504002
+       "60": -0.6544633426234436
       },
       "source": "main effect over the admissible region",
-      "spread": 0.2660270981412367
-     },
-     {
-      "direction": "decreases it",
-      "factor": "arrival_lactate_excess",
-      "impact": "LOW",
-      "levels": {
-       "lower": -0.4328574762195512,
-       "midpoint": -0.6544633426234436,
-       "upper": -0.6987845159042219
-      },
-      "source": "main effect over the admissible region",
-      "spread": 0.2659270396846707
+      "spread": 0.19935667056819328
      },
      {
       "direction": "increases it",
@@ -1555,9 +1555,9 @@
       "factor": "lactate_per_output_deficit",
       "impact": "LOW",
       "levels": {
-       "12": -0.6544633426234436,
-       "2": -0.6544633426234436,
-       "6": -0.6544633426234436
+       "12": -0.68890752793294,
+       "2": -0.68890752793294,
+       "6": -0.68890752793294
       },
       "source": "main effect over the admissible region",
       "spread": 0.0
@@ -1581,48 +1581,48 @@
       "factor": "lactate_clearance_tau_min",
       "impact": "HIGH",
       "levels": {
-       "120": 31,
-       "240": 76,
-       "45": 11
+       "120": 30,
+       "240": 72,
+       "45": 9
       },
       "source": "main effect over the admissible region",
-      "spread": 65
+      "spread": 63
      },
      {
       "direction": "decreases it",
       "factor": "arrival_lactate_excess",
       "impact": "MEDIUM",
       "levels": {
-       "lower": 47,
-       "midpoint": 30,
-       "upper": 27
+       "lower": 43,
+       "midpoint": 21,
+       "upper": 19
       },
       "source": "main effect over the admissible region",
-      "spread": 20
-     },
-     {
-      "direction": "decreases it",
-      "factor": "arrival_delivery_ratio",
-      "impact": "MEDIUM",
-      "levels": {
-       "lower": 42,
-       "midpoint": 31,
-       "upper": 28
-      },
-      "source": "main effect over the admissible region",
-      "spread": 14
+      "spread": 24
      },
      {
       "direction": "increases it",
       "factor": "debt_clearance_tau_min",
       "impact": "LOW",
       "levels": {
-       "120": 36,
+       "120": 33,
        "30": 27,
-       "60": 36
+       "60": 33
       },
       "source": "main effect over the admissible region",
-      "spread": 9
+      "spread": 6
+     },
+     {
+      "direction": "decreases it",
+      "factor": "arrival_delivery_ratio",
+      "impact": "LOW",
+      "levels": {
+       "lower": 33,
+       "midpoint": 31,
+       "upper": 28
+      },
+      "source": "main effect over the admissible region",
+      "spread": 5
      },
      {
       "direction": "increases it",
@@ -1637,6 +1637,18 @@
       "spread": 3
      },
      {
+      "direction": "no effect",
+      "factor": "lactate_per_output_deficit",
+      "impact": "LOW",
+      "levels": {
+       "12": 30,
+       "2": 30,
+       "6": 31
+      },
+      "source": "main effect over the admissible region",
+      "spread": 1
+     },
+     {
       "direction": "increases it",
       "factor": "debt_per_delivery_deficit",
       "impact": "LOW",
@@ -1647,18 +1659,6 @@
       },
       "source": "one-at-a-time probe around the middle candidate (the region does not vary it)",
       "spread": 1
-     },
-     {
-      "direction": "no effect",
-      "factor": "lactate_per_output_deficit",
-      "impact": "LOW",
-      "levels": {
-       "12": 33,
-       "2": 33,
-       "6": 33
-      },
-      "source": "main effect over the admissible region",
-      "spread": 0
      }
     ],
     "L3 lactate at 120 min (mmol/L)": [
@@ -1667,12 +1667,12 @@
       "factor": "lactate_clearance_tau_min",
       "impact": "HIGH",
       "levels": {
-       "120": 2.8792190373343542,
-       "240": 3.572212648616837,
-       "45": 1.623136157062659
+       "120": 2.787787932491126,
+       "240": 3.472629987652142,
+       "45": 1.4366211126661916
       },
       "source": "main effect over the admissible region",
-      "spread": 1.949076491554178
+      "spread": 2.03600887498595
      },
      {
       "direction": "increases it",
@@ -1691,36 +1691,36 @@
       "factor": "arrival_lactate_excess",
       "impact": "MEDIUM",
       "levels": {
-       "lower": 3.161667065407758,
-       "midpoint": 2.4495697281219213,
-       "upper": 2.3228379812331177
+       "lower": 3.083228462565941,
+       "midpoint": 2.419538125838873,
+       "upper": 2.2928063789500683
       },
       "source": "main effect over the admissible region",
-      "spread": 0.8388290841746402
+      "spread": 0.7904220836158729
      },
      {
       "direction": "increases it",
       "factor": "debt_clearance_tau_min",
       "impact": "MEDIUM",
       "levels": {
-       "120": 3.053196860282892,
+       "120": 2.981230737980612,
        "30": 2.3317642314567784,
-       "60": 2.981230737980612
+       "60": 2.8792190373343542
       },
       "source": "main effect over the admissible region",
-      "spread": 0.7214326288261135
+      "spread": 0.6494665065238334
      },
      {
       "direction": "non-monotonic",
       "factor": "arrival_delivery_ratio",
       "impact": "MEDIUM",
       "levels": {
-       "lower": 3.053196860282892,
+       "lower": 3.0100837459890157,
        "midpoint": 2.6610561856023227,
        "upper": 2.8792190373343542
       },
       "source": "main effect over the admissible region",
-      "spread": 0.3921406746805691
+      "spread": 0.349027560386693
      },
      {
       "direction": "increases it",
@@ -1769,75 +1769,75 @@
       "max": 4.4,
       "median": 4.4,
       "min": 4.4,
-      "n": 1054,
+      "n": 946,
       "p10": 4.4,
       "p90": 4.4,
       "rising": 0.0,
       "stopped_before": 0
      },
      "15": {
-      "changed_more_than_1": 0.051233396584440226,
+      "changed_more_than_1": 0.05708245243128964,
       "changed_more_than_2": 0.0,
-      "falling": 0.7694497153700189,
+      "falling": 0.8192389006342494,
       "max": 4.763724949033194,
-      "median": 4.164478247714806,
+      "median": 4.14222097583351,
       "min": 3.3711512093014107,
-      "n": 1054,
+      "n": 946,
       "p10": 3.449084660881598,
-      "p90": 4.668512181701366,
-      "rising": 0.23055028462998103,
+      "p90": 4.590117149353177,
+      "rising": 0.18076109936575052,
       "stopped_before": 0
      },
      "30": {
-      "changed_more_than_1": 0.222011385199241,
+      "changed_more_than_1": 0.24101479915433405,
       "changed_more_than_2": 0.0,
-      "falling": 0.7694497153700189,
+      "falling": 0.8192389006342494,
       "max": 5.159625973054087,
-      "median": 3.984823450386428,
+      "median": 3.9638273618953583,
       "min": 2.645298423797115,
-      "n": 1054,
+      "n": 946,
       "p10": 2.818354395775567,
-      "p90": 4.930206425369967,
-      "rising": 0.23055028462998103,
+      "p90": 4.767071633392541,
+      "rising": 0.18076109936575052,
       "stopped_before": 0
      },
      "60": {
-      "changed_more_than_1": 0.4952561669829222,
-      "changed_more_than_2": 0.12808349146110057,
-      "falling": 0.7182163187855788,
+      "changed_more_than_1": 0.4820295983086681,
+      "changed_more_than_2": 0.1427061310782241,
+      "falling": 0.7621564482029598,
       "max": 6.063835723781853,
-      "median": 3.7455366573765567,
+      "median": 3.7110924720670604,
       "min": 1.8132966881735977,
-      "n": 1054,
+      "n": 946,
       "p10": 2.19680817195918,
-      "p90": 5.474062415326907,
-      "rising": 0.28178368121442127,
+      "p90": 5.125134706584202,
+      "rising": 0.23784355179704017,
       "stopped_before": 0
      },
      "90": {
-      "changed_more_than_1": 0.5294117647058824,
-      "changed_more_than_2": 0.222011385199241,
-      "falling": 0.6925996204933587,
+      "changed_more_than_1": 0.507399577167019,
+      "changed_more_than_2": 0.2219873150105708,
+      "falling": 0.733615221987315,
       "max": 7.141349307302841,
-      "median": 3.721981289561431,
+      "median": 3.662856493251152,
       "min": 1.5109582247922044,
-      "n": 1054,
+      "n": 946,
       "p10": 2.1001901491259263,
-      "p90": 6.13429640554642,
-      "rising": 0.30740037950664134,
+      "p90": 5.605180890299756,
+      "rising": 0.266384778012685,
       "stopped_before": 0
      },
      "120": {
-      "changed_more_than_1": 0.5294117647058824,
-      "changed_more_than_2": 0.2476280834914611,
-      "falling": 0.573055028462998,
+      "changed_more_than_1": 0.507399577167019,
+      "changed_more_than_2": 0.23150105708245244,
+      "falling": 0.6067653276955602,
       "max": 8.416482490701677,
-      "median": 3.979474998839508,
+      "median": 3.824552549078021,
       "min": 1.5366773512350498,
-      "n": 1054,
+      "n": 946,
       "p10": 2.2215006709609804,
-      "p90": 6.969573526036637,
-      "rising": 0.4269449715370019,
+      "p90": 6.3591874868541005,
+      "rising": 0.39323467230443976,
       "stopped_before": 0
      }
     },
@@ -1849,75 +1849,75 @@
       "max": 4.4,
       "median": 4.4,
       "min": 4.4,
-      "n": 1054,
+      "n": 946,
       "p10": 4.4,
       "p90": 4.4,
       "rising": 0.0,
       "stopped_before": 0
      },
      "15": {
-      "changed_more_than_1": 0.051233396584440226,
+      "changed_more_than_1": 0.05708245243128964,
       "changed_more_than_2": 0.0,
-      "falling": 0.777988614800759,
+      "falling": 0.8255813953488372,
       "max": 4.760449656228284,
-      "median": 4.160093037368897,
+      "median": 4.136984741718541,
       "min": 3.3698332349601796,
-      "n": 1054,
+      "n": 946,
       "p10": 3.445983043497217,
-      "p90": 4.613788566533893,
-      "rising": 0.222011385199241,
+      "p90": 4.536375839787459,
+      "rising": 0.1744186046511628,
       "stopped_before": 0
      },
      "30": {
-      "changed_more_than_1": 0.23908918406072105,
+      "changed_more_than_1": 0.2536997885835095,
       "changed_more_than_2": 0.0,
-      "falling": 0.8036053130929791,
+      "falling": 0.8477801268498943,
       "max": 5.134318709217073,
-      "median": 3.93924877861312,
+      "median": 3.9052704967592713,
       "min": 2.6344563487516397,
-      "n": 1054,
+      "n": 946,
       "p10": 2.7959868524305995,
-      "p90": 4.810407722005532,
-      "rising": 0.19639468690702086,
+      "p90": 4.6052925064211205,
+      "rising": 0.1522198731501057,
       "stopped_before": 0
      },
      "60": {
-      "changed_more_than_1": 0.4696394686907021,
-      "changed_more_than_2": 0.16223908918406071,
-      "falling": 0.8121442125237192,
+      "changed_more_than_1": 0.47568710359408034,
+      "changed_more_than_2": 0.17758985200845667,
+      "falling": 0.854122621564482,
       "max": 5.930903854168458,
-      "median": 3.602778938319423,
+      "median": 3.4962194179043156,
       "min": 1.7353277280299964,
-      "n": 1054,
-      "p10": 2.0961612556085027,
-      "p90": 4.984244662970272,
-      "rising": 0.18785578747628084,
+      "n": 946,
+      "p10": 2.064661443519771,
+      "p90": 4.826657319553805,
+      "rising": 0.14587737843551796,
       "stopped_before": 0
      },
      "90": {
-      "changed_more_than_1": 0.6233396584440227,
-      "changed_more_than_2": 0.2647058823529412,
-      "falling": 0.8206831119544592,
+      "changed_more_than_1": 0.6342494714587738,
+      "changed_more_than_2": 0.2632135306553911,
+      "falling": 0.8604651162790697,
       "max": 6.839311939254012,
-      "median": 3.3079980830411393,
+      "median": 3.2765324647416936,
       "min": 1.3067047087985868,
-      "n": 1054,
-      "p10": 1.7793315501593978,
-      "p90": 5.227836470976303,
-      "rising": 0.1793168880455408,
+      "n": 946,
+      "p10": 1.7336312680873092,
+      "p90": 5.081458243106777,
+      "rising": 0.13953488372093023,
       "stopped_before": 0
      },
      "120": {
-      "changed_more_than_1": 0.6574952561669829,
-      "changed_more_than_2": 0.30740037950664134,
-      "falling": 0.777988614800759,
+      "changed_more_than_1": 0.6596194503171248,
+      "changed_more_than_2": 0.3044397463002114,
+      "falling": 0.8128964059196617,
       "max": 7.895533130962564,
-      "median": 3.37268834584706,
+      "median": 3.2459565989582577,
       "min": 1.1773134028093775,
-      "n": 1054,
+      "n": 946,
       "p10": 1.8172764301070876,
-      "p90": 5.780591536734331,
-      "rising": 0.222011385199241,
+      "p90": 5.277875780627055,
+      "rising": 0.18710359408033828,
       "stopped_before": 0
      }
     },
@@ -1929,75 +1929,75 @@
       "max": 4.4,
       "median": 4.4,
       "min": 4.4,
-      "n": 1054,
+      "n": 946,
       "p10": 4.4,
       "p90": 4.4,
       "rising": 0.0,
       "stopped_before": 0
      },
      "15": {
-      "changed_more_than_1": 0.051233396584440226,
+      "changed_more_than_1": 0.05708245243128964,
       "changed_more_than_2": 0.0,
-      "falling": 0.777988614800759,
+      "falling": 0.8255813953488372,
       "max": 4.759488298303051,
-      "median": 4.15281123565648,
+      "median": 4.136034273340055,
       "min": 3.3698332349601796,
-      "n": 1054,
+      "n": 946,
       "p10": 3.4450675589857314,
-      "p90": 4.613788566533893,
-      "rising": 0.222011385199241,
+      "p90": 4.536375839787459,
+      "rising": 0.1744186046511628,
       "stopped_before": 0
      },
      "30": {
-      "changed_more_than_1": 0.23908918406072105,
+      "changed_more_than_1": 0.2536997885835095,
       "changed_more_than_2": 0.0,
-      "falling": 0.8036053130929791,
+      "falling": 0.8477801268498943,
       "max": 5.1225771774426185,
-      "median": 3.927785159083336,
+      "median": 3.8857861239146447,
       "min": 2.6344563487516397,
-      "n": 1054,
+      "n": 946,
       "p10": 2.785375735856285,
-      "p90": 4.810407722005532,
-      "rising": 0.19639468690702086,
+      "p90": 4.593828886891339,
+      "rising": 0.1522198731501057,
       "stopped_before": 0
      },
      "60": {
-      "changed_more_than_1": 0.4696394686907021,
-      "changed_more_than_2": 0.16223908918406071,
-      "falling": 0.8292220113851992,
+      "changed_more_than_1": 0.4820295983086681,
+      "changed_more_than_2": 0.17758985200845667,
+      "falling": 0.8731501057082452,
       "max": 5.674363767877839,
-      "median": 3.556459947307236,
+      "median": 3.452627168134498,
       "min": 1.7347861376319982,
-      "n": 1054,
-      "p10": 1.9676066766862417,
-      "p90": 4.9577634874333105,
-      "rising": 0.17077798861480076,
+      "n": 946,
+      "p10": 1.95507731750938,
+      "p90": 4.660563242939201,
+      "rising": 0.12684989429175475,
       "stopped_before": 0
      },
      "90": {
-      "changed_more_than_1": 0.6328273244781784,
-      "changed_more_than_2": 0.25616698292220114,
-      "falling": 0.8548387096774194,
+      "changed_more_than_1": 0.6575052854122622,
+      "changed_more_than_2": 0.2632135306553911,
+      "falling": 0.8921775898520085,
       "max": 5.957062245957806,
-      "median": 3.2174725106023425,
+      "median": 3.1301227634080036,
       "min": 1.276340101362234,
-      "n": 1054,
-      "p10": 1.5030636199841818,
-      "p90": 4.76439714158127,
-      "rising": 0.14516129032258066,
+      "n": 946,
+      "p10": 1.4831178133501077,
+      "p90": 4.516100166883854,
+      "rising": 0.10782241014799154,
       "stopped_before": 0
      },
      "120": {
-      "changed_more_than_1": 0.7267552182163188,
-      "changed_more_than_2": 0.3927893738140417,
-      "falling": 0.8975332068311196,
+      "changed_more_than_1": 0.7526427061310782,
+      "changed_more_than_2": 0.41226215644820297,
+      "falling": 0.9238900634249472,
       "max": 6.047671880639271,
       "median": 2.8792190373343542,
       "min": 1.042729200863597,
-      "n": 1054,
-      "p10": 1.2622720966256744,
-      "p90": 4.430484954227974,
-      "rising": 0.10246679316888045,
+      "n": 946,
+      "p10": 1.2292442452600638,
+      "p90": 4.24209473059947,
+      "rising": 0.07610993657505286,
       "stopped_before": 0
      }
     },
@@ -2009,75 +2009,75 @@
       "max": 4.4,
       "median": 4.4,
       "min": 4.4,
-      "n": 1054,
+      "n": 946,
       "p10": 4.4,
       "p90": 4.4,
       "rising": 0.0,
       "stopped_before": 0
      },
      "15": {
-      "changed_more_than_1": 0.051233396584440226,
+      "changed_more_than_1": 0.05708245243128964,
       "changed_more_than_2": 0.0,
-      "falling": 0.7694497153700189,
+      "falling": 0.8192389006342494,
       "max": 4.76355677415198,
-      "median": 4.164318770224327,
+      "median": 4.141985658259715,
       "min": 3.370885413483947,
-      "n": 1054,
+      "n": 946,
       "p10": 3.4489251833911188,
-      "p90": 4.668231890232675,
-      "rising": 0.23055028462998103,
+      "p90": 4.589840305148712,
+      "rising": 0.18076109936575052,
       "stopped_before": 0
      },
      "30": {
-      "changed_more_than_1": 0.222011385199241,
+      "changed_more_than_1": 0.24101479915433405,
       "changed_more_than_2": 0.0,
-      "falling": 0.7694497153700189,
+      "falling": 0.8192389006342494,
       "max": 5.158140069996396,
-      "median": 3.982775373198877,
+      "median": 3.962381660351202,
       "min": 2.64309289426847,
-      "n": 1054,
+      "n": 946,
       "p10": 2.8170310780583785,
-      "p90": 4.927729920273812,
-      "rising": 0.23055028462998103,
+      "p90": 4.764662130818949,
+      "rising": 0.18076109936575052,
       "stopped_before": 0
      },
      "60": {
-      "changed_more_than_1": 0.4952561669829222,
-      "changed_more_than_2": 0.12808349146110057,
-      "falling": 0.7438330170777988,
+      "changed_more_than_1": 0.4820295983086681,
+      "changed_more_than_2": 0.1427061310782241,
+      "falling": 0.7906976744186046,
       "max": 6.051568956137803,
-      "median": 3.7250920446364724,
+      "median": 3.694664578758792,
       "min": 1.7970605454339872,
-      "n": 1054,
+      "n": 946,
       "p10": 2.187066486315413,
-      "p90": 5.453617802586825,
-      "rising": 0.25616698292220114,
+      "p90": 5.105807773280354,
+      "rising": 0.20930232558139536,
       "stopped_before": 0
      },
      "90": {
-      "changed_more_than_1": 0.5721062618595826,
-      "changed_more_than_2": 0.222011385199241,
-      "falling": 0.6925996204933587,
+      "changed_more_than_1": 0.5486257928118393,
+      "changed_more_than_2": 0.2219873150105708,
+      "falling": 0.733615221987315,
       "max": 7.093811718494392,
-      "median": 3.659558391716878,
+      "median": 3.583627178570404,
       "min": 1.452335481041552,
-      "n": 1054,
+      "n": 946,
       "p10": 2.0508562689295875,
-      "p90": 6.08961878887715,
-      "rising": 0.30740037950664134,
+      "p90": 5.561117668291841,
+      "rising": 0.266384778012685,
       "stopped_before": 0
      },
      "120": {
-      "changed_more_than_1": 0.5379506641366224,
-      "changed_more_than_2": 0.2732447817836812,
-      "falling": 0.5986717267552182,
+      "changed_more_than_1": 0.5232558139534884,
+      "changed_more_than_2": 0.26004228329809725,
+      "falling": 0.635306553911205,
       "max": 8.27175016942467,
-      "median": 3.792373908312088,
+      "median": 3.692481191058666,
       "min": 1.3677636274086165,
-      "n": 1054,
+      "n": 946,
       "p10": 2.0779240057085113,
-      "p90": 6.728352990574965,
-      "rising": 0.40132827324478176,
+      "p90": 6.227116128834748,
+      "rising": 0.36469344608879495,
       "stopped_before": 0
      }
     }
@@ -2085,23 +2085,23 @@
    "worksheet": {
     "FD-LAC-02/03 untreated lactate at 60 min": {
      "max": 6.063835723781853,
-     "median": 3.7455366573765567,
+     "median": 3.7110924720670604,
      "min": 1.8132966881735977,
-     "n": 1054,
+     "n": 946,
      "p10": 2.19680817195918,
-     "p90": 5.474062415326907
+     "p90": 5.125134706584202
     },
     "FD-LAC-04 first clear fall after definitive management": {
-     "15-30 min": 0.1793168880455408,
-     "30-60 min": 0.2144212523719165,
-     "after 60 min": 0.14516129032258066,
-     "not within 120 min": 0.16223908918406071,
-     "within 15 min": 0.29886148007590135
+     "15-30 min": 0.193446088794926,
+     "30-60 min": 0.23255813953488372,
+     "after 60 min": 0.13953488372093023,
+     "not within 120 min": 0.12684989429175475,
+     "within 15 min": 0.30761099365750527
     },
     "FD-LAC-05 lactate at 120 min after definitive management": {
      "max": 6.047671880639271,
      "median": 2.8792190373343542,
-     "median_above_candidate_baseline": 1.4495697281219209,
+     "median_above_candidate_baseline": 1.4195381258388724,
      "median_by_arrival_debt": {
       "lower": 2.2928063789500683,
       "midpoint": 2.6610561856023227,
@@ -2110,8 +2110,8 @@
      "min": 1.042729200863597
     },
     "FD-LAC-06 untreated runs with delivery below demand at 0, 15, 30 and 60 min": {
-     "lactate_falls_by_60": 460,
-     "n": 649
+     "lactate_falls_by_60": 442,
+     "n": 595
     }
    }
   },
@@ -2122,29 +2122,29 @@
       "A falls": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.17647058823529413,
-         "midpoint": 0.17647058823529413,
-         "upper": 0.6470588235294118
+         "lower": 0.1836734693877551,
+         "midpoint": 0.1836734693877551,
+         "upper": 0.6326530612244898
         },
         "arrival_lactate_excess": {
-         "lower": 0.08823529411764706,
-         "midpoint": 0.4117647058823529,
+         "lower": 0.09183673469387756,
+         "midpoint": 0.40816326530612246,
          "upper": 0.5
         },
         "arrival_oxygen_debt": {
-         "lower": 0.7058823529411765,
-         "midpoint": 0.17647058823529413,
-         "upper": 0.11764705882352941
+         "lower": 0.7346938775510204,
+         "midpoint": 0.1836734693877551,
+         "upper": 0.08163265306122448
         },
         "debt_clearance_tau_min": {
-         "120": 0.35294117647058826,
-         "30": 0.29411764705882354,
-         "60": 0.35294117647058826
+         "120": 0.3469387755102041,
+         "30": 0.30612244897959184,
+         "60": 0.3469387755102041
         },
         "lactate_clearance_tau_min": {
-         "120": 0.17647058823529413,
-         "240": 0.08823529411764706,
-         "45": 0.7352941176470589
+         "120": 0.1836734693877551,
+         "240": 0.09183673469387756,
+         "45": 0.7244897959183674
         },
         "lactate_per_output_deficit": {
          "12": 0.3333333333333333,
@@ -2152,69 +2152,69 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 306
+       "n": 294
       },
       "B approximately flat": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.3926174496644295,
-         "midpoint": 0.2751677852348993,
-         "upper": 0.33221476510067116
+         "lower": 0.375,
+         "midpoint": 0.29285714285714287,
+         "upper": 0.33214285714285713
         },
         "arrival_lactate_excess": {
-         "lower": 0.4228187919463087,
-         "midpoint": 0.33557046979865773,
-         "upper": 0.24161073825503357
+         "lower": 0.42857142857142855,
+         "midpoint": 0.3357142857142857,
+         "upper": 0.2357142857142857
         },
         "arrival_oxygen_debt": {
-         "lower": 0.5436241610738255,
-         "midpoint": 0.2751677852348993,
-         "upper": 0.18120805369127516
+         "lower": 0.5785714285714286,
+         "midpoint": 0.29285714285714287,
+         "upper": 0.12857142857142856
         },
         "debt_clearance_tau_min": {
-         "120": 0.3624161073825503,
-         "30": 0.27181208053691275,
-         "60": 0.36577181208053694
+         "120": 0.3535714285714286,
+         "30": 0.2892857142857143,
+         "60": 0.35714285714285715
         },
         "lactate_clearance_tau_min": {
-         "120": 0.4563758389261745,
-         "240": 0.18120805369127516,
-         "45": 0.3624161073825503
+         "120": 0.4857142857142857,
+         "240": 0.19285714285714287,
+         "45": 0.32142857142857145
         },
         "lactate_per_output_deficit": {
-         "12": 0.33221476510067116,
-         "2": 0.33221476510067116,
-         "6": 0.33557046979865773
+         "12": 0.33214285714285713,
+         "2": 0.33214285714285713,
+         "6": 0.3357142857142857
         }
        },
-       "n": 298
+       "n": 280
       },
       "C rises modestly": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.4666666666666667,
-         "midpoint": 0.4,
-         "upper": 0.13333333333333333
+         "lower": 0.47619047619047616,
+         "midpoint": 0.42857142857142855,
+         "upper": 0.09523809523809523
         },
         "arrival_lactate_excess": {
-         "lower": 0.4666666666666667,
-         "midpoint": 0.26666666666666666,
-         "upper": 0.26666666666666666
+         "lower": 0.47619047619047616,
+         "midpoint": 0.2619047619047619,
+         "upper": 0.2619047619047619
         },
         "arrival_oxygen_debt": {
-         "lower": 0.4,
-         "midpoint": 0.4,
-         "upper": 0.2
+         "lower": 0.42857142857142855,
+         "midpoint": 0.42857142857142855,
+         "upper": 0.14285714285714285
         },
         "debt_clearance_tau_min": {
-         "120": 0.36666666666666664,
-         "30": 0.26666666666666666,
-         "60": 0.36666666666666664
+         "120": 0.35714285714285715,
+         "30": 0.2857142857142857,
+         "60": 0.35714285714285715
         },
         "lactate_clearance_tau_min": {
-         "120": 0.3333333333333333,
-         "240": 0.6,
-         "45": 0.06666666666666667
+         "120": 0.30952380952380953,
+         "240": 0.6428571428571429,
+         "45": 0.047619047619047616
         },
         "lactate_per_output_deficit": {
          "12": 0.3333333333333333,
@@ -2222,7 +2222,7 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 270
+       "n": 252
       },
       "D rises substantially": {
        "composition": {
@@ -2252,39 +2252,39 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 180
+       "n": 120
       }
      },
-     "falls_while_delivery_fell": 306
+     "falls_while_delivery_fell": 294
     },
     "L1 at 60 min": {
      "classes": {
       "A falls": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.3541666666666667,
-         "midpoint": 0.1875,
-         "upper": 0.4583333333333333
+         "lower": 0.35507246376811596,
+         "midpoint": 0.1956521739130435,
+         "upper": 0.4492753623188406
         },
         "arrival_lactate_excess": {
-         "lower": 0.1875,
-         "midpoint": 0.3541666666666667,
-         "upper": 0.4583333333333333
+         "lower": 0.1956521739130435,
+         "midpoint": 0.35507246376811596,
+         "upper": 0.4492753623188406
         },
         "arrival_oxygen_debt": {
-         "lower": 0.6875,
-         "midpoint": 0.1875,
-         "upper": 0.125
+         "lower": 0.717391304347826,
+         "midpoint": 0.1956521739130435,
+         "upper": 0.08695652173913043
         },
         "debt_clearance_tau_min": {
-         "120": 0.3541666666666667,
-         "30": 0.2916666666666667,
-         "60": 0.3541666666666667
+         "120": 0.34782608695652173,
+         "30": 0.30434782608695654,
+         "60": 0.34782608695652173
         },
         "lactate_clearance_tau_min": {
-         "120": 0.25,
-         "240": 0.0625,
-         "45": 0.6875
+         "120": 0.2608695652173913,
+         "240": 0.06521739130434782,
+         "45": 0.6739130434782609
         },
         "lactate_per_output_deficit": {
          "12": 0.3333333333333333,
@@ -2292,42 +2292,42 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 432
+       "n": 414
       },
       "B approximately flat": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.35467980295566504,
-         "midpoint": 0.4014778325123153,
-         "upper": 0.2438423645320197
+         "lower": 0.3402061855670103,
+         "midpoint": 0.42010309278350516,
+         "upper": 0.23969072164948454
         },
         "arrival_lactate_excess": {
-         "lower": 0.4876847290640394,
-         "midpoint": 0.312807881773399,
-         "upper": 0.19950738916256158
+         "lower": 0.4793814432989691,
+         "midpoint": 0.3118556701030928,
+         "upper": 0.20876288659793815
         },
         "arrival_oxygen_debt": {
-         "lower": 0.46551724137931033,
-         "midpoint": 0.4014778325123153,
-         "upper": 0.1330049261083744
+         "lower": 0.48711340206185566,
+         "midpoint": 0.42010309278350516,
+         "upper": 0.09278350515463918
         },
         "debt_clearance_tau_min": {
-         "120": 0.35467980295566504,
-         "30": 0.2881773399014778,
-         "60": 0.35714285714285715
+         "120": 0.3479381443298969,
+         "30": 0.3015463917525773,
+         "60": 0.35051546391752575
         },
         "lactate_clearance_tau_min": {
-         "120": 0.33497536945812806,
-         "240": 0.5320197044334976,
-         "45": 0.1330049261083744
+         "120": 0.35051546391752575,
+         "240": 0.5567010309278351,
+         "45": 0.09278350515463918
         },
         "lactate_per_output_deficit": {
-         "12": 0.33251231527093594,
-         "2": 0.33251231527093594,
-         "6": 0.33497536945812806
+         "12": 0.3324742268041237,
+         "2": 0.3324742268041237,
+         "6": 0.33505154639175255
         }
        },
-       "n": 406
+       "n": 388
       },
       "C rises modestly": {
        "composition": {
@@ -2357,39 +2357,39 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 216
+       "n": 144
       }
      },
-     "falls_while_delivery_fell": 432
+     "falls_while_delivery_fell": 414
     },
     "L2 at 120 min": {
      "classes": {
       "A falls": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.19148936170212766,
-         "midpoint": 0.19148936170212766,
-         "upper": 0.6170212765957447
+         "lower": 0.19852941176470587,
+         "midpoint": 0.19852941176470587,
+         "upper": 0.6029411764705882
         },
         "arrival_lactate_excess": {
-         "lower": 0.2765957446808511,
-         "midpoint": 0.3617021276595745,
-         "upper": 0.3617021276595745
+         "lower": 0.27941176470588236,
+         "midpoint": 0.3602941176470588,
+         "upper": 0.3602941176470588
         },
         "arrival_oxygen_debt": {
-         "lower": 0.7021276595744681,
-         "midpoint": 0.19148936170212766,
-         "upper": 0.10638297872340426
+         "lower": 0.7279411764705882,
+         "midpoint": 0.19852941176470587,
+         "upper": 0.07352941176470588
         },
         "debt_clearance_tau_min": {
-         "120": 0.3404255319148936,
-         "30": 0.2978723404255319,
-         "60": 0.3617021276595745
+         "120": 0.3382352941176471,
+         "30": 0.3088235294117647,
+         "60": 0.35294117647058826
         },
         "lactate_clearance_tau_min": {
-         "120": 0.19148936170212766,
-         "240": 0.1276595744680851,
-         "45": 0.6808510638297872
+         "120": 0.19852941176470587,
+         "240": 0.1323529411764706,
+         "45": 0.6691176470588235
         },
         "lactate_per_output_deficit": {
          "12": 0.3333333333333333,
@@ -2397,69 +2397,69 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 423
+       "n": 408
       },
       "B approximately flat": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.5261538461538462,
-         "midpoint": 0.2523076923076923,
-         "upper": 0.22153846153846155
+         "lower": 0.5335570469798657,
+         "midpoint": 0.2751677852348993,
+         "upper": 0.1912751677852349
         },
         "arrival_lactate_excess": {
-         "lower": 0.27692307692307694,
-         "midpoint": 0.3630769230769231,
-         "upper": 0.36
+         "lower": 0.29194630872483224,
+         "midpoint": 0.35570469798657717,
+         "upper": 0.3523489932885906
         },
         "arrival_oxygen_debt": {
-         "lower": 0.49846153846153846,
-         "midpoint": 0.2523076923076923,
-         "upper": 0.24923076923076923
+         "lower": 0.5436241610738255,
+         "midpoint": 0.2751677852348993,
+         "upper": 0.18120805369127516
         },
         "debt_clearance_tau_min": {
-         "120": 0.38769230769230767,
-         "30": 0.24923076923076923,
-         "60": 0.3630769230769231
+         "120": 0.3724832214765101,
+         "30": 0.27181208053691275,
+         "60": 0.35570469798657717
         },
         "lactate_clearance_tau_min": {
-         "120": 0.6123076923076923,
-         "240": 0.24923076923076923,
-         "45": 0.13846153846153847
+         "120": 0.62751677852349,
+         "240": 0.27181208053691275,
+         "45": 0.10067114093959731
         },
         "lactate_per_output_deficit": {
-         "12": 0.3323076923076923,
-         "2": 0.3323076923076923,
-         "6": 0.3353846153846154
+         "12": 0.33221476510067116,
+         "2": 0.33221476510067116,
+         "6": 0.33557046979865773
         }
        },
-       "n": 325
+       "n": 298
       },
       "C rises modestly": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.22727272727272727,
-         "midpoint": 0.4090909090909091,
-         "upper": 0.36363636363636365
+         "lower": 0.23214285714285715,
+         "midpoint": 0.48214285714285715,
+         "upper": 0.2857142857142857
         },
         "arrival_lactate_excess": {
-         "lower": 0.5454545454545454,
-         "midpoint": 0.22727272727272727,
-         "upper": 0.22727272727272727
+         "lower": 0.5357142857142857,
+         "midpoint": 0.23214285714285715,
+         "upper": 0.23214285714285715
         },
         "arrival_oxygen_debt": {
-         "lower": 0.13636363636363635,
-         "midpoint": 0.4090909090909091,
-         "upper": 0.45454545454545453
+         "lower": 0.16071428571428573,
+         "midpoint": 0.48214285714285715,
+         "upper": 0.35714285714285715
         },
         "debt_clearance_tau_min": {
-         "120": 0.4090909090909091,
-         "30": 0.18181818181818182,
-         "60": 0.4090909090909091
+         "120": 0.39285714285714285,
+         "30": 0.21428571428571427,
+         "60": 0.39285714285714285
         },
         "lactate_clearance_tau_min": {
-         "120": 0.09090909090909091,
-         "240": 0.8181818181818182,
-         "45": 0.09090909090909091
+         "120": 0.07142857142857142,
+         "240": 0.8571428571428571,
+         "45": 0.07142857142857142
         },
         "lactate_per_output_deficit": {
          "12": 0.3333333333333333,
@@ -2467,7 +2467,7 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 198
+       "n": 168
       },
       "D rises substantially": {
        "composition": {
@@ -2496,39 +2496,39 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 108
+       "n": 72
       }
      },
-     "falls_while_delivery_fell": 423
+     "falls_while_delivery_fell": 408
     },
     "L2 at 60 min": {
      "classes": {
       "A falls": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.3148148148148148,
-         "midpoint": 0.16666666666666666,
-         "upper": 0.5185185185185185
+         "lower": 0.3141025641025641,
+         "midpoint": 0.17307692307692307,
+         "upper": 0.5128205128205128
         },
         "arrival_lactate_excess": {
-         "lower": 0.2222222222222222,
-         "midpoint": 0.37037037037037035,
-         "upper": 0.4074074074074074
+         "lower": 0.23076923076923078,
+         "midpoint": 0.3717948717948718,
+         "upper": 0.3974358974358974
         },
         "arrival_oxygen_debt": {
-         "lower": 0.7222222222222222,
-         "midpoint": 0.16666666666666666,
-         "upper": 0.1111111111111111
+         "lower": 0.75,
+         "midpoint": 0.17307692307692307,
+         "upper": 0.07692307692307693
         },
         "debt_clearance_tau_min": {
-         "120": 0.35185185185185186,
-         "30": 0.2962962962962963,
-         "60": 0.35185185185185186
+         "120": 0.34615384615384615,
+         "30": 0.3076923076923077,
+         "60": 0.34615384615384615
         },
         "lactate_clearance_tau_min": {
-         "120": 0.2777777777777778,
-         "240": 0.1111111111111111,
-         "45": 0.6111111111111112
+         "120": 0.28846153846153844,
+         "240": 0.11538461538461539,
+         "45": 0.5961538461538461
         },
         "lactate_per_output_deficit": {
          "12": 0.3333333333333333,
@@ -2536,42 +2536,42 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 486
+       "n": 468
       },
       "B approximately flat": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.36272040302267,
-         "midpoint": 0.4105793450881612,
-         "upper": 0.22670025188916876
+         "lower": 0.3626373626373626,
+         "midpoint": 0.4478021978021978,
+         "upper": 0.18956043956043955
         },
         "arrival_lactate_excess": {
-         "lower": 0.4534005037783375,
-         "midpoint": 0.2972292191435768,
-         "upper": 0.24937027707808565
+         "lower": 0.4532967032967033,
+         "midpoint": 0.29120879120879123,
+         "upper": 0.2554945054945055
         },
         "arrival_oxygen_debt": {
-         "lower": 0.34005037783375314,
-         "midpoint": 0.4105793450881612,
-         "upper": 0.24937027707808565
+         "lower": 0.3708791208791209,
+         "midpoint": 0.4478021978021978,
+         "upper": 0.1813186813186813
         },
         "debt_clearance_tau_min": {
-         "120": 0.36272040302267,
-         "30": 0.24937027707808565,
-         "60": 0.3879093198992443
+         "120": 0.3543956043956044,
+         "30": 0.27197802197802196,
+         "60": 0.37362637362637363
         },
         "lactate_clearance_tau_min": {
-         "120": 0.3879093198992443,
-         "240": 0.4760705289672544,
-         "45": 0.13602015113350127
+         "120": 0.38186813186813184,
+         "240": 0.5192307692307693,
+         "45": 0.0989010989010989
         },
         "lactate_per_output_deficit": {
-         "12": 0.33249370277078083,
-         "2": 0.33249370277078083,
-         "6": 0.3350125944584383
+         "12": 0.3324175824175824,
+         "2": 0.3324175824175824,
+         "6": 0.33516483516483514
         }
        },
-       "n": 397
+       "n": 364
       },
       "C rises modestly": {
        "composition": {
@@ -2601,38 +2601,38 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 171
+       "n": 114
       }
      },
-     "falls_while_delivery_fell": 486
+     "falls_while_delivery_fell": 468
     },
     "L3 over 120 min": {
      "classes": {
       "E falls clearly within 30 min": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.32432432432432434,
-         "midpoint": 0.16216216216216217,
-         "upper": 0.5135135135135135
+         "lower": 0.3364485981308411,
+         "midpoint": 0.16822429906542055,
+         "upper": 0.4953271028037383
         },
         "arrival_lactate_excess": {
-         "lower": 0.16216216216216217,
-         "midpoint": 0.3783783783783784,
-         "upper": 0.4594594594594595
+         "lower": 0.16822429906542055,
+         "midpoint": 0.37383177570093457,
+         "upper": 0.45794392523364486
         },
         "arrival_oxygen_debt": {
-         "lower": 0.7297297297297297,
-         "midpoint": 0.16216216216216217,
-         "upper": 0.10810810810810811
+         "lower": 0.7570093457943925,
+         "midpoint": 0.16822429906542055,
+         "upper": 0.07476635514018691
         },
         "debt_clearance_tau_min": {
-         "120": 0.35135135135135137,
-         "30": 0.2972972972972973,
-         "60": 0.35135135135135137
+         "120": 0.34579439252336447,
+         "30": 0.308411214953271,
+         "60": 0.34579439252336447
         },
         "lactate_clearance_tau_min": {
-         "120": 0.24324324324324326,
-         "45": 0.7567567567567568
+         "120": 0.2523364485981308,
+         "45": 0.7476635514018691
         },
         "lactate_per_output_deficit": {
          "12": 0.3333333333333333,
@@ -2640,69 +2640,69 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 333
+       "n": 321
       },
       "E' falls clearly after 30 min": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.3469879518072289,
-         "midpoint": 0.3060240963855422,
-         "upper": 0.3469879518072289
+         "lower": 0.3375959079283887,
+         "midpoint": 0.3248081841432225,
+         "upper": 0.3375959079283887
         },
         "arrival_lactate_excess": {
-         "lower": 0.3469879518072289,
-         "midpoint": 0.3493975903614458,
-         "upper": 0.3036144578313253
+         "lower": 0.35294117647058826,
+         "midpoint": 0.34782608695652173,
+         "upper": 0.29923273657289
         },
         "arrival_oxygen_debt": {
-         "lower": 0.5204819277108433,
-         "midpoint": 0.3060240963855422,
-         "upper": 0.17349397590361446
+         "lower": 0.5524296675191815,
+         "midpoint": 0.3248081841432225,
+         "upper": 0.12276214833759591
         },
         "debt_clearance_tau_min": {
-         "120": 0.3036144578313253,
-         "30": 0.3036144578313253,
-         "60": 0.3927710843373494
+         "120": 0.29923273657289,
+         "30": 0.32225063938618925,
+         "60": 0.37851662404092073
         },
         "lactate_clearance_tau_min": {
-         "120": 0.41445783132530123,
-         "240": 0.39036144578313253,
-         "45": 0.19518072289156627
+         "120": 0.42455242966751916,
+         "240": 0.4143222506393862,
+         "45": 0.16112531969309463
         },
         "lactate_per_output_deficit": {
-         "12": 0.3325301204819277,
-         "2": 0.3325301204819277,
-         "6": 0.3349397590361446
+         "12": 0.33248081841432225,
+         "2": 0.33248081841432225,
+         "6": 0.3350383631713555
         }
        },
-       "n": 415
+       "n": 391
       },
       "F stays elevated with delivery restored": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.5,
-         "midpoint": 0.20588235294117646,
-         "upper": 0.29411764705882354
+         "lower": 0.47435897435897434,
+         "midpoint": 0.2692307692307692,
+         "upper": 0.2564102564102564
         },
         "arrival_lactate_excess": {
-         "lower": 0.5,
-         "midpoint": 0.2647058823529412,
-         "upper": 0.23529411764705882
+         "lower": 0.5256410256410257,
+         "midpoint": 0.2564102564102564,
+         "upper": 0.21794871794871795
         },
         "arrival_oxygen_debt": {
-         "lower": 0.08823529411764706,
-         "midpoint": 0.20588235294117646,
-         "upper": 0.7058823529411765
+         "lower": 0.11538461538461539,
+         "midpoint": 0.2692307692307692,
+         "upper": 0.6153846153846154
         },
         "debt_clearance_tau_min": {
-         "120": 0.5294117647058824,
-         "30": 0.058823529411764705,
-         "60": 0.4117647058823529
+         "120": 0.5256410256410257,
+         "30": 0.07692307692307693,
+         "60": 0.3974358974358974
         },
         "lactate_clearance_tau_min": {
-         "120": 0.3235294117647059,
-         "240": 0.6176470588235294,
-         "45": 0.058823529411764705
+         "120": 0.2948717948717949,
+         "240": 0.6538461538461539,
+         "45": 0.05128205128205128
         },
         "lactate_per_output_deficit": {
          "12": 0.3333333333333333,
@@ -2710,7 +2710,7 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 306
+       "n": 234
       }
      }
     },
@@ -2719,28 +2719,28 @@
       "E falls clearly within 30 min": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.28125,
-         "midpoint": 0.1875,
-         "upper": 0.53125
+         "lower": 0.2872340425531915,
+         "midpoint": 0.19148936170212766,
+         "upper": 0.5212765957446809
         },
         "arrival_lactate_excess": {
-         "lower": 0.1875,
-         "midpoint": 0.375,
-         "upper": 0.4375
+         "lower": 0.19148936170212766,
+         "midpoint": 0.3829787234042553,
+         "upper": 0.425531914893617
         },
         "arrival_oxygen_debt": {
-         "lower": 0.75,
-         "midpoint": 0.1875,
-         "upper": 0.0625
+         "lower": 0.7659574468085106,
+         "midpoint": 0.19148936170212766,
+         "upper": 0.0425531914893617
         },
         "debt_clearance_tau_min": {
-         "120": 0.34375,
-         "30": 0.3125,
-         "60": 0.34375
+         "120": 0.3404255319148936,
+         "30": 0.3191489361702128,
+         "60": 0.3404255319148936
         },
         "lactate_clearance_tau_min": {
-         "120": 0.1875,
-         "45": 0.8125
+         "120": 0.19148936170212766,
+         "45": 0.8085106382978723
         },
         "lactate_per_output_deficit": {
          "12": 0.3333333333333333,
@@ -2748,34 +2748,34 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 288
+       "n": 282
       },
       "E' falls clearly after 30 min": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.36363636363636365,
-         "midpoint": 0.13636363636363635,
+         "lower": 0.3548387096774194,
+         "midpoint": 0.14516129032258066,
          "upper": 0.5
         },
         "arrival_lactate_excess": {
-         "lower": 0.2727272727272727,
-         "midpoint": 0.36363636363636365,
-         "upper": 0.36363636363636365
+         "lower": 0.2903225806451613,
+         "midpoint": 0.3548387096774194,
+         "upper": 0.3548387096774194
         },
         "arrival_oxygen_debt": {
-         "lower": 0.6818181818181818,
-         "midpoint": 0.13636363636363635,
-         "upper": 0.18181818181818182
+         "lower": 0.7258064516129032,
+         "midpoint": 0.14516129032258066,
+         "upper": 0.12903225806451613
         },
         "debt_clearance_tau_min": {
-         "120": 0.36363636363636365,
-         "30": 0.2727272727272727,
-         "60": 0.36363636363636365
+         "120": 0.3548387096774194,
+         "30": 0.2903225806451613,
+         "60": 0.3548387096774194
         },
         "lactate_clearance_tau_min": {
-         "120": 0.4090909090909091,
-         "240": 0.2727272727272727,
-         "45": 0.3181818181818182
+         "120": 0.43548387096774194,
+         "240": 0.2903225806451613,
+         "45": 0.27419354838709675
         },
         "lactate_per_output_deficit": {
          "12": 0.3333333333333333,
@@ -2783,42 +2783,42 @@
          "6": 0.3333333333333333
         }
        },
-       "n": 198
+       "n": 186
       },
       "F' stays elevated with delivery not restored": {
        "composition": {
         "arrival_delivery_ratio": {
-         "lower": 0.44366197183098594,
-         "midpoint": 0.2869718309859155,
-         "upper": 0.26936619718309857
+         "lower": 0.42677824267782427,
+         "midpoint": 0.3410041841004184,
+         "upper": 0.23221757322175732
         },
         "arrival_lactate_excess": {
-         "lower": 0.4278169014084507,
-         "midpoint": 0.3028169014084507,
-         "upper": 0.26936619718309857
+         "lower": 0.4330543933054393,
+         "midpoint": 0.29707112970711297,
+         "upper": 0.2698744769874477
         },
         "arrival_oxygen_debt": {
-         "lower": 0.23767605633802816,
-         "midpoint": 0.2869718309859155,
-         "upper": 0.4753521126760563
+         "lower": 0.2824267782426778,
+         "midpoint": 0.3410041841004184,
+         "upper": 0.37656903765690375
         },
         "debt_clearance_tau_min": {
-         "120": 0.4119718309859155,
-         "30": 0.1742957746478873,
-         "60": 0.4137323943661972
+         "120": 0.39539748953974896,
+         "30": 0.20711297071129708,
+         "60": 0.39748953974895396
         },
         "lactate_clearance_tau_min": {
-         "120": 0.38204225352112675,
-         "240": 0.522887323943662,
-         "45": 0.09507042253521127
+         "120": 0.3786610878661088,
+         "240": 0.5460251046025104,
+         "45": 0.07531380753138076
         },
         "lactate_per_output_deficit": {
-         "12": 0.33274647887323944,
-         "2": 0.33274647887323944,
-         "6": 0.3345070422535211
+         "12": 0.33263598326359833,
+         "2": 0.33263598326359833,
+         "6": 0.33472803347280333
         }
        },
-       "n": 568
+       "n": 478
       }
      }
     }
@@ -2848,8 +2848,8 @@
        "lactate_to": 3.270809179752405
       }
      ],
-     "n": 667,
-     "of": 1054,
+     "n": 643,
+     "of": 946,
      "pattern": "L1 0-60 min: D rises while lactate falls"
     },
     {
@@ -2864,7 +2864,7 @@
       {
        "D_from": 60.0,
        "D_to": 85.65930373272448,
-       "candidate": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+       "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
        "lactate_from": 3.4,
        "lactate_to": 2.701445200187491
       },
@@ -2876,8 +2876,8 @@
        "lactate_to": 3.375104303232228
       }
      ],
-     "n": 514,
-     "of": 1054,
+     "n": 496,
+     "of": 946,
      "pattern": "L1 0-120 min: D rises while lactate falls"
     },
     {
@@ -2891,10 +2891,10 @@
       },
       {
        "D_from": 60.0,
-       "D_to": 21.980475933358843,
-       "candidate": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
+       "D_to": 35.19483214581031,
+       "candidate": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
        "lactate_from": 3.4,
-       "lactate_to": 3.3568980916778073
+       "lactate_to": 3.2084743748093194
       },
       {
        "D_from": 20.0,
@@ -2904,8 +2904,8 @@
        "lactate_to": 3.100418356699133
       }
      ],
-     "n": 279,
-     "of": 1054,
+     "n": 207,
+     "of": 946,
      "pattern": "L3 0-120 min: D falls while lactate stays within 0.5 mmol/L of arrival or above"
     },
     {
@@ -2920,7 +2920,7 @@
       {
        "D_from": 60.0,
        "D_to": 117.0057513200445,
-       "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=midpoint;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+       "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
        "lactate_from": 3.4,
        "lactate_to": 3.4703396084770217
       },
@@ -2932,15 +2932,15 @@
        "lactate_to": 3.106793407182024
       }
      ],
-     "n": 271,
-     "of": 1054,
+     "n": 253,
+     "of": 946,
      "pattern": "L4 0-120 min: D stays at or above arrival while lactate moves less than 0.5 mmol/L"
     }
    ],
    "representatives": {
     "high": {
      "L1": {
-      "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "parameters": {
        "arrival_delivery_ratio": 0.6,
        "arrival_lactate_excess": 1.4,
@@ -3047,7 +3047,7 @@
       "stopped_at": null
      },
      "L3": {
-      "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "parameters": {
        "arrival_delivery_ratio": 0.6,
        "arrival_lactate_excess": 1.4,
@@ -3606,48 +3606,36 @@
       "factor": "lactate_clearance_tau_min",
       "impact": "HIGH",
       "levels": {
-       "120": -0.24223492888814668,
-       "240": 0.20662489356795222,
-       "45": -0.9846266103736676
+       "120": -0.32118266487694,
+       "240": 0.09241504615629781,
+       "45": -1.262503919249807
       },
       "source": "main effect over the admissible region",
-      "spread": 1.1912515039416198
+      "spread": 1.354918965406105
      },
      {
       "direction": "decreases it",
       "factor": "arrival_lactate_excess",
       "impact": "MEDIUM",
       "levels": {
-       "lower": 0.09241504615629781,
+       "lower": -0.17873481316468753,
        "midpoint": -0.4664901642167463,
-       "upper": -0.5108113374975245
+       "upper": -0.5164153668578901
       },
       "source": "main effect over the admissible region",
-      "spread": 0.6032263836538223
+      "spread": 0.3376805536932026
      },
      {
       "direction": "decreases it",
       "factor": "arrival_delivery_ratio",
       "impact": "MEDIUM",
       "levels": {
-       "lower": -0.17351199352837154,
+       "lower": -0.17873481316468753,
        "midpoint": -0.24223492888814668,
-       "upper": -0.49086229429233397
+       "upper": -0.5108113374975245
       },
       "source": "main effect over the admissible region",
-      "spread": 0.3173503007639624
-     },
-     {
-      "direction": "increases it",
-      "factor": "debt_clearance_tau_min",
-      "impact": "LOW",
-      "levels": {
-       "120": -0.24223492888814668,
-       "30": -0.5108113374975245,
-       "60": -0.24223492888814668
-      },
-      "source": "main effect over the admissible region",
-      "spread": 0.2685764086093778
+      "spread": 0.33207652433283696
      },
      {
       "direction": "increases it",
@@ -3660,6 +3648,18 @@
       },
       "source": "one-at-a-time probe around the middle candidate (the region does not vary it)",
       "spread": 0.26822949457811784
+     },
+     {
+      "direction": "increases it",
+      "factor": "debt_clearance_tau_min",
+      "impact": "LOW",
+      "levels": {
+       "120": -0.32118266487694,
+       "30": -0.5108113374975245,
+       "60": -0.32118266487694
+      },
+      "source": "main effect over the admissible region",
+      "spread": 0.18962867262058447
      },
      {
       "direction": "increases it",
@@ -3678,9 +3678,9 @@
       "factor": "lactate_per_output_deficit",
       "impact": "LOW",
       "levels": {
-       "12": -0.32118266487694,
-       "2": -0.32118266487694,
-       "6": -0.32118266487694
+       "12": -0.36834793005966704,
+       "2": -0.36834793005966704,
+       "6": -0.36834793005966704
       },
       "source": "main effect over the admissible region",
       "spread": 0.0
@@ -3692,12 +3692,12 @@
       "factor": "lactate_clearance_tau_min",
       "impact": "HIGH",
       "levels": {
-       "120": 55,
-       "240": 121,
-       "45": 20
+       "120": 53,
+       "240": 119,
+       "45": 14
       },
       "source": "main effect over the admissible region",
-      "spread": 101
+      "spread": 105
      },
      {
       "direction": "increases it",
@@ -3718,34 +3718,34 @@
       "levels": {
        "lower": 106,
        "midpoint": 49,
-       "upper": 44
+       "upper": 33
       },
       "source": "main effect over the admissible region",
-      "spread": 62
-     },
-     {
-      "direction": "increases it",
-      "factor": "debt_clearance_tau_min",
-      "impact": "HIGH",
-      "levels": {
-       "120": 80,
-       "30": 44,
-       "60": 70
-      },
-      "source": "main effect over the admissible region",
-      "spread": 36
+      "spread": 73
      },
      {
       "direction": "decreases it",
       "factor": "arrival_delivery_ratio",
       "impact": "MEDIUM",
       "levels": {
-       "lower": 80,
+       "lower": 77,
        "midpoint": 55,
-       "upper": 53
+       "upper": 52
       },
       "source": "main effect over the admissible region",
-      "spread": 27
+      "spread": 25
+     },
+     {
+      "direction": "increases it",
+      "factor": "debt_clearance_tau_min",
+      "impact": "MEDIUM",
+      "levels": {
+       "120": 56,
+       "30": 44,
+       "60": 55
+      },
+      "source": "main effect over the admissible region",
+      "spread": 12
      },
      {
       "direction": "increases it",
@@ -3776,15 +3776,27 @@
       "factor": "lactate_per_output_deficit",
       "impact": "LOW",
       "levels": {
-       "12": 56,
-       "2": 56,
-       "6": 56
+       "12": 53,
+       "2": 53,
+       "6": 53
       },
       "source": "main effect over the admissible region",
       "spread": 0
      }
     ],
     "L3 lactate at 120 min (mmol/L)": [
+     {
+      "direction": "increases it",
+      "factor": "lactate_clearance_tau_min",
+      "impact": "HIGH",
+      "levels": {
+       "120": 2.439120439802858,
+       "240": 2.892924900737564,
+       "45": 1.3691963346485254
+      },
+      "source": "main effect over the admissible region",
+      "spread": 1.5237285660890385
+     },
      {
       "direction": "increases it",
       "factor": "arrival_oxygen_debt",
@@ -3798,52 +3810,40 @@
       "spread": 1.5142432952541123
      },
      {
-      "direction": "increases it",
-      "factor": "lactate_clearance_tau_min",
-      "impact": "HIGH",
-      "levels": {
-       "120": 2.5128777717783732,
-       "240": 3.032297828401302,
-       "45": 1.5557113790449928
-      },
-      "source": "main effect over the admissible region",
-      "spread": 1.4765864493563092
-     },
-     {
       "direction": "decreases it",
       "factor": "arrival_lactate_excess",
       "impact": "MEDIUM",
       "levels": {
        "lower": 2.8482563981035707,
-       "midpoint": 2.2634559862838017,
-       "upper": 2.089384108430518
+       "midpoint": 2.1219540081285206,
+       "upper": 1.995222261239718
       },
       "source": "main effect over the admissible region",
-      "spread": 0.7588722896730529
+      "spread": 0.8530341368638528
      },
      {
       "direction": "increases it",
       "factor": "debt_clearance_tau_min",
       "impact": "MEDIUM",
       "levels": {
-       "120": 2.67900796168617,
+       "120": 2.4541538253204074,
        "30": 2.1508071679830607,
-       "60": 2.5128777717783732
+       "60": 2.4541538253204074
       },
       "source": "main effect over the admissible region",
-      "spread": 0.5282007937031095
+      "spread": 0.30334665733734667
      },
      {
       "direction": "non-monotonic",
       "factor": "arrival_delivery_ratio",
       "impact": "LOW",
       "levels": {
-       "lower": 2.6502073866624465,
+       "lower": 2.622999166161331,
        "midpoint": 2.367165877649765,
-       "upper": 2.4541538253204074
+       "upper": 2.375333310763775
       },
       "source": "main effect over the admissible region",
-      "spread": 0.28304150901268166
+      "spread": 0.25583328851156617
      },
      {
       "direction": "increases it",
@@ -3874,9 +3874,9 @@
       "factor": "lactate_per_output_deficit",
       "impact": "LOW",
       "levels": {
-       "12": 2.4541538253204074,
-       "2": 2.4541538253204074,
-       "6": 2.4541538253204074
+       "12": 2.439120439802858,
+       "2": 2.439120439802858,
+       "6": 2.439120439802858
       },
       "source": "main effect over the admissible region",
       "spread": 0.0
@@ -3892,7 +3892,7 @@
       "max": 3.4,
       "median": 3.4,
       "min": 3.4,
-      "n": 1054,
+      "n": 946,
       "p10": 3.4,
       "p90": 3.4,
       "rising": 0.0,
@@ -3901,66 +3901,66 @@
      "15": {
       "changed_more_than_1": 0.0,
       "changed_more_than_2": 0.0,
-      "falling": 0.6584440227703985,
+      "falling": 0.7082452431289641,
       "max": 3.824149806735341,
-      "median": 3.2579026678042293,
+      "median": 3.255212420700686,
       "min": 2.6568586859859042,
-      "n": 1054,
+      "n": 946,
       "p10": 2.7349721207856073,
-      "p90": 3.729763386961708,
-      "rising": 0.3415559772296015,
+      "p90": 3.7076136255112444,
+      "rising": 0.2917547568710359,
       "stopped_before": 0
      },
      "30": {
-      "changed_more_than_1": 0.10246679316888045,
+      "changed_more_than_1": 0.11416490486257928,
       "changed_more_than_2": 0.0,
-      "falling": 0.6584440227703985,
+      "falling": 0.7082452431289641,
       "max": 4.274868908967507,
-      "median": 3.159002620967293,
+      "median": 3.1254674768562754,
       "min": 2.132032168466993,
-      "n": 1054,
+      "n": 946,
       "p10": 2.306566159382867,
-      "p90": 4.067335673740741,
-      "rising": 0.3415559772296015,
+      "p90": 3.9850479856015575,
+      "rising": 0.2917547568710359,
       "stopped_before": 0
      },
      "60": {
-      "changed_more_than_1": 0.30740037950664134,
+      "changed_more_than_1": 0.2854122621564482,
       "changed_more_than_2": 0.0,
-      "falling": 0.6328273244781784,
+      "falling": 0.6797040169133193,
       "max": 5.265261977387428,
-      "median": 3.07881733512306,
+      "median": 3.031652069940333,
       "min": 1.5269687688369982,
-      "n": 1054,
+      "n": 946,
       "p10": 1.9211462939536654,
-      "p90": 4.706356767014384,
-      "rising": 0.36717267552182165,
+      "p90": 4.488092425483503,
+      "rising": 0.3202959830866808,
       "stopped_before": 0
      },
      "90": {
-      "changed_more_than_1": 0.41840607210626185,
-      "changed_more_than_2": 0.1110056925996205,
-      "falling": 0.5559772296015181,
+      "changed_more_than_1": 0.3964059196617336,
+      "changed_more_than_2": 0.0919661733615222,
+      "falling": 0.5940803382663847,
       "max": 6.387961227769062,
-      "median": 3.178292677790969,
+      "median": 3.1643176461806535,
       "min": 1.2992217309095424,
-      "n": 1054,
+      "n": 946,
       "p10": 1.9008620770939535,
-      "p90": 5.371035336809368,
-      "rising": 0.444022770398482,
+      "p90": 5.073040528868228,
+      "rising": 0.4059196617336152,
       "stopped_before": 0
      },
      "120": {
-      "changed_more_than_1": 0.5037950664136622,
-      "changed_more_than_2": 0.19639468690702086,
-      "falling": 0.4876660341555977,
+      "changed_more_than_1": 0.4788583509513742,
+      "changed_more_than_2": 0.1553911205073996,
+      "falling": 0.5243128964059197,
       "max": 7.6572479904212125,
-      "median": 3.4185944389154717,
+      "median": 3.3493963008982854,
       "min": 1.30258236721399,
-      "n": 1054,
+      "n": 946,
       "p10": 2.0124062178404296,
-      "p90": 6.108114310380427,
-      "rising": 0.5123339658444023,
+      "p90": 5.855524366450077,
+      "rising": 0.47568710359408034,
       "stopped_before": 0
      }
     },
@@ -3972,7 +3972,7 @@
       "max": 3.4,
       "median": 3.4,
       "min": 3.4,
-      "n": 1054,
+      "n": 946,
       "p10": 3.4,
       "p90": 3.4,
       "rising": 0.0,
@@ -3981,66 +3981,66 @@
      "15": {
       "changed_more_than_1": 0.0,
       "changed_more_than_2": 0.0,
-      "falling": 0.6925996204933587,
+      "falling": 0.7431289640591966,
       "max": 3.8221396894387913,
-      "median": 3.255917922073426,
+      "median": 3.2542969853688715,
       "min": 2.655990669693462,
-      "n": 1054,
+      "n": 946,
       "p10": 2.7330686326936355,
-      "p90": 3.700199790360808,
-      "rising": 0.30740037950664134,
+      "p90": 3.6543410195768278,
+      "rising": 0.2568710359408034,
       "stopped_before": 0
      },
      "30": {
-      "changed_more_than_1": 0.12808349146110057,
+      "changed_more_than_1": 0.1427061310782241,
       "changed_more_than_2": 0.0,
-      "falling": 0.6755218216318786,
+      "falling": 0.7209302325581395,
       "max": 4.259354024359712,
-      "median": 3.137656243178607,
+      "median": 3.1174395409346594,
       "min": 2.124885140765072,
-      "n": 1054,
+      "n": 946,
       "p10": 2.292853974843883,
-      "p90": 3.9281412466160885,
-      "rising": 0.32447817836812143,
+      "p90": 3.8343947000229224,
+      "rising": 0.27906976744186046,
       "stopped_before": 0
      },
      "60": {
-      "changed_more_than_1": 0.30740037950664134,
+      "changed_more_than_1": 0.3044397463002114,
       "changed_more_than_2": 0.0,
-      "falling": 0.6584440227703985,
+      "falling": 0.6987315010570825,
       "max": 5.183600512335191,
-      "median": 2.9707167116509186,
+      "median": 2.9698057836623573,
       "min": 1.4758035578671507,
-      "n": 1054,
+      "n": 946,
       "p10": 1.8593000076756905,
-      "p90": 4.2678859134046325,
-      "rising": 0.3415559772296015,
+      "p90": 4.211629713476309,
+      "rising": 0.3012684989429176,
       "stopped_before": 0
      },
      "90": {
-      "changed_more_than_1": 0.40132827324478176,
-      "changed_more_than_2": 0.11954459203036052,
-      "falling": 0.6669829222011385,
+      "changed_more_than_1": 0.38372093023255816,
+      "changed_more_than_2": 0.10782241014799154,
+      "falling": 0.7050739957716702,
       "max": 6.201925509276109,
-      "median": 2.9896730734956263,
+      "median": 2.926122089552654,
       "min": 1.1678103016416344,
-      "n": 1054,
+      "n": 946,
       "p10": 1.7279043858637588,
-      "p90": 4.799946053744699,
-      "rising": 0.33301707779886147,
+      "p90": 4.406331488655302,
+      "rising": 0.2949260042283298,
       "stopped_before": 0
      },
      "120": {
-      "changed_more_than_1": 0.4098671726755218,
-      "changed_more_than_2": 0.15370018975332067,
-      "falling": 0.5901328273244781,
+      "changed_more_than_1": 0.39006342494714585,
+      "changed_more_than_2": 0.1331923890063425,
+      "falling": 0.6194503171247357,
       "max": 7.335568666654831,
-      "median": 3.0417764680071384,
+      "median": 3.023184411304082,
       "min": 1.0735600641489649,
-      "n": 1054,
+      "n": 946,
       "p10": 1.7651953989194604,
-      "p90": 5.449679658894411,
-      "rising": 0.4098671726755218,
+      "p90": 4.656169524510876,
+      "rising": 0.38054968287526425,
       "stopped_before": 0
      }
     },
@@ -4052,7 +4052,7 @@
       "max": 3.4,
       "median": 3.4,
       "min": 3.4,
-      "n": 1054,
+      "n": 946,
       "p10": 3.4,
       "p90": 3.4,
       "rising": 0.0,
@@ -4061,66 +4061,66 @@
      "15": {
       "changed_more_than_1": 0.0,
       "changed_more_than_2": 0.0,
-      "falling": 0.6925996204933587,
+      "falling": 0.7431289640591966,
       "max": 3.821055263712651,
-      "median": 3.254846260803416,
+      "median": 3.2542969853688715,
       "min": 2.655990669693462,
-      "n": 1054,
+      "n": 946,
       "p10": 2.73203793223393,
-      "p90": 3.700199790360808,
-      "rising": 0.30740037950664134,
+      "p90": 3.6543410195768278,
+      "rising": 0.2568710359408034,
       "stopped_before": 0
      },
      "30": {
-      "changed_more_than_1": 0.12808349146110057,
+      "changed_more_than_1": 0.1427061310782241,
       "changed_more_than_2": 0.0,
-      "falling": 0.7267552182163188,
+      "falling": 0.7780126849894292,
       "max": 4.24780007544217,
-      "median": 3.1174395409346594,
+      "median": 3.1148407922118055,
       "min": 2.124885140765072,
-      "n": 1054,
+      "n": 946,
       "p10": 2.2824707505795225,
-      "p90": 3.9281412466160885,
-      "rising": 0.2732447817836812,
+      "p90": 3.823129257190913,
+      "rising": 0.2219873150105708,
       "stopped_before": 0
      },
      "60": {
-      "changed_more_than_1": 0.30740037950664134,
+      "changed_more_than_1": 0.3044397463002114,
       "changed_more_than_2": 0.0,
-      "falling": 0.7609108159392789,
+      "falling": 0.8128964059196617,
       "max": 5.001813422183162,
-      "median": 2.86814592063066,
+      "median": 2.8473658480784567,
       "min": 1.4751233216231094,
-      "n": 1054,
-      "p10": 1.7344191493536378,
-      "p90": 4.192689981281922,
-      "rising": 0.23908918406072105,
+      "n": 946,
+      "p10": 1.7339993929956745,
+      "p90": 4.068060947351144,
+      "rising": 0.18710359408033828,
       "stopped_before": 0
      },
      "90": {
-      "changed_more_than_1": 0.4696394686907021,
-      "changed_more_than_2": 0.10246679316888045,
-      "falling": 0.786527514231499,
+      "changed_more_than_1": 0.4725158562367865,
+      "changed_more_than_2": 0.1109936575052854,
+      "falling": 0.8350951374207188,
       "max": 5.456899516926859,
-      "median": 2.6592382786546684,
+      "median": 2.6482025169079764,
       "min": 1.1440234065393908,
-      "n": 1054,
-      "p10": 1.4057496572911328,
-      "p90": 4.214983521921376,
-      "rising": 0.21347248576850095,
+      "n": 946,
+      "p10": 1.362564944913343,
+      "p90": 3.994542058088102,
+      "rising": 0.1649048625792812,
       "stopped_before": 0
      },
      "120": {
-      "changed_more_than_1": 0.538899430740038,
-      "changed_more_than_2": 0.16223908918406071,
-      "falling": 0.8206831119544592,
+      "changed_more_than_1": 0.5496828752642706,
+      "changed_more_than_2": 0.1744186046511628,
+      "falling": 0.8636363636363636,
       "max": 5.678907899534749,
-      "median": 2.4541538253204074,
+      "median": 2.439120439802858,
       "min": 0.9753044228459307,
-      "n": 1054,
-      "p10": 1.2182319460007265,
-      "p90": 4.109120390722427,
-      "rising": 0.1793168880455408,
+      "n": 946,
+      "p10": 1.1618194672423978,
+      "p90": 3.715017817939264,
+      "rising": 0.13636363636363635,
       "stopped_before": 0
      }
     },
@@ -4132,7 +4132,7 @@
       "max": 3.4,
       "median": 3.4,
       "min": 3.4,
-      "n": 1054,
+      "n": 946,
       "p10": 3.4,
       "p90": 3.4,
       "rising": 0.0,
@@ -4141,66 +4141,66 @@
      "15": {
       "changed_more_than_1": 0.0,
       "changed_more_than_2": 0.0,
-      "falling": 0.6584440227703985,
+      "falling": 0.7082452431289641,
       "max": 3.8240390484814215,
-      "median": 3.2577932714963556,
+      "median": 3.25502782361082,
       "min": 2.6566836338416007,
-      "n": 1054,
+      "n": 946,
       "p10": 2.7348670894990237,
-      "p90": 3.7296539906538344,
-      "rising": 0.3415559772296015,
+      "p90": 3.707431298331454,
+      "rising": 0.2917547568710359,
       "stopped_before": 0
      },
      "30": {
-      "changed_more_than_1": 0.10246679316888045,
+      "changed_more_than_1": 0.11416490486257928,
       "changed_more_than_2": 0.0,
-      "falling": 0.6584440227703985,
+      "falling": 0.7082452431289641,
       "max": 4.273889467805566,
-      "median": 3.157652606771482,
+      "median": 3.123835074919708,
       "min": 2.1305783232246265,
-      "n": 1054,
+      "n": 946,
       "p10": 2.3056938522374457,
-      "p90": 4.065703271804173,
-      "rising": 0.3415559772296015,
+      "p90": 3.9834597336064865,
+      "rising": 0.2917547568710359,
       "stopped_before": 0
      },
      "60": {
-      "changed_more_than_1": 0.2903225806451613,
+      "changed_more_than_1": 0.2727272727272727,
       "changed_more_than_2": 0.0,
-      "falling": 0.6328273244781784,
+      "falling": 0.6797040169133193,
       "max": 5.257163221560273,
-      "median": 3.0679709417025314,
+      "median": 3.025219504620926,
       "min": 1.5162478266379869,
-      "n": 1054,
+      "n": 946,
       "p10": 1.9147137286342581,
-      "p90": 4.692858840635793,
-      "rising": 0.36717267552182165,
+      "p90": 4.4753319626358214,
+      "rising": 0.3202959830866808,
       "stopped_before": 0
      },
      "90": {
-      "changed_more_than_1": 0.40132827324478176,
-      "changed_more_than_2": 0.1110056925996205,
-      "falling": 0.5559772296015181,
+      "changed_more_than_1": 0.38372093023255816,
+      "changed_more_than_2": 0.0919661733615222,
+      "falling": 0.5940803382663847,
       "max": 6.356542438129139,
-      "median": 3.1259280283910957,
+      "median": 3.1230590146001767,
       "min": 1.260470377300979,
-      "n": 1054,
+      "n": 946,
       "p10": 1.8679234265266744,
-      "p90": 5.318670687409495,
-      "rising": 0.444022770398482,
+      "p90": 5.043916788929065,
+      "rising": 0.4059196617336152,
       "stopped_before": 0
      },
      "120": {
-      "changed_more_than_1": 0.5037950664136622,
-      "changed_more_than_2": 0.2049335863377609,
-      "falling": 0.5132827324478179,
+      "changed_more_than_1": 0.4788583509513742,
+      "changed_more_than_2": 0.17124735729386892,
+      "falling": 0.5528541226215645,
       "max": 7.56151370317873,
-      "median": 3.294828383227647,
+      "median": 3.2335251540708274,
       "min": 1.190831353101218,
-      "n": 1054,
+      "n": 946,
       "p10": 1.9174178558445738,
-      "p90": 5.948557164976289,
-      "rising": 0.48671726755218214,
+      "p90": 5.768160091846908,
+      "rising": 0.44714587737843553,
       "stopped_before": 0
      }
     }
@@ -4208,23 +4208,23 @@
    "worksheet": {
     "FD-LAC-02/03 untreated lactate at 60 min": {
      "max": 5.265261977387428,
-     "median": 3.07881733512306,
+     "median": 3.031652069940333,
      "min": 1.5269687688369982,
-     "n": 1054,
+     "n": 946,
      "p10": 1.9211462939536654,
-     "p90": 4.706356767014384
+     "p90": 4.488092425483503
     },
     "FD-LAC-04 first clear fall after definitive management": {
-     "15-30 min": 0.16223908918406071,
-     "30-60 min": 0.20588235294117646,
-     "after 60 min": 0.18785578747628084,
-     "not within 120 min": 0.2903225806451613,
-     "within 15 min": 0.15370018975332067
+     "15-30 min": 0.16807610993657504,
+     "30-60 min": 0.2167019027484144,
+     "after 60 min": 0.19661733615221988,
+     "not within 120 min": 0.24735729386892177,
+     "within 15 min": 0.17124735729386892
     },
     "FD-LAC-05 lactate at 120 min after definitive management": {
      "max": 5.678907899534749,
-     "median": 2.4541538253204074,
-     "median_above_candidate_baseline": 1.0959222535011253,
+     "median": 2.439120439802858,
+     "median_above_candidate_baseline": 1.072107549659941,
      "median_by_arrival_debt": {
       "lower": 2.1219540081285206,
       "midpoint": 2.367165877649765,
@@ -4233,8 +4233,8 @@
      "min": 0.9753044228459307
     },
     "FD-LAC-06 untreated runs with delivery below demand at 0, 15, 30 and 60 min": {
-     "lactate_falls_by_60": 388,
-     "n": 649
+     "lactate_falls_by_60": 376,
+     "n": 595
     }
    }
   }
@@ -4244,6 +4244,7 @@
   "gi_bleed_72f": 60
  },
  "freeze_digest": "c3fd2dd7de4b1621d6a772b24946812ddbf68a023cdea27c65018061b7d8c7ad",
+ "inconsistent_arrivals": 108,
  "legacy_reference": {
   "gi_bleed_57m": {
    "L1": {
@@ -4483,5 +4484,5 @@
    "trajectory_kind": "manual counterfactual composition: the endoscopic haemostasis is added by hand at L3's minute; the family engine defers this endoscopy and never produces it"
   }
  },
- "slice_digest": "4fff72395c7145bc40ea2dfbf83b04659d7e19496ffc6fb49e327d8dad51f04f"
+ "slice_digest": "f0c83d876d2bba7e604f36fb12514cca1262ff702481d897a3f8db32579f95a5"
 }

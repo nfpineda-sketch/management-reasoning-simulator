@@ -19,9 +19,11 @@ from clinical_core.state import CoreInvariantError
 
 #: The neutral arrival, indebted and declared exactly at the critical delivery for reserve 1: with the pump falling
 #: from minute 0 the deficit is critical at every minute's end, so D only accrues and never repays.
-ARRIVAL = replace(op.NEUTRAL, arrival_oxygen_debt=20.0, arrival_lactate_excess=0.5,
+#: P2I-2AE: an arrival debt is part of the arrival sympathetic drive (debt_to_sympathetic_gain x D0), so the probe
+#: declares a synthetic intrinsic rate below its arrival HR that leaves room for it. D and lactate do not read it.
+ARRIVAL = replace(op.NEUTRAL, arrival_oxygen_debt=20.0, arrival_lactate_excess=0.5, intrinsic_sinus_rate=75.0,
                   declared={**dict(op.NEUTRAL.declared), "arrival_oxygen_debt": "synthetic_probe",
-                            "arrival_lactate_excess": "synthetic_probe"})
+                            "arrival_lactate_excess": "synthetic_probe", "intrinsic_sinus_rate": "synthetic_probe"})
 FALLING = (Drift("pump", "P", 0, 90, -0.005),)
 
 

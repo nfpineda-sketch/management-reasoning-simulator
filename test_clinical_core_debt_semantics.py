@@ -23,8 +23,11 @@ from clinical_core.state import Channel, CoreState
 
 ANCHORS = op.NEUTRAL
 #: The same neutral arrival with a declared synthetic arrival debt, so that repayment has something to repay.
-INDEBTED = replace(ANCHORS, arrival_oxygen_debt=5.0,
-                   declared={**dict(ANCHORS.declared), "arrival_oxygen_debt": "synthetic_probe"})
+#: P2I-2AE: an arrival debt is part of the arrival sympathetic drive (debt_to_sympathetic_gain x D0), so the probe
+#: declares a synthetic intrinsic rate below its arrival HR that leaves room for it. D and lactate do not read it.
+INDEBTED = replace(ANCHORS, arrival_oxygen_debt=5.0, intrinsic_sinus_rate=75.0,
+                   declared={**dict(ANCHORS.declared), "arrival_oxygen_debt": "synthetic_probe",
+                             "intrinsic_sinus_rate": "synthetic_probe"})
 #: Reserve 1 and 2.5 (synthetic): the deficit is demand - reserve x delivery either way.
 RESERVES = (1.0, 2.5)
 

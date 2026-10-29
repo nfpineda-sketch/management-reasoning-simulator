@@ -24,12 +24,12 @@ from pathlib import Path
 from . import calibration, gi_reference
 from .bands import ARRIVAL, Drift
 from .calibration import LEVELS, REGISTRY, GICandidate
-from .derived import DEFAULT_PROFILE, _metabolic_drive, preload_position, respiratory_rate
+from .derived import DEFAULT_PROFILE, _metabolic_drive, arrival_non_debt_drive, preload_position, respiratory_rate
 from .integration import run
 from .legacy_adapter import contributors_from_legacy
 from .modules import GIHaemorrhage
 from .shadow import SCENARIOS as GI_SCENARIOS
-from .state import Anchors, RhythmCode, UnresolvedBoundary
+from .state import Anchors, CoreInvariantError, RhythmCode, UnresolvedBoundary
 
 CASES = gi_reference.GI_CASES
 TIMES = (0, 15, 30, 60, 90, 120)
@@ -178,10 +178,30 @@ def trajectory(case: str, candidate: GICandidate, scenario: str, *, source_scale
 
 # Envelopes over the admissible region ---------------------------------------------------------
 
+def arrival_consistent(candidate: GICandidate) -> bool:
+    """P2I-2AE: whether the core accepts both GI arrivals of a candidate, i.e. each arrival debt's share of the drive
+    (debt_to_sympathetic_gain x D0) fits within the drive the observed arrival HR carries over the intrinsic rate."""
+    profile = replace(DEFAULT_PROFILE, **candidate.profile)
+    for case in CASES:
+        try:
+            arrival_non_debt_drive(gi_reference.candidate_anchors(case, calibration.case_values(case, candidate)),
+                                   profile)
+        except CoreInvariantError:
+            return False
+    return True
+
+
+def runnable(quick: bool = False) -> list[GICandidate]:
+    """P2I-2AE: the admissible candidates whose arrivals the current core accepts. A P2F-admissible candidate whose
+    arrival debt would need a negative sympathetic contribution is not run by anything built on the region; the reports
+    count them (``inconsistent_arrivals``). P2F's written region (``admissible``) is unchanged."""
+    return [candidate for candidate in admissible(quick) if arrival_consistent(candidate)]
+
+
 def envelope_runs(quick: bool = False) -> dict:
-    """Every admissible candidate in every envelope scenario, for both cases."""
+    """Every runnable admissible candidate in every envelope scenario, for both cases."""
     runs = {}
-    for candidate in admissible(quick):
+    for candidate in runnable(quick):
         for case in CASES:
             for scenario in ENVELOPE_SCENARIOS:
                 runs[(candidate.key(), case, scenario)] = trajectory(case, candidate, scenario)
@@ -742,7 +762,8 @@ PACK_DIGEST_EXCLUDED = ("clinical_core/decision_pack_markdown.py", "clinical_cor
                         "clinical_core/blood_fluid_tau_closure_report.py", "clinical_core/lactate_rebuild.py",
                         "clinical_core/lactate_rebuild_report.py", "clinical_core/lactate_adequacy.py",
                         "clinical_core/lactate_adequacy_report.py", "clinical_core/lactate_closure.py",
-                        "clinical_core/lactate_closure_report.py")
+                        "clinical_core/lactate_closure_report.py", "clinical_core/hr_structure.py",
+                        "clinical_core/hr_structure_report.py")
 
 
 def pack_sources() -> dict[str, str]:
@@ -769,6 +790,7 @@ def report(quick: bool = False) -> dict:
     runs = envelope_runs(quick)
     grid = volume_grid(quick)
     return {**digests, "admissible_candidates": len(admissible(quick)), "quick": quick,
+            "inconsistent_arrivals": len(admissible(quick)) - len(runnable(quick)),
             "lactate": lactate_tables(runs), "hr": hr_tables(runs), "bp": bp_tables(runs),
             "collapse": collapse_tables(), "volume": {"rows": grid, "summary": volume_summary(grid)},
             "rr": rr_tables(runs), "preload_edge": preload_edge(), "pl2": pl2_analysis(),

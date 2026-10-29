@@ -105,6 +105,11 @@ def _effects(rows: list[dict], times, digits: int, scenarios: dict) -> str:
 
 def lactate(pack: dict) -> str:
     out = []
+    if pack.get("inconsistent_arrivals"):
+        out.append(f"P2I-2AE: {pack['inconsistent_arrivals']} de los {pack['admissible_candidates']} candidatos "
+                   "admisibles de P2F no se corren: su deuda de llegada pediría una contribución simpática negativa "
+                   "(72f con la intrínseca superior y la deuda superior, a la ganancia por defecto) y el núcleo vigente "
+                   "rechaza esa llegada. Las envolventes leen el resto.\n")
     for case in CASES:
         data = pack["lactate"][case]
         out.append(f"**{case}** — lactato (mmol/L), mínimo – mediana – máximo en la región admisible:\n")

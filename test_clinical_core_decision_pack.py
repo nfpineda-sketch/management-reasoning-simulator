@@ -34,18 +34,32 @@ def test_the_admissible_region_is_the_p2f_design_less_its_163_rejections():
     assert len(design) == 1217 and len(rejected) == 163 and len(decision_pack.admissible()) == 1054
 
 
-@pytest.mark.parametrize("candidate, rejected", [
-    (MIDDLE, False),
-    (replace(MIDDLE, preload="upper"), False),
-    (replace(MIDDLE, profile={**MIDDLE.profile, "debt_clearance_tau_min": 30.0}, debt="midpoint"), False),
-    (replace(MIDDLE, debt="upper", delivery="lower"), False),
+@pytest.mark.parametrize("candidate, rejected, live", [
+    (MIDDLE, False, False),
+    (replace(MIDDLE, preload="upper"), False, False),
+    (replace(MIDDLE, profile={**MIDDLE.profile, "debt_clearance_tau_min": 30.0}, debt="midpoint"), False, False),
+    (replace(MIDDLE, debt="upper", delivery="lower"), False, False),
     (replace(MIDDLE, profile={**MIDDLE.profile, "debt_clearance_tau_min": 30.0}, debt="upper",
-             delivery="lower"), True),
-    (replace(MIDDLE, preload="lower"), True),
+             delivery="lower"), True, False),
+    (replace(MIDDLE, preload="lower"), True, True),
 ])
-def test_the_written_rejection_matches_the_frozen_acceptance(candidate, rejected):
+def test_the_written_rejection_matches_the_frozen_acceptance(candidate, rejected, live):
+    """The written P2F rejection is history and stays as written. The frozen acceptance, run on the current core,
+    still reproduces it except for HR1 at tau_D 30 x arrival debt upper: that rejection was tau_D reaching the drive
+    (D / tau_D), which P2I-2AE removed (the debt-driven drive is debt_to_sympathetic_gain x D), so it no longer
+    reproduces; the faculty does not read it as evidence (P2I-2X, P2I-2AE)."""
     assert (decision_pack.p2f_rejection(candidate) is not None) is rejected
-    assert (not calibration.gi_physiology(candidate)["valid"]) is rejected
+    assert (not calibration.gi_physiology(candidate)["valid"]) is live
+
+
+def test_the_current_core_refuses_108_p2f_arrivals_and_the_region_runs_the_rest():
+    """P2I-2AE: at the default debt_to_sympathetic_gain, 72f at the intrinsic upper level (100) with the arrival debt at
+    its upper level (60) would need a negative sympathetic contribution, and the core refuses that arrival. P2F's
+    written region is unchanged; what is built on it runs the rest and counts them."""
+    refused = [c for c in decision_pack.admissible() if not decision_pack.arrival_consistent(c)]
+    assert len(refused) == 108 and {(c.intrinsic, c.debt) for c in refused} == {("upper", "upper")}
+    assert len(decision_pack.runnable()) == 1054 - 108
+    assert decision_pack.runnable(quick=True) == decision_pack.admissible(quick=True)
 
 
 # Decision support, never a choice ---------------------------------------------------------------

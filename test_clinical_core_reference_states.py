@@ -57,8 +57,11 @@ def test_p2e1_the_decomposition_reproduces_the_observed_arrival_and_is_inspectab
     assert arrival.R.rate_bpm == 90.0 and arrival.aux.sympathetic_drive > 0
     assert derive(arrival, anchors).pulse_rate_bpm == pytest.approx(124.0)
     split = heart_rate_decomposition(anchors)
+    # P2I-2AE: the arrival drive splits further into the arrival debt's share (none declared here) and the rest.
     assert split == {"observed_arrival_hr": 124.0, "intrinsic_sinus_rate": 90.0, "arrival_sympathetic_bpm": 34.0,
-                     "arrival_sympathetic_drive": pytest.approx(34.0 / 25.0), "source": "synthetic_probe"}
+                     "arrival_sympathetic_drive": pytest.approx(34.0 / 25.0), "arrival_debt_drive": 0.0,
+                     "arrival_non_debt_drive": pytest.approx(34.0 / 25.0), "arrival_debt_bpm": 0.0,
+                     "arrival_non_debt_bpm": pytest.approx(34.0), "source": "synthetic_probe"}
 
 
 def test_p2e1_resolving_the_drive_takes_the_rate_below_arrival_but_never_below_intrinsic():

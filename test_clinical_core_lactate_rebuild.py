@@ -236,6 +236,24 @@ OFF_GRID = {"rate": 3.5, "arrival_circulating_volume_ml": 4200.0, "preload_scale
 OFF_GRID_UNIT = {"red_cell_unit_hb_g_dl": 19.0, "red_cell_unit_volume_ml": 280.0}
 OFF_GRID_POINTS = ((45.0, 1.5, 4.0, 90.0, "upper", "upper", "lower"), (20.0, 3.0, 9.0, 60.0, "lower", "lower", "lower"),
                    (100.0, 0.7, 15.0, 200.0, "midpoint", "midpoint", "upper"))
+#: P2I-2AE: the arrival debt is part of the arrival sympathetic drive, debt_to_sympathetic_gain x D0. At the default gain
+#: (1 / 120) an arrival debt at its upper level (60) calls for 0.5 units of drive, above the 0.48 that gi_bleed_72f's
+#: arrival HR (112) carries over the intrinsic rate at its upper level (100): that arrival would need a negative
+#: sympathetic contribution, so the core stops before running it. Every other off-grid arrival stays consistent.
+INCONSISTENT_ARRIVALS = {("gi_bleed_72f", "upper", "upper")}
+
+
+def full_run_or_inconsistent(run_, case: str, intrinsic: str, debt: str):
+    """The full run, or None for an arrival P2I-2AE made inconsistent: the core stops there, and only there."""
+    from clinical_core.state import CoreInvariantError
+    try:
+        full = run_()
+    except CoreInvariantError as error:
+        assert (case, intrinsic, debt) in INCONSISTENT_ARRIVALS, (case, intrinsic, debt, error)
+        assert "negative sympathetic contribution" in str(error)
+        return None
+    assert (case, intrinsic, debt) not in INCONSISTENT_ARRIVALS, (case, intrinsic, debt)
+    return full
 
 
 @pytest.mark.parametrize("scenario", [lr.L1, lr.L2, lr.L3])
@@ -256,7 +274,10 @@ def test_the_haemodynamics_still_agree_with_the_core_and_only_the_debt_semantics
         for point in OFF_GRID_POINTS:
             for reserve, intrinsic in ((lr.RESERVE, "midpoint"), (1.0, "midpoint"), (3.0, "midpoint"),
                                        (lr.RESERVE, "lower"), (lr.RESERVE, "upper")):
-                full = lr.full_run(entry, case, scenario, point, bag, reserve, intrinsic)
+                full = full_run_or_inconsistent(lambda: lr.full_run(entry, case, scenario, point, bag, reserve,
+                                                                    intrinsic), case, intrinsic, point[5])
+                if full is None:
+                    continue
                 _, old, context = lr.factorized(haemodynamic, arrivals[case], point)
                 assert full["controlled_at"] == haemodynamic["controlled_at"] and full["stop"] is None
                 gap = lr._gap(context.deficit, full["deficit"])

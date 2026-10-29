@@ -23,7 +23,7 @@ from clinical_core import decision_pack, lactate_slice
 from clinical_core import faculty_constraints as fd
 from clinical_core import lactate_closure as lc
 from clinical_core import lactate_rebuild as lr
-from test_clinical_core_lactate_rebuild import OFF_GRID, OFF_GRID_UNIT
+from test_clinical_core_lactate_rebuild import OFF_GRID, OFF_GRID_UNIT, full_run_or_inconsistent
 
 ROOT = lc.ROOT
 SOURCE = ROOT / "clinical_core" / "lactate_closure.py"
@@ -32,6 +32,10 @@ SOURCE = ROOT / "clinical_core" / "lactate_closure.py"
 #: crossing audit, reporting rules, verdict rule, policy and every clinical_core source but the downstream reports,
 #: committed before any candidate was evaluated.
 FROZEN_DIGEST = "5cb48163da4ff081e752b7684f4b036dbcf3e2acb4f94ee1603aaec742fe7fcf"
+#: Closed by P2I-2AE, whose independent debt-to-sympathetic gain changes a core source the freeze digest reads
+#: (derived.py): the module and the record are pinned instead, and the live checks read only what P2I-2AE left unchanged
+#: (D, lactate, haemodynamics; P2I-2AE touches only the sympathetic drive and the arrival decomposition).
+P2I2AD_MODULE_SHA = "2ae56c334031da561a9d402795c1a81ec70646ea15ed0e71cc8b6991bc04dbc3"
 FACULTY_CONSTRAINTS_SHA = "092c32cf5a20cbf62e3e9df32a47896ccdef701f97170634740a8f8399d7982a"
 CASES = lc.CASES
 #: Lactate-side points off every grid: (tau_D, g, D-to-lactate gain, tau_L, excess, arrival debt, arrival delivery);
@@ -61,7 +65,11 @@ def test_the_package_is_frozen():
     assert {"clinical_core/lactate_closure.py", "clinical_core/integration.py", "clinical_core/derived.py",
             "clinical_core/lactate_adequacy.py", "clinical_core/faculty_constraints.py"} <= set(sources)
     assert not set(lactate_slice.DOWNSTREAM_REPORTS) & set(sources)
-    assert lc.freeze_digest() == FROZEN_DIGEST, "a source, the design, a rule or the policy changed after the freeze"
+    # P2I-2AE changed the core (the debt-driven drive is debt_to_sympathetic_gain x D): the P2I-2AD module stays byte
+    # for byte the frozen one and its record keeps the digest it ran with.
+    assert _sha("clinical_core/lactate_closure.py") == P2I2AD_MODULE_SHA, "the P2I-2AD module changed"
+    assert json.loads((ROOT / "docs" / "revision" / "P2I2AD_lactate_closure.json").read_text(encoding="utf-8"))[
+        "freeze_digest"] == FROZEN_DIGEST
 
 
 def test_the_faculty_decisions_are_recorded_and_fd_lac_is_unchanged():
@@ -96,11 +104,19 @@ def test_the_old_gain_range_is_declared_invalid_and_the_new_range_follows_its_ru
 
 
 def test_the_coupling_no_longer_reads_tau_d():
-    check = lc.coupling_check()
+    """The record's coupling check, and what of it still runs live. Its probe arrival (the neutral one with a debt of
+    20 and no intrinsic rate declared) carries no sympathetic share, so since P2I-2AE its debt would need a negative
+    one and the core stops it; test_clinical_core_lactate_coupling reruns the same probe on a consistent arrival."""
+    record = json.loads((ROOT / "docs" / "revision" / "P2I2AD_lactate_closure.json").read_text(encoding="utf-8"))
+    check = record["coupling"]
     assert check["independent"] and check["tau_d_invariant_probe"] and check["cartesian_tau_d_by_gain"]
-    assert check["reads"] == {"debt_to_lactate_gain": True, "debt_clearance_tau_min": False,
-                              "lactate_per_output_deficit": False}
+    body = inspect.getsource(lc.derived.lactate_after_minute).split('"""')[-1]
+    assert {name: name in body for name in check["reads"]} == check["reads"] == {
+        "debt_to_lactate_gain": True, "debt_clearance_tau_min": False, "lactate_per_output_deficit": False}
+    assert {(p[0], p[2]) for p in lc.LAMBDAS} == {(t, k) for t in (30.0, 60.0, 120.0) for k in lc.K_LD}
     assert "tau_d" not in inspect.signature(lc.lactate_series).parameters
+    with pytest.raises(lc.derived.CoreInvariantError, match="negative sympathetic contribution"):
+        lc.coupling_check()
 
 
 # The corrected D and lactate, post-processed (off-grid points only) -----------------------------------------------
@@ -124,7 +140,10 @@ def test_d_and_lactate_post_process_exactly_as_the_core_on_off_grid_points(scena
             context = lc.context_of(haemodynamic, arrivals[case]["ratio"][point[6]])
             crossings += sum(1 for s, e in zip(context.debt_input, context.end_deficit) if s == 0.0 and e > 0.0)
             for reserve, intrinsic, factor in variants:
-                full = lc.full_run(entry, case, scenario, point, bag, reserve, intrinsic, factor)
+                full = full_run_or_inconsistent(lambda: lc.full_run(entry, case, scenario, point, bag, reserve,
+                                                                    intrinsic, factor), case, intrinsic, point[5])
+                if full is None:
+                    continue
                 result = lc.compare(full, lc.factorized(haemodynamic, arrivals[case], point, factor), haemodynamic,
                                     case, scenario, point, reserve)
                 assert result["agrees"] and result["debt_coherent"], (case, point, reserve, factor, result)

@@ -159,9 +159,10 @@ def slice_run(case: str, candidate: GICandidate, scenario: str, *, profile_extra
 
 
 def region_runs(quick: bool = False) -> dict:
-    """Every admissible candidate (P2G's region) in every scenario, for both cases."""
+    """Every runnable admissible candidate (P2G's region less the arrivals P2I-2AE's core refuses) in every scenario,
+    for both cases."""
     return {(candidate.key(), case, scenario): slice_run(case, candidate, scenario)
-            for candidate in decision_pack.admissible(quick) for case in CASES for scenario in ORDERS}
+            for candidate in decision_pack.runnable(quick) for case in CASES for scenario in ORDERS}
 
 
 def _cases_runs(runs: dict, case: str, scenario: str) -> list:
@@ -515,7 +516,8 @@ DOWNSTREAM_REPORTS = ("clinical_core/blood_filter_report.py", "clinical_core/blo
                       "clinical_core/blood_rate_report.py", "clinical_core/blood_fluid_report.py",
                       "clinical_core/blood_fluid_readiness_report.py",
                       "clinical_core/blood_fluid_tau_closure_report.py", "clinical_core/lactate_rebuild_report.py",
-                      "clinical_core/lactate_adequacy_report.py", "clinical_core/lactate_closure_report.py")
+                      "clinical_core/lactate_adequacy_report.py", "clinical_core/lactate_closure_report.py",
+                      "clinical_core/hr_structure_report.py")
 
 
 def slice_sources() -> dict[str, str]:
@@ -545,6 +547,7 @@ def report(quick: bool = False) -> dict:
                        "worksheet": worksheet_support(runs, case)}
                 for case in CASES}
     return {**digests, "quick": quick, "admissible_candidates": len(decision_pack.admissible(quick)),
+            "inconsistent_arrivals": len(decision_pack.admissible(quick)) - len(decision_pack.runnable(quick)),
             "scenarios": {name: {"title": SCENARIO_TITLES[name], "minutes": spec["minutes"],
                                  "orders": {str(minute): order for minute, order in spec["orders"].items()},
                                  "trajectory_kind": TRAJECTORY_KIND[name],

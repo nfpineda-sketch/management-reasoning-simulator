@@ -214,6 +214,10 @@
    "provisional",
    "lactate (mmol/L) produced per minute per unit of D (P2I-2AD): its own parameter, independent of tau_D (debt repayment) and tau_lactate (clearance); TBD. The default equals the former default production 2 / (60 x 60) and is not a calibrated value"
   ],
+  "debt_to_sympathetic_gain": [
+   "provisional",
+   "sympathetic drive per unit of D (P2I-2AE): its own parameter, independent of tau_D (debt repayment); the debt-driven drive is gain x D, 0 at D = 0, and the arrival debt's share of the arrival drive is gain x D0; TBD. The default equals the former default sympathetic_per_debt / tau_D, 0.5 / 60, and is not a calibrated value"
+  ],
   "hr_per_sympathetic_drive": [
    "adopted",
    "family_engine._surface: hr + (circulation - 1) * 25, read here as bpm per unit of sympathetic drive"
@@ -316,7 +320,7 @@
   ],
   "sympathetic_per_debt": [
    "provisional",
-   "oxygen-delivery debt (D / tau_D) -> sympathetic drive gain: TBD (KD-S2)"
+   "oxygen-delivery debt (D / tau_D) -> sympathetic drive gain (KD-S2). Since P2I-2AE the core does not read it (tau_D is debt repayment only; the debt-driven drive is debt_to_sympathetic_gain x D); kept so historical records stay readable"
   ],
   "sympathetic_per_hypoglycaemia_mg_dl": [
    "provisional",

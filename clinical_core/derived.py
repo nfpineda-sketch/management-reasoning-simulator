@@ -78,7 +78,13 @@ class CoreProfile:
     low_output_pressure_knee: float = 0.5
     hr_per_sympathetic_drive: float = 25.0
     sympathetic_per_pressure_deficit: float = 1.0
+    # P2I-2AE: no longer read; the core's debt-driven drive is debt_to_sympathetic_gain x D. Kept so
+    # historical records stay readable.
     sympathetic_per_debt: float = 0.5
+    # P2I-2AE: sympathetic drive per unit of D, independent of tau_D (debt repayment only). The default is
+    # the number the former default sympathetic_per_debt / tau_D gave, 0.5 / 60; it is provisional and never
+    # derived from tau_D.
+    debt_to_sympathetic_gain: float = 1.0 / 120.0
     sympathetic_per_hypoxaemia_point: float = 0.02
     hypoxaemia_threshold_spo2: float = 94.0
     sympathetic_per_hypoglycaemia_mg_dl: float = 0.01
@@ -202,7 +208,15 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
     "hr_per_sympathetic_drive": (ADOPTED, "family_engine._surface: hr + (circulation - 1) * 25, read here as bpm "
                                           "per unit of sympathetic drive"),
     "sympathetic_per_pressure_deficit": (PROVISIONAL, "MAP/output deficit -> sympathetic drive gain: TBD (KD-S2)"),
-    "sympathetic_per_debt": (PROVISIONAL, "oxygen-delivery debt (D / tau_D) -> sympathetic drive gain: TBD (KD-S2)"),
+    "sympathetic_per_debt": (PROVISIONAL, "oxygen-delivery debt (D / tau_D) -> sympathetic drive gain (KD-S2). Since "
+                                          "P2I-2AE the core does not read it (tau_D is debt repayment only; the "
+                                          "debt-driven drive is debt_to_sympathetic_gain x D); kept so historical "
+                                          "records stay readable"),
+    "debt_to_sympathetic_gain": (PROVISIONAL, "sympathetic drive per unit of D (P2I-2AE): its own parameter, "
+                                              "independent of tau_D (debt repayment); the debt-driven drive is gain "
+                                              "x D, 0 at D = 0, and the arrival debt's share of the arrival drive is "
+                                              "gain x D0; TBD. The default equals the former default "
+                                              "sympathetic_per_debt / tau_D, 0.5 / 60, and is not a calibrated value"),
     "sympathetic_per_hypoxaemia_point": (PROVISIONAL, "drive per SpO2 point below the threshold: TBD (KD-S2)"),
     "hypoxaemia_threshold_spo2": (PROVISIONAL, "SpO2 below which hypoxaemia drives the rate: TBD (KD-S2)"),
     "sympathetic_per_hypoglycaemia_mg_dl": (PROVISIONAL, "drive per mg/dL below the threshold: TBD (KD-S2)"),
@@ -419,11 +433,42 @@ def arrival_sympathetic_drive(anchors: Anchors, profile: CoreProfile) -> float:
     return share / response
 
 
+def arrival_debt_drive(anchors: Anchors, profile: CoreProfile) -> float:
+    """The arrival debt's share of the arrival drive (P2I-2AE): debt_to_sympathetic_gain x D0, never tau_D."""
+    return profile.debt_to_sympathetic_gain * anchors.arrival_oxygen_debt
+
+
+def arrival_non_debt_drive(anchors: Anchors, profile: CoreProfile) -> float:
+    """The arrival drive the arrival debt does not explain (P2I-2AE): the arrival drive less the debt's share.
+
+    It carries the arrival stimuli the core reads relative to arrival (the arrival pressure deficit,
+    hypoxaemia, hypoglycaemia) and any the core does not model. It is never negative: an arrival debt that
+    alone calls for more drive than the observed HR carries above the intrinsic rate would need a negative
+    sympathetic contribution, so the declaration (intrinsic rate, arrival debt, gain) is inconsistent and
+    the core stops (exact comparison, no tolerance).
+    """
+    drive, debt = arrival_sympathetic_drive(anchors, profile), arrival_debt_drive(anchors, profile)
+    if debt > drive:
+        raise CoreInvariantError(
+            f"the arrival debt {anchors.arrival_oxygen_debt:g} calls for a sympathetic drive of {debt!r} "
+            f"(debt_to_sympathetic_gain {profile.debt_to_sympathetic_gain!r}), above the {drive!r} the observed arrival "
+            "HR carries over the intrinsic rate: the arrival decomposition would need a negative sympathetic "
+            "contribution")
+    return drive - debt
+
+
 def heart_rate_decomposition(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> dict:
-    """The observed arrival HR split into intrinsic rate and sympathetic contribution, with its source."""
+    """The observed arrival HR split into intrinsic rate and sympathetic contribution, with its source.
+
+    P2I-2AE: the arrival drive splits further into the arrival debt's share (gain x D0) and the rest; both
+    are non-negative (``arrival_non_debt_drive`` stops otherwise)."""
+    response = profile.hr_per_sympathetic_drive * (1.0 - anchors.beta_blockade)
+    debt, rest = arrival_debt_drive(anchors, profile), arrival_non_debt_drive(anchors, profile)
     return {"observed_arrival_hr": anchors.hr, "intrinsic_sinus_rate": intrinsic_sinus_rate(anchors),
             "arrival_sympathetic_bpm": anchors.hr - intrinsic_sinus_rate(anchors),
             "arrival_sympathetic_drive": arrival_sympathetic_drive(anchors, profile),
+            "arrival_debt_drive": debt, "arrival_non_debt_drive": rest,
+            "arrival_debt_bpm": response * debt, "arrival_non_debt_bpm": response * rest,
             "source": anchors.declared.get("intrinsic_sinus_rate", UNMAPPED)}
 
 
@@ -645,7 +690,10 @@ def arrival_state(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> C
     - D holds the debt accrued before arrival (P2F-3).
     Undeclared, they are the anchored defaults: intrinsic = observed HR and no drive; demand
     met by arrival delivery; no clearable lactate; no arrival debt.
+    The arrival debt's share of the drive is checked here (P2I-2AE): a declaration whose debt alone
+    calls for more drive than the arrival HR carries stops before the run.
     """
+    arrival_non_debt_drive(anchors, profile)
     state = anchored_state(anchors).evolve(D=anchors.arrival_oxygen_debt)
     if state.R.code is RhythmCode.SINUS:
         state = state.evolve(R=replace(state.R, rate_bpm=intrinsic_sinus_rate(anchors)))
@@ -865,12 +913,14 @@ def lung_water_clearance(state: CoreState, profile: CoreProfile) -> float:
 
 
 def sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:
-    """The drive the state calls for now, relative to arrival (KD-S2; proposal §7.3).
+    """The drive the state calls for now (KD-S2; proposal §7.3).
 
-    It sums the stimuli the core holds state for, each as a deviation from arrival:
-    - the pressure deficit;
-    - the oxygen-delivery debt D above its arrival value (P2F-3: a debt the patient arrives
-      with is already in the arrival drive, and repaying it lowers the drive);
+    It sums, on top of the arrival drive the arrival debt does not explain (``arrival_non_debt_drive``):
+    - the oxygen-delivery debt D itself, debt_to_sympathetic_gain x D (P2I-2AE): 0 at D = 0, never
+      decreasing in D, independent of tau_D, which only repays D; the arrival debt's share of the
+      arrival drive is the same term at D0, so repaying it lowers the drive;
+    and the stimuli the core holds state for, each as a deviation from arrival:
+    - the pressure deficit (the acute haemodynamic stimulus, separate from D);
     - hypoxaemia;
     - hypoglycaemia.
 
@@ -884,10 +934,11 @@ def sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile)
                   - max(0.0, profile.hypoxaemia_threshold_spo2 - anchors.spo2))
     hypoglycaemia = (max(0.0, profile.hypoglycaemia_threshold_mg_dl - state.glucose)
                      - max(0.0, profile.hypoglycaemia_threshold_mg_dl - anchors.glucose))
-    # Absolute drive (P2E-1): the arrival drive plus the stimuli's deviations from arrival.
-    target = (arrival_sympathetic_drive(anchors, profile)
+    # Absolute drive (P2E-1, P2I-2AE): the arrival drive the arrival debt does not explain, the debt's own
+    # drive, and the other stimuli's deviations from arrival. At arrival it is the arrival drive.
+    target = (arrival_non_debt_drive(anchors, profile)
               + profile.sympathetic_per_pressure_deficit * (1.0 - pressure_rel)
-              + profile.sympathetic_per_debt * (state.D - anchors.arrival_oxygen_debt) / profile.debt_clearance_tau_min
+              + profile.debt_to_sympathetic_gain * state.D
               + profile.sympathetic_per_hypoxaemia_point * hypoxaemia
               + profile.sympathetic_per_hypoglycaemia_mg_dl * hypoglycaemia)
     # P2D-3: the drive is never negative. As its stimuli resolve, the rate falls back to the

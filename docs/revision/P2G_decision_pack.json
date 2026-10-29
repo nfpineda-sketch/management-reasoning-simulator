@@ -767,12 +767,12 @@
    "envelopes": {
     "map": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 65.33333333333333,
       "median": 65.33333333333333,
       "min": 65.33333333333333,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "15": {
@@ -781,7 +781,7 @@
       "max": 63.91753412378332,
       "median": 62.703991944169026,
       "min": 62.703991944169026,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "30": {
@@ -790,7 +790,7 @@
       "max": 62.52458050121794,
       "median": 60.11707807369044,
       "min": 60.11707807369044,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "60": {
@@ -799,7 +799,7 @@
       "max": 59.79717883944892,
       "median": 55.05190355897656,
       "min": 55.05190355897656,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "120": {
@@ -808,18 +808,18 @@
       "max": 54.499278493965505,
       "median": 36.09731468451254,
       "min": 36.09731468451254,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      }
     },
     "sbp": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 88.0,
       "median": 88.0,
       "min": 88.0,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "15": {
@@ -828,7 +828,7 @@
       "max": 85.98807480748157,
       "median": 84.26356749960863,
       "min": 84.26356749960863,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "30": {
@@ -837,7 +837,7 @@
       "max": 84.00861439646759,
       "median": 80.58742673629695,
       "min": 80.58742673629695,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "60": {
@@ -846,7 +846,7 @@
       "max": 80.13283308763793,
       "median": 73.38954716275616,
       "min": 73.38954716275616,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "120": {
@@ -855,7 +855,7 @@
       "max": 72.60423785984572,
       "median": 47.765133572435786,
       "min": 47.765133572435786,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      }
     }
@@ -1627,12 +1627,12 @@
    "envelopes": {
     "map": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 74.0,
       "median": 74.0,
       "min": 74.0,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "15": {
@@ -1641,7 +1641,7 @@
       "max": 73.0561338603,
       "median": 72.26957874388333,
       "min": 72.26957874388333,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "30": {
@@ -1650,7 +1650,7 @@
       "max": 72.12749811192306,
       "median": 70.56707987185895,
       "min": 70.56707987185895,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "60": {
@@ -1659,7 +1659,7 @@
       "max": 70.30923033741038,
       "median": 67.23358895191905,
       "min": 67.23358895191905,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "120": {
@@ -1668,18 +1668,18 @@
       "max": 66.77729677375478,
       "median": 60.758377418550445,
       "min": 60.758377418550445,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      }
     },
     "sbp": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 98.0,
       "median": 98.0,
       "min": 98.0,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "15": {
@@ -1688,7 +1688,7 @@
       "max": 96.65871653832104,
       "median": 95.54098032025526,
       "min": 95.54098032025526,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "30": {
@@ -1697,7 +1697,7 @@
       "max": 95.33907626431173,
       "median": 93.12163981790484,
       "min": 93.12163981790484,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "60": {
@@ -1706,7 +1706,7 @@
       "max": 92.75522205842529,
       "median": 88.38457377377969,
       "min": 88.38457377377969,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "120": {
@@ -1715,7 +1715,7 @@
       "max": 87.73615857323048,
       "median": 79.1829573842559,
       "min": 79.1829573842559,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      }
     }
@@ -2336,9 +2336,9 @@
       "stopped_at": null,
       "values": {
        "0": 124.0,
-       "30": 113.01073381362463,
+       "30": 113.01073381362465,
        "60": 102.62807025698672,
-       "120": 100.59613413958073
+       "120": 100.59613413958074
       }
      },
      {
@@ -2415,7 +2415,7 @@
       "values": {
        "0": 124.0,
        "30": 118.02959601802283,
-       "60": 112.20312982141887,
+       "60": 112.20312982141886,
        "120": 110.56947024581613
       }
      },
@@ -2442,7 +2442,7 @@
        "0": 124.0,
        "30": 102.97300940482828,
        "60": 83.47795112812243,
-       "120": 80.66688868760508
+       "120": 80.66688868760507
       }
      },
      {
@@ -2453,9 +2453,9 @@
       "stopped_at": null,
       "values": {
        "0": 124.0,
-       "30": 113.48650470241412,
-       "60": 103.7389755640612,
-       "120": 102.33344434380254
+       "30": 113.01073381362464,
+       "60": 102.62807025698672,
+       "120": 100.59613413958074
       }
      },
      {
@@ -2479,9 +2479,9 @@
       "stopped_at": null,
       "values": {
        "0": 124.0,
-       "30": 112.05919203604566,
-       "60": 100.40625964283774,
-       "120": 97.13894049163227
+       "30": 113.01073381362464,
+       "60": 102.62807025698672,
+       "120": 100.59613413958074
       }
      }
     ],
@@ -2507,9 +2507,9 @@
       "stopped_at": null,
       "values": {
        "0": 124.0,
-       "30": 129.4824913882258,
+       "30": 129.48249138822578,
        "60": 135.71569959346243,
-       "120": 150.48382232226024
+       "120": 150.4838223222602
       }
      },
      {
@@ -2520,7 +2520,7 @@
       "stopped_at": null,
       "values": {
        "0": 124.0,
-       "30": 129.48249138822578,
+       "30": 129.4824913882258,
        "60": 135.71569959346243,
        "120": 150.48382232226024
       }
@@ -2533,9 +2533,9 @@
       "stopped_at": null,
       "values": {
        "0": 124.0,
-       "30": 129.4824913882258,
+       "30": 129.48249138822578,
        "60": 135.71569959346243,
-       "120": 150.48382232226024
+       "120": 150.4838223222602
       }
      },
      {
@@ -2546,9 +2546,9 @@
       "stopped_at": null,
       "values": {
        "0": 124.0,
-       "30": 129.4824913882258,
+       "30": 129.48249138822578,
        "60": 135.71569959346243,
-       "120": 150.48382232226024
+       "120": 150.4838223222602
       }
      },
      {
@@ -2559,9 +2559,9 @@
       "stopped_at": null,
       "values": {
        "0": 124.0,
-       "30": 129.4824913882258,
+       "30": 129.48249138822578,
        "60": 135.71569959346243,
-       "120": 150.48382232226024
+       "120": 150.4838223222602
       }
      },
      {
@@ -2585,9 +2585,9 @@
       "stopped_at": null,
       "values": {
        "0": 124.0,
-       "30": 129.4824913882258,
+       "30": 129.48249138822578,
        "60": 135.71569959346243,
-       "120": 150.48382232226024
+       "120": 150.4838223222602
       }
      },
      {
@@ -2611,9 +2611,9 @@
       "stopped_at": null,
       "values": {
        "0": 124.0,
-       "30": 128.80029382291931,
-       "60": 133.91630891818784,
-       "120": 145.1841694080351
+       "30": 129.48249138822578,
+       "60": 135.71569959346243,
+       "120": 150.4838223222602
       }
      },
      {
@@ -2624,9 +2624,9 @@
       "stopped_at": null,
       "values": {
        "0": 124.0,
-       "30": 129.4824913882258,
+       "30": 129.48249138822578,
        "60": 135.71569959346243,
-       "120": 150.48382232226024
+       "120": 150.4838223222602
       }
      },
      {
@@ -2637,9 +2637,9 @@
       "stopped_at": null,
       "values": {
        "0": 124.0,
-       "30": 130.8468865188388,
-       "60": 139.31448094401162,
-       "120": 161.0831281507105
+       "30": 129.48249138822578,
+       "60": 135.71569959346243,
+       "120": 150.4838223222602
       }
      }
     ]
@@ -2655,21 +2655,21 @@
       "fall_bpm": 23.246216592813937,
       "half_of_fall_min": 42,
       "hr_end": 100.75378340718606,
-      "sympathetic_end_bpm": 40.753783407186056,
+      "sympathetic_end_bpm": 40.75378340718607,
       "sympathetic_half_min": null
      },
      "midpoint": {
       "fall_bpm": 23.246216592813937,
       "half_of_fall_min": 42,
       "hr_end": 100.75378340718606,
-      "sympathetic_end_bpm": 20.753783407186067,
+      "sympathetic_end_bpm": 20.753783407186063,
       "sympathetic_half_min": 84
      },
      "upper": {
       "fall_bpm": 23.246216592813937,
       "half_of_fall_min": 42,
       "hr_end": 100.75378340718606,
-      "sympathetic_end_bpm": 0.7537834071860662,
+      "sympathetic_end_bpm": 0.7537834071860668,
       "sympathetic_half_min": 43
      }
     },
@@ -2685,37 +2685,37 @@
       "fall_bpm": 23.416987773121818,
       "half_of_fall_min": 29,
       "hr_end": 100.58301222687818,
-      "sympathetic_end_bpm": 20.583012226878182,
+      "sympathetic_end_bpm": 20.58301222687818,
       "sympathetic_half_min": 60
      },
      "upper": {
       "fall_bpm": 23.416987773121818,
       "half_of_fall_min": 29,
       "hr_end": 100.58301222687818,
-      "sympathetic_end_bpm": 0.583012226878179,
+      "sympathetic_end_bpm": 0.5830122268781797,
       "sympathetic_half_min": 30
      }
     },
     "5": {
      "lower": {
-      "fall_bpm": 23.403865860419273,
+      "fall_bpm": 23.40386586041926,
       "half_of_fall_min": 32,
-      "hr_end": 100.59613413958073,
-      "sympathetic_end_bpm": 40.596134139580734,
+      "hr_end": 100.59613413958074,
+      "sympathetic_end_bpm": 40.59613413958074,
       "sympathetic_half_min": null
      },
      "midpoint": {
       "fall_bpm": 23.40386586041926,
       "half_of_fall_min": 32,
       "hr_end": 100.59613413958074,
-      "sympathetic_end_bpm": 20.59613413958074,
+      "sympathetic_end_bpm": 20.596134139580737,
       "sympathetic_half_min": 63
      },
      "upper": {
       "fall_bpm": 23.40386586041926,
       "half_of_fall_min": 32,
       "hr_end": 100.59613413958074,
-      "sympathetic_end_bpm": 0.5961341395807379,
+      "sympathetic_end_bpm": 0.5961341395807387,
       "sympathetic_half_min": 33
      }
     }
@@ -2733,10 +2733,10 @@
        },
        "30": {
         "beta_factor": 1.0,
-        "hr": 113.01073381362463,
+        "hr": 113.01073381362465,
         "intrinsic_bpm": 60.0,
-        "other_chronotropic_bpm": -7.105427357601002e-15,
-        "sympathetic_bpm": 53.01073381362463
+        "other_chronotropic_bpm": 7.105427357601002e-15,
+        "sympathetic_bpm": 53.01073381362465
        },
        "60": {
         "beta_factor": 1.0,
@@ -2747,10 +2747,10 @@
        },
        "120": {
         "beta_factor": 1.0,
-        "hr": 100.59613413958073,
+        "hr": 100.59613413958074,
         "intrinsic_bpm": 60.0,
-        "other_chronotropic_bpm": -7.105427357601002e-15,
-        "sympathetic_bpm": 40.596134139580734
+        "other_chronotropic_bpm": 0.0,
+        "sympathetic_bpm": 40.59613413958074
        }
       },
       "intrinsic upper": {
@@ -2772,15 +2772,15 @@
         "beta_factor": 1.0,
         "hr": 102.62807025698672,
         "intrinsic_bpm": 100.0,
-        "other_chronotropic_bpm": -2.220446049250313e-15,
-        "sympathetic_bpm": 2.6280702569867196
+        "other_chronotropic_bpm": -3.1086244689504383e-15,
+        "sympathetic_bpm": 2.6280702569867205
        },
        "120": {
         "beta_factor": 1.0,
         "hr": 100.59613413958074,
         "intrinsic_bpm": 100.0,
-        "other_chronotropic_bpm": 2.9976021664879227e-15,
-        "sympathetic_bpm": 0.5961341395807379
+        "other_chronotropic_bpm": 2.220446049250313e-15,
+        "sympathetic_bpm": 0.5961341395807387
        }
       },
       "middle": {
@@ -2802,26 +2802,26 @@
         "beta_factor": 1.0,
         "hr": 102.62807025698672,
         "intrinsic_bpm": 80.0,
-        "other_chronotropic_bpm": -3.552713678800501e-15,
-        "sympathetic_bpm": 22.62807025698672
+        "other_chronotropic_bpm": 0.0,
+        "sympathetic_bpm": 22.628070256986717
        },
        "120": {
         "beta_factor": 1.0,
         "hr": 100.59613413958074,
         "intrinsic_bpm": 80.0,
-        "other_chronotropic_bpm": 0.0,
-        "sympathetic_bpm": 20.59613413958074
+        "other_chronotropic_bpm": 3.552713678800501e-15,
+        "sympathetic_bpm": 20.596134139580737
        }
       }
      },
      "envelope": {
       "0": {
-       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
        "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
        "max": 124.0,
        "median": 124.0,
        "min": 124.0,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       },
       "30": {
@@ -2830,25 +2830,25 @@
        "max": 117.97362223333994,
        "median": 113.96227559120364,
        "min": 109.63533464109594,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       },
       "60": {
        "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=upper;debt=midpoint;delivery=midpoint",
        "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-       "max": 111.67104085879375,
-       "median": 104.21416307196509,
+       "max": 111.67104085879373,
+       "median": 104.84988087113571,
        "min": 97.28779327509955,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       },
       "120": {
        "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=upper;debt=midpoint;delivery=midpoint",
        "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
        "max": 109.87688146548864,
-       "median": 102.84879605664673,
+       "median": 104.0891974834962,
        "min": 93.35464258623338,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       }
      }
@@ -2867,15 +2867,15 @@
         "beta_factor": 1.0,
         "hr": 117.8054254158358,
         "intrinsic_bpm": 60.0,
-        "other_chronotropic_bpm": 0.0,
-        "sympathetic_bpm": 57.8054254158358
+        "other_chronotropic_bpm": -7.105427357601002e-15,
+        "sympathetic_bpm": 57.805425415835806
        },
        "60": {
         "beta_factor": 1.0,
-        "hr": 124.90606926646785,
+        "hr": 124.90606926646784,
         "intrinsic_bpm": 60.0,
         "other_chronotropic_bpm": 0.0,
-        "sympathetic_bpm": 64.90606926646785
+        "sympathetic_bpm": 64.90606926646784
        }
       },
       "intrinsic upper": {
@@ -2890,8 +2890,8 @@
         "beta_factor": 1.0,
         "hr": 117.8054254158358,
         "intrinsic_bpm": 100.0,
-        "other_chronotropic_bpm": 0.0,
-        "sympathetic_bpm": 17.8054254158358
+        "other_chronotropic_bpm": -3.552713678800501e-15,
+        "sympathetic_bpm": 17.805425415835803
        },
        "60": {
         "beta_factor": 1.0,
@@ -2927,30 +2927,30 @@
      },
      "envelope": {
       "0": {
-       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
        "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
        "max": 124.0,
        "median": 124.0,
        "min": 124.0,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       },
       "30": {
-       "argmax": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
+       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=upper;debt=midpoint;delivery=midpoint",
        "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-       "max": 122.42212499549325,
+       "max": 121.66674984192126,
        "median": 118.64394697250495,
        "min": 113.69370183973143,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       },
       "60": {
-       "argmax": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
-       "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-       "max": 133.49105425142002,
-       "median": 125.18355044119428,
+       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=lower;preload=midpoint;debt=upper;delivery=lower",
+       "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
+       "max": 129.26347597370636,
+       "median": 125.10972406859347,
        "min": 118.09561684187722,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       }
      }
@@ -2999,8 +2999,8 @@
         "beta_factor": 1.0,
         "hr": 103.59331817177339,
         "intrinsic_bpm": 100.0,
-        "other_chronotropic_bpm": -4.884981308350689e-15,
-        "sympathetic_bpm": 3.593318171773395
+        "other_chronotropic_bpm": -5.329070518200751e-15,
+        "sympathetic_bpm": 3.5933181717733955
        }
       },
       "middle": {
@@ -3029,12 +3029,12 @@
      },
      "envelope": {
       "0": {
-       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
        "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
        "max": 124.0,
        "median": 124.0,
        "min": 124.0,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       },
       "30": {
@@ -3043,16 +3043,16 @@
        "max": 118.27917780565576,
        "median": 114.5180019172906,
        "min": 110.19106096718292,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       },
       "60": {
        "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=upper;debt=midpoint;delivery=midpoint",
        "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
        "max": 112.17545980214203,
-       "median": 105.21667766283531,
+       "median": 105.77941297883886,
        "min": 98.2173253828027,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       }
      }
@@ -3099,17 +3099,17 @@
        },
        "30": {
         "beta_factor": 1.0,
-        "hr": 129.48249138822578,
+        "hr": 129.4824913882258,
         "intrinsic_bpm": 100.0,
-        "other_chronotropic_bpm": -7.105427357601002e-15,
-        "sympathetic_bpm": 29.48249138822579
+        "other_chronotropic_bpm": 1.4210854715202004e-14,
+        "sympathetic_bpm": 29.482491388225796
        },
        "60": {
         "beta_factor": 1.0,
         "hr": 135.71569959346243,
         "intrinsic_bpm": 100.0,
-        "other_chronotropic_bpm": 7.105427357601002e-15,
-        "sympathetic_bpm": 35.715699593462425
+        "other_chronotropic_bpm": 0.0,
+        "sympathetic_bpm": 35.71569959346243
        },
        "120": {
         "beta_factor": 1.0,
@@ -3129,10 +3129,10 @@
        },
        "30": {
         "beta_factor": 1.0,
-        "hr": 129.4824913882258,
+        "hr": 129.48249138822578,
         "intrinsic_bpm": 80.0,
-        "other_chronotropic_bpm": 1.4210854715202004e-14,
-        "sympathetic_bpm": 49.482491388225796
+        "other_chronotropic_bpm": -7.105427357601002e-15,
+        "sympathetic_bpm": 49.48249138822579
        },
        "60": {
         "beta_factor": 1.0,
@@ -3143,48 +3143,48 @@
        },
        "120": {
         "beta_factor": 1.0,
-        "hr": 150.48382232226024,
+        "hr": 150.4838223222602,
         "intrinsic_bpm": 80.0,
-        "other_chronotropic_bpm": 0.0,
-        "sympathetic_bpm": 70.48382232226024
+        "other_chronotropic_bpm": -1.4210854715202004e-14,
+        "sympathetic_bpm": 70.48382232226022
        }
       }
      },
      "envelope": {
       "0": {
-       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
        "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
        "max": 124.0,
        "median": 124.0,
        "min": 124.0,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       },
       "30": {
-       "argmax": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
+       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
        "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=upper;debt=midpoint;delivery=midpoint",
-       "max": 133.72077173612524,
+       "max": 130.91943399686903,
        "median": 129.4824913882258,
        "min": 127.3856247856452,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       },
       "60": {
-       "argmax": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
+       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
        "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=upper;debt=midpoint;delivery=midpoint",
-       "max": 144.5504919142768,
-       "median": 135.22531166075413,
+       "max": 138.33370507859502,
+       "median": 135.71569959346243,
        "min": 131.180415043917,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       },
       "120": {
-       "argmax": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
+       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
        "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=upper;debt=midpoint;delivery=midpoint",
-       "max": 169.55412472221036,
-       "median": 147.9425233508103,
+       "max": 154.71932060801015,
+       "median": 150.48382232226024,
        "min": 140.04012144762146,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       }
      }
@@ -3274,8 +3274,8 @@
       "values": {
        "0": 112.0,
        "30": 106.99856609310528,
-       "60": 99.62580445185878,
-       "120": 95.62684536579883
+       "60": 99.62580445185877,
+       "120": 95.62684536579881
       }
      },
      {
@@ -3313,8 +3313,8 @@
       "values": {
        "0": 112.0,
        "30": 98.03114774417152,
-       "60": 84.69210486807674,
-       "120": 82.33201103286085
+       "60": 84.69210486807673,
+       "120": 82.33201103286083
       }
      },
      {
@@ -3325,9 +3325,9 @@
       "stopped_at": null,
       "values": {
        "0": 112.0,
-       "30": 105.01557387208575,
-       "60": 98.34605243403837,
-       "120": 97.16600551643042
+       "30": 104.63717150038794,
+       "60": 97.29517472211563,
+       "120": 95.45930812995701
       }
      },
      {
@@ -3351,9 +3351,9 @@
       "stopped_at": null,
       "values": {
        "0": 112.0,
-       "30": 103.88036675699229,
-       "60": 95.19341929827016,
-       "120": 92.04591335701018
+       "30": 104.63717150038794,
+       "60": 97.29517472211563,
+       "120": 95.45930812995701
       }
      }
     ],
@@ -3366,9 +3366,9 @@
       "stopped_at": null,
       "values": {
        "0": 112.0,
-       "30": 115.92925686779573,
+       "30": 115.92925686779571,
        "60": 120.35622955676212,
-       "120": 130.7477476003056
+       "120": 130.74774760030556
       }
      },
      {
@@ -3483,9 +3483,9 @@
       "stopped_at": null,
       "values": {
        "0": 112.0,
-       "30": 115.31972848447985,
-       "60": 118.8490665078867,
-       "120": 126.60083008230393
+       "30": 115.92925686779571,
+       "60": 120.35622955676212,
+       "120": 130.7477476003056
       }
      },
      {
@@ -3509,9 +3509,9 @@
       "stopped_at": null,
       "values": {
        "0": 112.0,
-       "30": 117.14831363442747,
-       "60": 123.37055565451294,
-       "120": 139.04158263630887
+       "30": 115.92925686779571,
+       "60": 120.35622955676212,
+       "120": 130.7477476003056
       }
      }
     ]
@@ -3531,10 +3531,10 @@
       "sympathetic_half_min": null
      },
      "midpoint": {
-      "fall_bpm": 16.37315463420117,
+      "fall_bpm": 16.373154634201185,
       "half_of_fall_min": 43,
-      "hr_end": 95.62684536579883,
-      "sympathetic_end_bpm": 15.626845365798822,
+      "hr_end": 95.62684536579881,
+      "sympathetic_end_bpm": 15.62684536579882,
       "sympathetic_half_min": 102
      },
      "upper": {
@@ -3564,7 +3564,7 @@
       "fall_bpm": 12.0,
       "half_of_fall_min": 23,
       "hr_end": 100.0,
-      "sympathetic_end_bpm": 7.807719877614699e-18,
+      "sympathetic_end_bpm": 7.807719877614719e-18,
       "sympathetic_half_min": 23
      }
     },
@@ -3573,7 +3573,7 @@
       "fall_bpm": 16.54069187004299,
       "half_of_fall_min": 34,
       "hr_end": 95.45930812995701,
-      "sympathetic_end_bpm": 35.45930812995701,
+      "sympathetic_end_bpm": 35.459308129957,
       "sympathetic_half_min": null
      },
      "midpoint": {
@@ -3587,7 +3587,7 @@
       "fall_bpm": 11.999999760629265,
       "half_of_fall_min": 26,
       "hr_end": 100.00000023937073,
-      "sympathetic_end_bpm": 2.393707315867654e-07,
+      "sympathetic_end_bpm": 2.393707315867659e-07,
       "sympathetic_half_min": 26
      }
     }
@@ -3621,8 +3621,8 @@
         "beta_factor": 1.0,
         "hr": 95.45930812995701,
         "intrinsic_bpm": 60.0,
-        "other_chronotropic_bpm": 0.0,
-        "sympathetic_bpm": 35.45930812995701
+        "other_chronotropic_bpm": 7.105427357601002e-15,
+        "sympathetic_bpm": 35.459308129957
        }
       },
       "intrinsic upper": {
@@ -3637,22 +3637,22 @@
         "beta_factor": 1.0,
         "hr": 104.63717150038794,
         "intrinsic_bpm": 100.0,
-        "other_chronotropic_bpm": -2.6645352591003757e-15,
-        "sympathetic_bpm": 4.637171500387939
+        "other_chronotropic_bpm": -3.552713678800501e-15,
+        "sympathetic_bpm": 4.6371715003879395
        },
        "60": {
         "beta_factor": 1.0,
         "hr": 100.03895873349121,
         "intrinsic_bpm": 100.0,
-        "other_chronotropic_bpm": -4.912736883966318e-15,
-        "sympathetic_bpm": 0.038958733491218506
+        "other_chronotropic_bpm": -4.961309141293668e-15,
+        "sympathetic_bpm": 0.038958733491218554
        },
        "120": {
         "beta_factor": 1.0,
         "hr": 100.00000023937073,
         "intrinsic_bpm": 100.0,
-        "other_chronotropic_bpm": 3.202425056348057e-15,
-        "sympathetic_bpm": 2.393707315867654e-07
+        "other_chronotropic_bpm": 3.2024245798920243e-15,
+        "sympathetic_bpm": 2.393707315867659e-07
        }
       },
       "middle": {
@@ -3674,8 +3674,8 @@
         "beta_factor": 1.0,
         "hr": 97.29517472211563,
         "intrinsic_bpm": 80.0,
-        "other_chronotropic_bpm": 3.552713678800501e-15,
-        "sympathetic_bpm": 17.29517472211563
+        "other_chronotropic_bpm": 7.105427357601002e-15,
+        "sympathetic_bpm": 17.295174722115625
        },
        "120": {
         "beta_factor": 1.0,
@@ -3688,30 +3688,30 @@
      },
      "envelope": {
       "0": {
-       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
        "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
        "max": 112.0,
        "median": 112.0,
        "min": 112.0,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       },
       "30": {
-       "argmax": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
+       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=upper;debt=midpoint;delivery=midpoint",
        "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-       "max": 108.27515556155434,
+       "max": 107.98837142251024,
        "median": 105.39397624378358,
        "min": 101.0670352936759,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       },
       "60": {
        "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=upper;debt=midpoint;delivery=midpoint",
        "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
        "max": 103.24360937938025,
-       "median": 99.43623837696403,
+       "median": 99.39693014596111,
        "min": 91.83484254992494,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       },
       "120": {
@@ -3720,7 +3720,7 @@
        "max": 101.50644448448615,
        "median": 98.8963094549505,
        "min": 88.17401770160802,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       }
      }
@@ -3737,17 +3737,17 @@
        },
        "30": {
         "beta_factor": 1.0,
-        "hr": 108.90173796333124,
+        "hr": 108.90173796333123,
         "intrinsic_bpm": 60.0,
-        "other_chronotropic_bpm": 7.105427357601002e-15,
-        "sympathetic_bpm": 48.901737963331236
+        "other_chronotropic_bpm": 0.0,
+        "sympathetic_bpm": 48.90173796333123
        },
        "60": {
         "beta_factor": 1.0,
         "hr": 113.96094223461492,
         "intrinsic_bpm": 60.0,
-        "other_chronotropic_bpm": -7.105427357601002e-15,
-        "sympathetic_bpm": 53.960942234614926
+        "other_chronotropic_bpm": 0.0,
+        "sympathetic_bpm": 53.96094223461492
        }
       },
       "intrinsic upper": {
@@ -3762,8 +3762,8 @@
         "beta_factor": 1.0,
         "hr": 108.90173796333123,
         "intrinsic_bpm": 100.0,
-        "other_chronotropic_bpm": -3.552713678800501e-15,
-        "sympathetic_bpm": 8.901737963331232
+        "other_chronotropic_bpm": -5.329070518200751e-15,
+        "sympathetic_bpm": 8.901737963331234
        },
        "60": {
         "beta_factor": 1.0,
@@ -3783,46 +3783,46 @@
        },
        "30": {
         "beta_factor": 1.0,
-        "hr": 108.90173796333124,
+        "hr": 108.90173796333123,
         "intrinsic_bpm": 80.0,
-        "other_chronotropic_bpm": 7.105427357601002e-15,
-        "sympathetic_bpm": 28.901737963331236
+        "other_chronotropic_bpm": -3.552713678800501e-15,
+        "sympathetic_bpm": 28.901737963331232
        },
        "60": {
         "beta_factor": 1.0,
         "hr": 113.96094223461492,
         "intrinsic_bpm": 80.0,
-        "other_chronotropic_bpm": 0.0,
-        "sympathetic_bpm": 33.96094223461492
+        "other_chronotropic_bpm": -7.105427357601002e-15,
+        "sympathetic_bpm": 33.960942234614926
        }
       }
      },
      "envelope": {
       "0": {
-       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
        "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
        "max": 112.0,
        "median": 112.0,
        "min": 112.0,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       },
       "30": {
-       "argmax": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
+       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=upper;debt=midpoint;delivery=midpoint",
        "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-       "max": 112.75389280183708,
-       "median": 108.90173796333124,
+       "max": 110.81426765980629,
+       "median": 108.90173796333123,
        "min": 103.61229511241297,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       },
       "60": {
-       "argmax": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
-       "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
-       "max": 121.84061183341312,
+       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
+       "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
+       "max": 117.26117823547337,
        "median": 113.96094223461492,
-       "min": 105.92932534243431,
-       "n": 1054,
+       "min": 105.92932534243432,
+       "n": 946,
        "stopped_before": 0
       }
      }
@@ -3864,15 +3864,15 @@
         "beta_factor": 1.0,
         "hr": 105.00825317780156,
         "intrinsic_bpm": 100.0,
-        "other_chronotropic_bpm": -8.881784197001252e-16,
-        "sympathetic_bpm": 5.008253177801564
+        "other_chronotropic_bpm": -2.6645352591003757e-15,
+        "sympathetic_bpm": 5.008253177801566
        },
        "60": {
         "beta_factor": 1.0,
         "hr": 100.05904052925007,
         "intrinsic_bpm": 100.0,
-        "other_chronotropic_bpm": -8.049116928532385e-16,
-        "sympathetic_bpm": 0.05904052925006989
+        "other_chronotropic_bpm": -8.604228440844963e-16,
+        "sympathetic_bpm": 0.059040529250069945
        }
       },
       "middle": {
@@ -3887,8 +3887,8 @@
         "beta_factor": 1.0,
         "hr": 105.00825317780156,
         "intrinsic_bpm": 80.0,
-        "other_chronotropic_bpm": 0.0,
-        "sympathetic_bpm": 25.008253177801564
+        "other_chronotropic_bpm": 3.552713678800501e-15,
+        "sympathetic_bpm": 25.00825317780156
        },
        "60": {
         "beta_factor": 1.0,
@@ -3901,21 +3901,21 @@
      },
      "envelope": {
       "0": {
-       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
        "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
        "max": 112.0,
        "median": 112.0,
        "min": 112.0,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       },
       "30": {
-       "argmax": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
+       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=upper;debt=midpoint;delivery=midpoint",
        "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
-       "max": 108.69532816533581,
+       "max": 108.1945198643073,
        "median": 105.75971066351605,
        "min": 101.43276971340836,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       },
       "60": {
@@ -3924,7 +3924,7 @@
        "max": 103.58145007249625,
        "median": 100.00867349889396,
        "min": 92.44658590285778,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       }
      }
@@ -3941,10 +3941,10 @@
        },
        "30": {
         "beta_factor": 1.0,
-        "hr": 115.92925686779573,
+        "hr": 115.92925686779571,
         "intrinsic_bpm": 60.0,
         "other_chronotropic_bpm": 0.0,
-        "sympathetic_bpm": 55.92925686779573
+        "sympathetic_bpm": 55.929256867795715
        },
        "60": {
         "beta_factor": 1.0,
@@ -3955,10 +3955,10 @@
        },
        "120": {
         "beta_factor": 1.0,
-        "hr": 130.7477476003056,
+        "hr": 130.74774760030556,
         "intrinsic_bpm": 60.0,
-        "other_chronotropic_bpm": 0.0,
-        "sympathetic_bpm": 70.74774760030559
+        "other_chronotropic_bpm": -1.4210854715202004e-14,
+        "sympathetic_bpm": 70.74774760030557
        }
       },
       "intrinsic upper": {
@@ -3980,8 +3980,8 @@
         "beta_factor": 1.0,
         "hr": 120.35622955676212,
         "intrinsic_bpm": 100.0,
-        "other_chronotropic_bpm": 7.105427357601002e-15,
-        "sympathetic_bpm": 20.35622955676211
+        "other_chronotropic_bpm": 3.552713678800501e-15,
+        "sympathetic_bpm": 20.356229556762113
        },
        "120": {
         "beta_factor": 1.0,
@@ -4010,8 +4010,8 @@
         "beta_factor": 1.0,
         "hr": 120.35622955676212,
         "intrinsic_bpm": 80.0,
-        "other_chronotropic_bpm": 0.0,
-        "sympathetic_bpm": 40.356229556762116
+        "other_chronotropic_bpm": 7.105427357601002e-15,
+        "sympathetic_bpm": 40.35622955676211
        },
        "120": {
         "beta_factor": 1.0,
@@ -4024,39 +4024,39 @@
      },
      "envelope": {
       "0": {
-       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
        "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
        "max": 112.0,
        "median": 112.0,
        "min": 112.0,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       },
       "30": {
-       "argmax": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=midpoint;preload=midpoint;debt=lower;delivery=lower",
+       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
        "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=upper;debt=midpoint;delivery=midpoint",
-       "max": 120.10769200699704,
+       "max": 117.4089460540805,
        "median": 115.92925686779571,
        "min": 114.57017666241941,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       },
       "60": {
-       "argmax": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
+       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
        "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=upper;debt=midpoint;delivery=midpoint",
-       "max": 128.95036383230658,
-       "median": 120.24401855233509,
+       "max": 123.14613364565892,
+       "median": 120.35622955676212,
        "min": 117.41669327464933,
-       "n": 1054,
+       "n": 946,
        "stopped_before": 0
       },
       "120": {
-       "argmax": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
+       "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=lower;delivery=lower",
        "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=6;excess=midpoint;intrinsic=midpoint;preload=upper;debt=midpoint;delivery=midpoint",
-       "max": 148.8687384974834,
-       "median": 129.05761904759757,
-       "min": 123.97868221859528,
-       "n": 1054,
+       "max": 135.66132553089284,
+       "median": 130.7477476003056,
+       "min": 123.97868221859527,
+       "n": 946,
        "stopped_before": 0
       }
      }
@@ -4069,6 +4069,7 @@
    ]
   }
  },
+ "inconsistent_arrivals": 108,
  "lactate": {
   "gi_bleed_57m": {
    "effects": {
@@ -4392,102 +4393,102 @@
    "envelopes": {
     "definitive_management": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 4.4,
       "median": 4.4,
       "min": 4.4,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 5.1225771774426185,
-      "median": 3.927785159083336,
+      "median": 3.8857861239146447,
       "min": 2.6344563487516397,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 5.674363767877839,
-      "median": 3.556459947307236,
+      "median": 3.452627168134498,
       "min": 1.7347861376319982,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 6.047671880639271,
       "median": 2.8792190373343542,
       "min": 1.042729200863597,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      }
     },
     "untreated_120": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 4.4,
       "median": 4.4,
       "min": 4.4,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 5.159625973054087,
-      "median": 3.984823450386428,
+      "median": 3.9638273618953583,
       "min": 2.645298423797115,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 6.063835723781853,
-      "median": 3.7455366573765567,
+      "median": 3.7110924720670604,
       "min": 1.8132966881735977,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 8.416482490701677,
-      "median": 3.979474998839508,
+      "median": 3.824552549078021,
       "min": 1.5366773512350498,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      }
     }
    },
    "fractions": {
     "definitive 120 min below arrival": {
-     "fraction": 0.8975332068311196,
-     "n": 1054
+     "fraction": 0.9238900634249472,
+     "n": 946
     },
     "definitive 30 min below arrival": {
-     "fraction": 0.8036053130929791,
-     "n": 1054
+     "fraction": 0.8477801268498943,
+     "n": 946
     },
     "untreated 60 min above arrival": {
-     "fraction": 0.28178368121442127,
-     "n": 1054
+     "fraction": 0.23784355179704017,
+     "n": 946
     },
     "untreated 60 min more than 1 mmol/L above arrival": {
-     "fraction": 0.11954459203036052,
-     "n": 1054
+     "fraction": 0.08879492600422834,
+     "n": 946
     }
    },
    "representatives": {
     "high": {
-     "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+     "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
      "trajectories": {
       "definitive_management": {
        "0": 4.4,
@@ -4861,102 +4862,102 @@
    "envelopes": {
     "definitive_management": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 3.4,
       "median": 3.4,
       "min": 3.4,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 4.24780007544217,
-      "median": 3.1174395409346594,
+      "median": 3.1148407922118055,
       "min": 2.124885140765072,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 5.001813422183162,
-      "median": 2.86814592063066,
+      "median": 2.8473658480784567,
       "min": 1.4751233216231094,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 5.678907899534749,
-      "median": 2.4541538253204074,
+      "median": 2.439120439802858,
       "min": 0.9753044228459307,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      }
     },
     "untreated_120": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 3.4,
       "median": 3.4,
       "min": 3.4,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 4.274868908967507,
-      "median": 3.159002620967293,
+      "median": 3.1254674768562754,
       "min": 2.132032168466993,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 5.265261977387428,
-      "median": 3.07881733512306,
+      "median": 3.031652069940333,
       "min": 1.5269687688369982,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 7.6572479904212125,
-      "median": 3.4185944389154717,
+      "median": 3.3493963008982854,
       "min": 1.30258236721399,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      }
     }
    },
    "fractions": {
     "definitive 120 min below arrival": {
-     "fraction": 0.8206831119544592,
-     "n": 1054
+     "fraction": 0.8636363636363636,
+     "n": 946
     },
     "definitive 30 min below arrival": {
-     "fraction": 0.7267552182163188,
-     "n": 1054
+     "fraction": 0.7780126849894292,
+     "n": 946
     },
     "untreated 60 min above arrival": {
-     "fraction": 0.36717267552182165,
-     "n": 1054
+     "fraction": 0.3202959830866808,
+     "n": 946
     },
     "untreated 60 min more than 1 mmol/L above arrival": {
-     "fraction": 0.15370018975332067,
-     "n": 1054
+     "fraction": 0.11416490486257928,
+     "n": 946
     }
    },
    "representatives": {
     "high": {
-     "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+     "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
      "trajectories": {
       "definitive_management": {
        "0": 3.4,
@@ -5009,7 +5010,7 @@
    }
   }
  },
- "pack_digest": "05a55d81125c3eb02dd42f8f6a83ee96300e71e24518e0a56ffb4c16f0eb1b04",
+ "pack_digest": "1da1569263988ab61bb61361ec8580608b71a24c1307d4bc5a13dc75d8626b36",
  "pl2": {
   "rows": [
    {
@@ -8305,77 +8306,77 @@
    "envelopes": {
     "definitive_management": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 26.0,
       "median": 26.0,
       "min": 26.0,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 28.371547213262186,
-      "median": 24.148029732062227,
+      "median": 23.97025439733722,
       "min": 17.501792036182806,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 29.86622320557239,
-      "median": 22.495832196671813,
+      "median": 21.999938245820683,
       "min": 13.168806398999287,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 30.745873409524904,
       "median": 18.964969190632644,
       "min": 13.168806398999287,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      }
     },
     "untreated_120": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 26.0,
       "median": 26.0,
       "min": 26.0,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 28.479837291850735,
-      "median": 24.38590507059218,
+      "median": 24.298814971033167,
       "min": 17.568904826933405,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 30.781781215291666,
-      "median": 23.360106669164644,
+      "median": 23.2062912514954,
       "min": 13.168806398999287,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 34.52171097096459,
-      "median": 24.363772164845287,
+      "median": 23.707015512337833,
       "min": 13.168806398999287,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      }
     }
@@ -9651,77 +9652,77 @@
    "envelopes": {
     "definitive_management": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 24.0,
       "median": 24.0,
       "min": 24.0,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 27.68885641456012,
-      "median": 22.546864353890257,
+      "median": 22.532919771626556,
       "min": 16.345480299755945,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 30.267457116304097,
-      "median": 21.158433310818307,
+      "median": 21.037942637313247,
       "min": 15.426170495376418,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 32.13489799993974,
-      "median": 18.610475225052834,
+      "median": 18.511863895681692,
       "min": 15.426170495376418,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      }
     },
     "untreated_120": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 24.0,
       "median": 24.0,
       "min": 24.0,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 27.79187283860209,
-      "median": 22.768415938129127,
+      "median": 22.589872720048717,
       "min": 16.397056595387863,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 31.039438224783304,
-      "median": 22.338498077745697,
+      "median": 22.08074587564569,
       "min": 15.426170495376418,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 35.8461593677228,
-      "median": 24.091375528714153,
+      "median": 23.748730050669586,
       "min": 15.426170495376418,
-      "n": 1054,
+      "n": 946,
       "stopped_before": 0
      }
     }
@@ -10985,7 +10986,7 @@
     "congestion_per_excess_preload": 0.02,
     "congestion_preload_knee": 0.75,
     "final_L": 0.17264659703038565,
-    "final_hr": 81.95923154249887,
+    "final_hr": 81.95923154249886,
     "final_position": 0.8939115571050428,
     "marginal_responsiveness": 0.16321298906916498,
     "net_V_ml_eq": 1087.6195498407887,
@@ -11005,7 +11006,7 @@
     "congestion_per_excess_preload": 0.02,
     "congestion_preload_knee": 0.75,
     "final_L": 0.0,
-    "final_hr": 81.95923154249887,
+    "final_hr": 81.95923154249886,
     "final_position": 0.8939115571050428,
     "marginal_responsiveness": 0.16321298906916498,
     "net_V_ml_eq": 1087.6195498407887,
@@ -11025,7 +11026,7 @@
     "congestion_per_excess_preload": 0.05,
     "congestion_preload_knee": 0.75,
     "final_L": 0.4316164925759642,
-    "final_hr": 81.95923154249887,
+    "final_hr": 81.95923154249886,
     "final_position": 0.8939115571050428,
     "marginal_responsiveness": 0.16321298906916498,
     "net_V_ml_eq": 1087.6195498407887,
@@ -11045,7 +11046,7 @@
     "congestion_per_excess_preload": 0.05,
     "congestion_preload_knee": 0.75,
     "final_L": 0.0,
-    "final_hr": 81.95923154249887,
+    "final_hr": 81.95923154249886,
     "final_position": 0.8939115571050428,
     "marginal_responsiveness": 0.16321298906916498,
     "net_V_ml_eq": 1087.6195498407887,
@@ -11065,7 +11066,7 @@
     "congestion_per_excess_preload": 0.1,
     "congestion_preload_knee": 0.75,
     "final_L": 0.8632329851519284,
-    "final_hr": 81.95923154249887,
+    "final_hr": 81.95923154249886,
     "final_position": 0.8939115571050428,
     "marginal_responsiveness": 0.16321298906916498,
     "net_V_ml_eq": 1087.6195498407887,
@@ -11085,7 +11086,7 @@
     "congestion_per_excess_preload": 0.1,
     "congestion_preload_knee": 0.75,
     "final_L": 0.0,
-    "final_hr": 81.95923154249887,
+    "final_hr": 81.95923154249886,
     "final_position": 0.8939115571050428,
     "marginal_responsiveness": 0.16321298906916498,
     "net_V_ml_eq": 1087.6195498407887,
@@ -11105,7 +11106,7 @@
     "congestion_per_excess_preload": 0.02,
     "congestion_preload_knee": 0.85,
     "final_L": 0.07869978226436435,
-    "final_hr": 81.95923154249887,
+    "final_hr": 81.95923154249886,
     "final_position": 0.8939115571050428,
     "marginal_responsiveness": 0.16321298906916498,
     "net_V_ml_eq": 1087.6195498407887,
@@ -11125,7 +11126,7 @@
     "congestion_per_excess_preload": 0.02,
     "congestion_preload_knee": 0.85,
     "final_L": 0.0,
-    "final_hr": 81.95923154249887,
+    "final_hr": 81.95923154249886,
     "final_position": 0.8939115571050428,
     "marginal_responsiveness": 0.16321298906916498,
     "net_V_ml_eq": 1087.6195498407887,
@@ -11145,7 +11146,7 @@
     "congestion_per_excess_preload": 0.05,
     "congestion_preload_knee": 0.85,
     "final_L": 0.19674945566091076,
-    "final_hr": 81.95923154249887,
+    "final_hr": 81.95923154249886,
     "final_position": 0.8939115571050428,
     "marginal_responsiveness": 0.16321298906916498,
     "net_V_ml_eq": 1087.6195498407887,
@@ -11165,7 +11166,7 @@
     "congestion_per_excess_preload": 0.05,
     "congestion_preload_knee": 0.85,
     "final_L": 0.0,
-    "final_hr": 81.95923154249887,
+    "final_hr": 81.95923154249886,
     "final_position": 0.8939115571050428,
     "marginal_responsiveness": 0.16321298906916498,
     "net_V_ml_eq": 1087.6195498407887,
@@ -11185,7 +11186,7 @@
     "congestion_per_excess_preload": 0.1,
     "congestion_preload_knee": 0.85,
     "final_L": 0.3934989113218215,
-    "final_hr": 81.95923154249887,
+    "final_hr": 81.95923154249886,
     "final_position": 0.8939115571050428,
     "marginal_responsiveness": 0.16321298906916498,
     "net_V_ml_eq": 1087.6195498407887,
@@ -11205,7 +11206,7 @@
     "congestion_per_excess_preload": 0.1,
     "congestion_preload_knee": 0.85,
     "final_L": 0.0,
-    "final_hr": 81.95923154249887,
+    "final_hr": 81.95923154249886,
     "final_position": 0.8939115571050428,
     "marginal_responsiveness": 0.16321298906916498,
     "net_V_ml_eq": 1087.6195498407887,
@@ -11225,7 +11226,7 @@
     "congestion_per_excess_preload": 0.02,
     "congestion_preload_knee": 0.92,
     "final_L": 0.0,
-    "final_hr": 81.95923154249887,
+    "final_hr": 81.95923154249886,
     "final_position": 0.8939115571050428,
     "marginal_responsiveness": 0.16321298906916498,
     "net_V_ml_eq": 1087.6195498407887,
@@ -11245,7 +11246,7 @@
     "congestion_per_excess_preload": 0.02,
     "congestion_preload_knee": 0.92,
     "final_L": 0.0,
-    "final_hr": 81.95923154249887,
+    "final_hr": 81.95923154249886,
     "final_position": 0.8939115571050428,
     "marginal_responsiveness": 0.16321298906916498,
     "net_V_ml_eq": 1087.6195498407887,
@@ -11265,7 +11266,7 @@
     "congestion_per_excess_preload": 0.05,
     "congestion_preload_knee": 0.92,
     "final_L": 0.0,
-    "final_hr": 81.95923154249887,
+    "final_hr": 81.95923154249886,
     "final_position": 0.8939115571050428,
     "marginal_responsiveness": 0.16321298906916498,
     "net_V_ml_eq": 1087.6195498407887,
@@ -11285,7 +11286,7 @@
     "congestion_per_excess_preload": 0.05,
     "congestion_preload_knee": 0.92,
     "final_L": 0.0,
-    "final_hr": 81.95923154249887,
+    "final_hr": 81.95923154249886,
     "final_position": 0.8939115571050428,
     "marginal_responsiveness": 0.16321298906916498,
     "net_V_ml_eq": 1087.6195498407887,
@@ -11305,7 +11306,7 @@
     "congestion_per_excess_preload": 0.1,
     "congestion_preload_knee": 0.92,
     "final_L": 0.0,
-    "final_hr": 81.95923154249887,
+    "final_hr": 81.95923154249886,
     "final_position": 0.8939115571050428,
     "marginal_responsiveness": 0.16321298906916498,
     "net_V_ml_eq": 1087.6195498407887,
@@ -11325,7 +11326,7 @@
     "congestion_per_excess_preload": 0.1,
     "congestion_preload_knee": 0.92,
     "final_L": 0.0,
-    "final_hr": 81.95923154249887,
+    "final_hr": 81.95923154249886,
     "final_position": 0.8939115571050428,
     "marginal_responsiveness": 0.16321298906916498,
     "net_V_ml_eq": 1087.6195498407887,
@@ -16449,7 +16450,7 @@
        0.0,
        0.8632329851519284
       ],
-      "final_hr": 81.95923154249887,
+      "final_hr": 81.95923154249886,
       "final_position": 0.8939115571050428,
       "in_p2f_design": false,
       "marginal_responsiveness": 0.16321298906916498,
