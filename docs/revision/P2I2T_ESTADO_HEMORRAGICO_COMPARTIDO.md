@@ -190,7 +190,7 @@ el motor heredado.
 ## 4. Tablas (generado)
 
 <!-- generado:estado-sanguineo -->
-Generado desde las sondas `bc8164127f489ad28f60f955af09fc7db85f579a4fc6562fd336723ae16643ff` (`python -m clinical_core.blood_probes`). Llegada GI `gi_bleed_72f` del golden (anclas canónicas, parámetros de caso sin declarar) y perfil canónico: volumen circulante de llegada 4000 mL-eq, κ 1,0, escala de la curva 833 mL-eq, relleno: meta 50 % de lo perdido, τ 120 min, capacidad 1000 mL-eq; unidad de GR 300 mL-eq a 20 g/dL; reserva de extracción 1 (canónica). **Todos son valores PROVISIONALES (SYNTHETIC/CANDIDATE, TBD); ninguno está aprobado.** Los volúmenes son mL-eq de volumen circulante normalizado, no litros medidos; los GR, en unidades del contenido de llegada (llegada = 1).
+Generado desde las sondas `a0b9a2f7921b17f0932f8340f2aeaa9a7a2eb566610f303a6b3482574bbc7373` (`python -m clinical_core.blood_probes`). Llegada GI `gi_bleed_72f` del golden (anclas canónicas, parámetros de caso sin declarar) y perfil canónico: volumen circulante de llegada 4000 mL-eq, κ 1,0, escala de la curva 833 mL-eq, relleno: meta 50 % de lo perdido, τ 120 min, capacidad 1000 mL-eq; unidad de GR 300 mL-eq a 20 g/dL; reserva de extracción 1 (canónica). **Todos son valores PROVISIONALES (SYNTHETIC/CANDIDATE, TBD); ninguno está aprobado.** Los volúmenes son mL-eq de volumen circulante normalizado, no litros medidos; los GR, en unidades del contenido de llegada (llegada = 1).
 
 ### 4.1 Sondas A–K
 

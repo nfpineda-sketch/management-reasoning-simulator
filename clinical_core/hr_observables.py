@@ -640,7 +640,7 @@ def trajectories(source: dict, support: list, units: list, joint: list, factor: 
                 **{name: _spread([c[name] for c in contrast])
                    for name in ("diverges_at", "diverges_by_1_bpm_at", "largest_difference", "largest_at",
                                 "prbc_minus_fluid_at_largest", "acute_signal_diverges_at", "debt_diverges_at")},
-                "first_input": {kind: sum(1 for c in contrast if c["first_input"] == kind)
+                "first_input": {str(kind).lower(): sum(1 for c in contrast if c["first_input"] == kind)
                                 for kind in ("acute", "debt", None)}}}
 
 

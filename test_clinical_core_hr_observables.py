@@ -27,7 +27,7 @@ SOURCE = ROOT / "clinical_core" / "hr_observables.py"
 #: The P2I-2AJ freeze: faculty decisions, the P2I-2AI record, the case-truth rule, the reuse, demand, HR,
 #: identifiability, trajectory and envelope rules, the verdict, the policy and every clinical_core source but the
 #: downstream reports, committed before any HR trajectory distribution was read.
-FROZEN_DIGEST = "6f17319a522ccfd3b376671a0623ab071343a6d32e3af7c699e506d4ccd8e4ff"
+FROZEN_DIGEST = "2437e1b1c3075e180ef0fec912867974af43242a828c356190193820933fec4d"
 C57, C72 = ho.C57, ho.C72
 
 
@@ -214,6 +214,8 @@ def test_the_trajectory_machinery_reproduces_the_core_on_one_survivor(factor):
     names = {f"{block}.{name}" for block, names in ho.READINGS.items() for name in names}
     assert set(traj["distributions"][C57]) == names == set(traj["distributions"][C72])
     assert traj["fluid_vs_prbc_72f"]["pairs"] == len(joint)
+    assert set(traj["fluid_vs_prbc_72f"]["first_input"]) == {"acute", "debt", "none"}
+    json.dumps({"checked": checked, "trajectories": traj}, sort_keys=True)  # the record is written with sorted keys
 
 
 def test_the_fluid_prbc_contrast_names_the_first_diverging_input():
