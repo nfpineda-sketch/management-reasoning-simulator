@@ -2322,7 +2322,7 @@
    "pea": "pea"
   }
  },
- "freeze_digest": "a8f00e04320823d24d5d1d802ae2eae14564fb970da4d7c0d44c65368fc9a8b0",
+ "freeze_digest": "c3fd2dd7de4b1621d6a772b24946812ddbf68a023cdea27c65018061b7d8c7ad",
  "hr": {
   "gi_bleed_57m": {
    "arrival_hr": 124.0,
@@ -2865,17 +2865,17 @@
        },
        "30": {
         "beta_factor": 1.0,
-        "hr": 117.74997128844343,
+        "hr": 117.8054254158358,
         "intrinsic_bpm": 60.0,
         "other_chronotropic_bpm": 0.0,
-        "sympathetic_bpm": 57.74997128844343
+        "sympathetic_bpm": 57.8054254158358
        },
        "60": {
         "beta_factor": 1.0,
-        "hr": 124.85061513907549,
+        "hr": 124.90606926646785,
         "intrinsic_bpm": 60.0,
         "other_chronotropic_bpm": 0.0,
-        "sympathetic_bpm": 64.85061513907549
+        "sympathetic_bpm": 64.90606926646785
        }
       },
       "intrinsic upper": {
@@ -2888,17 +2888,17 @@
        },
        "30": {
         "beta_factor": 1.0,
-        "hr": 117.74997128844343,
+        "hr": 117.8054254158358,
         "intrinsic_bpm": 100.0,
-        "other_chronotropic_bpm": 3.552713678800501e-15,
-        "sympathetic_bpm": 17.74997128844343
+        "other_chronotropic_bpm": 0.0,
+        "sympathetic_bpm": 17.8054254158358
        },
        "60": {
         "beta_factor": 1.0,
-        "hr": 124.85061513907547,
+        "hr": 124.90606926646784,
         "intrinsic_bpm": 100.0,
         "other_chronotropic_bpm": -3.552713678800501e-15,
-        "sympathetic_bpm": 24.850615139075476
+        "sympathetic_bpm": 24.906069266467842
        }
       },
       "middle": {
@@ -2911,17 +2911,17 @@
        },
        "30": {
         "beta_factor": 1.0,
-        "hr": 117.74997128844343,
+        "hr": 117.8054254158358,
         "intrinsic_bpm": 80.0,
         "other_chronotropic_bpm": 0.0,
-        "sympathetic_bpm": 37.74997128844343
+        "sympathetic_bpm": 37.8054254158358
        },
        "60": {
         "beta_factor": 1.0,
-        "hr": 124.85061513907547,
+        "hr": 124.90606926646784,
         "intrinsic_bpm": 80.0,
         "other_chronotropic_bpm": 0.0,
-        "sympathetic_bpm": 44.85061513907547
+        "sympathetic_bpm": 44.90606926646784
        }
       }
      },
@@ -2949,7 +2949,7 @@
        "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
        "max": 133.49105425142002,
        "median": 125.18355044119428,
-       "min": 118.00418529565582,
+       "min": 118.09561684187722,
        "n": 1054,
        "stopped_before": 0
       }
@@ -3818,10 +3818,10 @@
       },
       "60": {
        "argmax": "debt_clearance_tau_min=30,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
-       "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=upper;delivery=upper",
+       "argmin": "debt_clearance_tau_min=60,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=upper",
        "max": 121.84061183341312,
        "median": 113.96094223461492,
-       "min": 105.83476815587959,
+       "min": 105.92932534243431,
        "n": 1054,
        "stopped_before": 0
       }
@@ -4081,9 +4081,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 3.65655541688345,
-       "60": 3.0746806711193972,
-       "120": 2.26233402711048
+       "30": 3.6527537585281658,
+       "60": 3.0690832768097764,
+       "120": 2.2567427857037656
       }
      },
      {
@@ -4094,9 +4094,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 4.046185111804905,
-       "60": 3.618247912383755,
-       "120": 2.7920256219988913
+       "30": 3.9125068884758014,
+       "60": 3.4314614376526817,
+       "120": 2.609870515629371
       }
      },
      {
@@ -4107,9 +4107,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 4.825444501647816,
-       "60": 4.705382394912473,
-       "120": 3.8514088117757153
+       "30": 4.432013148371075,
+       "60": 4.156217759338492,
+       "120": 3.3161259754805896
       }
      },
      {
@@ -4120,9 +4120,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 4.268199687740906,
-       "60": 4.012986592327715,
-       "120": 3.425684356442911
+       "30": 4.134521464411803,
+       "60": 3.826200117596642,
+       "120": 3.2435292500733923
       }
      },
      {
@@ -4133,9 +4133,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 4.046185111804905,
-       "60": 3.618247912383755,
-       "120": 2.7920256219988913
+       "30": 3.9125068884758014,
+       "60": 3.4314614376526817,
+       "120": 2.609870515629371
       }
      },
      {
@@ -4146,9 +4146,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 4.001782196617704,
-       "60": 3.539300176394963,
-       "120": 2.6652938751100876
+       "30": 3.868103973288602,
+       "60": 3.3525137016638906,
+       "120": 2.4831387687405693
       }
      },
      {
@@ -4159,9 +4159,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 3.7788286651467002,
-       "60": 3.2446749629216116,
-       "120": 2.4277154092598545
+       "30": 3.9125068884758014,
+       "60": 3.4314614376526817,
+       "120": 2.609870515629371
       }
      },
      {
@@ -4172,9 +4172,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 4.046185111804905,
-       "60": 3.618247912383755,
-       "120": 2.7920256219988913
+       "30": 3.9125068884758014,
+       "60": 3.4314614376526817,
+       "120": 2.609870515629371
       }
      },
      {
@@ -4185,9 +4185,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 4.44721978179221,
-       "60": 4.17860733657697,
-       "120": 3.338490941107449
+       "30": 3.9125068884758014,
+       "60": 3.4314614376526817,
+       "120": 2.609870515629371
       }
      },
      {
@@ -4198,9 +4198,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 3.606361880429276,
-       "60": 2.8671341865770064,
-       "120": 1.8473418065586649
+       "30": 2.950997050473063,
+       "60": 2.1289237274669164,
+       "120": 1.3837686355847143
       }
      },
      {
@@ -4211,9 +4211,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 4.046185111804905,
-       "60": 3.618247912383755,
-       "120": 2.7920256219988913
+       "30": 3.9125068884758014,
+       "60": 3.4314614376526817,
+       "120": 2.609870515629371
       }
      },
      {
@@ -4224,9 +4224,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 4.213230281592953,
-       "60": 3.9673261502058055,
-       "120": 3.4286006897908927
+       "30": 4.284405036682566,
+       "60": 4.074254848865481,
+       "120": 3.551450502208776
       }
      }
     ],
@@ -4239,9 +4239,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 3.7106308027988413,
-       "60": 3.3666387081005915,
-       "120": 3.769212498259263
+       "30": 3.688804015805094,
+       "60": 3.263721968130573,
+       "120": 3.2613284331362853
       }
      },
      {
@@ -4252,9 +4252,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 4.154659954670844,
-       "60": 4.156116067988511,
-       "120": 5.0365299671473025
+       "30": 3.984823450386428,
+       "60": 3.790040208055853,
+       "120": 4.106206745728313
       }
      },
      {
@@ -4265,9 +4265,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 5.042718258414846,
-       "60": 5.735070787764345,
-       "120": 7.571164904923373
+       "30": 4.576862319549097,
+       "60": 4.84267668790641,
+       "120": 5.795963370912361
       }
      },
      {
@@ -4278,9 +4278,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 4.376674530606845,
-       "60": 4.550854747932471,
-       "120": 5.670188701591323
+       "30": 4.206838026322428,
+       "60": 4.184778887999812,
+       "120": 4.739865480172331
       }
      },
      {
@@ -4291,9 +4291,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 4.154659954670844,
-       "60": 4.156116067988511,
-       "120": 5.0365299671473025
+       "30": 3.984823450386428,
+       "60": 3.790040208055853,
+       "120": 4.106206745728313
       }
      },
      {
@@ -4304,9 +4304,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 4.110257039483645,
-       "60": 4.0771683319997205,
-       "120": 4.9097982202585
+       "30": 3.940420535199228,
+       "60": 3.7110924720670604,
+       "120": 3.979474998839508
       }
      },
      {
@@ -4317,9 +4317,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 3.8149869461020134,
-       "60": 3.4239643481231963,
-       "120": 3.175883524309324
+       "30": 3.984823450386428,
+       "60": 3.790040208055853,
+       "120": 4.106206745728313
       }
      },
      {
@@ -4330,9 +4330,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 4.154659954670844,
-       "60": 4.156116067988511,
-       "120": 5.0365299671473025
+       "30": 3.984823450386428,
+       "60": 3.790040208055853,
+       "120": 4.106206745728313
       }
      },
      {
@@ -4343,9 +4343,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 4.66416946752409,
-       "60": 5.254343647786481,
-       "120": 7.827499631404269
+       "30": 3.984823450386428,
+       "60": 3.790040208055853,
+       "120": 4.106206745728313
       }
      },
      {
@@ -4356,9 +4356,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 3.869223311726748,
-       "60": 4.030736215059882,
-       "120": 5.944330125649598
+       "30": 3.016712408297432,
+       "60": 2.4198242345876366,
+       "120": 2.408015715357447
       }
      },
      {
@@ -4369,9 +4369,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 4.154659954670844,
-       "60": 4.156116067988511,
-       "120": 5.0365299671473025
+       "30": 3.984823450386428,
+       "60": 3.790040208055853,
+       "120": 4.106206745728313
       }
      },
      {
@@ -4382,9 +4382,9 @@
       "stopped_at": null,
       "values": {
        "0": 4.4,
-       "30": 4.269096436587949,
-       "60": 4.255081002488534,
-       "120": 4.711884464245915
+       "30": 4.358893243342563,
+       "60": 4.457927985242454,
+       "120": 5.262495534815466
       }
      }
     ]
@@ -4401,28 +4401,28 @@
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 9.530785432944645,
-      "median": 4.023432056182912,
+      "max": 5.1225771774426185,
+      "median": 3.927785159083336,
       "min": 2.6344563487516397,
       "n": 1054,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 10.831756986996199,
-      "median": 3.660500373242911,
+      "max": 5.674363767877839,
+      "median": 3.556459947307236,
       "min": 1.7347861376319982,
       "n": 1054,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 7.652252201490596,
-      "median": 3.040260149628825,
+      "max": 6.047671880639271,
+      "median": 2.8792190373343542,
       "min": 1.042729200863597,
       "n": 1054,
       "stopped_before": 0
@@ -4439,29 +4439,29 @@
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 9.794614712298895,
-      "median": 4.087921186860507,
-      "min": 2.641684398781957,
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
+      "max": 5.159625973054087,
+      "median": 3.984823450386428,
+      "min": 2.645298423797115,
       "n": 1054,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 14.018873746546346,
-      "median": 3.9649020697814885,
-      "min": 1.7871265046597318,
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
+      "max": 6.063835723781853,
+      "median": 3.7455366573765567,
+      "min": 1.8132966881735977,
       "n": 1054,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 21.966402453676974,
-      "median": 4.614048672171863,
-      "min": 1.3720279677778993,
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
+      "max": 8.416482490701677,
+      "median": 3.979474998839508,
+      "min": 1.5366773512350498,
       "n": 1054,
       "stopped_before": 0
      }
@@ -4469,42 +4469,42 @@
    },
    "fractions": {
     "definitive 120 min below arrival": {
-     "fraction": 0.8889943074003795,
+     "fraction": 0.8975332068311196,
      "n": 1054
     },
     "definitive 30 min below arrival": {
-     "fraction": 0.7722960151802657,
+     "fraction": 0.8036053130929791,
      "n": 1054
     },
     "untreated 60 min above arrival": {
-     "fraction": 0.33301707779886147,
+     "fraction": 0.28178368121442127,
      "n": 1054
     },
     "untreated 60 min more than 1 mmol/L above arrival": {
-     "fraction": 0.19070208728652752,
+     "fraction": 0.11954459203036052,
      "n": 1054
     }
    },
    "representatives": {
     "high": {
-     "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+     "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
      "trajectories": {
       "definitive_management": {
        "0": 4.4,
-       "30": 9.530785432944645,
-       "60": 10.831756986996199,
-       "120": 7.652252201490596
+       "30": 5.1225771774426185,
+       "60": 5.572803574213648,
+       "120": 5.515211365133277
       },
       "untreated_120": {
        "0": 4.4,
-       "30": 9.794614712298895,
-       "60": 14.018873746546346,
-       "120": 21.966402453676974
+       "30": 5.159625973054087,
+       "60": 6.063835723781853,
+       "120": 8.416482490701677
       }
      }
     },
     "low": {
-     "candidate": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
+     "candidate": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
      "trajectories": {
       "definitive_management": {
        "0": 4.4,
@@ -4514,9 +4514,9 @@
       },
       "untreated_120": {
        "0": 4.4,
-       "30": 2.641684398781957,
-       "60": 1.7871265046597318,
-       "120": 1.3720279677778993
+       "30": 2.645298423797115,
+       "60": 1.8132966881735977,
+       "120": 1.5366773512350498
       }
      }
     },
@@ -4525,15 +4525,15 @@
      "trajectories": {
       "definitive_management": {
        "0": 4.4,
-       "30": 4.046185111804905,
-       "60": 3.618247912383755,
-       "120": 2.7920256219988913
+       "30": 3.9125068884758014,
+       "60": 3.4314614376526817,
+       "120": 2.609870515629371
       },
       "untreated_120": {
        "0": 4.4,
-       "30": 4.154659954670844,
-       "60": 4.156116067988511,
-       "120": 5.0365299671473025
+       "30": 3.984823450386428,
+       "60": 3.790040208055853,
+       "120": 4.106206745728313
       }
      }
     }
@@ -4550,9 +4550,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 2.8820286868570637,
-       "60": 2.4750083304890493,
-       "120": 1.9017945964394816
+       "30": 2.87707413048924,
+       "60": 2.4675479430375296,
+       "120": 1.8942694100711037
       }
      },
      {
@@ -4563,9 +4563,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 3.2847905718026733,
-       "60": 3.0412264265572735,
-       "120": 2.4555744607585313
+       "30": 3.145582053786313,
+       "60": 2.845026673749679,
+       "120": 2.2634559862838017
       }
      },
      {
@@ -4576,9 +4576,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 4.090314341693894,
-       "60": 4.173662618693722,
-       "120": 3.5631341893966297
+       "30": 3.6825979003804603,
+       "60": 3.599984135173982,
+       "120": 3.0018291387092058
       }
      },
      {
@@ -4589,9 +4589,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 3.5068051477386732,
-       "60": 3.435965106501232,
-       "120": 3.0892331952025494
+       "30": 3.367596629722316,
+       "60": 3.239765353693641,
+       "120": 2.897114720727824
       }
      },
      {
@@ -4602,9 +4602,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 3.2847905718026733,
-       "60": 3.0412264265572735,
-       "120": 2.4555744607585313
+       "30": 3.145582053786313,
+       "60": 2.845026673749679,
+       "120": 2.2634559862838017
       }
      },
      {
@@ -4615,9 +4615,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 3.2403876566154737,
-       "60": 2.9622786905684824,
-       "120": 2.3288427138697254
+       "30": 3.1011791385991128,
+       "60": 2.766078937760887,
+       "120": 2.136724239394998
       }
      },
      {
@@ -4628,9 +4628,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 3.006373535769957,
-       "60": 2.6488269209420894,
-       "120": 2.0713375118090784
+       "30": 3.145582053786313,
+       "60": 2.845026673749679,
+       "120": 2.2634559862838017
       }
      },
      {
@@ -4641,9 +4641,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 3.2847905718026733,
-       "60": 3.0412264265572735,
-       "120": 2.4555744607585313
+       "30": 3.145582053786313,
+       "60": 2.845026673749679,
+       "120": 2.2634559862838017
       }
      },
      {
@@ -4654,9 +4654,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 3.702416125851746,
-       "60": 3.6298256849800485,
-       "120": 3.0319298841827056
+       "30": 3.145582053786313,
+       "60": 2.845026673749679,
+       "120": 2.2634559862838017
       }
      },
      {
@@ -4667,9 +4667,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 3.13530820184562,
-       "60": 2.6603740693434457,
-       "120": 1.8160336218105608
+       "30": 2.4510552248372246,
+       "60": 1.8824865861518605,
+       "120": 1.3253730058844388
       }
      },
      {
@@ -4680,9 +4680,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 3.2847905718026733,
-       "60": 3.0412264265572735,
-       "120": 2.4555744607585313
+       "30": 3.145582053786313,
+       "60": 2.845026673749679,
+       "120": 2.2634559862838017
       }
      },
      {
@@ -4693,9 +4693,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 3.3396200603735213,
-       "60": 3.2047428201096935,
-       "120": 2.842347517800752
+       "30": 3.413680233519805,
+       "60": 3.316941786602705,
+       "120": 2.971745415294197
       }
      }
     ],
@@ -4708,9 +4708,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 2.9274966434829386,
-       "60": 2.720856662712612,
-       "120": 3.1110622911512
+       "30": 2.9073861015731577,
+       "60": 2.6314468311865737,
+       "120": 2.700447873212251
       }
      },
      {
@@ -4721,9 +4721,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 3.3715257953549393,
-       "60": 3.5103340226005306,
-       "120": 4.378379760039238
+       "30": 3.2034055361544924,
+       "60": 3.1577650711118532,
+       "120": 3.5453261858042766
       }
      },
      {
@@ -4734,9 +4734,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 4.259584099098945,
-       "60": 5.089288742376371,
-       "120": 6.913014697815314
+       "30": 3.7954444053171628,
+       "60": 4.210401550962413,
+       "120": 5.235082810988328
       }
      },
      {
@@ -4747,9 +4747,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 3.593540371290942,
-       "60": 3.9050727025444902,
-       "120": 5.012038494483257
+       "30": 3.4254201120904924,
+       "60": 3.552503751055811,
+       "120": 4.178984920248296
       }
      },
      {
@@ -4760,9 +4760,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 3.3715257953549393,
-       "60": 3.5103340226005306,
-       "120": 4.378379760039238
+       "30": 3.2034055361544924,
+       "60": 3.1577650711118532,
+       "120": 3.5453261858042766
       }
      },
      {
@@ -4773,9 +4773,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 3.3271228801677397,
-       "60": 3.431386286611738,
-       "120": 4.251648013150433
+       "30": 3.159002620967293,
+       "60": 3.07881733512306,
+       "120": 3.4185944389154717
       }
      },
      {
@@ -4786,9 +4786,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 3.035285276954045,
-       "60": 2.805196119623174,
-       "120": 2.7122726115693143
+       "30": 3.2034055361544924,
+       "60": 3.1577650711118532,
+       "120": 3.5453261858042766
       }
      },
      {
@@ -4799,9 +4799,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 3.3715257953549393,
-       "60": 3.5103340226005306,
-       "120": 4.378379760039238
+       "30": 3.2034055361544924,
+       "60": 3.1577650711118532,
+       "120": 3.5453261858042766
       }
      },
      {
@@ -4812,9 +4812,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 3.8758865729562837,
-       "60": 4.568040877066563,
-       "120": 6.877540482744122
+       "30": 3.2034055361544924,
+       "60": 3.1577650711118532,
+       "120": 3.5453261858042766
       }
      },
      {
@@ -4825,9 +4825,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 3.347088942772092,
-       "60": 3.680412047736775,
-       "120": 5.310226647220395
+       "30": 2.5040004100688424,
+       "60": 2.137496080750193,
+       "120": 2.1989212622368965
       }
      },
      {
@@ -4838,9 +4838,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 3.3715257953549393,
-       "60": 3.5103340226005306,
-       "120": 4.378379760039238
+       "30": 3.2034055361544924,
+       "60": 3.1577650711118532,
+       "120": 3.5453261858042766
       }
      },
      {
@@ -4851,9 +4851,9 @@
       "stopped_at": null,
       "values": {
        "0": 3.4,
-       "30": 3.384183710707797,
-       "60": 3.4552460302942105,
-       "120": 3.9430663968989745
+       "30": 3.47309843396551,
+       "60": 3.6509460668487304,
+       "120": 4.4393705874251665
       }
      }
     ]
@@ -4870,28 +4870,28 @@
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 9.074544006636504,
-      "median": 3.200031055531277,
+      "max": 4.24780007544217,
+      "median": 3.1174395409346594,
       "min": 2.124885140765072,
       "n": 1054,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 11.591812622026527,
-      "median": 3.0412787341707266,
+      "max": 5.001813422183162,
+      "median": 2.86814592063066,
       "min": 1.4751233216231094,
       "n": 1054,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 8.656609722947458,
-      "median": 2.573561514476915,
+      "max": 5.678907899534749,
+      "median": 2.4541538253204074,
       "min": 0.9753044228459307,
       "n": 1054,
       "stopped_before": 0
@@ -4908,29 +4908,29 @@
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 9.267307277063258,
-      "median": 3.247214969427641,
-      "min": 2.1296498258996874,
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
+      "max": 4.274868908967507,
+      "median": 3.159002620967293,
+      "min": 2.132032168466993,
       "n": 1054,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 13.631218434564447,
-      "median": 3.2854518235890686,
-      "min": 1.5096869530990356,
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
+      "max": 5.265261977387428,
+      "median": 3.07881733512306,
+      "min": 1.5269687688369982,
       "n": 1054,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 21.098960686843036,
-      "median": 3.9274242538943933,
-      "min": 1.1934897190913039,
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
+      "max": 7.6572479904212125,
+      "median": 3.4185944389154717,
+      "min": 1.30258236721399,
       "n": 1054,
       "stopped_before": 0
      }
@@ -4938,42 +4938,42 @@
    },
    "fractions": {
     "definitive 120 min below arrival": {
-     "fraction": 0.8092979127134725,
+     "fraction": 0.8206831119544592,
      "n": 1054
     },
     "definitive 30 min below arrival": {
-     "fraction": 0.6755218216318786,
+     "fraction": 0.7267552182163188,
      "n": 1054
     },
     "untreated 60 min above arrival": {
-     "fraction": 0.45635673624288425,
+     "fraction": 0.36717267552182165,
      "n": 1054
     },
     "untreated 60 min more than 1 mmol/L above arrival": {
-     "fraction": 0.23908918406072105,
+     "fraction": 0.15370018975332067,
      "n": 1054
     }
    },
    "representatives": {
     "high": {
-     "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+     "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
      "trajectories": {
       "definitive_management": {
        "0": 3.4,
-       "30": 9.074544006636504,
-       "60": 11.591812622026527,
-       "120": 8.656609722947458
+       "30": 4.24780007544217,
+       "60": 4.956062036302489,
+       "120": 5.211527106671074
       },
       "untreated_120": {
        "0": 3.4,
-       "30": 9.267307277063258,
-       "60": 13.631218434564447,
-       "120": 21.098960686843036
+       "30": 4.274868908967507,
+       "60": 5.265261977387428,
+       "120": 7.6572479904212125
       }
      }
     },
     "low": {
-     "candidate": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
+     "candidate": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
      "trajectories": {
       "definitive_management": {
        "0": 3.4,
@@ -4983,9 +4983,9 @@
       },
       "untreated_120": {
        "0": 3.4,
-       "30": 2.1296498258996874,
-       "60": 1.5096869530990356,
-       "120": 1.1934897190913039
+       "30": 2.132032168466993,
+       "60": 1.5269687688369982,
+       "120": 1.30258236721399
       }
      }
     },
@@ -4994,22 +4994,22 @@
      "trajectories": {
       "definitive_management": {
        "0": 3.4,
-       "30": 3.2847905718026733,
-       "60": 3.0412264265572735,
-       "120": 2.4555744607585313
+       "30": 3.145582053786313,
+       "60": 2.845026673749679,
+       "120": 2.2634559862838017
       },
       "untreated_120": {
        "0": 3.4,
-       "30": 3.3715257953549393,
-       "60": 3.5103340226005306,
-       "120": 4.378379760039238
+       "30": 3.2034055361544924,
+       "60": 3.1577650711118532,
+       "120": 3.5453261858042766
       }
      }
     }
    }
   }
  },
- "pack_digest": "5bb33da5a018030069d060583dc1c327464af09b56f8f5b0f31793772ea9caed",
+ "pack_digest": "05a55d81125c3eb02dd42f8f6a83ee96300e71e24518e0a56ffb4c16f0eb1b04",
  "pl2": {
   "rows": [
    {
@@ -7983,7 +7983,7 @@
      }
     ]
    },
-   "ceiling": 38.106209836293374,
+   "ceiling": 34.52171097096459,
    "effects": {
     "definitive_management": [
      {
@@ -7994,9 +7994,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 25.18703329660155,
-       "60": 24.156499045189296,
-       "120": 22.010695695971062
+       "30": 24.870782017611443,
+       "60": 23.689831654139297,
+       "120": 21.50830555778581
       }
      },
      {
@@ -8007,9 +8007,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 24.637306526952298,
-       "60": 22.783676512449034,
-       "120": 18.456007043107824
+       "30": 24.083618264438336,
+       "60": 21.89694382739947,
+       "120": 17.348793761410214
       }
      },
      {
@@ -8020,9 +8020,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 24.80275007822894,
-       "60": 23.05486551737812,
-       "120": 18.473123466601397
+       "30": 24.294785046256944,
+       "60": 22.1719210216707,
+       "120": 17.194405139577935
       }
      },
      {
@@ -8033,9 +8033,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 25.125690637678808,
-       "60": 23.8391938967183,
-       "120": 20.42294206711995
+       "30": 24.752961586358744,
+       "60": 23.18539147147097,
+       "120": 19.46034669496387
       }
      },
      {
@@ -8046,9 +8046,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 24.637306526952298,
-       "60": 22.783676512449034,
-       "120": 18.456007043107824
+       "30": 24.083618264438336,
+       "60": 21.89694382739947,
+       "120": 17.348793761410214
       }
      },
      {
@@ -8059,9 +8059,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 24.477316185195537,
-       "60": 22.446278323682094,
-       "120": 17.853411134546967
+       "30": 23.866040139815865,
+       "60": 21.48933293425195,
+       "120": 16.70674847594847
       }
      },
      {
@@ -8072,9 +8072,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 24.637306526952298,
-       "60": 22.783676512449034,
-       "120": 18.456007043107824
+       "30": 24.083618264438336,
+       "60": 21.89694382739947,
+       "120": 17.348793761410214
       }
      },
      {
@@ -8085,9 +8085,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 24.637306526952298,
-       "60": 22.783676512449034,
-       "120": 18.456007043107824
+       "30": 24.083618264438336,
+       "60": 21.89694382739947,
+       "120": 17.348793761410214
       }
      },
      {
@@ -8098,9 +8098,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 24.725580629124238,
-       "60": 22.99202716046608,
-       "120": 18.944700368666734
+       "30": 24.207759812388268,
+       "60": 22.162736250245153,
+       "120": 17.90921140376365
       }
      },
      {
@@ -8111,9 +8111,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 24.869606418385132,
-       "60": 23.3319668005796,
-       "120": 19.742040020822664
+       "30": 24.410306017715087,
+       "60": 22.596396435260132,
+       "120": 18.823574634538467
       }
      },
      {
@@ -8124,9 +8124,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 24.637306526952298,
-       "60": 22.783676512449034,
-       "120": 18.456007043107824
+       "30": 24.083618264438336,
+       "60": 21.89694382739947,
+       "120": 17.348793761410214
       }
      },
      {
@@ -8137,9 +8137,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 24.41677606067085,
-       "60": 22.263165236472034,
-       "120": 17.235130655781678
+       "30": 23.773482077485404,
+       "60": 21.23292883883505,
+       "120": 15.948732351101839
       }
      }
     ],
@@ -8152,9 +8152,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 25.43995676027956,
-       "60": 25.44332953749121,
-       "120": 27.378422597506926
+       "30": 25.042495756434953,
+       "60": 24.57656799865906,
+       "120": 25.32738844734308
       }
      },
      {
@@ -8165,9 +8165,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 25.070566812500196,
-       "60": 25.076287319283274,
-       "120": 28.11534659139998
+       "30": 24.38590507059218,
+       "60": 23.55650460667177,
+       "120": 24.878780770212266
       }
      },
      {
@@ -8178,9 +8178,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 25.191649198014048,
-       "60": 25.19673308488825,
-       "120": 28.079863551198056
+       "30": 24.57362435181831,
+       "60": 23.799930821994433,
+       "120": 25.02043683926594
       }
      },
      {
@@ -8191,9 +8191,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 25.4103612042067,
-       "60": 25.414078438089415,
-       "120": 27.231537902911878
+       "30": 24.95768873003826,
+       "60": 24.38892241771031,
+       "120": 25.285111501187387
       }
      },
      {
@@ -8204,9 +8204,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 25.070566812500196,
-       "60": 25.076287319283274,
-       "120": 28.11534659139998
+       "30": 24.38590507059218,
+       "60": 23.55650460667177,
+       "120": 24.878780770212266
       }
      },
      {
@@ -8217,9 +8217,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 24.958546659950258,
-       "60": 24.964918108197168,
-       "120": 28.42217985772352
+       "30": 24.199260336288894,
+       "60": 23.287815359064485,
+       "120": 24.745204051252855
       }
      },
      {
@@ -8230,9 +8230,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 25.070566812500196,
-       "60": 25.076287319283274,
-       "120": 28.11534659139998
+       "30": 24.38590507059218,
+       "60": 23.55650460667177,
+       "120": 24.878780770212266
       }
      },
      {
@@ -8243,9 +8243,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 25.070566812500196,
-       "60": 25.076287319283274,
-       "120": 28.11534659139998
+       "30": 24.38590507059218,
+       "60": 23.55650460667177,
+       "120": 24.878780770212266
       }
      },
      {
@@ -8256,9 +8256,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 25.130774688870112,
-       "60": 25.136124626181605,
-       "120": 28.11534659139998
+       "30": 24.490464741223825,
+       "60": 23.714792120535698,
+       "120": 24.951412380185467
       }
      },
      {
@@ -8269,9 +8269,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 25.229008334985366,
-       "60": 25.233753660532948,
-       "120": 27.820695684121524
+       "30": 24.661061651495977,
+       "60": 23.973050018984694,
+       "120": 25.06991627537439
       }
      },
      {
@@ -8282,9 +8282,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 25.070566812500196,
-       "60": 25.076287319283274,
-       "120": 28.11534659139998
+       "30": 24.38590507059218,
+       "60": 23.55650460667177,
+       "120": 24.878780770212266
       }
      },
      {
@@ -8295,9 +8295,9 @@
       "stopped_at": null,
       "values": {
        "0": 26.0,
-       "30": 24.92015269643463,
-       "60": 24.926798977100976,
-       "120": 28.45768210512705
+       "30": 24.124689239999903,
+       "60": 23.161063380082453,
+       "120": 24.697329105227183
       }
      }
     ]
@@ -8314,28 +8314,28 @@
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 35.55804945803109,
-      "median": 24.544625680169048,
+      "max": 28.371547213262186,
+      "median": 24.148029732062227,
       "min": 17.501792036182806,
       "n": 1054,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 36.401690594096706,
-      "median": 22.9774636000416,
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
+      "max": 29.86622320557239,
+      "median": 22.495832196671813,
       "min": 13.168806398999287,
       "n": 1054,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
-      "max": 33.581925894269716,
-      "median": 19.8706963229832,
+      "max": 30.745873409524904,
+      "median": 18.964969190632644,
       "min": 13.168806398999287,
       "n": 1054,
       "stopped_before": 0
@@ -8352,28 +8352,28 @@
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 35.75672165837034,
-      "median": 24.805675774887206,
-      "min": 17.546558147026058,
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
+      "max": 28.479837291850735,
+      "median": 24.38590507059218,
+      "min": 17.568904826933405,
       "n": 1054,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 37.489570166184066,
-      "median": 24.303286106970134,
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
+      "max": 30.781781215291666,
+      "median": 23.360106669164644,
       "min": 13.168806398999287,
       "n": 1054,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
-      "max": 38.106209836293374,
-      "median": 26.756854444954335,
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
+      "max": 34.52171097096459,
+      "median": 24.363772164845287,
       "min": 13.168806398999287,
       "n": 1054,
       "stopped_before": 0
@@ -8418,21 +8418,21 @@
        "rr_ventilatory": 13.168806398999287
       },
       "30": {
-       "lactate": 3.662922909660005,
-       "rr": 22.988500063467153,
-       "rr_metabolic": 9.819693664467867,
+       "lactate": 3.6569987537125344,
+       "rr": 22.961496924335126,
+       "rr_metabolic": 9.79269052533584,
        "rr_ventilatory": 13.168806398999287
       },
       "60": {
-       "lactate": 3.198217716201339,
-       "rr": 20.71756982446625,
-       "rr_metabolic": 7.548763425466961,
+       "lactate": 3.151441306864404,
+       "rr": 20.47095162883347,
+       "rr_metabolic": 7.302145229834182,
        "rr_ventilatory": 13.168806398999287
       },
       "120": {
-       "lactate": 3.262310793911703,
-       "rr": 21.049915465477678,
-       "rr_metabolic": 7.881109066478391,
+       "lactate": 2.923393963571245,
+       "rr": 19.217788675785464,
+       "rr_metabolic": 6.048982276786178,
        "rr_ventilatory": 13.168806398999287
       }
      }
@@ -8446,21 +8446,21 @@
        "rr_ventilatory": 13.168806398999287
       },
       "30": {
-       "lactate": 4.046185111804905,
-       "rr": 24.637306526952298,
-       "rr_metabolic": 11.46850012795301,
+       "lactate": 3.9125068884758014,
+       "rr": 24.083618264438336,
+       "rr_metabolic": 10.91481186543905,
        "rr_ventilatory": 13.168806398999287
       },
       "60": {
-       "lactate": 3.618247912383755,
-       "rr": 22.783676512449034,
-       "rr_metabolic": 9.614870113449747,
+       "lactate": 3.4314614376526817,
+       "rr": 21.89694382739947,
+       "rr_metabolic": 8.72813742840018,
        "rr_ventilatory": 13.168806398999287
       },
       "120": {
-       "lactate": 2.7920256219988913,
-       "rr": 18.456007043107824,
-       "rr_metabolic": 5.287200644108539,
+       "lactate": 2.609870515629371,
+       "rr": 17.348793761410214,
+       "rr_metabolic": 4.179987362410928,
        "rr_ventilatory": 13.168806398999287
       }
      },
@@ -8473,21 +8473,21 @@
        "rr_ventilatory": 13.168806398999287
       },
       "30": {
-       "lactate": 4.154659954670844,
-       "rr": 25.070566812500196,
-       "rr_metabolic": 11.90176041350091,
+       "lactate": 3.984823450386428,
+       "rr": 24.38590507059218,
+       "rr_metabolic": 11.217098671592893,
        "rr_ventilatory": 13.168806398999287
       },
       "60": {
-       "lactate": 4.156116067988511,
-       "rr": 25.076287319283274,
-       "rr_metabolic": 11.907480920283989,
+       "lactate": 3.790040208055853,
+       "rr": 23.55650460667177,
+       "rr_metabolic": 10.387698207672482,
        "rr_ventilatory": 13.168806398999287
       },
       "120": {
-       "lactate": 5.0365299671473025,
-       "rr": 28.11534659139998,
-       "rr_metabolic": 14.946540192400693,
+       "lactate": 4.106206745728313,
+       "rr": 24.878780770212266,
+       "rr_metabolic": 11.709974371212981,
        "rr_ventilatory": 13.168806398999287
       }
      }
@@ -8501,21 +8501,21 @@
        "rr_ventilatory": 13.168806398999287
       },
       "30": {
-       "lactate": 5.068168109428209,
-       "rr": 28.210317012817193,
-       "rr_metabolic": 15.041510613817904,
+       "lactate": 4.593828886891339,
+       "rr": 26.687419899678993,
+       "rr_metabolic": 13.518613500679708,
        "rr_ventilatory": 13.168806398999287
       },
       "60": {
-       "lactate": 5.315592967138757,
-       "rr": 28.92274251668025,
-       "rr_metabolic": 15.753936117680961,
+       "lactate": 4.5630248074893505,
+       "rr": 26.580826067129387,
+       "rr_metabolic": 13.412019668130098,
        "rr_ventilatory": 13.168806398999287
       },
       "120": {
-       "lactate": 4.572459178230762,
-       "rr": 26.613577287970706,
-       "rr_metabolic": 13.444770888971421,
+       "lactate": 3.7968262197839526,
+       "rr": 23.58622212229784,
+       "rr_metabolic": 10.417415723298554,
        "rr_ventilatory": 13.168806398999287
       }
      },
@@ -8528,21 +8528,21 @@
        "rr_ventilatory": 13.168806398999287
       },
       "30": {
-       "lactate": 5.122231413646244,
-       "rr": 28.37053089929337,
-       "rr_metabolic": 15.201724500294086,
+       "lactate": 4.629871089703359,
+       "rr": 26.81089548510074,
+       "rr_metabolic": 13.642089086101453,
        "rr_ventilatory": 13.168806398999287
       },
       "60": {
-       "lactate": 6.015772440929771,
-       "rr": 30.67449619929941,
-       "rr_metabolic": 17.50568980030012,
+       "lactate": 5.029811123350026,
+       "rr": 28.095061866962727,
+       "rr_metabolic": 14.92625546796344,
        "rr_ventilatory": 13.168806398999287
       },
       "120": {
-       "lactate": 8.416001078835976,
-       "rr": 34.52118420642259,
-       "rr_metabolic": 21.3523778074233,
+       "lactate": 6.3591874868541005,
+       "rr": 31.40815275140163,
+       "rr_metabolic": 18.239346352402343,
        "rr_ventilatory": 13.168806398999287
       }
      }
@@ -9329,7 +9329,7 @@
      }
     ]
    },
-   "ceiling": 40.344968250114235,
+   "ceiling": 35.8461593677228,
    "effects": {
     "definitive_management": [
      {
@@ -9340,9 +9340,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.705792763470388,
-       "60": 23.07025774011542,
-       "120": 21.463882175654717
+       "30": 23.344830111011998,
+       "60": 22.54462987248055,
+       "120": 20.91185082256691
       }
      },
      {
@@ -9353,9 +9353,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.422339806237627,
-       "60": 22.133363963099598,
-       "120": 18.619770888992186
+       "30": 22.69717950496714,
+       "60": 21.02433212880316,
+       "120": 17.326022390283917
       }
      },
      {
@@ -9366,9 +9366,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.28790025883652,
-       "60": 21.64635317933517,
-       "120": 16.816976315013065
+       "30": 22.373234910947744,
+       "60": 20.177127518302875,
+       "120": 14.913212895053418
       }
      },
      {
@@ -9379,9 +9379,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.558315766333408,
-       "60": 22.53643817939341,
-       "120": 19.504374523158297
+       "30": 22.989540917610427,
+       "60": 21.617816857161948,
+       "120": 18.300088582937413
       }
      },
      {
@@ -9392,9 +9392,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.422339806237627,
-       "60": 22.133363963099598,
-       "120": 18.619770888992186
+       "30": 22.69717950496714,
+       "60": 21.02433212880316,
+       "120": 17.326022390283917
       }
      },
      {
@@ -9405,9 +9405,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.382245980584187,
-       "60": 22.01618631635846,
-       "120": 18.370056182805733
+       "30": 22.611676484572605,
+       "60": 20.853655188321074,
+       "120": 17.052896992840335
       }
      },
      {
@@ -9418,9 +9418,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.422339806237627,
-       "60": 22.133363963099598,
-       "120": 18.619770888992186
+       "30": 22.69717950496714,
+       "60": 21.02433212880316,
+       "120": 17.326022390283917
       }
      },
      {
@@ -9431,9 +9431,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.422339806237627,
-       "60": 22.133363963099598,
-       "120": 18.619770888992186
+       "30": 22.69717950496714,
+       "60": 21.02433212880316,
+       "120": 17.326022390283917
       }
      },
      {
@@ -9444,9 +9444,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.422339806237627,
-       "60": 22.133363963099598,
-       "120": 18.619770888992186
+       "30": 22.69717950496714,
+       "60": 21.02433212880316,
+       "120": 17.326022390283917
       }
      },
      {
@@ -9457,9 +9457,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.502803263565482,
-       "60": 22.393371473957366,
-       "120": 19.369193889161277
+       "30": 22.87865200807518,
+       "60": 21.438818928069107,
+       "120": 18.255654236835127
       }
      },
      {
@@ -9470,9 +9470,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.422339806237627,
-       "60": 22.133363963099598,
-       "120": 18.619770888992186
+       "30": 22.69717950496714,
+       "60": 21.02433212880316,
+       "120": 17.326022390283917
       }
      },
      {
@@ -9483,8 +9483,8 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.328854606225825,
-       "60": 21.8312783336185,
+       "30": 22.48633853674261,
+       "60": 20.54276717225714,
        "120": 18.08448735842133
       }
      }
@@ -9498,9 +9498,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.927664153777965,
-       "60": 24.277969636161142,
-       "120": 26.341112846301446
+       "30": 23.49549679436632,
+       "60": 23.37666155193826,
+       "120": 24.365361093764122
       }
      },
      {
@@ -9511,9 +9511,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.859082337076643,
-       "60": 24.53480965660647,
-       "120": 28.178179822212044
+       "30": 23.00207295849175,
+       "60": 22.761859015546744,
+       "120": 24.70075902114501
       }
      },
      {
@@ -9524,9 +9524,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.827649725080143,
-       "60": 24.6585600321231,
-       "120": 28.784639461752583
+       "30": 22.76059656261896,
+       "60": 22.455745760352798,
+       "120": 24.860240395056984
       }
      },
      {
@@ -9537,9 +9537,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.893192452386387,
-       "60": 24.399797693852868,
-       "120": 26.881762262158674
+       "30": 23.230610571984904,
+       "60": 23.040913814981728,
+       "120": 24.522054628400873
       }
      },
      {
@@ -9550,9 +9550,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.859082337076643,
-       "60": 24.53480965660647,
-       "120": 28.178179822212044
+       "30": 23.00207295849175,
+       "60": 22.761859015546744,
+       "120": 24.70075902114501
       }
      },
      {
@@ -9563,9 +9563,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.84897234212462,
-       "60": 24.575164049402435,
-       "120": 28.58706188006481
+       "30": 22.935009642869133,
+       "60": 22.680189790665462,
+       "120": 24.754287065598817
       }
      },
      {
@@ -9576,9 +9576,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.859082337076643,
-       "60": 24.53480965660647,
-       "120": 28.178179822212044
+       "30": 23.00207295849175,
+       "60": 22.761859015546744,
+       "120": 24.70075902114501
       }
      },
      {
@@ -9589,9 +9589,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.859082337076643,
-       "60": 24.53480965660647,
-       "120": 28.178179822212044
+       "30": 23.00207295849175,
+       "60": 22.761859015546744,
+       "120": 24.70075902114501
       }
      },
      {
@@ -9602,9 +9602,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.859082337076643,
-       "60": 24.53480965660647,
-       "120": 28.178179822212044
+       "30": 23.00207295849175,
+       "60": 22.761859015546744,
+       "120": 24.70075902114501
       }
      },
      {
@@ -9615,9 +9615,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.878711043502694,
-       "60": 24.460314937310336,
-       "120": 27.596192699916138
+       "30": 23.141076235483588,
+       "60": 22.93432217874231,
+       "120": 24.603148879051325
       }
      },
      {
@@ -9628,9 +9628,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.859082337076643,
-       "60": 24.53480965660647,
-       "120": 28.178179822212044
+       "30": 23.00207295849175,
+       "60": 22.761859015546744,
+       "120": 24.70075902114501
       }
      },
      {
@@ -9641,9 +9641,9 @@
       "stopped_at": null,
       "values": {
        "0": 24.0,
-       "30": 23.83627703381041,
-       "60": 24.621360172387156,
-       "120": 28.854352389722326
+       "30": 22.840574191431188,
+       "60": 22.561485406936903,
+       "120": 24.81416582666703
       }
      }
     ]
@@ -9660,28 +9660,28 @@
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 37.432462884480216,
-      "median": 22.984424843160905,
+      "max": 27.68885641456012,
+      "median": 22.546864353890257,
       "min": 16.345480299755945,
       "n": 1054,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 39.01935021389748,
-      "median": 22.13365101676325,
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
+      "max": 30.267457116304097,
+      "median": 21.158433310818307,
       "min": 15.426170495376418,
       "n": 1054,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 37.03256505490293,
-      "median": 19.37813204512569,
+      "max": 32.13489799993974,
+      "median": 18.610475225052834,
       "min": 15.426170495376418,
       "n": 1054,
       "stopped_before": 0
@@ -9698,28 +9698,28 @@
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=2;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 37.60067529402788,
-      "median": 23.229576614282117,
-      "min": 16.37987678261969,
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
+      "max": 27.79187283860209,
+      "median": 22.768415938129127,
+      "min": 16.397056595387863,
       "n": 1054,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 39.66316474065875,
-      "median": 23.42571261571075,
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
+      "max": 31.039438224783304,
+      "median": 22.338498077745697,
       "min": 15.426170495376418,
       "n": 1054,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
-      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=2;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
-      "max": 40.344968250114235,
-      "median": 26.40387569493987,
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
+      "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
+      "max": 35.8461593677228,
+      "median": 24.091375528714153,
       "min": 15.426170495376418,
       "n": 1054,
       "stopped_before": 0
@@ -9764,21 +9764,21 @@
        "rr_ventilatory": 15.426170495376418
       },
       "30": {
-       "lactate": 2.8788801500055308,
-       "rr": 21.22038080663242,
-       "rr_metabolic": 5.794210311256001,
+       "lactate": 2.874975105921553,
+       "rr": 21.197867785435555,
+       "rr_metabolic": 5.771697290059138,
        "rr_ventilatory": 15.426170495376418
       },
       "60": {
-       "lactate": 2.5452849545783116,
-       "rr": 19.198822746880815,
-       "rr_metabolic": 3.7726522515043968,
+       "lactate": 2.5143990257637068,
+       "rr": 19.001220787178763,
+       "rr_metabolic": 3.575050291802345,
        "rr_ventilatory": 15.426170495376418
       },
       "120": {
-       "lactate": 2.552664891235624,
-       "rr": 19.245767704618746,
-       "rr_metabolic": 3.8195972092423287,
+       "lactate": 2.3281829399352008,
+       "rr": 17.770256013088858,
+       "rr_metabolic": 2.3440855177124407,
        "rr_ventilatory": 15.426170495376418
       }
      }
@@ -9792,21 +9792,21 @@
        "rr_ventilatory": 15.426170495376418
       },
       "30": {
-       "lactate": 3.2847905718026733,
-       "rr": 23.422339806237627,
-       "rr_metabolic": 7.996169310861209,
+       "lactate": 3.145582053786313,
+       "rr": 22.69717950496714,
+       "rr_metabolic": 7.2710090095907205,
        "rr_ventilatory": 15.426170495376418
       },
       "60": {
-       "lactate": 3.0412264265572735,
-       "rr": 22.133363963099598,
-       "rr_metabolic": 6.7071934677231795,
+       "lactate": 2.845026673749679,
+       "rr": 21.02433212880316,
+       "rr_metabolic": 5.598161633426741,
        "rr_ventilatory": 15.426170495376418
       },
       "120": {
-       "lactate": 2.4555744607585313,
-       "rr": 18.619770888992186,
-       "rr_metabolic": 3.193600393615767,
+       "lactate": 2.2634559862838017,
+       "rr": 17.326022390283917,
+       "rr_metabolic": 1.8998518949075005,
        "rr_ventilatory": 15.426170495376418
       }
      },
@@ -9819,21 +9819,21 @@
        "rr_ventilatory": 15.426170495376418
       },
       "30": {
-       "lactate": 3.3715257953549393,
-       "rr": 23.859082337076643,
-       "rr_metabolic": 8.432911841700227,
+       "lactate": 3.2034055361544924,
+       "rr": 23.00207295849175,
+       "rr_metabolic": 7.575902463115329,
        "rr_ventilatory": 15.426170495376418
       },
       "60": {
-       "lactate": 3.5103340226005306,
-       "rr": 24.53480965660647,
-       "rr_metabolic": 9.108639161230053,
+       "lactate": 3.1577650711118532,
+       "rr": 22.761859015546744,
+       "rr_metabolic": 7.335688520170325,
        "rr_ventilatory": 15.426170495376418
       },
       "120": {
-       "lactate": 4.378379760039238,
-       "rr": 28.178179822212044,
-       "rr_metabolic": 12.752009326835628,
+       "lactate": 3.5453261858042766,
+       "rr": 24.70075902114501,
+       "rr_metabolic": 9.274588525768593,
        "rr_ventilatory": 15.426170495376418
       }
      }
@@ -9847,21 +9847,21 @@
        "rr_ventilatory": 15.426170495376418
       },
       "30": {
-       "lactate": 4.30111137690957,
-       "rr": 27.890948872297365,
-       "rr_metabolic": 12.464778376920945,
+       "lactate": 3.823129257190913,
+       "rr": 25.958203285309544,
+       "rr_metabolic": 10.532032789933124,
        "rr_ventilatory": 15.426170495376418
       },
       "60": {
-       "lactate": 4.939454580712415,
-       "rr": 30.075622645616377,
-       "rr_metabolic": 14.649452150239958,
+       "lactate": 4.110512109853109,
+       "rr": 27.153299305656525,
+       "rr_metabolic": 11.727128810280107,
        "rr_ventilatory": 15.426170495376418
       },
       "120": {
-       "lactate": 4.575534419657067,
-       "rr": 28.881597004077378,
-       "rr_metabolic": 13.455426508700958,
+       "lactate": 3.6767626255494963,
+       "rr": 25.308760836710185,
+       "rr_metabolic": 9.882590341333769,
        "rr_ventilatory": 15.426170495376418
       }
      },
@@ -9874,21 +9874,21 @@
        "rr_ventilatory": 15.426170495376418
       },
       "30": {
-       "lactate": 4.340611588227958,
-       "rr": 28.038615386441165,
-       "rr_metabolic": 12.612444891064747,
+       "lactate": 3.849462731403171,
+       "rr": 26.07205054654454,
+       "rr_metabolic": 10.645880051168122,
        "rr_ventilatory": 15.426170495376418
       },
       "60": {
-       "lactate": 5.381908255933537,
-       "rr": 31.36223553512196,
-       "rr_metabolic": 15.936065039745543,
+       "lactate": 4.405481226667191,
+       "rr": 28.27735764933528,
+       "rr_metabolic": 12.85118715395886,
        "rr_ventilatory": 15.426170495376418
       },
       "120": {
-       "lactate": 7.84367703100794,
-       "rr": 36.09528200275429,
-       "rr_metabolic": 20.669111507377874,
+       "lactate": 5.855524366450077,
+       "rr": 32.562774961401615,
+       "rr_metabolic": 17.136604466025197,
        "rr_ventilatory": 15.426170495376418
       }
      }

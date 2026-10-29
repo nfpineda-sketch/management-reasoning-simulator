@@ -38,8 +38,8 @@ from typing import Any, ClassVar, Iterable, Mapping, Sequence
 
 from .derived import (ADOPTED, AUXILIARY_SOURCES, BLOOD_COMPOSITION, COLLAPSE, DEFAULT_PROFILE, LUNG_WATER_CLEARANCE,
                       PLASMA_REFILL, PRELOAD_CONGESTION, PROVISIONAL, CoreProfile, Derived, arrival_state,
-                      blood_haemoglobin, collapse_burden_after_minute, collapse_reached, congestion_rate, derive,
-                      effective_delivery, effective_oxygen_deficit, lactate_after_minute, lung_water_clearance,
+                      blood_haemoglobin, collapse_burden_after_minute, collapse_reached, congestion_rate,
+                      delivery_rel_of, derive, effective_delivery, effective_oxygen_deficit, lactate_after_minute, lung_water_clearance,
                       oxygen_demand, plasma_refill, red_cell_content, sympathetic_after_minute, terminal_rhythm)
 from .provenance import (BLOOD_PROCESSES, AuxiliaryChange, BloodChange, BloodFlow, BloodProcess, ChannelDelta,
                          CoreEvent, DemandModifier, MinuteRecord, ProvenanceError, RhythmTransition, SettingChange,
@@ -191,7 +191,7 @@ def from_spec(spec: Mapping[str, Any]) -> Contributor:
 
 def _oxygen_debt(state: CoreState, anchors: Anchors, profile: CoreProfile, minute: int, demand: float,
                  modulators: tuple[Source, ...]) -> ChannelDelta:
-    """D is the accumulated oxygen-delivery debt (P2E-2; semantics corrected by the faculty in P2I-2AC).
+    """D is the accumulated oxygen-delivery debt (P2E-2; semantics corrected by the faculty in P2I-2AC and P2I-2AD).
 
     With deficit = max(0, demand - reserve x delivery), delivery the delivery index
     (arrival-relative delivery times the case's arrival delivery ratio, P2F-6) read at the
@@ -199,7 +199,9 @@ def _oxygen_debt(state: CoreState, anchors: Anchors, profile: CoreProfile, minut
     (P2I-2P: only the demand left unmet once extraction is exhausted is a deficit; 1, the neutral
     default, is the earlier no-reserve model) and g the deficit-to-debt gain:
     - while deficit > 0 the debt accrues, dD = g x deficit, and is not repaid (dD >= 0);
-    - with deficit == 0 nothing accrues and the debt repays first-order, dD = -D / tau.
+    - with deficit == 0 nothing accrues and the debt repays first-order, dD = -D / tau, but only
+      across a minute that stays without deficit: ``step`` withdraws the repayment when the minute
+      ends in a deficit (``_no_repayment_across``, P2I-2AD), and adds no debt for that minute.
     Delivery above demand is no credit: D only repays what it accrued, and never falls below 0.
     Under a steady deficit D keeps rising at g x deficit per minute; it no longer settles. The
     sources that modified demand are named as modulators of the debt only when they changed it:
@@ -217,6 +219,25 @@ def _oxygen_debt(state: CoreState, anchors: Anchors, profile: CoreProfile, minut
     else:
         amount, why = -state.D / profile.debt_clearance_tau_min, "no unmet demand: first-order repayment"
     return ChannelDelta(Channel.D, amount, OXYGEN_DEBT, minute, why, modulated_by=modulators if changed else ())
+
+
+def _no_repayment_across(debt: ChannelDelta, after: CoreState, anchors: Anchors, profile: CoreProfile,
+                         demand: float) -> ChannelDelta | None:
+    """P2I-2AD: the repayment withdrawn when the minute ends in a deficit, else None.
+
+    Repayment needs an interval that stays oxygen-adequate: no deficit at the start (``_oxygen_debt``)
+    and none at the end, read on the end state's delivery against the minute's demand. Delivery reads
+    no D, so the end state's delivery is final before D is. A minute that crosses from no deficit
+    into one neither repays nor accrues: the deficit signal of its start was 0.
+    """
+    if debt.amount >= 0.0:
+        return None
+    delivery = effective_delivery(delivery_rel_of(after, anchors, profile), anchors)
+    if effective_oxygen_deficit(demand, delivery, profile.oxygen_extraction_reserve) <= 0.0:
+        return None
+    return ChannelDelta(Channel.D, 0.0, OXYGEN_DEBT, debt.minute,
+                        "no unmet demand at the start, but the minute ends in one: no repayment across the crossing",
+                        modulated_by=debt.modulated_by)
 
 
 def _blood_minute(state: CoreState, flows: Sequence[BloodFlow], anchors: Anchors, profile: CoreProfile,
@@ -351,7 +372,8 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
     # stays the first delta of the minute, as it was before demand had a state.
     demand = oxygen_demand(anchors, modifiers)
     modulators = tuple(sorted({item.source for item in modifiers}))
-    deltas.insert(0, _oxygen_debt(state, anchors, profile, minute, demand, modulators))
+    debt = _oxygen_debt(state, anchors, profile, minute, demand, modulators)
+    deltas.insert(0, debt)
     # Terminal collapse (P2E-3): when the declared criterion is met, the core moves R to a
     # pulseless rhythm, unless a contributor already moves the rhythm this minute (then the
     # criterion, still met, applies to the rhythm it leaves, the next minute).
@@ -395,6 +417,10 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
     new_internal = state.internal.updated(**internal) if internal else state.internal
     new_state = state.evolve(minute=minute, R=rhythm, fio2=fio2, terminal_since=terminal, internal=new_internal,
                              blood=blood, **values)
+    withdrawn = _no_repayment_across(debt, new_state, anchors, profile, demand)
+    if withdrawn is not None:
+        deltas[0] = withdrawn
+        new_state = new_state.evolve(D=state.D)
     # The core's auxiliary state (P2D-1). Lactate follows the debt of the minute before; the
     # drive answers to the state the minute ends in, so a fall in pressure raises the rate in
     # the same minute and only its decay is lagged.

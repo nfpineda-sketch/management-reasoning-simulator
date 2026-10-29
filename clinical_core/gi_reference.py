@@ -316,13 +316,13 @@ def pre_arrival_plausibility_probe(excess: float, profile: CoreProfile = DEFAULT
     """SYNTHETIC_PLAUSIBILITY_PROBE: constant pre-arrival deficits that would end at ``excess``.
 
     From no debt and no excess, a constant deficit s accrues D and lactate with the core's own
-    one-minute recurrences (P2I-2AC: while a deficit lasts D accrues and is not repaid); both are
-    linear in s, so s is solved exactly per duration. An
+    one-minute recurrences (P2I-2AC: while a deficit lasts D accrues and is not repaid; P2I-2AD:
+    lactate production is debt_to_lactate_gain x D); both are linear in s, so s is solved exactly per
+    duration. An
     empty result says only that no such idealized history exists under these kinetics: the
     case may still begin with its declared debt and excess, which is why they are declared.
     """
-    production = profile.lactate_per_output_deficit / (profile.debt_clearance_tau_min
-                                                        * profile.lactate_clearance_tau_min)
+    production = profile.debt_to_lactate_gain
     histories = []
     for total in minutes:
         debt = lactate = 0.0

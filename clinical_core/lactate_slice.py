@@ -23,8 +23,10 @@ physiology:
   is never pooled with them.
 
 The lactate model is linear given the path of the delivery deficit s (KD-S1, P2E-2, with the
-P2I-2AC debt semantics): D' = g s while s > 0 (accrued, never repaid), D' = -D / tau_D while
-s = 0, and X' = k D - X / tau_L with k = G / (tau_D tau_L), lactate = baseline + X. So, given s,
+P2I-2AC and P2I-2AD debt semantics): D' = g s while s > 0 at the start of the minute (accrued,
+never repaid), D' = -D / tau_D across a minute without deficit at its start and its end, no change
+across a minute that crosses into a deficit, and X' = k D - X / tau_L with k the debt-to-lactate
+gain (its own parameter since P2I-2AD), lactate = baseline + X. So, given s,
 the excess X splits exactly into what is left of the arrival excess, what the arrival debt
 still produces (the arrival debt is repaid only in the minutes without a deficit) and what the
 deficit since arrival produced. The split is exact for these recurrences; it is not a causal
@@ -292,7 +294,7 @@ def decomposition(case: str, candidate: GICandidate, scenario: str) -> dict:
     profile, states = run_["profile"], run_["states"]
     tau_d, tau_l, gain = profile.debt_clearance_tau_min, profile.lactate_clearance_tau_min, \
         profile.lactate_per_output_deficit
-    g, k = profile.debt_per_delivery_deficit, gain / (tau_d * tau_l)
+    g, k = profile.debt_per_delivery_deficit, profile.debt_to_lactate_gain
     a, b = 1.0 - 1.0 / tau_l, 1.0 - 1.0 / tau_d
     anchors, reserve = run_["anchors"], profile.oxygen_extraction_reserve
     arrival_debt_left, excess0 = states[0].D, states[0].aux.lactate_excess_mmol_l
@@ -314,16 +316,23 @@ def decomposition(case: str, candidate: GICandidate, scenario: str) -> dict:
                 "delivery": point["delivery"], "demand": point["demand"],
                 "deficit": max(0.0, point["demand"] - point["delivery"])}
         if minute + 1 < len(states):
-            # The core's minute (P2I-2AC): with a deficit the debt accrues and nothing is repaid, the arrival
-            # debt included; without one it all repays first-order.
+            # The core's minute (P2I-2AC, P2I-2AD): with a deficit at its start the debt accrues and nothing
+            # is repaid, the arrival debt included; without one at its start or its end it all repays
+            # first-order; crossing into a deficit it neither accrues nor repays.
+            after = states[minute + 1]
             delivery = effective_delivery(derive(state, anchors, profile).delivery_rel, anchors)
-            deficit = effective_oxygen_deficit(states[minute + 1].aux.oxygen_demand, delivery, reserve)
+            deficit = effective_oxygen_deficit(after.aux.oxygen_demand, delivery, reserve)
+            end = effective_oxygen_deficit(after.aux.oxygen_demand,
+                                           effective_delivery(derive(after, anchors, profile).delivery_rel, anchors),
+                                           reserve)
             if deficit > 0.0:
-                accrued += states[minute + 1].D - state.D
+                accrued += after.D - state.D
                 next_left = arrival_debt_left
-            else:
-                repaid += state.D - states[minute + 1].D
+            elif end == 0.0:
+                repaid += state.D - after.D
                 next_left = arrival_debt_left * b
+            else:
+                next_left = arrival_debt_left
             from_arrival_debt = from_arrival_debt * a + k * arrival_debt_left
             from_new_deficit = from_new_deficit * a + k * (state.D - arrival_debt_left)
             arrival_debt_left = next_left
@@ -506,7 +515,7 @@ DOWNSTREAM_REPORTS = ("clinical_core/blood_filter_report.py", "clinical_core/blo
                       "clinical_core/blood_rate_report.py", "clinical_core/blood_fluid_report.py",
                       "clinical_core/blood_fluid_readiness_report.py",
                       "clinical_core/blood_fluid_tau_closure_report.py", "clinical_core/lactate_rebuild_report.py",
-                      "clinical_core/lactate_adequacy_report.py")
+                      "clinical_core/lactate_adequacy_report.py", "clinical_core/lactate_closure_report.py")
 
 
 def slice_sources() -> dict[str, str]:

@@ -88,6 +88,10 @@ class CoreProfile:
     spo2_per_fio2: float = 30.0
     room_air_fio2: float = 0.21
     lactate_per_output_deficit: float = 2.0
+    # P2I-2AD: lactate produced per minute per unit of D, independent of tau_D and tau_L. The
+    # default is the number the former default production G / (tau_D tau_lactate) gave, 2 / (60 x 60);
+    # it is provisional and never derived from tau_D.
+    debt_to_lactate_gain: float = 2.0 / 3600.0
     lactate_floor: float = 0.8
     debt_clearance_tau_min: float = 60.0
     debt_per_delivery_deficit: float = 1.0
@@ -207,9 +211,14 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
     "crt_per_output_deficit_s": (ADOPTED, "family_engine._surface: crt + (circulation - 1) * 4"),
     "spo2_per_fio2": (ADOPTED, "family_engine._surface: oxygen_gain = (FiO2 - 0.21) * 30"),
     "room_air_fio2": (ADOPTED, "family_engine._initialize: oxygen_fio2 = .21"),
-    "lactate_per_output_deficit": (ADOPTED, "family_engine._diagnostic: lactate + (circulation - 1) * 2, "
-                                            "reached here as the steady state of D and of lactate kinetics; the "
-                                            "D -> lactate production gain it implies is provisional (KD-S1)"),
+    "lactate_per_output_deficit": (ADOPTED, "family_engine._diagnostic: lactate + (circulation - 1) * 2, once read "
+                                            "as the steady state of the pre-P2I-2AC D, which no longer exists. "
+                                            "Since P2I-2AD the core does not read it (lactate production is "
+                                            "debt_to_lactate_gain); kept so historical records stay readable"),
+    "debt_to_lactate_gain": (PROVISIONAL, "lactate (mmol/L) produced per minute per unit of D (P2I-2AD): its own "
+                                          "parameter, independent of tau_D (debt repayment) and tau_lactate "
+                                          "(clearance); TBD. The default equals the former default production "
+                                          "2 / (60 x 60) and is not a calibrated value"),
     "lactate_floor": (ADOPTED, "family_engine._diagnostic: max(.8, ...)"),
     "debt_per_delivery_deficit": (PROVISIONAL, "D accrued per unit of delivery deficit per minute (P2F-7): 1 by "
                                                "construction so far; only its product with the D -> lactate gain "
@@ -312,15 +321,15 @@ def lactate_baseline(anchors: Anchors) -> float:
 def lactate_after_minute(state: CoreState, profile: CoreProfile) -> float:
     """One minute of lactate kinetics (KD-S1): production from the debt D, first-order clearance.
 
-    dX = k * D - X / tau_lactate, with k = gain / (tau_D * tau_lactate). D accrues while a
-    shortfall lasts and repays only without one (P2I-2AC), so under a steady shortfall D and X
-    keep rising; lactate lags D, and after perfusion is restored it clears more slowly than D.
+    dX = k * D - X / tau_lactate, with k = ``debt_to_lactate_gain``, its own parameter since
+    P2I-2AD: tau_D sets only how D is repaid and tau_lactate only how lactate clears; neither scales
+    production. D accrues while a shortfall lasts and repays only across a minute without one
+    (P2I-2AC, P2I-2AD), so under a steady shortfall D and X keep rising; lactate lags D.
     X starts at the arrival excess the case declares (0 undeclared) and is read above the
     clearance baseline (``lactate_baseline``).
     """
     excess = lactate_excess(state)
-    production = profile.lactate_per_output_deficit / (profile.debt_clearance_tau_min
-                                                       * profile.lactate_clearance_tau_min) * state.D
+    production = profile.debt_to_lactate_gain * state.D
     return excess + production - excess / profile.lactate_clearance_tau_min
 
 
@@ -748,6 +757,12 @@ def _perfusion(state: CoreState, anchors: Anchors, profile: CoreProfile) -> tupl
     spo2 = min(100.0, max(0.0, anchors.spo2 + profile.spo2_per_fio2 * oxygen))
     delivery_rel = relative_delivery(output_rel, state.hb, spo2, anchors)
     return output_rel, pressure_rel, spo2, delivery_rel
+
+
+def delivery_rel_of(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:
+    """The state's arrival-relative oxygen delivery, as ``derive`` reads it (0 without a pulse). It reads
+    no D and no auxiliary state, so the integrator can read it on a minute's end state before D's."""
+    return _perfusion(state, anchors, profile)[3] if state.R.pulse_present else 0.0
 
 
 def arterial_pressures(pressure_rel: float, anchors: Anchors, profile: CoreProfile) -> tuple[float, float]:

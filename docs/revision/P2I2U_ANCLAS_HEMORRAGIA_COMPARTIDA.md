@@ -202,7 +202,7 @@ cinética del punto medio de P2F.
 ## 6. Tablas (generado)
 
 <!-- generado:anclas-hemorragia -->
-Generado desde las anclas `d7d02ff310c4d1e4c0d4e1b1590da205b45c50f5ec8b68ef260bf6998774bae9` (`python -m clinical_core.blood_anchors`). Llegada: cada caso GI con sus bandas en el punto medio (posición de precarga: la que indique la tabla), cinética del lactato del punto medio de P2F (sólo contexto), ρ 2,5 con la banda de entrega de llegada re-anclada. κ = 1: la escala se explora como λ/κ. **Todos los rangos son exploraciones SINTÉTICAS, no valores aprobados ni bandas nuevas:** λ/κ reutiliza los tres puntos candidatos del registro de `preload_curve_scale_ml` y la posición recorre la banda del caso; el resto no es una banda candidata. Cada celda: referencia (mínimo–máximo en la cuadrícula).
+Generado desde las anclas `163990e9e283d59e1dac511d9bc4bcade8a252b4ad991f4bb87f209ff550c245` (`python -m clinical_core.blood_anchors`). Llegada: cada caso GI con sus bandas en el punto medio (posición de precarga: la que indique la tabla), cinética del lactato del punto medio de P2F (sólo contexto), ρ 2,5 con la banda de entrega de llegada re-anclada. κ = 1: la escala se explora como λ/κ. **Todos los rangos son exploraciones SINTÉTICAS, no valores aprobados ni bandas nuevas:** λ/κ reutiliza los tres puntos candidatos del registro de `preload_curve_scale_ml` y la posición recorre la banda del caso; el resto no es una banda candidata. Cada celda: referencia (mínimo–máximo en la cuadrícula).
 
 | Parámetro | Referencia (provisional) | Exploración sintética |
 |---|---|---|
@@ -237,7 +237,7 @@ Generado desde las anclas `d7d02ff310c4d1e4c0d4e1b1590da205b45c50f5ec8b68ef260bf
 | déficit efectivo | 0,15 (0,15–0,15) | 0,29 (0,17–0,80) | 0,43 (0,19–0,98) | 0,69 (0,22–0,95) |
 | PAS (contexto) | 88 (88–88) | 81 (31–87) | 73 (4–86) | 48 (8–85) |
 | PAM (contexto) | 65 (65–65) | 60 (23–65) | 55 (3–64) | 36 (6–63) |
-| lactato (contexto) | 4,4 (4,4–4,4) | 4,2 (4,1–4,2) | 4,2 (4,1–4,4) | 5,0 (4,3–5,4) |
+| lactato (contexto) | 4,4 (4,4–4,4) | 4,0 (4,0–4,0) | 3,8 (3,7–3,9) | 4,1 (3,6–4,4) |
 | gasto relativo, con las detenidas en 0 | 1,00 (1,00–1,00) | 0,84 (0,00–0,98) | 0,68 (0,00–0,96) | 0,36 (0,00–0,92) |
 | déficit efectivo, con las detenidas en su valor al detenerse | 0,15 (0,15–0,15) | 0,29 (0,17–1,00) | 0,43 (0,19–1,00) | 0,69 (0,22–1,00) |
 
@@ -262,7 +262,7 @@ Proporción de corridas que se detienen antes de los 120 min, por valor de cada 
 | déficit efectivo | 0,15 (0,15–0,15) | 0,24 (0,16–0,70) | 0,33 (0,18–0,96) | 0,51 (0,20–0,99) |
 | PAS (contexto) | 98 (98–98) | 93 (54–97) | 88 (8–97) | 79 (2–96) |
 | PAM (contexto) | 74 (74–74) | 71 (42–74) | 67 (6–73) | 61 (1–72) |
-| lactato (contexto) | 3,4 (3,4–3,4) | 3,4 (3,4–3,4) | 3,5 (3,4–3,8) | 4,4 (3,9–5,0) |
+| lactato (contexto) | 3,4 (3,4–3,4) | 3,2 (3,2–3,2) | 3,2 (3,1–3,3) | 3,5 (3,2–4,0) |
 | gasto relativo, con las detenidas en 0 | 1,00 (1,00–1,00) | 0,89 (0,36–0,98) | 0,79 (0,00–0,97) | 0,58 (0,00–0,95) |
 | déficit efectivo, con las detenidas en su valor al detenerse | 0,15 (0,15–0,15) | 0,24 (0,16–0,70) | 0,33 (0,18–0,99) | 0,51 (0,20–1,00) |
 

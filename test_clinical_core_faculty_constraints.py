@@ -221,16 +221,19 @@ def test_fd_lac_05_debt_memory_is_the_core_s_own_arrival_debt_term():
     arrival = replace(oxygen_probes.NEUTRAL, arrival_oxygen_debt=20.0,
                       declared={**dict(oxygen_probes.NEUTRAL.declared), "arrival_oxygen_debt": "synthetic_probe"})
     for tau_d, tau_l, gain in ((60.0, 120.0, 6.0), (30.0, 45.0, 12.0)):
+        # The frozen coefficient reads production as gain / (tau_D tau_L); since P2I-2AD the core reads its own
+        # D-to-lactate gain, so the run is given that same number to compare the arithmetic.
         profile = replace(DEFAULT_PROFILE, debt_clearance_tau_min=tau_d, lactate_clearance_tau_min=tau_l,
-                          lactate_per_output_deficit=gain)
+                          debt_to_lactate_gain=gain / (tau_d * tau_l))
         excess = run(arrival, (), 120, profile).states[-1].aux.lactate_excess_mmol_l
         assert excess == pytest.approx(20.0 * fc.debt_memory_coefficient(tau_d, tau_l, gain, 120), rel=1e-12)
     for case in gi_reference.GI_CASES:
         split = lactate_slice.decomposition(case, MIDDLE, "L3")
         p = split["parameters"]
         assert p["arrival_oxygen_debt"] > 0
-        coefficient = fc.debt_memory_coefficient(p["debt_clearance_tau_min"], p["lactate_clearance_tau_min"],
-                                                 p["lactate_per_output_deficit"], 120)
+        tau_d, tau_l = p["debt_clearance_tau_min"], p["lactate_clearance_tau_min"]
+        coefficient = fc.debt_memory_coefficient(tau_d, tau_l, p["production_per_debt_unit_per_min"] * tau_d * tau_l,
+                                                 120)
         assert split["rows"][120]["from_arrival_debt"] >= coefficient * p["arrival_oxygen_debt"] - 1e-12
 
 

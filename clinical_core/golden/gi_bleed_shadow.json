@@ -210,6 +210,10 @@
    "provisional",
    "D accrued per unit of delivery deficit per minute (P2F-7): 1 by construction so far; only its product with the D -> lactate gain shows in lactate: TBD"
   ],
+  "debt_to_lactate_gain": [
+   "provisional",
+   "lactate (mmol/L) produced per minute per unit of D (P2I-2AD): its own parameter, independent of tau_D (debt repayment) and tau_lactate (clearance); TBD. The default equals the former default production 2 / (60 x 60) and is not a calibrated value"
+  ],
   "hr_per_sympathetic_drive": [
    "adopted",
    "family_engine._surface: hr + (circulation - 1) * 25, read here as bpm per unit of sympathetic drive"
@@ -236,7 +240,7 @@
   ],
   "lactate_per_output_deficit": [
    "adopted",
-   "family_engine._diagnostic: lactate + (circulation - 1) * 2, reached here as the steady state of D and of lactate kinetics; the D -> lactate production gain it implies is provisional (KD-S1)"
+   "family_engine._diagnostic: lactate + (circulation - 1) * 2, once read as the steady state of the pre-P2I-2AC D, which no longer exists. Since P2I-2AD the core does not read it (lactate production is debt_to_lactate_gain); kept so historical records stay readable"
   ],
   "low_output_pressure_knee": [
    "provisional",

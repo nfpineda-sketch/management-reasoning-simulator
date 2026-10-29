@@ -40,20 +40,21 @@ from clinical_core.shadow import GOLDEN
 #: faculty's list (2026-10-28): only harness_sources (calibration.py) changed. P2I-2AC corrected the debt
 #: semantics in the core (no repayment while a deficit lasts): harness_sources (calibration.py's delivery
 #: probes) and gi_reference (the pre-arrival plausibility probe's recurrence) changed; no rule, band or
-#: assertion did.
+#: assertion did. P2I-2AD gave lactate production its own gain (debt_to_lactate_gain): only gi_reference
+#: changed (the plausibility probe's production reads it); no rule, band or assertion did.
 FROZEN_COMPONENTS = {
     "rules": "9b3818ed3599a52a8a18a98c15882f1179bd1b63a5c1778744bec977979b396a",
     "bands": "99ca99f1b0d032056cfdabb90e1354683ef5ba093e896a0d5c10bc9c2ca192ca",
     "harness_sources": "412d7801d0de5f60c4ac3a5f2dccb6fc36980db1dc3ab945edda380a514568f8",
     "migration_sources": "6033f4437627ed1f78c2c2ea03764986572639d94596982963a44f5964a2cb29",
     "authority_registries": "e305793eefead76fb733761f3305148e3df85aa9074445d94f051cb5709d2314",
-    "gi_reference": "af3265d0b8a24eeff0747b851413012bf9e358bedb497cae418d8d9ab014aabb",
+    "gi_reference": "ee3114ce9eeeb426a7b843943819aa88095b6cb09674e4c895c93a6ad1de0867",
     "scenarios": "7380daec5536c8f9a23c857df2138c99a16d63eace51d62b295aa3f4ed100b58",
     "input_path_sources": "8bbff3d408efba2024917559156cfaa732c920b3bc7a45e0bac0e3e4838f65b9",
     "input_adapter_sources": "e83dca618fdaaa9239d861e1e1d6928dc703bfe33206a05cef44a5b0e9495bc5",
     "scenario_inputs": "afb2051e7fa04f1765aaf920c82f51dc6675d19bcbcb425c2ee581d8fa60d347",
 }
-FROZEN_DIGEST = "a8f00e04320823d24d5d1d802ae2eae14564fb970da4d7c0d44c65368fc9a8b0"
+FROZEN_DIGEST = "c3fd2dd7de4b1621d6a772b24946812ddbf68a023cdea27c65018061b7d8c7ad"
 
 
 # P2F-2 / P2F-5 -- repository truth, candidate inference, faculty decision ---------------------
