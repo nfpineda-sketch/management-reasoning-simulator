@@ -52,23 +52,20 @@ def test_the_written_rejection_matches_the_frozen_acceptance(candidate, rejected
     assert (not calibration.gi_physiology(candidate)["valid"]) is live
 
 
-def test_the_current_core_refuses_108_p2f_arrivals_and_the_region_runs_the_rest():
-    """P2I-2AE: at the default debt_to_sympathetic_gain, 72f at the intrinsic upper level (100) with the arrival debt at
-    its upper level (60) would need a negative sympathetic contribution, and the core refuses that arrival. P2F's
-    written region is unchanged; what is built on it runs the rest and counts them."""
-    refused = [c for c in decision_pack.admissible() if not decision_pack.arrival_consistent(c)]
-    assert len(refused) == 108 and {(c.intrinsic, c.debt) for c in refused} == {("upper", "upper")}
-    assert len(decision_pack.runnable()) == 1054 - 108
-    assert decision_pack.runnable(quick=True) == decision_pack.admissible(quick=True)
-    assert decision_pack.run_profile_extra(refused[0]) == decision_pack.NO_DEBT_DRIVE == {"debt_to_sympathetic_gain": 0.0}
-    assert decision_pack.run_profile_extra(MIDDLE) is None
+def test_the_current_core_refuses_no_p2f_arrival():
+    """P2I-2AE refused 108 P2F arrivals (72f at the intrinsic upper level with the arrival debt at its upper level),
+    whose debt needed a negative sympathetic contribution. Since P2I-2AF no arrival residual exists: every arrival is
+    accepted (its HR mismatch is reported), so everything built on the region runs the whole region as before."""
+    assert all(decision_pack.arrival_consistent(c) for c in decision_pack.admissible())
+    assert decision_pack.runnable() == decision_pack.admissible() and len(decision_pack.runnable()) == 1054
+    assert decision_pack.run_profile_extra(replace(MIDDLE, intrinsic="upper", debt="upper")) is None
+    assert decision_pack.NO_DEBT_DRIVE == {"debt_to_sympathetic_gain": 0.0}
 
 
-def test_a_refused_arrival_read_without_the_debt_drive_keeps_every_read_out_but_hr():
-    """The drive reaches no output, delivery, D, lactate, pressure or RR: a refused arrival read at gain 0 gives the same
-    read-outs as at a gain its arrival can hold; only HR differs, and the HR envelopes never read it."""
+def test_the_drive_reaches_every_read_out_but_hr_through_no_path():
+    """The drive reaches no output, delivery, D, lactate, pressure or RR: two debt gains give the same read-outs; only
+    HR differs."""
     candidate = replace(MIDDLE, intrinsic="upper", debt="upper")
-    assert not decision_pack.arrival_consistent(candidate)
     for scenario in ("untreated_120", "definitive_management"):
         runs = [decision_pack.trajectory("gi_bleed_72f", candidate, scenario,
                                          profile_extra={"debt_to_sympathetic_gain": gain}) for gain in (0.0, 0.004)]

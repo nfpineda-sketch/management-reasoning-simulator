@@ -85,6 +85,13 @@ class CoreProfile:
     # the number the former default sympathetic_per_debt / tau_D gave, 0.5 / 60; it is provisional and never
     # derived from tau_D.
     debt_to_sympathetic_gain: float = 1.0 / 120.0
+    # P2I-2AF: sympathetic drive per unit of the acute shock signal, the current effective oxygen deficit as a share of
+    # the current demand (dimensionless). 0 by default: the term exists, its value is the faculty's to set; no number
+    # is chosen here.
+    acute_deficit_to_sympathetic_gain: float = 0.0
+    # P2I-2AF: the sinus rate the sympathetic increment saturates toward (bpm); HR_RESERVE = ceiling - the sinus base
+    # rate. Provisional exploratory midpoint, not approved.
+    sinus_rate_ceiling_bpm: float = 175.0
     sympathetic_per_hypoxaemia_point: float = 0.02
     hypoxaemia_threshold_spo2: float = 94.0
     sympathetic_per_hypoglycaemia_mg_dl: float = 0.01
@@ -155,6 +162,8 @@ class CoreProfile:
             raise CoreInvariantError("the debt and lactate time constants are at least one minute (the step)")
         if not 0.0 < self.low_output_pressure_knee < 1.0:
             raise CoreInvariantError("the low-output pressure knee is strictly between 0 and 1")
+        if not self.sinus_rate_ceiling_bpm > 0.0:
+            raise CoreInvariantError("the sinus-rate ceiling is positive")
         if (self.collapse_output_threshold is None) != (self.collapse_burden_limit is None):
             raise CoreInvariantError("the collapse rule declares both its output threshold and its burden limit, "
                                      "or neither")
@@ -214,9 +223,21 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
                                           "records stay readable"),
     "debt_to_sympathetic_gain": (PROVISIONAL, "sympathetic drive per unit of D (P2I-2AE): its own parameter, "
                                               "independent of tau_D (debt repayment); the debt-driven drive is gain "
-                                              "x D, 0 at D = 0, and the arrival debt's share of the arrival drive is "
-                                              "gain x D0; TBD. The default equals the former default "
+                                              "x D, 0 at D = 0. D's absolute scale is latent, so only gain x D is "
+                                              "observable (rescaling D by c and the gain by 1 / c leaves HR unchanged; "
+                                              "P2I-2AF); TBD. The default equals the former default "
                                               "sympathetic_per_debt / tau_D, 0.5 / 60, and is not a calibrated value"),
+    "acute_deficit_to_sympathetic_gain": (PROVISIONAL, "sympathetic drive per unit of the acute shock signal, the "
+                                                       "current effective oxygen deficit over the current demand "
+                                                       "(P2I-2AF): 0 at no deficit, never decreasing in it, "
+                                                       "resolving when oxygen availability is adequate or "
+                                                       "compensated; reads no D, lactate or tau_D; TBD. 0 by default: "
+                                                       "the faculty sets it, nothing is chosen here"),
+    "sinus_rate_ceiling_bpm": (PROVISIONAL, "the sinus rate the sympathetic increment saturates toward (P2I-2AF): the "
+                                            "increment is HR_RESERVE x tanh(unconstrained / HR_RESERVE), HR_RESERVE = "
+                                            "ceiling - the sinus base rate; smooth, monotone, linear near 0, never a "
+                                            "hard clip; TBD. 175 is the exploratory midpoint of a broad adult "
+                                            "maximal-sinus-rate range (150-200), not approved"),
     "sympathetic_per_hypoxaemia_point": (PROVISIONAL, "drive per SpO2 point below the threshold: TBD (KD-S2)"),
     "hypoxaemia_threshold_spo2": (PROVISIONAL, "SpO2 below which hypoxaemia drives the rate: TBD (KD-S2)"),
     "sympathetic_per_hypoglycaemia_mg_dl": (PROVISIONAL, "drive per mg/dL below the threshold: TBD (KD-S2)"),
@@ -396,8 +417,8 @@ def case_parameter_provenance(anchors: Anchors, profile: CoreProfile = DEFAULT_P
              "synthetic_probe": "synthetic probe value; not a case"}
     unmapped_values = {"preload_fraction": (profile.arrival_preload_fraction,
                                             "not declared: provisional profile default (TBD)"),
-                       "intrinsic_sinus_rate": (anchors.hr, "not declared: the arrival HR is read as intrinsic, with "
-                                                            "no sympathetic share at arrival")}
+                       "intrinsic_sinus_rate": (anchors.hr, "not declared: the arrival HR is read as intrinsic; any "
+                                                            "drive the arrival physiology calls for adds to it")}
     unmapped_notes = {"metabolic_demand_baseline": "not declared: the reference demand, met by the reference delivery",
                       "arrival_oxygen_debt": "not declared: no debt accrued before arrival",
                       "arrival_delivery_ratio": "not declared: arrival delivery read as adequate",
@@ -423,7 +444,8 @@ def intrinsic_sinus_rate(anchors: Anchors) -> float:
 
 
 def arrival_sympathetic_drive(anchors: Anchors, profile: CoreProfile) -> float:
-    """The sympathetic drive that, on top of the intrinsic rate, gives the observed arrival HR (P2E-1)."""
+    """The drive the observed arrival share (arrival HR less the intrinsic rate) would need at the linear chronotropic
+    response (P2E-1). Since P2I-2AF it is a reported observation only: no drive is solved from it."""
     share = anchors.hr - intrinsic_sinus_rate(anchors)
     if share <= 0.0:
         return 0.0
@@ -434,41 +456,61 @@ def arrival_sympathetic_drive(anchors: Anchors, profile: CoreProfile) -> float:
 
 
 def arrival_debt_drive(anchors: Anchors, profile: CoreProfile) -> float:
-    """The arrival debt's share of the arrival drive (P2I-2AE): debt_to_sympathetic_gain x D0, never tau_D."""
+    """The arrival debt's drive (P2I-2AE): debt_to_sympathetic_gain x D0, never tau_D."""
     return profile.debt_to_sympathetic_gain * anchors.arrival_oxygen_debt
 
 
-def arrival_non_debt_drive(anchors: Anchors, profile: CoreProfile) -> float:
-    """The arrival drive the arrival debt does not explain (P2I-2AE): the arrival drive less the debt's share.
+def sinus_rate_reserve(base_rate: float, profile: CoreProfile) -> float:
+    """HR_RESERVE (P2I-2AF): how far the sympathetic increment can take a sinus base rate, ceiling - base rate."""
+    reserve = profile.sinus_rate_ceiling_bpm - base_rate
+    if not reserve > 0.0:
+        raise CoreInvariantError(f"the sinus base rate {base_rate!r} is not below the sinus-rate ceiling "
+                                 f"{profile.sinus_rate_ceiling_bpm!r}")
+    return reserve
 
-    It carries the arrival stimuli the core reads relative to arrival (the arrival pressure deficit,
-    hypoxaemia, hypoglycaemia) and any the core does not model. It is never negative: an arrival debt that
-    alone calls for more drive than the observed HR carries above the intrinsic rate would need a negative
-    sympathetic contribution, so the declaration (intrinsic rate, arrival debt, gain) is inconsistent and
-    the core stops (exact comparison, no tolerance).
-    """
-    drive, debt = arrival_sympathetic_drive(anchors, profile), arrival_debt_drive(anchors, profile)
-    if debt > drive:
-        raise CoreInvariantError(
-            f"the arrival debt {anchors.arrival_oxygen_debt:g} calls for a sympathetic drive of {debt!r} "
-            f"(debt_to_sympathetic_gain {profile.debt_to_sympathetic_gain!r}), above the {drive!r} the observed arrival "
-            "HR carries over the intrinsic rate: the arrival decomposition would need a negative sympathetic "
-            "contribution")
-    return drive - debt
+
+def unconstrained_increment(drive: float, beta_blockade: float, profile: CoreProfile) -> float:
+    """The sinus-rate increment a drive asks for before saturation: 25 bpm per unit (ADOPTED) x (1 - beta)."""
+    return profile.hr_per_sympathetic_drive * (1.0 - beta_blockade) * drive
+
+
+def sympathetic_increment(drive: float, base_rate: float, beta_blockade: float, profile: CoreProfile) -> float:
+    """The sinus-rate increment of a drive (P2I-2AF): HR_RESERVE x tanh(unconstrained / HR_RESERVE).
+
+    Linear near 0 (slope 1), monotone, continuous and differentiable, never negative for a non-negative drive and
+    always below HR_RESERVE: the sinus rate approaches the ceiling smoothly and never reaches it. It acts on the
+    increment only; the rhythm and its base rate are untouched."""
+    reserve = sinus_rate_reserve(base_rate, profile)
+    return reserve * math.tanh(unconstrained_increment(drive, beta_blockade, profile) / reserve)
+
+
+def arrival_drive(anchors: Anchors, profile: CoreProfile) -> float:
+    """The drive the arrival physiology calls for (P2I-2AF): the target read on the arrival state (acute deficit and
+    arrival debt; the arrival-relative stimuli are 0 there). Nothing is solved to match the authored HR."""
+    return arrival_state(anchors, profile).aux.sympathetic_drive
 
 
 def heart_rate_decomposition(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> dict:
-    """The observed arrival HR split into intrinsic rate and sympathetic contribution, with its source.
+    """The arrival HR the physiology predicts, split into its contributors, against the authored one (P2I-2AF).
 
-    P2I-2AE: the arrival drive splits further into the arrival debt's share (gain x D0) and the rest; both
-    are non-negative (``arrival_non_debt_drive`` stops otherwise)."""
-    response = profile.hr_per_sympathetic_drive * (1.0 - anchors.beta_blockade)
-    debt, rest = arrival_debt_drive(anchors, profile), arrival_non_debt_drive(anchors, profile)
-    return {"observed_arrival_hr": anchors.hr, "intrinsic_sinus_rate": intrinsic_sinus_rate(anchors),
+    Unconstrained increments (bpm) of the acute deficit and the arrival debt, their saturated sum, a proportional
+    attribution of the saturated increment, the predicted HR and its mismatch with the authored arrival HR. No residual
+    is solved: a mismatch is reported, never absorbed."""
+    state = arrival_state(anchors, profile)
+    intrinsic = state.R.rate_bpm if state.R.code is RhythmCode.SINUS else intrinsic_sinus_rate(anchors)
+    acute = unconstrained_increment(profile.acute_deficit_to_sympathetic_gain * acute_deficit_signal(
+        state, anchors, profile), anchors.beta_blockade, profile)
+    debt = unconstrained_increment(arrival_debt_drive(anchors, profile), anchors.beta_blockade, profile)
+    unconstrained = unconstrained_increment(state.aux.sympathetic_drive, anchors.beta_blockade, profile)
+    predicted = derive(state, anchors, profile).pulse_rate_bpm
+    saturated = predicted - state.R.rate_bpm if state.R.code is RhythmCode.SINUS else 0.0
+    share = saturated / unconstrained if unconstrained > 0.0 else 0.0
+    return {"observed_arrival_hr": anchors.hr, "intrinsic_sinus_rate": intrinsic,
             "arrival_sympathetic_bpm": anchors.hr - intrinsic_sinus_rate(anchors),
-            "arrival_sympathetic_drive": arrival_sympathetic_drive(anchors, profile),
-            "arrival_debt_drive": debt, "arrival_non_debt_drive": rest,
-            "arrival_debt_bpm": response * debt, "arrival_non_debt_bpm": response * rest,
+            "arrival_drive": state.aux.sympathetic_drive, "acute_deficit_signal": acute_deficit_signal(
+                state, anchors, profile), "acute_unconstrained_bpm": acute, "debt_unconstrained_bpm": debt,
+            "unconstrained_bpm": unconstrained, "saturated_bpm": saturated, "acute_bpm": acute * share,
+            "debt_bpm": debt * share, "predicted_arrival_hr": predicted, "mismatch_bpm": predicted - anchors.hr,
             "source": anchors.declared.get("intrinsic_sinus_rate", UNMAPPED)}
 
 
@@ -585,10 +627,10 @@ def arrival_layers(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> 
         anchors.reference_preload_fraction, anchors.beta_blockade, anchors.pump_reserve,
         {name: source(name) for name in ("intrinsic_sinus_rate", "arrival_lactate_excess", "metabolic_demand_baseline",
                                          "reference_preload_fraction", "beta_blockade", "pump_reserve")})
-    drive = arrival_sympathetic_drive(anchors, profile)
+    split = heart_rate_decomposition(anchors, profile)
     dynamic = ArrivalDynamicState(
         arrival_preload(anchors, profile), arrival_volume_deficit(anchors, profile), anchors.arrival_oxygen_debt,
-        anchors.arrival_lactate_excess, drive, anchors.hr - intrinsic_sinus_rate(anchors),
+        anchors.arrival_lactate_excess, split["arrival_drive"], split["saturated_bpm"],
         anchors.arrival_delivery_ratio, anchors.metabolic_demand_baseline,
         effective_oxygen_deficit(anchors.metabolic_demand_baseline, anchors.arrival_delivery_ratio,
                                  profile.oxygen_extraction_reserve),
@@ -601,10 +643,12 @@ def arrival_layers(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> 
 def check_arrival_reconstruction(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> Derived:
     """The arrival state, derived, reproduces the authored observation exactly (P2F-1), or this raises.
 
-    Reference and dynamic state change what happens next, never what the resident sees at t = 0.
+    Reference and dynamic state change what happens next, never what the resident sees at t = 0. The one
+    exception is HR (faculty decision, P2I-2AF): the arrival HR is predicted from the arrival physiology,
+    and its mismatch with the authored HR is reported by ``heart_rate_decomposition``; no residual forces it.
     """
     derived = derive(arrival_state(anchors, profile), anchors, profile)
-    expected = {"sbp": anchors.sbp, "dbp": anchors.dbp, "pulse_rate_bpm": anchors.hr, "spo2": anchors.spo2,
+    expected = {"sbp": anchors.sbp, "dbp": anchors.dbp, "spo2": anchors.spo2,
                 "respiratory_rate": anchors.respiratory_rate, "crt_s": anchors.crt_s, "lactate": anchors.lactate,
                 "consciousness_level": anchors.consciousness_level}
     for name, value in expected.items():
@@ -683,23 +727,25 @@ def oxygen_balance(delivery: float, demand: float, reserve: float) -> OxygenBala
 def arrival_state(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> CoreState:
     """Arrival, with the reference states the case declares (P2E).
 
-    - R holds the intrinsic sinus rate and the auxiliary state the arrival sympathetic drive,
-      so the derived arrival HR is the observed one (P2E-1);
+    - R holds the intrinsic sinus rate and the auxiliary state the arrival sympathetic drive
+      (P2E-1; since P2I-2AF the drive the arrival physiology calls for);
     - the auxiliary state holds the arrival oxygen demand (the case's baseline) and the
       clearable arrival lactate, so the derived arrival lactate is the authored one (P2E-2);
     - D holds the debt accrued before arrival (P2F-3).
     Undeclared, they are the anchored defaults: intrinsic = observed HR and no drive; demand
     met by arrival delivery; no clearable lactate; no arrival debt.
-    The arrival debt's share of the drive is checked here (P2I-2AE): a declaration whose debt alone
-    calls for more drive than the arrival HR carries stops before the run.
+    P2I-2AF: the arrival drive is the one the arrival physiology calls for (``sympathetic_target`` on
+    this state: the acute deficit and the arrival debt), not one solved from the authored HR. The
+    derived arrival HR is the model's; its mismatch with the authored HR is reported
+    (``heart_rate_decomposition``), never absorbed by a residual.
     """
-    arrival_non_debt_drive(anchors, profile)
     state = anchored_state(anchors).evolve(D=anchors.arrival_oxygen_debt)
     if state.R.code is RhythmCode.SINUS:
         state = state.evolve(R=replace(state.R, rate_bpm=intrinsic_sinus_rate(anchors)))
-    return state.evolve(aux=AuxiliaryState(lactate_excess_mmol_l=anchors.arrival_lactate_excess,
-                                           sympathetic_drive=arrival_sympathetic_drive(anchors, profile),
-                                           oxygen_demand=anchors.metabolic_demand_baseline))
+        sinus_rate_reserve(state.R.rate_bpm, profile)
+    state = state.evolve(aux=AuxiliaryState(lactate_excess_mmol_l=anchors.arrival_lactate_excess,
+                                            sympathetic_drive=0.0, oxygen_demand=anchors.metabolic_demand_baseline))
+    return state.evolve(aux=replace(state.aux, sympathetic_drive=sympathetic_target(state, anchors, profile)))
 
 
 def circulating_volume(blood: BloodState, profile: CoreProfile) -> float:
@@ -813,6 +859,14 @@ def delivery_rel_of(state: CoreState, anchors: Anchors, profile: CoreProfile) ->
     return _perfusion(state, anchors, profile)[3] if state.R.pulse_present else 0.0
 
 
+def acute_deficit_signal(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:
+    """The acute shock signal (P2I-2AF): the effective oxygen deficit over the demand, both of the state (0 to 1,
+    dimensionless). 0 when oxygen availability is adequate or compensated; it reads no D, no lactate, no tau_D."""
+    demand = state.aux.oxygen_demand
+    return effective_oxygen_deficit(demand, effective_delivery(delivery_rel_of(state, anchors, profile), anchors),
+                                    profile.oxygen_extraction_reserve) / demand
+
+
 def arterial_pressures(pressure_rel: float, anchors: Anchors, profile: CoreProfile) -> tuple[float, float]:
     """SBP and DBP from the pressure the state produces, pressure_rel = output x tone (KD-S4, P2E-4).
 
@@ -915,12 +969,14 @@ def lung_water_clearance(state: CoreState, profile: CoreProfile) -> float:
 def sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:
     """The drive the state calls for now (KD-S2; proposal §7.3).
 
-    It sums, on top of the arrival drive the arrival debt does not explain (``arrival_non_debt_drive``):
-    - the oxygen-delivery debt D itself, debt_to_sympathetic_gain x D (P2I-2AE): 0 at D = 0, never
-      decreasing in D, independent of tau_D, which only repays D; the arrival debt's share of the
-      arrival drive is the same term at D0, so repaying it lowers the drive;
+    It sums, from the current state only (P2I-2AF: no arrival residual):
+    - the acute shock signal, acute_deficit_to_sympathetic_gain x the effective oxygen deficit over the
+      demand (``acute_deficit_signal``): 0 when oxygen availability is adequate or compensated, so it
+      resolves when shock resolves;
+    - the oxygen-delivery debt D, debt_to_sympathetic_gain x D (P2I-2AE): the memory; 0 at D = 0,
+      never decreasing in D, independent of tau_D, which only repays D;
     and the stimuli the core holds state for, each as a deviation from arrival:
-    - the pressure deficit (the acute haemodynamic stimulus, separate from D);
+    - the pressure deficit (relative to arrival: 0 at arrival, below 0 above arrival pressure);
     - hypoxaemia;
     - hypoglycaemia.
 
@@ -929,21 +985,23 @@ def sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile)
     module). Hemostasis, or any disease module, never writes it: it moves only through
     these stimuli.
     """
-    _, pressure_rel, spo2, _ = _perfusion(state, anchors, profile)
+    _, pressure_rel, spo2, delivery_rel = _perfusion(state, anchors, profile)
+    demand = state.aux.oxygen_demand
+    acute = effective_oxygen_deficit(demand, effective_delivery(delivery_rel, anchors),
+                                     profile.oxygen_extraction_reserve) / demand
     hypoxaemia = (max(0.0, profile.hypoxaemia_threshold_spo2 - spo2)
                   - max(0.0, profile.hypoxaemia_threshold_spo2 - anchors.spo2))
     hypoglycaemia = (max(0.0, profile.hypoglycaemia_threshold_mg_dl - state.glucose)
                      - max(0.0, profile.hypoglycaemia_threshold_mg_dl - anchors.glucose))
-    # Absolute drive (P2E-1, P2I-2AE): the arrival drive the arrival debt does not explain, the debt's own
-    # drive, and the other stimuli's deviations from arrival. At arrival it is the arrival drive.
-    target = (arrival_non_debt_drive(anchors, profile)
+    # Absolute drive (P2I-2AF): the acute deficit's, the debt's, and the other stimuli's deviations from
+    # arrival. Nothing constant is carried from arrival.
+    target = (profile.acute_deficit_to_sympathetic_gain * acute
               + profile.sympathetic_per_pressure_deficit * (1.0 - pressure_rel)
               + profile.debt_to_sympathetic_gain * state.D
               + profile.sympathetic_per_hypoxaemia_point * hypoxaemia
               + profile.sympathetic_per_hypoglycaemia_mg_dl * hypoglycaemia)
     # P2D-3: the drive is never negative. As its stimuli resolve, the rate falls back to the
-    # intrinsic rate of R (below the observed arrival HR when arrival carried a sympathetic
-    # share, P2E-1) and no further; a lower rate needs an explicit source that changes R.
+    # intrinsic rate of R and no further; a lower rate needs an explicit source that changes R.
     return max(0.0, target)
 
 
@@ -991,10 +1049,10 @@ def derive(state: CoreState, anchors: Anchors, profile: CoreProfile = DEFAULT_PR
     sbp, dbp = arterial_pressures(pressure_rel, anchors, profile)
     if rhythm.code is RhythmCode.SINUS:
         # Sinus rate = intrinsic rate + chronotropic response to the common sympathetic drive,
-        # blunted by beta-blockade (KD-S2); a block, an escape or a paced rhythm keeps the rate
-        # the rhythm state holds.
-        response = profile.hr_per_sympathetic_drive * (1.0 - anchors.beta_blockade)
-        pulse_rate = rhythm.rate_bpm + response * sympathetic_drive(state, anchors, profile)
+        # blunted by beta-blockade (KD-S2) and saturating smoothly toward the sinus ceiling
+        # (P2I-2AF); a block, an escape or a paced rhythm keeps the rate the rhythm state holds.
+        pulse_rate = rhythm.rate_bpm + sympathetic_increment(sympathetic_drive(state, anchors, profile),
+                                                             rhythm.rate_bpm, anchors.beta_blockade, profile)
     else:
         pulse_rate = rhythm.rate_bpm
     crt = max(0.0, anchors.crt_s + profile.crt_per_output_deficit_s * (1.0 - output_rel))

@@ -12,7 +12,8 @@ import pytest
 
 from clinical_core import (Anchors, Channel, ChannelDelta, Contribution, Contributor, CoreInvariantError, RhythmState,
                            SourceKind, run)
-from clinical_core.derived import DEFAULT_PROFILE, LACTATE_KINETICS, SYMPATHETIC_DRIVE, derive
+from clinical_core.derived import (DEFAULT_PROFILE, LACTATE_KINETICS, SYMPATHETIC_DRIVE, derive, sympathetic_increment,
+                                   unconstrained_increment)
 from clinical_core.integration import step
 from clinical_core.modules import GIHaemorrhage
 from clinical_core.provenance import AuxiliaryChange, MinuteRecord, ProvenanceError, Source
@@ -220,9 +221,16 @@ def test_p2d3_no_drive_means_the_intrinsic_rate():
 def test_p2d3_beta_blockade_reduces_the_gain_and_never_turns_withdrawal_negative():
     blocked = Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, "beta_blockade": 0.5,
                          "declared": {"beta_blockade": "synthetic_probe"}})
-    free, beta = run(BLEEDING, (BLEED,), 60).derived(), run(blocked, (BLEED,), 60).derived()
-    for one, other in zip(free[1:], beta[1:]):
-        assert other.pulse_rate_bpm - BLEEDING.hr == pytest.approx(0.5 * (one.pulse_rate_bpm - BLEEDING.hr))
+    free_run, beta_run = run(BLEEDING, (BLEED,), 60), run(blocked, (BLEED,), 60)
+    # P2I-2AF: beta-blockade halves the unconstrained increment; the sinus increment then saturates smoothly.
+    for state, other, one in zip(beta_run.states[1:], beta_run.derived()[1:], free_run.derived()[1:]):
+        drive = state.aux.sympathetic_drive
+        assert unconstrained_increment(drive, 0.5, DEFAULT_PROFILE) == 0.5 * unconstrained_increment(
+            drive, 0.0, DEFAULT_PROFILE)
+        assert other.pulse_rate_bpm - BLEEDING.hr == pytest.approx(
+            sympathetic_increment(drive, BLEEDING.hr, 0.5, DEFAULT_PROFILE), abs=1e-9)
+        assert 0.0 <= other.pulse_rate_bpm - BLEEDING.hr <= one.pulse_rate_bpm - BLEEDING.hr
+    assert [s.aux.sympathetic_drive for s in free_run.states] == [s.aux.sympathetic_drive for s in beta_run.states]
     filled = run(blocked, (Step("fill", "V", 1, 800.0),), 30).derived()
     assert min(item.pulse_rate_bpm for item in filled) == BLEEDING.hr
 

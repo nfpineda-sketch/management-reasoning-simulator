@@ -15,7 +15,7 @@ from clinical_core import (Anchors, Channel, ChannelDelta, Contribution, Contrib
                            SourceKind, run)
 from clinical_core.derived import (DEFAULT_PROFILE, PRELOAD_CONGESTION, SYMPATHETIC_DRIVE, derive,
                                    effective_delivery, effective_oxygen_deficit, lactate_excess, preload_position,
-                                   sympathetic_drive)
+                                   sympathetic_drive, sympathetic_increment, unconstrained_increment)
 from clinical_core.logistics import EndoscopicHemostasis
 from clinical_core.modules import GIHaemorrhage
 from clinical_core.provenance import SettingChange
@@ -278,8 +278,16 @@ def test_kd_s2_d_beta_blockade_blunts_the_chronotropic_response_to_the_same_phys
                                  "declared": {"beta_blockade": "synthetic_probe"}})
     free, blocked = run(BLEEDING, (BLEED,), 90), run(blocked_anchors, (BLEED,), 90)
     assert [s.V for s in free.states] == [s.V for s in blocked.states], "the same physiology"
-    for one, other in zip(free.derived()[1:], blocked.derived()[1:]):
-        assert other.pulse_rate_bpm - BLEEDING.hr == pytest.approx(0.4 * (one.pulse_rate_bpm - BLEEDING.hr))
+    # P2I-2AF: the same drive; beta-blockade scales the unconstrained increment by 1 - beta, and the sinus
+    # increment then saturates smoothly toward the ceiling, so the blocked rise stays below the free one.
+    assert [s.aux.sympathetic_drive for s in free.states] == [s.aux.sympathetic_drive for s in blocked.states]
+    for state, one, other in zip(blocked.states[1:], free.derived()[1:], blocked.derived()[1:]):
+        drive = state.aux.sympathetic_drive
+        assert unconstrained_increment(drive, 0.6, DEFAULT_PROFILE) == pytest.approx(
+            0.4 * unconstrained_increment(drive, 0.0, DEFAULT_PROFILE))
+        assert other.pulse_rate_bpm - BLEEDING.hr == pytest.approx(
+            sympathetic_increment(drive, BLEEDING.hr, 0.6, DEFAULT_PROFILE), abs=1e-9)
+        assert 0.0 <= other.pulse_rate_bpm - BLEEDING.hr <= one.pulse_rate_bpm - BLEEDING.hr
         assert (other.sbp, other.map) == (one.sbp, one.map)
     with pytest.raises(Exception):
         Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, "beta_blockade": 1.5,

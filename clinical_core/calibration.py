@@ -357,11 +357,16 @@ def check_hr(profile: CoreProfile, arrivals: Mapping[str, Anchors] | None = None
         rate = arrival.intrinsic_sinus_rate if arrival.intrinsic_sinus_rate is not None else arrival.hr
         volume_loss = run(arrival, (Drift("loss", "V", 0, 30, -8.0),), 30, profile)
         rates = [item.pulse_rate_bpm for item in volume_loss.derived()]
-        _expect(max(rates) > arrival.hr, f"HR1 ({case}): deterioration did not raise HR")
+        # P2I-2AF: the arrival HR is the one the arrival physiology predicts (no residual forces the authored
+        # one), so the rules compare with the run's own arrival HR.
+        _expect(max(rates) > rates[0], f"HR1 ({case}): deterioration did not raise HR")
         recovered = run(arrival, (Drift("loss", "V", 0, 30, -8.0), Drift("restore", "V", 30, 31, 640.0)), 240,
                         profile)
         after = [item.pulse_rate_bpm for item in recovered.derived()]
-        _expect(after[-1] < arrival.hr, f"HR2 ({case}): recovery did not take HR below the arrival HR")
+        # An arrival with no sympathetic share (HR at intrinsic: no deficit drive, no debt) has nothing to resolve;
+        # it returns to its arrival HR, never above (HR4 forbids below).
+        _expect(after[-1] < after[0] if after[0] > rate else after[-1] <= after[0],
+                f"HR2 ({case}): recovery did not take HR below the arrival HR")
         for trajectory, values in ((volume_loss, rates), (recovered, after)):
             _expect(min(state.aux.sympathetic_drive for state in trajectory.states) >= 0,
                     f"HR3 ({case}): negative sympathetic drive")
@@ -468,7 +473,8 @@ FROZEN_RULES: Mapping[str, Rule] = {
                 "above the arrival HR", "the drive answers to the pressure deficit; corrected after the review: "
                 "the probe used to declare only the intrinsic rate, not the candidate's whole arrival"),
     "HR2": Rule("recovery can reduce HR toward intrinsic", "P2E-1",
-                "the same arrival and loss, then 400 mL beyond arrival, 240 min: HR ends below the arrival HR",
+                "the same arrival and loss, then 400 mL beyond arrival, 240 min: HR ends below the arrival HR (an "
+                "arrival with no sympathetic share, HR at intrinsic, ends at it: P2I-2AF)",
                 "an arrival sympathetic share can resolve; same correction as HR1"),
     "HR3": Rule("no negative sympathetic contribution", "P2D-3", "every HR probe run", "sign consistency",
                 "by construction: the drive's target is floored at 0"),

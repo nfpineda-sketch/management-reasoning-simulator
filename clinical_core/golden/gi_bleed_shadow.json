@@ -154,6 +154,10 @@
   ]
  },
  "parameters": {
+  "acute_deficit_to_sympathetic_gain": [
+   "provisional",
+   "sympathetic drive per unit of the acute shock signal, the current effective oxygen deficit over the current demand (P2I-2AF): 0 at no deficit, never decreasing in it, resolving when oxygen availability is adequate or compensated; reads no D, lactate or tau_D; TBD. 0 by default: the faculty sets it, nothing is chosen here"
+  ],
   "afterload_sensitivity": [
    "provisional",
    "how much tone above arrival lowers output, 1 / (1 + a (T - 1)): TBD (KD-S4)"
@@ -216,7 +220,7 @@
   ],
   "debt_to_sympathetic_gain": [
    "provisional",
-   "sympathetic drive per unit of D (P2I-2AE): its own parameter, independent of tau_D (debt repayment); the debt-driven drive is gain x D, 0 at D = 0, and the arrival debt's share of the arrival drive is gain x D0; TBD. The default equals the former default sympathetic_per_debt / tau_D, 0.5 / 60, and is not a calibrated value"
+   "sympathetic drive per unit of D (P2I-2AE): its own parameter, independent of tau_D (debt repayment); the debt-driven drive is gain x D, 0 at D = 0. D's absolute scale is latent, so only gain x D is observable (rescaling D by c and the gain by 1 / c leaves HR unchanged; P2I-2AF); TBD. The default equals the former default sympathetic_per_debt / tau_D, 0.5 / 60, and is not a calibrated value"
   ],
   "hr_per_sympathetic_drive": [
    "adopted",
@@ -310,6 +314,10 @@
    "adopted",
    "family_engine._surface: sbp - (circulation - 1) * 45"
   ],
+  "sinus_rate_ceiling_bpm": [
+   "provisional",
+   "the sinus rate the sympathetic increment saturates toward (P2I-2AF): the increment is HR_RESERVE x tanh(unconstrained / HR_RESERVE), HR_RESERVE = ceiling - the sinus base rate; smooth, monotone, linear near 0, never a hard clip; TBD. 175 is the exploratory midpoint of a broad adult maximal-sinus-rate range (150-200), not approved"
+  ],
   "spo2_per_fio2": [
    "adopted",
    "family_engine._surface: oxygen_gain = (FiO2 - 0.21) * 30"
@@ -371,7 +379,7 @@
     },
     "intrinsic_sinus_rate": {
      "calibrated": false,
-     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "note": "not declared: the arrival HR is read as intrinsic; any drive the arrival physiology calls for adds to it",
      "source": "default_unmapped",
      "value": 124.0
     },
@@ -1870,7 +1878,7 @@
     },
     "intrinsic_sinus_rate": {
      "calibrated": false,
-     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "note": "not declared: the arrival HR is read as intrinsic; any drive the arrival physiology calls for adds to it",
      "source": "default_unmapped",
      "value": 124.0
     },
@@ -3535,7 +3543,7 @@
     },
     "intrinsic_sinus_rate": {
      "calibrated": false,
-     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "note": "not declared: the arrival HR is read as intrinsic; any drive the arrival physiology calls for adds to it",
      "source": "default_unmapped",
      "value": 124.0
     },
@@ -4545,7 +4553,7 @@
     },
     "intrinsic_sinus_rate": {
      "calibrated": false,
-     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "note": "not declared: the arrival HR is read as intrinsic; any drive the arrival physiology calls for adds to it",
      "source": "default_unmapped",
      "value": 124.0
     },
@@ -6023,7 +6031,7 @@
     },
     "intrinsic_sinus_rate": {
      "calibrated": false,
-     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "note": "not declared: the arrival HR is read as intrinsic; any drive the arrival physiology calls for adds to it",
      "source": "default_unmapped",
      "value": 124.0
     },
@@ -7253,7 +7261,7 @@
     },
     "intrinsic_sinus_rate": {
      "calibrated": false,
-     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "note": "not declared: the arrival HR is read as intrinsic; any drive the arrival physiology calls for adds to it",
      "source": "default_unmapped",
      "value": 124.0
     },
@@ -8562,7 +8570,7 @@
     },
     "intrinsic_sinus_rate": {
      "calibrated": false,
-     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "note": "not declared: the arrival HR is read as intrinsic; any drive the arrival physiology calls for adds to it",
      "source": "default_unmapped",
      "value": 124.0
     },
@@ -10237,7 +10245,7 @@
     },
     "intrinsic_sinus_rate": {
      "calibrated": false,
-     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "note": "not declared: the arrival HR is read as intrinsic; any drive the arrival physiology calls for adds to it",
      "source": "default_unmapped",
      "value": 124.0
     },
@@ -11561,7 +11569,7 @@
     },
     "intrinsic_sinus_rate": {
      "calibrated": false,
-     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "note": "not declared: the arrival HR is read as intrinsic; any drive the arrival physiology calls for adds to it",
      "source": "default_unmapped",
      "value": 124.0
     },
@@ -13080,7 +13088,7 @@
     },
     "intrinsic_sinus_rate": {
      "calibrated": false,
-     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "note": "not declared: the arrival HR is read as intrinsic; any drive the arrival physiology calls for adds to it",
      "source": "default_unmapped",
      "value": 124.0
     },
@@ -14367,7 +14375,7 @@
     },
     "intrinsic_sinus_rate": {
      "calibrated": false,
-     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "note": "not declared: the arrival HR is read as intrinsic; any drive the arrival physiology calls for adds to it",
      "source": "default_unmapped",
      "value": 112.0
     },
@@ -15866,7 +15874,7 @@
     },
     "intrinsic_sinus_rate": {
      "calibrated": false,
-     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "note": "not declared: the arrival HR is read as intrinsic; any drive the arrival physiology calls for adds to it",
      "source": "default_unmapped",
      "value": 112.0
     },
@@ -17531,7 +17539,7 @@
     },
     "intrinsic_sinus_rate": {
      "calibrated": false,
-     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "note": "not declared: the arrival HR is read as intrinsic; any drive the arrival physiology calls for adds to it",
      "source": "default_unmapped",
      "value": 112.0
     },
@@ -18530,7 +18538,7 @@
     },
     "intrinsic_sinus_rate": {
      "calibrated": false,
-     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "note": "not declared: the arrival HR is read as intrinsic; any drive the arrival physiology calls for adds to it",
      "source": "default_unmapped",
      "value": 112.0
     },
@@ -20008,7 +20016,7 @@
     },
     "intrinsic_sinus_rate": {
      "calibrated": false,
-     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "note": "not declared: the arrival HR is read as intrinsic; any drive the arrival physiology calls for adds to it",
      "source": "default_unmapped",
      "value": 112.0
     },
@@ -21238,7 +21246,7 @@
     },
     "intrinsic_sinus_rate": {
      "calibrated": false,
-     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "note": "not declared: the arrival HR is read as intrinsic; any drive the arrival physiology calls for adds to it",
      "source": "default_unmapped",
      "value": 112.0
     },
@@ -22547,7 +22555,7 @@
     },
     "intrinsic_sinus_rate": {
      "calibrated": false,
-     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "note": "not declared: the arrival HR is read as intrinsic; any drive the arrival physiology calls for adds to it",
      "source": "default_unmapped",
      "value": 112.0
     },
@@ -24222,7 +24230,7 @@
     },
     "intrinsic_sinus_rate": {
      "calibrated": false,
-     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "note": "not declared: the arrival HR is read as intrinsic; any drive the arrival physiology calls for adds to it",
      "source": "default_unmapped",
      "value": 112.0
     },
@@ -25546,7 +25554,7 @@
     },
     "intrinsic_sinus_rate": {
      "calibrated": false,
-     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "note": "not declared: the arrival HR is read as intrinsic; any drive the arrival physiology calls for adds to it",
      "source": "default_unmapped",
      "value": 112.0
     },
@@ -27065,7 +27073,7 @@
     },
     "intrinsic_sinus_rate": {
      "calibrated": false,
-     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "note": "not declared: the arrival HR is read as intrinsic; any drive the arrival physiology calls for adds to it",
      "source": "default_unmapped",
      "value": 112.0
     },

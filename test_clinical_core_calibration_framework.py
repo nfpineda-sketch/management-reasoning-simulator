@@ -41,11 +41,15 @@ from clinical_core.shadow import GOLDEN
 #: semantics in the core (no repayment while a deficit lasts): harness_sources (calibration.py's delivery
 #: probes) and gi_reference (the pre-arrival plausibility probe's recurrence) changed; no rule, band or
 #: assertion did. P2I-2AD gave lactate production its own gain (debt_to_lactate_gain): only gi_reference
-#: changed (the plausibility probe's production reads it); no rule, band or assertion did.
+#: changed (the plausibility probe's production reads it); no rule, band or assertion did. P2I-2AF made the arrival HR
+#: the one the arrival physiology predicts (no residual forces the authored HR; faculty decision), so HR1 and HR2
+#: compare with the run's own arrival HR instead of the authored one, and HR2 asks an arrival with no sympathetic
+#: share (HR at intrinsic: nothing to resolve) to end at it instead of below: the rules component (check_hr's source,
+#: HR2's criterion text) and harness_sources (calibration.py) changed; no probe size, threshold or band did.
 FROZEN_COMPONENTS = {
-    "rules": "9b3818ed3599a52a8a18a98c15882f1179bd1b63a5c1778744bec977979b396a",
+    "rules": "252c400bd364ad5f6e657f7c6115f4578d2dcdc9746c07da4ce72c93f7734902",
     "bands": "99ca99f1b0d032056cfdabb90e1354683ef5ba093e896a0d5c10bc9c2ca192ca",
-    "harness_sources": "412d7801d0de5f60c4ac3a5f2dccb6fc36980db1dc3ab945edda380a514568f8",
+    "harness_sources": "dadb649f49b5e4f03417dbeff2b8cac5c70a8af399910c03d599d8d30999ddc6",
     "migration_sources": "6033f4437627ed1f78c2c2ea03764986572639d94596982963a44f5964a2cb29",
     "authority_registries": "e305793eefead76fb733761f3305148e3df85aa9074445d94f051cb5709d2314",
     "gi_reference": "ee3114ce9eeeb426a7b843943819aa88095b6cb09674e4c895c93a6ad1de0867",
@@ -54,7 +58,7 @@ FROZEN_COMPONENTS = {
     "input_adapter_sources": "e83dca618fdaaa9239d861e1e1d6928dc703bfe33206a05cef44a5b0e9495bc5",
     "scenario_inputs": "afb2051e7fa04f1765aaf920c82f51dc6675d19bcbcb425c2ee581d8fa60d347",
 }
-FROZEN_DIGEST = "c3fd2dd7de4b1621d6a772b24946812ddbf68a023cdea27c65018061b7d8c7ad"
+FROZEN_DIGEST = "990f3ad888d8ee1aad1991dea70a6f4919aec65f45bace6c8ac81b87a7dad176"
 
 
 # P2F-2 / P2F-5 -- repository truth, candidate inference, faculty decision ---------------------

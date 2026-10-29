@@ -4,7 +4,7 @@ Apoyo a decisiones, no decisiones. Nada de este documento aprueba un número, ma
 FACULTY_APPROVED, migra el GI, toca el tiempo de ejecución ni cambia lo que ve el residente. Todos los valores
 siguen CANDIDATE.
 
-- **Generado desde:** el congelamiento de calibración `c3fd2dd7de4b1621d6a772b24946812ddbf68a023cdea27c65018061b7d8c7ad` y el paquete `0490d7393c454d855fb2297a6acb91bf9ff356f08f4b6d8f04cd5b7cbae385ed`
+- **Generado desde:** el congelamiento de calibración `990f3ad888d8ee1aad1991dea70a6f4919aec65f45bace6c8ac81b87a7dad176` y el paquete `b632c0eeeadf1052bdd596fadf31a0b82fa016ba1aa80496a26aaf7327c3bf01`
   (`python -m clinical_core.decision_pack`; las tablas, con `python -m clinical_core.decision_pack_markdown`).
   Los números están en `docs/revision/P2G_decision_pack.json`. Una prueba falla si el código o las entradas cambian
   sin regenerarlos.
@@ -60,8 +60,6 @@ D → lactato (G); lo que se aclara depende de τ_L.
   - Que vuelva a la basal (0,8–2,0, sin dato en el caso) depende sobre todo de τ_L y de la D de llegada.
 
 <!-- generado:lactato -->
-P2I-2AE: en 108 de los 1054 candidatos admisibles de P2F (intrínseca sup. y deuda sup.) el núcleo vigente rechaza la llegada a la ganancia por defecto: su deuda pediría una contribución simpática negativa. Como el impulso simpático no llega al gasto, la entrega, D, el lactato, la presión ni la FR, esos candidatos se leen sin impulso por deuda (ganancia 0) en el lactato, la presión y la FR, y quedan fuera de las envolventes de FC.
-
 **gi_bleed_57m** — lactato (mmol/L), mínimo – mediana – máximo en la región admisible:
 
 | Corrida | 0′ | 30′ | 60′ | 120′ |
@@ -196,99 +194,99 @@ no depende de la intrínseca:
   ganancia 2 y 110 con ganancia 0,5.
 
 <!-- generado:fc -->
-P2I-2AE: la envolvente de FC lee sólo los 946 candidatos cuya llegada acepta el núcleo vigente. El impulso por deuda es debt_to_sympathetic_gain × D y el núcleo ya no lee sympathetic_per_debt: sus filas (0,25 / 0,5 / 1) son idénticas por construcción, no un resultado.
+Desde P2I-2AE el impulso por deuda es debt_to_sympathetic_gain × D y el núcleo ya no lee sympathetic_per_debt: sus filas (0,25 / 0,5 / 1) son idénticas por construcción, no un resultado. Desde P2I-2AF la FC de llegada es la que predice la fisiología de llegada (déficit agudo, deuda; sin resto de llegada), con la ganancia aguda en 0 por defecto y el incremento simpático saturado hacia el techo sinusal provisional: esta tabla histórica no reproduce la FC de llegada registrada y no es una calibración.
 
-**gi_bleed_57m** — FC de llegada 124 lpm = intrínseca 60–100 (medio 80) + parte simpática 24–64 (medio 44); betabloqueo 0 (factor 1 − β = 1); ninguna otra fuente cronotrópica en estas corridas.
+**gi_bleed_57m** — FC de llegada 84 lpm = intrínseca 60–100 (medio 80) + parte simpática -16–24 (medio 4); betabloqueo 0 (factor 1 − β = 1); ninguna otra fuente cronotrópica en estas corridas.
 
 | Corrida | Intrínseca | 30′ (FC = intr. + simp.) | 60′ | 120′ | Región admisible (mín – mediana – máx) |
 |---|---|---|---|---|---|
-| manejo definitivo (GR + IBP + endoscopia) | intrínseca inf. | 113,0 = 60 + 53,0 | 102,6 = 60 + 42,6 | 100,6 = 60 + 40,6 |  |
-| manejo definitivo (GR + IBP + endoscopia) | intrínseca sup. | 113,0 = 100 + 13,0 | 102,6 = 100 + 2,6 | 100,6 = 100 + 0,6 |  |
-| manejo definitivo (GR + IBP + endoscopia) | medio | 113,0 = 80 + 33,0 | 102,6 = 80 + 22,6 | 100,6 = 80 + 20,6 | 30′ 109,6 – 114,0 – 118,0; 60′ 97,3 – 104,8 – 111,7; 120′ 93,4 – 104,1 – 109,9 |
-| sólo cristaloides (2 L en 20 min) | intrínseca inf. | 117,8 = 60 + 57,8 | 124,9 = 60 + 64,9 | — |  |
-| sólo cristaloides (2 L en 20 min) | intrínseca sup. | 117,8 = 100 + 17,8 | 124,9 = 100 + 24,9 | — |  |
-| sólo cristaloides (2 L en 20 min) | medio | 117,8 = 80 + 37,8 | 124,9 = 80 + 44,9 | — | 30′ 113,7 – 118,6 – 121,7; 60′ 118,1 – 125,1 – 129,3 |
-| sólo GR (2 U en 60 min) | intrínseca inf. | 113,6 = 60 + 53,6 | 103,6 = 60 + 43,6 | — |  |
-| sólo GR (2 U en 60 min) | intrínseca sup. | 113,6 = 100 + 13,6 | 103,6 = 100 + 3,6 | — |  |
-| sólo GR (2 U en 60 min) | medio | 113,6 = 80 + 33,6 | 103,6 = 80 + 23,6 | — | 30′ 110,2 – 114,5 – 118,3; 60′ 98,2 – 105,8 – 112,2 |
-| sin tratamiento | intrínseca inf. | 129,5 = 60 + 69,5 | 135,7 = 60 + 75,7 | 150,5 = 60 + 90,5 |  |
-| sin tratamiento | intrínseca sup. | 129,5 = 100 + 29,5 | 135,7 = 100 + 35,7 | 150,5 = 100 + 50,5 |  |
-| sin tratamiento | medio | 129,5 = 80 + 49,5 | 135,7 = 80 + 55,7 | 150,5 = 80 + 70,5 | 30′ 127,4 – 129,5 – 130,9; 60′ 131,2 – 135,7 – 138,3; 120′ 140,0 – 150,5 – 154,7 |
+| manejo definitivo (GR + IBP + endoscopia) | intrínseca inf. | 60,0 = 60 + 0,0 | 60,0 = 60 + 0,0 | 60,0 = 60 + 0,0 |  |
+| manejo definitivo (GR + IBP + endoscopia) | intrínseca sup. | 100,0 = 100 + 0,0 | 100,0 = 100 + 0,0 | 100,0 = 100 + 0,0 |  |
+| manejo definitivo (GR + IBP + endoscopia) | medio | 80,0 = 80 + 0,0 | 80,0 = 80 + 0,0 | 80,0 = 80 + 0,0 | 30′ 60,0 – 80,0 – 103,7; 60′ 60,0 – 80,0 – 100,0; 120′ 60,0 – 80,0 – 100,0 |
+| sólo cristaloides (2 L en 20 min) | intrínseca inf. | 60,0 = 60 + 0,0 | 65,1 = 60 + 5,1 | — |  |
+| sólo cristaloides (2 L en 20 min) | intrínseca sup. | 100,0 = 100 + 0,0 | 105,1 = 100 + 5,1 | — |  |
+| sólo cristaloides (2 L en 20 min) | medio | 80,0 = 80 + 0,0 | 85,1 = 80 + 5,1 | — | 30′ 60,0 – 80,0 – 109,0; 60′ 61,1 – 85,3 – 117,4 |
+| sólo GR (2 U en 60 min) | intrínseca inf. | 60,0 = 60 + 0,0 | 60,0 = 60 + 0,0 | — |  |
+| sólo GR (2 U en 60 min) | intrínseca sup. | 100,0 = 100 + 0,0 | 100,0 = 100 + 0,0 | — |  |
+| sólo GR (2 U en 60 min) | medio | 80,0 = 80 + 0,0 | 80,0 = 80 + 0,0 | — | 30′ 60,0 – 80,0 – 104,3; 60′ 60,0 – 80,0 – 100,0 |
+| sin tratamiento | intrínseca inf. | 69,6 = 60 + 9,6 | 75,8 = 60 + 15,8 | 89,9 = 60 + 29,9 |  |
+| sin tratamiento | intrínseca sup. | 109,6 = 100 + 9,6 | 115,6 = 100 + 15,6 | 129,1 = 100 + 29,1 |  |
+| sin tratamiento | medio | 89,6 = 80 + 9,6 | 95,7 = 80 + 15,7 | 109,6 = 80 + 29,6 | 30′ 64,6 – 89,6 – 119,0; 60′ 70,1 – 95,7 – 125,7; 120′ 83,6 – 109,7 – 139,0 |
 
 Velocidad de resolución con manejo definitivo, por decaimiento simpático (τ) e intrínseca: minuto en que la parte simpática cae a la mitad de la de llegada («mitad simpática», depende de la intrínseca) y minuto en que la FC recorre la mitad de su propia caída hasta los 120′ («mitad de la caída»):
 
 | τ simpático (min) | Intrínseca | Mitad simpática (min) | Mitad de la caída (min) | FC 120′ | Caída (lpm) | Parte simpática 120′ (lpm) |
 |---|---|---|---|---|---|---|
-| 2 | inf. | nunca | 29 | 100,6 | 23,4 | 40,6 |
-| 2 | medio | 60 | 29 | 100,6 | 23,4 | 20,6 |
-| 2 | sup. | 30 | 29 | 100,6 | 23,4 | 0,6 |
-| 5 | inf. | nunca | 32 | 100,6 | 23,4 | 40,6 |
-| 5 | medio | 63 | 32 | 100,6 | 23,4 | 20,6 |
-| 5 | sup. | 33 | 32 | 100,6 | 23,4 | 0,6 |
-| 15 | inf. | nunca | 42 | 100,8 | 23,2 | 40,8 |
-| 15 | medio | 84 | 42 | 100,8 | 23,2 | 20,8 |
-| 15 | sup. | 43 | 42 | 100,8 | 23,2 | 0,8 |
+| 2 | inf. | 7 | 7 | 60,0 | 4,2 | 0,0 |
+| 2 | medio | 7 | 7 | 80,0 | 4,2 | 0,0 |
+| 2 | sup. | 7 | 7 | 100,0 | 4,2 | 0,0 |
+| 5 | inf. | 9 | 9 | 60,0 | 4,2 | 0,0 |
+| 5 | medio | 9 | 9 | 80,0 | 4,2 | 0,0 |
+| 5 | sup. | 9 | 9 | 100,0 | 4,2 | 0,0 |
+| 15 | inf. | 16 | 16 | 60,0 | 4,2 | 0,0 |
+| 15 | medio | 16 | 16 | 80,0 | 4,2 | 0,0 |
+| 15 | sup. | 16 | 16 | 100,0 | 4,2 | 0,0 |
 
 | Factor | Nivel | Estado | sin trat. 30′ | sin trat. 60′ | sin trat. 120′ | definitivo 30′ | definitivo 60′ | definitivo 120′ |
 |---|---|---|---|---|---|---|---|---|
-| `intrinsic_sinus_rate` | inf. | admisible | 129,5 | 135,7 | 150,5 | 113,0 | 102,6 | 100,6 |
-| `intrinsic_sinus_rate` | medio | admisible | 129,5 | 135,7 | 150,5 | 113,0 | 102,6 | 100,6 |
-| `intrinsic_sinus_rate` | sup. | admisible | 129,5 | 135,7 | 150,5 | 113,0 | 102,6 | 100,6 |
-| `sympathetic_decay_tau_min` | 2 | admisible · fuera del diseño de P2F | 129,5 | 135,7 | 150,5 | 111,8 | 101,7 | 100,6 |
-| `sympathetic_decay_tau_min` | 5 | admisible | 129,5 | 135,7 | 150,5 | 113,0 | 102,6 | 100,6 |
-| `sympathetic_decay_tau_min` | 15 | admisible · fuera del diseño de P2F | 129,5 | 135,7 | 150,5 | 116,5 | 105,9 | 100,8 |
-| `sympathetic_per_pressure_deficit` | 0,5 | admisible · fuera del diseño de P2F | 127,4 | 131,7 | 142,5 | 118,0 | 112,2 | 110,6 |
-| `sympathetic_per_pressure_deficit` | 1 | admisible | 129,5 | 135,7 | 150,5 | 113,0 | 102,6 | 100,6 |
-| `sympathetic_per_pressure_deficit` | 2 | admisible · fuera del diseño de P2F | 133,6 | 143,8 | 166,4 | 103,0 | 83,5 | 80,7 |
-| `sympathetic_per_debt` | 0,25 | admisible · fuera del diseño de P2F | 129,5 | 135,7 | 150,5 | 113,0 | 102,6 | 100,6 |
-| `sympathetic_per_debt` | 0,5 | admisible | 129,5 | 135,7 | 150,5 | 113,0 | 102,6 | 100,6 |
-| `sympathetic_per_debt` | 1 | admisible · fuera del diseño de P2F | 129,5 | 135,7 | 150,5 | 113,0 | 102,6 | 100,6 |
+| `intrinsic_sinus_rate` | inf. | admisible | 69,6 | 75,8 | 89,9 | 60,0 | 60,0 | 60,0 |
+| `intrinsic_sinus_rate` | medio | admisible | 89,6 | 95,7 | 109,6 | 80,0 | 80,0 | 80,0 |
+| `intrinsic_sinus_rate` | sup. | admisible | 109,6 | 115,6 | 129,1 | 100,0 | 100,0 | 100,0 |
+| `sympathetic_decay_tau_min` | 2 | admisible · fuera del diseño de P2F | 89,6 | 95,7 | 109,6 | 80,0 | 80,0 | 80,0 |
+| `sympathetic_decay_tau_min` | 5 | admisible | 89,6 | 95,7 | 109,6 | 80,0 | 80,0 | 80,0 |
+| `sympathetic_decay_tau_min` | 15 | admisible · fuera del diseño de P2F | 89,6 | 95,7 | 109,6 | 80,8 | 80,1 | 80,0 |
+| `sympathetic_per_pressure_deficit` | 0,5 | admisible · fuera del diseño de P2F | 87,6 | 91,8 | 102,3 | 80,1 | 80,0 | 80,0 |
+| `sympathetic_per_pressure_deficit` | 1 | admisible | 89,6 | 95,7 | 109,6 | 80,0 | 80,0 | 80,0 |
+| `sympathetic_per_pressure_deficit` | 2 | admisible · fuera del diseño de P2F | 93,7 | 103,5 | 123,1 | 80,0 | 80,0 | 80,0 |
+| `sympathetic_per_debt` | 0,25 | admisible · fuera del diseño de P2F | 89,6 | 95,7 | 109,6 | 80,0 | 80,0 | 80,0 |
+| `sympathetic_per_debt` | 0,5 | admisible | 89,6 | 95,7 | 109,6 | 80,0 | 80,0 | 80,0 |
+| `sympathetic_per_debt` | 1 | admisible · fuera del diseño de P2F | 89,6 | 95,7 | 109,6 | 80,0 | 80,0 | 80,0 |
 
-**gi_bleed_72f** — FC de llegada 112 lpm = intrínseca 60–100 (medio 80) + parte simpática 12–52 (medio 32); betabloqueo 0 (factor 1 − β = 1); ninguna otra fuente cronotrópica en estas corridas.
+**gi_bleed_72f** — FC de llegada 84 lpm = intrínseca 60–100 (medio 80) + parte simpática -16–24 (medio 4); betabloqueo 0 (factor 1 − β = 1); ninguna otra fuente cronotrópica en estas corridas.
 
 | Corrida | Intrínseca | 30′ (FC = intr. + simp.) | 60′ | 120′ | Región admisible (mín – mediana – máx) |
 |---|---|---|---|---|---|
-| manejo definitivo (GR + IBP + endoscopia) | intrínseca inf. | 104,6 = 60 + 44,6 | 97,3 = 60 + 37,3 | 95,5 = 60 + 35,5 |  |
-| manejo definitivo (GR + IBP + endoscopia) | intrínseca sup. | 104,6 = 100 + 4,6 | 100,0 = 100 + 0,0 | 100,0 = 100 + 0,0 |  |
-| manejo definitivo (GR + IBP + endoscopia) | medio | 104,6 = 80 + 24,6 | 97,3 = 80 + 17,3 | 95,5 = 80 + 15,5 | 30′ 101,1 – 105,4 – 108,0; 60′ 91,8 – 99,4 – 103,2; 120′ 88,2 – 98,9 – 101,5 |
-| sólo cristaloides (2 L en 20 min) | intrínseca inf. | 108,9 = 60 + 48,9 | 114,0 = 60 + 54,0 | — |  |
-| sólo cristaloides (2 L en 20 min) | intrínseca sup. | 108,9 = 100 + 8,9 | 114,0 = 100 + 14,0 | — |  |
-| sólo cristaloides (2 L en 20 min) | medio | 108,9 = 80 + 28,9 | 114,0 = 80 + 34,0 | — | 30′ 103,6 – 108,9 – 110,8; 60′ 105,9 – 114,0 – 117,3 |
-| sólo GR (2 U en 60 min) | intrínseca inf. | 105,0 = 60 + 45,0 | 97,9 = 60 + 37,9 | — |  |
-| sólo GR (2 U en 60 min) | intrínseca sup. | 105,0 = 100 + 5,0 | 100,1 = 100 + 0,1 | — |  |
-| sólo GR (2 U en 60 min) | medio | 105,0 = 80 + 25,0 | 97,9 = 80 + 17,9 | — | 30′ 101,4 – 105,8 – 108,2; 60′ 92,4 – 100,0 – 103,6 |
-| sin tratamiento | intrínseca inf. | 115,9 = 60 + 55,9 | 120,4 = 60 + 60,4 | 130,7 = 60 + 70,7 |  |
-| sin tratamiento | intrínseca sup. | 115,9 = 100 + 15,9 | 120,4 = 100 + 20,4 | 130,7 = 100 + 30,7 |  |
-| sin tratamiento | medio | 115,9 = 80 + 35,9 | 120,4 = 80 + 40,4 | 130,7 = 80 + 50,7 | 30′ 114,6 – 115,9 – 117,4; 60′ 117,4 – 120,4 – 123,1; 120′ 124,0 – 130,7 – 135,7 |
+| manejo definitivo (GR + IBP + endoscopia) | intrínseca inf. | 60,1 = 60 + 0,1 | 60,0 = 60 + 0,0 | 60,0 = 60 + 0,0 |  |
+| manejo definitivo (GR + IBP + endoscopia) | intrínseca sup. | 100,1 = 100 + 0,1 | 100,0 = 100 + 0,0 | 100,0 = 100 + 0,0 |  |
+| manejo definitivo (GR + IBP + endoscopia) | medio | 80,1 = 80 + 0,1 | 80,0 = 80 + 0,0 | 80,0 = 80 + 0,0 | 30′ 60,0 – 80,1 – 107,3; 60′ 60,0 – 80,0 – 100,5; 120′ 60,0 – 80,0 – 100,0 |
+| sólo cristaloides (2 L en 20 min) | intrínseca inf. | 61,1 = 60 + 1,1 | 66,1 = 60 + 6,1 | — |  |
+| sólo cristaloides (2 L en 20 min) | intrínseca sup. | 101,1 = 100 + 1,1 | 106,1 = 100 + 6,1 | — |  |
+| sólo cristaloides (2 L en 20 min) | medio | 81,1 = 80 + 1,1 | 86,1 = 80 + 6,1 | — | 30′ 60,0 – 81,1 – 111,0; 60′ 60,8 – 86,1 – 117,4 |
+| sólo GR (2 U en 60 min) | intrínseca inf. | 60,1 = 60 + 0,1 | 60,0 = 60 + 0,0 | — |  |
+| sólo GR (2 U en 60 min) | intrínseca sup. | 100,1 = 100 + 0,1 | 100,0 = 100 + 0,0 | — |  |
+| sólo GR (2 U en 60 min) | medio | 80,1 = 80 + 0,1 | 80,0 = 80 + 0,0 | — | 30′ 60,0 – 80,1 – 107,7; 60′ 60,0 – 80,0 – 100,9 |
+| sin tratamiento | intrínseca inf. | 68,1 = 60 + 8,1 | 72,5 = 60 + 12,5 | 82,6 = 60 + 22,6 |  |
+| sin tratamiento | intrínseca sup. | 108,1 = 100 + 8,1 | 112,4 = 100 + 12,4 | 122,2 = 100 + 22,2 |  |
+| sin tratamiento | medio | 88,1 = 80 + 8,1 | 92,5 = 80 + 12,5 | 102,5 = 80 + 22,5 | 30′ 63,0 – 88,1 – 117,6; 60′ 66,7 – 92,5 – 122,9; 120′ 75,7 – 103,2 – 133,6 |
 
 Velocidad de resolución con manejo definitivo, por decaimiento simpático (τ) e intrínseca: minuto en que la parte simpática cae a la mitad de la de llegada («mitad simpática», depende de la intrínseca) y minuto en que la FC recorre la mitad de su propia caída hasta los 120′ («mitad de la caída»):
 
 | τ simpático (min) | Intrínseca | Mitad simpática (min) | Mitad de la caída (min) | FC 120′ | Caída (lpm) | Parte simpática 120′ (lpm) |
 |---|---|---|---|---|---|---|
-| 2 | inf. | nunca | 31 | 95,4 | 16,6 | 35,4 |
-| 2 | medio | 76 | 31 | 95,4 | 16,6 | 15,4 |
-| 2 | sup. | 23 | 23 | 100,0 | 12,0 | 0,0 |
-| 5 | inf. | nunca | 34 | 95,5 | 16,5 | 35,5 |
-| 5 | medio | 80 | 34 | 95,5 | 16,5 | 15,5 |
-| 5 | sup. | 26 | 26 | 100,0 | 12,0 | 0,0 |
-| 15 | inf. | nunca | 43 | 95,6 | 16,4 | 35,6 |
-| 15 | medio | 102 | 43 | 95,6 | 16,4 | 15,6 |
-| 15 | sup. | 34 | 34 | 100,0 | 12,0 | 0,0 |
+| 2 | inf. | 10 | 10 | 60,0 | 4,2 | 0,0 |
+| 2 | medio | 10 | 10 | 80,0 | 4,2 | 0,0 |
+| 2 | sup. | 10 | 10 | 100,0 | 4,2 | 0,0 |
+| 5 | inf. | 13 | 13 | 60,0 | 4,2 | 0,0 |
+| 5 | medio | 13 | 13 | 80,0 | 4,2 | 0,0 |
+| 5 | sup. | 13 | 13 | 100,0 | 4,2 | 0,0 |
+| 15 | inf. | 19 | 19 | 60,0 | 4,2 | 0,0 |
+| 15 | medio | 19 | 19 | 80,0 | 4,2 | 0,0 |
+| 15 | sup. | 19 | 19 | 100,0 | 4,2 | 0,0 |
 
 | Factor | Nivel | Estado | sin trat. 30′ | sin trat. 60′ | sin trat. 120′ | definitivo 30′ | definitivo 60′ | definitivo 120′ |
 |---|---|---|---|---|---|---|---|---|
-| `intrinsic_sinus_rate` | inf. | admisible | 115,9 | 120,4 | 130,7 | 104,6 | 97,3 | 95,5 |
-| `intrinsic_sinus_rate` | medio | admisible | 115,9 | 120,4 | 130,7 | 104,6 | 97,3 | 95,5 |
-| `intrinsic_sinus_rate` | sup. | admisible | 115,9 | 120,4 | 130,7 | 104,6 | 100,0 | 100,0 |
-| `sympathetic_decay_tau_min` | 2 | admisible · fuera del diseño de P2F | 115,9 | 120,4 | 130,7 | 103,8 | 96,7 | 95,4 |
-| `sympathetic_decay_tau_min` | 5 | admisible | 115,9 | 120,4 | 130,7 | 104,6 | 97,3 | 95,5 |
-| `sympathetic_decay_tau_min` | 15 | admisible · fuera del diseño de P2F | 115,9 | 120,4 | 130,7 | 107,0 | 99,6 | 95,6 |
-| `sympathetic_per_pressure_deficit` | 0,5 | admisible · fuera del diseño de P2F | 114,6 | 117,7 | 125,5 | 107,9 | 103,6 | 102,0 |
-| `sympathetic_per_pressure_deficit` | 1 | admisible | 115,9 | 120,4 | 130,7 | 104,6 | 97,3 | 95,5 |
-| `sympathetic_per_pressure_deficit` | 2 | admisible · fuera del diseño de P2F | 118,6 | 125,7 | 141,2 | 98,0 | 84,7 | 82,3 |
-| `sympathetic_per_debt` | 0,25 | admisible · fuera del diseño de P2F | 115,9 | 120,4 | 130,7 | 104,6 | 97,3 | 95,5 |
-| `sympathetic_per_debt` | 0,5 | admisible | 115,9 | 120,4 | 130,7 | 104,6 | 97,3 | 95,5 |
-| `sympathetic_per_debt` | 1 | admisible · fuera del diseño de P2F | 115,9 | 120,4 | 130,7 | 104,6 | 97,3 | 95,5 |
+| `intrinsic_sinus_rate` | inf. | admisible | 68,1 | 72,5 | 82,6 | 60,1 | 60,0 | 60,0 |
+| `intrinsic_sinus_rate` | medio | admisible | 88,1 | 92,5 | 102,5 | 80,1 | 80,0 | 80,0 |
+| `intrinsic_sinus_rate` | sup. | admisible | 108,1 | 112,4 | 122,2 | 100,1 | 100,0 | 100,0 |
+| `sympathetic_decay_tau_min` | 2 | admisible · fuera del diseño de P2F | 88,1 | 92,5 | 102,5 | 80,0 | 80,0 | 80,0 |
+| `sympathetic_decay_tau_min` | 5 | admisible | 88,1 | 92,5 | 102,5 | 80,1 | 80,0 | 80,0 |
+| `sympathetic_decay_tau_min` | 15 | admisible · fuera del diseño de P2F | 88,1 | 92,5 | 102,5 | 81,0 | 80,1 | 80,0 |
+| `sympathetic_per_pressure_deficit` | 0,5 | admisible · fuera del diseño de P2F | 86,7 | 89,8 | 97,5 | 80,4 | 80,0 | 80,0 |
+| `sympathetic_per_pressure_deficit` | 1 | admisible | 88,1 | 92,5 | 102,5 | 80,1 | 80,0 | 80,0 |
+| `sympathetic_per_pressure_deficit` | 2 | admisible · fuera del diseño de P2F | 90,8 | 97,7 | 112,1 | 80,0 | 80,0 | 80,0 |
+| `sympathetic_per_debt` | 0,25 | admisible · fuera del diseño de P2F | 88,1 | 92,5 | 102,5 | 80,1 | 80,0 | 80,0 |
+| `sympathetic_per_debt` | 0,5 | admisible | 88,1 | 92,5 | 102,5 | 80,1 | 80,0 | 80,0 |
+| `sympathetic_per_debt` | 1 | admisible · fuera del diseño de P2F | 88,1 | 92,5 | 102,5 | 80,1 | 80,0 | 80,0 |
 <!-- /generado:fc -->
 
 **Preguntas para la docencia**
@@ -519,12 +517,12 @@ vuelve mayormente ineficaz.
 | inf. | 600 | 1088 | 88 → 243 | 174 | 4,44 | 0,20 → 0,87 | 0,16 | 80 | 0,000 – 0,677 | rechazado por las reglas congeladas | no |
 | inf. | 833 | 1088 | 88 → 225 | 161 | 4,03 | 0,20 → 0,78 | 0,27 | 80 | 0,000 – 0,191 | rechazado por las reglas congeladas | sí |
 | inf. | 1500 | 1088 | 88 → 186 | 134 | 3,18 | 0,20 → 0,61 | 0,48 | 80 | 0,000 – 0,000 | admisible | no |
-| medio | 600 | 1088 | 88 → 160 | 116 | 2,60 | 0,35 → 0,89 | 0,16 | 82 | 0,000 – 0,863 | admisible | no |
-| medio | 833 | 1088 | 88 → 151 | 110 | 2,41 | 0,35 → 0,82 | 0,27 | 87 | 0,000 – 0,403 | admisible | sí |
-| medio | 1500 | 1088 | 88 → 134 | 97 | 2,01 | 0,35 → 0,69 | 0,48 | 97 | 0,000 – 0,000 | admisible | no |
-| sup. | 600 | 1088 | 88 → 127 | 93 | 1,86 | 0,50 → 0,92 | 0,16 | 100 | 0,000 – 1,082 | admisible | no |
-| sup. | 833 | 1088 | 88 → 122 | 89 | 1,76 | 0,50 → 0,86 | 0,27 | 103 | 0,000 – 0,682 | admisible | sí |
-| sup. | 1500 | 1088 | 88 → 113 | 83 | 1,55 | 0,50 → 0,76 | 0,48 | 108 | 0,000 – 0,062 | admisible | no |
+| medio | 600 | 1088 | 88 → 160 | 116 | 2,60 | 0,35 → 0,89 | 0,16 | 80 | 0,000 – 0,863 | admisible | no |
+| medio | 833 | 1088 | 88 → 151 | 110 | 2,41 | 0,35 → 0,82 | 0,27 | 80 | 0,000 – 0,403 | admisible | sí |
+| medio | 1500 | 1088 | 88 → 134 | 97 | 2,01 | 0,35 → 0,69 | 0,48 | 80 | 0,000 – 0,000 | admisible | no |
+| sup. | 600 | 1088 | 88 → 127 | 93 | 1,86 | 0,50 → 0,92 | 0,16 | 80 | 0,000 – 1,082 | admisible | no |
+| sup. | 833 | 1088 | 88 → 122 | 89 | 1,76 | 0,50 → 0,86 | 0,27 | 80 | 0,000 – 0,682 | admisible | sí |
+| sup. | 1500 | 1088 | 88 → 113 | 83 | 1,55 | 0,50 → 0,76 | 0,48 | 80 | 0,000 – 0,062 | admisible | no |
 
 **gi_bleed_72f** — volumen agresivo (90 min). Lo que mueve la presión es la posición y la escala de la curva; la rodilla y la ganancia de congestión y la reserva sólo cambian L (rango en «L final»). «Estado» aplica las reglas congeladas al conjunto completo (el mismo nivel en los dos casos) con esa escala; «En el diseño de P2F» dice si P2F barrió esa celda (sólo con la escala por defecto).
 
@@ -533,12 +531,12 @@ vuelve mayormente ineficaz.
 | inf. | 600 | 1088 | 98 → 188 | 138 | 3,01 | 0,30 → 0,89 | 0,16 | 80 | 0,000 – 0,798 | rechazado por las reglas congeladas | no |
 | inf. | 833 | 1088 | 98 → 178 | 130 | 2,77 | 0,30 → 0,81 | 0,27 | 80 | 0,000 – 0,326 | rechazado por las reglas congeladas | sí |
 | inf. | 1500 | 1088 | 98 → 155 | 114 | 2,27 | 0,30 → 0,66 | 0,48 | 80 | 0,000 – 0,000 | admisible | no |
-| medio | 600 | 1088 | 98 → 145 | 107 | 2,05 | 0,45 → 0,91 | 0,16 | 83 | 0,000 – 1,005 | admisible | no |
-| medio | 833 | 1088 | 98 → 140 | 103 | 1,93 | 0,45 → 0,85 | 0,27 | 87 | 0,000 – 0,582 | admisible | sí |
-| medio | 1500 | 1088 | 98 → 128 | 95 | 1,67 | 0,45 → 0,73 | 0,48 | 93 | 0,000 – 0,000 | admisible | no |
-| sup. | 600 | 1088 | 98 → 124 | 92 | 1,57 | 0,60 → 0,93 | 0,16 | 95 | 0,000 – 1,255 | admisible | no |
-| sup. | 833 | 1088 | 98 → 121 | 90 | 1,51 | 0,60 → 0,89 | 0,27 | 97 | 0,000 – 0,910 | admisible | sí |
-| sup. | 1500 | 1088 | 98 → 114 | 86 | 1,36 | 0,60 → 0,81 | 0,48 | 100 | 0,000 – 0,319 | admisible | no |
+| medio | 600 | 1088 | 98 → 145 | 107 | 2,05 | 0,45 → 0,91 | 0,16 | 80 | 0,000 – 1,005 | admisible | no |
+| medio | 833 | 1088 | 98 → 140 | 103 | 1,93 | 0,45 → 0,85 | 0,27 | 80 | 0,000 – 0,582 | admisible | sí |
+| medio | 1500 | 1088 | 98 → 128 | 95 | 1,67 | 0,45 → 0,73 | 0,48 | 80 | 0,000 – 0,000 | admisible | no |
+| sup. | 600 | 1088 | 98 → 124 | 92 | 1,57 | 0,60 → 0,93 | 0,16 | 80 | 0,000 – 1,255 | admisible | no |
+| sup. | 833 | 1088 | 98 → 121 | 90 | 1,51 | 0,60 → 0,89 | 0,27 | 80 | 0,000 – 0,910 | admisible | sí |
+| sup. | 1500 | 1088 | 98 → 114 | 86 | 1,36 | 0,60 → 0,81 | 0,48 | 80 | 0,000 – 0,319 | admisible | no |
 
 Estado de los parámetros de congestión: `congestion_per_excess_preload` 0,02 admisible, 0,05 admisible, 0,1 admisible; `congestion_preload_knee` 0,75 admisible, 0,85 admisible, 0,92 admisible.
 <!-- /generado:volumen -->

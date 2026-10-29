@@ -145,9 +145,13 @@ def heart_rate(pack: dict) -> str:
     out = []
     if pack.get("inconsistent_arrivals"):
         out.append(f"P2I-2AE: la envolvente de FC lee sólo los {pack['admissible_candidates'] - pack['inconsistent_arrivals']}"
-                   " candidatos cuya llegada acepta el núcleo vigente. El impulso por deuda es debt_to_sympathetic_gain "
-                   "× D y el núcleo ya no lee sympathetic_per_debt: sus filas (0,25 / 0,5 / 1) son idénticas por "
-                   "construcción, no un resultado.\n")
+                   " candidatos cuya llegada acepta el núcleo vigente.\n")
+    out.append("Desde P2I-2AE el impulso por deuda es debt_to_sympathetic_gain × D y el núcleo ya no lee "
+               "sympathetic_per_debt: sus filas (0,25 / 0,5 / 1) son idénticas por construcción, no un resultado. Desde "
+               "P2I-2AF la FC de llegada es la que predice la fisiología de llegada (déficit agudo, deuda; sin resto de "
+               "llegada), con la ganancia aguda en 0 por defecto y el incremento simpático saturado hacia el techo "
+               "sinusal provisional: esta tabla histórica no reproduce la FC de llegada registrada y no es una "
+               "calibración.\n")
     for case in CASES:
         data = pack["hr"][case]
         intrinsic, sympathetic = data["intrinsic_band"], data["sympathetic_band_bpm"]

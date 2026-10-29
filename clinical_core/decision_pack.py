@@ -24,7 +24,8 @@ from pathlib import Path
 from . import calibration, gi_reference
 from .bands import ARRIVAL, Drift
 from .calibration import LEVELS, REGISTRY, GICandidate
-from .derived import DEFAULT_PROFILE, _metabolic_drive, arrival_non_debt_drive, preload_position, respiratory_rate
+from .derived import (DEFAULT_PROFILE, _metabolic_drive, arrival_state, preload_position, respiratory_rate,
+                      sympathetic_increment)
 from .integration import run
 from .legacy_adapter import contributors_from_legacy
 from .modules import GIHaemorrhage
@@ -141,7 +142,8 @@ def rr_parts(state, anchors: Anchors, profile, lactate: float) -> tuple[float, f
 def _record(state, item, anchors: Anchors, profile) -> dict:
     beta_factor = 1.0 - anchors.beta_blockade
     intrinsic = state.R.rate_bpm
-    sympathetic = (profile.hr_per_sympathetic_drive * beta_factor * state.aux.sympathetic_drive
+    # P2I-2AF: the sympathetic HR is the saturated increment the core adds, not 25 (1 - beta) drive.
+    sympathetic = (sympathetic_increment(state.aux.sympathetic_drive, intrinsic, anchors.beta_blockade, profile)
                    if item.rhythm is RhythmCode.SINUS else 0.0)
     ventilatory, metabolic = rr_parts(state, anchors, profile, item.lactate)
     if abs(min(profile.rr_max, ventilatory + metabolic) - item.respiratory_rate) > 1e-9:
@@ -179,13 +181,13 @@ def trajectory(case: str, candidate: GICandidate, scenario: str, *, source_scale
 # Envelopes over the admissible region ---------------------------------------------------------
 
 def arrival_consistent(candidate: GICandidate) -> bool:
-    """P2I-2AE: whether the core accepts both GI arrivals of a candidate, i.e. each arrival debt's share of the drive
-    (debt_to_sympathetic_gain x D0) fits within the drive the observed arrival HR carries over the intrinsic rate."""
+    """Whether the current core accepts both GI arrivals of a candidate (``arrival_state`` does not stop). P2I-2AE
+    refused an arrival debt that needed a negative sympathetic contribution; since P2I-2AF no arrival residual exists,
+    so every P2F arrival is accepted (the arrival HR mismatch is reported, never refused)."""
     profile = replace(DEFAULT_PROFILE, **candidate.profile)
     for case in CASES:
         try:
-            arrival_non_debt_drive(gi_reference.candidate_anchors(case, calibration.case_values(case, candidate)),
-                                   profile)
+            arrival_state(gi_reference.candidate_anchors(case, calibration.case_values(case, candidate)), profile)
         except CoreInvariantError:
             return False
     return True
@@ -774,7 +776,8 @@ PACK_DIGEST_EXCLUDED = ("clinical_core/decision_pack_markdown.py", "clinical_cor
                         "clinical_core/lactate_rebuild_report.py", "clinical_core/lactate_adequacy.py",
                         "clinical_core/lactate_adequacy_report.py", "clinical_core/lactate_closure.py",
                         "clinical_core/lactate_closure_report.py", "clinical_core/hr_structure.py",
-                        "clinical_core/hr_structure_report.py")
+                        "clinical_core/hr_structure_report.py", "clinical_core/hr_shock.py",
+                        "clinical_core/hr_shock_report.py")
 
 
 def pack_sources() -> dict[str, str]:

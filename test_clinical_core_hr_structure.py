@@ -1,34 +1,33 @@
-"""Phase 2 shadow core, P2I-2AE: HR / sympathetic-response structure.
+"""Phase 2 shadow core, P2I-2AE: HR / sympathetic-response structure (closed record since P2I-2AF).
 
-These tests pin the faculty decisions as frozen before evaluation: tau_D no longer reaches the drive (the debt-driven
-drive is debt_to_sympathetic_gain x D, 0 at D = 0, never decreasing in D, never derived from tau_D); the arrival HR is
-the intrinsic rate plus a non-negative sympathetic contribution and an arrival that would need a negative one stops
-the core; the rhythm stays authoritative; HR reaches no output, delivery, D, lactate or RR; the gain range, the
-analytic rejection, the flags, the invariants and the verdict rule were frozen before any HR outcome; the intrinsic
-band is not HR1 evidence; the P2F region is never read and the legacy HR only after the verdict.
+P2I-2AF replaced the arrival residual with an acute-deficit drive and added a smooth sinus saturation, so the P2I-2AE
+module and its record are pinned and its live checks keep only what P2I-2AF left unchanged: tau_D never reaches the
+drive (the debt-driven drive is debt_to_sympathetic_gain x D, 0 at D = 0, never decreasing in D); the rhythm stays
+authoritative; HR reaches no output, delivery, D, lactate or RR; the gain range, flags, invariants and verdict rule are
+the frozen ones; the intrinsic band is not HR1 evidence; the legacy HR is read only after the verdict.
 """
 import ast
 import hashlib
 import inspect
 import json
-import math
 from dataclasses import replace
 
 import pytest
 
 from clinical_core import blood_fluid_calibration as bf
-from clinical_core import derived, gi_reference, lactate_slice
+from clinical_core import derived, lactate_slice
 from clinical_core import hr_structure as hs
 from clinical_core import lactate_rebuild as lr
 from clinical_core.bands import Drift
 from clinical_core.derived import DEFAULT_PROFILE, CoreProfile, derive
 from clinical_core.integration import run
 from clinical_core.modules.rhythm_events import ScriptedRhythmEvent
-from clinical_core.state import CoreInvariantError, RhythmCode, RhythmState
-from test_clinical_core_lactate_rebuild import OFF_GRID, OFF_GRID_UNIT
+from clinical_core.state import RhythmCode, RhythmState
 
 ROOT = hs.ROOT
 SOURCE = ROOT / "clinical_core" / "hr_structure.py"
+RECORD = ROOT / "docs" / "revision" / "P2I2AE_hr_structure.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2I2AE_ESTRUCTURA_FC_SIMPATICA.md"
 #: The P2I-2AE freeze: faculty decisions, the P2I-2AD record, the audit, the gain range, the analytic rule, the
 #: scenarios, the factorization, the scan, the flags, the invariants, identifiability, the legacy and verdict rules, the
 #: policy and every clinical_core source but the downstream reports, committed before any HR outcome was evaluated.
@@ -36,6 +35,9 @@ SOURCE = ROOT / "clinical_core" / "hr_structure.py"
 #: decision_pack_markdown, lactate_slice); hr_structure.py and the core are byte for byte those of the freeze commit
 #: 6052ffb (digest 398ab817...), and the re-run record equals the first one but for this digest.
 FROZEN_DIGEST = "1b65d303831011014ca8cf8ce98e5fb880c5ea9cd3244f47773ce9d47b3712c8"
+#: Closed by P2I-2AF, whose acute-deficit drive and sinus saturation change the core sources the freeze digest reads:
+#: the module and the record are pinned instead.
+P2I2AE_MODULE_SHA = "1109ca9dded7b8e67c588932326f510e10e0ad51f6091f0a17fe9ef09f218f16"
 CASES = hs.CASES
 FALLING = (Drift("pump", "P", 0, 90, -0.005),)
 
@@ -61,7 +63,8 @@ def test_the_package_is_frozen():
             "clinical_core/lactate_closure.py"} <= set(sources)
     assert "clinical_core/hr_structure_report.py" in lactate_slice.DOWNSTREAM_REPORTS
     assert not set(lactate_slice.DOWNSTREAM_REPORTS) & set(sources)
-    assert hs.freeze_digest() == FROZEN_DIGEST, "a source, the design, a rule or the policy changed after the freeze"
+    assert hashlib.sha256(SOURCE.read_bytes()).hexdigest() == P2I2AE_MODULE_SHA, "the P2I-2AE module changed"
+    assert json.loads(RECORD.read_text(encoding="utf-8"))["freeze_digest"] == FROZEN_DIGEST
 
 
 def test_the_faculty_decisions_are_recorded():
@@ -98,11 +101,12 @@ def test_tau_d_at_fixed_d_changes_no_drive_and_no_hr():
             assert len(readings) == 1, (case, debt)
 
 
-def test_the_target_reads_the_gain_and_neither_tau_d_nor_the_retired_coefficient():
-    audit = hs.live_audit()
-    assert audit["no_tau_d_in_hr"] and audit["reads"]["sinus_rate_reads_drive"]
-    assert not audit["acute_oxygen_deficit_term"]
-    # The retired coefficient reaches nothing: a run with it at 0 or 10 is the same run.
+def test_the_retired_coefficient_reaches_nothing():
+    # The record's source audit; live, the retired coefficient reaches nothing: a run with it at 0 or 10 is the same.
+    live = json.loads(RECORD.read_text(encoding="utf-8"))["audit"]["live"]
+    assert live["no_tau_d_in_hr"] and live["reads"]["sinus_rate_reads_drive"]
+    body = inspect.getsource(derived.sympathetic_target).split('"""')[-1]
+    assert "debt_clearance_tau_min" not in body and "sympathetic_per_debt" not in body
     states = [run(_anchors(), FALLING, 60, _profile(sympathetic_per_debt=value)).states for value in (0.0, 0.5, 10.0)]
     assert states[0] == states[1] == states[2]
 
@@ -112,14 +116,11 @@ def test_the_debt_driven_drive_is_gain_times_d_and_zero_at_zero():
     arrival = derived.arrival_state(anchors)
     for gain in (0.0, 1e-3, 1.0 / 120.0, 0.05):
         profile = _profile(debt_to_sympathetic_gain=gain)
-        rest = derived.arrival_non_debt_drive(anchors, profile)
         base = derived.sympathetic_target(arrival.evolve(D=0.0), anchors, profile)
         for debt in (0.0, 1.0, 20.0, 64.0, 500.0):
             target = derived.sympathetic_target(arrival.evolve(D=debt), anchors, profile)
             assert target - base == pytest.approx(gain * debt, rel=1e-12, abs=1e-15)
         assert derived.arrival_debt_drive(anchors, profile) == gain * anchors.arrival_oxygen_debt
-        assert rest + derived.arrival_debt_drive(anchors, profile) == pytest.approx(
-            derived.arrival_sympathetic_drive(anchors, profile), rel=1e-15)
 
 
 def test_more_debt_never_lowers_the_drive_or_hr():
@@ -128,60 +129,11 @@ def test_more_debt_never_lowers_the_drive_or_hr():
         arrival = derived.arrival_state(anchors)
         for gain in (*hs.GAINS[:3], 0.0):
             profile = _profile(debt_to_sympathetic_gain=gain)
-            if derived.arrival_debt_drive(anchors, profile) > derived.arrival_sympathetic_drive(anchors, profile):
-                continue
             debts = [0.0, 0.5, 3.0, 20.0, 21.0, 60.0, 240.0, 1000.0]
             drives = [derived.sympathetic_after_minute(arrival, arrival.evolve(D=d), anchors, profile) for d in debts]
             rates = [derive(arrival.evolve(D=d, aux=replace(arrival.aux, sympathetic_drive=r)), anchors,
                             profile).pulse_rate_bpm for d, r in zip(debts, drives)]
             assert drives == sorted(drives) and rates == sorted(rates), (case, gain)
-
-
-def test_an_arrival_debt_needing_a_negative_contribution_stops_the_core():
-    anchors = _anchors(CASES[1], "upper", "upper")            # 72f: HR 112, intrinsic 100, D0 60
-    assert derived.arrival_sympathetic_drive(anchors, DEFAULT_PROFILE) == pytest.approx(0.48)
-    with pytest.raises(CoreInvariantError, match="negative sympathetic contribution"):
-        derived.arrival_state(anchors)
-    with pytest.raises(CoreInvariantError, match="negative sympathetic contribution"):
-        derived.heart_rate_decomposition(anchors)
-    # At a gain the arrival can hold, the same declaration runs and reproduces the arrival HR exactly.
-    profile = _profile(debt_to_sympathetic_gain=0.48 / 60.0 / 2)
-    assert derive(derived.arrival_state(anchors, profile), anchors, profile).pulse_rate_bpm == anchors.hr
-    # An undeclared intrinsic rate carries no sympathetic share: any arrival debt then needs a positive gain of 0.
-    plain = replace(gi_reference.candidate_anchors(CASES[0], {}), arrival_oxygen_debt=5.0,
-                    declared={"arrival_oxygen_debt": "synthetic_probe"})
-    with pytest.raises(CoreInvariantError):
-        derived.arrival_state(plain)
-    assert derived.arrival_state(plain, _profile(debt_to_sympathetic_gain=0.0)).aux.sympathetic_drive == 0.0
-
-
-def test_an_arrival_whose_hr_cannot_show_the_drive_is_refused_with_any_arrival_debt():
-    """TD-93(5), from the adversarial review: a paced arrival, or complete beta-blockade, carries no drive the HR can
-    show (inferred 0), so any positive gain with an arrival debt is refused (fail closed). Whether to seed the drive
-    with gain x D0 there instead is a pending design decision. No GI case is such an arrival."""
-    base = gi_reference.candidate_anchors(CASES[0], {})
-    paced = replace(base, rhythm=RhythmState(RhythmCode.PACED, base.hr, 1.0, True), arrival_oxygen_debt=5.0,
-                    declared={"arrival_oxygen_debt": "synthetic_probe"})
-    blocked = replace(base, beta_blockade=1.0, arrival_oxygen_debt=5.0,
-                      declared={"arrival_oxygen_debt": "synthetic_probe", "beta_blockade": "synthetic_probe"})
-    for anchors in (paced, blocked):
-        for gain in (1e-9, DEFAULT_PROFILE.debt_to_sympathetic_gain):
-            with pytest.raises(CoreInvariantError, match="negative sympathetic contribution"):
-                derived.arrival_state(anchors, _profile(debt_to_sympathetic_gain=gain))
-        assert derived.arrival_state(anchors, _profile(debt_to_sympathetic_gain=0.0)).aux.sympathetic_drive == 0.0
-        assert derived.arrival_state(replace(anchors, arrival_oxygen_debt=0.0)).aux.sympathetic_drive == 0.0
-
-
-def test_every_consistent_decomposition_reproduces_the_arrival_hr_and_splits_non_negatively():
-    analytic = hs.arrival_decompositions()
-    assert analytic["arrival_reproduced_exactly"]
-    for table in analytic["table"].values():
-        for row in table.values():
-            if row["status"] == hs.ANALYTIC_REJECTION:
-                assert row["gain"] * row["D0"] > 0.0
-                continue
-            assert row["debt_bpm"] >= 0.0 and row["non_debt_bpm"] >= 0.0
-            assert row["debt_bpm"] + row["non_debt_bpm"] == pytest.approx(row["sympathetic_bpm"], abs=1e-9)
 
 
 def test_the_drive_is_never_negative_and_the_sinus_rate_never_below_intrinsic():
@@ -257,45 +209,7 @@ def test_the_gain_range_follows_its_rule_and_never_reads_tau_d():
         assert word not in body
 
 
-def test_the_analytic_rejections_are_exactly_the_arrivals_the_core_refuses():
-    analytic = hs.arrival_decompositions()
-    assert hs.refused_by_core(analytic) == {"agree": True, "mismatches": []}
-    expected = 0
-    for case in CASES:
-        for intrinsic, rate in hs.intrinsic_levels(case).items():
-            for debt in hs.LEVELS:
-                d0 = gi_reference.arrival_debt_band(case).__getattribute__(debt)
-                for gain in hs.GAIN_SCAN:
-                    expected += gain * d0 > (gi_reference.authored(case, "hr") - rate) / 25.0
-    assert analytic["analytic_rejections"] == expected and analytic["combinations"] == 2 * 3 * 3 * 6
-
-
 # The factorization (off-grid physiology only) --------------------------------------------------------------------
-
-@pytest.mark.parametrize("scenario", [hs.L1, hs.L2, hs.L3])
-def test_hr_post_processes_exactly_as_the_core_on_an_off_grid_physiology(scenario):
-    point = (45.0, 1.5, 4e-4, 90.0, "upper", "midpoint", "lower")
-    inputs = {"entry": {**OFF_GRID, **OFF_GRID_UNIT}, "bag": bf.bag(0.22, 0.07, 75.0), "point": point}
-    for case in CASES:
-        base = hs.full_run(inputs, case, scenario)
-        for level, gain in (("midpoint", 0.0), ("lower", 2e-3), ("upper", 1.7e-2), ("midpoint", 0.11)):
-            rate = hs.intrinsic_levels(case)[level]
-            try:
-                series = hs.hr_series(base, rate, gain)
-            except CoreInvariantError:
-                with pytest.raises(CoreInvariantError):
-                    hs.full_run(inputs, case, scenario, level, gain)
-                continue
-            full = hs.full_run(inputs, case, scenario, level, gain)
-            assert [p["drive"] for p in series] == [r["drive"] for r in full["rows"]], (case, level, gain)
-            assert [p["hr"] for p in series] == [r["hr"] for r in full["rows"]]
-            assert [r["rr"] for r in full["rows"]] == [r["rr"] for r in base["rows"]]
-            for point_ in series:
-                parts = hs.contributions(point_)
-                if parts.get("hr") is not None:
-                    assert sum(v for k, v in parts.items() if k.endswith("_bpm")) + parts["intrinsic"] == (
-                        pytest.approx(parts["hr"], abs=1e-9))
-
 
 # Policy ------------------------------------------------------------------------------------------------------------
 
@@ -335,8 +249,6 @@ def test_nothing_is_selected_or_approved():
 
 # The evaluation, on the frozen package (after the freeze commit) ---------------------------------------------------
 
-RECORD = ROOT / "docs" / "revision" / "P2I2AE_hr_structure.json"
-DOCUMENT = ROOT / "docs" / "revision" / "P2I2AE_ESTRUCTURA_FC_SIMPATICA.md"
 
 
 @pytest.fixture(scope="module")
@@ -344,9 +256,9 @@ def record():
     return json.loads(RECORD.read_text(encoding="utf-8"))
 
 
-def test_the_record_ran_on_the_frozen_package_and_is_reproduced_live(record):
+def test_the_record_ran_on_the_frozen_package(record):
+    # P2I-2AE's run was reproduced live on its own core (b8551d2); P2I-2AF changed the HR mapping, so it is not rerun.
     assert record["freeze_digest"] == FROZEN_DIGEST and record["records"] == {"P2I-2AD": hs.P2I2AD_DIGEST}
-    assert json.loads(json.dumps(hs.run(), sort_keys=True, default=str)) == record
 
 
 def test_the_verdict_follows_the_frozen_rule(record):

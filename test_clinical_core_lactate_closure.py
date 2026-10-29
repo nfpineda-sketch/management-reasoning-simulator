@@ -104,9 +104,9 @@ def test_the_old_gain_range_is_declared_invalid_and_the_new_range_follows_its_ru
 
 
 def test_the_coupling_no_longer_reads_tau_d():
-    """The record's coupling check, and what of it still runs live. Its probe arrival (the neutral one with a debt of
-    20 and no intrinsic rate declared) carries no sympathetic share, so since P2I-2AE its debt would need a negative
-    one and the core stops it; test_clinical_core_lactate_coupling reruns the same probe on a consistent arrival."""
+    """The record's coupling check, and the same check run live. P2I-2AE refused its probe arrival (a debt of 20 with no
+    intrinsic rate declared needed a negative sympathetic contribution); since P2I-2AF no arrival is refused, so the
+    check runs live again and agrees with the record."""
     record = json.loads((ROOT / "docs" / "revision" / "P2I2AD_lactate_closure.json").read_text(encoding="utf-8"))
     check = record["coupling"]
     assert check["independent"] and check["tau_d_invariant_probe"] and check["cartesian_tau_d_by_gain"]
@@ -115,8 +115,7 @@ def test_the_coupling_no_longer_reads_tau_d():
         "debt_to_lactate_gain": True, "debt_clearance_tau_min": False, "lactate_per_output_deficit": False}
     assert {(p[0], p[2]) for p in lc.LAMBDAS} == {(t, k) for t in (30.0, 60.0, 120.0) for k in lc.K_LD}
     assert "tau_d" not in inspect.signature(lc.lactate_series).parameters
-    with pytest.raises(lc.derived.CoreInvariantError, match="negative sympathetic contribution"):
-        lc.coupling_check()
+    assert lc.coupling_check() == check
 
 
 # The corrected D and lactate, post-processed (off-grid points only) -----------------------------------------------

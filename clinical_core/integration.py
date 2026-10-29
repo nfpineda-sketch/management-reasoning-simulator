@@ -423,10 +423,11 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
         new_state = new_state.evolve(D=state.D)
     # The core's auxiliary state (P2D-1). Lactate follows the debt of the minute before; the
     # drive answers to the state the minute ends in, so a fall in pressure raises the rate in
-    # the same minute and only its decay is lagged.
+    # the same minute and only its decay is lagged. P2I-2AF: the drive reads the minute's own
+    # demand (its acute deficit signal), so the demand is set before the drive is.
     aux = AuxiliaryState(lactate_excess_mmol_l=lactate_after_minute(state, profile),
-                         sympathetic_drive=sympathetic_after_minute(state, new_state, anchors, profile),
-                         oxygen_demand=demand, collapse_burden=burden)
+                         sympathetic_drive=state.aux.sympathetic_drive, oxygen_demand=demand, collapse_burden=burden)
+    aux = replace(aux, sympathetic_drive=sympathetic_after_minute(state, new_state.evolve(aux=aux), anchors, profile))
     new_state = new_state.evolve(aux=aux)
     changes = tuple(AuxiliaryChange(name, getattr(state.aux, name), getattr(aux, name), AUXILIARY_SOURCES[name],
                                     minute, AUXILIARY_FIELDS[name])

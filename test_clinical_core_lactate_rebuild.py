@@ -236,11 +236,10 @@ OFF_GRID = {"rate": 3.5, "arrival_circulating_volume_ml": 4200.0, "preload_scale
 OFF_GRID_UNIT = {"red_cell_unit_hb_g_dl": 19.0, "red_cell_unit_volume_ml": 280.0}
 OFF_GRID_POINTS = ((45.0, 1.5, 4.0, 90.0, "upper", "upper", "lower"), (20.0, 3.0, 9.0, 60.0, "lower", "lower", "lower"),
                    (100.0, 0.7, 15.0, 200.0, "midpoint", "midpoint", "upper"))
-#: P2I-2AE: the arrival debt is part of the arrival sympathetic drive, debt_to_sympathetic_gain x D0. At the default gain
-#: (1 / 120) an arrival debt at its upper level (60) calls for 0.5 units of drive, above the 0.48 that gi_bleed_72f's
-#: arrival HR (112) carries over the intrinsic rate at its upper level (100): that arrival would need a negative
-#: sympathetic contribution, so the core stops before running it. Every other off-grid arrival stays consistent.
-INCONSISTENT_ARRIVALS = {("gi_bleed_72f", "upper", "upper")}
+#: P2I-2AE refused one off-grid arrival: gi_bleed_72f at the intrinsic upper level (100) with the arrival debt at its
+#: upper level (60), whose debt alone needed more drive than the arrival HR carried. Since P2I-2AF no arrival residual
+#: exists (the arrival HR is predicted, its mismatch reported), so the core refuses none and every variant runs.
+INCONSISTENT_ARRIVALS: set = set()
 
 
 def full_run_or_inconsistent(run_, case: str, intrinsic: str, debt: str):

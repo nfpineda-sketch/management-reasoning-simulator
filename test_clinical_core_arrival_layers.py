@@ -11,7 +11,7 @@ import pytest
 from clinical_core import Anchors, run
 from clinical_core.bands import ARRIVAL, Drift
 from clinical_core.derived import (DEFAULT_PROFILE, arrival_layers, arrival_state, check_arrival_reconstruction,
-                                   derive)
+                                   derive, heart_rate_decomposition)
 from clinical_core.state import ARRIVAL_LAYERS, CASE_PARAMETERS, CoreInvariantError, RhythmState
 
 #: A synthetic shocked arrival (not a bank case) with every arrival layer declared.
@@ -39,7 +39,11 @@ def test_the_three_layers_are_reported_apart():
     assert (layers.authored.hr, layers.authored.lactate, layers.authored.map) == (124.0, 4.4, (88 + 2 * 54) / 3)
     assert layers.reference.intrinsic_sinus_rate == 80.0
     assert layers.reference.lactate_clearance_baseline == pytest.approx(1.0)
-    assert layers.dynamic.sympathetic_bpm == 44.0 and layers.dynamic.oxygen_debt == 60.0
+    # P2I-2AF: the dynamic layer holds the sympathetic increment the arrival physiology produces, not the observed
+    # 44 bpm share; the mismatch is reported by the decomposition.
+    split = heart_rate_decomposition(shocked())
+    assert layers.dynamic.sympathetic_bpm == split["saturated_bpm"] != 44.0 and layers.dynamic.oxygen_debt == 60.0
+    assert layers.dynamic.sympathetic_drive == split["arrival_drive"] == arrival_state(shocked()).aux.sympathetic_drive
     assert layers.dynamic.lactate_excess == 3.4 and layers.dynamic.delivery_deficit == pytest.approx(0.2)
     assert layers.dynamic.volume_deficit_ml > 0, "arriving below the euvolemic reference"
     assert layers.dynamic.sources["arrival_oxygen_debt"] == "synthetic_probe"
@@ -53,9 +57,14 @@ def test_the_three_layers_are_reported_apart():
                                       {"intrinsic_sinus_rate": 60.0, "arrival_oxygen_debt": 200.0},
                                       {"arrival_lactate_excess": 4.4}])
 def test_the_arrival_observation_is_reconstructed_exactly_whatever_the_reference(declared):
+    """Every authored arrival value is reproduced exactly but HR, which since P2I-2AF the arrival physiology predicts
+    (faculty decision): its mismatch is reported, never absorbed."""
     anchors = shocked(**declared)
     derived = check_arrival_reconstruction(anchors)
-    assert (derived.pulse_rate_bpm, derived.sbp, derived.dbp, derived.lactate) == (124.0, 88.0, 54.0, 4.4)
+    assert (derived.sbp, derived.dbp, derived.lactate) == (88.0, 54.0, 4.4)
+    split = heart_rate_decomposition(anchors)
+    assert derived.pulse_rate_bpm == split["predicted_arrival_hr"] and split["mismatch_bpm"] == (
+        derived.pulse_rate_bpm - 124.0)
 
 
 def test_the_arrival_debt_is_the_arrival_value_of_d_and_never_negative():
@@ -89,11 +98,12 @@ def test_an_ongoing_arrival_deficit_accrues_and_adequate_delivery_repays_without
 
 
 def test_a_debt_the_patient_arrives_with_is_already_in_the_arrival_drive():
-    """Arrival HR is exact; repaying the arrival debt lowers the rate toward intrinsic, never below."""
+    """The arrival debt is in the arrival drive (gain x D0, P2I-2AF: predicted, not solved from the authored HR);
+    repaying it lowers the rate toward intrinsic, never below."""
     anchors = shocked(arrival_delivery_ratio=1.0)
     rates = [item.pulse_rate_bpm for item in run(anchors, (), 240).derived()]
-    assert rates[0] == 124.0
-    assert rates[-1] < 124.0 and min(rates) >= 80.0
+    assert rates[0] == heart_rate_decomposition(anchors)["predicted_arrival_hr"] > 80.0
+    assert rates[-1] < rates[0] and min(rates) >= 80.0
     assert all(later <= earlier + 1e-9 for earlier, later in zip(rates, rates[1:]))
 
 
