@@ -32,7 +32,7 @@ Congelamiento: `5cb48163da4ff081e752b7684f4b036dbcf3e2acb4f94ee1603aaec742fe7fcf
 | acople D → lactato | tau_D is debt-repayment kinetics only and must not define D -> lactate production; an independent D_to_lactate_gain, not derived from tau_D or tau_L, not tuned to the legacy, no value chosen |
 | ρ | physiological 2.0-3.0, 2.5 representative; 1 only synthetic reference; not in the physiological multiplicity; invariance under re-anchoring reported once |
 
-Espacio fuente reutilizado de P2I-2AB: 87 conjuntos P1, 458 conjuntos P3, 12 puntos del cristaloide y 2025 puntos del lado del lactato. FC / FR: CAUSAL_PROPAGATION_ACCEPTED · MAGNITUDE_PENDING_HR_RR_CALIBRATION; calibradas: no; el rechazo HR1 histórico es objetivo: no.
+Espacio de sangre y cristaloide reutilizado de P2I-2AB: 87 conjuntos P1, 458 conjuntos P3 y 12 puntos del cristaloide; lado del lactato nuevo: 2025 puntos. FC / FR: CAUSAL_PROPAGATION_ACCEPTED · MAGNITUDE_PENDING_HR_RR_CALIBRATION; calibradas: no; el rechazo HR1 histórico es objetivo: no.
 <!-- /generado:decisiones -->
 
 ## 2. D sólo se devuelve en un intervalo adecuado (P2I-2AD-1)
@@ -86,7 +86,8 @@ Espacio fuente reutilizado de P2I-2AB: 87 conjuntos P1, 458 conjuntos P3, 12 pun
 
 - **El 27,7 % afectado en P2I-2AC queda resuelto.** Los 95 698 candidatos de esa región con entrega de llegada
   superior empezaban en el empate exacto y pasaban de 2 a 63 minutos críticos con D bajo su valor de llegada. Con la
-  D de P2I-2AD, ninguno.
+  D de P2I-2AD, ninguno: es así por construcción de la regla, y lo respaldan las corridas completas de la validación y
+  de los representativos.
 - **La factorización sigue siendo exacta:** 936 corridas completas del núcleo coinciden. La hemodinámica de P2I-2AC
   (entrega, demanda, hemostasia, flujo, detención) no lee D ni las ganancias, así que no hubo que rehacer ninguna
   trayectoria por la semántica.
@@ -97,7 +98,10 @@ Espacio fuente reutilizado de P2I-2AB: 87 conjuntos P1, 458 conjuntos P3, 12 pun
   P2I-2AC.
 - **Ahora:**
   - el núcleo lee `debt_to_lactate_gain` (k): mmol/L de lactato por minuto y por unidad de D;
-  - τ_D sólo fija la devolución de D y τ_L sólo el aclaramiento;
+  - en la cadena del lactato, τ_D sólo fija la devolución de D y τ_L sólo el aclaramiento;
+  - **fuera de ella, el impulso simpático (FC) todavía lee D / τ_D** (`derived.sympathetic_target`; revisión
+    adversarial, §14). Con D sólo acumulando, τ_D 30 / 60 / 120 dan la misma D y el mismo lactato, pero la FC a los
+    90 min es 99,6 / 95,4 / 93,3 lpm. No se toca aquí: es del dominio de la FC;
   - G (`lactate_per_output_deficit`) ya no llega al núcleo y queda sólo para leer los registros históricos;
   - el valor por defecto es el mismo número que daba el anterior (2 / 3600), es provisional y no se elige.
 
@@ -132,8 +136,12 @@ Rango anterior: **OLD_G_RANGE_SEMANTICALLY_INVALID**. G (lactate_per_output_defi
 - **El rango histórico de G no se traduce:**
   - sus unidades llevan τ_D: un mismo G da nueve constantes según τ_D y τ_L;
   - su lectura de estado estacionario dejó de existir con P2I-2AC.
-- **El rango nuevo se construyó antes de cualquier conteo**, sólo con consistencia dimensional, las envolventes
+- **El rango nuevo se construyó antes de cualquier conteo**, con consistencia dimensional, las envolventes
   docentes y sondas sintéticas: una deuda constante durante 60 min, sin acumulación ni aclaramiento.
+  - Toma la escala de D de la banda de la deuda de llegada (niveles 20 y 60).
+  - La revisión adversarial lo señala: esa banda es candidata (su forma es una decisión docente pendiente) y su
+    nivel superior, 60, se describió como el estado estacionario de un déficit total con τ_D 60. Así τ_D entra de
+    forma indirecta en los extremos del rango.
   - **Extremo bajo:** la deuda declarada más alta (60) mueve el lactato sólo 0,1 mmol/L, la resolución de las
     envolventes.
   - **Extremo alto:** la deuda declarada no nula más baja (20) cubre la mayor amplitud de la envolvente sin
@@ -194,7 +202,9 @@ Demanda 1,0 (la región). Candidatos: 11 129 400; sobrevivientes: **353 302** (3
 
 ### 4.1 Lectura
 
-- **La adecuación L3 sigue siendo el rechazo propio más grande:** 377 844 candidatos la tienen como única causa.
+- **La adecuación L3 sigue siendo el rechazo propio más grande:** 377 844 candidatos tienen
+  L3_RESUSCITATION_INADEQUATE como única causa, y 379 320 si se suman los 1476 que sólo tienen
+  L3_RESUSCITATION_LOST.
 - **L3_RESUSCITATION_LOST rechaza a 9396 candidatos de 72f** cuya adecuación, recuperada en T*, se pierde antes de
   los 120 min. En 1476 es la única causa. Nunca cuenta como fallo de FD-LAC-05 ni pasa como NOT_EVALUABLE.
 - **Rechazos analíticos:** 0. No se conoce ninguna imposibilidad exacta antes de simular. Ninguna trayectoria se
@@ -344,7 +354,9 @@ Filtro con demanda ×1,1 (sólo informa):
 
 - **Todos los sobrevivientes mantienen la adecuación L3 desde T* = 60 hasta 120** en los dos casos.
 - **FD-LAC-04 y 05 pasan evaluadas en todos.** No queda ningún NOT_EVALUABLE.
-- **El T* de FD-LAC-04 coincide en todos con el inicio de la adecuación:** una sola definición de restauración.
+- **El T* de FD-LAC-04 coincide en todos con el inicio de la adecuación:** una sola definición de restauración. Es
+  así por construcción, porque la adecuación usa la misma `restoration_trigger`.
+- **La región está truncada arriba en k:** 78 207 sobrevivientes (22 %) están en el extremo alto del rango (§14).
 - **Caída mediana a los 30 min de T*:** 7,0 % (57m) y 5,3 % (72f). Los umbrales de 5, 10 y 15 % son sólo
   diagnóstico.
 
@@ -516,8 +528,8 @@ medio y el último. Cada uno se vuelve a correr con el núcleo completo (57m y 7
 - **L3 en 57m y 72f:** todos mantienen la adecuación desde T* = 60 hasta 120.
 - **Cada corrida completa coincide exactamente con la factorización.**
 - **Sin marcas de inverosimilitud.**
-- **«Adecuado con aclaramiento demorado»** aparece en L3 de HIGH y MID 57m/72f y en LOW 72f. Es informativa: la deuda
-  de llegada sigue produciendo lactato mientras se devuelve.
+- **«Adecuado con aclaramiento demorado»** aparece sólo en L3 de HIGH (57m y 72f). Es informativa: la deuda de llegada
+  (60) sigue produciendo lactato mientras se devuelve.
 
 ## 9. FC y FR
 
@@ -594,10 +606,21 @@ Próximo dominio: Recommended next domain (not started; needs its own authorizat
   - la regla de preparación y las pruebas previas a la corrida.
 - **Validación antes de congelar:** la factorización se validó sobre su muestra congelada (936 corridas completas,
   sin desacuerdos), y la suite del núcleo dio 913/913.
+  - La muestra no contenía ninguna corrida L3_RESUSCITATION_LOST.
+  - Por la revisión se agregó una prueba posterior: una unidad LOST de la región (conjunto P3 59, 72f, perdida en el
+    minuto 101) coincide también con corridas completas del núcleo.
 - **Corrida:** sobre `c9647c8`, 74 s con 4 procesos, cada uno con la guarda P2F y el bloqueo del legado. El registro
   es el del módulo; `--run` lo reproduce en un solo proceso.
-- **Entrega:** un commit ejecutable (informe, pruebas sobre el registro, JSON y documentación), sobre el que corre la
-  certificación completa.
+- **Entrega:** un commit ejecutable (`dd585c2`: informe, pruebas sobre el registro, JSON y documentación), sobre el
+  que corrió la certificación completa, y uno posterior sólo con documentación, el texto del informe generado y una
+  prueba.
+- **Revisión adversarial (una sola):**
+  - sin BLOCKER; confirmó el núcleo, la adecuación L3, la demanda, ρ, las guardas y los números;
+  - su MAJOR: τ_D todavía fija la ganancia D → impulso simpático. Es del dominio de la FC y queda en §3, §14 y TD-92;
+  - sus MINOR: la lectura de §8.1, ya corregida; la escala del rango de k y la región truncada, en §3, §6 y §14; los
+    documentos históricos que rotulan G, en TD-91(6);
+  - sus NIT: procedencia con D = 0, comprobaciones verdaderas por construcción, LOST fuera de la muestra (prueba
+    agregada), «sin hemostasia» rotulado STOPPED y redacción, corregidos aquí o en TD-92.
 
 ## 13. Qué no hace
 
@@ -611,9 +634,16 @@ Próximo dominio: Recommended next domain (not started; needs its own authorizat
 
 ## 14. Decisiones pendientes (docencia)
 
-- **Borde superior de k abierto:** 78 207 sobrevivientes tienen k = 2,17e-3, el extremo alto de la regla. La rejilla
-  anterior llegaba a 8,9e-3. ¿Se amplía el rango con otra sonda sintética o se acepta el borde?
-- **Valor por defecto del núcleo para k:** 2 / 3600, provisional, el mismo número que antes.
+- **Borde superior de k abierto y escala del rango:**
+  - 78 207 sobrevivientes (22 %) tienen k = 2,17e-3, el extremo alto de la regla, y la rejilla anterior llegaba a
+    8,9e-3: la región está truncada arriba en k;
+  - la regla tomó la escala de D de la banda candidata de la deuda de llegada, cuyo nivel superior arrastra τ_D 60;
+  - ¿qué escala de D aprueba la docencia para una regla nueva, congelada antes de contar?
+- **τ_D en el impulso simpático:** la FC lee D / τ_D, así que τ_D sigue fijando la ganancia D → FC. Hay que decidirlo
+  al abrir el dominio de la FC, con una ganancia propia y un rango fijado antes de cualquier conteo.
+- **Valor por defecto del núcleo para k:** 2 / 3600, provisional, el mismo número que antes. Es sólo un marcador de
+  continuidad, no un ajuste al legado. Los documentos regenerados que siguen variando G muestran G sin efecto
+  (TD-91, punto 6).
 - **Magnitudes de FC y FR:** pendientes de la calibración del dominio siguiente.
 - **Siguen abiertas:**
   - FD-24 y FD-25;

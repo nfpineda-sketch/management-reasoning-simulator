@@ -50,9 +50,9 @@ def render_decisiones(data: dict) -> str:
              "| Decisión docente | Texto registrado |", "|---|---|"]
     lines += [f"| {FACULTY_ES.get(name, name)} | {text} |" for name, text in data["faculty"].items()]
     source, hr = data["source"], data["hr_rr"]
-    lines += ["", f"Espacio fuente reutilizado de P2I-2AB: {source['p1_sets']} conjuntos P1, {source['p3_sets']} "
-                  f"conjuntos P3, {source['crystalloid_points']} puntos del cristaloide y {source['lactate_side']} "
-                  f"puntos del lado del lactato. FC / FR: {' · '.join(hr['status'])}; calibradas: "
+    lines += ["", f"Espacio de sangre y cristaloide reutilizado de P2I-2AB: {source['p1_sets']} conjuntos P1, "
+                  f"{source['p3_sets']} conjuntos P3 y {source['crystalloid_points']} puntos del cristaloide; lado del "
+                  f"lactato nuevo: {source['lactate_side']} puntos. FC / FR: {' · '.join(hr['status'])}; calibradas: "
                   f"{'sí' if hr['calibrated'] else 'no'}; el rechazo HR1 histórico es objetivo: "
                   f"{'sí' if hr['historical_hr1_target'] else 'no'}."]
     return "\n".join(lines)

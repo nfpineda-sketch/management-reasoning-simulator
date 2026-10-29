@@ -483,3 +483,19 @@ def test_the_document_blocks_are_generated(result):
     for name, render in report.RENDERERS.items():
         assert report.apply(text, name, render(result)) == text, name
     assert "LACTATE_PHYSIOLOGY_READY_FOR_HR_DOMAIN" in text and "353 302" in text and "c9647c8" in text
+
+
+def test_a_lost_l3_unit_also_post_processes_exactly_as_the_core(setting):
+    """Review finding: the frozen validation sample saw no L3_RESUSCITATION_LOST run. One from the region's own L3 space
+    (P3 set 59, 72f, arrival delivery lower: adequate at 60, a deficit again at 101) agrees with full core runs too."""
+    entry, case = setting["source"]["p3"][59], "gi_bleed_72f"
+    haemodynamic = _trajectories(setting, lc.L3, 59)[case]
+    point = lc.LAMBDAS[767]
+    assert point[6] == "lower"
+    for reserve, factor in ((lc.RESERVE, 1.0), (lc.RESERVE, 0.9), (lc.RESERVE, 1.1), (2.0, 1.0), (3.0, 1.0)):
+        full = lc.full_run(entry, case, lc.L3, point, None, reserve, "midpoint", factor)
+        factorized = lc.factorized(haemodynamic, setting["arrivals"][case], point, factor)
+        result = lc.compare(full, factorized, haemodynamic, case, lc.L3, point, reserve)
+        assert result["agrees"] and (result["exact"] or reserve != lc.RESERVE), (reserve, factor, result)
+        if factor == 1.0:
+            assert result["verdicts"]["L3 adequacy"] == lc.L3_LOST and result["verdicts"]["lost_at"] == 101

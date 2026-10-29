@@ -2897,7 +2897,7 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   pasaban hasta 63 minutos críticos bajo su D de llegada; con la D nueva, ninguno.
 - **Filtro (demanda 1,0):**
   - 353 302 sobrevivientes de 11 129 400;
-  - la adecuación L3 rechaza sola 377 844;
+  - L3_RESUSCITATION_INADEQUATE rechaza sola 377 844 (379 320 con los que sólo tienen LOST);
   - L3_RESUSCITATION_LOST rechaza 9396 de 72f (1476 sólo por eso);
   - ANALYTIC_REJECTION 0.
 - **Región:**
@@ -2908,5 +2908,14 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Representativos:** D nunca se devuelve en un intervalo crítico; sin marcas de inverosimilitud.
 - **Veredicto: LACTATE_PHYSIOLOGY_READY_FOR_HR_DOMAIN.** Próximo dominio recomendado, sin empezar: FC y respuesta
   simpática, después presión y tono vascular.
+- **Revisión adversarial:** sin BLOCKER.
+  - Su MAJOR: el impulso simpático todavía lee D / τ_D, así que τ_D fija la ganancia D → FC. Es del dominio de la
+    FC: queda informado y en TD-92.
+  - Sus MINOR y NIT quedan en el informe, TD-91 y TD-92:
+    - la escala del rango de k sale de la banda candidata de la deuda de llegada, y la región queda truncada arriba
+      en k;
+    - G sigue rotulado en los documentos históricos;
+    - la procedencia con D = 0.
+  - Se agregó una prueba de equivalencia con el núcleo para una unidad L3_RESUSCITATION_LOST.
 - **Sin elegir parámetros ocultos**, sin calibrar la FC, la FR ni la presión, sin colapso, sin migración y sin gancho
   en tiempo de ejecución. TD-91 queda parcialmente resuelta, con un punto nuevo sobre G en los módulos históricos.
