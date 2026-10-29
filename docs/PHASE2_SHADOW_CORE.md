@@ -3130,3 +3130,32 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - si se certifica y se sube ya el cierre estructural.
 - **Sin elegir ni aprobar parámetros**, sin calibrar la presión ni la FR, sin colapso, sin migración y sin gancho en
   tiempo de ejecución. El motor heredado no se leyó.
+
+## 38. P2I-2AH · Auditoría de distinguibilidad fisiológica de la FC de llegada (2026-10-29)
+
+- **Base local:** `ca75297` (P2I-2AG, bloqueada; `8eba7fc` y `ca75297` siguen sin push). Informe:
+  `docs/revision/P2I2AH_DISTINGUIBILIDAD_LLEGADA_FC.md`. Auditoría de diagnóstico: sin cambios de código, sin nuevo
+  congelamiento y sin artefactos regenerados.
+- **Por qué la FC no distingue a los dos pacientes en la llegada:**
+  - la FC de llegada lee la intrínseca, la razón de entrega (de la que sale la señal aguda) y D0, además del ritmo y el
+    betabloqueo;
+  - las tres son parámetros por paciente en la arquitectura, pero `GICandidate` da a ambos casos el mismo nivel de cada
+    banda, y en esas tres bandas los números coinciden;
+  - la PA, la Hb, el lactato, el relleno capilar y el POCUS, que difieren, quedan en la referencia de cada paciente o en
+    estados que la FC no lee en la llegada.
+  - Procedencia: B (niveles comunes por diseño) y D (la información existe arriba y la FC no la consume). No hay un
+    error de representación.
+- **Intrínseca:** por arquitectura es una propiedad basal de cada paciente (capa `physiological_reference`). Atarla es
+  una elección del diseño.
+- **Severidad de llegada:** la evidencia registrada muestra a 57m más grave, pero el diseño la colapsa a niveles comunes.
+  Diagnóstico analítico sobre el registro P2I-2AF, sin certificar: con la intrínseca común y un par (deuda, entrega)
+  propio de cada caso, sobreviven 18 de 5625, siempre con 57m más grave. Con el mismo par: 0 de 1125.
+- **Intrínseca por caso (sensibilidad reutilizada de P2I-2AG):** 5 de 2025, que son una sola predicción: LOW, 57m 80 y
+  72f 60, ganancia aguda 5,58, techo 150.
+- **Clasificación: BOTH_CONTRIBUTE.**
+  - La intrínseca por caso no se autoriza como solución mientras la severidad de llegada siga colapsada.
+  - Restaurar la severidad por caso es una NEW FACULTY PARAMETER (niveles propios de cada caso o un mapeo de la evidencia
+    de perfusión) y toca el dominio de D y lactato.
+  - No se implementa ni se certifica nada, no hay revisión adversarial y no hay push.
+- HR1 y HR2 sin cambios. La presión sigue DEFERRED, la tolerancia en ±5, las ganancias comunes, y 150 / 175 / 200 siguen
+  siendo techos sinusales totales.
