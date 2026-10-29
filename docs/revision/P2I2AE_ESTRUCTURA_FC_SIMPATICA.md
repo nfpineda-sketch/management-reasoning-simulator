@@ -11,9 +11,11 @@ Código:
 - `clinical_core/derived.py`: el impulso por deuda es `debt_to_sympathetic_gain × D`; τ_D ya no aparece en la FC; la
   descomposición de llegada separa la parte de la deuda (ganancia × D0) del resto, y una llegada que pediría una
   contribución simpática negativa detiene el núcleo;
-- `clinical_core/decision_pack.py`, `clinical_core/lactate_slice.py`: lo construido sobre la región histórica corre sólo
-  las llegadas que el núcleo vigente acepta (`runnable`) y cuenta las demás;
-- `clinical_core/hr_structure.py`: el análisis, congelado en `6052ffb` antes de leer ningún resultado de FC;
+- `clinical_core/decision_pack.py`, `clinical_core/lactate_slice.py`: lo construido sobre la región histórica lee las
+  llegadas que el núcleo vigente rechaza sin impulso por deuda (ganancia 0), que no llega al lactato, la presión ni
+  la FR, y las deja fuera de la FC de P2G; las cuenta;
+- `clinical_core/hr_structure.py`: el análisis, congelado en `6052ffb` antes de leer ningún resultado de FC (byte a
+  byte el mismo después de la revisión; sólo cambió el hash de fuentes del digest, §16);
 - `clinical_core/hr_structure_report.py`: sólo este informe.
 
 Números: `docs/revision/P2I2AE_hr_structure.json`. Registro de partida, cerrado: P2I-2AD (`5cb48163…`), cuyo módulo y
@@ -30,8 +32,9 @@ registro quedan fijados por sus pruebas.
 - **Llegada.** FC de llegada = intrínseca + parte de la deuda (ganancia × D0) + resto, ambas no negativas. Una
   declaración cuya deuda pediría una contribución negativa se rechaza analíticamente y el núcleo la detiene: 17 de 108
   combinaciones (caso × intrínseca × D0 × ganancia). En la región histórica P2F eso afecta a 108 de 1054 candidatos
-  (72f con intrínseca 100 y deuda 60 a la ganancia por defecto), que el paquete P2G y el corte P2I-1 ya no corren y
-  cuentan. El rechazo HR1 de P2F con τ_D 30 × deuda superior ya no se reproduce: era la fuga de τ_D.
+  (72f con intrínseca 100 y deuda 60 a la ganancia por defecto). El paquete P2G y el corte P2I-1 los leen sin impulso
+  por deuda: sus números de lactato, presión y FR son los de antes. Sólo la FC de P2G los deja fuera. El rechazo HR1 de
+  P2F con τ_D 30 × deuda superior ya no se reproduce: era la fuga de τ_D.
 - **Sin término agudo de oxígeno.** La FC responde a D (B), no al déficit efectivo instantáneo (A); el estímulo agudo
   que existe es el déficit de presión, relativo a la llegada. No se agregó ningún término nuevo.
 - **Veredicto: HR_STRUCTURE_READY_FOR_NUMERIC_FACULTY_CALIBRATION**, con dos hallazgos que el paquete numérico debe
@@ -41,7 +44,7 @@ registro quedan fijados por sus pruebas.
 ## 1. Decisiones docentes y punto de partida
 
 <!-- generado:decisiones -->
-Congelamiento: `398ab8179b9ea0b94343335ca68a9af34b7222cbb3f6be3fcee339d1bc126fc2` (una prueba lo fija). Registro de partida: P2I-2AD `5cb48163da4ff081e752b7684f4b036dbcf3e2acb4f94ee1603aaec742fe7fcf`.
+Congelamiento: `1b65d303831011014ca8cf8ce98e5fb880c5ea9cd3244f47773ce9d47b3712c8` (una prueba lo fija). Registro de partida: P2I-2AD `5cb48163da4ff081e752b7684f4b036dbcf3e2acb4f94ee1603aaec742fe7fcf`.
 
 | Decisión docente | Texto registrado |
 |---|---|
@@ -449,8 +452,8 @@ Inicio de la adecuación restaurada (T*) a la ganancia ancla: LOW min 60, FC 105
 Lectura: la llegada se reproduce siempre. La pendiente sin tratamiento crece con la ganancia: a los 120 min, 134–151
 lpm (57m) y 119–130 lpm (72f) con las tres ganancias menores, 166–167 / 146–147 con 0,0344, y 244 / 217 con 0,128 (sólo
 LOW es coherente ahí). El núcleo no tiene techo de FC sinusal: esas magnitudes no se filtran porque no hay una banda
-numérica aprobada. Tras el manejo definitivo la FC a los 120 min queda en 99–120 lpm (57m) y 91–110 lpm (72f) según el
-representativo y la ganancia.
+numérica aprobada. Tras el manejo definitivo la FC a los 120 min queda en 99–120 lpm (57m) y 91–109 lpm (72f) según el
+representativo y la ganancia (sin contar la referencia 0).
 
 ## 11. Identificabilidad (P2I-2AE-10)
 
@@ -492,26 +495,6 @@ LEGACY REFERENCE, NOT A CALIBRATION TARGET: the family engine's HR at 0, 15, 30,
 Cada celda: rango del núcleo sobre ganancias y representativos (intrínseca media) y, entre paréntesis, la FC del motor de familias. Sólo referencia.
 <!-- /generado:legado -->
 
-## 15. Hallazgos estructurales para el paquete numérico (no son bloqueos de esta regla)
-
-1. **El resto de llegada no se resuelve con la oxigenación.** S_rest es constante. Sólo baja la FC por debajo de él el
-   término de presión, relativo a la llegada (`sympathetic_per_pressure_deficit` 1,0, PROVISIONAL, del dominio de la
-   presión). Por eso, tras la hemostasia y la adecuación restaurada, la FC queda en 99–120 lpm (57m) y 91–110 lpm (72f)
-   a los 120 min, con D casi devuelta. Dentro de 120 min eso no es una contradicción con lo comprometido; sí lo sería
-   si se mantuviera indefinidamente. Si la docencia quiere que la parte de shock o hipoperfusión de llegada se
-   resuelva con la entrega restaurada, hace falta un término agudo de entrega o una referencia absoluta de presión.
-   Cualquiera de las dos necesita su propio rango: es la condición de STOP de P2I-2AE-3, y aquí no se inventa.
-2. **Sin techo ni saturación.** Con D creciente y sin tratamiento, la FC crece sin límite. En el extremo superior del
-   rango de la ganancia llega a 244 / 217 lpm a los 120 min. El rango se construyó sólo con la descomposición de
-   llegada; el paquete numérico debe decidir si hace falta un techo sinusal o una saturación, y estrechar la ganancia.
-3. **No identificabilidad.** La intrínseca y la ganancia no se separan con las observaciones autorizadas (sólo la FC
-   de llegada). Por encima del piso la intrínseca se cancela: misma FC con 60 / 80 / 100 a igual ganancia, hasta el
-   redondeo (5,7e-14 lpm). Sólo la suma intrínseca + 25 × ganancia × D0 queda acotada por la FC de llegada.
-4. **Región histórica.** 108 candidatos P2F ya no son llegadas coherentes a la ganancia por defecto. La región escrita
-   de P2F (1054) y sus 163 rechazos quedan como historia. El recálculo completo de la región de
-   `lactate_constraints.region` (histórico, su tubería está congelada) no se puede hacer para esos 108 con el núcleo
-   vigente; no se corrió ni se cambió.
-
 ## 14. Veredicto (P2I-2AE-13)
 
 <!-- generado:veredicto -->
@@ -532,3 +515,69 @@ Regla congelada: HR_STRUCTURE_READY_FOR_NUMERIC_FACULTY_CALIBRATION when every c
 
 Siguiente paso: Next step (not started; needs its own authorization): a small faculty HR numeric-calibration package (intrinsic rate, debt_to_sympathetic_gain, whether a sinus-rate ceiling or saturation is wanted, and HR readings at the decision-surface landmarks). Pressure and vascular tone follow HR; not started.
 <!-- /generado:veredicto -->
+
+## 15. Hallazgos estructurales para el paquete numérico (no son bloqueos de esta regla)
+
+1. **El resto de llegada no se resuelve con la oxigenación.** S_rest es constante. Sólo baja la FC por debajo de él el
+   término de presión, relativo a la llegada (`sympathetic_per_pressure_deficit` 1,0, PROVISIONAL, del dominio de la
+   presión). Por eso, tras la hemostasia y la adecuación restaurada, la FC queda en 99–120 lpm (57m) y 91–109 lpm (72f)
+   a los 120 min, con D casi devuelta. Dentro de 120 min eso no es una contradicción con lo comprometido; sí lo sería
+   si se mantuviera indefinidamente. Si la docencia quiere que la parte de shock o hipoperfusión de llegada se
+   resuelva con la entrega restaurada, hace falta un término agudo de entrega o una referencia absoluta de presión.
+   Cualquiera de las dos necesita su propio rango: es la condición de STOP de P2I-2AE-3, y aquí no se inventa.
+2. **Sin techo ni saturación.** Con D creciente y sin tratamiento, la FC crece sin límite. En el extremo superior del
+   rango de la ganancia llega a 244 / 217 lpm a los 120 min. El rango se construyó sólo con la descomposición de
+   llegada; el paquete numérico debe decidir si hace falta un techo sinusal o una saturación, y estrechar la ganancia.
+3. **No identificabilidad.** La intrínseca y la ganancia no se separan con las observaciones autorizadas (sólo la FC
+   de llegada). Por encima del piso la intrínseca se cancela: misma FC con 60 / 80 / 100 a igual ganancia, hasta el
+   redondeo (5,7e-14 lpm). Sólo la suma intrínseca + 25 × ganancia × D0 queda acotada por la FC de llegada.
+4. **Región histórica.** 108 candidatos P2F ya no son llegadas coherentes a la ganancia por defecto. La región escrita
+   de P2F (1054) y sus 163 rechazos quedan como historia. El recálculo completo de la región de
+   `lactate_constraints.region` (histórico, su tubería está congelada) no se puede hacer para esos 108 con el núcleo
+   vigente; no se corrió ni se cambió.
+5. **Escala de D del rango (revisión, F3).** Los dos extremos del rango de la ganancia salen de la banda de deuda de
+   llegada (20 y 60). La regla de no negatividad necesita una escala de D0, y esa banda es la vigente. Pero no está en
+   la lista de entradas docentes, y su 60 se justificó como un estado estacionario con τ_D 60 (la misma observación que
+   TD-92(2) para k). La docencia debe aceptar esa escala o reemplazarla (TD-93(6)). La docstring de `gain_design`
+   («never read tau_D») vale para la regla: el bloque posterior a `old =` lee los puntos de τ_D del registro sólo para
+   listar las ganancias del rango viejo.
+
+## 16. Revisión adversarial
+
+Una revisión independiente, de sólo lectura, sin BLOCKER:
+- **F1, MAJOR (ejecutable), corregida.** Excluir las 108 llegadas rechazadas cambiaba los resúmenes históricos de
+  lactato, presión y FR del paquete P2G y del corte P2I-1 (por ejemplo, 649 → 595 corridas). Ahora esas llegadas se
+  leen sin impulso por deuda, que no llega a esas lecturas, y sólo la FC de P2G las deja fuera. Comprobado: el corte
+  P2I-1 y las secciones de lactato, presión y FR de P2G son idénticos a los de `e0dffa8`. En el resto de P2G sólo
+  cambian la FC y un redondeo de 1 ulp en la FC final de la tabla de volumen.
+  El recongelamiento no tocó el diseño: `hr_structure.py` y el núcleo siguen byte a byte en `6052ffb`. La evaluación
+  se volvió a correr e igualó la primera salvo el digest (`398ab817…` → `1b65d303…`).
+- **F2, MAJOR (latente), declarada (TD-93(5)) y fijada por una prueba.** Una llegada no sinusal o con betabloqueo
+  completo y D0 > 0 se rechaza siempre, porque la FC no revela el impulso. No afecta a los casos GI.
+- **F3, MAJOR (metodológica), declarada:** §15.5 y TD-93(6).
+- **F4, MINOR.** Varias comprobaciones son guardas estructurales que no pueden fallar por construcción:
+  - `contributors_explicit` (el retardo es el residuo);
+  - `DRIVE_FALLS_AGAINST_ITS_TARGET`;
+  - `NEGATIVE_CONTRIBUTION` (las desviaciones de presión, SpO2 y glucosa pueden ser negativas por diseño);
+  - la igualdad exacta de `INSTANT_NORMALIZATION_AT_HAEMOSTASIS`;
+  - `nothing_approved` y `support_explicit`.
+
+  El veredicto descansa en la factorización exacta, la sonda de τ_D con D fija, la coherencia de llegada y los
+  invariantes 1, 2, 3, 9 y 10. Para el invariante 5, los datos muestran esto a los 90 min, 30 min después de la
+  hemostasia:
+  - con la intrínseca media, la FC sigue al menos 11 lpm sobre ella en todas las corridas leídas (§10);
+  - con la intrínseca superior (100), 57m HIGH ya está en 100,003 lpm, prácticamente en el piso. Es el único par del
+    plano donde el piso llega a activarse (§11).
+
+  Al minuto siguiente de la hemostasia, el menor margen sobre la intrínseca en todo el plano leído es 0,99 lpm (72f
+  HIGH, intrínseca 60, ganancia 0,0344). En el minuto 60 ya era 1,2 lpm: la FC llegó casi al piso por la reposición
+  previa, no por la hemostasia. Esto es una sonda posterior a la revisión, no parte del registro. L3 no es «hemostasia
+  sola»: incluye los glóbulos rojos.
+- **F5, MINOR.** `sympathetic_per_debt` sigue en el registro y en las tablas históricas de P2G. Sus filas son
+  idénticas por construcción, y el documento P2G ya lo anota (TD-93(7)).
+- **F6, NIT, corregidos:**
+  - 91–109 lpm en 72f, sin la referencia 0;
+  - el orden de las secciones;
+  - el alcance de la validación: en el extremo superior de la ganancia (0,128) sólo LOW (D0 = 0) es coherente y se
+    compara; MID y HIGH se rechazan analíticamente en el núcleo y en la reconstrucción a la vez;
+  - la nota de P2G lee del registro los niveles rechazados.

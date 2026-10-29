@@ -159,10 +159,11 @@ def slice_run(case: str, candidate: GICandidate, scenario: str, *, profile_extra
 
 
 def region_runs(quick: bool = False) -> dict:
-    """Every runnable admissible candidate (P2G's region less the arrivals P2I-2AE's core refuses) in every scenario,
-    for both cases."""
-    return {(candidate.key(), case, scenario): slice_run(case, candidate, scenario)
-            for candidate in decision_pack.runnable(quick) for case in CASES for scenario in ORDERS}
+    """Every admissible candidate (P2G's region) in every scenario, for both cases. P2I-2AE: an arrival the core refuses
+    at the default gain runs without the debt-driven drive, which reaches nothing the slice reads (no HR here)."""
+    return {(candidate.key(), case, scenario): slice_run(case, candidate, scenario,
+                                                         profile_extra=decision_pack.run_profile_extra(candidate))
+            for candidate in decision_pack.admissible(quick) for case in CASES for scenario in ORDERS}
 
 
 def _cases_runs(runs: dict, case: str, scenario: str) -> list:
@@ -291,7 +292,8 @@ def classes(runs: dict, case: str) -> dict:
 
 def decomposition(case: str, candidate: GICandidate, scenario: str) -> dict:
     """The exact split of the excess for one run, given its deficit path (see the module docstring)."""
-    run_ = slice_run(case, candidate, scenario, keep_states=True)
+    run_ = slice_run(case, candidate, scenario, keep_states=True,
+                     profile_extra=decision_pack.run_profile_extra(candidate))
     profile, states = run_["profile"], run_["states"]
     tau_d, tau_l, gain = profile.debt_clearance_tau_min, profile.lactate_clearance_tau_min, \
         profile.lactate_per_output_deficit
@@ -547,7 +549,7 @@ def report(quick: bool = False) -> dict:
                        "worksheet": worksheet_support(runs, case)}
                 for case in CASES}
     return {**digests, "quick": quick, "admissible_candidates": len(decision_pack.admissible(quick)),
-            "inconsistent_arrivals": len(decision_pack.admissible(quick)) - len(decision_pack.runnable(quick)),
+            "read_without_debt_drive": len(decision_pack.admissible(quick)) - len(decision_pack.runnable(quick)),
             "scenarios": {name: {"title": SCENARIO_TITLES[name], "minutes": spec["minutes"],
                                  "orders": {str(minute): order for minute, order in spec["orders"].items()},
                                  "trajectory_kind": TRAJECTORY_KIND[name],

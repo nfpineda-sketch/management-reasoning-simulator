@@ -4488,7 +4488,7 @@
   "NEGATIVE_CONTRIBUTION": 0,
   "NO_DEBT_RECOVERY_AFTER_ADEQUACY": 0
  },
- "freeze_digest": "398ab8179b9ea0b94343335ca68a9af34b7222cbb3f6be3fcee339d1bc126fc2",
+ "freeze_digest": "1b65d303831011014ca8cf8ce98e5fb880c5ea9cd3244f47773ce9d47b3712c8",
  "gain": {
   "arrival_shares_bpm": {
    "gi_bleed_57m": {

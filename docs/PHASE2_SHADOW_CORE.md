@@ -2943,15 +2943,21 @@ Ninguno. `clinical_core` sigue sólo en sombra.
     una llegada que pediría una contribución negativa detiene el núcleo;
   - con el perfil por defecto las trayectorias no cambian: el golden sólo cambia en la metadata y Contracts v2 da
     IDENTICAL;
-  - el paquete P2G y el corte P2I-1 corren sólo las llegadas aceptadas (`decision_pack.runnable`) y cuentan las 108
-    de 1054 que el núcleo rechaza (72f con intrínseca 100 y deuda 60). El rechazo HR1 con τ_D 30 × deuda superior ya
-    no se reproduce.
+  - el núcleo rechaza 108 de los 1054 candidatos P2F (72f con intrínseca 100 y deuda 60) a la ganancia por defecto.
+    El paquete P2G y el corte P2I-1 los leen sin impulso por deuda: el impulso no llega al lactato, la presión ni la
+    FR, así que esos números son los anteriores. La FC de P2G los deja fuera (corrección tras la revisión, F1);
+  - el rechazo HR1 con τ_D 30 × deuda superior ya no se reproduce.
 - **Banda intrínseca 60 / 80 / 100:** STILL_VALID_CANDIDATE_RANGE (rango de reposo del adulto, no derivado de HR1).
 - **Rango de la ganancia:** el de `sympathetic_per_debt` queda OLD_SYMPATHETIC_PER_DEBT_RANGE_SEMANTICALLY_INVALID. El
   nuevo se fijó antes de cualquier resultado, sólo con dimensiones, la FC de llegada, la banda intrínseca, la escala
   de D y la regla de no negatividad: de 6,67e-4 a 0,128, cinco puntos logarítmicos y 0 como referencia sintética.
-- **Congelamiento antes de evaluar:** `6052ffb`, un solo commit. Antes se validó la reconstrucción de la FC (90
-  recorridas completas exactas).
+- **Congelamiento antes de evaluar:** `6052ffb`, un solo commit.
+  - Antes, una comprobación técnica corrió la reconstrucción de la FC en las 18 corridas: 90 recorridas exactas, sin
+    leer ningún resultado de FC. La prueba congelada valida además una fisiología fuera de la grilla.
+  - Las mismas 90 recorridas forman parte de la evaluación.
+  - Tras la revisión, la corrección F1 tocó sólo módulos históricos (`decision_pack`, `lactate_slice`, el informe de
+    P2G). `hr_structure.py` y el núcleo quedan idénticos a `6052ffb`: cambia el hash de fuentes del digest, no el
+    diseño, y la evaluación se volvió a correr con el mismo resultado.
 - **Evaluación** (análisis, después 1-D y el plano 3 × 6 post-procesado, sin barrido cartesiano):
   - 18 corridas representativas, 90 recorridas de validación (todas exactas);
   - D, lactato, déficit y gasto idénticos al registro P2I-2AD;
@@ -2965,7 +2971,17 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - la intrínseca y la ganancia;
   - si hace falta techo o saturación (en el extremo superior del rango, 244 / 217 lpm a los 120 min sin tratamiento);
   - si el resto de llegada debe resolverse con la entrega restaurada (hoy sólo lo baja la presión; tras el manejo
-    definitivo la FC queda en 99–120 / 91–110 lpm). Esto necesitaría un término o una referencia nuevos con su rango.
+    definitivo la FC queda en 99–120 / 91–109 lpm). Esto necesitaría un término o una referencia nuevos con su rango;
+  - si acepta la escala de D (banda de deuda de llegada) de la que salen los extremos del rango (TD-93(6)).
   La presión y el tono vascular siguen a la FC.
 - **Sin elegir parámetros ocultos**, sin calibrar la FC, la FR ni la presión, sin colapso, sin migración y sin gancho
   en tiempo de ejecución.
+- **Revisión adversarial (una):** sin BLOCKER.
+  - MAJOR F1 (ejecutable), corregido: la exclusión de las 108 llegadas cambiaba los resúmenes históricos de lactato,
+    presión y FR. Ahora esos candidatos se leen sin impulso por deuda.
+  - MAJOR F2 (latente), declarado en TD-93(5) y fijado por una prueba: una llegada no sinusal o con betabloqueo
+    completo y D0 > 0 se rechaza siempre.
+  - MAJOR F3 (metodológico), declarado en TD-93(6): la escala de D del rango sale de la banda de deuda de llegada.
+  - MINOR, declarados en TD-93(7)–(8): guardas tautológicas y `sympathetic_per_debt` en tablas históricas.
+  - NIT, corregidos en los documentos: 91–109 lpm, orden de secciones y alcance de la validación en el extremo
+    superior.

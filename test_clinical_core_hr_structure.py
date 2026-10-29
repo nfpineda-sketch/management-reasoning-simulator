@@ -32,7 +32,10 @@ SOURCE = ROOT / "clinical_core" / "hr_structure.py"
 #: The P2I-2AE freeze: faculty decisions, the P2I-2AD record, the audit, the gain range, the analytic rule, the
 #: scenarios, the factorization, the scan, the flags, the invariants, identifiability, the legacy and verdict rules, the
 #: policy and every clinical_core source but the downstream reports, committed before any HR outcome was evaluated.
-FROZEN_DIGEST = "398ab8179b9ea0b94343335ca68a9af34b7222cbb3f6be3fcee339d1bc126fc2"
+#: Refrozen once after the adversarial review (finding F1): only the historical region modules changed (decision_pack,
+#: decision_pack_markdown, lactate_slice); hr_structure.py and the core are byte for byte those of the freeze commit
+#: 6052ffb (digest 398ab817...), and the re-run record equals the first one but for this digest.
+FROZEN_DIGEST = "1b65d303831011014ca8cf8ce98e5fb880c5ea9cd3244f47773ce9d47b3712c8"
 CASES = hs.CASES
 FALLING = (Drift("pump", "P", 0, 90, -0.005),)
 
@@ -150,6 +153,23 @@ def test_an_arrival_debt_needing_a_negative_contribution_stops_the_core():
     with pytest.raises(CoreInvariantError):
         derived.arrival_state(plain)
     assert derived.arrival_state(plain, _profile(debt_to_sympathetic_gain=0.0)).aux.sympathetic_drive == 0.0
+
+
+def test_an_arrival_whose_hr_cannot_show_the_drive_is_refused_with_any_arrival_debt():
+    """TD-93(5), from the adversarial review: a paced arrival, or complete beta-blockade, carries no drive the HR can
+    show (inferred 0), so any positive gain with an arrival debt is refused (fail closed). Whether to seed the drive
+    with gain x D0 there instead is a pending design decision. No GI case is such an arrival."""
+    base = gi_reference.candidate_anchors(CASES[0], {})
+    paced = replace(base, rhythm=RhythmState(RhythmCode.PACED, base.hr, 1.0, True), arrival_oxygen_debt=5.0,
+                    declared={"arrival_oxygen_debt": "synthetic_probe"})
+    blocked = replace(base, beta_blockade=1.0, arrival_oxygen_debt=5.0,
+                      declared={"arrival_oxygen_debt": "synthetic_probe", "beta_blockade": "synthetic_probe"})
+    for anchors in (paced, blocked):
+        for gain in (1e-9, DEFAULT_PROFILE.debt_to_sympathetic_gain):
+            with pytest.raises(CoreInvariantError, match="negative sympathetic contribution"):
+                derived.arrival_state(anchors, _profile(debt_to_sympathetic_gain=gain))
+        assert derived.arrival_state(anchors, _profile(debt_to_sympathetic_gain=0.0)).aux.sympathetic_drive == 0.0
+        assert derived.arrival_state(replace(anchors, arrival_oxygen_debt=0.0)).aux.sympathetic_drive == 0.0
 
 
 def test_every_consistent_decomposition_reproduces_the_arrival_hr_and_splits_non_negatively():

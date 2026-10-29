@@ -155,12 +155,12 @@ def _record(state, item, anchors: Anchors, profile) -> dict:
 
 
 def trajectory(case: str, candidate: GICandidate, scenario: str, *, source_scale: float = 1.0,
-               case_extra: dict | None = None, times=TIMES) -> dict:
+               case_extra: dict | None = None, times=TIMES, profile_extra: dict | None = None) -> dict:
     """One run read at ``times``. A run whose output reaches zero with a pulse (collapse off, as
     in every canonical GI run) stops: the minutes before are kept and the stop is reported."""
     values = {**calibration.case_values(case, candidate), **(case_extra or {})}
     anchors = gi_reference.candidate_anchors(case, values)
-    profile = replace(DEFAULT_PROFILE, **candidate.profile)
+    profile = replace(DEFAULT_PROFILE, **{**candidate.profile, **(profile_extra or {})})
     items = scenario_contributors(case, scenario, source_scale)
     minutes = DECISION_SCENARIOS[scenario]["minutes"]
     stopped = None
@@ -192,19 +192,30 @@ def arrival_consistent(candidate: GICandidate) -> bool:
 
 
 def runnable(quick: bool = False) -> list[GICandidate]:
-    """P2I-2AE: the admissible candidates whose arrivals the current core accepts. A P2F-admissible candidate whose
-    arrival debt would need a negative sympathetic contribution is not run by anything built on the region; the reports
-    count them (``inconsistent_arrivals``). P2F's written region (``admissible``) is unchanged."""
+    """P2I-2AE: the admissible candidates whose arrivals the current core accepts at the default gain. P2F's written
+    region (``admissible``) is unchanged."""
     return [candidate for candidate in admissible(quick) if arrival_consistent(candidate)]
 
 
+#: P2I-2AE: no debt-driven sympathetic drive. The drive reaches no output, delivery, D, lactate, pressure or RR, so an
+#: arrival the core refuses at the default gain is read with it for every read-out but HR, which it would change.
+NO_DEBT_DRIVE = {"debt_to_sympathetic_gain": 0.0}
+
+
+def run_profile_extra(candidate: GICandidate) -> dict | None:
+    """None for an arrival the core accepts; NO_DEBT_DRIVE for one it refuses (its HR is never read)."""
+    return None if arrival_consistent(candidate) else NO_DEBT_DRIVE
+
+
 def envelope_runs(quick: bool = False) -> dict:
-    """Every runnable admissible candidate in every envelope scenario, for both cases."""
+    """Every admissible candidate in every envelope scenario, for both cases. P2I-2AE: a refused arrival runs without
+    the debt-driven drive (``run_profile_extra``); the HR envelopes read only the accepted ones (``report``)."""
     runs = {}
-    for candidate in runnable(quick):
+    for candidate in admissible(quick):
+        extra = run_profile_extra(candidate)
         for case in CASES:
             for scenario in ENVELOPE_SCENARIOS:
-                runs[(candidate.key(), case, scenario)] = trajectory(case, candidate, scenario)
+                runs[(candidate.key(), case, scenario)] = trajectory(case, candidate, scenario, profile_extra=extra)
     return runs
 
 
@@ -789,9 +800,13 @@ def report(quick: bool = False) -> dict:
     digests = {"pack_digest": pack_digest(), "freeze_digest": calibration.frozen_digest()}
     runs = envelope_runs(quick)
     grid = volume_grid(quick)
+    accepted = {candidate.key() for candidate in runnable(quick)}
+    refused = [candidate for candidate in admissible(quick) if candidate.key() not in accepted]
     return {**digests, "admissible_candidates": len(admissible(quick)), "quick": quick,
-            "inconsistent_arrivals": len(admissible(quick)) - len(runnable(quick)),
-            "lactate": lactate_tables(runs), "hr": hr_tables(runs), "bp": bp_tables(runs),
+            "inconsistent_arrivals": len(refused),
+            "inconsistent_arrival_levels": sorted({(c.intrinsic, c.debt) for c in refused}),
+            "lactate": lactate_tables(runs),
+            "hr": hr_tables({key: run_ for key, run_ in runs.items() if key[0] in accepted}), "bp": bp_tables(runs),
             "collapse": collapse_tables(), "volume": {"rows": grid, "summary": volume_summary(grid)},
             "rr": rr_tables(runs), "preload_edge": preload_edge(), "pl2": pl2_analysis(),
             "reachability": reachability_analysis()}

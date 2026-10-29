@@ -106,10 +106,12 @@ def _effects(rows: list[dict], times, digits: int, scenarios: dict) -> str:
 def lactate(pack: dict) -> str:
     out = []
     if pack.get("inconsistent_arrivals"):
-        out.append(f"P2I-2AE: {pack['inconsistent_arrivals']} de los {pack['admissible_candidates']} candidatos "
-                   "admisibles de P2F no se corren: su deuda de llegada pediría una contribución simpática negativa "
-                   "(72f con la intrínseca superior y la deuda superior, a la ganancia por defecto) y el núcleo vigente "
-                   "rechaza esa llegada. Las envolventes leen el resto.\n")
+        levels = "; ".join(f"intrínseca {LEVEL[a]} y deuda {LEVEL[b]}" for a, b in pack["inconsistent_arrival_levels"])
+        out.append(f"P2I-2AE: en {pack['inconsistent_arrivals']} de los {pack['admissible_candidates']} candidatos "
+                   f"admisibles de P2F ({levels}) el núcleo vigente rechaza la llegada a la ganancia por defecto: su "
+                   "deuda pediría una contribución simpática negativa. Como el impulso simpático no llega al gasto, la "
+                   "entrega, D, el lactato, la presión ni la FR, esos candidatos se leen sin impulso por deuda "
+                   "(ganancia 0) en el lactato, la presión y la FR, y quedan fuera de las envolventes de FC.\n")
     for case in CASES:
         data = pack["lactate"][case]
         out.append(f"**{case}** — lactato (mmol/L), mínimo – mediana – máximo en la región admisible:\n")
@@ -141,6 +143,11 @@ def lactate(pack: dict) -> str:
 
 def heart_rate(pack: dict) -> str:
     out = []
+    if pack.get("inconsistent_arrivals"):
+        out.append(f"P2I-2AE: la envolvente de FC lee sólo los {pack['admissible_candidates'] - pack['inconsistent_arrivals']}"
+                   " candidatos cuya llegada acepta el núcleo vigente. El impulso por deuda es debt_to_sympathetic_gain "
+                   "× D y el núcleo ya no lee sympathetic_per_debt: sus filas (0,25 / 0,5 / 1) son idénticas por "
+                   "construcción, no un resultado.\n")
     for case in CASES:
         data = pack["hr"][case]
         intrinsic, sympathetic = data["intrinsic_band"], data["sympathetic_band_bpm"]

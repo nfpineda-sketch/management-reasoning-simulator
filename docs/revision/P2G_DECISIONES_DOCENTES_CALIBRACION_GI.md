@@ -4,7 +4,7 @@ Apoyo a decisiones, no decisiones. Nada de este documento aprueba un número, ma
 FACULTY_APPROVED, migra el GI, toca el tiempo de ejecución ni cambia lo que ve el residente. Todos los valores
 siguen CANDIDATE.
 
-- **Generado desde:** el congelamiento de calibración `c3fd2dd7de4b1621d6a772b24946812ddbf68a023cdea27c65018061b7d8c7ad` y el paquete `1da1569263988ab61bb61361ec8580608b71a24c1307d4bc5a13dc75d8626b36`
+- **Generado desde:** el congelamiento de calibración `c3fd2dd7de4b1621d6a772b24946812ddbf68a023cdea27c65018061b7d8c7ad` y el paquete `0490d7393c454d855fb2297a6acb91bf9ff356f08f4b6d8f04cd5b7cbae385ed`
   (`python -m clinical_core.decision_pack`; las tablas, con `python -m clinical_core.decision_pack_markdown`).
   Los números están en `docs/revision/P2G_decision_pack.json`. Una prueba falla si el código o las entradas cambian
   sin regenerarlos.
@@ -60,14 +60,14 @@ D → lactato (G); lo que se aclara depende de τ_L.
   - Que vuelva a la basal (0,8–2,0, sin dato en el caso) depende sobre todo de τ_L y de la D de llegada.
 
 <!-- generado:lactato -->
-P2I-2AE: 108 de los 1054 candidatos admisibles de P2F no se corren: su deuda de llegada pediría una contribución simpática negativa (72f con la intrínseca superior y la deuda superior, a la ganancia por defecto) y el núcleo vigente rechaza esa llegada. Las envolventes leen el resto.
+P2I-2AE: en 108 de los 1054 candidatos admisibles de P2F (intrínseca sup. y deuda sup.) el núcleo vigente rechaza la llegada a la ganancia por defecto: su deuda pediría una contribución simpática negativa. Como el impulso simpático no llega al gasto, la entrega, D, el lactato, la presión ni la FR, esos candidatos se leen sin impulso por deuda (ganancia 0) en el lactato, la presión y la FR, y quedan fuera de las envolventes de FC.
 
 **gi_bleed_57m** — lactato (mmol/L), mínimo – mediana – máximo en la región admisible:
 
 | Corrida | 0′ | 30′ | 60′ | 120′ |
 |---|---|---|---|---|
-| sin tratamiento | 4,40 – 4,40 – 4,40 | 2,65 – 3,96 – 5,16 | 1,81 – 3,71 – 6,06 | 1,54 – 3,82 – 8,42 |
-| manejo definitivo (GR + IBP + endoscopia) | 4,40 – 4,40 – 4,40 | 2,63 – 3,89 – 5,12 | 1,73 – 3,45 – 5,67 | 1,04 – 2,88 – 6,05 |
+| sin tratamiento | 4,40 – 4,40 – 4,40 | 2,65 – 3,98 – 5,16 | 1,81 – 3,75 – 6,06 | 1,54 – 3,98 – 8,42 |
+| manejo definitivo (GR + IBP + endoscopia) | 4,40 – 4,40 – 4,40 | 2,63 – 3,93 – 5,12 | 1,73 – 3,56 – 5,67 | 1,04 – 2,88 – 6,05 |
 
 Representantes (posición del lactato a los 60 min sin tratamiento; no son preferencias):
 
@@ -77,17 +77,17 @@ Representantes (posición del lactato a los 60 min sin tratamiento; no son prefe
 | bajo | τ_D 120 · τ_L 45 · G 12 · exceso sup. · intrínseca inf. · D inf. · entrega sup. | manejo definitivo (GR + IBP + endoscopia) | 4,40 | 2,63 | 1,73 | 1,04 |
 | medio | τ_D 60 · τ_L 120 · G 6 · resto medio | sin tratamiento | 4,40 | 3,98 | 3,79 | 4,11 |
 | medio | τ_D 60 · τ_L 120 · G 6 · resto medio | manejo definitivo (GR + IBP + endoscopia) | 4,40 | 3,91 | 3,43 | 2,61 |
-| alto | τ_D 60 · τ_L 240 · G 6 · exceso inf. · D sup. · entrega inf. | sin tratamiento | 4,40 | 5,16 | 6,06 | 8,42 |
-| alto | τ_D 60 · τ_L 240 · G 6 · exceso inf. · D sup. · entrega inf. | manejo definitivo (GR + IBP + endoscopia) | 4,40 | 5,12 | 5,57 | 5,52 |
+| alto | τ_D 60 · τ_L 240 · G 6 · exceso inf. · intrínseca sup. · D sup. · entrega inf. | sin tratamiento | 4,40 | 5,16 | 6,06 | 8,42 |
+| alto | τ_D 60 · τ_L 240 · G 6 · exceso inf. · intrínseca sup. · D sup. · entrega inf. | manejo definitivo (GR + IBP + endoscopia) | 4,40 | 5,12 | 5,57 | 5,52 |
 
 Proporción de la región admisible a cada lado de las preguntas docentes (sólo modelo):
 
 | Lectura | Conjuntos | Proporción |
 |---|---|---|
-| sin tratamiento, 60′ por encima de la llegada | 946 | 24 % |
-| sin tratamiento, 60′ más de 1 mmol/L por encima | 946 | 9 % |
-| manejo definitivo, 30′ por debajo de la llegada | 946 | 85 % |
-| manejo definitivo, 120′ por debajo de la llegada | 946 | 92 % |
+| sin tratamiento, 60′ por encima de la llegada | 1054 | 28 % |
+| sin tratamiento, 60′ más de 1 mmol/L por encima | 1054 | 12 % |
+| manejo definitivo, 30′ por debajo de la llegada | 1054 | 80 % |
+| manejo definitivo, 120′ por debajo de la llegada | 1054 | 90 % |
 
 Efecto de cada factor alrededor del punto medio:
 
@@ -110,8 +110,8 @@ Efecto de cada factor alrededor del punto medio:
 
 | Corrida | 0′ | 30′ | 60′ | 120′ |
 |---|---|---|---|---|
-| sin tratamiento | 3,40 – 3,40 – 3,40 | 2,13 – 3,13 – 4,27 | 1,53 – 3,03 – 5,27 | 1,30 – 3,35 – 7,66 |
-| manejo definitivo (GR + IBP + endoscopia) | 3,40 – 3,40 – 3,40 | 2,12 – 3,11 – 4,25 | 1,48 – 2,85 – 5,00 | 0,98 – 2,44 – 5,68 |
+| sin tratamiento | 3,40 – 3,40 – 3,40 | 2,13 – 3,16 – 4,27 | 1,53 – 3,08 – 5,27 | 1,30 – 3,42 – 7,66 |
+| manejo definitivo (GR + IBP + endoscopia) | 3,40 – 3,40 – 3,40 | 2,12 – 3,12 – 4,25 | 1,48 – 2,87 – 5,00 | 0,98 – 2,45 – 5,68 |
 
 Representantes (posición del lactato a los 60 min sin tratamiento; no son preferencias):
 
@@ -121,17 +121,17 @@ Representantes (posición del lactato a los 60 min sin tratamiento; no son prefe
 | bajo | τ_D 120 · τ_L 45 · G 12 · exceso sup. · intrínseca inf. · D inf. · entrega sup. | manejo definitivo (GR + IBP + endoscopia) | 3,40 | 2,12 | 1,48 | 0,98 |
 | medio | τ_D 60 · τ_L 120 · G 6 · resto medio | sin tratamiento | 3,40 | 3,20 | 3,16 | 3,55 |
 | medio | τ_D 60 · τ_L 120 · G 6 · resto medio | manejo definitivo (GR + IBP + endoscopia) | 3,40 | 3,15 | 2,85 | 2,26 |
-| alto | τ_D 60 · τ_L 240 · G 6 · exceso inf. · D sup. · entrega inf. | sin tratamiento | 3,40 | 4,27 | 5,27 | 7,66 |
-| alto | τ_D 60 · τ_L 240 · G 6 · exceso inf. · D sup. · entrega inf. | manejo definitivo (GR + IBP + endoscopia) | 3,40 | 4,25 | 4,96 | 5,21 |
+| alto | τ_D 60 · τ_L 240 · G 6 · exceso inf. · intrínseca sup. · D sup. · entrega inf. | sin tratamiento | 3,40 | 4,27 | 5,27 | 7,66 |
+| alto | τ_D 60 · τ_L 240 · G 6 · exceso inf. · intrínseca sup. · D sup. · entrega inf. | manejo definitivo (GR + IBP + endoscopia) | 3,40 | 4,25 | 4,96 | 5,21 |
 
 Proporción de la región admisible a cada lado de las preguntas docentes (sólo modelo):
 
 | Lectura | Conjuntos | Proporción |
 |---|---|---|
-| sin tratamiento, 60′ por encima de la llegada | 946 | 32 % |
-| sin tratamiento, 60′ más de 1 mmol/L por encima | 946 | 11 % |
-| manejo definitivo, 30′ por debajo de la llegada | 946 | 78 % |
-| manejo definitivo, 120′ por debajo de la llegada | 946 | 86 % |
+| sin tratamiento, 60′ por encima de la llegada | 1054 | 37 % |
+| sin tratamiento, 60′ más de 1 mmol/L por encima | 1054 | 15 % |
+| manejo definitivo, 30′ por debajo de la llegada | 1054 | 73 % |
+| manejo definitivo, 120′ por debajo de la llegada | 1054 | 82 % |
 
 Efecto de cada factor alrededor del punto medio:
 
@@ -196,6 +196,8 @@ no depende de la intrínseca:
   ganancia 2 y 110 con ganancia 0,5.
 
 <!-- generado:fc -->
+P2I-2AE: la envolvente de FC lee sólo los 946 candidatos cuya llegada acepta el núcleo vigente. El impulso por deuda es debt_to_sympathetic_gain × D y el núcleo ya no lee sympathetic_per_debt: sus filas (0,25 / 0,5 / 1) son idénticas por construcción, no un resultado.
+
 **gi_bleed_57m** — FC de llegada 124 lpm = intrínseca 60–100 (medio 80) + parte simpática 24–64 (medio 44); betabloqueo 0 (factor 1 − β = 1); ninguna otra fuente cronotrópica en estas corridas.
 
 | Corrida | Intrínseca | 30′ (FC = intr. + simp.) | 60′ | 120′ | Región admisible (mín – mediana – máx) |
@@ -593,8 +595,8 @@ En las corridas del paquete, FR observada entre 13,2 y 34,5. Mínimo – mediana
 
 | Corrida | 0′ | 30′ | 60′ | 120′ |
 |---|---|---|---|---|
-| sin tratamiento | 26,0 – 26,0 – 26,0 | 17,6 – 24,3 – 28,5 | 13,2 – 23,2 – 30,8 | 13,2 – 23,7 – 34,5 |
-| manejo definitivo (GR + IBP + endoscopia) | 26,0 – 26,0 – 26,0 | 17,5 – 24,0 – 28,4 | 13,2 – 22,0 – 29,9 | 13,2 – 19,0 – 30,7 |
+| sin tratamiento | 26,0 – 26,0 – 26,0 | 17,6 – 24,4 – 28,5 | 13,2 – 23,4 – 30,8 | 13,2 – 24,4 – 34,5 |
+| manejo definitivo (GR + IBP + endoscopia) | 26,0 – 26,0 – 26,0 | 17,5 – 24,1 – 28,4 | 13,2 – 22,5 – 29,9 | 13,2 – 19,0 – 30,7 |
 
 | Shock | Corrida | 0′ (FR = ventilatoria + metabólica) | 30′ | 60′ | 120′ |
 |---|---|---|---|---|---|
@@ -632,8 +634,8 @@ En las corridas del paquete, FR observada entre 15,4 y 35,8. Mínimo – mediana
 
 | Corrida | 0′ | 30′ | 60′ | 120′ |
 |---|---|---|---|---|
-| sin tratamiento | 24,0 – 24,0 – 24,0 | 16,4 – 22,6 – 27,8 | 15,4 – 22,1 – 31,0 | 15,4 – 23,7 – 35,8 |
-| manejo definitivo (GR + IBP + endoscopia) | 24,0 – 24,0 – 24,0 | 16,3 – 22,5 – 27,7 | 15,4 – 21,0 – 30,3 | 15,4 – 18,5 – 32,1 |
+| sin tratamiento | 24,0 – 24,0 – 24,0 | 16,4 – 22,8 – 27,8 | 15,4 – 22,3 – 31,0 | 15,4 – 24,1 – 35,8 |
+| manejo definitivo (GR + IBP + endoscopia) | 24,0 – 24,0 – 24,0 | 16,3 – 22,5 – 27,7 | 15,4 – 21,2 – 30,3 | 15,4 – 18,6 – 32,1 |
 
 | Shock | Corrida | 0′ (FR = ventilatoria + metabólica) | 30′ | 60′ | 120′ |
 |---|---|---|---|---|---|

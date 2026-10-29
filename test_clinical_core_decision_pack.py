@@ -60,6 +60,22 @@ def test_the_current_core_refuses_108_p2f_arrivals_and_the_region_runs_the_rest(
     assert len(refused) == 108 and {(c.intrinsic, c.debt) for c in refused} == {("upper", "upper")}
     assert len(decision_pack.runnable()) == 1054 - 108
     assert decision_pack.runnable(quick=True) == decision_pack.admissible(quick=True)
+    assert decision_pack.run_profile_extra(refused[0]) == decision_pack.NO_DEBT_DRIVE == {"debt_to_sympathetic_gain": 0.0}
+    assert decision_pack.run_profile_extra(MIDDLE) is None
+
+
+def test_a_refused_arrival_read_without_the_debt_drive_keeps_every_read_out_but_hr():
+    """The drive reaches no output, delivery, D, lactate, pressure or RR: a refused arrival read at gain 0 gives the same
+    read-outs as at a gain its arrival can hold; only HR differs, and the HR envelopes never read it."""
+    candidate = replace(MIDDLE, intrinsic="upper", debt="upper")
+    assert not decision_pack.arrival_consistent(candidate)
+    for scenario in ("untreated_120", "definitive_management"):
+        runs = [decision_pack.trajectory("gi_bleed_72f", candidate, scenario,
+                                         profile_extra={"debt_to_sympathetic_gain": gain}) for gain in (0.0, 0.004)]
+        fields = ("lactate", "rr", "sbp", "map", "output", "D", "delivery", "V")
+        assert [[point[f] for f in fields] for point in runs[0]["points"].values()] == [
+            [point[f] for f in fields] for point in runs[1]["points"].values()]
+        assert [p["hr"] for p in runs[0]["points"].values()] != [p["hr"] for p in runs[1]["points"].values()]
 
 
 # Decision support, never a choice ---------------------------------------------------------------

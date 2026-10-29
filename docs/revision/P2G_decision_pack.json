@@ -767,12 +767,12 @@
    "envelopes": {
     "map": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 65.33333333333333,
       "median": 65.33333333333333,
       "min": 65.33333333333333,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "15": {
@@ -781,7 +781,7 @@
       "max": 63.91753412378332,
       "median": 62.703991944169026,
       "min": 62.703991944169026,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "30": {
@@ -790,7 +790,7 @@
       "max": 62.52458050121794,
       "median": 60.11707807369044,
       "min": 60.11707807369044,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "60": {
@@ -799,7 +799,7 @@
       "max": 59.79717883944892,
       "median": 55.05190355897656,
       "min": 55.05190355897656,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "120": {
@@ -808,18 +808,18 @@
       "max": 54.499278493965505,
       "median": 36.09731468451254,
       "min": 36.09731468451254,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      }
     },
     "sbp": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 88.0,
       "median": 88.0,
       "min": 88.0,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "15": {
@@ -828,7 +828,7 @@
       "max": 85.98807480748157,
       "median": 84.26356749960863,
       "min": 84.26356749960863,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "30": {
@@ -837,7 +837,7 @@
       "max": 84.00861439646759,
       "median": 80.58742673629695,
       "min": 80.58742673629695,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "60": {
@@ -846,7 +846,7 @@
       "max": 80.13283308763793,
       "median": 73.38954716275616,
       "min": 73.38954716275616,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "120": {
@@ -855,7 +855,7 @@
       "max": 72.60423785984572,
       "median": 47.765133572435786,
       "min": 47.765133572435786,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      }
     }
@@ -1627,12 +1627,12 @@
    "envelopes": {
     "map": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 74.0,
       "median": 74.0,
       "min": 74.0,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "15": {
@@ -1641,7 +1641,7 @@
       "max": 73.0561338603,
       "median": 72.26957874388333,
       "min": 72.26957874388333,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "30": {
@@ -1650,7 +1650,7 @@
       "max": 72.12749811192306,
       "median": 70.56707987185895,
       "min": 70.56707987185895,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "60": {
@@ -1659,7 +1659,7 @@
       "max": 70.30923033741038,
       "median": 67.23358895191905,
       "min": 67.23358895191905,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "120": {
@@ -1668,18 +1668,18 @@
       "max": 66.77729677375478,
       "median": 60.758377418550445,
       "min": 60.758377418550445,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      }
     },
     "sbp": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 98.0,
       "median": 98.0,
       "min": 98.0,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "15": {
@@ -1688,7 +1688,7 @@
       "max": 96.65871653832104,
       "median": 95.54098032025526,
       "min": 95.54098032025526,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "30": {
@@ -1697,7 +1697,7 @@
       "max": 95.33907626431173,
       "median": 93.12163981790484,
       "min": 93.12163981790484,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "60": {
@@ -1706,7 +1706,7 @@
       "max": 92.75522205842529,
       "median": 88.38457377377969,
       "min": 88.38457377377969,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "120": {
@@ -1715,7 +1715,7 @@
       "max": 87.73615857323048,
       "median": 79.1829573842559,
       "min": 79.1829573842559,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      }
     }
@@ -4069,6 +4069,12 @@
    ]
   }
  },
+ "inconsistent_arrival_levels": [
+  [
+   "upper",
+   "upper"
+  ]
+ ],
  "inconsistent_arrivals": 108,
  "lactate": {
   "gi_bleed_57m": {
@@ -4393,102 +4399,102 @@
    "envelopes": {
     "definitive_management": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 4.4,
       "median": 4.4,
       "min": 4.4,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 5.1225771774426185,
-      "median": 3.8857861239146447,
+      "median": 3.927785159083336,
       "min": 2.6344563487516397,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 5.674363767877839,
-      "median": 3.452627168134498,
+      "median": 3.556459947307236,
       "min": 1.7347861376319982,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 6.047671880639271,
       "median": 2.8792190373343542,
       "min": 1.042729200863597,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      }
     },
     "untreated_120": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 4.4,
       "median": 4.4,
       "min": 4.4,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 5.159625973054087,
-      "median": 3.9638273618953583,
+      "median": 3.984823450386428,
       "min": 2.645298423797115,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 6.063835723781853,
-      "median": 3.7110924720670604,
+      "median": 3.7455366573765567,
       "min": 1.8132966881735977,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 8.416482490701677,
-      "median": 3.824552549078021,
+      "median": 3.979474998839508,
       "min": 1.5366773512350498,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      }
     }
    },
    "fractions": {
     "definitive 120 min below arrival": {
-     "fraction": 0.9238900634249472,
-     "n": 946
+     "fraction": 0.8975332068311196,
+     "n": 1054
     },
     "definitive 30 min below arrival": {
-     "fraction": 0.8477801268498943,
-     "n": 946
+     "fraction": 0.8036053130929791,
+     "n": 1054
     },
     "untreated 60 min above arrival": {
-     "fraction": 0.23784355179704017,
-     "n": 946
+     "fraction": 0.28178368121442127,
+     "n": 1054
     },
     "untreated 60 min more than 1 mmol/L above arrival": {
-     "fraction": 0.08879492600422834,
-     "n": 946
+     "fraction": 0.11954459203036052,
+     "n": 1054
     }
    },
    "representatives": {
     "high": {
-     "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+     "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
      "trajectories": {
       "definitive_management": {
        "0": 4.4,
@@ -4862,102 +4868,102 @@
    "envelopes": {
     "definitive_management": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 3.4,
       "median": 3.4,
       "min": 3.4,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 4.24780007544217,
-      "median": 3.1148407922118055,
+      "median": 3.1174395409346594,
       "min": 2.124885140765072,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 5.001813422183162,
-      "median": 2.8473658480784567,
+      "median": 2.86814592063066,
       "min": 1.4751233216231094,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 5.678907899534749,
-      "median": 2.439120439802858,
+      "median": 2.4541538253204074,
       "min": 0.9753044228459307,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      }
     },
     "untreated_120": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 3.4,
       "median": 3.4,
       "min": 3.4,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 4.274868908967507,
-      "median": 3.1254674768562754,
+      "median": 3.159002620967293,
       "min": 2.132032168466993,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 5.265261977387428,
-      "median": 3.031652069940333,
+      "median": 3.07881733512306,
       "min": 1.5269687688369982,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 7.6572479904212125,
-      "median": 3.3493963008982854,
+      "median": 3.4185944389154717,
       "min": 1.30258236721399,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      }
     }
    },
    "fractions": {
     "definitive 120 min below arrival": {
-     "fraction": 0.8636363636363636,
-     "n": 946
+     "fraction": 0.8206831119544592,
+     "n": 1054
     },
     "definitive 30 min below arrival": {
-     "fraction": 0.7780126849894292,
-     "n": 946
+     "fraction": 0.7267552182163188,
+     "n": 1054
     },
     "untreated 60 min above arrival": {
-     "fraction": 0.3202959830866808,
-     "n": 946
+     "fraction": 0.36717267552182165,
+     "n": 1054
     },
     "untreated 60 min more than 1 mmol/L above arrival": {
-     "fraction": 0.11416490486257928,
-     "n": 946
+     "fraction": 0.15370018975332067,
+     "n": 1054
     }
    },
    "representatives": {
     "high": {
-     "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+     "candidate": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
      "trajectories": {
       "definitive_management": {
        "0": 3.4,
@@ -5010,7 +5016,7 @@
    }
   }
  },
- "pack_digest": "1da1569263988ab61bb61361ec8580608b71a24c1307d4bc5a13dc75d8626b36",
+ "pack_digest": "0490d7393c454d855fb2297a6acb91bf9ff356f08f4b6d8f04cd5b7cbae385ed",
  "pl2": {
   "rows": [
    {
@@ -8306,77 +8312,77 @@
    "envelopes": {
     "definitive_management": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 26.0,
       "median": 26.0,
       "min": 26.0,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 28.371547213262186,
-      "median": 23.97025439733722,
+      "median": 24.148029732062227,
       "min": 17.501792036182806,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 29.86622320557239,
-      "median": 21.999938245820683,
+      "median": 22.495832196671813,
       "min": 13.168806398999287,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 30.745873409524904,
       "median": 18.964969190632644,
       "min": 13.168806398999287,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      }
     },
     "untreated_120": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 26.0,
       "median": 26.0,
       "min": 26.0,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 28.479837291850735,
-      "median": 24.298814971033167,
+      "median": 24.38590507059218,
       "min": 17.568904826933405,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 30.781781215291666,
-      "median": 23.2062912514954,
+      "median": 23.360106669164644,
       "min": 13.168806398999287,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 34.52171097096459,
-      "median": 23.707015512337833,
+      "median": 24.363772164845287,
       "min": 13.168806398999287,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      }
     }
@@ -9652,77 +9658,77 @@
    "envelopes": {
     "definitive_management": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 24.0,
       "median": 24.0,
       "min": 24.0,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 27.68885641456012,
-      "median": 22.532919771626556,
+      "median": 22.546864353890257,
       "min": 16.345480299755945,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 30.267457116304097,
-      "median": 21.037942637313247,
+      "median": 21.158433310818307,
       "min": 15.426170495376418,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=120,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 32.13489799993974,
-      "median": 18.511863895681692,
+      "median": 18.610475225052834,
       "min": 15.426170495376418,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      }
     },
     "untreated_120": {
      "0": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=midpoint;delivery=midpoint",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=45,lactate_per_output_deficit=6;excess=upper;intrinsic=upper;preload=midpoint;debt=upper;delivery=upper",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=120,lactate_per_output_deficit=12;excess=lower;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 24.0,
       "median": 24.0,
       "min": 24.0,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "30": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=upper;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 27.79187283860209,
-      "median": 22.589872720048717,
+      "median": 22.768415938129127,
       "min": 16.397056595387863,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "60": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=lower",
       "max": 31.039438224783304,
-      "median": 22.08074587564569,
+      "median": 22.338498077745697,
       "min": 15.426170495376418,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      },
      "120": {
-      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=midpoint;preload=midpoint;debt=upper;delivery=lower",
+      "argmax": "debt_clearance_tau_min=60,lactate_clearance_tau_min=240,lactate_per_output_deficit=6;excess=lower;intrinsic=upper;preload=midpoint;debt=upper;delivery=lower",
       "argmin": "debt_clearance_tau_min=120,lactate_clearance_tau_min=45,lactate_per_output_deficit=12;excess=midpoint;intrinsic=lower;preload=midpoint;debt=lower;delivery=upper",
       "max": 35.8461593677228,
-      "median": 23.748730050669586,
+      "median": 24.091375528714153,
       "min": 15.426170495376418,
-      "n": 946,
+      "n": 1054,
       "stopped_before": 0
      }
     }
