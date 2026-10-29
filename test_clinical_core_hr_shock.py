@@ -34,7 +34,7 @@ SOURCE = ROOT / "clinical_core" / "hr_shock.py"
 #: both gains and the ceiling, the mismatch rule, the scenarios, the factorization, the scan, the flags, the invariants,
 #: the legacy and verdict rules, the next-package design, the policy and every clinical_core source but the downstream
 #: reports, committed before any HR outcome was evaluated.
-FROZEN_DIGEST = "70106108285ced1556e746548fa79480d903a0495f6f65b6792cb17d9155eb2d"
+FROZEN_DIGEST = "adb3767b4e8042b9976057587ab337fd5de5cd25119a1bb28e7a119d85768ed3"
 CASES = hk.CASES
 FALLING = (Drift("pump", "P", 0, 90, -0.005),)
 
@@ -180,6 +180,23 @@ def test_hr2_resolves_an_arrival_share_and_leaves_an_arrival_at_intrinsic_there(
             assert (first > anchors.intrinsic_sinus_rate) is share, case
         calibration.check_hr(DEFAULT_PROFILE, arrivals)
     assert dp.assess(replace(dp.MIDDLE, debt="lower", delivery="upper"))["status"] == dp.ADMISSIBLE
+
+
+def test_declared_limits_without_a_declared_intrinsic_rate():
+    """TD-94(7)-(8), declared after the review: without a declared intrinsic rate (P2E-1's default, the golden's
+    path) the intrinsic is the authored arrival HR, so the authored HR is the sinus floor; and a sinus base rate at or
+    above the provisional ceiling stops the core. The no-residual claims hold for a declared intrinsic rate."""
+    from clinical_core.state import CoreInvariantError
+    anchors = gi_reference.candidate_anchors(CASES[0], {})
+    assert anchors.intrinsic_sinus_rate is None and derived.intrinsic_sinus_rate(anchors) == anchors.hr
+    lower = replace(anchors, hr=anchors.hr - 10.0, rhythm=RhythmState.sinus(anchors.hr - 10.0))
+    runs = [run(a, FALLING, 60) for a in (anchors, lower)]
+    assert [s.aux.sympathetic_drive for s in runs[0].states] == [s.aux.sympathetic_drive for s in runs[1].states]
+    gaps = [a.pulse_rate_bpm - b.pulse_rate_bpm for a, b in zip(runs[0].derived(), runs[1].derived())]
+    assert min(gaps) > 9.9 and max(gaps) == pytest.approx(10.0)
+    fast = replace(anchors, hr=180.0, rhythm=RhythmState.sinus(180.0))
+    with pytest.raises(CoreInvariantError, match="not below the sinus-rate ceiling"):
+        derived.arrival_state(fast)
 
 
 def test_the_rhythm_stays_authoritative_and_non_sinus_arrivals_with_a_debt_run():

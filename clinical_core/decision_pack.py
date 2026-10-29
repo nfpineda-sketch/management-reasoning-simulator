@@ -370,6 +370,10 @@ def hr_tables(runs: dict) -> dict:
     for case in CASES:
         bands = gi_reference.case_bands(case)
         middle = trajectory(case, MIDDLE, "definitive_management")["points"][0]
+        # P2I-2AF: the arrival HR is predicted, so it moves with the intrinsic level; each level's sympathetic part is
+        # its own minute-0 increment, never the middle arrival HR less another level's intrinsic rate.
+        arrivals = {level: trajectory(case, replace(MIDDLE, intrinsic=level), "definitive_management")["points"][0]
+                    for level in LEVELS}
         scenarios = {}
         for scenario in ENVELOPE_SCENARIOS:
             times = [minute for minute in HR_TIMES if minute <= DECISION_SCENARIOS[scenario]["minutes"]]
@@ -391,9 +395,8 @@ def hr_tables(runs: dict) -> dict:
             "arrival_hr": middle["hr"],
             "intrinsic_band": [bands["intrinsic_sinus_rate"].lower, bands["intrinsic_sinus_rate"].midpoint,
                                bands["intrinsic_sinus_rate"].upper],
-            "sympathetic_band_bpm": [middle["hr"] - bands["intrinsic_sinus_rate"].upper,
-                                     middle["hr"] - bands["intrinsic_sinus_rate"].midpoint,
-                                     middle["hr"] - bands["intrinsic_sinus_rate"].lower],
+            "arrival_hr_by_intrinsic": [arrivals[level]["hr"] for level in LEVELS],
+            "sympathetic_band_bpm": [arrivals[level]["sympathetic_bpm"] for level in LEVELS],
             "scenarios": scenarios,
             "resolution": {decay: {level: _resolution(case, replace(candidate, intrinsic=level),
                                                       "definitive_management") for level in LEVELS}

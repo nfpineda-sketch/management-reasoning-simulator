@@ -2994,8 +2994,9 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Decisiones docentes:**
   - la parte de shock de la FC de llegada se genera desde el estado actual y se resuelve con el shock: sin
     desplazamiento fijo por caso;
-  - la señal aguda es el déficit efectivo de oxígeno sobre la demanda, sin referencia absoluta de presión; el término
-    de presión relativa puede quedarse si se audita el doble conteo;
+  - la señal aguda es el déficit efectivo de oxígeno sobre la demanda, sin referencia absoluta de presión;
+  - el término de presión relativa: el texto registrado dice «puede quedarse si no cuenta dos veces» y el encargo pide
+    auditarlo; la diferencia queda para la docencia (informe, §15);
   - la escala de D no está aprobada: `debt_to_sympathetic_gain` se lee con ella (D × c con ganancia / c da la misma
     FC) y el soporte de deuda de llegada es incertidumbre propagada, nunca un ancla;
   - saturación suave y monótona del incremento simpático, sin recorte y sin reserva final elegida;
@@ -3030,8 +3031,10 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Evaluación** (análisis, reconstrucción, 1-D y plano 6 × 6 post-procesado, sin barrido cartesiano):
   - 3240 descomposiciones de llegada analíticas, 0 rechazos;
   - 18 corridas representativas, 162 recorridas de validación (todas exactas) y 720 series post-procesadas;
-  - D, lactato y FR idénticos al registro P2I-2AD;
-  - las doce direcciones se cumplen y no se levanta ninguna bandera estructural;
+  - D y lactato idénticos al registro P2I-2AD; la FR no lee la FC y no cambia;
+  - las doce direcciones se cumplen y no se levanta ninguna bandera estructural. Varias banderas y las invariantes 5 y
+    7 no pueden fallar por construcción; el veredicto descansa en la reconstrucción exacta, las sondas y las
+    invariantes 1–4 y 8–12;
   - la llegada no sinusal o con betabloqueo completo y deuda (TD-93(5)) corre: RESOLVED_BY_P2I2AF
     (GENERALIZATION_BLOCKER_ONLY).
 - **Hallazgos para la docencia:**
@@ -3040,8 +3043,9 @@ Ninguno. `clinical_core` sigue sólo en sombra.
     - El menor peor desajuste conjunto sobre la superficie es 6,2 lpm con la misma intrínseca, o 2,4 lpm si la
       intrínseca puede diferir por caso (sólo el valor; no se elige ningún punto).
   - En L3, tras los GR y la hemostasia, el término de presión relativa se vuelve negativo y cancela la parte de deuda.
-    - La FC vuelve a la intrínseca desde el minuto 60.
-    - La taquicardia diferida sólo se ve con la mayor ganancia de deuda (36 de 432 lecturas en los minutos 90 y 120).
+    - En el ancla, la FC vuelve a la intrínseca desde el minuto 60.
+    - La taquicardia diferida sólo se ve con la mayor ganancia de deuda: 36 de 432 lecturas superan la intrínseca por
+      más de 0,5 lpm en los minutos 90 y 120. El umbral es de presentación, fijado después de ver los resultados.
     - La invariante 5 la comprueba sobre la parte de deuda del impulso, no sobre la FC visible.
   - El término de presión queda NEEDS_PRESSURE_DOMAIN_REVIEW: correlación 0,75 con el agudo y 457 minutos en que
     descarga el impulso con un déficit presente.
@@ -3059,3 +3063,18 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   del techo y si el término de presión se queda.
 - **Sin elegir parámetros ocultos**, sin calibrar la FC, la FR ni la presión, sin colapso, sin migración y sin gancho
   en tiempo de ejecución.
+- **Revisión adversarial (una):** sin BLOCKER.
+  - MAJOR, corregido (ejecutable): la banda simpática de llegada del paquete P2G restaba la llegada media a cada nivel
+    de intrínseca y daba partes negativas. Ahora lee la llegada predicha de cada nivel; una prueba lo fija.
+  - MAJOR, declarado (TD-94(6)): banderas e invariantes 5 y 7 tautológicas. Los documentos explicaban mal por qué
+    pasaba la 7; se corrigió.
+  - MAJOR, declarado (TD-94(7)): sin intrínseca declarada, la FC registrada es el piso (comportamiento previo de P2E-1).
+    «Sin resto» vale con la intrínseca declarada; una prueba lo fija.
+  - MAJOR, contradicción señalada (informe, §15): la condición registrada para el término de presión frente al
+    encargo; decide la docencia.
+  - MINOR, declarados (TD-94(8)–(9)): la detención por un techo no aprobado, el texto de AC1 y descripciones antiguas
+    de `arrival_sympathetic_drive`.
+  - MINOR, corregido: cifras de los documentos (umbral de presentación, FR, «debe confirmarlo la docencia»).
+  - NIT, anotados en el informe (§18).
+  - `hr_shock.py` queda idéntico a `565e323`. Cambia el hash de fuentes del digest (`decision_pack.py`), y la
+    evaluación se volvió a correr.

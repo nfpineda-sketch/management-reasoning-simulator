@@ -32,7 +32,9 @@ Números: `docs/revision/P2I2AF_hr_shock.json`. Registros de partida, cerrados: 
   - qué era: una constante por caso, despejada de la FC registrada para reproducirla exactamente;
   - cuánto pesaba: hasta el 100 % de la parte simpática de llegada (64 lpm en 57m, 52 en 72f);
   - qué causaba: nunca se resolvía al resolverse el shock.
-  Se eliminó; la parte del shock la genera ahora el estado actual.
+  Se eliminó; la parte del shock la genera ahora el estado actual. Vale con la intrínseca declarada, como en todas las
+  llegadas del análisis. Sin intrínseca declarada (el golden; valor por defecto de P2E-1), la intrínseca es la FC
+  registrada y queda como piso de la FC sinusal: es comportamiento previo, declarado en TD-94(7).
 - **Señal aguda explícita.** Es el déficit efectivo de oxígeno sobre la demanda:
   - vale 0 sin déficit;
   - no lee τ_D, lactato ni presión absoluta;
@@ -43,23 +45,28 @@ Números: `docs/revision/P2I2AF_hr_shock.json`. Registros de partida, cerrados: 
 - **Saturación suave.**
   - forma y propiedades: tanh sobre el incremento, sin recorte; monótona, continua, de pendiente 1 en 0;
   - frente a la intrínseca y el ritmo: nunca baja de la intrínseca y no toca el ritmo;
-  - en la corrida extrema (techo 150): la FC máxima es 149,9999998 lpm.
-  - el techo no se elige: 150 / 175 / 200 lpm es fisiología general y lo confirma la docencia.
+  - en la corrida extrema (techo 150), que ya empieza saturada: la FC máxima es 149,9999998 lpm;
+  - el techo no se elige: 150 / 175 / 200 lpm es fisiología general y debe confirmarlo la docencia.
 - **Llegada predicha, desajuste informado.** 3240 descomposiciones analíticas y 0 rechazos:
   - mediana del desajuste: −24 lpm en 57m y −12 en 72f;
   - con ganancias comunes y los mismos niveles de llegada, la predicción es idéntica en ambos casos: la diferencia de
     12 lpm entre las FC registradas sólo puede venir de una intrínseca o de niveles de llegada propios de cada caso.
 - **Invariantes y banderas.** Las doce direcciones se cumplen y no se levanta ninguna bandera estructural:
   - la reconstrucción coincide exactamente con 162 reejecuciones completas;
-  - D, lactato y FR quedan idénticos al registro P2I-2AD.
-- **Hallazgo para la docencia (§9, §11).** Tras los GR y la hemostasia (L3), la FC vuelve a la intrínseca desde el
-  minuto 60 en casi todo el plano:
+  - D y lactato quedan idénticos al registro P2I-2AD; la FR no lee la FC y es idéntica en todas las reejecuciones;
+  - la mayoría de las banderas y las invariantes 5 y 7 son guardas estructurales que no pueden fallar por construcción
+    (§9): el veredicto descansa en la reconstrucción exacta, las sondas y las invariantes 1–4 y 8–12.
+- **Hallazgo para la docencia (§9, §11).** Tras los GR y la hemostasia (L3), la FC del ancla vuelve a la intrínseca
+  desde el minuto 60; en los minutos 90 y 120, también en casi todo el plano:
   - la causa: la presión queda sobre la de llegada y el término de presión relativa, negativo, cancela la parte de la
     deuda;
-  - dónde se ve la taquicardia diferida: sólo con la mayor ganancia de deuda (36 de 432 lecturas en los minutos 90
-    y 120);
+  - dónde se ve la taquicardia diferida: sólo con la mayor ganancia de deuda (36 de 432 lecturas más de 0,5 lpm sobre
+    la intrínseca en los minutos 90 y 120; el umbral de 0,5 lpm es de presentación, fijado después de ver los
+    resultados; §9 da también los conteos con 0 y 1 lpm);
   - qué mide la invariante 5: la parte de deuda del impulso, no la FC visible.
-  Es una cuestión del dominio de la presión: el término queda como NEEDS_PRESSURE_DOMAIN_REVIEW.
+  Es una cuestión del dominio de la presión: el término queda como NEEDS_PRESSURE_DOMAIN_REVIEW. La condición
+  registrada para conservarlo («si no cuenta dos veces») no se cumple del todo: la auditoría encuentra doble conteo
+  parcial (§11, §15). Es una contradicción que decide la docencia.
 - **Veredicto: HR_STRUCTURE_READY_FOR_NUMERIC_FACULTY_CALIBRATION**, con el diseño numérico docente preparado, no
   ejecutado (§16).
 - Nada se seleccionó ni aprobó. La FR, la presión y el lactato no cambian.
@@ -67,7 +74,7 @@ Números: `docs/revision/P2I2AF_hr_shock.json`. Registros de partida, cerrados: 
 ## 1. Decisiones docentes y punto de partida
 
 <!-- generado:decisiones -->
-Congelamiento: `70106108285ced1556e746548fa79480d903a0495f6f65b6792cb17d9155eb2d` (una prueba lo fija). Registros de partida: P2I-2AD `5cb48163da4ff081e752b7684f4b036dbcf3e2acb4f94ee1603aaec742fe7fcf` y P2I-2AE `1b65d303831011014ca8cf8ce98e5fb880c5ea9cd3244f47773ce9d47b3712c8`.
+Congelamiento: `adb3767b4e8042b9976057587ab337fd5de5cd25119a1bb28e7a119d85768ed3` (una prueba lo fija). Registros de partida: P2I-2AD `5cb48163da4ff081e752b7684f4b036dbcf3e2acb4f94ee1603aaec742fe7fcf` y P2I-2AE `1b65d303831011014ca8cf8ce98e5fb880c5ea9cd3244f47773ce9d47b3712c8`.
 
 | Decisión docente | Texto registrado |
 |---|---|
@@ -439,20 +446,44 @@ Corridas L3 con T*: 240; con deuda positiva y D(T*) > 0: 204; menor margen sobre
 | NO_DEBT_RECOVERY_AFTER_ADEQUACY | 0 |
 <!-- /generado:invariantes -->
 
+Qué pueden y qué no pueden mostrar estas comprobaciones (corregido tras la revisión adversarial):
+- Varias son guardas estructurales que no pueden fallar por construcción, porque repiten la aritmética del núcleo que
+  la reconstrucción ya valida contra 162 reejecuciones completas:
+  - `ACUTE_WITHOUT_DEFICIT` (la parte aguda es ganancia × déficit / demanda);
+  - `NEGATIVE_INCREMENT` (el objetivo tiene piso 0 y tanh de un valor no negativo no es negativa);
+  - `HR_BELOW_INTRINSIC`;
+  - `DRIVE_FALLS_FASTER_THAN_ITS_DECAY`;
+  - `INSTANT_NORMALIZATION_AT_HAEMOSTASIS`: exige un impulso mayor que 0 en T y una FC exactamente igual a la
+    intrínseca en T + 1, y con el decaimiento la FC en T + 1 queda siempre por encima. La guarda de igualdad exacta
+    que TD-93(8) ya había señalado en `hr_structure` se volvió a congelar aquí.
+  - Con ellas, `patient_like` también es casi vacía. TD-94(6).
+- La invariante 5 («D puede mantener una taquicardia diferida») filtra las corridas con ganancia y D(T\*) positivas y
+  comprueba que ganancia × D(T\*) > 0: es positiva en las 204 corridas, por construcción. No mide la FC visible.
+- La invariante 7 («la hemostasia sola no normaliza la FC al instante») descansa en esa misma bandera: pasa por
+  construcción, haya o no impulso en la hemostasia. Por ejemplo, con L3 MID 57m y ganancia de deuda 0,160, la FC pasa
+  de 106,1 a 105,1 lpm. El menor margen un minuto después de la hemostasia, 0 lpm, viene de las corridas cuyo impulso ya
+  era 0, no de una normalización.
+- El veredicto descansa en lo que sí puede fallar:
+  - la reconstrucción exacta;
+  - las sondas: déficit, D, τ_D con D fija, escala de D, ritmo, fluidos y saturación;
+  - las invariantes 1–4 y 8–12.
+
 Lectura descriptiva del registro, posterior al veredicto y sin cambiarlo:
-- La invariante 5 («D puede mantener una taquicardia diferida») se comprueba sobre la parte de deuda del impulso en
-  T\*: es positiva en las 204 corridas con deuda.
-- La FC visible es otra cosa. En L3, la parte de presión relativa se vuelve negativa (presión sobre la de llegada, tras
-  los GR) y anula la de deuda; el objetivo queda en 0 y la FC en la intrínseca desde el minuto 60. Ejemplo en el ancla
-  (§6, H4), en lpm sin saturar al minuto 60:
+- La FC visible no la mide ninguna invariante. En L3, la parte de presión relativa se vuelve negativa (presión sobre la
+  de llegada, tras los GR) y anula la de deuda; en el ancla el objetivo queda en 0 y la FC en la intrínseca desde el
+  minuto 60. Ejemplo en el ancla (§6, H4), en lpm sin saturar al minuto 60:
   - 57m HIGH: deuda 2,0 y presión −11,8;
   - 72f MID: deuda 1,8 y presión −2,7.
-- En la superficie (§10), una FC más de 0,5 lpm sobre la intrínseca en los minutos 90 y 120 de L3 sólo aparece con la
-  mayor ganancia de deuda (0,160): 36 de 432 lecturas (caso × hito × punto del plano × representante).
-- Por lo mismo, la invariante 7 («la hemostasia sola no normaliza la FC al instante») se cumple porque la FC ya está en
-  la intrínseca antes de la hemostasia: el menor margen un minuto después es 0 lpm.
-- Que la estructura permita la taquicardia diferida no significa que se vea. Que se vea depende de la ganancia de
-  deuda y del término de presión (§11). Es una decisión del dominio de la presión y del paquete numérico, no de este.
+- En la superficie (§10), sobre las 432 lecturas de los minutos 90 y 120 de L3 (caso × hito × punto del plano ×
+  representante), la FC supera a la intrínseca así:
+  - por cualquier margen: 384;
+  - por más de 0,5 lpm: 36, todas con la mayor ganancia de deuda (0,160);
+  - por más de 1 lpm: 30.
+  En el minuto 60 (segunda unidad y hemostasia), 70 de 216 superan la intrínseca por más de 0,5 lpm, sobre todo con las
+  dos ganancias de deuda mayores (hasta 109,5 lpm). Los umbrales de 0,5 y 1 lpm son de presentación, elegidos después
+  de ver los resultados; ningún umbral en lpm está comprometido.
+- Que la estructura permita la taquicardia diferida no significa que se vea. Que se vea depende de la ganancia de deuda
+  y del término de presión (§11). Es una decisión del dominio de la presión y del paquete numérico, no de este.
 
 ## 10. Superficie de decisión
 
@@ -672,6 +703,23 @@ Cada celda: núcleo en el ancla para LOW / MID / HIGH y, entre paréntesis, el m
 Regla congelada: HR_STRUCTURE_READY_FOR_NUMERIC_FACULTY_CALIBRATION when every check holds: (1) no arrival residual (the core's source and the probe in which the authored HR reaches no dynamics); (2) the acute contribution is explicit and recoverable (the source; 0 at no deficit; no acute contribution after sustained adequacy in any read L3 run); (3) tau_D does not reach HR at fixed D; (4) D x c with gain / c gives the same HR; (5) smooth saturation (tanh, no clip) and no sinus HR at or above the ceiling anywhere; (6) the twelve directions pass; (7) D, lactate and RR unchanged (P2I-2AD record and every validation rerun); (8) no structural flag; and the post-processing agrees with the full core. Otherwise HR_STRUCTURE_NOT_READY with the first blocker. The arrival mismatch is reported for the faculty, never a gate; no numeric parameter needs to be identified.
 <!-- /generado:veredicto -->
 
+Alcance del veredicto (tras la revisión adversarial):
+- **Presión.** El veredicto no comprueba el término de presión relativa; la regla congelada no lo incluye, como
+  tampoco la lista P2I-2AF-13 del encargo. Hay, sin embargo, una contradicción que debe decidir la docencia.
+  - El texto registrado de la decisión docente (`FACULTY["acute_signal"]`, §1) dice que el término «puede quedarse si
+    no cuenta dos veces».
+  - El encargo pide auditarlo y clasificarlo.
+  - La auditoría (§11) encuentra doble conteo parcial y lo clasifica NEEDS_PRESSURE_DOMAIN_REVIEW.
+  - Si rige el texto registrado, la condición para conservar el término no se cumple, y el veredicto queda supeditado a
+    la decisión del dominio de la presión. Si rige el encargo, la condición está cumplida: el término se auditó y quedó
+    en revisión.
+  - No se eligió entre los dos.
+- **Banderas.** `patient_like` y las invariantes 5 y 7 descansan en guardas que no pueden fallar por construcción (§9).
+- **Alcance de «sin resto».** Vale con la intrínseca declarada. Sin ella, la FC registrada es la intrínseca, y por lo
+  tanto el piso, como antes (TD-94(7)).
+  - `live_audit` busca la lectura textual de `anchors.hr` en el objetivo y no ve esa ruta indirecta.
+  - `authored_hr_probe` usa una intrínseca declarada.
+
 ## 16. Diseño numérico docente siguiente
 
 <!-- generado:siguiente -->
@@ -712,6 +760,12 @@ Método: filter the acute x debt x ceiling x intrinsic points (and their D suppo
     7·10⁻¹⁵ lpm; antes absorbía la compresión de la saturación.
   - El núcleo acepta ahora las 108 llegadas que P2I-2AE rechazaba. Las cifras de FC del paquete cambian (no hay resto);
     las de lactato, presión y FR, no.
+  - Tras la revisión, la banda simpática de llegada del paquete lee la llegada predicha de cada nivel de intrínseca:
+    su incremento del minuto 0. Antes restaba la FC de llegada del nivel medio a cada nivel, y con la llegada predicha
+    eso daba una parte simpática negativa (−16 a 24 lpm en el documento P2G). Una prueba lo fija.
+- **AC1.** `check_arrival_reconstruction` ya no compara la FC: la llegada la predice. El texto congelado de AC1
+  («la llegada declarada reconstruye exactamente la observación registrada») no se cambió en este paquete, para no
+  recongelar la calibración otra vez, y ahora exagera: vale para todo menos la FC. TD-94(9).
 - **Corte P2I-1, sondas P2I-2T y anclas P2I-2U.** Sólo cambian sus digests y el conteo de llegadas leídas sin impulso
   por deuda, que baja de 108 a 0.
 
@@ -723,7 +777,17 @@ Corridas completas de representantes: 18; reejecuciones de validación: 162; ser
 
 - Evaluación completa: 9,3 s.
 - 0 llamadas de IA de la app.
-- Una sola congelación y una sola evaluación.
+- Una sola congelación de `hr_shock.py`, byte a byte igual desde `565e323`.
+  - La corrección de la revisión tocó `decision_pack.py`, que forma parte de las fuentes del digest. Por eso cambió el
+    hash de fuentes, no el diseño.
+  - La evaluación se volvió a correr: la prueba la reproduce en vivo.
+- «Barrido cartesiano: no» se refiere a simulaciones. La superficie analítica de llegada (§5) sí es una grilla completa,
+  3 × 5 × 6 × 6 × 3 por caso, de evaluaciones cerradas sin simulación.
+- Notas menores:
+  - `HR_ABOVE_CEILING` compara con «>», mientras que la regla del veredicto dice «en el techo o por encima»;
+  - la docstring de `sympathetic_increment` dice que nunca se alcanza el techo, pero en coma flotante tanh llega a 1
+    más allá de unas 19 reservas (`FLAG_RULES` lo dice);
+  - la corrida extrema de H6 empieza ya saturada, así que el codo lo muestran las curvas, no el tiempo.
 
 ## 19. Lo que queda para la docencia
 
@@ -736,4 +800,7 @@ Registrado en `docs/REGISTRO_DEUDA_TECNICA.md` (TD-93, actualizada, y TD-94):
 - El rango del techo sinusal: 150 / 175 / 200 lpm es fisiología general, no verdad del repositorio.
 - El término de presión relativa: se queda, se vuelve absoluto o se quita. De eso depende que la taquicardia diferida
   por deuda sea visible (§9, §11).
+- Qué texto rige la condición del término de presión: el registrado («si no cuenta dos veces») o el del encargo
+  («auditado»). §15.
+- La política de la FC de llegada sin intrínseca declarada: hoy la FC registrada es el piso (TD-94(7)).
 - Las envolventes sobre los observables (§16). Ninguna ganancia latente se aprueba directamente.

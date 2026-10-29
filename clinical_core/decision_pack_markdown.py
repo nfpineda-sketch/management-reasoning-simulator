@@ -155,9 +155,11 @@ def heart_rate(pack: dict) -> str:
     for case in CASES:
         data = pack["hr"][case]
         intrinsic, sympathetic = data["intrinsic_band"], data["sympathetic_band_bpm"]
-        out.append(f"**{case}** — FC de llegada {num(data['arrival_hr'], 0)} lpm = intrínseca "
-                   f"{num(intrinsic[0], 0)}–{num(intrinsic[2], 0)} (medio {num(intrinsic[1], 0)}) + parte simpática "
-                   f"{num(sympathetic[0], 0)}–{num(sympathetic[2], 0)} (medio {num(sympathetic[1], 0)}); betabloqueo 0 "
+        arrival = data["arrival_hr_by_intrinsic"]
+        out.append(f"**{case}** — FC de llegada predicha {num(data['arrival_hr'], 0)} lpm = intrínseca media "
+                   f"{num(intrinsic[1], 0)} + parte simpática {num(sympathetic[1], 1)}; con la intrínseca "
+                   f"{num(intrinsic[0], 0)} / {num(intrinsic[2], 0)}: {num(arrival[0], 0)} / {num(arrival[2], 0)} lpm "
+                   f"(parte simpática {num(sympathetic[0], 1)} / {num(sympathetic[2], 1)}); betabloqueo 0 "
                    "(factor 1 − β = 1); ninguna otra fuente cronotrópica en estas corridas.\n")
         rows = []
         for scenario, item in data["scenarios"].items():

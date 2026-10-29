@@ -106,6 +106,17 @@ def test_heart_rate_is_intrinsic_plus_sympathetic_and_nothing_else(quick_pack):
                     assert point["hr"] >= point["intrinsic_bpm"] - 1e-9
 
 
+def test_each_intrinsic_level_reads_its_own_predicted_arrival(quick_pack):
+    """P2I-2AF (review): the arrival HR moves with the intrinsic level, so the sympathetic band is each level's own
+    minute-0 increment, never negative (HR3), not the middle arrival HR less another level's rate."""
+    for case in decision_pack.CASES:
+        data = quick_pack["hr"][case]
+        assert data["arrival_hr_by_intrinsic"][1] == data["arrival_hr"]
+        for hr, intrinsic, sympathetic in zip(data["arrival_hr_by_intrinsic"], data["intrinsic_band"],
+                                              data["sympathetic_band_bpm"]):
+            assert sympathetic >= 0.0 and hr - intrinsic == pytest.approx(sympathetic, abs=1e-9)
+
+
 def test_every_effect_row_says_whether_the_frozen_rules_admit_it(quick_pack):
     statuses = {decision_pack.ADMISSIBLE, decision_pack.REJECTED, decision_pack.NOT_ASSESSED,
                 decision_pack.SENSITIVITY}

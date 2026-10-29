@@ -4,7 +4,7 @@ Apoyo a decisiones, no decisiones. Nada de este documento aprueba un número, ma
 FACULTY_APPROVED, migra el GI, toca el tiempo de ejecución ni cambia lo que ve el residente. Todos los valores
 siguen CANDIDATE.
 
-- **Generado desde:** el congelamiento de calibración `990f3ad888d8ee1aad1991dea70a6f4919aec65f45bace6c8ac81b87a7dad176` y el paquete `b632c0eeeadf1052bdd596fadf31a0b82fa016ba1aa80496a26aaf7327c3bf01`
+- **Generado desde:** el congelamiento de calibración `990f3ad888d8ee1aad1991dea70a6f4919aec65f45bace6c8ac81b87a7dad176` y el paquete `10f4a27f676037a0fa81f7dd40f37ea9620597d9a3ce4eb0d041eefabae31faa`
   (`python -m clinical_core.decision_pack`; las tablas, con `python -m clinical_core.decision_pack_markdown`).
   Los números están en `docs/revision/P2G_decision_pack.json`. Una prueba falla si el código o las entradas cambian
   sin regenerarlos.
@@ -196,7 +196,7 @@ no depende de la intrínseca:
 <!-- generado:fc -->
 Desde P2I-2AE el impulso por deuda es debt_to_sympathetic_gain × D y el núcleo ya no lee sympathetic_per_debt: sus filas (0,25 / 0,5 / 1) son idénticas por construcción, no un resultado. Desde P2I-2AF la FC de llegada es la que predice la fisiología de llegada (déficit agudo, deuda; sin resto de llegada), con la ganancia aguda en 0 por defecto y el incremento simpático saturado hacia el techo sinusal provisional: esta tabla histórica no reproduce la FC de llegada registrada y no es una calibración.
 
-**gi_bleed_57m** — FC de llegada 84 lpm = intrínseca 60–100 (medio 80) + parte simpática -16–24 (medio 4); betabloqueo 0 (factor 1 − β = 1); ninguna otra fuente cronotrópica en estas corridas.
+**gi_bleed_57m** — FC de llegada predicha 84 lpm = intrínseca media 80 + parte simpática 4,2; con la intrínseca 60 / 100: 64 / 104 lpm (parte simpática 4,2 / 4,2); betabloqueo 0 (factor 1 − β = 1); ninguna otra fuente cronotrópica en estas corridas.
 
 | Corrida | Intrínseca | 30′ (FC = intr. + simp.) | 60′ | 120′ | Región admisible (mín – mediana – máx) |
 |---|---|---|---|---|---|
@@ -242,7 +242,7 @@ Velocidad de resolución con manejo definitivo, por decaimiento simpático (τ) 
 | `sympathetic_per_debt` | 0,5 | admisible | 89,6 | 95,7 | 109,6 | 80,0 | 80,0 | 80,0 |
 | `sympathetic_per_debt` | 1 | admisible · fuera del diseño de P2F | 89,6 | 95,7 | 109,6 | 80,0 | 80,0 | 80,0 |
 
-**gi_bleed_72f** — FC de llegada 84 lpm = intrínseca 60–100 (medio 80) + parte simpática -16–24 (medio 4); betabloqueo 0 (factor 1 − β = 1); ninguna otra fuente cronotrópica en estas corridas.
+**gi_bleed_72f** — FC de llegada predicha 84 lpm = intrínseca media 80 + parte simpática 4,2; con la intrínseca 60 / 100: 64 / 104 lpm (parte simpática 4,2 / 4,2); betabloqueo 0 (factor 1 − β = 1); ninguna otra fuente cronotrópica en estas corridas.
 
 | Corrida | Intrínseca | 30′ (FC = intr. + simp.) | 60′ | 120′ | Región admisible (mín – mediana – máx) |
 |---|---|---|---|---|---|

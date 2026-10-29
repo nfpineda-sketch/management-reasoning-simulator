@@ -49977,7 +49977,7 @@
   "scope": "shadow only; no pressure, RR or numeric HR calibration, no collapse, GI migration, second family or runtime integration; no hidden parameter approved",
   "shock_recoverable": "the shock part of arrival tachycardia is generated from the current state and resolves when shock resolves; no fixed case-specific offset; S0 is not forced to zero without replacing its causal role"
  },
- "freeze_digest": "70106108285ced1556e746548fa79480d903a0495f6f65b6792cb17d9155eb2d",
+ "freeze_digest": "adb3767b4e8042b9976057587ab337fd5de5cd25119a1bb28e7a119d85768ed3",
  "identifiability": {
   "composites": {
    "acute_increment_at_arrival": "25 x acute gain x arrival signal (bpm, unconstrained)",
