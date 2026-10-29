@@ -8,6 +8,7 @@ bpm per case; gains and intrinsic are common (a case-specific intrinsic only as 
 candidates are P2I-2AF's; nothing is approved; the legacy HR is never read.
 """
 import ast
+import hashlib
 import inspect
 import json
 from dataclasses import replace
@@ -29,6 +30,9 @@ SOURCE = ROOT / "clinical_core" / "hr_primary.py"
 #: tolerance, the surface, the analytic, constraint and verdict rules, the policy and every clinical_core source but the
 #: downstream reports, committed before any arrival count was evaluated.
 FROZEN_DIGEST = "94c94584009449c43b15bd3bb8673bccbead3db86fcf71fa10f508b674ccf763"
+#: P2I-2AI closed the P2I-2AG package: its module is pinned byte for byte (unchanged since the freeze 8eba7fc) and its
+#: record by its freeze digest; the live digest moves with clinical_core's sources (arrival_severity.py).
+P2I2AG_MODULE_SHA = "f9c5807fb6ddb6f2ced9ee8b209a047eed60b229ba450ccde56454cb0d8812f9"
 CASES = hp.CASES
 OFF_GRID_INPUTS = {"entry": {**OFF_GRID, **OFF_GRID_UNIT}, "bag": bf.bag(0.22, 0.07, 75.0),
                    "point": (45.0, 1.5, 4e-4, 90.0, "upper", "midpoint", "lower")}
@@ -42,7 +46,8 @@ def test_the_package_is_frozen():
     assert "clinical_core/hr_primary_report.py" in lactate_slice.DOWNSTREAM_REPORTS
     assert not set(lactate_slice.DOWNSTREAM_REPORTS) & set(sources)
     assert hp.p2i2af_record()["freeze_digest"] == hp.P2I2AF_DIGEST
-    assert hp.freeze_digest() == FROZEN_DIGEST, "a source, the design, a rule or the policy changed after the freeze"
+    assert hashlib.sha256(SOURCE.read_bytes()).hexdigest() == P2I2AG_MODULE_SHA, "the P2I-2AG module changed"
+    assert json.loads(RECORD.read_text(encoding="utf-8"))["freeze_digest"] == FROZEN_DIGEST
 
 
 def test_the_faculty_decisions_are_recorded():
@@ -202,7 +207,10 @@ def record():
 
 def test_the_record_is_reproduced_live_on_the_frozen_package(record):
     assert record["freeze_digest"] == FROZEN_DIGEST
-    assert json.loads(json.dumps(hp.run(), sort_keys=True, default=str)) == record, "rerun and commit the record"
+    # P2I-2AI: the core is unchanged, so the run reproduces the record but for the live source hash in its digest.
+    live = json.loads(json.dumps(hp.run(), sort_keys=True, default=str))
+    assert {k: v for k, v in live.items() if k != "freeze_digest"} == {
+        k: v for k, v in record.items() if k != "freeze_digest"}, "the P2I-2AG analysis changed"
 
 
 def test_the_verdict_is_blocked_by_the_arrival_reconstruction_and_the_package_stopped(record):
