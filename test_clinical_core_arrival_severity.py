@@ -7,6 +7,7 @@ apart, and the tied pairs reproduce P2I-2AD's units exactly; the arrival HR uses
 case, common gains and ceilings, pressure 0 and +-5 bpm; nothing is approved; the legacy HR is never read.
 """
 import ast
+import hashlib
 import inspect
 import json
 
@@ -26,6 +27,9 @@ SOURCE = ROOT / "clinical_core" / "arrival_severity.py"
 #: equivalence, compatibility, HR, comparison, trajectory and verdict rules, the policy and every clinical_core source
 #: but the downstream reports, committed before any new lactate or HR count was evaluated.
 FROZEN_DIGEST = "805eff4efb562b19f1d280bdd48bbc1d458d0055f104b66f7bc7dca7ea61a861"
+#: P2I-2AI is closed (P2I-2AJ): its module is pinned byte for byte and its record by its freeze digest, since a later
+#: clinical_core module changes the live digest's source list.
+P2I2AI_MODULE_SHA = "c5c0e4c125303b463ec1d2a5373464c09576f7d83ca975834e6b059c67b2b229"
 C57, C72 = asv.C57, asv.C72
 
 
@@ -37,7 +41,8 @@ def test_the_package_is_frozen():
     assert "clinical_core/arrival_severity_report.py" in lactate_slice.DOWNSTREAM_REPORTS
     assert not set(lactate_slice.DOWNSTREAM_REPORTS) & set(sources)
     assert asv.p2i2ad_region()["region"]["digest"] == asv.P2I2AD_REGION_DIGEST
-    assert asv.freeze_digest() == FROZEN_DIGEST, "a source, the design, a rule or the policy changed after the freeze"
+    assert hashlib.sha256(SOURCE.read_bytes()).hexdigest() == P2I2AI_MODULE_SHA, "the closed P2I-2AI module changed"
+    assert json.loads(RECORD.read_text(encoding="utf-8"))["freeze_digest"] == FROZEN_DIGEST
 
 
 def test_the_faculty_decisions_are_recorded():
