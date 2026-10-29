@@ -288,3 +288,198 @@ def test_the_validation_sample_covers_the_demand_factors_and_the_rho_band():
     assert all(s["lambda"] == canonical for s in sample if (s["reserve"], s["intrinsic"], s["demand"]) != (
         lc.RESERVE, "midpoint", 1.0))
     assert len(sample) == 936 and bc.SEPARATELY == "NON_IDENTIFIABLE_SEPARATELY" and math.isfinite(lc.K_LD[2])
+
+
+# After the freeze: the analysis's record ----------------------------------------------------------------------------
+
+RESULT = ROOT / "docs" / "revision" / "P2I2AD_lactate_closure.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2I2AD_CIERRE_DEUDA_LACTATO.md"
+
+
+@pytest.fixture(scope="module")
+def result():
+    return json.loads(RESULT.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="module")
+def setting():
+    record = lc.la.record_p2i2ab()
+    source, support = lc.la.source_space(record), record["crystalloid_support"]
+    return {"record": record, "source": source, "support": support, "arrivals": lr.arrival_table(),
+            "tasks": lc.haemodynamic_tasks(source, support), "store": {}}
+
+
+def _store(setting, *keys):
+    tasks, store = setting["tasks"], setting["store"]
+    for key in keys:
+        if tasks[key] not in store:
+            store[tasks[key]] = lc.la._haemodynamic(tasks[key])[1]
+    return store
+
+
+def _trajectories(setting, scenario, unit):
+    keys = [(scenario, unit, case) for case in CASES]
+    store = _store(setting, *keys)
+    return {key[2]: store[setting["tasks"][key]] for key in keys}
+
+
+def test_the_record_carries_the_frozen_digest_the_validation_and_the_coupling(result):
+    assert result["freeze_digest"] == FROZEN_DIGEST and result["revision"] == "P2I-2AD"
+    assert result["records"] == {"P2I-2AB": lc.la.P2I2AB_DIGEST, "P2I-2AC": lc.P2I2AC_DIGEST}
+    assert result["faculty"] == lc.FACULTY and result["coupling"]["independent"]
+    validation = result["validation"]
+    assert validation["agree"] and validation["exact_at_reserve_2_5"] and validation["debt_coherent"]
+    assert validation["runs"] == len(result["validation_sample"]) == 936 and not validation["disagreements"]
+    assert validation["reserves"] == [1.0, 2.0, 2.5, 3.0] and validation["demands"] == [0.9, 1.0, 1.1]
+    assert validation["max_gap_other_reserves"] <= lc.TOLERANCE
+    assert result["k_ld"]["points"] == list(lc.K_LD) and result["k_ld"]["old_status"] == lc.OLD_G_RANGE_STATUS
+    assert result["hr_rr"] == {"status": [lc.CAUSAL_PROPAGATION_ACCEPTED, lc.MAGNITUDE_PENDING], "calibrated": False,
+                               "historical_hr1_target": False}
+
+
+def test_the_factorization_agrees_again_live(result, setting):
+    sample = result["validation_sample"]
+    picked = [sample[0], sample[-1]] + [next(r for r in sample if r["reserve"] == 2.0),
+                                        next(r for r in sample if r["demand"] == 1.1 and r["scenario"] == lc.L3)]
+    source, support = setting["source"], setting["support"]
+    for item in picked:
+        entry = source["p3"][item["q"]]
+        unit = (item["q"] if item["scenario"] == lc.L3 else entry["p1"] if item["scenario"] == lc.L1
+                else (entry["p1"], item["support"]))
+        key = (item["scenario"], unit, item["case"])
+        haemodynamic = _store(setting, key)[setting["tasks"][key]]
+        bag = support[item["support"]]["bag"] if item["scenario"] == lc.L2 else None
+        live = lc._validate_one((item, entry, bag, haemodynamic, setting["arrivals"][item["case"]]))
+        assert live["agrees"] and live["exact"] == item["exact"] and live["gaps"] == item["gaps"]
+
+
+def test_the_stages_chain_for_every_demand_and_the_region_is_its_inline_units(result):
+    for factor, filtered in result["filter"].items():
+        stages = filtered["stages"]
+        assert [s["scenario"] for s in stages] == [lc.L1, lc.L3, lc.L2]
+        assert stages[0]["entering"] == filtered["candidates"] == 458 * 12 * 2025
+        for before, after in zip(stages, stages[1:]):
+            assert after["entering"] == before["survivors"]
+        assert stages[-1]["survivors"] == filtered["survivors"] == result["demand"]["survivors"][factor]
+        assert all(s[lc.ANALYTIC_REJECTION] == 0 and s[lc.SIMULATION_REJECTION] == s["rejected"] for s in stages)
+        assert not any(lc.STOPPED in name for s in stages for name in s["any_failure"])
+    region = result["region"]
+    units = region["inline"]
+    assert region["demand"] == 1.0 and region["candidates"] == result["filter"]["1"]["survivors"] == 353_302
+    assert len(units) == region["units"] == 7128 and region["status"] == lc.REGION_STATUS
+    assert sum(len(r) * len(d) for _, _, r, d in units) == region["candidates"]
+    assert hashlib.sha256(json.dumps(units, separators=(",", ":")).encode("utf-8")).hexdigest() == region["digest"]
+
+
+def _chain(setting, i, index):
+    source, support, arrivals = setting["source"], setting["support"], setting["arrivals"]
+    mask = lc._l1_unit((i, _trajectories(setting, lc.L1, i), arrivals, [index], 1.0))[1][index]
+    if mask:
+        return mask, [], []
+    passing = [q for q in source["children"][i]
+               if not lc._l3_unit((q, _trajectories(setting, lc.L3, q), arrivals, [index], 1.0))[1][index]]
+    if not passing:
+        return 0, [], []
+    points = [d for d in range(len(support)) if not lc._l2_unit(
+        ((i, d), _trajectories(setting, lc.L2, (i, d)), arrivals, [index], 1.0))[1][index]]
+    return 0, passing, points
+
+
+def test_survivors_and_their_neighbours_are_recomputed_live(result, setting):
+    units = result["region"]["inline"]
+    region = {(i, index): (r, d) for i, index, r, d in units}
+    for i, index, r, d in (units[0], units[-1]):
+        mask, passing, points = _chain(setting, i, index)
+        assert mask == 0 and passing == list(r) and points == list(d)
+        for other in (index - 1, index + 1):
+            if 0 <= other < len(lc.LAMBDAS) and (i, other) not in region:
+                mask, passing, points = _chain(setting, i, other)
+                assert mask or not passing or not points, (i, other)
+
+
+def test_every_l3_survivor_stays_adequate_through_120_with_fd_lac_04_05_evaluated(result):
+    survivors, statistics = result["region"]["candidates"], result["statistics"]
+    for case in CASES:
+        assert statistics["adequacy"][case] == {lc.L3_ADEQUATE: survivors}
+        assert statistics["fd04_status"][case] == {fd.PASS: survivors}
+        assert statistics["fd05_status"][case] == {fd.PASS: survivors}
+    assert statistics["fd04_and_05_evaluated_in_both_cases"] == statistics["trigger_is_adequacy_onset"] == survivors
+    assert statistics["debt_incoherent_l3"] == 0
+    l3 = result["filter"]["1"]["stages"][1]
+    assert l3["any_failure"][f"{lc.L3_LOST} gi_bleed_72f"] == 9396 and l3["only_failure"][lc.L3_LOST] == 1476
+    assert l3["only_failure"][lc.L3_INADEQUATE] == 377_844
+
+
+def test_the_demand_layer_classifies_every_candidate(result):
+    demand, total = result["demand"], result["filter"]["1"]["candidates"]
+    assert sum(demand["classes"].values()) == total
+    assert demand["classes"] == {lc.ROBUST: 63_859, lc.SENSITIVE: 673_381, lc.INCOMPATIBLE: 10_392_160}
+    assert sum(demand["final_region"].values()) == result["region"]["candidates"]
+    for factor, n in demand["survivors"].items():
+        assert n == sum(count for key, count in demand["patterns"].items() if factor in key.split("+"))
+
+
+def test_the_crossing_audit_clears_the_p2i2ac_arrivals_at_the_tie(result, setting):
+    crossing = result["crossing"]
+    assert crossing["region"] == 345_490 and crossing["upper_delivery"] == crossing["upper_affected_old"] == 95_698
+    assert crossing["affected_old"] == 95_698 and crossing["max_minutes_old"] == 63
+    assert crossing["affected_new"] == crossing["upper_affected_new"] == crossing["max_minutes_new"] == 0
+    units = json.loads(lc.P2I2AC_RECORD.read_text(encoding="utf-8"))["region"]["inline"]
+    i = units[0][0]
+    indices = sorted({index for p1, index, _, _ in units if p1 == i})
+    _, readings = lc._crossing_unit((i, _trajectories(setting, lc.L1, i), setting["arrivals"], indices))
+    assert all(new == 0 for _, new in readings.values())
+    assert all(old >= 2 for (index, _), (old, _) in readings.items() if lr.LAMBDAS[index][6] == "upper")
+
+
+def test_identifiability_follows_the_frozen_rule(result):
+    dimensions = result["identifiability"]["dimensions"]
+    for name, item in dimensions.items():
+        explored, left = item["explored"], item["surviving"]
+        expected = (bc.SEPARATELY if name in lc.STRUCTURAL else "NOT_VARIED" if len(explored) == 1 else
+                    bc.WELL if len(left) == 1 else bc.PARTIAL if len(left) < len(explored) else bc.POOR)
+        assert item["status"] == expected, name
+    assert "reserve" not in dimensions and not any(item["status"] == bc.WELL for item in dimensions.values())
+    assert dimensions["debt_to_lactate_gain"]["edge"] == "OPEN_UPPER_GRID_EDGE"
+    assert dimensions["arrival_oxygen_debt"]["status"] == bc.SEPARATELY
+    assert set(result["identifiability"]["parameter_semantics"]) == set(lc.PARAMETER_SEMANTICS)
+
+
+def test_the_representatives_rerun_live_and_never_repay_during_a_critical_interval(result, setting):
+    representatives, survivors = result["representatives"], result["region"]["candidates"]
+    assert [representatives[t]["pick"]["rank"] for t in ("LOW", "MID", "HIGH")] == [0, survivors // 2, survivors - 1]
+    for item in representatives.values():
+        for key, run_ in item["runs"].items():
+            assert not run_["debt"]["falls_outside_adequate_minutes"]
+            assert run_["debt"]["critical_minutes_below_arrival"] == 0
+            assert run_["rerun_equals_factorized"] and run_["stop"] is None
+            assert not any(run_["flags"][name] for name in ("WORSENING_CRITICAL_WITH_LARGE_LACTATE_FALL",
+                                                            "INSTANT_NORMALIZATION", "INCOMPATIBLE_WITH_SURVIVAL"))
+            if key.endswith(lc.L3):
+                assert run_["debt"]["l3_adequacy"]["status"] == lc.L3_ADEQUATE
+    pick = representatives["HIGH"]["pick"]
+    full = lc.full_run(setting["source"]["p3"][pick["p3"]], "gi_bleed_57m", lc.L3, lc.LAMBDAS[pick["lambda"]])
+    rows = representatives["HIGH"]["runs"]["gi_bleed_57m|L3"]["rows"]
+    assert [(full["lactate"][m], full["D"][m], full["bleed"][m]) for m in lc.TIMES] == [
+        (row["lactate"], row["D"], row["bleed_ml_per_min"]) for row in rows]
+
+
+def test_the_legacy_is_a_reference_and_the_verdict_is_recomputed(result):
+    legacy = result["legacy_reference"]
+    assert legacy["rule"] == lr.LEGACY_RULE and set(legacy["beside_representatives"]) == {"LOW", "MID", "HIGH"}
+    verdict = lc.verdict(result["validation"], result["coupling"], result["crossing"],
+                         {"survivors": result["region"]["candidates"], "candidates": result["filter"]["1"]["candidates"]},
+                         result["statistics"], result["demand"], result["representatives"])
+    assert json.loads(json.dumps(verdict)) == result["verdict"]
+    assert verdict["verdict"] == lc.READY and not verdict["blockers"] and verdict["next_domain"] == lc.NEXT_DOMAIN
+    efficiency = result["efficiency"]
+    assert efficiency["haemodynamic_trajectories"] == 3178 and efficiency["analytic_rejections"] == 0
+    assert efficiency["naive_core_runs"] == result["filter"]["1"]["candidates"] * 6 * 3
+
+
+def test_the_document_blocks_are_generated(result):
+    from clinical_core import lactate_closure_report as report
+    text = DOCUMENT.read_text(encoding="utf-8")
+    for name, render in report.RENDERERS.items():
+        assert report.apply(text, name, render(result)) == text, name
+    assert "LACTATE_PHYSIOLOGY_READY_FOR_HR_DOMAIN" in text and "353 302" in text and "c9647c8" in text

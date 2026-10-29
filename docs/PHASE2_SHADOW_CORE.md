@@ -2871,3 +2871,42 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Sin elegir parámetros ocultos**, sin calibrar la presión ni la FC, sin colapso, sin migración y sin gancho en tiempo
   de ejecución. TD-91 registra la memoria de deuda de FD-LAC-05, la clase heredada de la deuda de llegada y los textos
   congelados que la nueva D dejó desactualizados.
+
+## 34. P2I-2AD · Cierre semántico de D y del lactato (2026-10-29)
+
+- **Base:** `1c01884`. P2I-2AC queda aceptado como análisis diagnóstico; la docencia coincide con su NOT_READY. Su
+  módulo y su registro (`fc49efae…`) quedan fijados por sus pruebas. Informe:
+  `docs/revision/P2I2AD_CIERRE_DEUDA_LACTATO.md`; números: `docs/revision/P2I2AD_lactate_closure.json`.
+- **Decisiones docentes:**
+  - la adecuación L3 persiste hasta 120; si se pierde, L3_RESUSCITATION_LOST, un rechazo propio y nunca un fallo de
+    FD-LAC-05 ni un NOT_EVALUABLE que pase;
+  - D sólo se devuelve en un minuto sin déficit al inicio ni al final;
+  - τ_D no define la producción de lactato: hay una ganancia D → lactato propia;
+  - el cambio de FC y FR se acepta como propagación causal, con las magnitudes pendientes;
+  - la demanda 0,9 / 1,0 / 1,1 sigue como incertidumbre; ρ no se cuenta; FD-LAC-01..06 sin cambios.
+- **Núcleo:**
+  - `integration._no_repayment_across` y `debt_to_lactate_gain` (2 / 3600 por defecto, provisional);
+  - G ya no llega al núcleo;
+  - 8 invariantes de D y 4 pruebas de acople;
+  - golden, paquete, corte, sondas y anclas regenerados; Contracts v2 IDENTICAL.
+- **Rango de k:** el de G queda OLD_G_RANGE_SEMANTICALLY_INVALID. El nuevo se construyó antes de cualquier conteo,
+  sólo con dimensiones, envolventes y sondas sintéticas: de 2,78e-5 a 2,17e-3, cinco puntos, cruzados con τ_D.
+- **Congelamiento antes de evaluar:** `c9647c8`, un solo commit. Antes se validó la factorización (936 corridas
+  completas exactas) y la suite del núcleo dio 913/913.
+- **Cruce de umbral:** en la región de P2I-2AC, los 95 698 candidatos con entrega de llegada superior (27,7 %)
+  pasaban hasta 63 minutos críticos bajo su D de llegada; con la D nueva, ninguno.
+- **Filtro (demanda 1,0):**
+  - 353 302 sobrevivientes de 11 129 400;
+  - la adecuación L3 rechaza sola 377 844;
+  - L3_RESUSCITATION_LOST rechaza 9396 de 72f (1476 sólo por eso);
+  - ANALYTIC_REJECTION 0.
+- **Región:**
+  - todos los sobrevivientes mantienen la adecuación desde T* = 60 hasta 120;
+  - FD-LAC-04/05 pasan evaluadas en todos; ningún NOT_EVALUABLE.
+- **Demanda:** 63 859 ROBUST_ACROSS_DEMAND y 289 443 DEMAND_SENSITIVE.
+- **Identificabilidad:** sin mejora; g, k y D0 sólo llegan como k × g y k × D0. El borde superior de k queda abierto.
+- **Representativos:** D nunca se devuelve en un intervalo crítico; sin marcas de inverosimilitud.
+- **Veredicto: LACTATE_PHYSIOLOGY_READY_FOR_HR_DOMAIN.** Próximo dominio recomendado, sin empezar: FC y respuesta
+  simpática, después presión y tono vascular.
+- **Sin elegir parámetros ocultos**, sin calibrar la FC, la FR ni la presión, sin colapso, sin migración y sin gancho
+  en tiempo de ejecución. TD-91 queda parcialmente resuelta, con un punto nuevo sobre G en los módulos históricos.
