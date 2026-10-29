@@ -2985,3 +2985,77 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - MINOR, declarados en TD-93(7)–(8): guardas tautológicas y `sympathetic_per_debt` en tablas históricas.
   - NIT, corregidos en los documentos: 91–109 lpm, orden de secciones y alcance de la validación en el extremo
     superior.
+
+## 36. P2I-2AF · Impulso agudo del shock y saturación suave de la FC (2026-10-29)
+
+- **Base:** `b8551d2`. P2I-2AE queda aceptado como auditoría estructural de la FC y desacople de τ_D, y cerrado: su
+  módulo y su registro (`1b65d303…`) quedan fijados por sus pruebas. Es el último paquete estructural de la FC.
+  Informe: `docs/revision/P2I2AF_SHOCK_AGUDO_Y_SATURACION_FC.md`; números: `docs/revision/P2I2AF_hr_shock.json`.
+- **Decisiones docentes:**
+  - la parte de shock de la FC de llegada se genera desde el estado actual y se resuelve con el shock: sin
+    desplazamiento fijo por caso;
+  - la señal aguda es el déficit efectivo de oxígeno sobre la demanda, sin referencia absoluta de presión; el término
+    de presión relativa puede quedarse si se audita el doble conteo;
+  - la escala de D no está aprobada: `debt_to_sympathetic_gain` se lee con ella (D × c con ganancia / c da la misma
+    FC) y el soporte de deuda de llegada es incertidumbre propagada, nunca un ancla;
+  - saturación suave y monótona del incremento simpático, sin recorte y sin reserva final elegida;
+  - la intrínseca 60 / 80 / 100 sigue STILL_VALID_CANDIDATE_RANGE; ningún valor aprobado.
+- **Auditoría del resto (P2I-2AF-1):** `arrival_non_debt_drive` era un CASE_CALIBRATION_OFFSET.
+  - Qué era: se despejaba de la FC registrada, era propio del caso y no tenía dinámica.
+  - Cuánto pesaba: hasta el 100 % de la parte simpática de llegada (64 lpm en 57m y 52 en 72f).
+  - Qué se hizo: se eliminó y su papel causal lo toma el término agudo.
+- **Núcleo:**
+  - objetivo = max(0, k_A · x + a_P (1 − P_rel) + k_S · D + hipoxemia + hipoglucemia), con x = déficit efectivo /
+    demanda;
+  - FC sinusal = intrínseca + HR_RESERVE · tanh(25 (1 − β) impulso / HR_RESERVE), con HR_RESERVE = techo − intrínseca;
+  - la FC de llegada se predice desde la fisiología de llegada y su desajuste se informa;
+    `check_arrival_reconstruction` reproduce exactamente todo lo demás;
+  - la demanda del minuto se actualiza antes de que el impulso la lea;
+  - por defecto, provisionales y no aprobados: `acute_deficit_to_sympathetic_gain` 0 (apagada),
+    `debt_to_sympathetic_gain` 1/120, `sinus_rate_ceiling_bpm` 175. Golden: sólo metadata; Contracts v2: IDENTICAL.
+- **Efectos sobre artefactos anteriores:**
+  - HR1 y HR2 comparan con la FC de llegada de la propia corrida. HR2 pide a una llegada sin parte simpática (ya en la
+    intrínseca) terminar en ella; registro de congelamiento de calibración `990f3ad8…`. Ningún estado de P2G cambia.
+  - El paquete P2G registra el incremento simpático saturado y lee las 108 llegadas que P2I-2AE rechazaba: sus cifras
+    de FC cambian; las de lactato, presión y FR, no.
+  - El corte P2I-1, las sondas P2I-2T y las anclas P2I-2U sólo cambian sus digests y el conteo de llegadas leídas sin
+    impulso por deuda (de 108 a 0).
+- **Diseño predeclarado:** fijado antes de cualquier resultado, sin leer el motor heredado.
+  - `acute_deficit_to_sympathetic_gain`: de 0,1 a 21,3, cinco puntos logarítmicos y 0.
+  - `debt_to_sympathetic_gain`: de 6,67e-4 a 0,160, sobre el soporte de deuda 20 / 60.
+  - Techo 150 / 175 / 200 lpm: fisiología general, por encima de toda FC registrada y casi lineal en la menor parte
+    registrada.
+  - El ancla de lectura es el punto medio logarítmico de cada rango, techo 175 e intrínseca media; no es una selección.
+- **Congelamiento antes de evaluar:** `565e323`, un solo commit (digest `70106108…`).
+- **Evaluación** (análisis, reconstrucción, 1-D y plano 6 × 6 post-procesado, sin barrido cartesiano):
+  - 3240 descomposiciones de llegada analíticas, 0 rechazos;
+  - 18 corridas representativas, 162 recorridas de validación (todas exactas) y 720 series post-procesadas;
+  - D, lactato y FR idénticos al registro P2I-2AD;
+  - las doce direcciones se cumplen y no se levanta ninguna bandera estructural;
+  - la llegada no sinusal o con betabloqueo completo y deuda (TD-93(5)) corre: RESOLVED_BY_P2I2AF
+    (GENERALIZATION_BLOCKER_ONLY).
+- **Hallazgos para la docencia:**
+  - Con ganancias comunes y los mismos niveles de llegada, 57m y 72f reciben la misma FC predicha.
+    - El desajuste tiene mediana de −24 lpm en 57m y −12 en 72f.
+    - El menor peor desajuste conjunto sobre la superficie es 6,2 lpm con la misma intrínseca, o 2,4 lpm si la
+      intrínseca puede diferir por caso (sólo el valor; no se elige ningún punto).
+  - En L3, tras los GR y la hemostasia, el término de presión relativa se vuelve negativo y cancela la parte de deuda.
+    - La FC vuelve a la intrínseca desde el minuto 60.
+    - La taquicardia diferida sólo se ve con la mayor ganancia de deuda (36 de 432 lecturas en los minutos 90 y 120).
+    - La invariante 5 la comprueba sobre la parte de deuda del impulso, no sobre la FC visible.
+  - El término de presión queda NEEDS_PRESSURE_DOMAIN_REVIEW: correlación 0,75 con el agudo y 457 minutos en que
+    descarga el impulso con un déficit presente.
+  - Identificabilidad: todos los parámetros latentes son NON_IDENTIFIABLE por separado (intrínseca, ganancias, techo,
+    escala de D); sólo se informan compuestos.
+- **Veredicto: HR_STRUCTURE_READY_FOR_NUMERIC_FACULTY_CALIBRATION.** El diseño numérico docente sobre observables queda
+  preparado, no ejecutado. Observables:
+  - desajuste de llegada;
+  - FC sin tratamiento;
+  - FC con cristaloide;
+  - FC con cada unidad de GR;
+  - FC tras la adecuación;
+  - taquicardia diferida.
+  La docencia debe aportar: la tolerancia de llegada, las envolventes, si la intrínseca puede diferir por caso, el rango
+  del techo y si el término de presión se queda.
+- **Sin elegir parámetros ocultos**, sin calibrar la FC, la FR ni la presión, sin colapso, sin migración y sin gancho
+  en tiempo de ejecución.

@@ -297,3 +297,79 @@ def test_nothing_is_selected_or_approved_and_no_pressure_or_rr_parameter_is_set(
     for word in ("sbp_per_pressure_deficit=", "rr_per_lactate=", "sympathetic_per_pressure_deficit=",
                  "rr_metabolic_max=", "lactate_clearance_tau_min=tau_l * "):
         assert word not in source
+
+
+# The evaluation, on the frozen package (after the freeze commit 565e323) ---------------------------------------------
+
+RECORD = ROOT / "docs" / "revision" / "P2I2AF_hr_shock.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2I2AF_SHOCK_AGUDO_Y_SATURACION_FC.md"
+
+
+@pytest.fixture(scope="module")
+def record():
+    return json.loads(RECORD.read_text(encoding="utf-8"))
+
+
+def test_the_record_is_reproduced_live_on_the_frozen_package(record):
+    assert record["freeze_digest"] == FROZEN_DIGEST
+    assert record["records"] == {"P2I-2AD": hs.P2I2AD_DIGEST, "P2I-2AE": hk.P2I2AE_DIGEST}
+    assert json.loads(json.dumps(hk.run(), sort_keys=True, default=str)) == record, "rerun and commit the record"
+
+
+def test_the_verdict_follows_the_frozen_rule(record):
+    verdict = record["verdict"]
+    assert verdict["verdict"] == hk.READY and not verdict["blockers"] and all(verdict["checks"].values())
+    assert set(verdict["checks"]) == {"factorization", "no_residual", "acute_recoverable", "no_tau_d_leak",
+                                      "d_scale_invariance", "smooth_saturation", "invariants", "d_lactate_rr_unchanged",
+                                      "patient_like"}
+    assert verdict["next_design"]["status"] == "PREPARED_NOT_EXECUTED"
+
+
+def test_the_counts_the_report_states(record):
+    assert record["validation"]["agree"] and record["validation"]["full_reruns"] == 162
+    assert record["unchanged_physiology"] == {"rows_checked": 72, "equal": True}
+    assert record["arrival"]["analytic_rejections"] == 0 and record["arrival"]["identical_prediction_for_both_cases"]
+    assert sum(row["n"] for row in record["arrival"]["summary"].values()) == 3240
+    assert record["invariants"]["all_pass"] and set(record["invariants"]["flags"].values()) == {0}
+    assert (record["invariants"]["l3_runs"], record["invariants"]["delayed_runs"]) == (240, 204)
+    efficiency = record["efficiency"]
+    assert (efficiency["representative_runs"], efficiency["post_processed_series"]) == (18, 720)
+    assert efficiency["cartesian_sweep"] is False
+    assert record["pressure"]["classification"] == hk.NEEDS_PRESSURE_DOMAIN_REVIEW
+    assert record["rr"]["changes_rr"] is False and record["rr"]["calibrated"] is False
+    assert record["probes"]["non_sinus_and_beta"]["status"] == "RESOLVED_BY_P2I2AF"
+
+
+def test_the_delayed_debt_tachycardia_after_adequacy_is_visible_only_at_the_top_debt_gain(record):
+    """The descriptive reading in §9 of the report: in L3 at 90 and 120 the relative-pressure term, negative above the
+    arrival pressure, cancels the debt part, so HR > intrinsic + 0.5 bpm only at the highest debt gain."""
+    table = record["decision_surface"]["table"]
+    readings = [(key.split("|")[1], hr) for case in CASES for name in ("after_haemostasis_90", "restored_adequacy_120")
+                for key, cell in table[case][name]["plane"].items() for hr in cell.values()]
+    above = [gain for gain, hr in readings if hr > 80.5]
+    assert (len(above), len(readings)) == (36, 432) and set(above) == {repr(hk.DEBT[-1])}
+
+
+def test_identifiability_is_reported_not_resolved(record):
+    dimensions = record["identifiability"]["dimensions"]
+    for name in ("intrinsic_sinus_rate", "acute_deficit_to_sympathetic_gain", "debt_to_sympathetic_gain",
+                 "sinus_rate_ceiling_bpm", "d_scale"):
+        assert dimensions[name]["status"] == hk.NON_IDENTIFIABLE, name
+    # The one "best" key is a reading of the surface: the smallest joint worst-case mismatch, with no point recorded.
+    arrival = record["arrival"]
+    assert {key for key in arrival if key.startswith("best")} == {"best_joint_worst_mismatch_shared_intrinsic",
+                                                                  "best_joint_worst_mismatch_case_intrinsic"}
+    assert all(isinstance(arrival[key], float) for key in arrival if key.startswith("best"))
+    text = json.dumps({**record, "arrival": {k: v for k, v in arrival.items() if not k.startswith("best")}},
+                      default=str).lower()
+    found = [word for word in ("faculty_approved", "\"best", "\"selected", "\"recommended", "\"preferred", "\"rank")
+             if word in text]
+    assert not found
+
+
+def test_the_document_is_generated_from_the_record(tmp_path):
+    from clinical_core import hr_shock_report
+    copy = tmp_path / "document.md"
+    copy.write_text(DOCUMENT.read_text(encoding="utf-8"), encoding="utf-8")
+    hr_shock_report.main(["--write", str(copy), "--data", str(RECORD)])
+    assert copy.read_text(encoding="utf-8") == DOCUMENT.read_text(encoding="utf-8"), "regenerate the document"
