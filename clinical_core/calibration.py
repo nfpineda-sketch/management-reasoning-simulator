@@ -22,8 +22,8 @@ from typing import Any, Callable, Mapping
 
 from . import gi_reference
 from .bands import ARRIVAL, Demand, Drift
-from .derived import (DEFAULT_PROFILE, CoreProfile, arterial_pressures, check_arrival_reconstruction, derive,
-                      delivery_deficit, relative_delivery)
+from .derived import (DEFAULT_PROFILE, CoreProfile, arrival_state, arterial_pressures, check_arrival_reconstruction,
+                      derive, delivery_deficit, relative_delivery)
 from .integration import Contribution, Contributor, run
 from .provenance import SettingChange, SourceKind
 from .state import Anchors, CoreInvariantError, RhythmState, UnresolvedBoundary
@@ -139,7 +139,8 @@ REGISTRY: Mapping[str, RegistryEntry] = {entry.name: entry for entry in (
        "the family engine's literal, adopted in P2C; it sets the drive's units, so it is held", ("HR",), ("HR1",)),
     _c("intrinsic_sinus_rate", "sympathetic", "bpm", "non-acute resting sinus rate, at most the arrival HR",
        ("HR",), ("AC1", "HR2", "HR4"), None),
-    _c("arrival_sympathetic_drive", "sympathetic", "drive units", "arrival HR less intrinsic, over the gain",
+    _c("arrival_sympathetic_drive", "sympathetic", "drive units", "the observed arrival share (authored HR less "
+       "intrinsic, over the gain): reported only since P2I-2AF, the core predicts the arrival drive",
        ("HR",), ("AC1", "HR3"), 0.0),
     # Preload / pump
     _p("preload_curve_scale_ml", "preload", 600.0, 833.3333333333334, 1500.0, "mL-eq",
@@ -348,23 +349,37 @@ def _midpoint_arrivals() -> dict:
             for case in gi_reference.GI_CASES}
 
 
+#: P2I-2AG (faculty): every HR calibration candidate declares its intrinsic sinus rate; the recorded-HR fallback
+#: (``derived.intrinsic_sinus_rate``, P2E-1) stays for backwards-compatible shadow behaviour outside calibration only.
+CALIBRATION_REQUIRES_EXPLICIT_INTRINSIC_HR = "CALIBRATION_REQUIRES_EXPLICIT_INTRINSIC_HR"
+
+
 def check_hr(profile: CoreProfile, arrivals: Mapping[str, Anchors] | None = None, **_):
     """HR1-HR4 on each GI case's full declared arrival (the candidate's, or every band at its midpoint).
+
+    P2I-2AG (faculty): structural tests of the current predicted-arrival model, never historical clinical calibration
+    evidence; no authored, legacy or historical HR target. The intrinsic rate must be declared
+    (CALIBRATION_REQUIRES_EXPLICIT_INTRINSIC_HR): the recorded-HR fallback of P2E-1 never enters calibration.
 
     The loss is a SYNTHETIC_STATE_PERTURBATION of the preload coordinate (``LEVEL1_DIRECT_WRITES``), not a
     haemorrhage: it moves V alone, with no red cells, no refill and no Hb change."""
     for case, arrival in (arrivals or _midpoint_arrivals()).items():
-        rate = arrival.intrinsic_sinus_rate if arrival.intrinsic_sinus_rate is not None else arrival.hr
+        _expect(arrival.intrinsic_sinus_rate is not None,
+                f"{CALIBRATION_REQUIRES_EXPLICIT_INTRINSIC_HR} ({case}): no declared intrinsic sinus rate")
+        rate = arrival.intrinsic_sinus_rate
         volume_loss = run(arrival, (Drift("loss", "V", 0, 30, -8.0),), 30, profile)
         rates = [item.pulse_rate_bpm for item in volume_loss.derived()]
-        # P2I-2AF: the arrival HR is the one the arrival physiology predicts (no residual forces the authored
-        # one), so the rules compare with the run's own arrival HR.
+        # HR1: from the run's own predicted arrival HR, deterioration raises HR.
         _expect(max(rates) > rates[0], f"HR1 ({case}): deterioration did not raise HR")
         recovered = run(arrival, (Drift("loss", "V", 0, 30, -8.0), Drift("restore", "V", 30, 31, 640.0)), 240,
                         profile)
         after = [item.pulse_rate_bpm for item in recovered.derived()]
-        # An arrival with no sympathetic share (HR at intrinsic: no deficit drive, no debt) has nothing to resolve;
-        # it returns to its arrival HR, never above (HR4 forbids below).
+        # HR2 (a): an arrival physiology with no sympathetic contribution predicts the declared, rhythm-consistent
+        # intrinsic rate. (b): recovery ends below an arrival that carried a sympathetic share, else at it (HR4
+        # forbids below).
+        if arrival_state(arrival, profile).aux.sympathetic_drive == 0.0:
+            _expect(after[0] == rate == recovered.states[0].R.rate_bpm,
+                    f"HR2 ({case}): no sympathetic contribution, yet the arrival HR is not the declared intrinsic rate")
         _expect(after[-1] < after[0] if after[0] > rate else after[-1] <= after[0],
                 f"HR2 ({case}): recovery did not take HR below the arrival HR")
         for trajectory, values in ((volume_loss, rates), (recovered, after)):
@@ -469,13 +484,17 @@ FROZEN_RULES: Mapping[str, Rule] = {
                 "RR >= min(arrival RR, 10)", "clearing lactate may lower RR, never below the ventilatory part",
                 "by construction: the metabolic share falls at most to 0 and the floor is >= 10"),
     "HR1": Rule("deterioration can increase HR", "KD-S2",
-                "each GI case's full declared arrival (the candidate's), volume loss 8 mL/min for 30 min: HR rises "
-                "above the arrival HR", "the drive answers to the pressure deficit; corrected after the review: "
-                "the probe used to declare only the intrinsic rate, not the candidate's whole arrival"),
+                "each GI case's full declared arrival (the candidate's, explicit intrinsic), volume loss 8 mL/min for "
+                "30 min: HR rises above the run's own predicted arrival HR (P2I-2AG: a structural test of the current "
+                "predicted-arrival model, never clinical calibration evidence; no authored, legacy or historical "
+                "target)", "the drive answers to the deterioration through the current model's stimuli; the probe "
+                "declares the candidate's whole arrival"),
     "HR2": Rule("recovery can reduce HR toward intrinsic", "P2E-1",
-                "the same arrival and loss, then 400 mL beyond arrival, 240 min: HR ends below the arrival HR (an "
-                "arrival with no sympathetic share, HR at intrinsic, ends at it: P2I-2AF)",
-                "an arrival sympathetic share can resolve; same correction as HR1"),
+                "(a) an arrival physiology with no sympathetic contribution predicts exactly the declared, "
+                "rhythm-consistent intrinsic rate (P2I-2AG, faculty); (b) the same arrival and loss, then 400 mL "
+                "beyond arrival, 240 min: HR ends below an arrival HR that carried a sympathetic share, else at it "
+                "(P2I-2AF). A structural test of the current model, never clinical calibration evidence",
+                "an arrival sympathetic share can resolve; with none, the intrinsic rate is the arrival HR"),
     "HR3": Rule("no negative sympathetic contribution", "P2D-3", "every HR probe run", "sign consistency",
                 "by construction: the drive's target is floored at 0"),
     "HR4": Rule("HR below intrinsic requires an explicit mechanism", "P2E-1", "every HR probe run: HR >= intrinsic",
@@ -513,7 +532,8 @@ FROZEN_RULES: Mapping[str, Rule] = {
                 "never less and finally more with more demand",
                 "corrected after the review: the probe used to test only the arithmetic of max(0, .)",
                 "by construction: the deficit is monotonic in demand"),
-    "AC1": Rule("the declared arrival reconstructs the authored observation exactly", "P2F-1",
+    "AC1": Rule("the declared arrival reconstructs the authored observation exactly, but for HR, which the arrival "
+                "physiology predicts (P2I-2AF; its mismatch is reported)", "P2F-1",
                 "check_arrival_reconstruction on both GI arrivals", "arrival-state consistency",
                 "by construction (P2F-1)"),
     "AC2": Rule("the declared GI arrival responds coherently", "P2F-1, P2E-2",

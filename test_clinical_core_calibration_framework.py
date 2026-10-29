@@ -45,11 +45,16 @@ from clinical_core.shadow import GOLDEN
 #: the one the arrival physiology predicts (no residual forces the authored HR; faculty decision), so HR1 and HR2
 #: compare with the run's own arrival HR instead of the authored one, and HR2 asks an arrival with no sympathetic
 #: share (HR at intrinsic: nothing to resolve) to end at it instead of below: the rules component (check_hr's source,
-#: HR2's criterion text) and harness_sources (calibration.py) changed; no probe size, threshold or band did.
+#: HR2's criterion text) and harness_sources (calibration.py) changed; no probe size, threshold or band did. P2I-2AG
+#: (faculty) made HR1 / HR2 structural tests of the current predicted-arrival model and required an explicit intrinsic
+#: rate in calibration: check_hr refuses an arrival without one (CALIBRATION_REQUIRES_EXPLICIT_INTRINSIC_HR) and checks
+#: that an arrival with no sympathetic contribution predicts the declared intrinsic rate (HR2 (a)); the HR1, HR2 and
+#: AC1 texts and arrival_sympathetic_drive's registry description were updated: the rules component and
+#: harness_sources (calibration.py) changed; no probe size, threshold or band did.
 FROZEN_COMPONENTS = {
-    "rules": "252c400bd364ad5f6e657f7c6115f4578d2dcdc9746c07da4ce72c93f7734902",
+    "rules": "af88ab18a117b24b79fb7654ac78d83404c93abc7c0c1e86ca1d6c4c156e0709",
     "bands": "99ca99f1b0d032056cfdabb90e1354683ef5ba093e896a0d5c10bc9c2ca192ca",
-    "harness_sources": "dadb649f49b5e4f03417dbeff2b8cac5c70a8af399910c03d599d8d30999ddc6",
+    "harness_sources": "995aefa0835d6ba233c75357c9acfaede22058306f6654ad865327a726a56bda",
     "migration_sources": "6033f4437627ed1f78c2c2ea03764986572639d94596982963a44f5964a2cb29",
     "authority_registries": "e305793eefead76fb733761f3305148e3df85aa9074445d94f051cb5709d2314",
     "gi_reference": "ee3114ce9eeeb426a7b843943819aa88095b6cb09674e4c895c93a6ad1de0867",
@@ -58,7 +63,7 @@ FROZEN_COMPONENTS = {
     "input_adapter_sources": "e83dca618fdaaa9239d861e1e1d6928dc703bfe33206a05cef44a5b0e9495bc5",
     "scenario_inputs": "afb2051e7fa04f1765aaf920c82f51dc6675d19bcbcb425c2ee581d8fa60d347",
 }
-FROZEN_DIGEST = "990f3ad888d8ee1aad1991dea70a6f4919aec65f45bace6c8ac81b87a7dad176"
+FROZEN_DIGEST = "22bd65e434b79f3a9d215698dad620049b5dc249fbb5e6a0357ef1d6130873fd"
 
 
 # P2F-2 / P2F-5 -- repository truth, candidate inference, faculty decision ---------------------
