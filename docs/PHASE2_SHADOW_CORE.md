@@ -3191,3 +3191,34 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - Trayectorias: 12 relecturas de FC exactas; distribuciones informadas, sin envolventes.
 - **Veredicto: HR_NUMERIC_DECISION_SURFACE_READY_FOR_FACULTY.** Nada se aprobó. Siguen detenidos la selección latente de
   la FC, las envolventes, la presión, la FR, el colapso, la migración y la integración.
+
+## 40. P2I-2AJ · Poda de la severidad de llegada por verdad del caso y paquete de observables de la FC (2026-10-29)
+
+- **Base:** `12346cb` (P2I-2AI, cerrado: su módulo queda fijado byte a byte y su registro, `805eff4e…`, por su digest).
+  - Congelamiento: `ac6608d`, antes de leer ninguna distribución de FC. Lo corrigió `559fa11`, que cambia sólo una
+    clave para poder escribir el registro, sin que se leyera ningún resultado; digest `2437e1b1…`.
+  - Informe: `docs/revision/P2I2AJ_PODA_SEVERIDAD_Y_OBSERVABLES_FC.md`; números:
+    `docs/revision/P2I2AJ_hr_observables.json`.
+- **Decisiones docentes:**
+  - el estado de 72f con entrega normalizada 1,0 (D0 60) es REJECTED_BY_CASE_TRUTH_COMPATIBILITY, independiente de la
+    FC;
+  - queda como soporte 57m grave (60 / 0,6) con 72f (20 / 0,85), sólo para estos casos: no es un valor por defecto de
+    GI ni una escala de D aprobada;
+  - la robustez a la demanda es diagnóstica, no un filtro, y la demanda 1,0 no se aprueba por ser la central;
+  - la intrínseca es por paciente (60 / 80 / 100), y el 80 sigue en el soporte.
+- **Reutilización:** las filas de D y lactato del par retenido, reconstruidas con los chequeos de P2I-2AD, reproducen
+  P2I-2AI byte a byte (unidades `06f6d5c8…`; 0 / 216 / 1092 sobrevivientes con demanda 0,9 / 1,0 / 1,1), sobre las
+  mismas dependencias ejecutables.
+- **Demanda:** 0,9 es CURRENTLY_INCOMPATIBLE (L3 elimina a los 202 140 que superan L1, siempre por 57m); 1,0 y 1,1 son
+  CURRENTLY_COMPATIBLE. Ninguna se aprueba.
+- **Llegada de la FC:**
+  - La llegada depende de la demanda, así que se lee en cada demanda compatible: 2 candidatos conjuntos con 1,0 (los de
+    P2I-2AI) y 13 con 1,1.
+  - Con 1,1 vuelve a aparecer la intrínseca 80 de 72f.
+  - En la unión, todas las latentes quedan POORLY_IDENTIFIED, salvo la ganancia de deuda, que es NON_IDENTIFIABLE.
+- **Trayectorias:** se recorrieron todos los sobrevivientes por todos los candidatos, con 360 relecturas exactas, y se
+  informan como distribuciones H1–H4 y H6.
+  - En 72f el cristaloide y los GR ya se distinguen desde el minuto 1, por la señal aguda.
+  - Hay siete propuestas de envolventes (A–G); ninguna se aplica ni se aprueba.
+- **Veredicto: HR_OBSERVABLE_DECISION_PACK_READY.** Siguen detenidos la selección latente, el filtrado por
+  envolventes, la presión, la FR, el colapso, la migración y la integración.

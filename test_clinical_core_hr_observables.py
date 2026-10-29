@@ -262,3 +262,91 @@ def test_no_legacy_no_p2f_region_pressure_deferred_and_nothing_approved():
     text = json.dumps(ho.design(), default=str).lower()
     for word in ("faculty_approved", "\"best", "\"selected", "\"recommended", "\"preferred", "\"rank"):
         assert word not in text
+
+
+# The evaluation, on the frozen package (freeze ac6608d, serialization fix 559fa11) -----------------------------------
+
+RECORD = ROOT / "docs" / "revision" / "P2I2AJ_hr_observables.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2I2AJ_PODA_SEVERIDAD_Y_OBSERVABLES_FC.md"
+
+
+@pytest.fixture(scope="module")
+def record():
+    return json.loads(RECORD.read_text(encoding="utf-8"))
+
+
+def _json(value):
+    return json.loads(json.dumps(value, sort_keys=True, default=str))
+
+
+def test_the_record_comes_from_the_frozen_package_and_its_analytic_part_is_reproduced_live(record):
+    assert record["freeze_digest"] == FROZEN_DIGEST
+    p2i2ai = ho.p2i2ai_record()
+    assert record["pair_semantics"] == _json(ho.pair_semantics(p2i2ai))
+    assert record["case_truth"] == _json(ho.case_truth([tuple(map(tuple, c)) for c in p2i2ai["lactate_compatible"]]))
+    for key, surface in record["hr_surfaces"].items():
+        live = ho.surface(ho.arrival_table(float(key)))
+        assert surface == _json(live), key
+        assert record["identifiability"][key] == _json(ho.identifiability(live["survivors"]))
+        assert record["observables"][key] == _json(ho.observable_table(live["survivors"]))
+
+
+def test_the_case_truth_reuse_and_demand_the_report_states(record):
+    assert [t["status"] for t in record["case_truth"]] == ["RETAINED", ho.CASE_TRUTH_REJECTION]
+    reuse = record["reuse"]
+    assert reuse["equal"] and reuse["dependency"]["equal"] and reuse["units_digest"] == ho.P2I2AI_RETAINED_UNITS
+    assert reuse["survivors"] == {"0.9": 0, "1": 216, "1.1": 1092}
+    demand = record["demand"]
+    assert [demand[k]["status"] for k in ("0.9", "1", "1.1")] == [ho.DEMAND_INCOMPATIBLE, ho.DEMAND_COMPATIBLE,
+                                                                  ho.DEMAND_COMPATIBLE]
+    assert demand["robust_across_demand"] == 0 and not any(demand[k]["approved"] for k in ("0.9", "1", "1.1"))
+    l3 = {stage["scenario"]: stage for stage in demand["0.9"]["stages"]}[ho.L3]
+    assert (l3["entering"], l3["survivors"]) == (202140, 0)
+    assert l3["first_failure"] == {"FD-LAC-04 gi_bleed_57m": 95580, "FD-LAC-05 gi_bleed_57m": 46944,
+                                   "L3_RESUSCITATION_INADEQUATE gi_bleed_57m": 53136,
+                                   "L3_RESUSCITATION_LOST gi_bleed_57m": 6480}
+    assert record["efficiency"]["case_truth_rejected_lactate_survivors"] == 25613
+
+
+def test_the_arrival_surfaces_and_identifiability_the_report_states(record):
+    surfaces = record["hr_surfaces"]
+    assert sorted(surfaces) == ["1", "1.1"]  # 0.9 is CURRENTLY_INCOMPATIBLE: no HR read there
+    assert [(s["compatible_57m"], s["compatible_72f"], s["joint"]) for s in (surfaces["1"], surfaces["1.1"])] == [
+        (33, 9, 2), (45, 78, 13)]
+    assert surfaces["1.1"]["support"]["intrinsic_pairs"]["lower|midpoint"] == 7  # intrinsic 80 survives at 1.1
+    union = record["identifiability"]["union"]
+    assert {name: union[name]["status"] for name in ho.LATENTS} == {
+        "intrinsic_57m": ho.POOR, "intrinsic_72f": ho.POOR, "acute": ho.POOR, "debt": ho.NON, "ceiling": ho.POOR}
+    assert record["identifiability"]["1"]["acute"]["status"] == ho.PARTIAL
+
+
+def test_the_trajectories_contrast_envelopes_and_verdict_the_report_states(record):
+    assert all(v["exact"] for v in record["validation"].values())
+    assert sum(v["full_runs"] for v in record["validation"].values()) == 360
+    by_demand = record["trajectories"]["by_demand"]
+    assert {k: (t["lactate_survivors"], t["joint_survivors"]) for k, t in by_demand.items()} == {
+        "1": (216, 2), "1.1": (1092, 13)}
+    for t in by_demand.values():
+        contrast = t["fluid_vs_prbc_72f"]
+        assert contrast["never_diverge"] == 0 and contrast["first_input"]["acute"] == contrast["pairs"]
+        assert contrast["prbc_minus_fluid_at_largest"]["high"] < 0
+        assert t["distributions"][C57]["H3.delta_unit_1"]["high"] < 0 and t["distributions"][C72][
+            "H3.delta_unit_1"]["high"] < 0
+    assert not any(record["envelopes"][key]["approved"] for key in "ABCDEFG")
+    verdict = record["verdict"]
+    assert verdict["verdict"] == ho.READY and all(verdict["checks"].values()) and not verdict["approved"]
+    stripped = json.loads(json.dumps(record))
+    for pick in stripped["reuse"]["reused_from_record"]["representatives"].values():
+        del pick["rank"]  # the representatives' positions under P2I-2AD's LOW / MID / HIGH rule
+    text = json.dumps(stripped, default=str).lower()
+    found = [word for word in ("faculty_approved", "\"best", "\"selected", "\"recommended", "\"preferred", "\"rank")
+             if word in text]
+    assert not found
+
+
+def test_the_document_is_generated_from_the_record(tmp_path):
+    from clinical_core import hr_observables_report
+    copy = tmp_path / "document.md"
+    copy.write_text(DOCUMENT.read_text(encoding="utf-8"), encoding="utf-8")
+    hr_observables_report.main(["--write", str(copy), "--data", str(RECORD)])
+    assert copy.read_text(encoding="utf-8") == DOCUMENT.read_text(encoding="utf-8"), "regenerate the document"

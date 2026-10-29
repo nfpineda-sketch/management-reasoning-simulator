@@ -1,0 +1,4194 @@
+{
+ "case_truth": [
+  {
+   "72f_D0": 20.0,
+   "72f_delivery": 0.85,
+   "pair_57m": [
+    "upper",
+    "lower"
+   ],
+   "pair_72f": [
+    "midpoint",
+    "midpoint"
+   ],
+   "reason": null,
+   "status": "RETAINED"
+  },
+  {
+   "72f_D0": 60.0,
+   "72f_delivery": 1.0,
+   "pair_57m": [
+    "upper",
+    "lower"
+   ],
+   "pair_72f": [
+    "upper",
+    "upper"
+   ],
+   "reason": "72f normalized current delivery 1.0 at arrival contradicts its underfilled / impaired-perfusion phenotype",
+   "status": "REJECTED_BY_CASE_TRUTH_COMPATIBILITY"
+  }
+ ],
+ "decided": "2026-10-29",
+ "demand": {
+  "0.9": {
+   "approved": false,
+   "candidates": 2225880,
+   "dominant_failure": "L1: FD-LAC-02/03 gi_bleed_57m",
+   "dominant_failure_weight": 1711080,
+   "stages": [
+    {
+     "ANALYTIC_REJECTION": 0,
+     "SIMULATION_REJECTION": 2023740,
+     "any_failure": {
+      "FD-LAC-01 gi_bleed_57m": 1102536,
+      "FD-LAC-01 gi_bleed_72f": 1203624,
+      "FD-LAC-02/03 gi_bleed_57m": 1711080,
+      "FD-LAC-02/03 gi_bleed_72f": 1737936,
+      "FD-LAC-06 gi_bleed_57m": 1170648,
+      "FD-LAC-06 gi_bleed_72f": 1345320
+     },
+     "entering": 2225880,
+     "first_failure": {
+      "FD-LAC-02/03 gi_bleed_57m": 1711080,
+      "FD-LAC-02/03 gi_bleed_72f": 312660
+     },
+     "only_failure": {
+      "FD-LAC-02/03": 678420
+     },
+     "rejected": 2023740,
+     "scenario": "L1",
+     "survivors": 202140,
+     "units_evaluated": 35235,
+     "units_rejected": 32040
+    },
+    {
+     "ANALYTIC_REJECTION": 0,
+     "SIMULATION_REJECTION": 202140,
+     "any_failure": {
+      "FD-LAC-04 gi_bleed_57m": 101520,
+      "FD-LAC-04 gi_bleed_72f": 12420,
+      "FD-LAC-05 gi_bleed_57m": 142524,
+      "FD-LAC-05 gi_bleed_72f": 12744,
+      "L3_RESUSCITATION_INADEQUATE gi_bleed_57m": 53136,
+      "L3_RESUSCITATION_LOST gi_bleed_57m": 6480
+     },
+     "entering": 202140,
+     "first_failure": {
+      "FD-LAC-04 gi_bleed_57m": 95580,
+      "FD-LAC-05 gi_bleed_57m": 46944,
+      "L3_RESUSCITATION_INADEQUATE gi_bleed_57m": 53136,
+      "L3_RESUSCITATION_LOST gi_bleed_57m": 6480
+     },
+     "only_failure": {
+      "FD-LAC-05": 46944,
+      "L3_RESUSCITATION_INADEQUATE": 49860,
+      "L3_RESUSCITATION_LOST": 540
+     },
+     "rejected": 202140,
+     "scenario": "L3",
+     "survivors": 0,
+     "units_evaluated": 16845,
+     "units_rejected": 16845
+    },
+    {
+     "ANALYTIC_REJECTION": 0,
+     "SIMULATION_REJECTION": 0,
+     "any_failure": {},
+     "entering": 0,
+     "first_failure": {},
+     "only_failure": {},
+     "rejected": 0,
+     "scenario": "L2",
+     "survivors": 0,
+     "units_evaluated": 0,
+     "units_rejected": 0
+    }
+   ],
+   "status": "CURRENTLY_INCOMPATIBLE",
+   "survivors": 0
+  },
+  "1": {
+   "approved": false,
+   "candidates": 2225880,
+   "dominant_failure": "L1: FD-LAC-02/03 gi_bleed_57m",
+   "dominant_failure_weight": 1734192,
+   "stages": [
+    {
+     "ANALYTIC_REJECTION": 0,
+     "SIMULATION_REJECTION": 1998000,
+     "any_failure": {
+      "FD-LAC-01 gi_bleed_57m": 1055232,
+      "FD-LAC-01 gi_bleed_72f": 1170648,
+      "FD-LAC-02/03 gi_bleed_57m": 1734192,
+      "FD-LAC-02/03 gi_bleed_72f": 1743444,
+      "FD-LAC-06 gi_bleed_57m": 1137672,
+      "FD-LAC-06 gi_bleed_72f": 1254132
+     },
+     "entering": 2225880,
+     "first_failure": {
+      "FD-LAC-02/03 gi_bleed_57m": 1734192,
+      "FD-LAC-02/03 gi_bleed_72f": 263808
+     },
+     "only_failure": {
+      "FD-LAC-02/03": 743868
+     },
+     "rejected": 1998000,
+     "scenario": "L1",
+     "survivors": 227880,
+     "units_evaluated": 35235,
+     "units_rejected": 31638
+    },
+    {
+     "ANALYTIC_REJECTION": 0,
+     "SIMULATION_REJECTION": 227664,
+     "any_failure": {
+      "FD-LAC-04 gi_bleed_57m": 60336,
+      "FD-LAC-04 gi_bleed_72f": 11904,
+      "FD-LAC-05 gi_bleed_57m": 94896,
+      "FD-LAC-05 gi_bleed_72f": 29268,
+      "L3_RESUSCITATION_INADEQUATE gi_bleed_57m": 132768
+     },
+     "entering": 227880,
+     "first_failure": {
+      "FD-LAC-04 gi_bleed_57m": 60336,
+      "FD-LAC-05 gi_bleed_57m": 34560,
+      "L3_RESUSCITATION_INADEQUATE gi_bleed_57m": 132768
+     },
+     "only_failure": {
+      "FD-LAC-05": 34560,
+      "L3_RESUSCITATION_INADEQUATE": 112764
+     },
+     "rejected": 227664,
+     "scenario": "L3",
+     "survivors": 216,
+     "units_evaluated": 18990,
+     "units_rejected": 18972
+    },
+    {
+     "ANALYTIC_REJECTION": 0,
+     "SIMULATION_REJECTION": 0,
+     "any_failure": {},
+     "entering": 216,
+     "first_failure": {},
+     "only_failure": {},
+     "rejected": 0,
+     "scenario": "L2",
+     "survivors": 216,
+     "units_evaluated": 216,
+     "units_rejected": 0
+    }
+   ],
+   "status": "CURRENTLY_COMPATIBLE",
+   "survivors": 216
+  },
+  "1.1": {
+   "approved": false,
+   "candidates": 2225880,
+   "dominant_failure": "L1: FD-LAC-02/03 gi_bleed_57m",
+   "dominant_failure_weight": 1747728,
+   "stages": [
+    {
+     "ANALYTIC_REJECTION": 0,
+     "SIMULATION_REJECTION": 1962072,
+     "any_failure": {
+      "FD-LAC-01 gi_bleed_57m": 1037880,
+      "FD-LAC-01 gi_bleed_72f": 1154160,
+      "FD-LAC-02/03 gi_bleed_57m": 1747728,
+      "FD-LAC-02/03 gi_bleed_72f": 1714752,
+      "FD-LAC-06 gi_bleed_57m": 1104696,
+      "FD-LAC-06 gi_bleed_72f": 1203624
+     },
+     "entering": 2225880,
+     "first_failure": {
+      "FD-LAC-02/03 gi_bleed_57m": 1747728,
+      "FD-LAC-02/03 gi_bleed_72f": 214344
+     },
+     "only_failure": {
+      "FD-LAC-02/03": 758448
+     },
+     "rejected": 1962072,
+     "scenario": "L1",
+     "survivors": 263808,
+     "units_evaluated": 35235,
+     "units_rejected": 31059
+    },
+    {
+     "ANALYTIC_REJECTION": 0,
+     "SIMULATION_REJECTION": 262716,
+     "any_failure": {
+      "FD-LAC-04 gi_bleed_57m": 48792,
+      "FD-LAC-04 gi_bleed_72f": 37236,
+      "FD-LAC-05 gi_bleed_57m": 59964,
+      "FD-LAC-05 gi_bleed_72f": 63012,
+      "L3_RESUSCITATION_INADEQUATE gi_bleed_57m": 197568,
+      "L3_RESUSCITATION_LOST gi_bleed_57m": 5184
+     },
+     "entering": 263808,
+     "first_failure": {
+      "FD-LAC-04 gi_bleed_57m": 44424,
+      "FD-LAC-05 gi_bleed_57m": 15540,
+      "L3_RESUSCITATION_INADEQUATE gi_bleed_57m": 197568,
+      "L3_RESUSCITATION_LOST gi_bleed_57m": 5184
+     },
+     "only_failure": {
+      "FD-LAC-05": 15540,
+      "L3_RESUSCITATION_INADEQUATE": 143844,
+      "L3_RESUSCITATION_LOST": 816
+     },
+     "rejected": 262716,
+     "scenario": "L3",
+     "survivors": 1092,
+     "units_evaluated": 21984,
+     "units_rejected": 21893
+    },
+    {
+     "ANALYTIC_REJECTION": 0,
+     "SIMULATION_REJECTION": 0,
+     "any_failure": {},
+     "entering": 1092,
+     "first_failure": {},
+     "only_failure": {},
+     "rejected": 0,
+     "scenario": "L2",
+     "survivors": 1092,
+     "units_evaluated": 444,
+     "units_rejected": 0
+    }
+   ],
+   "status": "CURRENTLY_COMPATIBLE",
+   "survivors": 1092
+  },
+  "robust_across_demand": 0,
+  "robust_is_filter": false,
+  "rule": "Each demand factor is its own uncertainty condition. A value is CURRENTLY_COMPATIBLE when the retained pair has at least one lactate survivor there (P2I-2AD's constraints, both cases at their own pair), else CURRENTLY_INCOMPATIBLE; neither is approval. The dominant failure is the (stage, constraint, case) first failure with the largest candidate weight, read in P2I-2AD's order. ROBUST_ACROSS_DEMAND (survival at all three) is reported, never a filter. The HR surface and the trajectories are read at every CURRENTLY_COMPATIBLE value."
+ },
+ "efficiency": {
+  "arrival_decompositions": 900,
+  "cartesian_sweep": false,
+  "case_truth_rejected_lactate_survivors": 25613,
+  "case_truth_rejections": 1,
+  "haemodynamic_trajectories": 3178,
+  "hr_post_processed_readings": {
+   "1": 864,
+   "1.1": 28392
+  },
+  "lactate_side_points_per_case": 405,
+  "legacy_read": false,
+  "of_lactate_side_points_per_case_in_p2i2ai": 2025,
+  "trajectory_full_runs": {
+   "1": 504,
+   "1.1": 2548
+  },
+  "trajectory_full_runs_without_sharing": {
+   "1": 1296,
+   "1.1": 6552
+  },
+  "validation_full_runs": 360
+ },
+ "envelopes": {
+  "A": {
+   "approved": false,
+   "basis": "PHYSIOLOGICAL",
+   "cases": [
+    "gi_bleed_57m"
+   ],
+   "current": {
+    "1": {
+     "gi_bleed_57m": {
+      "all": {
+       "high": 157.61791223852128,
+       "low": 144.19614520365676,
+       "median": 150.1138482735009,
+       "n": 432
+      },
+      "by_intrinsic": {
+       "upper": {
+        "high": 157.61791223852128,
+        "low": 144.19614520365676,
+        "median": 150.1138482735009,
+        "n": 432
+       }
+      }
+     }
+    },
+    "1.1": {
+     "gi_bleed_57m": {
+      "all": {
+       "high": 153.1335860323415,
+       "low": 126.92431951809829,
+       "median": 139.07129796041573,
+       "n": 14196
+      },
+      "by_intrinsic": {
+       "lower": {
+        "high": 153.1335860323415,
+        "low": 137.23702632811455,
+        "median": 145.13721891758507,
+        "n": 7644
+       },
+       "upper": {
+        "high": 139.22285144290237,
+        "low": 126.92431951809829,
+        "median": 130.80882015225689,
+        "n": 6552
+       }
+      }
+     }
+    }
+   },
+   "interpretation": "progressive compensation while bleeding continues untreated",
+   "proposal": "at or above the arrival HR (untreated ongoing haemorrhage does not relieve tachycardia) and below the age-predicted maximum (about 220 - 57 = 163 bpm)",
+   "quantity": "untreated 57m HR at 120 min (H1)",
+   "reading": "H1.hr_120"
+  },
+  "B": {
+   "approved": false,
+   "basis": "PHYSIOLOGICAL",
+   "cases": [
+    "gi_bleed_72f"
+   ],
+   "current": {
+    "1": {
+     "gi_bleed_72f": {
+      "all": {
+       "high": 136.84560535903745,
+       "low": 129.4655875671525,
+       "median": 133.3051598431874,
+       "n": 432
+      },
+      "by_intrinsic": {
+       "upper": {
+        "high": 136.84560535903745,
+        "low": 129.4655875671525,
+        "median": 133.3051598431874,
+        "n": 432
+       }
+      }
+     }
+    },
+    "1.1": {
+     "gi_bleed_72f": {
+      "all": {
+       "high": 146.23152902183136,
+       "low": 114.39241314607222,
+       "median": 129.76918771337654,
+       "n": 14196
+      },
+      "by_intrinsic": {
+       "midpoint": {
+        "high": 146.23152902183136,
+        "low": 126.9895092747924,
+        "median": 137.03702431512355,
+        "n": 7644
+       },
+       "upper": {
+        "high": 126.70701779279375,
+        "low": 114.39241314607222,
+        "median": 117.76223917590198,
+        "n": 6552
+       }
+      }
+     }
+    }
+   },
+   "interpretation": "progressive compensation while bleeding continues untreated, in an older patient",
+   "proposal": "at or above the arrival HR and below the age-predicted maximum (about 220 - 72 = 148 bpm)",
+   "quantity": "untreated 72f HR at 120 min (H1)",
+   "reading": "H1.hr_120"
+  },
+  "C": {
+   "approved": false,
+   "basis": "PHYSIOLOGICAL (direction) / EXPLORATION (magnitude)",
+   "cases": [
+    "gi_bleed_57m",
+    "gi_bleed_72f"
+   ],
+   "current": {
+    "1": {
+     "gi_bleed_57m": {
+      "all": {
+       "high": -4.749802824449262,
+       "low": -5.981506696103153,
+       "median": -5.34038646244138,
+       "n": 432
+      },
+      "by_intrinsic": {
+       "upper": {
+        "high": -4.749802824449262,
+        "low": -5.981506696103153,
+        "median": -5.34038646244138,
+        "n": 432
+       }
+      }
+     },
+     "gi_bleed_72f": {
+      "all": {
+       "high": -6.675755942456021,
+       "low": -6.911834242899062,
+       "median": -6.790177766034944,
+       "n": 432
+      },
+      "by_intrinsic": {
+       "upper": {
+        "high": -6.675755942456021,
+        "low": -6.911834242899062,
+        "median": -6.790177766034944,
+        "n": 432
+       }
+      }
+     }
+    },
+    "1.1": {
+     "gi_bleed_57m": {
+      "all": {
+       "high": -0.607651294954124,
+       "low": -31.52174410368717,
+       "median": -7.635026619465123,
+       "n": 14196
+      },
+      "by_intrinsic": {
+       "lower": {
+        "high": -1.2220654995543754,
+        "low": -31.52174410368717,
+        "median": -22.831555796984986,
+        "n": 7644
+       },
+       "upper": {
+        "high": -0.607651294954124,
+        "low": -8.724458783018349,
+        "median": -6.139431439253279,
+        "n": 6552
+       }
+      }
+     },
+     "gi_bleed_72f": {
+      "all": {
+       "high": -1.8528363442131877,
+       "low": -30.083557352143117,
+       "median": -8.099296875317506,
+       "n": 14196
+      },
+      "by_intrinsic": {
+       "midpoint": {
+        "high": -6.273534696801718,
+        "low": -30.083557352143117,
+        "median": -28.607550195685562,
+        "n": 7644
+       },
+       "upper": {
+        "high": -1.8528363442131877,
+        "low": -8.27880813568008,
+        "median": -7.822291735941832,
+        "n": 6552
+       }
+      }
+     }
+    }
+   },
+   "interpretation": "delivery restored by red cells lowers the acute signal before haemostasis",
+   "proposal": "a fall or no rise (<= 0 bpm) while the unit restores delivery; magnitude open",
+   "quantity": "HR change over the first PRBC unit (H3, both cases)",
+   "reading": "H3.delta_unit_1"
+  },
+  "D": {
+   "approved": false,
+   "basis": "PHYSIOLOGICAL (direction) / EXPLORATION (magnitude)",
+   "cases": [
+    "gi_bleed_57m",
+    "gi_bleed_72f"
+   ],
+   "current": {
+    "1": {
+     "gi_bleed_57m": {
+      "all": {
+       "high": -10.828733855623597,
+       "low": -11.965800314540886,
+       "median": -11.390399582534705,
+       "n": 432
+      },
+      "by_intrinsic": {
+       "upper": {
+        "high": -10.828733855623597,
+        "low": -11.965800314540886,
+        "median": -11.390399582534705,
+        "n": 432
+       }
+      }
+     },
+     "gi_bleed_72f": {
+      "all": {
+       "high": -2.339884685719099,
+       "low": -2.4411856573961614,
+       "median": -2.415019906058788,
+       "n": 432
+      },
+      "by_intrinsic": {
+       "upper": {
+        "high": -2.339884685719099,
+        "low": -2.4411856573961614,
+        "median": -2.415019906058788,
+        "n": 432
+       }
+      }
+     }
+    },
+    "1.1": {
+     "gi_bleed_57m": {
+      "all": {
+       "high": -2.0067094542788624,
+       "low": -31.85076560504369,
+       "median": -8.440854586214499,
+       "n": 14196
+      },
+      "by_intrinsic": {
+       "lower": {
+        "high": -4.647042327589247,
+        "low": -31.85076560504369,
+        "median": -28.1668860509009,
+        "n": 7644
+       },
+       "upper": {
+        "high": -2.0067094542788624,
+        "low": -9.866485609614756,
+        "median": -7.863849203294549,
+        "n": 6552
+       }
+      }
+     },
+     "gi_bleed_72f": {
+      "all": {
+       "high": -0.9887648234264077,
+       "low": -12.941123741241825,
+       "median": -3.0519991865917007,
+       "n": 14196
+      },
+      "by_intrinsic": {
+       "midpoint": {
+        "high": -1.156471100701907,
+        "low": -12.941123741241825,
+        "median": -4.153084640297934,
+        "n": 7644
+       },
+       "upper": {
+        "high": -0.9887648234264077,
+        "low": -3.8014187851871384,
+        "median": -2.1908776470183255,
+        "n": 6552
+       }
+      }
+     }
+    }
+   },
+   "interpretation": "continued restoration; the second interval also carries PPI and approaching haemostasis",
+   "proposal": "a fall or no rise (<= 0 bpm); no requirement on its size relative to the first unit (endoscopic haemostasis lands at minute 60, when the second unit completes)",
+   "quantity": "additional HR change over the second PRBC unit (H3, both cases)",
+   "reading": "H3.delta_unit_2"
+  },
+  "E": {
+   "approved": false,
+   "basis": "EXPLORATION",
+   "cases": [
+    "gi_bleed_57m",
+    "gi_bleed_72f"
+   ],
+   "current": {
+    "1": {
+     "gi_bleed_57m": {
+      "all": {
+       "high": 101.48498674751583,
+       "low": 101.42295792181656,
+       "median": 101.45186540205663,
+       "n": 432
+      },
+      "by_intrinsic": {
+       "upper": {
+        "high": 101.48498674751583,
+        "low": 101.42295792181656,
+        "median": 101.45186540205663,
+        "n": 432
+       }
+      }
+     },
+     "gi_bleed_72f": {
+      "all": {
+       "high": 100.1796858746685,
+       "low": 100.17244953600269,
+       "median": 100.17849167117703,
+       "n": 432
+      },
+      "by_intrinsic": {
+       "upper": {
+        "high": 100.1796858746685,
+        "low": 100.17244953600269,
+        "median": 100.17849167117703,
+        "n": 432
+       }
+      }
+     }
+    },
+    "1.1": {
+     "gi_bleed_57m": {
+      "all": {
+       "high": 102.43020451070247,
+       "low": 60.10955084266006,
+       "median": 69.14877472815131,
+       "n": 14196
+      },
+      "by_intrinsic": {
+       "lower": {
+        "high": 69.54654841859778,
+        "low": 60.10955084266006,
+        "median": 62.02061853721584,
+        "n": 7644
+       },
+       "upper": {
+        "high": 102.43020451070247,
+        "low": 100.4312354755461,
+        "median": 101.15721832189294,
+        "n": 6552
+       }
+      }
+     },
+     "gi_bleed_72f": {
+      "all": {
+       "high": 100.27379386476031,
+       "low": 80.01467006587933,
+       "median": 80.9997593373293,
+       "n": 14196
+      },
+      "by_intrinsic": {
+       "midpoint": {
+        "high": 81.07776681726432,
+        "low": 80.01467006587933,
+        "median": 80.23603826426756,
+        "n": 7644
+       },
+       "upper": {
+        "high": 100.27379386476031,
+        "low": 100.0577497499773,
+        "median": 100.1484431233772,
+        "n": 6552
+       }
+      }
+     }
+    }
+   },
+   "interpretation": "tachycardia largely resolved once delivery is adequate and bleeding controlled",
+   "proposal": "within intrinsic + 15 bpm",
+   "quantity": "HR at 120 min after successful definitive management (H4, both cases)",
+   "reading": "H4.hr_120"
+  },
+  "F": {
+   "approved": false,
+   "basis": "EXPLORATION",
+   "cases": [
+    "gi_bleed_57m",
+    "gi_bleed_72f"
+   ],
+   "current": {
+    "1": {
+     "gi_bleed_57m": {
+      "all": {
+       "high": 1.4849867475158334,
+       "low": 1.422957921816561,
+       "median": 1.451865402056626,
+       "n": 432
+      },
+      "by_intrinsic": {
+       "upper": {
+        "high": 1.4849867475158334,
+        "low": 1.422957921816561,
+        "median": 1.451865402056626,
+        "n": 432
+       }
+      }
+     },
+     "gi_bleed_72f": {
+      "all": {
+       "high": 0.17968587466849328,
+       "low": 0.17244953600268786,
+       "median": 0.1784916711770279,
+       "n": 432
+      },
+      "by_intrinsic": {
+       "upper": {
+        "high": 0.17968587466849328,
+        "low": 0.17244953600268786,
+        "median": 0.1784916711770279,
+        "n": 432
+       }
+      }
+     }
+    },
+    "1.1": {
+     "gi_bleed_57m": {
+      "all": {
+       "high": 9.54654841859778,
+       "low": 0.1095508426600631,
+       "median": 1.7595330243670588,
+       "n": 14196
+      },
+      "by_intrinsic": {
+       "lower": {
+        "high": 9.54654841859778,
+        "low": 0.1095508426600631,
+        "median": 2.0206185372158387,
+        "n": 7644
+       },
+       "upper": {
+        "high": 2.430204510702467,
+        "low": 0.431235475546103,
+        "median": 1.157218321892941,
+        "n": 6552
+       }
+      }
+     },
+     "gi_bleed_72f": {
+      "all": {
+       "high": 1.0777668172643189,
+       "low": 0.014670065879329286,
+       "median": 0.22744981991810675,
+       "n": 14196
+      },
+      "by_intrinsic": {
+       "midpoint": {
+        "high": 1.0777668172643189,
+        "low": 0.014670065879329286,
+        "median": 0.23603826426756314,
+        "n": 7644
+       },
+       "upper": {
+        "high": 0.2737938647603073,
+        "low": 0.05774974997730453,
+        "median": 0.14844312337720567,
+        "n": 6552
+       }
+      }
+     }
+    }
+   },
+   "interpretation": "the debt drive repays after adequacy; a small residual is plausible, a large one is not",
+   "proposal": "0 to 15 bpm (some debt repayment may persist)",
+   "quantity": "residual tachycardia above intrinsic at 120 min (H4, both cases)",
+   "reading": "H4.residual_above_intrinsic_120"
+  },
+  "G": {
+   "approved": false,
+   "basis": "PHYSIOLOGICAL (general physiology, not repository truth)",
+   "cases": [
+    "gi_bleed_57m",
+    "gi_bleed_72f"
+   ],
+   "current": {
+    "1": {
+     "gi_bleed_57m": {
+      "all": {
+       "high": 157.61791223852128,
+       "low": 144.19614520365676,
+       "median": 150.1138482735009,
+       "n": 432
+      },
+      "by_intrinsic": {
+       "upper": {
+        "high": 157.61791223852128,
+        "low": 144.19614520365676,
+        "median": 150.1138482735009,
+        "n": 432
+       }
+      }
+     },
+     "gi_bleed_72f": {
+      "all": {
+       "high": 136.84560535903745,
+       "low": 129.4655875671525,
+       "median": 133.3051598431874,
+       "n": 432
+      },
+      "by_intrinsic": {
+       "upper": {
+        "high": 136.84560535903745,
+        "low": 129.4655875671525,
+        "median": 133.3051598431874,
+        "n": 432
+       }
+      }
+     }
+    },
+    "1.1": {
+     "gi_bleed_57m": {
+      "all": {
+       "high": 153.1335860323415,
+       "low": 126.92431951809829,
+       "median": 139.07129796041573,
+       "n": 14196
+      },
+      "by_intrinsic": {
+       "lower": {
+        "high": 153.1335860323415,
+        "low": 137.23702632811455,
+        "median": 145.13721891758507,
+        "n": 7644
+       },
+       "upper": {
+        "high": 139.22285144290237,
+        "low": 126.92431951809829,
+        "median": 130.80882015225689,
+        "n": 6552
+       }
+      }
+     },
+     "gi_bleed_72f": {
+      "all": {
+       "high": 146.23152902183136,
+       "low": 114.39241314607222,
+       "median": 129.76918771337654,
+       "n": 14196
+      },
+      "by_intrinsic": {
+       "midpoint": {
+        "high": 146.23152902183136,
+        "low": 126.9895092747924,
+        "median": 137.03702431512355,
+        "n": 7644
+       },
+       "upper": {
+        "high": 126.70701779279375,
+        "low": 114.39241314607222,
+        "median": 117.76223917590198,
+        "n": 6552
+       }
+      }
+     }
+    }
+   },
+   "interpretation": "ceilings bound the saturated sinus response; the arrival does not identify them",
+   "proposal": "a common total ceiling far above both age-predicted maxima (about 163 for 57m and 148 for 72f by 220 - age) is physiologically implausible: drop 200, keep 150 and 175 for the faculty",
+   "quantity": "maximum sinus HR and the ceiling candidates 150 / 175 / 200 (H6)",
+   "reading": "H6.max_hr"
+  },
+  "rule": "Each proposal is shown with the current survivors' LOW / median / HIGH, by the case's intrinsic level and by demand; nothing is filtered, no pass count is computed and no proposal is approved by the faculty here."
+ },
+ "faculty": {
+  "case_truth": "72f's arrival state with D0 60 and normalized current delivery 1.0 is REJECTED_BY_CASE_TRUTH_COMPATIBILITY: 72f arrives with BP 98/62 (MAP about 74), CRT 4 s, a hyperdynamic LV, IVC 1.1 cm with > 50 % inspiratory collapse, active GI bleeding, lactate 3.4 and no known prehospital resuscitation restoring delivery; normalized current delivery is not compatible with that ongoing underfilled / impaired-perfusion phenotype, and accrued D0 60 does not rescue the contradiction; not rejected because of HR or of its survivor count",
+  "decided": "2026-10-29",
+  "demand": "simultaneous survival at demand 0.9, 1.0 and 1.1 is not required: the three values are explicit physiological uncertainty, not three states the same patient must satisfy; ROBUST_ACROSS_DEMAND stays diagnostic; demand 1.0 is not approved for being the central reference; demand values unchanged",
+  "hr": "common acute gain (five frozen points), common debt gain (five frozen points), common total sinus ceilings 150 / 175 / 200, pressure DEFERRED (zero in the primary calibration), arrival tolerance 57m 124 +- 5 and 72f 112 +- 5; no dimension changed",
+  "intrinsic": "intrinsic HR is patient-specific latent physiology: 60 / 80 / 100 per patient, explored independently, none approved, no value added; no survivor at 80 in P2I-2AI is not evidence that a resting HR of 80 is invalid, and 80 stays in the support",
+  "retained": "57m existing SEVERE pair with 72f D0 20 / delivery 0.85: FACULTY-CONSTRAINED CASE-COMPATIBLE ARRIVAL-SEVERITY SUPPORT for these authored cases and the current calibration; not a universal GI default, not a faculty-approved D scale, not a production migration parameter",
+  "scope": "shadow only; no final latent HR selection, no HR-envelope filtering, no pressure / vascular-tone or RR calibration, no collapse, no GI or second-family migration, no runtime integration"
+ },
+ "freeze_digest": "2437e1b1c3075e180ef0fec912867974af43242a828c356190193820933fec4d",
+ "hr_surfaces": {
+  "1": {
+   "compatible_57m": 33,
+   "compatible_72f": 9,
+   "compatible_decompositions": {
+    "gi_bleed_57m": 11,
+    "gi_bleed_72f": 3
+   },
+   "decompositions": 450,
+   "distinct_predictions": 2,
+   "joint": 2,
+   "joint_candidates": 675,
+   "rule": "The retained pair only, at each CURRENTLY_COMPATIBLE demand: arrival HR analytic (derived.heart_rate_decomposition, P2I-2AG's primary profile, pressure 0), 57m intrinsic 60 / 80 / 100 x 72f intrinsic 60 / 80 / 100 x the five common acute gains x the five common debt gains x the common ceilings 150 / 175 / 200. JOINT when |HR57 - 124| <= 5 and |HR72 - 112| <= 5. At demand 1.0 the joint set must equal P2I-2AI's retained-pair survivors (else stop). No dimension changed, no best candidate.",
+   "support": {
+    "acute": {
+     "0.1": 0,
+     "0.3822350547713923": 0,
+     "1.4610363709608927": 2,
+     "21.346272772705746": 0,
+     "5.58459317277233": 0
+    },
+    "ceiling": {
+     "150": 1,
+     "175": 1,
+     "200": 0
+    },
+    "debt": {
+     "0.0006666666666666666": 0,
+     "0.0026243840235588385": 0,
+     "0.010331087254666317": 2,
+     "0.040669110505707935": 0,
+     "0.16009704579529324": 0
+    },
+    "intrinsic_pairs": {
+     "lower|lower": 0,
+     "lower|midpoint": 0,
+     "lower|upper": 0,
+     "midpoint|lower": 0,
+     "midpoint|midpoint": 0,
+     "midpoint|upper": 0,
+     "upper|lower": 0,
+     "upper|midpoint": 0,
+     "upper|upper": 2
+    }
+   },
+   "survivors": [
+    {
+     "acute": 1.4610363709608927,
+     "ceiling": 150.0,
+     "debt": 0.010331087254666317,
+     "intrinsic": [
+      "upper",
+      "upper"
+     ],
+     "mismatch": [
+      2.928525810061018,
+      -1.5135146565395843
+     ],
+     "observables": {
+      "gi_bleed_57m": {
+       "D0": 60.0,
+       "acute_bpm": 13.067912011325218,
+       "debt_bpm": 13.860613798735798,
+       "intrinsic": 100.0,
+       "predicted": 126.92852581006102,
+       "reserve_utilization": 0.5385705162012203,
+       "sympathetic_bpm": 26.928525810061018,
+       "x0": 0.4
+      },
+      "gi_bleed_72f": {
+       "D0": 20.0,
+       "acute_bpm": 5.397589325053321,
+       "debt_bpm": 5.088896018407095,
+       "intrinsic": 100.0,
+       "predicted": 110.48648534346042,
+       "reserve_utilization": 0.2097297068692083,
+       "sympathetic_bpm": 10.486485343460416,
+       "x0": 0.15000000000000013
+      }
+     },
+     "predicted": [
+      126.92852581006102,
+      110.48648534346042
+     ]
+    },
+    {
+     "acute": 1.4610363709608927,
+     "ceiling": 175.0,
+     "debt": 0.010331087254666317,
+     "intrinsic": [
+      "upper",
+      "upper"
+     ],
+     "mismatch": [
+      4.587671234027141,
+      -1.4264687389044042
+     ],
+     "observables": {
+      "gi_bleed_57m": {
+       "D0": 60.0,
+       "acute_bpm": 13.873064382729133,
+       "debt_bpm": 14.714606851298006,
+       "intrinsic": 100.0,
+       "predicted": 128.58767123402714,
+       "reserve_utilization": 0.38116894978702853,
+       "sympathetic_bpm": 28.58767123402714,
+       "x0": 0.4
+      },
+      "gi_bleed_72f": {
+       "D0": 20.0,
+       "acute_bpm": 5.442393480156644,
+       "debt_bpm": 5.1311377809389525,
+       "intrinsic": 100.0,
+       "predicted": 110.5735312610956,
+       "reserve_utilization": 0.14098041681460793,
+       "sympathetic_bpm": 10.573531261095596,
+       "x0": 0.15000000000000013
+      }
+     },
+     "predicted": [
+      128.58767123402714,
+      110.5735312610956
+     ]
+    }
+   ]
+  },
+  "1.1": {
+   "compatible_57m": 45,
+   "compatible_72f": 78,
+   "compatible_decompositions": {
+    "gi_bleed_57m": 15,
+    "gi_bleed_72f": 26
+   },
+   "decompositions": 450,
+   "distinct_predictions": 13,
+   "joint": 13,
+   "joint_candidates": 675,
+   "rule": "The retained pair only, at each CURRENTLY_COMPATIBLE demand: arrival HR analytic (derived.heart_rate_decomposition, P2I-2AG's primary profile, pressure 0), 57m intrinsic 60 / 80 / 100 x 72f intrinsic 60 / 80 / 100 x the five common acute gains x the five common debt gains x the common ceilings 150 / 175 / 200. JOINT when |HR57 - 124| <= 5 and |HR72 - 112| <= 5. At demand 1.0 the joint set must equal P2I-2AI's retained-pair survivors (else stop). No dimension changed, no best candidate.",
+   "support": {
+    "acute": {
+     "0.1": 0,
+     "0.3822350547713923": 2,
+     "1.4610363709608927": 6,
+     "21.346272772705746": 0,
+     "5.58459317277233": 5
+    },
+    "ceiling": {
+     "150": 4,
+     "175": 5,
+     "200": 4
+    },
+    "debt": {
+     "0.0006666666666666666": 1,
+     "0.0026243840235588385": 5,
+     "0.010331087254666317": 5,
+     "0.040669110505707935": 2,
+     "0.16009704579529324": 0
+    },
+    "intrinsic_pairs": {
+     "lower|lower": 0,
+     "lower|midpoint": 7,
+     "lower|upper": 0,
+     "midpoint|lower": 0,
+     "midpoint|midpoint": 0,
+     "midpoint|upper": 0,
+     "upper|lower": 0,
+     "upper|midpoint": 0,
+     "upper|upper": 6
+    }
+   },
+   "survivors": [
+    {
+     "acute": 1.4610363709608927,
+     "ceiling": 150.0,
+     "debt": 0.040669110505707935,
+     "intrinsic": [
+      "lower",
+      "midpoint"
+     ],
+     "mismatch": [
+      -1.2306614421644326,
+      -4.861359811367308
+     ],
+     "observables": {
+      "gi_bleed_57m": {
+       "D0": 60.0,
+       "acute_bpm": 13.428535120498163,
+       "debt_bpm": 49.34080343733742,
+       "intrinsic": 60.0,
+       "predicted": 122.76933855783557,
+       "reserve_utilization": 0.6974370950870619,
+       "sympathetic_bpm": 62.76933855783557,
+       "x0": 0.4545454545454546
+      },
+      "gi_bleed_72f": {
+       "D0": 20.0,
+       "acute_bpm": 7.867298559813065,
+       "debt_bpm": 19.271341628819627,
+       "intrinsic": 80.0,
+       "predicted": 107.13864018863269,
+       "reserve_utilization": 0.3876948598376099,
+       "sympathetic_bpm": 27.138640188632692,
+       "x0": 0.22727272727272746
+      }
+     },
+     "predicted": [
+      122.76933855783557,
+      107.13864018863269
+     ]
+    },
+    {
+     "acute": 1.4610363709608927,
+     "ceiling": 175.0,
+     "debt": 0.040669110505707935,
+     "intrinsic": [
+      "lower",
+      "midpoint"
+     ],
+     "mismatch": [
+      3.637618307466809,
+      -4.200988176873707
+     ],
+     "observables": {
+      "gi_bleed_57m": {
+       "D0": 60.0,
+       "acute_bpm": 14.470028739776907,
+       "debt_bpm": 53.16758956768991,
+       "intrinsic": 60.0,
+       "predicted": 127.63761830746681,
+       "reserve_utilization": 0.5881532026736245,
+       "sympathetic_bpm": 67.63761830746681,
+       "x0": 0.4545454545454546
+      },
+      "gi_bleed_72f": {
+       "D0": 20.0,
+       "acute_bpm": 8.05873559471539,
+       "debt_bpm": 19.740276228410902,
+       "intrinsic": 80.0,
+       "predicted": 107.79901182312629,
+       "reserve_utilization": 0.2926211770855399,
+       "sympathetic_bpm": 27.799011823126293,
+       "x0": 0.22727272727272746
+      }
+     },
+     "predicted": [
+      127.63761830746681,
+      107.79901182312629
+     ]
+    },
+    {
+     "acute": 5.58459317277233,
+     "ceiling": 200.0,
+     "debt": 0.0006666666666666666,
+     "intrinsic": [
+      "lower",
+      "midpoint"
+     ],
+     "mismatch": [
+      -3.7382699854030648,
+      -0.677920559895739
+     ],
+     "observables": {
+      "gi_bleed_57m": {
+       "D0": 60.0,
+       "acute_bpm": 59.326878513745726,
+       "debt_bpm": 0.9348515008512083,
+       "intrinsic": 60.0,
+       "predicted": 120.26173001459694,
+       "reserve_utilization": 0.4304409286756924,
+       "sympathetic_bpm": 60.261730014596935,
+       "x0": 0.4545454545454546
+      },
+      "gi_bleed_72f": {
+       "D0": 20.0,
+       "acute_bpm": 30.996458780042268,
+       "debt_bpm": 0.3256206600619905,
+       "intrinsic": 80.0,
+       "predicted": 111.32207944010426,
+       "reserve_utilization": 0.2610173286675355,
+       "sympathetic_bpm": 31.32207944010426,
+       "x0": 0.22727272727272746
+      }
+     },
+     "predicted": [
+      120.26173001459694,
+      111.32207944010426
+     ]
+    },
+    {
+     "acute": 5.58459317277233,
+     "ceiling": 175.0,
+     "debt": 0.0026243840235588385,
+     "intrinsic": [
+      "lower",
+      "midpoint"
+     ],
+     "mismatch": [
+      -3.387864734983225,
+      -0.22818241764586844
+     ],
+     "observables": {
+      "gi_bleed_57m": {
+       "D0": 60.0,
+       "acute_bpm": 57.071900133851194,
+       "debt_bpm": 3.5402351311655793,
+       "intrinsic": 60.0,
+       "predicted": 120.61213526501678,
+       "reserve_utilization": 0.5270620457827546,
+       "sympathetic_bpm": 60.612135265016775,
+       "x0": 0.4545454545454546
+      },
+      "gi_bleed_72f": {
+       "D0": 20.0,
+       "acute_bpm": 30.510100021430457,
+       "debt_bpm": 1.2617175609236784,
+       "intrinsic": 80.0,
+       "predicted": 111.77181758235413,
+       "reserve_utilization": 0.3344401850774119,
+       "sympathetic_bpm": 31.77181758235413,
+       "x0": 0.22727272727272746
+      }
+     },
+     "predicted": [
+      120.61213526501678,
+      111.77181758235413
+     ]
+    },
+    {
+     "acute": 5.58459317277233,
+     "ceiling": 200.0,
+     "debt": 0.0026243840235588385,
+     "intrinsic": [
+      "lower",
+      "midpoint"
+     ],
+     "mismatch": [
+      -1.3675333983375992,
+      0.23229026021277832
+     ],
+     "observables": {
+      "gi_bleed_57m": {
+       "D0": 60.0,
+       "acute_bpm": 58.974227906634326,
+       "debt_bpm": 3.658238695028074,
+       "intrinsic": 60.0,
+       "predicted": 122.6324666016624,
+       "reserve_utilization": 0.44737476144044575,
+       "sympathetic_bpm": 62.6324666016624,
+       "x0": 0.4545454545454546
+      },
+      "gi_bleed_72f": {
+       "D0": 20.0,
+       "acute_bpm": 30.952286478726688,
+       "debt_bpm": 1.2800037814860954,
+       "intrinsic": 80.0,
+       "predicted": 112.23229026021278,
+       "reserve_utilization": 0.2686024188351065,
+       "sympathetic_bpm": 32.23229026021278,
+       "x0": 0.22727272727272746
+      }
+     },
+     "predicted": [
+      122.6324666016624,
+      112.23229026021278
+     ]
+    },
+    {
+     "acute": 5.58459317277233,
+     "ceiling": 150.0,
+     "debt": 0.010331087254666317,
+     "intrinsic": [
+      "lower",
+      "midpoint"
+     ],
+     "mismatch": [
+      -0.5437685261996137,
+      1.8206603138602304
+     ],
+     "observables": {
+      "gi_bleed_57m": {
+       "D0": 60.0,
+       "acute_bpm": 51.0020301160518,
+       "debt_bpm": 12.45420135774859,
+       "intrinsic": 60.0,
+       "predicted": 123.45623147380039,
+       "reserve_utilization": 0.705069238597782,
+       "sympathetic_bpm": 63.456231473800386,
+       "x0": 0.4545454545454546
+      },
+      "gi_bleed_72f": {
+       "D0": 20.0,
+       "acute_bpm": 29.085696833958284,
+       "debt_bpm": 4.734963479901947,
+       "intrinsic": 80.0,
+       "predicted": 113.82066031386023,
+       "reserve_utilization": 0.48315229019800326,
+       "sympathetic_bpm": 33.82066031386023,
+       "x0": 0.22727272727272746
+      }
+     },
+     "predicted": [
+      123.45623147380039,
+      113.82066031386023
+     ]
+    },
+    {
+     "acute": 5.58459317277233,
+     "ceiling": 175.0,
+     "debt": 0.010331087254666317,
+     "intrinsic": [
+      "lower",
+      "midpoint"
+     ],
+     "mismatch": [
+      4.515535428356969,
+      3.1465407976088073
+     ],
+     "observables": {
+      "gi_bleed_57m": {
+       "D0": 60.0,
+       "acute_bpm": 55.06837264323278,
+       "debt_bpm": 13.447162785124188,
+       "intrinsic": 60.0,
+       "predicted": 128.51553542835697,
+       "reserve_utilization": 0.5957872645944084,
+       "sympathetic_bpm": 68.51553542835697,
+       "x0": 0.4545454545454546
+      },
+      "gi_bleed_72f": {
+       "D0": 20.0,
+       "acute_bpm": 30.22595126514007,
+       "debt_bpm": 4.92058953246874,
+       "intrinsic": 80.0,
+       "predicted": 115.14654079760881,
+       "reserve_utilization": 0.3699635873432506,
+       "sympathetic_bpm": 35.14654079760881,
+       "x0": 0.22727272727272746
+      }
+     },
+     "predicted": [
+      128.51553542835697,
+      115.14654079760881
+     ]
+    },
+    {
+     "acute": 0.3822350547713923,
+     "ceiling": 175.0,
+     "debt": 0.010331087254666317,
+     "intrinsic": [
+      "upper",
+      "upper"
+     ],
+     "mismatch": [
+      -4.609992982908906,
+      -4.685985381147773
+     ],
+     "observables": {
+      "gi_bleed_57m": {
+       "D0": 60.0,
+       "acute_bpm": 4.245017843933173,
+       "debt_bpm": 15.144989173157919,
+       "intrinsic": 100.0,
+       "predicted": 119.3900070170911,
+       "reserve_utilization": 0.2585334268945479,
+       "sympathetic_bpm": 19.390007017091094,
+       "x0": 0.4545454545454546
+      },
+      "gi_bleed_72f": {
+       "D0": 20.0,
+       "acute_bpm": 2.164887825471321,
+       "debt_bpm": 5.149126793380905,
+       "intrinsic": 100.0,
+       "predicted": 107.31401461885223,
+       "reserve_utilization": 0.09752019491802968,
+       "sympathetic_bpm": 7.314014618852227,
+       "x0": 0.22727272727272746
+      }
+     },
+     "predicted": [
+      119.3900070170911,
+      107.31401461885223
+     ]
+    },
+    {
+     "acute": 0.3822350547713923,
+     "ceiling": 200.0,
+     "debt": 0.010331087254666317,
+     "intrinsic": [
+      "upper",
+      "upper"
+     ],
+     "mismatch": [
+      -4.416080342938756,
+      -4.675805199256843
+     ],
+     "observables": {
+      "gi_bleed_57m": {
+       "D0": 60.0,
+       "acute_bpm": 4.287470774255061,
+       "debt_bpm": 15.296448882806182,
+       "intrinsic": 100.0,
+       "predicted": 119.58391965706124,
+       "reserve_utilization": 0.19583919657061244,
+       "sympathetic_bpm": 19.583919657061244,
+       "x0": 0.4545454545454546
+      },
+      "gi_bleed_72f": {
+       "D0": 20.0,
+       "acute_bpm": 2.167901075100321,
+       "debt_bpm": 5.156293725642835,
+       "intrinsic": 100.0,
+       "predicted": 107.32419480074316,
+       "reserve_utilization": 0.07324194800743157,
+       "sympathetic_bpm": 7.324194800743157,
+       "x0": 0.22727272727272746
+      }
+     },
+     "predicted": [
+      119.58391965706124,
+      107.32419480074316
+     ]
+    },
+    {
+     "acute": 1.4610363709608927,
+     "ceiling": 150.0,
+     "debt": 0.0026243840235588385,
+     "intrinsic": [
+      "upper",
+      "upper"
+     ],
+     "mismatch": [
+      -4.54303917224135,
+      -2.503203496918246
+     ],
+     "observables": {
+      "gi_bleed_57m": {
+       "D0": 60.0,
+       "acute_bpm": 15.727819758434151,
+       "debt_bpm": 3.7291410693244966,
+       "intrinsic": 100.0,
+       "predicted": 119.45696082775865,
+       "reserve_utilization": 0.389139216555173,
+       "sympathetic_bpm": 19.45696082775865,
+       "x0": 0.4545454545454546
+      },
+      "gi_bleed_72f": {
+       "D0": 20.0,
+       "acute_bpm": 8.200538625853227,
+       "debt_bpm": 1.2962578772285274,
+       "intrinsic": 100.0,
+       "predicted": 109.49679650308175,
+       "reserve_utilization": 0.1899359300616351,
+       "sympathetic_bpm": 9.496796503081754,
+       "x0": 0.22727272727272746
+      }
+     },
+     "predicted": [
+      119.45696082775865,
+      109.49679650308175
+     ]
+    },
+    {
+     "acute": 1.4610363709608927,
+     "ceiling": 175.0,
+     "debt": 0.0026243840235588385,
+     "intrinsic": [
+      "upper",
+      "upper"
+     ],
+     "mismatch": [
+      -3.9592531441766425,
+      -2.4387721016685333
+     ],
+     "observables": {
+      "gi_bleed_57m": {
+       "D0": 60.0,
+       "acute_bpm": 16.199716757568503,
+       "debt_bpm": 3.8410300982548544,
+       "intrinsic": 100.0,
+       "predicted": 120.04074685582336,
+       "reserve_utilization": 0.26720995807764475,
+       "sympathetic_bpm": 20.040746855823357,
+       "x0": 0.4545454545454546
+      },
+      "gi_bleed_72f": {
+       "D0": 20.0,
+       "acute_bpm": 8.256175507752447,
+       "debt_bpm": 1.3050523905790201,
+       "intrinsic": 100.0,
+       "predicted": 109.56122789833147,
+       "reserve_utilization": 0.12748303864441957,
+       "sympathetic_bpm": 9.561227898331467,
+       "x0": 0.22727272727272746
+      }
+     },
+     "predicted": [
+      120.04074685582336,
+      109.56122789833147
+     ]
+    },
+    {
+     "acute": 1.4610363709608927,
+     "ceiling": 200.0,
+     "debt": 0.0026243840235588385,
+     "intrinsic": [
+      "upper",
+      "upper"
+     ],
+     "mismatch": [
+      -3.7447699907312995,
+      -2.4159720092878842
+     ],
+     "observables": {
+      "gi_bleed_57m": {
+       "D0": 60.0,
+       "acute_bpm": 16.373091849828352,
+       "debt_bpm": 3.8821381594403483,
+       "intrinsic": 100.0,
+       "predicted": 120.2552300092687,
+       "reserve_utilization": 0.20255230009268702,
+       "sympathetic_bpm": 20.2552300092687,
+       "x0": 0.4545454545454546
+      },
+      "gi_bleed_72f": {
+       "D0": 20.0,
+       "acute_bpm": 8.275863519197133,
+       "debt_bpm": 1.3081644715149825,
+       "intrinsic": 100.0,
+       "predicted": 109.58402799071212,
+       "reserve_utilization": 0.09584027990712116,
+       "sympathetic_bpm": 9.584027990712116,
+       "x0": 0.22727272727272746
+      }
+     },
+     "predicted": [
+      120.2552300092687,
+      109.58402799071212
+     ]
+    },
+    {
+     "acute": 1.4610363709608927,
+     "ceiling": 150.0,
+     "debt": 0.010331087254666317,
+     "intrinsic": [
+      "upper",
+      "upper"
+     ],
+     "mismatch": [
+      4.312525504500229,
+      1.1504243556457112
+     ],
+     "observables": {
+      "gi_bleed_57m": {
+       "D0": 60.0,
+       "acute_bpm": 14.644049062044244,
+       "debt_bpm": 13.668476442455983,
+       "intrinsic": 100.0,
+       "predicted": 128.31252550450023,
+       "reserve_utilization": 0.5662505100900046,
+       "sympathetic_bpm": 28.31252550450023,
+       "x0": 0.4545454545454546
+      },
+      "gi_bleed_72f": {
+       "D0": 20.0,
+       "acute_bpm": 8.106267341336215,
+       "debt_bpm": 5.044157014309495,
+       "intrinsic": 100.0,
+       "predicted": 113.15042435564571,
+       "reserve_utilization": 0.26300848711291425,
+       "sympathetic_bpm": 13.150424355645711,
+       "x0": 0.22727272727272746
+      }
+     },
+     "predicted": [
+      128.31252550450023,
+      113.15042435564571
+     ]
+    }
+   ]
+  }
+ },
+ "identifiability": {
+  "1": {
+   "acute": {
+    "bracket_rejected_neighbours": [
+     0.3822350547713923,
+     5.58459317277233
+    ],
+    "of": [
+     0.1,
+     0.3822350547713923,
+     1.4610363709608927,
+     5.58459317277233,
+     21.346272772705746
+    ],
+    "status": "PARTIALLY_CONSTRAINED",
+    "structural": null,
+    "surviving": [
+     1.4610363709608927
+    ]
+   },
+   "ceiling": {
+    "bracket_rejected_neighbours": null,
+    "of": [
+     150.0,
+     175.0,
+     200.0
+    ],
+    "status": "POORLY_IDENTIFIED",
+    "structural": null,
+    "surviving": [
+     150.0,
+     175.0
+    ]
+   },
+   "debt": {
+    "bracket_rejected_neighbours": null,
+    "of": [
+     0.0006666666666666666,
+     0.0026243840235588385,
+     0.010331087254666317,
+     0.040669110505707935,
+     0.16009704579529324
+    ],
+    "status": "NON_IDENTIFIABLE",
+    "structural": "only debt_to_sympathetic_gain x D reaches HR and the D scale is not approved (P2I-2AG: the D scale and the debt gain are one observable)",
+    "surviving": [
+     0.010331087254666317
+    ]
+   },
+   "intrinsic_57m": {
+    "bracket_rejected_neighbours": null,
+    "of": [
+     "lower",
+     "midpoint",
+     "upper"
+    ],
+    "status": "POORLY_IDENTIFIED",
+    "structural": null,
+    "surviving": [
+     "upper"
+    ]
+   },
+   "intrinsic_72f": {
+    "bracket_rejected_neighbours": null,
+    "of": [
+     "lower",
+     "midpoint",
+     "upper"
+    ],
+    "status": "POORLY_IDENTIFIED",
+    "structural": null,
+    "surviving": [
+     "upper"
+    ]
+   },
+   "observations": [
+    "57m authored arrival HR",
+    "72f authored arrival HR"
+   ],
+   "rule": "Per latent, over the joint survivors: NON_IDENTIFIABLE when the observable reaches it only through a product with an unapproved latent (STRUCTURAL); POORLY_IDENTIFIED when two or more grid values survive or the one surviving value is an edge of the explored support (unbounded on that side); PARTIALLY_CONSTRAINED when one interior value survives, bracketed by rejected neighbours, but the observations (two arrival HRs) are fewer than the latents (five), so the bracket is a grid artefact on a continuum of solutions; WELL_CONSTRAINED only when one interior value survives and the observations are at least as many as the latents. NOT_EVALUABLE without survivors. A narrow grid survivor set is never called identification; the arrival observables (acute, debt and total sympathetic increments, reserve utilization, predicted HR) are reported apart."
+  },
+  "1.1": {
+   "acute": {
+    "bracket_rejected_neighbours": null,
+    "of": [
+     0.1,
+     0.3822350547713923,
+     1.4610363709608927,
+     5.58459317277233,
+     21.346272772705746
+    ],
+    "status": "POORLY_IDENTIFIED",
+    "structural": null,
+    "surviving": [
+     0.3822350547713923,
+     1.4610363709608927,
+     5.58459317277233
+    ]
+   },
+   "ceiling": {
+    "bracket_rejected_neighbours": null,
+    "of": [
+     150.0,
+     175.0,
+     200.0
+    ],
+    "status": "POORLY_IDENTIFIED",
+    "structural": null,
+    "surviving": [
+     150.0,
+     175.0,
+     200.0
+    ]
+   },
+   "debt": {
+    "bracket_rejected_neighbours": null,
+    "of": [
+     0.0006666666666666666,
+     0.0026243840235588385,
+     0.010331087254666317,
+     0.040669110505707935,
+     0.16009704579529324
+    ],
+    "status": "NON_IDENTIFIABLE",
+    "structural": "only debt_to_sympathetic_gain x D reaches HR and the D scale is not approved (P2I-2AG: the D scale and the debt gain are one observable)",
+    "surviving": [
+     0.0006666666666666666,
+     0.0026243840235588385,
+     0.010331087254666317,
+     0.040669110505707935
+    ]
+   },
+   "intrinsic_57m": {
+    "bracket_rejected_neighbours": null,
+    "of": [
+     "lower",
+     "midpoint",
+     "upper"
+    ],
+    "status": "POORLY_IDENTIFIED",
+    "structural": null,
+    "surviving": [
+     "lower",
+     "upper"
+    ]
+   },
+   "intrinsic_72f": {
+    "bracket_rejected_neighbours": null,
+    "of": [
+     "lower",
+     "midpoint",
+     "upper"
+    ],
+    "status": "POORLY_IDENTIFIED",
+    "structural": null,
+    "surviving": [
+     "midpoint",
+     "upper"
+    ]
+   },
+   "observations": [
+    "57m authored arrival HR",
+    "72f authored arrival HR"
+   ],
+   "rule": "Per latent, over the joint survivors: NON_IDENTIFIABLE when the observable reaches it only through a product with an unapproved latent (STRUCTURAL); POORLY_IDENTIFIED when two or more grid values survive or the one surviving value is an edge of the explored support (unbounded on that side); PARTIALLY_CONSTRAINED when one interior value survives, bracketed by rejected neighbours, but the observations (two arrival HRs) are fewer than the latents (five), so the bracket is a grid artefact on a continuum of solutions; WELL_CONSTRAINED only when one interior value survives and the observations are at least as many as the latents. NOT_EVALUABLE without survivors. A narrow grid survivor set is never called identification; the arrival observables (acute, debt and total sympathetic increments, reserve utilization, predicted HR) are reported apart."
+  },
+  "union": {
+   "acute": {
+    "bracket_rejected_neighbours": null,
+    "of": [
+     0.1,
+     0.3822350547713923,
+     1.4610363709608927,
+     5.58459317277233,
+     21.346272772705746
+    ],
+    "status": "POORLY_IDENTIFIED",
+    "structural": null,
+    "surviving": [
+     0.3822350547713923,
+     1.4610363709608927,
+     5.58459317277233
+    ]
+   },
+   "ceiling": {
+    "bracket_rejected_neighbours": null,
+    "of": [
+     150.0,
+     175.0,
+     200.0
+    ],
+    "status": "POORLY_IDENTIFIED",
+    "structural": null,
+    "surviving": [
+     150.0,
+     175.0,
+     200.0
+    ]
+   },
+   "debt": {
+    "bracket_rejected_neighbours": null,
+    "of": [
+     0.0006666666666666666,
+     0.0026243840235588385,
+     0.010331087254666317,
+     0.040669110505707935,
+     0.16009704579529324
+    ],
+    "status": "NON_IDENTIFIABLE",
+    "structural": "only debt_to_sympathetic_gain x D reaches HR and the D scale is not approved (P2I-2AG: the D scale and the debt gain are one observable)",
+    "surviving": [
+     0.0006666666666666666,
+     0.0026243840235588385,
+     0.010331087254666317,
+     0.040669110505707935
+    ]
+   },
+   "intrinsic_57m": {
+    "bracket_rejected_neighbours": null,
+    "of": [
+     "lower",
+     "midpoint",
+     "upper"
+    ],
+    "status": "POORLY_IDENTIFIED",
+    "structural": null,
+    "surviving": [
+     "lower",
+     "upper"
+    ]
+   },
+   "intrinsic_72f": {
+    "bracket_rejected_neighbours": null,
+    "of": [
+     "lower",
+     "midpoint",
+     "upper"
+    ],
+    "status": "POORLY_IDENTIFIED",
+    "structural": null,
+    "surviving": [
+     "midpoint",
+     "upper"
+    ]
+   },
+   "observations": [
+    "57m authored arrival HR",
+    "72f authored arrival HR"
+   ],
+   "rule": "Per latent, over the joint survivors: NON_IDENTIFIABLE when the observable reaches it only through a product with an unapproved latent (STRUCTURAL); POORLY_IDENTIFIED when two or more grid values survive or the one surviving value is an edge of the explored support (unbounded on that side); PARTIALLY_CONSTRAINED when one interior value survives, bracketed by rejected neighbours, but the observations (two arrival HRs) are fewer than the latents (five), so the bracket is a grid artefact on a continuum of solutions; WELL_CONSTRAINED only when one interior value survives and the observations are at least as many as the latents. NOT_EVALUABLE without survivors. A narrow grid survivor set is never called identification; the arrival observables (acute, debt and total sympathetic increments, reserve utilization, predicted HR) are reported apart."
+  }
+ },
+ "observables": {
+  "1": {
+   "gi_bleed_57m": {
+    "D0": {
+     "max": 60.0,
+     "min": 60.0
+    },
+    "acute_bpm": {
+     "max": 13.873064382729133,
+     "min": 13.067912011325218
+    },
+    "debt_bpm": {
+     "max": 14.714606851298006,
+     "min": 13.860613798735798
+    },
+    "intrinsic": {
+     "max": 100.0,
+     "min": 100.0
+    },
+    "predicted": {
+     "max": 128.58767123402714,
+     "min": 126.92852581006102
+    },
+    "reserve_utilization": {
+     "max": 0.5385705162012203,
+     "min": 0.38116894978702853
+    },
+    "sympathetic_bpm": {
+     "max": 28.58767123402714,
+     "min": 26.928525810061018
+    },
+    "x0": {
+     "max": 0.4,
+     "min": 0.4
+    }
+   },
+   "gi_bleed_72f": {
+    "D0": {
+     "max": 20.0,
+     "min": 20.0
+    },
+    "acute_bpm": {
+     "max": 5.442393480156644,
+     "min": 5.397589325053321
+    },
+    "debt_bpm": {
+     "max": 5.1311377809389525,
+     "min": 5.088896018407095
+    },
+    "intrinsic": {
+     "max": 100.0,
+     "min": 100.0
+    },
+    "predicted": {
+     "max": 110.5735312610956,
+     "min": 110.48648534346042
+    },
+    "reserve_utilization": {
+     "max": 0.2097297068692083,
+     "min": 0.14098041681460793
+    },
+    "sympathetic_bpm": {
+     "max": 10.573531261095596,
+     "min": 10.486485343460416
+    },
+    "x0": {
+     "max": 0.15000000000000013,
+     "min": 0.15000000000000013
+    }
+   }
+  },
+  "1.1": {
+   "gi_bleed_57m": {
+    "D0": {
+     "max": 60.0,
+     "min": 60.0
+    },
+    "acute_bpm": {
+     "max": 59.326878513745726,
+     "min": 4.245017843933173
+    },
+    "debt_bpm": {
+     "max": 53.16758956768991,
+     "min": 0.9348515008512083
+    },
+    "intrinsic": {
+     "max": 100.0,
+     "min": 60.0
+    },
+    "predicted": {
+     "max": 128.51553542835697,
+     "min": 119.3900070170911
+    },
+    "reserve_utilization": {
+     "max": 0.705069238597782,
+     "min": 0.19583919657061244
+    },
+    "sympathetic_bpm": {
+     "max": 68.51553542835697,
+     "min": 19.390007017091094
+    },
+    "x0": {
+     "max": 0.4545454545454546,
+     "min": 0.4545454545454546
+    }
+   },
+   "gi_bleed_72f": {
+    "D0": {
+     "max": 20.0,
+     "min": 20.0
+    },
+    "acute_bpm": {
+     "max": 30.996458780042268,
+     "min": 2.164887825471321
+    },
+    "debt_bpm": {
+     "max": 19.740276228410902,
+     "min": 0.3256206600619905
+    },
+    "intrinsic": {
+     "max": 100.0,
+     "min": 80.0
+    },
+    "predicted": {
+     "max": 115.14654079760881,
+     "min": 107.13864018863269
+    },
+    "reserve_utilization": {
+     "max": 0.48315229019800326,
+     "min": 0.07324194800743157
+    },
+    "sympathetic_bpm": {
+     "max": 35.14654079760881,
+     "min": 7.314014618852227
+    },
+    "x0": {
+     "max": 0.22727272727272746,
+     "min": 0.22727272727272746
+    }
+   }
+  }
+ },
+ "pair_semantics": {
+  "band_reads": {
+   "arrival_delivery_ratio": {
+    "cited_items": [
+     "crt_s",
+     "hb_g_dl",
+     "peripheral_perfusion"
+    ],
+    "literal_values": true,
+    "reads_authored_value": false
+   },
+   "arrival_oxygen_debt": {
+    "cited_items": [
+     "active_bleeding",
+     "crt_s",
+     "lactate_mmol_l"
+    ],
+    "literal_values": true,
+    "reads_authored_value": false
+   }
+  },
+  "checks": {
+   "in_p2i2ai_inventory": true,
+   "no_hr": true,
+   "no_legacy": true,
+   "no_pressure_hr_term": true,
+   "p2i2ai_admissible": true,
+   "p2i2ai_lactate_compatible": true
+  },
+  "gi_bleed_57m": {
+   "D0": 60.0,
+   "debt_band": {
+    "lower": 0.0,
+    "midpoint": 20.0,
+    "name": "arrival_oxygen_debt",
+    "rationale": "the scale of the variable, not a fit: 0 (no accrued debt) to 60; neither case states a duration, so the band is wide and the same for both, and arrival need not be in steady state. Correction after the review (the values are unchanged, frozen before the sweep): the earlier wording derived the upper limit from a deficit of 0.5 for about two hours at the provisional repayment time (60 min), which gives about 26, not 60; 60 is the steady state of a total deficit (no delivery) at 60 min, and a debt above debt_per_delivery_deficit x demand x debt_clearance_tau_min (30 at tau 30) cannot accrue from any deficit. Whether to add such a reachability limit is a faculty decision",
+    "units": "index-minutes",
+    "upper": 60.0
+   },
+   "delivery": 0.6,
+   "delivery_band": {
+    "lower": 0.6,
+    "midpoint": 0.85,
+    "name": "arrival_delivery_ratio",
+    "rationale": "impaired perfusion (delayed refill, cool extremities), hypotension and severe anaemia place arrival delivery at or below adequacy; 1 is a compensated arrival, 0.6 a severe ongoing deficit; the case does not measure delivery",
+    "units": "units of the delivery that meets the reference demand",
+    "upper": 1.0
+   },
+   "delivery_reanchored": 0.24,
+   "in_p2i2ai_inventory": true,
+   "label": "severe: debt and low delivery",
+   "pair": [
+    "upper",
+    "lower"
+   ],
+   "values_from": "gi_reference.case_bands: arrival_oxygen_debt and arrival_delivery_ratio only (asv.pair_values); delivery re-anchored by the extraction reserve 2.5",
+   "x0": 0.4
+  },
+  "gi_bleed_72f": {
+   "D0": 20.0,
+   "debt_band": {
+    "lower": 0.0,
+    "midpoint": 20.0,
+    "name": "arrival_oxygen_debt",
+    "rationale": "the scale of the variable, not a fit: 0 (no accrued debt) to 60; neither case states a duration, so the band is wide and the same for both, and arrival need not be in steady state. Correction after the review (the values are unchanged, frozen before the sweep): the earlier wording derived the upper limit from a deficit of 0.5 for about two hours at the provisional repayment time (60 min), which gives about 26, not 60; 60 is the steady state of a total deficit (no delivery) at 60 min, and a debt above debt_per_delivery_deficit x demand x debt_clearance_tau_min (30 at tau 30) cannot accrue from any deficit. Whether to add such a reachability limit is a faculty decision",
+    "units": "index-minutes",
+    "upper": 60.0
+   },
+   "delivery": 0.85,
+   "delivery_band": {
+    "lower": 0.6,
+    "midpoint": 0.85,
+    "name": "arrival_delivery_ratio",
+    "rationale": "impaired perfusion (delayed refill, cool extremities), hypotension and severe anaemia place arrival delivery at or below adequacy; 1 is a compensated arrival, 0.6 a severe ongoing deficit; the case does not measure delivery",
+    "units": "units of the delivery that meets the reference demand",
+    "upper": 1.0
+   },
+   "delivery_reanchored": 0.33999999999999997,
+   "in_p2i2ai_inventory": true,
+   "label": "middle",
+   "pair": [
+    "midpoint",
+    "midpoint"
+   ],
+   "values_from": "gi_reference.case_bands: arrival_oxygen_debt and arrival_delivery_ratio only (asv.pair_values); delivery re-anchored by the extraction reserve 2.5",
+   "x0": 0.15000000000000013
+  }
+ },
+ "policy": "Shadow only. P2I-2AI's record and P2I-2AD's machinery (closed), never the P2F historical region (P2FGuard); legacy never read (LegacyLock). Case truth before any count; the retained pair's rows rebuilt and reused only on exact reproduction; arrival HR analytic; trajectories once per P3 set, point and crystalloid point, HR post-processed and validated; no Cartesian product with blood, fluid or other case pairs; nothing selected, filtered or approved.",
+ "record": "805eff4efb562b19f1d280bdd48bbc1d458d0055f104b66f7bc7dca7ea61a861",
+ "retained": [
+  [
+   "upper",
+   "lower"
+  ],
+  [
+   "midpoint",
+   "midpoint"
+  ]
+ ],
+ "retained_status": "FACULTY_CONSTRAINED_CASE_COMPATIBLE_ARRIVAL_SEVERITY_SUPPORT",
+ "reuse": {
+  "dependency": {
+   "at_p2i2ai": "a27eddf04f9b075a2093446ea7288dea423874d96823977d1e4b68005ce21e1c",
+   "digest": "a27eddf04f9b075a2093446ea7288dea423874d96823977d1e4b68005ce21e1c",
+   "equal": true
+  },
+  "equal": true,
+  "pair": "upper/lower|midpoint/midpoint",
+  "record_freeze_digest": "805eff4efb562b19f1d280bdd48bbc1d458d0055f104b66f7bc7dca7ea61a861",
+  "recorded_survivors": {
+   "0.9": 0,
+   "1": 216,
+   "1.1": 1092
+  },
+  "recorded_units_digest": "06f6d5c82fa3047643c4073bf77614e88499575de51ef9b22aa5514bca18488b",
+  "reused_from_record": {
+   "representatives": {
+    "HIGH": {
+     "lambda_57m": 612,
+     "lambda_72f": 611,
+     "p1": 5,
+     "p3": 21,
+     "rank": 215,
+     "support": 11
+    },
+    "LOW": {
+     "lambda_57m": 612,
+     "lambda_72f": 611,
+     "p1": 40,
+     "p3": 196,
+     "rank": 0,
+     "support": 0
+    },
+    "MID": {
+     "lambda_57m": 612,
+     "lambda_72f": 611,
+     "p1": 15,
+     "p3": 65,
+     "rank": 108,
+     "support": 0
+    }
+   },
+   "statistics": {
+    "adequate_through_120": 216,
+    "debt_coherent": 216,
+    "evaluated_both": 216,
+    "trigger_is_onset": 216
+   }
+  },
+  "rule": "P2I-2AI's record keeps the retained pair's units digest, survivors by demand and statistics, not the rows. The rows are rebuilt for the retained pair only (its 405 lactate-side bases per case, not P2I-2AI's 25 combinations) with P2I-2AD's own unit checks (lactate_closure._l1_unit, _l3_unit, _l2_unit and its Stage accounting, each case read at its own pair) and reused only when: the pair is the record's; the record is the committed one (its freeze digest); every clinical_core source the rows depend on equals P2I-2AI's certified HEAD (DEPENDENCIES_AT_P2I2AI); the units digest at demand 1.0 equals the record's and the survivors at 0.9 / 1.0 / 1.1 equal the record's. Otherwise the run stops.",
+  "survivors": {
+   "0.9": 0,
+   "1": 216,
+   "1.1": 1092
+  },
+  "units_digest": "06f6d5c82fa3047643c4073bf77614e88499575de51ef9b22aa5514bca18488b"
+ },
+ "revision": "P2I-2AJ",
+ "trajectories": {
+  "by_demand": {
+   "1": {
+    "by_intrinsic": {
+     "gi_bleed_57m": {
+      "upper": {
+       "H1.delta_120": {
+        "high": 29.030241004494144,
+        "low": 17.267619393595737,
+        "median": 22.355749751456827,
+        "n": 432
+       },
+       "H1.delta_30": {
+        "high": 7.763227160611052,
+        "low": 5.5658435058601015,
+        "median": 6.572433635034059,
+        "n": 432
+       },
+       "H1.delta_60": {
+        "high": 15.49001055514799,
+        "low": 10.394663486197516,
+        "median": 12.665931754029373,
+        "n": 432
+       },
+       "H1.hr_120": {
+        "high": 157.61791223852128,
+        "low": 144.19614520365676,
+        "median": 150.1138482735009,
+        "n": 432
+       },
+       "H1.hr_30": {
+        "high": 136.3508983946382,
+        "low": 132.49436931592112,
+        "median": 134.33053215707815,
+        "n": 432
+       },
+       "H1.hr_60": {
+        "high": 144.07768178917513,
+        "low": 137.32318929625853,
+        "median": 140.42403027607344,
+        "n": 432
+       },
+       "H1.max": {
+        "high": 157.61791223852128,
+        "low": 144.19614520365676,
+        "median": 150.1138482735009,
+        "n": 432
+       },
+       "H2.early_change": {
+        "high": -0.9588991314704742,
+        "low": -2.6438054238830375,
+        "median": -1.924957327375779,
+        "n": 432
+       },
+       "H2.hr_120": {
+        "high": 149.89052090022446,
+        "low": 138.6540441988117,
+        "median": 143.17589898626886,
+        "n": 432
+       },
+       "H2.hr_60": {
+        "high": 136.02602111278722,
+        "low": 129.98079353371017,
+        "median": 132.4443793993303,
+        "n": 432
+       },
+       "H2.nadir": {
+        "high": 127.44188907603846,
+        "low": 124.6346735534866,
+        "median": 125.87392006553169,
+        "n": 432
+       },
+       "H2.nadir_minute": {
+        "high": 22,
+        "low": 20,
+        "median": 21.0,
+        "n": 432
+       },
+       "H2.rebound": {
+        "high": 23.14422864284853,
+        "low": 13.590676968363155,
+        "median": 17.415534040047334,
+        "n": 432
+       },
+       "H3.after_unit_1": {
+        "high": 123.06246111058226,
+        "low": 121.77296300862314,
+        "median": 122.39244376176788,
+        "n": 432
+       },
+       "H3.after_unit_2": {
+        "high": 111.23521746395977,
+        "low": 110.68741598425136,
+        "median": 110.9400328946995,
+        "n": 432
+       },
+       "H3.before_unit_1": {
+        "high": 128.58767123402714,
+        "low": 126.92852581006102,
+        "median": 127.75809852204408,
+        "n": 432
+       },
+       "H3.delta_unit_1": {
+        "high": -4.749802824449262,
+        "low": -5.981506696103153,
+        "median": -5.34038646244138,
+        "n": 432
+       },
+       "H3.delta_unit_2": {
+        "high": -10.828733855623597,
+        "low": -11.965800314540886,
+        "median": -11.390399582534705,
+        "n": 432
+       },
+       "H3.unit_1_minute": {
+        "high": 30,
+        "low": 30,
+        "median": 30.0,
+        "n": 432
+       },
+       "H3.unit_2_minute": {
+        "high": 60,
+        "low": 60,
+        "median": 60.0,
+        "n": 432
+       },
+       "H4.adequacy_onset": {
+        "high": 60,
+        "low": 60,
+        "median": 60.0,
+        "n": 432
+       },
+       "H4.change_after_adequacy": {
+        "high": -9.264458062434798,
+        "low": -9.750230716443937,
+        "median": -9.48816749264288,
+        "n": 432
+       },
+       "H4.hr_120": {
+        "high": 101.48498674751583,
+        "low": 101.42295792181656,
+        "median": 101.45186540205663,
+        "n": 432
+       },
+       "H4.hr_60": {
+        "high": 111.23521746395977,
+        "low": 110.68741598425136,
+        "median": 110.9400328946995,
+        "n": 432
+       },
+       "H4.hr_90": {
+        "high": 104.1023663341292,
+        "low": 103.92739087026969,
+        "median": 104.00884269661341,
+        "n": 432
+       },
+       "H4.residual_above_intrinsic_120": {
+        "high": 1.4849867475158334,
+        "low": 1.422957921816561,
+        "median": 1.451865402056626,
+        "n": 432
+       },
+       "H6.ceiling": {
+        "high": 175.0,
+        "low": 150.0,
+        "median": 162.5,
+        "n": 432
+       },
+       "H6.distance_to_ceiling": {
+        "high": 20.24212073605284,
+        "low": 4.5301827169453475,
+        "median": 11.59297127891098,
+        "n": 432
+       },
+       "H6.max_hr": {
+        "high": 157.61791223852128,
+        "low": 144.19614520365676,
+        "median": 150.1138482735009,
+        "n": 432
+       },
+       "H6.reserve_utilization": {
+        "high": 0.9093963456610931,
+        "low": 0.7301050568526288,
+        "median": 0.8260808669600428,
+        "n": 432
+       }
+      }
+     },
+     "gi_bleed_72f": {
+      "upper": {
+       "H1.delta_120": {
+        "high": 26.272074097941854,
+        "low": 18.979102223692095,
+        "median": 22.81867449972698,
+        "n": 432
+       },
+       "H1.delta_30": {
+        "high": 5.350327672650437,
+        "low": 4.314993269137389,
+        "median": 5.124476555152633,
+        "n": 432
+       },
+       "H1.delta_60": {
+        "high": 11.695647341292855,
+        "low": 9.082199083896043,
+        "median": 10.91693264262846,
+        "n": 432
+       },
+       "H1.hr_120": {
+        "high": 136.84560535903745,
+        "low": 129.4655875671525,
+        "median": 133.3051598431874,
+        "n": 432
+       },
+       "H1.hr_30": {
+        "high": 115.92385893374603,
+        "low": 114.8014786125978,
+        "median": 115.61096189861306,
+        "n": 432
+       },
+       "H1.hr_60": {
+        "high": 122.26917860238845,
+        "low": 119.56868442735646,
+        "median": 121.40341798608887,
+        "n": 432
+       },
+       "H1.max": {
+        "high": 136.84560535903745,
+        "low": 129.4655875671525,
+        "median": 133.3051598431874,
+        "n": 432
+       },
+       "H2.early_change": {
+        "high": -2.1947160753490067,
+        "low": -3.844082832732056,
+        "median": -2.929498089581358,
+        "n": 432
+       },
+       "H2.hr_120": {
+        "high": 125.59126783665671,
+        "low": 117.79756573248946,
+        "median": 120.38928054087339,
+        "n": 432
+       },
+       "H2.hr_60": {
+        "high": 113.22801057690634,
+        "low": 109.18985071270971,
+        "median": 110.90072872503252,
+        "n": 432
+       },
+       "H2.nadir": {
+        "high": 108.23412684135177,
+        "low": 106.34585939034014,
+        "median": 107.45003289928957,
+        "n": 432
+       },
+       "H2.nadir_minute": {
+        "high": 26,
+        "low": 23,
+        "median": 24.0,
+        "n": 432
+       },
+       "H2.rebound": {
+        "high": 17.820263347472874,
+        "low": 10.881441063735053,
+        "median": 13.093593717097619,
+        "n": 432
+       },
+       "H3.after_unit_1": {
+        "high": 103.81483860643172,
+        "low": 103.65806286646759,
+        "median": 103.77934514498652,
+        "n": 432
+       },
+       "H3.after_unit_2": {
+        "high": 101.37365294903556,
+        "low": 101.31817818074849,
+        "median": 101.36432523892773,
+        "n": 432
+       },
+       "H3.before_unit_1": {
+        "high": 110.5735312610956,
+        "low": 110.48648534346042,
+        "median": 110.530008302278,
+        "n": 432
+       },
+       "H3.delta_unit_1": {
+        "high": -6.675755942456021,
+        "low": -6.911834242899062,
+        "median": -6.790177766034944,
+        "n": 432
+       },
+       "H3.delta_unit_2": {
+        "high": -2.339884685719099,
+        "low": -2.4411856573961614,
+        "median": -2.415019906058788,
+        "n": 432
+       },
+       "H3.unit_1_minute": {
+        "high": 30,
+        "low": 30,
+        "median": 30.0,
+        "n": 432
+       },
+       "H3.unit_2_minute": {
+        "high": 60,
+        "low": 60,
+        "median": 60.0,
+        "n": 432
+       },
+       "H4.adequacy_onset": {
+        "high": 60,
+        "low": 60,
+        "median": 60.0,
+        "n": 432
+       },
+       "H4.change_after_adequacy": {
+        "high": -1.1457286447458017,
+        "low": -1.193967074367066,
+        "median": -1.1858335677507057,
+        "n": 432
+       },
+       "H4.hr_120": {
+        "high": 100.1796858746685,
+        "low": 100.17244953600269,
+        "median": 100.17849167117703,
+        "n": 432
+       },
+       "H4.hr_60": {
+        "high": 101.37365294903556,
+        "low": 101.31817818074849,
+        "median": 101.36432523892773,
+        "n": 432
+       },
+       "H4.hr_90": {
+        "high": 100.49682818548254,
+        "low": 100.47681334029323,
+        "median": 100.49351854026327,
+        "n": 432
+       },
+       "H4.residual_above_intrinsic_120": {
+        "high": 0.17968587466849328,
+        "low": 0.17244953600268786,
+        "median": 0.1784916711770279,
+        "n": 432
+       },
+       "H6.ceiling": {
+        "high": 175.0,
+        "low": 150.0,
+        "median": 162.5,
+        "n": 432
+       },
+       "H6.distance_to_ceiling": {
+        "high": 43.291393794246005,
+        "low": 16.614236046787255,
+        "median": 29.34440353690502,
+        "n": 432
+       },
+       "H6.max_hr": {
+        "high": 136.84560535903745,
+        "low": 129.4655875671525,
+        "median": 133.3051598431874,
+        "n": 432
+       },
+       "H6.reserve_utilization": {
+        "high": 0.6677152790642549,
+        "low": 0.42278141607671993,
+        "median": 0.5402932447317748,
+        "n": 432
+       }
+      }
+     }
+    },
+    "distributions": {
+     "gi_bleed_57m": {
+      "H1.delta_120": {
+       "high": 29.030241004494144,
+       "low": 17.267619393595737,
+       "median": 22.355749751456827,
+       "n": 432
+      },
+      "H1.delta_30": {
+       "high": 7.763227160611052,
+       "low": 5.5658435058601015,
+       "median": 6.572433635034059,
+       "n": 432
+      },
+      "H1.delta_60": {
+       "high": 15.49001055514799,
+       "low": 10.394663486197516,
+       "median": 12.665931754029373,
+       "n": 432
+      },
+      "H1.hr_120": {
+       "high": 157.61791223852128,
+       "low": 144.19614520365676,
+       "median": 150.1138482735009,
+       "n": 432
+      },
+      "H1.hr_30": {
+       "high": 136.3508983946382,
+       "low": 132.49436931592112,
+       "median": 134.33053215707815,
+       "n": 432
+      },
+      "H1.hr_60": {
+       "high": 144.07768178917513,
+       "low": 137.32318929625853,
+       "median": 140.42403027607344,
+       "n": 432
+      },
+      "H1.max": {
+       "high": 157.61791223852128,
+       "low": 144.19614520365676,
+       "median": 150.1138482735009,
+       "n": 432
+      },
+      "H2.early_change": {
+       "high": -0.9588991314704742,
+       "low": -2.6438054238830375,
+       "median": -1.924957327375779,
+       "n": 432
+      },
+      "H2.hr_120": {
+       "high": 149.89052090022446,
+       "low": 138.6540441988117,
+       "median": 143.17589898626886,
+       "n": 432
+      },
+      "H2.hr_60": {
+       "high": 136.02602111278722,
+       "low": 129.98079353371017,
+       "median": 132.4443793993303,
+       "n": 432
+      },
+      "H2.nadir": {
+       "high": 127.44188907603846,
+       "low": 124.6346735534866,
+       "median": 125.87392006553169,
+       "n": 432
+      },
+      "H2.nadir_minute": {
+       "high": 22,
+       "low": 20,
+       "median": 21.0,
+       "n": 432
+      },
+      "H2.rebound": {
+       "high": 23.14422864284853,
+       "low": 13.590676968363155,
+       "median": 17.415534040047334,
+       "n": 432
+      },
+      "H3.after_unit_1": {
+       "high": 123.06246111058226,
+       "low": 121.77296300862314,
+       "median": 122.39244376176788,
+       "n": 432
+      },
+      "H3.after_unit_2": {
+       "high": 111.23521746395977,
+       "low": 110.68741598425136,
+       "median": 110.9400328946995,
+       "n": 432
+      },
+      "H3.before_unit_1": {
+       "high": 128.58767123402714,
+       "low": 126.92852581006102,
+       "median": 127.75809852204408,
+       "n": 432
+      },
+      "H3.delta_unit_1": {
+       "high": -4.749802824449262,
+       "low": -5.981506696103153,
+       "median": -5.34038646244138,
+       "n": 432
+      },
+      "H3.delta_unit_2": {
+       "high": -10.828733855623597,
+       "low": -11.965800314540886,
+       "median": -11.390399582534705,
+       "n": 432
+      },
+      "H3.unit_1_minute": {
+       "high": 30,
+       "low": 30,
+       "median": 30.0,
+       "n": 432
+      },
+      "H3.unit_2_minute": {
+       "high": 60,
+       "low": 60,
+       "median": 60.0,
+       "n": 432
+      },
+      "H4.adequacy_onset": {
+       "high": 60,
+       "low": 60,
+       "median": 60.0,
+       "n": 432
+      },
+      "H4.change_after_adequacy": {
+       "high": -9.264458062434798,
+       "low": -9.750230716443937,
+       "median": -9.48816749264288,
+       "n": 432
+      },
+      "H4.hr_120": {
+       "high": 101.48498674751583,
+       "low": 101.42295792181656,
+       "median": 101.45186540205663,
+       "n": 432
+      },
+      "H4.hr_60": {
+       "high": 111.23521746395977,
+       "low": 110.68741598425136,
+       "median": 110.9400328946995,
+       "n": 432
+      },
+      "H4.hr_90": {
+       "high": 104.1023663341292,
+       "low": 103.92739087026969,
+       "median": 104.00884269661341,
+       "n": 432
+      },
+      "H4.residual_above_intrinsic_120": {
+       "high": 1.4849867475158334,
+       "low": 1.422957921816561,
+       "median": 1.451865402056626,
+       "n": 432
+      },
+      "H6.ceiling": {
+       "high": 175.0,
+       "low": 150.0,
+       "median": 162.5,
+       "n": 432
+      },
+      "H6.distance_to_ceiling": {
+       "high": 20.24212073605284,
+       "low": 4.5301827169453475,
+       "median": 11.59297127891098,
+       "n": 432
+      },
+      "H6.max_hr": {
+       "high": 157.61791223852128,
+       "low": 144.19614520365676,
+       "median": 150.1138482735009,
+       "n": 432
+      },
+      "H6.reserve_utilization": {
+       "high": 0.9093963456610931,
+       "low": 0.7301050568526288,
+       "median": 0.8260808669600428,
+       "n": 432
+      }
+     },
+     "gi_bleed_72f": {
+      "H1.delta_120": {
+       "high": 26.272074097941854,
+       "low": 18.979102223692095,
+       "median": 22.81867449972698,
+       "n": 432
+      },
+      "H1.delta_30": {
+       "high": 5.350327672650437,
+       "low": 4.314993269137389,
+       "median": 5.124476555152633,
+       "n": 432
+      },
+      "H1.delta_60": {
+       "high": 11.695647341292855,
+       "low": 9.082199083896043,
+       "median": 10.91693264262846,
+       "n": 432
+      },
+      "H1.hr_120": {
+       "high": 136.84560535903745,
+       "low": 129.4655875671525,
+       "median": 133.3051598431874,
+       "n": 432
+      },
+      "H1.hr_30": {
+       "high": 115.92385893374603,
+       "low": 114.8014786125978,
+       "median": 115.61096189861306,
+       "n": 432
+      },
+      "H1.hr_60": {
+       "high": 122.26917860238845,
+       "low": 119.56868442735646,
+       "median": 121.40341798608887,
+       "n": 432
+      },
+      "H1.max": {
+       "high": 136.84560535903745,
+       "low": 129.4655875671525,
+       "median": 133.3051598431874,
+       "n": 432
+      },
+      "H2.early_change": {
+       "high": -2.1947160753490067,
+       "low": -3.844082832732056,
+       "median": -2.929498089581358,
+       "n": 432
+      },
+      "H2.hr_120": {
+       "high": 125.59126783665671,
+       "low": 117.79756573248946,
+       "median": 120.38928054087339,
+       "n": 432
+      },
+      "H2.hr_60": {
+       "high": 113.22801057690634,
+       "low": 109.18985071270971,
+       "median": 110.90072872503252,
+       "n": 432
+      },
+      "H2.nadir": {
+       "high": 108.23412684135177,
+       "low": 106.34585939034014,
+       "median": 107.45003289928957,
+       "n": 432
+      },
+      "H2.nadir_minute": {
+       "high": 26,
+       "low": 23,
+       "median": 24.0,
+       "n": 432
+      },
+      "H2.rebound": {
+       "high": 17.820263347472874,
+       "low": 10.881441063735053,
+       "median": 13.093593717097619,
+       "n": 432
+      },
+      "H3.after_unit_1": {
+       "high": 103.81483860643172,
+       "low": 103.65806286646759,
+       "median": 103.77934514498652,
+       "n": 432
+      },
+      "H3.after_unit_2": {
+       "high": 101.37365294903556,
+       "low": 101.31817818074849,
+       "median": 101.36432523892773,
+       "n": 432
+      },
+      "H3.before_unit_1": {
+       "high": 110.5735312610956,
+       "low": 110.48648534346042,
+       "median": 110.530008302278,
+       "n": 432
+      },
+      "H3.delta_unit_1": {
+       "high": -6.675755942456021,
+       "low": -6.911834242899062,
+       "median": -6.790177766034944,
+       "n": 432
+      },
+      "H3.delta_unit_2": {
+       "high": -2.339884685719099,
+       "low": -2.4411856573961614,
+       "median": -2.415019906058788,
+       "n": 432
+      },
+      "H3.unit_1_minute": {
+       "high": 30,
+       "low": 30,
+       "median": 30.0,
+       "n": 432
+      },
+      "H3.unit_2_minute": {
+       "high": 60,
+       "low": 60,
+       "median": 60.0,
+       "n": 432
+      },
+      "H4.adequacy_onset": {
+       "high": 60,
+       "low": 60,
+       "median": 60.0,
+       "n": 432
+      },
+      "H4.change_after_adequacy": {
+       "high": -1.1457286447458017,
+       "low": -1.193967074367066,
+       "median": -1.1858335677507057,
+       "n": 432
+      },
+      "H4.hr_120": {
+       "high": 100.1796858746685,
+       "low": 100.17244953600269,
+       "median": 100.17849167117703,
+       "n": 432
+      },
+      "H4.hr_60": {
+       "high": 101.37365294903556,
+       "low": 101.31817818074849,
+       "median": 101.36432523892773,
+       "n": 432
+      },
+      "H4.hr_90": {
+       "high": 100.49682818548254,
+       "low": 100.47681334029323,
+       "median": 100.49351854026327,
+       "n": 432
+      },
+      "H4.residual_above_intrinsic_120": {
+       "high": 0.17968587466849328,
+       "low": 0.17244953600268786,
+       "median": 0.1784916711770279,
+       "n": 432
+      },
+      "H6.ceiling": {
+       "high": 175.0,
+       "low": 150.0,
+       "median": 162.5,
+       "n": 432
+      },
+      "H6.distance_to_ceiling": {
+       "high": 43.291393794246005,
+       "low": 16.614236046787255,
+       "median": 29.34440353690502,
+       "n": 432
+      },
+      "H6.max_hr": {
+       "high": 136.84560535903745,
+       "low": 129.4655875671525,
+       "median": 133.3051598431874,
+       "n": 432
+      },
+      "H6.reserve_utilization": {
+       "high": 0.6677152790642549,
+       "low": 0.42278141607671993,
+       "median": 0.5402932447317748,
+       "n": 432
+      }
+     }
+    },
+    "fluid_vs_prbc_72f": {
+     "acute_signal_diverges_at": {
+      "high": 1,
+      "low": 1,
+      "median": 1.0,
+      "n": 432
+     },
+     "debt_diverges_at": {
+      "high": 2,
+      "low": 2,
+      "median": 2.0,
+      "n": 432
+     },
+     "diverges_at": {
+      "high": 1,
+      "low": 1,
+      "median": 1.0,
+      "n": 432
+     },
+     "diverges_by_1_bpm_at": {
+      "high": 13,
+      "low": 9,
+      "median": 11.0,
+      "n": 432
+     },
+     "first_input": {
+      "acute": 432,
+      "debt": 0,
+      "none": 0
+     },
+     "largest_at": {
+      "high": 120,
+      "low": 120,
+      "median": 120.0,
+      "n": 432
+     },
+     "largest_difference": {
+      "high": 25.41277574424663,
+      "low": 17.625116196486772,
+      "median": 20.21078886969636,
+      "n": 432
+     },
+     "never_diverge": 0,
+     "pairs": 432,
+     "prbc_minus_fluid_at_largest": {
+      "high": -17.625116196486772,
+      "low": -25.41277574424663,
+      "median": -20.21078886969636,
+      "n": 432
+     },
+     "rule": "72f only, diagnostic (no requirement that HR distinguish the treatments): for every 72f lactate survivor and joint survivor, L2 (2 L crystalloid over 20 min, bleeding continues) against L3 (2 PRBC units over 60 min with PPI from minute 0 and endoscopic haemostasis at 60) on the same P3 set and lactate-side point: the first minute the HRs differ at all and by more than 1 bpm, the largest difference and its minute, and which HR input diverges first (the acute signal, deficit over demand, or D). The scenarios differ in more than the fluid (PPI, haemostasis)."
+    },
+    "full_runs": 504,
+    "joint_survivors": 2,
+    "lactate_survivors": 216,
+    "naive_full_runs": 1296,
+    "readings_per_case": 432
+   },
+   "1.1": {
+    "by_intrinsic": {
+     "gi_bleed_57m": {
+      "lower": {
+       "H1.delta_120": {
+        "high": 29.442625986642042,
+        "low": 13.780794854314166,
+        "median": 22.504752315922673,
+        "n": 7644
+       },
+       "H1.delta_30": {
+        "high": 7.942318996991645,
+        "low": 4.149886988353188,
+        "median": 5.930543362485679,
+        "n": 7644
+       },
+       "H1.delta_60": {
+        "high": 15.599688180980877,
+        "low": 7.765912623454284,
+        "median": 11.614390824359333,
+        "n": 7644
+       },
+       "H1.hr_120": {
+        "high": 153.1335860323415,
+        "low": 137.23702632811455,
+        "median": 145.13721891758507,
+        "n": 7644
+       },
+       "H1.hr_30": {
+        "high": 135.67901245046806,
+        "low": 125.72774305665082,
+        "median": 128.48486113172595,
+        "n": 7644
+       },
+       "H1.hr_60": {
+        "high": 142.24803823207625,
+        "low": 130.44712991810576,
+        "median": 134.17480420791006,
+        "n": 7644
+       },
+       "H1.max": {
+        "high": 153.1335860323415,
+        "low": 137.23702632811455,
+        "median": 145.13721891758507,
+        "n": 7644
+       },
+       "H2.early_change": {
+        "high": 0.3943238843620094,
+        "low": -17.803127659505492,
+        "median": -10.791883980340607,
+        "n": 7644
+       },
+       "H2.hr_120": {
+        "high": 146.66196954299735,
+        "low": 124.25233224702222,
+        "median": 132.85040930117444,
+        "n": 7644
+       },
+       "H2.hr_60": {
+        "high": 135.5124775291542,
+        "low": 107.92101782825435,
+        "median": 120.376240020086,
+        "n": 7644
+       },
+       "H2.nadir": {
+        "high": 127.60370136475717,
+        "low": 100.33933752797924,
+        "median": 113.29153208467073,
+        "n": 7644
+       },
+       "H2.nadir_minute": {
+        "high": 27,
+        "low": 7,
+        "median": 25.0,
+        "n": 7644
+       },
+       "H2.rebound": {
+        "high": 33.29809881310945,
+        "low": 11.726116608595305,
+        "median": 19.634177023599577,
+        "n": 7644
+       },
+       "H3.after_unit_1": {
+        "high": 126.09080807577791,
+        "low": 88.73998591090977,
+        "median": 103.4363019465636,
+        "n": 7644
+       },
+       "H3.after_unit_2": {
+        "high": 120.21534345750649,
+        "low": 61.22714582987394,
+        "median": 75.49812834883126,
+        "n": 7644
+       },
+       "H3.before_unit_1": {
+        "high": 128.51553542835697,
+        "low": 120.26173001459694,
+        "median": 122.76933855783557,
+        "n": 7644
+       },
+       "H3.delta_unit_1": {
+        "high": -1.2220654995543754,
+        "low": -31.52174410368717,
+        "median": -22.831555796984986,
+        "n": 7644
+       },
+       "H3.delta_unit_2": {
+        "high": -4.647042327589247,
+        "low": -31.85076560504369,
+        "median": -28.1668860509009,
+        "n": 7644
+       },
+       "H3.unit_1_minute": {
+        "high": 30,
+        "low": 30,
+        "median": 30.0,
+        "n": 7644
+       },
+       "H3.unit_2_minute": {
+        "high": 60,
+        "low": 60,
+        "median": 60.0,
+        "n": 7644
+       },
+       "H4.adequacy_onset": {
+        "high": 60,
+        "low": 60,
+        "median": 60.0,
+        "n": 7644
+       },
+       "H4.change_after_adequacy": {
+        "high": -1.1175949872138773,
+        "low": -50.66879503890871,
+        "median": -13.47750981161542,
+        "n": 7644
+       },
+       "H4.hr_120": {
+        "high": 69.54654841859778,
+        "low": 60.10955084266006,
+        "median": 62.02061853721584,
+        "n": 7644
+       },
+       "H4.hr_60": {
+        "high": 120.21534345750649,
+        "low": 61.22714582987394,
+        "median": 75.49812834883126,
+        "n": 7644
+       },
+       "H4.hr_90": {
+        "high": 85.98541010870846,
+        "low": 60.30386866928748,
+        "median": 65.58131124391677,
+        "n": 7644
+       },
+       "H4.residual_above_intrinsic_120": {
+        "high": 9.54654841859778,
+        "low": 0.1095508426600631,
+        "median": 2.0206185372158387,
+        "n": 7644
+       },
+       "H6.ceiling": {
+        "high": 200.0,
+        "low": 150.0,
+        "median": 175.0,
+        "n": 7644
+       },
+       "H6.distance_to_ceiling": {
+        "high": 58.96604514626077,
+        "low": 9.57513398376662,
+        "median": 24.593466704286868,
+        "n": 7644
+       },
+       "H6.max_hr": {
+        "high": 153.1335860323415,
+        "low": 137.23702632811455,
+        "median": 145.13721891758507,
+        "n": 7644
+       },
+       "H6.reserve_utilization": {
+        "high": 0.8936096224025931,
+        "low": 0.5788139632409945,
+        "median": 0.7861437677888098,
+        "n": 7644
+       }
+      },
+      "upper": {
+       "H1.delta_120": {
+        "high": 12.225083029132946,
+        "low": 7.467358690339637,
+        "median": 10.722193543990784,
+        "n": 6552
+       },
+       "H1.delta_30": {
+        "high": 2.9802371167920114,
+        "low": 1.9161805838410118,
+        "median": 2.528469224523988,
+        "n": 6552
+       },
+       "H1.delta_60": {
+        "high": 5.975406932437181,
+        "low": 3.7766907511967105,
+        "median": 5.146259462588219,
+        "n": 6552
+       },
+       "H1.hr_120": {
+        "high": 139.22285144290237,
+        "low": 126.92431951809829,
+        "median": 130.80882015225689,
+        "n": 6552
+       },
+       "H1.hr_30": {
+        "high": 131.29276262129224,
+        "low": 121.37314141159966,
+        "median": 122.20839870767887,
+        "n": 6552
+       },
+       "H1.hr_60": {
+        "high": 134.15609143672938,
+        "low": 123.23365157895536,
+        "median": 124.79129274821113,
+        "n": 6552
+       },
+       "H1.max": {
+        "high": 139.22285144290237,
+        "low": 126.92431951809829,
+        "median": 130.80882015225689,
+        "n": 6552
+       },
+       "H2.early_change": {
+        "high": 0.11971317572462681,
+        "low": -5.037225590480688,
+        "median": -2.9756809025146396,
+        "n": 6552
+       },
+       "H2.hr_120": {
+        "high": 135.84391848078863,
+        "low": 121.79250193977539,
+        "median": 125.77641259608176,
+        "n": 6552
+       },
+       "H2.hr_60": {
+        "high": 130.27928071895204,
+        "low": 116.7277931034127,
+        "median": 120.87541696811142,
+        "n": 6552
+       },
+       "H2.nadir": {
+        "high": 126.67657117135964,
+        "low": 114.38095074106957,
+        "median": 118.03773029859198,
+        "n": 6552
+       },
+       "H2.nadir_minute": {
+        "high": 27,
+        "low": 8,
+        "median": 24.0,
+        "n": 6552
+       },
+       "H2.rebound": {
+        "high": 11.568494932360238,
+        "low": 5.799150008209963,
+        "median": 7.77877398727901,
+        "n": 6552
+       },
+       "H3.after_unit_1": {
+        "high": 123.88059274413436,
+        "low": 111.3794712725292,
+        "median": 115.81156804422905,
+        "n": 6552
+       },
+       "H3.after_unit_2": {
+        "high": 116.8253122512886,
+        "low": 103.33811450166283,
+        "median": 108.7611023512841,
+        "n": 6552
+       },
+       "H3.before_unit_1": {
+        "high": 128.31252550450023,
+        "low": 119.3900070170911,
+        "median": 119.8123332564423,
+        "n": 6552
+       },
+       "H3.delta_unit_1": {
+        "high": -0.607651294954124,
+        "low": -8.724458783018349,
+        "median": -6.139431439253279,
+        "n": 6552
+       },
+       "H3.delta_unit_2": {
+        "high": -2.0067094542788624,
+        "low": -9.866485609614756,
+        "median": -7.863849203294549,
+        "n": 6552
+       },
+       "H3.unit_1_minute": {
+        "high": 30,
+        "low": 30,
+        "median": 30.0,
+        "n": 6552
+       },
+       "H3.unit_2_minute": {
+        "high": 60,
+        "low": 60,
+        "median": 60.0,
+        "n": 6552
+       },
+       "H4.adequacy_onset": {
+        "high": 60,
+        "low": 60,
+        "median": 60.0,
+        "n": 6552
+       },
+       "H4.change_after_adequacy": {
+        "high": -2.9068790261167265,
+        "low": -14.395107740586127,
+        "median": -7.604006562375581,
+        "n": 6552
+       },
+       "H4.hr_120": {
+        "high": 102.43020451070247,
+        "low": 100.4312354755461,
+        "median": 101.15721832189294,
+        "n": 6552
+       },
+       "H4.hr_60": {
+        "high": 116.8253122512886,
+        "low": 103.33811450166283,
+        "median": 108.7611023512841,
+        "n": 6552
+       },
+       "H4.hr_90": {
+        "high": 106.70686461247466,
+        "low": 101.19229007438281,
+        "median": 103.1938033388472,
+        "n": 6552
+       },
+       "H4.residual_above_intrinsic_120": {
+        "high": 2.430204510702467,
+        "low": 0.431235475546103,
+        "median": 1.157218321892941,
+        "n": 6552
+       },
+       "H6.ceiling": {
+        "high": 200.0,
+        "low": 150.0,
+        "median": 175.0,
+        "n": 6552
+       },
+       "H6.distance_to_ceiling": {
+        "high": 70.77627300012838,
+        "low": 10.777148557097632,
+        "median": 44.30658160537112,
+        "n": 6552
+       },
+       "H6.max_hr": {
+        "high": 139.22285144290237,
+        "low": 126.92431951809829,
+        "median": 130.80882015225689,
+        "n": 6552
+       },
+       "H6.reserve_utilization": {
+        "high": 0.7844570288580474,
+        "low": 0.29223726999871613,
+        "median": 0.40924557859505173,
+        "n": 6552
+       }
+      }
+     },
+     "gi_bleed_72f": {
+      "midpoint": {
+       "H1.delta_120": {
+        "high": 33.20751780774657,
+        "low": 18.85074287981206,
+        "median": 23.78935340677532,
+        "n": 7644
+       },
+       "H1.delta_30": {
+        "high": 8.63458069369625,
+        "low": 4.827626565819969,
+        "median": 6.300322240033438,
+        "n": 7644
+       },
+       "H1.delta_60": {
+        "high": 17.201038309626,
+        "low": 9.85077253046039,
+        "median": 12.67934167598196,
+        "n": 7644
+       },
+       "H1.hr_120": {
+        "high": 146.23152902183136,
+        "low": 126.9895092747924,
+        "median": 137.03702431512355,
+        "n": 7644
+       },
+       "H1.hr_30": {
+        "high": 123.69910731671231,
+        "low": 111.96626675445266,
+        "median": 119.38928144578956,
+        "n": 7644
+       },
+       "H1.hr_60": {
+        "high": 131.916353556987,
+        "low": 116.98941271909308,
+        "median": 124.84365389866076,
+        "n": 7644
+       },
+       "H1.max": {
+        "high": 146.23152902183136,
+        "low": 126.9895092747924,
+        "median": 137.03702431512355,
+        "n": 7644
+       },
+       "H2.early_change": {
+        "high": -0.40709837337850274,
+        "low": -16.783838768513277,
+        "median": -10.734172852131664,
+        "n": 7644
+       },
+       "H2.hr_120": {
+        "high": 134.6688890795243,
+        "low": 117.04058518228086,
+        "median": 122.31948191140182,
+        "n": 7644
+       },
+       "H2.hr_60": {
+        "high": 117.64901310925723,
+        "low": 100.36066040148137,
+        "median": 109.55442028792935,
+        "n": 7644
+       },
+       "H2.nadir": {
+        "high": 107.87139326418458,
+        "low": 92.74068640538495,
+        "median": 101.74288098833152,
+        "n": 7644
+       },
+       "H2.nadir_minute": {
+        "high": 27,
+        "low": 19,
+        "median": 25.0,
+        "n": 7644
+       },
+       "H2.rebound": {
+        "high": 34.692416528881054,
+        "low": 12.541503656067405,
+        "median": 21.792469033262705,
+        "n": 7644
+       },
+       "H3.after_unit_1": {
+        "high": 101.15762622183651,
+        "low": 81.27101017120373,
+        "median": 85.95988154052513,
+        "n": 7644
+       },
+       "H3.after_unit_2": {
+        "high": 88.21650248059468,
+        "low": 80.11453907050182,
+        "median": 81.8067969002272,
+        "n": 7644
+       },
+       "H3.before_unit_1": {
+        "high": 115.14654079760881,
+        "low": 107.13864018863269,
+        "median": 111.77181758235413,
+        "n": 7644
+       },
+       "H3.delta_unit_1": {
+        "high": -6.273534696801718,
+        "low": -30.083557352143117,
+        "median": -28.607550195685562,
+        "n": 7644
+       },
+       "H3.delta_unit_2": {
+        "high": -1.156471100701907,
+        "low": -12.941123741241825,
+        "median": -4.153084640297934,
+        "n": 7644
+       },
+       "H3.unit_1_minute": {
+        "high": 30,
+        "low": 30,
+        "median": 30.0,
+        "n": 7644
+       },
+       "H3.unit_2_minute": {
+        "high": 60,
+        "low": 60,
+        "median": 60.0,
+        "n": 7644
+       },
+       "H4.adequacy_onset": {
+        "high": 60,
+        "low": 60,
+        "median": 60.0,
+        "n": 7644
+       },
+       "H4.change_after_adequacy": {
+        "high": -0.09986900462249082,
+        "low": -7.138735663330365,
+        "median": -1.5707586359596348,
+        "n": 7644
+       },
+       "H4.hr_120": {
+        "high": 81.07776681726432,
+        "low": 80.01467006587933,
+        "median": 80.23603826426756,
+        "n": 7644
+       },
+       "H4.hr_60": {
+        "high": 88.21650248059468,
+        "low": 80.11453907050182,
+        "median": 81.8067969002272,
+        "n": 7644
+       },
+       "H4.hr_90": {
+        "high": 82.97918581855185,
+        "low": 80.04056883451514,
+        "median": 80.65264670432329,
+        "n": 7644
+       },
+       "H4.residual_above_intrinsic_120": {
+        "high": 1.0777668172643189,
+        "low": 0.014670065879329286,
+        "median": 0.23603826426756314,
+        "n": 7644
+       },
+       "H6.ceiling": {
+        "high": 200.0,
+        "low": 150.0,
+        "median": 175.0,
+        "n": 7644
+       },
+       "H6.distance_to_ceiling": {
+        "high": 65.68856346529907,
+        "low": 12.310836573941373,
+        "median": 36.26099582262523,
+        "n": 7644
+       },
+       "H6.max_hr": {
+        "high": 146.23152902183136,
+        "low": 126.9895092747924,
+        "median": 137.03702431512355,
+        "n": 7644
+       },
+       "H6.reserve_utilization": {
+        "high": 0.8241309060865518,
+        "low": 0.4525953044558411,
+        "median": 0.6183053071302607,
+        "n": 7644
+       }
+      },
+      "upper": {
+       "H1.delta_120": {
+        "high": 13.556593437148038,
+        "low": 7.0783985272199885,
+        "median": 8.673414055536881,
+        "n": 6552
+       },
+       "H1.delta_30": {
+        "high": 3.213538921947716,
+        "low": 1.4890793653639491,
+        "median": 1.9783166924539728,
+        "n": 6552
+       },
+       "H1.delta_60": {
+        "high": 6.612865634675202,
+        "low": 3.1605809329121115,
+        "median": 4.014732771573598,
+        "n": 6552
+       },
+       "H1.hr_120": {
+        "high": 126.70701779279375,
+        "low": 114.39241314607222,
+        "median": 117.76223917590198,
+        "n": 6552
+       },
+       "H1.hr_30": {
+        "high": 116.36396327759343,
+        "low": 108.80309398421618,
+        "median": 111.56234468316609,
+        "n": 6552
+       },
+       "H1.hr_60": {
+        "high": 119.76328999032091,
+        "low": 110.47459555176434,
+        "median": 113.58331772534497,
+        "n": 6552
+       },
+       "H1.max": {
+        "high": 126.70701779279375,
+        "low": 114.39241314607222,
+        "median": 117.76223917590198,
+        "n": 6552
+       },
+       "H2.early_change": {
+        "high": -0.13676960827696405,
+        "low": -4.46038211149407,
+        "median": -2.7904206496290556,
+        "n": 6552
+       },
+       "H2.hr_120": {
+        "high": 121.56368262056185,
+        "low": 110.47964523593278,
+        "median": 112.78993028419495,
+        "n": 6552
+       },
+       "H2.hr_60": {
+        "high": 114.96918919566417,
+        "low": 106.80448710403928,
+        "median": 108.4273322955816,
+        "n": 6552
+       },
+       "H2.nadir": {
+        "high": 111.47707392839914,
+        "low": 104.65979473630807,
+        "median": 106.59407917733938,
+        "n": 6552
+       },
+       "H2.nadir_minute": {
+        "high": 27,
+        "low": 20,
+        "median": 24.0,
+        "n": 6552
+       },
+       "H2.rebound": {
+        "high": 11.677299110877414,
+        "low": 4.037221583967522,
+        "median": 6.927197740033662,
+        "n": 6552
+       },
+       "H3.after_unit_1": {
+        "high": 105.89377263765007,
+        "low": 101.43079002455127,
+        "median": 103.32609427701598,
+        "n": 6552
+       },
+       "H3.after_unit_2": {
+        "high": 102.09235385246294,
+        "low": 100.44202520112486,
+        "median": 101.13521662999766,
+        "n": 6552
+       },
+       "H3.before_unit_1": {
+        "high": 113.15042435564571,
+        "low": 107.31401461885223,
+        "median": 109.5290122007066,
+        "n": 6552
+       },
+       "H3.delta_unit_1": {
+        "high": -1.8528363442131877,
+        "low": -8.27880813568008,
+        "median": -7.822291735941832,
+        "n": 6552
+       },
+       "H3.delta_unit_2": {
+        "high": -0.9887648234264077,
+        "low": -3.8014187851871384,
+        "median": -2.1908776470183255,
+        "n": 6552
+       },
+       "H3.unit_1_minute": {
+        "high": 30,
+        "low": 30,
+        "median": 30.0,
+        "n": 6552
+       },
+       "H3.unit_2_minute": {
+        "high": 60,
+        "low": 60,
+        "median": 60.0,
+        "n": 6552
+       },
+       "H4.adequacy_onset": {
+        "high": 60,
+        "low": 60,
+        "median": 60.0,
+        "n": 6552
+       },
+       "H4.change_after_adequacy": {
+        "high": -0.384275451147559,
+        "low": -1.8185620332704246,
+        "median": -0.9867730729015918,
+        "n": 6552
+       },
+       "H4.hr_120": {
+        "high": 100.27379386476031,
+        "low": 100.0577497499773,
+        "median": 100.1484431233772,
+        "n": 6552
+       },
+       "H4.hr_60": {
+        "high": 102.09235385246294,
+        "low": 100.44202520112486,
+        "median": 101.13521662999766,
+        "n": 6552
+       },
+       "H4.hr_90": {
+        "high": 100.7570300093745,
+        "low": 100.15967981515728,
+        "median": 100.41043490984592,
+        "n": 6552
+       },
+       "H4.residual_above_intrinsic_120": {
+        "high": 0.2737938647603073,
+        "low": 0.05774974997730453,
+        "median": 0.14844312337720567,
+        "n": 6552
+       },
+       "H6.ceiling": {
+        "high": 200.0,
+        "low": 150.0,
+        "median": 175.0,
+        "n": 6552
+       },
+       "H6.distance_to_ceiling": {
+        "high": 85.52920638037773,
+        "low": 23.29298220720625,
+        "median": 58.281075669825746,
+        "n": 6552
+       },
+       "H6.max_hr": {
+        "high": 126.70701779279375,
+        "low": 114.39241314607222,
+        "median": 117.76223917590198,
+        "n": 6552
+       },
+       "H6.reserve_utilization": {
+        "high": 0.5341403558558749,
+        "low": 0.14470793619622271,
+        "median": 0.22291899106899005,
+        "n": 6552
+       }
+      }
+     }
+    },
+    "distributions": {
+     "gi_bleed_57m": {
+      "H1.delta_120": {
+       "high": 29.442625986642042,
+       "low": 7.467358690339637,
+       "median": 16.023261427041263,
+       "n": 14196
+      },
+      "H1.delta_30": {
+       "high": 7.942318996991645,
+       "low": 1.9161805838410118,
+       "median": 4.68483164658663,
+       "n": 14196
+      },
+      "H1.delta_60": {
+       "high": 15.599688180980877,
+       "low": 3.7766907511967105,
+       "median": 8.987669320863603,
+       "n": 14196
+      },
+      "H1.hr_120": {
+       "high": 153.1335860323415,
+       "low": 126.92431951809829,
+       "median": 139.07129796041573,
+       "n": 14196
+      },
+      "H1.hr_30": {
+       "high": 135.67901245046806,
+       "low": 121.37314141159966,
+       "median": 127.59206599261597,
+       "n": 14196
+      },
+      "H1.hr_60": {
+       "high": 142.24803823207625,
+       "low": 123.23365157895536,
+       "median": 131.76686591267168,
+       "n": 14196
+      },
+      "H1.max": {
+       "high": 153.1335860323415,
+       "low": 126.92431951809829,
+       "median": 139.07129796041573,
+       "n": 14196
+      },
+      "H2.early_change": {
+       "high": 0.3943238843620094,
+       "low": -17.803127659505492,
+       "median": -3.950408330946985,
+       "n": 14196
+      },
+      "H2.hr_120": {
+       "high": 146.66196954299735,
+       "low": 121.79250193977539,
+       "median": 128.84366069041494,
+       "n": 14196
+      },
+      "H2.hr_60": {
+       "high": 135.5124775291542,
+       "low": 107.92101782825435,
+       "median": 120.49057773586043,
+       "n": 14196
+      },
+      "H2.nadir": {
+       "high": 127.60370136475717,
+       "low": 100.33933752797924,
+       "median": 116.07310729158553,
+       "n": 14196
+      },
+      "H2.nadir_minute": {
+       "high": 27,
+       "low": 7,
+       "median": 25.0,
+       "n": 14196
+      },
+      "H2.rebound": {
+       "high": 33.29809881310945,
+       "low": 5.799150008209963,
+       "median": 12.552148639133165,
+       "n": 14196
+      },
+      "H3.after_unit_1": {
+       "high": 126.09080807577791,
+       "low": 88.73998591090977,
+       "median": 112.28298258797368,
+       "n": 14196
+      },
+      "H3.after_unit_2": {
+       "high": 120.21534345750649,
+       "low": 61.22714582987394,
+       "median": 104.15509762955989,
+       "n": 14196
+      },
+      "H3.before_unit_1": {
+       "high": 128.51553542835697,
+       "low": 119.3900070170911,
+       "median": 120.61213526501678,
+       "n": 14196
+      },
+      "H3.delta_unit_1": {
+       "high": -0.607651294954124,
+       "low": -31.52174410368717,
+       "median": -7.635026619465123,
+       "n": 14196
+      },
+      "H3.delta_unit_2": {
+       "high": -2.0067094542788624,
+       "low": -31.85076560504369,
+       "median": -8.440854586214499,
+       "n": 14196
+      },
+      "H3.unit_1_minute": {
+       "high": 30,
+       "low": 30,
+       "median": 30.0,
+       "n": 14196
+      },
+      "H3.unit_2_minute": {
+       "high": 60,
+       "low": 60,
+       "median": 60.0,
+       "n": 14196
+      },
+      "H4.adequacy_onset": {
+       "high": 60,
+       "low": 60,
+       "median": 60.0,
+       "n": 14196
+      },
+      "H4.change_after_adequacy": {
+       "high": -1.1175949872138773,
+       "low": -50.66879503890871,
+       "median": -11.626756221464689,
+       "n": 14196
+      },
+      "H4.hr_120": {
+       "high": 102.43020451070247,
+       "low": 60.10955084266006,
+       "median": 69.14877472815131,
+       "n": 14196
+      },
+      "H4.hr_60": {
+       "high": 120.21534345750649,
+       "low": 61.22714582987394,
+       "median": 104.15509762955989,
+       "n": 14196
+      },
+      "H4.hr_90": {
+       "high": 106.70686461247466,
+       "low": 60.30386866928748,
+       "median": 84.76705443259664,
+       "n": 14196
+      },
+      "H4.residual_above_intrinsic_120": {
+       "high": 9.54654841859778,
+       "low": 0.1095508426600631,
+       "median": 1.7595330243670588,
+       "n": 14196
+      },
+      "H6.ceiling": {
+       "high": 200.0,
+       "low": 150.0,
+       "median": 175.0,
+       "n": 14196
+      },
+      "H6.distance_to_ceiling": {
+       "high": 70.77627300012838,
+       "low": 9.57513398376662,
+       "median": 30.10500843699424,
+       "n": 14196
+      },
+      "H6.max_hr": {
+       "high": 153.1335860323415,
+       "low": 126.92431951809829,
+       "median": 139.07129796041573,
+       "n": 14196
+      },
+      "H6.reserve_utilization": {
+       "high": 0.8936096224025931,
+       "low": 0.29223726999871613,
+       "median": 0.6512829467184714,
+       "n": 14196
+      }
+     },
+     "gi_bleed_72f": {
+      "H1.delta_120": {
+       "high": 33.20751780774657,
+       "low": 7.0783985272199885,
+       "median": 19.903632378444996,
+       "n": 14196
+      },
+      "H1.delta_30": {
+       "high": 8.63458069369625,
+       "low": 1.4890793653639491,
+       "median": 5.312072844931336,
+       "n": 14196
+      },
+      "H1.delta_60": {
+       "high": 17.201038309626,
+       "low": 3.1605809329121115,
+       "median": 10.586560543697672,
+       "n": 14196
+      },
+      "H1.hr_120": {
+       "high": 146.23152902183136,
+       "low": 114.39241314607222,
+       "median": 129.76918771337654,
+       "n": 14196
+      },
+      "H1.hr_30": {
+       "high": 123.69910731671231,
+       "low": 108.80309398421618,
+       "median": 113.75364010557732,
+       "n": 14196
+      },
+      "H1.hr_60": {
+       "high": 131.916353556987,
+       "low": 110.47459555176434,
+       "median": 118.85507913395286,
+       "n": 14196
+      },
+      "H1.max": {
+       "high": 146.23152902183136,
+       "low": 114.39241314607222,
+       "median": 129.76918771337654,
+       "n": 14196
+      },
+      "H2.early_change": {
+       "high": -0.13676960827696405,
+       "low": -16.783838768513277,
+       "median": -3.424834608641845,
+       "n": 14196
+      },
+      "H2.hr_120": {
+       "high": 134.6688890795243,
+       "low": 110.47964523593278,
+       "median": 119.2552939023426,
+       "n": 14196
+      },
+      "H2.hr_60": {
+       "high": 117.64901310925723,
+       "low": 100.36066040148137,
+       "median": 108.6655602030852,
+       "n": 14196
+      },
+      "H2.nadir": {
+       "high": 111.47707392839914,
+       "low": 92.74068640538495,
+       "median": 105.43086910418347,
+       "n": 14196
+      },
+      "H2.nadir_minute": {
+       "high": 27,
+       "low": 19,
+       "median": 25.0,
+       "n": 14196
+      },
+      "H2.rebound": {
+       "high": 34.692416528881054,
+       "low": 4.037221583967522,
+       "median": 14.03299236622263,
+       "n": 14196
+      },
+      "H3.after_unit_1": {
+       "high": 105.89377263765007,
+       "low": 81.27101017120373,
+       "median": 99.95463777607632,
+       "n": 14196
+      },
+      "H3.after_unit_2": {
+       "high": 102.09235385246294,
+       "low": 80.11453907050182,
+       "median": 87.61549463794509,
+       "n": 14196
+      },
+      "H3.before_unit_1": {
+       "high": 115.14654079760881,
+       "low": 107.13864018863269,
+       "median": 109.58402799071212,
+       "n": 14196
+      },
+      "H3.delta_unit_1": {
+       "high": -1.8528363442131877,
+       "low": -30.083557352143117,
+       "median": -8.099296875317506,
+       "n": 14196
+      },
+      "H3.delta_unit_2": {
+       "high": -0.9887648234264077,
+       "low": -12.941123741241825,
+       "median": -3.0519991865917007,
+       "n": 14196
+      },
+      "H3.unit_1_minute": {
+       "high": 30,
+       "low": 30,
+       "median": 30.0,
+       "n": 14196
+      },
+      "H3.unit_2_minute": {
+       "high": 60,
+       "low": 60,
+       "median": 60.0,
+       "n": 14196
+      },
+      "H4.adequacy_onset": {
+       "high": 60,
+       "low": 60,
+       "median": 60.0,
+       "n": 14196
+      },
+      "H4.change_after_adequacy": {
+       "high": -0.09986900462249082,
+       "low": -7.138735663330365,
+       "median": -1.5123452519351162,
+       "n": 14196
+      },
+      "H4.hr_120": {
+       "high": 100.27379386476031,
+       "low": 80.01467006587933,
+       "median": 80.9997593373293,
+       "n": 14196
+      },
+      "H4.hr_60": {
+       "high": 102.09235385246294,
+       "low": 80.11453907050182,
+       "median": 87.61549463794509,
+       "n": 14196
+      },
+      "H4.hr_90": {
+       "high": 100.7570300093745,
+       "low": 80.04056883451514,
+       "median": 82.76317836627089,
+       "n": 14196
+      },
+      "H4.residual_above_intrinsic_120": {
+       "high": 1.0777668172643189,
+       "low": 0.014670065879329286,
+       "median": 0.22744981991810675,
+       "n": 14196
+      },
+      "H6.ceiling": {
+       "high": 200.0,
+       "low": 150.0,
+       "median": 175.0,
+       "n": 14196
+      },
+      "H6.distance_to_ceiling": {
+       "high": 85.52920638037773,
+       "low": 12.310836573941373,
+       "median": 41.41242475077311,
+       "n": 14196
+      },
+      "H6.max_hr": {
+       "high": 146.23152902183136,
+       "low": 114.39241314607222,
+       "median": 129.76918771337654,
+       "n": 14196
+      },
+      "H6.reserve_utilization": {
+       "high": 0.8241309060865518,
+       "low": 0.14470793619622271,
+       "median": 0.5259314528809383,
+       "n": 14196
+      }
+     }
+    },
+    "fluid_vs_prbc_72f": {
+     "acute_signal_diverges_at": {
+      "high": 1,
+      "low": 1,
+      "median": 1.0,
+      "n": 14196
+     },
+     "debt_diverges_at": {
+      "high": 2,
+      "low": 2,
+      "median": 2.0,
+      "n": 14196
+     },
+     "diverges_at": {
+      "high": 1,
+      "low": 1,
+      "median": 1.0,
+      "n": 14196
+     },
+     "diverges_by_1_bpm_at": {
+      "high": 28,
+      "low": 5,
+      "median": 12.0,
+      "n": 14196
+     },
+     "first_input": {
+      "acute": 14196,
+      "debt": 0,
+      "none": 0
+     },
+     "largest_at": {
+      "high": 120,
+      "low": 120,
+      "median": 120.0,
+      "n": 14196
+     },
+     "largest_difference": {
+      "high": 54.44143889374364,
+      "low": 10.225615787448717,
+      "median": 38.2046463038469,
+      "n": 14196
+     },
+     "never_diverge": 0,
+     "pairs": 14196,
+     "prbc_minus_fluid_at_largest": {
+      "high": -10.225615787448717,
+      "low": -54.44143889374364,
+      "median": -38.2046463038469,
+      "n": 14196
+     },
+     "rule": "72f only, diagnostic (no requirement that HR distinguish the treatments): for every 72f lactate survivor and joint survivor, L2 (2 L crystalloid over 20 min, bleeding continues) against L3 (2 PRBC units over 60 min with PPI from minute 0 and endoscopic haemostasis at 60) on the same P3 set and lactate-side point: the first minute the HRs differ at all and by more than 1 bpm, the largest difference and its minute, and which HR input diverges first (the acute signal, deficit over demand, or D). The scenarios differ in more than the fluid (PPI, haemostasis)."
+    },
+    "full_runs": 2548,
+    "joint_survivors": 13,
+    "lactate_survivors": 1092,
+    "naive_full_runs": 6552,
+    "readings_per_case": 14196
+   }
+  },
+  "readings": {
+   "H1": [
+    "hr_30",
+    "hr_60",
+    "hr_120",
+    "delta_30",
+    "delta_60",
+    "delta_120",
+    "max"
+   ],
+   "H2": [
+    "early_change",
+    "nadir",
+    "nadir_minute",
+    "hr_60",
+    "hr_120",
+    "rebound"
+   ],
+   "H3": [
+    "before_unit_1",
+    "after_unit_1",
+    "delta_unit_1",
+    "after_unit_2",
+    "delta_unit_2",
+    "unit_1_minute",
+    "unit_2_minute"
+   ],
+   "H4": [
+    "hr_60",
+    "hr_90",
+    "hr_120",
+    "adequacy_onset",
+    "change_after_adequacy",
+    "residual_above_intrinsic_120"
+   ],
+   "H6": [
+    "max_hr",
+    "ceiling",
+    "distance_to_ceiling",
+    "reserve_utilization"
+   ]
+  },
+  "rule": "At each CURRENTLY_COMPATIBLE demand with joint arrival survivors: every lactate survivor of the retained pair (P3 set, crystalloid point, its 57m and 72f lactate-side points) is run by the full core at that demand, each case with its own pair (L1 and L3 once per P3 set and point, L2 once per crystalloid point), and the primary HR (pressure 0) is post-processed for every joint survivor (hr_primary.primary_series, the core's arithmetic). Readings H1-H4 and H6 per (lactate survivor, joint survivor, case); distributions LOW / median / HIGH, also by the case's intrinsic level. Validated before any reading: on the first, middle and last lactate survivor, every joint survivor, case and scenario is re-run by the full core with its HR profile (exact HR, minute 0 equal to the analytic arrival), and the demand-aware run equals lactate_closure.full_run (lactate, D) and, at demand 1.0, hr_shock.full_run (every row); else the run stops. No trajectory filter, no envelope applied, no candidate selected."
+ },
+ "validation": {
+  "1": {
+   "checks": {
+    "arrival": true,
+    "hr": true,
+    "hr_shock": true,
+    "lactate_closure": true
+   },
+   "exact": true,
+   "full_runs": 90,
+   "sample": [
+    [
+     1,
+     0,
+     612,
+     611
+    ],
+    [
+     70,
+     0,
+     612,
+     611
+    ],
+    [
+     202,
+     11,
+     612,
+     611
+    ]
+   ]
+  },
+  "1.1": {
+   "checks": {
+    "arrival": true,
+    "hr": true,
+    "lactate_closure": true
+   },
+   "exact": true,
+   "full_runs": 270,
+   "sample": [
+    [
+     1,
+     0,
+     187,
+     186
+    ],
+    [
+     90,
+     6,
+     187,
+     186
+    ],
+    [
+     202,
+     11,
+     187,
+     186
+    ]
+   ]
+  }
+ },
+ "verdict": {
+  "approved": false,
+  "blockers": [],
+  "checks": {
+   "case_truth_compatible": true,
+   "common_gains": true,
+   "intrinsic_patient_specific": true,
+   "joint_arrival": true,
+   "lactate_rows_certified": true,
+   "no_regression": true,
+   "pressure_deferred": true,
+   "trajectories_available": true
+  },
+  "rule": "HR_OBSERVABLE_DECISION_PACK_READY when: (1) the retained case pair is independently case-truth compatible (the case-truth rule retains exactly the faculty's pair, and its values come from the case bands with no HR, legacy or pressure term, present in P2I-2AI's inventory); (2) its D / lactate rows remain certified (REUSE_RULE); (3) at least one joint arrival-compatible HR candidate remains at a CURRENTLY_COMPATIBLE demand (else HR_SURFACE_BLOCKED_AFTER_CASE_TRUTH_PRUNING); (4) the sympathetic gains and ceiling are common (one triple per candidate, applied to both cases); (5) the intrinsic rate is patient-specific candidate uncertainty (all three levels explored per case, none approved); (6) the pressure contribution is 0 in the primary profile and in every validation rerun; (7) no D / lactate regression (the rows reproduce P2I-2AI's and the demand-aware runs equal lactate_closure.full_run; RR by the final certification); (8) trajectory distributions are available and validated. Otherwise HR_OBSERVABLE_DECISION_PACK_NOT_READY with the first blocker. Nothing is approved.",
+  "verdict": "HR_OBSERVABLE_DECISION_PACK_READY"
+ }
+}
