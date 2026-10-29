@@ -2919,3 +2919,53 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - Se agregó una prueba de equivalencia con el núcleo para una unidad L3_RESUSCITATION_LOST.
 - **Sin elegir parámetros ocultos**, sin calibrar la FC, la FR ni la presión, sin colapso, sin migración y sin gancho
   en tiempo de ejecución. TD-91 queda parcialmente resuelta, con un punto nuevo sobre G en los módulos históricos.
+
+## 35. P2I-2AE · Estructura de la FC y de la respuesta simpática (2026-10-29)
+
+- **Base:** `e0dffa8`. P2I-2AD queda aceptado (LACTATE_PHYSIOLOGY_READY_FOR_HR_DOMAIN) y cerrado: su módulo y su
+  registro (`5cb48163…`) quedan fijados por sus pruebas. Informe: `docs/revision/P2I2AE_ESTRUCTURA_FC_SIMPATICA.md`;
+  números: `docs/revision/P2I2AE_hr_structure.json`.
+- **Decisiones docentes:**
+  - τ_D es sólo devolución de D y no define el impulso simpático (TD-92);
+  - FC de llegada = intrínseca + contribución simpática no negativa;
+  - sin decremento de FC propio de GI; la FC heredada no es objetivo; el rechazo HR1 de P2F no es evidencia;
+  - el lactato sigue cerrado.
+- **Auditoría (antes de cambiar código):**
+  - la vía `sympathetic_per_debt × (D − D0) / τ_D` era SEMANTIC_LEAK;
+  - la devolución de D por τ_D sigue siendo VALID_CAUSAL_PATH;
+  - el rango de `sympathetic_per_debt`, el rechazo HR1 con τ_D 30 y las tablas históricas son LEGACY_ARTIFACT;
+  - no hay término del déficit efectivo instantáneo (A no; B, D acumulada, sí); el estímulo agudo existente es el
+    déficit de presión, relativo a la llegada. No se agregó ningún término.
+- **Núcleo:**
+  - el impulso por deuda es `debt_to_sympathetic_gain × D` (1/120 por defecto = 0,5/60, provisional, nunca derivado
+    de τ_D); `sympathetic_per_debt` ya no se lee;
+  - el impulso de llegada se separa en la parte de la deuda (ganancia × D0) y el resto (`arrival_non_debt_drive`);
+    una llegada que pediría una contribución negativa detiene el núcleo;
+  - con el perfil por defecto las trayectorias no cambian: el golden sólo cambia en la metadata y Contracts v2 da
+    IDENTICAL;
+  - el paquete P2G y el corte P2I-1 corren sólo las llegadas aceptadas (`decision_pack.runnable`) y cuentan las 108
+    de 1054 que el núcleo rechaza (72f con intrínseca 100 y deuda 60). El rechazo HR1 con τ_D 30 × deuda superior ya
+    no se reproduce.
+- **Banda intrínseca 60 / 80 / 100:** STILL_VALID_CANDIDATE_RANGE (rango de reposo del adulto, no derivado de HR1).
+- **Rango de la ganancia:** el de `sympathetic_per_debt` queda OLD_SYMPATHETIC_PER_DEBT_RANGE_SEMANTICALLY_INVALID. El
+  nuevo se fijó antes de cualquier resultado, sólo con dimensiones, la FC de llegada, la banda intrínseca, la escala
+  de D y la regla de no negatividad: de 6,67e-4 a 0,128, cinco puntos logarítmicos y 0 como referencia sintética.
+- **Congelamiento antes de evaluar:** `6052ffb`, un solo commit. Antes se validó la reconstrucción de la FC (90
+  recorridas completas exactas).
+- **Evaluación** (análisis, después 1-D y el plano 3 × 6 post-procesado, sin barrido cartesiano):
+  - 18 corridas representativas, 90 recorridas de validación (todas exactas);
+  - D, lactato, déficit y gasto idénticos al registro P2I-2AD;
+  - 17 de 108 descomposiciones de llegada con ANALYTIC_REJECTION, exactamente las que el núcleo rechaza;
+  - las diez direcciones se cumplen; ninguna bandera estructural;
+  - la FR no cambia.
+- **Identificabilidad:** NON_IDENTIFIABLE para la intrínseca y la ganancia por separado. Por encima del piso la
+  intrínseca se cancela; sólo ganancia × g y ganancia × D0 llegan a la FC; no hay techo de FC.
+- **Veredicto: HR_STRUCTURE_READY_FOR_NUMERIC_FACULTY_CALIBRATION.** Siguiente paso recomendado, sin empezar: un
+  paquete pequeño de calibración numérica de la FC con la docencia. Debe decidir:
+  - la intrínseca y la ganancia;
+  - si hace falta techo o saturación (en el extremo superior del rango, 244 / 217 lpm a los 120 min sin tratamiento);
+  - si el resto de llegada debe resolverse con la entrega restaurada (hoy sólo lo baja la presión; tras el manejo
+    definitivo la FC queda en 99–120 / 91–110 lpm). Esto necesitaría un término o una referencia nuevos con su rango.
+  La presión y el tono vascular siguen a la FC.
+- **Sin elegir parámetros ocultos**, sin calibrar la FC, la FR ni la presión, sin colapso, sin migración y sin gancho
+  en tiempo de ejecución.

@@ -311,3 +311,74 @@ def test_nothing_is_selected_or_approved():
     assert DEFAULT_PROFILE == CoreProfile() and DEFAULT_PROFILE.collapse_output_threshold is None
     for word in ("sbp_per_pressure_deficit=", "rr_per_lactate=", "sympathetic_per_pressure_deficit="):
         assert word not in SOURCE.read_text(encoding="utf-8")
+
+
+# The evaluation, on the frozen package (after the freeze commit) ---------------------------------------------------
+
+RECORD = ROOT / "docs" / "revision" / "P2I2AE_hr_structure.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2I2AE_ESTRUCTURA_FC_SIMPATICA.md"
+
+
+@pytest.fixture(scope="module")
+def record():
+    return json.loads(RECORD.read_text(encoding="utf-8"))
+
+
+def test_the_record_ran_on_the_frozen_package_and_is_reproduced_live(record):
+    assert record["freeze_digest"] == FROZEN_DIGEST and record["records"] == {"P2I-2AD": hs.P2I2AD_DIGEST}
+    assert json.loads(json.dumps(hs.run(), sort_keys=True, default=str)) == record
+
+
+def test_the_verdict_follows_the_frozen_rule(record):
+    verdict = record["verdict"]
+    assert verdict["verdict"] == hs.READY and not verdict["blockers"] and not verdict["flags_seen"]
+    assert all(verdict["checks"].values()) and set(verdict["checks"]) == {
+        "factorization", "no_tau_d_leak", "contributors_explicit", "arrival_coherent", "invariants", "patient_like",
+        "support_explicit", "nothing_approved"}
+    assert verdict["next_step"] == hs.NEXT_STEP and "Pressure and vascular tone follow HR; not started" in hs.NEXT_STEP
+
+
+def test_the_factorization_was_exact_and_the_physiology_is_p2i2ad_s(record):
+    assert record["validation"]["agree"] and record["validation"]["full_reruns"] == 90
+    assert not record["validation"]["disagreements"]
+    assert record["unchanged_physiology"] == {"rows_checked": 72, "equal": True}
+
+
+def test_the_analytic_rejections_and_the_counts(record):
+    assert record["analytic"]["analytic_rejections"] == 17 and record["analytic"]["combinations"] == 108
+    assert record["refused_by_core"] == {"agree": True, "mismatches": []}
+    efficiency = record["efficiency"]
+    assert efficiency["representative_runs"] == 18 and efficiency["validation_full_reruns"] == 90
+    assert efficiency["post_processed_series"] + efficiency["scan_pairs_rejected_analytically"] == 18 * 3 * 6
+    assert efficiency["cartesian_sweep"] is False
+
+
+def test_the_invariants_hold_and_no_flag_is_raised(record):
+    assert record["invariants"]["all_pass"] and record["invariants"]["recovery_runs"] > 0
+    assert set(record["flags"].values()) == {0}
+    for case in CASES:
+        assert record["probes"][case]["tau_d_at_fixed_D"]["holds"]
+
+
+def test_rr_is_not_changed_or_calibrated_and_the_legacy_is_reference_only(record):
+    assert record["rr"]["changes_rr"] is False and record["rr"]["calibrated"] is False
+    assert record["legacy_reference"]["rule"] == hs.LEGACY_RULE
+    assert "NOT A CALIBRATION TARGET" in hs.LEGACY_RULE
+
+
+def test_identifiability_is_reported_not_resolved(record):
+    identifiable = record["identifiability"]
+    assert identifiable["intrinsic_vs_gain"]["status"] == hs.NON_IDENTIFIABLE
+    assert identifiable["intrinsic_vs_gain"]["max_hr_gap_bpm"] < 1e-9
+    assert identifiable["dimensions"]["saturation_or_cap"]["status"] == "NO_PARAMETER"
+    text = json.dumps(record, default=str).lower()
+    for word in ("faculty_approved", "\"best", "\"selected", "\"recommended", "\"preferred", "\"rank"):
+        assert word not in text
+
+
+def test_the_document_is_generated_from_the_record(tmp_path):
+    from clinical_core import hr_structure_report
+    copy = tmp_path / "document.md"
+    copy.write_text(DOCUMENT.read_text(encoding="utf-8"), encoding="utf-8")
+    hr_structure_report.main(["--write", str(copy), "--data", str(RECORD)])
+    assert copy.read_text(encoding="utf-8") == DOCUMENT.read_text(encoding="utf-8"), "regenerate the document"
