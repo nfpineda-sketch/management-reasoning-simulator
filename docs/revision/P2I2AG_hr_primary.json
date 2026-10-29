@@ -1,0 +1,1186 @@
+{
+ "arrival": {
+  "analytic_rejections": {
+   "IDENTICAL_PREDICTION_DISJOINT_WINDOWS": 675,
+   "IMPLICIT_RECORDED_HR_FALLBACK": 0,
+   "INVALID_RESERVE_BASE": 0,
+   "NEGATIVE_SYMPATHETIC_COMPONENT": 0
+  },
+  "candidates_per_representative": 225,
+  "case_intrinsic_sensitivity": {
+   "acute": {
+    "0.1": 0,
+    "0.3822350547713923": 0,
+    "1.4610363709608927": 0,
+    "21.346272772705746": 0,
+    "5.58459317277233": 5
+   },
+   "approved": false,
+   "by_representative": {
+    "HIGH": 0,
+    "LOW": 5,
+    "MID": 0
+   },
+   "ceiling": {
+    "150": 5,
+    "175": 0,
+    "200": 0
+   },
+   "debt": {
+    "0.0006666666666666666": 1,
+    "0.0026243840235588385": 1,
+    "0.010331087254666317": 1,
+    "0.040669110505707935": 1,
+    "0.16009704579529324": 1
+   },
+   "intrinsic_pairs": {
+    "lower|lower": 0,
+    "lower|midpoint": 0,
+    "lower|upper": 0,
+    "midpoint|lower": 5,
+    "midpoint|midpoint": 0,
+    "midpoint|upper": 0,
+    "upper|lower": 0,
+    "upper|midpoint": 0,
+    "upper|upper": 0
+   },
+   "joint": 5,
+   "of": 2025
+  },
+  "case_specific_gain_required": false,
+  "compatible": {
+   "gi_bleed_57m": 30,
+   "gi_bleed_72f": 58
+  },
+  "compatible_by_representative": {
+   "HIGH": {
+    "gi_bleed_57m": 0,
+    "gi_bleed_72f": 25
+   },
+   "LOW": {
+    "gi_bleed_57m": 5,
+    "gi_bleed_72f": 30
+   },
+   "MID": {
+    "gi_bleed_57m": 25,
+    "gi_bleed_72f": 3
+   }
+  },
+  "identical_arrival_physiology": {
+   "HIGH": true,
+   "LOW": true,
+   "MID": true
+  },
+  "joint_by_representative": {
+   "HIGH": 0,
+   "LOW": 0,
+   "MID": 0
+  },
+  "joint_common_intrinsic": 0,
+  "minimum_common_mismatch_bound_bpm": 6.0,
+  "pressure_on_equal_at_arrival": true,
+  "rule": "ARRIVAL-COMPATIBLE for a case: |predicted arrival HR - authored| <= 5 bpm (57m 119-129, 72f 107-117). JOINT: both cases at once with the same candidate. Fixed before any count; never loosened.",
+  "simulation_rejections": 0,
+  "support": {
+   "gi_bleed_57m": {
+    "acute": {
+     "0.1": 4,
+     "0.3822350547713923": 4,
+     "1.4610363709608927": 4,
+     "21.346272772705746": 3,
+     "5.58459317277233": 15
+    },
+    "ceiling": {
+     "150.0": 17,
+     "175.0": 6,
+     "200.0": 7
+    },
+    "debt": {
+     "0.0006666666666666666": 5,
+     "0.0026243840235588385": 5,
+     "0.010331087254666317": 5,
+     "0.040669110505707935": 11,
+     "0.16009704579529324": 4
+    },
+    "intrinsic": {
+     "lower": 6,
+     "midpoint": 6,
+     "upper": 18
+    }
+   },
+   "gi_bleed_72f": {
+    "acute": {
+     "0.1": 5,
+     "0.3822350547713923": 5,
+     "1.4610363709608927": 23,
+     "21.346272772705746": 5,
+     "5.58459317277233": 20
+    },
+    "ceiling": {
+     "150.0": 21,
+     "175.0": 21,
+     "200.0": 16
+    },
+    "debt": {
+     "0.0006666666666666666": 6,
+     "0.0026243840235588385": 6,
+     "0.010331087254666317": 24,
+     "0.040669110505707935": 16,
+     "0.16009704579529324": 6
+    },
+    "intrinsic": {
+     "lower": 25,
+     "midpoint": 0,
+     "upper": 33
+    }
+   }
+  },
+  "total_decompositions": 1350,
+  "windows": {
+   "gi_bleed_57m": [
+    119.0,
+    129.0
+   ],
+   "gi_bleed_72f": [
+    107.0,
+    117.0
+   ]
+  },
+  "windows_disjoint": true
+ },
+ "d_scale": {
+  "holds": true,
+  "rows": [
+   {
+    "c": 0.37,
+    "max_gap_bpm": 1.4210854715202004e-14,
+    "without_gain_division_gap_bpm": 7.524564490988723
+   },
+   {
+    "c": 3.0,
+    "max_gap_bpm": 1.4210854715202004e-14,
+    "without_gain_division_gap_bpm": 20.857308274126822
+   }
+  ]
+ },
+ "decided": "2026-10-29",
+ "design": {
+  "analytic_rules": {
+   "IDENTICAL_PREDICTION_DISJOINT_WINDOWS": "joint, common intrinsic: both cases' arrival physiology is identical (same signal, debt, beta and rhythm), so the predicted arrival HR is identical, and the two tolerance windows do not overlap",
+   "IMPLICIT_RECORDED_HR_FALLBACK": "a candidate arrival without a declared intrinsic rate",
+   "INVALID_RESERVE_BASE": "a sinus base rate at or above the ceiling (HR_RESERVE <= 0)",
+   "NEGATIVE_SYMPATHETIC_COMPONENT": "a negative acute or debt contribution"
+  },
+  "arrival_rule": "ARRIVAL-COMPATIBLE for a case: |predicted arrival HR - authored| <= 5 bpm (57m 119-129, 72f 107-117). JOINT: both cases at once with the same candidate. Fixed before any count; never loosened.",
+  "authored": {
+   "gi_bleed_57m": 124.0,
+   "gi_bleed_72f": 112.0
+  },
+  "constraint_rule": "Per latent dimension, over a set of arrival-compatible candidates: WELL_CONSTRAINED when one value survives; PARTIALLY_CONSTRAINED when more than one but not all survive; POORLY_IDENTIFIED when all survive and the least-supported value holds less than half the survivors of the most-supported; NON_IDENTIFIABLE when all survive and it holds at least half; EMPTY when the set has no survivor (no constraint is assessable).",
+  "guard": "CALIBRATION_REQUIRES_EXPLICIT_INTRINSIC_HR",
+  "primary_mode": {
+   "diagnostic_column": "PRESSURE_TERM_DIAGNOSTIC_ONLY",
+   "pressure": "DEFERRED",
+   "profile_changes": {
+    "sympathetic_per_pressure_deficit": 0.0
+   }
+  },
+  "surface": {
+   "acute": [
+    0.1,
+    0.3822350547713923,
+    1.4610363709608927,
+    5.58459317277233,
+    21.346272772705746
+   ],
+   "ceilings": [
+    150.0,
+    175.0,
+    200.0
+   ],
+   "count": 225,
+   "debt": [
+    0.0006666666666666666,
+    0.0026243840235588385,
+    0.010331087254666317,
+    0.040669110505707935,
+    0.16009704579529324
+   ],
+   "intrinsic": [
+    "lower",
+    "midpoint",
+    "upper"
+   ],
+   "rule": "Primary surface: intrinsic 60 / 80 / 100 (declared) x acute_deficit_to_sympathetic_gain at the five frozen P2I-2AF points x debt_to_sympathetic_gain at the five frozen P2I-2AF points x the three frozen P2I-2AF ceilings 150 / 175 / 200 (HR_RESERVE = ceiling - intrinsic): 225 candidates, gains and intrinsic common to both cases, pressure contribution 0. Arrival physiology: the three P2I-2AD representatives (LOW / MID / HIGH, its committed record) as the core builds them. Arrival HR is analytic (derived.heart_rate_decomposition), no simulation per candidate. Sensitivity only: the intrinsic may differ by case (3 x 3 pairs), the gains and ceiling stay common."
+  },
+  "tolerance_bpm": 5.0,
+  "verdict": "HR_NUMERIC_DECISION_SURFACE_READY_FOR_FACULTY when: (1) the pressure contribution enters no candidate acceptance (the primary profile zeroes it; the reconstruction reads no pressure; its value is reported apart, diagnostic only); (2) every candidate declares its intrinsic rate (no fallback); (3) HR1 / HR2 carry the current structural semantics (frozen rule texts, check_hr's guard and HR2 arrival reduction); (4) at least one candidate is jointly arrival-compatible with COMMON intrinsic and common gains; (5) no case-specific gain (by construction); (6) D, lactate, RR, BloodState and DO2 / effective deficit unchanged, and the reconstruction agrees with the full core. The suite criterion (no new failure) is the final certification's, outside this module. Otherwise HR_NUMERIC_DECISION_SURFACE_NOT_READY with the first blocker; zero joint survivors is HR_NUMERIC_CALIBRATION_BLOCKED_BY_ARRIVAL_RECONSTRUCTION and stops the package: no trajectory decision pack (P2I-2AG-6) and no envelope proposal (P2I-2AG-7) is built, and the tolerance is never loosened.",
+  "windows": {
+   "gi_bleed_57m": [
+    119.0,
+    129.0
+   ],
+   "gi_bleed_72f": [
+    107.0,
+    117.0
+   ]
+  }
+ },
+ "efficiency": {
+  "analytic_rejections": {
+   "IDENTICAL_PREDICTION_DISJOINT_WINDOWS": 675,
+   "IMPLICIT_RECORDED_HR_FALLBACK": 0,
+   "INVALID_RESERVE_BASE": 0,
+   "NEGATIVE_SYMPATHETIC_COMPONENT": 0
+  },
+  "arrival_decompositions_analytic": 1350,
+  "cartesian_sweep": false,
+  "legacy_read": false,
+  "non_regression_state_runs": 36,
+  "post_processed_series": 900,
+  "representative_runs": 18,
+  "simulation_rejections": 0,
+  "trajectory_decision_pack_built": false,
+  "validation_full_reruns": 54
+ },
+ "examples": {
+  "HIGH|gi_bleed_57m": null,
+  "HIGH|gi_bleed_72f": {
+   "D0": 60.0,
+   "acute": 0.1,
+   "acute_bpm": 0.0,
+   "acute_unconstrained_bpm": 0.0,
+   "beta": 0.0,
+   "case": "gi_bleed_72f",
+   "ceiling": 150.0,
+   "compatible": true,
+   "debt": 0.040669110505707935,
+   "debt_bpm": 53.10894304217267,
+   "debt_unconstrained_bpm": 61.0036657585619,
+   "intrinsic": 60.0,
+   "intrinsic_level": "lower",
+   "mismatch": 1.108943042172669,
+   "predicted": 113.10894304217267,
+   "pressure_on_predicted": 113.10894304217267,
+   "reserve_utilization": 0.5900993671352519,
+   "rhythm": "sinus",
+   "saturated_bpm": 53.10894304217267,
+   "tag": "HIGH",
+   "x0": 0.0
+  },
+  "HIGH|sensitivity": null,
+  "LOW|gi_bleed_57m": {
+   "D0": 0.0,
+   "acute": 5.58459317277233,
+   "acute_bpm": 46.39631532483982,
+   "acute_unconstrained_bpm": 55.8459317277233,
+   "beta": 0.0,
+   "case": "gi_bleed_57m",
+   "ceiling": 150.0,
+   "compatible": true,
+   "debt": 0.0006666666666666666,
+   "debt_bpm": 0.0,
+   "debt_unconstrained_bpm": 0.0,
+   "intrinsic": 80.0,
+   "intrinsic_level": "midpoint",
+   "mismatch": 2.3963153248398186,
+   "predicted": 126.39631532483982,
+   "pressure_on_predicted": 126.39631532483982,
+   "reserve_utilization": 0.6628045046405688,
+   "rhythm": "sinus",
+   "saturated_bpm": 46.39631532483982,
+   "tag": "LOW",
+   "x0": 0.4
+  },
+  "LOW|gi_bleed_72f": {
+   "D0": 0.0,
+   "acute": 5.58459317277233,
+   "acute_bpm": 49.63349390120561,
+   "acute_unconstrained_bpm": 55.8459317277233,
+   "beta": 0.0,
+   "case": "gi_bleed_72f",
+   "ceiling": 150.0,
+   "compatible": true,
+   "debt": 0.0006666666666666666,
+   "debt_bpm": 0.0,
+   "debt_unconstrained_bpm": 0.0,
+   "intrinsic": 60.0,
+   "intrinsic_level": "lower",
+   "mismatch": -2.366506098794389,
+   "predicted": 109.63349390120561,
+   "pressure_on_predicted": 109.63349390120561,
+   "reserve_utilization": 0.5514832655689512,
+   "rhythm": "sinus",
+   "saturated_bpm": 49.63349390120561,
+   "tag": "LOW",
+   "x0": 0.4
+  },
+  "LOW|sensitivity": {
+   "acute": 5.58459317277233,
+   "ceiling": 150.0,
+   "debt": 0.0006666666666666666,
+   "intrinsic": [
+    "midpoint",
+    "lower"
+   ],
+   "predicted": [
+    126.39631532483982,
+    109.63349390120561
+   ],
+   "tag": "LOW"
+  },
+  "MID|gi_bleed_57m": {
+   "D0": 20.0,
+   "acute": 0.1,
+   "acute_bpm": 0.2992819421876089,
+   "acute_unconstrained_bpm": 0.37500000000000033,
+   "beta": 0.0,
+   "case": "gi_bleed_57m",
+   "ceiling": 150.0,
+   "compatible": true,
+   "debt": 0.16009704579529324,
+   "debt_bpm": 63.88553973881851,
+   "debt_unconstrained_bpm": 80.04852289764662,
+   "intrinsic": 60.0,
+   "intrinsic_level": "lower",
+   "mismatch": 0.18482168100611318,
+   "predicted": 124.18482168100611,
+   "pressure_on_predicted": 124.18482168100611,
+   "reserve_utilization": 0.7131646853445124,
+   "rhythm": "sinus",
+   "saturated_bpm": 64.18482168100611,
+   "tag": "MID",
+   "x0": 0.15000000000000013
+  },
+  "MID|gi_bleed_72f": {
+   "D0": 20.0,
+   "acute": 1.4610363709608927,
+   "acute_bpm": 5.397589325053321,
+   "acute_unconstrained_bpm": 5.4788863911033525,
+   "beta": 0.0,
+   "case": "gi_bleed_72f",
+   "ceiling": 150.0,
+   "compatible": true,
+   "debt": 0.010331087254666317,
+   "debt_bpm": 5.088896018407095,
+   "debt_unconstrained_bpm": 5.165543627333158,
+   "intrinsic": 100.0,
+   "intrinsic_level": "upper",
+   "mismatch": -1.5135146565395843,
+   "predicted": 110.48648534346042,
+   "pressure_on_predicted": 110.48648534346042,
+   "reserve_utilization": 0.2097297068692083,
+   "rhythm": "sinus",
+   "saturated_bpm": 10.486485343460416,
+   "tag": "MID",
+   "x0": 0.15000000000000013
+  },
+  "MID|sensitivity": null
+ },
+ "faculty": {
+  "arrival": "authored 57m 124 and 72f 112 bpm (no later authored HR); arrival match tolerance +-5 bpm for each case, an educational calibration tolerance, not a measurement-error model; never tuned after counts",
+  "common_gains": "acute and debt gains common to both cases; common intrinsic first; a case-specific intrinsic only as sensitivity / identifiability, never approved",
+  "d_scale": "D's scale is not approved: HR depends on the observable debt contribution; D 20 / 60 are never faculty constants",
+  "decided": "2026-10-29",
+  "hr1_hr2": "accepted only as structural tests of the current predicted-arrival model, never historical clinical evidence; HR2: with no sympathetic contribution the predicted arrival HR reduces to the declared intrinsic, rhythm-consistent rate",
+  "intrinsic": "every HR calibration candidate declares its intrinsic HR (60 / 80 / 100); no implicit recorded-HR floor (CALIBRATION_REQUIRES_EXPLICIT_INTRINSIC_HR); the fallback stays outside calibration",
+  "pressure": "PRESSURE_SYMPATHETIC_CONTRIBUTION = DEFERRED for the primary HR calibration: the relative-pressure term (referenced to the shocked arrival; pressure domain uncalibrated; correlated with the acute deficit; unloading the drive while a deficit persists) selects no HR gain, compensates no acute or debt drive and enters no arrival matching or ranking; reported as PRESSURE_TERM_DIAGNOSTIC_ONLY; not rejected: kept in the common physiology for the pressure domain; no absolute pressure reference",
+  "rhythm": "non-sinus and complete beta-blockade edges stay GENERALIZATION_BLOCKER_ONLY; they do not block GI",
+  "saturation": "the P2I-2AF smooth form unchanged; candidates 150 / 175 / 200 bpm, exploratory, not approved, not extended",
+  "scope": "shadow only; no final HR approval, no hard trajectory envelope, no pressure / vascular-tone or RR calibration, no collapse, migration or runtime integration"
+ },
+ "freeze_digest": "94c94584009449c43b15bd3bb8673bccbead3db86fcf71fa10f508b674ccf763",
+ "hr_semantics": {
+  "HR1": {
+   "probe": "each GI case's full declared arrival (the candidate's, explicit intrinsic), volume loss 8 mL/min for 30 min: HR rises above the run's own predicted arrival HR (P2I-2AG: a structural test of the current predicted-arrival model, never clinical calibration evidence; no authored, legacy or historical target)",
+   "rule": "deterioration can increase HR"
+  },
+  "HR2": {
+   "probe": "(a) an arrival physiology with no sympathetic contribution predicts exactly the declared, rhythm-consistent intrinsic rate (P2I-2AG, faculty); (b) the same arrival and loss, then 400 mL beyond arrival, 240 min: HR ends below an arrival HR that carried a sympathetic share, else at it (P2I-2AF). A structural test of the current model, never clinical calibration evidence",
+   "rule": "recovery can reduce HR toward intrinsic"
+  },
+  "check_hr_requires_explicit_intrinsic": true,
+  "fallback_outside_calibration": true,
+  "hr2_arrival_reduction_encoded": true,
+  "no_authored_or_legacy_target": true,
+  "structural_only": true
+ },
+ "identifiability": {
+  "composites": {
+   "gi_bleed_57m": {
+    "acute_increment_at_arrival_bpm": {
+     "max": 80.0485228976466,
+     "median": 20.942224397896254,
+     "min": 0.37500000000000033,
+     "n": 30
+    },
+    "debt_increment_at_arrival_bpm": {
+     "max": 80.04852289764662,
+     "median": 5.165543627333158,
+     "min": 0.0,
+     "n": 30
+    },
+    "saturated_reserve_utilization": {
+     "max": 0.7399208953427814,
+     "median": 0.40978993259977103,
+     "min": 0.2041848003264127,
+     "n": 30
+    },
+    "total_sympathetic_increment_bpm": {
+     "max": 66.59288058085032,
+     "median": 25.101946820788683,
+     "min": 19.601274803638205,
+     "n": 30
+    }
+   },
+   "gi_bleed_72f": {
+    "acute_increment_at_arrival_bpm": {
+     "max": 55.8459317277233,
+     "median": 14.610363709608928,
+     "min": 0.0,
+     "n": 58
+    },
+    "debt_increment_at_arrival_bpm": {
+     "max": 61.0036657585619,
+     "median": 0.0,
+     "min": 0.0,
+     "n": 58
+    },
+    "saturated_reserve_utilization": {
+     "max": 0.5900993671352519,
+     "median": 0.3003757956435959,
+     "min": 0.10604409543264452,
+     "n": 58
+    },
+    "total_sympathetic_increment_bpm": {
+     "max": 55.85983851161345,
+     "median": 15.373762755421737,
+     "min": 10.486485343460416,
+     "n": 58
+    }
+   }
+  },
+  "d_scale": "the debt increment is gain x D0: only gain x D scale is observable",
+  "rule": "Per latent dimension, over a set of arrival-compatible candidates: WELL_CONSTRAINED when one value survives; PARTIALLY_CONSTRAINED when more than one but not all survive; POORLY_IDENTIFIED when all survive and the least-supported value holds less than half the survivors of the most-supported; NON_IDENTIFIABLE when all survive and it holds at least half; EMPTY when the set has no survivor (no constraint is assessable).",
+  "sets": {
+   "gi_bleed_57m alone": {
+    "acute": "POORLY_IDENTIFIED",
+    "ceiling": "POORLY_IDENTIFIED",
+    "debt": "POORLY_IDENTIFIED",
+    "intrinsic": "POORLY_IDENTIFIED"
+   },
+   "gi_bleed_72f alone": {
+    "acute": "POORLY_IDENTIFIED",
+    "ceiling": "NON_IDENTIFIABLE",
+    "debt": "POORLY_IDENTIFIED",
+    "intrinsic": "PARTIALLY_CONSTRAINED"
+   },
+   "joint, case-specific intrinsic (sensitivity)": {
+    "acute": "WELL_CONSTRAINED",
+    "ceiling": "WELL_CONSTRAINED",
+    "debt": "NON_IDENTIFIABLE",
+    "intrinsic gi_bleed_57m": "WELL_CONSTRAINED",
+    "intrinsic gi_bleed_72f": "WELL_CONSTRAINED"
+   },
+   "joint, common intrinsic (primary)": {
+    "acute": "EMPTY",
+    "ceiling": "EMPTY",
+    "debt": "EMPTY",
+    "intrinsic": "EMPTY"
+   }
+  }
+ },
+ "non_regression": {
+  "d_lactate_vs_p2i2ad": {
+   "equal": true,
+   "rows_checked": 72
+  },
+  "delivery_deficit_rr_lactate_equal": true,
+  "states_compared": 2178,
+  "states_equal_but_drive": true,
+  "unchanged": true
+ },
+ "policy": "Shadow only. The P2I-2AD representatives (its committed record) and synthetic probes; the P2F region never; the legacy HR never read. Arrival analytic; trajectories post-processed from the cached physiology and validated on full reruns; no Cartesian product with blood, fluid or lactate; no pressure, RR or lactate change; nothing selected or approved.",
+ "pressure_audit": {
+  "arrival_unaffected": "pressure_rel is 1 at arrival, so the arrival filter is the same on and off",
+  "both_push_up": 948,
+  "both_push_up_share": 0.4388888888888889,
+  "calibrated": false,
+  "cancelled_share_of_acute_and_debt_at_anchor": {
+   "max": 9.43491130543937,
+   "median": 0.23798990263127376,
+   "min": 0.0018021584770825923,
+   "n": 457,
+   "q10": 0.04130141169815312,
+   "q90": 1.2690249979593966
+  },
+  "classification": "NEEDS_PRESSURE_DOMAIN_REVIEW",
+  "correlation_signals": 0.7527293965880618,
+  "deficit_signal_in_those_minutes": {
+   "max": 0.4216829038366525,
+   "median": 0.1895508283235373,
+   "min": 0.001631605417458326,
+   "n": 457,
+   "q10": 0.038303853034272306,
+   "q90": 0.3693691225621418
+  },
+  "landmarks": {
+   "after_crystalloid_30": {
+    "hr_on_minus_off_bpm": {
+     "max": -0.10526873933218894,
+     "median": -2.2426560230059494,
+     "min": -9.430430191574771,
+     "n": 150,
+     "q10": -7.19355347912682,
+     "q90": -0.5757558238869933
+    },
+    "off_above_intrinsic_bpm": {
+     "max": 91.90361620010111,
+     "median": 20.029998518000923,
+     "min": 0.42792018834377643,
+     "n": 150,
+     "q10": 1.1002904368477004,
+     "q90": 76.83247047943775
+    },
+    "off_above_intrinsic_count": 150,
+    "on_above_intrinsic_bpm": {
+     "max": 91.79834746076892,
+     "median": 14.736020026450973,
+     "min": 0.0021570186246293588,
+     "n": 150,
+     "q10": 0.002747319134826398,
+     "q90": 75.97717919039377
+    },
+    "on_above_intrinsic_count": 150,
+    "readings": 150
+   },
+   "after_haemostasis_90": {
+    "hr_on_minus_off_bpm": {
+     "max": -0.01763315585752423,
+     "median": -0.7681533169573953,
+     "min": -11.492267389521103,
+     "n": 150,
+     "q10": -4.228311578396571,
+     "q90": -0.04959112642048069
+    },
+    "off_above_intrinsic_bpm": {
+     "max": 13.366508257422595,
+     "median": 0.7126196381029359,
+     "min": 0.017633174490356396,
+     "n": 150,
+     "q10": 0.04959164555614848,
+     "q90": 10.993575663369853
+    },
+    "off_above_intrinsic_count": 150,
+    "on_above_intrinsic_bpm": {
+     "max": 9.31390939238672,
+     "median": 7.110221854134124e-05,
+     "min": 1.8632832166076696e-08,
+     "n": 150,
+     "q10": 2.489608164069068e-08,
+     "q90": 1.8742408679014915
+    },
+    "on_above_intrinsic_count": 150,
+    "readings": 150
+   },
+   "after_prbc_unit_1": {
+    "hr_on_minus_off_bpm": {
+     "max": -0.3456963339221346,
+     "median": -1.6535762852007707,
+     "min": -8.111631129363985,
+     "n": 150,
+     "q10": -5.480607186629513,
+     "q90": -0.4564590319177455
+    },
+    "off_above_intrinsic_bpm": {
+     "max": 83.00593303378957,
+     "median": 6.620616390714503,
+     "min": 0.34978213392126634,
+     "n": 150,
+     "q10": 0.59215684768823,
+     "q90": 72.59061132347085
+    },
+    "off_above_intrinsic_count": 150,
+    "on_above_intrinsic_bpm": {
+     "max": 81.82513918401912,
+     "median": 4.2322153975045325,
+     "min": 0.003032583488860041,
+     "n": 150,
+     "q10": 0.004051956366907916,
+     "q90": 69.43327579890973
+    },
+    "on_above_intrinsic_count": 150,
+    "readings": 150
+   },
+   "after_prbc_unit_2_and_haemostasis": {
+    "hr_on_minus_off_bpm": {
+     "max": -0.051444919843731896,
+     "median": -2.216891028189025,
+     "min": -10.919880578167053,
+     "n": 150,
+     "q10": -8.529972269195724,
+     "q90": -0.15491798779088128
+    },
+    "off_above_intrinsic_bpm": {
+     "max": 35.412907713538644,
+     "median": 2.400344146654689,
+     "min": 0.05145243686665424,
+     "n": 150,
+     "q10": 0.15492741833196533,
+     "q90": 31.65448142302384
+    },
+    "off_above_intrinsic_count": 150,
+    "on_above_intrinsic_bpm": {
+     "max": 29.4502353572705,
+     "median": 0.02868468136725255,
+     "min": 7.517022922343131e-06,
+     "n": 150,
+     "q10": 1.0043795668934763e-05,
+     "q90": 25.496609892449626
+    },
+    "on_above_intrinsic_count": 150,
+    "readings": 150
+   },
+   "arrival": {
+    "hr_on_minus_off_bpm": {
+     "max": 0.0,
+     "median": 0.0,
+     "min": 0.0,
+     "n": 150,
+     "q10": 0.0,
+     "q90": 0.0
+    },
+    "off_above_intrinsic_bpm": {
+     "max": 93.79681142109723,
+     "median": 15.360628673215487,
+     "min": 0.7083202072572874,
+     "n": 150,
+     "q10": 0.9999630671955373,
+     "q90": 92.89995763511752
+    },
+    "off_above_intrinsic_count": 150,
+    "on_above_intrinsic_bpm": {
+     "max": 93.79681142109723,
+     "median": 15.360628673215487,
+     "min": 0.7083202072572874,
+     "n": 150,
+     "q10": 0.9999630671955373,
+     "q90": 92.89995763511752
+    },
+    "on_above_intrinsic_count": 150,
+    "readings": 150
+   },
+   "crystalloid_120": {
+    "hr_on_minus_off_bpm": {
+     "max": 5.667676321851317,
+     "median": 0.2698132179646393,
+     "min": 0.003686734543435932,
+     "n": 150,
+     "q10": 0.06962646276788576,
+     "q90": 5.250303513757316
+    },
+    "off_above_intrinsic_bpm": {
+     "max": 94.96628555058675,
+     "median": 26.57936824382378,
+     "min": 0.305250366384314,
+     "n": 150,
+     "q10": 2.498490369784477,
+     "q90": 93.57366739207137
+    },
+    "off_above_intrinsic_count": 150,
+    "on_above_intrinsic_bpm": {
+     "max": 94.96997228513018,
+     "median": 28.916090413701227,
+     "min": 0.42708557240949574,
+     "n": 150,
+     "q10": 3.8921914439952587,
+     "q90": 93.67892236732976
+    },
+    "on_above_intrinsic_count": 150,
+    "readings": 150
+   },
+   "restored_adequacy_120": {
+    "hr_on_minus_off_bpm": {
+     "max": -0.006374823328243906,
+     "median": -0.27793397626410865,
+     "min": -4.857537441454667,
+     "n": 150,
+     "q10": -3.384265098195087,
+     "q90": -0.01793522569963102
+    },
+    "off_above_intrinsic_bpm": {
+     "max": 4.862183822977713,
+     "median": 0.25772301431435096,
+     "min": 0.006374823374429184,
+     "n": 150,
+     "q10": 0.017935225797842236,
+     "q90": 3.9914960692182717
+    },
+    "off_above_intrinsic_count": 150,
+    "on_above_intrinsic_bpm": {
+     "max": 1.882787524320733,
+     "median": 1.7624478232391994e-07,
+     "min": 4.618527782440651e-11,
+     "n": 150,
+     "q10": 6.17177420281223e-11,
+     "q90": 0.0046463815230453065
+    },
+    "on_above_intrinsic_count": 150,
+    "readings": 150
+   },
+   "untreated_120": {
+    "hr_on_minus_off_bpm": {
+     "max": 12.94273049393324,
+     "median": 4.374197335117827,
+     "min": 3.907296161287377e-06,
+     "n": 150,
+     "q10": 0.008544192434811748,
+     "q90": 10.876041789920123
+    },
+    "off_above_intrinsic_bpm": {
+     "max": 94.99998376351374,
+     "median": 64.18123486736658,
+     "min": 1.858084344231841,
+     "n": 150,
+     "q10": 7.18897322386897,
+     "q90": 94.96449018943994
+    },
+    "off_above_intrinsic_count": 150,
+    "on_above_intrinsic_bpm": {
+     "max": 94.9999876708099,
+     "median": 69.82471515840189,
+     "min": 8.282810263674818,
+     "n": 150,
+     "q10": 16.39421137007355,
+     "q90": 94.97132383472677
+    },
+    "on_above_intrinsic_count": 150,
+    "readings": 150
+   },
+   "untreated_30": {
+    "hr_on_minus_off_bpm": {
+     "max": 3.1718240716936776,
+     "median": 1.8235351021879467,
+     "min": 0.013600784886762085,
+     "n": 150,
+     "q10": 0.05544730471837056,
+     "q90": 3.049800988252514
+    },
+    "off_above_intrinsic_bpm": {
+     "max": 94.78943253116506,
+     "median": 29.742661137529296,
+     "min": 0.943283709761431,
+     "n": 150,
+     "q10": 2.882598047635099,
+     "q90": 94.02555605207749
+    },
+    "off_above_intrinsic_count": 150,
+    "on_above_intrinsic_bpm": {
+     "max": 94.80303331605182,
+     "median": 32.575795629931775,
+     "min": 2.593105562074811,
+     "n": 150,
+     "q10": 5.453298595444707,
+     "q90": 94.06781766977858
+    },
+    "on_above_intrinsic_count": 150,
+    "readings": 150
+   },
+   "untreated_60": {
+    "hr_on_minus_off_bpm": {
+     "max": 6.4064791425959555,
+     "median": 3.21546993179156,
+     "min": 0.0022889828589427452,
+     "n": 150,
+     "q10": 0.04324882275585651,
+     "q90": 6.038655430916492
+    },
+    "off_above_intrinsic_bpm": {
+     "max": 94.98190720236798,
+     "median": 43.129728648384855,
+     "min": 1.2143567933536303,
+     "n": 150,
+     "q10": 4.747609583245776,
+     "q90": 94.50757526204285
+    },
+    "off_above_intrinsic_count": 150,
+    "on_above_intrinsic_bpm": {
+     "max": 94.98419618522692,
+     "median": 46.92836926851537,
+     "min": 4.478555971158798,
+     "n": 150,
+     "q10": 9.295712008366806,
+     "q90": 94.54993947802365
+    },
+    "on_above_intrinsic_count": 150,
+    "readings": 150
+   }
+  },
+  "minutes": 2160,
+  "pressure_cancellation_bpm": {
+   "max": -0.031205245411830562,
+   "median": -2.2958140137800953,
+   "min": -10.90891269440315,
+   "n": 457,
+   "q10": -7.709078950801473,
+   "q90": -0.47181089686308963
+  },
+  "pressure_down_while_deficit": 457,
+  "pressure_down_while_deficit_share": 0.21157407407407408,
+  "ranking_changes": {
+   "discordant": 383,
+   "pairs": 18000,
+   "ties_changed": 0
+  },
+  "ranking_detail": {
+   "after_crystalloid_30|HIGH|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_crystalloid_30|HIGH|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_crystalloid_30|LOW|gi_bleed_57m": {
+    "discordant": 3,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_crystalloid_30|LOW|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_crystalloid_30|MID|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_crystalloid_30|MID|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_haemostasis_90|HIGH|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_haemostasis_90|HIGH|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_haemostasis_90|LOW|gi_bleed_57m": {
+    "discordant": 60,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_haemostasis_90|LOW|gi_bleed_72f": {
+    "discordant": 60,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_haemostasis_90|MID|gi_bleed_57m": {
+    "discordant": 9,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_haemostasis_90|MID|gi_bleed_72f": {
+    "discordant": 8,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_prbc_unit_1|HIGH|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_prbc_unit_1|HIGH|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_prbc_unit_1|LOW|gi_bleed_57m": {
+    "discordant": 3,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_prbc_unit_1|LOW|gi_bleed_72f": {
+    "discordant": 3,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_prbc_unit_1|MID|gi_bleed_57m": {
+    "discordant": 7,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_prbc_unit_1|MID|gi_bleed_72f": {
+    "discordant": 1,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_prbc_unit_2_and_haemostasis|HIGH|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_prbc_unit_2_and_haemostasis|HIGH|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_prbc_unit_2_and_haemostasis|LOW|gi_bleed_57m": {
+    "discordant": 50,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_prbc_unit_2_and_haemostasis|LOW|gi_bleed_72f": {
+    "discordant": 25,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_prbc_unit_2_and_haemostasis|MID|gi_bleed_57m": {
+    "discordant": 9,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "after_prbc_unit_2_and_haemostasis|MID|gi_bleed_72f": {
+    "discordant": 8,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "arrival|HIGH|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "arrival|HIGH|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "arrival|LOW|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "arrival|LOW|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "arrival|MID|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "arrival|MID|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "crystalloid_120|HIGH|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "crystalloid_120|HIGH|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "crystalloid_120|LOW|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "crystalloid_120|LOW|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "crystalloid_120|MID|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "crystalloid_120|MID|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "restored_adequacy_120|HIGH|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "restored_adequacy_120|HIGH|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "restored_adequacy_120|LOW|gi_bleed_57m": {
+    "discordant": 60,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "restored_adequacy_120|LOW|gi_bleed_72f": {
+    "discordant": 60,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "restored_adequacy_120|MID|gi_bleed_57m": {
+    "discordant": 9,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "restored_adequacy_120|MID|gi_bleed_72f": {
+    "discordant": 8,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "untreated_120|HIGH|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "untreated_120|HIGH|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "untreated_120|LOW|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "untreated_120|LOW|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "untreated_120|MID|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "untreated_120|MID|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "untreated_30|HIGH|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "untreated_30|HIGH|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "untreated_30|LOW|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "untreated_30|LOW|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "untreated_30|MID|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "untreated_30|MID|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "untreated_60|HIGH|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "untreated_60|HIGH|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "untreated_60|LOW|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "untreated_60|LOW|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "untreated_60|MID|gi_bleed_57m": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   },
+   "untreated_60|MID|gi_bleed_72f": {
+    "discordant": 0,
+    "pairs": 300,
+    "ties_changed": 0
+   }
+  }
+ },
+ "records": {
+  "P2I-2AD": "5cb48163da4ff081e752b7684f4b036dbcf3e2acb4f94ee1603aaec742fe7fcf",
+  "P2I-2AE": "1b65d303831011014ca8cf8ce98e5fb880c5ea9cd3244f47773ce9d47b3712c8",
+  "P2I-2AF": "adb3767b4e8042b9976057587ab337fd5de5cd25119a1bb28e7a119d85768ed3"
+ },
+ "revision": "P2I-2AG",
+ "rhythm": {
+  "affects_gi": false,
+  "cases": {
+   "beta_1": {
+    "rate_constant": true,
+    "rates": [
+     124.0
+    ]
+   },
+   "paced": {
+    "rate_constant": true,
+    "rates": [
+     124.0
+    ]
+   }
+  },
+  "classification": "GENERALIZATION_BLOCKER_ONLY",
+  "holds": true
+ },
+ "validation": {
+  "agree": true,
+  "disagreements": [],
+  "full_reruns": 54,
+  "no_pressure": true
+ },
+ "verdict": {
+  "approved": false,
+  "blockers": [
+   "HR_NUMERIC_CALIBRATION_BLOCKED_BY_ARRIVAL_RECONSTRUCTION"
+  ],
+  "checks": {
+   "common_gains": true,
+   "explicit_intrinsic": true,
+   "hr_semantics": true,
+   "joint_arrival": false,
+   "pressure_excluded": true,
+   "unchanged_physiology": true
+  },
+  "rule": "HR_NUMERIC_DECISION_SURFACE_READY_FOR_FACULTY when: (1) the pressure contribution enters no candidate acceptance (the primary profile zeroes it; the reconstruction reads no pressure; its value is reported apart, diagnostic only); (2) every candidate declares its intrinsic rate (no fallback); (3) HR1 / HR2 carry the current structural semantics (frozen rule texts, check_hr's guard and HR2 arrival reduction); (4) at least one candidate is jointly arrival-compatible with COMMON intrinsic and common gains; (5) no case-specific gain (by construction); (6) D, lactate, RR, BloodState and DO2 / effective deficit unchanged, and the reconstruction agrees with the full core. The suite criterion (no new failure) is the final certification's, outside this module. Otherwise HR_NUMERIC_DECISION_SURFACE_NOT_READY with the first blocker; zero joint survivors is HR_NUMERIC_CALIBRATION_BLOCKED_BY_ARRIVAL_RECONSTRUCTION and stops the package: no trajectory decision pack (P2I-2AG-6) and no envelope proposal (P2I-2AG-7) is built, and the tolerance is never loosened.",
+  "stopped": true,
+  "verdict": "HR_NUMERIC_DECISION_SURFACE_NOT_READY \u2014 HR_NUMERIC_CALIBRATION_BLOCKED_BY_ARRIVAL_RECONSTRUCTION"
+ }
+}

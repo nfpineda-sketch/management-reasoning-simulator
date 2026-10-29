@@ -3078,3 +3078,55 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - NIT, anotados en el informe (§18).
   - `hr_shock.py` queda idéntico a `565e323`. Cambia el hash de fuentes del digest (`decision_pack.py`), y la
     evaluación se volvió a correr.
+
+## 37. P2I-2AG · Presión aplazada y superficie primaria de calibración de la FC (2026-10-29)
+
+- **Base:** `79a3895`. P2I-2AF queda aceptado como paquete estructural de la FC y cerrado: su módulo queda fijado byte a
+  byte y su registro (`adb3767b…`) por su digest. Informe: `docs/revision/P2I2AG_SUPERFICIE_PRIMARIA_FC.md`; números:
+  `docs/revision/P2I2AG_hr_primary.json`.
+- **Decisiones docentes:**
+  - la contribución de presión queda DEFERRED en la calibración primaria de la FC: no elige ganancias, no compensa el
+    impulso agudo ni el de deuda y no entra en la coincidencia de llegada ni en ningún orden;
+  - no se rechaza: queda en la fisiología común para el dominio de la presión, sin referencia absoluta inventada;
+  - toda calibración declara la intrínseca (60 / 80 / 100): `CALIBRATION_REQUIRES_EXPLICIT_INTRINSIC_HR`;
+  - HR1 y HR2 son pruebas estructurales del modelo vigente;
+  - tolerancia de llegada de ±5 lpm por caso (57m 124, 72f 112);
+  - ganancias comunes y primero una intrínseca común; la intrínseca por caso, sólo como sensibilidad;
+  - se mantienen la saturación y los candidatos de P2I-2AF; la escala de D no está aprobada.
+- **Calibración** (registro de congelamiento `22bd65e4…`):
+  - `check_hr` rechaza una llegada sin intrínseca declarada;
+  - HR2 (a): una llegada sin contribución simpática predice exactamente la intrínseca declarada;
+  - se actualizaron los textos de HR1, HR2 y AC1 y la descripción de `arrival_sympathetic_drive`;
+  - los artefactos (P2G, P2I-1, P2I-2T, P2I-2U) sólo cambian sus digests; ningún estado cambia; el golden directo no
+    cambia y Contracts v2 da IDENTICAL.
+- **Modo primario:** el perfil de análisis de P2I-2AF con la ganancia de presión en 0. El valor de la presión se informa
+  aparte (`PRESSURE_TERM_DIAGNOSTIC_ONLY`). Verificado así:
+  - 54 recorridas exactas;
+  - 2178 estados idénticos salvo el impulso (BloodState, V, Hb, D, lactato y demanda);
+  - D y lactato iguales al registro P2I-2AD.
+- **Congelamiento antes de evaluar:** `8eba7fc`, un solo commit (digest `94c94584…`).
+- **Evaluación** (analítica en la llegada, sin barrido cartesiano):
+  - 1350 descomposiciones (3 representantes × 225 candidatos × 2 casos);
+  - compatibles con su caso: 57m 30, 72f 58;
+  - conjuntamente compatibles con la intrínseca común: **0**. Los 675 candidatos conjuntos caen por un rechazo
+    analítico exacto (IDENTICAL_PREDICTION_DISJOINT_WINDOWS): cada representante tiene la misma llegada en ambos casos,
+    y las ventanas 119–129 y 107–117 no se superponen. El peor desajuste no puede bajar de 6 lpm.
+- **Sensibilidad (no aprobada):** con una intrínseca propia de cada caso sobreviven 5 de 2025 combinaciones, todas con:
+  - el representante LOW;
+  - 57m con intrínseca 80 y 72f con 60;
+  - ganancia aguda 5,58 y techo 150.
+- **Presión (diagnóstico):**
+  - correlación con la señal aguda 0,753;
+  - en el 21 % de los minutos baja el impulso aunque haya déficit, con una cancelación mediana de 2,3 lpm;
+  - suma una mediana de +4,4 lpm sin tratamiento a los 120 min y resta −2,2 tras los GR y la hemostasia;
+  - invierte el orden de 383 de 18 000 pares de candidatos;
+  - la llegada no cambia.
+- **Veredicto: HR_NUMERIC_DECISION_SURFACE_NOT_READY — HR_NUMERIC_CALIBRATION_BLOCKED_BY_ARRIVAL_RECONSTRUCTION.** El
+  paquete se detiene como pide el encargo: sin paquete de trayectorias, sin propuesta de envolventes y sin certificación
+  completa ni push.
+- **Decisiones docentes pendientes:**
+  - permitir una intrínseca propia de cada caso, o niveles de llegada propios de cada caso;
+  - aclarar si 150 / 175 / 200 son techos o reservas literales;
+  - si se certifica y se sube ya el cierre estructural.
+- **Sin elegir ni aprobar parámetros**, sin calibrar la presión ni la FR, sin colapso, sin migración y sin gancho en
+  tiempo de ejecución. El motor heredado no se leyó.

@@ -187,3 +187,68 @@ def test_no_legacy_no_p2f_region_no_p2g_acceptance_and_nothing_approved():
     for word in ("rr_per_lactate=", "sbp_per_pressure_deficit=", "rr_metabolic_max=", "TOLERANCE_BPM = 6",
                  "TOLERANCE_BPM *"):
         assert word not in source
+
+
+# The evaluation, on the frozen package (after the freeze commit 8eba7fc) ---------------------------------------------
+
+RECORD = ROOT / "docs" / "revision" / "P2I2AG_hr_primary.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2I2AG_SUPERFICIE_PRIMARIA_FC.md"
+
+
+@pytest.fixture(scope="module")
+def record():
+    return json.loads(RECORD.read_text(encoding="utf-8"))
+
+
+def test_the_record_is_reproduced_live_on_the_frozen_package(record):
+    assert record["freeze_digest"] == FROZEN_DIGEST
+    assert json.loads(json.dumps(hp.run(), sort_keys=True, default=str)) == record, "rerun and commit the record"
+
+
+def test_the_verdict_is_blocked_by_the_arrival_reconstruction_and_the_package_stopped(record):
+    verdict = record["verdict"]
+    assert verdict["verdict"] == f"{hp.NOT_READY} — {hp.BLOCKED_BY_ARRIVAL}" and verdict["stopped"]
+    assert verdict["checks"] == {"pressure_excluded": True, "explicit_intrinsic": True, "hr_semantics": True,
+                                 "joint_arrival": False, "common_gains": True, "unchanged_physiology": True}
+    assert not verdict["approved"] and not record["efficiency"]["trajectory_decision_pack_built"]
+
+
+def test_the_arrival_counts_the_report_states(record):
+    arrival = record["arrival"]
+    assert arrival["total_decompositions"] == 1350 and arrival["compatible"] == {"gi_bleed_57m": 30, "gi_bleed_72f": 58}
+    assert arrival["joint_common_intrinsic"] == 0 and arrival["simulation_rejections"] == 0
+    assert arrival["analytic_rejections"] == {"IMPLICIT_RECORDED_HR_FALLBACK": 0, "INVALID_RESERVE_BASE": 0,
+                                              "NEGATIVE_SYMPATHETIC_COMPONENT": 0,
+                                              "IDENTICAL_PREDICTION_DISJOINT_WINDOWS": 675}
+    assert all(arrival["identical_arrival_physiology"].values()) and arrival["windows_disjoint"]
+    assert arrival["pressure_on_equal_at_arrival"] and not arrival["case_specific_gain_required"]
+    sens = arrival["case_intrinsic_sensitivity"]
+    assert (sens["joint"], sens["of"], sens["approved"]) == (5, 2025, False)
+    assert sens["intrinsic_pairs"]["midpoint|lower"] == 5 and sens["ceiling"] == {"150": 5, "175": 0, "200": 0}
+
+
+def test_the_diagnostics_and_non_regression_the_report_states(record):
+    audit = record["pressure_audit"]
+    assert (audit["minutes"], audit["both_push_up"], audit["pressure_down_while_deficit"]) == (2160, 948, 457)
+    assert audit["ranking_changes"] == {"pairs": 18000, "discordant": 383, "ties_changed": 0}
+    assert audit["classification"] == hk.NEEDS_PRESSURE_DOMAIN_REVIEW and not audit["calibrated"]
+    assert record["validation"]["agree"] and record["validation"]["full_reruns"] == 54
+    assert record["non_regression"]["unchanged"] and record["non_regression"]["states_compared"] == 2178
+    assert record["d_scale"]["holds"] and record["rhythm"]["holds"]
+    assert record["identifiability"]["sets"]["joint, common intrinsic (primary)"] == {
+        "intrinsic": "EMPTY", "acute": "EMPTY", "debt": "EMPTY", "ceiling": "EMPTY"}
+    # The only "rank" keys are P2I-2AG-2's diagnostic: whether the descriptive HR order changes with the pressure term.
+    assert {key for key in audit if key.startswith("rank")} == {"ranking_changes", "ranking_detail"}
+    stripped = {**record, "pressure_audit": {k: v for k, v in audit.items() if not k.startswith("rank")}}
+    text = json.dumps(stripped, default=str).lower()
+    found = [word for word in ("faculty_approved", "\"best", "\"selected", "\"recommended", "\"preferred", "\"rank")
+             if word in text]
+    assert not found
+
+
+def test_the_document_is_generated_from_the_record(tmp_path):
+    from clinical_core import hr_primary_report
+    copy = tmp_path / "document.md"
+    copy.write_text(DOCUMENT.read_text(encoding="utf-8"), encoding="utf-8")
+    hr_primary_report.main(["--write", str(copy), "--data", str(RECORD)])
+    assert copy.read_text(encoding="utf-8") == DOCUMENT.read_text(encoding="utf-8"), "regenerate the document"
