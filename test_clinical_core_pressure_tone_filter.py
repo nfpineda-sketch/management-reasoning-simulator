@@ -218,3 +218,55 @@ def test_no_legacy_no_p2f_no_pressure_feedback_and_nothing_approved():
     text = json.dumps(pf.design(), default=str).lower()
     for word in ("\"best", "\"selected", "\"recommended", "\"preferred", "\"rank"):
         assert word not in text
+
+
+# The evaluation, on the frozen package (freeze 3d558fd) ---------------------------------------------------------------
+
+RECORD = ROOT / "docs" / "revision" / "P2J3_pressure_tone_filter.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2J3_FILTRO_PRESION_TONO.md"
+
+
+@pytest.fixture(scope="module")
+def record():
+    return json.loads(RECORD.read_text(encoding="utf-8"))
+
+
+def test_the_record_comes_from_the_frozen_package(record):
+    assert record["freeze_digest"] == FROZEN_DIGEST and record["record"] == pf.P2J2_DIGEST
+    assert record["design"] == json.loads(json.dumps(pf.design(), sort_keys=True, default=str))
+    assert record["reuse"]["units_digests"] == {"1": vt.UNITS[1.0], "1.1": vt.UNITS[1.1]}
+    assert record["reuse"]["units_equal"] and record["reuse"]["p2j2_tables_reproduced"]
+    assert record["comparators"]["valid"] and record["hr"]["validation"]["equal"]
+
+
+def test_the_primary_filter_the_report_states(record):
+    primary = record["primary"]
+    assert {g: {f: v["survivors"] for f, v in by.items()} for g, by in primary.items()} == {
+        "0.25": {"1": 216, "1.1": 1092}, "0.5": {"1": 181, "1.1": 1092}, "1": {"1": 134, "1.1": 1092}}
+    for by in primary.values():
+        for item in by.values():
+            assert all(item["any_failure"][n] == 0 for n in ("SIMULATION", "G", "H", "A", "B", "F", "C", "D", "E"))
+            assert item["entering"] == record["entering_per_point"][next(f for f in by if by[f] is item)]
+    assert set(record["demand_class"].values()) == {"ROBUST_ACROSS_DEMAND"}
+    for by_case in record["support"].values():
+        for item in by_case.values():
+            for name in "CDE":
+                assert set(item[name]["classes"]) == {"PRESSURE_AND_PERFUSION_IMPROVE"}
+            assert item["t_abs120_after_adequacy"]["high"] - 1.0 < 1e-9
+
+
+def test_sensitivity_never_rescues_and_the_verdict_holds(record):
+    assert record["sensitivity_demand_class"]["g2 a0.3"] == "DEMAND_INCOMPATIBLE"
+    assert record["sensitivity"]["g1.5 a0.3"]["1.1"]["survivors"] == 0
+    assert record["verdict"]["verdict"] == pf.READY and record["verdict"]["approved"] == []
+    assert all(record["verdict"]["checks"].values())
+    assert record["identifiability"]["tone gain"]["class"] == "NON_IDENTIFIABLE"
+    assert all(not item["failures"] for item in record["hr"]["by_point"].values())
+
+
+def test_the_document_is_generated_from_the_record(tmp_path):
+    from clinical_core import pressure_tone_filter_report
+    copy = tmp_path / "document.md"
+    copy.write_text(DOCUMENT.read_text(encoding="utf-8"), encoding="utf-8")
+    pressure_tone_filter_report.main(["--write", str(copy), "--data", str(RECORD)])
+    assert copy.read_text(encoding="utf-8") == DOCUMENT.read_text(encoding="utf-8"), "regenerate the document"

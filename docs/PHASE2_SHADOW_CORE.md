@@ -3322,3 +3322,29 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - si la retirada del tono necesita memoria o una constante de tiempo;
   - las envolventes A–I;
   - después, el barorreflejo.
+
+## 44. P2J-3 · Filtro docente de envolventes observables de presión y tono (2026-10-30)
+
+- **Base:** `51bc0ca` (P2J-2, cerrado: su módulo y su registro quedan fijados; su congelamiento se recalcula con
+  `pressure_tone_filter.p2j2_sources`).
+  - Congelamiento: `3d558fd` (digest `611e1702…`), antes de contar ningún superviviente.
+  - Informe: `docs/revision/P2J3_FILTRO_PRESION_TONO.md`; números: `docs/revision/P2J3_pressure_tone_filter.json`.
+  - Sin cambios en el núcleo.
+- **Decisiones docentes codificadas:**
+  - canal normalizado a la llegada, con T_abs como coordenada interna y no como RVS medida;
+  - respuesta instantánea con el retraso de un paso;
+  - g = 0,25 / 0,5 / 1 primarias con a = 0,3 provisional; g = 0 como referencia; g = 1,5 / 2 y a = 0,1 / 0,5 sólo
+    de sensibilidad;
+  - envolventes A–I y orden del filtro.
+- **Resultados:**
+  - Ninguna envolvente A–H rechaza candidatos primarios. Sólo FD-LAC recorta a demanda 1,0: g = 0,5 deja 181 de 216 y
+    g = 1 deja 134. A demanda 1,1 quedan los 1092.
+  - Las tres ganancias son robustas en ambas demandas.
+  - Los contrafactuales de cristaloide y de las dos unidades de GR mejoran presión y perfusión en todos los
+    candidatos.
+  - La FC (diagnóstico) no fallaría ninguna regla A–F.
+  - En sensibilidad, g = 1,5 y g = 2 caen por G y F, y nada rescata a los primarios.
+- **Veredicto: PRESSURE_TONE_OBSERVABLE_FILTER_SATISFIED.**
+  - La ganancia sigue NON_IDENTIFIABLE dentro de [0,25, 1].
+  - Recomendación: pasar al barorreflejo llevando las tres ganancias como incertidumbre. La FC no alimenta la
+    presión, así que la reconexión no mueve esta región.
