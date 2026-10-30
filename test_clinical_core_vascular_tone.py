@@ -245,3 +245,88 @@ def test_no_legacy_no_p2f_no_pressure_feedback_and_nothing_approved():
     text = json.dumps(vt.design(), default=str).lower()
     for word in ("faculty_approved", "\"best", "\"selected", "\"recommended", "\"preferred", "\"rank"):
         assert word not in text
+
+
+# The evaluation, on the frozen package (freeze b3b63b1) ---------------------------------------------------------------
+
+RECORD = ROOT / "docs" / "revision" / "P2J2_vascular_tone.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2J2_TONO_VASCULAR_DINAMICO.md"
+
+
+def _json(value):
+    return json.loads(json.dumps(value, sort_keys=True, default=str))
+
+
+@pytest.fixture(scope="module")
+def record():
+    return json.loads(RECORD.read_text(encoding="utf-8"))
+
+
+def test_the_record_comes_from_the_frozen_package_and_its_analytic_part_is_reproduced_live(record):
+    assert record["freeze_digest"] == FROZEN_DIGEST and record["record"] == vt.P2J1_DIGEST
+    # The trajectories are not re-run here; the screen, the probes and the arrival signals are.
+    assert record["screen"] == _json(vt.analytic_screen()) and record["probes"] == _json(vt.probes())
+    signals = {f"{case} {level} x{f:g}": arrival_tone_signal(vt.tone_anchors(case, level, f), vt.tone_profile(0.0, 0.3))
+               for case in vt.CASES for level in vt.LEVELS for f in vt.DEMANDS}
+    assert record["arrival_signals"] == _json(signals)
+    assert record["literal_alternative"] == _json(vt.literal_alternative(signals))
+    assert record["gains"] == list(vt.GAINS) and record["afterload"] == list(vt.AFTERLOAD)
+
+
+def test_the_verdict_follows_its_checks_on_the_recorded_inputs(record):
+    inputs = dict(probe=record["probes"], flags=record["flags"], sample_flags=record["sample_flags"],
+                  fd=record["fd_lac"], tables=record["trajectories"], validation=record["validation"],
+                  reuse=record["reuse"], reference_equal=record["reference_equals_p2j1"],
+                  deterministic=record["deterministic"], trade=record["tradeoff"],
+                  gains=[g for g, a in vt.admissible() if a == vt.PRIMARY_AFTERLOAD])
+    assert _json(vt.verdict(**inputs)) == record["verdict"]
+    assert record["verdict"]["verdict"] == vt.READY and record["verdict"]["approved"] == []
+    broken = vt.verdict(**{**inputs, "validation": {**record["validation"], "equal": False}})
+    assert broken["verdict"] == f"{vt.NOT_READY} — reconstruction_exact"
+    lost = json.loads(json.dumps(record["fd_lac"]))
+    for item in lost.values():
+        for g in item["gains"].values():
+            g["candidates"] = 0
+    assert vt.verdict(**{**inputs, "fd": lost})["verdict"].endswith("lactate_satisfiable")
+
+
+def test_the_reuse_validation_and_stability_the_report_states(record):
+    assert record["reuse"]["units_digests"] == {"1": vt.UNITS[1.0], "1.1": vt.UNITS[1.1]}
+    assert record["units"] == {"1": 18, "1.1": 37} and record["keys"] == 1866
+    assert record["validation"]["equal"] and record["validation"]["compared"] == 816
+    assert record["deterministic"] and record["reference_equals_p2j1"]
+    for by_gain in (record["flags"], *record["sample_flags"].values()):
+        for flag in by_gain.values():
+            assert flag["arrival_kept"] and not any(flag[k] for k in ("GUARD_CONTACT", "OSCILLATION", "STOP",
+                                                                      "negative_pressure"))
+    assert {f: v["gains"]["0"]["candidates"] for f, v in record["fd_lac"].items()} == {"1": 216, "1.1": 1092}
+    assert {f: v["reference_candidates"] for f, v in record["fd_lac"].items()} == {"1": 216, "1.1": 1092}
+    assert not any(item["class"] == "UNSTABLE_FEEDBACK" for item in record["tradeoff"].values())
+    assert record["tradeoff"]["g2 a0.5"]["class"] == "ANALYTIC_REJECTION"
+
+
+def test_the_trajectories_the_report_states(record):
+    t = record["trajectories"]
+    p1, p4 = t["P1 gi_bleed_57m x1"]["gains"], t["P4 gi_bleed_57m x1"]["gains"]
+    assert p1["0"]["at"]["120"]["map"]["median"] == pytest.approx(32.35, abs=0.01)
+    assert p1["2"]["at"]["120"]["map"]["median"] == pytest.approx(39.91, abs=0.01)
+    assert p4["0"]["at"]["120"]["map"]["median"] == pytest.approx(100.66, abs=0.01)
+    assert p4["1"]["at"]["120"]["T"]["median"] == pytest.approx(0.714, abs=0.001)
+    for table in t.values():
+        for gain in table["gains"].values():
+            assert gain["at"]["0"]["T"]["low"] == gain["at"]["0"]["T"]["high"] == 1.0   # minute 1: the flags
+    # Untreated: tone never lowers pressure against T = 1; resuscitated: T_abs back to 1.
+    assert all(g["at"]["120"]["map_change"]["low"] >= 0.0 for k, v in t.items() if k.startswith("P1")
+               for g in v["gains"].values())
+    assert all(abs(g["at"]["120"]["T_abs"]["median"] - 1.0) < 0.01 for k, v in t.items() if k.startswith("P4")
+               for g in v["gains"].values())
+    assert all(item["status"] == "PROPOSED_NOT_APPROVED" for item in record["envelopes"].values())
+    assert set(record["envelopes"]) == set("ABCDEFGHI")
+
+
+def test_the_document_is_generated_from_the_record(tmp_path):
+    from clinical_core import vascular_tone_report
+    copy = tmp_path / "document.md"
+    copy.write_text(DOCUMENT.read_text(encoding="utf-8"), encoding="utf-8")
+    vascular_tone_report.main(["--write", str(copy), "--data", str(RECORD)])
+    assert copy.read_text(encoding="utf-8") == DOCUMENT.read_text(encoding="utf-8"), "regenerate the document"

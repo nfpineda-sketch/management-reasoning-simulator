@@ -1030,6 +1030,7 @@ Sondas con umbral sintético 0,4 y límite 10:
 - El golden no baja nunca de 0,80, así que sus presiones no cambian (prueba).
 - Cambia una sonda de Nivel 2: `preload_dependent`, minuto 1, con gasto 0,19. Su PAM pasa de 64 a 28.
 - **Desde P2J-1 (§42):** no hay rodilla; PAS y PAD son las de llegada × `pressure_rel` en todo el rango.
+- **Desde P2J-2 (§43):** T puede moverse con una respuesta común al déficit agudo (ganancia 0 por defecto).
 
 ### 11.5 Falla de bomba y congestión (P2E-5)
 
@@ -3281,3 +3282,34 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - si hace falta una respuesta del tono;
   - las envolventes de presión;
   - después, la reconexión presión → FC (plan en el informe, §16).
+
+## 43. P2J-2 · Tono vascular dinámico y superficie de decisión de la presión (2026-10-30)
+
+- **Base:** `f6b4cd0` (P2J-1, cerrado: su módulo y su registro quedan fijados byte a byte; su congelamiento se recalcula
+  con la prueba AST de P2J-2, `vascular_tone.p2j1_sources`).
+  - Congelamiento: `b3b63b1`, antes de evaluar ninguna trayectoria clínica (digest `baa2ee12…`).
+  - Informe: `docs/revision/P2J2_TONO_VASCULAR_DINAMICO.md`; números: `docs/revision/P2J2_vascular_tone.json`.
+- **Núcleo:** `deficit_to_tone_gain` (0 por defecto, PROVISIONAL).
+  - Cada minuto T toma el objetivo `derived.tone_target`, que pide el estado del inicio del minuto: (1 + g·s) /
+    (1 + g·s0), con s la señal aguda (déficit efectivo / demanda) y s0 la de llegada.
+  - Es retroalimentación explícita con un minuto de retraso, sin solucionador; la llegada es su punto fijo.
+  - El perfil rechaza g·a ≥ 1. El integrador falla cerrado si el objetivo sale del guardia de T o si otra fuente
+    escribe T en el mismo minuto.
+  - Con g = 0 no se escribe nada: el golden sólo gana la entrada nueva de PARAMETERS; Contracts v2 queda idéntico.
+- **Superficie congelada:** g ∈ {0, 0,25, 0,5, 1, 1,5, 2} × a ∈ {0,1, 0,3, 0,5}; (2, 0,5) se rechaza analíticamente.
+  - Ocho sondas estructurales.
+  - Una reconstrucción exacta desde las trayectorias de sangre en caché, validada contra 816 corridas del núcleo.
+- **Resultados** (a = 0,3; detalle en el informe):
+  - Sin tratamiento, el tono sostiene la PAM a los 120: +1,6 a +7,5 mmHg en 57m y +2,5 a +16,9 en 72f, a un costo de
+    gasto y aporte de −2 % a −15 %.
+  - Tras la reanimación, T_abs vuelve a 1 y el canal baja a 1 / (1 + g·s0). La PAM de 57m a los 120 baja de 100,7 a
+    94–65, pero el gasto sigue 1,5–1,8 veces el de llegada: la sobrepresión que queda es del gasto.
+  - Con g ≥ 1,5, la retirada del tono hace bajar la PAM de 57m durante la primera unidad de GR.
+  - FD-LAC: a demanda 1,0, g ≥ 0,5 pierde candidatos (FD-LAC-06 de 72f en L2); la adecuación L3 se mantiene.
+  - La FC cambia ≤ 5 bpm.
+- **Veredicto: DYNAMIC_TONE_DECISION_SURFACE_READY.** Decisiones docentes (informe, §19):
+  - la normalización a la llegada;
+  - el rango de la ganancia;
+  - si la retirada del tono necesita memoria o una constante de tiempo;
+  - las envolventes A–I;
+  - después, el barorreflejo.
