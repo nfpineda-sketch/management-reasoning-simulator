@@ -41,7 +41,10 @@ STDLIB = {"__future__", "argparse", "ast", "copy", "dataclasses", "enum", "funct
 #: Standard-library modules one offline analysis file may use besides STDLIB.
 ANALYSIS_ONLY = {
     # P2I-2AI: the offline analysis CLI parallelizes its run (--workers); nothing the application runs imports it.
-    "arrival_severity.py": {"multiprocessing"}}
+    "arrival_severity.py": {"multiprocessing"},
+    # P2J-4: the offline baroreflex analysis takes medians and a Pearson correlation of its own readings; nothing the
+    # application runs imports it.
+    "baroreflex.py": {"statistics"}}
 
 
 def _imports(path):
