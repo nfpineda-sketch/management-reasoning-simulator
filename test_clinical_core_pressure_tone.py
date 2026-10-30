@@ -14,6 +14,7 @@ from dataclasses import replace
 
 import pytest
 
+from clinical_core import baroreflex as br
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import calibration, decision_pack, gi_reference, lactate_slice
 from clinical_core import hr_primary as hp
@@ -36,7 +37,7 @@ FROZEN_DIGEST = "92aa42cbf18d6f2e4e3a978babbd8a4b0f8dd8a1058a8d6bde4b2592ac3f409
 #: the declared statements there (vascular_tone.p2j1_sources); P2J-2's own module is a later module.
 P2J1_MODULE_SHA = "2e350c8a42bcacfa31e8e5349d284c7d276808e396d36421e1dc369dbcb9ec26"
 P2J1_RECORD_SHA = "421e5aa34a35a9ad92f3b17994ef90f70b26cd74b646a7a01b42522ad13bb64b"
-LATER_MODULES = ("clinical_core/vascular_tone.py", "clinical_core/pressure_tone_filter.py")
+LATER_MODULES = ("clinical_core/vascular_tone.py", "clinical_core/pressure_tone_filter.py", "clinical_core/baroreflex.py")
 #: What P2J-2 added to tone's paths (its analysis module, and the integrator's tone response): the P2J-1 audit's view
 #: of the tree leaves them out; test_clinical_core_vascular_tone pins them.
 P2J2_TONE_ROWS = (("clinical_core/vascular_tone.py", None), ("clinical_core/vascular_tone_report.py", None),
@@ -65,7 +66,7 @@ def test_the_package_is_frozen():
     assert hashlib.sha256(RECORD.read_bytes()).hexdigest() == P2J1_RECORD_SHA
     sources = {k: v for k, v in sources.items() if k not in LATER_MODULES}
     text = json.dumps({"revision": pt.REVISION, "p2i2ak": hashlib.sha256(pt.P2I2AK_RECORD.read_bytes()).hexdigest(),
-                       "design": pt.design(), "sources": vt.p2j1_sources(sources)}, sort_keys=True, default=str)
+                       "design": pt.design(), "sources": br.p2j1_sources(sources)}, sort_keys=True, default=str)
     assert hashlib.sha256(text.encode("utf-8")).hexdigest() == FROZEN_DIGEST, "a source P2J-1 froze changed"
 
 
@@ -101,10 +102,13 @@ def test_pressure_is_the_arrival_pressure_times_output_x_tone_everywhere(arrival
 
 
 def test_p2j1_changed_only_the_declared_statements_of_derived_and_shadow():
-    # P2J-2 changed derived.py again (the tone statements): the P2I-2AK proof of derived.py is now
-    # vascular_tone's, over P2J-1's and P2J-2's declared statements together; shadow.py keeps P2J-1's.
+    # P2J-2 and P2J-4 changed derived.py again (the tone, then the baroreflex statements): the P2I-2AK proof of
+    # derived.py is now baroreflex's, over P2J-1's, P2J-2's and P2J-4's declared statements together; shadow.py keeps
+    # P2J-1's.
     from clinical_core import vascular_tone as vt
-    assert pt.outside_unchanged()[pt.SHADOW] and vt.outside_unchanged()[pt.DERIVED]["since_p2i2ak"]
+    item = br.P2J4_CHANGES[pt.DERIVED]
+    assert pt.outside_unchanged()[pt.SHADOW] and vt.outside_digest(vt._live(pt.DERIVED), item["since_p2i2ak"]) == \
+        item["outside_p2i2ak"]
     text = (ROOT / pt.DERIVED).read_text(encoding="utf-8")
     assert pt.outside_digest(pt.DERIVED, text.replace("OUTPUT_EPSILON = 1e-9", "OUTPUT_EPSILON = 1e-8")) != \
         pt.P2J1_CHANGES[pt.DERIVED]["outside"], "the proof must notice a change outside the pressure relation"
@@ -118,7 +122,7 @@ def test_p2j1_changed_only_the_declared_statements_of_derived_and_shadow():
     from test_clinical_core_vascular_tone import P2J2_SOURCES
     assert {k: hashlib.sha256((ROOT / k).read_bytes()).hexdigest() for k in P2J2_SOURCES} == P2J2_SOURCES
     sources = {pt.DERIVED: "live", pt.SHADOW: "live", "clinical_core/state.py": "s"}
-    assert vt.p2i2ak_sources(sources) == {pt.DERIVED: pt.P2J1_CHANGES[pt.DERIVED]["sha_at_p2i2ak"],
+    assert br.p2i2ak_sources(sources) == {pt.DERIVED: pt.P2J1_CHANGES[pt.DERIVED]["sha_at_p2i2ak"],
                                           pt.SHADOW: pt.P2J1_CHANGES[pt.SHADOW]["sha_at_p2i2ak"],
                                           "clinical_core/state.py": "s"}
     for name in ("sbp_per_pressure_deficit", "dbp_per_pressure_deficit", "low_output_pressure_knee"):

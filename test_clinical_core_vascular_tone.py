@@ -15,6 +15,7 @@ from dataclasses import replace
 import pytest
 
 from clinical_core import bands, decision_pack, lactate_slice
+from clinical_core import baroreflex as br
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import derived as dv
 from clinical_core import hr_primary as hp
@@ -39,10 +40,11 @@ FROZEN_DIGEST = "baa2ee124decc7c84a48b0b8fe5031a9dab774e3587176c79e1907df9490454
 #: changed (pressure_tone_filter.p2j2_sources).
 P2J2_MODULE_SHA = "8314c34accd082511b8e5cbe73da90c054fdbd2a0b8a6f3a56ab0aa0c12f7cf5"
 P2J2_RECORD_SHA = "0c5c9feda158d9d799a0d12f900a9776fcca917ea0b80bfd7b580ec604031924"
-LATER_MODULES = ("clinical_core/pressure_tone_filter.py",)
-#: derived.py, integration.py and shadow.py as P2J-2 leaves them: the AST proofs cover the declared statements; these pins
+LATER_MODULES = ("clinical_core/pressure_tone_filter.py", "clinical_core/baroreflex.py")
+#: derived.py, integration.py and shadow.py as the latest package leaves them (derived.py: P2J-4, proven by
+#: baroreflex.P2J4_CHANGES; integration.py and shadow.py: P2J-2): the AST proofs cover the declared statements; these pins
 #: make any later change of the three files fail the closed packages' guards until it is proven again.
-P2J2_SOURCES = {"clinical_core/derived.py": "6974d0fcf5159e9a67aa18fc030d9a65d87da40a5d776b3be258d3589ba2bfda",
+P2J2_SOURCES = {"clinical_core/derived.py": "87f773f54d6bc4d125ef7817eb79383e7b77d792d9879a9a90d8caa82efe275c",
                 "clinical_core/integration.py": "cb54d2eec3754eecdd7267dba58b0389203b233b16a86455f5280d1eafa520f0",
                 "clinical_core/shadow.py": "66ef25c952509f0765731cfc0c0b97274bc5a4d263dcb486b595a8585a99ef35"}
 C57, C72 = vt.C57, vt.C72
@@ -68,7 +70,8 @@ def test_the_package_is_frozen():
     assert hashlib.sha256(RECORD.read_bytes()).hexdigest() == P2J2_RECORD_SHA
     sources = {k: v for k, v in sources.items() if k not in LATER_MODULES}
     text = json.dumps({"revision": vt.REVISION, "p2j1": hashlib.sha256(vt.P2J1_RECORD.read_bytes()).hexdigest(),
-                       "design": vt.design(), "sources": pf.p2j2_sources(sources)}, sort_keys=True, default=str)
+                       "design": vt.design(), "sources": pf.p2j2_sources(br.p2j3_sources(sources))}, sort_keys=True,
+                      default=str)
     assert hashlib.sha256(text.encode("utf-8")).hexdigest() == FROZEN_DIGEST, "a source P2J-2 froze changed"
 
 
@@ -219,8 +222,11 @@ def test_the_reconstruction_equals_the_core(source, gain, a):
 # What P2J-2 changed outside its module --------------------------------------------------------------------------------
 
 def test_p2j2_changed_only_the_declared_statements():
-    assert vt.outside_unchanged() == {vt.DERIVED: {"since_p2j1": True, "since_p2i2ak": True},
-                                      vt.INTEGRATION: {"since_p2j1": True, "since_p2i2ak": True}}
+    # P2J-4 changed derived.py again (the baroreflex): its proof is baroreflex's, over P2J-2's and P2J-4's statements.
+    assert vt.outside_unchanged()[vt.INTEGRATION] == {"since_p2j1": True, "since_p2i2ak": True}
+    item = br.P2J4_CHANGES[vt.DERIVED]
+    assert vt.outside_digest(vt._live(vt.DERIVED), item["since_p2j1"]) == item["outside_p2j1"]
+    assert vt.outside_digest(vt._live(vt.DERIVED), item["since_p2i2ak"]) == item["outside_p2i2ak"]
     derived = vt._live(vt.DERIVED)
     mutated = derived.replace("OUTPUT_EPSILON = 1e-9", "OUTPUT_EPSILON = 1e-8")
     assert vt.outside_digest(mutated, vt.P2J2_CHANGES[vt.DERIVED]["changed"]) != \
@@ -238,9 +244,10 @@ def test_p2j2_changed_only_the_declared_statements():
 
 #: Inside the statements P2J-2 declared, nothing but the tone (adversarial review of P2J-2): each statement's AST with
 #: the tone field, the tone check, the tone PARAMETERS entry, the tone branch of step and the tone_target import removed
-#: equals its AST at P2J-1 (f6b4cd0), digest by digest.
+#: equals its AST at P2J-1 (f6b4cd0), digest by digest. P2J-4: the baroreflex fields, check and entries, the amended
+#: relative-pressure text and the sympathetic_target line are removed first (baroreflex.StripP2J4), on both sides.
 INSIDE_AT_P2J1 = {("clinical_core/derived.py", "CoreProfile"): "da3e103747d4d0c1302bbb1413397b7e64e75cd22e38d3abf8630e8e7001a52e",
-                  ("clinical_core/derived.py", "PARAMETERS"): "7ee9d1a34a862a4af475a45bdd2d21993e35d347da94592e6763d6985b266cda",
+                  ("clinical_core/derived.py", "PARAMETERS"): "288f89278c8fefb8d290c40ad69972569c4d09d99109936cfbf108d3d464fe61",
                   ("clinical_core/integration.py", "step"): "a0b51f40ca0ae6a52acd4fa75b8e1decc5bcbafcaf689e219e955b386c6c5386",
                   ("clinical_core/integration.py", "from .derived"):
                       "cdcf016cb56ff945da0ee7d278430f04c6152deb54d52625de6df1d061cfd1ee"}
@@ -275,7 +282,7 @@ def _inside_digest(text, name):
             node, ast.AnnAssign) else []
         if getattr(node, "name", None) == name or any(isinstance(t, ast.Name) and t.id == name for t in targets) or (
                 isinstance(node, ast.ImportFrom) and name == f"from .{node.module}"):
-            return hashlib.sha256(ast.dump(_StripTone().visit(node)).encode("utf-8")).hexdigest()
+            return hashlib.sha256(ast.dump(_StripTone().visit(br.StripP2J4().visit(node))).encode("utf-8")).hexdigest()
     raise KeyError(name)
 
 
@@ -295,7 +302,7 @@ def test_inside_the_declared_statements_p2j2_changed_only_the_tone():
 def test_the_closed_p2j1_freeze_recomputes_from_the_proven_sources():
     sources = {k: v for k, v in bf.freeze_sources().items() if k not in vt.OWN + LATER_MODULES}
     text = json.dumps({"revision": pt.REVISION, "p2i2ak": hashlib.sha256(pt.P2I2AK_RECORD.read_bytes()).hexdigest(),
-                       "design": pt.design(), "sources": vt.p2j1_sources(sources)}, sort_keys=True, default=str)
+                       "design": pt.design(), "sources": br.p2j1_sources(sources)}, sort_keys=True, default=str)
     assert hashlib.sha256(text.encode("utf-8")).hexdigest() == vt.P2J1_DIGEST
 
 

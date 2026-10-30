@@ -96,6 +96,11 @@ class CoreProfile:
     # P2I-2AF: the sinus rate the sympathetic increment saturates toward (bpm); HR_RESERVE = ceiling - the sinus base
     # rate. Provisional exploratory midpoint, not approved.
     sinus_rate_ceiling_bpm: float = 175.0
+    # P2J-4: the direct baroreflex, drive per unit of the MAP signal max(0, (MAP_set - MAP) / MAP_set): 0 at or above
+    # MAP_set, never negative. 0 by default (off). MAP_set (mmHg) is declared with a gain, never read from a case; no
+    # value is chosen here.
+    baroreflex_to_sympathetic_gain: float = 0.0
+    baroreflex_map_set_mmhg: float | None = None
     sympathetic_per_hypoxaemia_point: float = 0.02
     hypoxaemia_threshold_spo2: float = 94.0
     sympathetic_per_hypoglycaemia_mg_dl: float = 0.01
@@ -174,6 +179,15 @@ class CoreProfile:
             raise CoreInvariantError("the low-output pressure knee is strictly between 0 and 1")
         if not self.sinus_rate_ceiling_bpm > 0.0:
             raise CoreInvariantError("the sinus-rate ceiling is positive")
+        if self.baroreflex_map_set_mmhg is not None and not self.baroreflex_map_set_mmhg > 0.0:
+            raise CoreInvariantError("the baroreflex MAP set point is positive when declared")
+        if self.baroreflex_to_sympathetic_gain > 0.0:
+            if self.baroreflex_map_set_mmhg is None:
+                raise CoreInvariantError("a baroreflex gain needs a declared MAP set point")
+            if self.sympathetic_per_pressure_deficit != 0.0:
+                # P2J-4: one pressure signal. The relative-pressure term (1 - pressure_rel, below 0 above arrival) is
+                # retired from the HR physiology the baroreflex enters; the two never drive the rate together.
+                raise CoreInvariantError("the baroreflex and the relative-pressure term are never active together")
         if (self.collapse_output_threshold is None) != (self.collapse_burden_limit is None):
             raise CoreInvariantError("the collapse rule declares both its output threshold and its burden limit, "
                                      "or neither")
@@ -238,7 +252,11 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
                                               "over the whole range); kept so historical records stay readable"),
     "hr_per_sympathetic_drive": (ADOPTED, "family_engine._surface: hr + (circulation - 1) * 25, read here as bpm "
                                           "per unit of sympathetic drive"),
-    "sympathetic_per_pressure_deficit": (PROVISIONAL, "MAP/output deficit -> sympathetic drive gain: TBD (KD-S2)"),
+    "sympathetic_per_pressure_deficit": (PROVISIONAL, "MAP/output deficit -> sympathetic drive gain: TBD (KD-S2). The "
+                                                      "term is 1 - pressure_rel, relative to the shocked arrival and "
+                                                      "below 0 above it; 0 in every primary HR calibration (P2I-2AG) "
+                                                      "and never active together with the baroreflex (P2J-4); the "
+                                                      "common default stays for the historical records"),
     "sympathetic_per_debt": (PROVISIONAL, "oxygen-delivery debt (D / tau_D) -> sympathetic drive gain (KD-S2). Since "
                                           "P2I-2AE the core does not read it (tau_D is debt repayment only; the "
                                           "debt-driven drive is debt_to_sympathetic_gain x D); kept so historical "
@@ -260,6 +278,15 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
                                             "ceiling - the sinus base rate; smooth, monotone, linear near 0, never a "
                                             "hard clip; TBD. 175 is the exploratory midpoint of a broad adult "
                                             "maximal-sinus-rate range (150-200), not approved"),
+    "baroreflex_to_sympathetic_gain": (PROVISIONAL, "sympathetic drive per unit of the direct baroreflex signal "
+                                                    "max(0, (MAP_set - MAP) / MAP_set) (P2J-4): 0 at or above MAP_set, "
+                                                    "never negative, approaching 1 as MAP approaches 0; reads the MAP "
+                                                    "the state resolves, never the deficit, D, tone gain, arrival or "
+                                                    "legacy HR; never active with the relative-pressure term; TBD. 0 "
+                                                    "by default: the faculty sets it, nothing is chosen here"),
+    "baroreflex_map_set_mmhg": (PROVISIONAL, "the MAP the direct baroreflex is referenced to (P2J-4), mmHg: common, "
+                                             "declared with a gain, never read from a case's arrival pressure; TBD. "
+                                             "None by default (the baroreflex is off)"),
     "sympathetic_per_hypoxaemia_point": (PROVISIONAL, "drive per SpO2 point below the threshold: TBD (KD-S2)"),
     "hypoxaemia_threshold_spo2": (PROVISIONAL, "SpO2 below which hypoxaemia drives the rate: TBD (KD-S2)"),
     "sympathetic_per_hypoglycaemia_mg_dl": (PROVISIONAL, "drive per mg/dL below the threshold: TBD (KD-S2)"),
@@ -934,6 +961,30 @@ def arterial_pressures(pressure_rel: float, anchors: Anchors, profile: CoreProfi
     return anchors.sbp * scale, anchors.dbp * scale
 
 
+def mean_arterial_pressure(pressure_rel: float, anchors: Anchors, profile: CoreProfile) -> float:
+    """MAP (mmHg) of the pressure the state produces, as ``derive`` reports it: (SBP + 2 DBP) / 3."""
+    sbp, dbp = arterial_pressures(pressure_rel, anchors, profile)
+    return (sbp + 2 * dbp) / 3
+
+
+def baroreflex_signal(map_mmhg: float, map_set_mmhg: float) -> float:
+    """The direct baroreflex signal (P2J-4): max(0, (MAP_set - MAP) / MAP_set). 0 at or above MAP_set, so a high
+    pressure brakes nothing; positive below it; approaching 1 as MAP approaches 0. Never negative."""
+    if not map_set_mmhg > 0.0:
+        raise CoreInvariantError("the baroreflex MAP set point is positive")
+    return max(0.0, (map_set_mmhg - map_mmhg) / map_set_mmhg)
+
+
+def baroreflex_drive(pressure_rel: float, anchors: Anchors, profile: CoreProfile) -> float:
+    """baroreflex_to_sympathetic_gain x ``baroreflex_signal`` on the MAP the state resolves (P2J-4); 0 with the gain
+    off. It reads that MAP only: no deficit, D, tone gain, arrival HR or legacy HR."""
+    gain = profile.baroreflex_to_sympathetic_gain
+    if gain == 0.0:
+        return 0.0
+    return gain * baroreflex_signal(mean_arterial_pressure(pressure_rel, anchors, profile),
+                                    profile.baroreflex_map_set_mmhg)
+
+
 def collapse_burden_after_minute(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:
     """One minute of the collapse burden (P2E-3), read on the output at the start of the minute.
 
@@ -1012,9 +1063,12 @@ def sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile)
     - the oxygen-delivery debt D, debt_to_sympathetic_gain x D (P2I-2AE): the memory; 0 at D = 0,
       never decreasing in D, independent of tau_D, which only repays D;
     and the stimuli the core holds state for, each as a deviation from arrival:
-    - the pressure deficit (relative to arrival: 0 at arrival, below 0 above arrival pressure);
+    - the pressure deficit (relative to arrival: 0 at arrival, below 0 above arrival pressure; 0 in every primary
+      HR calibration since P2I-2AG);
     - hypoxaemia;
-    - hypoglycaemia.
+    - hypoglycaemia;
+    and, P2J-4, the direct baroreflex (``baroreflex_drive``): the MAP of this same state against a declared MAP_set,
+    0 at or above it, never negative, never active together with the pressure deficit (the profile refuses both).
 
     Hypercapnia, pain or agitation, fever and withdrawal are declared inputs of the same
     drive, but no core state carries them yet (no CO2, pain, temperature or withdrawal
@@ -1036,6 +1090,8 @@ def sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile)
               + profile.debt_to_sympathetic_gain * state.D
               + profile.sympathetic_per_hypoxaemia_point * hypoxaemia
               + profile.sympathetic_per_hypoglycaemia_mg_dl * hypoglycaemia)
+    # P2J-4: the direct baroreflex, on the MAP of this same state, after the other terms (0 with the gain off).
+    target += baroreflex_drive(pressure_rel, anchors, profile)
     # P2D-3: the drive is never negative. As its stimuli resolve, the rate falls back to the
     # intrinsic rate of R and no further; a lower rate needs an explicit source that changes R.
     return max(0.0, target)

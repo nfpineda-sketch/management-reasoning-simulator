@@ -178,6 +178,14 @@
    "provisional",
    "where arrival sits on the preload curve when the case does not declare it (0 empty, 1 plateau): TBD (KD-S4)"
   ],
+  "baroreflex_map_set_mmhg": [
+   "provisional",
+   "the MAP the direct baroreflex is referenced to (P2J-4), mmHg: common, declared with a gain, never read from a case's arrival pressure; TBD. None by default (the baroreflex is off)"
+  ],
+  "baroreflex_to_sympathetic_gain": [
+   "provisional",
+   "sympathetic drive per unit of the direct baroreflex signal max(0, (MAP_set - MAP) / MAP_set) (P2J-4): 0 at or above MAP_set, never negative, approaching 1 as MAP approaches 0; reads the MAP the state resolves, never the deficit, D, tone gain, arrival or legacy HR; never active with the relative-pressure term; TBD. 0 by default: the faculty sets it, nothing is chosen here"
+  ],
   "collapse_burden_limit": [
    "provisional",
    "burden (fraction below the threshold x minutes) at which R moves to a pulseless rhythm (P2E-3): TBD; off by default"
@@ -352,7 +360,7 @@
   ],
   "sympathetic_per_pressure_deficit": [
    "provisional",
-   "MAP/output deficit -> sympathetic drive gain: TBD (KD-S2)"
+   "MAP/output deficit -> sympathetic drive gain: TBD (KD-S2). The term is 1 - pressure_rel, relative to the shocked arrival and below 0 above it; 0 in every primary HR calibration (P2I-2AG) and never active together with the baroreflex (P2J-4); the common default stays for the historical records"
   ],
   "volume_preload_kappa": [
    "provisional",
