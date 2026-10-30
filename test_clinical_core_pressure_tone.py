@@ -246,3 +246,71 @@ def test_the_verdict_follows_its_checks():
     for item in kinked.values():
         item["current"] = item["prior"]
     assert pt.verdict(**_checks_input(audit=kinked))["verdict"] == f"{pt.NOT_READY} — mapping_coherent"
+
+
+# The evaluation, on the frozen package (freeze 31a74ef) ---------------------------------------------------------------
+
+RECORD = ROOT / "docs" / "revision" / "P2J1_pressure_tone.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2J1_PRESION_Y_TONO_VASCULAR.md"
+
+
+def _json(value):
+    return json.loads(json.dumps(value, sort_keys=True, default=str))
+
+
+@pytest.fixture(scope="module")
+def record():
+    return json.loads(RECORD.read_text(encoding="utf-8"))
+
+
+def test_the_record_comes_from_the_frozen_package_and_its_analytic_part_is_reproduced_live(record):
+    assert record["freeze_digest"] == FROZEN_DIGEST and record["record"] == pt.P2I2AK_DIGEST
+    # The trajectories (minutes of physiology) are not re-run here; the audit and the probes are.
+    assert record["knee"] == _json(pt.knee_audit()) and record["prior_matches_p2i2q"]["equal"]
+    assert record["tone"] == _json(pt.tone_paths()) and record["coupling"] == _json(pt.coupling_probes())
+    assert record["zero_output"] == _json(pt.zero_output_probe())
+    assert record["authored"] == _json(pt.authored_pressures())
+    assert record["arrival"] == _json(pt.arrival_reconstruction()) and record["path"] == _json(pt.path_reads())
+    assert record["candidate_surface"] == _json(pt.CANDIDATE_SURFACE)
+
+
+def test_the_reuse_and_the_dependency_proof_the_report_states(record):
+    assert record["reuse"]["units_digests"] == {"1": pt.UNITS[1.0], "1.1": pt.UNITS[1.1]}
+    assert record["reuse"]["units_equal"] and all(record["reuse"]["outside_unchanged"].values())
+    assert record["blood_sets"] == {"P1": 37, "P2": 444, "P3": 91, "P4": 91}
+    dependency = record["dependency"]
+    assert dependency["pressure_equal"] and dependency["d_moves_with_demand"] and dependency["full_runs"] == 240
+    assert record["efficiency"]["pressure_runs"] == 1326 and not record["efficiency"]["legacy_read"]
+
+
+def test_the_directions_and_the_verdict_the_report_states(record):
+    d = record["directions"]
+    assert all(d[k]["holds"] for k in ("1", "2", "3", "4", "5", "7", "8"))
+    assert (d["5"]["blood_sets"], d["5"]["failing"]) == (74, 0)
+    assert (d["6"]["improved"], d["6"]["blood_sets"]) == (182, 182) and d["7"]["haemostasis_minute"] == [60]
+    verdict = record["verdict"]
+    assert verdict["verdict"] == pt.READY and all(verdict["checks"].values()) and verdict["approved"] == []
+
+
+def test_the_trajectories_the_report_states(record):
+    t = record["trajectories"]
+    for name in pt.SCENARIOS:
+        for case in pt.CASES:
+            for item in t[f"{name} {case}"]["times"].values():
+                assert item["T"]["low"] == item["T"]["high"] == 1.0
+            assert t[f"{name} {case}"]["stops"] == 0
+    untreated, definitive = t[f"P1 {C57}"]["times"], t[f"P4 {C57}"]["times"]
+    assert untreated["0"]["map"]["median"] == pytest.approx(196.0 / 3.0)
+    assert untreated["120"]["map"]["high"] < untreated["120"]["map_prior"]["low"], "the hidden tone no longer buffers"
+    assert round(untreated["120"]["sbp"]["median"]) == 44 and round(definitive["120"]["map"]["median"]) == 101
+    assert round(t[f"P4 {C72}"]["times"]["120"]["sbp"]["median"]) == 133
+    changed = record["changed"]
+    assert changed["arrival_unchanged"] and changed["largest_change_mmhg"]["map"] < 25.0
+
+
+def test_the_document_is_generated_from_the_record(tmp_path):
+    from clinical_core import pressure_tone_report
+    copy = tmp_path / "document.md"
+    copy.write_text(DOCUMENT.read_text(encoding="utf-8"), encoding="utf-8")
+    pressure_tone_report.main(["--write", str(copy), "--data", str(RECORD)])
+    assert copy.read_text(encoding="utf-8") == DOCUMENT.read_text(encoding="utf-8"), "regenerate the document"

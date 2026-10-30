@@ -1029,6 +1029,7 @@ Sondas con umbral sintético 0,4 y límite 10:
 
 - El golden no baja nunca de 0,80, así que sus presiones no cambian (prueba).
 - Cambia una sonda de Nivel 2: `preload_dependent`, minuto 1, con gasto 0,19. Su PAM pasa de 64 a 28.
+- **Desde P2J-1 (§42):** no hay rodilla; PAS y PAD son las de llegada × `pressure_rel` en todo el rango.
 
 ### 11.5 Falla de bomba y congestión (P2E-5)
 
@@ -3248,3 +3249,35 @@ Ninguno. `clinical_core` sigue sólo en sombra.
     unidad.
 - **Veredicto: HR_OBSERVABLE_FILTER_SATISFIED.** Recomendación: pasar a la presión y el tono vascular con la región de la
   FC como incertidumbre arrastrada. Al calibrar la presión habrá que reabrir el término de presión sobre la FC.
+
+## 42. P2J-1 · Presión y tono vascular: auditoría estructural y superficie de calibración (2026-10-30)
+
+- **Base:** `052d816` (P2I-2AK, cerrado: su módulo y su registro de entrada de P2I-2AJ quedan fijados byte a byte).
+  - Congelamiento: `31a74ef`, antes de leer ninguna trayectoria sobre la fisiología conservada (digest `92aa42cb…`).
+  - Informe: `docs/revision/P2J1_PRESION_Y_TONO_VASCULAR.md`; números: `docs/revision/P2J1_pressure_tone.json`.
+- **Auditoría:**
+  - La relación previa era CONTINUOUS_WITH_KNEE: la recta heredada (llegada − 45 y − 25 mmHg por unidad de 1 − p) se
+    empalmaba en p = 0,5 con una rampa proporcional. La pendiente saltaba ×2,9 a ×5 según la presión de llegada.
+  - La recta llevaba una resistencia propia que T no representaba: un tono oculto, de 1,52–1,65 veces la de llegada en
+    la rodilla y menos de 1 sobre la llegada.
+  - Sin piso: 0 sin gasto; con pulso y gasto cero numérico, la corrida se detiene.
+  - T es la resistencia relativa a la llegada. Entra en el gasto (poscarga) y en la presión, sin doble conteo. Ningún
+    mecanismo clínico la escribe: vale 1 en los casos GI.
+- **Corrección mínima, sin parámetros nuevos:** PAS y PAD = las de llegada × p, con p = gasto × T, en todo el rango.
+  - Las ganancias y la rodilla quedan sin leerse.
+  - Sólo cambian PAS, PAD, PAM y la conciencia. El golden lo registra como P2J-1, y KD-S3 vuelve a actuar en la hora
+    sin tratamiento de 57m.
+  - Gasto, BloodState, D, lactato, FR y FC no cambian. Las unidades de lactato se reproducen exactas.
+- **Normalización:** mmHg absolutos anclados en la llegada registrada (PAM / PAM de llegada = p); no se inventa una
+  presión normal.
+- **Trayectorias (fisiología conservada, una corrida por conjunto de sangre; la presión no depende de la demanda ni de
+  la FC):**
+  - Sin tratamiento, la PAM cae a 33 (57m) y 49 (72f) a los 120.
+  - Con GR y hemostasia, sube a 101 en ambos.
+  - Las ocho direcciones se cumplen.
+- **Veredicto: PRESSURE_STRUCTURE_READY_FOR_NUMERIC_FACULTY_CALIBRATION.** Sin respuesta del tono, la relación no
+  tiene parámetros propios en los casos GI. Las decisiones docentes son:
+  - confirmar la relación proporcional;
+  - si hace falta una respuesta del tono;
+  - las envolventes de presión;
+  - después, la reconexión presión → FC (plan en el informe, §16).
