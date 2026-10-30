@@ -120,9 +120,14 @@ def render_conteos(data: dict) -> str:
     lines = ["| Categoría | " + " | ".join(f"demanda {_d(k)}" for k in _demands(data)) + " |",
              "|---|" + "---|" * len(_demands(data))]
     truth = c[hf.CASE_TRUTH_REJECTION]
+    # The record's count is demand 1.0's (P2I-2AJ's efficiency field, TD-97): each demand's is read from the committed
+    # P2I-2AI record of the rejected case pair.
+    rejected = [t for t in hf.p2i2aj_record()["case_truth"] if t["status"] == hf.ho.CASE_TRUTH_REJECTION]
+    by_demand = {k: sum(hf.ho.p2i2ai_record()["recertification"][hf.ho.asv._key(tuple(t["pair_57m"]),
+                                                                                tuple(t["pair_72f"]))]
+                        ["survivors_by_demand"][k] for t in rejected) for k in _demands(data)}
     lines.append(f"| {COUNT_ES[hf.CASE_TRUTH_REJECTION]} | " + " | ".join(
-        f"{truth['case_pairs']} par de casos ({truth['lactate_survivors']} sobrevivientes de lactato)"
-        for _ in _demands(data)) + " |")
+        f"{truth['case_pairs']} par de casos ({by_demand[k]} sobrevivientes de lactato)" for k in _demands(data)) + " |")
     for key in (hf.ARRIVAL_HR_REJECTION, hf.OUT_OF_PRIMARY, hf.HR_ENVELOPE_REJECTION, hf.SIMULATION_REJECTION):
         lines.append(f"| {COUNT_ES[key]} | " + " | ".join(str(c[key][k]) for k in _demands(data)) + " |")
     return "\n".join(lines)
@@ -266,7 +271,9 @@ def render_eficiencia(data: dict) -> str:
             f"contrafactuales una vez por caso, conjunto P3 y punto): {by(e['physiology_full_runs'])}; corridas de L2 y "
             f"L3 para los sobrevivientes: {by(e['survivor_full_runs'])}; corridas de validación: "
             f"{e['validation_full_runs']}; reconstrucciones de FC posprocesadas: {by(e['hr_post_processed'])}; barrido "
-            f"cartesiano: {_yes(e['cartesian_sweep'])}; motor heredado leído: {_yes(e['legacy_read'])}.")
+            f"cartesiano: {_yes(e['cartesian_sweep'])}; motor heredado leído: {_yes(e['legacy_read'])}. La mitad de las "
+            "corridas de sobrevivientes repite L3, que no depende del punto de cristaloide, y las reconstrucciones "
+            "contadas son sólo las de techo primario (revisión adversarial, TD-97).")
 
 
 RENDERERS = {name: globals()[f"render_{name}"] for name in NAMES}

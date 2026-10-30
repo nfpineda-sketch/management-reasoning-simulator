@@ -3242,7 +3242,9 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Resultado:**
   - Ninguna envolvente rechaza a ningún candidato: sobreviven los 432 de 1,0 y los 9828 de 1,1, y todas las filas de
     lactato de cada combinación.
-  - Las 10 combinaciones primarias distintas siguen POORLY_IDENTIFIED; la ganancia de deuda es NON_IDENTIFIABLE.
-  - Con 72f, la segunda unidad no cambia la FC, porque el déficit ya es cero.
+  - Quedan 10 combinaciones primarias distintas. Por latente, todas siguen POORLY_IDENTIFIED, salvo la ganancia de
+    deuda (NON_IDENTIFIABLE); con 1,0 sola, la ganancia aguda queda PARTIALLY_CONSTRAINED.
+  - Con 72f, la segunda unidad no cambia la FC: el déficit ya es cero, y D, SpO2 y glucosa son iguales con y sin la
+    unidad.
 - **Veredicto: HR_OBSERVABLE_FILTER_SATISFIED.** Recomendación: pasar a la presión y el tono vascular con la región de la
   FC como incertidumbre arrastrada. Al calibrar la presión habrá que reabrir el término de presión sobre la FC.

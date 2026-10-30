@@ -33,10 +33,13 @@ módulo queda fijado byte a byte). El núcleo, BloodState, el gasto, el DO2, el 
 - **GR contra su contrafactual (C y D).**
   - Unidad 1: beneficio de 10–13 lpm con 1,0 y de 3–37 con 1,1.
   - Unidad 2 en 57m: 12–13 lpm con 1,0 y 3–32 con 1,1.
-  - **Unidad 2 en 72f: exactamente 0 en todos los candidatos.** Una sonda fuera del registro muestra por qué: en L3 el
-    déficit efectivo de 72f ya es cero desde el minuto 12 (1,0) o 21 (1,1). Entre los minutos 30 y 60, L3 y el
-    contrafactual tienen déficit cero y la misma D, aunque la entrega difiere, y la FC sólo lee el déficit y D. La regla
-    D se cumple (cero está permitido), pero en 72f no puede discriminar.
+  - **Unidad 2 en 72f: exactamente 0 en todos los candidatos.** Lo explican una sonda fuera del registro, la revisión
+    adversarial y una prueba:
+    - en L3, el déficit efectivo de 72f llega a cero entre los minutos 12 y 13 (1,0) o 21 y 26 (1,1), según la unidad;
+    - entre los minutos 30 y 60, L3 y el contrafactual tienen déficit cero y la misma D, aunque la entrega difiere;
+    - las otras entradas de la FC (SpO2, glucosa y la memoria del impulso) también son iguales, así que la FC no
+      cambia.
+  - La regla D se cumple, porque el cero está permitido, pero en 72f no puede discriminar.
 - **Techo 200 (sólo sensibilidad).** Las 4 combinaciones de 1,1 con techo 200 también cumplirían A–F. No entran en
   ningún resultado ni rescatan a nadie.
 - **Entre demandas (diagnóstico):** 1 combinación ROBUST_ACROSS_DEMAND, 1 sólo con 1,0, 8 sólo con 1,1 y 440
@@ -47,7 +50,8 @@ módulo queda fijado byte a byte). El núcleo, BloodState, el gasto, el DO2, el 
 - **72f, cristaloide frente a GR:** la región superviviente conserva el hallazgo de P2I-2AJ.
   - Divergen desde el minuto 1, primero por la señal aguda.
   - Superan 1 lpm entre los minutos 9–13 (1,0) y 5–28 (1,1).
-  - A los 120 la FC bajo GR es 18–25 o 10–54 lpm más baja.
+  - La mayor diferencia es de 18–25 lpm (1,0) o 10–54 lpm (1,1), con la FC más baja bajo GR. La revisión comprobó que
+    cae en el minuto 120 en todos los pares; el registro no guarda ese minuto.
 - **Veredicto: HR_OBSERVABLE_FILTER_SATISFIED.**
   - No se exigió robustez entre demandas.
   - La presión sigue DEFERRED, las ganancias son comunes y la fisiología previa no cambió.
@@ -103,7 +107,7 @@ Regla: Reused, never re-derived: the retained pair and its lactate survivors per
 <!-- generado:conteos -->
 | Categoría | demanda 1,0 | demanda 1,1 |
 |---|---|---|
-| rechazo por verdad del caso (P2I-2AJ) | 1 par de casos (25613 sobrevivientes de lactato) | 1 par de casos (25613 sobrevivientes de lactato) |
+| rechazo por verdad del caso (P2I-2AJ) | 1 par de casos (25613 sobrevivientes de lactato) | 1 par de casos (8631 sobrevivientes de lactato) |
 | rechazo por la FC de llegada (±5 lpm), sobre 450 combinaciones primarias | 448 | 441 |
 | fuera del soporte primario de techo (200, sólo sensibilidad) | 0 | 4 |
 | rechazo por envolventes A–F (candidatos) | 0 | 0 |
@@ -257,6 +261,9 @@ Diagnóstico, sin filtro; no se exige que la FC distinga el líquido.
   - Las unidades de lactato de las dos demandas reproducen las de P2I-2AJ.
   - En las unidades de muestra, las corridas igualan a `lactate_closure.full_run` en lactato y D, y a
     `hr_observables.full_run` fila por fila: BloodState, gasto, DO2, déficit, D, lactato y FR.
+  - La regla congelada del veredicto menciona también la igualdad con `hr_shock.full_run` con demanda 1,0. La validación
+    del paquete no la comprueba. Se cumple por transitividad: P2I-2AJ comprobó `hr_observables.full_run` frente a
+    `hr_shock.full_run`, y una prueba nueva lo comprueba directamente en una unidad (TD-97).
   - Las relecturas con el perfil de FC de cada candidato no cambian ni el lactato, ni D, ni la FR.
 
 ## 14. Veredicto (P2I-2AK-11)
@@ -286,7 +293,8 @@ Regla congelada: HR_OBSERVABLE_FILTER_SATISFIED when: (1) at least one candidate
    latentes siguen sin identificarse y se arrastran como incertidumbre (10 combinaciones, dos condiciones de demanda),
    sin elegir ninguna.
 2. Para calibrar la presión no hace falta elegir la FC. En este núcleo la FC no llega al gasto, la entrega, D, el
-   lactato ni la FR (factorización de P2I-2AF, verificada otra vez aquí).
+   lactato ni la FR. Es la factorización de P2I-2AF: la validación de este paquete la comprueba para lactato, D y FR,
+   y una prueba para el gasto, la entrega y el déficit en una unidad.
 3. El término de presión sobre el impulso simpático está aplazado. Cuando se calibre la presión habrá que reabrir la
    superficie de la FC con ese término y repetir las mismas envolventes A–F como pruebas de no regresión.
 
@@ -311,5 +319,5 @@ colapso, la migración y la integración.
 ## 17. Eficiencia
 
 <!-- generado:eficiencia -->
-Trayectorias hemodinámicas: 3178; descomposiciones de llegada analíticas: 900; corridas de fisiología del filtro (L1, L3 y los dos contrafactuales una vez por caso, conjunto P3 y punto): demanda 1,0: 144; demanda 1,1: 728; corridas de L2 y L3 para los sobrevivientes: demanda 1,0: 864; demanda 1,1: 4368; corridas de validación: 492; reconstrucciones de FC posprocesadas: demanda 1,0: 72; demanda 1,1: 1638; barrido cartesiano: no; motor heredado leído: no.
+Trayectorias hemodinámicas: 3178; descomposiciones de llegada analíticas: 900; corridas de fisiología del filtro (L1, L3 y los dos contrafactuales una vez por caso, conjunto P3 y punto): demanda 1,0: 144; demanda 1,1: 728; corridas de L2 y L3 para los sobrevivientes: demanda 1,0: 864; demanda 1,1: 4368; corridas de validación: 492; reconstrucciones de FC posprocesadas: demanda 1,0: 72; demanda 1,1: 1638; barrido cartesiano: no; motor heredado leído: no. La mitad de las corridas de sobrevivientes repite L3, que no depende del punto de cristaloide, y las reconstrucciones contadas son sólo las de techo primario (revisión adversarial, TD-97).
 <!-- /generado:eficiencia -->

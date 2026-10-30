@@ -46,6 +46,9 @@ def test_the_package_is_frozen():
         decision_pack.PACK_DIGEST_EXCLUDED)
     assert ho.p2i2ai_record()["freeze_digest"] == ho.P2I2AI_DIGEST
     assert hashlib.sha256(SOURCE.read_bytes()).hexdigest() == P2I2AJ_MODULE_SHA, "the closed P2I-2AJ module changed"
+    # The live freeze digest hashed P2I-2AI's record bytes; closed, they are pinned here (adversarial review, P2I-2AK).
+    assert hashlib.sha256(ho.P2I2AI_RECORD.read_bytes()).hexdigest() == (
+        "0ba48ea735f924cdcde3538ea1136514fb37ad4982ce508e966bfa203d447bf1")
     assert json.loads(RECORD.read_text(encoding="utf-8"))["freeze_digest"] == FROZEN_DIGEST
 
 

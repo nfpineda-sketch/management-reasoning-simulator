@@ -326,3 +326,71 @@ def test_the_document_is_generated_from_the_record(tmp_path):
     copy.write_text(DOCUMENT.read_text(encoding="utf-8"), encoding="utf-8")
     hr_envelope_filter_report.main(["--write", str(copy), "--data", str(RECORD)])
     assert copy.read_text(encoding="utf-8") == DOCUMENT.read_text(encoding="utf-8"), "regenerate the document"
+
+
+# Review fixes (adversarial review of P2I-2AK) ------------------------------------------------------------------------
+
+def test_the_runs_equal_hr_shock_at_demand_1_and_hr_reaches_no_haemodynamics(one_unit):
+    from clinical_core import hr_shock as hk
+    pick, source, _ = one_unit
+    candidate = ho._p2i2ai_joint(ho.p2i2ai_record())[0]
+    changes = {"acute_deficit_to_sympathetic_gain": candidate["acute"], "debt_to_sympathetic_gain": candidate["debt"],
+               "sinus_rate_ceiling_bpm": candidate["ceiling"], **hp.PRIMARY_HR_CALIBRATION}
+    with lr.P2FGuard(), lr.LegacyLock():
+        for case, index in ((C57, pick["lambda_57m"]), (C72, pick["lambda_72f"])):
+            inputs = {"entry": source["p3"][pick["p3"]], "bag": None, "point": hf.LAMBDAS[index]}
+            for scenario in (hf.L1, hf.L3):
+                assert hf.full_run(inputs, case, scenario, 1.0)["rows"] == hk.full_run(inputs, case, scenario)["rows"]
+            for scenario in (hf.L1, hf.L3, hf.CF1, hf.CF2):
+                base = hf.full_run(inputs, case, scenario, 1.0)["rows"]
+                profiled = hf.full_run(inputs, case, scenario, 1.0, "upper", changes)["rows"]
+                for name in ("output", "delivery", "deficit", "demand", "D", "lactate", "rr", "bleed_ml_per_min",
+                             "prbc_units"):
+                    assert [r[name] for r in base] == [r[name] for r in profiled], (case, scenario, name)
+
+
+@pytest.mark.parametrize("factor", [1.0, 1.1])
+def test_the_72f_second_unit_cannot_move_its_hr(one_unit, factor):
+    pick, source, _ = one_unit
+    inputs = {"entry": source["p3"][pick["p3"]], "bag": None, "point": hf.LAMBDAS[pick["lambda_72f"]]}
+    with lr.P2FGuard(), lr.LegacyLock():
+        runs = {sc: hf.full_run(inputs, C72, sc, factor) for sc in (hf.L1, hf.L3, hf.CF1, hf.CF2)}
+    l3, cf2 = runs[hf.L3]["rows"], runs[hf.CF2]["rows"]
+    # 72f's effective deficit is zero through the second unit, with and without it; D, SpO2 and glucose are equal.
+    assert all(l3[m]["deficit"] == 0.0 == cf2[m]["deficit"] for m in range(31, 61))
+    assert all(l3[m][name] == cf2[m][name] for m in range(61) for name in ("D", "spo2", "glucose"))
+    assert l3[60]["delivery"] != cf2[60]["delivery"]  # the unit does change delivery
+    candidate = ho._p2i2ai_joint(ho.p2i2ai_record())[0]
+    assert hf.readings(runs, 100.0, candidate)["benefit_2"] == 0.0
+
+
+def test_ceiling_200_stays_out_of_every_primary_result(record):
+    for demand in record["demands"].values():
+        assert all(c["latent"][4] in hf.PRIMARY_CEILINGS for c in demand["summary"]["candidates"])
+        sens = demand["sensitivity_200"]
+        if sens:
+            assert all(c["latent"][4] == 200.0 for c in sens["summary"]["candidates"])
+    assert all(item[4] in hf.PRIMARY_CEILINGS for items in record["cross_demand"]["surviving"].values()
+               for item in items)
+    assert all(record["identifiability"][k]["ceiling"]["of"] == [150.0, 175.0] for k in record["identifiability"])
+    rows = [{"candidate": n, "failures": []} for n in range(5)]
+    assert [r["candidate"] for r in hf.subset({"rows": rows}, 2, 3)["rows"]] == [0, 1, 2]
+    assert [r["candidate"] for r in hf.subset({"rows": rows}, 0, 2)["rows"]] == [0, 1]
+
+
+def test_the_demand_1_filter_is_reproduced_live(record):
+    """The demand-1.0 half recomputed end to end (about 3 minutes): units, every row's verdict, the summary, margins."""
+    with lr.P2FGuard(), lr.LegacyLock():
+        source_record = la.record_p2i2ab()
+        source, support = la.source_space(source_record), source_record["crystalloid_support"]
+        arrivals = lr.arrival_table()
+        tasks = hf.lc.haemodynamic_tasks(source, support)
+        store = hf.lc.haemodynamics(tasks)
+        region = ho.retained_region(source, support, arrivals, tasks, store, 1.0)
+        assert region["digest"] == hf.UNITS[1.0]
+        pool = hf.arrival_pool(hf.p2i2aj_record(), 1.0)
+        filtered = hf.filter_demand(source, support, region["units"], pool["primary"], 1.0)
+    demand = record["demands"]["1"]
+    assert json.loads(json.dumps(hf.summarize(filtered, pool["primary"]))) == demand["summary"]
+    assert json.loads(json.dumps(hf.margins(filtered))) == demand["margins"]
+    assert filtered["physiology_units"] == demand["physiology_units"]
