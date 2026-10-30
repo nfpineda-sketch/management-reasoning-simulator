@@ -3287,7 +3287,8 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 
 - **Base:** `f6b4cd0` (P2J-1, cerrado: su módulo y su registro quedan fijados byte a byte; su congelamiento se recalcula
   con la prueba AST de P2J-2, `vascular_tone.p2j1_sources`).
-  - Congelamiento: `b3b63b1`, antes de evaluar ninguna trayectoria clínica (digest `baa2ee12…`).
+  - Congelamiento: `b3b63b1` (digest `baa2ee12…`), antes de evaluar las trayectorias clínicas. Una corrida técnica
+    previa y una enmienda del congelamiento antes de leer resultados están declaradas en el informe (§21).
   - Informe: `docs/revision/P2J2_TONO_VASCULAR_DINAMICO.md`; números: `docs/revision/P2J2_vascular_tone.json`.
 - **Núcleo:** `deficit_to_tone_gain` (0 por defecto, PROVISIONAL).
   - Cada minuto T toma el objetivo `derived.tone_target`, que pide el estado del inicio del minuto: (1 + g·s) /
@@ -3303,10 +3304,18 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - Sin tratamiento, el tono sostiene la PAM a los 120: +1,6 a +7,5 mmHg en 57m y +2,5 a +16,9 en 72f, a un costo de
     gasto y aporte de −2 % a −15 %.
   - Tras la reanimación, T_abs vuelve a 1 y el canal baja a 1 / (1 + g·s0). La PAM de 57m a los 120 baja de 100,7 a
-    94–65, pero el gasto sigue 1,5–1,8 veces el de llegada: la sobrepresión que queda es del gasto.
-  - Con g ≥ 1,5, la retirada del tono hace bajar la PAM de 57m durante la primera unidad de GR.
-  - FD-LAC: a demanda 1,0, g ≥ 0,5 pierde candidatos (FD-LAC-06 de 72f en L2); la adecuación L3 se mantiene.
-  - La FC cambia ≤ 5 bpm.
+    94–65 y el gasto sigue 1,5–1,8 veces el de llegada. Lo que queda sobre la llegada (hasta g = 1,5 en 57m y con
+    todas las ganancias en 72f) es del gasto.
+  - La normalización a la llegada hace que T baje de 1 en cuanto s < s0, todavía con déficit. Con g ≥ 1,5 la PAM de
+    57m baja durante la primera unidad de GR, y con g = 2 el 57m tratado cruza PAS 80 antes que el no tratado.
+  - s0 sale del nivel de aporte de llegada, sin aprobar, y actúa en la práctica como un desplazamiento por caso.
+  - FD-LAC con a = 0,3:
+    - a demanda 1,0, g ≥ 0,5 pierde candidatos (FD-LAC-06 de 72f en L2);
+    - a demanda 1,1, g = 2 pierde 112 de 1092;
+    - la adecuación L3 se mantiene.
+  - Con a = 0,5, en la muestra, g = 1,5 no deja ningún candidato a demanda 1,0.
+  - La FC cambia sólo a través del déficit y de D: medianas de hasta 6,5 bpm en un minuto, el beneficio de la 2.ª
+    unidad de 57m −12,5 bpm con g = 2 y rangos de hasta −24 bpm. Hay que recertificarla cuando se fije el tono.
 - **Veredicto: DYNAMIC_TONE_DECISION_SURFACE_READY.** Decisiones docentes (informe, §19):
   - la normalización a la llegada;
   - el rango de la ganancia;

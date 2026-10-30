@@ -39,7 +39,8 @@ CHECKS_ES = {"tone_semantics_coherent": "semántica del tono coherente (sondas 1
              "pressure_to_hr_deferred": "presión → FC aplazada (0 en el perfil primario)",
              "nothing_approved": "nada aprobado"}
 TRADE_ES = {"REFERENCE_T_EQUALS_1": "referencia T = 1", "ANALYTIC_REJECTION": "rechazo analítico",
-            "PRESSURE_SUPPORTED_WITH_STABLE_DELIVERY": "presión sostenida con aporte estable",
+            "PRESSURE_SUPPORTED_WITH_STABLE_DELIVERY": "presión sostenida sin perder candidatos FD-LAC (el aporte "
+                                                       "baja igual: §9)",
             "PRESSURE_SUPPORTED_AT_DELIVERY_COST": "presión sostenida con costo de aporte",
             "UNSTABLE_FEEDBACK": "retroalimentación inestable"}
 SCOPE_ES = {"ALL_RETAINED_UNITS": "todas las unidades retenidas", "SAMPLE_ONLY": "sólo la muestra"}
@@ -66,8 +67,9 @@ IDENT_WHY_ES = {
 ENV_FIELD_ES = {"sbp": "PAS", "dbp": "PAD", "map": "PAM", "map_change": "ΔPAM", "sbp_change": "ΔPAS", "T": "T",
                 "T_abs": "T_abs", "T_max": "T máx", "output_cost": "costo de gasto", "delivery_cost": "costo de aporte",
                 "deficit_change": "Δ déficit", "D_change": "ΔD"}
-HR_ES = {"arrival": "FC de llegada", "l1_120": "FC sin tratamiento a los 120", "l3_120": "FC a los 120 en L3",
-         "benefit_1": "beneficio de la 1.ª unidad"}
+HR_ES = {"l1_120": "L1 a los 120", "l3_60": "L3 a los 60", "l3_90": "L3 a los 90", "l3_120": "L3 a los 120",
+         "benefit_1": "beneficio de la 1.ª unidad", "benefit_2": "beneficio de la 2.ª unidad"}
+TONE_FIELDS = ("T", "T_abs", "T_max")
 
 
 def _n(value, digits: int = 1) -> str:
@@ -252,17 +254,24 @@ def render_lactato(data: dict) -> str:
 
 
 def render_fc(data: dict) -> str:
+    fields = tuple(HR_ES)
     lines = ["Diagnóstico, nunca filtro: corridas completas de la muestra (L1, L3 y los dos contrafactuales), a = 0,3, "
              "bajo las combinaciones latentes primarias del grupo de P2I-2AK en cada demanda; cambio de la FC contra "
-             "g = 0 (mediana [rango]) y reglas A–F que fallarían.", "",
-             "| demanda | g | filas | " + " | ".join(f"{CASE_ES[c]}: {HR_ES[k]}" for c in vt.CASES
-                                                  for k in ("l1_120", "l3_120", "benefit_1")) + " | A–F que fallan |",
-             "|---|---|---|" + "---|" * 7]
+             "g = 0 en bpm (mediana [rango]) y reglas A–F que fallarían.", "",
+             "| demanda | g | caso | filas | " + " | ".join(HR_ES[k] for k in fields) + " | A–F que fallan |",
+             "|---|---|---|---|" + "---|" * (len(fields) + 1)]
+    largest = {}
     for factor, by_gain in data["hr"].items():
         for g, slot in by_gain.items():
-            cells = [_s(slot["change"].get(f"{c} {k}"), 2) for c in vt.CASES for k in ("l1_120", "l3_120", "benefit_1")]
             failures = ", ".join(f"{k} ({v})" for k, v in slot["failures"].items()) or "ninguna"
-            lines.append(f"| {factor} | {g} | {slot['rows']} | " + " | ".join(cells) + f" | {failures} |")
+            for case in vt.CASES:
+                cells = [_s(slot["change"].get(f"{case} {k}"), 1) for k in fields]
+                lines.append(f"| {factor} | {g} | {CASE_ES[case]} | {slot['rows']} | " + " | ".join(cells) +
+                             f" | {failures} |")
+            changes = [c for c in slot["change"].values() if c]
+            largest[(factor, g)] = max((max(abs(c["low"]), abs(c["high"])) for c in changes), default=0.0)
+    lines += ["", "Mayor |cambio| de la FC en cualquier lectura y fila: " + "; ".join(
+        f"demanda {f}, g {g}: {_n(v)} bpm" for (f, g), v in largest.items() if g != "0") + "."]
     return "\n".join(lines)
 
 
@@ -299,14 +308,14 @@ def render_envolventes(data: dict) -> str:
                 for g in gains:
                     values = rows.get(g, {})
                     cells.append("; ".join((_pct(values.get(f)) if f in ("output_cost", "delivery_cost")
-                                            else _s(values.get(f), 2 if f.startswith("T") else 1)) for f in fields))
+                                            else _s(values.get(f), 2 if f in TONE_FIELDS else 1)) for f in fields))
                 lines.append(f"| {factor} | " + " | ".join(cells) + " |")
             sens = block["sensitivity_a_sample"]
             if sens:
                 lines.append("")
                 lines.append("Sensibilidad a a (muestra, medianas a = 0,1 / 0,3 / 0,5): " + "; ".join(
                     f"{key}: " + " / ".join(
-                        ", ".join(_n(v, 2 if f.startswith("T") else 1) if f not in ("output_cost", "delivery_cost")
+                        ", ".join(_n(v, 2 if f in TONE_FIELDS else 1) if f not in ("output_cost", "delivery_cost")
                                   else _n(100 * v) + " %" if v is not None else "—"
                                   for f, v in point.items()) for point in by_a.values())
                     for key, by_a in sens.items() if key.endswith(("g0", "g1", "g2")) or key.endswith("g1.5")) + ".")

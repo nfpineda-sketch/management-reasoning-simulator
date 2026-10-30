@@ -224,6 +224,62 @@ def test_p2j2_changed_only_the_declared_statements():
         assert name in {f.name for f in __import__("dataclasses").fields(CoreProfile)}
 
 
+#: Inside the statements P2J-2 declared, nothing but the tone (adversarial review of P2J-2): each statement's AST with
+#: the tone field, the tone check, the tone PARAMETERS entry, the tone branch of step and the tone_target import removed
+#: equals its AST at P2J-1 (f6b4cd0), digest by digest.
+INSIDE_AT_P2J1 = {("clinical_core/derived.py", "CoreProfile"): "da3e103747d4d0c1302bbb1413397b7e64e75cd22e38d3abf8630e8e7001a52e",
+                  ("clinical_core/derived.py", "PARAMETERS"): "7ee9d1a34a862a4af475a45bdd2d21993e35d347da94592e6763d6985b266cda",
+                  ("clinical_core/integration.py", "step"): "a0b51f40ca0ae6a52acd4fa75b8e1decc5bcbafcaf689e219e955b386c6c5386",
+                  ("clinical_core/integration.py", "from .derived"):
+                      "cdcf016cb56ff945da0ee7d278430f04c6152deb54d52625de6df1d061cfd1ee"}
+TONE_NAME = "deficit_to_tone_gain"
+
+
+def _mentions(node, name):
+    return any((isinstance(n, ast.Name) and n.id == name) or (isinstance(n, ast.Attribute) and n.attr == name)
+               for n in ast.walk(node))
+
+
+class _StripTone(ast.NodeTransformer):
+    def generic_visit(self, node):
+        super().generic_visit(node)
+        for field, value in ast.iter_fields(node):
+            if isinstance(value, list):
+                setattr(node, field, [v for v in value if not (
+                    isinstance(v, ast.AnnAssign) and isinstance(v.target, ast.Name) and v.target.id == TONE_NAME)
+                    and not (isinstance(v, ast.If) and _mentions(v.test, TONE_NAME))])
+        if isinstance(node, ast.Dict):
+            pairs = [(k, v) for k, v in zip(node.keys, node.values)
+                     if not (isinstance(k, ast.Constant) and k.value == TONE_NAME)]
+            node.keys, node.values = [k for k, _ in pairs], [v for _, v in pairs]
+        if isinstance(node, ast.ImportFrom):
+            node.names = [a for a in node.names if a.name != "tone_target"]
+        return node
+
+
+def _inside_digest(text, name):
+    for node in ast.parse(text).body:
+        targets = node.targets if isinstance(node, ast.Assign) else [node.target] if isinstance(
+            node, ast.AnnAssign) else []
+        if getattr(node, "name", None) == name or any(isinstance(t, ast.Name) and t.id == name for t in targets) or (
+                isinstance(node, ast.ImportFrom) and name == f"from .{node.module}"):
+            return hashlib.sha256(ast.dump(_StripTone().visit(node)).encode("utf-8")).hexdigest()
+    raise KeyError(name)
+
+
+def test_inside_the_declared_statements_p2j2_changed_only_the_tone():
+    for (relative, name), expected in INSIDE_AT_P2J1.items():
+        assert _inside_digest(vt._live(relative), name) == expected, (relative, name)
+    derived = vt._live(vt.DERIVED)
+    assert _inside_digest(derived.replace("debt_to_lactate_gain: float = 2.0 / 3600.0",
+                                          "debt_to_lactate_gain: float = 2.0 / 3000.0"), "CoreProfile") != \
+        INSIDE_AT_P2J1[(vt.DERIVED, "CoreProfile")], "a changed default inside CoreProfile must be noticed"
+    integration = vt._live(vt.INTEGRATION)
+    assert _inside_digest(integration.replace("withdrawn = _no_repayment_across(debt, new_state, anchors, profile, demand)",
+                                              "withdrawn = None"), "step") != \
+        INSIDE_AT_P2J1[(vt.INTEGRATION, "step")], "a change inside step must be noticed"
+
+
 def test_the_closed_p2j1_freeze_recomputes_from_the_proven_sources():
     sources = {k: v for k, v in bf.freeze_sources().items() if k not in vt.OWN}
     text = json.dumps({"revision": pt.REVISION, "p2i2ak": hashlib.sha256(pt.P2I2AK_RECORD.read_bytes()).hexdigest(),

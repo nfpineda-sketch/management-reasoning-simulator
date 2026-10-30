@@ -4,19 +4,24 @@
   selecciona, y la presión no alimenta la FC.
 - **Base:** `f6b4cd0` (P2J-1, cerrado: su módulo y su registro quedan fijados byte a byte, y su congelamiento se
   recalcula con la prueba AST de P2J-2). Congelamiento de P2J-2: `b3b63b1` (digest `baa2ee12…`), antes de evaluar
-  ninguna trayectoria clínica.
+  las trayectorias clínicas sobre la fisiología retenida; las dos excepciones (una corrida técnica previa y la
+  enmienda del congelamiento) están en §21.
 - **Números:** `docs/revision/P2J2_vascular_tone.json`. Las secciones marcadas «generado» las escribe
   `python -m clinical_core.vascular_tone_report` desde ese registro.
 
 ## Resumen
 
-- **Respuesta de tono común**, sin coeficientes del caso. La impulsa la señal aguda s, el déficit efectivo de oxígeno
-  sobre la demanda: la misma señal que ya lee el impulso simpático.
+- **Respuesta de tono común**, con una sola ganancia g para todos los casos. La impulsa la señal aguda s, el déficit
+  efectivo de oxígeno sobre la demanda: la misma señal que ya lee el impulso simpático.
   - Respecto del tono sin déficit: T_abs = 1 + g·s.
   - El canal T es relativo a la llegada, así que guarda T = (1 + g·s) / (1 + g·s0), con s0 la señal de llegada.
   - En la llegada T = 1 exactamente: la PAS y la PAD registradas siguen siendo la escala de la relación aceptada, y la
     llegada es el punto fijo de la respuesta.
   - Con déficit 0, T_abs = 1 (el canal vale 1 / (1 + g·s0)).
+  - La normalización no elige ningún número por caso, pero en la práctica actúa como un desplazamiento propio de cada
+    caso. Lee s0, que sale del nivel de aporte de llegada del lado del lactato, y ese nivel no está aprobado. En las
+    unidades retenidas, 57m usa siempre el nivel inferior (s0 = 0,40 con demanda 1,0 y 0,45 con 1,1) y 72f el medio
+    (0,15 y 0,23).
   - No lee la presión, D, el lactato ni la FC. Por defecto g = 0, y nada de lo anterior cambia.
 - **Temporalidad y lazo:** respuesta instantánea con el retraso del paso. T(m+1) es el objetivo que pide el estado del
   minuto m. El lazo T → poscarga → gasto → aporte → s → T es retroalimentación explícita con un minuto de retraso.
@@ -32,26 +37,39 @@
   - El apoyo de 57m es menor porque buena parte de su vasoconstricción ya está contenida en la presión de llegada (la
     normalización a la llegada).
 - **Reanimación definitiva (P4, 120 min):** el déficit se resuelve y T_abs vuelve a 1. El canal T baja a 1 / (1 + g·s0),
-  y el gasto sube un 3–15 % porque cae la poscarga.
+  y el gasto sube porque cae la poscarga: 3–17 % en 57m y 1–10 % en 72f.
   - **57m:** la PAM pasa de 100,7 a 94,1 / 88,3 / 78,6 / 70,9 / 64,5.
-  - **72f:** la PAM pasa de 100,7 a 98,1 / 95,7 / 91,1 / 87,0 / 83,2.
-  - La sobrepresión baja, pero con g ≤ 1 persiste. A los 120 el gasto es 1,5–1,8 veces el de llegada en 57m y
-    1,4–1,5 en 72f: **lo que queda sobre la llegada lo pone el gasto (precarga y volumen de la fisiología sanguínea
-    certificada), no el tono.**
-- **Señal de normalización demasiado rápida:** el tono se retira en cuanto se resuelve el déficit.
-  - Con g ≥ 1,5, la PAM de 57m baja durante la primera unidad de GR: −4,2 mmHg con g = 1,5 y −9,7 con g = 2 (demanda
+  - **72f:** la PAM pasa de 100,7 a 98,1 / 95,6 / 91,1 / 87,0 / 83,2.
+  - La sobrepresión baja pero persiste. La PAM a los 120 sobre la de llegada es:
+    - 57m: ×1,54 con T = 1, ×1,20 con g = 1, ×1,09 con g = 1,5 y ×0,99 con g = 2 (×0,94 con demanda 1,1);
+    - 72f: ×1,12–1,36 con demanda 1,0 y ×1,03–1,36 con 1,1, sin bajar nunca de la llegada.
+  - A los 120 el gasto es 1,5–1,8 veces el de llegada en 57m y 1,4–1,5 en 72f: **lo que queda sobre la llegada lo
+    pone el gasto (precarga y volumen de la fisiología sanguínea certificada), no el tono.**
+- **Caída de la presión en el paciente tratado, causada por la normalización a la llegada:** T baja de 1 en cuanto el
+  déficit es menor que el de llegada (s < s0), aunque todavía haya déficit, porque el canal está relativo al tono de
+  llegada.
+  - En 57m, con g ≥ 1,5, la PAM baja durante la primera unidad de GR: −4,2 mmHg con g = 1,5 y −9,7 con g = 2 (demanda
     1,0).
-  - Con g = 2, la PAS de 57m cae bajo 80 hacia el minuto 22–31 de P3 y P4.
-  - Es la situación que la docencia anticipó para un término de memoria. Aquí no se inventa: es decisión docente (§19).
+  - Con g = 2, el 57m tratado (P3/P4) cruza PAS 80 hacia el minuto 22–31, antes que el no tratado con la misma ganancia
+    (minuto 39). Con g = 1,5 y demanda 1,1, 9 de 91 claves de P3/P4 cruzan bajo 80.
+  - Una constante de tiempo o un término de memoria sólo retrasarían la caída. El nivel final, 1 / (1 + g·s0), es el de
+    la normalización. Es decisión docente (§19).
 - **Lactato:**
   - La adecuación L3 se mantiene en todas las claves y ganancias.
   - **Demanda 1,0, a = 0,3:** g = 0,25 conserva los 216 candidatos de P2I-2AK; g = 0,5 deja 181, g = 1 deja 134,
     g = 1,5 deja 39 y g = 2 deja 4.
   - **Demanda 1,1:** sólo g = 2 pierde candidatos (quedan 980 de 1092).
-  - Un diagnóstico fuera del congelamiento (§13) muestra que la única regla que se pierde es FD-LAC-06 de 72f en L2.
-  - Ninguna ganancia vuelve insatisfacibles las restricciones vigentes.
-- **FC (diagnóstico):** cambios de ≤ 5 bpm. Las reglas A–F de P2I-2AK seguirían cumpliéndose en la muestra, salvo B
-  en una fila con g = 2 a demanda 1,1.
+  - Un diagnóstico fuera del congelamiento (§13), no committeado, muestra que la única regla que se pierde es
+    FD-LAC-06 de 72f en L2.
+  - Con a = 0,3, ninguna ganancia vuelve insatisfacibles las restricciones vigentes.
+  - Con a = 0,5, en la muestra, g = 1,5 conserva 0 de 36 candidatos a demanda 1,0, y g = 1 conserva 2.
+- **FC (diagnóstico):** el tono cambia la FC sólo a través del déficit agudo y de D.
+  - Las medianas de la FC en un minuto cambian hasta 6,5 bpm (L3 a los 60 min).
+  - El beneficio de la 2.ª unidad de 57m (una diferencia entre corridas) cae 12,5 bpm de mediana con g = 2 a demanda
+    1,0.
+  - En el rango, la FC de L3 a los 60 min de 57m llega a −24 bpm con g = 2 a demanda 1,1.
+  - Las reglas A–F de P2I-2AK seguirían cumpliéndose en la muestra, salvo B en una fila con g = 2 a demanda 1,1.
+  - La FC tendría que recertificarse cuando se fije el tono (§14).
 - **Veredicto: DYNAMIC_TONE_DECISION_SURFACE_READY.**
 
 ## 1. Decisiones docentes registradas (generado)
@@ -86,7 +104,7 @@
 ## 3. Temporalidad, lazo y llegada (generado)
 
 La lectura literal del encargo (T = 1 + g·s en el canal, con T = 1 anclado en la llegada) se rechaza analíticamente.
-En toda llegada con déficit (s0 > 0, casi todas las unidades retenidas), su primera actualización saltaría de 1 a
+En toda llegada con déficit (s0 > 0, todas las unidades retenidas), su primera actualización saltaría de 1 a
 1 + g·s0 sin que el paciente cambie. Evitar el salto exigiría una constante de tiempo, que no está autorizada. La forma
 normalizada cumple la misma ecuación en la escala del tono sin déficit (T_abs = 1 + g·s) y respeta la definición del
 canal (llegada = 1). Que esta lectura sea la buscada es la primera decisión que se pide (§19).
@@ -565,13 +583,13 @@ Per admissible (gain, a), predeclared: UNSTABLE_FEEDBACK when a SIMULATION_RULES
 | g0 a0.1 | referencia T = 1 | — | — | — |
 | g0 a0.3 | referencia T = 1 | — | — | — |
 | g0 a0.5 | referencia T = 1 | — | — | — |
-| g0.25 a0.1 | presión sostenida con aporte estable | 0 | sólo la muestra | — |
-| g0.25 a0.3 | presión sostenida con aporte estable | 0 | todas las unidades retenidas | — |
+| g0.25 a0.1 | presión sostenida sin perder candidatos FD-LAC (el aporte baja igual: §9) | 0 | sólo la muestra | — |
+| g0.25 a0.3 | presión sostenida sin perder candidatos FD-LAC (el aporte baja igual: §9) | 0 | todas las unidades retenidas | — |
 | g0.25 a0.5 | presión sostenida con costo de aporte | 4 | sólo la muestra | — |
-| g0.5 a0.1 | presión sostenida con aporte estable | 0 | sólo la muestra | — |
+| g0.5 a0.1 | presión sostenida sin perder candidatos FD-LAC (el aporte baja igual: §9) | 0 | sólo la muestra | — |
 | g0.5 a0.3 | presión sostenida con costo de aporte | 35 | todas las unidades retenidas | — |
 | g0.5 a0.5 | presión sostenida con costo de aporte | 13 | sólo la muestra | — |
-| g1 a0.1 | presión sostenida con aporte estable | 0 | sólo la muestra | — |
+| g1 a0.1 | presión sostenida sin perder candidatos FD-LAC (el aporte baja igual: §9) | 0 | sólo la muestra | — |
 | g1 a0.3 | presión sostenida con costo de aporte | 82 | todas las unidades retenidas | — |
 | g1 a0.5 | presión sostenida con costo de aporte | 34 | sólo la muestra | — |
 | g1.5 a0.1 | presión sostenida con costo de aporte | 4 | sólo la muestra | — |
@@ -649,22 +667,36 @@ El costo de aporte del tono alarga o profundiza esa ventana en 72f. No se descom
 La FC cambia sólo a través del déficit agudo y de D. Presión → FC sigue en 0 en el perfil primario.
 
 <!-- generado:fc -->
-Diagnóstico, nunca filtro: corridas completas de la muestra (L1, L3 y los dos contrafactuales), a = 0,3, bajo las combinaciones latentes primarias del grupo de P2I-2AK en cada demanda; cambio de la FC contra g = 0 (mediana [rango]) y reglas A–F que fallarían.
+Diagnóstico, nunca filtro: corridas completas de la muestra (L1, L3 y los dos contrafactuales), a = 0,3, bajo las combinaciones latentes primarias del grupo de P2I-2AK en cada demanda; cambio de la FC contra g = 0 en bpm (mediana [rango]) y reglas A–F que fallarían.
 
-| demanda | g | filas | 57m: FC sin tratamiento a los 120 | 57m: FC a los 120 en L3 | 57m: beneficio de la 1.ª unidad | 72f: FC sin tratamiento a los 120 | 72f: FC a los 120 en L3 | 72f: beneficio de la 1.ª unidad | A–F que fallan |
-|---|---|---|---|---|---|---|---|---|---|
-| 1 | 0 | 6 | 0.00 [0.00–0.00] | 0.00 [0.00–0.00] | 0.00 [0.00–0.00] | 0.00 [0.00–0.00] | 0.00 [0.00–0.00] | 0.00 [0.00–0.00] | ninguna |
-| 1 | 0.25 | 6 | 0.19 [0.08–0.20] | −0.16 [−0.16–−0.15] | 0.70 [0.61–0.75] | 0.57 [0.45–0.66] | −0.00 [−0.01–−0.00] | 0.16 [0.12–0.28] | ninguna |
-| 1 | 0.5 | 6 | 0.36 [0.15–0.36] | −0.26 [−0.26–−0.25] | 1.37 [1.21–1.48] | 1.13 [0.89–1.30] | −0.01 [−0.01–−0.01] | 0.44 [0.37–0.56] | ninguna |
-| 1 | 1 | 6 | 0.61 [0.26–0.63] | −0.39 [−0.43–−0.38] | 2.67 [2.37–2.83] | 2.23 [1.74–2.50] | −0.02 [−0.02–−0.01] | 0.88 [0.85–1.00] | ninguna |
-| 1 | 1.5 | 6 | 0.80 [0.33–0.83] | −0.51 [−0.51–−0.49] | 3.87 [3.46–4.18] | 3.28 [2.54–3.60] | −0.03 [−0.03–−0.02] | 1.33 [1.21–1.45] | ninguna |
-| 1 | 2 | 6 | 0.95 [0.39–0.99] | −0.58 [−0.58–−0.56] | 4.99 [4.47–5.32] | 4.28 [3.22–4.61] | −0.03 [−0.03–−0.03] | 1.79 [1.58–1.91] | ninguna |
-| 1.1 | 0 | 27 | 0.00 [0.00–0.00] | 0.00 [0.00–0.00] | 0.00 [0.00–0.00] | 0.00 [0.00–0.00] | 0.00 [0.00–0.00] | 0.00 [0.00–0.00] | ninguna |
-| 1.1 | 0.25 | 27 | 0.14 [0.08–0.34] | −0.29 [−1.52–−0.05] | 0.47 [0.14–1.99] | 0.35 [0.14–0.80] | −0.02 [−0.07–−0.00] | 0.59 [0.18–1.18] | ninguna |
-| 1.1 | 0.5 | 27 | 0.25 [0.14–0.63] | −0.48 [−2.33–−0.09] | 0.90 [0.26–3.85] | 0.68 [0.28–1.52] | −0.03 [−0.11–−0.01] | 1.16 [0.38–1.87] | ninguna |
-| 1.1 | 1 | 27 | 0.43 [0.24–1.07] | −0.70 [−3.49–−0.14] | 1.68 [0.49–7.28] | 1.25 [0.54–2.78] | −0.05 [−0.20–−0.01] | 2.02 [0.67–3.68] | ninguna |
-| 1.1 | 1.5 | 27 | 0.56 [0.32–1.39] | −0.85 [−4.09–−0.18] | 2.36 [0.69–10.39] | 1.74 [0.77–3.89] | −0.06 [−0.26–−0.01] | 2.69 [0.93–4.93] | ninguna |
-| 1.1 | 2 | 27 | 0.66 [0.38–1.64] | −0.98 [−4.63–−0.20] | 2.98 [0.86–13.28] | 2.16 [0.98–4.86] | −0.07 [−0.29–−0.01] | 3.26 [1.14–5.65] | B (1) |
+| demanda | g | caso | filas | L1 a los 120 | L3 a los 60 | L3 a los 90 | L3 a los 120 | beneficio de la 1.ª unidad | beneficio de la 2.ª unidad | A–F que fallan |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 0 | 57m | 6 | 0.0 [0.0–0.0] | 0.0 [0.0–0.0] | 0.0 [0.0–0.0] | 0.0 [0.0–0.0] | 0.0 [0.0–0.0] | 0.0 [0.0–0.0] | ninguna |
+| 1 | 0 | 72f | 6 | 0.0 [0.0–0.0] | 0.0 [0.0–0.0] | 0.0 [0.0–0.0] | 0.0 [0.0–0.0] | 0.0 [0.0–0.0] | 0.0 [0.0–0.0] | ninguna |
+| 1 | 0.25 | 57m | 6 | 0.2 [0.1–0.2] | −1.1 [−1.2–−1.1] | −0.4 [−0.4–−0.4] | −0.2 [−0.2–−0.2] | 0.7 [0.6–0.8] | 0.2 [0.1–0.3] | ninguna |
+| 1 | 0.25 | 72f | 6 | 0.6 [0.4–0.7] | −0.0 [−0.1–−0.0] | −0.0 [−0.0–−0.0] | −0.0 [−0.0–−0.0] | 0.2 [0.1–0.3] | 0.0 [0.0–0.0] | ninguna |
+| 1 | 0.5 | 57m | 6 | 0.4 [0.1–0.4] | −1.9 [−1.9–−1.8] | −0.7 [−0.7–−0.7] | −0.3 [−0.3–−0.2] | 1.4 [1.2–1.5] | 0.0 [−0.2–0.2] | ninguna |
+| 1 | 0.5 | 72f | 6 | 1.1 [0.9–1.3] | −0.1 [−0.1–−0.1] | −0.0 [−0.0–−0.0] | −0.0 [−0.0–−0.0] | 0.4 [0.4–0.6] | 0.0 [0.0–0.0] | ninguna |
+| 1 | 1 | 57m | 6 | 0.6 [0.3–0.6] | −2.9 [−3.2–−2.8] | −1.1 [−1.2–−1.0] | −0.4 [−0.4–−0.4] | 2.7 [2.4–2.8] | −2.4 [−4.9–−0.6] | ninguna |
+| 1 | 1 | 72f | 6 | 2.2 [1.7–2.5] | −0.2 [−0.2–−0.1] | −0.1 [−0.1–−0.0] | −0.0 [−0.0–−0.0] | 0.9 [0.8–1.0] | 0.0 [0.0–0.0] | ninguna |
+| 1 | 1.5 | 57m | 6 | 0.8 [0.3–0.8] | −3.7 [−3.8–−3.6] | −1.4 [−1.4–−1.3] | −0.5 [−0.5–−0.5] | 3.9 [3.5–4.2] | −10.9 [−12.4–−10.0] | ninguna |
+| 1 | 1.5 | 72f | 6 | 3.3 [2.5–3.6] | −0.2 [−0.2–−0.2] | −0.1 [−0.1–−0.1] | −0.0 [−0.0–−0.0] | 1.3 [1.2–1.5] | 0.0 [0.0–0.0] | ninguna |
+| 1 | 2 | 57m | 6 | 0.9 [0.4–1.0] | −4.2 [−4.3–−4.1] | −1.6 [−1.6–−1.5] | −0.6 [−0.6–−0.6] | 5.0 [4.5–5.3] | −12.5 [−13.5–−12.4] | ninguna |
+| 1 | 2 | 72f | 6 | 4.3 [3.2–4.6] | −0.2 [−0.2–−0.2] | −0.1 [−0.1–−0.1] | −0.0 [−0.0–−0.0] | 1.8 [1.6–1.9] | 0.0 [0.0–0.0] | ninguna |
+| 1.1 | 0 | 57m | 27 | 0.0 [0.0–0.0] | 0.0 [0.0–0.0] | 0.0 [0.0–0.0] | 0.0 [0.0–0.0] | 0.0 [0.0–0.0] | 0.0 [0.0–0.0] | ninguna |
+| 1.1 | 0 | 72f | 27 | 0.0 [0.0–0.0] | 0.0 [0.0–0.0] | 0.0 [0.0–0.0] | 0.0 [0.0–0.0] | 0.0 [0.0–0.0] | 0.0 [0.0–0.0] | ninguna |
+| 1.1 | 0.25 | 57m | 27 | 0.1 [0.1–0.3] | −1.6 [−5.7–−0.4] | −0.8 [−4.0–−0.1] | −0.3 [−1.5–−0.0] | 0.5 [0.1–2.0] | 0.9 [−1.3–5.2] | ninguna |
+| 1.1 | 0.25 | 72f | 27 | 0.4 [0.1–0.8] | −0.1 [−0.5–−0.0] | −0.0 [−0.2–−0.0] | −0.0 [−0.1–−0.0] | 0.6 [0.2–1.2] | 0.0 [0.0–0.0] | ninguna |
+| 1.1 | 0.5 | 57m | 27 | 0.2 [0.1–0.6] | −2.9 [−9.8–−0.7] | −1.3 [−6.2–−0.2] | −0.5 [−2.3–−0.1] | 0.9 [0.3–3.9] | 1.4 [−2.7–8.8] | ninguna |
+| 1.1 | 0.5 | 72f | 27 | 0.7 [0.3–1.5] | −0.2 [−0.8–−0.0] | −0.1 [−0.3–−0.0] | −0.0 [−0.1–−0.0] | 1.2 [0.4–1.9] | 0.0 [0.0–0.0] | ninguna |
+| 1.1 | 1 | 57m | 27 | 0.4 [0.2–1.1] | −4.5 [−16.6–−1.1] | −1.9 [−9.3–−0.4] | −0.7 [−3.5–−0.1] | 1.7 [0.5–7.3] | 1.2 [−5.5–14.7] | ninguna |
+| 1.1 | 1 | 72f | 27 | 1.3 [0.5–2.8] | −0.4 [−1.5–−0.1] | −0.1 [−0.6–−0.0] | −0.0 [−0.2–−0.0] | 2.0 [0.7–3.7] | 0.0 [0.0–0.0] | ninguna |
+| 1.1 | 1.5 | 57m | 27 | 0.6 [0.3–1.4] | −5.6 [−20.5–−1.4] | −2.3 [−11.0–−0.5] | −0.9 [−4.1–−0.2] | 2.4 [0.7–10.4] | −0.0 [−8.3–17.8] | ninguna |
+| 1.1 | 1.5 | 72f | 27 | 1.7 [0.8–3.9] | −0.5 [−2.0–−0.1] | −0.2 [−0.7–−0.0] | −0.1 [−0.3–−0.0] | 2.7 [0.9–4.9] | 0.0 [0.0–0.0] | ninguna |
+| 1.1 | 2 | 57m | 27 | 0.7 [0.4–1.6] | −6.5 [−24.1–−1.6] | −2.7 [−12.5–−0.6] | −1.0 [−4.6–−0.2] | 3.0 [0.9–13.3] | −0.6 [−11.1–20.6] | B (1) |
+| 1.1 | 2 | 72f | 27 | 2.2 [1.0–4.9] | −0.5 [−2.2–−0.1] | −0.2 [−0.8–−0.0] | −0.1 [−0.3–−0.0] | 3.3 [1.1–5.6] | 0.0 [0.0–0.0] | B (1) |
+
+Mayor |cambio| de la FC en cualquier lectura y fila: demanda 1, g 0.25: 1.2 bpm; demanda 1, g 0.5: 1.9 bpm; demanda 1, g 1: 4.9 bpm; demanda 1, g 1.5: 12.4 bpm; demanda 1, g 2: 13.5 bpm; demanda 1.1, g 0.25: 5.7 bpm; demanda 1.1, g 0.5: 9.8 bpm; demanda 1.1, g 1: 16.6 bpm; demanda 1.1, g 1.5: 20.5 bpm; demanda 1.1, g 2: 24.1 bpm.
 <!-- /generado:fc -->
 
 ## 15. Umbrales de conciencia (generado)
@@ -876,6 +908,10 @@ Sensibilidad a a (muestra, medianas a = 0,1 / 0,3 / 0,5): x1 g0: 0.0, 0.0, 0.0 %
 Amplitud de las medianas entre ganancias (lo que una envolvente podría acotar, mmHg): A gi_bleed_57m map x1: 7.6; A gi_bleed_57m map x1.1: 6.5; A gi_bleed_57m sbp x1: 10.2; A gi_bleed_57m sbp x1.1: 8.7; B gi_bleed_72f map x1: 16.8; B gi_bleed_72f map x1.1: 13.5; B gi_bleed_72f sbp x1: 22.3; B gi_bleed_72f sbp x1.1: 17.8; F gi_bleed_57m dbp x1: 29.9; F gi_bleed_57m dbp x1.1: 32.4; F gi_bleed_57m map x1: 36.1; F gi_bleed_57m map x1.1: 39.1; F gi_bleed_57m sbp x1: 48.7; F gi_bleed_57m sbp x1.1: 52.7; F gi_bleed_72f dbp x1: 14.6; F gi_bleed_72f dbp x1.1: 20.4; F gi_bleed_72f map x1: 17.5; F gi_bleed_72f map x1.1: 24.3; F gi_bleed_72f sbp x1: 23.1; F gi_bleed_72f sbp x1.1: 32.2.
 <!-- /generado:identificabilidad -->
 
+La tabla congelada no tiene fila para s0, y la revisión adversarial lo señaló. s0 y g son conjuntamente no
+identificables: el nivel de aporte de llegada fija s0, no está aprobado, y su efecto sobre T se confunde con el de g,
+porque T a los 120 tras la reanimación es 1 / (1 + g·s0).
+
 ## 18. Barorreflejo: plan actualizado (generado)
 
 <!-- generado:barorreflejo -->
@@ -890,16 +926,22 @@ Amplitud de las medianas entre ganancias (lo que una envolvente podría acotar, 
 
 1. **Normalización del tono a la llegada (§3):**
    - El canal T vale (1 + g·s) / (1 + g·s0), así que la llegada ya contiene la vasoconstricción de su propio déficit.
-   - En consecuencia, el apoyo sin tratamiento es moderado (57m) y, tras la reanimación, el tono baja por debajo del de
-     llegada.
-   - ¿Es la lectura buscada?
+   - En consecuencia:
+     - el apoyo sin tratamiento es moderado (57m);
+     - tras la reanimación, el tono baja por debajo del de llegada;
+     - el paciente tratado puede caer bajo PAS 80 antes que el no tratado (57m, g = 2);
+     - y, en la práctica, s0 actúa como un desplazamiento propio de cada caso, ligado a un nivel de aporte de llegada
+       sin aprobar.
+   - ¿Es la lectura buscada, o se prefiere otra referencia del tono, como un s0 docente o común?
 2. **Ganancia de tono:**
    - El rango congelado es 0,25–2; 0 es la referencia T = 1.
    - Con a = 0,3, g ≥ 0,5 pierde candidatos de lactato a demanda 1,0 (FD-LAC-06 de 72f), y g ≥ 1,5 hace que la PAM
      baje durante la primera unidad de GR en 57m.
    - ¿Qué rango es aceptable?
-3. **Retirada del tono:** ¿se acepta una normalización instantánea al resolverse el déficit, o se autoriza un término de
-   memoria o una constante de tiempo? Si se autoriza, falta su rango.
+3. **Retirada del tono:**
+   - ¿Se acepta que T siga al déficit sin retraso?
+   - ¿O se autoriza un término de memoria o una constante de tiempo? Si se autoriza, falta su rango.
+   - Ninguna de las dos opciones cambia el nivel final, que depende del punto 1.
 4. **Envolventes de presión A, B y F** (sin tratamiento a los 120 y tras la reanimación definitiva), y las respuestas
    a cristaloide y a la primera y la segunda unidad de GR (C–E).
 5. **Rango de T aceptable** en shock (G) y tras la adecuación (H), y **costo de aporte aceptable** del tono (I).
@@ -938,10 +980,22 @@ Trayectorias hemodinámicas para reproducir las unidades: 3178; trayectorias de 
 
 - **La sensibilidad a a** se lee en la muestra (3 unidades por demanda), no en todas las unidades. Lo mismo ocurre con
   FD-LAC para a = 0,1 y 0,5 y con la FC.
-- **Antes del congelamiento** se miró una sola corrida técnica: P1, 57m, un conjunto de sangre, g = 1. Servía para
-  comprobar la implementación. La lista de ganancias ya estaba fijada y no cambió.
-- **El congelamiento se enmendó una vez** antes de leer ninguna trayectoria. El primer intento de evaluación se detuvo
-  sin producir resultados por un `None` (la adecuación L3 donde no hay hemostasia) y por una lectura de un par
-  rechazado. Se agregó también la comprobación de que la ganancia 0 reproduce la referencia de lactato.
+- **Antes del congelamiento** se miró una corrida técnica: P1, 57m, un conjunto de sangre, tres niveles de aporte,
+  ganancias 0 y 1, con
+  T, PAM, déficit, D y lactato en algunos minutos. Servía para comprobar la implementación. La lista de ganancias ya
+  estaba fijada y no cambió.
+- **El congelamiento se enmendó una vez** (`a034aef` → `b3b63b1`; `a034aef` queda sólo en el reflog, nunca se subió).
+  - El primer intento de evaluación se detuvo en la primera tarea de trayectorias, sin escribir resultados: la
+    adecuación L3 vale `None` donde no hay hemostasia.
+  - Después, una prueba de humo sobre dos unidades sintéticas hizo fallar `envelopes()` al leer un par rechazado con
+    a = 0,5. Esa prueba sólo imprimió booleanos y el nombre de la comprobación que no pasaba (la de lactato, esperable
+    en unidades no retenidas), ningún valor de presión.
+  - La enmienda tiene tres cambios de código (`NOT_ASSESSED`, saltar los pares rechazados en la sensibilidad a a y la
+    comprobación de que la ganancia 0 reproduce la referencia de lactato) más el texto de `VERDICT_RULE`. No se tocaron
+    ganancias, poscargas ni reglas.
+- **Dos comprobaciones del veredicto no pueden fallar en la práctica:**
+  - `reference_equals_p2j1` compara la reconstrucción con g = 0 contra la salida en caché × la PAM de llegada, no
+    contra el registro de P2J-1;
+  - `pressure_to_hr_deferred` compara una constante.
 - **El mecanismo exacto de la pérdida de FD-LAC-06** (§13) no se descompuso, y ese diagnóstico no está en el registro.
 - **El registro** se escribe en JSON compacto (4 MB) para no duplicar su tamaño con sangría.
