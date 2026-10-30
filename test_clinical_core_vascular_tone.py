@@ -34,6 +34,12 @@ SOURCE = ROOT / "clinical_core" / "vascular_tone.py"
 #: trade-off, envelope, identifiability and verdict rules, the baroreflex plan, the policy and every clinical_core
 #: source but the downstream reports, committed before any clinical trajectory was evaluated.
 FROZEN_DIGEST = "baa2ee124decc7c84a48b0b8fe5031a9dab774e3587176c79e1907df94904545"
+#: P2J-2 is closed (P2J-3): its module and its record are pinned byte for byte, and its freeze is recomputed from the
+#: live sources without the later modules, with the two tuple-only files at their P2J-2 hashes while only their tuples
+#: changed (pressure_tone_filter.p2j2_sources).
+P2J2_MODULE_SHA = "8314c34accd082511b8e5cbe73da90c054fdbd2a0b8a6f3a56ab0aa0c12f7cf5"
+P2J2_RECORD_SHA = "0c5c9feda158d9d799a0d12f900a9776fcca917ea0b80bfd7b580ec604031924"
+LATER_MODULES = ("clinical_core/pressure_tone_filter.py",)
 #: derived.py, integration.py and shadow.py as P2J-2 leaves them: the AST proofs cover the declared statements; these pins
 #: make any later change of the three files fail the closed packages' guards until it is proven again.
 P2J2_SOURCES = {"clinical_core/derived.py": "6974d0fcf5159e9a67aa18fc030d9a65d87da40a5d776b3be258d3589ba2bfda",
@@ -57,7 +63,13 @@ def test_the_package_is_frozen():
     assert {"clinical_core/vascular_tone.py", "clinical_core/vascular_tone_report.py"} <= set(
         decision_pack.PACK_DIGEST_EXCLUDED)
     assert vt.p2j1_record()["freeze_digest"] == vt.P2J1_DIGEST
-    assert vt.freeze_digest() == FROZEN_DIGEST, "a source, the design, a rule or the policy changed after the freeze"
+    from clinical_core import pressure_tone_filter as pf
+    assert hashlib.sha256(SOURCE.read_bytes()).hexdigest() == P2J2_MODULE_SHA, "the closed P2J-2 module changed"
+    assert hashlib.sha256(RECORD.read_bytes()).hexdigest() == P2J2_RECORD_SHA
+    sources = {k: v for k, v in sources.items() if k not in LATER_MODULES}
+    text = json.dumps({"revision": vt.REVISION, "p2j1": hashlib.sha256(vt.P2J1_RECORD.read_bytes()).hexdigest(),
+                       "design": vt.design(), "sources": pf.p2j2_sources(sources)}, sort_keys=True, default=str)
+    assert hashlib.sha256(text.encode("utf-8")).hexdigest() == FROZEN_DIGEST, "a source P2J-2 froze changed"
 
 
 def test_the_faculty_decisions_are_recorded():
@@ -281,7 +293,7 @@ def test_inside_the_declared_statements_p2j2_changed_only_the_tone():
 
 
 def test_the_closed_p2j1_freeze_recomputes_from_the_proven_sources():
-    sources = {k: v for k, v in bf.freeze_sources().items() if k not in vt.OWN}
+    sources = {k: v for k, v in bf.freeze_sources().items() if k not in vt.OWN + LATER_MODULES}
     text = json.dumps({"revision": pt.REVISION, "p2i2ak": hashlib.sha256(pt.P2I2AK_RECORD.read_bytes()).hexdigest(),
                        "design": pt.design(), "sources": vt.p2j1_sources(sources)}, sort_keys=True, default=str)
     assert hashlib.sha256(text.encode("utf-8")).hexdigest() == vt.P2J1_DIGEST
