@@ -188,6 +188,18 @@ def test_demand_classes_are_diagnostic():
     assert pf.demand_class({"1": {"survivors": 0}, "1.1": {"survivors": 0}}) == "DEMAND_INCOMPATIBLE"
 
 
+def test_sensitivity_results_never_reach_the_primary_counts_or_the_verdict():
+    """In run(), sensitivity comes from its own _evaluate pass and is read only into the sensitivity entries."""
+    body = inspect.getsource(pf.run)
+    tree = ast.parse(body.lstrip())
+    uses = [n for n in ast.walk(tree) if isinstance(n, ast.Name) and n.id == "sensitive"]
+    assert len(uses) == 2       # assigned once, read once (the sensitivity dict comprehension)
+    primary_line = next(line for line in body.splitlines() if line.strip().startswith("primary = {"))
+    assert "evaluated[" in primary_line and "sensitive" not in primary_line
+    verdict_calls = [line for line in body.splitlines() if "verdict(" in line]
+    assert verdict_calls and not any("sensitiv" in line for line in verdict_calls)
+
+
 def test_an_empty_primary_region_stops():
     primary = {"0.25": {"1": {"survivors": 0}, "1.1": {"survivors": 0}}}
     item = pf.verdict(primary, {})

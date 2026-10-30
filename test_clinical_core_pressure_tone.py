@@ -40,9 +40,7 @@ LATER_MODULES = ("clinical_core/vascular_tone.py", "clinical_core/pressure_tone_
 #: What P2J-2 added to tone's paths (its analysis module, and the integrator's tone response): the P2J-1 audit's view
 #: of the tree leaves them out; test_clinical_core_vascular_tone pins them.
 P2J2_TONE_ROWS = (("clinical_core/vascular_tone.py", None), ("clinical_core/vascular_tone_report.py", None),
-                  ("clinical_core/integration.py", "_vascular_tone"),
-                  # P2J-3's filter and its report (later modules that read tone)
-                  ("clinical_core/pressure_tone_filter.py", None), ("clinical_core/pressure_tone_filter_report.py", None))
+                  ("clinical_core/integration.py", "_vascular_tone"))
 C57, C72 = pt.C57, pt.C72
 NEUTRAL = Anchors(**ARRIVAL)
 

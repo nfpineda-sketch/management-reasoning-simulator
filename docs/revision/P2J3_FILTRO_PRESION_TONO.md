@@ -4,7 +4,8 @@
   diagnóstico, y la presión no alimenta la FC.
 - **Base:** `51bc0ca` (P2J-2, cerrado: su módulo y su registro quedan fijados byte a byte, y su congelamiento se
   recalcula con los archivos de tuplas en sus hashes de P2J-2). Congelamiento de P2J-3: `3d558fd` (digest
-  `611e1702…`), antes de contar ningún superviviente.
+  `611e1702…`), antes de contar los supervivientes de la fisiología retenida; la prueba de humo previa se declara en
+  §16.
 - **Números:** `docs/revision/P2J3_pressure_tone_filter.json`. Las secciones marcadas «generado» las escribe
   `python -m clinical_core.pressure_tone_filter_report` desde ese registro.
 - **Sin cambios en el núcleo:** las trayectorias son la reconstrucción exacta de P2J-2 desde las trayectorias de sangre
@@ -18,23 +19,28 @@
 - **Filtro primario** (g = 0,25 / 0,5 / 1; a = 0,3):
   - Ninguna envolvente de presión ni de tono rechaza un candidato. A, B, F, C, D, E, G y H se cumplen en todos, y no
     hay rechazo estructural.
+  - **Las envolventes tampoco distinguen entre haber respuesta de tono y no haberla.** La referencia sin respuesta
+    (g = 0) cumple A, B y F en todas las claves y en ambas demandas. En F, la PAS de 57m queda a 0,6 mmHg del techo
+    de 140. C, D y E no se calcularon para g = 0.
   - Sólo FD-LAC (I) recorta, y sólo a demanda 1,0: g = 0,5 deja 181 de 216 y g = 1 deja 134. A demanda 1,1 sobreviven
     los 1092 en las tres ganancias.
   - Las tres ganancias son ROBUST_ACROSS_DEMAND.
-- **Sin tratamiento (P1, 120 min, demanda 1,0, medianas):**
+- **Sin tratamiento (P1, 120 min, demanda 1,0, medianas por caso):**
   - **57m:** PAS / PAM 45,7 / 33,9 (g = 0,25), 47,4 / 35,2 (g = 0,5) y 50,2 / 37,2 (g = 1); con T = 1, 43,6 / 32,4.
   - **72f:** 68,3 / 51,6, 71,4 / 53,9 y 77,3 / 58,3; con T = 1, 65,0 / 49,1.
   - Todos los valores quedan dentro de A y B.
-- **Manejo definitivo (P4, 120 min):**
+- **Manejo definitivo (P4, 120 min, demanda 1,0, medianas):**
   - **57m:** 126,7 / 94,1, 118,9 / 88,3 y 105,9 / 78,6.
   - **72f:** 129,9 / 98,1, 126,7 / 95,6 y 120,7 / 91,1.
   - Todos dentro de F. T_abs vale 1 a los 120 tras la adecuación (H).
 - **Contrafactuales:** el cristaloide (frente a L1 en el mismo minuto) y la 1.ª y la 2.ª unidad de GR (frente a L3
-  sin esa unidad) dan, en cada candidato y cada minuto de comparación, PRESSURE_AND_PERFUSION_IMPROVE.
+  sin esa unidad) dan, en todas las trayectorias de los supervivientes y en cada minuto de comparación,
+  PRESSURE_AND_PERFUSION_IMPROVE. Ninguna regla C, D ni E rechazó a ningún candidato primario.
   - Bajo el comparador emparejado desaparece la caída de la PAM durante la 1.ª unidad que se veía en P2J-2 con la
     ventana antes/después.
   - Con g = 1, la 1.ª unidad todavía sube la PAM de 57m +7,3 mmHg a los 30 min (demanda 1,0).
-- **Tono en shock:** T_abs máximo en P1 de 1,18 (g = 0,25), 1,36 (g = 0,5) y 1,73–1,76 (g = 1), dentro de G.
+- **Tono en shock:** T_abs máximo en P1 de 1,18 (g = 0,25), 1,36 (g = 0,5) y 1,73 (g = 1), en 57m con demanda
+  1,0 (1,76 con 1,1). Todos quedan dentro de G, que para g ≤ 1 se cumple por construcción.
 - **Costo:** el gasto y el aporte caen −2 % (g = 0,25), −4 % (g = 0,5) y −6 a −8 % (g = 1) a los 120 sin tratamiento.
   No hay umbral: la docencia lo remite a FD-LAC.
 - **FC (diagnóstico):** en 2616 corridas completas del núcleo, ninguna regla A–F de P2I-2AK fallaría en ningún
@@ -42,10 +48,12 @@
 - **Sensibilidad (después, sin rescatar nada):**
   - **a = 0,1:** sobreviven todos, salvo 24 candidatos de g = 1 a demanda 1,1, que F rechaza.
   - **a = 0,5:** FD-LAC recorta más; con g = 1 quedan 20 de 216 a demanda 1,0.
-  - **g = 1,5:** G (T_abs > 2) y F lo restringen a 18 candidatos a demanda 1,0 y ninguno a 1,1.
-  - **g = 2:** queda incompatible con ambas demandas.
+  - **g = 1,5:** G (T_abs > 2) y FD-LAC lo restringen a 18 candidatos a demanda 1,0 (F no rechaza ninguno ahí). A
+    1,1 lo eliminan G y F.
+  - **g = 2:** queda incompatible con ambas demandas por G, F, FD-LAC y, a 1,0, también B (48).
   - Las conclusiones primarias son cualitativamente estables con a = 0,1 y 0,5: sobreviven las tres ganancias
-    primarias, y FD-LAC es el único recorte importante.
+    primarias. Con a = 0,5 el recorte es de FD-LAC; con a = 0,1 el único recorte es F (24 candidatos de g = 1 a
+    1,1).
 - **Identificabilidad:**
   - La ganancia de tono sigue NON_IDENTIFIABLE: las envolventes no distinguen entre 0,25, 0,5 y 1.
   - La poscarga queda POORLY_IDENTIFIED: sólo F con a = 0,1 la distingue.
@@ -355,9 +363,14 @@ con a = 0,3, todos robustos en ambas demandas. No hace falta otra decisión de p
 
 - En este núcleo la FC no alimenta el gasto ni la presión. La presión es igual con cualquier perfil de FC (P2J-1), así
   que reconectar presión → FC no puede mover la región de presión y tono filtrada aquí.
-- La región ya cumple A–I en todos los candidatos. Lo que sigue sin identificar es la ganancia dentro de [0,25, 1],
-  porque las envolventes por extremos no la distinguen. Eso no impide fijar un punto de ajuste y un rango de ganancia
-  del barorreflejo; sólo obliga a llevar las tres ganancias.
+- Los supervivientes cumplen A–I. I recorta 35 y 82 candidatos a demanda 1,0 con g = 0,5 y 1.
+- Lo que sigue sin identificar es la ganancia dentro de [0,25, 1]. Las envolventes por extremos no la distinguen y
+  tampoco distinguen la ausencia de respuesta (g = 0). La región la acotan las decisiones de soporte de la docencia
+  y FD-LAC, no las envolventes A–H.
+- Eso no impide fijar un punto de ajuste y un rango de ganancia del barorreflejo; sólo obliga a llevar las tres
+  ganancias.
+- El texto congelado `BAROREFLEX_NEXT` pide una región acotada en ambas demandas o una declaración docente. Aquí las
+  tres ganancias son robustas en ambas demandas, así que la condición se cumple sin pedir robustez como criterio.
 
 Lo que sí hará falta para el barorreflejo:
 
@@ -373,8 +386,25 @@ temporal serviría, por ejemplo la PAM a los 30 o 60 min sin tratamiento. Sería
 - **La prueba de humo previa al congelamiento** (dos unidades sintéticas) imprimió un booleano: algún candidato de ese
   subconjunto sobrevivía. No se leyó ningún recuento ni valor de presión, y ninguna envolvente es mía: todas las
   fijó la docencia.
-- **La regla de identificabilidad** cuenta como «envolventes» todas las reglas salvo I (también G, H y la estructural).
-  Para las ganancias primarias, G se cumple por construcción (T_abs ≤ 1 + g ≤ 2).
+- **La regla de identificabilidad** cuenta como «envolventes» todas las reglas salvo I (también G, H y la
+  estructural), y compara recuentos, no conjuntos de candidatos.
+  - La clase global elige el caso más favorable: «poscarga POORLY_IDENTIFIED» sale de 1 de 6 puntos.
+  - El «compuesto presión / gasto» se asignó a mano (POORLY_IDENTIFIED); con la regla, sin eliminaciones, saldría
+    NON_IDENTIFIABLE.
+- **Seis de las nueve comprobaciones del veredicto no pueden fallar en la rama READY:**
+  - `nothing_approved` y `pressure_to_hr_deferred` son constantes;
+  - `upstream_reproduced` lleva `units_equal` literal (el control real es la excepción previa);
+  - `fd_lac_region_nonempty` se deduce de que haya supervivientes;
+  - `g_h_hold`: G se cumple por construcción para g ≤ 1, y H es exacta por la fórmula del objetivo;
+  - `feedback_stable`: el guardia de T es inalcanzable para g ≤ 1.
+  - Sólo informan de verdad `primary_survivors`, los comparadores, la reconstrucción y la reproducción de P2J-2.
+- **Una corrida detenida o una fila sin pulso** haría caer la evaluación (índice 120) en vez de contarse como
+  SIMULATION. No ocurre en el registro.
+- **El texto de G** menciona «sondas sintéticas aparte», pero P2J-3 no tiene sondas.
+- **La regla del veredicto** dice «trayectorias de los supervivientes»; el código comprueba G y H en todos los
+  candidatos primarios, que es más estricto.
+- **Cómputo de sobra:** cada pasada de poscarga recalcula g = 0 y su FD-LAC (unas 27 % de las evaluaciones FD-LAC),
+  que no se leen. No hay barrido cartesiano.
 - **La FC** se lee sobre las unidades fisiológicas de los supervivientes (L1, L3 y contrafactuales). L2 y los
   observables de la FC con cristaloide de P2I-2AK no se repiten.
 - **Los minutos de comparación** son la finalización de cada intervención (cristaloide a los 20, unidades a los 30 y

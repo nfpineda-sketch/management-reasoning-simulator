@@ -3327,7 +3327,8 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 
 - **Base:** `51bc0ca` (P2J-2, cerrado: su módulo y su registro quedan fijados; su congelamiento se recalcula con
   `pressure_tone_filter.p2j2_sources`).
-  - Congelamiento: `3d558fd` (digest `611e1702…`), antes de contar ningún superviviente.
+  - Congelamiento: `3d558fd` (digest `611e1702…`), antes de contar los supervivientes; una prueba de humo previa sobre
+    dos unidades sintéticas se declara en el informe (§16).
   - Informe: `docs/revision/P2J3_FILTRO_PRESION_TONO.md`; números: `docs/revision/P2J3_pressure_tone_filter.json`.
   - Sin cambios en el núcleo.
 - **Decisiones docentes codificadas:**
@@ -3339,11 +3340,14 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Resultados:**
   - Ninguna envolvente A–H rechaza candidatos primarios. Sólo FD-LAC recorta a demanda 1,0: g = 0,5 deja 181 de 216 y
     g = 1 deja 134. A demanda 1,1 quedan los 1092.
+  - La referencia sin respuesta (g = 0) también cumple A, B y F: las envolventes no distinguen tono de ausencia de
+    tono.
   - Las tres ganancias son robustas en ambas demandas.
-  - Los contrafactuales de cristaloide y de las dos unidades de GR mejoran presión y perfusión en todos los
-    candidatos.
+  - Los contrafactuales de cristaloide y de las dos unidades de GR mejoran presión y perfusión en todas las
+    trayectorias de los supervivientes; C, D y E no rechazan ningún candidato.
   - La FC (diagnóstico) no fallaría ninguna regla A–F.
-  - En sensibilidad, g = 1,5 y g = 2 caen por G y F, y nada rescata a los primarios.
+  - En sensibilidad, g = 1,5 cae por G y FD-LAC a 1,0 y por G y F a 1,1; g = 2 cae por G, F, FD-LAC y B. Nada
+    rescata a los primarios.
 - **Veredicto: PRESSURE_TONE_OBSERVABLE_FILTER_SATISFIED.**
   - La ganancia sigue NON_IDENTIFIABLE dentro de [0,25, 1].
   - Recomendación: pasar al barorreflejo llevando las tres ganancias como incertidumbre. La FC no alimenta la
