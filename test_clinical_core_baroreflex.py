@@ -419,3 +419,98 @@ def test_the_document_is_generated_from_the_record(tmp_path):
     assert "BAROREFLEX_HR_RECERTIFICATION_SATISFIED" in text and "RR_NEXT" in text
     for name in rp.NAMES:
         assert f"<!-- generado:{name} -->" in text
+
+
+# After the adversarial review of P2J-4 (tests only; the frozen module is unchanged) ----------------------------------------
+
+#: The AST digest of everything the inside proof strips (the baroreflex fields and checks, the AugAssign, the baroreflex
+#: PARAMETERS entries and the amended relative-pressure entry): the proof removes whole statements by mention, so what
+#: it removes is pinned here (review H2).
+STRIPPED_AT_P2J4 = "33c3db4d6afdf92c7d45b53b7ace5749fb62d1887b070454aed47b33edca4dd1"
+
+
+def _stripped(text):
+    out = []
+    for name in ("CoreProfile", "PARAMETERS", "sympathetic_target"):
+        for n in ast.walk(br.statement(text, name)):
+            if isinstance(n, ast.stmt) and br.StripP2J4._dropped(n):
+                out.append(ast.dump(n))
+            if isinstance(n, ast.Dict):
+                for k, v in zip(n.keys, n.values):
+                    if isinstance(k, ast.Constant) and k.value in br.BARO_NAMES + (br.AMENDED_ENTRY,):
+                        out.append(ast.dump(k) + ast.dump(v))
+    return hashlib.sha256("\n".join(out).encode("utf-8")).hexdigest()
+
+
+def _top_level_names(text):
+    names = []
+    for node in ast.parse(text).body:
+        if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
+            names.append(node.name)
+        elif isinstance(node, (ast.Assign, ast.AnnAssign)):
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            names += [t.id for t in targets if isinstance(t, ast.Name)]
+    return names
+
+
+def test_what_the_proof_strips_is_pinned_and_every_declared_statement_is_unique():
+    live = vt._live(br.DERIVED)
+    assert _stripped(live) == STRIPPED_AT_P2J4
+    names = _top_level_names(live)
+    assert all(names.count(name) == 1 for name in br.P2J4_STATEMENTS)
+    mutations = [
+        ("target += baroreflex_drive(pressure_rel, anchors, profile)",
+         "target += baroreflex_drive(pressure_rel, anchors, profile) + 0.3"),
+        ("baroreflex_to_sympathetic_gain: float = 0.0", "baroreflex_to_sympathetic_gain: float = 1.0"),
+        ('                raise CoreInvariantError("a baroreflex gain needs a declared MAP set point")',
+         '                raise CoreInvariantError("a baroreflex gain needs a declared MAP set point")\n'
+         '            self.__dict__.get("x")'),
+        ('"sympathetic_per_pressure_deficit": (PROVISIONAL,', '"sympathetic_per_pressure_deficit": (ADOPTED,'),
+    ]
+    for old, new in mutations:
+        assert live.count(old) == 1, old
+        assert _stripped(live.replace(old, new)) != STRIPPED_AT_P2J4, new
+    appended = live + "\n\ndef sympathetic_target(state, anchors, profile):\n    return 0.0\n"
+    assert _top_level_names(appended).count("sympathetic_target") == 2
+    assert PARAMETERS["sympathetic_per_pressure_deficit"][0] == dv.PROVISIONAL
+
+
+def test_every_combination_and_point_rebuilds_the_core_hr_on_one_unit_per_case_and_demand(source):
+    """Review H1: the run validates one (combination, point) pair per unit, in rotation (12 of 24 pairs at demand 1.0,
+    36 of 108 at 1.1). Here every pair, the gain-0 reference included, on L3 of one unit per case and demand."""
+    latent = br.latent_region()["combos"]
+    for factor in br.DEMANDS:
+        for case, lam, position in ((C57, 612, 0), (C72, 611, 1)):
+            inputs = {"entry": source["p3"][0], "point": br.LAMBDAS[lam], "bag": None}
+            base = {"deficit_to_tone_gain": 0.5, "afterload_sensitivity": 0.3, **hp.PRIMARY_HR_CALIBRATION}
+            off = hf.full_run(inputs, case, br.L3, factor, "midpoint", base)
+            rates = br.hs.intrinsic_levels(case)
+            for combo in latent[factor]:
+                level = combo["intrinsic"][position]
+                for point in br.POINTS:
+                    on = hf.full_run(inputs, case, br.L3, factor, level, {**base, **br.combo_changes(combo, *point)})
+                    rebuilt = br.hr_series(off, rates[level], combo["acute"], combo["debt"], combo["ceiling"], *point)
+                    assert [p["hr"] for p in rebuilt] == [row["hr"] for row in on["rows"]], (factor, case, point)
+                    assert br._physiology(off["rows"]) == br._physiology(on["rows"])
+
+
+def test_l2_and_l3_without_haemostasis_are_unchanged_with_the_baroreflex_on(source):
+    """Review H3: the run's validation reads L1, L3 and the counterfactuals; the crystalloid (L2) and the red cells
+    before haemostasis (P3) here, at the strongest primary point."""
+    record = la.record_p2i2ab()
+    bag = record["crystalloid_support"][0]["bag"]
+    combo = br.latent_region()["combos"][1.1][0]
+    base = {"deficit_to_tone_gain": 1.0, "afterload_sensitivity": 0.3, **hp.PRIMARY_HR_CALIBRATION}
+    on = {**base, **br.combo_changes(combo, 100.0, 1.5)}
+    for case, lam in ((C57, 612), (C72, 611)):
+        inputs = {"entry": source["p3"][0], "point": br.LAMBDAS[lam], "bag": bag}
+        a = hf.full_run(inputs, case, br.pf.L2, 1.1, "midpoint", base)
+        b = hf.full_run(inputs, case, br.pf.L2, 1.1, "midpoint", on)
+        assert br._physiology(a["rows"]) == br._physiology(b["rows"]) and a["rows"][-1]["crystalloid_in_ml"] > 0.0
+        assert any(x["hr"] != y["hr"] for x, y in zip(a["rows"], b["rows"]))
+        from clinical_core import pressure_tone as pt
+        p3 = pt.SCENARIOS["P3"]
+        a = pt.full_run(source["p3"][0], case, p3, 1.1, br.LAMBDAS[lam], None, "midpoint", base)
+        b = pt.full_run(source["p3"][0], case, p3, 1.1, br.LAMBDAS[lam], None, "midpoint", on)
+        keys = [k for k in a["rows"][0] if k != "hr"]
+        assert [[r[k] for k in keys] for r in a["rows"]] == [[r[k] for k in keys] for r in b["rows"]]

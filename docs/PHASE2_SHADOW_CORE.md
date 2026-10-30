@@ -3380,14 +3380,23 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - llegada ±5 y A–F sin cambios.
 - **Resultados:**
   - Temporalidad ACYCLIC_SAME_STEP. Sondas A–D: se cumplen las cuatro.
-  - P2J-3 se recalcula idéntico. En las 654 unidades, encender el barorreflejo deja iguales la fisiología previa (filas
-    y estados) y la FC reconstruida es igual a la del núcleo.
+  - P2J-3 se recalcula idéntico con el barorreflejo apagado. En las 654 unidades, encenderlo deja iguales la
+    fisiología previa (filas y estados).
+  - La FC reconstruida es igual a la del núcleo en el par validado de cada unidad y, por prueba, en todos los pares
+    de una unidad por caso y demanda.
   - Recorta casi todo la llegada: el barorreflejo sube la FC de llegada y sólo caben las combinaciones latentes con
     margen.
   - Sobreviven 2124 de 12 744 filas a demanda 1,0 (sólo la combinación de techo 150, ganancias ≤ 0,5) y 204 852 de
     353 808 a 1,1.
-  - E (72f) y F (57m) rechazan sólo con ganancia 1,5 a demanda 1,1, por la relajación del tono tras la adecuación.
+  - E (72f) y F (57m) rechazan sólo con ganancia 1,5 a demanda 1,1. E se debe a la relajación del tono tras la
+    adecuación; F, a un residual > 15.
   - Doble conteo: STRUCTURALLY_DISTINCT_BUT_CORRELATED.
-  - MAP_set y ganancia: POORLY_IDENTIFIED.
+  - MAP_set y ganancia: POORLY_IDENTIFIED juntando las demandas. Leída por demanda, a 1,0 la ganancia queda acotada
+    a ≤ 0,5.
 - **Veredicto: BAROREFLEX_HR_RECERTIFICATION_SATISFIED.** Recomendación según la regla congelada: RR_NEXT, llevando la
-  región (MAP_set, ganancia) superviviente como incertidumbre. Nada aprobado; FR no se inicia.
+  región (MAP_set, ganancia) superviviente como incertidumbre.
+  - Decisión docente pendiente: si la identificabilidad se lee por demanda, la misma regla daría
+    ONE_MORE_BAROREFLEX_DECISION (el rango de ganancia a demanda 1,0).
+  - Nada aprobado; FR no se inicia.
+- **Revisión adversarial:** sin hallazgos ALTA; cuatro MEDIA y cinco BAJA, resueltos en documentos y pruebas (informe
+  §19).

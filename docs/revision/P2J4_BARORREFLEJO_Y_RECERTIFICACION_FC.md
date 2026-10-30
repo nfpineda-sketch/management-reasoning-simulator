@@ -33,7 +33,10 @@
   y clases de demanda iguales al registro.
 - **Fisiología previa: idéntica.** En las 654 unidades × 4 escenarios, encender el barorreflejo dejó iguales las
   filas sin FC (presión, gasto, aporte, déficit, D, lactato, FR, sangrado, GR, cristaloide) y los estados de L3 salvo
-  el impulso, BloodState incluido. La FC reconstruida es igual a la del núcleo en los 12 puntos primarios.
+  el impulso, BloodState incluido. En cada unidad se comparó con el núcleo un par (combinación, punto) en rotación:
+  quedan cubiertos los 12 puntos, pero no todos los pares (12 de 24 a demanda 1,0 y 36 de 108 a 1,1). Una prueba
+  añadida tras la revisión compara todos los pares, con la referencia de ganancia 0, en L3 de una unidad por caso y
+  demanda: FC idéntica. Otra comprueba L2 y L3 sin hemostasia con el barorreflejo encendido: filas sin FC idénticas.
 - **Recertificación (filas candidatas: tono × demanda × superviviente lactato × combinación latente × punto del
   barorreflejo):**
   - **Demanda 1,0:**
@@ -62,13 +65,19 @@
   minutos con sólo el barorreflejo positivo: 7 % con MAP_set 80, 22 % con 90 y 37 % con 100. No hay violaciones de
   signo.
 - **Identificabilidad:**
-  - MAP_set y ganancia: POORLY_IDENTIFIED. Ningún nivel se vacía, pero los conjuntos supervivientes difieren.
+  - MAP_set y ganancia: POORLY_IDENTIFIED si se juntan ambas demandas, como fija la regla: ningún nivel se vacía y
+    los conjuntos difieren.
+  - **Leída por demanda, a 1,0 las ganancias 1 y 1,5 se vacían.** Sobreviven filas sólo con 0,25 (1593) y 0,5
+    (531), así que la ganancia quedaría PARTIALLY_CONSTRAINED a esa demanda (§14, §17).
   - Interacción con las combinaciones latentes: COUPLED según la regla (ver §14 sobre la lectura del código a demanda
     1,0).
   - Interacción con g: UNCOUPLED en los puntos admisibles, aunque con recuentos distintos con ganancia 1,5.
 - **Veredicto: BAROREFLEX_HR_RECERTIFICATION_SATISFIED.** Nada aprobado.
 - **Recomendación según la regla congelada: RR_NEXT.** Se lleva como incertidumbre la región superviviente (MAP_set,
   ganancia) junto con g y la demanda.
+  - La regla junta ambas demandas. Si la docencia leyera la identificabilidad por demanda, la misma regla daría
+    ONE_MORE_BAROREFLEX_DECISION, porque a demanda 1,0 la ganancia queda acotada a ≤ 0,5.
+  - Queda como decisión docente (§17), no como resultado.
 
 ## 1. Decisiones docentes registradas (generado)
 
@@ -506,14 +515,17 @@ Frozen, on the primary survivors only (the gain-0 reference never counts). For a
 
 - **MAP_set y ganancia: POORLY_IDENTIFIED.**
   - Ningún nivel se vacía si se juntan ambas demandas.
-  - A demanda 1,0, en cambio, sólo sobreviven ganancias ≤ 0,5 con MAP_set 80 y 0,25 con 90 y 100. Si la demanda 1,0
-    fuera la única, MAP_set y ganancia quedarían más acotados. Es una lectura, no una regla.
+  - A demanda 1,0, en cambio, sólo sobreviven ganancias ≤ 0,5 con MAP_set 80 y 0,25 con 90 y 100.
+    - Leída por demanda, la ganancia queda PARTIALLY_CONSTRAINED a 1,0: los niveles 1 y 1,5 se vacían.
+    - MAP_set seguiría POORLY_IDENTIFIED: ningún nivel se vacía.
+  - La regla congelada junta las demandas, y por eso la recomendación es RR_NEXT. Leerla por demanda es una
+    decisión docente (§17).
 - **Interacción con las combinaciones latentes:**
   - El registro dice UNCOUPLED a demanda 1,0 y COUPLED a 1,1.
   - El texto congelado de la regla compara el conjunto de puntos que conserva cada combinación. A 1,0, la combinación
     de techo 175 no conserva ninguno y la de techo 150 conserva cuatro, así que según el texto también es COUPLED.
-  - El código omite las combinaciones que no sobreviven en ningún punto. Se declara en §16 y en TD-101; el módulo
-    congelado no se cambia.
+  - El código omite las combinaciones que no sobreviven en ningún punto. Se declara en §18 y en TD-101; el módulo
+    congelado no se cambia. El análogo para g (`by_tone`) omite las demandas sin supervivientes; hoy no tiene efecto.
   - El acoplamiento es el esperable: el incremento del barorreflejo en la llegada tiene que caber en el margen que
     dejan las ganancias aguda y de deuda y la intrínseca de cada combinación.
 - **Interacción con g:** los mismos puntos admisibles en las tres ganancias; con ganancia 1,5 los recuentos bajan al
@@ -558,12 +570,15 @@ La regla congelada da **RR_NEXT**:
 
 - ninguna rama de tono queda sin supervivientes;
 - el doble conteo no es redundante;
-- ningún nivel de MAP_set ni de ganancia se vacía;
+- juntando ambas demandas, como fija la regla, ningún nivel de MAP_set ni de ganancia se vacía;
 - ambas demandas conservan supervivientes.
 
 El sistema integrado shock → T / presión → barorreflejo → FC es coherente:
 
-- la FC no alimenta la presión, así que reconectar no movió la región de P2J-3;
+- con el barorreflejo apagado, la región primaria A–I de P2J-3 se recalcula idéntica en el código vivo;
+- con el barorreflejo encendido, las filas sin FC y los estados quedan idénticos en todas las unidades (L1, L3 y
+  contrafactuales) y, por prueba, en L2 y en L3 sin hemostasia;
+- los puntos de sensibilidad de P2J-3 no se recalculan, porque no se llevan;
 - la señal es no negativa y distinta del déficit agudo;
 - los supervivientes cumplen la llegada y A–F.
 
@@ -571,7 +586,12 @@ Se lleva como incertidumbre la región superviviente (§8): demanda 1,0 con 80/0
 demanda 1,1 con los doce puntos, más estrechos con ganancia 1,5. Van junto con g = 0,25 / 0,5 / 1, a = 0,3 y las
 combinaciones latentes que conservan margen de llegada.
 
-Hay dos lecturas para la docencia, que no bloquean:
+**Decisión docente pendiente (de la revisión adversarial):** la regla congelada junta ambas demandas en la
+identificabilidad. Leída por demanda, a 1,0 la ganancia queda acotada a ≤ 0,5 (niveles 1 y 1,5 vacíos) y la misma
+regla daría ONE_MORE_BAROREFLEX_DECISION: fijar, para demanda 1,0, el rango de ganancia. Si la docencia acepta
+juntar las demandas, RR_NEXT se mantiene. La IA no elige.
+
+Hay además dos lecturas para la docencia, que no bloquean:
 
 - **La llegada ±5 decide casi todo el recorte.** Con la tolerancia y la malla intrínseca fijadas, el barorreflejo
   sólo cabe en las combinaciones con margen. Si se quisiera admitir ganancias mayores, haría falta revisar la malla
@@ -588,9 +608,13 @@ FR no se inicia.
   supervivientes sintéticos que sólo imprimió claves; el fallo que encontró se corrigió antes de congelar.
 - **Clasificador de interacción latente:** omite las combinaciones sin ningún superviviente (§14). Según el texto de
   la regla, a demanda 1,0 la interacción es COUPLED, no UNCOUPLED. No afecta al veredicto ni a la recomendación.
-- **Validación contra el núcleo:** cada unidad compara un solo punto del barorreflejo y una sola combinación,
-  rotando por los doce puntos y las combinaciones; los demás puntos se reconstruyen. La reconstrucción usa
-  `derived.baroreflex_drive`, la misma función que el núcleo.
+- **Validación contra el núcleo:** cada unidad compara un solo par (combinación, punto), con un mismo índice que
+  rota los dos.
+  - Quedan cubiertos los 12 puntos, pero no todos los pares: 12 de 24 a demanda 1,0 y 36 de 108 a 1,1. La referencia
+    de ganancia 0 no se compara durante la corrida.
+  - Tras la revisión, una prueba compara todos los pares, con la referencia, en L3 de una unidad por caso y demanda:
+    son iguales.
+  - La reconstrucción usa `derived.baroreflex_drive`, la misma función que el núcleo.
 - **B3 y B4:** salen de las trayectorias de sangre en caché de P2J-3, reconstruidas al tono (exactas en P2J-2 y
   P2J-3). Dan la señal y la contribución sin saturar, no la FC saturada. B1 es sólo el minuto 0. B6 y B7 son las
   sondas A y B, sin curso temporal.
@@ -602,3 +626,36 @@ FR no se inicia.
   en sombra y los goldens sigan idénticos. Nunca convive con el barorreflejo.
 - **Memoria del impulso:** sube al instante y decae con τ 5 min. Es común a todos sus términos; no es una constante
   propia del barorreflejo.
+- **Prueba AST:** la prueba de «dentro de las sentencias» retira sentencias enteras por mención: los `If` del
+  barorreflejo, la línea `target +=`, sus entradas de PARAMETERS y el texto enmendado del término de presión relativa.
+  - Sola, no notaría un cambio dentro de lo retirado ni una segunda definición añadida con el mismo nombre.
+  - Tras la revisión, una prueba fija el digest exacto de lo retirado y exige que cada sentencia declarada sea única.
+  - `p2j3_sources` aplica sólo la prueba de «fuera»; la de «dentro» vive en las pruebas.
+- **Comprobaciones estructurales que no pueden fallar en esta corrida:**
+  - `sign_violations` vuelve a evaluar la misma función de la señal;
+  - `old_term_retired` compara la constante de la calibración primaria.
+  - La garantía real la dan la invariante del perfil y la prueba que inspecciona el código fuente.
+- **Otros términos negativos:** las desviaciones de hipoxemia e hipoglucemia frente a la llegada pueden ser negativas
+  antes del `max(0)` y restar parte del barorreflejo. No ocurre en los casos GI actuales (SpO2 y glucosa por encima de
+  los umbrales). El barorreflejo en sí nunca es negativo.
+- **Unidades de los recuentos:** «supervivientes» son filas ponderadas por los supervivientes de lactato en §6–§8 y
+  tuplas únicas sin ponderar en §13.
+- **Cómputo repetido:** en cada unidad, la trayectoria de estados de L3 con el barorreflejo repite la corrida completa
+  ya hecha (654 trayectorias de más).
+
+## 19. Revisión adversarial
+
+Una revisión independiente, de sólo lectura, sin hallazgos ALTA. Todo se resolvió en documentos y pruebas; el módulo
+congelado y el núcleo no cambian.
+
+| id | severidad | hallazgo | resolución |
+|---|---|---|---|
+| H1 | MEDIA | la validación contra el núcleo cubre 12 de 24 y 36 de 108 pares (combinación, punto); se decía «los 12 puntos» | redacción corregida; prueba nueva con todos los pares, referencia incluida |
+| H2 | MEDIA | la prueba AST retira sentencias enteras por mención y no nota cambios dentro de ellas ni definiciones duplicadas | prueba nueva: digest exacto de lo retirado y unicidad de cada sentencia declarada |
+| H3 | MEDIA | P2J-3 se recalcula con el barorreflejo apagado; L2 no se corría encendido; la sensibilidad no se recalcula | redacción precisada; prueba nueva de L2 y L3 sin hemostasia con el barorreflejo encendido |
+| H4 | MEDIA | RR_NEXT depende de juntar las demandas: a demanda 1,0 la ganancia se acota a ≤ 0,5 | declarado como decisión docente pendiente (Resumen, §14, §17) |
+| H5 | BAJA | el clasificador latente omite combinaciones sin supervivientes; `by_tone` tiene el análogo; errata §16 → §18 | confirmado, declarado (§14, §18, TD-101); errata corregida |
+| H6 | BAJA | `sign_violations` y `old_term_retired` no pueden fallar | descritas como estructurales (§18) |
+| H7 | BAJA | hipoxemia e hipoglucemia pueden restar antes del `max(0)` | declarado (§18, TD-101) |
+| H8 | BAJA | §45 atribuía también F a la relajación del tono; unidades de «supervivientes» mezcladas | corregido (§45); unidades aclaradas (§18) |
+| H9 | BAJA | estados de L3 recalculados por duplicado | declarado (§18) |
