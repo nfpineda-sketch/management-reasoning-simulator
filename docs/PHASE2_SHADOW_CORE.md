@@ -3224,3 +3224,25 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - Hay siete propuestas de envolventes (A–G); ninguna se aplica ni se aprueba.
 - **Veredicto: HR_OBSERVABLE_DECISION_PACK_READY.** Siguen detenidos la selección latente, el filtrado por
   envolventes, la presión, la FR, el colapso, la migración y la integración.
+
+## 41. P2I-2AK · Filtro de la FC por envolventes observables docentes (2026-10-30)
+
+- **Base:** `9d97610` (P2I-2AJ, cerrado: su módulo queda fijado byte a byte y su registro, `2437e1b1…`, por su digest).
+  - Congelamiento: `9de09fa`, antes de ver ningún conteo (digest `31f09265…`).
+  - Informe: `docs/revision/P2I2AK_FILTRO_ENVOLVENTES_FC.md`; números: `docs/revision/P2I2AK_hr_envelope_filter.json`.
+- **Reglas docentes:**
+  - Demanda: 1,0 y 1,1 por separado; 0,9 fuera.
+  - Envolventes:
+    - A: 57m sin tratamiento, 124 ≤ FC_120 ≤ 160;
+    - B: 72f sin tratamiento, 112 ≤ FC_120 ≤ 150;
+    - C y D: cada unidad de GR frente a un contrafactual que sólo la omite; sólo la dirección;
+    - E: FC_120 ≤ FC_90 ≤ FC_60, con adecuación desde el minuto 60;
+    - F: 0 ≤ FC_120 − intrínseca ≤ 15.
+  - Techos primarios 150 y 175; 200 queda sólo como sensibilidad.
+- **Resultado:**
+  - Ninguna envolvente rechaza a ningún candidato: sobreviven los 432 de 1,0 y los 9828 de 1,1, y todas las filas de
+    lactato de cada combinación.
+  - Las 10 combinaciones primarias distintas siguen POORLY_IDENTIFIED; la ganancia de deuda es NON_IDENTIFIABLE.
+  - Con 72f, la segunda unidad no cambia la FC, porque el déficit ya es cero.
+- **Veredicto: HR_OBSERVABLE_FILTER_SATISFIED.** Recomendación: pasar a la presión y el tono vascular con la región de la
+  FC como incertidumbre arrastrada. Al calibrar la presión habrá que reabrir el término de presión sobre la FC.

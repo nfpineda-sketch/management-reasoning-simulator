@@ -260,3 +260,69 @@ def test_no_legacy_no_p2f_pressure_deferred_and_nothing_approved():
     text = json.dumps(hf.design(), default=str).lower()
     for word in ("faculty_approved", "\"best", "\"selected", "\"recommended", "\"preferred", "\"rank"):
         assert word not in text
+
+
+# The evaluation, on the frozen package (freeze 9de09fa) ---------------------------------------------------------------
+
+RECORD = ROOT / "docs" / "revision" / "P2I2AK_hr_envelope_filter.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2I2AK_FILTRO_ENVOLVENTES_FC.md"
+
+
+@pytest.fixture(scope="module")
+def record():
+    return json.loads(RECORD.read_text(encoding="utf-8"))
+
+
+def test_the_record_comes_from_the_frozen_package_and_its_analytic_part_is_reproduced_live(record):
+    assert record["freeze_digest"] == FROZEN_DIGEST
+    p2i2aj = hf.p2i2aj_record()
+    for key, factor in (("1", 1.0), ("1.1", 1.1)):
+        pool = hf.arrival_pool(p2i2aj, factor)
+        demand = record["demands"][key]
+        assert demand["entering_latent_combinations"] == len(pool["primary"])
+        assert [c["latent"] for c in demand["summary"]["candidates"]] == [list(hf.latent(s)) for s in pool["primary"]]
+        assert record["counts"][hf.ARRIVAL_HR_REJECTION][key] == pool["arrival_rejected"]
+    assert record["reuse"]["units_digests"] == {"1": hf.UNITS[1.0], "1.1": hf.UNITS[1.1]}
+    assert record["reuse"]["dependency"]["equal"]
+
+
+def test_the_filter_counts_the_report_states(record):
+    d1, d11 = record["demands"]["1"], record["demands"]["1.1"]
+    assert (d1["summary"]["entering"], d1["summary"]["surviving"], d1["summary"]["surviving_candidates"]) == (432, 432, 2)
+    assert (d11["summary"]["entering"], d11["summary"]["surviving"], d11["summary"]["surviving_candidates"]) == (
+        9828, 9828, 9)
+    for demand in (d1, d11):
+        assert not demand["summary"]["first_failure"] and not demand["summary"]["any_failure"]
+        assert all(c["row_robust"] for c in demand["summary"]["candidates"])
+        assert demand["margins"]["D_benefit gi_bleed_72f"]["high"] == 0.0  # the second unit cannot move 72f's HR
+        assert demand["margins"]["A_l1_120"]["high"] <= 160.0 and demand["margins"]["B_l1_120"]["high"] <= 150.0
+    assert record["counts"][hf.OUT_OF_PRIMARY] == {"1": 0, "1.1": 4}
+    sens = d11["sensitivity_200"]
+    assert sens["status"] == hf.SENSITIVITY and not sens["rescues"] and len(sens["summary"]["candidates"]) == 4
+    assert record["cross_demand"]["counts"] == {hf.ROBUST: 1, hf.ONLY_1_0: 1, hf.ONLY_1_1: 8, hf.INCOMPATIBLE: 440}
+    assert not record["cross_demand"]["is_filter"]
+
+
+def test_the_identifiability_contrast_validation_and_verdict_the_report_states(record):
+    union = record["identifiability"]["union"]
+    assert {name: union[name]["status"] for name in ho.LATENTS} == {
+        "intrinsic_57m": ho.POOR, "intrinsic_72f": ho.POOR, "acute": ho.POOR, "debt": ho.NON, "ceiling": ho.POOR}
+    for demand in record["demands"].values():
+        contrast = demand["fluid_vs_prbc_72f"]
+        assert contrast["never_diverge"] == 0 and contrast["first_input"]["acute"] == contrast["pairs"] > 0
+    assert all(v["exact"] and all(v["checks"].values()) for v in record["validation"].values())
+    verdict = record["verdict"]
+    assert verdict["verdict"] == hf.READY and all(verdict["checks"].values())
+    assert not verdict["cross_demand_required"] and not verdict["approved"]
+    text = json.dumps(record, default=str).lower()
+    for word in ("faculty_approved", "\"best", "\"selected", "\"recommended", "\"preferred", "\"rank"):
+        assert word not in text
+
+
+def test_the_document_is_generated_from_the_record(tmp_path):
+    from clinical_core import hr_envelope_filter_report
+    assert "clinical_core/hr_envelope_filter_report.py" in lactate_slice.DOWNSTREAM_REPORTS
+    copy = tmp_path / "document.md"
+    copy.write_text(DOCUMENT.read_text(encoding="utf-8"), encoding="utf-8")
+    hr_envelope_filter_report.main(["--write", str(copy), "--data", str(RECORD)])
+    assert copy.read_text(encoding="utf-8") == DOCUMENT.read_text(encoding="utf-8"), "regenerate the document"
