@@ -33,6 +33,10 @@ FROZEN_DIGEST = "31f092650ee73ff4134fc9e5cc79b3a171fb7bb54de553fc2a7de2081f309dc
 P2I2AK_MODULE_SHA = "6bfe0ef46ed1f2b1a4555b7322ca7d3747c237f2cc185caf3dcd479e8a50d885"
 P2I2AJ_RECORD_SHA = "209db24136e478dc3bd2c392db4459b0fa9c3506b361eff6ab91053ebed9f66e"
 LATER_MODULES = ("clinical_core/pressure_tone.py",)
+#: derived.py and shadow.py as P2J-1 left them (adversarial review of P2J-1): pressure_tone's AST proof covers what P2J-1
+#: changed; this pin makes any later change of either file fail the guard until it is proven again.
+P2J1_SOURCES = {"clinical_core/derived.py": "ef3fe5ca5e63d4cbe298bad4ddfdf2b206e646533a06fcb5db479af72b65a75c",
+                "clinical_core/shadow.py": "66ef25c952509f0765731cfc0c0b97274bc5a4d263dcb486b595a8585a99ef35"}
 C57, C72 = hf.C57, hf.C72
 
 
@@ -183,6 +187,7 @@ def test_the_readings_compare_with_the_counterfactual_at_each_units_completion(o
 
 def test_the_reuse_guards_and_the_arrival_pools_hold_on_the_committed_inputs():
     from clinical_core import pressure_tone as pt
+    assert {k: hashlib.sha256((ROOT / k).read_bytes()).hexdigest() for k in P2J1_SOURCES} == P2J1_SOURCES
     sources = {k: v for k, v in bf.freeze_sources().items() if k not in hf.TUPLE_ONLY + hf.OWN + LATER_MODULES}
     digest = hashlib.sha256(json.dumps(pt.pressure_only_sources(sources), sort_keys=True).encode("utf-8")).hexdigest()
     assert digest == hf.DEPENDENCIES_AT_P2I2AJ, "an executable dependency changed since P2I-2AJ"

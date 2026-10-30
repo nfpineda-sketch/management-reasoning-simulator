@@ -142,8 +142,10 @@ def render_acoplamiento(data: dict) -> str:
              f"{_yes(flags['tone_down']['pressure_falls'])}.",
              f"- **Más bomba (P 1 → 1,5) con T fijo:** el gasto sube: {_yes(flags['pump_up']['output_rises'])}; la "
              f"presión sube: {_yes(flags['pump_up']['pressure_rises'])}.",
-             f"- **Techo del tono:** con P y precarga fijos, p no supera {_n(flags['pressure_supremum_over_tone'], 2)} "
-             "veces el gasto base (1 / a), a cualquier tono.", "",
+             f"- **Techo del tono:** con P y precarga fijos y T sin cota, p no supera "
+             f"{_n(flags['pressure_supremum_over_tone'], 2)} veces el gasto base (1 / a); dentro de la guarda de T "
+             f"(≤ 3) el máximo es 3 / (1 + 2a), {_n(3.0 / (1.0 + 2.0 / flags['pressure_supremum_over_tone']), 3)} con "
+             "a = 0,3.", "",
              "| a | PAM con bomba fija, T 0,5 · 1 · 2 · 3 | Gasto con bomba fija, T 0,5 · 1 · 2 · 3 | "
              "PAM con gasto fijo, T 0,5 · 1 · 2 · 3 |", "|---|---|---|---|"]
     for a, item in c["P5"].items():
@@ -154,10 +156,15 @@ def render_acoplamiento(data: dict) -> str:
     lines += ["", "| T | PAM con P 0,1 · 0,25 · 0,5 · 0,75 · 1 · 1,5 |", "|---|---|"]
     for t in ("1", "2"):
         lines.append(f"| {t} | {' · '.join(_n(v['map']) for v in c['P6'][t].values())} |")
-    volume = c["P6"]["V at T 1"]
-    lines.append(f"| 1 (V −75 %, −50 %, 0, +50 %, +100 % del llenado de llegada) | "
-                 f"{' · '.join(_n(v['map']) for v in volume.values())} |")
+    # The record's keys are sorted as text ("-0.5" before "-0.75"): read them in numeric order (review, P2J-1).
+    volume = sorted(c["P6"]["V at T 1"].items(), key=lambda item: float(item[0].split()[0]))
+    lines.append(f"| 1 (V {', '.join(_pct(float(k.split()[0])) for k, _ in volume)} del llenado de llegada) | "
+                 f"{' · '.join(_n(v['map']) for _, v in volume)} |")
     return "\n".join(lines)
+
+
+def _pct(share: float) -> str:
+    return "0" if share == 0 else f"{share * 100:+.0f} %".replace("-", "−")
 
 
 def render_cero(data: dict) -> str:
@@ -288,8 +295,10 @@ def render_dependencia(data: dict) -> str:
     return (f"- **Código:** la ruta de la presión ({', '.join(pt.PRESSURE_PATH)}) lee {len(path['reads'])} nombres y "
             f"ninguno prohibido ({len(path['forbidden_read'])}); contribuyentes que leen derivados: "
             f"{len(path['contributors_reading_derived'])}.\n"
-            f"- **Números:** {dep['full_runs']} corridas completas de la muestra (demandas 1,0 y 1,1, otro punto de "
-            f"lactato y dos perfiles de FC) dan exactamente el gasto, p, PAS, PAD y PAM de la corrida sólo de sangre: "
+            f"- **Números:** {dep['full_runs']} corridas completas de la muestra dan exactamente el gasto, p, PAS, PAD y "
+            "PAM de la corrida sólo de sangre: demandas 1,0 y 1,1, otro punto de lactato y dos variantes de FC (el perfil "
+            "primario con las ganancias más altas, techo 150 e intrínseca superior; y la intrínseca inferior con el "
+            "término de presión diagnóstico del perfil por defecto, el mismo que ya usan las corridas base): "
             f"{_yes(dep['pressure_equal'])}; D cambia con la demanda: {_yes(dep['d_moves_with_demand'])}.\n"
             "- **Consecuencia:** la presión no depende de la región de FC ni de la demanda; se simula una vez por "
             "conjunto de sangre.")

@@ -1,6 +1,8 @@
 # P2J-1 · Presión y tono vascular: auditoría estructural y superficie de calibración
 
-- **Fecha:** 2026-10-30. Sólo en sombra; nada se integra, se aprueba ni se selecciona.
+- **Fecha:** 2026-10-30. Sólo en sombra. No se integra nada, y ningún parámetro se aprueba ni se selecciona. El golden
+  registra P2J-1 con la dirección estructural que pidió la docencia (§10); la forma proporcional queda por confirmar
+  (§18).
 - **Base:** `052d816` (P2I-2AK, cerrado). Congelamiento: `31a74ef`, antes de leer ninguna trayectoria sobre la
   fisiología conservada (digest `92aa42cb…`).
 - **Números:** `docs/revision/P2J1_pressure_tone.json`. Las secciones marcadas «generado» las escribe
@@ -25,7 +27,7 @@
 - **Trayectorias sobre la fisiología conservada:**
   - Sin tratamiento, la PAM de 57m cae de 65 a 33 mmHg (PAS 44) en 120 min, y la de 72f de 74 a 49.
   - Con 2 U de GR y hemostasia, sube a 101 mmHg en ambos (PAS 136 y 133).
-  - La relación previa daba 49 y 63, y 83 y 85.
+  - La relación previa daba 49 y 63, y 82 y 85.
 - **Veredicto:** PRESSURE_STRUCTURE_READY_FOR_NUMERIC_FACULTY_CALIBRATION. La estructura es coherente, pero la relación
   ya no tiene parámetros propios en los casos GI: la calibración numérica de la presión depende de envolventes docentes
   y de autorizar, o no, una respuesta del tono (§17).
@@ -47,6 +49,10 @@
 Antes de P2J-1 las ecuaciones de PAS y PAD eran las de la columna «antes»; desde P2J-1 son las de la llegada × p. La
 PAM no se modela aparte: es (PAS + 2 PAD) / 3. La presión de pulso tampoco: es PAS − PAD. La presión relativa p que lee
 la FC es gasto × T.
+
+Fuera del núcleo, la comparación con el motor heredado (`comparison.py`) proyecta las presiones a la pantalla con la
+convención del motor (PAS acotada a 50–240, PAD con mínimo 25). Es un piso sólo de pantalla: no actúa en el golden (PAS
+mínima 73), pero las trayectorias de §12 llegan a PAS cruda 42–44.
 
 <!-- generado:ecuaciones -->
 | Término | Ecuación | Parámetros | Procedencia | Valor | Estado | Alcance |
@@ -93,6 +99,10 @@ Clasificación de la relación previa: **CONTINUOUS_WITH_KNEE**.
 - La resistencia implícita (PAM / (PAM de llegada × p)) muestra el tono oculto.
 
 Desde P2J-1: **CONTINUOUS_AND_SMOOTH**, con resistencia implícita 1 en todo el rango.
+
+Alcance del clasificador: lee la cuadrícula de 0,002 y el punto 0,5, no todo el intervalo. Un quiebre o un salto entre
+puntos de la cuadrícula se le escaparía. La relación actual está fijada aparte, exactamente: una prueba la compara en 301
+puntos y en puntos fuera de la cuadrícula, y la dirección 8 comprueba la identidad en cada minuto de cada trayectoria.
 
 <!-- generado:rodilla -->
 | Llegada | Antes de P2J-1 | Pendiente de PAS bajo / sobre la rodilla (×) | Pendiente de PAD (×) | Resistencia implícita con p 0,5 · 1,5 · 2 | Desde P2J-1 |
@@ -143,7 +153,7 @@ El acoplamiento de poscarga es coherente en los tres puntos de a.
 - **Más tono (T 1 → 2):** el gasto baja: sí; la presión sube: sí.
 - **Menos tono (T 1 → 0,5):** el gasto sube: sí; la presión baja: sí.
 - **Más bomba (P 1 → 1,5) con T fijo:** el gasto sube: sí; la presión sube: sí.
-- **Techo del tono:** con P y precarga fijos, p no supera 3,33 veces el gasto base (1 / a), a cualquier tono.
+- **Techo del tono:** con P y precarga fijos y T sin cota, p no supera 3,33 veces el gasto base (1 / a); dentro de la guarda de T (≤ 3) el máximo es 3 / (1 + 2a), 1,875 con a = 0,3.
 
 | a | PAM con bomba fija, T 0,5 · 1 · 2 · 3 | Gasto con bomba fija, T 0,5 · 1 · 2 · 3 | PAM con gasto fijo, T 0,5 · 1 · 2 · 3 |
 |---|---|---|---|
@@ -155,7 +165,7 @@ El acoplamiento de poscarga es coherente en los tres puntos de a.
 |---|---|
 | 1 | 6,5 · 16,3 · 32,7 · 49,0 · 65,3 · 98,0 |
 | 2 | 10,1 · 25,1 · 50,3 · 75,4 · 100,5 · 150,8 |
-| 1 (V −75 %, −50 %, 0, +50 %, +100 % del llenado de llegada) | 38,3 · 20,8 · 65,3 · 84,5 · 98,0 |
+| 1 (V −75 %, −50 %, 0, +50 %, +100 % del llenado de llegada) | 20,8 · 38,3 · 65,3 · 84,5 · 98,0 |
 <!-- /generado:acoplamiento -->
 
 ## 7. Presiones registradas (generado)
@@ -200,13 +210,18 @@ El acoplamiento de poscarga es coherente en los tres puntos de a.
   - no añade ningún parámetro;
   - extiende a todo el rango la regla que P2E-4 ya usaba bajo la rodilla (presión proporcional a flujo × resistencia),
     a la resistencia de llegada;
-  - es el límite rodilla → 1 de la familia previa.
+  - por debajo de la llegada coincide con la familia previa con rodilla 1; por encima, reemplaza la recta heredada, que
+    ningún valor de la rodilla convierte en proporcional.
 - **Alternativas descartadas:**
   - Suavizar la rodilla conservando las ganancias heredadas exige elegir una forma funcional nueva (potencia,
     hipérbola) y conserva el tono oculto.
   - Una respuesta explícita del tono exige parámetros nuevos.
   - Ninguna se toma sin autorización docente.
-- **Golden:** sólo cambian PAS, PAD, PAM y la conciencia; quedan registrados como P2J-1. En la hora sin tratamiento de
+- **Golden:** sólo cambian PAS, PAD, PAM y la conciencia; quedan registrados como P2J-1.
+  - `shadow.DECISIONS` marca P2J-1 como «approved»: sólo la dirección que pidió la docencia en el encargo (continua,
+    monótona con el gasto y con el tono, 0 sin gasto). De esa entrada depende que el golden clasifique esas diferencias
+    como APPROVED_DIRECTION_MAGNITUDE_TBD y no como UNRESOLVED.
+  - La forma proporcional, que fija cuánto difiere el núcleo del motor heredado, está por confirmar (§18.1). En la hora sin tratamiento de
   57m, la PAS del núcleo baja de 80 mmHg desde el minuto 31, y KD-S3 vuelve a actuar. Contracts v2 reproduce el nuevo
   golden.
 
@@ -236,8 +251,8 @@ El acoplamiento de poscarga es coherente en los tres puntos de a.
   simula una vez por conjunto.
 - **Lo que muestran:**
   - Sin tratamiento (P1), la presión cae con el gasto y nada la compensa.
-  - El cristaloide (P2) la sube rápido, un máximo de 117/72 mmHg en 57m a los 15–30 min, y la pierde a medida que se
-    redistribuye.
+  - El cristaloide (P2) la sube rápido, con una mediana de 118/72 mmHg en 57m a los 30 min (hasta 123/75), y la pierde a
+    medida que se redistribuye.
   - Los GR (P3, P4) la llevan por encima de la llegada; la hemostasia la sostiene.
 - **La columna «PAM antes de P2J-1»** es la misma salida de gasto leída con la relación previa: muestra cuánto
   amortiguaba el tono oculto.
@@ -376,7 +391,7 @@ Las únicas observaciones de presión son dos, una por caso y en la llegada, don
 
 <!-- generado:dependencia -->
 - **Código:** la ruta de la presión (_perfusion, preload_position, arrival_filling, arrival_preload, arterial_pressures) lee 39 nombres y ninguno prohibido (0); contribuyentes que leen derivados: 0.
-- **Números:** 240 corridas completas de la muestra (demandas 1,0 y 1,1, otro punto de lactato y dos perfiles de FC) dan exactamente el gasto, p, PAS, PAD y PAM de la corrida sólo de sangre: sí; D cambia con la demanda: sí.
+- **Números:** 240 corridas completas de la muestra dan exactamente el gasto, p, PAS, PAD y PAM de la corrida sólo de sangre: demandas 1,0 y 1,1, otro punto de lactato y dos variantes de FC (el perfil primario con las ganancias más altas, techo 150 e intrínseca superior; y la intrínseca inferior con el término de presión diagnóstico del perfil por defecto, el mismo que ya usan las corridas base): sí; D cambia con la demanda: sí.
 - **Consecuencia:** la presión no depende de la región de FC ni de la demanda; se simula una vez por conjunto de sangre.
 <!-- /generado:dependencia -->
 
@@ -420,7 +435,8 @@ Las únicas observaciones de presión son dos, una por caso y en la llegada, don
 ## 18. Decisiones docentes que se piden
 
 1. **Confirmar o reemplazar la relación proporcional.** Deja sin leer las ganancias heredadas (45 y 25 mmHg) y la
-   rodilla, y duplica, cerca de la llegada, la sensibilidad de la presión al gasto.
+   rodilla, y duplica, cerca de la llegada, la sensibilidad de la presión al gasto. Hay que decidir también si la entrada
+   «approved» de P2J-1 en `shadow.DECISIONS`, que cubre sólo la dirección, puede seguir así hasta esa confirmación.
 2. **Decidir si la presión necesita una respuesta explícita del tono.** Sería una vasoconstricción barorrefleja o
    simpática que escriba T al caer la presión, y que lo relaje cuando el gasto se recupere.
    - Sin ella: 57m llega a PAS 44 a los 120 min sin tratamiento y a 136/83 tras la reanimación; 72f, a 65 y a 133/84.
@@ -438,6 +454,11 @@ Las únicas observaciones de presión son dos, una por caso y en la llegada, don
 Trayectorias hemodinámicas para reproducir las unidades de lactato: 3178; corridas de presión, una por conjunto de sangre y escenario: 1326 (un diseño por candidato y demanda habría pedido 10464); corridas completas de validación: 240; barrido cartesiano: no; presión heredada leída: no.
 <!-- /generado:eficiencia -->
 
-- **Sobre el congelamiento:** antes de él, una sonda de tiempo imprimió dos valores de PAM en L3 de un conjunto de
-  sangre, cuando la corrección estructural ya estaba decidida e implementada. No se fijó ninguna regla ni rango después
-  de leerlos.
+- **Sobre el congelamiento:** antes de él se vieron presiones GI con la relación corregida, cuando la corrección ya estaba
+  decidida e implementada:
+  - una sonda de tiempo imprimió dos valores de PAM en L3 de un conjunto de sangre;
+  - la regeneración del propio congelamiento (golden, P2I-2T, P2I-2U) mostró las presiones nuevas, PAS de hasta 330 en
+    extremos de la exploración sintética de P2I-2U.
+
+  No se fijó ninguna regla ni rango después de verlas. Entre `31a74ef` y `e11d6d1`, en `clinical_core` sólo se añadió
+  el módulo del informe, y la banda de poscarga 0,1/0,3/0,5 es anterior a P2J-1.

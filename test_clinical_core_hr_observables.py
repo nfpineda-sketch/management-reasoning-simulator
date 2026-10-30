@@ -33,6 +33,10 @@ FROZEN_DIGEST = "2437e1b1c3075e180ef0fec912867974af43242a828c356190193820933fec4
 #: clinical_core module changes the live digest's source list; later packages' own modules leave its dependency digest.
 P2I2AJ_MODULE_SHA = "47c21f35d7a38ccee60df3df2053edcc776e86d8fdeb5ff8881bf4e105764f05"
 LATER_MODULES = ("clinical_core/hr_envelope_filter.py", "clinical_core/pressure_tone.py")
+#: derived.py and shadow.py as P2J-1 left them (adversarial review of P2J-1): pressure_tone's AST proof covers what P2J-1
+#: changed; this pin makes any later change of either file fail the guard until it is proven again.
+P2J1_SOURCES = {"clinical_core/derived.py": "ef3fe5ca5e63d4cbe298bad4ddfdf2b206e646533a06fcb5db479af72b65a75c",
+                "clinical_core/shadow.py": "66ef25c952509f0765731cfc0c0b97274bc5a4d263dcb486b595a8585a99ef35"}
 C57, C72 = ho.C57, ho.C72
 
 
@@ -111,6 +115,7 @@ def test_the_reuse_guards_hold_on_the_committed_inputs():
     # P2J-1 changed derived.py only in the pressure relation, which no reused row reads; pt.pressure_only_sources
     # stands its P2I-2AK hash in for it only while the rest of its syntax tree is P2I-2AK's.
     from clinical_core import pressure_tone as pt
+    assert {k: hashlib.sha256((ROOT / k).read_bytes()).hexdigest() for k in P2J1_SOURCES} == P2J1_SOURCES
     sources = {k: v for k, v in bf.freeze_sources().items() if k not in ho.TUPLE_ONLY + ho.OWN + LATER_MODULES}
     digest = hashlib.sha256(json.dumps(pt.pressure_only_sources(sources), sort_keys=True).encode("utf-8")).hexdigest()
     assert digest == ho.DEPENDENCIES_AT_P2I2AI, "a source the reused rows depend on changed"

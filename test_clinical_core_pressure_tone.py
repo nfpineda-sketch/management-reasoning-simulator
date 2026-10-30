@@ -64,7 +64,8 @@ def test_the_faculty_decisions_are_recorded():
 @pytest.mark.parametrize("arrival", [NEUTRAL, gi_reference.canonical_anchors(C57), gi_reference.canonical_anchors(C72),
                                      Anchors(**{**ARRIVAL, "sbp": 70.0, "dbp": 66.0})])
 def test_pressure_is_the_arrival_pressure_times_output_x_tone_everywhere(arrival):
-    for p in [i * 0.01 for i in range(301)]:
+    # A 0.01 grid and points off the classifier's 0.002 grid (adversarial review of P2J-1).
+    for p in [i * 0.01 for i in range(301)] + [0.5011, 0.7005, 1.0 / 3.0, 2.0 ** -0.5, 1.23456]:
         sbp, dbp = arterial_pressures(p, arrival, DEFAULT_PROFILE)
         assert sbp == arrival.sbp * p and dbp == arrival.dbp * p and sbp >= dbp >= 0.0
     assert arterial_pressures(0.0, arrival, DEFAULT_PROFILE) == (0.0, 0.0)
@@ -85,6 +86,10 @@ def test_p2j1_changed_only_the_declared_statements_of_derived_and_shadow():
         pt.P2J1_CHANGES[pt.SHADOW]["outside"], "the proof must notice a change outside the golden's registry"
     for relative, item in pt.P2J1_CHANGES.items():
         assert hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() != item["sha_at_p2i2ak"]
+    # The AST proof alone can be bypassed by a new top-level statement that names a declared one (adversarial review):
+    # the closed packages' guards also pin both files as P2J-1 left them.
+    from test_clinical_core_hr_envelope_filter import P2J1_SOURCES
+    assert {k: hashlib.sha256((ROOT / k).read_bytes()).hexdigest() for k in P2J1_SOURCES} == P2J1_SOURCES
     sources = {pt.DERIVED: "live", pt.SHADOW: "live", "clinical_core/state.py": "s"}
     assert pt.pressure_only_sources(sources) == {pt.DERIVED: pt.P2J1_CHANGES[pt.DERIVED]["sha_at_p2i2ak"],
                                                  pt.SHADOW: pt.P2J1_CHANGES[pt.SHADOW]["sha_at_p2i2ak"],
@@ -130,6 +135,19 @@ def test_tone_is_read_in_output_and_pressure_and_no_clinical_mechanism_writes_it
     writers = {w[0] for w in paths["writes"]}
     assert writers <= set(pt.PROBE_MODULES) | {"clinical_core/state.py"}
     assert not any(w[0].startswith(("clinical_core/modules", "clinical_core/interventions")) for w in paths["writes"])
+
+
+def test_no_contributor_names_the_tone_channel():
+    """tone_paths reads Channel.T as a read; the standard way to write a channel is ChannelDelta(Channel.T, ...), so this
+    guard looks for the name itself (adversarial review of P2J-1): only the channel table and its bound name it."""
+    allowed = {"clinical_core/state.py", "clinical_core/integration.py"}
+    named = set()
+    for path in sorted((ROOT / "clinical_core").rglob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        if any(isinstance(n, ast.Attribute) and n.attr == "T" and isinstance(n.value, ast.Name)
+               and n.value.id == "Channel" for n in ast.walk(tree)):
+            named.add(path.relative_to(ROOT).as_posix())
+    assert named == allowed
 
 
 def test_the_pump_tone_coupling_is_coherent_at_every_afterload_point():
