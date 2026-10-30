@@ -17,6 +17,9 @@ def free_generation_opened(monkeypatch):
     tests are about the flow itself, so they open it explicitly.
     """
     monkeypatch.setenv("MRS_FREE_GENERATION", "all")
+    # Offline mode would start a bank case instead; an earlier test in the same
+    # process may have left it on (tools_order_reading.play).
+    monkeypatch.delenv("MRS_OFFLINE_CASES", raising=False)
 
 
 def install_author(monkeypatch, payload_factory=None, review=None):
