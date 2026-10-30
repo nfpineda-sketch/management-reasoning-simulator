@@ -353,3 +353,69 @@ def test_no_legacy_no_p2f_nothing_approved():
     assert "lr.P2FGuard(), lr.LegacyLock()" in inspect.getsource(br.run)
     assert '"nothing_approved": True' in inspect.getsource(br.run) and "approved\": []" in inspect.getsource(br.verdict)
     assert "RR is not started" in br.RECOMMENDATION_RULE
+
+
+# The committed record ---------------------------------------------------------------------------------------------------------
+
+RECORD = ROOT / "docs" / "revision" / "P2J4_baroreflex.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2J4_BARORREFLEJO_Y_RECERTIFICACION_FC.md"
+
+
+@pytest.fixture(scope="module")
+def record():
+    return json.loads(RECORD.read_text(encoding="utf-8"))
+
+
+def _json(value):
+    return json.loads(json.dumps(value, sort_keys=True, default=str))
+
+
+def test_the_record_comes_from_the_frozen_package_and_its_analytic_part_is_reproduced_live(record):
+    assert record["freeze_digest"] == FROZEN_DIGEST and record["record"] == br.P2J3_DIGEST
+    assert record["design"] == _json(br.design()) and record["probes"] == _json(br.probes())
+    latent = br.latent_region()
+    assert record["latent"]["combos"] == _json({f"{f:g}": v for f, v in latent["combos"].items()})
+    assert record["latent"]["HR_PRIOR_REGION_REJECTION"] == latent["prior_region_rejection"]
+
+
+def test_the_verdict_follows_its_checks_on_the_recorded_inputs(record):
+    checks = record["verdict"]["checks"]
+    assert all(checks.values()) and record["verdict"]["verdict"] == br.READY and record["verdict"]["approved"] == []
+    assert record["pressure_tone"]["unchanged"] == {"units": True, "primary": True, "support": True,
+                                                    "demand_class": True}
+    v = record["validation"]
+    assert v["hr_equal"] and v["rows_equal"] and v["states_equal"] and v["baroreflex_moved_drive"] == v["tasks"] == 654
+    assert len(v["checked_points"]) == len(br.PRIMARY_POINTS)
+    primary = {k: x for k, x in record["filter"].items() if not k.endswith("reference")}
+    arrival = any(x["entering"] - x["first_failure"]["ARRIVAL"] for x in primary.values())
+    survivors = any(x["survivors"] for x in primary.values())
+    assert br.verdict(checks, arrival, survivors)["verdict"] == record["verdict"]["verdict"]
+    assert br.recommendation(record["support"], record["double_counting"],
+                             record["identifiability"])["recommendation"] == record["recommendation"]["recommendation"]
+
+
+def test_the_filter_counts_add_up_and_the_reference_is_p2j3_s(record):
+    for key, x in record["filter"].items():
+        assert x["entering"] == x["survivors"] + sum(x["first_failure"].values()), key
+        assert x["first_failure"]["DOMAIN"] == x["first_failure"]["SIMULATION"] == 0
+        if key.endswith("reference"):
+            assert x["survivors"] == x["entering"]
+    p2j3 = br.p2j3_record()["hr"]["by_point"]
+    assert {k: v["candidate_rows"] for k, v in record["reference"].items()} == \
+        {k: v["candidate_rows"] for k, v in p2j3.items()}
+    assert all(v["failures"] == {} for v in record["reference"].values())
+    assert record["support"]["incompatible_tone_branches"] == []
+    assert record["double_counting"]["class"] == "STRUCTURALLY_DISTINCT_BUT_CORRELATED"
+    assert all(x["sign_violations"] == 0 for x in record["double_counting"]["by_map_set"].values())
+
+
+def test_the_document_is_generated_from_the_record(tmp_path):
+    from clinical_core import baroreflex_report as rp
+    copy = tmp_path / "doc.md"
+    copy.write_text(DOCUMENT.read_text(encoding="utf-8"), encoding="utf-8")
+    assert rp.main(["--write", str(copy), "--data", str(RECORD)]) == 0
+    assert copy.read_text(encoding="utf-8") == DOCUMENT.read_text(encoding="utf-8")
+    text = DOCUMENT.read_text(encoding="utf-8")
+    assert "BAROREFLEX_HR_RECERTIFICATION_SATISFIED" in text and "RR_NEXT" in text
+    for name in rp.NAMES:
+        assert f"<!-- generado:{name} -->" in text

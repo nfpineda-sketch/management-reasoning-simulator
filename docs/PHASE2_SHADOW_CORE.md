@@ -3352,3 +3352,42 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - La ganancia sigue NON_IDENTIFIABLE dentro de [0,25, 1].
   - Recomendación: pasar al barorreflejo llevando las tres ganancias como incertidumbre. La FC no alimenta la
     presión, así que la reconexión no mueve esta región.
+
+## 45. P2J-4 · Barorreflejo directo y recertificación de la FC del paciente completo (2026-10-30)
+
+- **Base:** `789b6f4` (P2J-3, cerrado: su módulo y su registro quedan fijados; su congelamiento se recalcula con
+  `baroreflex.p2j3_sources`).
+  - Congelamiento: `5eb3fe3` (digest `81ab565e…`), antes de leer recuentos.
+  - Antes de congelar sólo se imprimieron booleanos estructurales y las claves de una prueba de rutas de código
+    sintética, que encontró un fallo, corregido.
+  - Informe: `docs/revision/P2J4_BARORREFLEJO_Y_RECERTIFICACION_FC.md`; números: `docs/revision/P2J4_baroreflex.json`.
+- **Núcleo:**
+  - Parámetros nuevos: `baroreflex_to_sympathetic_gain` (0 por defecto) y `baroreflex_map_set_mmhg` (sin valor por
+    defecto), los dos PROVISIONAL.
+  - El objetivo simpático suma ganancia × max(0, (MAP_set − PAM) / MAP_set) sobre la PAM del propio estado: 0 desde
+    MAP_set, nunca negativo.
+  - El perfil rechaza una ganancia sin punto de ajuste, un punto de ajuste ≤ 0 y el barorreflejo junto al término de
+    presión relativa.
+  - Apagado por defecto: el golden sólo cambia en PARAMETERS, Contracts v2 queda idéntico y el congelamiento de
+    calibración no cambia.
+  - La prueba AST cubre las seis sentencias de `derived.py` que cambiaron. Las guardias cerradas de P2I-2AJ / AK y de
+    P2J-1 / 2 / 3 la componen.
+- **Decisiones docentes codificadas:**
+  - señal PAM no negativa;
+  - MAP_set 80 / 90 / 100 y ganancias 0 (referencia) / 0,25 / 0,5 / 1 / 1,5, exploratorias;
+  - región de P2J-3 llevada como incertidumbre (g 0,25 / 0,5 / 1, a 0,3, demanda 1,0 / 1,1);
+  - región latente de P2I-2AK;
+  - llegada ±5 y A–F sin cambios.
+- **Resultados:**
+  - Temporalidad ACYCLIC_SAME_STEP. Sondas A–D: se cumplen las cuatro.
+  - P2J-3 se recalcula idéntico. En las 654 unidades, encender el barorreflejo deja iguales la fisiología previa (filas
+    y estados) y la FC reconstruida es igual a la del núcleo.
+  - Recorta casi todo la llegada: el barorreflejo sube la FC de llegada y sólo caben las combinaciones latentes con
+    margen.
+  - Sobreviven 2124 de 12 744 filas a demanda 1,0 (sólo la combinación de techo 150, ganancias ≤ 0,5) y 204 852 de
+    353 808 a 1,1.
+  - E (72f) y F (57m) rechazan sólo con ganancia 1,5 a demanda 1,1, por la relajación del tono tras la adecuación.
+  - Doble conteo: STRUCTURALLY_DISTINCT_BUT_CORRELATED.
+  - MAP_set y ganancia: POORLY_IDENTIFIED.
+- **Veredicto: BAROREFLEX_HR_RECERTIFICATION_SATISFIED.** Recomendación según la regla congelada: RR_NEXT, llevando la
+  región (MAP_set, ganancia) superviviente como incertidumbre. Nada aprobado; FR no se inicia.
