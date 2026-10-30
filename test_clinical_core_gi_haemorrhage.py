@@ -136,7 +136,8 @@ def test_a_scripted_block_changes_rate_and_output_together():
     derived = run(STABLE, (event,), 30).derived()
     assert derived[19].rhythm is RhythmCode.SINUS and derived[19].pulse_rate_bpm == 72.0
     assert derived[20].rhythm is RhythmCode.COMPLETE_AV_BLOCK and derived[20].pulse_rate_bpm == 40.0
-    assert derived[20].sbp == pytest.approx(120.0 - 45 * 0.3) and derived[20].output_rel == pytest.approx(0.7)
+    # Pressure falls with output, in proportion since P2J-1.
+    assert derived[20].sbp == pytest.approx(120.0 * 0.7) and derived[20].output_rel == pytest.approx(0.7)
     events = [e for record in run(STABLE, (event,), 30).records for e in record.events]
     assert [(e.kind, e.cause_class, e.preventability, e.severity) for e in events] == [
         ("rhythm_change", "natural_history", "not preventable in this simulator", "significant")]

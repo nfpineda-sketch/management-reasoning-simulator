@@ -39,9 +39,10 @@ def test_the_known_differences_are_the_same_and_all_still_occur(results):
     # Run-dependent mechanisms (P2E-2) count where they acted.
     used = {cause for key, result in results.items()
             for causes in expected_causes(key, acting_mechanisms(result.core)).values() for cause in causes}
-    # P2I-2T added the shared blood state; KD-S3 stays registered but no run produces it (DORMANT).
-    assert used == set(DIFFERENCES) - set(DORMANT) == {"KD-S1", "KD-S2", "KD-S4", "P2E-2", "P2I-2T"}
-    assert set(DIFFERENCES) == {"KD-S1", "KD-S2", "KD-S3", "KD-S4", "P2E-2", "P2I-2T"} and set(DORMANT) == {"KD-S3"}
+    # P2I-2T added the shared blood state; P2J-1 the proportional pressure, which makes the 57m untreated hour cross
+    # 80 mmHg again, so KD-S3 acts and nothing is dormant.
+    assert used == set(DIFFERENCES) - set(DORMANT) == {"KD-S1", "KD-S2", "KD-S3", "KD-S4", "P2E-2", "P2I-2T", "P2J-1"}
+    assert set(DIFFERENCES) == used and DORMANT == {}
 
 
 def test_the_core_runs_the_same_patient_from_the_contracts_as_from_the_engine(results):

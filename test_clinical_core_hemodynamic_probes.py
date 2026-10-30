@@ -106,11 +106,18 @@ def test_the_collapse_signals_behave_as_reported():
     assert hp.burden_track(held, "profound_oxygen_deficit")["peak"] == 0.0
 
 
-def test_the_pressure_relation_has_an_implicit_tone_and_a_knee():
-    for item in hp.pressure_form().values():
+def test_the_pressure_relation_had_an_implicit_tone_and_a_knee_until_p2j1():
+    """P2I-2Q's finding, as its committed record holds it; P2J-1 corrected both, so the live relation has neither."""
+    data = json.loads(DATA.read_text(encoding="utf-8"))
+    for item in data["pressure_form"].values():
         assert item["implied_resistance"]["0.5"] > 1.4 and item["slope_ratio"] > 2.5
+    assert data["pressure_as_perfusion"][-1]["state"] == OXYGEN_CRITICAL
+    assert data["pressure_as_perfusion"][-1]["consciousness"] == 0
+    for item in hp.pressure_form().values():
+        assert all(value == pytest.approx(1.0) for value in item["implied_resistance"].values())
+        assert item["slope_ratio"] == pytest.approx(1.0, rel=1e-4)
     vasoconstricted = hp.pressure_as_perfusion()[-1]
-    assert vasoconstricted["state"] == OXYGEN_CRITICAL and vasoconstricted["consciousness"] == 0
+    assert vasoconstricted["state"] == OXYGEN_CRITICAL and vasoconstricted["consciousness"] == 2
 
 
 def test_the_probes_run_no_fd_lac_rule_and_change_nothing_canonical():

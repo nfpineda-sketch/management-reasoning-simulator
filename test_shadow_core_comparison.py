@@ -204,20 +204,20 @@ def test_a_difference_without_an_approved_decision_stays_unresolved(results):
     assert classes["hr"]["classification"] == "UNRESOLVED"
 
 
-def test_the_mental_status_difference_is_attributed_minute_by_minute(without_refill):
-    """57m untreated with refill off (the pressure path before P2I-2T), minutes 55-60: the raw
-    reading (KD-S3) and the lower pressure (KD-S4). The golden run no longer crosses the threshold
-    (``DORMANT``), so the attribution is exercised here."""
-    result = without_refill["gi_bleed_57m/untreated_60"]
+def test_the_mental_status_difference_is_attributed_minute_by_minute(results):
+    """57m untreated, minutes 31-60 (P2J-1: the core's proportional pressure crosses 80 mmHg again, the
+    engine's does not): the raw reading (KD-S3) and the core's lower pressure (KD-S4 with P2J-1)."""
+    result = results["gi_bleed_57m/untreated_60"]
     rows = {row["minute"]: row for row in consciousness_attribution(result)}
-    assert sorted(rows) == [55, 56, 57, 58, 59, 60]
-    assert {m: rows[m]["mode"] for m in rows} == {55: "jointly_necessary", 56: "jointly_necessary",
-                                                 57: "jointly_necessary", 58: "sufficient_alone",
-                                                 59: "sufficient_alone", 60: "each_sufficient"}
-    assert rows[58]["candidate_causes"] == rows[59]["candidate_causes"] == ["KD-S4"]
-    assert all(rows[m]["candidate_causes"] == ["KD-S3", "KD-S4"] for m in (55, 56, 57, 60))
+    assert sorted(rows) == list(range(31, 61))
+    modes = {m: rows[m]["mode"] for m in rows}
+    assert modes[31] == modes[32] == "jointly_necessary" and modes[60] == "each_sufficient"
+    assert all(modes[m] == "sufficient_alone" and rows[m]["candidate_causes"] == ["KD-S4", "P2J-1"]
+               for m in range(33, 60))
+    assert all(rows[m]["candidate_causes"] == ["KD-S3", "KD-S4", "P2J-1"] for m in (31, 32, 60))
     entry = classify("gi_bleed_57m/untreated_60", result.summary, list(rows.values()))["consciousness_level"]
-    assert entry["candidate_causes"] == ["KD-S3", "KD-S4"] and len(entry["by_minute"]) == 6
+    assert entry["candidate_causes"] == ["KD-S3", "KD-S4", "P2J-1"] and len(entry["by_minute"]) == 30
+    assert entry["classification"] == "APPROVED_DIRECTION_MAGNITUDE_TBD" and not DORMANT
 
 
 def test_the_engine_raw_pressure_the_attribution_uses_rounds_to_what_the_engine_shows(results):

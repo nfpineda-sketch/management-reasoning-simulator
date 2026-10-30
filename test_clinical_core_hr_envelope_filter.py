@@ -6,6 +6,7 @@ only the target unit, the primary ceilings 150 / 175 (200 sensitivity only), the
 reconstruction against the full core and the pressure guard; nothing is approved and the legacy HR is never read.
 """
 import ast
+import hashlib
 import inspect
 import json
 
@@ -26,6 +27,12 @@ SOURCE = ROOT / "clinical_core" / "hr_envelope_filter.py"
 #: primary ceilings and the sensitivity status, the filter order, the candidate, reuse, identifiability and verdict
 #: rules, the policy and every clinical_core source but the downstream reports, committed before any survivor count.
 FROZEN_DIGEST = "31f092650ee73ff4134fc9e5cc79b3a171fb7bb54de553fc2a7de2081f309dc3"
+#: P2I-2AK is closed (P2J-1): its module is pinned byte for byte and its P2I-2AJ input record by its bytes, since a later
+#: clinical_core module changes the live digest's source list; later packages' own modules leave its dependency digest,
+#: and P2J-1's pressure-only change of derived.py is checked, not ignored (pressure_tone.pressure_only_sources).
+P2I2AK_MODULE_SHA = "6bfe0ef46ed1f2b1a4555b7322ca7d3747c237f2cc185caf3dcd479e8a50d885"
+P2I2AJ_RECORD_SHA = "209db24136e478dc3bd2c392db4459b0fa9c3506b361eff6ab91053ebed9f66e"
+LATER_MODULES = ("clinical_core/pressure_tone.py",)
 C57, C72 = hf.C57, hf.C72
 
 
@@ -38,7 +45,8 @@ def test_the_package_is_frozen():
     assert {"clinical_core/hr_envelope_filter.py", "clinical_core/hr_envelope_filter_report.py"} <= set(
         decision_pack.PACK_DIGEST_EXCLUDED)
     assert hf.p2i2aj_record()["freeze_digest"] == hf.P2I2AJ_DIGEST
-    assert hf.freeze_digest() == FROZEN_DIGEST, "a source, the design, a rule or the policy changed after the freeze"
+    assert hashlib.sha256(SOURCE.read_bytes()).hexdigest() == P2I2AK_MODULE_SHA, "the closed P2I-2AK module changed"
+    assert hashlib.sha256(hf.P2I2AJ_RECORD.read_bytes()).hexdigest() == P2I2AJ_RECORD_SHA
 
 
 def test_the_faculty_decisions_are_recorded():
@@ -174,7 +182,10 @@ def test_the_readings_compare_with_the_counterfactual_at_each_units_completion(o
 # Pools, reuse, reconstruction ---------------------------------------------------------------------------------------
 
 def test_the_reuse_guards_and_the_arrival_pools_hold_on_the_committed_inputs():
-    assert hf.dependency_digest() == hf.DEPENDENCIES_AT_P2I2AJ, "an executable dependency changed since P2I-2AJ"
+    from clinical_core import pressure_tone as pt
+    sources = {k: v for k, v in bf.freeze_sources().items() if k not in hf.TUPLE_ONLY + hf.OWN + LATER_MODULES}
+    digest = hashlib.sha256(json.dumps(pt.pressure_only_sources(sources), sort_keys=True).encode("utf-8")).hexdigest()
+    assert digest == hf.DEPENDENCIES_AT_P2I2AJ, "an executable dependency changed since P2I-2AJ"
     record = hf.p2i2aj_record()
     assert record["reuse"]["units_digest"] == hf.UNITS[1.0]
     pools = {f: hf.arrival_pool(record, f) for f in hf.DEMANDS}

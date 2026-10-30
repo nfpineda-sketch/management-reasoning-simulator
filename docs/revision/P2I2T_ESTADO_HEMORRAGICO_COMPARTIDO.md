@@ -190,7 +190,7 @@ el motor heredado.
 ## 4. Tablas (generado)
 
 <!-- generado:estado-sanguineo -->
-Generado desde las sondas `d5b813bd0454c97a62c67a7f60cb837743bfa3d462ddd43df66a18b8a95fedc9` (`python -m clinical_core.blood_probes`). Llegada GI `gi_bleed_72f` del golden (anclas canónicas, parámetros de caso sin declarar) y perfil canónico: volumen circulante de llegada 4000 mL-eq, κ 1,0, escala de la curva 833 mL-eq, relleno: meta 50 % de lo perdido, τ 120 min, capacidad 1000 mL-eq; unidad de GR 300 mL-eq a 20 g/dL; reserva de extracción 1 (canónica). **Todos son valores PROVISIONALES (SYNTHETIC/CANDIDATE, TBD); ninguno está aprobado.** Los volúmenes son mL-eq de volumen circulante normalizado, no litros medidos; los GR, en unidades del contenido de llegada (llegada = 1).
+Generado desde las sondas `5d46d3233863911202eba6ca6103b55717fdcf69d044e07280854da487465296` (`python -m clinical_core.blood_probes`). Llegada GI `gi_bleed_72f` del golden (anclas canónicas, parámetros de caso sin declarar) y perfil canónico: volumen circulante de llegada 4000 mL-eq, κ 1,0, escala de la curva 833 mL-eq, relleno: meta 50 % de lo perdido, τ 120 min, capacidad 1000 mL-eq; unidad de GR 300 mL-eq a 20 g/dL; reserva de extracción 1 (canónica). **Todos son valores PROVISIONALES (SYNTHETIC/CANDIDATE, TBD); ninguno está aprobado.** Los volúmenes son mL-eq de volumen circulante normalizado, no litros medidos; los GR, en unidades del contenido de llegada (llegada = 1).
 
 ### 4.1 Sondas A–K
 
@@ -366,30 +366,30 @@ Columnas: perdido (mL-eq) · GR (contenido) · desviación circulante C · desvi
 
 ### 4.3 Golden GI: antes / después
 
-Antes: `d087bde147a1254c6d81c883dbea09670dd97b0316d1e26e93e3364bde822833`; después: `891ace4b88f18be3ad305573c05a093c4c888f42a22bcb71de7d8bc20cee96d3` (sha256 de `clinical_core/golden/gi_bleed_shadow.json`). Cada celda: motor heredado · núcleo antes → núcleo después, en el último minuto de la corrida.
+Antes: `d087bde147a1254c6d81c883dbea09670dd97b0316d1e26e93e3364bde822833`; después: `cb353081d45cf32ba7cb11a29b96d24a809aa1c02d3fdf5101b79e2846d88f2a` (sha256 de `clinical_core/golden/gi_bleed_shadow.json`). Cada celda: motor heredado · núcleo antes → núcleo después, en el último minuto de la corrida.
 
 | Corrida | min | V | Hb | PAS | FC | lactato | FR | llenado capilar | Variables distintas del heredado: antes → después |
 |---|---|---|---|---|---|---|---|---|---|
-| gi_bleed_57m/aggressive_volume | 90 | 528 · 1088 → 1088 | 8,09 · 8,09 → 9,60 | 117,0 · 121,0 → 121,0 | 108,0 · 124,0 → 124,0 | 3,10 · 4,40 → 4,40 | 16,0 · 26,0 → 26,0 | 2,50 · 2,10 → 2,10 | +Hb |
-| gi_bleed_57m/definitive_management | 120 | 467 · 467 → 467 | 7,92 · 7,92 → 8,46 | 113,0 · 107,0 → 107,0 | 95,0 · 124,0 → 124,0 | 3,30 · 4,40 → 4,40 | 18,0 · 26,0 → 26,0 | 2,80 · 3,30 → 3,30 | +Hb |
-| gi_bleed_57m/oxygen_non_rebreather | 20 | -50 · -50 → -48 | 6,52 · 6,52 → 6,70 | 85,0 · 85,0 → 85,0 | 125,0 · 126,0 → 126,0 | 4,50 · 4,40 → 4,40 | 27,0 · 26,0 → 26,0 | 5,20 · 5,20 → 5,20 | +V, +Hb, −PAD, −PAM, −PAS |
-| gi_bleed_57m/prbc_2u_over_60 | 90 | 375 · 375 → 375 | 7,59 · 7,59 → 8,46 | 108,0 · 104,0 → 104,0 | 113,0 · 124,0 → 124,0 | 3,50 · 4,40 → 4,40 | 19,0 · 26,0 → 26,0 | 3,20 · 3,60 → 3,60 | +Hb |
-| gi_bleed_57m/queued_timed_bags | 45 | 44 · 44 → 44 | 5,09 · 5,09 → 6,45 | 90,0 · 90,0 → 90,0 | 123,0 · 124,0 → 124,0 | 4,30 · 4,40 → 4,40 | 25,0 · 26,0 → 26,0 | 4,80 · 4,80 → 4,80 | +Hb |
-| gi_bleed_57m/saline_2l_over_20 | 60 | -22 · -22 → -18 | 4,96 · 4,96 → 6,49 | 87,0 · 87,0 → 87,0 | 125,0 · 126,0 → 125,0 | 4,50 · 4,40 → 4,40 | 26,0 · 26,0 → 26,0 | 5,10 · 5,10 → 5,10 | +V, +Hb |
-| gi_bleed_57m/saline_then_blood | 120 | 397 · 397 → 397 | 6,88 · 6,88 → 8,39 | 109,0 · 105,0 → 105,0 | 112,0 · 124,0 → 124,0 | 3,40 · 4,40 → 4,40 | 19,0 · 26,0 → 26,0 | 3,10 · 3,50 → 3,50 | +Hb |
-| gi_bleed_57m/stop_fluids | 60 | -43 · -43 → -37 | 5,16 · 5,16 → 6,52 | 86,0 · 86,0 → 86,0 | 125,0 · 126,0 → 125,0 | 4,50 · 4,40 → 4,40 | 27,0 · 26,0 → 26,0 | 5,20 · 5,20 → 5,20 | +V, +Hb |
-| gi_bleed_57m/untimed_shared_line | 90 | 490 · 490 → 490 | 6,39 · 6,39 → 8,27 | 114,0 · 108,0 → 108,0 | 109,0 · 124,0 → 124,0 | 3,20 · 4,40 → 4,40 | 17,0 · 26,0 → 26,0 | 2,60 · 3,20 → 3,20 | +Hb |
-| gi_bleed_57m/untreated_60 | 60 | -150 · -150 → -134 | 6,16 · 6,16 → 6,67 | 80,0 · 79,0 → 80,0 | 128,0 · 130,0 → 129,0 | 4,80 · 4,50 → 4,40 | 29,0 · 26,0 → 26,0 | 5,70 · 5,80 → 5,70 | +V, +Hb, −conciencia |
-| gi_bleed_72f/aggressive_volume | 90 | 528 · 1088 → 1088 | 7,79 · 7,79 → 9,38 | 127,0 · 131,0 → 131,0 | 96,0 · 112,0 → 112,0 | 2,10 · 3,40 → 3,40 | 14,0 · 24,0 → 24,0 | 2,00 · 2,00 → 2,00 | +Hb |
-| gi_bleed_72f/definitive_management | 120 | 467 · 467 → 467 | 7,62 · 7,62 → 8,20 | 123,0 · 117,0 → 117,0 | 83,0 · 112,0 → 112,0 | 2,30 · 3,40 → 3,40 | 16,0 · 24,0 → 24,0 | 2,00 · 2,30 → 2,30 | +Hb |
-| gi_bleed_72f/oxygen_non_rebreather | 20 | -50 · -50 → -48 | 6,22 · 6,22 → 6,40 | 95,0 · 95,0 → 95,0 | 113,0 · 114,0 → 113,0 | 3,50 · 3,40 → 3,40 | 25,0 · 24,0 → 24,0 | 4,20 · 4,20 → 4,20 | +V, +Hb, −PAD, −FC, −PAS |
-| gi_bleed_72f/prbc_2u_over_60 | 90 | 375 · 375 → 375 | 7,29 · 7,29 → 8,20 | 118,0 · 114,0 → 114,0 | 101,0 · 112,0 → 112,0 | 2,50 · 3,40 → 3,40 | 17,0 · 24,0 → 24,0 | 2,20 · 2,60 → 2,60 | +Hb |
-| gi_bleed_72f/queued_timed_bags | 45 | 44 · 44 → 44 | 4,79 · 4,79 → 6,16 | 100,0 · 100,0 → 100,0 | 111,0 · 112,0 → 112,0 | 3,30 · 3,40 → 3,40 | 23,0 · 24,0 → 24,0 | 3,80 · 3,80 → 3,80 | +Hb |
-| gi_bleed_72f/saline_2l_over_20 | 60 | -22 · -22 → -18 | 4,66 · 4,66 → 6,20 | 97,0 · 97,0 → 97,0 | 113,0 · 114,0 → 113,0 | 3,50 · 3,50 → 3,40 | 24,0 · 24,0 → 24,0 | 4,10 · 4,10 → 4,10 | +V, +Hb |
-| gi_bleed_72f/saline_then_blood | 120 | 397 · 397 → 397 | 6,58 · 6,58 → 8,14 | 119,0 · 115,0 → 115,0 | 100,0 · 112,0 → 112,0 | 2,40 · 3,40 → 3,40 | 17,0 · 24,0 → 24,0 | 2,10 · 2,50 → 2,50 | +Hb |
-| gi_bleed_72f/stop_fluids | 60 | -43 · -43 → -37 | 4,86 · 4,86 → 6,22 | 96,0 · 96,0 → 96,0 | 113,0 · 115,0 → 113,0 | 3,50 · 3,40 → 3,40 | 25,0 · 24,0 → 24,0 | 4,20 · 4,20 → 4,20 | +V, +Hb |
-| gi_bleed_72f/untimed_shared_line | 90 | 490 · 490 → 490 | 6,09 · 6,09 → 8,01 | 124,0 · 118,0 → 118,0 | 97,0 · 112,0 → 112,0 | 2,20 · 3,40 → 3,40 | 15,0 · 24,0 → 24,0 | 2,00 · 2,20 → 2,20 | +Hb |
-| gi_bleed_72f/untreated_60 | 60 | -150 · -150 → -134 | 5,86 · 5,86 → 6,37 | 90,0 · 89,0 → 90,0 | 116,0 · 118,0 → 117,0 | 3,80 · 3,50 → 3,40 | 27,0 · 24,0 → 24,0 | 4,70 · 4,80 → 4,70 | +V, +Hb |
+| gi_bleed_57m/aggressive_volume | 90 | 528 · 1088 → 1088 | 8,09 · 8,09 → 9,60 | 117,0 · 121,0 → 152,0 | 108,0 · 124,0 → 124,0 | 3,10 · 4,40 → 4,40 | 16,0 · 26,0 → 26,0 | 2,50 · 2,10 → 2,10 | +Hb |
+| gi_bleed_57m/definitive_management | 120 | 467 · 467 → 467 | 7,92 · 7,92 → 8,46 | 113,0 · 107,0 → 126,0 | 95,0 · 124,0 → 124,0 | 3,30 · 4,40 → 4,40 | 18,0 · 26,0 → 26,0 | 2,80 · 3,30 → 3,30 | +Hb |
+| gi_bleed_57m/oxygen_non_rebreather | 20 | -50 · -50 → -48 | 6,52 · 6,52 → 6,70 | 85,0 · 85,0 → 83,0 | 125,0 · 126,0 → 126,0 | 4,50 · 4,40 → 4,40 | 27,0 · 26,0 → 26,0 | 5,20 · 5,20 → 5,20 | +V, +Hb |
+| gi_bleed_57m/prbc_2u_over_60 | 90 | 375 · 375 → 375 | 7,59 · 7,59 → 8,46 | 108,0 · 104,0 → 120,0 | 113,0 · 124,0 → 124,0 | 3,50 · 4,40 → 4,40 | 19,0 · 26,0 → 26,0 | 3,20 · 3,60 → 3,60 | +Hb |
+| gi_bleed_57m/queued_timed_bags | 45 | 44 · 44 → 44 | 5,09 · 5,09 → 6,45 | 90,0 · 90,0 → 93,0 | 123,0 · 124,0 → 124,0 | 4,30 · 4,40 → 4,40 | 25,0 · 26,0 → 26,0 | 4,80 · 4,80 → 4,80 | +Hb |
+| gi_bleed_57m/saline_2l_over_20 | 60 | -22 · -22 → -18 | 4,96 · 4,96 → 6,49 | 87,0 · 87,0 → 86,0 | 125,0 · 126,0 → 125,0 | 4,50 · 4,40 → 4,40 | 26,0 · 26,0 → 26,0 | 5,10 · 5,10 → 5,10 | +V, +Hb |
+| gi_bleed_57m/saline_then_blood | 120 | 397 · 397 → 397 | 6,88 · 6,88 → 8,39 | 109,0 · 105,0 → 121,0 | 112,0 · 124,0 → 124,0 | 3,40 · 4,40 → 4,40 | 19,0 · 26,0 → 26,0 | 3,10 · 3,50 → 3,50 | +Hb |
+| gi_bleed_57m/stop_fluids | 60 | -43 · -43 → -37 | 5,16 · 5,16 → 6,52 | 86,0 · 86,0 → 84,0 | 125,0 · 126,0 → 125,0 | 4,50 · 4,40 → 4,40 | 27,0 · 26,0 → 26,0 | 5,20 · 5,20 → 5,20 | +V, +Hb |
+| gi_bleed_57m/untimed_shared_line | 90 | 490 · 490 → 490 | 6,39 · 6,39 → 8,27 | 114,0 · 108,0 → 127,0 | 109,0 · 124,0 → 124,0 | 3,20 · 4,40 → 4,40 | 17,0 · 26,0 → 26,0 | 2,60 · 3,20 → 3,20 | +Hb |
+| gi_bleed_57m/untreated_60 | 60 | -150 · -150 → -134 | 6,16 · 6,16 → 6,67 | 80,0 · 79,0 → 73,0 | 128,0 · 130,0 → 129,0 | 4,80 · 4,50 → 4,40 | 29,0 · 26,0 → 26,0 | 5,70 · 5,80 → 5,70 | +V, +Hb |
+| gi_bleed_72f/aggressive_volume | 90 | 528 · 1088 → 1088 | 7,79 · 7,79 → 9,38 | 127,0 · 131,0 → 169,0 | 96,0 · 112,0 → 112,0 | 2,10 · 3,40 → 3,40 | 14,0 · 24,0 → 24,0 | 2,00 · 2,00 → 2,00 | +Hb |
+| gi_bleed_72f/definitive_management | 120 | 467 · 467 → 467 | 7,62 · 7,62 → 8,20 | 123,0 · 117,0 → 140,0 | 83,0 · 112,0 → 112,0 | 2,30 · 3,40 → 3,40 | 16,0 · 24,0 → 24,0 | 2,00 · 2,30 → 2,30 | +Hb |
+| gi_bleed_72f/oxygen_non_rebreather | 20 | -50 · -50 → -48 | 6,22 · 6,22 → 6,40 | 95,0 · 95,0 → 92,0 | 113,0 · 114,0 → 113,0 | 3,50 · 3,40 → 3,40 | 25,0 · 24,0 → 24,0 | 4,20 · 4,20 → 4,20 | +V, +Hb, +PAM, −FC |
+| gi_bleed_72f/prbc_2u_over_60 | 90 | 375 · 375 → 375 | 7,29 · 7,29 → 8,20 | 118,0 · 114,0 → 134,0 | 101,0 · 112,0 → 112,0 | 2,50 · 3,40 → 3,40 | 17,0 · 24,0 → 24,0 | 2,20 · 2,60 → 2,60 | +Hb |
+| gi_bleed_72f/queued_timed_bags | 45 | 44 · 44 → 44 | 4,79 · 4,79 → 6,16 | 100,0 · 100,0 → 103,0 | 111,0 · 112,0 → 112,0 | 3,30 · 3,40 → 3,40 | 23,0 · 24,0 → 24,0 | 3,80 · 3,80 → 3,80 | +Hb |
+| gi_bleed_72f/saline_2l_over_20 | 60 | -22 · -22 → -18 | 4,66 · 4,66 → 6,20 | 97,0 · 97,0 → 96,0 | 113,0 · 114,0 → 113,0 | 3,50 · 3,50 → 3,40 | 24,0 · 24,0 → 24,0 | 4,10 · 4,10 → 4,10 | +V, +Hb |
+| gi_bleed_72f/saline_then_blood | 120 | 397 · 397 → 397 | 6,58 · 6,58 → 8,14 | 119,0 · 115,0 → 135,0 | 100,0 · 112,0 → 112,0 | 2,40 · 3,40 → 3,40 | 17,0 · 24,0 → 24,0 | 2,10 · 2,50 → 2,50 | +Hb |
+| gi_bleed_72f/stop_fluids | 60 | -43 · -43 → -37 | 4,86 · 4,86 → 6,22 | 96,0 · 96,0 → 94,0 | 113,0 · 115,0 → 113,0 | 3,50 · 3,40 → 3,40 | 25,0 · 24,0 → 24,0 | 4,20 · 4,20 → 4,20 | +V, +Hb |
+| gi_bleed_72f/untimed_shared_line | 90 | 490 · 490 → 490 | 6,09 · 6,09 → 8,01 | 124,0 · 118,0 → 142,0 | 97,0 · 112,0 → 112,0 | 2,20 · 3,40 → 3,40 | 15,0 · 24,0 → 24,0 | 2,00 · 2,20 → 2,20 | +Hb |
+| gi_bleed_72f/untreated_60 | 60 | -150 · -150 → -134 | 5,86 · 5,86 → 6,37 | 90,0 · 89,0 → 81,0 | 116,0 · 118,0 → 117,0 | 3,80 · 3,50 → 3,40 | 27,0 · 24,0 → 24,0 | 4,70 · 4,80 → 4,70 | +V, +Hb |
 
 <!-- /generado:estado-sanguineo -->
 

@@ -2,7 +2,8 @@
 
 Structure only. The collapse rule is off by default; the thresholds, limits and repayment
 used here are synthetic test values, not a clinical arrest threshold or dwell time (TBD).
-The pressure knee is provisional. Nothing here is tuned to the GI-bleed golden.
+Since P2J-1 pressure is proportional to output x tone over the whole range (no knee). Nothing here is
+tuned to the GI-bleed golden.
 """
 import json
 import math
@@ -158,13 +159,10 @@ def test_pressures_fall_monotonically_with_output_and_reach_zero(arrival):
     assert max(arterial_pressures(1e-6, arrival, DEFAULT_PROFILE)) < 1.0, "it approaches zero"
 
 
-def test_the_mapping_is_continuous_at_the_knee_and_proportional_to_flow_times_tone_below_it():
-    knee, step = DEFAULT_PROFILE.low_output_pressure_knee, 1e-9
-    below, at, above = (arterial_pressures(level, NEUTRAL, DEFAULT_PROFILE) for level in (knee - step, knee, knee + step))
-    assert below == pytest.approx(at, abs=1e-6) and above == pytest.approx(at, abs=1e-6)
-    for level in (0.4, 0.2, 0.05):
-        assert arterial_pressures(level, NEUTRAL, DEFAULT_PROFILE) == pytest.approx(
-            tuple(value * level / knee for value in at))
+def test_the_mapping_is_proportional_to_flow_times_tone_over_the_whole_range():
+    """P2J-1: what P2E-4 made true below the knee holds everywhere, at the arrival's resistance."""
+    for level in (1.3, 1.0, 0.8, 0.5, 0.4, 0.2, 0.05):
+        assert arterial_pressures(level, NEUTRAL, DEFAULT_PROFILE) == (NEUTRAL.sbp * level, NEUTRAL.dbp * level)
 
 
 def test_no_legacy_floor_remains_at_low_output():
@@ -173,18 +171,26 @@ def test_no_legacy_floor_remains_at_low_output():
     assert sbp < old_floor / 2, "the adopted linear relation alone never fell below arrival - 45"
 
 
-def test_above_the_knee_the_adopted_relation_is_unchanged():
-    for level in (0.5, 0.8, 1.0, 1.2):
+def test_since_p2j1_the_adopted_linear_relation_and_the_knee_are_not_read():
+    for level in (0.5, 0.8, 1.2):
         sbp, dbp = arterial_pressures(level, NEUTRAL, DEFAULT_PROFILE)
-        assert sbp == NEUTRAL.sbp - 45.0 * (1 - level) and dbp == NEUTRAL.dbp - 25.0 * (1 - level)
+        assert (sbp, dbp) == (NEUTRAL.sbp * level, NEUTRAL.dbp * level)
+        assert sbp != NEUTRAL.sbp - 45.0 * (1 - level), "the linear relation of P2E-4 is gone"
+    for changes in ({"sbp_per_pressure_deficit": 30.0}, {"dbp_per_pressure_deficit": 10.0},
+                    {"low_output_pressure_knee": 0.3}):
+        assert arterial_pressures(0.7, NEUTRAL, replace(DEFAULT_PROFILE, **changes)) == arterial_pressures(
+            0.7, NEUTRAL, DEFAULT_PROFILE)
 
 
-def test_the_golden_runs_stay_above_the_knee_so_their_pressures_are_unchanged():
+def test_the_golden_runs_read_their_pressures_as_the_arrival_pressure_times_output_x_tone():
     from clinical_core.shadow import SCENARIOS, VARIANTS, run_shadow
     for variant in VARIANTS:
         for scenario in SCENARIOS:
-            derived = run_shadow(variant, scenario).core.derived()
-            assert min(item.pressure_rel for item in derived) >= DEFAULT_PROFILE.low_output_pressure_knee
+            result = run_shadow(variant, scenario).core
+            arrival = result.anchors
+            for state, item in zip(result.states, result.derived()):
+                assert item.pressure_rel == item.output_rel * state.T
+                assert (item.sbp, item.dbp) == (arrival.sbp * item.pressure_rel, arrival.dbp * item.pressure_rel)
 
 
 def test_tone_still_holds_diastolic_and_mean_pressure_without_meaning_perfusion():

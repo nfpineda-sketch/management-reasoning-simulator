@@ -202,7 +202,7 @@ cinética del punto medio de P2F.
 ## 6. Tablas (generado)
 
 <!-- generado:anclas-hemorragia -->
-Generado desde las anclas `8cdf78663a6abd3a47517257911a0579857850dc8b3031c2b80370d3c567848f` (`python -m clinical_core.blood_anchors`). Llegada: cada caso GI con sus bandas en el punto medio (posición de precarga: la que indique la tabla), cinética del lactato del punto medio de P2F (sólo contexto), ρ 2,5 con la banda de entrega de llegada re-anclada. κ = 1: la escala se explora como λ/κ. **Todos los rangos son exploraciones SINTÉTICAS, no valores aprobados ni bandas nuevas:** λ/κ reutiliza los tres puntos candidatos del registro de `preload_curve_scale_ml` y la posición recorre la banda del caso; el resto no es una banda candidata. Cada celda: referencia (mínimo–máximo en la cuadrícula).
+Generado desde las anclas `763f58e6d3e621e643b3bfd115ec3de357d08d14d2b74bc063f9143ce83500ef` (`python -m clinical_core.blood_anchors`). Llegada: cada caso GI con sus bandas en el punto medio (posición de precarga: la que indique la tabla), cinética del lactato del punto medio de P2F (sólo contexto), ρ 2,5 con la banda de entrega de llegada re-anclada. κ = 1: la escala se explora como λ/κ. **Todos los rangos son exploraciones SINTÉTICAS, no valores aprobados ni bandas nuevas:** λ/κ reutiliza los tres puntos candidatos del registro de `preload_curve_scale_ml` y la posición recorre la banda del caso; el resto no es una banda candidata. Cada celda: referencia (mínimo–máximo en la cuadrícula).
 
 | Parámetro | Referencia (provisional) | Exploración sintética |
 |---|---|---|
@@ -235,8 +235,8 @@ Generado desde las anclas `8cdf78663a6abd3a47517257911a0579857850dc8b3031c2b8037
 | gasto relativo | 1,00 (1,00–1,00) | 0,84 (0,24–0,98) | 0,68 (0,03–0,96) | 0,36 (0,06–0,92) |
 | índice de DO2 | 0,34 (0,34–0,34) | 0,28 (0,08–0,33) | 0,23 (0,01–0,32) | 0,12 (0,02–0,31) |
 | déficit efectivo | 0,15 (0,15–0,15) | 0,29 (0,17–0,80) | 0,43 (0,19–0,98) | 0,69 (0,22–0,95) |
-| PAS (contexto) | 88 (88–88) | 81 (31–87) | 73 (4–86) | 48 (8–85) |
-| PAM (contexto) | 65 (65–65) | 60 (23–65) | 55 (3–64) | 36 (6–63) |
+| PAS (contexto) | 88 (88–88) | 74 (21–86) | 59 (2–84) | 32 (5–81) |
+| PAM (contexto) | 65 (65–65) | 55 (15–64) | 44 (2–63) | 24 (4–60) |
 | lactato (contexto) | 4,4 (4,4–4,4) | 4,0 (4,0–4,0) | 3,8 (3,7–3,9) | 4,1 (3,6–4,4) |
 | gasto relativo, con las detenidas en 0 | 1,00 (1,00–1,00) | 0,84 (0,00–0,98) | 0,68 (0,00–0,96) | 0,36 (0,00–0,92) |
 | déficit efectivo, con las detenidas en su valor al detenerse | 0,15 (0,15–0,15) | 0,29 (0,17–1,00) | 0,43 (0,19–1,00) | 0,69 (0,22–1,00) |
@@ -260,8 +260,8 @@ Proporción de corridas que se detienen antes de los 120 min, por valor de cada 
 | gasto relativo | 1,00 (1,00–1,00) | 0,89 (0,36–0,98) | 0,79 (0,05–0,97) | 0,58 (0,01–0,95) |
 | índice de DO2 | 0,34 (0,34–0,34) | 0,30 (0,12–0,33) | 0,27 (0,02–0,33) | 0,20 (0,00–0,32) |
 | déficit efectivo | 0,15 (0,15–0,15) | 0,24 (0,16–0,70) | 0,33 (0,18–0,96) | 0,51 (0,20–0,99) |
-| PAS (contexto) | 98 (98–98) | 93 (54–97) | 88 (8–97) | 79 (2–96) |
-| PAM (contexto) | 74 (74–74) | 71 (42–74) | 67 (6–73) | 61 (1–72) |
+| PAS (contexto) | 98 (98–98) | 87 (35–96) | 77 (5–95) | 57 (1–93) |
+| PAM (contexto) | 74 (74–74) | 66 (26–73) | 58 (4–72) | 43 (1–70) |
 | lactato (contexto) | 3,4 (3,4–3,4) | 3,2 (3,2–3,2) | 3,2 (3,1–3,3) | 3,5 (3,2–4,0) |
 | gasto relativo, con las detenidas en 0 | 1,00 (1,00–1,00) | 0,89 (0,36–0,98) | 0,79 (0,00–0,97) | 0,58 (0,00–0,95) |
 | déficit efectivo, con las detenidas en su valor al detenerse | 0,15 (0,15–0,15) | 0,24 (0,16–0,70) | 0,33 (0,18–0,99) | 0,51 (0,20–1,00) |
@@ -285,7 +285,7 @@ Proporción de corridas que se detienen antes de los 120 min, por valor de cada 
 | respuesta a +100 mL-eq (Δgasto) | 0,210 (0,064–0,614) | 0,147 (0,051–0,405) | 0,102 (0,040–0,267) |
 | índice de DO2 | 0,34 (0,34–0,34) | 0,60 (0,42–1,17) | 0,84 (0,50–1,83) |
 | déficit efectivo | 0,15 (0,15–0,15) | 0,00 (0,00–0,00) | 0,00 (0,00–0,00) |
-| PAS (contexto) | 88 (88–88) | 113 (95–168) | 131 (101–212) |
+| PAS (contexto) | 88 (88–88) | 137 (102–244) | 172 (113–330) |
 
 | Incremento | unidad 1 | unidad 2 |
 |---|---|---|
@@ -309,7 +309,7 @@ Proporción de corridas que se detienen antes de los 120 min, por valor de cada 
 | respuesta a +100 mL-eq (Δgasto) | 0,138 (0,043–0,358) | 0,096 (0,034–0,236) | 0,067 (0,027–0,156) |
 | índice de DO2 | 0,34 (0,34–0,34) | 0,53 (0,41–0,87) | 0,71 (0,47–1,29) |
 | déficit efectivo | 0,15 (0,15–0,15) | 0,00 (0,00–0,00) | 0,00 (0,00–0,00) |
-| PAS (contexto) | 98 (98–98) | 115 (103–144) | 126 (107–170) |
+| PAS (contexto) | 98 (98–98) | 134 (108–199) | 159 (117–255) |
 
 | Incremento | unidad 1 | unidad 2 |
 |---|---|---|
@@ -328,37 +328,37 @@ Proporción de corridas que se detienen antes de los 120 min, por valor de cada 
 
 | Minuto | n | retenido (mL-eq) | retenido / pico | efecto neto en C | dilución de Hb | reversión | gasto | Δgasto | DO2 | déficit | PAS (contexto) |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 20 | 729 | 104 (78–281) | 1,00 (1,00–1,00) | 102 (77–279) | 0,17 (0,10–0,57) | 0,00 (0,00–0,00) | 1,12 (1,02–2,28) | 0,23 (0,05–1,61) | 0,37 (0,34–0,73) | 0,08 (0,00–0,16) | 93 (89–146) |
-| 30 | 729 | 89 (52–266) | 0,85 (0,67–0,94) | 84 (49–261) | 0,14 (0,07–0,54) | 0,17 (0,06–0,35) | 1,03 (0,85–2,09) | 0,19 (0,03–1,59) | 0,34 (0,29–0,67) | 0,14 (0,00–0,29) | 89 (81–137) |
-| 60 | 648 | 64 (29–232) | 0,62 (0,37–0,82) | 60 (26–216) | 0,10 (0,03–0,45) | 0,42 (0,22–0,67) | 0,83 (0,45–1,37) | 0,15 (0,02–1,07) | 0,28 (0,15–0,45) | 0,31 (0,00–0,63) | 80 (59–105) |
-| 120 | 567 | 52 (25–199) | 0,50 (0,28–0,74) | 49 (24–176) | 0,08 (0,03–0,35) | 0,53 (0,29–0,76) | 0,51 (0,17–0,95) | 0,14 (0,02–0,71) | 0,17 (0,06–0,31) | 0,58 (0,23–0,86) | 66 (22–86) |
+| 20 | 729 | 104 (78–281) | 1,00 (1,00–1,00) | 102 (77–279) | 0,17 (0,10–0,57) | 0,00 (0,00–0,00) | 1,12 (1,02–2,28) | 0,23 (0,05–1,61) | 0,37 (0,34–0,73) | 0,08 (0,00–0,16) | 98 (90–201) |
+| 30 | 729 | 89 (52–266) | 0,85 (0,67–0,94) | 84 (49–261) | 0,14 (0,07–0,54) | 0,17 (0,06–0,35) | 1,03 (0,85–2,09) | 0,19 (0,03–1,59) | 0,34 (0,29–0,67) | 0,14 (0,00–0,29) | 91 (75–184) |
+| 60 | 648 | 64 (29–232) | 0,62 (0,37–0,82) | 60 (26–216) | 0,10 (0,03–0,45) | 0,42 (0,22–0,67) | 0,83 (0,45–1,37) | 0,15 (0,02–1,07) | 0,28 (0,15–0,45) | 0,31 (0,00–0,63) | 73 (39–121) |
+| 120 | 567 | 52 (25–199) | 0,50 (0,28–0,74) | 49 (24–176) | 0,08 (0,03–0,35) | 0,53 (0,29–0,76) | 0,51 (0,17–0,95) | 0,14 (0,02–0,71) | 0,17 (0,06–0,31) | 0,58 (0,23–0,86) | 45 (15–84) |
 
 **gi_bleed_57m, 2 L en 20 min** — 729 combinaciones (retención intravascular del cristaloide, τ de redistribución del cristaloide (min), fracción transitoria del cristaloide, λ/κ (mL-eq), B0 (mL-eq), posición de precarga de llegada); comparado con el mismo sangrado sin cristaloide; antes de los 120 min se detienen 27 corridas con cristaloide y 162 sin él, y cada fila resume sólo los pares que siguen perfundiendo los dos (columna n). Efecto pico en C 206 (155–561) mL-eq (minuto 20 en la referencia); cristaloide retenido pico 208 (157–562) mL-eq; dilución pico de Hb 0,33 (0,20–1,06) g/dL. Δgasto al terminar, por posición de llegada: inf. 1,25 (0,41–2,63), medio 0,58 (0,19–1,22), sup. 0,31 (0,10–0,66).
 
 | Minuto | n | retenido (mL-eq) | retenido / pico | efecto neto en C | dilución de Hb | reversión | gasto | Δgasto | DO2 | déficit | PAS (contexto) |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 20 | 729 | 208 (157–562) | 1,00 (1,00–1,00) | 206 (155–561) | 0,33 (0,20–1,06) | 0,00 (0,00–0,00) | 1,32 (1,07–3,30) | 0,43 (0,10–2,63) | 0,43 (0,35–1,01) | 0,00 (0,00–0,14) | 102 (91–191) |
-| 30 | 729 | 177 (105–531) | 0,85 (0,67–0,94) | 173 (101–527) | 0,28 (0,13–1,01) | 0,16 (0,05–0,35) | 1,21 (1,02–3,13) | 0,38 (0,07–2,63) | 0,40 (0,33–0,96) | 0,01 (0,00–0,16) | 98 (89–184) |
-| 60 | 648 | 128 (57–464) | 0,62 (0,37–0,82) | 116 (53–448) | 0,19 (0,07–0,86) | 0,44 (0,19–0,67) | 0,96 (0,59–2,26) | 0,28 (0,04–1,95) | 0,32 (0,20–0,70) | 0,21 (0,00–0,51) | 86 (69–144) |
-| 120 | 567 | 104 (50–398) | 0,50 (0,28–0,74) | 96 (47–343) | 0,15 (0,06–0,65) | 0,54 (0,32–0,76) | 0,64 (0,27–1,28) | 0,27 (0,04–1,22) | 0,21 (0,09–0,40) | 0,48 (0,00–0,78) | 72 (36–101) |
+| 20 | 729 | 208 (157–562) | 1,00 (1,00–1,00) | 206 (155–561) | 0,33 (0,20–1,06) | 0,00 (0,00–0,00) | 1,32 (1,07–3,30) | 0,43 (0,10–2,63) | 0,43 (0,35–1,01) | 0,00 (0,00–0,14) | 116 (94–290) |
+| 30 | 729 | 177 (105–531) | 0,85 (0,67–0,94) | 173 (101–527) | 0,28 (0,13–1,01) | 0,16 (0,05–0,35) | 1,21 (1,02–3,13) | 0,38 (0,07–2,63) | 0,40 (0,33–0,96) | 0,01 (0,00–0,16) | 107 (90–275) |
+| 60 | 648 | 128 (57–464) | 0,62 (0,37–0,82) | 116 (53–448) | 0,19 (0,07–0,86) | 0,44 (0,19–0,67) | 0,96 (0,59–2,26) | 0,28 (0,04–1,95) | 0,32 (0,20–0,70) | 0,21 (0,00–0,51) | 84 (52–198) |
+| 120 | 567 | 104 (50–398) | 0,50 (0,28–0,74) | 96 (47–343) | 0,15 (0,06–0,65) | 0,54 (0,32–0,76) | 0,64 (0,27–1,28) | 0,27 (0,04–1,22) | 0,21 (0,09–0,40) | 0,48 (0,00–0,78) | 56 (24–113) |
 
 **gi_bleed_72f, 1 L en 20 min** — 729 combinaciones (retención intravascular del cristaloide, τ de redistribución del cristaloide (min), fracción transitoria del cristaloide, λ/κ (mL-eq), B0 (mL-eq), posición de precarga de llegada); comparado con el mismo sangrado sin cristaloide; antes de los 120 min se detienen 6 corridas con cristaloide y 81 sin él, y cada fila resume sólo los pares que siguen perfundiendo los dos (columna n). Efecto pico en C 102 (77–279) mL-eq (minuto 20 en la referencia); cristaloide retenido pico 104 (78–281) mL-eq; dilución pico de Hb 0,16 (0,10–0,55) g/dL. Δgasto al terminar, por posición de llegada: inf. 0,40 (0,12–0,94), medio 0,21 (0,06–0,49), sup. 0,11 (0,03–0,27).
 
 | Minuto | n | retenido (mL-eq) | retenido / pico | efecto neto en C | dilución de Hb | reversión | gasto | Δgasto | DO2 | déficit | PAS (contexto) |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 20 | 729 | 104 (78–281) | 1,00 (1,00–1,00) | 102 (77–279) | 0,16 (0,10–0,55) | 0,00 (0,00–0,00) | 1,08 (1,01–1,75) | 0,15 (0,03–0,94) | 0,36 (0,34–0,56) | 0,11 (0,00–0,16) | 101 (99–132) |
-| 30 | 729 | 89 (52–266) | 0,85 (0,67–0,94) | 84 (49–261) | 0,13 (0,06–0,52) | 0,17 (0,06–0,35) | 1,02 (0,92–1,64) | 0,13 (0,02–0,93) | 0,34 (0,31–0,53) | 0,15 (0,00–0,24) | 99 (94–127) |
-| 60 | 729 | 64 (29–232) | 0,62 (0,37–0,82) | 60 (26–216) | 0,09 (0,03–0,43) | 0,42 (0,22–0,67) | 0,89 (0,54–1,30) | 0,10 (0,01–0,88) | 0,30 (0,18–0,42) | 0,26 (0,00–0,55) | 93 (77–111) |
-| 120 | 648 | 52 (25–199) | 0,50 (0,28–0,74) | 49 (24–176) | 0,07 (0,03–0,34) | 0,53 (0,29–0,76) | 0,68 (0,29–0,97) | 0,09 (0,01–0,60) | 0,22 (0,10–0,31) | 0,44 (0,21–0,76) | 83 (44–97) |
+| 20 | 729 | 104 (78–281) | 1,00 (1,00–1,00) | 102 (77–279) | 0,16 (0,10–0,55) | 0,00 (0,00–0,00) | 1,08 (1,01–1,75) | 0,15 (0,03–0,94) | 0,36 (0,34–0,56) | 0,11 (0,00–0,16) | 105 (99–171) |
+| 30 | 729 | 89 (52–266) | 0,85 (0,67–0,94) | 84 (49–261) | 0,13 (0,06–0,52) | 0,17 (0,06–0,35) | 1,02 (0,92–1,64) | 0,13 (0,02–0,93) | 0,34 (0,31–0,53) | 0,15 (0,00–0,24) | 100 (90–160) |
+| 60 | 729 | 64 (29–232) | 0,62 (0,37–0,82) | 60 (26–216) | 0,09 (0,03–0,43) | 0,42 (0,22–0,67) | 0,89 (0,54–1,30) | 0,10 (0,01–0,88) | 0,30 (0,18–0,42) | 0,26 (0,00–0,55) | 87 (53–127) |
+| 120 | 648 | 52 (25–199) | 0,50 (0,28–0,74) | 49 (24–176) | 0,07 (0,03–0,34) | 0,53 (0,29–0,76) | 0,68 (0,29–0,97) | 0,09 (0,01–0,60) | 0,22 (0,10–0,31) | 0,44 (0,21–0,76) | 66 (28–95) |
 
 **gi_bleed_72f, 2 L en 20 min** — 729 combinaciones (retención intravascular del cristaloide, τ de redistribución del cristaloide (min), fracción transitoria del cristaloide, λ/κ (mL-eq), B0 (mL-eq), posición de precarga de llegada); comparado con el mismo sangrado sin cristaloide; antes de los 120 min se detienen 0 corridas con cristaloide y 81 sin él, y cada fila resume sólo los pares que siguen perfundiendo los dos (columna n). Efecto pico en C 206 (155–561) mL-eq (minuto 20 en la referencia); cristaloide retenido pico 208 (157–562) mL-eq; dilución pico de Hb 0,31 (0,19–1,01) g/dL. Δgasto al terminar, por posición de llegada: inf. 0,73 (0,24–1,53), medio 0,38 (0,12–0,80), sup. 0,21 (0,07–0,44).
 
 | Minuto | n | retenido (mL-eq) | retenido / pico | efecto neto en C | dilución de Hb | reversión | gasto | Δgasto | DO2 | déficit | PAS (contexto) |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 20 | 729 | 208 (157–562) | 1,00 (1,00–1,00) | 206 (155–561) | 0,31 (0,19–1,01) | 0,00 (0,00–0,00) | 1,21 (1,05–2,34) | 0,28 (0,07–1,53) | 0,39 (0,34–0,71) | 0,02 (0,00–0,16) | 107 (100–158) |
-| 30 | 729 | 177 (105–531) | 0,85 (0,67–0,94) | 173 (101–527) | 0,27 (0,13–0,96) | 0,16 (0,05–0,35) | 1,14 (1,01–2,24) | 0,25 (0,05–1,54) | 0,37 (0,33–0,69) | 0,07 (0,00–0,17) | 104 (99–154) |
-| 60 | 729 | 128 (57–464) | 0,62 (0,37–0,82) | 116 (53–448) | 0,18 (0,06–0,83) | 0,44 (0,19–0,67) | 0,97 (0,66–1,95) | 0,19 (0,03–1,54) | 0,32 (0,22–0,61) | 0,20 (0,00–0,45) | 97 (83–141) |
-| 120 | 648 | 104 (50–398) | 0,50 (0,28–0,74) | 96 (47–343) | 0,14 (0,06–0,62) | 0,54 (0,32–0,76) | 0,76 (0,37–1,26) | 0,18 (0,02–1,06) | 0,25 (0,12–0,40) | 0,38 (0,01–0,69) | 87 (56–110) |
+| 20 | 729 | 208 (157–562) | 1,00 (1,00–1,00) | 206 (155–561) | 0,31 (0,19–1,01) | 0,00 (0,00–0,00) | 1,21 (1,05–2,34) | 0,28 (0,07–1,53) | 0,39 (0,34–0,71) | 0,02 (0,00–0,16) | 119 (102–229) |
+| 30 | 729 | 177 (105–531) | 0,85 (0,67–0,94) | 173 (101–527) | 0,27 (0,13–0,96) | 0,16 (0,05–0,35) | 1,14 (1,01–2,24) | 0,25 (0,05–1,54) | 0,37 (0,33–0,69) | 0,07 (0,00–0,17) | 112 (99–220) |
+| 60 | 729 | 128 (57–464) | 0,62 (0,37–0,82) | 116 (53–448) | 0,18 (0,06–0,83) | 0,44 (0,19–0,67) | 0,97 (0,66–1,95) | 0,19 (0,03–1,54) | 0,32 (0,22–0,61) | 0,20 (0,00–0,45) | 95 (65–191) |
+| 120 | 648 | 104 (50–398) | 0,50 (0,28–0,74) | 96 (47–343) | 0,14 (0,06–0,62) | 0,54 (0,32–0,76) | 0,76 (0,37–1,26) | 0,18 (0,02–1,06) | 0,25 (0,12–0,40) | 0,38 (0,01–0,69) | 75 (37–123) |
 
 «Retenido» es el cristaloide que sigue en la circulación (estado sanguíneo); «efecto neto en C» lo compara con el mismo sangrado sin cristaloide, y es menor porque mientras la circulación está sobre la llegada el relleno espera.
 

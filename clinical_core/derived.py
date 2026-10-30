@@ -210,10 +210,16 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
     "congestion_preload_knee": (PROVISIONAL, "position on the preload curve above which excess preload congests "
                                              "a pump without reserve: TBD (KD-S4)"),
     "congestion_per_excess_preload": (PROVISIONAL, "L per minute at full excess and no pump reserve: TBD (KD-S4)"),
-    "sbp_per_pressure_deficit": (ADOPTED, "family_engine._surface: sbp - (circulation - 1) * 45"),
-    "dbp_per_pressure_deficit": (ADOPTED, "family_engine._surface: dbp - (circulation - 1) * 25"),
-    "low_output_pressure_knee": (PROVISIONAL, "pressure_rel below which SBP and DBP leave the adopted linear "
-                                              "relation and fall continuously to 0 with output (P2E-4): TBD"),
+    "sbp_per_pressure_deficit": (ADOPTED, "family_engine._surface: sbp - (circulation - 1) * 45. Since P2J-1 the "
+                                          "core does not read it (SBP is the arrival SBP x pressure_rel); kept so "
+                                          "historical records stay readable"),
+    "dbp_per_pressure_deficit": (ADOPTED, "family_engine._surface: dbp - (circulation - 1) * 25. Since P2J-1 the "
+                                          "core does not read it (DBP is the arrival DBP x pressure_rel); kept so "
+                                          "historical records stay readable"),
+    "low_output_pressure_knee": (PROVISIONAL, "pressure_rel below which SBP and DBP left the adopted linear relation "
+                                              "and fell continuously to 0 with output (P2E-4). Since P2J-1 the core "
+                                              "does not read it (no knee: pressure is proportional to pressure_rel "
+                                              "over the whole range); kept so historical records stay readable"),
     "hr_per_sympathetic_drive": (ADOPTED, "family_engine._surface: hr + (circulation - 1) * 25, read here as bpm "
                                           "per unit of sympathetic drive"),
     "sympathetic_per_pressure_deficit": (PROVISIONAL, "MAP/output deficit -> sympathetic drive gain: TBD (KD-S2)"),
@@ -868,34 +874,26 @@ def acute_deficit_signal(state: CoreState, anchors: Anchors, profile: CoreProfil
 
 
 def arterial_pressures(pressure_rel: float, anchors: Anchors, profile: CoreProfile) -> tuple[float, float]:
-    """SBP and DBP from the pressure the state produces, pressure_rel = output x tone (KD-S4, P2E-4).
+    """SBP and DBP from the pressure the state produces, pressure_rel = output x tone (KD-S4, P2E-4, P2J-1).
 
-    - At and above ``low_output_pressure_knee``: the adopted linear relation, arrival less the
-      gain times (1 - pressure_rel), never below 0.
-    - Below it: both are the knee's values times pressure_rel / knee, so they fall together,
-      continuously and monotonically, to 0 as pressure_rel (and so output, at any tone) goes to
-      0: pressure proportional to flow times resistance. Sharing the scale keeps SBP above DBP
-      below the knee whenever it is above it at the knee. The slope changes at the knee; the
-      value does not.
+    Both are the authored arrival values times pressure_rel, over the whole range: pressure
+    proportional to flow times resistance, each relative to arrival, with T the only resistance
+    (P2J-1). So they are continuous and smooth, never decrease with output at a fixed tone or
+    with tone at a fixed output, keep SBP above DBP (the arrival pulse pressure scales with
+    them) and reach 0 with output: no floor, no knee, no clip.
 
-    An arrival pulse pressure narrower than (sbp gain - dbp gain) x (1 - knee), 10 mmHg at the
-    defaults, still reaches SBP < DBP above the knee, as before P2E; ``check`` then fails the
-    minute closed (§9.8).
+    Before P2J-1 the adopted linear relation (arrival less 45 and 25 mmHg per unit of
+    1 - pressure_rel) held above ``low_output_pressure_knee`` and the proportional one below it.
+    The linear branch carried a resistance of its own that T did not (1.52 to 1.65 times
+    arrival's at the knee, below 1 above arrival), and the splice broke the slope at the knee
+    (by 2.9 to 5 times, depending on the arrival pressure). The two gains and the knee stay in
+    the profile, unread, so historical records stay readable.
 
-    No legacy floor: without output there is no pressure. Tone still lifts DBP and MAP through
-    pressure_rel, so a vasoconstricted patient can hold a pressure that does not mean
-    perfusion: output, delivery, D and CRT read output, not pressure. Knee and form are TBD.
+    Tone still lifts DBP and MAP through pressure_rel, so a vasoconstricted patient can hold a
+    pressure that does not mean perfusion: output, delivery, D and CRT read output, not pressure.
     """
-    def linear(rel):
-        return (max(0.0, anchors.sbp - profile.sbp_per_pressure_deficit * (1.0 - rel)),
-                max(0.0, anchors.dbp - profile.dbp_per_pressure_deficit * (1.0 - rel)))
-
-    knee = profile.low_output_pressure_knee
-    if pressure_rel >= knee:
-        return linear(pressure_rel)
-    sbp_knee, dbp_knee = linear(knee)
-    scale = max(0.0, pressure_rel) / knee
-    return sbp_knee * scale, dbp_knee * scale
+    scale = max(0.0, pressure_rel)
+    return anchors.sbp * scale, anchors.dbp * scale
 
 
 def collapse_burden_after_minute(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:

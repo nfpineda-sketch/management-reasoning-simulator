@@ -100,30 +100,41 @@ DIFFERENCES = {
                "TBD: bleed rate (case or family), arrival circulating volume, kappa (only kappa / curve scale "
                "is identifiable), refill target, capacity and tau, red-cell unit content and volume, crystalloid "
                "retention and redistribution"),
+    "P2J-1": ("arterial pressure proportional to output x tone (faculty structural expectation, P2J-1): the core "
+              "reads SBP and DBP as the arrival values times pressure_rel = output x T over the whole range, with no "
+              "knee and no floor; the family engine subtracts 45 and 25 mmHg per unit of circulation deficit from "
+              "arrival, the relation the core read above its knee before P2J-1, whose implicit resistance halved the "
+              "pressure response to output near arrival. So SBP, DBP and MAP differ wherever output leaves arrival, "
+              "about twice as much per unit of output near arrival, and consciousness wherever the two SBPs fall on "
+              "different sides of 80 or 65 mmHg", "TBD: a vascular-tone response (no mechanism writes T), its gains "
+              "and set point, and the faculty's pressure envelopes"),
 }
 #: Candidate causes of each expected difference (P2D-9): the decided mechanisms on the variable's
 #: causal path in that run. They are candidates, not a measure of how much each contributes;
 #: where more than one mechanism lies on the path, all are listed:
 #: - lactate and RR: KD-S1 kinetics, and KD-S4 through output and so through D;
 #: - HR: the KD-S2 drive, and KD-S4 through the pressure deficit and D;
-#: - SBP, DBP, MAP and CRT: KD-S4 (output and pressure from the preload curve);
+#: - SBP, DBP and MAP: KD-S4 (output and pressure from the preload curve) and P2J-1 (pressure
+#:   proportional to output x tone);
+#: - CRT: KD-S4;
 #: - V: KD-S4 (no clamp on volume);
-#: - consciousness: KD-S3 and/or KD-S4, minute by minute (``consciousness_attribution``).
+#: - consciousness: KD-S3 and/or the core's pressure (KD-S4 with P2J-1), minute by minute
+#:   (``consciousness_attribution``).
 #: Every run bleeds, so V leaves arrival and KD-S4 lies on every path through output. Every run
 #: bleeds, so plasma refill acts on V and the shared blood state on Hb (P2I-2T), and through them
 #: on every variable downstream of output or delivery.
 _STRUCTURAL = {"lactate_mmol_l": ("KD-S1", "KD-S4", "P2I-2T"), "respiratory_rate": ("KD-S1", "KD-S4", "P2I-2T"),
-               "hr": ("KD-S2", "KD-S4", "P2I-2T"), "sbp": ("KD-S4", "P2I-2T"), "dbp": ("KD-S4", "P2I-2T"),
-               "map": ("KD-S4", "P2I-2T"), "crt_s": ("KD-S4", "P2I-2T"), "V_ml_eq": ("P2I-2T",),
+               "hr": ("KD-S2", "KD-S4", "P2I-2T"), "sbp": ("KD-S4", "P2I-2T", "P2J-1"),
+               "dbp": ("KD-S4", "P2I-2T", "P2J-1"), "map": ("KD-S4", "P2I-2T", "P2J-1"), "crt_s": ("KD-S4", "P2I-2T"), "V_ml_eq": ("P2I-2T",),
                "hb_g_dl": ("P2I-2T",)}
 EXPECTED_DIFFERENCES = {
     f"{variant}/{scenario}": dict(_STRUCTURAL) for variant in VARIANTS for scenario in SCENARIOS}
 # The oxygen runs last 20 minutes and V moves only with the bleeding (less what refill restores,
-# P2I-2T), so the core's displayed pressures and CRT stay those of the engine; in the 72f run the
-# rate does too.
-for _name in ("sbp", "dbp", "map", "crt_s"):
-    del EXPECTED_DIFFERENCES["gi_bleed_57m/oxygen_non_rebreather"][_name]
-for _name in ("sbp", "dbp", "map", "crt_s", "hr"):
+# P2I-2T), so the core's displayed CRT stays the engine's; in the 72f run the rate does too. Since
+# P2J-1 the pressures differ there as well: the same small fall of output moves the core's
+# proportional pressure about twice as far as the engine's linear one.
+del EXPECTED_DIFFERENCES["gi_bleed_57m/oxygen_non_rebreather"]["crt_s"]
+for _name in ("crt_s", "hr"):
     del EXPECTED_DIFFERENCES["gi_bleed_72f/oxygen_non_rebreather"][_name]
 for _variant in VARIANTS:
     # Past the engine's circulation clamp the core's V keeps rising (KD-S4).
@@ -134,13 +145,15 @@ for _variant in VARIANTS:
                       "untimed_shared_line"):
         del EXPECTED_DIFFERENCES[f"{_variant}/{_scenario}"]["V_ml_eq"]
 # Before P2I-2T the 57m untreated hour crossed the 80 mmHg threshold differently (KD-S3 / KD-S4);
-# with plasma refill the core's raw SBP no longer reaches it, so consciousness matches and no
-# consciousness difference is expected in any run (consciousness_attribution stays for when one is).
+# with plasma refill the core's raw SBP no longer reached it. Since P2J-1 the core's proportional
+# pressure crosses 80 mmHg again in that hour, from minute 31, while the engine's stays at or above
+# it, so consciousness differs there, minute by minute (consciousness_attribution).
+EXPECTED_DIFFERENCES["gi_bleed_57m/untreated_60"]["consciousness_level"] = ("KD-S3", "KD-S4", "P2J-1")
 
 #: Registered differences no golden run produces at present, and why. Each stays registered
-#: because its mechanism is still in the core and a later run may produce it again.
-DORMANT = {"KD-S3": "since P2I-2T plasma refill keeps the 57m untreated hour's raw SBP above the 80 mmHg threshold, "
-                    "so no run reads that threshold differently"}
+#: because its mechanism is still in the core and a later run may produce it again. Since P2J-1
+#: KD-S3 acts again (the 57m untreated hour), so none is dormant.
+DORMANT: dict[str, str] = {}
 
 #: The decision behind each known difference. "approved" means its physiological direction is
 #: approved (P2C); its magnitude is not, until the Level-2 bands and the Appendix A9 tolerances
@@ -156,6 +169,10 @@ DECISIONS = {
     "P2I-2T": ("approved", "STRUCTURE: one haemorrhage source drives circulating volume and red-cell mass; Hb is a "
                            "concentration; refill, crystalloid and red cells act through the shared state; every "
                            "value is TBD"),
+    "P2J-1": ("approved", "STRUCTURE (the faculty's structural expectation in the P2J-1 brief): pressure continuous and "
+                          "monotone in output and in tone, reaching 0 without output, no floor; the proportional form is "
+                          "the minimum correction the brief authorized, and its confirmation and every magnitude (any "
+                          "tone response) are the faculty's"),
 }
 
 #: Mechanisms on a variable's causal path only in the runs where they act (P2E). P2E-2: in a run
@@ -197,7 +214,8 @@ def consciousness_attribution(result) -> list[dict]:
     - KD-S3 alone: the engine's own pressure (its circulation change since arrival, through
       the adopted relation) read raw, as the core reads it;
     - KD-S4 alone: the core's pressure read on its displayed (rounded) value, as the engine
-      reads it.
+      reads it. Since P2J-1 that pressure is the preload curve's output read through the
+      proportional relation, so this cause is named with P2J-1 (KD-S4 and P2J-1 together).
     Each that still differs from the engine's level is sufficient alone; when neither does,
     both are needed together. A minute without a pulse on either side, or one the pressure
     does not explain, gets no candidate cause: it stays unresolved.
@@ -232,12 +250,14 @@ def consciousness_attribution(result) -> list[dict]:
             continue
         s3_alone = level(engine_raw_sbp, engine_spo2) != row["legacy"]
         s4_alone = level(shown["sbp"], engine_spo2) != row["legacy"]
+        # The core's pressure is the preload curve's output (KD-S4) read through the proportional
+        # pressure relation (P2J-1): both lie on its path, so they are named together.
         if s3_alone and s4_alone:
-            causes, mode = ["KD-S3", "KD-S4"], "each_sufficient"
+            causes, mode = ["KD-S3", "KD-S4", "P2J-1"], "each_sufficient"
         elif s3_alone or s4_alone:
-            causes, mode = ["KD-S3" if s3_alone else "KD-S4"], "sufficient_alone"
+            causes, mode = (["KD-S3"] if s3_alone else ["KD-S4", "P2J-1"]), "sufficient_alone"
         else:
-            causes, mode = ["KD-S3", "KD-S4"], "jointly_necessary"
+            causes, mode = ["KD-S3", "KD-S4", "P2J-1"], "jointly_necessary"
         rows.append({**entry, "candidate_causes": causes, "mode": mode})
     return rows
 

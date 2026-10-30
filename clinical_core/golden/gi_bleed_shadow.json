@@ -95,6 +95,10 @@
   "P2I-2T": [
    "approved",
    "STRUCTURE: one haemorrhage source drives circulating volume and red-cell mass; Hb is a concentration; refill, crystalloid and red cells act through the shared state; every value is TBD"
+  ],
+  "P2J-1": [
+   "approved",
+   "STRUCTURE (the faculty's structural expectation in the P2J-1 brief): pressure continuous and monotone in output and in tone, reaching 0 without output, no floor; the proportional form is the minimum correction the brief authorized, and its confirmation and every magnitude (any tone response) are the faculty's"
   ]
  },
  "differences": {
@@ -121,6 +125,10 @@
   "P2I-2T": [
    "shared haemorrhage state (faculty decision, P2I-2T): one bleeding source takes whole blood -- circulating volume and red cells together -- out of a shared blood state; plasma refill restores part of the shed volume without red cells; crystalloid and packed red cells act through the same state; Hb is red-cell content over circulating volume, and V is kappa x the circulating-volume deviation. The family engine moves circulation and Hb by two independent drifts, dilutes Hb by a fixed amount per mL of crystalloid that never reverses and raises it by a fixed 0.85 g/dL per unit. So V differs wherever refill acts (every bleeding run) and Hb wherever blood is lost, refilled, diluted or transfused, and both reach output, delivery, D, lactate, RR and HR",
    "TBD: bleed rate (case or family), arrival circulating volume, kappa (only kappa / curve scale is identifiable), refill target, capacity and tau, red-cell unit content and volume, crystalloid retention and redistribution"
+  ],
+  "P2J-1": [
+   "arterial pressure proportional to output x tone (faculty structural expectation, P2J-1): the core reads SBP and DBP as the arrival values times pressure_rel = output x T over the whole range, with no knee and no floor; the family engine subtracts 45 and 25 mmHg per unit of circulation deficit from arrival, the relation the core read above its knee before P2J-1, whose implicit resistance halved the pressure response to output near arrival. So SBP, DBP and MAP differ wherever output leaves arrival, about twice as much per unit of output near arrival, and consciousness wherever the two SBPs fall on different sides of 80 or 65 mmHg",
+   "TBD: a vascular-tone response (no mechanism writes T), its gains and set point, and the faculty's pressure envelopes"
   ]
  },
  "legacy": {
@@ -204,7 +212,7 @@
   ],
   "dbp_per_pressure_deficit": [
    "adopted",
-   "family_engine._surface: dbp - (circulation - 1) * 25"
+   "family_engine._surface: dbp - (circulation - 1) * 25. Since P2J-1 the core does not read it (DBP is the arrival DBP x pressure_rel); kept so historical records stay readable"
   ],
   "debt_clearance_tau_min": [
    "provisional",
@@ -252,7 +260,7 @@
   ],
   "low_output_pressure_knee": [
    "provisional",
-   "pressure_rel below which SBP and DBP leave the adopted linear relation and fall continuously to 0 with output (P2E-4): TBD"
+   "pressure_rel below which SBP and DBP left the adopted linear relation and fell continuously to 0 with output (P2E-4). Since P2J-1 the core does not read it (no knee: pressure is proportional to pressure_rel over the whole range); kept so historical records stay readable"
   ],
   "lung_water_clearance_tau_min": [
    "provisional",
@@ -312,7 +320,7 @@
   ],
   "sbp_per_pressure_deficit": [
    "adopted",
-   "family_engine._surface: sbp - (circulation - 1) * 45"
+   "family_engine._surface: sbp - (circulation - 1) * 45. Since P2J-1 the core does not read it (SBP is the arrival SBP x pressure_rel); kept so historical records stay readable"
   ],
   "sinus_rate_ceiling_bpm": [
    "provisional",
@@ -434,7 +442,8 @@
     "dbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -481,7 +490,8 @@
     "map": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -505,7 +515,8 @@
     "sbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -577,7 +588,8 @@
     ],
     "dbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "hb_g_dl": [
      "P2I-2T"
@@ -596,7 +608,8 @@
     ],
     "map": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "respiratory_rate": [
      "KD-S1",
@@ -606,7 +619,8 @@
     ],
     "sbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ]
    },
    "orders": {
@@ -895,10 +909,10 @@
     },
     "dbp": {
      "compared": 91,
-     "first_mismatch_minute": 2,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 6.0,
-     "mismatched": 79,
+     "max_abs_diff": 24.0,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -907,43 +921,43 @@
       ],
       "1": [
        55,
-       55
+       56
       ],
       "10": [
        62,
-       60
+       68
       ],
       "15": [
        65,
-       63
+       73
       ],
       "20": [
        69,
-       65
+       78
       ],
       "30": [
        73,
-       68
+       85
       ],
       "45": [
        73,
-       71
+       91
       ],
       "5": [
        58,
-       58
+       62
       ],
       "60": [
        73,
-       73
+       95
       ],
       "75": [
        71,
-       73
+       94
       ],
       "90": [
        70,
-       72
+       93
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -1455,10 +1469,10 @@
     },
     "map": {
      "compared": 90,
-     "first_mismatch_minute": 2,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 7.0,
-     "mismatched": 79,
+     "max_abs_diff": 28.0,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -1467,43 +1481,43 @@
       ],
       "1": [
        66,
-       66
+       68
       ],
       "10": [
        75,
-       73
+       82
       ],
       "15": [
        79,
-       77
+       89
       ],
       "20": [
        84,
-       79
+       94
       ],
       "30": [
        89,
-       83
+       103
       ],
       "45": [
        89,
-       87
+       110
       ],
       "5": [
        70,
-       70
+       75
       ],
       "60": [
        89,
-       89
+       115
       ],
       "75": [
        87,
-       89
+       114
       ],
       "90": [
        86,
-       88
+       113
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -1679,10 +1693,10 @@
     },
     "sbp": {
      "compared": 91,
-     "first_mismatch_minute": 5,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 10.0,
-     "mismatched": 82,
+     "max_abs_diff": 36.0,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -1691,43 +1705,43 @@
       ],
       "1": [
        89,
-       89
+       91
       ],
       "10": [
        102,
-       100
+       111
       ],
       "15": [
        108,
-       104
+       120
       ],
       "20": [
        114,
-       108
+       127
       ],
       "30": [
        122,
-       114
+       139
       ],
       "45": [
        122,
-       119
+       148
       ],
       "5": [
        95,
-       94
+       100
       ],
       "60": [
        122,
-       122
+       155
       ],
       "75": [
        119,
-       121
+       153
       ],
       "90": [
        117,
-       121
+       152
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -1930,7 +1944,8 @@
     "dbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -1977,7 +1992,8 @@
     "map": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -2001,7 +2017,8 @@
     "sbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -2066,7 +2083,8 @@
     ],
     "dbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "hb_g_dl": [
      "P2I-2T"
@@ -2085,7 +2103,8 @@
     ],
     "map": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "respiratory_rate": [
      "KD-S1",
@@ -2095,7 +2114,8 @@
     ],
     "sbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ]
    },
    "orders": {
@@ -2424,10 +2444,10 @@
     },
     "dbp": {
      "compared": 121,
-     "first_mismatch_minute": 15,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 3.0,
-     "mismatched": 99,
+     "max_abs_diff": 10.0,
+     "mismatched": 120,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -2436,51 +2456,51 @@
       ],
       "1": [
        54,
-       54
+       55
       ],
       "10": [
        56,
-       56
+       59
       ],
       "105": [
        68,
-       65
+       77
       ],
       "120": [
        68,
-       65
+       77
       ],
       "15": [
        58,
-       57
+       61
       ],
       "20": [
        59,
-       58
+       63
       ],
       "30": [
        61,
-       60
+       68
       ],
       "45": [
        65,
-       63
+       73
       ],
       "5": [
        55,
-       55
+       57
       ],
       "60": [
        68,
-       65
+       78
       ],
       "75": [
        68,
-       65
+       78
       ],
       "90": [
        68,
-       65
+       77
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -3064,10 +3084,10 @@
     },
     "map": {
      "compared": 120,
-     "first_mismatch_minute": 15,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 4.0,
-     "mismatched": 100,
+     "max_abs_diff": 11.0,
+     "mismatched": 120,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -3076,51 +3096,51 @@
       ],
       "1": [
        65,
-       65
+       66
       ],
       "10": [
        68,
-       68
+       71
       ],
       "105": [
        83,
-       79
+       93
       ],
       "120": [
        83,
-       79
+       93
       ],
       "15": [
        70,
-       69
+       74
       ],
       "20": [
        72,
-       71
+       76
       ],
       "30": [
        74,
-       73
+       82
       ],
       "45": [
        79,
-       77
+       88
       ],
       "5": [
        67,
-       67
+       69
       ],
       "60": [
        83,
-       79
+       94
       ],
       "75": [
        83,
-       79
+       94
       ],
       "90": [
        83,
-       79
+       93
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -3320,10 +3340,10 @@
     },
     "sbp": {
      "compared": 121,
-     "first_mismatch_minute": 13,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 7.0,
-     "mismatched": 104,
+     "max_abs_diff": 13.0,
+     "mismatched": 120,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -3332,51 +3352,51 @@
       ],
       "1": [
        88,
-       88
+       89
       ],
       "10": [
        92,
-       92
+       96
       ],
       "105": [
        113,
-       107
+       126
       ],
       "120": [
        113,
-       107
+       126
       ],
       "15": [
        94,
-       94
+       100
       ],
       "20": [
        97,
-       96
+       103
       ],
       "30": [
        101,
-       99
+       110
       ],
       "45": [
        107,
-       104
+       119
       ],
       "5": [
        90,
-       90
+       92
       ],
       "60": [
        114,
-       108
+       127
       ],
       "75": [
        114,
-       108
+       126
       ],
       "90": [
        114,
-       108
+       126
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -3592,8 +3612,12 @@
      "classification": "MATCH"
     },
     "dbp": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "KD-S4",
+      "P2I-2T",
+      "P2J-1"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "fio2": {
      "candidate_causes": [],
@@ -3636,8 +3660,12 @@
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "KD-S4",
+      "P2I-2T",
+      "P2J-1"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "pulse_present": {
      "candidate_causes": [],
@@ -3657,8 +3685,12 @@
      "classification": "MATCH"
     },
     "sbp": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "KD-S4",
+      "P2I-2T",
+      "P2J-1"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "spo2": {
      "candidate_causes": [],
@@ -3702,6 +3734,11 @@
     "V_ml_eq": [
      "P2I-2T"
     ],
+    "dbp": [
+     "KD-S4",
+     "P2I-2T",
+     "P2J-1"
+    ],
     "hb_g_dl": [
      "P2I-2T"
     ],
@@ -3717,11 +3754,21 @@
      "P2I-2T",
      "P2E-2"
     ],
+    "map": [
+     "KD-S4",
+     "P2I-2T",
+     "P2J-1"
+    ],
     "respiratory_rate": [
      "KD-S1",
      "KD-S4",
      "P2I-2T",
      "P2E-2"
+    ],
+    "sbp": [
+     "KD-S4",
+     "P2I-2T",
+     "P2J-1"
     ]
    },
    "orders": {
@@ -3910,10 +3957,10 @@
     },
     "dbp": {
      "compared": 21,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 4,
      "kind": "display",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 2.0,
+     "mismatched": 14,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -3926,19 +3973,19 @@
       ],
       "10": [
        53,
-       53
+       52
       ],
       "15": [
        53,
-       53
+       52
       ],
       "20": [
        53,
-       53
+       51
       ],
       "5": [
        54,
-       54
+       53
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -4270,10 +4317,10 @@
     },
     "map": {
      "compared": 20,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 4,
      "kind": "display",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 2.0,
+     "mismatched": 14,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -4286,19 +4333,19 @@
       ],
       "10": [
        64,
-       64
+       63
       ],
       "15": [
        64,
-       64
+       63
       ],
       "20": [
        64,
-       64
+       62
       ],
       "5": [
        65,
-       65
+       64
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -4414,10 +4461,10 @@
     },
     "sbp": {
      "compared": 21,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 3.0,
+     "mismatched": 17,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -4430,15 +4477,15 @@
       ],
       "10": [
        87,
-       87
+       85
       ],
       "15": [
        86,
-       86
+       84
       ],
       "20": [
        85,
-       85
+       83
       ],
       "5": [
        87,
@@ -4605,7 +4652,8 @@
     "dbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -4652,7 +4700,8 @@
     "map": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -4676,7 +4725,8 @@
     "sbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -4730,7 +4780,8 @@
     ],
     "dbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "hb_g_dl": [
      "P2I-2T"
@@ -4749,7 +4800,8 @@
     ],
     "map": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "respiratory_rate": [
      "KD-S1",
@@ -4759,7 +4811,8 @@
     ],
     "sbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ]
    },
    "orders": {
@@ -5048,10 +5101,10 @@
     },
     "dbp": {
      "compared": 91,
-     "first_mismatch_minute": 16,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 4.0,
-     "mismatched": 69,
+     "max_abs_diff": 9.0,
+     "mismatched": 88,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -5064,39 +5117,39 @@
       ],
       "10": [
        56,
-       56
+       59
       ],
       "15": [
        57,
-       57
+       61
       ],
       "20": [
        59,
-       58
+       63
       ],
       "30": [
        61,
-       60
+       67
       ],
       "45": [
        64,
-       62
+       72
       ],
       "5": [
        55,
-       55
+       56
       ],
       "60": [
        68,
-       64
+       77
       ],
       "75": [
        66,
-       64
+       75
       ],
       "90": [
        65,
-       63
+       74
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -5608,10 +5661,10 @@
     },
     "map": {
      "compared": 90,
-     "first_mismatch_minute": 16,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 5.0,
-     "mismatched": 71,
+     "max_abs_diff": 10.0,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -5620,43 +5673,43 @@
       ],
       "1": [
        65,
-       65
+       66
       ],
       "10": [
        68,
-       68
+       71
       ],
       "15": [
        69,
-       69
+       74
       ],
       "20": [
        71,
-       70
+       76
       ],
       "30": [
        74,
-       73
+       81
       ],
       "45": [
        78,
-       76
+       87
       ],
       "5": [
        67,
-       67
+       68
       ],
       "60": [
        83,
-       78
+       93
       ],
       "75": [
        81,
-       78
+       91
       ],
       "90": [
        79,
-       77
+       89
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -5832,10 +5885,10 @@
     },
     "sbp": {
      "compared": 91,
-     "first_mismatch_minute": 14,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 6.0,
-     "mismatched": 74,
+     "max_abs_diff": 13.0,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -5844,43 +5897,43 @@
       ],
       "1": [
        88,
-       88
+       89
       ],
       "10": [
        92,
-       92
+       96
       ],
       "15": [
        94,
-       94
+       99
       ],
       "20": [
        96,
-       95
+       102
       ],
       "30": [
        100,
-       99
+       109
       ],
       "45": [
        106,
-       103
+       117
       ],
       "5": [
        90,
-       90
+       92
       ],
       "60": [
        112,
-       107
+       125
       ],
       "75": [
        110,
-       106
+       122
       ],
       "90": [
        108,
-       104
+       120
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -6083,7 +6136,8 @@
     "dbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -6130,7 +6184,8 @@
     "map": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -6154,7 +6209,8 @@
     "sbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -6224,7 +6280,8 @@
     ],
     "dbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "hb_g_dl": [
      "P2I-2T"
@@ -6243,7 +6300,8 @@
     ],
     "map": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "respiratory_rate": [
      "KD-S1",
@@ -6253,7 +6311,8 @@
     ],
     "sbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ]
    },
    "orders": {
@@ -6482,10 +6541,10 @@
     },
     "dbp": {
      "compared": 46,
-     "first_mismatch_minute": 10,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 4,
+     "max_abs_diff": 4.0,
+     "mismatched": 43,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -6498,27 +6557,27 @@
       ],
       "10": [
        56,
-       55
+       57
       ],
       "15": [
        56,
-       56
+       58
       ],
       "20": [
        57,
-       57
+       59
       ],
       "30": [
        58,
-       57
+       61
       ],
       "45": [
        55,
-       55
+       57
       ],
       "5": [
        55,
-       55
+       56
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -6922,10 +6981,10 @@
     },
     "map": {
      "compared": 45,
-     "first_mismatch_minute": 10,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 4,
+     "max_abs_diff": 5.0,
+     "mismatched": 44,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -6934,31 +6993,31 @@
       ],
       "1": [
        65,
-       65
+       66
       ],
       "10": [
        68,
-       67
+       69
       ],
       "15": [
        68,
-       68
+       70
       ],
       "20": [
        69,
-       69
+       72
       ],
       "30": [
        70,
-       69
+       74
       ],
       "45": [
        67,
-       67
+       69
       ],
       "5": [
        66,
-       66
+       68
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -7098,10 +7157,10 @@
     },
     "sbp": {
      "compared": 46,
-     "first_mismatch_minute": 14,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 8,
+     "max_abs_diff": 6.0,
+     "mismatched": 44,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -7110,31 +7169,31 @@
       ],
       "1": [
        88,
-       88
+       89
       ],
       "10": [
        91,
-       91
+       93
       ],
       "15": [
        92,
-       92
+       95
       ],
       "20": [
        93,
-       93
+       97
       ],
       "30": [
        94,
-       94
+       100
       ],
       "45": [
        90,
-       90
+       93
       ],
       "5": [
        89,
-       89
+       91
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -7315,7 +7374,8 @@
     "dbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -7362,7 +7422,8 @@
     "map": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -7386,7 +7447,8 @@
     "sbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -7445,7 +7507,8 @@
     ],
     "dbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "hb_g_dl": [
      "P2I-2T"
@@ -7464,7 +7527,8 @@
     ],
     "map": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "respiratory_rate": [
      "KD-S1",
@@ -7474,7 +7538,8 @@
     ],
     "sbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ]
    },
    "orders": {
@@ -7723,10 +7788,10 @@
     },
     "dbp": {
      "compared": 61,
-     "first_mismatch_minute": 10,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 11,
+     "max_abs_diff": 5.0,
+     "mismatched": 50,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -7735,31 +7800,31 @@
       ],
       "1": [
        54,
-       54
+       55
       ],
       "10": [
        57,
-       56
+       59
       ],
       "15": [
        58,
-       57
+       61
       ],
       "20": [
        59,
-       58
+       63
       ],
       "30": [
        57,
-       57
+       60
       ],
       "45": [
        55,
-       55
+       56
       ],
       "5": [
        55,
-       55
+       57
       ],
       "60": [
        53,
@@ -8203,10 +8268,10 @@
     },
     "map": {
      "compared": 60,
-     "first_mismatch_minute": 10,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 14,
+     "max_abs_diff": 5.0,
+     "mismatched": 52,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -8219,27 +8284,27 @@
       ],
       "10": [
        69,
-       68
+       72
       ],
       "15": [
        70,
-       69
+       74
       ],
       "20": [
        72,
-       71
+       76
       ],
       "30": [
        69,
-       69
+       73
       ],
       "45": [
        67,
-       67
+       68
       ],
       "5": [
        67,
-       67
+       69
       ],
       "60": [
        64,
@@ -8395,10 +8460,10 @@
     },
     "sbp": {
      "compared": 61,
-     "first_mismatch_minute": 5,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 16,
+     "max_abs_diff": 7.0,
+     "mismatched": 53,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -8411,31 +8476,31 @@
       ],
       "10": [
        93,
-       92
+       97
       ],
       "15": [
        95,
-       94
+       100
       ],
       "20": [
        97,
-       96
+       103
       ],
       "30": [
        94,
-       93
+       98
       ],
       "45": [
        90,
-       90
+       92
       ],
       "5": [
        91,
-       90
+       93
       ],
       "60": [
        87,
-       87
+       86
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -8622,7 +8687,8 @@
     "dbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -8669,7 +8735,8 @@
     "map": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -8693,7 +8760,8 @@
     "sbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -8767,7 +8835,8 @@
     ],
     "dbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "hb_g_dl": [
      "P2I-2T"
@@ -8786,7 +8855,8 @@
     ],
     "map": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "respiratory_rate": [
      "KD-S1",
@@ -8796,7 +8866,8 @@
     ],
     "sbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ]
    },
    "orders": {
@@ -9126,10 +9197,10 @@
     },
     "dbp": {
      "compared": 121,
-     "first_mismatch_minute": 45,
+     "first_mismatch_minute": 3,
      "kind": "display",
-     "max_abs_diff": 4.0,
-     "mismatched": 70,
+     "max_abs_diff": 10.0,
+     "mismatched": 112,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -9142,31 +9213,31 @@
       ],
       "10": [
        55,
-       55
+       56
       ],
       "105": [
        67,
-       64
+       76
       ],
       "120": [
        66,
-       63
+       74
       ],
       "15": [
        55,
-       55
+       57
       ],
       "20": [
        56,
-       56
+       57
       ],
       "30": [
        54,
-       54
+       55
       ],
       "45": [
        58,
-       57
+       61
       ],
       "5": [
        55,
@@ -9174,15 +9245,15 @@
       ],
       "60": [
        61,
-       60
+       67
       ],
       "75": [
        64,
-       62
+       72
       ],
       "90": [
        68,
-       65
+       77
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -9766,10 +9837,10 @@
     },
     "map": {
      "compared": 120,
-     "first_mismatch_minute": 45,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 5.0,
-     "mismatched": 72,
+     "max_abs_diff": 11.0,
+     "mismatched": 116,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -9782,23 +9853,23 @@
       ],
       "10": [
        67,
-       67
+       68
       ],
       "105": [
        82,
-       78
+       92
       ],
       "120": [
        80,
-       77
+       90
       ],
       "15": [
        67,
-       67
+       69
       ],
       "20": [
        68,
-       68
+       69
       ],
       "30": [
        66,
@@ -9806,23 +9877,23 @@
       ],
       "45": [
        70,
-       69
+       74
       ],
       "5": [
        66,
-       66
+       67
       ],
       "60": [
        74,
-       73
+       81
       ],
       "75": [
        78,
-       76
+       87
       ],
       "90": [
        83,
-       79
+       93
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -10022,10 +10093,10 @@
     },
     "sbp": {
      "compared": 121,
-     "first_mismatch_minute": 43,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 6.0,
-     "mismatched": 74,
+     "max_abs_diff": 13.0,
+     "mismatched": 116,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -10038,23 +10109,23 @@
       ],
       "10": [
        90,
-       90
+       91
       ],
       "105": [
        111,
-       106
+       123
       ],
       "120": [
        109,
-       105
+       121
       ],
       "15": [
        90,
-       90
+       92
       ],
       "20": [
        91,
-       91
+       94
       ],
       "30": [
        89,
@@ -10062,23 +10133,23 @@
       ],
       "45": [
        94,
-       94
+       100
       ],
       "5": [
        89,
-       89
+       90
       ],
       "60": [
        100,
-       99
+       109
       ],
       "75": [
        107,
-       103
+       118
       ],
       "90": [
        113,
-       107
+       125
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -10299,7 +10370,8 @@
     "dbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -10346,7 +10418,8 @@
     "map": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -10370,7 +10443,8 @@
     "sbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -10443,7 +10517,8 @@
     ],
     "dbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "hb_g_dl": [
      "P2I-2T"
@@ -10462,7 +10537,8 @@
     ],
     "map": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "respiratory_rate": [
      "KD-S1",
@@ -10472,7 +10548,8 @@
     ],
     "sbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ]
    },
    "orders": {
@@ -10722,10 +10799,10 @@
     },
     "dbp": {
      "compared": 61,
-     "first_mismatch_minute": 7,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 7,
+     "max_abs_diff": 4.0,
+     "mismatched": 48,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -10738,31 +10815,31 @@
       ],
       "10": [
        56,
-       56
+       58
       ],
       "15": [
        57,
-       57
+       60
       ],
       "20": [
        58,
-       57
+       61
       ],
       "30": [
        56,
-       56
+       59
       ],
       "45": [
        54,
-       54
+       55
       ],
       "5": [
        55,
-       55
+       56
       ],
       "60": [
        53,
-       53
+       52
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -11202,10 +11279,10 @@
     },
     "map": {
      "compared": 60,
-     "first_mismatch_minute": 7,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 7,
+     "max_abs_diff": 5.0,
+     "mismatched": 51,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -11214,23 +11291,23 @@
       ],
       "1": [
        65,
-       65
+       66
       ],
       "10": [
        68,
-       68
+       70
       ],
       "15": [
        69,
-       69
+       73
       ],
       "20": [
        70,
-       69
+       74
       ],
       "30": [
        68,
-       68
+       71
       ],
       "45": [
        66,
@@ -11238,11 +11315,11 @@
       ],
       "5": [
        67,
-       67
+       68
       ],
       "60": [
        64,
-       64
+       63
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -11394,10 +11471,10 @@
     },
     "sbp": {
      "compared": 61,
-     "first_mismatch_minute": 13,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 8,
+     "max_abs_diff": 6.0,
+     "mismatched": 53,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -11406,23 +11483,23 @@
       ],
       "1": [
        88,
-       88
+       89
       ],
       "10": [
        92,
-       92
+       95
       ],
       "15": [
        93,
-       93
+       98
       ],
       "20": [
        95,
-       94
+       100
       ],
       "30": [
        92,
-       92
+       95
       ],
       "45": [
        89,
@@ -11430,11 +11507,11 @@
       ],
       "5": [
        90,
-       90
+       92
       ],
       "60": [
        86,
-       86
+       84
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -11621,7 +11698,8 @@
     "dbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -11668,7 +11746,8 @@
     "map": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -11692,7 +11771,8 @@
     "sbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -11786,7 +11866,8 @@
     ],
     "dbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "hb_g_dl": [
      "P2I-2T"
@@ -11805,7 +11886,8 @@
     ],
     "map": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "respiratory_rate": [
      "KD-S1",
@@ -11815,7 +11897,8 @@
     ],
     "sbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ]
    },
    "orders": {
@@ -12107,10 +12190,10 @@
     },
     "dbp": {
      "compared": 91,
-     "first_mismatch_minute": 17,
+     "first_mismatch_minute": 3,
      "kind": "display",
-     "max_abs_diff": 5.0,
-     "mismatched": 69,
+     "max_abs_diff": 10.0,
+     "mismatched": 85,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -12123,23 +12206,23 @@
       ],
       "10": [
        55,
-       55
+       56
       ],
       "15": [
        57,
-       57
+       60
       ],
       "20": [
        59,
-       58
+       63
       ],
       "30": [
        62,
-       61
+       69
       ],
       "45": [
        66,
-       64
+       75
       ],
       "5": [
        55,
@@ -12147,15 +12230,15 @@
       ],
       "60": [
        69,
-       65
+       78
       ],
       "75": [
        70,
-       66
+       80
       ],
       "90": [
        69,
-       65
+       78
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -12667,10 +12750,10 @@
     },
     "map": {
      "compared": 90,
-     "first_mismatch_minute": 17,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 6.0,
-     "mismatched": 70,
+     "max_abs_diff": 11.0,
+     "mismatched": 87,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -12683,39 +12766,39 @@
       ],
       "10": [
        67,
-       67
+       68
       ],
       "15": [
        69,
-       69
+       72
       ],
       "20": [
        71,
-       71
+       76
       ],
       "30": [
        76,
-       74
+       83
       ],
       "45": [
        81,
-       78
+       91
       ],
       "5": [
        66,
-       66
+       67
       ],
       "60": [
        84,
-       79
+       94
       ],
       "75": [
        86,
-       80
+       97
       ],
       "90": [
        84,
-       79
+       94
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -12891,10 +12974,10 @@
     },
     "sbp": {
      "compared": 91,
-     "first_mismatch_minute": 16,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 8.0,
-     "mismatched": 73,
+     "max_abs_diff": 13.0,
+     "mismatched": 87,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -12907,39 +12990,39 @@
       ],
       "10": [
        90,
-       90
+       91
       ],
       "15": [
        93,
-       93
+       97
       ],
       "20": [
        96,
-       96
+       103
       ],
       "30": [
        103,
-       100
+       112
       ],
       "45": [
        110,
-       105
+       122
       ],
       "5": [
        89,
-       89
+       90
       ],
       "60": [
        115,
-       108
+       127
       ],
       "75": [
        117,
-       109
+       130
       ],
       "90": [
        114,
-       108
+       127
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -13129,8 +13212,437 @@
      "classification": "MATCH"
     },
     "consciousness_level": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "by_minute": [
+      {
+       "candidate_causes": [
+        "KD-S3",
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 80,
+       "core_raw_sbp": 79.939,
+       "legacy": 0,
+       "legacy_displayed_sbp": 84,
+       "legacy_raw_sbp": 83.815,
+       "minute": 31,
+       "mode": "jointly_necessary"
+      },
+      {
+       "candidate_causes": [
+        "KD-S3",
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 80,
+       "core_raw_sbp": 79.683,
+       "legacy": 0,
+       "legacy_displayed_sbp": 84,
+       "legacy_raw_sbp": 83.68,
+       "minute": 32,
+       "mode": "jointly_necessary"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 79,
+       "core_raw_sbp": 79.427,
+       "legacy": 0,
+       "legacy_displayed_sbp": 84,
+       "legacy_raw_sbp": 83.545,
+       "minute": 33,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 79,
+       "core_raw_sbp": 79.172,
+       "legacy": 0,
+       "legacy_displayed_sbp": 83,
+       "legacy_raw_sbp": 83.41,
+       "minute": 34,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 79,
+       "core_raw_sbp": 78.917,
+       "legacy": 0,
+       "legacy_displayed_sbp": 83,
+       "legacy_raw_sbp": 83.275,
+       "minute": 35,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 79,
+       "core_raw_sbp": 78.663,
+       "legacy": 0,
+       "legacy_displayed_sbp": 83,
+       "legacy_raw_sbp": 83.14,
+       "minute": 36,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 78,
+       "core_raw_sbp": 78.408,
+       "legacy": 0,
+       "legacy_displayed_sbp": 83,
+       "legacy_raw_sbp": 83.005,
+       "minute": 37,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 78,
+       "core_raw_sbp": 78.154,
+       "legacy": 0,
+       "legacy_displayed_sbp": 83,
+       "legacy_raw_sbp": 82.87,
+       "minute": 38,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 78,
+       "core_raw_sbp": 77.9,
+       "legacy": 0,
+       "legacy_displayed_sbp": 83,
+       "legacy_raw_sbp": 82.735,
+       "minute": 39,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 78,
+       "core_raw_sbp": 77.646,
+       "legacy": 0,
+       "legacy_displayed_sbp": 83,
+       "legacy_raw_sbp": 82.6,
+       "minute": 40,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 77,
+       "core_raw_sbp": 77.392,
+       "legacy": 0,
+       "legacy_displayed_sbp": 82,
+       "legacy_raw_sbp": 82.465,
+       "minute": 41,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 77,
+       "core_raw_sbp": 77.139,
+       "legacy": 0,
+       "legacy_displayed_sbp": 82,
+       "legacy_raw_sbp": 82.33,
+       "minute": 42,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 77,
+       "core_raw_sbp": 76.886,
+       "legacy": 0,
+       "legacy_displayed_sbp": 82,
+       "legacy_raw_sbp": 82.195,
+       "minute": 43,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 77,
+       "core_raw_sbp": 76.633,
+       "legacy": 0,
+       "legacy_displayed_sbp": 82,
+       "legacy_raw_sbp": 82.06,
+       "minute": 44,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 76,
+       "core_raw_sbp": 76.38,
+       "legacy": 0,
+       "legacy_displayed_sbp": 82,
+       "legacy_raw_sbp": 81.925,
+       "minute": 45,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 76,
+       "core_raw_sbp": 76.128,
+       "legacy": 0,
+       "legacy_displayed_sbp": 82,
+       "legacy_raw_sbp": 81.79,
+       "minute": 46,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 76,
+       "core_raw_sbp": 75.876,
+       "legacy": 0,
+       "legacy_displayed_sbp": 82,
+       "legacy_raw_sbp": 81.655,
+       "minute": 47,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 76,
+       "core_raw_sbp": 75.624,
+       "legacy": 0,
+       "legacy_displayed_sbp": 82,
+       "legacy_raw_sbp": 81.52,
+       "minute": 48,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 75,
+       "core_raw_sbp": 75.372,
+       "legacy": 0,
+       "legacy_displayed_sbp": 81,
+       "legacy_raw_sbp": 81.385,
+       "minute": 49,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 75,
+       "core_raw_sbp": 75.12,
+       "legacy": 0,
+       "legacy_displayed_sbp": 81,
+       "legacy_raw_sbp": 81.25,
+       "minute": 50,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 75,
+       "core_raw_sbp": 74.869,
+       "legacy": 0,
+       "legacy_displayed_sbp": 81,
+       "legacy_raw_sbp": 81.115,
+       "minute": 51,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 75,
+       "core_raw_sbp": 74.618,
+       "legacy": 0,
+       "legacy_displayed_sbp": 81,
+       "legacy_raw_sbp": 80.98,
+       "minute": 52,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 74,
+       "core_raw_sbp": 74.367,
+       "legacy": 0,
+       "legacy_displayed_sbp": 81,
+       "legacy_raw_sbp": 80.845,
+       "minute": 53,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 74,
+       "core_raw_sbp": 74.116,
+       "legacy": 0,
+       "legacy_displayed_sbp": 81,
+       "legacy_raw_sbp": 80.71,
+       "minute": 54,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 74,
+       "core_raw_sbp": 73.865,
+       "legacy": 0,
+       "legacy_displayed_sbp": 81,
+       "legacy_raw_sbp": 80.575,
+       "minute": 55,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 74,
+       "core_raw_sbp": 73.615,
+       "legacy": 0,
+       "legacy_displayed_sbp": 80,
+       "legacy_raw_sbp": 80.44,
+       "minute": 56,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 73,
+       "core_raw_sbp": 73.365,
+       "legacy": 0,
+       "legacy_displayed_sbp": 80,
+       "legacy_raw_sbp": 80.305,
+       "minute": 57,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 73,
+       "core_raw_sbp": 73.115,
+       "legacy": 0,
+       "legacy_displayed_sbp": 80,
+       "legacy_raw_sbp": 80.17,
+       "minute": 58,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 73,
+       "core_raw_sbp": 72.865,
+       "legacy": 0,
+       "legacy_displayed_sbp": 80,
+       "legacy_raw_sbp": 80.035,
+       "minute": 59,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S3",
+        "KD-S4",
+        "P2J-1"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 73,
+       "core_raw_sbp": 72.615,
+       "legacy": 0,
+       "legacy_displayed_sbp": 80,
+       "legacy_raw_sbp": 79.9,
+       "minute": 60,
+       "mode": "each_sufficient"
+      }
+     ],
+     "candidate_causes": [
+      "KD-S3",
+      "KD-S4",
+      "P2J-1"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "crt_s": {
      "candidate_causes": [
@@ -13142,7 +13654,8 @@
     "dbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -13187,7 +13700,8 @@
     "map": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -13210,7 +13724,8 @@
     "sbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -13249,13 +13764,19 @@
     "V_ml_eq": [
      "P2I-2T"
     ],
+    "consciousness_level": [
+     "KD-S3",
+     "KD-S4",
+     "P2J-1"
+    ],
     "crt_s": [
      "KD-S4",
      "P2I-2T"
     ],
     "dbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "hb_g_dl": [
      "P2I-2T"
@@ -13272,7 +13793,8 @@
     ],
     "map": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "respiratory_rate": [
      "KD-S1",
@@ -13281,7 +13803,8 @@
     ],
     "sbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ]
    },
    "orders": {},
@@ -13432,10 +13955,10 @@
     },
     "consciousness_level": {
      "compared": 61,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 31,
      "kind": "categorical",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 1.0,
+     "mismatched": 30,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -13464,7 +13987,7 @@
       ],
       "45": [
        0,
-       0
+       1
       ],
       "5": [
        0,
@@ -13472,7 +13995,7 @@
       ],
       "60": [
        0,
-       0
+       1
       ]
      },
      "tolerance": "categorical equality",
@@ -13528,10 +14051,10 @@
     },
     "dbp": {
      "compared": 61,
-     "first_mismatch_minute": 47,
+     "first_mismatch_minute": 4,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 1,
+     "max_abs_diff": 5.0,
+     "mismatched": 54,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -13544,31 +14067,31 @@
       ],
       "10": [
        53,
-       53
+       52
       ],
       "15": [
        53,
-       53
+       52
       ],
       "20": [
        53,
-       53
+       51
       ],
       "30": [
        52,
-       52
+       49
       ],
       "45": [
        51,
-       51
+       47
       ],
       "5": [
        54,
-       54
+       53
       ],
       "60": [
        50,
-       50
+       45
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -14008,10 +14531,10 @@
     },
     "map": {
      "compared": 60,
-     "first_mismatch_minute": 41,
+     "first_mismatch_minute": 4,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 2,
+     "max_abs_diff": 6.0,
+     "mismatched": 54,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -14024,31 +14547,31 @@
       ],
       "10": [
        64,
-       64
+       63
       ],
       "15": [
        64,
-       64
+       63
       ],
       "20": [
        64,
-       64
+       62
       ],
       "30": [
        63,
-       63
+       59
       ],
       "45": [
        61,
-       61
+       57
       ],
       "5": [
        65,
-       65
+       64
       ],
       "60": [
        60,
-       60
+       54
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -14200,10 +14723,10 @@
     },
     "sbp": {
      "compared": 61,
-     "first_mismatch_minute": 26,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 5,
+     "max_abs_diff": 7.0,
+     "mismatched": 57,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -14216,23 +14739,23 @@
       ],
       "10": [
        87,
-       87
+       85
       ],
       "15": [
        86,
-       86
+       84
       ],
       "20": [
        85,
-       85
+       83
       ],
       "30": [
        84,
-       84
+       80
       ],
       "45": [
        82,
-       82
+       76
       ],
       "5": [
        87,
@@ -14240,7 +14763,7 @@
       ],
       "60": [
        80,
-       80
+       73
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -14430,7 +14953,8 @@
     "dbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -14477,7 +15001,8 @@
     "map": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -14501,7 +15026,8 @@
     "sbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -14573,7 +15099,8 @@
     ],
     "dbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "hb_g_dl": [
      "P2I-2T"
@@ -14592,7 +15119,8 @@
     ],
     "map": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "respiratory_rate": [
      "KD-S1",
@@ -14602,7 +15130,8 @@
     ],
     "sbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ]
    },
    "orders": {
@@ -14891,10 +15420,10 @@
     },
     "dbp": {
      "compared": 91,
-     "first_mismatch_minute": 2,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 6.0,
-     "mismatched": 79,
+     "max_abs_diff": 30.0,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -14903,43 +15432,43 @@
       ],
       "1": [
        63,
-       63
+       64
       ],
       "10": [
        70,
-       68
+       78
       ],
       "15": [
        73,
-       71
+       84
       ],
       "20": [
        77,
-       73
+       89
       ],
       "30": [
        81,
-       76
+       98
       ],
       "45": [
        81,
-       79
+       104
       ],
       "5": [
        66,
-       66
+       71
       ],
       "60": [
        81,
-       81
+       109
       ],
       "75": [
        79,
-       81
+       108
       ],
       "90": [
        78,
-       80
+       107
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -15451,10 +15980,10 @@
     },
     "map": {
      "compared": 90,
-     "first_mismatch_minute": 6,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 7.0,
-     "mismatched": 79,
+     "max_abs_diff": 35.0,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -15463,43 +15992,43 @@
       ],
       "1": [
        75,
-       75
+       76
       ],
       "10": [
        84,
-       82
+       93
       ],
       "15": [
        88,
-       85
+       100
       ],
       "20": [
        93,
-       88
+       106
       ],
       "30": [
        98,
-       92
+       117
       ],
       "45": [
        98,
-       96
+       124
       ],
       "5": [
        79,
-       79
+       85
       ],
       "60": [
        98,
-       98
+       130
       ],
       "75": [
        96,
-       98
+       129
       ],
       "90": [
        94,
-       97
+       128
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -15675,10 +16204,10 @@
     },
     "sbp": {
      "compared": 91,
-     "first_mismatch_minute": 5,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 10.0,
-     "mismatched": 82,
+     "max_abs_diff": 43.0,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -15687,43 +16216,43 @@
       ],
       "1": [
        99,
-       99
+       101
       ],
       "10": [
        112,
-       110
+       123
       ],
       "15": [
        118,
-       114
+       133
       ],
       "20": [
        124,
-       118
+       141
       ],
       "30": [
        132,
-       124
+       155
       ],
       "45": [
        132,
-       129
+       164
       ],
       "5": [
        105,
-       104
+       112
       ],
       "60": [
        132,
-       132
+       172
       ],
       "75": [
        129,
-       131
+       171
       ],
       "90": [
        127,
-       131
+       169
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -15926,7 +16455,8 @@
     "dbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -15973,7 +16503,8 @@
     "map": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -15997,7 +16528,8 @@
     "sbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -16062,7 +16594,8 @@
     ],
     "dbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "hb_g_dl": [
      "P2I-2T"
@@ -16081,7 +16614,8 @@
     ],
     "map": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "respiratory_rate": [
      "KD-S1",
@@ -16091,7 +16625,8 @@
     ],
     "sbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ]
    },
    "orders": {
@@ -16420,10 +16955,10 @@
     },
     "dbp": {
      "compared": 121,
-     "first_mismatch_minute": 15,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 3.0,
-     "mismatched": 99,
+     "max_abs_diff": 13.0,
+     "mismatched": 120,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -16432,51 +16967,51 @@
       ],
       "1": [
        62,
-       62
+       63
       ],
       "10": [
        64,
-       64
+       68
       ],
       "105": [
        76,
-       73
+       89
       ],
       "120": [
        76,
-       73
+       89
       ],
       "15": [
        66,
-       65
+       70
       ],
       "20": [
        67,
-       66
+       73
       ],
       "30": [
        69,
-       68
+       78
       ],
       "45": [
        73,
-       71
+       84
       ],
       "5": [
        63,
-       63
+       65
       ],
       "60": [
        76,
-       73
+       89
       ],
       "75": [
        76,
-       73
+       89
       ],
       "90": [
        76,
-       73
+       89
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -17060,10 +17595,10 @@
     },
     "map": {
      "compared": 120,
-     "first_mismatch_minute": 15,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 4.0,
-     "mismatched": 102,
+     "max_abs_diff": 14.0,
+     "mismatched": 120,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -17072,51 +17607,51 @@
       ],
       "1": [
        74,
-       74
+       75
       ],
       "10": [
        77,
-       77
+       81
       ],
       "105": [
        92,
-       88
+       106
       ],
       "120": [
        92,
-       88
+       106
       ],
       "15": [
        79,
-       78
+       84
       ],
       "20": [
        80,
-       79
+       87
       ],
       "30": [
        83,
-       82
+       93
       ],
       "45": [
        88,
-       85
+       100
       ],
       "5": [
        75,
-       75
+       78
       ],
       "60": [
        92,
-       88
+       106
       ],
       "75": [
        92,
-       88
+       106
       ],
       "90": [
        92,
-       88
+       106
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -17316,10 +17851,10 @@
     },
     "sbp": {
      "compared": 121,
-     "first_mismatch_minute": 13,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 7.0,
-     "mismatched": 104,
+     "max_abs_diff": 17.0,
+     "mismatched": 120,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -17328,51 +17863,51 @@
       ],
       "1": [
        98,
-       98
+       99
       ],
       "10": [
        102,
-       102
+       107
       ],
       "105": [
        123,
-       117
+       140
       ],
       "120": [
        123,
-       117
+       140
       ],
       "15": [
        104,
-       104
+       111
       ],
       "20": [
        107,
-       106
+       115
       ],
       "30": [
        111,
-       109
+       123
       ],
       "45": [
        117,
-       114
+       132
       ],
       "5": [
        100,
-       100
+       103
       ],
       "60": [
        124,
-       118
+       141
       ],
       "75": [
        124,
-       118
+       141
       ],
       "90": [
        124,
-       118
+       141
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -17588,8 +18123,12 @@
      "classification": "MATCH"
     },
     "dbp": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "KD-S4",
+      "P2I-2T",
+      "P2J-1"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "fio2": {
      "candidate_causes": [],
@@ -17627,8 +18166,12 @@
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "map": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "KD-S4",
+      "P2I-2T",
+      "P2J-1"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "pulse_present": {
      "candidate_causes": [],
@@ -17648,8 +18191,12 @@
      "classification": "MATCH"
     },
     "sbp": {
-     "candidate_causes": [],
-     "classification": "MATCH"
+     "candidate_causes": [
+      "KD-S4",
+      "P2I-2T",
+      "P2J-1"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
     "spo2": {
      "candidate_causes": [],
@@ -17693,6 +18240,11 @@
     "V_ml_eq": [
      "P2I-2T"
     ],
+    "dbp": [
+     "KD-S4",
+     "P2I-2T",
+     "P2J-1"
+    ],
     "hb_g_dl": [
      "P2I-2T"
     ],
@@ -17702,11 +18254,21 @@
      "P2I-2T",
      "P2E-2"
     ],
+    "map": [
+     "KD-S4",
+     "P2I-2T",
+     "P2J-1"
+    ],
     "respiratory_rate": [
      "KD-S1",
      "KD-S4",
      "P2I-2T",
      "P2E-2"
+    ],
+    "sbp": [
+     "KD-S4",
+     "P2I-2T",
+     "P2J-1"
     ]
    },
    "orders": {
@@ -17895,10 +18457,10 @@
     },
     "dbp": {
      "compared": 21,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 3,
      "kind": "display",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 3.0,
+     "mismatched": 16,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -17911,19 +18473,19 @@
       ],
       "10": [
        61,
-       61
+       60
       ],
       "15": [
        61,
-       61
+       59
       ],
       "20": [
        61,
-       61
+       58
       ],
       "5": [
        62,
-       62
+       61
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -18255,10 +18817,10 @@
     },
     "map": {
      "compared": 20,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 3,
      "kind": "display",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 3.0,
+     "mismatched": 16,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -18271,19 +18833,19 @@
       ],
       "10": [
        73,
-       73
+       72
       ],
       "15": [
        73,
-       73
+       71
       ],
       "20": [
        72,
-       72
+       69
       ],
       "5": [
        74,
-       74
+       73
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -18399,10 +18961,10 @@
     },
     "sbp": {
      "compared": 21,
-     "first_mismatch_minute": null,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 0.0,
-     "mismatched": 0,
+     "max_abs_diff": 3.0,
+     "mismatched": 17,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -18415,15 +18977,15 @@
       ],
       "10": [
        97,
-       97
+       95
       ],
       "15": [
        96,
-       96
+       94
       ],
       "20": [
        95,
-       95
+       92
       ],
       "5": [
        97,
@@ -18590,7 +19152,8 @@
     "dbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -18637,7 +19200,8 @@
     "map": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -18661,7 +19225,8 @@
     "sbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -18715,7 +19280,8 @@
     ],
     "dbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "hb_g_dl": [
      "P2I-2T"
@@ -18734,7 +19300,8 @@
     ],
     "map": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "respiratory_rate": [
      "KD-S1",
@@ -18744,7 +19311,8 @@
     ],
     "sbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ]
    },
    "orders": {
@@ -19033,10 +19601,10 @@
     },
     "dbp": {
      "compared": 91,
-     "first_mismatch_minute": 16,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 4.0,
-     "mismatched": 68,
+     "max_abs_diff": 13.0,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -19045,43 +19613,43 @@
       ],
       "1": [
        62,
-       62
+       63
       ],
       "10": [
        64,
-       64
+       67
       ],
       "15": [
        65,
-       65
+       70
       ],
       "20": [
        66,
-       66
+       72
       ],
       "30": [
        69,
-       68
+       77
       ],
       "45": [
        72,
-       70
+       83
       ],
       "5": [
        63,
-       63
+       65
       ],
       "60": [
        76,
-       72
+       88
       ],
       "75": [
        74,
-       72
+       86
       ],
       "90": [
        73,
-       71
+       84
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -19593,10 +20161,10 @@
     },
     "map": {
      "compared": 90,
-     "first_mismatch_minute": 16,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 4.0,
-     "mismatched": 70,
+     "max_abs_diff": 14.0,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -19605,43 +20173,43 @@
       ],
       "1": [
        74,
-       74
+       75
       ],
       "10": [
        77,
-       77
+       80
       ],
       "15": [
        78,
-       78
+       83
       ],
       "20": [
        79,
-       79
+       86
       ],
       "30": [
        83,
-       82
+       92
       ],
       "45": [
        87,
-       84
+       99
       ],
       "5": [
        75,
-       75
+       77
       ],
       "60": [
        91,
-       87
+       105
       ],
       "75": [
        89,
-       87
+       103
       ],
       "90": [
        88,
-       85
+       101
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -19817,10 +20385,10 @@
     },
     "sbp": {
      "compared": 91,
-     "first_mismatch_minute": 14,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 6.0,
-     "mismatched": 74,
+     "max_abs_diff": 17.0,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -19829,43 +20397,43 @@
       ],
       "1": [
        98,
-       98
+       99
       ],
       "10": [
        102,
-       102
+       106
       ],
       "15": [
        104,
-       104
+       110
       ],
       "20": [
        106,
-       105
+       114
       ],
       "30": [
        110,
-       109
+       121
       ],
       "45": [
        116,
-       113
+       131
       ],
       "5": [
        100,
-       100
+       102
       ],
       "60": [
        122,
-       117
+       139
       ],
       "75": [
        120,
-       116
+       136
       ],
       "90": [
        118,
-       114
+       134
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -20068,7 +20636,8 @@
     "dbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -20115,7 +20684,8 @@
     "map": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -20139,7 +20709,8 @@
     "sbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -20209,7 +20780,8 @@
     ],
     "dbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "hb_g_dl": [
      "P2I-2T"
@@ -20228,7 +20800,8 @@
     ],
     "map": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "respiratory_rate": [
      "KD-S1",
@@ -20238,7 +20811,8 @@
     ],
     "sbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ]
    },
    "orders": {
@@ -20467,10 +21041,10 @@
     },
     "dbp": {
      "compared": 46,
-     "first_mismatch_minute": 10,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 4,
+     "max_abs_diff": 5.0,
+     "mismatched": 44,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -20483,27 +21057,27 @@
       ],
       "10": [
        64,
-       63
+       66
       ],
       "15": [
        64,
-       64
+       67
       ],
       "20": [
        65,
-       65
+       68
       ],
       "30": [
        66,
-       65
+       70
       ],
       "45": [
        63,
-       63
+       65
       ],
       "5": [
        63,
-       63
+       64
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -20907,10 +21481,10 @@
     },
     "map": {
      "compared": 45,
-     "first_mismatch_minute": 14,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 5,
+     "max_abs_diff": 6.0,
+     "mismatched": 44,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -20923,27 +21497,27 @@
       ],
       "10": [
        76,
-       76
+       79
       ],
       "15": [
        77,
-       77
+       80
       ],
       "20": [
        78,
-       78
+       81
       ],
       "30": [
        79,
-       78
+       84
       ],
       "45": [
        75,
-       75
+       78
       ],
       "5": [
        75,
-       75
+       76
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -21083,10 +21657,10 @@
     },
     "sbp": {
      "compared": 46,
-     "first_mismatch_minute": 14,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 8,
+     "max_abs_diff": 7.0,
+     "mismatched": 44,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -21095,31 +21669,31 @@
       ],
       "1": [
        98,
-       98
+       99
       ],
       "10": [
        101,
-       101
+       104
       ],
       "15": [
        102,
-       102
+       106
       ],
       "20": [
        103,
-       103
+       108
       ],
       "30": [
        104,
-       104
+       111
       ],
       "45": [
        100,
-       100
+       103
       ],
       "5": [
        99,
-       99
+       101
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -21300,7 +21874,8 @@
     "dbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -21347,7 +21922,8 @@
     "map": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -21371,7 +21947,8 @@
     "sbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -21430,7 +22007,8 @@
     ],
     "dbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "hb_g_dl": [
      "P2I-2T"
@@ -21449,7 +22027,8 @@
     ],
     "map": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "respiratory_rate": [
      "KD-S1",
@@ -21459,7 +22038,8 @@
     ],
     "sbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ]
    },
    "orders": {
@@ -21708,10 +22288,10 @@
     },
     "dbp": {
      "compared": 61,
-     "first_mismatch_minute": 10,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 11,
+     "max_abs_diff": 6.0,
+     "mismatched": 52,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -21720,31 +22300,31 @@
       ],
       "1": [
        62,
-       62
+       63
       ],
       "10": [
        65,
-       64
+       68
       ],
       "15": [
        66,
-       65
+       71
       ],
       "20": [
        67,
-       66
+       73
       ],
       "30": [
        65,
-       65
+       69
       ],
       "45": [
        63,
-       63
+       64
       ],
       "5": [
        63,
-       63
+       65
       ],
       "60": [
        61,
@@ -22188,10 +22768,10 @@
     },
     "map": {
      "compared": 60,
-     "first_mismatch_minute": 5,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 12,
+     "max_abs_diff": 7.0,
+     "mismatched": 52,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -22200,31 +22780,31 @@
       ],
       "1": [
        74,
-       74
+       75
       ],
       "10": [
        78,
-       77
+       81
       ],
       "15": [
        79,
-       78
+       85
       ],
       "20": [
        80,
-       79
+       87
       ],
       "30": [
        78,
-       78
+       82
       ],
       "45": [
        75,
-       75
+       77
       ],
       "5": [
        76,
-       75
+       78
       ],
       "60": [
        73,
@@ -22380,10 +22960,10 @@
     },
     "sbp": {
      "compared": 61,
-     "first_mismatch_minute": 5,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 16,
+     "max_abs_diff": 8.0,
+     "mismatched": 53,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -22396,31 +22976,31 @@
       ],
       "10": [
        103,
-       102
+       108
       ],
       "15": [
        105,
-       104
+       112
       ],
       "20": [
        107,
-       106
+       115
       ],
       "30": [
        104,
-       103
+       109
       ],
       "45": [
        100,
-       100
+       102
       ],
       "5": [
        101,
-       100
+       103
       ],
       "60": [
        97,
-       97
+       96
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -22607,7 +23187,8 @@
     "dbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -22654,7 +23235,8 @@
     "map": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -22678,7 +23260,8 @@
     "sbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -22752,7 +23335,8 @@
     ],
     "dbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "hb_g_dl": [
      "P2I-2T"
@@ -22771,7 +23355,8 @@
     ],
     "map": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "respiratory_rate": [
      "KD-S1",
@@ -22781,7 +23366,8 @@
     ],
     "sbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ]
    },
    "orders": {
@@ -23111,10 +23697,10 @@
     },
     "dbp": {
      "compared": 121,
-     "first_mismatch_minute": 45,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 4.0,
-     "mismatched": 70,
+     "max_abs_diff": 13.0,
+     "mismatched": 115,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -23127,31 +23713,31 @@
       ],
       "10": [
        63,
-       63
+       64
       ],
       "105": [
        75,
-       72
+       87
       ],
       "120": [
        74,
-       71
+       85
       ],
       "15": [
        63,
-       63
+       65
       ],
       "20": [
        64,
-       64
+       66
       ],
       "30": [
        62,
-       62
+       63
       ],
       "45": [
        66,
-       65
+       70
       ],
       "5": [
        63,
@@ -23159,15 +23745,15 @@
       ],
       "60": [
        69,
-       68
+       77
       ],
       "75": [
        72,
-       70
+       83
       ],
       "90": [
        76,
-       73
+       88
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -23751,10 +24337,10 @@
     },
     "map": {
      "compared": 120,
-     "first_mismatch_minute": 45,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 5.0,
-     "mismatched": 72,
+     "max_abs_diff": 14.0,
+     "mismatched": 115,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -23767,31 +24353,31 @@
       ],
       "10": [
        75,
-       75
+       77
       ],
       "105": [
        90,
-       87
+       104
       ],
       "120": [
        89,
-       86
+       102
       ],
       "15": [
        75,
-       75
+       78
       ],
       "20": [
        76,
-       76
+       79
       ],
       "30": [
        74,
-       74
+       75
       ],
       "45": [
        79,
-       78
+       84
       ],
       "5": [
        75,
@@ -23799,15 +24385,15 @@
       ],
       "60": [
        83,
-       82
+       92
       ],
       "75": [
        87,
-       84
+       99
       ],
       "90": [
        92,
-       88
+       105
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -24007,10 +24593,10 @@
     },
     "sbp": {
      "compared": 121,
-     "first_mismatch_minute": 43,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 6.0,
-     "mismatched": 74,
+     "max_abs_diff": 17.0,
+     "mismatched": 118,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -24023,47 +24609,47 @@
       ],
       "10": [
        100,
-       100
+       102
       ],
       "105": [
        121,
-       116
+       137
       ],
       "120": [
        119,
-       115
+       135
       ],
       "15": [
        100,
-       100
+       103
       ],
       "20": [
        101,
-       101
+       104
       ],
       "30": [
        99,
-       99
+       100
       ],
       "45": [
        104,
-       104
+       111
       ],
       "5": [
        99,
-       99
+       100
       ],
       "60": [
        110,
-       109
+       122
       ],
       "75": [
        117,
-       113
+       131
       ],
       "90": [
        123,
-       117
+       140
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -24284,7 +24870,8 @@
     "dbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -24331,7 +24918,8 @@
     "map": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -24355,7 +24943,8 @@
     "sbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -24428,7 +25017,8 @@
     ],
     "dbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "hb_g_dl": [
      "P2I-2T"
@@ -24447,7 +25037,8 @@
     ],
     "map": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "respiratory_rate": [
      "KD-S1",
@@ -24457,7 +25048,8 @@
     ],
     "sbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ]
    },
    "orders": {
@@ -24707,10 +25299,10 @@
     },
     "dbp": {
      "compared": 61,
-     "first_mismatch_minute": 7,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 7,
+     "max_abs_diff": 5.0,
+     "mismatched": 53,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -24719,35 +25311,35 @@
       ],
       "1": [
        62,
-       62
+       63
       ],
       "10": [
        64,
-       64
+       67
       ],
       "15": [
        65,
-       65
+       69
       ],
       "20": [
        66,
-       65
+       71
       ],
       "30": [
        64,
-       64
+       67
       ],
       "45": [
        62,
-       62
+       63
       ],
       "5": [
        63,
-       63
+       65
       ],
       "60": [
        61,
-       61
+       59
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -25187,10 +25779,10 @@
     },
     "map": {
      "compared": 60,
-     "first_mismatch_minute": 13,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 5,
+     "max_abs_diff": 5.0,
+     "mismatched": 53,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -25199,35 +25791,35 @@
       ],
       "1": [
        74,
-       74
+       75
       ],
       "10": [
        77,
-       77
+       80
       ],
       "15": [
        78,
-       78
+       82
       ],
       "20": [
        79,
-       78
+       84
       ],
       "30": [
        77,
-       77
+       80
       ],
       "45": [
        74,
-       74
+       75
       ],
       "5": [
        75,
-       75
+       77
       ],
       "60": [
        73,
-       73
+       71
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -25379,10 +25971,10 @@
     },
     "sbp": {
      "compared": 61,
-     "first_mismatch_minute": 13,
+     "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 8,
+     "max_abs_diff": 7.0,
+     "mismatched": 56,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -25391,23 +25983,23 @@
       ],
       "1": [
        98,
-       98
+       99
       ],
       "10": [
        102,
-       102
+       106
       ],
       "15": [
        103,
-       103
+       109
       ],
       "20": [
        105,
-       104
+       111
       ],
       "30": [
        102,
-       102
+       106
       ],
       "45": [
        99,
@@ -25415,11 +26007,11 @@
       ],
       "5": [
        100,
-       100
+       102
       ],
       "60": [
        96,
-       96
+       94
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -25606,7 +26198,8 @@
     "dbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -25653,7 +26246,8 @@
     "map": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -25677,7 +26271,8 @@
     "sbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -25771,7 +26366,8 @@
     ],
     "dbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "hb_g_dl": [
      "P2I-2T"
@@ -25790,7 +26386,8 @@
     ],
     "map": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "respiratory_rate": [
      "KD-S1",
@@ -25800,7 +26397,8 @@
     ],
     "sbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ]
    },
    "orders": {
@@ -26092,10 +26690,10 @@
     },
     "dbp": {
      "compared": 91,
-     "first_mismatch_minute": 17,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 5.0,
-     "mismatched": 69,
+     "max_abs_diff": 14.0,
+     "mismatched": 87,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -26108,23 +26706,23 @@
       ],
       "10": [
        63,
-       63
+       64
       ],
       "15": [
        65,
-       65
+       69
       ],
       "20": [
        67,
-       66
+       72
       ],
       "30": [
        70,
-       69
+       79
       ],
       "45": [
        74,
-       72
+       86
       ],
       "5": [
        63,
@@ -26132,15 +26730,15 @@
       ],
       "60": [
        77,
-       73
+       90
       ],
       "75": [
        78,
-       74
+       91
       ],
       "90": [
        77,
-       73
+       90
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -26652,10 +27250,10 @@
     },
     "map": {
      "compared": 90,
-     "first_mismatch_minute": 17,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 6.0,
-     "mismatched": 71,
+     "max_abs_diff": 16.0,
+     "mismatched": 87,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -26668,23 +27266,23 @@
       ],
       "10": [
        75,
-       75
+       77
       ],
       "15": [
        78,
-       78
+       82
       ],
       "20": [
        80,
-       79
+       86
       ],
       "30": [
        84,
-       83
+       94
       ],
       "45": [
        89,
-       86
+       103
       ],
       "5": [
        75,
@@ -26692,15 +27290,15 @@
       ],
       "60": [
        93,
-       88
+       107
       ],
       "75": [
        94,
-       89
+       109
       ],
       "90": [
        93,
-       88
+       107
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -26876,10 +27474,10 @@
     },
     "sbp": {
      "compared": 91,
-     "first_mismatch_minute": 16,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 8.0,
-     "mismatched": 73,
+     "max_abs_diff": 18.0,
+     "mismatched": 88,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -26892,39 +27490,39 @@
       ],
       "10": [
        100,
-       100
+       102
       ],
       "15": [
        103,
-       103
+       108
       ],
       "20": [
        106,
-       106
+       115
       ],
       "30": [
        113,
-       110
+       125
       ],
       "45": [
        120,
-       115
+       136
       ],
       "5": [
        99,
-       99
+       100
       ],
       "60": [
        125,
-       118
+       142
       ],
       "75": [
        127,
-       119
+       145
       ],
       "90": [
        124,
-       118
+       142
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -27127,7 +27725,8 @@
     "dbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -27172,7 +27771,8 @@
     "map": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -27195,7 +27795,8 @@
     "sbp": {
      "candidate_causes": [
       "KD-S4",
-      "P2I-2T"
+      "P2I-2T",
+      "P2J-1"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -27240,7 +27841,8 @@
     ],
     "dbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "hb_g_dl": [
      "P2I-2T"
@@ -27257,7 +27859,8 @@
     ],
     "map": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ],
     "respiratory_rate": [
      "KD-S1",
@@ -27266,7 +27869,8 @@
     ],
     "sbp": [
      "KD-S4",
-     "P2I-2T"
+     "P2I-2T",
+     "P2J-1"
     ]
    },
    "orders": {},
@@ -27513,10 +28117,10 @@
     },
     "dbp": {
      "compared": 61,
-     "first_mismatch_minute": 47,
+     "first_mismatch_minute": 3,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 1,
+     "max_abs_diff": 7.0,
+     "mismatched": 56,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -27529,31 +28133,31 @@
       ],
       "10": [
        61,
-       61
+       60
       ],
       "15": [
        61,
-       61
+       59
       ],
       "20": [
        61,
-       61
+       58
       ],
       "30": [
        60,
-       60
+       57
       ],
       "45": [
        59,
-       59
+       54
       ],
       "5": [
        62,
-       62
+       61
       ],
       "60": [
        58,
-       58
+       51
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -27993,10 +28597,10 @@
     },
     "map": {
      "compared": 60,
-     "first_mismatch_minute": 26,
+     "first_mismatch_minute": 3,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 2,
+     "max_abs_diff": 8.0,
+     "mismatched": 56,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -28009,31 +28613,31 @@
       ],
       "10": [
        73,
-       73
+       72
       ],
       "15": [
        73,
-       73
+       71
       ],
       "20": [
        72,
-       72
+       69
       ],
       "30": [
        71,
-       71
+       68
       ],
       "45": [
        70,
-       70
+       64
       ],
       "5": [
        74,
-       74
+       73
       ],
       "60": [
        69,
-       69
+       61
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -28185,10 +28789,10 @@
     },
     "sbp": {
      "compared": 61,
-     "first_mismatch_minute": 26,
+     "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 5,
+     "max_abs_diff": 9.0,
+     "mismatched": 57,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -28201,23 +28805,23 @@
       ],
       "10": [
        97,
-       97
+       95
       ],
       "15": [
        96,
-       96
+       94
       ],
       "20": [
        95,
-       95
+       92
       ],
       "30": [
        94,
-       94
+       89
       ],
       "45": [
        92,
-       92
+       85
       ],
       "5": [
        97,
@@ -28225,7 +28829,7 @@
       ],
       "60": [
        90,
-       90
+       81
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",

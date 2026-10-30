@@ -1,7 +1,7 @@
 {
  "case": "gi_bleed_72f",
  "golden": {
-  "after_sha256": "891ace4b88f18be3ad305573c05a093c4c888f42a22bcb71de7d8bc20cee96d3",
+  "after_sha256": "cb353081d45cf32ba7cb11a29b96d24a809aa1c02d3fdf5101b79e2846d88f2a",
   "before_sha256": "d087bde147a1254c6d81c883dbea09670dd97b0316d1e26e93e3364bde822833",
   "runs": {
    "gi_bleed_57m/aggressive_volume": {
@@ -71,10 +71,10 @@
       "max_abs_diff_before": 11.0
      },
      "sbp": {
-      "after": 121,
+      "after": 152,
       "before": 121,
       "legacy": 117,
-      "max_abs_diff_after": 10.0,
+      "max_abs_diff_after": 36.0,
       "max_abs_diff_before": 10.0
      }
     }
@@ -144,10 +144,10 @@
       "max_abs_diff_before": 9.0
      },
      "sbp": {
-      "after": 107,
+      "after": 126,
       "before": 107,
       "legacy": 113,
-      "max_abs_diff_after": 7.0,
+      "max_abs_diff_after": 13.0,
       "max_abs_diff_before": 7.0
      }
     }
@@ -156,10 +156,13 @@
     "minutes": 20,
     "mismatching_after": [
      "V_ml_eq",
+     "dbp",
      "hb_g_dl",
      "hr",
      "lactate_mmol_l",
-     "respiratory_rate"
+     "map",
+     "respiratory_rate",
+     "sbp"
     ],
     "mismatching_before": [
      "dbp",
@@ -213,10 +216,10 @@
       "max_abs_diff_before": 1.0
      },
      "sbp": {
-      "after": 85,
+      "after": 83,
       "before": 85,
       "legacy": 85,
-      "max_abs_diff_after": 0.0,
+      "max_abs_diff_after": 3.0,
       "max_abs_diff_before": 1.0
      }
     }
@@ -286,10 +289,10 @@
       "max_abs_diff_before": 8.0
      },
      "sbp": {
-      "after": 104,
+      "after": 120,
       "before": 104,
       "legacy": 108,
-      "max_abs_diff_after": 6.0,
+      "max_abs_diff_after": 13.0,
       "max_abs_diff_before": 6.0
      }
     }
@@ -359,10 +362,10 @@
       "max_abs_diff_before": 2.0
      },
      "sbp": {
-      "after": 90,
+      "after": 93,
       "before": 90,
       "legacy": 90,
-      "max_abs_diff_after": 1.0,
+      "max_abs_diff_after": 6.0,
       "max_abs_diff_before": 1.0
      }
     }
@@ -433,10 +436,10 @@
       "max_abs_diff_before": 3.0
      },
      "sbp": {
-      "after": 87,
+      "after": 86,
       "before": 87,
       "legacy": 87,
-      "max_abs_diff_after": 1.0,
+      "max_abs_diff_after": 7.0,
       "max_abs_diff_before": 1.0
      }
     }
@@ -506,10 +509,10 @@
       "max_abs_diff_before": 8.0
      },
      "sbp": {
-      "after": 105,
+      "after": 121,
       "before": 105,
       "legacy": 109,
-      "max_abs_diff_after": 6.0,
+      "max_abs_diff_after": 13.0,
       "max_abs_diff_before": 6.0
      }
     }
@@ -580,10 +583,10 @@
       "max_abs_diff_before": 2.0
      },
      "sbp": {
-      "after": 86,
+      "after": 84,
       "before": 86,
       "legacy": 86,
-      "max_abs_diff_after": 1.0,
+      "max_abs_diff_after": 6.0,
       "max_abs_diff_before": 1.0
      }
     }
@@ -653,10 +656,10 @@
       "max_abs_diff_before": 10.0
      },
      "sbp": {
-      "after": 108,
+      "after": 127,
       "before": 108,
       "legacy": 114,
-      "max_abs_diff_after": 8.0,
+      "max_abs_diff_after": 13.0,
       "max_abs_diff_before": 8.0
      }
     }
@@ -665,6 +668,7 @@
     "minutes": 60,
     "mismatching_after": [
      "V_ml_eq",
+     "consciousness_level",
      "crt_s",
      "dbp",
      "hb_g_dl",
@@ -728,10 +732,10 @@
       "max_abs_diff_before": 3.0
      },
      "sbp": {
-      "after": 80,
+      "after": 73,
       "before": 79,
       "legacy": 80,
-      "max_abs_diff_after": 1.0,
+      "max_abs_diff_after": 7.0,
       "max_abs_diff_before": 1.0
      }
     }
@@ -803,10 +807,10 @@
       "max_abs_diff_before": 10.0
      },
      "sbp": {
-      "after": 131,
+      "after": 169,
       "before": 131,
       "legacy": 127,
-      "max_abs_diff_after": 10.0,
+      "max_abs_diff_after": 43.0,
       "max_abs_diff_before": 10.0
      }
     }
@@ -876,10 +880,10 @@
       "max_abs_diff_before": 9.0
      },
      "sbp": {
-      "after": 117,
+      "after": 140,
       "before": 117,
       "legacy": 123,
-      "max_abs_diff_after": 7.0,
+      "max_abs_diff_after": 17.0,
       "max_abs_diff_before": 7.0
      }
     }
@@ -888,9 +892,12 @@
     "minutes": 20,
     "mismatching_after": [
      "V_ml_eq",
+     "dbp",
      "hb_g_dl",
      "lactate_mmol_l",
-     "respiratory_rate"
+     "map",
+     "respiratory_rate",
+     "sbp"
     ],
     "mismatching_before": [
      "dbp",
@@ -943,10 +950,10 @@
       "max_abs_diff_before": 1.0
      },
      "sbp": {
-      "after": 95,
+      "after": 92,
       "before": 95,
       "legacy": 95,
-      "max_abs_diff_after": 0.0,
+      "max_abs_diff_after": 3.0,
       "max_abs_diff_before": 1.0
      }
     }
@@ -1016,10 +1023,10 @@
       "max_abs_diff_before": 8.0
      },
      "sbp": {
-      "after": 114,
+      "after": 134,
       "before": 114,
       "legacy": 118,
-      "max_abs_diff_after": 6.0,
+      "max_abs_diff_after": 17.0,
       "max_abs_diff_before": 6.0
      }
     }
@@ -1089,10 +1096,10 @@
       "max_abs_diff_before": 2.0
      },
      "sbp": {
-      "after": 100,
+      "after": 103,
       "before": 100,
       "legacy": 100,
-      "max_abs_diff_after": 1.0,
+      "max_abs_diff_after": 7.0,
       "max_abs_diff_before": 1.0
      }
     }
@@ -1163,10 +1170,10 @@
       "max_abs_diff_before": 3.0
      },
      "sbp": {
-      "after": 97,
+      "after": 96,
       "before": 97,
       "legacy": 97,
-      "max_abs_diff_after": 1.0,
+      "max_abs_diff_after": 8.0,
       "max_abs_diff_before": 1.0
      }
     }
@@ -1236,10 +1243,10 @@
       "max_abs_diff_before": 8.0
      },
      "sbp": {
-      "after": 115,
+      "after": 135,
       "before": 115,
       "legacy": 119,
-      "max_abs_diff_after": 6.0,
+      "max_abs_diff_after": 17.0,
       "max_abs_diff_before": 6.0
      }
     }
@@ -1310,10 +1317,10 @@
       "max_abs_diff_before": 2.0
      },
      "sbp": {
-      "after": 96,
+      "after": 94,
       "before": 96,
       "legacy": 96,
-      "max_abs_diff_after": 1.0,
+      "max_abs_diff_after": 7.0,
       "max_abs_diff_before": 1.0
      }
     }
@@ -1383,10 +1390,10 @@
       "max_abs_diff_before": 10.0
      },
      "sbp": {
-      "after": 118,
+      "after": 142,
       "before": 118,
       "legacy": 124,
-      "max_abs_diff_after": 8.0,
+      "max_abs_diff_after": 18.0,
       "max_abs_diff_before": 8.0
      }
     }
@@ -1457,10 +1464,10 @@
       "max_abs_diff_before": 3.0
      },
      "sbp": {
-      "after": 90,
+      "after": 81,
       "before": 89,
       "legacy": 90,
-      "max_abs_diff_after": 1.0,
+      "max_abs_diff_after": 9.0,
       "max_abs_diff_before": 1.0
      }
     }
@@ -1545,7 +1552,7 @@
      "plasma_ml": -241.81818181818187,
      "red_cells": 0.925,
      "refill_ml": 0.0,
-     "sbp": 78.50017634478468,
+     "sbp": 55.533717373086645,
      "shed_ml": 300.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -1564,7 +1571,7 @@
      "plasma_ml": -241.81818181818187,
      "red_cells": 0.925,
      "refill_ml": 0.0,
-     "sbp": 78.50017634478468,
+     "sbp": 55.533717373086645,
      "shed_ml": 300.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -1583,7 +1590,7 @@
      "plasma_ml": -241.81818181818187,
      "red_cells": 0.925,
      "refill_ml": 0.0,
-     "sbp": 78.50017634478468,
+     "sbp": 55.533717373086645,
      "shed_ml": 300.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -1602,7 +1609,7 @@
      "plasma_ml": -241.81818181818187,
      "red_cells": 0.925,
      "refill_ml": 0.0,
-     "sbp": 78.50017634478468,
+     "sbp": 55.533717373086645,
      "shed_ml": 300.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -1621,7 +1628,7 @@
      "plasma_ml": -241.81818181818187,
      "red_cells": 0.925,
      "refill_ml": 0.0,
-     "sbp": 78.50017634478468,
+     "sbp": 55.533717373086645,
      "shed_ml": 300.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -1640,7 +1647,7 @@
      "plasma_ml": -241.81818181818187,
      "red_cells": 0.925,
      "refill_ml": 0.0,
-     "sbp": 78.50017634478468,
+     "sbp": 55.533717373086645,
      "shed_ml": 300.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -1659,7 +1666,7 @@
      "plasma_ml": -241.81818181818187,
      "red_cells": 0.925,
      "refill_ml": 0.0,
-     "sbp": 78.50017634478468,
+     "sbp": 55.533717373086645,
      "shed_ml": 300.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -1678,7 +1685,7 @@
      "plasma_ml": -241.81818181818187,
      "red_cells": 0.925,
      "refill_ml": 0.0,
-     "sbp": 78.50017634478468,
+     "sbp": 55.533717373086645,
      "shed_ml": 300.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -1728,7 +1735,7 @@
      "plasma_ml": -236.36105680393874,
      "red_cells": 0.9250287738840577,
      "refill_ml": 5.479446572784795,
-     "sbp": 78.9228930747362,
+     "sbp": 56.45430047386992,
      "shed_ml": 300.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -1747,7 +1754,7 @@
      "plasma_ml": -149.62699671032155,
      "red_cells": 0.9250287738840577,
      "refill_ml": 92.21350666640198,
-     "sbp": 85.25676025999404,
+     "sbp": 70.24805567732034,
      "shed_ml": 300.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -1766,7 +1773,7 @@
      "plasma_ml": -126.88978330083043,
      "red_cells": 0.9250287738840577,
      "refill_ml": 114.9507200758931,
-     "sbp": 86.81096530471487,
+     "sbp": 73.6327688858235,
      "shed_ml": 300.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -1785,7 +1792,7 @@
      "plasma_ml": -224.8058313565716,
      "red_cells": 0.9250287738840577,
      "refill_ml": 17.03467202015195,
-     "sbp": 79.80527178549836,
+     "sbp": 58.37592522175199,
      "shed_ml": 300.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -1804,7 +1811,7 @@
      "plasma_ml": -113.09896625154482,
      "red_cells": 0.9250287738840577,
      "refill_ml": 128.74153712517872,
-     "sbp": 87.73318460019718,
+     "sbp": 75.64115757376275,
      "shed_ml": 300.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -1823,7 +1830,7 @@
      "plasma_ml": -214.17451072393882,
      "red_cells": 0.9250287738840577,
      "refill_ml": 27.665992652784727,
-     "sbp": 80.60636302715034,
+     "sbp": 60.12052392579407,
      "shed_ml": 300.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -1842,7 +1849,7 @@
      "plasma_ml": -187.11432409499778,
      "red_cells": 0.9250287738840577,
      "refill_ml": 54.726179281725756,
-     "sbp": 82.59988103051745,
+     "sbp": 64.4619631331269,
      "shed_ml": 300.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -1861,7 +1868,7 @@
      "plasma_ml": -166.03982955832015,
      "red_cells": 0.9250287738840577,
      "refill_ml": 75.8006738184034,
-     "sbp": 84.10821064540791,
+     "sbp": 67.74676984999945,
      "shed_ml": 300.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -1909,7 +1916,7 @@
      "plasma_ml": -19.695043822281576,
      "red_cells": 0.9937501923519707,
      "refill_ml": 0.4566205477320663,
-     "sbp": 96.65494745469302,
+     "sbp": 95.07077445688701,
      "shed_ml": 25.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -1928,7 +1935,7 @@
      "plasma_ml": -187.32157700845457,
      "red_cells": 0.9253734250372103,
      "refill_ml": 54.78629211132071,
-     "sbp": 82.60423785984572,
+     "sbp": 64.47145133921957,
      "shed_ml": 300.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -1947,7 +1954,7 @@
      "plasma_ml": -255.6403430685167,
      "red_cells": 0.8886554851363533,
      "refill_ml": 107.98330600695739,
-     "sbp": 74.37492452891476,
+     "sbp": 48.26981856843475,
      "shed_ml": 450.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -1966,7 +1973,7 @@
      "plasma_ml": -38.42824663795545,
      "red_cells": 0.9875017955149651,
      "refill_ml": 1.8761765494113956,
-     "sbp": 95.3248128073424,
+     "sbp": 92.17403678043455,
      "shed_ml": 50.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -1985,7 +1992,7 @@
      "plasma_ml": -315.8268176386866,
      "red_cells": 0.8525131310664824,
      "refill_ml": 169.75912646137246,
-     "sbp": 48.95460865616068,
+     "sbp": 31.771865220554616,
      "shed_ml": 600.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -2004,7 +2011,7 @@
      "plasma_ml": -56.27774423919633,
      "red_cells": 0.981256283821063,
      "refill_ml": 4.1816759371434555,
-     "sbp": 94.00861439646759,
+     "sbp": 89.30764913008497,
      "shed_ml": 75.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -2023,7 +2030,7 @@
      "plasma_ml": -105.21476716299631,
      "red_cells": 0.9625502931862847,
      "refill_ml": 15.733339066363946,
-     "sbp": 90.13283308763793,
+     "sbp": 80.86705872418926,
      "shed_ml": 150.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -2042,7 +2049,7 @@
      "plasma_ml": -148.4662101150748,
      "red_cells": 0.9439141334192764,
      "refill_ml": 33.02475399200026,
-     "sbp": 86.34202325975114,
+     "sbp": 72.61151732123582,
      "shed_ml": 225.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -2090,7 +2097,7 @@
      "plasma_ml": -19.695043822281576,
      "red_cells": 0.9937501923519707,
      "refill_ml": 0.4566205477320663,
-     "sbp": 96.65494745469302,
+     "sbp": 95.07077445688701,
      "shed_ml": 25.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -2109,7 +2116,7 @@
      "plasma_ml": -185.29964403488296,
      "red_cells": 0.9259896833134657,
      "refill_ml": 54.78629211132071,
-     "sbp": 82.78515363691378,
+     "sbp": 64.86544569816776,
      "shed_ml": 297.5,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -2128,7 +2135,7 @@
      "plasma_ml": -148.3278058809695,
      "red_cells": 0.9259896833134657,
      "refill_ml": 91.75813026523419,
-     "sbp": 85.3982624265814,
+     "sbp": 70.55621595122172,
      "shed_ml": 297.5,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -2147,7 +2154,7 @@
      "plasma_ml": -38.42824663795545,
      "red_cells": 0.9875017955149651,
      "refill_ml": 1.8761765494113956,
-     "sbp": 95.3248128073424,
+     "sbp": 92.17403678043455,
      "shed_ml": 50.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -2166,7 +2173,7 @@
      "plasma_ml": -125.90325249468765,
      "red_cells": 0.9259896833134657,
      "refill_ml": 114.182683651516,
-     "sbp": 86.92762486638472,
+     "sbp": 73.88682748679341,
      "shed_ml": 297.5,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -2185,7 +2192,7 @@
      "plasma_ml": -56.27774423919633,
      "red_cells": 0.981256283821063,
      "refill_ml": 4.1816759371434555,
-     "sbp": 94.00861439646759,
+     "sbp": 89.30764913008497,
      "shed_ml": 75.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -2204,7 +2211,7 @@
      "plasma_ml": -105.21476716299631,
      "red_cells": 0.9625502931862847,
      "refill_ml": 15.733339066363946,
-     "sbp": 90.13283308763793,
+     "sbp": 80.86705872418926,
      "shed_ml": 150.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -2223,7 +2230,7 @@
      "plasma_ml": -148.4662101150748,
      "red_cells": 0.9439141334192764,
      "refill_ml": 33.02475399200026,
-     "sbp": 86.34202325975114,
+     "sbp": 72.61151732123582,
      "shed_ml": 225.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -2271,7 +2278,7 @@
      "plasma_ml": 56.36167651194274,
      "red_cells": 1.0,
      "refill_ml": 0.0,
-     "sbp": 100.94288909968824,
+     "sbp": 104.4089584837655,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 0.0,
@@ -2290,7 +2297,7 @@
      "plasma_ml": 51.92044877481746,
      "red_cells": 1.0,
      "refill_ml": 0.0,
-     "sbp": 100.71814850817779,
+     "sbp": 103.91952341780942,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 0.0,
@@ -2309,7 +2316,7 @@
      "plasma_ml": 50.25990447888131,
      "red_cells": 1.0,
      "refill_ml": 0.0,
-     "sbp": 100.63381144404589,
+     "sbp": 103.73585603369993,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 0.0,
@@ -2328,7 +2335,7 @@
      "plasma_ml": 103.83329968483629,
      "red_cells": 1.0,
      "refill_ml": 0.0,
-     "sbp": 103.27174965787913,
+     "sbp": 109.48069925493678,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 0.0,
@@ -2347,7 +2354,7 @@
      "plasma_ml": 50.03517424626391,
      "red_cells": 1.0,
      "refill_ml": 0.0,
-     "sbp": 100.62238474726945,
+     "sbp": 103.7109712273868,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 0.0,
@@ -2366,7 +2373,7 @@
      "plasma_ml": 88.5732447756873,
      "red_cells": 1.0,
      "refill_ml": 0.0,
-     "sbp": 102.53754140172947,
+     "sbp": 107.88175683043308,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 0.0,
@@ -2385,7 +2392,7 @@
      "plasma_ml": 64.1903037322491,
      "red_cells": 1.0,
      "refill_ml": 0.0,
-     "sbp": 101.33613837818355,
+     "sbp": 105.26536802359972,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 0.0,
@@ -2404,7 +2411,7 @@
      "plasma_ml": 55.2203210070728,
      "red_cells": 1.0,
      "refill_ml": 0.0,
-     "sbp": 100.88524709663452,
+     "sbp": 104.2834270104485,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 0.0,
@@ -2452,7 +2459,7 @@
      "plasma_ml": 112.72335302388548,
      "red_cells": 1.0,
      "refill_ml": 0.0,
-     "sbp": 103.69332050486395,
+     "sbp": 110.39878687725925,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 0.0,
@@ -2471,7 +2478,7 @@
      "plasma_ml": 103.84089754963492,
      "red_cells": 1.0,
      "refill_ml": 0.0,
-     "sbp": 103.27211187607762,
+     "sbp": 109.48148808568014,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 0.0,
@@ -2490,7 +2497,7 @@
      "plasma_ml": 100.51980895776262,
      "red_cells": 1.0,
      "refill_ml": 0.0,
-     "sbp": 103.11346816091873,
+     "sbp": 109.13599732822303,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 0.0,
@@ -2509,7 +2516,7 @@
      "plasma_ml": 207.66659936967258,
      "red_cells": 1.0,
      "refill_ml": 0.0,
-     "sbp": 107.92591388341717,
+     "sbp": 119.61643467944185,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 0.0,
@@ -2528,7 +2535,7 @@
      "plasma_ml": 100.07034849252781,
      "red_cells": 1.0,
      "refill_ml": 0.0,
-     "sbp": 103.09194945536754,
+     "sbp": 109.0891343694671,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 0.0,
@@ -2547,7 +2554,7 @@
      "plasma_ml": 177.1464895513746,
      "red_cells": 1.0,
      "refill_ml": 0.0,
-     "sbp": 106.61754320407209,
+     "sbp": 116.7670940888681,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 0.0,
@@ -2566,7 +2573,7 @@
      "plasma_ml": 128.3806074644982,
      "red_cells": 1.0,
      "refill_ml": 0.0,
-     "sbp": 104.42494743906956,
+     "sbp": 111.99210775619592,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 0.0,
@@ -2585,7 +2592,7 @@
      "plasma_ml": 110.4406420141456,
      "red_cells": 1.0,
      "refill_ml": 0.0,
-     "sbp": 103.58550195307708,
+     "sbp": 110.16398203114565,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 0.0,
@@ -2633,7 +2640,7 @@
      "plasma_ml": 39.39393939393939,
      "red_cells": 1.078125,
      "refill_ml": 0.0,
-     "sbp": 103.08858034772791,
+     "sbp": 109.08179720171857,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 100.0,
@@ -2652,7 +2659,7 @@
      "plasma_ml": 118.18181818181819,
      "red_cells": 1.234375,
      "refill_ml": 0.0,
-     "sbp": 111.60456532680361,
+     "sbp": 127.62772004503896,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 300.0,
@@ -2671,7 +2678,7 @@
      "plasma_ml": 118.18181818181819,
      "red_cells": 1.234375,
      "refill_ml": 0.0,
-     "sbp": 111.60456532680361,
+     "sbp": 127.62772004503896,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 300.0,
@@ -2690,7 +2697,7 @@
      "plasma_ml": 78.78787878787878,
      "red_cells": 1.15625,
      "refill_ml": 0.0,
-     "sbp": 107.60174625200509,
+     "sbp": 118.91046961547775,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 200.0,
@@ -2709,7 +2716,7 @@
      "plasma_ml": 118.18181818181819,
      "red_cells": 1.234375,
      "refill_ml": 0.0,
-     "sbp": 111.60456532680361,
+     "sbp": 127.62772004503896,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 300.0,
@@ -2728,7 +2735,7 @@
      "plasma_ml": 118.18181818181819,
      "red_cells": 1.234375,
      "refill_ml": 0.0,
-     "sbp": 111.60456532680361,
+     "sbp": 127.62772004503896,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 300.0,
@@ -2747,7 +2754,7 @@
      "plasma_ml": 118.18181818181819,
      "red_cells": 1.234375,
      "refill_ml": 0.0,
-     "sbp": 111.60456532680361,
+     "sbp": 127.62772004503896,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 300.0,
@@ -2766,7 +2773,7 @@
      "plasma_ml": 118.18181818181819,
      "red_cells": 1.234375,
      "refill_ml": 0.0,
-     "sbp": 111.60456532680361,
+     "sbp": 127.62772004503896,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 300.0,
@@ -2814,7 +2821,7 @@
      "plasma_ml": 39.39393939393939,
      "red_cells": 1.078125,
      "refill_ml": 0.0,
-     "sbp": 103.08858034772791,
+     "sbp": 109.08179720171857,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 100.0,
@@ -2833,7 +2840,7 @@
      "plasma_ml": 236.3636363636365,
      "red_cells": 1.46875,
      "refill_ml": 0.0,
-     "sbp": 121.09614848180127,
+     "sbp": 148.29827891592277,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 600.0000000000001,
@@ -2852,7 +2859,7 @@
      "plasma_ml": 236.3636363636365,
      "red_cells": 1.46875,
      "refill_ml": 0.0,
-     "sbp": 121.09614848180127,
+     "sbp": 148.29827891592277,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 600.0000000000001,
@@ -2871,7 +2878,7 @@
      "plasma_ml": 78.78787878787878,
      "red_cells": 1.15625,
      "refill_ml": 0.0,
-     "sbp": 107.60174625200509,
+     "sbp": 118.91046961547775,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 200.0,
@@ -2890,7 +2897,7 @@
      "plasma_ml": 236.3636363636365,
      "red_cells": 1.46875,
      "refill_ml": 0.0,
-     "sbp": 121.09614848180127,
+     "sbp": 148.29827891592277,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 600.0000000000001,
@@ -2909,7 +2916,7 @@
      "plasma_ml": 118.18181818181819,
      "red_cells": 1.234375,
      "refill_ml": 0.0,
-     "sbp": 111.60456532680361,
+     "sbp": 127.62772004503896,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 300.0,
@@ -2928,7 +2935,7 @@
      "plasma_ml": 236.3636363636365,
      "red_cells": 1.46875,
      "refill_ml": 0.0,
-     "sbp": 121.09614848180127,
+     "sbp": 148.29827891592277,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 600.0000000000001,
@@ -2947,7 +2954,7 @@
      "plasma_ml": 236.3636363636365,
      "red_cells": 1.46875,
      "refill_ml": 0.0,
-     "sbp": 121.09614848180127,
+     "sbp": 148.29827891592277,
      "shed_ml": 0.0,
      "state": "ADEQUATE",
      "transfused_ml": 600.0000000000001,
@@ -2995,7 +3002,7 @@
      "plasma_ml": 19.356786196185674,
      "red_cells": 1.0717275802939794,
      "refill_ml": 0.0,
-     "sbp": 101.87309666279474,
+     "sbp": 106.43474384341964,
      "shed_ml": 25.0,
      "state": "ADEQUATE",
      "transfused_ml": 100.0,
@@ -3014,7 +3021,7 @@
      "plasma_ml": 6.937220765317818,
      "red_cells": 1.3777762388572077,
      "refill_ml": 0.0,
-     "sbp": 111.60456532680361,
+     "sbp": 127.62772004503896,
      "shed_ml": 300.0,
      "state": "ADEQUATE",
      "transfused_ml": 600.0000000000001,
@@ -3033,7 +3040,7 @@
      "plasma_ml": -105.7783482465804,
      "red_cells": 1.3297142770366077,
      "refill_ml": 0.0,
-     "sbp": 105.41284048649275,
+     "sbp": 114.14351928169535,
      "shed_ml": 450.0,
      "state": "ADEQUATE",
      "transfused_ml": 600.0000000000001,
@@ -3052,7 +3059,7 @@
      "plasma_ml": 38.96088081552135,
      "red_cells": 1.143136364573742,
      "refill_ml": 0.0,
-     "sbp": 105.41284048649275,
+     "sbp": 114.14351928169535,
      "shed_ml": 50.0,
      "state": "ADEQUATE",
      "transfused_ml": 200.0,
@@ -3090,7 +3097,7 @@
      "plasma_ml": 58.80196644084552,
      "red_cells": 1.2142396526348476,
      "refill_ml": 0.0,
-     "sbp": 108.6479227548416,
+     "sbp": 121.18880955498838,
      "shed_ml": 75.0,
      "state": "ADEQUATE",
      "transfused_ml": 300.0,
@@ -3109,7 +3116,7 @@
      "plasma_ml": 119.65278977721584,
      "red_cells": 1.4258382006778079,
      "refill_ml": 0.0,
-     "sbp": 116.77632864317046,
+     "sbp": 138.890671267349,
      "shed_ml": 150.0,
      "state": "ADEQUATE",
      "transfused_ml": 600.0000000000001,
@@ -3128,7 +3135,7 @@
      "plasma_ml": 63.2950052712668,
      "red_cells": 1.4018072197675078,
      "refill_ml": 0.0,
-     "sbp": 114.3067331770202,
+     "sbp": 133.51244114106623,
      "shed_ml": 225.0,
      "state": "ADEQUATE",
      "transfused_ml": 600.0000000000001,
@@ -3176,7 +3183,7 @@
      "plasma_ml": 92.50926304600692,
      "red_cells": 0.9938306628621091,
      "refill_ml": 0.0,
-     "sbp": 102.49625389957932,
+     "sbp": 107.79184182575051,
      "shed_ml": 25.0,
      "state": "ADEQUATE",
      "transfused_ml": 0.0,
@@ -3195,7 +3202,7 @@
      "plasma_ml": -92.72631792929954,
      "red_cells": 0.9275164020293316,
      "refill_ml": 47.203084277153096,
-     "sbp": 89.1926695513636,
+     "sbp": 78.81959146741404,
      "shed_ml": 300.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -3214,7 +3221,7 @@
      "plasma_ml": -162.0212704474796,
      "red_cells": 0.8916219895679502,
      "refill_ml": 103.3838579565616,
-     "sbp": 82.54023578617507,
+     "sbp": 64.33206904544795,
      "shed_ml": 450.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -3233,7 +3240,7 @@
      "plasma_ml": 167.11760757645143,
      "red_cells": 0.9878170597334491,
      "refill_ml": 0.0,
-     "sbp": 105.75705352473315,
+     "sbp": 114.89313878719665,
      "shed_ml": 50.0,
      "state": "ADEQUATE",
      "transfused_ml": 0.0,
@@ -3252,7 +3259,7 @@
      "plasma_ml": -221.4718088542373,
      "red_cells": 0.8562844554327329,
      "refill_ml": 166.96942020105192,
-     "sbp": 75.89793843084895,
+     "sbp": 49.86662147162661,
      "shed_ml": 600.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -3271,7 +3278,7 @@
      "plasma_ml": 116.22155218594635,
      "red_cells": 0.9818563645726224,
      "refill_ml": 0.0,
-     "sbp": 103.19125139587982,
+     "sbp": 109.30539192880494,
      "shed_ml": 75.0,
      "state": "ADEQUATE",
      "transfused_ml": 0.0,
@@ -3290,7 +3297,7 @@
      "plasma_ml": 9.70636103695476,
      "red_cells": 0.9637837754468745,
      "refill_ml": 3.230743010031941,
-     "sbp": 96.99597607926866,
+     "sbp": 95.81345901707397,
      "shed_ml": 150.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -3309,7 +3316,7 @@
      "plasma_ml": -49.09037059750925,
      "red_cells": 0.9456257130918134,
      "refill_ml": 23.28772239290344,
-     "sbp": 92.79129327067044,
+     "sbp": 86.65659423390451,
      "shed_ml": 225.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -3357,7 +3364,7 @@
      "plasma_ml": -19.695043822281576,
      "red_cells": 0.9937501923519707,
      "refill_ml": 0.4566205477320663,
-     "sbp": 96.65494745469302,
+     "sbp": 95.07077445688701,
      "shed_ml": 25.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -3376,7 +3383,7 @@
      "plasma_ml": -185.5018373322401,
      "red_cells": 0.9259280574858401,
      "refill_ml": 54.78629211132071,
-     "sbp": 82.76708647306577,
+     "sbp": 64.82609943023212,
      "shed_ml": 297.75,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -3395,7 +3402,7 @@
      "plasma_ml": -159.05506007466855,
      "red_cells": 0.9222511078579874,
      "refill_ml": 93.38064783940648,
-     "sbp": 84.44855834545629,
+     "sbp": 68.48797150788258,
      "shed_ml": 312.75,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -3414,7 +3421,7 @@
      "plasma_ml": -38.42824663795545,
      "red_cells": 0.9875017955149651,
      "refill_ml": 1.8761765494113956,
-     "sbp": 95.3248128073424,
+     "sbp": 92.17403678043455,
      "shed_ml": 50.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -3433,7 +3440,7 @@
      "plasma_ml": -144.86707530624835,
      "red_cells": 0.9186052463624511,
      "refill_ml": 119.7403279325016,
-     "sbp": 85.24129371324013,
+     "sbp": 70.21437297550072,
      "shed_ml": 327.75,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -3452,7 +3459,7 @@
      "plasma_ml": -56.27774423919633,
      "red_cells": 0.981256283821063,
      "refill_ml": 4.1816759371434555,
-     "sbp": 94.00861439646759,
+     "sbp": 89.30764913008497,
      "shed_ml": 75.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -3471,7 +3478,7 @@
      "plasma_ml": -105.21476716299631,
      "red_cells": 0.9625502931862847,
      "refill_ml": 15.733339066363946,
-     "sbp": 90.13283308763793,
+     "sbp": 80.86705872418926,
      "shed_ml": 150.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -3490,7 +3497,7 @@
      "plasma_ml": -148.4662101150748,
      "red_cells": 0.9439141334192764,
      "refill_ml": 33.02475399200026,
-     "sbp": 86.34202325975114,
+     "sbp": 72.61151732123582,
      "shed_ml": 225.0,
      "state": "CRITICAL",
      "transfused_ml": 0.0,
@@ -3502,7 +3509,7 @@
    "v_lowest": -243.50001049826784
   }
  },
- "probes_digest": "d5b813bd0454c97a62c67a7f60cb837743bfa3d462ddd43df66a18b8a95fedc9",
+ "probes_digest": "5d46d3233863911202eba6ca6103b55717fdcf69d044e07280854da487465296",
  "profile": {
   "arrival_circulating_volume_ml": 4000.0,
   "oxygen_extraction_reserve": 1.0,

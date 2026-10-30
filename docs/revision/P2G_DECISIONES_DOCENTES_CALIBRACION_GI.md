@@ -4,7 +4,7 @@ Apoyo a decisiones, no decisiones. Nada de este documento aprueba un número, ma
 FACULTY_APPROVED, migra el GI, toca el tiempo de ejecución ni cambia lo que ve el residente. Todos los valores
 siguen CANDIDATE.
 
-- **Generado desde:** el congelamiento de calibración `22bd65e434b79f3a9d215698dad620049b5dc249fbb5e6a0357ef1d6130873fd` y el paquete `bda61af498d49ea8783aa2ce105b32610bf05ea5bbd4500ed5429db90f3de2ab`
+- **Generado desde:** el congelamiento de calibración `22bd65e434b79f3a9d215698dad620049b5dc249fbb5e6a0357ef1d6130873fd` y el paquete `e54a75697ce12e483ca98fbc63be815b993e96104f0ed8d9e8e10764d339c58f`
   (`python -m clinical_core.decision_pack`; las tablas, con `python -m clinical_core.decision_pack_markdown`).
   Los números están en `docs/revision/P2G_decision_pack.json`. Una prueba falla si el código o las entradas cambian
   sin regenerarlos.
@@ -324,75 +324,75 @@ estrecho. PAS mínima – máxima:
 
 |  | 0′ | 15′ | 30′ | 60′ | 120′ |
 |---|---|---|---|---|---|
-| SBP | 88,0 – 88,0 – 88,0 | 84,3 – 84,3 – 86,0 | 80,6 – 80,6 – 84,0 | 73,4 – 73,4 – 80,1 | 47,8 – 47,8 – 72,6 |
-| MAP | 65,3 – 65,3 – 65,3 | 62,7 – 62,7 – 63,9 | 60,1 – 60,1 – 62,5 | 55,1 – 55,1 – 59,8 | 36,1 – 36,1 – 54,5 |
+| SBP | 88,0 – 88,0 – 88,0 | 80,7 – 80,7 – 84,1 | 73,5 – 73,5 – 80,2 | 59,4 – 59,4 – 72,6 | 32,1 – 32,1 – 57,9 |
+| MAP | 65,3 – 65,3 – 65,3 | 59,9 – 59,9 – 62,4 | 54,6 – 54,6 – 59,5 | 44,1 – 44,1 – 53,9 | 23,8 – 23,8 – 43,0 |
 
 | Factor | Nivel | Estado | 15′ PAS/PAM | 30′ | 60′ | 120′ | Se detiene en |
 |---|---|---|---|---|---|---|---|
-| `blood_loss_ml_per_min` (× tasa; volumen y glóbulos rojos de una sola fuente) | ×0,5 | sonda de sensibilidad · fuera del diseño de P2F | 86 / 64 | 84 / 63 | 81 / 60 | 75 / 56 |  |
-| `blood_loss_ml_per_min` (× tasa; volumen y glóbulos rojos de una sola fuente) | ×1 | sonda de sensibilidad | 84 / 63 | 81 / 60 | 73 / 55 | 48 / 36 |  |
-| `blood_loss_ml_per_min` (× tasa; volumen y glóbulos rojos de una sola fuente) | ×2 | sonda de sensibilidad · fuera del diseño de P2F | 80 / 60 | 73 / 54 | 38 / 29 | — / — | 84 |
-| `blood_loss_ml_per_min` (× tasa; volumen y glóbulos rojos de una sola fuente) | ×4 | sonda de sensibilidad · fuera del diseño de P2F | 72 / 54 | 33 / 25 | — / — | — / — | 39 |
-| `preload_fraction` | inf. | rechazado por las reglas congeladas | 80 / 60 | 72 / 54 | 39 / 30 | — / — | 87 |
-| `preload_fraction` | medio | admisible | 84 / 63 | 81 / 60 | 73 / 55 | 48 / 36 |  |
-| `preload_fraction` | sup. | admisible | 86 / 64 | 84 / 63 | 80 / 60 | 73 / 54 |  |
-| `preload_curve_scale_ml` | 600 | admisible · fuera del diseño de P2F | 83 / 62 | 78 / 58 | 67 / 51 | 8 / 6 |  |
-| `preload_curve_scale_ml` | 833 | admisible | 84 / 63 | 81 / 60 | 73 / 55 | 48 / 36 |  |
-| `preload_curve_scale_ml` | 1500 | admisible · fuera del diseño de P2F | 86 / 64 | 84 / 62 | 80 / 60 | 73 / 55 |  |
-| `pump_preload_coupling` | 0 | admisible · fuera del diseño de P2F | 84 / 63 | 81 / 60 | 73 / 55 | 48 / 36 |  |
-| `pump_preload_coupling` | 0,5 | admisible · fuera del diseño de P2F | 84 / 63 | 81 / 60 | 73 / 55 | 48 / 36 |  |
-| `pump_preload_coupling` | 1 | admisible | 84 / 63 | 81 / 60 | 73 / 55 | 48 / 36 |  |
-| `afterload_sensitivity` | 0,1 | admisible · fuera del diseño de P2F | 84 / 63 | 81 / 60 | 73 / 55 | 48 / 36 |  |
-| `afterload_sensitivity` | 0,3 | admisible | 84 / 63 | 81 / 60 | 73 / 55 | 48 / 36 |  |
-| `afterload_sensitivity` | 0,5 | admisible · fuera del diseño de P2F | 84 / 63 | 81 / 60 | 73 / 55 | 48 / 36 |  |
-| `pump_reserve` | 0,7 | no evaluado (ninguna regla congelada lo lee) · fuera del diseño de P2F | 84 / 63 | 81 / 60 | 73 / 55 | 48 / 36 |  |
-| `pump_reserve` | 1 | no evaluado (ninguna regla congelada lo lee) | 84 / 63 | 81 / 60 | 73 / 55 | 48 / 36 |  |
-| `low_output_pressure_knee` | 0,3 | admisible · fuera del diseño de P2F | 84 / 63 | 81 / 60 | 73 / 55 | 59 / 45 |  |
-| `low_output_pressure_knee` | 0,5 | admisible | 84 / 63 | 81 / 60 | 73 / 55 | 48 / 36 |  |
-| `low_output_pressure_knee` | 0,6 | admisible · fuera del diseño de P2F | 84 / 63 | 81 / 60 | 73 / 55 | 43 / 32 |  |
-| `sbp_per_pressure_deficit` | 35 | admisible · fuera del diseño de P2F | 85 / 63 | 82 / 61 | 77 / 56 | 51 / 37 |  |
-| `sbp_per_pressure_deficit` | 45 | admisible | 84 / 63 | 81 / 60 | 73 / 55 | 48 / 36 |  |
-| `sbp_per_pressure_deficit` | 55 | admisible · fuera del diseño de P2F | 83 / 62 | 79 / 60 | 70 / 54 | 44 / 35 |  |
-| `dbp_per_pressure_deficit` | 15 | admisible · fuera del diseño de P2F | 84 / 63 | 81 / 61 | 73 / 57 | 48 / 39 |  |
-| `dbp_per_pressure_deficit` | 25 | admisible | 84 / 63 | 81 / 60 | 73 / 55 | 48 / 36 |  |
-| `dbp_per_pressure_deficit` | 30 | admisible · fuera del diseño de P2F | 84 / 62 | 81 / 60 | 73 / 54 | 48 / 35 |  |
+| `blood_loss_ml_per_min` (× tasa; volumen y glóbulos rojos de una sola fuente) | ×0,5 | sonda de sensibilidad · fuera del diseño de P2F | 84 / 63 | 81 / 60 | 74 / 55 | 62 / 46 |  |
+| `blood_loss_ml_per_min` (× tasa; volumen y glóbulos rojos de una sola fuente) | ×1 | sonda de sensibilidad | 81 / 60 | 74 / 55 | 59 / 44 | 32 / 24 |  |
+| `blood_loss_ml_per_min` (× tasa; volumen y glóbulos rojos de una sola fuente) | ×2 | sonda de sensibilidad · fuera del diseño de P2F | 73 / 54 | 58 / 43 | 26 / 19 | — / — | 84 |
+| `blood_loss_ml_per_min` (× tasa; volumen y glóbulos rojos de una sola fuente) | ×4 | sonda de sensibilidad · fuera del diseño de P2F | 57 / 42 | 22 / 16 | — / — | — / — | 39 |
+| `preload_fraction` | inf. | rechazado por las reglas congeladas | 72 / 54 | 57 / 42 | 26 / 20 | — / — | 87 |
+| `preload_fraction` | medio | admisible | 81 / 60 | 74 / 55 | 59 / 44 | 32 / 24 |  |
+| `preload_fraction` | sup. | admisible | 84 / 62 | 80 / 60 | 73 / 54 | 58 / 43 |  |
+| `preload_curve_scale_ml` | 600 | admisible · fuera del diseño de P2F | 78 / 58 | 68 / 50 | 47 / 35 | 5 / 4 |  |
+| `preload_curve_scale_ml` | 833 | admisible | 81 / 60 | 74 / 55 | 59 / 44 | 32 / 24 |  |
+| `preload_curve_scale_ml` | 1500 | admisible · fuera del diseño de P2F | 84 / 62 | 80 / 59 | 73 / 54 | 59 / 44 |  |
+| `pump_preload_coupling` | 0 | admisible · fuera del diseño de P2F | 81 / 60 | 74 / 55 | 59 / 44 | 32 / 24 |  |
+| `pump_preload_coupling` | 0,5 | admisible · fuera del diseño de P2F | 81 / 60 | 74 / 55 | 59 / 44 | 32 / 24 |  |
+| `pump_preload_coupling` | 1 | admisible | 81 / 60 | 74 / 55 | 59 / 44 | 32 / 24 |  |
+| `afterload_sensitivity` | 0,1 | admisible · fuera del diseño de P2F | 81 / 60 | 74 / 55 | 59 / 44 | 32 / 24 |  |
+| `afterload_sensitivity` | 0,3 | admisible | 81 / 60 | 74 / 55 | 59 / 44 | 32 / 24 |  |
+| `afterload_sensitivity` | 0,5 | admisible · fuera del diseño de P2F | 81 / 60 | 74 / 55 | 59 / 44 | 32 / 24 |  |
+| `pump_reserve` | 0,7 | no evaluado (ninguna regla congelada lo lee) · fuera del diseño de P2F | 81 / 60 | 74 / 55 | 59 / 44 | 32 / 24 |  |
+| `pump_reserve` | 1 | no evaluado (ninguna regla congelada lo lee) | 81 / 60 | 74 / 55 | 59 / 44 | 32 / 24 |  |
+| `low_output_pressure_knee` | 0,3 | admisible · fuera del diseño de P2F | 81 / 60 | 74 / 55 | 59 / 44 | 32 / 24 |  |
+| `low_output_pressure_knee` | 0,5 | admisible | 81 / 60 | 74 / 55 | 59 / 44 | 32 / 24 |  |
+| `low_output_pressure_knee` | 0,6 | admisible · fuera del diseño de P2F | 81 / 60 | 74 / 55 | 59 / 44 | 32 / 24 |  |
+| `sbp_per_pressure_deficit` | 35 | admisible · fuera del diseño de P2F | 81 / 60 | 74 / 55 | 59 / 44 | 32 / 24 |  |
+| `sbp_per_pressure_deficit` | 45 | admisible | 81 / 60 | 74 / 55 | 59 / 44 | 32 / 24 |  |
+| `sbp_per_pressure_deficit` | 55 | admisible · fuera del diseño de P2F | 81 / 60 | 74 / 55 | 59 / 44 | 32 / 24 |  |
+| `dbp_per_pressure_deficit` | 15 | admisible · fuera del diseño de P2F | 81 / 60 | 74 / 55 | 59 / 44 | 32 / 24 |  |
+| `dbp_per_pressure_deficit` | 25 | admisible | 81 / 60 | 74 / 55 | 59 / 44 | 32 / 24 |  |
+| `dbp_per_pressure_deficit` | 30 | admisible · fuera del diseño de P2F | 81 / 60 | 74 / 55 | 59 / 44 | 32 / 24 |  |
 
 **gi_bleed_72f** — sin tratamiento, mínimo – mediana – máximo en la región admisible:
 
 |  | 0′ | 15′ | 30′ | 60′ | 120′ |
 |---|---|---|---|---|---|
-| SBP | 98,0 – 98,0 – 98,0 | 95,5 – 95,5 – 96,7 | 93,1 – 93,1 – 95,3 | 88,4 – 88,4 – 92,8 | 79,2 – 79,2 – 87,7 |
-| MAP | 74,0 – 74,0 – 74,0 | 72,3 – 72,3 – 73,1 | 70,6 – 70,6 – 72,1 | 67,2 – 67,2 – 70,3 | 60,8 – 60,8 – 66,8 |
+| SBP | 98,0 – 98,0 – 98,0 | 92,6 – 92,6 – 95,1 | 87,4 – 87,4 – 92,2 | 77,1 – 77,1 – 86,6 | 57,0 – 57,0 – 75,6 |
+| MAP | 74,0 – 74,0 – 74,0 | 70,0 – 70,0 – 71,8 | 66,0 – 66,0 – 69,6 | 58,2 – 58,2 – 65,4 | 43,1 – 43,1 – 57,1 |
 
 | Factor | Nivel | Estado | 15′ PAS/PAM | 30′ | 60′ | 120′ | Se detiene en |
 |---|---|---|---|---|---|---|---|
-| `blood_loss_ml_per_min` (× tasa; volumen y glóbulos rojos de una sola fuente) | ×0,5 | sonda de sensibilidad · fuera del diseño de P2F | 97 / 73 | 96 / 72 | 93 / 71 | 89 / 68 |  |
-| `blood_loss_ml_per_min` (× tasa; volumen y glóbulos rojos de una sola fuente) | ×1 | sonda de sensibilidad | 96 / 72 | 93 / 71 | 88 / 67 | 79 / 61 |  |
-| `blood_loss_ml_per_min` (× tasa; volumen y glóbulos rojos de una sola fuente) | ×2 | sonda de sensibilidad · fuera del diseño de P2F | 93 / 70 | 88 / 67 | 77 / 59 | 3 / 2 |  |
-| `blood_loss_ml_per_min` (× tasa; volumen y glóbulos rojos de una sola fuente) | ×4 | sonda de sensibilidad · fuera del diseño de P2F | 87 / 67 | 76 / 58 | — / — | — / — | 56 |
-| `preload_fraction` | inf. | rechazado por las reglas congeladas | 93 / 71 | 89 / 67 | 80 / 61 | 30 / 23 |  |
-| `preload_fraction` | medio | admisible | 96 / 72 | 93 / 71 | 88 / 67 | 79 / 61 |  |
-| `preload_fraction` | sup. | admisible | 97 / 73 | 95 / 72 | 93 / 70 | 88 / 67 |  |
-| `preload_curve_scale_ml` | 600 | admisible · fuera del diseño de P2F | 95 / 72 | 91 / 69 | 84 / 64 | 58 / 45 |  |
-| `preload_curve_scale_ml` | 833 | admisible | 96 / 72 | 93 / 71 | 88 / 67 | 79 / 61 |  |
-| `preload_curve_scale_ml` | 1500 | admisible · fuera del diseño de P2F | 97 / 73 | 95 / 72 | 93 / 70 | 88 / 67 |  |
-| `pump_preload_coupling` | 0 | admisible · fuera del diseño de P2F | 96 / 72 | 93 / 71 | 88 / 67 | 79 / 61 |  |
-| `pump_preload_coupling` | 0,5 | admisible · fuera del diseño de P2F | 96 / 72 | 93 / 71 | 88 / 67 | 79 / 61 |  |
-| `pump_preload_coupling` | 1 | admisible | 96 / 72 | 93 / 71 | 88 / 67 | 79 / 61 |  |
-| `afterload_sensitivity` | 0,1 | admisible · fuera del diseño de P2F | 96 / 72 | 93 / 71 | 88 / 67 | 79 / 61 |  |
-| `afterload_sensitivity` | 0,3 | admisible | 96 / 72 | 93 / 71 | 88 / 67 | 79 / 61 |  |
-| `afterload_sensitivity` | 0,5 | admisible · fuera del diseño de P2F | 96 / 72 | 93 / 71 | 88 / 67 | 79 / 61 |  |
-| `pump_reserve` | 0,7 | no evaluado (ninguna regla congelada lo lee) · fuera del diseño de P2F | 96 / 72 | 93 / 71 | 88 / 67 | 79 / 61 |  |
-| `pump_reserve` | 1 | no evaluado (ninguna regla congelada lo lee) | 96 / 72 | 93 / 71 | 88 / 67 | 79 / 61 |  |
-| `low_output_pressure_knee` | 0,3 | admisible · fuera del diseño de P2F | 96 / 72 | 93 / 71 | 88 / 67 | 79 / 61 |  |
-| `low_output_pressure_knee` | 0,5 | admisible | 96 / 72 | 93 / 71 | 88 / 67 | 79 / 61 |  |
-| `low_output_pressure_knee` | 0,6 | admisible · fuera del diseño de P2F | 96 / 72 | 93 / 71 | 88 / 67 | 78 / 59 |  |
-| `sbp_per_pressure_deficit` | 35 | admisible · fuera del diseño de P2F | 96 / 72 | 94 / 71 | 91 / 68 | 83 / 62 |  |
-| `sbp_per_pressure_deficit` | 45 | admisible | 96 / 72 | 93 / 71 | 88 / 67 | 79 / 61 |  |
-| `sbp_per_pressure_deficit` | 55 | admisible · fuera del diseño de P2F | 95 / 72 | 92 / 70 | 86 / 67 | 75 / 59 |  |
-| `dbp_per_pressure_deficit` | 15 | admisible · fuera del diseño de P2F | 96 / 73 | 93 / 71 | 88 / 69 | 79 / 64 |  |
-| `dbp_per_pressure_deficit` | 25 | admisible | 96 / 72 | 93 / 71 | 88 / 67 | 79 / 61 |  |
-| `dbp_per_pressure_deficit` | 30 | admisible · fuera del diseño de P2F | 96 / 72 | 93 / 70 | 88 / 67 | 79 / 59 |  |
+| `blood_loss_ml_per_min` (× tasa; volumen y glóbulos rojos de una sola fuente) | ×0,5 | sonda de sensibilidad · fuera del diseño de P2F | 95 / 72 | 93 / 70 | 88 / 66 | 79 / 60 |  |
+| `blood_loss_ml_per_min` (× tasa; volumen y glóbulos rojos de una sola fuente) | ×1 | sonda de sensibilidad | 93 / 70 | 87 / 66 | 77 / 58 | 57 / 43 |  |
+| `blood_loss_ml_per_min` (× tasa; volumen y glóbulos rojos de una sola fuente) | ×2 | sonda de sensibilidad · fuera del diseño de P2F | 87 / 66 | 76 / 57 | 52 / 40 | 2 / 2 |  |
+| `blood_loss_ml_per_min` (× tasa; volumen y glóbulos rojos de una sola fuente) | ×4 | sonda de sensibilidad · fuera del diseño de P2F | 75 / 57 | 50 / 37 | — / — | — / — | 56 |
+| `preload_fraction` | inf. | rechazado por las reglas congeladas | 88 / 66 | 78 / 59 | 58 / 44 | 20 / 15 |  |
+| `preload_fraction` | medio | admisible | 93 / 70 | 87 / 66 | 77 / 58 | 57 / 43 |  |
+| `preload_fraction` | sup. | admisible | 95 / 72 | 92 / 70 | 87 / 65 | 76 / 57 |  |
+| `preload_curve_scale_ml` | 600 | admisible · fuera del diseño de P2F | 90 / 68 | 83 / 63 | 68 / 51 | 38 / 28 |  |
+| `preload_curve_scale_ml` | 833 | admisible | 93 / 70 | 87 / 66 | 77 / 58 | 57 / 43 |  |
+| `preload_curve_scale_ml` | 1500 | admisible · fuera del diseño de P2F | 95 / 72 | 92 / 70 | 87 / 66 | 77 / 58 |  |
+| `pump_preload_coupling` | 0 | admisible · fuera del diseño de P2F | 93 / 70 | 87 / 66 | 77 / 58 | 57 / 43 |  |
+| `pump_preload_coupling` | 0,5 | admisible · fuera del diseño de P2F | 93 / 70 | 87 / 66 | 77 / 58 | 57 / 43 |  |
+| `pump_preload_coupling` | 1 | admisible | 93 / 70 | 87 / 66 | 77 / 58 | 57 / 43 |  |
+| `afterload_sensitivity` | 0,1 | admisible · fuera del diseño de P2F | 93 / 70 | 87 / 66 | 77 / 58 | 57 / 43 |  |
+| `afterload_sensitivity` | 0,3 | admisible | 93 / 70 | 87 / 66 | 77 / 58 | 57 / 43 |  |
+| `afterload_sensitivity` | 0,5 | admisible · fuera del diseño de P2F | 93 / 70 | 87 / 66 | 77 / 58 | 57 / 43 |  |
+| `pump_reserve` | 0,7 | no evaluado (ninguna regla congelada lo lee) · fuera del diseño de P2F | 93 / 70 | 87 / 66 | 77 / 58 | 57 / 43 |  |
+| `pump_reserve` | 1 | no evaluado (ninguna regla congelada lo lee) | 93 / 70 | 87 / 66 | 77 / 58 | 57 / 43 |  |
+| `low_output_pressure_knee` | 0,3 | admisible · fuera del diseño de P2F | 93 / 70 | 87 / 66 | 77 / 58 | 57 / 43 |  |
+| `low_output_pressure_knee` | 0,5 | admisible | 93 / 70 | 87 / 66 | 77 / 58 | 57 / 43 |  |
+| `low_output_pressure_knee` | 0,6 | admisible · fuera del diseño de P2F | 93 / 70 | 87 / 66 | 77 / 58 | 57 / 43 |  |
+| `sbp_per_pressure_deficit` | 35 | admisible · fuera del diseño de P2F | 93 / 70 | 87 / 66 | 77 / 58 | 57 / 43 |  |
+| `sbp_per_pressure_deficit` | 45 | admisible | 93 / 70 | 87 / 66 | 77 / 58 | 57 / 43 |  |
+| `sbp_per_pressure_deficit` | 55 | admisible · fuera del diseño de P2F | 93 / 70 | 87 / 66 | 77 / 58 | 57 / 43 |  |
+| `dbp_per_pressure_deficit` | 15 | admisible · fuera del diseño de P2F | 93 / 70 | 87 / 66 | 77 / 58 | 57 / 43 |  |
+| `dbp_per_pressure_deficit` | 25 | admisible | 93 / 70 | 87 / 66 | 77 / 58 | 57 / 43 |  |
+| `dbp_per_pressure_deficit` | 30 | admisible · fuera del diseño de P2F | 93 / 70 | 87 / 66 | 77 / 58 | 57 / 43 |  |
 <!-- /generado:presion -->
 
 **Pregunta para la docencia:** ¿qué grado de deterioro hipotensivo sin tratamiento, a lo largo de una hora, debería
@@ -514,29 +514,29 @@ vuelve mayormente ineficaz.
 
 | Precarga | Escala (mL) | V neto (mL-eq) | PAS llegada → pico | PAM pico | Gasto pico (× llegada) | Posición llegada → final | Respuesta marginal final | FC final | L final | Estado | En el diseño de P2F |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| inf. | 600 | 1088 | 88 → 243 | 174 | 4,44 | 0,20 → 0,87 | 0,16 | 80 | 0,000 – 0,677 | rechazado por las reglas congeladas | no |
-| inf. | 833 | 1088 | 88 → 225 | 161 | 4,03 | 0,20 → 0,78 | 0,27 | 80 | 0,000 – 0,191 | rechazado por las reglas congeladas | sí |
-| inf. | 1500 | 1088 | 88 → 186 | 134 | 3,18 | 0,20 → 0,61 | 0,48 | 80 | 0,000 – 0,000 | admisible | no |
-| medio | 600 | 1088 | 88 → 160 | 116 | 2,60 | 0,35 → 0,89 | 0,16 | 80 | 0,000 – 0,863 | admisible | no |
-| medio | 833 | 1088 | 88 → 151 | 110 | 2,41 | 0,35 → 0,82 | 0,27 | 80 | 0,000 – 0,403 | admisible | sí |
-| medio | 1500 | 1088 | 88 → 134 | 97 | 2,01 | 0,35 → 0,69 | 0,48 | 80 | 0,000 – 0,000 | admisible | no |
-| sup. | 600 | 1088 | 88 → 127 | 93 | 1,86 | 0,50 → 0,92 | 0,16 | 80 | 0,000 – 1,082 | admisible | no |
-| sup. | 833 | 1088 | 88 → 122 | 89 | 1,76 | 0,50 → 0,86 | 0,27 | 80 | 0,000 – 0,682 | admisible | sí |
-| sup. | 1500 | 1088 | 88 → 113 | 83 | 1,55 | 0,50 → 0,76 | 0,48 | 80 | 0,000 – 0,062 | admisible | no |
+| inf. | 600 | 1088 | 88 → 391 | 290 | 4,44 | 0,20 → 0,87 | 0,16 | 80 | 0,000 – 0,677 | rechazado por las reglas congeladas | no |
+| inf. | 833 | 1088 | 88 → 355 | 264 | 4,03 | 0,20 → 0,78 | 0,27 | 80 | 0,000 – 0,191 | rechazado por las reglas congeladas | sí |
+| inf. | 1500 | 1088 | 88 → 280 | 208 | 3,18 | 0,20 → 0,61 | 0,48 | 80 | 0,000 – 0,000 | admisible | no |
+| medio | 600 | 1088 | 88 → 229 | 170 | 2,60 | 0,35 → 0,89 | 0,16 | 80 | 0,000 – 0,863 | admisible | no |
+| medio | 833 | 1088 | 88 → 212 | 157 | 2,41 | 0,35 → 0,82 | 0,27 | 80 | 0,000 – 0,403 | admisible | sí |
+| medio | 1500 | 1088 | 88 → 177 | 132 | 2,01 | 0,35 → 0,69 | 0,48 | 80 | 0,000 – 0,000 | admisible | no |
+| sup. | 600 | 1088 | 88 → 164 | 122 | 1,86 | 0,50 → 0,92 | 0,16 | 80 | 0,000 – 1,082 | admisible | no |
+| sup. | 833 | 1088 | 88 → 155 | 115 | 1,76 | 0,50 → 0,86 | 0,27 | 80 | 0,000 – 0,682 | admisible | sí |
+| sup. | 1500 | 1088 | 88 → 136 | 101 | 1,55 | 0,50 → 0,76 | 0,48 | 80 | 0,000 – 0,062 | admisible | no |
 
 **gi_bleed_72f** — volumen agresivo (90 min). Lo que mueve la presión es la posición y la escala de la curva; la rodilla y la ganancia de congestión y la reserva sólo cambian L (rango en «L final»). «Estado» aplica las reglas congeladas al conjunto completo (el mismo nivel en los dos casos) con esa escala; «En el diseño de P2F» dice si P2F barrió esa celda (sólo con la escala por defecto).
 
 | Precarga | Escala (mL) | V neto (mL-eq) | PAS llegada → pico | PAM pico | Gasto pico (× llegada) | Posición llegada → final | Respuesta marginal final | FC final | L final | Estado | En el diseño de P2F |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| inf. | 600 | 1088 | 98 → 188 | 138 | 3,01 | 0,30 → 0,89 | 0,16 | 80 | 0,000 – 0,798 | rechazado por las reglas congeladas | no |
-| inf. | 833 | 1088 | 98 → 178 | 130 | 2,77 | 0,30 → 0,81 | 0,27 | 80 | 0,000 – 0,326 | rechazado por las reglas congeladas | sí |
-| inf. | 1500 | 1088 | 98 → 155 | 114 | 2,27 | 0,30 → 0,66 | 0,48 | 80 | 0,000 – 0,000 | admisible | no |
-| medio | 600 | 1088 | 98 → 145 | 107 | 2,05 | 0,45 → 0,91 | 0,16 | 80 | 0,000 – 1,005 | admisible | no |
-| medio | 833 | 1088 | 98 → 140 | 103 | 1,93 | 0,45 → 0,85 | 0,27 | 80 | 0,000 – 0,582 | admisible | sí |
-| medio | 1500 | 1088 | 98 → 128 | 95 | 1,67 | 0,45 → 0,73 | 0,48 | 80 | 0,000 – 0,000 | admisible | no |
-| sup. | 600 | 1088 | 98 → 124 | 92 | 1,57 | 0,60 → 0,93 | 0,16 | 80 | 0,000 – 1,255 | admisible | no |
-| sup. | 833 | 1088 | 98 → 121 | 90 | 1,51 | 0,60 → 0,89 | 0,27 | 80 | 0,000 – 0,910 | admisible | sí |
-| sup. | 1500 | 1088 | 98 → 114 | 86 | 1,36 | 0,60 → 0,81 | 0,48 | 80 | 0,000 – 0,319 | admisible | no |
+| inf. | 600 | 1088 | 98 → 295 | 223 | 3,01 | 0,30 → 0,89 | 0,16 | 80 | 0,000 – 0,798 | rechazado por las reglas congeladas | no |
+| inf. | 833 | 1088 | 98 → 271 | 205 | 2,77 | 0,30 → 0,81 | 0,27 | 80 | 0,000 – 0,326 | rechazado por las reglas congeladas | sí |
+| inf. | 1500 | 1088 | 98 → 223 | 168 | 2,27 | 0,30 → 0,66 | 0,48 | 80 | 0,000 – 0,000 | admisible | no |
+| medio | 600 | 1088 | 98 → 201 | 152 | 2,05 | 0,45 → 0,91 | 0,16 | 80 | 0,000 – 1,005 | admisible | no |
+| medio | 833 | 1088 | 98 → 189 | 143 | 1,93 | 0,45 → 0,85 | 0,27 | 80 | 0,000 – 0,582 | admisible | sí |
+| medio | 1500 | 1088 | 98 → 163 | 123 | 1,67 | 0,45 → 0,73 | 0,48 | 80 | 0,000 – 0,000 | admisible | no |
+| sup. | 600 | 1088 | 98 → 154 | 116 | 1,57 | 0,60 → 0,93 | 0,16 | 80 | 0,000 – 1,255 | admisible | no |
+| sup. | 833 | 1088 | 98 → 148 | 111 | 1,51 | 0,60 → 0,89 | 0,27 | 80 | 0,000 – 0,910 | admisible | sí |
+| sup. | 1500 | 1088 | 98 → 134 | 101 | 1,36 | 0,60 → 0,81 | 0,48 | 80 | 0,000 – 0,319 | admisible | no |
 
 Estado de los parámetros de congestión: `congestion_per_excess_preload` 0,02 admisible, 0,05 admisible, 0,1 admisible; `congestion_preload_knee` 0,75 admisible, 0,85 admisible, 0,92 admisible.
 <!-- /generado:volumen -->

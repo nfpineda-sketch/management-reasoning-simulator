@@ -426,7 +426,9 @@ def test_kd_s4_7_overload_volume_rises_output_barely_and_lungs_congest_only_with
         added = states[-1].V - states[1].V
         assert added > 900, "V rises substantially"
         assert derived[-1].output_rel - derived[1].output_rel < 0.1 * arrival_slope * added, "output barely moves"
-        assert derived[-1].map - derived[1].map < 3.0, "nor does pressure"
+        # Since P2J-1 pressure is proportional to output x tone, so it moves by the same small share as output.
+        share = derived[-1].output_rel / derived[1].output_rel
+        assert derived[-1].map / derived[1].map == pytest.approx(share) and share - 1.0 < 0.05, "nor does pressure"
         congestion = [d for record in trajectory.records for d in record.deltas if d.source == PRELOAD_CONGESTION]
         if anchors is limited:
             assert states[-1].L > 0 and all(d.channel is Channel.L and d.amount > 0 for d in congestion)
