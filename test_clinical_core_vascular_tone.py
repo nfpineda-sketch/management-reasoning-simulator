@@ -1,0 +1,247 @@
+"""Phase 2 shadow core, P2J-2: the dynamic vascular-tone response and the pressure decision surface.
+
+These tests pin the tone response in the core (the target, its arrival normalization, the explicit one-minute timing,
+gain 0 writing nothing, the contraction bound, the fail-closed guard and second writer), the structural probes 1-8, the
+analytic prefilter of the frozen surface, the exact reconstruction against the core, what P2J-2 changed outside its
+module (and the closed packages' guards that rest on it), and the policy: nothing approved, no pressure feedback, no
+pressure -> HR.
+"""
+import ast
+import hashlib
+import inspect
+import json
+from dataclasses import replace
+
+import pytest
+
+from clinical_core import bands, decision_pack, lactate_slice
+from clinical_core import blood_fluid_calibration as bf
+from clinical_core import derived as dv
+from clinical_core import hr_primary as hp
+from clinical_core import lactate_adequacy as la
+from clinical_core import lactate_rebuild as lr
+from clinical_core import pressure_tone as pt
+from clinical_core import vascular_tone as vt
+from clinical_core.derived import (DEFAULT_PROFILE, PARAMETERS, CoreProfile, acute_deficit_signal, arrival_state,
+                                   arrival_tone_signal, tone_target)
+from clinical_core.integration import VASCULAR_TONE, step
+from clinical_core.state import CoreInvariantError
+
+ROOT = vt.ROOT
+SOURCE = ROOT / "clinical_core" / "vascular_tone.py"
+#: The P2J-2 freeze: faculty decisions, the P2J-1 record, the tone equation, timing, feedback and arrival rules, the
+#: gains, the afterload points, the analytic and simulation rules, the design, the reconstruction rule, the probes, the
+#: trade-off, envelope, identifiability and verdict rules, the baroreflex plan, the policy and every clinical_core
+#: source but the downstream reports, committed before any clinical trajectory was evaluated.
+FROZEN_DIGEST = "baa2ee124decc7c84a48b0b8fe5031a9dab774e3587176c79e1907df94904545"
+#: derived.py, integration.py and shadow.py as P2J-2 leaves them: the AST proofs cover the declared statements; these pins
+#: make any later change of the three files fail the closed packages' guards until it is proven again.
+P2J2_SOURCES = {"clinical_core/derived.py": "6974d0fcf5159e9a67aa18fc030d9a65d87da40a5d776b3be258d3589ba2bfda",
+                "clinical_core/integration.py": "cb54d2eec3754eecdd7267dba58b0389203b233b16a86455f5280d1eafa520f0",
+                "clinical_core/shadow.py": "66ef25c952509f0765731cfc0c0b97274bc5a4d263dcb486b595a8585a99ef35"}
+C57, C72 = vt.C57, vt.C72
+
+
+@pytest.fixture(scope="module")
+def source():
+    record = la.record_p2i2ab()
+    return la.source_space(record), record["crystalloid_support"]
+
+
+# The frozen package ------------------------------------------------------------------------------------------------
+
+def test_the_package_is_frozen():
+    sources = bf.freeze_sources()
+    assert "clinical_core/vascular_tone.py" in sources
+    assert "clinical_core/vascular_tone_report.py" in lactate_slice.DOWNSTREAM_REPORTS
+    assert {"clinical_core/vascular_tone.py", "clinical_core/vascular_tone_report.py"} <= set(
+        decision_pack.PACK_DIGEST_EXCLUDED)
+    assert vt.p2j1_record()["freeze_digest"] == vt.P2J1_DIGEST
+    assert vt.freeze_digest() == FROZEN_DIGEST, "a source, the design, a rule or the policy changed after the freeze"
+
+
+def test_the_faculty_decisions_are_recorded():
+    assert set(vt.FACULTY) == {"decided", "structure", "tone", "semantics", "no_pressure_driver", "no_memory", "timing",
+                               "loop", "range", "afterload", "arrival", "demand", "hr", "lactate", "scope"}
+    assert "STRUCTURE_APPROVED" in vt.FACULTY["structure"] and "retired" in vt.FACULTY["structure"]
+    assert "not authorized" in vt.FACULTY["timing"] and "no iterative solver" in vt.FACULTY["loop"]
+    assert "88/54" in vt.FACULTY["arrival"] and "98/62" in vt.FACULTY["arrival"]
+
+
+# The tone response in the core --------------------------------------------------------------------------------------
+
+def test_the_gain_defaults_to_zero_and_then_writes_nothing():
+    assert DEFAULT_PROFILE.deficit_to_tone_gain == 0.0
+    assert PARAMETERS["deficit_to_tone_gain"][0] == dv.PROVISIONAL
+    anchors = vt.tone_anchors(C57, "lower", 1.0)
+    profile = vt.tone_profile(0.0, 0.3)
+    state = arrival_state(anchors, profile).evolve(P=0.5)
+    after, record = step(state, (), anchors, profile)
+    assert after.T == 1.0 and not any(delta.source == VASCULAR_TONE for delta in record.deltas)
+
+
+@pytest.mark.parametrize("case,level,factor", [(C57, "lower", 1.0), (C72, "midpoint", 1.1), (C57, "upper", 1.0)])
+def test_the_arrival_is_the_targets_fixed_point_and_no_deficit_is_the_unstressed_tone(case, level, factor):
+    anchors = vt.tone_anchors(case, level, factor)
+    for gain in vt.GAINS:
+        profile = vt.tone_profile(gain, 0.3)
+        start = arrival_state(anchors, profile)
+        s0 = arrival_tone_signal(anchors, profile)
+        assert acute_deficit_signal(start, anchors, profile) == s0
+        assert tone_target(start, anchors, profile) == 1.0
+        resolved = start.evolve(P=3.0)
+        assert acute_deficit_signal(resolved, anchors, profile) == 0.0
+        assert tone_target(resolved, anchors, profile) * (1.0 + gain * s0) == pytest.approx(1.0, abs=1e-12)
+
+
+def test_the_target_never_falls_as_the_deficit_grows_and_reads_no_pressure_debt_lactate_or_rate():
+    anchors = vt.tone_anchors(C57, "midpoint", 1.0)
+    profile = vt.tone_profile(1.5, 0.3)
+    values = [(acute_deficit_signal(s, anchors, profile), tone_target(s, anchors, profile))
+              for s in (arrival_state(anchors, profile).evolve(P=p) for p in (2.0, 1.5, 1.0, 0.7, 0.4, 0.2))]
+    assert all(b[0] >= a[0] and b[1] >= a[1] for a, b in zip(values, values[1:]))
+    forbidden = {"D", "lactate", "lactate_excess", "sympathetic_drive", "rate_bpm", "pressure_rel", "sbp", "dbp", "map",
+                 "arterial_pressures", "sympathetic_target"}
+    for function in (dv.tone_target, dv.arrival_tone_signal, dv.acute_deficit_signal, dv.delivery_rel_of):
+        tree = ast.parse(inspect.getsource(function))
+        names = {n.id for n in ast.walk(tree) if isinstance(n, ast.Name)} | {
+            n.attr for n in ast.walk(tree) if isinstance(n, ast.Attribute)}
+        assert not names & forbidden, function.__name__
+
+
+def test_the_profile_refuses_a_loop_without_contraction():
+    with pytest.raises(CoreInvariantError, match="below 1"):
+        CoreProfile(deficit_to_tone_gain=2.0, afterload_sensitivity=0.5)
+    with pytest.raises(CoreInvariantError):
+        CoreProfile(deficit_to_tone_gain=-0.1)
+    CoreProfile(deficit_to_tone_gain=1.9, afterload_sensitivity=0.5)
+
+
+def test_a_target_outside_the_guard_and_a_second_tone_writer_fail_closed():
+    anchors = vt.tone_anchors(C57, "lower", 1.0)
+    profile = replace(vt.tone_profile(0.0, 0.3), deficit_to_tone_gain=2.5)
+    with pytest.raises(CoreInvariantError, match="guard"):
+        step(arrival_state(anchors, profile), (), anchors, profile)
+    profile = vt.tone_profile(1.0, 0.3)
+    drift = bands.Drift("tone", "T", 0, 40, -0.01)
+    with pytest.raises(CoreInvariantError, match="compose"):
+        step(arrival_state(anchors, profile), (drift,), anchors, profile)
+    # At gain 0 the synthetic tone drift still writes T, as before P2J-2.
+    plain = vt.tone_profile(0.0, 0.3)
+    after, _ = step(arrival_state(anchors, plain), (drift,), anchors, plain)
+    assert after.T == pytest.approx(0.99)
+
+
+def test_the_core_writes_tone_only_in_its_own_coupling():
+    """The only ChannelDelta on T built in clinical_core outside the synthetic bands is the integrator's tone response."""
+    found = set()
+    for path in sorted((ROOT / "clinical_core").rglob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for top in tree.body:
+            for node in ast.walk(top):
+                if isinstance(node, ast.Call) and getattr(node.func, "id", None) == "ChannelDelta" and node.args and \
+                        isinstance(node.args[0], ast.Attribute) and node.args[0].attr == "T":
+                    found.add((path.relative_to(ROOT).as_posix(), getattr(top, "name", "<module>")))
+    assert found == {("clinical_core/integration.py", "_vascular_tone")}
+
+
+# Probes, prefilter, timing ---------------------------------------------------------------------------------------------
+
+def test_the_structural_probes_hold():
+    probes = vt.probes()
+    assert probes["checks"] == {str(n): True for n in range(1, 9)}
+    for base in probes["bases"].values():
+        for item in base["steady"].values():
+            assert item["monotone"] and item["settled"] and item["largest_ratio"] <= item["bound"] + 1e-9
+            assert item["bound"] < 1.0
+        assert all(base["arrival_minute_1"].values())
+    assert set(probes["bases"]) == {"neutral (s0 = 0)", "57m lower x1 (s0 = 0.4)"}
+
+
+def test_the_surface_is_frozen_and_screened_before_any_simulation():
+    assert vt.GAINS == (0.0, 0.25, 0.5, 1.0, 1.5, 2.0) and vt.AFTERLOAD == (0.1, 0.3, 0.5)
+    assert vt.PRIMARY_AFTERLOAD == 0.3 and vt.REFERENCE_GAIN == 0.0
+    screen = vt.analytic_screen()
+    rejected = {k: v["reasons"] for k, v in screen.items() if v["status"] == "ANALYTIC_REJECTION"}
+    assert rejected == {"g2 a0.5": ["NO_CONTRACTION"]} and len(vt.admissible()) == 17
+    assert all(1.0 + g <= vt.T_UPPER and 1.0 / (1.0 + g) >= vt.T_LOWER for g in vt.GAINS)
+    literal = vt.literal_alternative({"x": 0.4, "zero": 0.0})
+    assert literal["x g1 a0.3"]["T_minute_1"] == 1.4 and literal["x g1 a0.3"]["map_factor"] > 1.2
+    assert all(item["map_factor"] == 1.0 for key, item in literal.items() if key.startswith("zero"))
+
+
+def test_the_timing_is_explicit_one_minute_behind_with_no_solver():
+    from clinical_core import integration
+    source = inspect.getsource(integration._vascular_tone)
+    assert "tone_target(state, anchors, profile) - state.T" in source
+    for function in (integration._vascular_tone, dv.tone_target, dv.arrival_tone_signal, dv.acute_deficit_signal):
+        tree = ast.parse(inspect.getsource(function))
+        assert not any(isinstance(n, (ast.While, ast.For)) for n in ast.walk(tree)), function
+    assert vt.FEEDBACK["classification"] == "EXPLICIT_LAGGED_FEEDBACK"
+    # The tone delta is added once per minute, after the contributions and before the channels are summed.
+    body = inspect.getsource(integration.step)
+    assert body.count("_vascular_tone(") == 1 and body.index("_vascular_tone(") < body.index("for channel in SCALAR")
+
+
+# The reconstruction ---------------------------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("gain,a", [(1.0, 0.3), (2.0, 0.1), (1.5, 0.5)])
+def test_the_reconstruction_equals_the_core(source, gain, a):
+    src, support = source
+    arrivals = lr.arrival_table()
+    for case, index, name, entry, bag, scenario in (
+            (C57, 3, "P1", src["p1"][0], None, vt.L1), (C72, 1, "P2", src["p1"][0], support[0]["bag"], vt.L2),
+            (C57, 0, "P4", src["p3"][0], None, vt.L3)):
+        _, blood = vt._blood_task(((name, case, 0), entry, case, scenario, bag))
+        rebuilt = vt.rebuild(blood, vt.tone_anchors(case, vt.level_of(index), 1.1), gain, a)
+        series = vt.debt_and_lactate(blood, rebuilt, case, index, 1.1, arrivals)
+        core = pt.full_run(entry, case, scenario, 1.1, vt.LAMBDAS[index], bag, "midpoint",
+                           {"deficit_to_tone_gain": gain, "afterload_sensitivity": a})
+        assert len(core["rows"]) == len(rebuilt["rows"]) and core["stop"] == rebuilt["stop"]
+        for row, mine in zip(core["rows"], rebuilt["rows"]):
+            assert all(row[f] == mine[f] for f in ("T", "output", "p", "sbp", "dbp", "map", "deficit")), row["minute"]
+            assert row["D"] == series["D"][row["minute"]] and row["lactate"] == series["lactate"][row["minute"]]
+        assert rebuilt["rows"][1]["T"] == 1.0 and rebuilt["rows"][2]["T"] != 1.0
+
+
+# What P2J-2 changed outside its module --------------------------------------------------------------------------------
+
+def test_p2j2_changed_only_the_declared_statements():
+    assert vt.outside_unchanged() == {vt.DERIVED: {"since_p2j1": True, "since_p2i2ak": True},
+                                      vt.INTEGRATION: {"since_p2j1": True, "since_p2i2ak": True}}
+    derived = vt._live(vt.DERIVED)
+    mutated = derived.replace("OUTPUT_EPSILON = 1e-9", "OUTPUT_EPSILON = 1e-8")
+    assert vt.outside_digest(mutated, vt.P2J2_CHANGES[vt.DERIVED]["changed"]) != \
+        vt.P2J2_CHANGES[vt.DERIVED]["outside_p2j1"], "the proof must notice a change outside the tone statements"
+    integration = vt._live(vt.INTEGRATION)
+    mutated = integration.replace("CONSERVATION_TOLERANCE = 1e-9", "CONSERVATION_TOLERANCE = 1e-8")
+    assert vt.outside_digest(mutated, vt.P2J2_CHANGES[vt.INTEGRATION]["changed"]) != \
+        vt.P2J2_CHANGES[vt.INTEGRATION]["outside_p2j1"]
+    for relative, item in vt.TUPLE_CHANGES.items():
+        assert vt.outside_digest(vt._live(relative), item["changed"]) == item["outside_p2j1"]
+    assert {k: hashlib.sha256((ROOT / k).read_bytes()).hexdigest() for k in P2J2_SOURCES} == P2J2_SOURCES
+    for name in ("deficit_to_tone_gain",):
+        assert name in {f.name for f in __import__("dataclasses").fields(CoreProfile)}
+
+
+def test_the_closed_p2j1_freeze_recomputes_from_the_proven_sources():
+    sources = {k: v for k, v in bf.freeze_sources().items() if k not in vt.OWN}
+    text = json.dumps({"revision": pt.REVISION, "p2i2ak": hashlib.sha256(pt.P2I2AK_RECORD.read_bytes()).hexdigest(),
+                       "design": pt.design(), "sources": vt.p2j1_sources(sources)}, sort_keys=True, default=str)
+    assert hashlib.sha256(text.encode("utf-8")).hexdigest() == vt.P2J1_DIGEST
+
+
+# Policy ---------------------------------------------------------------------------------------------------------------
+
+def test_no_legacy_no_p2f_no_pressure_feedback_and_nothing_approved():
+    tree = ast.parse(SOURCE.read_text(encoding="utf-8"))
+    imported = {alias.name for node in ast.walk(tree) if isinstance(node, (ast.Import, ast.ImportFrom))
+                for alias in node.names}
+    assert not imported & {"shadow", "legacy_adapter", "comparison", "family_engine", "contracts_shadow",
+                           "contracts_legacy", "hemodynamic_probes"}
+    assert "with lr.P2FGuard(), lr.LegacyLock():" in inspect.getsource(vt.run)
+    assert hp.PRIMARY_HR_CALIBRATION == {"sympathetic_per_pressure_deficit": 0.0}
+    assert vt.BAROREFLEX_PLAN["status"].startswith("DEFERRED")
+    text = json.dumps(vt.design(), default=str).lower()
+    for word in ("faculty_approved", "\"best", "\"selected", "\"recommended", "\"preferred", "\"rank"):
+        assert word not in text

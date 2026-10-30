@@ -71,6 +71,10 @@ class CoreProfile:
     pump_preload_coupling: float = 1.0
     lung_water_clearance_tau_min: float = 240.0
     afterload_sensitivity: float = 0.3
+    # P2J-2: vascular tone per unit of the acute shock signal (the current effective oxygen deficit over the current
+    # demand), relative to the tone with no deficit: 1 + g x signal. 0 by default: tone stays at arrival (P2J-1); the
+    # response exists, its value is the faculty's to set.
+    deficit_to_tone_gain: float = 0.0
     congestion_preload_knee: float = 0.85
     congestion_per_excess_preload: float = 0.05
     sbp_per_pressure_deficit: float = 45.0
@@ -151,6 +155,12 @@ class CoreProfile:
             raise CoreInvariantError("the pump/preload coupling c is between 0 and 1")
         if self.afterload_sensitivity >= 1.0:
             raise CoreInvariantError("afterload sensitivity is below 1, so output stays positive at any tone")
+        if self.deficit_to_tone_gain * self.afterload_sensitivity >= 1.0:
+            # P2J-2: tone lowers output (afterload), output lowers delivery, delivery raises the acute signal, the signal
+            # raises tone. The core closes that loop one minute behind; its slope is below g x a, so g x a < 1 keeps it a
+            # contraction: one fixed point, approached without oscillation.
+            raise CoreInvariantError("the tone loop's gain bound, deficit_to_tone_gain x afterload_sensitivity, is "
+                                     "below 1")
         if min(self.debt_per_delivery_deficit, self.collapse_burden_per_minute) <= 0.0:
             raise CoreInvariantError("the deficit-to-debt and collapse-burden gains are positive")
         if self.oxygen_extraction_reserve < 1.0:
@@ -207,6 +217,12 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
     "lung_water_clearance_tau_min": (PROVISIONAL, "slow clearance of lung water above arrival: TBD (P2D-6)"),
     "afterload_sensitivity": (PROVISIONAL, "how much tone above arrival lowers output, 1 / (1 + a (T - 1)): TBD "
                                            "(KD-S4)"),
+    "deficit_to_tone_gain": (PROVISIONAL, "vascular tone per unit of the acute shock signal, the current effective "
+                                          "oxygen deficit over the current demand (P2J-2): tone relative to the tone "
+                                          "with no deficit is 1 + g x signal, and T, relative to arrival, is that over "
+                                          "its arrival value; reads no pressure, D, lactate or HR; g x a < 1. TBD. 0 "
+                                          "by default (tone stays at arrival, P2J-1): the faculty sets it, nothing is "
+                                          "chosen here"),
     "congestion_preload_knee": (PROVISIONAL, "position on the preload curve above which excess preload congests "
                                              "a pump without reserve: TBD (KD-S4)"),
     "congestion_per_excess_preload": (PROVISIONAL, "L per minute at full excess and no pump reserve: TBD (KD-S4)"),
@@ -871,6 +887,28 @@ def acute_deficit_signal(state: CoreState, anchors: Anchors, profile: CoreProfil
     demand = state.aux.oxygen_demand
     return effective_oxygen_deficit(demand, effective_delivery(delivery_rel_of(state, anchors, profile), anchors),
                                     profile.oxygen_extraction_reserve) / demand
+
+
+def arrival_tone_signal(anchors: Anchors, profile: CoreProfile) -> float:
+    """The acute shock signal of the arrival state (P2J-2), as ``acute_deficit_signal`` reads it there: the arrival
+    delivery (relative delivery 1) against the case's baseline demand."""
+    demand = anchors.metabolic_demand_baseline
+    return effective_oxygen_deficit(demand, effective_delivery(1.0, anchors), profile.oxygen_extraction_reserve) / demand
+
+
+def tone_target(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:
+    """The vascular tone the state calls for (P2J-2), on the T channel's scale (arrival = 1).
+
+    Relative to the tone with no deficit the vasoconstrictor response is 1 + g x s: s the acute shock signal
+    (``acute_deficit_signal``: 0 when oxygen availability is adequate or compensated, never decreasing as the effective
+    deficit grows), g ``deficit_to_tone_gain``. T is relative to arrival, so it holds that over its arrival value,
+    (1 + g s) / (1 + g s0), s0 the arrival signal: 1 at arrival exactly (the authored arrival pressure stays the scale,
+    and arrival is the response's own fixed point), above 1 as the deficit grows past arrival's, 1 / (1 + g s0) once no
+    deficit is left. It reads delivery and demand only: no pressure, D, lactate or HR. g = 0 gives 1.
+    """
+    gain = profile.deficit_to_tone_gain
+    return ((1.0 + gain * acute_deficit_signal(state, anchors, profile))
+            / (1.0 + gain * arrival_tone_signal(anchors, profile)))
 
 
 def arterial_pressures(pressure_rel: float, anchors: Anchors, profile: CoreProfile) -> tuple[float, float]:

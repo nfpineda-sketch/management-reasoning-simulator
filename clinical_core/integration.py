@@ -16,7 +16,8 @@ One ``step`` integrates one minute:
 4. the core adds its own coupling: the oxygen-delivery debt, from the deficit of delivery
    (flow, haemoglobin and saturation) below the metabolic demand that the case's baseline and
    the minute's declared modifiers give (KD-S1, P2E-2); lung water from excess preload on a
-   pump without reserve (KD-S4); and it updates its own memory: lactate kinetics, from that
+   pump without reserve (KD-S4); vascular tone from the acute shock signal at the start of the
+   minute, when its gain is on (P2J-2); and it updates its own memory: lactate kinetics, from that
    debt, the common sympathetic drive, from the state the minute ends in (KD-S2), the
    demand of the minute and the collapse burden; when a declared collapse criterion is met,
    it moves the rhythm to a pulseless one (P2E-3);
@@ -40,7 +41,8 @@ from .derived import (ADOPTED, AUXILIARY_SOURCES, BLOOD_COMPOSITION, COLLAPSE, D
                       PLASMA_REFILL, PRELOAD_CONGESTION, PROVISIONAL, CoreProfile, Derived, arrival_state,
                       blood_haemoglobin, collapse_burden_after_minute, collapse_reached, congestion_rate,
                       delivery_rel_of, derive, effective_delivery, effective_oxygen_deficit, lactate_after_minute, lung_water_clearance,
-                      oxygen_demand, plasma_refill, red_cell_content, sympathetic_after_minute, terminal_rhythm)
+                      oxygen_demand, plasma_refill, red_cell_content, sympathetic_after_minute, terminal_rhythm,
+                      tone_target)
 from .provenance import (BLOOD_PROCESSES, AuxiliaryChange, BloodChange, BloodFlow, BloodProcess, ChannelDelta,
                          CoreEvent, DemandModifier, MinuteRecord, ProvenanceError, RhythmTransition, SettingChange,
                          Source, SourceKind)
@@ -66,6 +68,8 @@ CHANNEL_BOUNDS: Mapping[Channel, tuple[float, float, str, str]] = {
 }
 
 OXYGEN_DEBT = Source(SourceKind.CORE_COUPLING, "oxygen_debt")
+#: The core's vascular-tone response to the acute shock signal (P2J-2); off at deficit_to_tone_gain 0.
+VASCULAR_TONE = Source(SourceKind.CORE_COUPLING, "vascular_tone")
 CONSERVATION_TOLERANCE = 1e-9   # floating-point noise only; not a clinical tolerance
 #: Channels only the shared blood state moves (P2I-2T): V by kappa x the circulating-volume
 #: change, Hb by the change of the red-cell concentration. A disease module, order or logistic
@@ -240,6 +244,28 @@ def _no_repayment_across(debt: ChannelDelta, after: CoreState, anchors: Anchors,
                         modulated_by=debt.modulated_by)
 
 
+def _vascular_tone(state: CoreState, deltas: Sequence[ChannelDelta], anchors: Anchors, profile: CoreProfile,
+                   minute: int) -> ChannelDelta:
+    """P2J-2: T moves to the tone the state at the start of the minute calls for (``tone_target``).
+
+    Explicit feedback, one minute behind the signal it answers: tone lowers output, so a same-minute reading would be an
+    algebraic loop, and no solver is used. The minute after arrival keeps T at 1 (arrival is the target's fixed point).
+    Fails closed where nothing is decided: another source writing T in the same minute (how a drug or a disease module
+    would compose with the response is not decided), or a gain whose largest target, 1 + g at no delivery, is outside
+    T's guard (so the guard never shapes the response).
+    """
+    upper = CHANNEL_BOUNDS[Channel.T][1]
+    if 1.0 + profile.deficit_to_tone_gain > upper:
+        raise CoreInvariantError(f"the tone response's largest target 1 + {profile.deficit_to_tone_gain!r} is above "
+                                 f"T's guard {upper!r}")
+    writers = sorted({delta.source.key for delta in deltas if delta.channel is Channel.T})
+    if writers:
+        raise CoreInvariantError(f"minute {minute}: {writers} write T while the vascular-tone response is on; how they "
+                                 "compose is not decided (P2J-2)")
+    return ChannelDelta(Channel.T, tone_target(state, anchors, profile) - state.T, VASCULAR_TONE, minute,
+                        "the tone the acute shock signal at the start of the minute calls for")
+
+
 def _blood_minute(state: CoreState, flows: Sequence[BloodFlow], anchors: Anchors, profile: CoreProfile,
                   minute: int) -> tuple[BloodState, tuple[BloodChange, ...], list[ChannelDelta]]:
     """The shared blood state over one minute (P2I-2T): the flows declared, then the core's refill.
@@ -386,6 +412,8 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
         events.append(CoreEvent("terminal_collapse", COLLAPSE, minute, "critical", "physiological_collapse",
                                 "not assessed", f"terminal collapse from sustained critically low output: "
                                                 f"{target.code.value}"))
+    if profile.deficit_to_tone_gain > 0.0:
+        deltas.append(_vascular_tone(state, deltas, anchors, profile, minute))
     values = {}
     for channel in SCALAR_CHANNELS:
         before = state.value(channel)

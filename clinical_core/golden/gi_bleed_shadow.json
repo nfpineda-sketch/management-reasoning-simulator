@@ -230,6 +230,10 @@
    "provisional",
    "sympathetic drive per unit of D (P2I-2AE): its own parameter, independent of tau_D (debt repayment); the debt-driven drive is gain x D, 0 at D = 0. D's absolute scale is latent, so only gain x D is observable (rescaling D by c and the gain by 1 / c leaves HR unchanged; P2I-2AF); TBD. The default equals the former default sympathetic_per_debt / tau_D, 0.5 / 60, and is not a calibrated value"
   ],
+  "deficit_to_tone_gain": [
+   "provisional",
+   "vascular tone per unit of the acute shock signal, the current effective oxygen deficit over the current demand (P2J-2): tone relative to the tone with no deficit is 1 + g x signal, and T, relative to arrival, is that over its arrival value; reads no pressure, D, lactate or HR; g x a < 1. TBD. 0 by default (tone stays at arrival, P2J-1): the faculty sets it, nothing is chosen here"
+  ],
   "hr_per_sympathetic_drive": [
    "adopted",
    "family_engine._surface: hr + (circulation - 1) * 25, read here as bpm per unit of sympathetic drive"

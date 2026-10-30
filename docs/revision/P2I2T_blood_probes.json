@@ -1,7 +1,7 @@
 {
  "case": "gi_bleed_72f",
  "golden": {
-  "after_sha256": "cb353081d45cf32ba7cb11a29b96d24a809aa1c02d3fdf5101b79e2846d88f2a",
+  "after_sha256": "8df053173818222a74c1dc8b58725daa74cd117baf5d438a43f74fd5460b9fc1",
   "before_sha256": "d087bde147a1254c6d81c883dbea09670dd97b0316d1e26e93e3364bde822833",
   "runs": {
    "gi_bleed_57m/aggressive_volume": {
@@ -3509,7 +3509,7 @@
    "v_lowest": -243.50001049826784
   }
  },
- "probes_digest": "5d46d3233863911202eba6ca6103b55717fdcf69d044e07280854da487465296",
+ "probes_digest": "9c5b615428bd23c2a734220cc7c8dae476c676946fe136793fea15211e4aac6b",
  "profile": {
   "arrival_circulating_volume_ml": 4000.0,
   "oxygen_extraction_reserve": 1.0,

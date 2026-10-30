@@ -31,6 +31,15 @@ SOURCE = ROOT / "clinical_core" / "pressure_tone.py"
 #: plan, the verdict rule, the policy and every clinical_core source but the downstream reports, committed before any
 #: trajectory on the retained physiology was read.
 FROZEN_DIGEST = "92aa42cbf18d6f2e4e3a978babbd8a4b0f8dd8a1058a8d6bde4b2592ac3f4091"
+#: P2J-1 is closed (P2J-2): its module is pinned byte for byte, and its freeze is recomputed from the live sources with
+#: each file P2J-2 changed at its P2J-1 hash, which vascular_tone's AST proofs allow only while P2J-2 changed nothing but
+#: the declared statements there (vascular_tone.p2j1_sources); P2J-2's own module is a later module.
+P2J1_MODULE_SHA = "2e350c8a42bcacfa31e8e5349d284c7d276808e396d36421e1dc369dbcb9ec26"
+P2J1_RECORD_SHA = "421e5aa34a35a9ad92f3b17994ef90f70b26cd74b646a7a01b42522ad13bb64b"
+LATER_MODULES = ("clinical_core/vascular_tone.py",)
+#: What P2J-2 added to tone's paths (its analysis module, and the integrator's tone response): the P2J-1 audit's view
+#: of the tree leaves them out; test_clinical_core_vascular_tone pins them.
+P2J2_TONE_ROWS = (("clinical_core/vascular_tone.py", None), ("clinical_core/integration.py", "_vascular_tone"))
 C57, C72 = pt.C57, pt.C72
 NEUTRAL = Anchors(**ARRIVAL)
 
@@ -50,7 +59,21 @@ def test_the_package_is_frozen():
     assert {"clinical_core/pressure_tone.py", "clinical_core/pressure_tone_report.py"} <= set(
         decision_pack.PACK_DIGEST_EXCLUDED)
     assert pt.p2i2ak_record()["freeze_digest"] == pt.P2I2AK_DIGEST
-    assert pt.freeze_digest() == FROZEN_DIGEST, "a source, the design, a rule or the policy changed after the freeze"
+    from clinical_core import vascular_tone as vt
+    assert hashlib.sha256(SOURCE.read_bytes()).hexdigest() == P2J1_MODULE_SHA, "the closed P2J-1 module changed"
+    assert hashlib.sha256(RECORD.read_bytes()).hexdigest() == P2J1_RECORD_SHA
+    sources = {k: v for k, v in sources.items() if k not in LATER_MODULES}
+    text = json.dumps({"revision": pt.REVISION, "p2i2ak": hashlib.sha256(pt.P2I2AK_RECORD.read_bytes()).hexdigest(),
+                       "design": pt.design(), "sources": vt.p2j1_sources(sources)}, sort_keys=True, default=str)
+    assert hashlib.sha256(text.encode("utf-8")).hexdigest() == FROZEN_DIGEST, "a source P2J-1 froze changed"
+
+
+def _p2j1_view(paths: dict) -> dict:
+    """tone_paths as the P2J-1 tree had it: without the rows P2J-2 added (P2J2_TONE_ROWS)."""
+    def kept(row):
+        return not any(row[0] == path and (name is None or row[1] == name) for path, name in P2J2_TONE_ROWS)
+    return {key: [row for row in value if kept(row)] if isinstance(value, list) else value
+            for key, value in paths.items()}
 
 
 def test_the_faculty_decisions_are_recorded():
@@ -77,7 +100,10 @@ def test_pressure_is_the_arrival_pressure_times_output_x_tone_everywhere(arrival
 
 
 def test_p2j1_changed_only_the_declared_statements_of_derived_and_shadow():
-    assert pt.outside_unchanged() == {pt.DERIVED: True, pt.SHADOW: True}
+    # P2J-2 changed derived.py again (the tone statements): the P2I-2AK proof of derived.py is now
+    # vascular_tone's, over P2J-1's and P2J-2's declared statements together; shadow.py keeps P2J-1's.
+    from clinical_core import vascular_tone as vt
+    assert pt.outside_unchanged()[pt.SHADOW] and vt.outside_unchanged()[pt.DERIVED]["since_p2i2ak"]
     text = (ROOT / pt.DERIVED).read_text(encoding="utf-8")
     assert pt.outside_digest(pt.DERIVED, text.replace("OUTPUT_EPSILON = 1e-9", "OUTPUT_EPSILON = 1e-8")) != \
         pt.P2J1_CHANGES[pt.DERIVED]["outside"], "the proof must notice a change outside the pressure relation"
@@ -88,12 +114,12 @@ def test_p2j1_changed_only_the_declared_statements_of_derived_and_shadow():
         assert hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() != item["sha_at_p2i2ak"]
     # The AST proof alone can be bypassed by a new top-level statement that names a declared one (adversarial review):
     # the closed packages' guards also pin both files as P2J-1 left them.
-    from test_clinical_core_hr_envelope_filter import P2J1_SOURCES
-    assert {k: hashlib.sha256((ROOT / k).read_bytes()).hexdigest() for k in P2J1_SOURCES} == P2J1_SOURCES
+    from test_clinical_core_vascular_tone import P2J2_SOURCES
+    assert {k: hashlib.sha256((ROOT / k).read_bytes()).hexdigest() for k in P2J2_SOURCES} == P2J2_SOURCES
     sources = {pt.DERIVED: "live", pt.SHADOW: "live", "clinical_core/state.py": "s"}
-    assert pt.pressure_only_sources(sources) == {pt.DERIVED: pt.P2J1_CHANGES[pt.DERIVED]["sha_at_p2i2ak"],
-                                                 pt.SHADOW: pt.P2J1_CHANGES[pt.SHADOW]["sha_at_p2i2ak"],
-                                                 "clinical_core/state.py": "s"}
+    assert vt.p2i2ak_sources(sources) == {pt.DERIVED: pt.P2J1_CHANGES[pt.DERIVED]["sha_at_p2i2ak"],
+                                          pt.SHADOW: pt.P2J1_CHANGES[pt.SHADOW]["sha_at_p2i2ak"],
+                                          "clinical_core/state.py": "s"}
     for name in ("sbp_per_pressure_deficit", "dbp_per_pressure_deficit", "low_output_pressure_knee"):
         assert "Since P2J-1 the core does not read it" in PARAMETERS[name][1]
 
@@ -129,7 +155,8 @@ def test_the_classifier_tells_a_jump_and_a_floor_apart():
 # Tone, coupling, zero output ----------------------------------------------------------------------------------------
 
 def test_tone_is_read_in_output_and_pressure_and_no_clinical_mechanism_writes_it():
-    paths = pt.tone_paths()
+    # As P2J-1 audited the tree; P2J-2's tone response is the integrator's coupling, tested in its own package.
+    paths = _p2j1_view(pt.tone_paths())
     assert ["clinical_core/derived.py", "_perfusion", ".T"] in paths["reads"]
     assert not paths["clinical_writers"]
     writers = {w[0] for w in paths["writes"]}
@@ -140,7 +167,8 @@ def test_tone_is_read_in_output_and_pressure_and_no_clinical_mechanism_writes_it
 def test_no_contributor_names_the_tone_channel():
     """tone_paths reads Channel.T as a read; the standard way to write a channel is ChannelDelta(Channel.T, ...), so this
     guard looks for the name itself (adversarial review of P2J-1): only the channel table and its bound name it."""
-    allowed = {"clinical_core/state.py", "clinical_core/integration.py"}
+    allowed = {"clinical_core/state.py", "clinical_core/integration.py",
+               "clinical_core/vascular_tone.py"}   # P2J-2's analysis module reads T's guard; it is not a contributor
     named = set()
     for path in sorted((ROOT / "clinical_core").rglob("*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"))
@@ -250,7 +278,7 @@ def _checks_input(**overrides):
     reuse = {"units_equal": True, "outside_unchanged": {pt.DERIVED: True, pt.SHADOW: True}}
     dependency, path = {"pressure_equal": True}, pt.path_reads()
     invariants = {k: {"holds": True} for k in ("1", "2", "3", "4", "5", "7", "8")}
-    values = dict(audit=audit, tone=pt.tone_paths(), coupling=coupling, zero=zero, arrival=arrival, reuse=reuse,
+    values = dict(audit=audit, tone=_p2j1_view(pt.tone_paths()), coupling=coupling, zero=zero, arrival=arrival, reuse=reuse,
                   dependency=dependency, path=path, invariants=invariants)
     values.update(overrides)
     return values
@@ -285,7 +313,8 @@ def test_the_record_comes_from_the_frozen_package_and_its_analytic_part_is_repro
     assert record["freeze_digest"] == FROZEN_DIGEST and record["record"] == pt.P2I2AK_DIGEST
     # The trajectories (minutes of physiology) are not re-run here; the audit and the probes are.
     assert record["knee"] == _json(pt.knee_audit()) and record["prior_matches_p2i2q"]["equal"]
-    assert record["tone"] == _json(pt.tone_paths()) and record["coupling"] == _json(pt.coupling_probes())
+    assert record["tone"] == _json(_p2j1_view(pt.tone_paths())) and record["coupling"] == _json(
+        pt.coupling_probes())
     assert record["zero_output"] == _json(pt.zero_output_probe())
     assert record["authored"] == _json(pt.authored_pressures())
     assert record["arrival"] == _json(pt.arrival_reconstruction()) and record["path"] == _json(pt.path_reads())
