@@ -7,6 +7,7 @@ diagnostic, no value approved, every currently compatible value read); the HR su
 trajectory machinery reproduces the core; envelopes are proposals, never applied; nothing is approved.
 """
 import ast
+import hashlib
 import inspect
 import json
 
@@ -28,6 +29,10 @@ SOURCE = ROOT / "clinical_core" / "hr_observables.py"
 #: identifiability, trajectory and envelope rules, the verdict, the policy and every clinical_core source but the
 #: downstream reports, committed before any HR trajectory distribution was read.
 FROZEN_DIGEST = "2437e1b1c3075e180ef0fec912867974af43242a828c356190193820933fec4d"
+#: P2I-2AJ is closed (P2I-2AK): its module is pinned byte for byte and its record by its freeze digest, since a later
+#: clinical_core module changes the live digest's source list; later packages' own modules leave its dependency digest.
+P2I2AJ_MODULE_SHA = "47c21f35d7a38ccee60df3df2053edcc776e86d8fdeb5ff8881bf4e105764f05"
+LATER_MODULES = ("clinical_core/hr_envelope_filter.py",)
 C57, C72 = ho.C57, ho.C72
 
 
@@ -40,7 +45,8 @@ def test_the_package_is_frozen():
     assert {"clinical_core/hr_observables.py", "clinical_core/hr_observables_report.py"} <= set(
         decision_pack.PACK_DIGEST_EXCLUDED)
     assert ho.p2i2ai_record()["freeze_digest"] == ho.P2I2AI_DIGEST
-    assert ho.freeze_digest() == FROZEN_DIGEST, "a source, the design, a rule or the policy changed after the freeze"
+    assert hashlib.sha256(SOURCE.read_bytes()).hexdigest() == P2I2AJ_MODULE_SHA, "the closed P2I-2AJ module changed"
+    assert json.loads(RECORD.read_text(encoding="utf-8"))["freeze_digest"] == FROZEN_DIGEST
 
 
 def test_the_faculty_decisions_are_recorded():
@@ -99,7 +105,9 @@ def test_the_reuse_guards_hold_on_the_committed_inputs():
     item = record["recertification"][ho.RETAINED_KEY]
     assert item["digest"] == ho.P2I2AI_RETAINED_UNITS and item["survivors_by_demand"] == {"0.9": 0, "1": 216,
                                                                                           "1.1": 1092}
-    assert ho.dependency_digest() == ho.DEPENDENCIES_AT_P2I2AI, "a source the reused rows depend on changed"
+    sources = {k: v for k, v in bf.freeze_sources().items() if k not in ho.TUPLE_ONLY + ho.OWN + LATER_MODULES}
+    digest = hashlib.sha256(json.dumps(sources, sort_keys=True).encode("utf-8")).hexdigest()
+    assert digest == ho.DEPENDENCIES_AT_P2I2AI, "a source the reused rows depend on changed"
     assert ho.DEMANDS == (0.9, 1.0, 1.1) and lc.PRIMARY_DEMAND == 1.0
 
 
