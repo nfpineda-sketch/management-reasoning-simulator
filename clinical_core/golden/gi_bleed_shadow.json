@@ -162,6 +162,14 @@
   ]
  },
  "parameters": {
+  "acid_clearance_tau_min": [
+   "provisional",
+   "first-order clearance of the metabolic acid burden (P2K-2), min: the burden may fall while a deficit lasts when clearance exceeds production; not the debt's no-repayment rule. EXPLORATORY, TBD; None by default"
+  ],
+  "acid_to_drive_gain": [
+   "provisional",
+   "respiratory drive (breaths/min-equivalent) per mEq/L of metabolic acid burden (P2K-2): common, no case-specific gain; the drive reads no lactate, D, pressure, HR or W. EXPLORATORY, TBD; None by default"
+  ],
   "acute_deficit_to_sympathetic_gain": [
    "provisional",
    "sympathetic drive per unit of the acute shock signal, the current effective oxygen deficit over the current demand (P2I-2AF): 0 at no deficit, never decreasing in it, resolving when oxygen availability is adequate or compensated; reads no D, lactate or tau_D; TBD. 0 by default: the faculty sets it, nothing is chosen here"
@@ -185,6 +193,10 @@
   "baroreflex_to_sympathetic_gain": [
    "provisional",
    "sympathetic drive per unit of the direct baroreflex signal max(0, (MAP_set - MAP) / MAP_set) (P2J-4): 0 at or above MAP_set, never negative, approaching 1 as MAP approaches 0; reads the MAP the state resolves, never the deficit, D, tone gain, arrival or legacy HR; never active with the relative-pressure term; TBD. 0 by default: the faculty sets it, nothing is chosen here"
+  ],
+  "bicarbonate_reference_meq_l": [
+   "provisional",
+   "COMMON_REFERENCE_PROVISIONAL (P2K-2), not FACULTY_APPROVED: the bicarbonate the metabolic acid burden is read against, burden = max(0, reference - HCO3); 24 mEq/L. Not an approved normal"
   ],
   "collapse_burden_limit": [
    "provisional",
@@ -238,6 +250,10 @@
    "provisional",
    "sympathetic drive per unit of D (P2I-2AE): its own parameter, independent of tau_D (debt repayment); the debt-driven drive is gain x D, 0 at D = 0. D's absolute scale is latent, so only gain x D is observable (rescaling D by c and the gain by 1 / c leaves HR unchanged; P2I-2AF); TBD. The default equals the former default sympathetic_per_debt / tau_D, 0.5 / 60, and is not a calibrated value"
   ],
+  "deficit_to_acid_gain": [
+   "provisional",
+   "metabolic acid burden (mEq/L) produced per minute per unit of effective oxygen deficit (P2K-2): its own parameter, independent of the debt, lactate and their time constants; 0 production at no deficit. EXPLORATORY, TBD; None by default (the acid-base physiology is off)"
+  ],
   "deficit_to_tone_gain": [
    "provisional",
    "vascular tone per unit of the acute shock signal, the current effective oxygen deficit over the current demand (P2J-2): tone relative to the tone with no deficit is 1 + g x signal, and T, relative to arrival, is that over its arrival value; reads no pressure, D, lactate or HR; g x a < 1. TBD. 0 by default (tone stays at arrival, P2J-1): the faculty sets it, nothing is chosen here"
@@ -286,6 +302,10 @@
    "adopted",
    "family_engine._OXYGEN_LEVELS, same reservation"
   ],
+  "paco2_reference_mmhg": [
+   "provisional",
+   "COMMON_REFERENCE_PROVISIONAL (P2K-2): the arrival PaCO2 read when a case declares none; 40 mmHg. A declared arrival PaCO2 is never replaced by it"
+  ],
   "plasma_refill_capacity_ml": [
    "provisional",
    "SYNTHETIC/CANDIDATE finite interstitial reserve: the most plasma refill can add in an encounter (P2I-2T): TBD"
@@ -313,6 +333,10 @@
   "room_air_fio2": [
    "adopted",
    "family_engine._initialize: oxygen_fio2 = .21"
+  ],
+  "rr_drive_saturation": [
+   "provisional",
+   "the most the respiratory drive adds to the intrinsic RR (P2K-2): RR = intrinsic + S (1 - exp(-drive / S)), smooth, monotone, slope 1 at no drive; structural, the number of the retired rr_metabolic_max; not a candidate dimension; TBD"
   ],
   "rr_max": [
    "provisional",
@@ -361,6 +385,10 @@
   "sympathetic_per_pressure_deficit": [
    "provisional",
    "MAP/output deficit -> sympathetic drive gain: TBD (KD-S2). The term is 1 - pressure_rel, relative to the shocked arrival and below 0 above it; 0 in every primary HR calibration (P2I-2AG) and never active together with the baroreflex (P2J-4); the common default stays for the historical records"
+  ],
+  "ventilation_efficiency": [
+   "provisional",
+   "STRUCTURAL_REFERENCE (P2K-2): the share of the ventilation RR moves that is effective alveolar ventilation; 1 for the current GI cases (mechanics preserved), below 1 only in synthetic probes; not an approved value"
   ],
   "volume_preload_kappa": [
    "provisional",

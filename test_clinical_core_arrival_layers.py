@@ -30,8 +30,11 @@ def test_every_arrival_field_belongs_to_exactly_one_layer_and_no_layer_is_a_chan
     names = [item.name for item in fields(Anchors) if item.name not in ("case_id", "declared")]
     layered = [name for layer in ARRIVAL_LAYERS.values() for name in layer]
     assert sorted(layered) == sorted(names) and len(layered) == len(set(layered))
-    assert set(CASE_PARAMETERS) == set(ARRIVAL_LAYERS["physiological_reference"]) | set(
-        ARRIVAL_LAYERS["arrival_dynamic_state"])
+    # P2K-2: the reference and dynamic layers also hold the acid-base physiology's three candidate inputs, which stay
+    # outside the case-parameter / migration registry until the faculty adopts that physiology.
+    from clinical_core.acid_base import CANDIDATE_INPUTS
+    assert set(CASE_PARAMETERS) | set(CANDIDATE_INPUTS) == set(ARRIVAL_LAYERS["physiological_reference"]) | set(
+        ARRIVAL_LAYERS["arrival_dynamic_state"]) and not set(CASE_PARAMETERS) & set(CANDIDATE_INPUTS)
 
 
 def test_the_three_layers_are_reported_apart():

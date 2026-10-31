@@ -35,7 +35,7 @@ FROZEN_DIGEST = "2437e1b1c3075e180ef0fec912867974af43242a828c356190193820933fec4
 P2I2AJ_MODULE_SHA = "47c21f35d7a38ccee60df3df2053edcc776e86d8fdeb5ff8881bf4e105764f05"
 LATER_MODULES = ("clinical_core/hr_envelope_filter.py", "clinical_core/pressure_tone.py",
                  "clinical_core/vascular_tone.py", "clinical_core/pressure_tone_filter.py",
-                 "clinical_core/baroreflex.py", "clinical_core/rr_audit.py")
+                 "clinical_core/baroreflex.py", "clinical_core/rr_audit.py", "clinical_core/acid_base.py")
 #: derived.py, integration.py and shadow.py as P2J-2 left them (P2J-1 pinned derived.py and shadow.py, P2J-2 added
 #: integration.py): the AST proofs (pressure_tone for shadow.py, vascular_tone.p2i2ak_sources for derived.py and
 #: integration.py) cover what P2J-1 and P2J-2 changed; the pin makes any later change fail the guard until proven again.
@@ -118,10 +118,16 @@ def test_the_reuse_guards_hold_on_the_committed_inputs():
     # P2J-1 changed derived.py only in the pressure relation and P2J-2 derived.py and integration.py only in the tone
     # response (off at gain 0), which no reused row reads; vt.p2i2ak_sources stands their P2I-2AK hashes in only while
     # the rest of their syntax trees is P2I-2AK's.
-    assert {k: hashlib.sha256((ROOT / k).read_bytes()).hexdigest() for k in P2J2_SOURCES} == P2J2_SOURCES
+    # P2K-2 changed derived.py and integration.py only by its off-by-default insertions (acid_base's AST proof): the
+    # pin reads their P2K-1 hashes while that proof holds.
+    from clinical_core import acid_base as _ab
+    assert all(_ab.proofs().values())
+    assert {k: _ab.CORE_AT_P2K1.get(k, hashlib.sha256((ROOT / k).read_bytes()).hexdigest()) for k in P2J2_SOURCES} == \
+        P2J2_SOURCES
     sources = {k: v for k, v in bf.freeze_sources().items() if k not in ho.TUPLE_ONLY + ho.OWN + LATER_MODULES}
     from clinical_core import vascular_tone as vt
-    digest = hashlib.sha256(json.dumps(br.p2i2ak_sources(sources), sort_keys=True).encode("utf-8")).hexdigest()
+    from clinical_core import acid_base as ab
+    digest = hashlib.sha256(json.dumps(ab.p2i2ak_sources(sources), sort_keys=True).encode("utf-8")).hexdigest()
     assert digest == ho.DEPENDENCIES_AT_P2I2AI, "a source the reused rows depend on changed"
     assert ho.DEMANDS == (0.9, 1.0, 1.1) and lc.PRIMARY_DEMAND == 1.0
 

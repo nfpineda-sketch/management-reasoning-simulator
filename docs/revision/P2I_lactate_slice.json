@@ -4243,7 +4243,7 @@
   "gi_bleed_57m": 60,
   "gi_bleed_72f": 60
  },
- "freeze_digest": "22bd65e434b79f3a9d215698dad620049b5dc249fbb5e6a0357ef1d6130873fd",
+ "freeze_digest": "d78960c0a494dec577b4986b62a3f69844a9e41bad4e6f3d2315e9a0cd4e8091",
  "legacy_reference": {
   "gi_bleed_57m": {
    "L1": {
@@ -4484,5 +4484,5 @@
    "trajectory_kind": "manual counterfactual composition: the endoscopic haemostasis is added by hand at L3's minute; the family engine defers this endoscopy and never produces it"
   }
  },
- "slice_digest": "8ce7e371b7f6cf38c68fd6f45261ebe759ce3d890747521f67aa552c56ffa8f8"
+ "slice_digest": "76706caa395031e00ac5bcb06af407cbfbf56a26092654f1fe2545def998ae25"
 }

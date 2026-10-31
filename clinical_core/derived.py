@@ -51,6 +51,10 @@ LUNG_WATER_CLEARANCE = Source(SourceKind.CORE_COUPLING, "lung_water_clearance")
 #: burden and, when the rule is on and the criterion is met, moves R to a pulseless rhythm.
 COLLAPSE = Source(SourceKind.CORE_COUPLING, "collapse")
 AUXILIARY_SOURCES["collapse_burden"] = COLLAPSE
+#: P2K-2: the core's metabolic acid-base coupling: the acid burden produced by the effective oxygen deficit and cleared
+#: first-order (``acid_burden_after_minute``). Off unless a profile declares the acid-base physiology.
+ACID_BASE = Source(SourceKind.CORE_COUPLING, "acid_base")
+AUXILIARY_SOURCES["metabolic_acid_burden"] = ACID_BASE
 #: The rhythms the collapse rule may end in (P2E-3). Which one, and when, is TBD.
 TERMINAL_RHYTHMS = ("pea", "asystole")
 #: The shared blood state's two core couplings (P2I-2T): plasma refill into the circulation, and
@@ -126,6 +130,18 @@ class CoreProfile:
     rr_metabolic_max: float = 25.0
     rr_ventilatory_floor: float = 12.0
     rr_max: float = 60.0
+    # P2K-2: the metabolic acid-base and ventilation physiology, a candidate that is off by default (the three gains
+    # None: RR stays the P2K-1 structure). Declared together they make the acid burden a dynamic state produced by the
+    # effective oxygen deficit, the respiratory drive a function of that burden only, RR the intrinsic RR plus a
+    # smooth saturating response to the drive, the effective ventilation RR x efficiency relative to need, and PaCO2
+    # and pH algebraic. No value is chosen here; the references are common and provisional, not approved.
+    bicarbonate_reference_meq_l: float = 24.0
+    paco2_reference_mmhg: float = 40.0
+    deficit_to_acid_gain: float | None = None
+    acid_clearance_tau_min: float | None = None
+    acid_to_drive_gain: float | None = None
+    rr_drive_saturation: float = 25.0
+    ventilation_efficiency: float = 1.0
     pressure_levels: tuple[tuple[float, int], ...] = ((80.0, 1), (65.0, 2))
     oxygen_levels: tuple[tuple[float, int], ...] = ((87.0, 1), (80.0, 2))
     # P2E-3: the collapse rule is off (None) unless a profile declares it. No clinical threshold,
@@ -209,6 +225,19 @@ class CoreProfile:
         if self.plasma_refill_tau_min < 1.0:
             # Integrated one minute at a time: a shorter time constant would pass the target.
             raise CoreInvariantError("the plasma refill time constant is at least one minute (the step)")
+        if len({self.deficit_to_acid_gain is None, self.acid_clearance_tau_min is None,
+                self.acid_to_drive_gain is None}) != 1:
+            # P2K-2: production, clearance and drive make one physiology; part of it would leave RR half-defined.
+            raise CoreInvariantError("the acid-base physiology declares its acid production gain, acid clearance time "
+                                     "and acid-to-drive gain together, or none of them")
+        if self.acid_clearance_tau_min is not None and self.acid_clearance_tau_min < 1.0:
+            # Integrated one minute at a time: a shorter time constant would take the burden negative.
+            raise CoreInvariantError("the acid clearance time constant is at least one minute (the step)")
+        if min(self.bicarbonate_reference_meq_l, self.paco2_reference_mmhg, self.rr_drive_saturation) <= 0.0:
+            raise CoreInvariantError("the bicarbonate and PaCO2 references and the drive saturation are positive")
+        if not 0.0 < self.ventilation_efficiency <= 1.0:
+            # Effective ventilation is never more than the ventilation RR moves (P2K-2).
+            raise CoreInvariantError("the ventilation efficiency is above 0 and at most 1")
 
     def to_dict(self) -> dict:
         return {item.name: (list(map(list, getattr(self, item.name))) if isinstance(getattr(self, item.name), tuple)
@@ -328,6 +357,28 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
     "rr_metabolic_max": (PROVISIONAL, "largest metabolic addition to RR (saturation): TBD (KD-S1)"),
     "rr_ventilatory_floor": (PROVISIONAL, "RR below which the arrival RR is never read as metabolic: TBD (KD-S1)"),
     "rr_max": (PROVISIONAL, "safety bound on RR, not physiology: TBD (KD-S1)"),
+    "bicarbonate_reference_meq_l": (PROVISIONAL, "COMMON_REFERENCE_PROVISIONAL (P2K-2), not FACULTY_APPROVED: the "
+                                                 "bicarbonate the metabolic acid burden is read against, burden = "
+                                                 "max(0, reference - HCO3); 24 mEq/L. Not an approved normal"),
+    "paco2_reference_mmhg": (PROVISIONAL, "COMMON_REFERENCE_PROVISIONAL (P2K-2): the arrival PaCO2 read when a case "
+                                          "declares none; 40 mmHg. A declared arrival PaCO2 is never replaced by it"),
+    "deficit_to_acid_gain": (PROVISIONAL, "metabolic acid burden (mEq/L) produced per minute per unit of effective "
+                                          "oxygen deficit (P2K-2): its own parameter, independent of the debt, lactate "
+                                          "and their time constants; 0 production at no deficit. EXPLORATORY, TBD; "
+                                          "None by default (the acid-base physiology is off)"),
+    "acid_clearance_tau_min": (PROVISIONAL, "first-order clearance of the metabolic acid burden (P2K-2), min: the "
+                                            "burden may fall while a deficit lasts when clearance exceeds production; "
+                                            "not the debt's no-repayment rule. EXPLORATORY, TBD; None by default"),
+    "acid_to_drive_gain": (PROVISIONAL, "respiratory drive (breaths/min-equivalent) per mEq/L of metabolic acid burden "
+                                        "(P2K-2): common, no case-specific gain; the drive reads no lactate, D, "
+                                        "pressure, HR or W. EXPLORATORY, TBD; None by default"),
+    "rr_drive_saturation": (PROVISIONAL, "the most the respiratory drive adds to the intrinsic RR (P2K-2): RR = "
+                                         "intrinsic + S (1 - exp(-drive / S)), smooth, monotone, slope 1 at no drive; "
+                                         "structural, the number of the retired rr_metabolic_max; not a candidate "
+                                         "dimension; TBD"),
+    "ventilation_efficiency": (PROVISIONAL, "STRUCTURAL_REFERENCE (P2K-2): the share of the ventilation RR moves that "
+                                            "is effective alveolar ventilation; 1 for the current GI cases (mechanics "
+                                            "preserved), below 1 only in synthetic probes; not an approved value"),
     "pressure_levels": (ADOPTED, "family_engine._PRESSURE_LEVELS, without the DC1 anchoring or the recovery "
                                  "margin, which belong to the observation layer"),
     "oxygen_levels": (ADOPTED, "family_engine._OXYGEN_LEVELS, same reservation"),
@@ -451,6 +502,143 @@ def respiratory_rate(state: CoreState, anchors: Anchors, profile: CoreProfile, l
         metabolic = share * now / arrival_metabolic
     drive = max(0.0, 1.0 + min(0.0, state.W))
     return min(profile.rr_max, drive * (ventilatory + metabolic))
+
+
+# P2K-2: metabolic acid burden, respiratory drive, RR, effective ventilation, PaCO2 and pH (the candidate physiology) --
+
+#: The bicarbonate / CO2 relation the case bank computes the authored HCO3 with (clinical_cases._gas): pK 6.1 and CO2
+#: solubility 0.03 mmol/L per mmHg. Chemistry constants, not parameters.
+CARBONIC_PK = 6.1
+CO2_SOLUBILITY = 0.03
+
+
+def acid_base_active(profile: CoreProfile) -> bool:
+    """Whether the profile declares the P2K-2 acid-base physiology (its three gains together, never part of them)."""
+    return profile.acid_to_drive_gain is not None
+
+
+def arrival_bicarbonate(anchors: Anchors, profile: CoreProfile) -> float:
+    """The arrival HCO3 the case declares (mEq/L); undeclared, the reference: no arrival burden."""
+    return profile.bicarbonate_reference_meq_l if anchors.arrival_bicarbonate is None else anchors.arrival_bicarbonate
+
+
+def arrival_acid_burden(anchors: Anchors, profile: CoreProfile) -> float:
+    """The metabolic acid burden at arrival, max(0, HCO3_reference - arrival HCO3): read from the declared HCO3, never
+    from the lactate."""
+    return max(0.0, profile.bicarbonate_reference_meq_l - arrival_bicarbonate(anchors, profile))
+
+
+def arrival_paco2(anchors: Anchors, profile: CoreProfile) -> float:
+    """The arrival PaCO2 the case declares (mmHg); undeclared, the provisional reference."""
+    return profile.paco2_reference_mmhg if anchors.arrival_paco2 is None else anchors.arrival_paco2
+
+
+def intrinsic_respiratory_rate(anchors: Anchors) -> float:
+    """The patient's RR without respiratory drive; undeclared, the arrival RR is read as intrinsic."""
+    return anchors.respiratory_rate if anchors.intrinsic_respiratory_rate is None else anchors.intrinsic_respiratory_rate
+
+
+def acid_burden_after_minute(burden: float, deficit: float, profile: CoreProfile) -> float:
+    """One minute of the metabolic acid burden: dA = deficit_to_acid_gain x deficit - A / tau_acid.
+
+    The effective oxygen deficit of the minute is the only production signal: a larger deficit never produces less, and
+    no deficit produces nothing. Clearance is first-order and always on, so the burden may fall while a deficit lasts
+    when clearance exceeds production (not D's no-repayment rule). With tau_acid >= 1 the burden never goes negative.
+    """
+    return burden + profile.deficit_to_acid_gain * deficit - burden / profile.acid_clearance_tau_min
+
+
+def respiratory_drive(burden: float, profile: CoreProfile) -> float:
+    """The central respiratory drive (breaths/min-equivalent): acid_to_drive_gain x the metabolic acid burden.
+
+    The only driver in P2K-2. It reads no lactate, D, pressure, HR or W; a hypoxaemic term is deferred, and later terms
+    would add here."""
+    return profile.acid_to_drive_gain * burden
+
+
+def rate_from_drive(drive: float, intrinsic: float, profile: CoreProfile) -> float:
+    """RR = intrinsic + S (1 - exp(-drive / S)): continuous, monotone, slope 1 at no drive, saturating toward
+    intrinsic + S; rr_max only as a safety guard."""
+    saturation = profile.rr_drive_saturation
+    return min(profile.rr_max, intrinsic + saturation * (1.0 - math.exp(-drive / saturation)))
+
+
+def alveolar_ventilation(rate: float, intrinsic: float, efficiency: float, demand_ratio: float) -> float:
+    """Effective alveolar ventilation relative to metabolic ventilatory need: efficiency x (RR / intrinsic RR) over the
+    CO2 production relative to the patient's baseline (the oxygen demand ratio). 1 matches need, below 1 is relative
+    hypoventilation, above 1 relative hyperventilation; a high RR with a low efficiency is still a low ventilation."""
+    return efficiency * rate / intrinsic / demand_ratio
+
+
+def bicarbonate(burden: float, anchors: Anchors, profile: CoreProfile) -> float:
+    """HCO3 (mEq/L) = the arrival HCO3 less the burden gained since arrival: HCO3_reference - burden when arrival is
+    below the reference."""
+    return arrival_bicarbonate(anchors, profile) - (burden - arrival_acid_burden(anchors, profile))
+
+
+def carbonic_ph(hco3: float, paco2: float) -> float:
+    """pH = pK + log10(HCO3 / (0.03 x PaCO2)): the bicarbonate / CO2 relation, never a tuned state."""
+    return CARBONIC_PK + math.log10(hco3 / (CO2_SOLUBILITY * paco2))
+
+
+def arrival_alveolar_ventilation(anchors: Anchors, profile: CoreProfile) -> float:
+    """The effective ventilation the arrival state derives (the model's arrival RR, not the authored one)."""
+    intrinsic = intrinsic_respiratory_rate(anchors)
+    rate = rate_from_drive(respiratory_drive(arrival_acid_burden(anchors, profile), profile), intrinsic, profile)
+    return alveolar_ventilation(rate, intrinsic, profile.ventilation_efficiency, 1.0)
+
+
+@dataclass(frozen=True)
+class Respiration:
+    """One minute of the P2K-2 respiratory physiology: drive, RR and effective ventilation are three quantities.
+
+    ``ventilation`` is the effective alveolar ventilation relative to need (1 matches it). ``resting_paco2`` is the
+    PaCO2 the model implies at ventilation 1: the arrival PaCO2 times the arrival ventilation (anchored, not a
+    parameter). PaCO2 and pH are None without breathing."""
+
+    intrinsic_rr: float
+    acid_burden: float
+    bicarbonate: float
+    drive: float
+    respiratory_rate: float
+    efficiency: float
+    ventilation: float
+    resting_paco2: float
+    paco2: float | None
+    ph: float | None
+
+
+def respiration(state: CoreState, anchors: Anchors, profile: CoreProfile) -> Respiration:
+    """Drive from the acid burden, RR from the drive, effective ventilation from RR x efficiency relative to need,
+    PaCO2 from the ventilation anchored to the arrival PaCO2 (exact at arrival by construction), pH from HCO3 and PaCO2.
+
+    No term reads lactate, D or the W channel; the ventilation feeds back into nothing (no CO2 chemoreflex in P2K-2)."""
+    if not acid_base_active(profile):
+        raise CoreInvariantError("the acid-base physiology is off in this profile (P2K-2 gains undeclared)")
+    intrinsic = intrinsic_respiratory_rate(anchors)
+    burden = state.aux.metabolic_acid_burden
+    hco3 = bicarbonate(burden, anchors, profile)
+    if not hco3 > 0.0:
+        raise UnresolvedBoundary(f"minute {state.minute}: the metabolic acid burden {burden!r} takes HCO3 to {hco3!r}; "
+                                 "no bicarbonate is left and no rule for that boundary is decided")
+    drive = respiratory_drive(burden, profile)
+    rate = rate_from_drive(drive, intrinsic, profile) if state.R.pulse_present else 0.0
+    demand_ratio = state.aux.oxygen_demand / anchors.metabolic_demand_baseline
+    ventilation = alveolar_ventilation(rate, intrinsic, profile.ventilation_efficiency, demand_ratio)
+    resting = arrival_paco2(anchors, profile) * arrival_alveolar_ventilation(anchors, profile)
+    paco2 = resting / ventilation if ventilation > 0.0 else None
+    return Respiration(intrinsic, burden, hco3, drive, rate, profile.ventilation_efficiency, ventilation, resting,
+                       paco2, None if paco2 is None else carbonic_ph(hco3, paco2))
+
+
+def respiratory_rate_decomposition(anchors: Anchors, profile: CoreProfile) -> dict:
+    """The arrival RR the P2K-2 physiology derives against the authored one: reported, never absorbed by a residual."""
+    intrinsic = intrinsic_respiratory_rate(anchors)
+    burden = arrival_acid_burden(anchors, profile)
+    drive = respiratory_drive(burden, profile)
+    rate = rate_from_drive(drive, intrinsic, profile)
+    return {"authored_rr": anchors.respiratory_rate, "intrinsic_rr": intrinsic, "arrival_acid_burden": burden,
+            "arrival_drive": drive, "model_rr": rate, "mismatch": rate - anchors.respiratory_rate}
 
 
 def case_parameter_provenance(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> dict:
@@ -700,6 +888,10 @@ def check_arrival_reconstruction(anchors: Anchors, profile: CoreProfile = DEFAUL
     expected = {"sbp": anchors.sbp, "dbp": anchors.dbp, "spo2": anchors.spo2,
                 "respiratory_rate": anchors.respiratory_rate, "crt_s": anchors.crt_s, "lactate": anchors.lactate,
                 "consciousness_level": anchors.consciousness_level}
+    if acid_base_active(profile):
+        # P2K-2: the arrival RR is the intrinsic RR plus the response to the arrival acid burden; its mismatch with the
+        # authored RR is reported by ``respiratory_rate_decomposition``, never forced by a residual (as HR, P2I-2AF).
+        expected.pop("respiratory_rate")
     for name, value in expected.items():
         if not math.isclose(getattr(derived, name), value, rel_tol=0.0, abs_tol=1e-9):
             raise CoreInvariantError(f"{anchors.case_id}: the arrival state reads {name} = {getattr(derived, name)!r}, "
@@ -793,7 +985,8 @@ def arrival_state(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> C
         state = state.evolve(R=replace(state.R, rate_bpm=intrinsic_sinus_rate(anchors)))
         sinus_rate_reserve(state.R.rate_bpm, profile)
     state = state.evolve(aux=AuxiliaryState(lactate_excess_mmol_l=anchors.arrival_lactate_excess,
-                                            sympathetic_drive=0.0, oxygen_demand=anchors.metabolic_demand_baseline))
+                                            sympathetic_drive=0.0, oxygen_demand=anchors.metabolic_demand_baseline,
+                                            metabolic_acid_burden=arrival_acid_burden(anchors, profile)))
     return state.evolve(aux=replace(state.aux, sympathetic_drive=sympathetic_target(state, anchors, profile)))
 
 
@@ -1149,6 +1342,9 @@ def derive(state: CoreState, anchors: Anchors, profile: CoreProfile = DEFAULT_PR
         pulse_rate = rhythm.rate_bpm
     crt = max(0.0, anchors.crt_s + profile.crt_per_output_deficit_s * (1.0 - output_rel))
     rr = respiratory_rate(state, anchors, profile, lactate)
+    if acid_base_active(profile):
+        # P2K-2: the candidate physiology replaces the P2K-1 RR: the drive reads the acid burden only (no lactate, no W).
+        rr = respiration(state, anchors, profile).respiratory_rate
     level = max(anchors.consciousness_level, _level(sbp, profile.pressure_levels), _level(spo2, profile.oxygen_levels))
     derived = Derived(minute=state.minute, pulse_present=True, rhythm=rhythm.code,
                       monitor_rate_bpm=pulse_rate, pulse_rate_bpm=pulse_rate, output_rel=output_rel,

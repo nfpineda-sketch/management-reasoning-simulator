@@ -41,6 +41,7 @@ from .derived import (ADOPTED, AUXILIARY_SOURCES, BLOOD_COMPOSITION, COLLAPSE, D
                       PLASMA_REFILL, PRELOAD_CONGESTION, PROVISIONAL, CoreProfile, Derived, arrival_state,
                       blood_haemoglobin, collapse_burden_after_minute, collapse_reached, congestion_rate,
                       delivery_rel_of, derive, effective_delivery, effective_oxygen_deficit, lactate_after_minute, lung_water_clearance,
+                      acid_base_active, acid_burden_after_minute,
                       oxygen_demand, plasma_refill, red_cell_content, sympathetic_after_minute, terminal_rhythm,
                       tone_target)
 from .provenance import (BLOOD_PROCESSES, AuxiliaryChange, BloodChange, BloodFlow, BloodProcess, ChannelDelta,
@@ -223,6 +224,17 @@ def _oxygen_debt(state: CoreState, anchors: Anchors, profile: CoreProfile, minut
     else:
         amount, why = -state.D / profile.debt_clearance_tau_min, "no unmet demand: first-order repayment"
     return ChannelDelta(Channel.D, amount, OXYGEN_DEBT, minute, why, modulated_by=modulators if changed else ())
+
+
+def _acid_burden(state: CoreState, anchors: Anchors, profile: CoreProfile, demand: float) -> float:
+    """P2K-2: the metabolic acid burden after the minute, produced by the minute's effective oxygen deficit (the one D
+    integrates: the start-of-minute delivery against the minute's demand) and cleared first-order. Held while the acid-base
+    physiology is off."""
+    if not acid_base_active(profile):
+        return state.aux.metabolic_acid_burden
+    delivery = effective_delivery(derive(state, anchors, profile).delivery_rel, anchors)
+    deficit = effective_oxygen_deficit(demand, delivery, profile.oxygen_extraction_reserve)
+    return acid_burden_after_minute(state.aux.metabolic_acid_burden, deficit, profile)
 
 
 def _no_repayment_across(debt: ChannelDelta, after: CoreState, anchors: Anchors, profile: CoreProfile,
@@ -454,7 +466,8 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
     # the same minute and only its decay is lagged. P2I-2AF: the drive reads the minute's own
     # demand (its acute deficit signal), so the demand is set before the drive is.
     aux = AuxiliaryState(lactate_excess_mmol_l=lactate_after_minute(state, profile),
-                         sympathetic_drive=state.aux.sympathetic_drive, oxygen_demand=demand, collapse_burden=burden)
+                         sympathetic_drive=state.aux.sympathetic_drive, oxygen_demand=demand, collapse_burden=burden,
+                         metabolic_acid_burden=_acid_burden(state, anchors, profile, demand))
     aux = replace(aux, sympathetic_drive=sympathetic_after_minute(state, new_state.evolve(aux=aux), anchors, profile))
     new_state = new_state.evolve(aux=aux)
     changes = tuple(AuxiliaryChange(name, getattr(state.aux, name), getattr(aux, name), AUXILIARY_SOURCES[name],

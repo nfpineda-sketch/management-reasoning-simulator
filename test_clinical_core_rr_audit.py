@@ -35,6 +35,10 @@ SOURCE = ROOT / "clinical_core" / "rr_audit.py"
 #: rules, the missing structure and the decisions, and every clinical_core source but the downstream reports, committed
 #: before any clinical RR trajectory was read.
 FROZEN_DIGEST = "a3f098deb7d643e6158da3aaa8852874d6fa35d981379be173a17d6d8d8ec427"
+#: P2K-1 is closed (P2K-2): its module and record byte for byte, and the modules added after it.
+P2K1_MODULE_SHA = "4b663ffad81ff88f728707e7c96a255d882cbf62247107980652331fff885bf1"
+P2K1_RECORD_SHA = "e297209a8d7bbe1c475e12b3f23f5881f95ec232ee68523b621d48ca7ef2824a"
+LATER_MODULES = ("clinical_core/acid_base.py",)
 C57, C72 = ra.C57, ra.C72
 
 
@@ -51,7 +55,16 @@ def test_the_package_is_frozen():
     assert "clinical_core/rr_audit_report.py" in lactate_slice.DOWNSTREAM_REPORTS
     assert {"clinical_core/rr_audit.py", "clinical_core/rr_audit_report.py"} <= set(decision_pack.PACK_DIGEST_EXCLUDED)
     assert ra.p2j4_record()["freeze_digest"] == ra.P2J4_DIGEST
-    assert ra.freeze_digest() == FROZEN_DIGEST, "a source, a rule or the audit changed after the freeze"
+    # P2K-1 is closed (P2K-2): its module and record are pinned byte for byte, and its freeze is recomputed from the live
+    # sources without the later modules, with the core files and the two tuple-only files at their P2K-1 hashes while
+    # P2K-2 only inserted its declared, off-by-default names (acid_base.p2k1_sources).
+    from clinical_core import acid_base as ab
+    assert hashlib.sha256(SOURCE.read_bytes()).hexdigest() == P2K1_MODULE_SHA, "the closed P2K-1 module changed"
+    assert hashlib.sha256(RECORD.read_bytes()).hexdigest() == P2K1_RECORD_SHA
+    sources = {k: v for k, v in bf.freeze_sources().items() if k not in LATER_MODULES}
+    text = json.dumps({"revision": ra.REVISION, "p2j4": hashlib.sha256(ra.P2J4_RECORD.read_bytes()).hexdigest(),
+                       "design": ra.design(), "sources": ab.p2k1_sources(sources)}, sort_keys=True, default=str)
+    assert hashlib.sha256(text.encode("utf-8")).hexdigest() == FROZEN_DIGEST, "a source P2K-1 froze changed"
 
 
 def test_the_faculty_decisions_and_the_carried_uncertainty_are_recorded():
@@ -131,8 +144,9 @@ def test_w_is_a_mixed_construct_read_only_by_rr(probes):
     readers = _readers_of_w()
     assert {r for r in readers if r[0] != "decision_pack.py"} == {("derived.py", "respiratory_rate")}
     assert {r[1] for r in readers if r[0] == "decision_pack.py"} <= {"rr_parts", "rr_bounds"}, readers
-    assert ra.w_references() == ["clinical_core/bands.py", "clinical_core/decision_pack.py", "clinical_core/derived.py",
-                                 "clinical_core/integration.py", "clinical_core/state.py"]
+    # P2K-2 adds one file that names W: its probe writes the W channel to show the candidate RR does not read it.
+    assert ra.w_references() == ["clinical_core/acid_base.py", "clinical_core/bands.py", "clinical_core/decision_pack.py",
+                                 "clinical_core/derived.py", "clinical_core/integration.py", "clinical_core/state.py"]
     assert probes["D"]["w_minus_half_rr"] < probes["arrival_rr"] < probes["E"]["w_plus_half_rr"]
     assert not any("ventilation" in f.name for f in fields(Derived)), "no effective-ventilation output exists"
 
@@ -229,7 +243,9 @@ def test_hr_and_the_baroreflex_never_reach_rr():
 
 
 def test_the_core_is_unchanged_and_nothing_is_corrected_or_approved():
-    assert all(ra.core_unchanged().values())
+    # P2K-2 changed the core files only by its off-by-default insertions: stripped of them, each is the P2K-1 file.
+    from clinical_core import acid_base as ab
+    assert not all(ra.core_unchanged().values()) and all(ab.proofs().values())
     assert ra.CORRECTION["made"] is False and ra.CANDIDATE_SURFACE["built"] is False
     checks = {name: False for name in ra.BLOCKERS}
     assert ra.verdict(checks)["verdict"] == f"{ra.NOT_READY} — ACID_BASE_STATE_REQUIRED"
@@ -272,7 +288,8 @@ def test_the_record_comes_from_the_frozen_package_and_its_analytic_part_is_repro
     assert record["freeze_digest"] == FROZEN_DIGEST and record["record"] == ra.P2J4_DIGEST
     assert record["design"] == _json(ra.design()) and record["probes"] == _json(probes)
     assert record["authored"] == _json(ra.authored()) and record["reads"] == _json(ra.rr_reads())
-    assert record["w_references"] == ra.w_references() and all(record["core_unchanged"].values())
+    assert record["w_references"] == [r for r in ra.w_references() if r != "clinical_core/acid_base.py"]
+    assert all(record["core_unchanged"].values())
 
 
 def test_the_verdict_and_the_reconstruction_the_report_states(record):
@@ -364,9 +381,17 @@ TUPLES_AT_P2K1 = {"DOWNSTREAM_REPORTS": ("6168a4c03e11e94b625d5eaf6706181f253860
                   "PACK_DIGEST_EXCLUDED": ("64f2e94cfea36f7ba4d73b63a1c935e612626c6161158bdd5dfafba48bfd2dca", 49)}
 
 
+#: What P2K-2 added to them.
+TUPLES_ADDED_BY_P2K2 = {"DOWNSTREAM_REPORTS": ("clinical_core/acid_base_report.py",),
+                        "PACK_DIGEST_EXCLUDED": ("clinical_core/acid_base.py", "clinical_core/acid_base_report.py")}
+
+
 def test_the_exclusion_tuples_hold_exactly_their_p2k1_content():
     for name, values in (("DOWNSTREAM_REPORTS", lactate_slice.DOWNSTREAM_REPORTS),
                          ("PACK_DIGEST_EXCLUDED", decision_pack.PACK_DIGEST_EXCLUDED)):
+        added = TUPLES_ADDED_BY_P2K2[name]
+        assert set(added) <= set(values), name
+        values = [v for v in values if v not in added]
         assert (hashlib.sha256(json.dumps(sorted(values)).encode("utf-8")).hexdigest(), len(values)) == \
             TUPLES_AT_P2K1[name], name
 

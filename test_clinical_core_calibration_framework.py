@@ -50,7 +50,10 @@ from clinical_core.shadow import GOLDEN
 #: rate in calibration: check_hr refuses an arrival without one (CALIBRATION_REQUIRES_EXPLICIT_INTRINSIC_HR) and checks
 #: that an arrival with no sympathetic contribution predicts the declared intrinsic rate (HR2 (a)); the HR1, HR2 and
 #: AC1 texts and arrival_sympathetic_drive's registry description were updated: the rules component and
-#: harness_sources (calibration.py) changed; no probe size, threshold or band did.
+#: harness_sources (calibration.py) changed; no probe size, threshold or band did. P2K-2 gave the anchors three candidate
+#: inputs of the acid-base physiology (off by default), None at every canonical arrival: only scenario_inputs changed
+#: (the anchors' dictionary holds the three None fields); without them it is the P2I-2AG digest
+#: (SCENARIO_INPUTS_BEFORE_P2K2), and no rule, band, probe, threshold or input value changed.
 FROZEN_COMPONENTS = {
     "rules": "af88ab18a117b24b79fb7654ac78d83404c93abc7c0c1e86ca1d6c4c156e0709",
     "bands": "99ca99f1b0d032056cfdabb90e1354683ef5ba093e896a0d5c10bc9c2ca192ca",
@@ -61,9 +64,11 @@ FROZEN_COMPONENTS = {
     "scenarios": "7380daec5536c8f9a23c857df2138c99a16d63eace51d62b295aa3f4ed100b58",
     "input_path_sources": "8bbff3d408efba2024917559156cfaa732c920b3bc7a45e0bac0e3e4838f65b9",
     "input_adapter_sources": "e83dca618fdaaa9239d861e1e1d6928dc703bfe33206a05cef44a5b0e9495bc5",
-    "scenario_inputs": "afb2051e7fa04f1765aaf920c82f51dc6675d19bcbcb425c2ee581d8fa60d347",
+    "scenario_inputs": "ef226016482529e12759be8d6dea82418665c1812b003ac3ebdba3b897e80026",
 }
-FROZEN_DIGEST = "22bd65e434b79f3a9d215698dad620049b5dc249fbb5e6a0357ef1d6130873fd"
+FROZEN_DIGEST = "d78960c0a494dec577b4986b62a3f69844a9e41bad4e6f3d2315e9a0cd4e8091"
+SCENARIO_INPUTS_BEFORE_P2K2 = "afb2051e7fa04f1765aaf920c82f51dc6675d19bcbcb425c2ee581d8fa60d347"
+P2K2_INPUTS = ("intrinsic_respiratory_rate", "arrival_bicarbonate", "arrival_paco2")
 
 
 # P2F-2 / P2F-5 -- repository truth, candidate inference, faculty decision ---------------------
@@ -203,6 +208,11 @@ def test_the_rules_are_frozen():
     assert calibration.digest_components() == FROZEN_COMPONENTS, (
         "a component of the calibration freeze changed: record which and why, then update the digest")
     assert calibration.frozen_digest() == FROZEN_DIGEST
+    inputs = calibration.scenario_inputs()
+    for case in inputs:
+        assert all(inputs[case]["arrival_anchors"].pop(name) is None for name in P2K2_INPUTS)
+    assert hashlib.sha256(json.dumps(inputs, sort_keys=True, default=repr).encode("utf-8")).hexdigest() == \
+        SCENARIO_INPUTS_BEFORE_P2K2, "P2K-2 added only three None anchor fields to the scenario inputs"
     covered = {part for name in calibration.CHECKS for part in name.replace("-", "/").split("/")}
     assert {"DL1", "DL2", "DL3", "DL4", "RR1", "HR1", "PL1", "PL4", "PR1", "CO1", "DM1"} <= covered | {"HR1"}
     assert set(calibration.FROZEN_RULES) >= {"DL1", "DL2", "DL3", "DL4", "RR1", "HR1", "HR2", "HR3", "HR4", "PL1",

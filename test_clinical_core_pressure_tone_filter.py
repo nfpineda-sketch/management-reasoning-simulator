@@ -12,6 +12,7 @@ import json
 
 import pytest
 
+from clinical_core import acid_base as ab
 from clinical_core import baroreflex as br
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import decision_pack, lactate_slice
@@ -33,7 +34,7 @@ FROZEN_DIGEST = "611e1702d44d97ec19c42a78ab1bf1f97de8f0001ec6eb148ed376990ebf2d2
 #: their declared statements changed (baroreflex.p2j3_sources).
 P2J3_MODULE_SHA = "54bff406686b2b8e47757f10c5ec42cb6e0a0d170f2627cb926f99eea1c7e650"
 P2J3_RECORD_SHA = "bcecbe1651df99b9351f58162e99b312b01b23a109e785722d282faeae3151de"
-LATER_MODULES = ("clinical_core/baroreflex.py", "clinical_core/rr_audit.py")
+LATER_MODULES = ("clinical_core/baroreflex.py", "clinical_core/rr_audit.py", "clinical_core/acid_base.py")
 C57, C72 = pf.C57, pf.C72
 
 
@@ -58,7 +59,7 @@ def test_the_package_is_frozen():
         == P2J3_RECORD_SHA
     sources = {k: v for k, v in bf.freeze_sources().items() if k not in LATER_MODULES}
     text = json.dumps({"revision": pf.REVISION, "p2j2": hashlib.sha256(pf.P2J2_RECORD.read_bytes()).hexdigest(),
-                       "design": pf.design(), "sources": br.p2j3_sources(sources)}, sort_keys=True, default=str)
+                       "design": pf.design(), "sources": ab.p2j3_sources(sources)}, sort_keys=True, default=str)
     assert hashlib.sha256(text.encode("utf-8")).hexdigest() == FROZEN_DIGEST, "a source P2J-3 froze changed"
 
 

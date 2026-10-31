@@ -36,7 +36,7 @@ P2I2AK_MODULE_SHA = "6bfe0ef46ed1f2b1a4555b7322ca7d3747c237f2cc185caf3dcd479e8a5
 P2I2AJ_RECORD_SHA = "209db24136e478dc3bd2c392db4459b0fa9c3506b361eff6ab91053ebed9f66e"
 LATER_MODULES = ("clinical_core/pressure_tone.py", "clinical_core/vascular_tone.py",
                  "clinical_core/pressure_tone_filter.py",
-                 "clinical_core/baroreflex.py", "clinical_core/rr_audit.py")
+                 "clinical_core/baroreflex.py", "clinical_core/rr_audit.py", "clinical_core/acid_base.py")
 #: derived.py, integration.py and shadow.py as P2J-2 left them (P2J-1 pinned derived.py and shadow.py, P2J-2 added
 #: integration.py): the AST proofs (pressure_tone for shadow.py, vascular_tone.p2i2ak_sources for derived.py and
 #: integration.py) cover what P2J-1 and P2J-2 changed; the pin makes any later change fail the guard until proven again.
@@ -191,10 +191,16 @@ def test_the_readings_compare_with_the_counterfactual_at_each_units_completion(o
 
 def test_the_reuse_guards_and_the_arrival_pools_hold_on_the_committed_inputs():
     from clinical_core import pressure_tone as pt
-    assert {k: hashlib.sha256((ROOT / k).read_bytes()).hexdigest() for k in P2J2_SOURCES} == P2J2_SOURCES
+    # P2K-2 changed derived.py and integration.py only by its off-by-default insertions (acid_base's AST proof): the
+    # pin reads their P2K-1 hashes while that proof holds.
+    from clinical_core import acid_base as _ab
+    assert all(_ab.proofs().values())
+    assert {k: _ab.CORE_AT_P2K1.get(k, hashlib.sha256((ROOT / k).read_bytes()).hexdigest()) for k in P2J2_SOURCES} == \
+        P2J2_SOURCES
     sources = {k: v for k, v in bf.freeze_sources().items() if k not in hf.TUPLE_ONLY + hf.OWN + LATER_MODULES}
     from clinical_core import vascular_tone as vt
-    digest = hashlib.sha256(json.dumps(br.p2i2ak_sources(sources), sort_keys=True).encode("utf-8")).hexdigest()
+    from clinical_core import acid_base as ab
+    digest = hashlib.sha256(json.dumps(ab.p2i2ak_sources(sources), sort_keys=True).encode("utf-8")).hexdigest()
     assert digest == hf.DEPENDENCIES_AT_P2I2AJ, "an executable dependency changed since P2I-2AJ"
     record = hf.p2i2aj_record()
     assert record["reuse"]["units_digest"] == hf.UNITS[1.0]

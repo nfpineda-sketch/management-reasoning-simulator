@@ -264,9 +264,9 @@ ARRIVAL_LAYERS: Mapping[str, tuple[str, ...]] = {
     "authored_observation": ("sbp", "dbp", "hr", "spo2", "respiratory_rate", "crt_s", "lactate", "hb", "glucose",
                              "k", "fio2", "rhythm", "consciousness_level"),
     "physiological_reference": ("intrinsic_sinus_rate", "metabolic_demand_baseline", "reference_preload_fraction",
-                                "beta_blockade", "pump_reserve"),
+                                "beta_blockade", "pump_reserve", "intrinsic_respiratory_rate"),
     "arrival_dynamic_state": ("preload_fraction", "arrival_oxygen_debt", "arrival_lactate_excess",
-                              "arrival_delivery_ratio"),
+                              "arrival_delivery_ratio", "arrival_bicarbonate", "arrival_paco2"),
 }
 #: Where a declared case parameter comes from (P2D-8, P2E-6). One that is not declared is
 #: "default_unmapped".
@@ -344,6 +344,14 @@ class Anchors:
     arrival_oxygen_debt: float = 0.0
     arrival_delivery_ratio: float = 1.0
     reference_preload_fraction: float | None = None
+    # P2K-2 candidate inputs, read only by the acid-base physiology (off by default) and outside the case-parameter /
+    # migration registry until the faculty adopts that physiology: ``intrinsic_respiratory_rate`` (bpm) is the RR
+    # without respiratory drive (None: the arrival RR is read as intrinsic); ``arrival_bicarbonate`` (mEq/L) and
+    # ``arrival_paco2`` (mmHg) are the arrival blood gas as the case bank holds it (None: the profile's provisional
+    # references). The arrival metabolic acid burden is read from the bicarbonate, never from the lactate.
+    intrinsic_respiratory_rate: float | None = None
+    arrival_bicarbonate: float | None = None
+    arrival_paco2: float | None = None
     declared: FrozenRecord = field(default=EMPTY)
 
     def __post_init__(self):
@@ -352,7 +360,8 @@ class Anchors:
         if not isinstance(self.declared, FrozenRecord):
             object.__setattr__(self, "declared", FrozenRecord(self.declared))
         for item in fields(self):
-            if item.name not in {"case_id", "rhythm", "consciousness_level", "declared"} \
+            if item.name not in {"case_id", "rhythm", "consciousness_level", "declared", "intrinsic_respiratory_rate",
+                                 "arrival_bicarbonate", "arrival_paco2"} \
                     and not (CASE_PARAMETERS.get(item.name, 0.0) is None and getattr(self, item.name) is None):
                 _finite(getattr(self, item.name), item.name)
         for name, source in self.declared.items():
@@ -392,6 +401,9 @@ class Anchors:
             raise CoreInvariantError("the arrival oxygen delivery ratio is positive")
         if self.reference_preload_fraction is not None and not 0.0 < self.reference_preload_fraction < 1.0:
             raise CoreInvariantError("the reference preload fraction is strictly between 0 and 1")
+        for name in ("intrinsic_respiratory_rate", "arrival_bicarbonate", "arrival_paco2"):
+            if getattr(self, name) is not None and not getattr(self, name) > 0.0:
+                raise CoreInvariantError(f"{name} is positive when declared (P2K-2)")
         if not isinstance(self.rhythm, RhythmState):
             raise CoreInvariantError("the arrival rhythm is a RhythmState")
         if not self.rhythm.pulse_present:
@@ -431,6 +443,9 @@ AUXILIARY_FIELDS: Mapping[str, str] = {
                      "baseline times the modifiers the sources declared for that minute (P2E-2)",
     "collapse_burden": "severity x duration of critically low output accumulated toward the terminal-collapse "
                        "criterion (P2E-3); 0 while the collapse rule is off",
+    "metabolic_acid_burden": "metabolic acid / bicarbonate-deficit burden (mEq/L): the arrival burden the case's "
+                             "bicarbonate declares, plus what the effective oxygen deficit produced, less first-order "
+                             "clearance (P2K-2); not lactate, D or pH; constant while the acid-base physiology is off",
 }
 
 
@@ -442,6 +457,7 @@ class AuxiliaryState:
     sympathetic_drive: float = 0.0
     oxygen_demand: float = 1.0
     collapse_burden: float = 0.0
+    metabolic_acid_burden: float = 0.0
 
     def __post_init__(self):
         for name in AUXILIARY_FIELDS:
@@ -456,6 +472,9 @@ class AuxiliaryState:
         if self.lactate_excess_mmol_l < 0:
             # P2E-2: D is never negative, so nothing takes lactate below its clearance baseline.
             raise CoreInvariantError("the lactate above its clearance baseline is never negative")
+        if self.metabolic_acid_burden < 0:
+            # P2K-2: the burden is a bicarbonate deficit; clearance takes it to 0, never below.
+            raise CoreInvariantError("the metabolic acid burden is never negative")
 
     def to_dict(self) -> dict:
         return {name: getattr(self, name) for name in AUXILIARY_FIELDS}

@@ -40,7 +40,8 @@ FROZEN_DIGEST = "baa2ee124decc7c84a48b0b8fe5031a9dab774e3587176c79e1907df9490454
 #: changed (pressure_tone_filter.p2j2_sources).
 P2J2_MODULE_SHA = "8314c34accd082511b8e5cbe73da90c054fdbd2a0b8a6f3a56ab0aa0c12f7cf5"
 P2J2_RECORD_SHA = "0c5c9feda158d9d799a0d12f900a9776fcca917ea0b80bfd7b580ec604031924"
-LATER_MODULES = ("clinical_core/pressure_tone_filter.py", "clinical_core/baroreflex.py", "clinical_core/rr_audit.py")
+LATER_MODULES = ("clinical_core/pressure_tone_filter.py", "clinical_core/baroreflex.py", "clinical_core/rr_audit.py",
+                 "clinical_core/acid_base.py")
 #: derived.py, integration.py and shadow.py as the latest package leaves them (derived.py: P2J-4, proven by
 #: baroreflex.P2J4_CHANGES; integration.py and shadow.py: P2J-2): the AST proofs cover the declared statements; these pins
 #: make any later change of the three files fail the closed packages' guards until it is proven again.
@@ -49,6 +50,10 @@ P2J2_SOURCES = {"clinical_core/derived.py": "87f773f54d6bc4d125ef7817eb79383e7b7
                 "clinical_core/shadow.py": "66ef25c952509f0765731cfc0c0b97274bc5a4d263dcb486b595a8585a99ef35"}
 C57, C72 = vt.C57, vt.C72
 
+
+def _ab():
+    from clinical_core import acid_base as ab
+    return ab
 
 @pytest.fixture(scope="module")
 def source():
@@ -70,7 +75,7 @@ def test_the_package_is_frozen():
     assert hashlib.sha256(RECORD.read_bytes()).hexdigest() == P2J2_RECORD_SHA
     sources = {k: v for k, v in sources.items() if k not in LATER_MODULES}
     text = json.dumps({"revision": vt.REVISION, "p2j1": hashlib.sha256(vt.P2J1_RECORD.read_bytes()).hexdigest(),
-                       "design": vt.design(), "sources": pf.p2j2_sources(br.p2j3_sources(sources))}, sort_keys=True,
+                       "design": vt.design(), "sources": pf.p2j2_sources(_ab().p2j3_sources(sources))}, sort_keys=True,
                       default=str)
     assert hashlib.sha256(text.encode("utf-8")).hexdigest() == FROZEN_DIGEST, "a source P2J-2 froze changed"
 
@@ -223,21 +228,29 @@ def test_the_reconstruction_equals_the_core(source, gain, a):
 
 def test_p2j2_changed_only_the_declared_statements():
     # P2J-4 changed derived.py again (the baroreflex): its proof is baroreflex's, over P2J-2's and P2J-4's statements.
-    assert vt.outside_unchanged()[vt.INTEGRATION] == {"since_p2j1": True, "since_p2i2ak": True}
+    # P2K-2 changed derived.py and integration.py once more, only by its off-by-default insertions: the proofs read the
+    # live files with them removed (acid_base.p2k1_text); a mutation is made on the live file first.
+    ab = _ab()
+    integration_item = vt.P2J2_CHANGES[vt.INTEGRATION]
+    stripped = ab.p2k1_text(vt.INTEGRATION)
+    assert vt.outside_digest(stripped, integration_item["changed"]) == integration_item["outside_p2j1"]
+    assert vt.outside_digest(stripped, integration_item["since_p2i2ak"]) == integration_item["outside_p2i2ak"]
     item = br.P2J4_CHANGES[vt.DERIVED]
-    assert vt.outside_digest(vt._live(vt.DERIVED), item["since_p2j1"]) == item["outside_p2j1"]
-    assert vt.outside_digest(vt._live(vt.DERIVED), item["since_p2i2ak"]) == item["outside_p2i2ak"]
+    assert vt.outside_digest(ab.p2k1_text(vt.DERIVED), item["since_p2j1"]) == item["outside_p2j1"]
+    assert vt.outside_digest(ab.p2k1_text(vt.DERIVED), item["since_p2i2ak"]) == item["outside_p2i2ak"]
     derived = vt._live(vt.DERIVED)
-    mutated = derived.replace("OUTPUT_EPSILON = 1e-9", "OUTPUT_EPSILON = 1e-8")
+    mutated = ab.stripped_text(vt.DERIVED, derived.replace("OUTPUT_EPSILON = 1e-9", "OUTPUT_EPSILON = 1e-8"))
     assert vt.outside_digest(mutated, vt.P2J2_CHANGES[vt.DERIVED]["changed"]) != \
         vt.P2J2_CHANGES[vt.DERIVED]["outside_p2j1"], "the proof must notice a change outside the tone statements"
     integration = vt._live(vt.INTEGRATION)
-    mutated = integration.replace("CONSERVATION_TOLERANCE = 1e-9", "CONSERVATION_TOLERANCE = 1e-8")
+    mutated = ab.stripped_text(vt.INTEGRATION, integration.replace("CONSERVATION_TOLERANCE = 1e-9",
+                                                                   "CONSERVATION_TOLERANCE = 1e-8"))
     assert vt.outside_digest(mutated, vt.P2J2_CHANGES[vt.INTEGRATION]["changed"]) != \
         vt.P2J2_CHANGES[vt.INTEGRATION]["outside_p2j1"]
     for relative, item in vt.TUPLE_CHANGES.items():
         assert vt.outside_digest(vt._live(relative), item["changed"]) == item["outside_p2j1"]
-    assert {k: hashlib.sha256((ROOT / k).read_bytes()).hexdigest() for k in P2J2_SOURCES} == P2J2_SOURCES
+    assert all(ab.proofs().values()) and {k: ab.CORE_AT_P2K1.get(k, hashlib.sha256((ROOT / k).read_bytes()).hexdigest())
+                                          for k in P2J2_SOURCES} == P2J2_SOURCES
     for name in ("deficit_to_tone_gain",):
         assert name in {f.name for f in __import__("dataclasses").fields(CoreProfile)}
 
@@ -287,22 +300,25 @@ def _inside_digest(text, name):
 
 
 def test_inside_the_declared_statements_p2j2_changed_only_the_tone():
+    # P2K-2: read on the live files with its insertions removed (acid_base.p2k1_text); mutations on the live file first.
+    ab = _ab()
     for (relative, name), expected in INSIDE_AT_P2J1.items():
-        assert _inside_digest(vt._live(relative), name) == expected, (relative, name)
+        assert _inside_digest(ab.p2k1_text(relative), name) == expected, (relative, name)
     derived = vt._live(vt.DERIVED)
-    assert _inside_digest(derived.replace("debt_to_lactate_gain: float = 2.0 / 3600.0",
-                                          "debt_to_lactate_gain: float = 2.0 / 3000.0"), "CoreProfile") != \
+    assert _inside_digest(ab.stripped_text(vt.DERIVED, derived.replace("debt_to_lactate_gain: float = 2.0 / 3600.0",
+                                                                       "debt_to_lactate_gain: float = 2.0 / 3000.0")),
+                          "CoreProfile") != \
         INSIDE_AT_P2J1[(vt.DERIVED, "CoreProfile")], "a changed default inside CoreProfile must be noticed"
     integration = vt._live(vt.INTEGRATION)
-    assert _inside_digest(integration.replace("withdrawn = _no_repayment_across(debt, new_state, anchors, profile, demand)",
-                                              "withdrawn = None"), "step") != \
+    assert _inside_digest(ab.stripped_text(vt.INTEGRATION, integration.replace(
+        "withdrawn = _no_repayment_across(debt, new_state, anchors, profile, demand)", "withdrawn = None")), "step") != \
         INSIDE_AT_P2J1[(vt.INTEGRATION, "step")], "a change inside step must be noticed"
 
 
 def test_the_closed_p2j1_freeze_recomputes_from_the_proven_sources():
     sources = {k: v for k, v in bf.freeze_sources().items() if k not in vt.OWN + LATER_MODULES}
     text = json.dumps({"revision": pt.REVISION, "p2i2ak": hashlib.sha256(pt.P2I2AK_RECORD.read_bytes()).hexdigest(),
-                       "design": pt.design(), "sources": br.p2j1_sources(sources)}, sort_keys=True, default=str)
+                       "design": pt.design(), "sources": _ab().p2j1_sources(sources)}, sort_keys=True, default=str)
     assert hashlib.sha256(text.encode("utf-8")).hexdigest() == vt.P2J1_DIGEST
 
 

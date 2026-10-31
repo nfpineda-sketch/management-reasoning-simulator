@@ -41,7 +41,7 @@ FROZEN_DIGEST = "81ab565efb3170ee9e7e4683c3198495004d30c7dfdadce09f551d66547dedf
 #: changed (rr_audit.p2j4_sources).
 P2J4_MODULE_SHA = "cd9072b8c97bfc3a15e8d314c88aae7ec6a622a8c4b7e1fad9fa73c38e5aca6e"
 P2J4_RECORD_SHA = "e67682cf989edc08a6b56ffb185136a4da2778934d46a27f7a9255bace429c08"
-LATER_MODULES = ("clinical_core/rr_audit.py",)
+LATER_MODULES = ("clinical_core/rr_audit.py", "clinical_core/acid_base.py")
 C57, C72 = br.C57, br.C72
 
 
@@ -58,13 +58,13 @@ def test_the_package_is_frozen():
     assert "clinical_core/baroreflex_report.py" in lactate_slice.DOWNSTREAM_REPORTS
     assert {"clinical_core/baroreflex.py", "clinical_core/baroreflex_report.py"} <= set(decision_pack.PACK_DIGEST_EXCLUDED)
     assert br.p2j3_record()["freeze_digest"] == br.P2J3_DIGEST
-    from clinical_core import rr_audit as ra
+    from clinical_core import acid_base as ab
     assert hashlib.sha256(SOURCE.read_bytes()).hexdigest() == P2J4_MODULE_SHA, "the closed P2J-4 module changed"
     assert hashlib.sha256((ROOT / "docs" / "revision" / "P2J4_baroreflex.json").read_bytes()).hexdigest() == \
         P2J4_RECORD_SHA
     sources = {k: v for k, v in sources.items() if k not in LATER_MODULES}
     text = json.dumps({"revision": br.REVISION, "p2j3": hashlib.sha256(br.P2J3_RECORD.read_bytes()).hexdigest(),
-                       "design": br.design(), "sources": ra.p2j4_sources(sources)}, sort_keys=True, default=str)
+                       "design": br.design(), "sources": ab.p2j4_sources(sources)}, sort_keys=True, default=str)
     assert hashlib.sha256(text.encode("utf-8")).hexdigest() == FROZEN_DIGEST, "a source P2J-4 froze changed"
 
 
@@ -283,33 +283,44 @@ def test_one_task_per_unit_and_case_no_cartesian_runs():
 # What P2J-4 changed outside its module ------------------------------------------------------------------------------------------
 
 def test_p2j4_changed_only_the_declared_statements_of_derived():
+    # P2K-2 changed derived.py again, only by its off-by-default insertions: the proof reads the live file with them
+    # removed (acid_base.stripped_text, AST-identical to the P2K-1 file); a mutation is made on the live file first.
+    from clinical_core import acid_base as ab
     item = br.P2J4_CHANGES[br.DERIVED]
-    live = vt._live(br.DERIVED)
-    assert hashlib.sha256(live.encode("utf-8")).hexdigest() != item["sha_at_p2j3"]
+    raw = vt._live(br.DERIVED)
+    live = ab.p2k1_text(br.DERIVED)
+    assert hashlib.sha256(raw.encode("utf-8")).hexdigest() != item["sha_at_p2j3"]
     assert vt.outside_digest(live, item["changed"]) == item["outside_p2j3"]
     assert vt.outside_digest(live, item["since_p2j1"]) == item["outside_p2j1"]
     assert vt.outside_digest(live, item["since_p2i2ak"]) == item["outside_p2i2ak"]
-    assert vt.outside_digest(live.replace("OUTPUT_EPSILON = 1e-9", "OUTPUT_EPSILON = 1e-8"), item["changed"]) != \
-        item["outside_p2j3"], "the proof must notice a change outside the baroreflex statements"
+    assert vt.outside_digest(ab.stripped_text(br.DERIVED, raw.replace("OUTPUT_EPSILON = 1e-9", "OUTPUT_EPSILON = 1e-8")),
+                             item["changed"]) != item["outside_p2j3"], "the proof must notice a change outside the baroreflex statements"
     for name, expected in br.INSIDE_AT_P2J3.items():
         assert br.inside_digest(live, name) == expected, name
-    mutated = live.replace("debt_to_sympathetic_gain * state.D", "debt_to_sympathetic_gain * 2.0 * state.D")
-    assert br.inside_digest(mutated, "sympathetic_target") != br.INSIDE_AT_P2J3["sympathetic_target"]
-    mutated = live.replace("sinus_rate_ceiling_bpm: float = 175.0", "sinus_rate_ceiling_bpm: float = 180.0")
-    assert br.inside_digest(mutated, "CoreProfile") != br.INSIDE_AT_P2J3["CoreProfile"]
+    mutated = raw.replace("debt_to_sympathetic_gain * state.D", "debt_to_sympathetic_gain * 2.0 * state.D")
+    assert mutated != raw and br.inside_digest(ab.stripped_text(br.DERIVED, mutated), "sympathetic_target") != \
+        br.INSIDE_AT_P2J3["sympathetic_target"]
+    mutated = raw.replace("sinus_rate_ceiling_bpm: float = 175.0", "sinus_rate_ceiling_bpm: float = 180.0")
+    assert mutated != raw and br.inside_digest(ab.stripped_text(br.DERIVED, mutated), "CoreProfile") != \
+        br.INSIDE_AT_P2J3["CoreProfile"]
     from test_clinical_core_vascular_tone import P2J2_SOURCES
-    assert {k: hashlib.sha256((ROOT / k).read_bytes()).hexdigest() for k in P2J2_SOURCES} == P2J2_SOURCES
+    assert all(ab.proofs().values()) and {k: ab.CORE_AT_P2K1.get(k, hashlib.sha256((ROOT / k).read_bytes()).hexdigest())
+                                          for k in P2J2_SOURCES} == P2J2_SOURCES
     for relative in ("clinical_core/integration.py", "clinical_core/shadow.py", "clinical_core/state.py"):
         assert relative not in br.P2J4_CHANGES
 
 
 def test_the_closed_packages_see_derived_at_their_own_hash_only_while_proven():
+    # P2K-2: the maps read the live core through acid_base's proof of its insertions (the baroreflex maps alone no
+    # longer prove the live derived.py).
+    from clinical_core import acid_base as ab
     sources = {br.DERIVED: "live", **{k: "live" for k in br.TUPLE_AT_P2J3}, "clinical_core/state.py": "s"}
     item = br.P2J4_CHANGES[br.DERIVED]
-    assert br.p2j3_sources(sources) == {br.DERIVED: item["sha_at_p2j3"], **br.TUPLE_AT_P2J3,
-                                        "clinical_core/state.py": "s"}
-    assert br.p2j1_sources({br.DERIVED: "live"})[br.DERIVED] == item["sha_at_p2j1"]
-    assert br.p2i2ak_sources({br.DERIVED: "live"})[br.DERIVED] == item["sha_at_p2i2ak"]
+    assert br.p2j3_sources(sources)[br.DERIVED] == "live"
+    assert ab.p2j3_sources(sources) == {br.DERIVED: item["sha_at_p2j3"], **br.TUPLE_AT_P2J3,
+                                        "clinical_core/state.py": ab.CORE_AT_P2K1["clinical_core/state.py"]}
+    assert ab.p2j1_sources({br.DERIVED: "live"})[br.DERIVED] == item["sha_at_p2j1"]
+    assert ab.p2i2ak_sources({br.DERIVED: "live"})[br.DERIVED] == item["sha_at_p2i2ak"]
 
 
 # Frozen classifiers, verdict, recommendation ----------------------------------------------------------------------------
