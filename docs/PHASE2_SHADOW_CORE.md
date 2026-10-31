@@ -3400,3 +3400,30 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - Nada aprobado; FR no se inicia.
 - **Revisión adversarial:** sin hallazgos ALTA; cuatro MEDIA y cinco BAJA, resueltos en documentos y pruebas (informe
   §19).
+
+## 46. P2K-1 · Auditoría estructural de la FR y del impulso ventilatorio (2026-10-31)
+
+- **Base:** `6aad5cc` (P2J-4, cerrado: su módulo y su registro quedan fijados; su congelamiento se recalcula con
+  `rr_audit.p2j4_sources`).
+  - Congelamiento: `c1952da` (digest `a3f098de…`), antes de leer las trayectorias clínicas de FR.
+  - Informe: `docs/revision/P2K1_AUDITORIA_FR_Y_VENTILACION.md`; números: `docs/revision/P2K1_rr_audit.json`.
+  - El núcleo no cambia.
+- **Hallazgos:**
+  - La FR lee W, la FR y el lactato de llegada, sus parámetros y la concentración de lactato. D llega sólo por el
+    lactato que produce.
+  - El impulso «acidémico» es la concentración de lactato: BIOMARKER_PROXY_REQUIRES_REFACTOR. El valor de su ganancia
+    es el heredado.
+  - W es una construcción mixta, sin escritor GI ni salida de ventilación efectiva.
+  - pH, pCO2 y HCO3 son sólo observaciones de la gasometría de llegada; la carga ácida y la compensación respiratoria
+    no están modeladas.
+  - Sondas: A, D y E no son representables; B sube la FR sólo por el lactato; C llega por D → lactato. El oxígeno sólo
+    oxigena, y la FR no tiene impulso hipoxémico propio.
+  - Reconstrucción R1–R4 (5364 trayectorias, exactas en 48 corridas del núcleo):
+    - con manejo definitivo, la FR cae por debajo de la llegada a medida que se aclara el lactato;
+    - en 72f sin tratamiento, la FR baja durante los primeros 30 min aunque la hemorragia sigue.
+  - Dirección 3 violada por el sustituto; 4, 5 y 7 no representables.
+  - MAP_set, el barorreflejo y la FC no llegan a la FR.
+- **Veredicto: RR_STRUCTURE_NOT_READY — ACID_BASE_STATE_REQUIRED.** Sin corrección estructural ni superficie candidata.
+  - Lo que falta, en orden: (1) una carga ácida metabólica; (2) la representación del CO2; (3) W separado en impulso y
+    ventilación efectiva; (4) la semántica del soporte respiratorio.
+  - (1) y (2) son el primer paso, con autorización docente previa. Nada aprobado.

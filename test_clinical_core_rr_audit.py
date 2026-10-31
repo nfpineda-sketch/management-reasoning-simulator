@@ -251,3 +251,64 @@ def test_no_legacy_no_p2f_nothing_approved():
                                                              ":shadow"))
     assert "lr.P2FGuard(), lr.LegacyLock()" in inspect.getsource(ra.run)
     assert '"approved": []' in inspect.getsource(ra.verdict) and '"candidate_runs": 0' in inspect.getsource(ra.run)
+
+
+# The committed record ----------------------------------------------------------------------------------------------------
+
+RECORD = ROOT / "docs" / "revision" / "P2K1_rr_audit.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2K1_AUDITORIA_FR_Y_VENTILACION.md"
+
+
+@pytest.fixture(scope="module")
+def record():
+    return json.loads(RECORD.read_text(encoding="utf-8"))
+
+
+def _json(value):
+    return json.loads(json.dumps(value, sort_keys=True, default=str))
+
+
+def test_the_record_comes_from_the_frozen_package_and_its_analytic_part_is_reproduced_live(record, probes):
+    assert record["freeze_digest"] == FROZEN_DIGEST and record["record"] == ra.P2J4_DIGEST
+    assert record["design"] == _json(ra.design()) and record["probes"] == _json(probes)
+    assert record["authored"] == _json(ra.authored()) and record["reads"] == _json(ra.rr_reads())
+    assert record["w_references"] == ra.w_references() and all(record["core_unchanged"].values())
+
+
+def test_the_verdict_and_the_reconstruction_the_report_states(record):
+    assert record["verdict"]["verdict"] == f"{ra.NOT_READY} — ACID_BASE_STATE_REQUIRED"
+    assert record["verdict"]["blockers"] == list(ra.BLOCKERS) and record["verdict"]["approved"] == []
+    assert record["validation"] == {"compared": 48, "equal": True}
+    assert record["pressure_tone_unchanged"] == {"units": True, "primary": True, "support": True, "demand_class": True}
+    assert {k: v["status"] for k, v in record["directions"].items()} == {
+        "1": "PASSES_FOR_THE_PROXY_ONLY", "2": "PASSES", "3": "VIOLATED_BY_THE_PROXY", "4": "NOT_REPRESENTABLE",
+        "5": "NOT_REPRESENTABLE", "6": "PASSES", "7": "NOT_REPRESENTABLE", "8": "PASSES"}
+    assert record["efficiency"]["candidate_runs"] == 0 and not record["efficiency"]["cartesian_sweep"]
+    assert record["identifiability"]["rr_max"]["class"] == "NON_IDENTIFIABLE"
+    assert record["dependencies"]["demand"]["max_rr_difference"] == {"n": 0}
+
+
+def test_rr_depends_on_demand_through_the_lactate_chain():
+    """The frozen comparison found no unit at both demands (the surviving lactate-side points differ); here one unit at
+    1.0 and 1.1 (supplementary, after the run)."""
+    record = la.record_p2i2ab()
+    source = la.source_space(record)
+    for case, lam in ((C57, 612), (C72, 611)):
+        rows = {factor: pt.full_run(source["p3"][0], case, pt.L1, factor, ra.LAMBDAS[lam], None, "midpoint",
+                                    {"deficit_to_tone_gain": 0.5, "afterload_sensitivity": ra.AFTERLOAD})["rows"]
+                for factor in ra.DEMANDS}
+        assert rows[1.0][0]["rr"] == rows[1.1][0]["rr"]
+        assert any(a["rr"] != b["rr"] for a, b in zip(rows[1.0], rows[1.1]))
+        assert any(a["D"] != b["D"] for a, b in zip(rows[1.0], rows[1.1]))
+
+
+def test_the_document_is_generated_from_the_record(tmp_path):
+    from clinical_core import rr_audit_report as rp
+    copy = tmp_path / "doc.md"
+    copy.write_text(DOCUMENT.read_text(encoding="utf-8"), encoding="utf-8")
+    assert rp.main(["--write", str(copy), "--data", str(RECORD)]) == 0
+    assert copy.read_text(encoding="utf-8") == DOCUMENT.read_text(encoding="utf-8")
+    text = DOCUMENT.read_text(encoding="utf-8")
+    assert "RR_STRUCTURE_NOT_READY — ACID_BASE_STATE_REQUIRED" in text
+    for name in rp.NAMES:
+        assert f"<!-- generado:{name} -->" in text
