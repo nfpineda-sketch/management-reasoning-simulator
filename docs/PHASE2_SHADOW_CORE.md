@@ -3503,3 +3503,8 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Veredicto: RR_VENTILATION_DECISION_SURFACE_READY.** Nada se aprueba. Se piden envolventes observables y la
   confirmación de la semántica de la demanda (`docs/revision/P2K3_VENTILACION_EFECTIVA_Y_SUPERFICIE_RESPIRATORIA.md`
   §15).
+- **Revisión adversarial:** sin hallazgos de severidad alta.
+  - Dos medios, de maquinaria: el bloqueante que nombraba una parada temprana y la validación, que comprobaba una
+    copia del álgebra. Se corrigieron junto con cuatro bajos.
+  - P2K-3 se recongeló (`bb6d81e`) con los mismos soportes y criterios. La reevaluación da los mismos números (informe
+    §17).

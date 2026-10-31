@@ -404,8 +404,9 @@ def render_eficiencia(data: dict) -> str:
             f"contrafactuales. {e['deficit_trajectories']} trayectorias de déficit reconstruidas una vez; la carga se "
             f"integra para {e['acid_pairs']} pares (B, τ); la FR es álgebra de la carga para "
             f"{e['rr_candidates']['gi_bleed_57m']} (57m) y {e['rr_candidates']['gi_bleed_72f']} (72f) pares (ganancia, FR "
-            f"intrínseca) y W / PaCO2 / pH para {e['ventilation_gains']} ganancias de ventilación, sin producto entre "
-            f"ellas. La llegada se resolvió analíticamente ({e['arrival_combinations']} combinaciones con el soporte "
+            f"intrínseca) y W / PaCO2 / pH para {e['ventilation_gains']} ganancias de ventilación. Las tablas y el "
+            f"paquete A–I no las cruzan; sólo las preguntas 3 y 6, que por definición piden la relación entre FR y "
+            f"PaCO2, recorren los dos lados (con los conjuntos de la PaCO2 calculados una vez por ganancia). La llegada se resolvió analíticamente ({e['arrival_combinations']} combinaciones con el soporte "
             f"ácido). Corridas completas del núcleo: {e['core_validation_runs']} (validación). Barrido cartesiano: "
             f"{_yes(e['cartesian_sweep'])}; FR heredada leída: {_yes(e['legacy_read'])}.")
 

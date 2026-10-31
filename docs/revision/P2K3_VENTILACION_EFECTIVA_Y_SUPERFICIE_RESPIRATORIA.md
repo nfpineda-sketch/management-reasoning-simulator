@@ -3,6 +3,9 @@
 - **Fecha:** 2026-10-31. **Rama:** `phase-2-clinical-core-shadow`. **Base:** `cbec249` (P2K-2, cerrado).
 - **Congelamiento:** `75dc218` (digest `38e30b84…`), antes de contar cualquier candidato de llegada o leer
   cualquier trayectoria respiratoria clínica.
+- **Recongelamiento tras la revisión adversarial:** `bb6d81e` (digest `23f1673f…`). Sólo cambia la maquinaria (§17);
+  los soportes, las tolerancias, las referencias y los criterios son los mismos. La reevaluación da los mismos números
+  en la llegada, R1–R4, el paquete A–I, la validación y el veredicto.
   - Antes de congelar sólo se leyeron entradas y sondas sintéticas: el gas de llegada del banco, las ganancias
     implícitas que da la docencia y las sondas A–I.
   - Las rutas de código se probaron sobre un almacén sintético y sobre una corrida real de la que sólo se imprimieron
@@ -46,8 +49,10 @@
     mismos candidatos de FR, iba de 39 a 73;
   - en R4 la PaCO2 a 120 min se acerca a 40 en todas las combinaciones (57m 35,3 [30,6–38,7]; 72f 37,2 [34,3–39,3]);
   - la caída precoz de la FR de 72f sigue siendo posible, y es ácida, no por lactato;
-  - el lactato y la FR se mueven en sentidos opuestos en la mayoría de las combinaciones;
-  - pH 6,96–7,42, sin valores patológicos ni rechazos.
+  - el lactato y la FR se mueven en sentidos opuestos al menos un minuto en la mayoría de las combinaciones
+    (259 118 de 313 794);
+  - pH 6,96–7,42: ningún valor fuera del rango plausible 6,8–7,8 y ningún rechazo. El mínimo, 6,96, es una acidemia
+    grave en la esquina extrema sin tratamiento (R1 57m).
 - **Previo intacto.** En los siete dominios (BloodState, gasto, presión/tono, DO2/déficit, D, lactato, FC/barorreflejo)
   las filas y los estados son iguales con la candidata y sin ella. P2K-1, P2K-2 y la región de P2J-3 se reproducen.
 - **Veredicto: RR_VENTILATION_DECISION_SURFACE_READY.** Nada se aprueba. Se pide a la docencia un juego pequeño de
@@ -132,6 +137,14 @@ Predeclared before any count. RR side: P2K-2's frozen supports (intrinsic RR 12 
 |---|---|
 | `effective_ventilation` | `capacity`, `demand_ratio`, `float` |
 | `paco2_from_ventilation` | `float`, `reference`, `ventilation` |
+| `return.capacity` | `capacity` |
+| `return.demand_ratio` | `demand_ratio` |
+| `return.efficiency` | `profile`, `ventilation_efficiency` |
+| `return.paco2` | `paco2` |
+| `return.paco2_reference` | `paco2_reference_mmhg`, `profile` |
+| `return.ph` | `base`, `bicarbonate`, `carbonic_ph`, `paco2` |
+| `return.recruitment` | `recruitment` |
+| `return.ventilation` | `ventilation` |
 | `ventilated_respiration.capacity` | `acid_burden`, `acid_to_ventilation_gain`, `base`, `candidate`, `profile`, `ventilation_efficiency`, `ventilatory_capacity` |
 | `ventilated_respiration.demand_ratio` | `anchors`, `aux`, `metabolic_demand_baseline`, `oxygen_demand`, `state` |
 | `ventilated_respiration.paco2` | `paco2_from_ventilation`, `paco2_reference_mmhg`, `profile`, `ventilation` |
@@ -577,7 +590,7 @@ Validación contra el núcleo: 48 corridas completas con el candidato de validac
 ## 14. Eficiencia (generado)
 
 <!-- generado:eficiencia -->
-P2J-3 recalculado: 1326 trayectorias de sangre y 364 contrafactuales. 5364 trayectorias de déficit reconstruidas una vez; la carga se integra para 9 pares (B, τ); la FR es álgebra de la carga para 6 (57m) y 7 (72f) pares (ganancia, FR intrínseca) y W / PaCO2 / pH para 4 ganancias de ventilación, sin producto entre ellas. La llegada se resolvió analíticamente (2025 combinaciones con el soporte ácido). Corridas completas del núcleo: 96 (validación). Barrido cartesiano: no; FR heredada leída: no.
+P2J-3 recalculado: 1326 trayectorias de sangre y 364 contrafactuales. 5364 trayectorias de déficit reconstruidas una vez; la carga se integra para 9 pares (B, τ); la FR es álgebra de la carga para 6 (57m) y 7 (72f) pares (ganancia, FR intrínseca) y W / PaCO2 / pH para 4 ganancias de ventilación. Las tablas y el paquete A–I no las cruzan; sólo las preguntas 3 y 6, que por definición piden la relación entre FR y PaCO2, recorren los dos lados (con los conjuntos de la PaCO2 calculados una vez por ganancia). La llegada se resolvió analíticamente (2025 combinaciones con el soporte ácido). Corridas completas del núcleo: 96 (validación). Barrido cartesiano: no; FR heredada leída: no.
 <!-- /generado:eficiencia -->
 
 ## 15. Lo que se pide a la docencia
@@ -629,4 +642,43 @@ Ninguna de estas decisiones la toma la IA. Todo lo anterior es EXPLORATORY o PRO
 
 ## 17. Revisión adversarial
 
-Pendiente.
+Una revisión independiente, de sólo lectura, sobre `e243b05`, con el foco que pidió la docencia. Confirmó cada
+hallazgo con una sonda o una mutación fuera del repositorio. Sin hallazgos de severidad alta.
+
+- **Limpios** (con evidencia):
+  - ni la FR ni la FR intrínseca llegan a W, PaCO2 o pH;
+  - W no es el impulso con otro nombre;
+  - la ganancia de ventilación no se ajustó y es común;
+  - la PaCO2 de referencia no figura como aprobada;
+  - el pH no filtra;
+  - no se fuerza la subida de la carga;
+  - el lactato y D no vuelven;
+  - no hay volumen corriente explícito;
+  - los archivos del núcleo tienen las huellas de `cbec249`;
+  - no se lee la FR heredada;
+  - no se multiplican MAP_set, el barorreflejo ni la FC;
+  - los conteos de llegada, recalculados, coinciden.
+- **M1 (media), corregido.** En una parada temprana, los criterios no evaluados contaban como fallidos, así que el
+  bloqueante nombrado era el equivocado. Ahora la parada nombra el criterio que falló y lista los no evaluados.
+  Prueba de regresión: la parada de PaCO2 nombra ARRIVAL_PACO2_REPRODUCED y la de un archivo del núcleo,
+  UPSTREAM_UNCHANGED.
+- **M2 (media), corregido.** La validación contra el núcleo comprobaba una copia del álgebra, no la que generó las
+  tablas. Ahora `evaluate` y `validate` usan las mismas funciones por serie, y además se comprueba el pulso de la
+  trayectoria contra el del núcleo.
+- **B1, corregido.** La pregunta 1 recorría la FR intrínseca sin usarla. Ahora se calcula con el módulo sobre estados
+  del núcleo con cada FR intrínseca declarada.
+- **B2, corregido.** La prueba estática no veía asignaciones aumentadas, anidadas ni anotadas, ni el `return`. Ahora
+  las ve; hay pruebas con mutaciones.
+- **B3, corregido.** Los conjuntos de dirección de la PaCO2 se recalculaban dentro del bucle de FR. Además, «sin
+  producto» no era literal para las preguntas 3 y 6, que cruzan FR y PaCO2 por definición; el registro y §14 lo dicen
+  ahora.
+- **B4, corregido en el texto.** El resumen ahora dice «al menos un minuto». El pH mínimo de 6,96 se describe como
+  acidemia grave dentro del rango plausible, no como «sin valores patológicos». El comentario de `PH_PLAUSIBLE` ya no
+  habla de una parada.
+- **B5, declarado.** `paco2_reference_mmhg` cambia de papel en la candidata: es la PaCO2 con W = 1, no el respaldo de
+  la PaCO2 de llegada de P2K-2 (`ventilation.STATUS`, TD-104 (7)).
+
+Estas correcciones cambian el digest, así que P2K-3 se recongeló (`bb6d81e`) después de ver los resultados, como en
+P2K-2. Ningún rango, candidato, tolerancia, referencia ni criterio cambió. Antes del recongelamiento, una corrida del
+análisis corregido coincidió con el registro de `e243b05` en todo valor de llegada, reconstrucción, paquete,
+validación y veredicto; la reevaluación oficial es idéntica a esa corrida.

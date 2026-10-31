@@ -2833,11 +2833,11 @@
   "ventilation_status": {
    "acid_to_ventilation_gain": "EXPLORATORY (per mEq/L); no value approved",
    "demand": "the oxygen demand over the patient's baseline demand (BASELINE_RELATIVE)",
-   "paco2_reference_mmhg": "COMMON_REFERENCE_PROVISIONAL (the profile's 40 mmHg); not approved",
+   "paco2_reference_mmhg": "COMMON_REFERENCE_PROVISIONAL (the profile's 40 mmHg); not approved. Here it is the PaCO2 at W = 1 (no burden, baseline demand, efficiency 1), not the arrival-PaCO2 fallback derived.arrival_paco2 gives it in P2K-2; the authored arrival PaCO2 only filters the arrival (+/- 3)",
    "tidal_volume": "IMPLICIT: no tidal-volume, dead-space, mechanics or fatigue state",
    "ventilation_efficiency": "STRUCTURAL_REFERENCE 1 for the GI cases; below 1 only in synthetic probes; not a universal constant"
   },
-  "verdict_rule": "Frozen. READY when every criterion holds: RR does not determine W (probe B, the static proof that W reads no rate, intrinsic RR or drive name, and the full-core recomputation with another drive gain); the intrinsic RR determines neither W nor the resting PaCO2 (probes C and H, question 1: 40 at every intrinsic RR, and the full-core recomputation with another intrinsic RR); lactate and D reach no RR or W term (probes E, F, the W channel); the arrival RR is reproduced (at least one RR-compatible candidate) and the arrival PaCO2 with one common ventilation gain (at least one joint candidate; none is a STOP); pH is coherent (derived everywhere, formula probe, every value within the plausible 6.8-7.8, the bank's reconstruction within 0.005); the trajectories are patient-like (W > 0 and PaCO2 > 0 wherever breathing; in every R4 combination RR stays at least 1 breath/min above intrinsic 15 min after haemostasis, and the haemostasis minute moves RR and PaCO2 no more than another minute); the factorization is valid (the core equals it, order independent); the upstream is unchanged (rows and states equal, the P2J-3 region, P2K-1 and P2K-2 reproduced, the default RR, the core files at their P2K-2 hashes); nothing is approved. Otherwise NOT_READY with the first failing criterion as the blocker. The acid burden is never required to rise.",
+  "verdict_rule": "Frozen. READY when every criterion holds: RR does not determine W (probes A, B, D, G, I and no pulse; the static proof that no assignment to a W-side name and no returned W-side field reads a rate, intrinsic RR or drive name; and the full-core recomputation with another drive gain); the intrinsic RR determines neither W nor the resting PaCO2 (probes C and H, question 1: 40 at every intrinsic RR, and the full-core recomputation with another intrinsic RR); lactate and D reach no RR or W term (probes E, F, the W channel); the arrival RR is reproduced (at least one RR-compatible candidate) and the arrival PaCO2 with one common ventilation gain (at least one joint candidate; none is a STOP); pH is coherent (derived by the bicarbonate relation: the formula probe, and the factorized pH equal to the core's in the validation; every value within the plausible 6.8-7.8; the bank's reconstruction within 0.005); the trajectories are patient-like (W > 0 and PaCO2 > 0 wherever breathing; in every R4 combination RR stays at least 1 breath/min above intrinsic 15 min after haemostasis, and the haemostasis minute moves RR and PaCO2 no more than another minute); the factorization is valid (the core equals it, order independent); the upstream is unchanged (rows and states equal, the P2J-3 region, P2K-1 and P2K-2 reproduced, the default RR, the core files at their P2K-2 hashes); nothing is approved. Otherwise NOT_READY with the first failing criterion as the blocker; an early stop evaluates only the criteria it reached and lists the others as not evaluated. The acid burden is never required to rise.",
   "w_forbidden": [
    "D",
    "W",
@@ -2862,6 +2862,16 @@
    "effective_ventilation",
    "paco2_from_ventilation"
   ],
+  "w_returned": [
+   "efficiency",
+   "recruitment",
+   "capacity",
+   "demand_ratio",
+   "ventilation",
+   "paco2_reference",
+   "paco2",
+   "ph"
+  ],
   "w_targets": [
    "demand_ratio",
    "recruitment",
@@ -2883,6 +2893,10 @@
    "gi_bleed_57m": 6,
    "gi_bleed_72f": 7
   },
+  "rr_w_crossed_only_for": [
+   "key question 3 (RR near intrinsic with PaCO2 near 40)",
+   "key question 6 (RR and PaCO2 directions)"
+  ],
   "ventilation_gains": 4
  },
  "envelope_request": [
@@ -2922,7 +2936,7 @@
   "keep the ventilation gain EXPLORATORY over its joint support, or adopt one (no value is proposed)",
   "the envelopes above, if READY; none is applied in P2K-3"
  ],
- "freeze_digest": "38e30b846a6647e9b759a06952322930eb22e62de8f521a86909055686b919da",
+ "freeze_digest": "23f1673fe24fe6a49a9fed13e60088eb05f5f15c8cf5eec2700618bca2a897e3",
  "identifiability": {
   "B": {
    "class": "NON_IDENTIFIABLE",
@@ -3334,6 +3348,7 @@
  "key_questions": {
   "1_resting_hypercapnia": {
    "all_reference": true,
+   "intrinsic_covered": true,
    "p2k2_over_the_same_rr_candidates": {
     "gi_bleed_57m": {
      "high": 73.47496090779701,
@@ -3350,25 +3365,55 @@
    },
    "p2k3": {
     "12": {
-     "0.03": 40.0,
-     "0.04": 40.0,
-     "0.05": 40.0,
-     "0.06": 40.0,
-     "0.08": 40.0
+     "0.03": [
+      40.0
+     ],
+     "0.04": [
+      40.0
+     ],
+     "0.05": [
+      40.0
+     ],
+     "0.06": [
+      40.0
+     ],
+     "0.08": [
+      40.0
+     ]
     },
     "16": {
-     "0.03": 40.0,
-     "0.04": 40.0,
-     "0.05": 40.0,
-     "0.06": 40.0,
-     "0.08": 40.0
+     "0.03": [
+      40.0
+     ],
+     "0.04": [
+      40.0
+     ],
+     "0.05": [
+      40.0
+     ],
+     "0.06": [
+      40.0
+     ],
+     "0.08": [
+      40.0
+     ]
     },
     "20": {
-     "0.03": 40.0,
-     "0.04": 40.0,
-     "0.05": 40.0,
-     "0.06": 40.0,
-     "0.08": 40.0
+     "0.03": [
+      40.0
+     ],
+     "0.04": [
+      40.0
+     ],
+     "0.05": [
+      40.0
+     ],
+     "0.06": [
+      40.0
+     ],
+     "0.08": [
+      40.0
+     ]
     }
    }
   },
@@ -43205,6 +43250,7 @@
   "intrinsic_alone_moves_no_w": true,
   "max_abs_diff": 0.0,
   "order_independent": true,
+  "pulse_equal": true,
   "rr_alone_moves_no_w": true,
   "rr_moved": true,
   "upstream_equal": true
@@ -43223,6 +43269,7 @@
    "upstream_unchanged": true
   },
   "failing": [],
+  "not_evaluated": [],
   "verdict": "RR_VENTILATION_DECISION_SURFACE_READY"
  },
  "w_inputs": {
@@ -43236,6 +43283,35 @@
    "paco2_from_ventilation": [
     "float",
     "reference",
+    "ventilation"
+   ],
+   "return.capacity": [
+    "capacity"
+   ],
+   "return.demand_ratio": [
+    "demand_ratio"
+   ],
+   "return.efficiency": [
+    "profile",
+    "ventilation_efficiency"
+   ],
+   "return.paco2": [
+    "paco2"
+   ],
+   "return.paco2_reference": [
+    "paco2_reference_mmhg",
+    "profile"
+   ],
+   "return.ph": [
+    "base",
+    "bicarbonate",
+    "carbonic_ph",
+    "paco2"
+   ],
+   "return.recruitment": [
+    "recruitment"
+   ],
+   "return.ventilation": [
     "ventilation"
    ],
    "ventilated_respiration.capacity": [
@@ -43288,6 +43364,16 @@
     "ventilation_recruitment"
    ]
   },
+  "returned_found": [
+   "capacity",
+   "demand_ratio",
+   "efficiency",
+   "paco2",
+   "paco2_reference",
+   "ph",
+   "recruitment",
+   "ventilation"
+  ],
   "targets_found": [
    "capacity",
    "demand_ratio",
