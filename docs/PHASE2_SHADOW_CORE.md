@@ -3432,3 +3432,39 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Revisión adversarial:** sin hallazgos de severidad alta; las correcciones son de documentos y pruebas (informe
   §17–§18). R3 y R4 no son idénticos a los 120 min (a demanda 1,1, algunos 57m sin hemostasia recuperan un déficit
   pequeño); varias comprobaciones congeladas no pueden fallar y se complementan con pruebas.
+
+## 47. P2K-2 · Carga ácida metabólica y núcleo de ventilación efectiva (2026-10-31)
+
+- **Encargo:** introducir un estado ácido-base causal, retirar el lactato como controlador de la FR, separar impulso,
+  FR y W, derivar PaCO2 y pH y preparar, sin filtrar, la superficie observable de la FR. Sólo sombra.
+- **Núcleo (desactivado por defecto: las tres ganancias en None):**
+  - `aux.metabolic_acid_burden`, con llegada max(0, 24 − HCO3) desde el HCO3 del banco, producción
+    `deficit_to_acid_gain` × déficit efectivo y aclaramiento de primer orden `acid_clearance_tau_min`; nunca
+    negativa y sin la regla de D de no repagar.
+  - Impulso = `acid_to_drive_gain` × carga; FR = intrínseca + S (1 − exp(−impulso / S)).
+  - W = eficiencia × FR / FR intrínseca / relación de demanda.
+  - PaCO2 = PaCO2 en reposo / W, anclada a la PaCO2 de autor (exacta en la llegada); pH = 6,1 + log10(HCO3 / (0,03
+    PaCO2)).
+  - La FR de llegada se informa (`respiratory_rate_decomposition`) y no se fuerza.
+  - La FR intrínseca y el gas de llegada son entradas candidatas de las anclas, fuera del registro de parámetros de
+    caso y de la migración.
+  - El perfil por defecto conserva la FR de P2K-1, y con ella el golden y los registros cerrados.
+- **Cierre de los paquetes anteriores:** la prueba AST (`acid_base.proofs`) muestra que los tres archivos del núcleo
+  son los de P2K-1 más las inserciones declaradas e inertes de P2K-2. Los congelamientos de P2I-2AJ a P2K-1 se
+  recalculan con los mapas de `acid_base` y sus registros no cambian.
+- **Candidatos predeclarados (EXPLORATORY):**
+  - FR intrínseca 12 / 16 / 20;
+  - ganancia de 1 a 4 (razón √2);
+  - B = k × τ de 13,4 / 19,4 / 28;
+  - τ de 60 / 120 / 240 min;
+  - eficiencia 1.
+- **Resultados:**
+  - 9 de 45 tríos compatibles en la llegada (± 3 rpm), en una cresta ganancia / FR intrínseca.
+  - Sondas A–H: todas como pide la docencia.
+  - 48 validaciones completas iguales a la reconstrucción y aguas arriba idénticas; perfil por defecto igual a P2K-1.
+  - Sin tratamiento la carga nunca baja con B = 28. Con B bajo baja al principio: es la bradipnea precoz de 72f,
+    ahora de origen ácido.
+  - Tras la reanimación la FR baja hacia la intrínseca sin normalizarse de golpe y la PaCO2 sube hacia la de reposo.
+  - Con W ∝ FR, la PaCO2 en reposo es eucápnica sólo con FR intrínseca ≈ 20; con 12–16 es de 44 a 74 mmHg.
+- **Veredicto: ACID_BASE_RR_STRUCTURE_READY_FOR_NUMERIC_FACULTY_CALIBRATION.** Nada aprobado; paquete de decisión
+  preparado sin filtrar. Decisiones pedidas en el informe `docs/revision/P2K2_CARGA_ACIDA_Y_VENTILACION.md` §13.

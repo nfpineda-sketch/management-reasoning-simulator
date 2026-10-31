@@ -311,3 +311,75 @@ def test_the_policy_approves_nothing_and_reads_no_legacy_rr():
     source = SOURCE.read_text(encoding="utf-8")
     for forbidden in ("family_engine", "legacy_adapter", "snapshot("):
         assert forbidden not in source
+
+
+# The record and the report ---------------------------------------------------------------------------------------------------
+
+RECORD = ROOT / "docs" / "revision" / "P2K2_acid_base.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2K2_CARGA_ACIDA_Y_VENTILACION.md"
+
+
+@pytest.fixture(scope="module")
+def record():
+    return json.loads(RECORD.read_text(encoding="utf-8"))
+
+
+def _json(value):
+    return json.loads(json.dumps(value, sort_keys=True, default=str))
+
+
+def test_the_record_comes_from_the_frozen_package_and_its_analytic_part_is_reproduced_live(record, probes):
+    assert record["freeze_digest"] == FROZEN_DIGEST and record["record"] == ab.P2K1_DIGEST
+    assert record["design"] == _json(ab.design()) and record["probes"] == _json(probes)
+    assert record["arrival_compatibility"] == _json(ab.arrival_compatibility())
+    assert record["authored_gas"] == _json({case: ab.authored_gas(case) for case in ab.CASES})
+    assert record["ph_reconstruction"] == _json({case: ab.ph_reconstruction(case) for case in ab.CASES})
+    assert record["exact_arrival_gains"] == _json(ab.exact_arrival_gains())
+    assert record["arrival_deficits"] == _json(ab.arrival_deficits())
+    assert record["identifiability"] == _json(ab.identifiability(ab.arrival_compatibility()))
+    assert record["proofs"] == _json(ab.proofs())
+
+
+def test_the_verdict_validation_and_non_regression_the_report_states(record):
+    assert record["verdict"]["verdict"] == ab.READY and not record["verdict"]["failing"]
+    assert all(record["verdict"]["checks"].values()) and set(record["verdict"]["checks"]) == set(ab.CRITERIA)
+    v = record["validation"]
+    assert v["compared"] == 48 and v["equal"] and v["upstream_equal"] and v["max_abs_diff"] == 0.0
+    assert record["p2k1_unchanged"] and all(record["pressure_tone_unchanged"].values())
+    assert record["rejections"] == {ab.ANALYTIC_REJECTION: 0, ab.SIMULATION_REJECTION: 0}
+    assert record["arrival_compatibility"]["count"] == 9 and record["arrival_compatibility"]["of"] == 45
+    q = record["key_questions"]
+    assert all(q["1_untreated_acid_and_drive"]["by_pair"][f"28/{tau:g}"]["true"] ==
+               q["1_untreated_acid_and_drive"]["by_pair"][f"28/{tau:g}"]["n"] > 0 for tau in ab.ACID_TAUS)
+    assert q["2_72f_early_dip"]["by_b"]["28"]["true"] == 0
+    assert q["2_72f_early_dip"]["by_b"]["13.4"]["true"] == q["2_72f_early_dip"]["by_b"]["13.4"]["n"]
+    r4 = q["3_post_resuscitation"]
+    assert r4["no_instant_normalization"]["true"] == r4["no_instant_normalization"]["n"] > 0
+    assert r4["haemostasis_step_vs_others"]["true"] == r4["haemostasis_step_vs_others"]["n"]
+    assert record["dependencies"]["multiplied"] == ["demand", "tone_gain"]
+    assert record["efficiency"]["cartesian_sweep"] is False and record["efficiency"]["legacy_read"] is False
+
+
+def test_the_resting_paco2_is_eucapnic_only_near_an_intrinsic_rr_of_20(record):
+    """The finding the report puts first: with W proportional to RR, the authored arrival (RR 26 / 24 at PaCO2 31 / 33)
+    implies a resting PaCO2 near 40 only at an intrinsic RR of 20; at 12 or 16 the resting PaCO2 is hypercapnic."""
+    gas = record["authored_gas"]
+    for row in record["arrival_compatibility"]["rows"]:
+        if not row["compatible"]:
+            continue
+        for case, intrinsic in row["intrinsic"].items():
+            rest = gas[case]["paco2"] * row["rr"][case] / intrinsic
+            assert math.isclose(rest, ab.resting_paco2(row["gain"], intrinsic, case))
+            assert (rest < 44.0) == (intrinsic == 20.0) or (intrinsic == 16.0 and 43.0 < rest < 44.0), (row, case)
+
+
+def test_the_document_is_generated_from_the_record():
+    from clinical_core import acid_base_report as rep
+    document = DOCUMENT.read_text(encoding="utf-8")
+    data = json.loads(RECORD.read_text(encoding="utf-8"))
+    rendered = document
+    for name, render in rep.RENDERERS.items():
+        rendered = rep.apply(rendered, name, render(data))
+    assert rendered == document, "the generated blocks are stale: regenerate the report"
+    assert "ACID_BASE_RR_STRUCTURE_READY_FOR_NUMERIC_FACULTY_CALIBRATION" in document
+    assert "## 13. Lo que se pide a la docencia" in document and "## 14. Limitaciones" in document
