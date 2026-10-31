@@ -49,6 +49,17 @@ def _w(state, anchors=vs.PROBE_ANCHORS, profile=vs.PROBE_PROFILE, gain=0.05):
 
 # The frozen package ---------------------------------------------------------------------------------------------------------
 
+def _freeze_digest_at_p2k3() -> str:
+    """ventilation_surface.freeze_digest's formula on the sources P2K-3 froze: P2K-4's module, added later, left out, and
+    the two tuple-only files at their P2K-3 hashes while only their tuples changed (ventilation_filter.p2k3_sources; the
+    tuple content is pinned in test_clinical_core_rr_audit)."""
+    from clinical_core import ventilation_filter as vf
+    text = json.dumps({"revision": vs.REVISION, "p2k2": hashlib.sha256(vs.P2K2_RECORD.read_bytes()).hexdigest(),
+                       "design": vs.design(), "sources": vf.p2k3_sources(bf.freeze_sources())}, sort_keys=True,
+                      default=str)
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
 def test_the_package_is_frozen():
     sources = bf.freeze_sources()
     assert set(vs.OWN) <= set(sources) and vs.REPORT not in sources
@@ -59,8 +70,10 @@ def test_the_package_is_frozen():
     # The closed P2K-2 record it builds on (its frozen digest, test_clinical_core_acid_base.FROZEN_DIGEST).
     assert vs.p2k2_record()["freeze_digest"] == vs.P2K2_DIGEST == \
         "7540ee76a681d272e8ac290781771d83d19c1562ea152209c88809aa4e8b710c"
+    # The recomputation is ventilation_surface.freeze_digest's own formula (its source unchanged since P2K-3).
+    assert '"sources": bf.freeze_sources()}, sort_keys=True, default=str)' in inspect.getsource(vs.freeze_digest)
     if FROZEN_DIGEST is not None:
-        assert vs.freeze_digest() == FROZEN_DIGEST, "a source, a rule or a support changed after the freeze"
+        assert _freeze_digest_at_p2k3() == FROZEN_DIGEST, "a source, a rule or a support changed after the freeze"
 
 
 def test_the_core_files_are_untouched_by_p2k3():
@@ -73,7 +86,9 @@ def test_the_core_files_are_untouched_by_p2k3():
                     for alias in node.names} | {node.module or "" for node in ast.walk(tree)
                                                 if isinstance(node, ast.ImportFrom)}
         if "ventilation" in imported:
-            assert path.name in ("ventilation_surface.py", "ventilation_surface_report.py"), path.name
+            # P2K-4's filter and its report read the module too (analysis only; no core step does).
+            assert path.name in ("ventilation_surface.py", "ventilation_surface_report.py", "ventilation_filter.py",
+                                 "ventilation_filter_report.py"), path.name
 
 
 def test_the_faculty_decisions_and_the_carried_uncertainty_are_recorded():
