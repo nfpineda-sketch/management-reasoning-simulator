@@ -304,8 +304,9 @@ def test_p2j4_changed_only_the_declared_statements_of_derived():
     assert mutated != raw and br.inside_digest(ab.stripped_text(br.DERIVED, mutated), "CoreProfile") != \
         br.INSIDE_AT_P2J3["CoreProfile"]
     from test_clinical_core_vascular_tone import P2J2_SOURCES
-    assert all(ab.proofs().values()) and {k: ab.CORE_AT_P2K1.get(k, hashlib.sha256((ROOT / k).read_bytes()).hexdigest())
-                                          for k in P2J2_SOURCES} == P2J2_SOURCES
+    assert all(ab.proofs().values())
+    assert {k: (ab.CORE_AT_P2K1[k] if k in ab.CORE_FILES and ab.proved(k)
+                else hashlib.sha256((ROOT / k).read_bytes()).hexdigest()) for k in P2J2_SOURCES} == P2J2_SOURCES
     for relative in ("clinical_core/integration.py", "clinical_core/shadow.py", "clinical_core/state.py"):
         assert relative not in br.P2J4_CHANGES
 

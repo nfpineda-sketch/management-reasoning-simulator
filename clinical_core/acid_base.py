@@ -136,10 +136,13 @@ SEMANTICS = {
     "rr": "RR = intrinsic + S (1 - exp(-drive / S)), S = rr_drive_saturation (25, structural); rr_max a safety guard "
           "only; RR = 0 without a pulse",
     "w": "W = efficiency x (RR / intrinsic RR) / (demand / baseline demand): effective alveolar ventilation over the "
-         "ventilation that meets the current CO2 production at the patient's eupnoea; 1 at the intrinsic RR with no "
-         "drive",
-    "paco2": "PaCO2 = PaCO2_rest / W, PaCO2_rest = arrival PaCO2 x arrival W (the model's arrival RR): exact at minute "
-             "0 by construction; PaCO2_rest is implied by the anchoring, not a parameter",
+         "ventilation of the patient's eupnoea at the current CO2 production; 1 at the intrinsic RR with no drive and "
+         "mechanics preserved. 'Need' is that eupnoeic ventilation: it is eucapnic only when the implied resting PaCO2 "
+         "is (adversarial review)",
+    "paco2": "PaCO2 = PaCO2_rest / W, PaCO2_rest = arrival PaCO2 x the arrival W at the reference efficiency 1 (the "
+             "model's arrival RR): exact at minute 0 when the arrival efficiency is the reference (the GI cases); a lower "
+             "efficiency lowers W and raises PaCO2 above that anchor (review: a constant efficiency used on both sides "
+             "cancelled); PaCO2_rest is implied by the anchoring, not a parameter",
     "ph": "pH = 6.1 + log10(HCO3 / (0.03 PaCO2)), the case bank's own constants (clinical_cases._gas)",
     "w_channel": "the W channel (C7) is read by no candidate term: RESERVED for future families; the default profile "
                  "keeps the P2K-1 RR for the frozen records",
@@ -384,7 +387,8 @@ def probes() -> dict:
         "C": {"result": c, "rr_unchanged": c["rr"] == base["rr"] and c["core_rr"] == base["core_rr"]},
         "D": {"start": start, "end": d_end, "burden_falls": d_end["burden"] < start["burden"],
               "rr_falls": d_end["rr"] < start["rr"], "lactate_stays_high": d_end["lactate"] > base["lactate"] + 2.0},
-        "E1": {"result": e1, "w_at_most_1": e1["w"] <= 1.0, "rr_above_intrinsic": e1["rr"] > intrinsic},
+        "E1": {"result": e1, "w_at_most_1": e1["w"] <= 1.0, "rr_above_intrinsic": e1["rr"] > intrinsic,
+               "paco2_above_arrival": e1["paco2"] > PROBE_GAS["arrival_paco2"]},
         "E2": {"course": course, "paco2_rises": course[-1]["paco2"] > course[0]["paco2"],
                "rr_rises": course[-1]["rr"] > course[0]["rr"], "w_falls_below_1": course[-1]["w"] < 1.0},
         "F": {"result": f, "w_rises": f["w"] > base["w"], "paco2_falls": f["paco2"] < base["paco2"],
@@ -635,7 +639,7 @@ def validate(region: dict, store: dict) -> dict:
     without it: the burden, RR, W, PaCO2 and pH equal the factorized reconstruction, and every upstream row (output,
     pressure, tone, delivery, demand, D, lactate, HR, blood) equals the run without the candidate."""
     gain, i57, i72, b, tau = VALIDATION_CANDIDATE
-    compared, equal, upstream_equal, max_diff = 0, True, True, 0.0
+    compared, equal, upstream_equal, max_diff, default_rr = 0, True, True, 0.0, True
     for (tgain, factor, name, case), seen in sorted(store.items(), key=lambda kv: str(kv[0])):
         if not seen:
             continue
@@ -649,6 +653,9 @@ def validate(region: dict, store: dict) -> dict:
                            {**tone, "deficit_to_acid_gain": b / tau, "acid_clearance_tau_min": tau,
                             "acid_to_drive_gain": gain, "ventilation_efficiency": EFFICIENCY}, gas)
         compared += 1
+        # The default profile's RR through derive equals the P2K-1 RR of the same trajectory (review: p2k1_unchanged
+        # reads respiratory_rate directly, so derive itself is compared here).
+        default_rr = default_rr and [row["rr"] for row in plain["rows"]] == traj["rr"][:len(plain["rows"])]
         series = burden_series(traj["deficit"], arrival_burden(case), b, tau)
         rest = resting_paco2(gain, intrinsic, case)
         for m, state in enumerate(live["states"]):
@@ -668,7 +675,7 @@ def validate(region: dict, store: dict) -> dict:
             _upstream(s) == _upstream(t) for s, t in zip(plain["states"], live["states"]))
         equal = equal and len(series) >= len(live["states"])
     return {"compared": compared, "equal": equal and max_diff <= 1e-9, "max_abs_diff": max_diff,
-            "upstream_equal": upstream_equal, "candidate": list(VALIDATION_CANDIDATE)}
+            "upstream_equal": upstream_equal, "default_rr_equal": default_rr, "candidate": list(VALIDATION_CANDIDATE)}
 
 
 def p2k1_unchanged(store: dict) -> bool:
@@ -761,8 +768,10 @@ def identifiability(compat: dict) -> dict:
         "acid_clearance_tau": {"class": "NON_IDENTIFIABLE", "why": "no authored observation after arrival"},
         "acid_burden": {"class": "WELL_CONSTRAINED", "why": "at arrival, exact from the authored HCO3; after arrival it "
                                                             "follows (B, tau), which nothing authored reads"},
-        "w_efficiency": {"class": "PARTIALLY_CONSTRAINED", "why": "efficiency fixed at 1 (structural); W's absolute "
-                                                                 "scale and the resting PaCO2 follow the intrinsic RR",
+        "w_efficiency": {"class": "NON_IDENTIFIABLE", "why": "efficiency fixed at the structural reference 1 and read by "
+                                                            "no authored observation (review: the frozen rule); W's "
+                                                            "absolute scale and the resting PaCO2 follow the intrinsic "
+                                                            "RR, itself constrained only jointly with the gain",
                          "resting_paco2": rest},
         "rule": IDENTIFIABILITY_RULE}
 
@@ -809,7 +818,7 @@ P2K2_NAMES = frozenset({
     "CO2_SOLUBILITY", "acid_base_active", "arrival_bicarbonate", "arrival_acid_burden", "arrival_paco2",
     "intrinsic_respiratory_rate", "acid_burden_after_minute", "respiratory_drive", "rate_from_drive",
     "alveolar_ventilation", "bicarbonate", "carbonic_ph", "arrival_alveolar_ventilation", "Respiration", "respiration",
-    "respiratory_rate_decomposition", "_acid_burden"})
+    "respiratory_rate_decomposition", "_acid_burden", "REFERENCE_VENTILATION_EFFICIENCY"})
 #: The statements that existed before P2K-2 and that it changed, only by inserting what names P2K2_NAMES.
 P2K2_CHANGED = {DERIVED: ("CoreProfile", "PARAMETERS", "arrival_state", "check_arrival_reconstruction", "derive"),
                 INTEGRATION: ("from .derived", "step"),
@@ -818,9 +827,14 @@ P2K2_CHANGED = {DERIVED: ("CoreProfile", "PARAMETERS", "arrival_state", "check_a
 P2K2_NEW = {DERIVED: ("ACID_BASE", "CARBONIC_PK", "CO2_SOLUBILITY", "acid_base_active", "arrival_bicarbonate",
                       "arrival_acid_burden", "arrival_paco2", "intrinsic_respiratory_rate", "acid_burden_after_minute",
                       "respiratory_drive", "rate_from_drive", "alveolar_ventilation", "bicarbonate", "carbonic_ph",
-                      "arrival_alveolar_ventilation", "Respiration", "respiration", "respiratory_rate_decomposition"),
+                      "arrival_alveolar_ventilation", "Respiration", "respiration", "respiratory_rate_decomposition",
+                      "REFERENCE_VENTILATION_EFFICIENCY"),
             INTEGRATION: ("_acid_burden",), STATE: ()}
 P2K2_KEYED = {DERIVED: ("AUXILIARY_SOURCES", "metabolic_acid_burden")}
+#: What P2K-2 inserted in each file, its AST digest (``insertions_digest``) as frozen after the adversarial review.
+INSERTIONS_AT_P2K2 = {DERIVED: "f24467d418473740459bdec14de1c2d72046f1db65a98301cb4734d7a81e75a6",
+                      INTEGRATION: "37f5b725a4de9cca5e417fb5fbf5b75b71f4d740b28c6119d5658f7cd5c31da6",
+                      STATE: "a40b09886a578f14201d9f54ae96d8d52eec57f677fb2cabd7a3718b211c1240"}
 #: The three files at P2K-1 (81ed6b8, P2J-4's core): their hashes and the AST digest of every top-level statement.
 CORE_AT_P2K1 = dict(ra.CORE_AT_P2J4)
 WHOLE_AT_P2K1 = {DERIVED: "9403bacd4e6ca4a1e9e777e03782e45d35c5147643c0ff83dafc1527b8a64d63",
@@ -847,9 +861,13 @@ class StripP2K2(ast.NodeTransformer):
     def generic_visit(self, node):
         # Decide on the children as they are, then descend into what is kept.
         if isinstance(node, ast.Dict):
-            pairs = [(k, v) for k, v in zip(node.keys, node.values)
-                     if not (isinstance(k, ast.Constant) and k.value in P2K2_NAMES)]
-            node.keys, node.values = [k for k, _ in pairs], [v for _, v in pairs]
+            pairs, kept = list(zip(node.keys, node.values)), []
+            for k, v in pairs:
+                if isinstance(k, ast.Constant) and k.value in P2K2_NAMES:
+                    self.dropped.append(ast.dump(k) + ast.dump(v))
+                else:
+                    kept.append((k, v))
+            node.keys, node.values = [k for k, _ in kept], [v for _, v in kept]
         else:
             for field, value in ast.iter_fields(node):
                 if isinstance(value, list):
@@ -857,20 +875,25 @@ class StripP2K2(ast.NodeTransformer):
         return super().generic_visit(node)
 
     def __init__(self):
-        self.uninert = []
+        self.uninert, self.dropped = [], []
 
     def _dropped(self, v) -> bool:
         # An inserted check names a P2K-2 field or function in its test; a check that existed before and only gained
-        # names in a literal set or tuple keeps its place (those names are stripped as constants).
+        # names in a literal set or tuple keeps its place (those names are stripped as constants). Everything dropped is
+        # recorded, so its content is pinned (INSERTIONS_AT_P2K2) and cannot change unproven.
         inserted_if = isinstance(v, ast.If) and _mentions(_ConstantsOnly().visit(copy.deepcopy(v.test)))
         if inserted_if or (isinstance(v, ast.For) and _mentions(v.iter)):
             if not _inert(v):
                 self.uninert.append(ast.dump(v)[:120])
+            self.dropped.append(ast.dump(v))
             return True
-        return ((isinstance(v, ast.AnnAssign) and isinstance(v.target, ast.Name) and v.target.id in P2K2_NAMES)
-                or (isinstance(v, ast.keyword) and v.arg in P2K2_NAMES)
-                or (isinstance(v, ast.alias) and v.name in P2K2_NAMES)
-                or (isinstance(v, ast.Constant) and isinstance(v.value, str) and v.value in P2K2_NAMES))
+        dropped = ((isinstance(v, ast.AnnAssign) and isinstance(v.target, ast.Name) and v.target.id in P2K2_NAMES)
+                   or (isinstance(v, ast.keyword) and v.arg in P2K2_NAMES)
+                   or (isinstance(v, ast.alias) and v.name in P2K2_NAMES)
+                   or (isinstance(v, ast.Constant) and isinstance(v.value, str) and v.value in P2K2_NAMES))
+        if dropped:
+            self.dropped.append(ast.dump(v))
+        return dropped
 
 
 class _ConstantsOnly(ast.NodeTransformer):
@@ -884,25 +907,30 @@ class _ConstantsOnly(ast.NodeTransformer):
         return super().generic_visit(node)
 
 
+#: The only guarded statements P2K-2 may insert into an existing statement, under exactly ``acid_base_active(profile)``.
+GUARD = ast.dump(ast.parse("acid_base_active(profile)", mode="eval").body)
+GUARDED = {ast.dump(ast.parse(s).body[0]) for s in ("rr = respiration(state, anchors, profile).respiratory_rate",
+                                                    "expected.pop('respiratory_rate')")}
+
+
+def _raise_only(node) -> bool:
+    return not node.orelse and all(isinstance(item, ast.Raise) or (isinstance(item, ast.If) and _raise_only(item))
+                                   for item in node.body)
+
+
 def _inert(node) -> bool:
-    """What an inserted check or loop may do inside a statement that existed before P2K-2: raise, set the derived RR
-    (``rr``) or drop the RR reconstruction requirement (``expected.pop``); a loop holds only such checks, no else
-    branch. Anything else would be logic hidden from the proof."""
-    if getattr(node, "orelse", None):
-        return False
-    for item in node.body:
-        if isinstance(item, ast.Raise):
-            continue
-        if isinstance(item, ast.Assign) and [type(t) for t in item.targets] == [ast.Name] and item.targets[0].id == "rr":
-            continue
-        if isinstance(item, ast.Expr) and isinstance(item.value, ast.Call) and isinstance(item.value.func, ast.Attribute) \
-                and isinstance(item.value.func.value, ast.Name) and item.value.func.value.id == "expected" \
-                and item.value.func.attr == "pop":
-            continue
-        if isinstance(item, ast.If) and _inert(item):
-            continue
-        return False
-    return True
+    """What an inserted check or loop may be inside a statement that existed before P2K-2 (adversarial review): a check
+    that only raises; a check whose test is exactly ``acid_base_active(profile)`` and whose body is exactly one of the
+    GUARDED statements; a loop over a literal tuple of P2K-2 names holding only raising checks. Anything else would be
+    logic hidden from the proof."""
+    if isinstance(node, ast.For):
+        return (isinstance(node.iter, ast.Tuple) and not node.orelse and all(
+            isinstance(e, ast.Constant) and e.value in P2K2_NAMES for e in node.iter.elts)
+            and all(isinstance(item, ast.If) and _raise_only(item) for item in node.body))
+    if _raise_only(node):
+        return True
+    return (ast.dump(node.test) == GUARD and not node.orelse and len(node.body) == 1
+            and ast.dump(node.body[0]) in GUARDED)
 
 
 def _keys(index: int, node) -> set:
@@ -929,18 +957,25 @@ def _keyed(relative: str, node) -> bool:
 
 def _strip(relative: str, text: str | None = None) -> tuple:
     tree = ast.parse(text if text is not None else vt._live(relative))
-    out, uninert = [], []
+    out, uninert, dropped = [], [], []
     for index, node in enumerate(tree.body):
         keys = _keys(index, node)
         if keys & set(P2K2_CHANGED.get(relative, ())):
             stripper = StripP2K2()
             out.append(stripper.visit(node))
             uninert.extend(stripper.uninert)
+            dropped.extend(stripper.dropped)
         elif (keys and keys <= set(P2K2_NEW.get(relative, ()))) or _keyed(relative, node):
-            continue
+            dropped.append(ast.dump(node))
         else:
             out.append(node)
-    return out, uninert
+    return out, uninert, hashlib.sha256("\n".join(dropped).encode("utf-8")).hexdigest()
+
+
+def insertions_digest(relative: str, text: str | None = None) -> str:
+    """The AST digest of everything P2K-2 put in the file: its new statements, its fields with their defaults, its
+    checks, entries, keywords and imported names, in order."""
+    return _strip(relative, text)[2]
 
 
 def stripped_body(relative: str, text: str | None = None) -> list:
@@ -962,9 +997,10 @@ def body_digest(body: list, changed=()) -> str:
 
 
 def proved(relative: str) -> bool:
-    """The live file is the P2K-1 file with only P2K-2's declared insertions, every inserted check inert."""
-    body, uninert = _strip(relative)
-    return not uninert and body_digest(body) == WHOLE_AT_P2K1[relative]
+    """The live file is the P2K-1 file plus exactly P2K-2's frozen insertions (their AST digest pinned), every inserted
+    check inert: nothing outside them changed, and they are what was frozen and evaluated."""
+    body, uninert, inserted = _strip(relative)
+    return not uninert and body_digest(body) == WHOLE_AT_P2K1[relative] and inserted == INSERTIONS_AT_P2K2[relative]
 
 
 def stripped_text(relative: str, text: str | None = None) -> str:
@@ -1113,18 +1149,19 @@ def run(progress=None, map_=map) -> dict:
             "acid_burden_causal": probes_["A"]["drive_rises"] and probes_["A"]["rr_rises"],
             "lactate_retired": probes_["B"]["rr_unchanged"] and probes_["D"]["rr_falls"],
             "d_not_direct": probes_["C"]["rr_unchanged"],
-            "distinct_drive_rr_w": probes_["E1"]["w_at_most_1"] and probes_["F"]["rr_unchanged"]
-            and probes_["W_channel"]["rr_unchanged"],
+            "distinct_drive_rr_w": probes_["E1"]["w_at_most_1"] and probes_["E1"]["paco2_above_arrival"]
+            and probes_["F"]["rr_unchanged"] and probes_["F"]["w_rises"] and probes_["W_channel"]["rr_unchanged"],
             "paco2_ph_coherent": probes_["F"]["paco2_falls"] and probes_["G"]["paco2_rises"]
             and probes_["H"]["ph_formula"] and probes_["H"]["more_acid_lower_ph"] and probes_["H"]["arrival_exact"]
             and all(abs(ph_reconstruction(case)["error"]) <= 0.005 for case in CASES),
-            "rr_w_dissociation": probes_["E1"]["w_at_most_1"] and probes_["E2"]["paco2_rises"],
+            "rr_w_dissociation": probes_["E1"]["w_at_most_1"] and probes_["E1"]["paco2_above_arrival"]
+            and probes_["E1"]["rr_above_intrinsic"] and probes_["E2"]["paco2_rises"],
             "patient_like": any(v["n"] and v["true"] == v["n"] for v in r1.values())
             and r4["no_instant_normalization"]["n"] > 0
             and r4["no_instant_normalization"]["true"] == r4["no_instant_normalization"]["n"]
             and r4["haemostasis_step_vs_others"]["true"] == r4["haemostasis_step_vs_others"]["n"],
             "no_upstream_regression": validation["equal"] and validation["upstream_equal"]
-            and all(region["unchanged"].values()) and p2k1_unchanged(store),
+            and validation["default_rr_equal"] and all(region["unchanged"].values()) and p2k1_unchanged(store),
             "bounded_surface": compat["count"] > 0,
             "nothing_approved": True}
         out.update({

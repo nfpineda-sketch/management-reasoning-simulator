@@ -581,20 +581,27 @@ def carbonic_ph(hco3: float, paco2: float) -> float:
     return CARBONIC_PK + math.log10(hco3 / (CO2_SOLUBILITY * paco2))
 
 
+#: The ventilation efficiency the authored arrival PaCO2 is read at: the structural reference, mechanics preserved.
+REFERENCE_VENTILATION_EFFICIENCY = 1.0
+
+
 def arrival_alveolar_ventilation(anchors: Anchors, profile: CoreProfile) -> float:
-    """The effective ventilation the arrival state derives (the model's arrival RR, not the authored one)."""
+    """The effective ventilation of the arrival state (the model's arrival RR, not the authored one) at the reference
+    efficiency: the authored arrival PaCO2 is read with mechanics preserved, so a lower efficiency is a lower W and a
+    higher PaCO2 than that anchor, never absorbed by it (adversarial review of P2K-2)."""
     intrinsic = intrinsic_respiratory_rate(anchors)
     rate = rate_from_drive(respiratory_drive(arrival_acid_burden(anchors, profile), profile), intrinsic, profile)
-    return alveolar_ventilation(rate, intrinsic, profile.ventilation_efficiency, 1.0)
+    return alveolar_ventilation(rate, intrinsic, REFERENCE_VENTILATION_EFFICIENCY, 1.0)
 
 
 @dataclass(frozen=True)
 class Respiration:
     """One minute of the P2K-2 respiratory physiology: drive, RR and effective ventilation are three quantities.
 
-    ``ventilation`` is the effective alveolar ventilation relative to need (1 matches it). ``resting_paco2`` is the
-    PaCO2 the model implies at ventilation 1: the arrival PaCO2 times the arrival ventilation (anchored, not a
-    parameter). PaCO2 and pH are None without breathing."""
+    ``ventilation`` is the effective alveolar ventilation relative to need (1: the patient's eupnoea at the intrinsic RR
+    with mechanics preserved). ``resting_paco2`` is the PaCO2 the model implies at ventilation 1: the arrival PaCO2 times
+    the arrival ventilation at the reference efficiency (anchored, not a parameter; eucapnic only when the authored
+    arrival makes it so). PaCO2 and pH are None without breathing."""
 
     intrinsic_rr: float
     acid_burden: float

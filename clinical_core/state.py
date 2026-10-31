@@ -402,8 +402,8 @@ class Anchors:
         if self.reference_preload_fraction is not None and not 0.0 < self.reference_preload_fraction < 1.0:
             raise CoreInvariantError("the reference preload fraction is strictly between 0 and 1")
         for name in ("intrinsic_respiratory_rate", "arrival_bicarbonate", "arrival_paco2"):
-            if getattr(self, name) is not None and not getattr(self, name) > 0.0:
-                raise CoreInvariantError(f"{name} is positive when declared (P2K-2)")
+            if getattr(self, name) is not None and not (math.isfinite(getattr(self, name)) and getattr(self, name) > 0.0):
+                raise CoreInvariantError(f"{name} is finite and positive when declared (P2K-2)")
         if not isinstance(self.rhythm, RhythmState):
             raise CoreInvariantError("the arrival rhythm is a RhythmState")
         if not self.rhythm.pulse_present:

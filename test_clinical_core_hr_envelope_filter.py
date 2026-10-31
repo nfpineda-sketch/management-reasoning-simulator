@@ -195,7 +195,9 @@ def test_the_reuse_guards_and_the_arrival_pools_hold_on_the_committed_inputs():
     # pin reads their P2K-1 hashes while that proof holds.
     from clinical_core import acid_base as _ab
     assert all(_ab.proofs().values())
-    assert {k: _ab.CORE_AT_P2K1.get(k, hashlib.sha256((ROOT / k).read_bytes()).hexdigest()) for k in P2J2_SOURCES} == \
+    assert {
+        k: (_ab.CORE_AT_P2K1[k] if k in _ab.CORE_FILES and _ab.proved(k)
+            else hashlib.sha256((ROOT / k).read_bytes()).hexdigest()) for k in P2J2_SOURCES} == \
         P2J2_SOURCES
     sources = {k: v for k, v in bf.freeze_sources().items() if k not in hf.TUPLE_ONLY + hf.OWN + LATER_MODULES}
     from clinical_core import vascular_tone as vt

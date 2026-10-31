@@ -129,8 +129,9 @@ def test_p2j1_changed_only_the_declared_statements_of_derived_and_shadow():
     # The AST proof alone can be bypassed by a new top-level statement that names a declared one (adversarial review):
     # the closed packages' guards also pin both files as P2J-1 left them.
     from test_clinical_core_vascular_tone import P2J2_SOURCES
-    assert all(ab.proofs().values()) and {k: ab.CORE_AT_P2K1.get(k, hashlib.sha256((ROOT / k).read_bytes()).hexdigest())
-                                          for k in P2J2_SOURCES} == P2J2_SOURCES
+    assert all(ab.proofs().values())
+    assert {k: (ab.CORE_AT_P2K1[k] if k in ab.CORE_FILES and ab.proved(k)
+                else hashlib.sha256((ROOT / k).read_bytes()).hexdigest()) for k in P2J2_SOURCES} == P2J2_SOURCES
     sources = {pt.DERIVED: "live", pt.SHADOW: "live", "clinical_core/state.py": "s"}
     assert ab.p2i2ak_sources(sources) == {pt.DERIVED: pt.P2J1_CHANGES[pt.DERIVED]["sha_at_p2i2ak"],
                                           pt.SHADOW: pt.P2J1_CHANGES[pt.SHADOW]["sha_at_p2i2ak"],

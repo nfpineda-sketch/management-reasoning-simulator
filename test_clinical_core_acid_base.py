@@ -32,7 +32,7 @@ SOURCE = ROOT / "clinical_core" / "acid_base.py"
 #: The P2K-2 freeze: the faculty decisions, the semantics, the predeclared candidates and their rules, the probes, the
 #: reconstruction, identifiability and verdict rules, the AST proof and every clinical_core source but the downstream
 #: reports, committed before any clinical respiratory trajectory was read.
-FROZEN_DIGEST = "23aa0a38ccecac0284f14e6ef46b81e49da4c0bb6510b65e99372a3d79ae1b22"
+FROZEN_DIGEST = "7540ee76a681d272e8ac290781771d83d19c1562ea152209c88809aa4e8b710c"
 C57, C72 = ab.C57, ab.C72
 GAINS = ("deficit_to_acid_gain", "acid_clearance_tau_min", "acid_to_drive_gain")
 
@@ -104,8 +104,11 @@ def test_the_new_case_parameters_and_the_auxiliary_burden_are_declared():
         AuxiliaryState(metabolic_acid_burden=-0.1)
     with pytest.raises(CoreInvariantError):
         replace(ab.PROBE_ANCHORS, arrival_paco2=0.0)
-    with pytest.raises(CoreInvariantError):
-        replace(vt.NEUTRAL, intrinsic_respiratory_rate=-1.0)
+    for bad in (-1.0, 0.0, math.inf, math.nan):
+        with pytest.raises(CoreInvariantError):
+            replace(vt.NEUTRAL, intrinsic_respiratory_rate=bad)
+        with pytest.raises(CoreInvariantError):
+            replace(vt.NEUTRAL, arrival_paco2=bad)
 
 
 def test_the_arrival_burden_comes_from_the_bicarbonate_never_the_lactate():
@@ -170,7 +173,14 @@ def test_the_candidate_rr_reads_the_burden_only(probes):
 def test_drive_rr_and_w_are_three_quantities(probes):
     r = respiration(ab._probe_state(8.0), ab.PROBE_ANCHORS, ab.PROBE_PROFILE)
     assert r.drive != r.respiratory_rate != r.ventilation
-    assert probes["E1"]["w_at_most_1"] and probes["E1"]["rr_above_intrinsic"]
+    assert probes["E1"]["w_at_most_1"] and probes["E1"]["rr_above_intrinsic"] and probes["E1"]["paco2_above_arrival"]
+    # Review: the efficiency acts in the core (the arrival anchor is read at the reference efficiency, so a constant
+    # efficiency does not cancel): at the same burden, a lower efficiency is a lower W, a higher PaCO2, a lower pH.
+    state = ab._probe_state(8.0)
+    full, half = (respiration(state, ab.PROBE_ANCHORS, replace(ab.PROBE_PROFILE, ventilation_efficiency=e))
+                  for e in (1.0, 0.5))
+    assert full.respiratory_rate == half.respiratory_rate and math.isclose(half.ventilation, full.ventilation / 2)
+    assert math.isclose(half.paco2, 2 * full.paco2) and half.ph < full.ph and half.resting_paco2 == full.resting_paco2
     assert probes["E2"]["paco2_rises"] and probes["E2"]["rr_rises"] and probes["E2"]["w_falls_below_1"]
     assert probes["F"]["w_rises"] and probes["F"]["rr_unchanged"] and probes["F"]["paco2_falls"]
     assert probes["G"]["w_falls"] and probes["G"]["paco2_rises"]
@@ -213,7 +223,8 @@ def test_the_arrival_rr_is_reported_not_forced():
     assert split["model_rr"] != split["authored_rr"] and math.isclose(split["mismatch"], split["model_rr"] - 24.0)
     view = dv.check_arrival_reconstruction(anchors, p)
     assert view.respiratory_rate == split["model_rr"]
-    # Off, the P2K-1 RR still reproduces the authored arrival RR exactly, and the check still requires it.
+    # Off, the P2K-1 RR still reproduces the authored arrival RR exactly; the requirement is dropped only under exactly
+    # acid_base_active(profile), which the AST proof pins (test_the_proof_rejects_the_reviews_mutations).
     off = replace(DEFAULT_PROFILE, oxygen_extraction_reserve=ab.RESERVE)
     assert dv.check_arrival_reconstruction(anchors, off).respiratory_rate == 24.0
     assert "expected.pop(\"respiratory_rate\")" in inspect.getsource(dv.check_arrival_reconstruction)
@@ -274,6 +285,43 @@ def test_p2k2_changed_the_core_only_by_its_declared_inert_insertions():
     mutated = state.replace('"arrival_delivery_ratio": 1.0, "reference_preload_fraction": None}',
                             '"arrival_delivery_ratio": 0.9, "reference_preload_fraction": None}')
     assert mutated != state and ab.body_digest(ab.stripped_body(ab.STATE, mutated)) != ab.WHOLE_AT_P2K1[ab.STATE]
+
+
+def _proved_text(relative, text):
+    body, uninert, inserted = ab._strip(relative, text)
+    return not uninert and ab.body_digest(body) == ab.WHOLE_AT_P2K1[relative] and inserted == \
+        ab.INSERTIONS_AT_P2K2[relative]
+
+
+#: The adversarial review's mutations (each changed the default RR or a guarantee and passed the first proof), and one
+#: more: every one must fail the proof now.
+MUTATIONS = (
+    ("    deficit_to_acid_gain: float | None = None", "    deficit_to_acid_gain: float | None = 0.16"),
+    ("    if acid_base_active(profile):\n        # P2K-2: the candidate physiology replaces",
+     "    if acid_base_active(profile) or lactate > 2.0:\n        # P2K-2: the candidate physiology replaces"),
+    ("    if acid_base_active(profile):\n        # P2K-2: the arrival RR is",
+     "    if acid_base_active(profile) or True:\n        # P2K-2: the arrival RR is"),
+    ("    return profile.acid_to_drive_gain is not None", "    return True"),
+    ("CARBONIC_PK = 6.1", "CARBONIC_PK = (globals().update(x=1), 6.1)[1]"),
+    ("        rr = respiration(state, anchors, profile).respiratory_rate", "        rr = 30.0"),
+    ("REFERENCE_VENTILATION_EFFICIENCY = 1.0", "REFERENCE_VENTILATION_EFFICIENCY = 0.5"),
+)
+
+
+def test_the_proof_rejects_the_reviews_mutations():
+    live = vt._live(ab.DERIVED)
+    assert _proved_text(ab.DERIVED, live)
+    for old, new in MUTATIONS:
+        mutated = live.replace(old, new)
+        assert mutated != live, old
+        assert not _proved_text(ab.DERIVED, mutated), old
+    state = vt._live(ab.STATE)
+    mutated = state.replace("    metabolic_acid_burden: float = 0.0", "    metabolic_acid_burden: float = 1.0")
+    assert mutated != state and not _proved_text(ab.STATE, mutated)
+    integration_text = vt._live(ab.INTEGRATION)
+    mutated = integration_text.replace("    if not acid_base_active(profile):\n        return state.aux.metabolic_acid_burden",
+                                       "    if not acid_base_active(profile):\n        return 1.0")
+    assert mutated != integration_text and not _proved_text(ab.INTEGRATION, mutated)
 
 
 def test_the_closed_packages_see_the_core_at_their_own_hashes_only_while_proven():

@@ -249,8 +249,9 @@ def test_p2j2_changed_only_the_declared_statements():
         vt.P2J2_CHANGES[vt.INTEGRATION]["outside_p2j1"]
     for relative, item in vt.TUPLE_CHANGES.items():
         assert vt.outside_digest(vt._live(relative), item["changed"]) == item["outside_p2j1"]
-    assert all(ab.proofs().values()) and {k: ab.CORE_AT_P2K1.get(k, hashlib.sha256((ROOT / k).read_bytes()).hexdigest())
-                                          for k in P2J2_SOURCES} == P2J2_SOURCES
+    assert all(ab.proofs().values())
+    assert {k: (ab.CORE_AT_P2K1[k] if k in ab.CORE_FILES and ab.proved(k)
+                else hashlib.sha256((ROOT / k).read_bytes()).hexdigest()) for k in P2J2_SOURCES} == P2J2_SOURCES
     for name in ("deficit_to_tone_gain",):
         assert name in {f.name for f in __import__("dataclasses").fields(CoreProfile)}
 
