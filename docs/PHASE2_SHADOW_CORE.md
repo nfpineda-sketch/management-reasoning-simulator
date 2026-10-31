@@ -3416,8 +3416,10 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - W es una construcción mixta, sin escritor GI ni salida de ventilación efectiva.
   - pH, pCO2 y HCO3 son sólo observaciones de la gasometría de llegada; la carga ácida y la compensación respiratoria
     no están modeladas.
-  - Sondas: A, D y E no son representables; B sube la FR sólo por el lactato; C llega por D → lactato. El oxígeno sólo
-    oxigena, y la FR no tiene impulso hipoxémico propio.
+  - Sondas: A, D y E no son representables; B sube la FR sólo por el lactato; C llega por D → lactato.
+  - El oxígeno y la hipoxemia no tienen una vía directa a la FR ni a W. Llegan de forma indirecta: SpO2 → aporte →
+    déficit → D → lactato → FR (con déficit, FiO2 0,6 baja un poco la FR; con el lactato fijo, no la mueve). La FR no
+    tiene impulso hipoxémico propio.
   - Reconstrucción R1–R4 (5364 trayectorias, exactas en 48 corridas del núcleo):
     - con manejo definitivo, la FR cae por debajo de la llegada a medida que se aclara el lactato;
     - en 72f sin tratamiento, la FR baja durante los primeros 30 min aunque la hemorragia sigue.
@@ -3427,3 +3429,6 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - Lo que falta, en orden: (1) una carga ácida metabólica; (2) la representación del CO2; (3) W separado en impulso y
     ventilación efectiva; (4) la semántica del soporte respiratorio.
   - (1) y (2) son el primer paso, con autorización docente previa. Nada aprobado.
+- **Revisión adversarial:** sin hallazgos de severidad alta; las correcciones son de documentos y pruebas (informe
+  §17–§18). R3 y R4 no son idénticos a los 120 min (a demanda 1,1, algunos 57m sin hemostasia recuperan un déficit
+  pequeño); varias comprobaciones congeladas no pueden fallar y se complementan con pruebas.

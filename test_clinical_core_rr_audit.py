@@ -312,3 +312,70 @@ def test_the_document_is_generated_from_the_record(tmp_path):
     assert "RR_STRUCTURE_NOT_READY — ACID_BASE_STATE_REQUIRED" in text
     for name in rp.NAMES:
         assert f"<!-- generado:{name} -->" in text
+
+
+# After the adversarial review of P2K-1 (tests only; the frozen module is unchanged) ----------------------------------------
+
+def _course(anchors, profile, items, minutes=20, fio2=None):
+    state = arrival_state(anchors, profile).evolve(P=0.3)
+    if fio2 is not None:
+        state = state.evolve(fio2=fio2)
+    for _ in range(minutes):
+        state, _ = step(state, items, anchors, profile)
+    return state, derive(state, anchors, profile)
+
+
+def test_oxygen_and_desaturation_reach_rr_only_through_the_debt_and_lactate_chain():
+    """Review M1: with a deficit, FiO2 moves SpO2, delivery, the deficit and D, and RR follows through lactate; with the
+    lactate held, RR does not move at all. Oxygen has no direct path to RR or W."""
+    anchors, profile = ra.PROBE_ANCHORS, ra._profile()
+    room, room_view = _course(anchors, profile, ())
+    oxy, oxy_view = _course(anchors, profile, (Oxygen("o", 0, 0.6),))
+    assert oxy.fio2 == 0.6 and oxy.D < room.D and oxy_view.lactate < room_view.lactate
+    assert oxy_view.respiratory_rate < room_view.respiratory_rate and oxy.W == room.W == 0.0
+    held = ra._profile(debt_to_lactate_gain=0.0)
+    _, a = _course(anchors, held, ())
+    _, b = _course(anchors, held, (Oxygen("o", 0, 0.6),))
+    assert a.respiratory_rate == b.respiratory_rate and a.spo2 != b.spo2
+    high = replace(anchors, fio2=0.6)
+    _, kept = _course(high, profile, (), fio2=0.6)
+    _, dropped = _course(high, profile, (Oxygen("o", 0, 0.21),), fio2=0.6)
+    assert dropped.respiratory_rate > kept.respiratory_rate, "desaturation raises RR only through D -> lactate"
+
+
+def test_haemostasis_moves_rr_no_more_than_any_other_minute_and_rr_recovers_after_definitive_care():
+    """Review M3: the frozen direction-8 check compares a step with the largest step including itself; here the
+    haemostasis step is compared with every other step of the same R4 trajectory, and recovery is read on R4."""
+    record = la.record_p2i2ab()
+    source, arrivals = la.source_space(record), lr.arrival_table()
+    for case, lam in ((C57, 612), (C72, 611)):
+        _, blood = vt._blood_task((("P4", case, 0), source["p3"][0], case, vt.SCENARIOS["P4"], None))
+        for factor, gain in ((1.0, 0.25), (1.1, 1.0)):
+            t = ra.trajectory(blood, case, lam, factor, gain, arrivals)
+            h = t["controlled_at"]
+            steps = [abs(b - a) for a, b in zip(t["rr"], t["rr"][1:])]
+            assert h is not None and steps[h] <= max(steps[:h] + steps[h + 1:])
+            assert t["ventilatory"] <= t["rr"][120] <= max(t["rr"])
+
+
+#: The exact content of the two exclusion tuples after P2K-1 (review B3): the closure proofs accept any tuple
+#: content, so it is pinned here.
+TUPLES_AT_P2K1 = {"DOWNSTREAM_REPORTS": ("6168a4c03e11e94b625d5eaf6706181f253860e3646d4cb13e1b479a501cc67a", 20),
+                  "PACK_DIGEST_EXCLUDED": ("64f2e94cfea36f7ba4d73b63a1c935e612626c6161158bdd5dfafba48bfd2dca", 49)}
+
+
+def test_the_exclusion_tuples_hold_exactly_their_p2k1_content():
+    for name, values in (("DOWNSTREAM_REPORTS", lactate_slice.DOWNSTREAM_REPORTS),
+                         ("PACK_DIGEST_EXCLUDED", decision_pack.PACK_DIGEST_EXCLUDED)):
+        assert (hashlib.sha256(json.dumps(sorted(values)).encode("utf-8")).hexdigest(), len(values)) == \
+            TUPLES_AT_P2K1[name], name
+
+
+def test_the_other_ventilation_related_channels_are_named_and_read_by_neither_rr_nor_spo2():
+    """Review M6: L (lung water), G (gas exchange) and N (CNS depression) exist as channels; neither RR nor SpO2 reads
+    them today, which the decisions on W and support must take into account."""
+    from clinical_core.state import Channel
+    assert {"L", "G", "N"} <= {c.value for c in Channel}
+    text = inspect.getsource(dv.respiratory_rate) + inspect.getsource(dv._perfusion)
+    for name in ("state.L", "state.G", "state.N"):
+        assert name not in text

@@ -16,6 +16,8 @@
   lactato de llegada) × (1 + W⁺) + impulso metabólico(lactato), con techo y piso.
   - No lee D, déficit, SpO2, glucosa, pH, pCO2 ni FC.
   - D llega a la FR sólo por el lactato que produce. Así se explica que el cambio de D de P2I-2AC moviera la FR.
+  - Por la misma cadena llegan, de forma indirecta, la demanda, el aporte, la SpO2 y la FiO2: SpO2 → aporte → déficit
+    → D → lactato → FR (revisión M1).
 - **El lactato es un sustituto, no un controlador:** BIOMARKER_PROXY_REQUIRES_REFACTOR.
   - El impulso «acidémico» lee directamente la concentración de lactato; no hay carga ácida, pH ni bicarbonato.
   - El valor de la ganancia es el heredado del motor GI (LEGACY_ARTIFACT).
@@ -36,18 +38,25 @@
   - A, D y E no son representables.
   - B sube la FR sólo por el lactato.
   - C: el déficit llega a la FR sólo por D → lactato, con retraso; con el lactato fijo la FR no cambia aunque D crezca.
-  - La FR no tiene impulso hipoxémico propio.
-  - El oxígeno mejora la SpO2 sin tocar la FR ni W.
-- **Soporte respiratorio:** sólo FiO2, que mueve la SpO2. No existen VNI, ventilación invasiva, PEEP ni modo; no hay
+  - La FR no tiene impulso hipoxémico propio: la desaturación sólo sube la FR a través de D → lactato.
+  - El oxígeno no tiene una vía directa a la FR ni a W. Con déficit, al subir la SpO2 sube el aporte y bajan el
+    déficit, D y la FR (sonda de la revisión: D 5,00 → 4,56; FR 16,154 → 16,141). Con el lactato fijo, la FR no
+    cambia con la FiO2.
+  - El texto congelado de §3 y §8 («SpO2 only») omite esta vía indirecta; lo corrigen este resumen y §18.
+- **Soporte respiratorio:** sólo FiO2, que mueve la SpO2 y, a través del aporte, el déficit, D, el lactato y la FR.
+  No existen VNI, ventilación invasiva, PEEP ni modo; no hay
   ventilación mecánica que pueda imponerse a la FR espontánea, y ningún escenario GI ventila.
 - **Reconstrucción R1–R4:** sin cambiar ningún parámetro.
   - 5364 trayectorias reconstruidas desde la fisiología certificada de P2J-3, iguales al núcleo en las 48 corridas de
     validación.
   - Sin tratamiento, 57m sube de 26 a ≈ 35 rpm a los 120 min y 72f de 24 a ≈ 28–30.
-  - Con manejo definitivo, 57m baja a ≈ 21–24 y 72f a ≈ 15–16, por debajo de la llegada, a medida que se aclara el
-    lactato.
-  - R3 (GR sin hemostasia) y R4 coinciden hasta los 120 min: tras las GR el déficit efectivo es 0 en los dos (la
-    reserva de extracción lo absorbe), D se repaga igual y la FR también.
+  - Con manejo definitivo, a los 120 min 57m baja a 19,7–23,9 (medianas 20,5–23,8) y 72f a ≈ 15–16, por debajo de
+    la llegada, a medida que se aclara el lactato.
+  - R3 (GR sin hemostasia) y R4 coinciden hasta el minuto 90 y, a los 120, en la mediana y el mínimo: tras las GR el
+    déficit efectivo es 0 en casi todas las trayectorias (la reserva de extracción lo absorbe), D se repaga igual y la
+    FR también.
+  - No son idénticos: a demanda 1,1 y g = 0,25, algunas trayectorias de 57m sin hemostasia recuperan un déficit
+    pequeño (hasta 0,031) y más D (hasta 13,3 frente a 6,9), y la FR máxima a los 120 min es 23,9 frente a 23,4.
 - **Dependencias:**
   - La FR depende de la demanda y de g a través de déficit → D → lactato. Con g, la diferencia máxima es de 0,18 rpm
     (mediana) y 2,45 como máximo.
@@ -55,6 +64,8 @@
 - **Corrección estructural: ninguna.** Ninguna es clara sin un estado nuevo. **Superficie candidata: ninguna.**
 - **Veredicto: RR_STRUCTURE_NOT_READY — ACID_BASE_STATE_REQUIRED.** Falta, como mínimo, un estado de carga ácida
   metabólica y una representación del CO2 (§16).
+  - Es un juicio estructural: las comprobaciones del veredicto son constantes del módulo congelado, no mediciones
+    que pudieran salir de otra forma (§18).
 
 ## 1. Decisiones docentes registradas (generado)
 
@@ -408,6 +419,18 @@ la fisiología que falta detrás de ganancias de FR.
 
 (1) y (2) son el primer paso. Cada uno necesita autorización docente antes de cualquier número; la IA no elige.
 
+**Canales que ya existen y que la FR no lee (revisión M6):** L (agua pulmonar, C5), G (intercambio de gases, C6) y N
+(depresión del SNC, C9). Ni la FR ni la SpO2 los leen hoy. Las decisiones 3 (W) y 5 (soporte) deben decir si la
+mecánica, el intercambio y la depresión del impulso entran por estos canales o por otros.
+
+**Precauciones para el diseño (revisión B4):**
+
+- Un estado de carga ácida con fuente ligada al déficit de aporte y aclaramiento de primer orden es, tal como está
+  descrito, isomorfo a la cadena actual D → lactato. Sin algo que lo distinga (tampón y pH con la PaCO2, para que la
+  compensación respiratoria realimente; ácidos que no son lactato), sólo renombraría el sustituto.
+- La demanda entraría dos veces: por la producción de CO2 y por el déficit → carga ácida. Es fisiológico, pero las
+  ganancias no deben contarla dos veces en la FR.
+
 **Mientras tanto:**
 
 - el término del lactato queda **marcado** como sustituto: no se ajusta y no se usa para filtrar;
@@ -421,12 +444,58 @@ Si se mantiene como sustituto provisional o se retira es una decisión docente (
   lactato) en las dos demandas y no encontró ninguna (n = 0). Los puntos que sobreviven a 1,0 y a 1,1 son distintos.
   - La vía estructural existe (demanda → déficit → D → lactato → FR).
   - Una prueba añadida tras la corrida lo confirma: la misma unidad a demanda 1,0 y 1,1 da una FR distinta.
-- **R3 y R4 coinciden hasta los 120 min:** es un hecho del modelo, no un fallo de claves. La sangre difiere (en R4 el
-  sangrado cae desde el minuto 60), pero el déficit efectivo es 0 en los dos tras las GR, así que D, el lactato y la
-  FR coinciden. La validación contra el núcleo lo confirma en los dos escenarios.
+- **R3 y R4 casi coinciden:** es un hecho del modelo, no un fallo de claves. La sangre difiere (en R4 el sangrado cae
+  desde el minuto 60), pero tras las GR el déficit efectivo es 0 en casi todas las trayectorias, así que D, el lactato
+  y la FR coinciden hasta el minuto 90 y, a los 120, en la mediana y el mínimo. A demanda 1,1 algunas trayectorias de
+  57m sin hemostasia recuperan un déficit pequeño y el máximo difiere (23,9 frente a 23,4). La validación contra el
+  núcleo comprueba la reconstrucción, no esta coincidencia.
 - **Reconstrucción:** se valida contra el núcleo con una corrida completa por escenario, caso, demanda y g (48). El
   resto se reconstruye con la misma función `respiratory_rate` que usa el núcleo.
 - **Sondas:** son estados sintéticos sobre el arranque neutro con lactato 2,5; no dan ningún valor clínico.
 - **Medianas y rangos:** de la reconstrucción se calculan sobre trayectorias únicas, sin ponderar.
 - **Copia del reparto de la FR:** el paquete P2G mantiene una copia offline (`decision_pack.rr_parts`) que debe
   cambiar junto con la FR si la FR cambia.
+- **Comprobaciones que no pueden fallar** (revisión M3 y M4): la de la dirección 8 compara un paso con el mayor paso
+  incluido él mismo; la de la dirección 2 y la sonda hipoxémica no tienen un resultado posible que las contradiga; las
+  comprobaciones del veredicto son constantes. Las pruebas añadidas tras la revisión (§18) dan a la dirección 8 y al
+  oxígeno una comprobación que sí puede fallar.
+- **Direcciones 1 y 3** (revisión M5): la 1 se cumple sólo si W > 0 se lee como necesidad, que es justamente la
+  semántica en duda; la 3 supone que «la misma D» significa que la necesidad persiste.
+- **Clases** (revisión B1): el déficit y la demanda figuran como NOT_CURRENTLY_MODELED aunque llegan a la FR por la
+  misma cadena que D (BIOMARKER_PROXY); los techos y pisos figuran como VALID_CAUSAL_PATH aunque son límites; el corte
+  sin pulso (FR = 0) no figura entre los contribuyentes.
+- **Texto congelado:** §3 y §8 dicen que el oxígeno y la hipoxemia sólo llegan a la SpO2 o a la FC; la regla de las
+  sondas dice «FiO2 0,6 desde el minuto 1», pero la orden de oxígeno se aplica en el minuto 2. El módulo congelado no
+  se toca; este informe lo corrige en el texto.
+
+## 18. Revisión adversarial
+
+Una revisión independiente, de sólo lectura, al final. Cada hallazgo se confirmó con una sonda antes de corregirlo.
+Ninguno de severidad alta. Las correcciones son de documentos y pruebas; `clinical_core/rr_audit.py` sigue congelado
+(digest `a3f098de…`) y el núcleo no cambia.
+
+| # | hallazgo | sonda | corrección |
+|---|---|---|---|
+| M1 | el oxígeno y la hipoxemia llegan a la FR por SpO2 → aporte → déficit → D → lactato; el texto congelado dice «SpO2 only» | con déficit, FiO2 0,6 baja D de 5,00 a 4,56 y la FR de 16,154 a 16,141 | resumen, §17, §46 y una prueba: con el lactato fijo la FR no cambia con la FiO2 |
+| M2 | R3 y R4 no son idénticos a los 120 min | máximo 23,94 frente a 23,41; déficit 0,031 frente a 0; D 13,29 frente a 6,90 | resumen y §17 |
+| M3 | las comprobaciones de las direcciones 8 y 2 y la sonda hipoxémica no pueden fallar | lectura del código | §17; prueba de la hemostasia contra los demás pasos de la misma trayectoria R4 |
+| M4 | las comprobaciones del veredicto son constantes | lectura del código | resumen y §17: el veredicto es estructural |
+| M5 | la dirección 1 depende de la semántica de W; la 3 supone que la misma D es la misma necesidad | lectura | §17 |
+| M6 | faltan los canales L, G y N | `Channel` | §16 y una prueba: ni la FR ni la SpO2 los leen |
+| B1 | clases inconsistentes; el corte sin pulso no figura | lectura | §17 |
+| B2 | el rango definitivo de 57m es 19,7–23,9 | tabla R4 | resumen |
+| B3 | huecos de las guardas: W buscado sólo por glob; contenido de las tuplas sin fijar; texto a mano sin prueba | lectura | prueba que fija el contenido de las dos tuplas por hash |
+| B4 | el estado ácido-base propuesto es isomorfo a D → lactato; la demanda puede contarse dos veces | lectura | §16 |
+| B5 | la prueba de la demanda no fija magnitud | lectura | se deja así: sólo prueba la vía, no un tamaño |
+
+**Hemostasia contra los demás pasos** (unidad p3[0], h = 60, criterio más fuerte que el congelado):
+
+| caso | demanda · g | paso en h | mayor de los demás | FR máxima | FR a 120 | parte ventilatoria |
+|---|---|---|---|---|---|---|
+| 57m | 1,0 · 0,25 | 0,014 | 0,093 | 29,02 | 25,15 | 13,17 |
+| 57m | 1,1 · 1,0 | 0,000 | 0,091 | 29,57 | 26,11 | 13,17 |
+| 72f | 1,0 · 0,25 | 0,079 | 0,082 | 24,00 | 16,07 | 15,43 |
+| 72f | 1,1 · 1,0 | 0,074 | 0,082 | 24,00 | 16,76 | 15,43 |
+
+En 72f el margen es pequeño (0,079 frente a 0,082): la hemostasia no normaliza la FR de golpe, pero el paso de ese
+minuto está cerca del mayor de la trayectoria.
