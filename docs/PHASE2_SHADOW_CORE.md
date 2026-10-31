@@ -3476,3 +3476,30 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - Una eficiencia constante se cancelaba con el anclaje.
 
   Los dos se corrigieron y P2K-2 se recongeló con los mismos candidatos y criterios (informe §15).
+
+## 48. P2K-3 · Ventilación efectiva desacoplada de la FR y superficie de decisión respiratoria (2026-10-31)
+
+- **Encargo:** quitar la dependencia W ∝ FR / FR intrínseca (FREQUENCY_TO_VENTILATION_OVERCONSTRAINT) y preparar una
+  superficie observable de FR, PaCO2 y pH, sin filtrar trayectorias tardías. Sólo sombra.
+- **Fisiología candidata, en un módulo nuevo que ningún paso del núcleo lee** (`clinical_core/ventilation.py`):
+  - capacidad = eficiencia × (1 + `acid_to_ventilation_gain` × carga);
+  - W = capacidad / (demanda / demanda basal);
+  - PaCO2 = 40 / W, predicha en la llegada y nunca anclada; pH de HCO3 y PaCO2.
+
+  La FR sigue siendo la de P2K-2. W no lee FR, FR intrínseca, impulso, lactato, D ni el canal W.
+- **El núcleo no cambia:** `derived.py`, `integration.py`, `state.py` y `acid_base.py` conservan las huellas de
+  `cbec249`. Los congelamientos cerrados excluyen los dos módulos nuevos (`LATER_MODULES`). El de P2K-2 se recalcula
+  sobre sus propias fuentes (`ventilation_surface.p2k2_sources`).
+- **Soportes congelados (`75dc218`):**
+  - ganancia común 0,03 / 0,04 / 0,05 / 0,06 / 0,08 por mEq/L;
+  - FR, carga ácida y referencias de P2K-2;
+  - PaCO2 de llegada ± 3 mmHg; pH ± 0,03 sólo diagnóstico.
+- **Resultados:**
+  - sondas A–I, todas como pide la docencia;
+  - en la llegada, 9 de 45 combinaciones por FR, 4 de 5 ganancias por PaCO2 (0,03–0,06) y 36 de 225 en conjunto;
+  - la PaCO2 en reposo es 40 para toda FR intrínseca (con el mapeo de P2K-2 iba de 39 a 73);
+  - en R4 la PaCO2 vuelve hacia 40; la caída precoz de la FR de 72f sigue siendo ácida;
+  - 48 validaciones completas: núcleo = factorización y fisiología previa idéntica en sus siete dominios.
+- **Veredicto: RR_VENTILATION_DECISION_SURFACE_READY.** Nada se aprueba. Se piden envolventes observables y la
+  confirmación de la semántica de la demanda (`docs/revision/P2K3_VENTILACION_EFECTIVA_Y_SUPERFICIE_RESPIRATORIA.md`
+  §15).

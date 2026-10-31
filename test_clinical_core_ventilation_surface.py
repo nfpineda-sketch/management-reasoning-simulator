@@ -342,3 +342,89 @@ def test_the_policy_approves_nothing_and_reads_no_legacy():
             assert forbidden not in source
     assert json.loads(json.dumps(vs.design(), default=str))["ventilation_gains"] == [0.03, 0.04, 0.05, 0.06, 0.08]
     assert hashlib.sha256(SOURCE.read_bytes()).hexdigest()
+
+
+# The record and the report ------------------------------------------------------------------------------------------------
+
+RECORD = ROOT / "docs" / "revision" / "P2K3_ventilation_surface.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2K3_VENTILACION_EFECTIVA_Y_SUPERFICIE_RESPIRATORIA.md"
+
+
+@pytest.fixture(scope="module")
+def record():
+    return json.loads(RECORD.read_text(encoding="utf-8"))
+
+
+def _json(value):
+    return json.loads(json.dumps(value, sort_keys=True, default=str))
+
+
+def test_the_record_comes_from_the_frozen_package_and_its_analytic_part_is_reproduced_live(record, probes):
+    assert record["freeze_digest"] == FROZEN_DIGEST and record["record"] == vs.P2K2_DIGEST
+    assert record["design"] == _json(vs.design()) and record["probes"] == _json(probes)
+    assert record["probes_pass"] == _json(vs.probes_pass(probes)) and record["w_inputs"] == _json(vs.w_inputs())
+    assert record["arrival_rr"] == _json(ab.arrival_compatibility())
+    assert record["arrival_paco2"] == _json(vs.paco2_compatibility())
+    surface = vs.joint_surface(ab.arrival_compatibility(), vs.paco2_compatibility())
+    assert record["joint_surface"] == _json(surface)
+    assert record["demand_semantics"] == _json(vs.demand_semantics_sensitivity())
+    assert record["exact_ventilation_gains"] == _json(vs.exact_ventilation_gains())
+    assert record["arrival_rejections"] == _json(vs.arrival_rejections())
+    assert record["identifiability"] == _json(vs.identifiability(surface["joint"]))
+    assert record["core_unchanged"] == _json(vs.core_unchanged())
+
+
+def test_the_verdict_validation_and_non_regression_the_report_states(record):
+    assert record["verdict"]["verdict"] == vs.READY and not record["verdict"]["failing"] and "stopped" not in record
+    assert all(record["verdict"]["checks"].values()) and set(record["verdict"]["checks"]) == set(vs.CRITERIA)
+    v = record["validation"]
+    assert v["compared"] == 48 and v["equal"] and v["max_abs_diff"] == 0.0 and v["order_independent"]
+    assert v["rr_alone_moves_no_w"] and v["rr_moved"] and v["intrinsic_alone_moves_no_w"] and v["demand_ratio_one"]
+    assert v["upstream_equal"] and v["default_rr_equal"] and v["domains"] == {name: True for name in vs.UPSTREAM_DOMAINS}
+    assert record["p2k1_unchanged"] and all(record["pressure_tone_unchanged"].values())
+    assert record["p2k2_reproduced"] == {"arrival_compatibility": True, "probes": True, "upstream_tables": True}
+    assert record["rejections"] == {ab.ANALYTIC_REJECTION: 0, ab.SIMULATION_REJECTION: 0}
+    assert record["arrival_rejections"] == {ab.ANALYTIC_REJECTION: 0}
+    # The arrival surface: RR as in P2K-2, PaCO2 for every common gain but 0.08, joint the product.
+    surface = record["joint_surface"]
+    assert record["arrival_rr"]["count"] == 9 and record["arrival_paco2"]["compatible"] == [0.03, 0.04, 0.05, 0.06]
+    assert surface["arrival_read"] == {"total": 225, "rr_compatible": 45, "paco2_compatible": 180, "joint": 36}
+    assert surface["with_acid_support"]["joint"] == 324
+    p = record["plausible"]
+    assert p["outside"] == 0 and p["non_positive"] == 0 and vs.PH_PLAUSIBLE[0] < p["ph_low"] < p["ph_high"] < 7.8
+    assert record["dependencies"]["multiplied"] == ["demand", "tone_gain"]
+    assert record["efficiency"]["cartesian_sweep"] is False and record["efficiency"]["legacy_read"] is False
+    assert record["envelope_request"] == list(vs.ENVELOPE_REQUEST)
+
+
+def test_the_key_answers_the_report_puts_first(record):
+    q = record["key_questions"]
+    assert q["1_resting_hypercapnia"]["all_reference"]
+    assert q["1_resting_hypercapnia"]["p2k2_over_the_same_rr_candidates"]["gi_bleed_57m"]["high"] > 70.0
+    assert q["2_paco2_toward_40"]["r4_toward"]["true"] == q["2_paco2_toward_40"]["r4_toward"]["n"] > 0
+    assert q["4_72f_early_dip"]["by_b"]["13.4"]["true"] == q["4_72f_early_dip"]["by_b"]["13.4"]["n"]
+    assert q["4_72f_early_dip"]["by_b"]["28"]["true"] == 0
+    assert 0 < q["5_lactate_rr_opposite"]["true"] < q["5_lactate_rr_opposite"]["n"]
+    six = q["6_rr_paco2_directions"]
+    assert six["same_direction"]["true"] == 0 and six["opposite_direction"]["true"] == six["opposite_direction"]["n"]
+    # Every RR observable reads no ventilation gain, every gas observable no drive gain or intrinsic RR.
+    for letter, item in record["decision_pack"].items():
+        assert item["status"] == "PREPARED_NOT_APPROVED"
+        for name, summary in item["distributions"].items():
+            gas = letter in "CDH"
+            silent = ("drive_gain", "intrinsic_rr") if gas else ("ventilation_gain",)
+            for factor in silent:
+                assert summary[factor] == {"path": "NONE", "range": 0.0}, (name, factor)
+
+
+def test_the_document_is_generated_from_the_record():
+    from clinical_core import ventilation_surface_report as rep
+    document = DOCUMENT.read_text(encoding="utf-8")
+    data = json.loads(RECORD.read_text(encoding="utf-8"))
+    rendered = document
+    for name, render in rep.RENDERERS.items():
+        rendered = rep.apply(rendered, name, render(data))
+    assert rendered == document, "the generated blocks are stale: regenerate the report"
+    assert vs.READY in document and "## 15. Lo que se pide a la docencia" in document
+    assert "## 16. Limitaciones" in document and "## 17. Revisión adversarial" in document
+    assert len(rep.ENVELOPE_ES) == len(vs.ENVELOPE_REQUEST) and len(rep.QUESTIONS_ES) == len(vs.FACULTY_QUESTIONS)
