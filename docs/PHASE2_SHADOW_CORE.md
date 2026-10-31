@@ -3508,3 +3508,45 @@ Ninguno. `clinical_core` sigue sólo en sombra.
     copia del álgebra. Se corrigieron junto con cuatro bajos.
   - P2K-3 se recongeló (`bb6d81e`) con los mismos soportes y criterios. La reevaluación da los mismos números (informe
     §17).
+
+## 49. P2K-4 · Filtro docente de envolventes observables de FR / ventilación (2026-10-31)
+
+- **Encargo:** acotar la región respiratoria candidata de los dos casos GI con las envolventes docentes A–I, conservar
+  la incertidumbre latente y decidir si el dominio respiratorio está acotado para seguir. Sólo sombra.
+- **Congelado antes de cualquier conteo (`46d009a`, digest `638b64f6…`)** en un módulo de análisis
+  (`clinical_core/ventilation_filter.py`):
+  - las envolventes A–I y las ventanas de llegada;
+  - el pH de llegada y el pH sin tratamiento, nunca filtros (pH < 7,00 sólo se marca);
+  - el soporte de P2K-3 sin la ganancia 0,08 y la demanda BASELINE_RELATIVE;
+  - comparadores que omiten sólo su exposición: E es el de P2J-3 (R2 frente a R1); F es R3 frente a R3 sin GR y, en
+    R4, cada unidad frente a L3 sin ella (CF1, CF2); R3 nunca es contrafactual de R4;
+  - la señal respiratoria (carga y pH juntos, nunca la FR sola), la regla R3 / R4 y el orden de la docencia.
+- **El núcleo no cambia:**
+  - `derived.py`, `integration.py`, `state.py`, `acid_base.py`, `ventilation.py` y `ventilation_surface.py` conservan
+    sus bytes de `ef2cfe8`;
+  - los congelamientos cerrados excluyen el módulo nuevo (`LATER_MODULES`); el de P2K-3 se recalcula sobre sus propias
+    fuentes (`ventilation_filter.p2k3_sources`).
+- **Método:** cada regla es un bitset sobre las 1620 combinaciones latentes por superviviente de P2J-3. Una
+  recomputación directa independiente lo iguala: 19 440 candidatos, 0 discrepancias.
+- **Resultados** (`docs/revision/P2K4_FILTRO_ENVOLVENTES_RESPIRATORIAS.md`):
+  - sobreviven 165 480 de 860 220 candidatos (demanda 1,0) y 1 022 112 de 5 307 120 (demanda 1,1); las mismas 312
+    combinaciones latentes en ambas;
+  - casi todo el rechazo es la FR de llegada; después I y, sólo con demanda 1,0, A; nada por C, D, H, E ni F;
+  - la ganancia de ventilación queda NON_IDENTIFIABLE y la FR intrínseca y la ganancia ácido → FR, POORLY_IDENTIFIED;
+  - ninguna lectura emparejada empeora a la vez la respiración y la perfusión;
+  - pH < 7,00 sin tratamiento en el 1,7 % de los supervivientes con demanda 1,1 (57m, mínimo 6,96), entregado a
+    CONSCIOUSNESS_COLLAPSE_REVIEW;
+  - R3 y R4 convergen en lo respiratorio con déficit nulo o casi nulo a los 120 min, y con sangrado, BloodState, gasto y
+    DO2 distintos: ningún colapso.
+- **Hallazgo:**
+  - con la referencia HCO3 24, el pH baja de forma monótona con la carga sólo si la ganancia de ventilación es
+    ≤ 1/24 ≈ 0,042;
+  - con 0,05 y 0,06 hay una sobrecompensación pequeña a cargas bajas (≤ 0,015 de pH);
+  - en esa zona, la regla «empeoran ambas» de E y F no puede dispararse, y la dirección del pH no la prueba ningún
+    criterio (revisión adversarial M1, M2);
+  - se declara (TD-105) y se pide decisión docente; no cambia el veredicto congelado. Condiciona la migración de esta
+    fisiología a otra familia y toda regla de conciencia que lea la tendencia del pH.
+- **Revisión adversarial:** sin hallazgos de severidad alta y nada que cambie los resultados ejecutables. Dos medios,
+  de diseño y ligados al hallazgo, quedan declarados para el próximo congelamiento. Los bajos son de documentación y de
+  robustez del código (informe §15).
+- **Veredicto: RR_VENTILATION_OBSERVABLE_FILTER_SATISFIED.** Recomendación predeclarada: MOVE_FORWARD. Nada se aprueba.

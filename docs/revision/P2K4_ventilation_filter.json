@@ -1,0 +1,3286 @@
+{
+ "approval": "none FACULTY_APPROVED",
+ "arrival_ph_diagnostic": {
+  "0.03": {
+   "gi_bleed_57m": {
+    "class": "PH_INCONSISTENT",
+    "ph": 7.3384078644840764
+   },
+   "gi_bleed_72f": {
+    "class": "PH_INCONSISTENT",
+    "ph": 7.369022334729234
+   }
+  },
+  "0.04": {
+   "gi_bleed_57m": {
+    "class": "PH_CONSISTENT",
+    "ph": 7.361984110626884
+   },
+   "gi_bleed_72f": {
+    "class": "PH_CONSISTENT",
+    "ph": 7.384926786990286
+   }
+  },
+  "0.05": {
+   "gi_bleed_57m": {
+    "class": "PH_CONSISTENT",
+    "ph": 7.384346122781764
+   },
+   "gi_bleed_72f": {
+    "class": "PH_CONSISTENT",
+    "ph": 7.400269314530356
+   }
+  },
+  "0.06": {
+   "gi_bleed_57m": {
+    "class": "PH_INCONSISTENT",
+    "ph": 7.40561287071181
+   },
+   "gi_bleed_72f": {
+    "class": "PH_CONSISTENT",
+    "ph": 7.415088273088317
+   }
+  }
+ },
+ "arrival_reproduced": {
+  "paco2": true,
+  "rr": true
+ },
+ "closed_unchanged": {
+  "clinical_core/acid_base.py": true,
+  "clinical_core/derived.py": true,
+  "clinical_core/integration.py": true,
+  "clinical_core/state.py": true,
+  "clinical_core/ventilation.py": true,
+  "clinical_core/ventilation_surface.py": true
+ },
+ "comparator_validation": {
+  "candidate": [
+   2.0,
+   16.0,
+   16.0,
+   19.4,
+   120.0,
+   0.05
+  ],
+  "compared": 18,
+  "domains": {
+   "D": true,
+   "blood_state": true,
+   "delivery_deficit": true,
+   "hr_baroreflex": true,
+   "lactate": true,
+   "output": true,
+   "pressure_tone": true
+  },
+  "equal": true,
+  "max_abs_diff": 0.0,
+  "upstream_equal": true
+ },
+ "comparators_matched": {
+  "checked": 1434,
+  "first_failure": null,
+  "matched": true
+ },
+ "cross_demand": {
+  "DEMAND_1_0_ONLY": {
+   "count": 0,
+   "support": {
+    "B": [],
+    "drive_gain": [],
+    "intrinsic_57m": [],
+    "intrinsic_72f": [],
+    "tau": [],
+    "ventilation_gain": []
+   }
+  },
+  "DEMAND_1_1_ONLY": {
+   "count": 0,
+   "support": {
+    "B": [],
+    "drive_gain": [],
+    "intrinsic_57m": [],
+    "intrinsic_72f": [],
+    "tau": [],
+    "ventilation_gain": []
+   }
+  },
+  "DEMAND_INCOMPATIBLE": {
+   "count": 1308,
+   "support": {
+    "B": [
+     13.4,
+     19.4,
+     28.0
+    ],
+    "drive_gain": [
+     1.0,
+     1.4142135623730951,
+     2.0,
+     2.8284271247461903,
+     4.0
+    ],
+    "intrinsic_57m": [
+     12.0,
+     16.0,
+     20.0
+    ],
+    "intrinsic_72f": [
+     12.0,
+     16.0,
+     20.0
+    ],
+    "tau": [
+     60.0,
+     120.0,
+     240.0
+    ],
+    "ventilation_gain": [
+     0.03,
+     0.04,
+     0.05,
+     0.06
+    ]
+   }
+  },
+  "ROBUST_ACROSS_DEMAND": {
+   "count": 312,
+   "support": {
+    "B": [
+     13.4,
+     19.4,
+     28.0
+    ],
+    "drive_gain": [
+     1.0,
+     1.4142135623730951,
+     2.0,
+     2.8284271247461903,
+     4.0
+    ],
+    "intrinsic_57m": [
+     12.0,
+     16.0,
+     20.0
+    ],
+    "intrinsic_72f": [
+     12.0,
+     16.0,
+     20.0
+    ],
+    "tau": [
+     60.0,
+     120.0,
+     240.0
+    ],
+    "ventilation_gain": [
+     0.03,
+     0.04,
+     0.05,
+     0.06
+    ]
+   }
+  }
+ },
+ "decided": "2026-10-31",
+ "demands": {
+  "1": {
+   "filter": {
+    "any_failure": {
+     "A": 213420,
+     "ARRIVAL_PACO2": 0,
+     "ARRIVAL_RR": 688176,
+     "B": 154296,
+     "C": 0,
+     "D": 0,
+     "E": 0,
+     "F": 0,
+     "G": 105120,
+     "G2": 114696,
+     "H_PACO2": 0,
+     "H_PH": 0,
+     "I": 57348,
+     "SIMULATION": 0
+    },
+    "by_tone_gain": {
+     "0.25": {
+      "entering": 349920,
+      "survivors": 67200,
+      "units": 216
+     },
+     "0.5": {
+      "entering": 293220,
+      "survivors": 56472,
+      "units": 181
+     },
+     "1": {
+      "entering": 217080,
+      "survivors": 41808,
+      "units": 134
+     }
+    },
+    "entering": 860220,
+    "first_failure": {
+     "A": 192,
+     "ARRIVAL_PACO2": 0,
+     "ARRIVAL_RR": 688176,
+     "B": 0,
+     "C": 0,
+     "D": 0,
+     "E": 0,
+     "F": 0,
+     "G": 0,
+     "G2": 0,
+     "H_PACO2": 0,
+     "H_PH": 0,
+     "I": 6372,
+     "SIMULATION": 0
+    },
+    "latent_survivors": 312,
+    "only_failure": {
+     "A": 192,
+     "ARRIVAL_PACO2": 0,
+     "ARRIVAL_RR": 256776,
+     "B": 0,
+     "C": 0,
+     "D": 0,
+     "E": 0,
+     "F": 0,
+     "G": 0,
+     "G2": 0,
+     "H_PACO2": 0,
+     "H_PH": 0,
+     "I": 6372,
+     "SIMULATION": 0
+    },
+    "overlap": {
+     "A+B": 66744,
+     "A+C": 0,
+     "A+D": 0,
+     "A+E": 0,
+     "A+F": 0,
+     "A+G": 31860,
+     "A+G2": 17520,
+     "A+H_PACO2": 0,
+     "A+H_PH": 0,
+     "A+I": 12744,
+     "ARRIVAL_PACO2+A": 0,
+     "ARRIVAL_PACO2+B": 0,
+     "ARRIVAL_PACO2+C": 0,
+     "ARRIVAL_PACO2+D": 0,
+     "ARRIVAL_PACO2+E": 0,
+     "ARRIVAL_PACO2+F": 0,
+     "ARRIVAL_PACO2+G": 0,
+     "ARRIVAL_PACO2+G2": 0,
+     "ARRIVAL_PACO2+H_PACO2": 0,
+     "ARRIVAL_PACO2+H_PH": 0,
+     "ARRIVAL_PACO2+I": 0,
+     "ARRIVAL_RR+A": 213228,
+     "ARRIVAL_RR+ARRIVAL_PACO2": 0,
+     "ARRIVAL_RR+B": 154296,
+     "ARRIVAL_RR+C": 0,
+     "ARRIVAL_RR+D": 0,
+     "ARRIVAL_RR+E": 0,
+     "ARRIVAL_RR+F": 0,
+     "ARRIVAL_RR+G": 105120,
+     "ARRIVAL_RR+G2": 114696,
+     "ARRIVAL_RR+H_PACO2": 0,
+     "ARRIVAL_RR+H_PH": 0,
+     "ARRIVAL_RR+I": 50976,
+     "B+C": 0,
+     "B+D": 0,
+     "B+E": 0,
+     "B+F": 0,
+     "B+G": 4776,
+     "B+G2": 6372,
+     "B+H_PACO2": 0,
+     "B+H_PH": 0,
+     "B+I": 0,
+     "C+D": 0,
+     "C+E": 0,
+     "C+F": 0,
+     "D+E": 0,
+     "D+F": 0,
+     "E+F": 0,
+     "G+C": 0,
+     "G+D": 0,
+     "G+E": 0,
+     "G+F": 0,
+     "G+G2": 47784,
+     "G+H_PACO2": 0,
+     "G+H_PH": 0,
+     "G+I": 38232,
+     "G2+C": 0,
+     "G2+D": 0,
+     "G2+E": 0,
+     "G2+F": 0,
+     "G2+H_PACO2": 0,
+     "G2+H_PH": 0,
+     "G2+I": 38232,
+     "H_PACO2+C": 0,
+     "H_PACO2+D": 0,
+     "H_PACO2+E": 0,
+     "H_PACO2+F": 0,
+     "H_PACO2+H_PH": 0,
+     "H_PACO2+I": 0,
+     "H_PH+C": 0,
+     "H_PH+D": 0,
+     "H_PH+E": 0,
+     "H_PH+F": 0,
+     "H_PH+I": 0,
+     "I+C": 0,
+     "I+D": 0,
+     "I+E": 0,
+     "I+F": 0,
+     "SIMULATION+A": 0,
+     "SIMULATION+ARRIVAL_PACO2": 0,
+     "SIMULATION+ARRIVAL_RR": 0,
+     "SIMULATION+B": 0,
+     "SIMULATION+C": 0,
+     "SIMULATION+D": 0,
+     "SIMULATION+E": 0,
+     "SIMULATION+F": 0,
+     "SIMULATION+G": 0,
+     "SIMULATION+G2": 0,
+     "SIMULATION+H_PACO2": 0,
+     "SIMULATION+H_PH": 0,
+     "SIMULATION+I": 0
+    },
+    "rejection_classes_any": {
+     "ARRIVAL_PACO2_REJECTION": 0,
+     "ARRIVAL_RR_REJECTION": 688176,
+     "PACO2_ENVELOPE_REJECTION": 0,
+     "PH_ENVELOPE_REJECTION": 0,
+     "RR_ENVELOPE_REJECTION": 437964,
+     "SIMULATION_REJECTION": 0,
+     "TREATMENT_DIRECTION_REJECTION": 0
+    },
+    "rejection_classes_first": {
+     "ARRIVAL_PACO2_REJECTION": 0,
+     "ARRIVAL_RR_REJECTION": 688176,
+     "PACO2_ENVELOPE_REJECTION": 0,
+     "PH_ENVELOPE_REJECTION": 0,
+     "RR_ENVELOPE_REJECTION": 6564,
+     "SIMULATION_REJECTION": 0,
+     "TREATMENT_DIRECTION_REJECTION": 0
+    },
+    "survivors": 165480,
+    "upstream_units": 531,
+    "upstream_units_with_survivors": 531
+   },
+   "latent_support": {
+    "B": {
+     "class": "POORLY_IDENTIFIED",
+     "filter_reads_it": true,
+     "latent_combinations_by_value": {
+      "13.4": 104,
+      "19.4": 104,
+      "28": 104
+     },
+     "values": [
+      13.4,
+      19.4,
+      28.0
+     ]
+    },
+    "drive_gain": {
+     "class": "POORLY_IDENTIFIED",
+     "filter_reads_it": true,
+     "latent_combinations_by_value": {
+      "1": 36,
+      "1.41421": 144,
+      "2": 36,
+      "2.82843": 72,
+      "4": 24
+     },
+     "values": [
+      1.0,
+      1.4142135623730951,
+      2.0,
+      2.8284271247461903,
+      4.0
+     ]
+    },
+    "intrinsic_57m": {
+     "class": "POORLY_IDENTIFIED",
+     "filter_reads_it": true,
+     "latent_combinations_by_value": {
+      "12": 96,
+      "16": 108,
+      "20": 108
+     },
+     "values": [
+      12.0,
+      16.0,
+      20.0
+     ]
+    },
+    "intrinsic_72f": {
+     "class": "POORLY_IDENTIFIED",
+     "filter_reads_it": true,
+     "latent_combinations_by_value": {
+      "12": 60,
+      "16": 144,
+      "20": 108
+     },
+     "values": [
+      12.0,
+      16.0,
+      20.0
+     ]
+    },
+    "tau": {
+     "class": "POORLY_IDENTIFIED",
+     "filter_reads_it": true,
+     "latent_combinations_by_value": {
+      "120": 108,
+      "240": 96,
+      "60": 108
+     },
+     "values": [
+      60.0,
+      120.0,
+      240.0
+     ]
+    },
+    "ventilation_gain": {
+     "class": "NON_IDENTIFIABLE",
+     "filter_reads_it": false,
+     "latent_combinations_by_value": {
+      "0.03": 78,
+      "0.04": 78,
+      "0.05": 78,
+      "0.06": 78
+     },
+     "values": [
+      0.03,
+      0.04,
+      0.05,
+      0.06
+     ]
+    }
+   },
+   "observed": {
+    "classes": {
+     "crystalloid m0 gi_bleed_57m": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 19116
+     },
+     "crystalloid m0 gi_bleed_72f": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 18312,
+      "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT": 804
+     },
+     "crystalloid m1 gi_bleed_57m": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 19116
+     },
+     "crystalloid m1 gi_bleed_72f": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 18073,
+      "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT": 1043
+     },
+     "prbc_R3 m0 gi_bleed_57m": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 1944
+     },
+     "prbc_R3 m0 gi_bleed_72f": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 1770,
+      "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT": 174
+     },
+     "prbc_R3 m1 gi_bleed_57m": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 1944
+     },
+     "prbc_R3 m1 gi_bleed_72f": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 1622,
+      "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT": 322
+     },
+     "prbc_R3 m2 gi_bleed_57m": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 1944
+     },
+     "prbc_R3 m2 gi_bleed_72f": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 1634,
+      "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT": 310
+     },
+     "prbc_R4_unit1 m0 gi_bleed_57m": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 1944
+     },
+     "prbc_R4_unit1 m0 gi_bleed_72f": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 1770,
+      "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT": 174
+     },
+     "prbc_R4_unit1 m1 gi_bleed_57m": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 1668,
+      "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT": 276
+     },
+     "prbc_R4_unit1 m1 gi_bleed_72f": {
+      "NO_PERFUSION_CHANGE": 1944
+     },
+     "prbc_R4_unit2 m0 gi_bleed_57m": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 1863,
+      "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT": 81
+     },
+     "prbc_R4_unit2 m0 gi_bleed_72f": {
+      "NO_PERFUSION_CHANGE": 1944
+     },
+     "prbc_R4_unit2 m1 gi_bleed_57m": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 1557,
+      "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT": 387
+     },
+     "prbc_R4_unit2 m1 gi_bleed_72f": {
+      "NO_PERFUSION_CHANGE": 1944
+     }
+    },
+    "comparison_minutes": {
+     "crystalloid": [
+      20,
+      120
+     ],
+     "prbc_R3": [
+      30,
+      60,
+      120
+     ],
+     "prbc_R4_unit1": [
+      30,
+      120
+     ],
+     "prbc_R4_unit2": [
+      60,
+      120
+     ]
+    },
+    "extreme_acidemia": {
+     "by_case": {
+      "gi_bleed_57m": 0,
+      "gi_bleed_72f": 0
+     },
+     "flagged": 0,
+     "lowest": {
+      "burden": 16.001715260353546,
+      "case": "gi_bleed_57m",
+      "deficit": 0.7374451869940079,
+      "flag": null,
+      "minute": 120,
+      "paco2": 27.026087362645313,
+      "ph": 7.094092429973695,
+      "rr": {
+       "high": 35.06791180716916,
+       "low": 30.888411774838687,
+       "median": 33.480126289269684,
+       "n": 6
+      }
+     },
+     "survivors": 165480
+    },
+    "observables": {
+     "arrival_paco2 gi_bleed_57m": {
+      "high": 33.30557868442964,
+      "low": 28.530670470756064,
+      "median": 30.75414407070027,
+      "n": 12
+     },
+     "arrival_paco2 gi_bleed_72f": {
+      "high": 35.52397868561279,
+      "low": 31.94888178913738,
+      "median": 33.65221329106759,
+      "n": 12
+     },
+     "arrival_ph_diagnostic gi_bleed_57m": {
+      "high": 7.40561287071181,
+      "low": 7.3384078644840764,
+      "median": 7.373165116704325,
+      "n": 12
+     },
+     "arrival_ph_diagnostic gi_bleed_72f": {
+      "high": 7.415088273088317,
+      "low": 7.369022334729234,
+      "median": 7.392598050760322,
+      "n": 12
+     },
+     "arrival_rr gi_bleed_57m": {
+      "high": 28.441920351405297,
+      "low": 23.886517722221193,
+      "median": 26.12510381631786,
+      "n": 18
+     },
+     "arrival_rr gi_bleed_72f": {
+      "high": 25.455605863893048,
+      "low": 21.286810166726596,
+      "median": 23.86615413288353,
+      "n": 21
+     },
+     "crystalloid delta_burden m0 gi_bleed_57m": {
+      "high": -0.10264138899140818,
+      "low": -1.1783935416303546,
+      "median": -0.3802179578645637,
+      "n": 19116
+     },
+     "crystalloid delta_burden m0 gi_bleed_72f": {
+      "high": -0.08385174785665495,
+      "low": -1.066759675683529,
+      "median": -0.3197979216493083,
+      "n": 19116
+     },
+     "crystalloid delta_burden m1 gi_bleed_57m": {
+      "high": -0.665143074121973,
+      "low": -6.454827314585021,
+      "median": -2.4184635456450456,
+      "n": 19116
+     },
+     "crystalloid delta_burden m1 gi_bleed_72f": {
+      "high": -0.5557676969106398,
+      "low": -5.907037812050042,
+      "median": -2.136940833142213,
+      "n": 19116
+     },
+     "crystalloid delta_deficit m0 gi_bleed_57m": {
+      "high": -0.18004495008574573,
+      "low": -0.2606781346106083,
+      "median": -0.22758630791788936,
+      "n": 19116
+     },
+     "crystalloid delta_deficit m0 gi_bleed_72f": {
+      "high": -0.1464875093817808,
+      "low": -0.20987122866024954,
+      "median": -0.18946998429079387,
+      "n": 19116
+     },
+     "crystalloid delta_deficit m1 gi_bleed_57m": {
+      "high": -0.09903858129833132,
+      "low": -0.27744355486113925,
+      "median": -0.21752864052467413,
+      "n": 19116
+     },
+     "crystalloid delta_deficit m1 gi_bleed_72f": {
+      "high": -0.08498104071662038,
+      "low": -0.2533115663600125,
+      "median": -0.1981416388933781,
+      "n": 19116
+     },
+     "crystalloid delta_paco2 m0 gi_bleed_57m": {
+      "high": 1.332282384833821,
+      "low": 0.0859872301443545,
+      "median": 0.3776368263301322,
+      "n": 19116
+     },
+     "crystalloid delta_paco2 m0 gi_bleed_72f": {
+      "high": 1.6817709266302998,
+      "low": 0.0802085785834592,
+      "median": 0.39848651840711113,
+      "n": 19116
+     },
+     "crystalloid delta_paco2 m1 gi_bleed_57m": {
+      "high": 5.109369935148759,
+      "low": 0.5593648696183351,
+      "median": 2.2700021723313526,
+      "n": 19116
+     },
+     "crystalloid delta_paco2 m1 gi_bleed_72f": {
+      "high": 7.318117680463963,
+      "low": 0.5409266098334484,
+      "median": 2.5941117411881898,
+      "n": 19116
+     },
+     "crystalloid delta_ph m0 gi_bleed_57m": {
+      "high": 0.018767382223744633,
+      "low": 0.0006370906707324764,
+      "median": 0.003646468399622016,
+      "n": 19116
+     },
+     "crystalloid delta_ph m0 gi_bleed_72f": {
+      "high": 0.010616945469649863,
+      "low": -0.0002506062679774601,
+      "median": 0.0012895528633096731,
+      "n": 19116
+     },
+     "crystalloid delta_ph m1 gi_bleed_57m": {
+      "high": 0.19606596627642858,
+      "low": 0.00401807443602209,
+      "median": 0.03097387182818956,
+      "n": 19116
+     },
+     "crystalloid delta_ph m1 gi_bleed_72f": {
+      "high": 0.08744438388104481,
+      "low": -0.0028280404601623843,
+      "median": 0.012221294737771782,
+      "n": 19116
+     },
+     "crystalloid delta_rr m0 gi_bleed_57m": {
+      "high": -0.07894817947724064,
+      "low": -1.4079305505655029,
+      "median": -0.4089729697794908,
+      "n": 27057
+     },
+     "crystalloid delta_rr m0 gi_bleed_72f": {
+      "high": -0.07144922839653844,
+      "low": -2.287544740215534,
+      "median": -0.4577869324485455,
+      "n": 31860
+     },
+     "crystalloid delta_rr m1 gi_bleed_57m": {
+      "high": -0.5131611461379393,
+      "low": -4.7913285365349125,
+      "median": -2.340534158925699,
+      "n": 27057
+     },
+     "crystalloid delta_rr m1 gi_bleed_72f": {
+      "high": -0.47970338453279737,
+      "low": -8.602560384667392,
+      "median": -2.9220879908150383,
+      "n": 31860
+     },
+     "definitive_paco2_120 gi_bleed_57m": {
+      "high": 38.70883558079966,
+      "low": 31.331980440743557,
+      "median": 35.48185384356991,
+      "n": 1944
+     },
+     "definitive_paco2_120 gi_bleed_72f": {
+      "high": 39.311284304310455,
+      "low": 34.57292504365042,
+      "median": 37.34542701223324,
+      "n": 1944
+     },
+     "definitive_ph_120 gi_bleed_57m": {
+      "high": 7.415115972234463,
+      "low": 7.364644013412568,
+      "median": 7.399143503581832,
+      "n": 1944
+     },
+     "definitive_ph_120 gi_bleed_72f": {
+      "high": 7.4142265865117665,
+      "low": 7.3837177776835965,
+      "median": 7.4015955635307105,
+      "n": 1944
+     },
+     "definitive_rr_120 gi_bleed_57m": {
+      "high": 25.73968260098836,
+      "low": 14.955057686634166,
+      "median": 21.395695949154256,
+      "n": 2752
+     },
+     "definitive_rr_120 gi_bleed_72f": {
+      "high": 23.439161279680206,
+      "low": 13.598374294776619,
+      "median": 19.217940910083467,
+      "n": 3240
+     },
+     "ph_highest_any_scenario gi_bleed_57m": {
+      "high": 7.415387164902603,
+      "low": 7.3384078644840764,
+      "median": 7.384346122781764,
+      "n": 24948
+     },
+     "ph_highest_any_scenario gi_bleed_72f": {
+      "high": 7.415387164918221,
+      "low": 7.369022334729234,
+      "median": 7.400335530519729,
+      "n": 24948
+     },
+     "ph_lowest_any_scenario gi_bleed_57m": {
+      "high": 7.40561287071181,
+      "low": 7.094092429973695,
+      "median": 7.361984110626884,
+      "n": 24948
+     },
+     "ph_lowest_any_scenario gi_bleed_72f": {
+      "high": 7.415088273088317,
+      "low": 7.284366824739806,
+      "median": 7.384926786990286,
+      "n": 24948
+     },
+     "prbc_R3 delta_burden m0 gi_bleed_57m": {
+      "high": -0.29455350222294374,
+      "low": -2.7423624713340233,
+      "median": -0.9315527961360082,
+      "n": 1944
+     },
+     "prbc_R3 delta_burden m0 gi_bleed_72f": {
+      "high": -0.2210384788790325,
+      "low": -1.8397113061804014,
+      "median": -0.6660789883725433,
+      "n": 1944
+     },
+     "prbc_R3 delta_burden m1 gi_bleed_57m": {
+      "high": -0.9882396557993971,
+      "low": -7.237781118587605,
+      "median": -2.8176617803670023,
+      "n": 1944
+     },
+     "prbc_R3 delta_burden m1 gi_bleed_72f": {
+      "high": -0.5346343466144337,
+      "low": -3.981244933772453,
+      "median": -1.553893438362754,
+      "n": 1944
+     },
+     "prbc_R3 delta_burden m2 gi_bleed_57m": {
+      "high": -2.359660459927274,
+      "low": -13.482225635674098,
+      "median": -6.0918135507877675,
+      "n": 1944
+     },
+     "prbc_R3 delta_burden m2 gi_bleed_72f": {
+      "high": -1.2479881317963901,
+      "low": -8.031384448522726,
+      "median": -3.3894770482074614,
+      "n": 1944
+     },
+     "prbc_R3 delta_deficit m0 gi_bleed_57m": {
+      "high": -0.38216565754135123,
+      "low": -0.46821437183685277,
+      "median": -0.42815826054060474,
+      "n": 1944
+     },
+     "prbc_R3 delta_deficit m0 gi_bleed_72f": {
+      "high": -0.19388035862633224,
+      "low": -0.22163888089900285,
+      "median": -0.21094239866077924,
+      "n": 1944
+     },
+     "prbc_R3 delta_deficit m1 gi_bleed_57m": {
+      "high": -0.49096476980250336,
+      "low": -0.5354169323246081,
+      "median": -0.5236486612673114,
+      "n": 1944
+     },
+     "prbc_R3 delta_deficit m1 gi_bleed_72f": {
+      "high": -0.23705453609131377,
+      "low": -0.2921821429600765,
+      "median": -0.2720174371007936,
+      "n": 1944
+     },
+     "prbc_R3 delta_deficit m2 gi_bleed_57m": {
+      "high": -0.5771402049346739,
+      "low": -0.6636973259362418,
+      "median": -0.6446713750778743,
+      "n": 1944
+     },
+     "prbc_R3 delta_deficit m2 gi_bleed_72f": {
+      "high": -0.32037146936944494,
+      "low": -0.4259917881137779,
+      "median": -0.3934480833491486,
+      "n": 1944
+     },
+     "prbc_R3 delta_paco2 m0 gi_bleed_57m": {
+      "high": 3.138729042145009,
+      "low": 0.2483845588083966,
+      "median": 0.9783957292963734,
+      "n": 1944
+     },
+     "prbc_R3 delta_paco2 m0 gi_bleed_72f": {
+      "high": 2.964455520532635,
+      "low": 0.21298239304166344,
+      "median": 0.8304847386424363,
+      "n": 1944
+     },
+     "prbc_R3 delta_paco2 m1 gi_bleed_57m": {
+      "high": 8.57826771107965,
+      "low": 0.8497305649188363,
+      "median": 2.999798270326812,
+      "n": 1944
+     },
+     "prbc_R3 delta_paco2 m1 gi_bleed_72f": {
+      "high": 6.481435142886003,
+      "low": 0.523166185697562,
+      "median": 1.9569676904656745,
+      "n": 1944
+     },
+     "prbc_R3 delta_paco2 m2 gi_bleed_57m": {
+      "high": 15.827690165880892,
+      "low": 2.087893887939785,
+      "median": 6.406106300148412,
+      "n": 1944
+     },
+     "prbc_R3 delta_paco2 m2 gi_bleed_72f": {
+      "high": 12.24371329990587,
+      "low": 1.2468858229792374,
+      "median": 4.461737733244654,
+      "n": 1944
+     },
+     "prbc_R3 delta_ph m0 gi_bleed_57m": {
+      "high": 0.043205133652231886,
+      "low": 0.001742826944884257,
+      "median": 0.00869010208933485,
+      "n": 1944
+     },
+     "prbc_R3 delta_ph m0 gi_bleed_72f": {
+      "high": 0.017792298976250898,
+      "low": -0.0010666136562971218,
+      "median": 0.0025288802884158024,
+      "n": 1944
+     },
+     "prbc_R3 delta_ph m1 gi_bleed_57m": {
+      "high": 0.11403157845224143,
+      "low": 0.005016544679574686,
+      "median": 0.023218143516706036,
+      "n": 1944
+     },
+     "prbc_R3 delta_ph m1 gi_bleed_72f": {
+      "high": 0.03853462658003082,
+      "low": -0.004478148767680601,
+      "median": 0.0054892590833217625,
+      "n": 1944
+     },
+     "prbc_R3 delta_ph m2 gi_bleed_57m": {
+      "high": 0.25043854087469075,
+      "low": 0.0044923925018816036,
+      "median": 0.04958859782759806,
+      "n": 1944
+     },
+     "prbc_R3 delta_ph m2 gi_bleed_72f": {
+      "high": 0.09046421590528464,
+      "low": -0.010071555046632596,
+      "median": 0.01282103483746777,
+      "n": 1944
+     },
+     "prbc_R3 delta_rr m0 gi_bleed_57m": {
+      "high": -0.22774626940055498,
+      "low": -3.3309121641741477,
+      "median": -1.0408731156733708,
+      "n": 2752
+     },
+     "prbc_R3 delta_rr m0 gi_bleed_72f": {
+      "high": -0.18937064118324543,
+      "low": -4.089438369541494,
+      "median": -0.9769351234261716,
+      "n": 3240
+     },
+     "prbc_R3 delta_rr m1 gi_bleed_57m": {
+      "high": -0.7759259366653666,
+      "low": -9.47751357987125,
+      "median": -3.2186732424047797,
+      "n": 2752
+     },
+     "prbc_R3 delta_rr m1 gi_bleed_72f": {
+      "high": -0.46330306642634156,
+      "low": -9.006906258267147,
+      "median": -2.258720242136718,
+      "n": 3240
+     },
+     "prbc_R3 delta_rr m2 gi_bleed_57m": {
+      "high": -1.894132709645735,
+      "low": -17.804139965255004,
+      "median": -6.984974936814217,
+      "n": 2752
+     },
+     "prbc_R3 delta_rr m2 gi_bleed_72f": {
+      "high": -1.0980301526887217,
+      "low": -16.39811517569383,
+      "median": -5.072109015503317,
+      "n": 3240
+     },
+     "prbc_R4_unit1 delta_burden m0 gi_bleed_57m": {
+      "high": -0.29455350222294374,
+      "low": -2.7423624713340233,
+      "median": -0.9315527961360082,
+      "n": 1944
+     },
+     "prbc_R4_unit1 delta_burden m0 gi_bleed_72f": {
+      "high": -0.2210384788790325,
+      "low": -1.8397113061804014,
+      "median": -0.6660789883725433,
+      "n": 1944
+     },
+     "prbc_R4_unit1 delta_burden m1 gi_bleed_57m": {
+      "high": -0.7022787877283125,
+      "low": -3.5920374736274234,
+      "median": -1.6745609836603297,
+      "n": 1944
+     },
+     "prbc_R4_unit1 delta_burden m1 gi_bleed_72f": {
+      "high": -0.21421358913908284,
+      "low": -0.6623492608617916,
+      "median": -0.39914349712285113,
+      "n": 1944
+     },
+     "prbc_R4_unit1 delta_deficit m0 gi_bleed_57m": {
+      "high": -0.38216565754135123,
+      "low": -0.46821437183685277,
+      "median": -0.42815826054060474,
+      "n": 1944
+     },
+     "prbc_R4_unit1 delta_deficit m0 gi_bleed_72f": {
+      "high": -0.19388035862633224,
+      "low": -0.22163888089900285,
+      "median": -0.21094239866077924,
+      "n": 1944
+     },
+     "prbc_R4_unit1 delta_deficit m1 gi_bleed_57m": {
+      "high": -0.056998717596184134,
+      "low": -0.11764566836682966,
+      "median": -0.09627667045533461,
+      "n": 1944
+     },
+     "prbc_R4_unit1 delta_deficit m1 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 1944
+     },
+     "prbc_R4_unit1 delta_paco2 m0 gi_bleed_57m": {
+      "high": 3.138729042145009,
+      "low": 0.2483845588083966,
+      "median": 0.9783957292963734,
+      "n": 1944
+     },
+     "prbc_R4_unit1 delta_paco2 m0 gi_bleed_72f": {
+      "high": 2.964455520532635,
+      "low": 0.21298239304166344,
+      "median": 0.8304847386424363,
+      "n": 1944
+     },
+     "prbc_R4_unit1 delta_paco2 m1 gi_bleed_57m": {
+      "high": 6.092844682853109,
+      "low": 0.6495983800387961,
+      "median": 2.1496400208239095,
+      "n": 1944
+     },
+     "prbc_R4_unit1 delta_paco2 m1 gi_bleed_72f": {
+      "high": 1.2758402239851918,
+      "low": 0.22016226433511576,
+      "median": 0.5959451397039466,
+      "n": 1944
+     },
+     "prbc_R4_unit1 delta_ph m0 gi_bleed_57m": {
+      "high": 0.043205133652231886,
+      "low": 0.001742826944884257,
+      "median": 0.00869010208933485,
+      "n": 1944
+     },
+     "prbc_R4_unit1 delta_ph m0 gi_bleed_72f": {
+      "high": 0.017792298976250898,
+      "low": -0.0010666136562971218,
+      "median": 0.0025288802884158024,
+      "n": 1944
+     },
+     "prbc_R4_unit1 delta_ph m1 gi_bleed_57m": {
+      "high": 0.03264254029286384,
+      "low": -0.006163525687059135,
+      "median": 0.007115057968444027,
+      "n": 1944
+     },
+     "prbc_R4_unit1 delta_ph m1 gi_bleed_72f": {
+      "high": 0.00488537016127033,
+      "low": -0.0034836290291595517,
+      "median": 0.0005877268764842292,
+      "n": 1944
+     },
+     "prbc_R4_unit1 delta_rr m0 gi_bleed_57m": {
+      "high": -0.22774626940055498,
+      "low": -3.3309121641741477,
+      "median": -1.0408731156733708,
+      "n": 2752
+     },
+     "prbc_R4_unit1 delta_rr m0 gi_bleed_72f": {
+      "high": -0.18937064118324543,
+      "low": -4.089438369541494,
+      "median": -0.9769351234261716,
+      "n": 3240
+     },
+     "prbc_R4_unit1 delta_rr m1 gi_bleed_57m": {
+      "high": -0.5834552902668726,
+      "low": -8.674646134922057,
+      "median": -2.2381325650699466,
+      "n": 2752
+     },
+     "prbc_R4_unit1 delta_rr m1 gi_bleed_72f": {
+      "high": -0.19240018689249894,
+      "low": -2.040535258338581,
+      "median": -0.6750840855751621,
+      "n": 3240
+     },
+     "prbc_R4_unit2 delta_burden m0 gi_bleed_57m": {
+      "high": -0.02811357871882869,
+      "low": -0.9087222673141051,
+      "median": -0.19926969638250647,
+      "n": 1944
+     },
+     "prbc_R4_unit2 delta_burden m0 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 1944
+     },
+     "prbc_R4_unit2 delta_burden m1 gi_bleed_57m": {
+      "high": -0.18152856072839185,
+      "low": -2.391239322784798,
+      "median": -0.7691630940037082,
+      "n": 1944
+     },
+     "prbc_R4_unit2 delta_burden m1 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 1944
+     },
+     "prbc_R4_unit2 delta_deficit m0 gi_bleed_57m": {
+      "high": -0.04575423955839131,
+      "low": -0.10864373092138013,
+      "median": -0.08836217215288189,
+      "n": 1944
+     },
+     "prbc_R4_unit2 delta_deficit m0 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 1944
+     },
+     "prbc_R4_unit2 delta_deficit m1 gi_bleed_57m": {
+      "high": -0.06127591722775816,
+      "low": -0.12242334564627178,
+      "median": -0.1027264984896179,
+      "n": 1944
+     },
+     "prbc_R4_unit2 delta_deficit m1 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 1944
+     },
+     "prbc_R4_unit2 delta_paco2 m0 gi_bleed_57m": {
+      "high": 1.3566266537385623,
+      "low": 0.02483459638555985,
+      "median": 0.23634705629799058,
+      "n": 1944
+     },
+     "prbc_R4_unit2 delta_paco2 m0 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 1944
+     },
+     "prbc_R4_unit2 delta_paco2 m1 gi_bleed_57m": {
+      "high": 4.293608137981323,
+      "low": 0.1702247742045131,
+      "median": 1.0289808732498926,
+      "n": 1944
+     },
+     "prbc_R4_unit2 delta_paco2 m1 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 1944
+     },
+     "prbc_R4_unit2 delta_ph m0 gi_bleed_57m": {
+      "high": 0.009771270635292595,
+      "low": -0.0002636481209421504,
+      "median": 0.0011629799406742691,
+      "n": 1944
+     },
+     "prbc_R4_unit2 delta_ph m0 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 1944
+     },
+     "prbc_R4_unit2 delta_ph m1 gi_bleed_57m": {
+      "high": 0.019805133119357166,
+      "low": -0.005486253777752914,
+      "median": 0.0027107317383929797,
+      "n": 1944
+     },
+     "prbc_R4_unit2 delta_ph m1 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 1944
+     },
+     "prbc_R4_unit2 delta_rr m0 gi_bleed_57m": {
+      "high": -0.022546004202951053,
+      "low": -1.7793192692085817,
+      "median": -0.2601162472506857,
+      "n": 2752
+     },
+     "prbc_R4_unit2 delta_rr m0 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 3240
+     },
+     "prbc_R4_unit2 delta_rr m1 gi_bleed_57m": {
+      "high": -0.1523887298386768,
+      "low": -6.308684363036889,
+      "median": -1.1261986130032469,
+      "n": 2752
+     },
+     "prbc_R4_unit2 delta_rr m1 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 3240
+     },
+     "residual_rr_above_intrinsic_120 gi_bleed_57m": {
+      "high": 10.161606947573173,
+      "low": 1.0874980442199131,
+      "median": 4.058427273695543,
+      "n": 2752
+     },
+     "residual_rr_above_intrinsic_120 gi_bleed_72f": {
+      "high": 6.4052093470543525,
+      "low": 0.5772167702473148,
+      "median": 2.4127213517405597,
+      "n": 3240
+     },
+     "untreated_paco2_120 gi_bleed_57m": {
+      "high": 33.208511333657434,
+      "low": 20.407091730345627,
+      "median": 28.161064093822326,
+      "n": 1944
+     },
+     "untreated_paco2_120 gi_bleed_72f": {
+      "high": 35.82822633835336,
+      "low": 25.157722578714043,
+      "median": 32.08160705770099,
+      "n": 1944
+     },
+     "untreated_ph_120 gi_bleed_57m": {
+      "high": 7.404834792691361,
+      "low": 7.094092429973695,
+      "median": 7.333340884823711,
+      "n": 1944
+     },
+     "untreated_ph_120 gi_bleed_72f": {
+      "high": 7.415338783812245,
+      "low": 7.284366824739806,
+      "median": 7.382058179972624,
+      "n": 1944
+     },
+     "untreated_ph_lowest_0_120 gi_bleed_57m": {
+      "high": 7.404834792691361,
+      "low": 7.094092429973695,
+      "median": 7.333340884823711,
+      "n": 1944
+     },
+     "untreated_ph_lowest_0_120 gi_bleed_72f": {
+      "high": 7.415088273088317,
+      "low": 7.284366824739806,
+      "median": 7.382058179972624,
+      "n": 1944
+     },
+     "untreated_rr_120 gi_bleed_57m": {
+      "high": 35.06791180716916,
+      "low": 24.000962742244894,
+      "median": 28.880823320027304,
+      "n": 2752
+     },
+     "untreated_rr_120 gi_bleed_72f": {
+      "high": 32.781238440828055,
+      "low": 20.884848299055392,
+      "median": 25.38786730247802,
+      "n": 3240
+     }
+    },
+    "r3r4": {
+     "bug": false,
+     "classes": {
+      "PHYSIOLOGICAL_RESPIRATORY_CONVERGENCE": 108,
+      "RESPIRATORY_OUTPUTS_DISTINCT": 0,
+      "SCENARIO_STATE_COLLAPSE_BUG": 0
+     },
+     "pairs": [
+      {
+       "case": "gi_bleed_57m",
+       "class": "PHYSIOLOGICAL_RESPIRATORY_CONVERGENCE",
+       "gap": {
+        "burden": 0.0,
+        "paco2": 0.0,
+        "ph": 0.0,
+        "rr": 0.0,
+        "w": 0.0
+       },
+       "level": "lower",
+       "q": 1,
+       "underlying": {
+        "bleed_rate_120": [
+         2.0,
+         0.25
+        ],
+        "bleeding_differs": true,
+        "blood_state_differs": true,
+        "chronology_same": true,
+        "complete": true,
+        "deficit_120": [
+         0.0,
+         0.0
+        ],
+        "deficit_max_abs_difference": 0.0,
+        "delivery_120": [
+         1.9180605175676069,
+         2.036284394350883
+        ],
+        "distinct": true,
+        "haemostasis": [
+         null,
+         60
+        ],
+        "hb_120": [
+         8.613990996148807,
+         8.613977400749864
+        ],
+        "hb_differs": true,
+        "output_120": [
+         1.4918758881276366,
+         1.5838334380774273
+        ],
+        "output_differs": true,
+        "red_cells_120": [
+         1.4399507336845767,
+         1.4856968235845565
+        ],
+        "shed_ml_120": [
+         240.0,
+         133.25
+        ],
+        "volume_ml_120": [
+         360.0000000000001,
+         466.7500000000001
+        ]
+       }
+      },
+      {
+       "case": "gi_bleed_57m",
+       "class": "PHYSIOLOGICAL_RESPIRATORY_CONVERGENCE",
+       "gap": {
+        "burden": 0.0,
+        "paco2": 0.0,
+        "ph": 0.0,
+        "rr": 0.0,
+        "w": 0.0
+       },
+       "level": "lower",
+       "q": 13,
+       "underlying": {
+        "bleed_rate_120": [
+         2.0,
+         0.25
+        ],
+        "bleeding_differs": true,
+        "blood_state_differs": true,
+        "chronology_same": true,
+        "complete": true,
+        "deficit_120": [
+         0.0,
+         0.0
+        ],
+        "deficit_max_abs_difference": 0.0,
+        "delivery_120": [
+         1.9180605175676069,
+         2.036284394350883
+        ],
+        "distinct": true,
+        "haemostasis": [
+         null,
+         60
+        ],
+        "hb_120": [
+         8.613990996148807,
+         8.613977400749864
+        ],
+        "hb_differs": true,
+        "output_120": [
+         1.4918758881276366,
+         1.5838334380774273
+        ],
+        "output_differs": true,
+        "red_cells_120": [
+         1.4399507336845767,
+         1.4856968235845565
+        ],
+        "shed_ml_120": [
+         240.0,
+         133.25
+        ],
+        "volume_ml_120": [
+         360.0000000000001,
+         466.7500000000001
+        ]
+       }
+      },
+      {
+       "case": "gi_bleed_57m",
+       "class": "PHYSIOLOGICAL_RESPIRATORY_CONVERGENCE",
+       "gap": {
+        "burden": 0.0,
+        "paco2": 0.0,
+        "ph": 0.0,
+        "rr": 0.0,
+        "w": 0.0
+       },
+       "level": "lower",
+       "q": 130,
+       "underlying": {
+        "bleed_rate_120": [
+         2.0,
+         0.25
+        ],
+        "bleeding_differs": true,
+        "blood_state_differs": true,
+        "chronology_same": true,
+        "complete": true,
+        "deficit_120": [
+         0.0,
+         0.0
+        ],
+        "deficit_max_abs_difference": 0.0,
+        "delivery_120": [
+         1.9909440975472232,
+         2.116344863642906
+        ],
+        "distinct": true,
+        "haemostasis": [
+         null,
+         60
+        ],
+        "hb_120": [
+         8.705607141606695,
+         8.705596124728327
+        ],
+        "hb_differs": true,
+        "output_120": [
+         1.5322682538491517,
+         1.628781117714666
+        ],
+        "output_differs": true,
+        "red_cells_120": [
+         1.4487689496852931,
+         1.483443324723996
+        ],
+        "shed_ml_120": [
+         240.0,
+         133.25
+        ],
+        "volume_ml_120": [
+         460.00000000000034,
+         566.7500000000003
+        ]
+       }
+      },
+      {
+       "case": "gi_bleed_57m",
+       "class": "PHYSIOLOGICAL_RESPIRATORY_CONVERGENCE",
+       "gap": {
+        "burden": 0.0,
+        "paco2": 0.0,
+        "ph": 0.0,
+        "rr": 0.0,
+        "w": 0.0
+       },
+       "level": "lower",
+       "q": 137,
+       "underlying": {
+        "bleed_rate_120": [
+         2.0,
+         0.25
+        ],
+        "bleeding_differs": true,
+        "blood_state_differs": true,
+        "chronology_same": true,
+        "complete": true,
+        "deficit_120": [
+         0.0,
+         0.0
+        ],
+        "deficit_max_abs_difference": 0.0,
+        "delivery_120": [
+         1.9909440975472232,
+         2.116344863642906
+        ],
+        "distinct": true,
+        "haemostasis": [
+         null,
+         60
+        ],
+        "hb_120": [
+         8.705607141606695,
+         8.705596124728327
+        ],
+        "hb_differs": true,
+        "output_120": [
+         1.5322682538491517,
+         1.628781117714666
+        ],
+        "output_differs": true,
+        "red_cells_120": [
+         1.4487689496852931,
+         1.483443324723996
+        ],
+        "shed_ml_120": [
+         240.0,
+         133.25
+        ],
+        "volume_ml_120": [
+         460.00000000000034,
+         566.7500000000003
+        ]
+       }
+      }
+     ]
+    },
+    "signs": {
+     "paco2_follows_burden": {
+      "checked": 103680,
+      "held": 103680
+     },
+     "rr_follows_burden": {
+      "checked": 159778,
+      "held": 159778
+     }
+    }
+   }
+  },
+  "1.1": {
+   "filter": {
+    "any_failure": {
+     "A": 1320336,
+     "ARRIVAL_PACO2": 0,
+     "ARRIVAL_RR": 4245696,
+     "B": 835920,
+     "C": 0,
+     "D": 0,
+     "E": 0,
+     "F": 0,
+     "G": 721440,
+     "G2": 707616,
+     "H_PACO2": 0,
+     "H_PH": 0,
+     "I": 353808,
+     "SIMULATION": 0
+    },
+    "by_tone_gain": {
+     "0.25": {
+      "entering": 1769040,
+      "survivors": 340704,
+      "units": 1092
+     },
+     "0.5": {
+      "entering": 1769040,
+      "survivors": 340704,
+      "units": 1092
+     },
+     "1": {
+      "entering": 1769040,
+      "survivors": 340704,
+      "units": 1092
+     }
+    },
+    "entering": 5307120,
+    "first_failure": {
+     "A": 0,
+     "ARRIVAL_PACO2": 0,
+     "ARRIVAL_RR": 4245696,
+     "B": 0,
+     "C": 0,
+     "D": 0,
+     "E": 0,
+     "F": 0,
+     "G": 0,
+     "G2": 0,
+     "H_PACO2": 0,
+     "H_PH": 0,
+     "I": 39312,
+     "SIMULATION": 0
+    },
+    "latent_survivors": 312,
+    "only_failure": {
+     "A": 0,
+     "ARRIVAL_PACO2": 0,
+     "ARRIVAL_RR": 1712640,
+     "B": 0,
+     "C": 0,
+     "D": 0,
+     "E": 0,
+     "F": 0,
+     "G": 0,
+     "G2": 0,
+     "H_PACO2": 0,
+     "H_PH": 0,
+     "I": 39312,
+     "SIMULATION": 0
+    },
+    "overlap": {
+     "A+B": 369840,
+     "A+C": 0,
+     "A+D": 0,
+     "A+E": 0,
+     "A+F": 0,
+     "A+G": 259776,
+     "A+G2": 134064,
+     "A+H_PACO2": 0,
+     "A+H_PH": 0,
+     "A+I": 78624,
+     "ARRIVAL_PACO2+A": 0,
+     "ARRIVAL_PACO2+B": 0,
+     "ARRIVAL_PACO2+C": 0,
+     "ARRIVAL_PACO2+D": 0,
+     "ARRIVAL_PACO2+E": 0,
+     "ARRIVAL_PACO2+F": 0,
+     "ARRIVAL_PACO2+G": 0,
+     "ARRIVAL_PACO2+G2": 0,
+     "ARRIVAL_PACO2+H_PACO2": 0,
+     "ARRIVAL_PACO2+H_PH": 0,
+     "ARRIVAL_PACO2+I": 0,
+     "ARRIVAL_RR+A": 1320336,
+     "ARRIVAL_RR+ARRIVAL_PACO2": 0,
+     "ARRIVAL_RR+B": 835920,
+     "ARRIVAL_RR+C": 0,
+     "ARRIVAL_RR+D": 0,
+     "ARRIVAL_RR+E": 0,
+     "ARRIVAL_RR+F": 0,
+     "ARRIVAL_RR+G": 721440,
+     "ARRIVAL_RR+G2": 707616,
+     "ARRIVAL_RR+H_PACO2": 0,
+     "ARRIVAL_RR+H_PH": 0,
+     "ARRIVAL_RR+I": 314496,
+     "B+C": 0,
+     "B+D": 0,
+     "B+E": 0,
+     "B+F": 0,
+     "B+G": 71520,
+     "B+G2": 126000,
+     "B+H_PACO2": 0,
+     "B+H_PH": 0,
+     "B+I": 39312,
+     "C+D": 0,
+     "C+E": 0,
+     "C+F": 0,
+     "D+E": 0,
+     "D+F": 0,
+     "E+F": 0,
+     "G+C": 0,
+     "G+D": 0,
+     "G+E": 0,
+     "G+F": 0,
+     "G+G2": 318912,
+     "G+H_PACO2": 0,
+     "G+H_PH": 0,
+     "G+I": 235872,
+     "G2+C": 0,
+     "G2+D": 0,
+     "G2+E": 0,
+     "G2+F": 0,
+     "G2+H_PACO2": 0,
+     "G2+H_PH": 0,
+     "G2+I": 235872,
+     "H_PACO2+C": 0,
+     "H_PACO2+D": 0,
+     "H_PACO2+E": 0,
+     "H_PACO2+F": 0,
+     "H_PACO2+H_PH": 0,
+     "H_PACO2+I": 0,
+     "H_PH+C": 0,
+     "H_PH+D": 0,
+     "H_PH+E": 0,
+     "H_PH+F": 0,
+     "H_PH+I": 0,
+     "I+C": 0,
+     "I+D": 0,
+     "I+E": 0,
+     "I+F": 0,
+     "SIMULATION+A": 0,
+     "SIMULATION+ARRIVAL_PACO2": 0,
+     "SIMULATION+ARRIVAL_RR": 0,
+     "SIMULATION+B": 0,
+     "SIMULATION+C": 0,
+     "SIMULATION+D": 0,
+     "SIMULATION+E": 0,
+     "SIMULATION+F": 0,
+     "SIMULATION+G": 0,
+     "SIMULATION+G2": 0,
+     "SIMULATION+H_PACO2": 0,
+     "SIMULATION+H_PH": 0,
+     "SIMULATION+I": 0
+    },
+    "rejection_classes_any": {
+     "ARRIVAL_PACO2_REJECTION": 0,
+     "ARRIVAL_RR_REJECTION": 4245696,
+     "PACO2_ENVELOPE_REJECTION": 0,
+     "PH_ENVELOPE_REJECTION": 0,
+     "RR_ENVELOPE_REJECTION": 2572368,
+     "SIMULATION_REJECTION": 0,
+     "TREATMENT_DIRECTION_REJECTION": 0
+    },
+    "rejection_classes_first": {
+     "ARRIVAL_PACO2_REJECTION": 0,
+     "ARRIVAL_RR_REJECTION": 4245696,
+     "PACO2_ENVELOPE_REJECTION": 0,
+     "PH_ENVELOPE_REJECTION": 0,
+     "RR_ENVELOPE_REJECTION": 39312,
+     "SIMULATION_REJECTION": 0,
+     "TREATMENT_DIRECTION_REJECTION": 0
+    },
+    "survivors": 1022112,
+    "upstream_units": 3276,
+    "upstream_units_with_survivors": 3276
+   },
+   "latent_support": {
+    "B": {
+     "class": "NON_IDENTIFIABLE",
+     "filter_reads_it": false,
+     "latent_combinations_by_value": {
+      "13.4": 104,
+      "19.4": 104,
+      "28": 104
+     },
+     "values": [
+      13.4,
+      19.4,
+      28.0
+     ]
+    },
+    "drive_gain": {
+     "class": "POORLY_IDENTIFIED",
+     "filter_reads_it": true,
+     "latent_combinations_by_value": {
+      "1": 36,
+      "1.41421": 144,
+      "2": 36,
+      "2.82843": 72,
+      "4": 24
+     },
+     "values": [
+      1.0,
+      1.4142135623730951,
+      2.0,
+      2.8284271247461903,
+      4.0
+     ]
+    },
+    "intrinsic_57m": {
+     "class": "POORLY_IDENTIFIED",
+     "filter_reads_it": true,
+     "latent_combinations_by_value": {
+      "12": 96,
+      "16": 108,
+      "20": 108
+     },
+     "values": [
+      12.0,
+      16.0,
+      20.0
+     ]
+    },
+    "intrinsic_72f": {
+     "class": "POORLY_IDENTIFIED",
+     "filter_reads_it": true,
+     "latent_combinations_by_value": {
+      "12": 60,
+      "16": 144,
+      "20": 108
+     },
+     "values": [
+      12.0,
+      16.0,
+      20.0
+     ]
+    },
+    "tau": {
+     "class": "POORLY_IDENTIFIED",
+     "filter_reads_it": true,
+     "latent_combinations_by_value": {
+      "120": 108,
+      "240": 96,
+      "60": 108
+     },
+     "values": [
+      60.0,
+      120.0,
+      240.0
+     ]
+    },
+    "ventilation_gain": {
+     "class": "NON_IDENTIFIABLE",
+     "filter_reads_it": false,
+     "latent_combinations_by_value": {
+      "0.03": 78,
+      "0.04": 78,
+      "0.05": 78,
+      "0.06": 78
+     },
+     "values": [
+      0.03,
+      0.04,
+      0.05,
+      0.06
+     ]
+    }
+   },
+   "observed": {
+    "classes": {
+     "crystalloid m0 gi_bleed_57m": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 47952
+     },
+     "crystalloid m0 gi_bleed_72f": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 47952
+     },
+     "crystalloid m1 gi_bleed_57m": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 47952
+     },
+     "crystalloid m1 gi_bleed_72f": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 47952
+     },
+     "prbc_R3 m0 gi_bleed_57m": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 9828
+     },
+     "prbc_R3 m0 gi_bleed_72f": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 9555,
+      "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT": 273
+     },
+     "prbc_R3 m1 gi_bleed_57m": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 9828
+     },
+     "prbc_R3 m1 gi_bleed_72f": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 9143,
+      "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT": 685
+     },
+     "prbc_R3 m2 gi_bleed_57m": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 9828
+     },
+     "prbc_R3 m2 gi_bleed_72f": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 9002,
+      "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT": 826
+     },
+     "prbc_R4_unit1 m0 gi_bleed_57m": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 9828
+     },
+     "prbc_R4_unit1 m0 gi_bleed_72f": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 9555,
+      "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT": 273
+     },
+     "prbc_R4_unit1 m1 gi_bleed_57m": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 9356,
+      "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT": 472
+     },
+     "prbc_R4_unit1 m1 gi_bleed_72f": {
+      "NO_PERFUSION_CHANGE": 9828
+     },
+     "prbc_R4_unit2 m0 gi_bleed_57m": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 9828
+     },
+     "prbc_R4_unit2 m0 gi_bleed_72f": {
+      "NO_PERFUSION_CHANGE": 9828
+     },
+     "prbc_R4_unit2 m1 gi_bleed_57m": {
+      "RESPIRATORY_AND_PERFUSION_IMPROVE": 9181,
+      "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT": 647
+     },
+     "prbc_R4_unit2 m1 gi_bleed_72f": {
+      "NO_PERFUSION_CHANGE": 9828
+     }
+    },
+    "comparison_minutes": {
+     "crystalloid": [
+      20,
+      120
+     ],
+     "prbc_R3": [
+      30,
+      60,
+      120
+     ],
+     "prbc_R4_unit1": [
+      30,
+      120
+     ],
+     "prbc_R4_unit2": [
+      60,
+      120
+     ]
+    },
+    "extreme_acidemia": {
+     "by_case": {
+      "gi_bleed_57m": 17604,
+      "gi_bleed_72f": 0
+     },
+     "flagged": 17604,
+     "lowest": {
+      "burden": 18.37918705414266,
+      "case": "gi_bleed_57m",
+      "deficit": 0.8351209656884006,
+      "flag": "CONSCIOUSNESS_COLLAPSE_REVIEW",
+      "minute": 120,
+      "paco2": 25.78356891798774,
+      "ph": 6.961334846510912,
+      "rr": {
+       "high": 36.16083866118893,
+       "low": 32.16083866118893,
+       "median": 34.56427852093174,
+       "n": 6
+      }
+     },
+     "survivors": 1022112
+    },
+    "observables": {
+     "arrival_paco2 gi_bleed_57m": {
+      "high": 33.30557868442964,
+      "low": 28.530670470756064,
+      "median": 30.75414407070027,
+      "n": 12
+     },
+     "arrival_paco2 gi_bleed_72f": {
+      "high": 35.52397868561279,
+      "low": 31.94888178913738,
+      "median": 33.65221329106759,
+      "n": 12
+     },
+     "arrival_ph_diagnostic gi_bleed_57m": {
+      "high": 7.40561287071181,
+      "low": 7.3384078644840764,
+      "median": 7.373165116704325,
+      "n": 12
+     },
+     "arrival_ph_diagnostic gi_bleed_72f": {
+      "high": 7.415088273088317,
+      "low": 7.369022334729234,
+      "median": 7.392598050760322,
+      "n": 12
+     },
+     "arrival_rr gi_bleed_57m": {
+      "high": 28.441920351405297,
+      "low": 23.886517722221193,
+      "median": 26.12510381631786,
+      "n": 18
+     },
+     "arrival_rr gi_bleed_72f": {
+      "high": 25.455605863893048,
+      "low": 21.286810166726596,
+      "median": 23.86615413288353,
+      "n": 21
+     },
+     "crystalloid delta_burden m0 gi_bleed_57m": {
+      "high": -0.09161302289482975,
+      "low": -1.272873089794171,
+      "median": -0.36124598221762927,
+      "n": 47952
+     },
+     "crystalloid delta_burden m0 gi_bleed_72f": {
+      "high": -0.06904265270378751,
+      "low": -1.2035345503720114,
+      "median": -0.30056154516683464,
+      "n": 47952
+     },
+     "crystalloid delta_burden m1 gi_bleed_57m": {
+      "high": -0.6093130857882754,
+      "low": -7.06726789062823,
+      "median": -2.2789981114787716,
+      "n": 47952
+     },
+     "crystalloid delta_burden m1 gi_bleed_72f": {
+      "high": -0.478384224975116,
+      "low": -6.748018379422525,
+      "median": -2.0369266151145204,
+      "n": 47952
+     },
+     "crystalloid delta_deficit m0 gi_bleed_57m": {
+      "high": -0.15860580287455728,
+      "low": -0.2869798878866644,
+      "median": -0.22149959925597779,
+      "n": 47952
+     },
+     "crystalloid delta_deficit m0 gi_bleed_72f": {
+      "high": -0.11898592475419156,
+      "low": -0.27120353504738504,
+      "median": -0.1854020255389076,
+      "n": 47952
+     },
+     "crystalloid delta_deficit m1 gi_bleed_57m": {
+      "high": -0.09393664848802075,
+      "low": -0.2925755482390683,
+      "median": -0.19610800797264571,
+      "n": 47952
+     },
+     "crystalloid delta_deficit m1 gi_bleed_72f": {
+      "high": -0.07725829394695316,
+      "low": -0.2794740089422624,
+      "median": -0.17993774587894784,
+      "n": 47952
+     },
+     "crystalloid delta_paco2 m0 gi_bleed_57m": {
+      "high": 1.3544146974569458,
+      "low": 0.07631604029200645,
+      "median": 0.3545478933156545,
+      "n": 47952
+     },
+     "crystalloid delta_paco2 m0 gi_bleed_72f": {
+      "high": 1.7709902841497467,
+      "low": 0.0656390593388565,
+      "median": 0.37791172136497586,
+      "n": 47952
+     },
+     "crystalloid delta_paco2 m1 gi_bleed_57m": {
+      "high": 4.814218305180322,
+      "low": 0.498373844755136,
+      "median": 2.027581082380239,
+      "n": 47952
+     },
+     "crystalloid delta_paco2 m1 gi_bleed_72f": {
+      "high": 7.11946472494429,
+      "low": 0.45164011148349203,
+      "median": 2.321002055987794,
+      "n": 47952
+     },
+     "crystalloid delta_ph m0 gi_bleed_57m": {
+      "high": 0.022136159525802057,
+      "low": 0.0005917716250340987,
+      "median": 0.0036922672759107655,
+      "n": 47952
+     },
+     "crystalloid delta_ph m0 gi_bleed_72f": {
+      "high": 0.013218328793328737,
+      "low": 6.524521980733056e-05,
+      "median": 0.0015411867322008277,
+      "n": 47952
+     },
+     "crystalloid delta_ph m1 gi_bleed_57m": {
+      "high": 0.2884660150968754,
+      "low": 0.004445268081658682,
+      "median": 0.03580071773885374,
+      "n": 47952
+     },
+     "crystalloid delta_ph m1 gi_bleed_72f": {
+      "high": 0.12481299419713654,
+      "low": 0.0005846486468072953,
+      "median": 0.016183394494719394,
+      "n": 47952
+     },
+     "crystalloid delta_rr m0 gi_bleed_57m": {
+      "high": -0.07014827829291193,
+      "low": -1.3974877207845822,
+      "median": -0.38729068219229745,
+      "n": 67932
+     },
+     "crystalloid delta_rr m0 gi_bleed_72f": {
+      "high": -0.05856131718091717,
+      "low": -2.299731939137576,
+      "median": -0.43604090118307326,
+      "n": 79920
+     },
+     "crystalloid delta_rr m1 gi_bleed_57m": {
+      "high": -0.45973320522058714,
+      "low": -4.378175550408045,
+      "median": -2.0114362446052265,
+      "n": 67932
+     },
+     "crystalloid delta_rr m1 gi_bleed_72f": {
+      "high": -0.4036369672547586,
+      "low": -7.3103459364363665,
+      "median": -2.5765991849179137,
+      "n": 79920
+     },
+     "definitive_paco2_120 gi_bleed_57m": {
+      "high": 38.54527081571055,
+      "low": 30.615616797226995,
+      "median": 35.20825604716321,
+      "n": 9828
+     },
+     "definitive_paco2_120 gi_bleed_72f": {
+      "high": 39.2595184979529,
+      "low": 34.29064217165811,
+      "median": 37.1809385129431,
+      "n": 9828
+     },
+     "definitive_ph_120 gi_bleed_57m": {
+      "high": 7.41538716450941,
+      "low": 7.359008057345485,
+      "median": 7.398203520753906,
+      "n": 9828
+     },
+     "definitive_ph_120 gi_bleed_72f": {
+      "high": 7.414551164896654,
+      "low": 7.3823952903307,
+      "median": 7.40161584340998,
+      "n": 9828
+     },
+     "definitive_rr_120 gi_bleed_57m": {
+      "high": 26.27455301540458,
+      "low": 15.316613422090564,
+      "median": 21.810344403797682,
+      "n": 13923
+     },
+     "definitive_rr_120 gi_bleed_72f": {
+      "high": 23.63190211256941,
+      "low": 13.71648038593122,
+      "median": 19.421126565220355,
+      "n": 16380
+     },
+     "ph_highest_any_scenario gi_bleed_57m": {
+      "high": 7.415387164918172,
+      "low": 7.3384078644840764,
+      "median": 7.384346122781764,
+      "n": 71604
+     },
+     "ph_highest_any_scenario gi_bleed_72f": {
+      "high": 7.415387164918224,
+      "low": 7.369022334729234,
+      "median": 7.400269314530356,
+      "n": 71604
+     },
+     "ph_lowest_any_scenario gi_bleed_57m": {
+      "high": 7.40561287071181,
+      "low": 6.961334846510912,
+      "median": 7.358231080381481,
+      "n": 71604
+     },
+     "ph_lowest_any_scenario gi_bleed_72f": {
+      "high": 7.415088273088317,
+      "low": 7.2301824843364475,
+      "median": 7.384926786990286,
+      "n": 71604
+     },
+     "prbc_R3 delta_burden m0 gi_bleed_57m": {
+      "high": -0.24824976133077037,
+      "low": -2.6709792047695853,
+      "median": -0.8504098033507681,
+      "n": 9828
+     },
+     "prbc_R3 delta_burden m0 gi_bleed_72f": {
+      "high": -0.2679685461936083,
+      "low": -2.5101774796823277,
+      "median": -0.8586170585988757,
+      "n": 9828
+     },
+     "prbc_R3 delta_burden m1 gi_bleed_57m": {
+      "high": -0.9791243824539553,
+      "low": -8.159513624407868,
+      "median": -2.995275219694146,
+      "n": 9828
+     },
+     "prbc_R3 delta_burden m1 gi_bleed_72f": {
+      "high": -0.7331607463677914,
+      "low": -5.453955433379408,
+      "median": -2.117089463612363,
+      "n": 9828
+     },
+     "prbc_R3 delta_burden m2 gi_bleed_57m": {
+      "high": -2.6348206933043805,
+      "low": -15.551226125264503,
+      "median": -6.7354892862463895,
+      "n": 9828
+     },
+     "prbc_R3 delta_burden m2 gi_bleed_72f": {
+      "high": -1.6970803748648446,
+      "low": -10.244615945171516,
+      "median": -4.223844738959573,
+      "n": 9828
+     },
+     "prbc_R3 delta_deficit m0 gi_bleed_57m": {
+      "high": -0.32275220323242626,
+      "low": -0.46467628293624585,
+      "median": -0.38892065852260627,
+      "n": 9828
+     },
+     "prbc_R3 delta_deficit m0 gi_bleed_72f": {
+      "high": -0.2925548735822662,
+      "low": -0.3191798593570728,
+      "median": -0.30972908769399554,
+      "n": 9828
+     },
+     "prbc_R3 delta_deficit m1 gi_bleed_57m": {
+      "high": -0.586540173039913,
+      "low": -0.6336506905478767,
+      "median": -0.6182212555031004,
+      "n": 9828
+     },
+     "prbc_R3 delta_deficit m1 gi_bleed_72f": {
+      "high": -0.3340116993237989,
+      "low": -0.38780829398098415,
+      "median": -0.36847849531797716,
+      "n": 9828
+     },
+     "prbc_R3 delta_deficit m2 gi_bleed_57m": {
+      "high": -0.644046042675395,
+      "low": -0.7613060737275892,
+      "median": -0.7344634802780627,
+      "n": 9828
+     },
+     "prbc_R3 delta_deficit m2 gi_bleed_72f": {
+      "high": -0.4149720768252322,
+      "low": -0.5194752407279297,
+      "median": -0.4855213944741199,
+      "n": 9828
+     },
+     "prbc_R3 delta_paco2 m0 gi_bleed_57m": {
+      "high": 2.7869965002138173,
+      "low": 0.2074464715435198,
+      "median": 0.8507697751547969,
+      "n": 9828
+     },
+     "prbc_R3 delta_paco2 m0 gi_bleed_72f": {
+      "high": 3.764818960558131,
+      "low": 0.2563517070511736,
+      "median": 1.0537930005044025,
+      "n": 9828
+     },
+     "prbc_R3 delta_paco2 m1 gi_bleed_57m": {
+      "high": 8.732628088462622,
+      "low": 0.8291426276916667,
+      "median": 3.0394333311634973,
+      "n": 9828
+     },
+     "prbc_R3 delta_paco2 m1 gi_bleed_72f": {
+      "high": 8.125702055589748,
+      "low": 0.7098748884310737,
+      "median": 2.5667427169685446,
+      "n": 9828
+     },
+     "prbc_R3 delta_paco2 m2 gi_bleed_57m": {
+      "high": 16.699291608134736,
+      "low": 2.2854133882560035,
+      "median": 6.887719706063722,
+      "n": 9828
+     },
+     "prbc_R3 delta_paco2 m2 gi_bleed_72f": {
+      "high": 14.235259720213175,
+      "low": 1.668600031505889,
+      "median": 5.511914360065644,
+      "n": 9828
+     },
+     "prbc_R3 delta_ph m0 gi_bleed_57m": {
+      "high": 0.048095761638402124,
+      "low": 0.0015689233886462262,
+      "median": 0.008699748267258833,
+      "n": 9828
+     },
+     "prbc_R3 delta_ph m0 gi_bleed_72f": {
+      "high": 0.026989463461620566,
+      "low": -0.0005525833751232057,
+      "median": 0.003871891639459335,
+      "n": 9828
+     },
+     "prbc_R3 delta_ph m1 gi_bleed_57m": {
+      "high": 0.15136707010482464,
+      "low": 0.005620569979230439,
+      "median": 0.029082810032606154,
+      "n": 9828
+     },
+     "prbc_R3 delta_ph m1 gi_bleed_72f": {
+      "high": 0.060857978948250846,
+      "low": -0.003707603896148548,
+      "median": 0.008800129666897583,
+      "n": 9828
+     },
+     "prbc_R3 delta_ph m2 gi_bleed_57m": {
+      "high": 0.35807777680279074,
+      "low": 0.012439476633558044,
+      "median": 0.06487620752607093,
+      "n": 9828
+     },
+     "prbc_R3 delta_ph m2 gi_bleed_72f": {
+      "high": 0.13738513002514274,
+      "low": -0.008479348658969599,
+      "median": 0.02071318231154029,
+      "n": 9828
+     },
+     "prbc_R3 delta_rr m0 gi_bleed_57m": {
+      "high": -0.19056077822861184,
+      "low": -2.8515373899009333,
+      "median": -0.9118931877137193,
+      "n": 13923
+     },
+     "prbc_R3 delta_rr m0 gi_bleed_72f": {
+      "high": -0.22834945325285005,
+      "low": -4.956788263154166,
+      "median": -1.226432134007613,
+      "n": 16380
+     },
+     "prbc_R3 delta_rr m1 gi_bleed_57m": {
+      "high": -0.7595512251718688,
+      "low": -9.012418023224278,
+      "median": -3.265912242992787,
+      "n": 13923
+     },
+     "prbc_R3 delta_rr m1 gi_bleed_72f": {
+      "high": -0.6303692633114757,
+      "low": -10.680421062038725,
+      "median": -2.9661899606613176,
+      "n": 16380
+     },
+     "prbc_R3 delta_rr m2 gi_bleed_57m": {
+      "high": -2.08225222049051,
+      "low": -17.58290070136235,
+      "median": -7.550780745559987,
+      "n": 13923
+     },
+     "prbc_R3 delta_rr m2 gi_bleed_72f": {
+      "high": -1.4756024712940992,
+      "low": -17.995012459613186,
+      "median": -6.28792233237462,
+      "n": 16380
+     },
+     "prbc_R4_unit1 delta_burden m0 gi_bleed_57m": {
+      "high": -0.24824976133077037,
+      "low": -2.6709792047695853,
+      "median": -0.8504098033507681,
+      "n": 9828
+     },
+     "prbc_R4_unit1 delta_burden m0 gi_bleed_72f": {
+      "high": -0.2679685461936083,
+      "low": -2.5101774796823277,
+      "median": -0.8586170585988757,
+      "n": 9828
+     },
+     "prbc_R4_unit1 delta_burden m1 gi_bleed_57m": {
+      "high": -1.1386329961668844,
+      "low": -6.6094222516220835,
+      "median": -2.7838737784510714,
+      "n": 9828
+     },
+     "prbc_R4_unit1 delta_burden m1 gi_bleed_72f": {
+      "high": -0.341351002462039,
+      "low": -1.0669793821839948,
+      "median": -0.6567221664381543,
+      "n": 9828
+     },
+     "prbc_R4_unit1 delta_deficit m0 gi_bleed_57m": {
+      "high": -0.32275220323242626,
+      "low": -0.46467628293624585,
+      "median": -0.38892065852260627,
+      "n": 9828
+     },
+     "prbc_R4_unit1 delta_deficit m0 gi_bleed_72f": {
+      "high": -0.2925548735822662,
+      "low": -0.3191798593570728,
+      "median": -0.30972908769399554,
+      "n": 9828
+     },
+     "prbc_R4_unit1 delta_deficit m1 gi_bleed_57m": {
+      "high": -0.16839757836485847,
+      "low": -0.2803718623847141,
+      "median": -0.2243209251941506,
+      "n": 9828
+     },
+     "prbc_R4_unit1 delta_deficit m1 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 9828
+     },
+     "prbc_R4_unit1 delta_paco2 m0 gi_bleed_57m": {
+      "high": 2.7869965002138173,
+      "low": 0.2074464715435198,
+      "median": 0.8507697751547969,
+      "n": 9828
+     },
+     "prbc_R4_unit1 delta_paco2 m0 gi_bleed_72f": {
+      "high": 3.764818960558131,
+      "low": 0.2563517070511736,
+      "median": 1.0537930005044025,
+      "n": 9828
+     },
+     "prbc_R4_unit1 delta_paco2 m1 gi_bleed_57m": {
+      "high": 9.269048609973972,
+      "low": 1.0342740908566128,
+      "median": 3.366595126534353,
+      "n": 9828
+     },
+     "prbc_R4_unit1 delta_paco2 m1 gi_bleed_72f": {
+      "high": 2.066379874488355,
+      "low": 0.34845459598870576,
+      "median": 0.9336681992951057,
+      "n": 9828
+     },
+     "prbc_R4_unit1 delta_ph m0 gi_bleed_57m": {
+      "high": 0.048095761638402124,
+      "low": 0.0015689233886462262,
+      "median": 0.008699748267258833,
+      "n": 9828
+     },
+     "prbc_R4_unit1 delta_ph m0 gi_bleed_72f": {
+      "high": 0.026989463461620566,
+      "low": -0.0005525833751232057,
+      "median": 0.003871891639459335,
+      "n": 9828
+     },
+     "prbc_R4_unit1 delta_ph m1 gi_bleed_57m": {
+      "high": 0.08153925161383224,
+      "low": -0.006135463788561779,
+      "median": 0.01663331471992091,
+      "n": 9828
+     },
+     "prbc_R4_unit1 delta_ph m1 gi_bleed_72f": {
+      "high": 0.008351976397631411,
+      "low": -0.005144177044463127,
+      "median": 0.001139844191355266,
+      "n": 9828
+     },
+     "prbc_R4_unit1 delta_rr m0 gi_bleed_57m": {
+      "high": -0.19056077822861184,
+      "low": -2.8515373899009333,
+      "median": -0.9118931877137193,
+      "n": 13923
+     },
+     "prbc_R4_unit1 delta_rr m0 gi_bleed_72f": {
+      "high": -0.22834945325285005,
+      "low": -4.956788263154166,
+      "median": -1.226432134007613,
+      "n": 16380
+     },
+     "prbc_R4_unit1 delta_rr m1 gi_bleed_57m": {
+      "high": -0.9329241593658573,
+      "low": -11.708121659144656,
+      "median": -3.558611168684685,
+      "n": 13923
+     },
+     "prbc_R4_unit1 delta_rr m1 gi_bleed_72f": {
+      "high": -0.30509013565042764,
+      "low": -3.258133100477627,
+      "median": -1.064668973484192,
+      "n": 16380
+     },
+     "prbc_R4_unit2 delta_burden m0 gi_bleed_57m": {
+      "high": -0.18353222305738814,
+      "low": -1.918105599315048,
+      "median": -0.6419687999769668,
+      "n": 9828
+     },
+     "prbc_R4_unit2 delta_burden m0 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 9828
+     },
+     "prbc_R4_unit2 delta_burden m1 gi_bleed_57m": {
+      "high": -0.633796010351654,
+      "low": -5.653623388646167,
+      "median": -2.014511130958345,
+      "n": 9828
+     },
+     "prbc_R4_unit2 delta_burden m1 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 9828
+     },
+     "prbc_R4_unit2 delta_deficit m0 gi_bleed_57m": {
+      "high": -0.15776183023805934,
+      "low": -0.27171078720511255,
+      "median": -0.2170012832513165,
+      "n": 9828
+     },
+     "prbc_R4_unit2 delta_deficit m0 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 9828
+     },
+     "prbc_R4_unit2 delta_deficit m1 gi_bleed_57m": {
+      "high": -0.17245679541181813,
+      "low": -0.2846151495432244,
+      "median": -0.22955994443073957,
+      "n": 9828
+     },
+     "prbc_R4_unit2 delta_deficit m1 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 9828
+     },
+     "prbc_R4_unit2 delta_paco2 m0 gi_bleed_57m": {
+      "high": 2.4344460788932594,
+      "low": 0.16009756105578532,
+      "median": 0.6987152968389161,
+      "n": 9828
+     },
+     "prbc_R4_unit2 delta_paco2 m0 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 9828
+     },
+     "prbc_R4_unit2 delta_paco2 m1 gi_bleed_57m": {
+      "high": 8.23920486291063,
+      "low": 0.5832791846214818,
+      "median": 2.451698629611599,
+      "n": 9828
+     },
+     "prbc_R4_unit2 delta_paco2 m1 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 9828
+     },
+     "prbc_R4_unit2 delta_ph m0 gi_bleed_57m": {
+      "high": 0.0268151289160361,
+      "low": 0.0001388558196344647,
+      "median": 0.004614074655928668,
+      "n": 9828
+     },
+     "prbc_R4_unit2 delta_ph m0 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 9828
+     },
+     "prbc_R4_unit2 delta_ph m1 gi_bleed_57m": {
+      "high": 0.06523055849547443,
+      "low": -0.005848807250361965,
+      "median": 0.010262389729022381,
+      "n": 9828
+     },
+     "prbc_R4_unit2 delta_ph m1 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 9828
+     },
+     "prbc_R4_unit2 delta_rr m0 gi_bleed_57m": {
+      "high": -0.14574790863144926,
+      "low": -2.8481329160968087,
+      "median": -0.7613569277002732,
+      "n": 13923
+     },
+     "prbc_R4_unit2 delta_rr m0 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 16380
+     },
+     "prbc_R4_unit2 delta_rr m1 gi_bleed_57m": {
+      "high": -0.5245309611756284,
+      "low": -10.66794929273551,
+      "median": -2.685994848614108,
+      "n": 13923
+     },
+     "prbc_R4_unit2 delta_rr m1 gi_bleed_72f": {
+      "high": 0.0,
+      "low": 0.0,
+      "median": 0.0,
+      "n": 16380
+     },
+     "residual_rr_above_intrinsic_120 gi_bleed_57m": {
+      "high": 11.456517947294927,
+      "low": 1.2268982215586703,
+      "median": 4.611492187858218,
+      "n": 13923
+     },
+     "residual_rr_above_intrinsic_120 gi_bleed_72f": {
+      "high": 6.736175706927376,
+      "low": 0.6208669738588775,
+      "median": 2.5465569370864998,
+      "n": 16380
+     },
+     "untreated_paco2_120 gi_bleed_57m": {
+      "high": 32.79602596002365,
+      "low": 19.022697291885834,
+      "median": 27.42721768786716,
+      "n": 3996
+     },
+     "untreated_paco2_120 gi_bleed_72f": {
+      "high": 35.270341160447636,
+      "low": 23.154709593783732,
+      "median": 31.081185986826103,
+      "n": 3996
+     },
+     "untreated_ph_120 gi_bleed_57m": {
+      "high": 7.401120091851716,
+      "low": 6.961334846510912,
+      "median": 7.315513806043679,
+      "n": 3996
+     },
+     "untreated_ph_120 gi_bleed_72f": {
+      "high": 7.414708896104037,
+      "low": 7.2301824843364475,
+      "median": 7.371111235008742,
+      "n": 3996
+     },
+     "untreated_ph_lowest_0_120 gi_bleed_57m": {
+      "high": 7.401120091851716,
+      "low": 6.961334846510912,
+      "median": 7.315513806043679,
+      "n": 3996
+     },
+     "untreated_ph_lowest_0_120 gi_bleed_72f": {
+      "high": 7.414708896104037,
+      "low": 7.2301824843364475,
+      "median": 7.371111235008742,
+      "n": 3996
+     },
+     "untreated_rr_120 gi_bleed_57m": {
+      "high": 36.16083866118893,
+      "low": 24.478195134185363,
+      "median": 29.76540485397503,
+      "n": 5661
+     },
+     "untreated_rr_120 gi_bleed_72f": {
+      "high": 34.65879260061513,
+      "low": 21.585514542343976,
+      "median": 26.425341041603026,
+      "n": 6660
+     }
+    },
+    "r3r4": {
+     "bug": false,
+     "classes": {
+      "PHYSIOLOGICAL_RESPIRATORY_CONVERGENCE": 526,
+      "RESPIRATORY_OUTPUTS_DISTINCT": 20,
+      "SCENARIO_STATE_COLLAPSE_BUG": 0
+     },
+     "pairs": [
+      {
+       "case": "gi_bleed_57m",
+       "class": "PHYSIOLOGICAL_RESPIRATORY_CONVERGENCE",
+       "gap": {
+        "burden": 0.0,
+        "paco2": 0.0,
+        "ph": 0.0,
+        "rr": 0.0,
+        "w": 0.0
+       },
+       "level": "lower",
+       "q": 1,
+       "underlying": {
+        "bleed_rate_120": [
+         2.0,
+         0.25
+        ],
+        "bleeding_differs": true,
+        "blood_state_differs": true,
+        "chronology_same": true,
+        "complete": true,
+        "deficit_120": [
+         0.0,
+         0.0
+        ],
+        "deficit_max_abs_difference": 0.0,
+        "delivery_120": [
+         1.9246681901640124,
+         2.043299345374484
+        ],
+        "distinct": true,
+        "haemostasis": [
+         null,
+         60
+        ],
+        "hb_120": [
+         8.613990996148807,
+         8.613977400749864
+        ],
+        "hb_differs": true,
+        "output_120": [
+         1.4970153648714257,
+         1.5892897063808518
+        ],
+        "output_differs": true,
+        "red_cells_120": [
+         1.4399507336845767,
+         1.4856968235845565
+        ],
+        "shed_ml_120": [
+         240.0,
+         133.25
+        ],
+        "volume_ml_120": [
+         360.0000000000001,
+         466.7500000000001
+        ]
+       }
+      },
+      {
+       "case": "gi_bleed_57m",
+       "class": "RESPIRATORY_OUTPUTS_DISTINCT",
+       "gap": {
+        "burden": 0.06213044887824948,
+        "paco2": 0.11847299449626547,
+        "ph": 0.00046526315008410535,
+        "rr": 0.17955919999326397,
+        "w": 0.003727826932695022
+       },
+       "level": "lower",
+       "q": 10,
+       "underlying": {
+        "bleed_rate_120": [
+         2.0,
+         0.25
+        ],
+        "bleeding_differs": true,
+        "blood_state_differs": true,
+        "chronology_same": true,
+        "complete": true,
+        "deficit_120": [
+         0.023616071417361217,
+         0.0
+        ],
+        "deficit_max_abs_difference": 0.023616071417361217,
+        "delivery_120": [
+         1.7939732143043983,
+         1.9368823287303156
+        ],
+        "distinct": true,
+        "haemostasis": [
+         null,
+         60
+        ],
+        "hb_120": [
+         8.632150879918406,
+         8.632136340435126
+        ],
+        "hb_differs": true,
+        "output_120": [
+         1.3924247505684333,
+         1.5033487760967141
+        ],
+        "output_differs": true,
+        "red_cells_120": [
+         1.4000403914693536,
+         1.4458828370228838
+        ],
+        "shed_ml_120": [
+         240.0,
+         133.25
+        ],
+        "volume_ml_120": [
+         260.00000000000045,
+         366.75000000000045
+        ]
+       }
+      },
+      {
+       "case": "gi_bleed_57m",
+       "class": "PHYSIOLOGICAL_RESPIRATORY_CONVERGENCE",
+       "gap": {
+        "burden": 0.0,
+        "paco2": 0.0,
+        "ph": 0.0,
+        "rr": 0.0,
+        "w": 0.0
+       },
+       "level": "lower",
+       "q": 102,
+       "underlying": {
+        "bleed_rate_120": [
+         2.0,
+         0.25
+        ],
+        "bleeding_differs": true,
+        "blood_state_differs": true,
+        "chronology_same": true,
+        "complete": true,
+        "deficit_120": [
+         0.0,
+         0.0
+        ],
+        "deficit_max_abs_difference": 0.0,
+        "delivery_120": [
+         1.9089678282260092,
+         2.0017605240210137
+        ],
+        "distinct": true,
+        "haemostasis": [
+         null,
+         60
+        ],
+        "hb_120": [
+         8.705607141606695,
+         8.705596124728327
+        ],
+        "hb_differs": true,
+        "output_120": [
+         1.4691777656708893,
+         1.540594729962772
+        ],
+        "output_differs": true,
+        "red_cells_120": [
+         1.4487689496852931,
+         1.483443324723996
+        ],
+        "shed_ml_120": [
+         240.0,
+         133.25
+        ],
+        "volume_ml_120": [
+         460.00000000000034,
+         566.7500000000003
+        ]
+       }
+      },
+      {
+       "case": "gi_bleed_57m",
+       "class": "PHYSIOLOGICAL_RESPIRATORY_CONVERGENCE",
+       "gap": {
+        "burden": 0.0,
+        "paco2": 0.0,
+        "ph": 0.0,
+        "rr": 0.0,
+        "w": 0.0
+       },
+       "level": "lower",
+       "q": 106,
+       "underlying": {
+        "bleed_rate_120": [
+         2.0,
+         0.25
+        ],
+        "bleeding_differs": true,
+        "blood_state_differs": true,
+        "chronology_same": true,
+        "complete": true,
+        "deficit_120": [
+         0.0,
+         0.0
+        ],
+        "deficit_max_abs_difference": 0.0,
+        "delivery_120": [
+         1.8428339842327575,
+         1.9324122843130074
+        ],
+        "distinct": true,
+        "haemostasis": [
+         null,
+         60
+        ],
+        "hb_120": [
+         8.404012082718468,
+         8.40400272251354
+        ],
+        "hb_differs": true,
+        "output_120": [
+         1.4691777656708893,
+         1.540594729962772
+        ],
+        "output_differs": true,
+        "red_cells_120": [
+         1.3985781301837452,
+         1.4320514713820416
+        ],
+        "shed_ml_120": [
+         240.0,
+         133.25
+        ],
+        "volume_ml_120": [
+         460.00000000000034,
+         566.7500000000003
+        ]
+       }
+      }
+     ]
+    },
+    "signs": {
+     "paco2_follows_burden": {
+      "checked": 329400,
+      "held": 329400
+     },
+     "rr_follows_burden": {
+      "checked": 507825,
+      "held": 507825
+     }
+    }
+   }
+  }
+ },
+ "design": {
+  "arrival_paco2": {
+   "gi_bleed_57m": [
+    28.0,
+    34.0
+   ],
+   "gi_bleed_72f": [
+    30.0,
+    36.0
+   ]
+  },
+  "arrival_rr": {
+   "gi_bleed_57m": [
+    23.0,
+    29.0
+   ],
+   "gi_bleed_72f": [
+    21.0,
+    27.0
+   ]
+  },
+  "bounds_rule": "Inclusive bounds, the faculty's numbers exactly, no tolerance; all at minute 120. An observable that does not exist (no pulse: RR 0, no PaCO2 or pH) fails the envelope that reads it.",
+  "carried": {
+   "demand": "1.0 and 1.1 filtered separately; robustness across them diagnostic only",
+   "not_multiplied": "MAP_set, the baroreflex gain, the HR latent region (no path to deficit, burden, RR or W)",
+   "tone_gain": "PRIMARY 0.25 / 0.5 / 1.0 (P2J-3), causal through output, delivery and the deficit"
+  },
+  "classes": [
+   "RESPIRATORY_AND_PERFUSION_IMPROVE",
+   "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT",
+   "RESPIRATORY_IMPROVING_WITH_PERFUSION_WORSENING",
+   "RESPIRATORY_UNCHANGED_WITH_PERFUSION_WORSENING",
+   "RESPIRATORY_AND_PERFUSION_WORSEN",
+   "NO_PERFUSION_CHANGE",
+   "COMPARATOR_ARREST_WITH_TREATED_BREATHING",
+   "TREATED_ARREST_WITH_COMPARATOR_BREATHING",
+   "NO_COMPARISON_BOTH_ARRESTED",
+   "NO_COMPARISON_IMPOSSIBLE_VALUE"
+  ],
+  "closed_at_p2k3": {
+   "clinical_core/acid_base.py": "9298b1f0a6defbe1a11627a0d76208c36792b01a390d80558e3cc1fda1827954",
+   "clinical_core/derived.py": "b9056ada72f4c651974eccd1069a67097d31814a5d691cbfc883e33d85bb77a6",
+   "clinical_core/integration.py": "dad171baff07805997272310f4f33545ed38956b531585ae246c0e26e8c07b7a",
+   "clinical_core/state.py": "578d32abad60fcda31a4d3344532b709c8c8f8b71ea2f4bdb2f88c37265a6d13",
+   "clinical_core/ventilation.py": "260393add18e2275ee21411512d18531a74387f853bb76a2f33f89d5cb1bafe9",
+   "clinical_core/ventilation_surface.py": "d361b500ccaf059784ea7e7662b6be5dd7d02019174c2f66cc0ca0ff24245825"
+  },
+  "comparator_rule": "Each comparator omits only the target exposure and keeps the blood set, the lactate-side point, the tone gain, the demand, the latent respiratory combination, the elapsed time, the bleeding chronology, the PPI and haemostasis timing. E is P2J-3's comparator (L2 against L1, the same blood set). F: R3 against R3's inputs without the red cells; in R4 each unit against L3 without it (P2J-3's CF1 / CF2). R3 is never compared with R4 as a red-cell counterfactual: that pair changes the haemostasis.",
+  "comparators": {
+   "E": [
+    [
+     "P2",
+     "P1",
+     "Crystalloid",
+     "crystalloid volume complete (P2J-3), and 120"
+    ]
+   ],
+   "F": [
+    [
+     "P3",
+     "NP",
+     "PackedRedCells",
+     "unit 1 complete, unit 2 complete, and 120"
+    ],
+    [
+     "P4",
+     "CF1",
+     "PackedRedCells unit 1",
+     "unit 1 complete (P2J-3), and 120"
+    ],
+    [
+     "P4",
+     "CF2",
+     "PackedRedCells unit 2",
+     "unit 2 complete (P2J-3), and 120"
+    ]
+   ]
+  },
+  "criteria": [
+   "upstream_unchanged",
+   "comparators_matched",
+   "survivors_exist",
+   "filter_consistent",
+   "envelopes_hold",
+   "arrival_compatible",
+   "ph_coherent",
+   "treatment_responses_coherent",
+   "r3_r4_physiological",
+   "nothing_approved"
+  ],
+  "decided": "2026-10-31",
+  "demand_classes": [
+   "ROBUST_ACROSS_DEMAND",
+   "DEMAND_1_0_ONLY",
+   "DEMAND_1_1_ONLY",
+   "DEMAND_INCOMPATIBLE"
+  ],
+  "demand_normalization": {
+   "not_used": "an absolute demand index (it would make the 1.1 class hypercapnic at rest)",
+   "semantics": "BASELINE_RELATIVE (P2K-3): demand ratio = aux.oxygen_demand / the patient's baseline demand; the GI runs carry no demand modifier, so the ratio is 1 and the class reaches W only through the deficit and the burden",
+   "status": "MODELING_SEMANTIC_DECISION; demand 1.0 and 1.1 not approved"
+  },
+  "dims": [
+   "drive_gain",
+   "intrinsic_57m",
+   "intrinsic_72f",
+   "ventilation_gain",
+   "B",
+   "tau"
+  ],
+  "direct_rule": "An independent recomputation for a predeclared sample (the first and last upstream survivor of every tone gain and demand, all latent combinations): each rule evaluated from the rebuilt series and the core algebra written out (burden_series, rate_from_drive, PaCO2 = 40 / (1 + gain x burden), carbonic_ph), never through the summaries, tables or bitsets; it must equal the filter bit for bit.",
+  "envelopes": {
+   "A": {
+    "case": "gi_bleed_57m",
+    "rr": [
+     24.0,
+     38.0
+    ],
+    "scenario": "P1",
+    "text": "R1 57m untreated, RR at 120 in 24-38"
+   },
+   "B": {
+    "case": "gi_bleed_72f",
+    "rr": [
+     20.0,
+     36.0
+    ],
+    "scenario": "P1",
+    "text": "R1 72f untreated, RR at 120 in 20-36; not required to be at or above the arrival RR"
+   },
+   "C": {
+    "case": "gi_bleed_57m",
+    "paco2": [
+     18.0,
+     35.0
+    ],
+    "scenario": "P1",
+    "text": "R1 57m untreated, PaCO2 at 120 in 18-35"
+   },
+   "D": {
+    "case": "gi_bleed_72f",
+    "paco2": [
+     22.0,
+     38.0
+    ],
+    "scenario": "P1",
+    "text": "R1 72f untreated, PaCO2 at 120 in 22-38"
+   },
+   "E": {
+    "scenario": "P2",
+    "text": "R2 against matched R1: no RESPIRATORY_AND_PERFUSION_WORSEN at the frozen minutes"
+   },
+   "F": {
+    "scenario": "P3 / P4",
+    "text": "red cells against matched no-PRBC trajectories: no PRBC_CAUSES_RESPIRATORY_AND_PERFUSION_WORSENING at the frozen minutes"
+   },
+   "G": {
+    "case": "gi_bleed_57m",
+    "rr": [
+     12.0,
+     27.0
+    ],
+    "scenario": "P4",
+    "text": "R4 57m definitive, RR at 120 in 12-27"
+   },
+   "G2": {
+    "case": "gi_bleed_72f",
+    "rr": [
+     12.0,
+     24.0
+    ],
+    "scenario": "P4",
+    "text": "R4 72f definitive, RR at 120 in 12-24"
+   },
+   "H": {
+    "case": null,
+    "paco2": [
+     30.0,
+     42.0
+    ],
+    "ph": [
+     7.35,
+     7.45
+    ],
+    "scenario": "P4",
+    "text": "R4 both cases, PaCO2 at 120 in 30-42 and pH at 120 in 7.35-7.45"
+   },
+   "I": {
+    "residual": {
+     "gi_bleed_57m": [
+      0.0,
+      12.0
+     ],
+     "gi_bleed_72f": [
+      0.0,
+      10.0
+     ]
+    },
+    "scenario": "P4",
+    "text": "R4 at 120, RR - intrinsic RR in 0-12 (57m) and 0-10 (72f)"
+   }
+  },
+  "excluded_gains": [
+   0.08
+  ],
+  "extreme_acidemia": 7.0,
+  "extreme_rule": "UNTREATED_EXTREME_ACIDEMIA: R1 pH below 7.00 at any minute 0-120 in either case; diagnostic, never a rejection; handed to CONSCIOUSNESS_COLLAPSE_REVIEW",
+  "f_rejection_name": "PRBC_CAUSES_RESPIRATORY_AND_PERFUSION_WORSENING",
+  "faculty": {
+   "closed": "P2K-3 accepted and closed; RR_VENTILATION_DECISION_SURFACE_READY accepted",
+   "crystalloid": "E: P2J-3's matched comparator, R2 against R1 at P2J-3's minutes; only RESPIRATORY_AND_PERFUSION_WORSEN rejects; never judged from RR alone",
+   "decided": "2026-10-31",
+   "demand": "BASELINE_RELATIVE: W is effective ventilation relative to the patient's baseline / current ventilatory requirement; demand 1.1 is not an absolute hypermetabolism with a new resting PaCO2; a modeling semantic decision, not an approval of demand 1.0 or 1.1",
+   "early_stop": "an empty region or a causal contradiction STOPs; no widened envelope or tolerance, no new support value, no gain 0.08, no B / tau change, no legacy fitting, no hypoxaemic drive, no tidal-volume or fatigue state",
+   "exit": "a coherent non-empty region, no contradiction, intact upstream, structurally coherent RR / W / PaCO2 / pH and plausible counterfactuals bound the current GI respiratory domain: default MOVE_FORWARD; broad B, tau, intrinsic RR or gains never call for another respiratory package",
+   "goal": "bound the current respiratory candidate region with interpretable RR / PaCO2 / pH observables, keep the acid burden, drive, RR, W and PaCO2 separate, keep the latent uncertainty (no single set), and say whether the GI respiratory domain is bounded enough to move on",
+   "prbc": "F: the red cells against matched trajectories omitting only the target exposure: R3 against R3 without the red cells; in R4 unit 1 and unit 2 each against L3 without it; never R3 against R4",
+   "priority": "a coherent common physiology with explicit plausible uncertainty and no causal contradiction, good enough to migrate other families; not a tighter fit of two GI cases; a non-empty region is acceptable",
+   "r3_r4": "similar R3 / R4 respiratory outputs at 120 are not a contradiction when neither has an effective deficit; the bleeding state, BloodState and chronology must differ where they should, else STOP",
+   "references": "HCO3 24, PaCO2 40 (COMMON_REFERENCE_PROVISIONAL); arrival RR 57m 26 +/- 3, 72f 24 +/- 3; arrival PaCO2 57m 31 +/- 3, 72f 33 +/- 3; arrival pH diagnostic only (same HCO3 and PaCO2)",
+   "scope": "shadow only; no runtime integration, migration, parameter approval, consciousness, collapse or legacy fitting; the upstream physiology reused, never reopened",
+   "support": "P2K-3's primary support unchanged: intrinsic RR 12 / 16 / 20 per patient, the frozen drive gains, ventilation gain 0.03-0.06 (0.08 excluded: it failed the arrival PaCO2 windows), B 13.4 / 19.4 / 28, tau 60 / 120 / 240; no value FACULTY_APPROVED",
+   "untreated_ph": "no untreated pH filter; its distribution reported; pH < 7.00 flagged UNTREATED_EXTREME_ACIDEMIA (diagnostic, CONSCIOUSNESS_COLLAPSE_REVIEW)"
+  },
+  "identifiability_rule": "Per demand, on the survivors: NON_IDENTIFIABLE when no candidate survives, or when the filter does not read the parameter (for every upstream unit, every combination of the other parameters survives at all its values or at none); WELL_CONSTRAINED when one value survives; PARTIALLY_CONSTRAINED when some but not all do; POORLY_IDENTIFIED when all survive although the filter reads it (trade-offs). No best combination is selected.",
+  "kinds": [
+   "P1",
+   "P2",
+   "P3",
+   "P4",
+   "CF1",
+   "CF2",
+   "NP"
+  ],
+  "migration_gate": "MIGRATION_GATE_CLOSED: no runtime integration, GI or second-family migration or parameter approval is authorized; consciousness and collapse are not calibrated",
+  "minute": 120,
+  "next_rule": "Predeclared. When READY: MOVE_FORWARD (the GI respiratory domain is bounded for the current cases; consciousness / neurologic response is next and is not begun here), the diagnostics forwarded: untreated extreme acidemia to CONSCIOUSNESS_COLLAPSE_REVIEW, the cross-demand classes to the demand question, the latent classes as explicit uncertainty (broad B, tau, intrinsic RR or gains never call for another respiratory package). Otherwise STOP_FOR_FACULTY_REVIEW with the blocker.",
+  "order": [
+   "SIMULATION",
+   "ARRIVAL_RR",
+   "ARRIVAL_PACO2",
+   "A",
+   "B",
+   "G",
+   "G2",
+   "H_PACO2",
+   "H_PH",
+   "I",
+   "C",
+   "D",
+   "E",
+   "F"
+  ],
+  "order_rule": "Frozen before any count: the faculty's order (arrival RR, arrival PaCO2, A, B, G / G2, H, I, C, D, E, F), H split into its PaCO2 and pH parts, behind one structural guard (SIMULATION: a trajectory the candidate reads lacks minute 120, has HCO3 <= 0, W <= 0 while breathing, or stops / clamps where its blood run does not). Every rule is evaluated for every candidate as a bitset, so the order changes no cost and is kept as given; the first failure in ORDER is the counted one, and every failure, every sole failure and every pair of failures is reported too.",
+  "own": [
+   "clinical_core/ventilation_filter.py"
+  ],
+  "policy": "Shadow only. P2K-3's committed trajectories and machinery, the P2J-3 comparators, the legacy RR never read; no envelope, window or support changed after a count; untreated and arrival pH never filter; demand robustness never required; RR alone never judges a treatment; R3 and R4 never required to differ by treatment identity; nothing selected or approved.",
+  "r3r4_classes": [
+   "PHYSIOLOGICAL_RESPIRATORY_CONVERGENCE",
+   "RESPIRATORY_OUTPUTS_DISTINCT",
+   "SCENARIO_STATE_COLLAPSE_BUG"
+  ],
+  "r3r4_near": {
+   "burden": 0.01,
+   "paco2": 0.1,
+   "ph": 0.001,
+   "rr": 0.1,
+   "w": 0.005
+  },
+  "r3r4_rule": "For every surviving (tone gain, demand, case, red-cell set, lactate-side level), R3 (L3 without haemostasis) and R4 (L3) are compared at 120. Underlying: the haemostasis minute, the active bleed rate and the cumulative blood loss, the circulating volume and red-cell content of the core's BloodState, Hb, output and delivery, the effective deficit; the red-cell and crystalloid chronology must be the same. Respiratory: burden, RR, W, PaCO2 and pH over the pair's surviving latent combinations. SCENARIO_STATE_COLLAPSE_BUG (a STOP) when the bleeding state or the BloodState does not differ or the chronology differs beyond the haemostasis; otherwise PHYSIOLOGICAL_RESPIRATORY_CONVERGENCE when the respiratory outputs are within R3R4_NEAR, else RESPIRATORY_OUTPUTS_DISTINCT. Respiratory identity is never required to differ by treatment identity.",
+  "rejecting": [
+   "RESPIRATORY_AND_PERFUSION_WORSEN",
+   "TREATED_ARREST_WITH_COMPARATOR_BREATHING"
+  ],
+  "rejection_class": {
+   "A": "RR_ENVELOPE_REJECTION",
+   "ARRIVAL_PACO2": "ARRIVAL_PACO2_REJECTION",
+   "ARRIVAL_RR": "ARRIVAL_RR_REJECTION",
+   "B": "RR_ENVELOPE_REJECTION",
+   "C": "PACO2_ENVELOPE_REJECTION",
+   "D": "PACO2_ENVELOPE_REJECTION",
+   "E": "TREATMENT_DIRECTION_REJECTION",
+   "F": "TREATMENT_DIRECTION_REJECTION",
+   "G": "RR_ENVELOPE_REJECTION",
+   "G2": "RR_ENVELOPE_REJECTION",
+   "H_PACO2": "PACO2_ENVELOPE_REJECTION",
+   "H_PH": "PH_ENVELOPE_REJECTION",
+   "I": "RR_ENVELOPE_REJECTION",
+   "SIMULATION": "SIMULATION_REJECTION"
+  },
+  "report": "clinical_core/ventilation_filter_report.py",
+  "revision": "P2K-4",
+  "signal_rule": "At each comparison minute, delta = treated - matched comparator, the same latent combination. Perfusion improves when the effective deficit is lower, worsens when higher. The respiratory signal reads the acid burden and the compensation state together: it improves when the burden is lower and pH higher, worsens when the burden is higher and pH lower (a physiologically worse compensation), and is otherwise not improving. RR and PaCO2 are reported and checked to follow the burden at fixed latent parameters (RR never lower, PaCO2 never higher when the burden is higher); RR alone never classifies. A delta within 1e-9 of its scale is no change (P2J-3's rule). Only RESPIRATORY_AND_PERFUSION_WORSEN rejects (for the red cells named PRBC_CAUSES_RESPIRATORY_AND_PERFUSION_WORSENING: worse deficit + worse burden + lower pH), and a treated arrest while the comparator still breathes; a comparator arrest with the treated breathing is the treated doing better.",
+  "status": {
+   "approved": "none FACULTY_APPROVED",
+   "envelopes": "FACULTY_CALIBRATION_ENVELOPE: case and scenario specific, not universal ranges",
+   "excluded_gain_0.08": "EXCLUDED_BY_FACULTY_SUPPORT (not a rejection count)",
+   "latent": "EXPLORATORY (intrinsic RR, drive gain, ventilation gain, B, tau)"
+  },
+  "tuple_at_p2k3": {
+   "clinical_core/decision_pack.py": "e828cd8202ba37721da077002edd0f712b420f9153d14164c1de5041aefe9a80",
+   "clinical_core/lactate_slice.py": "20aee425ac512b3e1c82871ac685a3d89b532ba187f01fd6d3c21e44171a0f8a"
+  },
+  "tuples_added": {
+   "DOWNSTREAM_REPORTS": [
+    "clinical_core/ventilation_filter_report.py"
+   ],
+   "PACK_DIGEST_EXCLUDED": [
+    "clinical_core/ventilation_filter.py",
+    "clinical_core/ventilation_filter_report.py"
+   ]
+  },
+  "validation_candidate": [
+   2.0,
+   16.0,
+   16.0,
+   19.4,
+   120.0,
+   0.05
+  ],
+  "values": {
+   "B": [
+    13.4,
+    19.4,
+    28.0
+   ],
+   "drive_gain": [
+    1.0,
+    1.4142135623730951,
+    2.0,
+    2.8284271247461903,
+    4.0
+   ],
+   "intrinsic_57m": [
+    12.0,
+    16.0,
+    20.0
+   ],
+   "intrinsic_72f": [
+    12.0,
+    16.0,
+    20.0
+   ],
+   "tau": [
+    60.0,
+    120.0,
+    240.0
+   ],
+   "ventilation_gain": [
+    0.03,
+    0.04,
+    0.05,
+    0.06
+   ]
+  },
+  "verdict_rule": "Frozen. EMPTY when no candidate survives at either demand (a STOP: nothing is widened). READY when every criterion holds: the upstream is unchanged (the closed files at their ef2cfe8 bytes, the P2J-3 region, P2K-1 and the P2K-3 record reproduced, the new comparators equal the core with every upstream row unchanged); every comparator omits only its target exposure; some candidate survives at some demand (robustness across demands is diagnostic, never required); the independent direct check equals the filter; every survivor's observables lie in A-I; its arrival RR and PaCO2 lie in their windows (arrival pH never filters); pH stays within 6.8-7.8 on every clinical trajectory and the bank's pH is reproduced within 0.005; no survivor's matched comparison rejects and RR and PaCO2 follow the burden in every reading; no R3 / R4 pair is a SCENARIO_STATE_COLLAPSE_BUG (a STOP); nothing is approved. Otherwise NOT_READY with the first failing criterion as the blocker; an early stop lists what it never reached as not evaluated."
+ },
+ "direct_check": {
+  "candidates": 19440,
+  "equal": true,
+  "first_mismatch": null,
+  "mismatches": 0,
+  "units": 12
+ },
+ "efficiency": {
+  "bitset_rules": 14,
+  "candidates_evaluated": 6167340,
+  "cartesian_sweep": false,
+  "comparator_core_runs": 36,
+  "direct_check_candidates": 19440,
+  "latent_combinations": 1620,
+  "legacy_read": false,
+  "no_prbc_runs": 182,
+  "p2j3_blood_runs": 1326,
+  "p2j3_counterfactual_runs": 364,
+  "p2k3_validation_runs": 96,
+  "r3r4_state_runs": 364,
+  "upstream_units": 3807
+ },
+ "freeze_digest": "638b64f699ddd53afda7f2e11eebf77e418a28789da8c47e667343738c642773",
+ "migration_gate": "MIGRATION_GATE_CLOSED: no runtime integration, GI or second-family migration or parameter approval is authorized; consciousness and collapse are not calibrated",
+ "p2k3_reproduced": {
+  "decision_pack": true,
+  "p2j3_region": true,
+  "p2k1_unchanged": true,
+  "plausible": true,
+  "reconstruction": true,
+  "rejections": true,
+  "validation": true
+ },
+ "policy": "Shadow only. P2K-3's committed trajectories and machinery, the P2J-3 comparators, the legacy RR never read; no envelope, window or support changed after a count; untreated and arrival pH never filter; demand robustness never required; RR alone never judges a treatment; R3 and R4 never required to differ by treatment identity; nothing selected or approved.",
+ "recommendation": {
+  "forwarded": {
+   "cross_demand": "the demand question (diagnostic)",
+   "latent": "explicit uncertainty; no respiratory package for identifiability alone",
+   "untreated_extreme_acidemia": "CONSCIOUSNESS_COLLAPSE_REVIEW"
+  },
+  "next": "CONSCIOUSNESS / NEUROLOGIC RESPONSE (not begun)",
+  "recommendation": "MOVE_FORWARD",
+  "rule": "Predeclared. When READY: MOVE_FORWARD (the GI respiratory domain is bounded for the current cases; consciousness / neurologic response is next and is not begun here), the diagnostics forwarded: untreated extreme acidemia to CONSCIOUSNESS_COLLAPSE_REVIEW, the cross-demand classes to the demand question, the latent classes as explicit uncertainty (broad B, tau, intrinsic RR or gains never call for another respiratory package). Otherwise STOP_FOR_FACULTY_REVIEW with the blocker."
+ },
+ "record": "23f1673fe24fe6a49a9fed13e60088eb05f5f15c8cf5eec2700618bca2a897e3",
+ "revision": "P2K-4",
+ "verdict": {
+  "checks": {
+   "arrival_compatible": true,
+   "comparators_matched": true,
+   "envelopes_hold": true,
+   "filter_consistent": true,
+   "nothing_approved": true,
+   "ph_coherent": true,
+   "r3_r4_physiological": true,
+   "survivors_exist": true,
+   "treatment_responses_coherent": true,
+   "upstream_unchanged": true
+  },
+  "failing": [],
+  "not_evaluated": [],
+  "verdict": "RR_VENTILATION_OBSERVABLE_FILTER_SATISFIED"
+ }
+}

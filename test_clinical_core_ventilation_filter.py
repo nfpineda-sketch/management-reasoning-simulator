@@ -241,6 +241,22 @@ def test_the_bitset_filter_equals_the_direct_recomputation_on_synthetic_bloods()
     json.dumps(public, default=str)
 
 
+
+def test_e_and_f_reject_a_harmful_treatment_and_the_direct_check_agrees():
+    """Review L3: on real data E and F never fail, so a synthetic harm shows they can (and that the filter's bits equal
+    the direct recomputation when they do)."""
+    bloods = _bloods()
+    for case in vf.CASES:
+        falling = bloods[("P1", case, 0)]["output1"]
+        bloods[("P2", case, (0, 0))]["output1"] = [x - 0.15 for x in falling]
+        bloods[("P3", case, 1)]["output1"] = [0.45] * N
+    arrival = vf.arrival_bits()
+    tally, obs = vf.Tally(), vf.Observed()
+    _, sample = vf.filter_point(bloods, [(0, 0, 0, 1, 0)], 1.0, 0.5, arrival, tally, obs, _states())
+    assert tally.any["E"] > 0 and tally.any["F"] > 0
+    direct = vf.direct_check(bloods, sample, arrival)
+    assert direct["equal"] and direct["mismatches"] == 0
+
 def test_the_tally_counts_first_sole_and_paired_failures():
     t = vf.Tally()
     rules = {name: vf.FULL for name in vf.ORDER}
@@ -313,3 +329,97 @@ def test_the_policy_approves_nothing_and_reads_no_legacy():
     assert vf.MIGRATION_GATE.startswith("MIGRATION_GATE_CLOSED")
     assert json.loads(json.dumps(vf.design(), default=str))["values"]["ventilation_gain"] == [0.03, 0.04, 0.05, 0.06]
     assert hashlib.sha256(SOURCE.read_bytes()).hexdigest()
+
+
+# The record and the report (generated once, after the frozen evaluation) -----------------------------------------------------
+
+RECORD = ROOT / "docs" / "revision" / "P2K4_ventilation_filter.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2K4_FILTRO_ENVOLVENTES_RESPIRATORIAS.md"
+
+
+@pytest.fixture(scope="module")
+def record():
+    return json.loads(RECORD.read_text(encoding="utf-8"))
+
+
+def _json(value):
+    return json.loads(json.dumps(value, sort_keys=True, default=str))
+
+
+def test_the_record_comes_from_the_frozen_package(record):
+    assert record["freeze_digest"] == FROZEN_DIGEST and record["record"] == vf.P2K3_DIGEST
+    assert record["design"] == _json(vf.design()) and record["closed_unchanged"] == _json(vf.closed_unchanged())
+    assert record["arrival_ph_diagnostic"] == _json(vf.arrival_ph_diagnostic()) and "stopped" not in record
+
+
+def test_the_verdict_and_the_upstream_non_regression_the_report_states(record):
+    v = record["verdict"]
+    assert v["verdict"] == vf.READY and not v["failing"] and not v["not_evaluated"]
+    assert set(v["checks"]) == set(vf.CRITERIA) and all(v["checks"].values())
+    assert record["recommendation"]["recommendation"] == "MOVE_FORWARD"
+    assert all(record["p2k3_reproduced"].values()) and all(record["arrival_reproduced"].values())
+    c = record["comparator_validation"]
+    assert c["compared"] == 18 and c["equal"] and c["max_abs_diff"] == 0.0 and c["upstream_equal"]
+    assert all(c["domains"].values()) and set(c["domains"]) == set(vs.UPSTREAM_DOMAINS)
+    assert record["comparators_matched"]["matched"] and record["comparators_matched"]["checked"] > 0
+    d = record["direct_check"]
+    assert d["equal"] and d["mismatches"] == 0 and d["units"] == 12 and d["candidates"] == 12 * vf.N_LATENT
+    assert record["efficiency"]["cartesian_sweep"] is False and record["efficiency"]["legacy_read"] is False
+
+
+def test_the_filter_counts_add_up(record):
+    for key, data in record["demands"].items():
+        f = data["filter"]
+        assert f["entering"] == f["upstream_units"] * vf.N_LATENT
+        assert sum(f["first_failure"].values()) + f["survivors"] == f["entering"]
+        assert sum(f["rejection_classes_first"].values()) == sum(f["first_failure"].values())
+        assert sum(v["survivors"] for v in f["by_tone_gain"].values()) == f["survivors"] > 0
+        for rule in ("SIMULATION", "ARRIVAL_PACO2", "C", "D", "H_PACO2", "H_PH", "E", "F"):
+            assert f["any_failure"][rule] == 0, (key, rule)
+    cross = record["cross_demand"]
+    assert sum(item["count"] for item in cross.values()) == vf.N_LATENT
+    assert cross["ROBUST_ACROSS_DEMAND"]["count"] == 312 and cross["DEMAND_1_0_ONLY"]["count"] == 0
+
+
+def test_every_survivor_observable_lies_in_its_envelope(record):
+    e = vf.ENVELOPES
+    for data in record["demands"].values():
+        o = data["observed"]["observables"]
+        within = lambda name, case, bounds: bounds[0] <= o[f"{name} {case}"]["low"] <= o[f"{name} {case}"]["high"] <= bounds[1]
+        for case, a, g in ((C57, "A", "G"), (C72, "B", "G2")):
+            assert within("untreated_rr_120", case, e[a]["rr"]) and within("definitive_rr_120", case, e[g]["rr"])
+            assert within("untreated_paco2_120", case, e["C" if case == C57 else "D"]["paco2"])
+            assert within("definitive_paco2_120", case, e["H"]["paco2"]) and within("definitive_ph_120", case, e["H"]["ph"])
+            assert within("residual_rr_above_intrinsic_120", case, e["I"]["residual"][case])
+            assert within("arrival_rr", case, vf.ARRIVAL_RR[case]) and within("arrival_paco2", case, vf.ARRIVAL_PACO2[case])
+
+
+def test_untreated_ph_is_reported_never_filtered(record):
+    x = record["demands"]["1.1"]["observed"]["extreme_acidemia"]
+    assert x["flagged"] > 0 and x["lowest"]["ph"] < vf.EXTREME_ACIDEMIA
+    assert x["lowest"]["flag"] == "CONSCIOUSNESS_COLLAPSE_REVIEW"
+
+
+def test_r3_r4_converge_physiologically_and_the_counterfactuals_never_worsen(record):
+    for data in record["demands"].values():
+        r = data["observed"]["r3r4"]
+        assert not r["bug"] and r["classes"]["SCENARIO_STATE_COLLAPSE_BUG"] == 0
+        assert r["classes"]["PHYSIOLOGICAL_RESPIRATORY_CONVERGENCE"] > 0
+        for pair in r["pairs"]:
+            u = pair["underlying"]
+            assert u["bleeding_differs"] and u["blood_state_differs"] and u["chronology_same"]
+        for counts in data["observed"]["classes"].values():
+            assert not any(counts.get(c) for c in vf.REJECTING)
+        assert all(s["checked"] == s["held"] > 0 for s in data["observed"]["signs"].values())
+
+
+def test_the_document_is_generated_from_the_record():
+    from clinical_core import ventilation_filter_report as rep
+    document = DOCUMENT.read_text(encoding="utf-8")
+    data = json.loads(RECORD.read_text(encoding="utf-8"))
+    rendered = document
+    for name, render in rep.RENDERERS.items():
+        rendered = rep.apply(rendered, name, render(data))
+    assert rendered == document, "the generated blocks are stale: regenerate the report"
+    assert vf.READY in document and "## 13. Lo que se pide a la docencia" in document
+    assert "## 14. Limitaciones" in document and "## 15. Revisión adversarial" in document
