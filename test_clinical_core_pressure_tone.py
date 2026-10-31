@@ -37,7 +37,8 @@ FROZEN_DIGEST = "92aa42cbf18d6f2e4e3a978babbd8a4b0f8dd8a1058a8d6bde4b2592ac3f409
 #: the declared statements there (vascular_tone.p2j1_sources); P2J-2's own module is a later module.
 P2J1_MODULE_SHA = "2e350c8a42bcacfa31e8e5349d284c7d276808e396d36421e1dc369dbcb9ec26"
 P2J1_RECORD_SHA = "421e5aa34a35a9ad92f3b17994ef90f70b26cd74b646a7a01b42522ad13bb64b"
-LATER_MODULES = ("clinical_core/vascular_tone.py", "clinical_core/pressure_tone_filter.py", "clinical_core/baroreflex.py")
+LATER_MODULES = ("clinical_core/vascular_tone.py", "clinical_core/pressure_tone_filter.py", "clinical_core/baroreflex.py",
+                 "clinical_core/rr_audit.py")
 #: What P2J-2 added to tone's paths (its analysis module, and the integrator's tone response): the P2J-1 audit's view
 #: of the tree leaves them out; test_clinical_core_vascular_tone pins them.
 P2J2_TONE_ROWS = (("clinical_core/vascular_tone.py", None), ("clinical_core/vascular_tone_report.py", None),

@@ -36,6 +36,12 @@ SOURCE = ROOT / "clinical_core" / "baroreflex.py"
 #: verdict and recommendation rules, the AST proof and every clinical_core source but the downstream reports,
 #: committed before any survivor count was read.
 FROZEN_DIGEST = "81ab565efb3170ee9e7e4683c3198495004d30c7dfdadce09f551d66547dedf6"
+#: P2J-4 is closed (P2K-1): its module and its record are pinned byte for byte, and its freeze is recomputed from the
+#: live sources without the later modules, with the two tuple-only files at their P2J-4 hashes while only their tuples
+#: changed (rr_audit.p2j4_sources).
+P2J4_MODULE_SHA = "cd9072b8c97bfc3a15e8d314c88aae7ec6a622a8c4b7e1fad9fa73c38e5aca6e"
+P2J4_RECORD_SHA = "e67682cf989edc08a6b56ffb185136a4da2778934d46a27f7a9255bace429c08"
+LATER_MODULES = ("clinical_core/rr_audit.py",)
 C57, C72 = br.C57, br.C72
 
 
@@ -52,7 +58,14 @@ def test_the_package_is_frozen():
     assert "clinical_core/baroreflex_report.py" in lactate_slice.DOWNSTREAM_REPORTS
     assert {"clinical_core/baroreflex.py", "clinical_core/baroreflex_report.py"} <= set(decision_pack.PACK_DIGEST_EXCLUDED)
     assert br.p2j3_record()["freeze_digest"] == br.P2J3_DIGEST
-    assert br.freeze_digest() == FROZEN_DIGEST, "a source, a range, a rule or the order changed after the freeze"
+    from clinical_core import rr_audit as ra
+    assert hashlib.sha256(SOURCE.read_bytes()).hexdigest() == P2J4_MODULE_SHA, "the closed P2J-4 module changed"
+    assert hashlib.sha256((ROOT / "docs" / "revision" / "P2J4_baroreflex.json").read_bytes()).hexdigest() == \
+        P2J4_RECORD_SHA
+    sources = {k: v for k, v in sources.items() if k not in LATER_MODULES}
+    text = json.dumps({"revision": br.REVISION, "p2j3": hashlib.sha256(br.P2J3_RECORD.read_bytes()).hexdigest(),
+                       "design": br.design(), "sources": ra.p2j4_sources(sources)}, sort_keys=True, default=str)
+    assert hashlib.sha256(text.encode("utf-8")).hexdigest() == FROZEN_DIGEST, "a source P2J-4 froze changed"
 
 
 def test_the_faculty_decisions_are_recorded():

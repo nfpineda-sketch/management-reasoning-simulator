@@ -35,7 +35,7 @@ FROZEN_DIGEST = "2437e1b1c3075e180ef0fec912867974af43242a828c356190193820933fec4
 P2I2AJ_MODULE_SHA = "47c21f35d7a38ccee60df3df2053edcc776e86d8fdeb5ff8881bf4e105764f05"
 LATER_MODULES = ("clinical_core/hr_envelope_filter.py", "clinical_core/pressure_tone.py",
                  "clinical_core/vascular_tone.py", "clinical_core/pressure_tone_filter.py",
-                 "clinical_core/baroreflex.py")
+                 "clinical_core/baroreflex.py", "clinical_core/rr_audit.py")
 #: derived.py, integration.py and shadow.py as P2J-2 left them (P2J-1 pinned derived.py and shadow.py, P2J-2 added
 #: integration.py): the AST proofs (pressure_tone for shadow.py, vascular_tone.p2i2ak_sources for derived.py and
 #: integration.py) cover what P2J-1 and P2J-2 changed; the pin makes any later change fail the guard until proven again.

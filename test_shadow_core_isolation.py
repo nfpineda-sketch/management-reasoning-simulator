@@ -44,7 +44,10 @@ ANALYSIS_ONLY = {
     "arrival_severity.py": {"multiprocessing"},
     # P2J-4: the offline baroreflex analysis takes medians and a Pearson correlation of its own readings; nothing the
     # application runs imports it.
-    "baroreflex.py": {"statistics"}}
+    "baroreflex.py": {"statistics"},
+    # P2K-1: the offline RR audit lists the files that name W (re) and evaluates the RR function on a bare W holder
+    # (types.SimpleNamespace); nothing the application runs imports it.
+    "rr_audit.py": {"re", "types"}}
 
 
 def _imports(path):
