@@ -41,7 +41,8 @@ FROZEN_DIGEST = "81ab565efb3170ee9e7e4683c3198495004d30c7dfdadce09f551d66547dedf
 #: changed (rr_audit.p2j4_sources).
 P2J4_MODULE_SHA = "cd9072b8c97bfc3a15e8d314c88aae7ec6a622a8c4b7e1fad9fa73c38e5aca6e"
 P2J4_RECORD_SHA = "e67682cf989edc08a6b56ffb185136a4da2778934d46a27f7a9255bace429c08"
-LATER_MODULES = ("clinical_core/rr_audit.py", "clinical_core/acid_base.py")
+LATER_MODULES = ("clinical_core/rr_audit.py", "clinical_core/acid_base.py",
+                 "clinical_core/ventilation.py", "clinical_core/ventilation_surface.py")
 C57, C72 = br.C57, br.C72
 
 

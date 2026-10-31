@@ -49,14 +49,27 @@ def _active(**changes):
 
 # The frozen package ------------------------------------------------------------------------------------------------------
 
+def _freeze_digest_at_p2k2() -> str:
+    """acid_base.freeze_digest's formula on the sources P2K-2 froze: P2K-3's modules, added later, left out, and the two
+    tuple-only files at their P2K-2 hashes while only their tuples changed (ventilation_surface.p2k2_sources; the tuple
+    content is pinned in test_clinical_core_rr_audit)."""
+    from clinical_core import ventilation_surface as vs
+    text = json.dumps({"revision": ab.REVISION, "p2k1": hashlib.sha256(ab.P2K1_RECORD.read_bytes()).hexdigest(),
+                       "design": ab.design(), "sources": vs.p2k2_sources(bf.freeze_sources())}, sort_keys=True,
+                      default=str)
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
 def test_the_package_is_frozen():
     sources = bf.freeze_sources()
     assert "clinical_core/acid_base.py" in sources and "clinical_core/derived.py" in sources
     assert "clinical_core/acid_base_report.py" in lactate_slice.DOWNSTREAM_REPORTS
     assert {"clinical_core/acid_base.py", "clinical_core/acid_base_report.py"} <= set(decision_pack.PACK_DIGEST_EXCLUDED)
     assert ab.p2k1_record()["freeze_digest"] == ab.P2K1_DIGEST
+    # The recomputation is acid_base.freeze_digest's own formula (its source unchanged since P2K-2).
+    assert "bf.freeze_sources()}, sort_keys=True, default=str)" in inspect.getsource(ab.freeze_digest)
     if FROZEN_DIGEST is not None:
-        assert ab.freeze_digest() == FROZEN_DIGEST, "a source, a rule or a candidate changed after the freeze"
+        assert _freeze_digest_at_p2k2() == FROZEN_DIGEST, "a source, a rule or a candidate changed after the freeze"
 
 
 def test_the_faculty_decisions_and_the_carried_uncertainty_are_recorded():

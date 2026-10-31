@@ -38,7 +38,8 @@ FROZEN_DIGEST = "a3f098deb7d643e6158da3aaa8852874d6fa35d981379be173a17d6d8d8ec42
 #: P2K-1 is closed (P2K-2): its module and record byte for byte, and the modules added after it.
 P2K1_MODULE_SHA = "4b663ffad81ff88f728707e7c96a255d882cbf62247107980652331fff885bf1"
 P2K1_RECORD_SHA = "e297209a8d7bbe1c475e12b3f23f5881f95ec232ee68523b621d48ca7ef2824a"
-LATER_MODULES = ("clinical_core/acid_base.py",)
+LATER_MODULES = ("clinical_core/acid_base.py", "clinical_core/ventilation.py",
+                 "clinical_core/ventilation_surface.py")
 C57, C72 = ra.C57, ra.C72
 
 
@@ -144,9 +145,11 @@ def test_w_is_a_mixed_construct_read_only_by_rr(probes):
     readers = _readers_of_w()
     assert {r for r in readers if r[0] != "decision_pack.py"} == {("derived.py", "respiratory_rate")}
     assert {r[1] for r in readers if r[0] == "decision_pack.py"} <= {"rr_parts", "rr_bounds"}, readers
-    # P2K-2 adds one file that names W: its probe writes the W channel to show the candidate RR does not read it.
+    # P2K-2 adds one file that names W: its probe writes the W channel to show the candidate RR does not read it. P2K-3
+    # adds one more for the same reason (its W-channel probe: neither RR nor the effective ventilation reads the channel).
     assert ra.w_references() == ["clinical_core/acid_base.py", "clinical_core/bands.py", "clinical_core/decision_pack.py",
-                                 "clinical_core/derived.py", "clinical_core/integration.py", "clinical_core/state.py"]
+                                 "clinical_core/derived.py", "clinical_core/integration.py", "clinical_core/state.py",
+                                 "clinical_core/ventilation_surface.py"]
     assert probes["D"]["w_minus_half_rr"] < probes["arrival_rr"] < probes["E"]["w_plus_half_rr"]
     assert not any("ventilation" in f.name for f in fields(Derived)), "no effective-ventilation output exists"
 
@@ -288,7 +291,7 @@ def test_the_record_comes_from_the_frozen_package_and_its_analytic_part_is_repro
     assert record["freeze_digest"] == FROZEN_DIGEST and record["record"] == ra.P2J4_DIGEST
     assert record["design"] == _json(ra.design()) and record["probes"] == _json(probes)
     assert record["authored"] == _json(ra.authored()) and record["reads"] == _json(ra.rr_reads())
-    assert record["w_references"] == [r for r in ra.w_references() if r != "clinical_core/acid_base.py"]
+    assert record["w_references"] == [r for r in ra.w_references() if r not in LATER_MODULES]
     assert all(record["core_unchanged"].values())
 
 
@@ -387,9 +390,11 @@ TUPLES_ADDED_BY_P2K2 = {"DOWNSTREAM_REPORTS": ("clinical_core/acid_base_report.p
 
 
 def test_the_exclusion_tuples_hold_exactly_their_p2k1_content():
+    from clinical_core import ventilation_surface as vs
     for name, values in (("DOWNSTREAM_REPORTS", lactate_slice.DOWNSTREAM_REPORTS),
                          ("PACK_DIGEST_EXCLUDED", decision_pack.PACK_DIGEST_EXCLUDED)):
-        added = TUPLES_ADDED_BY_P2K2[name]
+        # What P2K-2 and P2K-3 (ventilation_surface.TUPLES_ADDED, frozen with it) added, exactly.
+        added = TUPLES_ADDED_BY_P2K2[name] + vs.TUPLES_ADDED[name]
         assert set(added) <= set(values), name
         values = [v for v in values if v not in added]
         assert (hashlib.sha256(json.dumps(sorted(values)).encode("utf-8")).hexdigest(), len(values)) == \
