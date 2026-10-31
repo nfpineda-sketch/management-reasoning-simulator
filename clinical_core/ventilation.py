@@ -29,7 +29,10 @@ from .state import Anchors, CoreInvariantError, CoreState
 
 #: What each P2K-3 quantity is, recorded with the physiology.
 STATUS = {"acid_to_ventilation_gain": "EXPLORATORY (per mEq/L); no value approved",
-          "paco2_reference_mmhg": "COMMON_REFERENCE_PROVISIONAL (the profile's 40 mmHg); not approved",
+          "paco2_reference_mmhg": "COMMON_REFERENCE_PROVISIONAL (the profile's 40 mmHg); not approved. Here it is the "
+                                  "PaCO2 at W = 1 (no burden, baseline demand, efficiency 1), not the arrival-PaCO2 "
+                                  "fallback derived.arrival_paco2 gives it in P2K-2; the authored arrival PaCO2 only "
+                                  "filters the arrival (+/- 3)",
           "ventilation_efficiency": "STRUCTURAL_REFERENCE 1 for the GI cases; below 1 only in synthetic probes; not a "
                                     "universal constant",
           "demand": "the oxygen demand over the patient's baseline demand (BASELINE_RELATIVE)",

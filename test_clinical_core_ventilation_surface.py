@@ -30,7 +30,7 @@ SOURCE = ROOT / "clinical_core" / "ventilation_surface.py"
 #: The P2K-3 freeze: the faculty decisions, the semantics, the supports, references and tolerances, the probes, the
 #: factorization, the identifiability, decision-pack and verdict rules and every clinical_core source but the downstream
 #: reports, committed before any arrival count or clinical trajectory was read.
-FROZEN_DIGEST = "38e30b846a6647e9b759a06952322930eb22e62de8f521a86909055686b919da"
+FROZEN_DIGEST = "23f1673fe24fe6a49a9fed13e60088eb05f5f15c8cf5eec2700618bca2a897e3"
 C57, C72 = vs.C57, vs.C72
 
 
@@ -115,6 +115,27 @@ def test_the_w_side_reads_no_rate_intrinsic_rate_drive_lactate_or_d():
     proof = vs.w_inputs()
     assert proof["leaks"] == []
     assert sorted(proof["targets_found"]) == sorted(vs.W_TARGETS)
+    assert proof["returned_found"] == sorted(vs.W_RETURNED)
+
+
+@pytest.mark.parametrize("mutation", [
+    "    ventilation *= base.respiratory_rate / base.intrinsic_rr\n",
+    "    if state.R.pulse_present:\n        ventilation = ventilation * base.drive\n",
+    "    paco2: float = profile.paco2_reference_mmhg / base.respiratory_rate\n"])
+def test_the_static_proof_sees_every_assignment_form(mutation):
+    """Review B2: an augmented, nested or annotated rebinding of a W-side name that reads the rate is a leak."""
+    source = (ROOT / "clinical_core" / "ventilation.py").read_text(encoding="utf-8")
+    anchor = "    paco2 = paco2_from_ventilation(ventilation, profile.paco2_reference_mmhg) if ventilation > 0.0 else None\n"
+    assert source.count(anchor) == 1
+    assert vs.w_inputs(source.replace(anchor, mutation + anchor))["leaks"]
+
+
+def test_the_static_proof_reads_the_returned_w_fields():
+    source = (ROOT / "clinical_core" / "ventilation.py").read_text(encoding="utf-8")
+    anchor = "                                 ventilation, profile.paco2_reference_mmhg, paco2,"
+    assert source.count(anchor) == 1
+    mutated = source.replace(anchor, "                                 base.respiratory_rate, profile.paco2_reference_mmhg, paco2,")
+    assert "respiratory_rate" in vs.w_inputs(mutated)["leaks"]
     assert {"rate", "respiratory_rate", "intrinsic", "acid_to_drive_gain", "lactate", "D"} <= vs.W_FORBIDDEN
 
 
@@ -262,12 +283,30 @@ def test_the_factorized_algebra_equals_the_module_on_core_states():
         for gain in vs.VENTILATION_GAINS:
             s = state.evolve(aux=replace(state.aux, metabolic_acid_burden=burden))
             r = vn.ventilated_respiration(s, anchors, profile, vn.VentilationCandidate(gain))
-            f = vs._gas_at(burden, 2.0, 16.0, gain, C57)
-            for got, want in ((r.respiratory_rate, f["rr"]), (r.ventilation, f["w"]), (r.paco2, f["paco2"]),
-                              (r.ph, f["ph"]), (r.bicarbonate, f["hco3"]), (r.recruitment, f["recruitment"]),
-                              (r.frequency_drive, f["frequency_drive"])):
+            hco3 = vs.hco3_series([burden], C57)
+            rr = vs.rr_series([burden], [True], 2.0, 16.0)
+            w, paco2, ph = vs.gas_series([burden], hco3, [True], gain)
+            for got, want in ((r.respiratory_rate, rr[0]), (r.ventilation, w[0]), (r.paco2, paco2[0]), (r.ph, ph[0]),
+                              (r.bicarbonate, hco3[0]), (r.recruitment, vs.recruitment_series([burden], gain)[0]),
+                              (r.frequency_drive, vs.frequency_drive_series(rr, [True], 16.0)[0])):
                 assert abs(got - want) <= 1e-12
             assert derive(s, anchors, profile).respiratory_rate == r.respiratory_rate
+
+
+def test_evaluate_and_validate_share_one_factorized_algebra(monkeypatch):
+    """Review M2: the validation certifies the functions that produced the tables, not a copy of them."""
+    for name in ("hco3_series", "rr_series", "frequency_drive_series", "recruitment_series", "gas_series"):
+        assert f"{name}(" in inspect.getsource(vs.evaluate) and f"{name}(" in inspect.getsource(vs.validate), name
+    assert not hasattr(vs, "_gas_at")
+    trajectory = {"deficit": [0.3] * 121, "lactate": [3.0] * 121, "D": [0.0] * 121, "pulse": [True] * 121,
+                  "crystalloid": [0] * 121, "prbc": [0] * 121, "controlled_at": None, "rr": [20.0] * 121}
+    store = {(0.5, 1.0, "P1", C57): {(("b",), 0): (None, trajectory)}}
+    joint = [(2.0, 16.0, 16.0, 0.05)]
+    before = vs.evaluate(store, joint)["tables"]["x1 g0.5 P1 gi_bleed_57m"]["minutes"]["120"]["paco2"]
+    original = vs.gas_series
+    monkeypatch.setattr(vs, "gas_series", lambda *a: tuple([v + 1.0 if v else v for v in x] for x in original(*a)))
+    after = vs.evaluate(store, joint)["tables"]["x1 g0.5 P1 gi_bleed_57m"]["minutes"]["120"]["paco2"]
+    assert math.isclose(after["median"], before["median"] + 1.0)
 
 
 def test_each_observable_is_read_over_the_factors_it_depends_on():
@@ -321,6 +360,34 @@ def test_the_closed_packages_see_p2k2s_sources():
 
 
 # Policy ----------------------------------------------------------------------------------------------------------------------
+
+def test_an_early_stop_names_its_own_blocker(monkeypatch):
+    """Review M1: an early stop names the criterion that failed; what it never reached is not evaluated, not failed."""
+    stub = {"rows": [], "compatible": [], "count": 0, "of": 5}
+    monkeypatch.setattr(vs, "paco2_compatibility", lambda demand_ratio=1.0: stub)
+    monkeypatch.setattr(vs, "demand_semantics_sensitivity", lambda: {})
+    out = vs.run()
+    assert out["verdict"]["verdict"] == f"{vs.NOT_READY} - ARRIVAL_PACO2_REPRODUCED" and "STOP" in out["stopped"]
+    assert "factorization_valid" in out["verdict"]["not_evaluated"] and "reconstruction" not in out
+    monkeypatch.setattr(vs, "core_unchanged", lambda: {"clinical_core/derived.py": False})
+    out = vs.run()
+    assert out["verdict"]["verdict"] == f"{vs.NOT_READY} - UPSTREAM_UNCHANGED" and "arrival_rr" not in out
+    assert vs.verdict({"rr_not_determining_w": True})["verdict"] == f"{vs.NOT_READY} - NOT_EVALUATED"
+
+
+def test_question_1_is_computed_by_the_module_with_the_intrinsic_rr_varied(monkeypatch, probes):
+    """Review B1: a W that read the intrinsic RR would fail question 1 itself, not only probes C and H."""
+    table = vs.resting_paco2_table([(2.0, 16.0, 16.0, 0.05)], probes)
+    assert table["all_reference"] and table["intrinsic_covered"]
+    original = vn.ventilated_respiration
+
+    def leaking(state, anchors, profile, candidate):
+        r = original(state, anchors, profile, candidate)
+        w = r.ventilation * 16.0 / r.intrinsic_rr
+        return replace(r, ventilation=w, paco2=40.0 / w if w > 0.0 else None)
+    monkeypatch.setattr(vn, "ventilated_respiration", leaking)
+    assert not vs.resting_paco2_table([(2.0, 16.0, 16.0, 0.05)], vs.probes())["all_reference"]
+
 
 def test_the_verdict_rule_is_the_faculty_list_and_never_forces_the_burden_up():
     assert len(vs.CRITERIA) == 10 and vs.CRITERIA[-1] == "nothing_approved"

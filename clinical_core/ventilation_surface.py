@@ -23,7 +23,7 @@ import ast
 import hashlib
 import json
 import math
-from dataclasses import replace
+from dataclasses import fields, replace
 from pathlib import Path
 
 from . import acid_base as ab
@@ -156,8 +156,8 @@ PH_TOLERANCE = 0.03
 AUTHORED_RR = ab.AUTHORED_RR
 #: The faculty's arrival PaCO2 windows (authored 31 and 33, +/- 3).
 PACO2_WINDOWS = {C57: (28.0, 34.0), C72: (30.0, 36.0)}
-#: Structural plausibility of pH (life-compatible range): a value outside is the early stop "pathological pH", never a
-#: filter of a trajectory.
+#: Structural plausibility of pH (life-compatible range): a value outside fails the verdict's ph_coherent criterion
+#: ("pathological pH"); it never filters a trajectory.
 PH_PLAUSIBLE = (6.8, 7.8)
 #: Key question 3's reading band: RR within the RR tolerance of the intrinsic RR, PaCO2 within 5 mmHg of the reference
 #: (DIAGNOSTIC_READING, not an envelope; nothing is filtered by it).
@@ -186,6 +186,8 @@ def candidate(gain: float) -> vn.VentilationCandidate:
 
 W_FUNCTIONS = ("ventilation_recruitment", "ventilatory_capacity", "effective_ventilation", "paco2_from_ventilation")
 W_TARGETS = ("demand_ratio", "recruitment", "capacity", "ventilation", "paco2")
+#: The W-side fields of the returned VentilatedRespiration (the RR-side fields may read the rate).
+W_RETURNED = ("efficiency", "recruitment", "capacity", "demand_ratio", "ventilation", "paco2_reference", "paco2", "ph")
 #: Names W may never read: the rate, the intrinsic rate, the drive and its parameters, lactate, D, the W channel.
 W_FORBIDDEN = frozenset({"rate", "respiratory_rate", "intrinsic", "intrinsic_rr", "intrinsic_respiratory_rate",
                          "frequency_drive", "drive", "acid_to_drive_gain", "rr_drive_saturation", "rate_from_drive",
@@ -198,17 +200,37 @@ def _read(node) -> set:
         {n.arg for n in ast.walk(node) if isinstance(n, ast.arg)}
 
 
-def w_inputs() -> dict:
-    """Static proof: every name the W-side functions and the W-side assignments of ventilated_respiration read."""
-    tree = ast.parse(Path(vn.__file__).read_text(encoding="utf-8"))
+def _targets(node) -> list:
+    """The names an assignment binds (plain, tuple-unpacked, augmented or annotated)."""
+    targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+    out = []
+    for target in targets:
+        out += [n.id for n in ast.walk(target) if isinstance(n, ast.Name)]
+    return out
+
+
+def w_inputs(source: str | None = None) -> dict:
+    """Static proof: every name the W-side functions read; every assignment to a W-side name anywhere in
+    ventilated_respiration (plain, augmented or annotated, at any depth), with the value it reads; and every W-side field
+    of the VentilatedRespiration it returns (review B2: augmented assignments and the return were not covered)."""
+    tree = ast.parse(source if source is not None else Path(vn.__file__).read_text(encoding="utf-8"))
     functions = {node.name: node for node in tree.body if isinstance(node, ast.FunctionDef)}
     reads = {name: sorted(_read(functions[name])) for name in W_FUNCTIONS}
-    for node in functions["ventilated_respiration"].body:
-        if isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name) and \
-                node.targets[0].id in W_TARGETS:
-            reads[f"ventilated_respiration.{node.targets[0].id}"] = sorted(_read(node.value))
-    found = {name for name in reads if name.startswith("ventilated_respiration.")}
-    return {"reads": reads, "targets_found": sorted(t.split(".")[1] for t in found),
+    found = set()
+    for node in ast.walk(functions["ventilated_respiration"]):
+        if isinstance(node, (ast.Assign, ast.AugAssign, ast.AnnAssign)) and node.value is not None:
+            for name in _targets(node):
+                if name in W_TARGETS:
+                    found.add(name)
+                    key = f"ventilated_respiration.{name}"
+                    extra = {name} if isinstance(node, ast.AugAssign) else set()
+                    reads[key] = sorted(set(reads.get(key, [])) | _read(node.value) | extra)
+        if isinstance(node, ast.Return) and isinstance(node.value, ast.Call):
+            for field, arg in zip([f.name for f in fields(vn.VentilatedRespiration)], node.value.args):
+                if field in W_RETURNED:
+                    reads[f"return.{field}"] = sorted(_read(arg))
+    return {"reads": reads, "targets_found": sorted(found),
+            "returned_found": sorted(k.split(".")[1] for k in reads if k.startswith("return.")),
             "leaks": sorted({name for values in reads.values() for name in values if name in W_FORBIDDEN})}
 
 
@@ -429,16 +451,39 @@ RR_FACTORS = ("intrinsic_rr", "drive_gain", "acid_pair", "demand", "tone_gain")
 GAS_FACTORS = ("ventilation_gain", "acid_pair", "demand", "tone_gain")
 
 
-def _gas_at(burden: float, drive_gain: float, intrinsic: float, gain: float, case: str, pulse: bool = True) -> dict:
-    drive = drive_gain * burden
-    rate = dv.rate_from_drive(drive, intrinsic, DEFAULT_PROFILE) if pulse else 0.0
-    recruitment = vn.ventilation_recruitment(burden, gain)
-    w = vn.effective_ventilation(vn.ventilatory_capacity(burden, EFFICIENCY, gain), 1.0) if pulse else 0.0
-    hco3 = ab.authored_gas(case)["hco3"] - (burden - ab.arrival_burden(case))
-    paco2 = vn.paco2_from_ventilation(w, PACO2_REFERENCE) if w > 0.0 else None
-    return {"burden": burden, "hco3": hco3, "drive": drive, "rr": rate, "frequency_drive": rate - intrinsic if pulse
-            else 0.0, "recruitment": recruitment, "w": w, "paco2": paco2,
-            "ph": dv.carbonic_ph(hco3, paco2) if paco2 and hco3 > 0.0 else None, "demand_ratio": 1.0}
+# The factorized algebra: one function per series, the same in evaluate (the tables, the questions, the pack) and in
+# validate (against the core), so the validation certifies the code that produced the record (review M2).
+
+def hco3_series(series: list, case: str) -> list:
+    a0, hco3_0 = ab.arrival_burden(case), ab.authored_gas(case)["hco3"]
+    return [hco3_0 - (x - a0) for x in series]
+
+
+def rr_series(series: list, pulse: list, drive_gain: float, intrinsic: float) -> list:
+    return [dv.rate_from_drive(drive_gain * x, intrinsic, DEFAULT_PROFILE) if p else 0.0 for x, p in zip(series, pulse)]
+
+
+def frequency_drive_series(rr: list, pulse: list, intrinsic: float) -> list:
+    return [r - intrinsic if p else 0.0 for r, p in zip(rr, pulse)]
+
+
+def recruitment_series(series: list, gain: float) -> list:
+    return [vn.ventilation_recruitment(x, gain) for x in series]
+
+
+def gas_series(series: list, hco3: list, pulse: list, gain: float) -> tuple:
+    """W, PaCO2 and pH per minute at efficiency 1 and the baseline demand; 0 / None without breathing."""
+    w = [vn.effective_ventilation(vn.ventilatory_capacity(x, EFFICIENCY, gain), 1.0) if p else 0.0
+         for x, p in zip(series, pulse)]
+    paco2 = [vn.paco2_from_ventilation(v, PACO2_REFERENCE) if v > 0.0 else None for v in w]
+    ph = [dv.carbonic_ph(c, q) if q is not None and c > 0.0 else None for c, q in zip(hco3, paco2)]
+    return w, paco2, ph
+
+
+def _directions(values: list) -> tuple:
+    n = len(values)
+    known = [m for m in range(1, n) if values[m] is not None and values[m - 1] is not None]
+    return ({m for m in known if values[m] - values[m - 1] > 1e-12}, {m for m in known if values[m] - values[m - 1] < -1e-12})
 
 
 class _Pack:
@@ -514,7 +559,7 @@ def evaluate(store: dict, joint: list) -> dict:
             for b, tau in ab.acid_pairs():
                 levels = _levels(factor, tgain, b, tau)
                 series = ab.burden_series(t["deficit"], a0, b, tau)[:n]
-                hco3 = [hco3_0 - (x - a0) for x in series]
+                hco3 = hco3_series(series, case)
                 if min(hco3) <= 0.0:
                     rejections[ab.SIMULATION_REJECTION] += 1
                     continue
@@ -526,13 +571,12 @@ def evaluate(store: dict, joint: list) -> dict:
                 if 120 < n:
                     summary["burden_120"].append(series[120])
                 # W side: per ventilation gain.
-                gas = {}
+                gas, directions = {}, {}
                 for gain in gains:
-                    w = [vn.effective_ventilation(vn.ventilatory_capacity(x, EFFICIENCY, gain), 1.0) if p else 0.0
-                         for x, p in zip(series, pulse)]
-                    paco2 = [vn.paco2_from_ventilation(v, PACO2_REFERENCE) if v > 0.0 else None for v in w]
-                    ph = [dv.carbonic_ph(c, p) if p is not None else None for c, p in zip(hco3, paco2)]
+                    w, paco2, ph = gas_series(series, hco3, pulse, gain)
                     gas[gain] = (w, paco2, ph)
+                    directions[gain] = _directions(paco2)
+                    recruitment = recruitment_series(series, gain)
                     breathing = [v for v, p in zip(w, pulse) if p]
                     if breathing and (min(breathing) <= 0.0 or not all(math.isfinite(v) for v in breathing)):
                         plausible["non_positive"] += 1
@@ -550,7 +594,7 @@ def evaluate(store: dict, joint: list) -> dict:
                     for m in MINUTES_REPORTED:
                         if m < n:
                             cell = gas_cells[str(m)]
-                            cell["recruitment"].append(vn.ventilation_recruitment(series[m], gain))
+                            cell["recruitment"].append(recruitment[m])
                             cell["efficiency"].append(EFFICIENCY)
                             cell["w"].append(w[m])
                             cell["paco2"].append(paco2[m])
@@ -577,20 +621,23 @@ def evaluate(store: dict, joint: list) -> dict:
                         steps = [abs(y - x) for x, y in zip(paco2, paco2[1:]) if x is not None and y is not None]
                         if len(steps) == n - 1:
                             tally.count("paco2_haemostasis_step", steps[h] <= max(steps[:h] + steps[h + 1:]))
+                # Question 3's PaCO2 side depends on the ventilation gain only: counted once per (trajectory, pair).
+                reasonable = (sum(1 for gain in gains if abs(gas[gain][1][120] - PACO2_REFERENCE) <= REASONABLE_PACO2)
+                              if 120 < n else 0)
                 # RR side: per (drive gain, intrinsic RR).
                 for drive_gain, intrinsic in rr_set[case]:
                     if ab.analytic_rejections(drive_gain, intrinsic, b, tau, d_max, case):
                         rejections[ab.ANALYTIC_REJECTION] += 1
                         continue
-                    rr = [dv.rate_from_drive(drive_gain * x, intrinsic, DEFAULT_PROFILE) if p else 0.0
-                          for x, p in zip(series, pulse)]
+                    rr = rr_series(series, pulse, drive_gain, intrinsic)
+                    frequency = frequency_drive_series(rr, pulse, intrinsic)
                     rr_levels = {**levels, "intrinsic_rr": f"{intrinsic:g}", "drive_gain": f"{drive_gain:g}"}
                     for m in MINUTES_REPORTED:
                         if m < n:
                             cell = rr_cells[str(m)]
                             cell["rr"].append(rr[m])
                             cell["intrinsic"].append(intrinsic)
-                            cell["frequency_drive"].append(rr[m] - intrinsic if pulse[m] else 0.0)
+                            cell["frequency_drive"].append(frequency[m])
                             cell["drive"].append(drive_gain * series[m])
                     summary["rr_peak"].append(max(rr))
                     summary["rr_min"].append(min(rr))
@@ -616,14 +663,9 @@ def evaluate(store: dict, joint: list) -> dict:
                         tally.add("q4_dip_depth", dip)
                     tally.count("q5_opposite", any((lactate[m] - lactate[m - 1]) * (rr[m] - rr[m - 1]) < -1e-12
                                                    for m in range(1, n)))
-                    up = {m for m in range(1, n) if rr[m] - rr[m - 1] > 1e-12}
-                    down = {m for m in range(1, n) if rr[m] - rr[m - 1] < -1e-12}
+                    up, down = _directions(rr)
                     for gain in gains:
-                        paco2 = gas[gain][1]
-                        p_up = {m for m in range(1, n) if paco2[m] is not None and paco2[m - 1] is not None
-                                and paco2[m] - paco2[m - 1] > 1e-12}
-                        p_down = {m for m in range(1, n) if paco2[m] is not None and paco2[m - 1] is not None
-                                  and paco2[m] - paco2[m - 1] < -1e-12}
+                        p_up, p_down = directions[gain]
                         tally.count("q6_same_direction", bool((up & p_up) | (down & p_down)))
                         tally.count("q6_opposite_direction", bool((up & p_down) | (down & p_up)))
                     if name == "P4":
@@ -635,8 +677,6 @@ def evaluate(store: dict, joint: list) -> dict:
                             tally.count("no_instant_normalization", above >= 1.0)
                         if 120 < n and intrinsic == lowest[case]:
                             near = rr[120] - intrinsic <= APPROACH_RR
-                            reasonable = sum(1 for gain in gains
-                                             if abs(gas[gain][1][120] - PACO2_REFERENCE) <= REASONABLE_PACO2)
                             n_, true = tally.counts.get(f"q3 {case}", (0, 0))
                             tally.counts[f"q3 {case}"] = (n_ + len(gains), true + (reasonable if near else 0))
                             tally.count(f"q3_rr_near {case}", near)
@@ -678,7 +718,8 @@ def _domain_equal(plain: dict, live: dict, rows: tuple, fields: tuple) -> bool:
 
 def validate(region: dict, store: dict) -> dict:
     """One full core run per (tone gain, demand, scenario, case) with the acid-base candidate declared, and the same run
-    without it. At every state the ventilation module equals the factorized algebra; recomputed on the same states with
+    without it. At every state the ventilation module equals the factorized algebra (the series functions evaluate
+    uses, on the trajectory's own deficit and pulse); recomputed on the same states with
     another drive gain or another intrinsic RR its W and PaCO2 are identical (RR alone moves no W); recomputed in reverse
     order it is identical (no order dependence); every upstream row equals the run without the candidate; the default
     RR equals P2K-1's."""
@@ -686,7 +727,7 @@ def validate(region: dict, store: dict) -> dict:
     vc = candidate(gain)
     out = {"compared": 0, "equal": True, "max_abs_diff": 0.0, "upstream_equal": True, "default_rr_equal": True,
            "rr_alone_moves_no_w": True, "intrinsic_alone_moves_no_w": True, "rr_moved": False, "order_independent": True,
-           "demand_ratio_one": True, "core_rr_equal": True, "candidate": list(VALIDATION_CANDIDATE),
+           "demand_ratio_one": True, "core_rr_equal": True, "pulse_equal": True, "candidate": list(VALIDATION_CANDIDATE),
            "domains": {name: True for name in UPSTREAM_DOMAINS}}
     for (tgain, factor, name, case), seen in sorted(store.items(), key=lambda kv: str(kv[0])):
         if not seen:
@@ -703,18 +744,26 @@ def validate(region: dict, store: dict) -> dict:
         out["compared"] += 1
         out["default_rr_equal"] &= [row["rr"] for row in plain["rows"]] == traj["rr"][:len(plain["rows"])]
         series = ab.burden_series(traj["deficit"], ab.arrival_burden(case), b, tau)
+        states = live["states"]
+        out["equal"] &= len(series) >= len(states) and len(traj["pulse"]) >= len(states)
+        n = min(len(states), len(series), len(traj["pulse"]))
+        burden, pulse = series[:n], list(traj["pulse"][:n])
+        out["pulse_equal"] &= pulse == [state.R.pulse_present for state in states[:n]]
+        hco3 = hco3_series(burden, case)
+        rr = rr_series(burden, pulse, drive_gain, intrinsic)
+        frequency = frequency_drive_series(rr, pulse, intrinsic)
+        recruitment = recruitment_series(burden, gain)
+        w, paco2, ph = gas_series(burden, hco3, pulse, gain)
         anchors, profile = live["anchors"], live["profile"]
         other_rate = replace(profile, acid_to_drive_gain=4.0)
         other_intrinsic = replace(anchors, intrinsic_respiratory_rate=12.0 if intrinsic != 12.0 else 20.0)
         forward = []
-        for m, state in enumerate(live["states"]):
+        for m, state in enumerate(states[:n]):
             r = vn.ventilated_respiration(state, anchors, profile, vc)
             forward.append(r)
-            want = _gas_at(series[m], drive_gain, intrinsic, gain, case, state.R.pulse_present)
-            for got, exp in ((r.acid_burden, want["burden"]), (r.respiratory_rate, want["rr"]),
-                             (r.frequency_drive, want["frequency_drive"]), (r.recruitment, want["recruitment"]),
-                             (r.ventilation, want["w"]), (r.paco2, want["paco2"]), (r.ph, want["ph"]),
-                             (r.bicarbonate, want["hco3"]), (r.demand_ratio, want["demand_ratio"])):
+            for got, exp in ((r.acid_burden, burden[m]), (r.respiratory_rate, rr[m]), (r.frequency_drive, frequency[m]),
+                             (r.recruitment, recruitment[m]), (r.ventilation, w[m]), (r.paco2, paco2[m]),
+                             (r.ph, ph[m]), (r.bicarbonate, hco3[m]), (r.demand_ratio, 1.0)):
                 if got is None or exp is None:
                     out["equal"] &= got is exp
                     continue
@@ -726,7 +775,7 @@ def validate(region: dict, store: dict) -> dict:
             out["rr_alone_moves_no_w"] &= (s.ventilation, s.paco2, s.ph) == (r.ventilation, r.paco2, r.ph)
             out["intrinsic_alone_moves_no_w"] &= (u.ventilation, u.paco2, u.ph) == (r.ventilation, r.paco2, r.ph)
             out["rr_moved"] |= s.respiratory_rate != r.respiratory_rate and u.respiratory_rate != r.respiratory_rate
-        backward = [vn.ventilated_respiration(state, anchors, profile, vc) for state in reversed(live["states"])]
+        backward = [vn.ventilated_respiration(state, anchors, profile, vc) for state in reversed(states[:n])]
         out["order_independent"] &= backward[::-1] == forward
         out["upstream_equal"] &= len(plain["rows"]) == len(live["rows"]) and all(
             {k: v for k, v in p.items() if k != "rr"} == {k: v for k, v in q.items() if k != "rr"}
@@ -734,8 +783,8 @@ def validate(region: dict, store: dict) -> dict:
             ab._upstream(s) == ab._upstream(t) for s, t in zip(plain["states"], live["states"]))
         for domain, (rows, fields) in UPSTREAM_DOMAINS.items():
             out["domains"][domain] &= _domain_equal(plain, live, rows, fields)
-        out["equal"] &= len(series) >= len(live["states"])
-    out["equal"] = out["equal"] and out["max_abs_diff"] <= 1e-9 and out["core_rr_equal"] and out["demand_ratio_one"]
+    out["equal"] = out["equal"] and out["max_abs_diff"] <= 1e-9 and out["core_rr_equal"] and out["demand_ratio_one"] \
+        and out["pulse_equal"]
     return out
 
 
@@ -763,22 +812,26 @@ def p2k2_reproduced(tables: dict) -> dict:
 
 # 9. Key questions, identifiability, dependencies, decision pack, readiness (P2K-3-8, -11, -12, -15, -16) ---------------------
 
-def resting_paco2_table(joint: list) -> dict:
-    """Question 1: the PaCO2 at no burden and the baseline demand for every intrinsic RR and ventilation gain (P2K-3), and
-    P2K-2's resting PaCO2 over the same RR candidates for contrast."""
-    rows = {f"{i:g}": {f"{g:g}": vn.paco2_from_ventilation(vn.effective_ventilation(
-        vn.ventilatory_capacity(0.0, EFFICIENCY, g), 1.0), PACO2_REFERENCE) for g in VENTILATION_GAINS}
-        for i in INTRINSIC_RR}
+def resting_paco2_table(joint: list, probes_: dict) -> dict:
+    """Question 1: the PaCO2 at no burden and the baseline demand, computed by the ventilation module on core states with
+    each intrinsic RR declared on the anchors, every drive gain and every ventilation gain (probe H's rows; review B1: it
+    was the bare algebra, which never read the intrinsic RR), and P2K-2's resting PaCO2 over the same RR candidates."""
+    rows = {}
+    for row in probes_["H"]["rows"]:
+        rows.setdefault(f"{row['intrinsic']:g}", {}).setdefault(f"{row['gain']:g}", set()).add(row["paco2"])
     old = {case: ab._spread([ab.resting_paco2(g, i57 if case == C57 else i72, case) for g, i57, i72, _ in joint])
            for case in CASES}
-    return {"p2k3": rows, "all_reference": all(v == PACO2_REFERENCE for row in rows.values() for v in row.values()),
+    return {"p2k3": {i: {g: sorted(v) for g, v in by.items()} for i, by in rows.items()},
+            "all_reference": bool(probes_["H"]["rows"]) and all(r["paco2"] == PACO2_REFERENCE and r["w"] == 1.0
+                                                                 for r in probes_["H"]["rows"]),
+            "intrinsic_covered": sorted({r["intrinsic"] for r in probes_["H"]["rows"]}) == sorted(INTRINSIC_RR),
             "p2k2_over_the_same_rr_candidates": old}
 
 
 def key_questions(evaluated: dict, probes_: dict, joint: list) -> dict:
     tally = evaluated["tally"]
     return {
-        "1_resting_hypercapnia": resting_paco2_table(joint),
+        "1_resting_hypercapnia": resting_paco2_table(joint, probes_),
         "2_paco2_toward_40": {"r4_toward": tally.share("q2_toward"),
                               "by_case": {case: tally.share(f"q2_toward {case}") for case in CASES},
                               "r4_paco2_120": {case: tally.spread(f"q2_paco2_120 {case}") for case in CASES},
@@ -943,24 +996,34 @@ CRITERIA = ("rr_not_determining_w", "intrinsic_not_determining_rest", "lactate_d
             "arrival_paco2_reproduced", "ph_coherent", "patient_like", "factorization_valid", "upstream_unchanged",
             "nothing_approved")
 VERDICT_RULE = (
-    "Frozen. READY when every criterion holds: RR does not determine W (probe B, the static proof that W reads no rate, "
-    "intrinsic RR or drive name, and the full-core recomputation with another drive gain); the intrinsic RR determines "
+    "Frozen. READY when every criterion holds: RR does not determine W (probes A, B, D, G, I and no pulse; the static "
+    "proof that no assignment to a W-side name and no returned W-side field reads a rate, intrinsic RR or drive name; and "
+    "the full-core recomputation with another drive gain); the intrinsic RR determines "
     "neither W nor the resting PaCO2 (probes C and H, question 1: 40 at every intrinsic RR, and the full-core "
     "recomputation with another intrinsic RR); lactate and D reach no RR or W term (probes E, F, the W channel); the "
     "arrival RR is reproduced (at least one RR-compatible candidate) and the arrival PaCO2 with one common ventilation "
-    "gain (at least one joint candidate; none is a STOP); pH is coherent (derived everywhere, formula probe, every value "
-    "within the plausible 6.8-7.8, the bank's reconstruction within 0.005); the trajectories are patient-like (W > 0 and "
+    "gain (at least one joint candidate; none is a STOP); pH is coherent (derived by the bicarbonate relation: the formula "
+    "probe, and the factorized pH equal to the core's in the validation; every value within the plausible 6.8-7.8; the "
+    "bank's reconstruction within 0.005); the trajectories are patient-like (W > 0 and "
     "PaCO2 > 0 wherever breathing; in every R4 combination RR stays at least 1 breath/min above intrinsic 15 min after "
     "haemostasis, and the haemostasis minute moves RR and PaCO2 no more than another minute); the factorization is valid "
     "(the core equals it, order independent); the upstream is unchanged (rows and states equal, the P2J-3 region, P2K-1 "
     "and P2K-2 reproduced, the default RR, the core files at their P2K-2 hashes); nothing is approved. Otherwise "
-    "NOT_READY with the first failing criterion as the blocker. The acid burden is never required to rise.")
+    "NOT_READY with the first failing criterion as the blocker; an early stop "
+    "evaluates only the criteria it reached and lists the others as not evaluated. The acid burden is never required to "
+    "rise.")
 
 
 def verdict(checks: dict) -> dict:
-    failing = [name for name in CRITERIA if not checks[name]]
-    return {"verdict": READY if not failing else f"{NOT_READY} - {failing[0].upper()}", "checks": checks,
-            "failing": failing}
+    """READY when every criterion is evaluated and holds; otherwise the first failing criterion, in CRITERIA order, is the
+    blocker. A criterion an early stop never reached is listed as not evaluated, never counted as failing (review M1)."""
+    failing = [name for name in CRITERIA if checks.get(name) is False]
+    unevaluated = [name for name in CRITERIA if name not in checks]
+    if failing:
+        result = f"{NOT_READY} - {failing[0].upper()}"
+    else:
+        result = READY if not unevaluated else f"{NOT_READY} - NOT_EVALUATED"
+    return {"verdict": result, "checks": checks, "failing": failing, "not_evaluated": unevaluated}
 
 
 POLICY = ("Shadow only. The P2K-3 candidate is the P2K-2 acid-base profile plus a ventilation gain read by "
@@ -1010,6 +1073,7 @@ def design() -> dict:
             "ph_tolerance": PH_TOLERANCE, "authored_rr": AUTHORED_RR, "paco2_windows": PACO2_WINDOWS,
             "ph_plausible": list(PH_PLAUSIBLE), "approach_rr": APPROACH_RR, "reasonable_paco2": REASONABLE_PACO2,
             "candidate_rule": CANDIDATE_RULE, "w_functions": list(W_FUNCTIONS), "w_targets": list(W_TARGETS),
+            "w_returned": list(W_RETURNED),
             "w_forbidden": sorted(W_FORBIDDEN), "probe_gain": PROBE_GAIN, "probe_rule": PROBE_RULE,
             "reconstruction_rule": RECONSTRUCTION_RULE, "sensitivity_factors": list(SENSITIVITY_FACTORS),
             "validation_candidate": list(VALIDATION_CANDIDATE), "upstream_domains": UPSTREAM_DOMAINS,
@@ -1028,7 +1092,7 @@ def freeze_digest() -> str:
 
 def _stopped(out: dict, checks: dict, why: str) -> dict:
     out["stopped"] = why
-    out["verdict"] = verdict({name: checks.get(name, False) for name in CRITERIA})
+    out["verdict"] = verdict(checks)
     return out
 
 
@@ -1043,13 +1107,16 @@ def run(progress=None, map_=map) -> dict:
         probes_ = probes()
         passed = probes_pass(probes_)
         core = core_unchanged()
-        checks = {"rr_not_determining_w": passed["B"] and not proof["leaks"]
-                  and sorted(proof["targets_found"]) == sorted(W_TARGETS),
+        # The criteria the structure alone can fail, before any count (each completed after the trajectories).
+        checks = {"rr_not_determining_w": all(passed[k] for k in ("A", "B", "D", "G", "I", "no_pulse"))
+                  and not proof["leaks"] and proof["targets_found"] == sorted(W_TARGETS)
+                  and proof["returned_found"] == sorted(W_RETURNED),
+                  "intrinsic_not_determining_rest": passed["C"] and passed["H"],
                   "lactate_d_retired": passed["E"] and passed["F"] and passed["W_channel"],
-                  "nothing_approved": True}
+                  "ph_coherent": passed["pH"], "upstream_unchanged": all(core.values()), "nothing_approved": True}
         out.update({"w_inputs": proof, "probes": probes_, "probes_pass": passed, "core_unchanged": core})
-        if not all(passed.values()) or not checks["rr_not_determining_w"] or not all(core.values()):
-            return _stopped(out, checks, "a structural probe or proof failed")
+        if not all(checks.values()):
+            return _stopped(out, checks, "a structural probe or proof failed, or a core file changed")
         say("arrival joint surface")
         rr = ab.arrival_compatibility()
         paco2 = paco2_compatibility()
@@ -1084,9 +1151,10 @@ def run(progress=None, map_=map) -> dict:
         checks.update({
             "rr_not_determining_w": checks["rr_not_determining_w"] and validation["rr_alone_moves_no_w"]
             and validation["rr_moved"],
-            "intrinsic_not_determining_rest": passed["C"] and passed["H"]
-            and questions["1_resting_hypercapnia"]["all_reference"] and validation["intrinsic_alone_moves_no_w"],
-            "ph_coherent": passed["pH"] and plausible["outside"] == 0
+            "intrinsic_not_determining_rest": checks["intrinsic_not_determining_rest"]
+            and questions["1_resting_hypercapnia"]["all_reference"]
+            and questions["1_resting_hypercapnia"]["intrinsic_covered"] and validation["intrinsic_alone_moves_no_w"],
+            "ph_coherent": checks["ph_coherent"] and plausible["outside"] == 0
             and all(abs(ab.ph_reconstruction(case)["error"]) <= 0.005 for case in CASES),
             "patient_like": plausible["non_positive"] == 0 and plausible["paco2_low"] is not None
             and plausible["paco2_low"] > 0.0
@@ -1094,10 +1162,10 @@ def run(progress=None, map_=map) -> dict:
             and post["no_instant_normalization"]["true"] == post["no_instant_normalization"]["n"]
             and post["rr_haemostasis_step"]["true"] == post["rr_haemostasis_step"]["n"] > 0
             and post["paco2_haemostasis_step"]["true"] == post["paco2_haemostasis_step"]["n"] > 0,
-            "upstream_unchanged": validation["upstream_equal"] and validation["default_rr_equal"]
+            "upstream_unchanged": checks["upstream_unchanged"] and validation["upstream_equal"]
+            and validation["default_rr_equal"]
             and all(validation["domains"].values())
-            and all(region["unchanged"].values()) and p2k1 and all(reproduced.values())
-            and all(core.values())})
+            and all(region["unchanged"].values()) and p2k1 and all(reproduced.values())})
         out.update({
             "pressure_tone_unchanged": region["unchanged"], "p2k1_unchanged": p2k1,
             "p2k2_reproduced": reproduced, "reconstruction": evaluated["tables"],
@@ -1110,6 +1178,8 @@ def run(progress=None, map_=map) -> dict:
                                                                                  evaluated["rr_set"].items()},
                            "ventilation_gains": len(evaluated["gains"]), "core_validation_runs": 2 * validation["compared"],
                            "cartesian_sweep": False, "legacy_read": False,
+                           "rr_w_crossed_only_for": ["key question 3 (RR near intrinsic with PaCO2 near 40)",
+                                                     "key question 6 (RR and PaCO2 directions)"],
                            "arrival_combinations": surface["with_acid_support"]["total"]}})
         out["verdict"] = verdict(checks)
         if out["verdict"]["verdict"] == READY:
