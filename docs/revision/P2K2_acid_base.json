@@ -984,6 +984,7 @@
    "ACID_BASE",
    "CARBONIC_PK",
    "CO2_SOLUBILITY",
+   "REFERENCE_VENTILATION_EFFICIENCY",
    "Respiration",
    "_acid_burden",
    "acid_base_active",
@@ -1028,7 +1029,8 @@
     "arrival_alveolar_ventilation",
     "Respiration",
     "respiration",
-    "respiratory_rate_decomposition"
+    "respiratory_rate_decomposition",
+    "REFERENCE_VENTILATION_EFFICIENCY"
    ],
    "clinical_core/integration.py": [
     "_acid_burden"
@@ -1056,11 +1058,11 @@
    "clearance": "first-order, always on: the burden falls whenever A / tau exceeds the production, also while a deficit lasts; no no-repayment rule",
    "default": "off by default: the three gains None leave every default run, the golden and every closed record unchanged; the candidate is the profile with the three gains declared",
    "drive": "respiratory_drive = acid_to_drive_gain x A (breaths/min-equivalent): the burden only",
-   "paco2": "PaCO2 = PaCO2_rest / W, PaCO2_rest = arrival PaCO2 x arrival W (the model's arrival RR): exact at minute 0 by construction; PaCO2_rest is implied by the anchoring, not a parameter",
+   "paco2": "PaCO2 = PaCO2_rest / W, PaCO2_rest = arrival PaCO2 x the arrival W at the reference efficiency 1 (the model's arrival RR): exact at minute 0 when the arrival efficiency is the reference (the GI cases); a lower efficiency lowers W and raises PaCO2 above that anchor (review: a constant efficiency used on both sides cancelled); PaCO2_rest is implied by the anchoring, not a parameter",
    "ph": "pH = 6.1 + log10(HCO3 / (0.03 PaCO2)), the case bank's own constants (clinical_cases._gas)",
    "production": "the minute's effective oxygen deficit, max(0, demand - reserve x delivery) at the start-of-minute delivery and the minute's demand: the one D integrates; linear, so more deficit never produces less and no deficit produces nothing",
    "rr": "RR = intrinsic + S (1 - exp(-drive / S)), S = rr_drive_saturation (25, structural); rr_max a safety guard only; RR = 0 without a pulse",
-   "w": "W = efficiency x (RR / intrinsic RR) / (demand / baseline demand): effective alveolar ventilation over the ventilation that meets the current CO2 production at the patient's eupnoea; 1 at the intrinsic RR with no drive",
+   "w": "W = efficiency x (RR / intrinsic RR) / (demand / baseline demand): effective alveolar ventilation over the ventilation of the patient's eupnoea at the current CO2 production; 1 at the intrinsic RR with no drive and mechanics preserved. 'Need' is that eupnoeic ventilation: it is eucapnic only when the implied resting PaCO2 is (adversarial review)",
    "w_channel": "the W channel (C7) is read by no candidate term: RESERVED for future families; the default profile keeps the P2K-1 RR for the frozen records"
   },
   "status": {
@@ -1158,7 +1160,7 @@
   "w": "W = effective alveolar ventilation relative to metabolic ventilatory need: 1 matches it, below 1 relative hypoventilation, above 1 relative hyperventilation; not the drive",
   "w_leak": "the old W use (W > 0 multiplying part of RR, W < 0 scaling it) is a SEMANTIC_LEAK retired in the candidate: drive -> RR, drive + efficiency -> W, W -> PaCO2, never W -> drive"
  },
- "freeze_digest": "23aa0a38ccecac0284f14e6ef46b81e49da4c0bb6510b65e99372a3d79ae1b22",
+ "freeze_digest": "7540ee76a681d272e8ac290781771d83d19c1562ea152209c88809aa4e8b710c",
  "identifiability": {
   "acid_burden": {
    "class": "WELL_CONSTRAINED",
@@ -1200,7 +1202,7 @@
   },
   "rule": "Frozen. Arrival compatibility (+/- 3, provisional) is the only authored respiratory constraint besides the arrival gas: a quantity is WELL_CONSTRAINED when one value is compatible, PARTIALLY_CONSTRAINED when some but not all are, NON_IDENTIFIABLE when every value is or the arrival does not read it; the arrival burden is exact from the authored HCO3. B and tau reach only trajectories with no authored later observation: NON_IDENTIFIABLE from authored data, their trajectory sensitivity reported. The implied resting PaCO2 is reported, never filtered. No best set.",
   "w_efficiency": {
-   "class": "PARTIALLY_CONSTRAINED",
+   "class": "NON_IDENTIFIABLE",
    "resting_paco2": {
     "gi_bleed_57m": {
      "high": 73.47496090779701,
@@ -1215,7 +1217,7 @@
      "n": 9
     }
    },
-   "why": "efficiency fixed at 1 (structural); W's absolute scale and the resting PaCO2 follow the intrinsic RR"
+   "why": "efficiency fixed at the structural reference 1 and read by no authored observation (review: the frozen rule); W's absolute scale and the resting PaCO2 follow the intrinsic RR, itself constrained only jointly with the gain"
   }
  },
  "key_questions": {
@@ -1458,6 +1460,7 @@
    }
   },
   "E1": {
+   "paco2_above_arrival": true,
    "result": {
     "D": 0.0,
     "burden": 8.0,
@@ -1465,8 +1468,8 @@
     "drive": 16.0,
     "hco3": 16.0,
     "lactate": 1.0,
-    "paco2": 29.56628981073812,
-    "ph": 7.356201898365121,
+    "paco2": 59.13257962147624,
+    "ph": 7.05517190270114,
     "rr": 27.817689398923786,
     "w": 0.8693027937163683
    },
@@ -27951,6 +27954,7 @@
    120.0
   ],
   "compared": 48,
+  "default_rr_equal": true,
   "equal": true,
   "max_abs_diff": 0.0,
   "upstream_equal": true

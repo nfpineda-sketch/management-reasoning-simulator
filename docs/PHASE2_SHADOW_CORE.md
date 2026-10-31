@@ -3450,8 +3450,11 @@ Ninguno. `clinical_core` sigue sólo en sombra.
     caso y de la migración.
   - El perfil por defecto conserva la FR de P2K-1, y con ella el golden y los registros cerrados.
 - **Cierre de los paquetes anteriores:** la prueba AST (`acid_base.proofs`) muestra que los tres archivos del núcleo
-  son los de P2K-1 más las inserciones declaradas e inertes de P2K-2. Los congelamientos de P2I-2AJ a P2K-1 se
-  recalculan con los mapas de `acid_base` y sus registros no cambian.
+  son los de P2K-1 más las inserciones declaradas de P2K-2:
+  - su contenido queda fijado por digest (`INSERTIONS_AT_P2K2`);
+  - las comprobaciones insertadas sólo lanzan un error o actúan bajo exactamente `acid_base_active(profile)`.
+
+  Los congelamientos de P2I-2AJ a P2K-1 se recalculan con los mapas de `acid_base` y sus registros no cambian.
 - **Candidatos predeclarados (EXPLORATORY):**
   - FR intrínseca 12 / 16 / 20;
   - ganancia de 1 a 4 (razón √2);
@@ -3468,3 +3471,8 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - Con W ∝ FR, la PaCO2 en reposo es eucápnica sólo con FR intrínseca ≈ 20; con 12–16 es de 44 a 74 mmHg.
 - **Veredicto: ACID_BASE_RR_STRUCTURE_READY_FOR_NUMERIC_FACULTY_CALIBRATION.** Nada aprobado; paquete de decisión
   preparado sin filtrar. Decisiones pedidas en el informe `docs/revision/P2K2_CARGA_ACIDA_Y_VENTILACION.md` §13.
+- **Revisión adversarial:** dos hallazgos de severidad alta, los dos de maquinaria y no de rangos.
+  - La prueba AST no comprobaba la condición ni el contenido de lo insertado.
+  - Una eficiencia constante se cancelaba con el anclaje.
+
+  Los dos se corrigieron y P2K-2 se recongeló con los mismos candidatos y criterios (informe §15).

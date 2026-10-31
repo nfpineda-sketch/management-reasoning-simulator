@@ -2,6 +2,10 @@
 
 - **Fecha:** 2026-10-31. **Rama:** `phase-2-clinical-core-shadow`. **Base:** `81ed6b8` (P2K-1, cerrado).
 - **Congelamiento:** `57b0ddc` (digest `23aa0a38…`), antes de leer cualquier trayectoria respiratoria clínica.
+- **Recongelamiento tras la revisión adversarial:** `0863d75` (digest `7540ee76…`). Los rangos, los candidatos y los criterios son los
+  mismos. Cambian la prueba de cierre, el anclaje de la eficiencia ventilatoria, una comprobación de E1, la clase de
+  identificabilidad de la eficiencia y una comprobación de la validación (§15). Los números de los escenarios no
+  cambian.
   - Antes de congelar sólo se leyeron entradas: el gas de llegada del banco, los déficits efectivos de llegada del
     registro de P2K-1 y las sondas sintéticas.
   - Las rutas de código se probaron sobre un almacén sintético y una corrida real de la que sólo se imprimieron
@@ -23,8 +27,11 @@
   - PaCO2 algebraica en W, anclada a la PaCO2 de autor, y pH de HCO3 y PaCO2.
   - En la fisiología candidata el lactato, D y el canal W no llegan a la FR.
   - El perfil por defecto conserva la FR de P2K-1, sólo para que los registros cerrados y el golden sigan
-    reproducibles. La prueba AST muestra que P2K-2 cambió los tres archivos del núcleo sólo con sus inserciones
-    declaradas e inertes.
+    reproducibles.
+  - La prueba AST muestra que P2K-2 cambió los tres archivos del núcleo sólo con sus inserciones declaradas:
+    - su contenido queda fijado por digest;
+    - cada comprobación insertada sólo lanza un error, o actúa bajo exactamente `acid_base_active(profile)` con uno de
+      sus dos cuerpos permitidos.
 - **Llegada.**
   - La carga de llegada sale del HCO3 (57m 6,7; 72f 4,2 mEq/L), nunca del lactato.
   - La PaCO2 es exacta por construcción.
@@ -37,7 +44,10 @@
 - **Sondas A–H:** todas se comportan como pide la docencia.
   - El lactato solo y D solo no mueven la FR.
   - La carga que se aclara baja la FR con el lactato alto.
-  - Con eficiencia baja, una FR alta deja W ≤ 1 y la PaCO2 sube pese a la taquipnea.
+  - Con eficiencia baja, una FR alta deja W ≤ 1 y la PaCO2 sube pese a la taquipnea (E1, dentro del núcleo: PaCO2 59
+    mmHg con FR 27,8).
+  - La revisión encontró que antes una eficiencia constante se cancelaba con el anclaje; ahora el anclaje de llegada
+    se lee a la eficiencia de referencia 1.
 - **Trayectorias.**
   - Sin tratamiento, la carga sube y la FR con ella cuando B es alto. Con B = 28 nunca baja en ninguna trayectoria de
     ningún caso; con B = 13,4 baja al principio, porque la carga de llegada supera la que sostiene el déficit de
@@ -49,8 +59,10 @@
 - **Hallazgo principal para la docencia: la PaCO2 en reposo implícita.**
   - Con volumen corriente constante (W ∝ FR), la llegada de autor (FR 26 y 24 con PaCO2 31 y 33) sólo da una
     recuperación eucápnica (≈ 40 mmHg) con FR intrínseca ≈ 20.
-  - Con 12 o 16 la PaCO2 en reposo implícita es de 44 a 74 mmHg, y a los 120 min de R4 la PaCO2 llega a 55–56 con
-    pH 7,24–7,25.
+  - Con 12 o 16 la PaCO2 en reposo implícita es de 44 a 74 mmHg. A los 120 min de R4 la PaCO2 llega a 55,4–56,2 en
+    72f y a 52,6–54,9 en 57m, con pH 7,24–7,26.
+  - W = 1 es la eupnea del paciente a su FR intrínseca, y sólo es eucapnia si esa PaCO2 en reposo es normal: 6 de los
+    9 tríos compatibles la dan hipercápnica.
   - No es un fallo del álgebra ni un valor imposible. Es la consecuencia de suponer que toda la hiperventilación de
     llegada es frecuencia, y la docencia decide qué hacer (§13).
 - **Dependencias.**
@@ -58,8 +70,9 @@
     demanda y 0,07 por tono.
   - MAP_set, el barorreflejo y la región latente de FC no llegan y no se multiplican.
 - **Veredicto: ACID_BASE_RR_STRUCTURE_READY_FOR_NUMERIC_FACULTY_CALIBRATION.**
-  - Con las salvedades de §13: nada aprobado, ninguna envolvente filtra nada y el paquete de decisión queda
-    preparado sin filtrar.
+  - Es el veredicto de los criterios congelados y queda condicionado a la decisión de §13.1 (FR intrínseca y volumen
+    corriente). Varios criterios se cumplen por construcción (§14).
+  - Nada aprobado, ninguna envolvente filtra nada y el paquete de decisión queda preparado sin filtrar.
 
 ## 1. Decisiones docentes registradas (generado)
 
@@ -100,11 +113,11 @@
 | clearance | first-order, always on: the burden falls whenever A / tau exceeds the production, also while a deficit lasts; no no-repayment rule |
 | default | off by default: the three gains None leave every default run, the golden and every closed record unchanged; the candidate is the profile with the three gains declared |
 | drive | respiratory_drive = acid_to_drive_gain x A (breaths/min-equivalent): the burden only |
-| paco2 | PaCO2 = PaCO2_rest / W, PaCO2_rest = arrival PaCO2 x arrival W (the model's arrival RR): exact at minute 0 by construction; PaCO2_rest is implied by the anchoring, not a parameter |
+| paco2 | PaCO2 = PaCO2_rest / W, PaCO2_rest = arrival PaCO2 x the arrival W at the reference efficiency 1 (the model's arrival RR): exact at minute 0 when the arrival efficiency is the reference (the GI cases); a lower efficiency lowers W and raises PaCO2 above that anchor (review: a constant efficiency used on both sides cancelled); PaCO2_rest is implied by the anchoring, not a parameter |
 | ph | pH = 6.1 + log10(HCO3 / (0.03 PaCO2)), the case bank's own constants (clinical_cases._gas) |
 | production | the minute's effective oxygen deficit, max(0, demand - reserve x delivery) at the start-of-minute delivery and the minute's demand: the one D integrates; linear, so more deficit never produces less and no deficit produces nothing |
 | rr | RR = intrinsic + S (1 - exp(-drive / S)), S = rr_drive_saturation (25, structural); rr_max a safety guard only; RR = 0 without a pulse |
-| w | W = efficiency x (RR / intrinsic RR) / (demand / baseline demand): effective alveolar ventilation over the ventilation that meets the current CO2 production at the patient's eupnoea; 1 at the intrinsic RR with no drive |
+| w | W = efficiency x (RR / intrinsic RR) / (demand / baseline demand): effective alveolar ventilation over the ventilation of the patient's eupnoea at the current CO2 production; 1 at the intrinsic RR with no drive and mechanics preserved. 'Need' is that eupnoeic ventilation: it is eucapnic only when the implied resting PaCO2 is (adversarial review) |
 | w_channel | the W channel (C7) is read by no candidate term: RESERVED for future families; the default profile keeps the P2K-1 RR for the frozen records |
 
 **Vías retiradas en la candidata:**
@@ -413,7 +426,7 @@ Se multiplican sólo: demand, tone_gain.
 | ganancia déficit → ácido | NON_IDENTIFIABLE | no authored observation after arrival |
 | τ de aclaramiento ácido | NON_IDENTIFIABLE | no authored observation after arrival |
 | carga ácida | WELL_CONSTRAINED | at arrival, exact from the authored HCO3; after arrival it follows (B, tau), which nothing authored reads |
-| W / eficiencia ventilatoria | PARTIALLY_CONSTRAINED | efficiency fixed at 1 (structural); W's absolute scale and the resting PaCO2 follow the intrinsic RR; PaCO2 en reposo implícita: 57m 46,3 [40,1–73,5]; 72f 43,9 [39,4–66,6] |
+| W / eficiencia ventilatoria | NON_IDENTIFIABLE | efficiency fixed at the structural reference 1 and read by no authored observation (review: the frozen rule); W's absolute scale and the resting PaCO2 follow the intrinsic RR, itself constrained only jointly with the gain; PaCO2 en reposo implícita: 57m 46,3 [40,1–73,5]; 72f 43,9 [39,4–66,6] |
 
 Frozen. Arrival compatibility (+/- 3, provisional) is the only authored respiratory constraint besides the arrival gas: a quantity is WELL_CONSTRAINED when one value is compatible, PARTIALLY_CONSTRAINED when some but not all are, NON_IDENTIFIABLE when every value is or the arrival does not read it; the arrival burden is exact from the authored HCO3. B and tau reach only trajectories with no authored later observation: NON_IDENTIFIABLE from authored data, their trajectory sensitivity reported. The implied resting PaCO2 is reported, never filtered. No best set.
 <!-- /generado:identificabilidad -->
@@ -497,6 +510,24 @@ zonas que la docencia debe juzgar antes de filtrar:
 
 ## 14. Limitaciones
 
+- **Criterios que se cumplen por construcción** (revisión, hallazgo 5):
+  - `bounded_surface`: la rejilla de ganancias se construye con las soluciones exactas de llegada de las mismas FR de
+    autor.
+  - La parte R1 de `patient_like`: B máximo = A0 / d0 máximo, así que la carga no baja al llegar con B = 28.
+  - `paco2_ph_coherent`: el HCO3 del banco sale del pH y la PaCO2 de autor, así que el error de pH es sólo redondeo.
+  - `nothing_approved` es una constante.
+  - Ningún resultado posterior a la llegada entra en un rango.
+- **Eficiencia.** Es un campo constante del perfil: dentro de una corrida del núcleo no puede variar. E2 usa las
+  funciones del núcleo con una eficiencia que cae, y E1 la usa constante dentro del núcleo.
+- **Canal W (C7).** Queda reservado: la candidata no lo lee y nada impide hoy que un contribuyente lo escriba mientras
+  la candidata está activa (no hay ninguno en GI).
+- **Corridas con la candidata activa.**
+  - Si el HCO3 llega a 0, la corrida se detiene (UnresolvedBoundary); no ocurrió.
+  - La carga deriva el estado una vez más por minuto, y `derive` calcula y descarta la FR de P2K-1: sólo cuesta
+    cómputo.
+- **Tuplas de exclusión.** Las prueba su contenido la prueba de P2K-1 (`test_the_exclusion_tuples_hold_exactly_their_p2k1_content`),
+  no los mapas de dependencias.
+
 - **Mapa FR → W.**
   - Es proporcional (volumen corriente y espacio muerto constantes) y la eficiencia es 1 en los casos GI.
   - No hay quimiorreflejo de CO2: la PaCO2 no realimenta el impulso. Sólo la carga ácida lo mueve.
@@ -517,3 +548,22 @@ zonas que la docencia debe juzgar antes de filtrar:
   reescribe.
 - **Fuera de este paquete.** Sin impulso hipoxémico (HYPOXEMIC_DRIVE_DEFERRED); L, G y N reservados; sin VNI ni
   ventilación mecánica (FUTURE_GENERALIZATION_REQUIREMENT).
+
+## 15. Revisión adversarial
+
+Una revisión independiente de sólo lectura, al final. Cada hallazgo se confirmó con una sonda antes de corregirlo. Los
+dos de severidad alta tocaban la maquinaria, no los rangos: se corrigieron en el núcleo y en el módulo, y P2K-2 se
+recongeló con los mismos candidatos, reglas y criterios. Luego se repitió una vez la evaluación.
+
+| # | severidad | hallazgo | corrección |
+|---|---|---|---|
+| 1 | ALTA | La prueba AST no comprobaba la condición de un `If` insertado ni el contenido de lo insertado (valores por defecto, funciones nuevas). Seis mutaciones cambiaban la FR por defecto con la prueba en verde | Sólo se aceptan comprobaciones que lanzan un error, o que actúan bajo exactamente `acid_base_active(profile)` con uno de sus dos cuerpos; el digest AST de todo lo insertado queda fijado; las mutaciones son pruebas de regresión; la validación compara la FR por defecto de `derive` con la de P2K-1 |
+| 2 | ALTA | Una eficiencia constante se cancelaba con el anclaje: no movía PaCO2 ni pH, y E1 se contradecía | El anclaje de llegada se lee a la eficiencia de referencia 1 (`REFERENCE_VENTILATION_EFFICIENCY`). E1 comprueba PaCO2 sobre la llegada; los criterios de disociación leen E1, E2 y F. Eficiencia NON_IDENTIFIABLE por la regla congelada |
+| 3 | MEDIA | Cinco pines de paquetes cerrados quedaron como constante igual a constante, y `shadow.py` perdió el suyo | Se usa el hash de P2K-1 sólo para los tres archivos probados; el resto, con su hash vivo |
+| 4 | MEDIA | W = 1 no es necesidad eucápnica para 6 de los 9 tríos, y `paco2_ph_coherent` no lee trayectorias | Resumen y §13: W = 1 es la eupnea a la FR intrínseca; el veredicto queda condicionado a §13.1 |
+| 5 | MEDIA | Varios criterios se cumplen por construcción | §14 |
+| 6 | BAJA | 55–56 mmHg y pH 7,24–7,25 eran sólo de 72f | Resumen corregido |
+| 7 | BAJA | Los mapas de tuplas no comprueban su contenido | Lo cubre la prueba de P2K-1 que fija ese contenido (§14) |
+| 8 | BAJA | Las tres entradas candidatas aceptaban `inf` | Ahora se exige finito y positivo; con prueba |
+| 9 | BAJA | Dos W con el mismo nombre; el canal C7 sin guarda | §14 |
+| 10 | BAJA | Corte por HCO3 ≤ 0 y cómputo extra | §14 |
