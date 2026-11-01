@@ -52,14 +52,15 @@ def _active(**changes):
 def _freeze_digest_at_p2k2() -> str:
     """acid_base.freeze_digest's formula on the sources P2K-2 froze: P2K-3's, P2K-4's and P2K-5's modules, added later,
     left out, and the two tuple-only files at their P2K-2 hashes while only their tuples changed
-    (consciousness_audit.p2k5_sources, respiratory_monotonicity.p2k4_sources, ventilation_filter.p2k3_sources, then
-    ventilation_surface.p2k2_sources; the
+    (encephalopathy_architecture.p2l1_sources, consciousness_audit.p2k5_sources, respiratory_monotonicity.p2k4_sources,
+    ventilation_filter.p2k3_sources, then ventilation_surface.p2k2_sources; the
     tuple content is pinned in test_clinical_core_rr_audit)."""
     from clinical_core import consciousness_audit as ca
+    from clinical_core import encephalopathy_architecture as ea
     from clinical_core import respiratory_monotonicity as rm
     from clinical_core import ventilation_filter as vf
     from clinical_core import ventilation_surface as vs
-    sources = vs.p2k2_sources(vf.p2k3_sources(rm.p2k4_sources(ca.p2k5_sources(bf.freeze_sources()))))
+    sources = vs.p2k2_sources(vf.p2k3_sources(rm.p2k4_sources(ca.p2k5_sources(ea.p2l1_sources(bf.freeze_sources())))))
     text = json.dumps({"revision": ab.REVISION, "p2k1": hashlib.sha256(ab.P2K1_RECORD.read_bytes()).hexdigest(),
                        "design": ab.design(), "sources": sources}, sort_keys=True,
                       default=str)

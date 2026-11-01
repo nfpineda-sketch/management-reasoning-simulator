@@ -90,9 +90,11 @@ def test_the_package_is_frozen():
     record = rm.p2k4_record()
     assert record["freeze_digest"] == rm.P2K4_DIGEST == "638b64f699ddd53afda7f2e11eebf77e418a28789da8c47e667343738c642773"
     # P2K-5 is closed (P2L-1): both freezes are recomputed with their own formulas on the sources they froze, P2L-1's
-    # module left out and the tuple-only files at their P2K-5 hashes (consciousness_audit.p2k5_sources).
+    # module left out and the tuple-only files at their P2K-5 hashes (consciousness_audit.p2k5_sources), after P2L-2's
+    # modules and tuple entries are left out (encephalopathy_architecture.p2l1_sources).
     from clinical_core import consciousness_audit as ca
-    sources = ca.p2k5_sources(bf.freeze_sources())
+    from clinical_core import encephalopathy_architecture as ea
+    sources = ca.p2k5_sources(ea.p2l1_sources(bf.freeze_sources()))
     p2k4 = json.dumps({"revision": vf.REVISION, "p2k3": hashlib.sha256(vf.P2K3_RECORD.read_bytes()).hexdigest(),
                        "design": vf.design(), "sources": rm.p2k4_sources(sources)}, sort_keys=True, default=str)
     assert hashlib.sha256(p2k4.encode("utf-8")).hexdigest() == rm.P2K4_DIGEST

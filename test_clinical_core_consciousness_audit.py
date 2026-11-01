@@ -26,6 +26,28 @@ SOURCE = ROOT / "clinical_core" / "consciousness_audit.py"
 #: classes, the probes, the criteria, the verdict and next rules, the smallest structure and every clinical_core source
 #: but the downstream reports, committed before the evaluation run.
 FROZEN_DIGEST = "f3ec29e684331fd7750e4471d2cdc1b21374123bf2ab79c0e187a27ff2edf83c"
+#: P2L-2's layer, added after P2L-1 closed: the audit's view of the tree leaves it out (its N reader is the candidate's,
+#: P2L-2's own audit reports it), and the freeze is recomputed on P2L-1's sources (encephalopathy_architecture.
+#: p2l1_sources); the record is unchanged.
+LATER_MODULES = ("clinical_core/encephalopathy.py", "clinical_core/encephalopathy_architecture.py")
+
+
+@pytest.fixture(autouse=True)
+def _p2l1_tree(monkeypatch):
+    original = ca._python
+    later = {ROOT / relative for relative in LATER_MODULES}
+    monkeypatch.setattr(ca, "_python", lambda: [p for p in original() if p not in later])
+
+
+def _freeze_digest_at_p2l1() -> str:
+    """consciousness_audit.freeze_digest's formula on the sources P2L-1 froze (P2L-2's modules left out, the tuple-only
+    files at their P2L-1 hashes while only their tuples changed)."""
+    from clinical_core import encephalopathy_architecture as ea
+    assert '"sources": bf.freeze_sources()}, sort_keys=True, default=str)' in inspect.getsource(ca.freeze_digest)
+    text = json.dumps({"revision": ca.REVISION, "p2k5": hashlib.sha256(ca.P2K5_RECORD.read_bytes()).hexdigest(),
+                       "p2j3": hashlib.sha256(ca.P2J3_RECORD.read_bytes()).hexdigest(), "design": ca.design(),
+                       "sources": ea.p2l1_sources(bf.freeze_sources())}, sort_keys=True, default=str)
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 # The frozen package and its closure --------------------------------------------------------------------------------------
@@ -39,7 +61,7 @@ def test_the_package_is_frozen():
         "GI_RESPIRATORY_PHYSIOLOGY_CLOSED_FOR_CURRENT_PHASE"
     assert ca._record(ca.P2J3_RECORD, ca.P2J3_RECORD_SHA)["support"]
     if FROZEN_DIGEST is not None:
-        assert ca.freeze_digest() == FROZEN_DIGEST, "a source, a rule or a probe changed after the freeze"
+        assert _freeze_digest_at_p2l1() == FROZEN_DIGEST, "a source, a rule or a probe changed after the freeze"
 
 
 def test_the_closed_files_keep_their_p2k5_bytes_and_nothing_imports_the_audit():
@@ -50,7 +72,8 @@ def test_the_closed_files_keep_their_p2k5_bytes_and_nothing_imports_the_audit():
                     for alias in node.names} | {node.module or "" for node in ast.walk(tree)
                                                 if isinstance(node, ast.ImportFrom)}
         if any("consciousness_audit" in name for name in imported):
-            assert path.name == "consciousness_audit_report.py", path.name
+            # Its report, and P2L-2's analysis, which reuses the frozen scan and the pinned-record reader.
+            assert path.name in ("consciousness_audit_report.py", "encephalopathy_architecture.py"), path.name
     own = {alias.name for node in ast.walk(ast.parse(SOURCE.read_text(encoding="utf-8")))
            if isinstance(node, (ast.Import, ast.ImportFrom)) for alias in node.names}
     assert not own & {"family_engine", "legacy_adapter", "ventilation_filter", "respiratory_monotonicity", "ventilation"}
