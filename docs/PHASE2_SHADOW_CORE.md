@@ -3629,3 +3629,43 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - la alteración de llegada la lleva N o una causa declarada, nunca F.
 
   Se piden las decisiones docentes, empezando por confirmar el concepto previo de N9; nada se aprueba.
+
+## 52. P2L-2 · Arquitectura común de la encefalopatía sistémica (2026-11-01)
+
+- **Encargo:**
+  - reservar N para la patología neurológica primaria;
+  - introducir una memoria reversible común de encefalopatía sistémica;
+  - definir señales agudas causalmente distintas y agregarlas sin doble conteo;
+  - retirar del candidato las escaleras de PAS y SpO2 y el piso de llegada;
+  - mostrar la recuperación diferida y probar la generalización.
+
+  Es estructural: sin umbrales, sin ajuste a los casos GI y sin colapso.
+- **Congelamiento** `8072279` (digest `970db00d…`), sin tocar el núcleo:
+  - **`clinical_core/encephalopathy.py`:** fisiología candidata que ningún paso del núcleo lee y que no escribe estado:
+    - N leído sólo como alteración neurológica primaria, en la escala común [0, 1], estático;
+    - seis señales agudas, cada una desde una lectura certificada: hipoperfusión cerebral (PAM; sin pulso, máxima),
+      déficit de aporte de O2, hipoxemia (SpO2), acidemia (pH), hipercapnia (PaCO2, aparte del pH) e hipoglucemia
+      (glucosa). Sin lactato, D, FC, PAS ni nivel de autoría;
+    - S = máx(señales) e I = máx(N, S, F), nunca suma;
+    - la memoria F (carga de encefalopatía sistémica) es un estado auxiliar del candidato, no un canal. Relaja hacia S,
+      más rápido al subir que al aclararse; es no negativa, nunca supera a S y no lee N ni D;
+    - las cotas de cada señal y las constantes de la memoria son ranuras sin valor (UNMAPPED / UNSET).
+  - **`clinical_core/encephalopathy_architecture.py`:** la evaluación:
+    - N1–N12 con señales normalizadas sintéticas y memoria sintética (razones 2, 4 y 8);
+    - 14 sondas fisiológicas fijas a las dos ganancias de ventilación retenidas, clasificadas sin umbral;
+    - el bucle del tono y la acidemia extrema leídos del registro de P2L-1, con huella fijada.
+- **Resultados** (`docs/revision/P2L2_ARQUITECTURA_ENCEFALOPATIA.md`):
+  - N1–N12 pasan con las tres razones (N9: máximo 0,6 frente a una suma de 1,8; N10: memoria 0,898 al restaurar,
+    decreciente; N11: breve < repetida < prolongada; N12: I es el peor, F no depende de N);
+  - la ortogonalidad A–H es distinguible y aislada a las dos ganancias. La hipercapnia aguda lee acidemia e
+    hipercapnia, y el máximo evita el doble conteo;
+  - una etiqueta de llegada «obnubilado» lee igual que la referencia (sin piso);
+  - la inversión del bucle del tono desaparece;
+  - las 17 604 filas de acidemia extrema se arrastran sin filtrar;
+  - generalización plausible para las seis familias;
+  - todo queda estructuralmente definido pero clínicamente sin identificar;
+  - no se generan trayectorias GI;
+  - el árbol de P2L-1 (64 archivos) y el golden son idénticos.
+- **Veredicto: COMMON_CONSCIOUSNESS_ARCHITECTURE_READY.** No hace falta más calibración numérica antes de probar la
+  generalización (`DO_NOT_OVERFIT_GI`). Por necesidad causal se recomienda `COLLAPSE_SAFETY_ARCHITECTURE` antes de
+  migrar cualquier familia de shock; una segunda familia sin shock puede venir después. Nada se aprueba.

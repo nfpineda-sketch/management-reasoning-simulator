@@ -314,3 +314,48 @@ def test_the_run_states_its_verdict_and_scope(result):
     assert e["fixed_state_readings"] == len(ea.PHYSIOLOGY_PROBES) * len(ea.GAINS)
     assert "nothing selected or approved" in ea.POLICY and ea.MIGRATION_GATE.startswith("MIGRATION_GATE_CLOSED")
     assert vs.PROBE_PROFILE.oxygen_extraction_reserve == 2.5
+
+
+# The record and the report (generated once, after the frozen evaluation) -----------------------------------------------------
+
+RECORD = ROOT / "docs" / "revision" / "P2L2_encephalopathy_architecture.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2L2_ARQUITECTURA_ENCEFALOPATIA.md"
+
+
+def _json(value):
+    return json.loads(json.dumps(value, sort_keys=True, default=str))
+
+
+@pytest.fixture(scope="module")
+def record():
+    return json.loads(RECORD.read_text(encoding="utf-8"))
+
+
+def test_the_record_comes_from_the_frozen_package_and_is_reproduced_live(record, result):
+    assert record["freeze_digest"] == FROZEN_DIGEST and "stopped" not in record
+    assert record["design"] == _json(ea.design())
+    for key in ("upstream", "scan", "n", "legacy", "neuro_probes", "ratio_robustness", "memory_proof", "physiology",
+                "orthogonality", "tone_loop", "extreme_acidemia", "generalization", "pharmacologic", "identifiability",
+                "trajectories", "verdict", "recommendation", "efficiency"):
+        assert record[key] == _json(result[key]), key
+
+
+def test_the_record_states_the_architecture_verdict(record):
+    v = record["verdict"]
+    assert v["verdict"] == ea.READY and v["failing"] == [] and not v["not_evaluated"]
+    assert set(v["checks"]) == set(ea.CRITERIA) and all(v["checks"].values())
+    r = record["recommendation"]
+    assert r["recommendation"] == "COLLAPSE_SAFETY_ARCHITECTURE" and r["strategy"] == "DO_NOT_OVERFIT_GI"
+    e = record["efficiency"]
+    assert e["trajectory_simulations"] == 0 == e["gi_trajectories"] and e["fixed_state_readings"] == 28
+    assert record["extreme_acidemia"]["flagged"] == 17604 and record["extreme_acidemia"]["filtered"] is False
+    assert record["approval"] == "none FACULTY_APPROVED"
+
+
+def test_the_document_is_generated_from_the_record(record):
+    from clinical_core import encephalopathy_architecture_report as rep
+    document = DOCUMENT.read_text(encoding="utf-8")
+    for name, render in rep.RENDERERS.items():
+        assert rep.apply(document, name, render(record)) == document, name
+    assert "COMMON_CONSCIOUSNESS_ARCHITECTURE_READY" in document and "COLLAPSE_SAFETY_ARCHITECTURE" in document
+    assert "SUMMARY" not in document and "LIMITATIONS" not in document
