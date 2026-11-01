@@ -39,7 +39,8 @@ FROZEN_DIGEST = "a3f098deb7d643e6158da3aaa8852874d6fa35d981379be173a17d6d8d8ec42
 P2K1_MODULE_SHA = "4b663ffad81ff88f728707e7c96a255d882cbf62247107980652331fff885bf1"
 P2K1_RECORD_SHA = "e297209a8d7bbe1c475e12b3f23f5881f95ec232ee68523b621d48ca7ef2824a"
 LATER_MODULES = ("clinical_core/acid_base.py", "clinical_core/ventilation.py",
-                 "clinical_core/ventilation_surface.py", "clinical_core/ventilation_filter.py")
+                 "clinical_core/ventilation_surface.py", "clinical_core/ventilation_filter.py",
+                 "clinical_core/respiratory_monotonicity.py")
 C57, C72 = ra.C57, ra.C72
 
 
@@ -390,12 +391,13 @@ TUPLES_ADDED_BY_P2K2 = {"DOWNSTREAM_REPORTS": ("clinical_core/acid_base_report.p
 
 
 def test_the_exclusion_tuples_hold_exactly_their_p2k1_content():
+    from clinical_core import respiratory_monotonicity as rm
     from clinical_core import ventilation_filter as vf
     from clinical_core import ventilation_surface as vs
     for name, values in (("DOWNSTREAM_REPORTS", lactate_slice.DOWNSTREAM_REPORTS),
                          ("PACK_DIGEST_EXCLUDED", decision_pack.PACK_DIGEST_EXCLUDED)):
-        # What P2K-2, P2K-3 and P2K-4 (their modules' TUPLES_ADDED, frozen with them) added, exactly.
-        added = TUPLES_ADDED_BY_P2K2[name] + vs.TUPLES_ADDED[name] + vf.TUPLES_ADDED[name]
+        # What P2K-2, P2K-3, P2K-4 and P2K-5 (their modules' TUPLES_ADDED, frozen with them) added, exactly.
+        added = TUPLES_ADDED_BY_P2K2[name] + vs.TUPLES_ADDED[name] + vf.TUPLES_ADDED[name] + rm.TUPLES_ADDED[name]
         assert set(added) <= set(values), name
         values = [v for v in values if v not in added]
         assert (hashlib.sha256(json.dumps(sorted(values)).encode("utf-8")).hexdigest(), len(values)) == \

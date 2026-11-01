@@ -36,7 +36,8 @@ P2J3_MODULE_SHA = "54bff406686b2b8e47757f10c5ec42cb6e0a0d170f2627cb926f99eea1c7e
 P2J3_RECORD_SHA = "bcecbe1651df99b9351f58162e99b312b01b23a109e785722d282faeae3151de"
 LATER_MODULES = ("clinical_core/baroreflex.py", "clinical_core/rr_audit.py", "clinical_core/acid_base.py",
                  "clinical_core/ventilation.py", "clinical_core/ventilation_surface.py",
-                 "clinical_core/ventilation_filter.py")
+                 "clinical_core/ventilation_filter.py",
+                 "clinical_core/respiratory_monotonicity.py")
 C57, C72 = pf.C57, pf.C72
 
 

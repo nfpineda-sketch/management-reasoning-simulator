@@ -83,8 +83,12 @@ def test_the_package_is_frozen():
     # The closed P2K-3 record it builds on (its frozen digest, test_clinical_core_ventilation_surface.FROZEN_DIGEST).
     assert vf.p2k3_record()["freeze_digest"] == vf.P2K3_DIGEST == \
         "23f1673fe24fe6a49a9fed13e60088eb05f5f15c8cf5eec2700618bca2a897e3"
+    # P2K-4 is closed (P2K-5): its freeze is recomputed with its own formula on the sources it froze, P2K-5's module
+    # left out and the two tuple-only files at their P2K-4 hashes while only their tuples changed
+    # (respiratory_monotonicity.p2k4_freeze_digest; the formula is pinned in test_clinical_core_respiratory_monotonicity).
+    from clinical_core import respiratory_monotonicity as rm
     if FROZEN_DIGEST is not None:
-        assert vf.freeze_digest() == FROZEN_DIGEST, "a source, a rule or a support changed after the freeze"
+        assert rm.p2k4_freeze_digest() == FROZEN_DIGEST, "a source, a rule or a support changed after the freeze"
 
 
 def test_the_closed_files_keep_their_ef2cfe8_bytes_and_nothing_imports_the_filter():
@@ -95,7 +99,9 @@ def test_the_closed_files_keep_their_ef2cfe8_bytes_and_nothing_imports_the_filte
                     for alias in node.names} | {node.module or "" for node in ast.walk(tree)
                                                 if isinstance(node, ast.ImportFrom)}
         if any("ventilation_filter" in name for name in imported):
-            assert path.name == "ventilation_filter_report.py", path.name
+            # P2K-5's closure module and its report reuse the frozen filter (analysis only; no core step does).
+            assert path.name in ("ventilation_filter_report.py", "respiratory_monotonicity.py",
+                                 "respiratory_monotonicity_report.py"), path.name
 
 
 def test_the_closed_packages_see_p2k3s_sources():

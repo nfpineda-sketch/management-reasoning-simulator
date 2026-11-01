@@ -50,13 +50,15 @@ def _w(state, anchors=vs.PROBE_ANCHORS, profile=vs.PROBE_PROFILE, gain=0.05):
 # The frozen package ---------------------------------------------------------------------------------------------------------
 
 def _freeze_digest_at_p2k3() -> str:
-    """ventilation_surface.freeze_digest's formula on the sources P2K-3 froze: P2K-4's module, added later, left out, and
-    the two tuple-only files at their P2K-3 hashes while only their tuples changed (ventilation_filter.p2k3_sources; the
-    tuple content is pinned in test_clinical_core_rr_audit)."""
+    """ventilation_surface.freeze_digest's formula on the sources P2K-3 froze: P2K-4's and P2K-5's modules, added later,
+    left out, and the two tuple-only files at their P2K-3 hashes while only their tuples changed
+    (respiratory_monotonicity.p2k4_sources, then ventilation_filter.p2k3_sources; the tuple content is pinned in
+    test_clinical_core_rr_audit)."""
+    from clinical_core import respiratory_monotonicity as rm
     from clinical_core import ventilation_filter as vf
     text = json.dumps({"revision": vs.REVISION, "p2k2": hashlib.sha256(vs.P2K2_RECORD.read_bytes()).hexdigest(),
-                       "design": vs.design(), "sources": vf.p2k3_sources(bf.freeze_sources())}, sort_keys=True,
-                      default=str)
+                       "design": vs.design(), "sources": vf.p2k3_sources(rm.p2k4_sources(bf.freeze_sources()))},
+                      sort_keys=True, default=str)
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
