@@ -3660,7 +3660,8 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - la ortogonalidad A–H es distinguible y aislada a las dos ganancias. La hipercapnia aguda lee acidemia e
     hipercapnia, y el máximo evita el doble conteo;
   - una etiqueta de llegada «obnubilado» lee igual que la referencia (sin piso);
-  - la inversión del bucle del tono desaparece;
+  - el déficit tiene su propia señal, monótona. Con la compensación del tono, S puede bajar porque la PAM se restituye,
+    pero nunca por debajo de la señal del déficit; su peso relativo es una decisión docente;
   - las 17 604 filas de acidemia extrema se arrastran sin filtrar;
   - generalización plausible para las seis familias;
   - todo queda estructuralmente definido pero clínicamente sin identificar;
@@ -3669,3 +3670,9 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Veredicto: COMMON_CONSCIOUSNESS_ARCHITECTURE_READY.** No hace falta más calibración numérica antes de probar la
   generalización (`DO_NOT_OVERFIT_GI`). Por necesidad causal se recomienda `COLLAPSE_SAFETY_ARCHITECTURE` antes de
   migrar cualquier familia de shock; una segunda familia sin shock puede venir después. Nada se aprueba.
+- **Revisión adversarial:** sin hallazgos altos. Lo corregible fuera del código congelado se corrigió en pruebas y
+  documentos, sin recongelar: escaneo por cadena, lector único de N y nota sobre el tono. Quedan declarados:
+  - S = 0 sin marca de cota inferior con señales sin mapear;
+  - NaN en la rampa (no alcanzable desde el núcleo certificado);
+  - seis interpretaciones pendientes de la docencia, entre ellas F0 a la llegada frente a P2L-1, «suficientemente
+    grave», la lectura de la acidemia y su memoria propia, y la regla de paro.

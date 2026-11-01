@@ -216,9 +216,42 @@ def test_the_candidate_never_reads_the_legacy_ladders_lactate_d_or_the_heart_rat
         "hypercapnia": "paco2", "hypoglycaemia": "glucose"}
     assert "pharmacologic_cns_depression" not in enc.SIGNALS
     assert enc.FUTURE_MODIFIERS["pharmacologic_cns_depression"].startswith("FUTURE_COMMON_SYSTEMIC_OR_PHARMACOLOGIC")
-    # The probe-only scan catches what it should (a planted lactate read and a planted write).
-    planted = ast.parse("x = state.lactate\ny = state.evolve(N=1.0)\n")
-    assert "lactate" in {n.attr for n in ast.walk(planted) if isinstance(n, ast.Attribute)}
+
+
+#: Names the candidate must never read, by attribute or by string (the frozen scan sees attributes only; P2L-2 review M2).
+STRING_FORBIDDEN = set(ea.FORBIDDEN_READS) | {"N"}
+
+
+def _string_reads(tree) -> set:
+    """Reads by string: getattr(x, "name"), vars(x)["name"] / x["name"] subscripts, x.get("name")."""
+    out = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call) and getattr(node.func, "id", None) == "getattr" and len(node.args) > 1 \
+                and isinstance(node.args[1], ast.Constant):
+            out.add(node.args[1].value)
+        elif isinstance(node, ast.Subscript) and isinstance(node.slice, ast.Constant):
+            out.add(node.slice.value)
+        elif isinstance(node, ast.Call) and getattr(node.func, "attr", None) == "get" and node.args \
+                and isinstance(node.args[0], ast.Constant):
+            out.add(node.args[0].value)
+    return out
+
+
+def test_the_scans_catch_planted_reads_and_the_physiology_has_none(tmp_path, monkeypatch):
+    # The physiology reads no forbidden name by string either; it reads N once, by attribute, in primary_from_state.
+    tree = ast.parse(PHYSIOLOGY.read_text(encoding="utf-8"))
+    assert not _string_reads(tree) & STRING_FORBIDDEN
+    readers = [n for n in ast.walk(tree) if isinstance(n, ast.Attribute) and n.attr == "N"]
+    assert len(readers) == 1 and readers[0].lineno == 189
+    # A planted copy: the frozen attribute scan catches the attribute read and the write; the string scan the rest.
+    planted = tmp_path / "encephalopathy.py"
+    planted.write_text(PHYSIOLOGY.read_text(encoding="utf-8") + "\n\ndef _planted(state, d, anchors):\n"
+                       "    a = state.lactate\n    b = state.evolve(N=1.0)\n    c = getattr(d, 'sbp')\n"
+                       "    return vars(anchors)['consciousness_level'], a, b, c\n", encoding="utf-8")
+    monkeypatch.setattr(ea, "PHYSIOLOGY_SOURCE", planted)
+    scan = ea.candidate_scan()
+    assert "lactate" in scan["forbidden_reads"] and "evolve" in scan["writes_state"] and "N" in scan["writes_state"]
+    assert {"sbp", "consciousness_level"} <= _string_reads(ast.parse(planted.read_text(encoding="utf-8")))
 
 
 # The structural evaluation -----------------------------------------------------------------------------------------------
@@ -264,6 +297,8 @@ def test_the_tone_loop_inversion_is_removed_and_the_subset_is_carried(result):
     assert tone["candidate_inversion_removed"] and tone["legacy_inverted"] == [
         "anaemia g0.5", "anaemia g1", "demand_x2 g0.5", "demand_x2 g1"]
     x = result["extreme_acidemia"]
+    # The subset's 'filtered' is P2L-1's recorded value (the frozen module restates it as a literal; review M2).
+    assert ca._record(ea.P2L1_RECORD, ea.P2L1_RECORD_SHA)["extreme_acidemia"]["filtered"] is False
     assert x["flagged"] == 17604 and x["by_case"] == {"gi_bleed_57m": 17604, "gi_bleed_72f": 0}
     assert x["filtered"] is False and x["classification"] == "CONSCIOUSNESS_COLLAPSE_REVIEW"
     assert x["signals"]["hypercapnia"].startswith("ZERO_UNDER_EVERY") and x["ph_range"][1] == 7.0
@@ -359,3 +394,30 @@ def test_the_document_is_generated_from_the_record(record):
         assert rep.apply(document, name, render(record)) == document, name
     assert "COMMON_CONSCIOUSNESS_ARCHITECTURE_READY" in document and "COLLAPSE_SAFETY_ARCHITECTURE" in document
     assert "SUMMARY" not in document and "LIMITATIONS" not in document
+
+
+def test_under_tone_compensation_the_observable_never_falls_below_the_deficit_signal():
+    """P2L-2 review M1: the deficit's own path is monotone, but tone compensation raises MAP, so with an admissible
+    mapping S can fall while the deficit rises; it never falls below the deficit's own signal. Test-only synthetic
+    mapping (zero at the reference MAP 90 and deficit 0), never a profile value."""
+    from dataclasses import replace
+    from clinical_core import acid_base as ab
+    from clinical_core.bands import Demand, Drift
+    from clinical_core.integration import step
+    anchors, base, profile0 = ca.neutral()
+    mapping = enc.EncephalopathyProfile(mappings=(("cerebral_hypoperfusion", enc.SignalMapping(70.0, 40.0)),
+                                                  ("oxygen_deficit", enc.SignalMapping(0.0, 1.0))))
+    insults = {"anaemia": (Drift("hb", "hb", 0, 1, -anchors.hb / 2.0),), "demand_x2": (Demand("demand", 0, 10, 2.0),)}
+    fell = []
+    for name, contributors in insults.items():
+        for gain in (0.0,) + tuple(ab.TONE_GAINS):
+            profile = replace(profile0, deficit_to_tone_gain=gain)
+            state, rows = base.evolve(P=ca.TONE_START_PUMP), []
+            for _ in range(3):
+                state, _ = step(state, contributors, anchors, profile)
+                signals = enc.acute_signals(enc.readings(state, anchors, profile), mapping)
+                rows.append((signals.value("oxygen_deficit"), enc.systemic_acute_brain_stress(dict(signals.values))))
+            assert all(b[0] >= a[0] for a, b in zip(rows, rows[1:])), (name, gain)
+            assert all(stress >= deficit for deficit, stress in rows), (name, gain)
+            fell.append(rows[-1][1] < rows[0][1])
+    assert any(fell) and not all(fell)

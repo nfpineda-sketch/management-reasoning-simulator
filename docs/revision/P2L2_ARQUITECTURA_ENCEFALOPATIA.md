@@ -26,15 +26,21 @@ aprueba.
 - **N1–N12 pasan** con las razones sintéticas 2, 4 y 8. En particular:
   - N9: S 0,6 frente a una suma de 1,8;
   - N10: al restaurar la fisiología, S = 0 y la memoria queda en 0,898, decreciente;
-  - N11: la agresión breve deja menos memoria que la repetida y ésta que la prolongada (0,569 / 0,779 / 0,898);
+  - N11: la agresión breve deja menos memoria que la prolongada y que la repetida (al restaurar: breve 0,569,
+    repetida 0,779, prolongada 0,898);
   - N12: con N y una agresión sistémica, I es el peor de los dos y F no depende de N.
 - **Ortogonalidad A–H a las dos ganancias retenidas:**
   - cada patrón es distinto y aislado tal como se declaró;
   - la hipercapnia aguda lee acidemia e hipercapnia a la vez, y el máximo evita contarlas dos veces;
   - una etiqueta de llegada «obnubilado» con fisiología normal lee igual que la referencia: no hay piso.
-- **La inversión del bucle del tono** (P2L-1) desaparece: el déficit tiene su propia señal, monótona.
-- **Las 17 604 filas de acidemia extrema** se arrastran sin filtrar. Con cualquier mapeo admisible pueden leer
-  alteradas por acidemia, por perfusión y por aporte; el máximo no las cuenta tres veces.
+- **El bucle del tono de P2L-1:**
+  - el déficit tiene ahora su propia señal, monótona, y nada invierte su signo;
+  - pero con la compensación del tono la PAM sube, así que con un mapeo admisible S puede bajar mientras el déficit
+    sube. Con la PAM de 70 a 40 y el déficit de 0 a 1, en una sonda de prueba, S baja de 0,473 a 0,284;
+  - S nunca baja de la señal del déficit;
+  - si eso es aceptable depende del peso relativo de las cotas de PAM y de déficit: es una decisión docente (§10).
+- **Las 17 604 filas de acidemia extrema** se arrastran sin filtrar. Con algún mapeo admisible pueden leer alteradas
+  por acidemia, por perfusión y por aporte; el máximo no las cuenta tres veces.
 - **Generalización:** `COMMON_NEUROLOGIC_ARCHITECTURE_PLAUSIBLE` para las seis familias, sin términos de enfermedad.
   Lo que cada familia aún aporta es el escritor de su señal.
 - **Identificabilidad:** todo queda STRUCTURALLY_DEFINED_BUT_CLINICALLY_UNIDENTIFIED; nada es WELL_CONSTRAINED.
@@ -67,8 +73,8 @@ Decisiones de la docencia (texto congelado, en inglés):
 ## 2. N: estado neurológico primario
 
 <!-- generado:n -->
-- **Escritores:** state.py:697 (sólo el constructor de llegada, N = 0).
-- **Lectores:** encephalopathy.py:189: el único lector, `primary_from_state`, que lo lee como alteración neurológica primaria; ninguna señal sistémica lo lee ni lo escribe.
+- **Escritores** (1): state.py:697.
+- **Lectores** (1): encephalopathy.py:189.
 - **Archivos revisados:** 65 (búsqueda recursiva congelada de P2L-1).
 - **Semántica** (texto congelado, en inglés): PRIMARY_NEUROLOGIC_STATE (faculty, 2026-11-01): static during the encounter, no recovery kinetics; no systemic cause and no pharmacologic depression is written into it; state.py's closed wording ('CNS depression / neurological state') is kept for the closed records and superseded for this candidate
 - **Escala:** the common impairment scale [0, 1]: 0 intact, 1 maximal primary impairment; outside it the candidate stops (CoreInvariantError)
@@ -196,7 +202,7 @@ Ganancia de ventilación 0,04:
 | Shock con acidemia | 27,0 | 0,250 | 97,0 | 7,179 | 25,0 | 100 | acidemia, hipoperfusión cerebral, déficit de aporte de oxígeno | sí | sí |
 | Sólo N primario (0,5) | 90,0 | 0,000 | 97,0 | 7,386 | 34,5 | 100 | ninguna | sí | sí |
 | Etiqueta de llegada «obnubilado», fisiología normal | 90,0 | 0,000 | 97,0 | 7,386 | 34,5 | 100 | ninguna | sí | sí |
-Con el perfil comprometido, cada señal de cada sonda queda UNMAPPED: ninguna lectura numérica de conciencia sale del núcleo real.
+Con el perfil comprometido, cada señal de estas sondas queda UNMAPPED: ninguna lectura numérica de conciencia sale de ellas (S sería una cota inferior, 0, no un valor normal).
 <!-- /generado:fisiologia -->
 
 ## 8. Ortogonalidad A–H
@@ -238,8 +244,20 @@ Estado (texto congelado, en inglés):
 | demand_x2 g0.5 | sí | sí | sí |
 | demand_x2 g1 | sí | sí | sí |
 
-Inversión heredada en anaemia g0.5, anaemia g1, demand_x2 g0.5, demand_x2 g1. En el candidato el déficit entra con su propia señal, monótona: inversión eliminada: sí.
+Inversión heredada en anaemia g0.5, anaemia g1, demand_x2 g0.5, demand_x2 g1. En el candidato el déficit entra con su propia señal, monótona; a lo largo de estas filas el déficit no decrece: sí. Esto prueba el camino del déficit, no el observable (ver la nota que sigue).
 <!-- /generado:tono -->
+
+**Nota (revisión adversarial, M1).** La comprobación anterior usa los déficits ya registrados en P2L-1, así que prueba
+sólo que el camino del déficit es monótono. Una sonda de prueba repitió el bucle con el núcleo certificado y un mapeo
+sintético admisible (PAM de 70 a 40, déficit de 0 a 1; los dos dan 0 en la referencia), sólo para la prueba.
+
+- Con el tono activo, S baja de 0,473 a 0,397, 0,316 y 0,284 (g 0,25, 0,5 y 1) mientras el déficit sube de 0,225 a
+  0,239, 0,253 y 0,284.
+- S nunca baja de la señal del déficit. El observable mejora por la perfusión restituida, no porque se lea el déficit
+  al revés.
+
+La prueba `test_under_tone_compensation_the_observable_never_falls_below_the_deficit_signal` fija esa propiedad. Si la
+mejora es aceptable depende del peso relativo de las cotas de PAM y de déficit, y lo decide la docencia.
 
 ## 11. Subconjunto de acidemia extrema
 
@@ -345,6 +363,28 @@ Decisiones pedidas a la docencia (texto congelado, en inglés):
 8. the carried extreme-acidemia subset: stays CONSCIOUSNESS_COLLAPSE_REVIEW for the collapse architecture
 <!-- /generado:recomendacion -->
 
+Decisiones adicionales que surgieron de la revisión adversarial. Son interpretaciones tomadas sin la docencia, que
+quedan pendientes:
+
+9. **«Suficientemente grave».** Se leyó como la cota normal de cada señal: bajo ella la señal vale 0 y no carga
+   memoria. Con la relajación elegida, F nunca supera el pico agudo y satura en unas 3 tau_subida. La alternativa es
+   una acumulación que pueda superarlo: un integrador con ganancia propia. ¿Cuál corresponde?
+10. **Carga previa a la llegada F0.** Hay una contradicción entre fuentes:
+    - P2L-1 dejó que una alteración de llegada de causa no modelada la lleve N o una causa declarada, nunca F;
+    - P2L-2-4 admite la memoria sistémica entre las causas de llegada.
+
+    Aquí F0 queda permitida sólo para una agresión sistémica previa declarada, y nunca desde una etiqueta. ¿Se
+    confirma?
+11. **El nombre y la lectura de la acidemia.** La docencia la nombró acidemia metabólica y le asignó el pH actual. Leer
+    el pH total hace que la hipercapnia aguda también la eleve. ¿Se mantiene, o se lee el componente metabólico
+    (HCO3 o carga)?
+12. **El peso relativo de PAM y déficit bajo compensación del tono** (§10).
+13. **La regla de paro.** Sin pulso, la hipoperfusión vale 1 con cualquier perfil: es el invariante heredado del
+    `derive` («sin pulso, sin respuesta», camino válido en P2L-1). Se mantiene sin cotas; ¿se confirma?
+14. **La memoria de la acidemia.** La señal de acidemia ya arrastra memoria del déficit: el pH sigue a la carga ácida,
+    que integra el déficit con tau_acid. En una familia de shock, el aclaramiento de F y tau_acid quedan confundidos.
+    ¿Se acepta, o la acidemia debe entrar de otro modo?
+
 ## 17. Eficiencia
 
 <!-- generado:eficiencia -->
@@ -352,7 +392,7 @@ Decisiones pedidas a la docencia (texto congelado, en inglés):
 - Pasos de la memoria sintética: 6288 en 66 cursos (aritmética exacta, sin integrador del núcleo).
 - Pasos del integrador del núcleo: 0; trayectorias simuladas: 0; trayectorias GI: 0.
 - Registros reutilizados: P2L1_consciousness_audit.json (con huella fijada).
-- Barrido cartesiano: no; región reconstruida: no; motor heredado leído: no.
+- Barrido cartesiano: no; región reconstruida: no; motor heredado consultado o ajustado: no (campos declarados por el módulo; sus módulos se importan por las guardas de la corrida).
 <!-- /generado:eficiencia -->
 
 ## 18. Limitaciones
@@ -377,9 +417,63 @@ Decisiones pedidas a la docencia (texto congelado, en inglés):
   sólo con la integración en tiempo de ejecución, que no está autorizada.
 - **Las pruebas de P2L-1 se adaptaron** para ver su propio árbol, dejando fuera la capa de P2L-2, y el análisis de P2L-2
   reutiliza su búsqueda congelada; el registro de P2L-1 no cambia.
+- **Revisión adversarial.** Sus hallazgos que tocan el código congelado se declaran y se cubren con pruebas, sin
+  recongelar (§19):
+  - los criterios del veredicto `n_reserved_for_primary` y `lactate_not_controller` usan un escaneo de atributos que
+    no ve lecturas por cadena. Las pruebas agregan un escaneo por cadena, que confirma que la fisiología no tiene
+    ninguna, y fijan su único lector de N (línea 189);
+  - con señales sin mapear o no disponibles, S vale 0 sin marca de cota inferior: los motivos están en
+    `AcuteSignals.reasons`, pero S y el observable no los llevan. No se alcanza en P2L-2, porque no se calcula
+    ninguna conciencia real, pero debe corregirse antes de cualquier uso;
+  - `ramp` acepta NaN y devuelve 0. Desde el núcleo certificado no se alcanza, porque `derive.check` exige signos
+    vitales finitos con pulso y la glucosa tiene guarda 15–350. Una `SignalMapping` sin validar con cotas iguales
+    dividiría por cero;
+  - `filtered`, `integrator_steps` y `legacy_read` son campos literales del módulo. `filtered` coincide con el
+    registro de P2L-1, y un contador del revisor confirmó 0 pasos del integrador. `family_engine` se importa por las
+    guardas de la corrida, pero no se consulta ni se ajusta;
+  - el portador físico de la familia hemorrágica es un estado de bajo gasto (bomba 0,3 con carga ácida), la
+    consecuencia común, no una pérdida de volumen de BloodState.
 - **Proceso:** las sondas estructurales se ejercitaron (sólo aprobado o fallido) mientras se escribían los módulos,
   como prevé el orden del encargo; el registro sale de la corrida del módulo congelado.
 
 ## 19. Revisión adversarial
 
-Pendiente.
+Una revisión independiente, de sólo lectura, sobre `8072279` y `b78f91a`. Sus sondas quedaron fuera del repositorio.
+
+**Sin hallazgos altos.** Comprobó limpio:
+- el núcleo sin cambios: el árbol de P2L-1 coincide y el golden es idéntico;
+- N sin escritores sistémicos y con un solo lector;
+- sin lactato, D, FC ni PAS;
+- agregación por máximo;
+- memoria exacta, entre F y S;
+- sin valores comprometidos;
+- la acidemia extrema sin filtrar;
+- las adaptaciones de las pruebas cerradas;
+- el registro reproducible byte a byte desde el módulo congelado.
+
+Hallazgos medios y bajos, confirmados con sondas propias antes de actuar:
+
+- **M1. La inversión del tono, sobredicha.** *Resuelto en texto y pruebas:* nota en §10, resumen corregido, prueba
+  nueva y decisión 12.
+- **M2. Criterios que se cumplen por construcción y una prueba que no podía fallar.** *Resuelto en pruebas:* escaneo
+  por cadena, lector único de N por línea, escaneo congelado sobre una copia con lecturas plantadas, y `filtered`
+  leído del registro de P2L-1. Los criterios congelados no cambian; queda declarado en §18.
+- **M3. S = 0 con señales sin mapear, sin marca.** *Declarado* (§18, TD-108): debe corregirse antes de cualquier uso.
+- **M4. La acidemia ya trae memoria del déficit.** *Declarado:* decisión 14.
+- **M5. Interpretaciones tomadas sin la docencia:** «suficientemente grave», F0 frente a P2L-1, nombre y lectura de la
+  acidemia. *Declaradas:* decisiones 9 a 11; la contradicción con P2L-1 queda señalada.
+- **Bajos.**
+  - *Corregidos:*
+    - el resumen dice ahora «con algún mapeo admisible»;
+    - N se escribe desde el registro;
+    - la frase del §7 queda acotada a sus sondas;
+    - la eficiencia aclara que sus campos son declarados.
+  - *Declarados en §18:*
+    - el paro sin cotas (decisión 13);
+    - NaN en `ramp`;
+    - el portador hemorrágico de bajo gasto;
+    - los campos literales.
+
+**Sin segundo congelamiento.** Corregir los hallazgos dentro del código congelado exigiría recongelar, y en P2L-1 se
+señaló que esa desviación la decide la docencia. Aquí se corrigió sólo lo no congelado: pruebas, informe y documentos.
+El registro sigue siendo el de la corrida del congelamiento `970db00d…`.

@@ -65,9 +65,8 @@ def render_decisiones(data: dict) -> str:
 def render_n(data: dict) -> str:
     n = data["n"]
     return "\n".join([
-        f"- **Escritores:** {', '.join(n['writers'])} (sólo el constructor de llegada, N = 0).",
-        f"- **Lectores:** {', '.join(n['readers'])}: el único lector, `primary_from_state`, que lo lee como "
-        "alteración neurológica primaria; ninguna señal sistémica lo lee ni lo escribe.",
+        f"- **Escritores** ({len(n['writers'])}): {', '.join(n['writers']) or 'ninguno'}.",
+        f"- **Lectores** ({len(n['readers'])}): {', '.join(n['readers']) or 'ninguno'}.",
         f"- **Archivos revisados:** {n['files_scanned']} (búsqueda recursiva congelada de P2L-1).",
         f"- **Semántica** {FROZEN}: {n['semantics']}",
         f"- **Escala:** {n['scale']}", f"- **Dinámica:** {n['dynamics']}", f"- **Valores GI:** {n['gi_values']}",
@@ -148,8 +147,8 @@ def render_fisiologia(data: dict) -> str:
                        f"{_n(r['ph'], 3)} | {_n(r['paco2'])} | {_n(r['glucose'], 0)} | {_signals(row['positive'])} | "
                        f"{_yes(row['wired'])} | {_yes(row['isolated_as_declared'])} |")
         out.append("")
-    return "\n".join(out) + "Con el perfil comprometido, cada señal de cada sonda queda UNMAPPED: ninguna lectura " \
-                            "numérica de conciencia sale del núcleo real."
+    return "\n".join(out) + "Con el perfil comprometido, cada señal de estas sondas queda UNMAPPED: ninguna lectura " \
+                            "numérica de conciencia sale de ellas (S sería una cota inferior, 0, no un valor normal)."
 
 
 def render_ortogonalidad(data: dict) -> str:
@@ -177,8 +176,9 @@ def render_tono(data: dict) -> str:
         rows.append(f"| {name} | {_yes(row['deficit_non_decreasing'])} | {_yes(row['pressure_non_decreasing'])} | "
                     f"{_yes(row['legacy_level_fell'])} |")
     return "\n".join(rows) + (f"\n\nInversión heredada en {', '.join(t['legacy_inverted'])}. En el candidato el déficit "
-                              f"entra con su propia señal, monótona: inversión eliminada: "
-                              f"{_yes(t['candidate_inversion_removed'])}.")
+                              f"entra con su propia señal, monótona; a lo largo de estas filas el déficit no decrece: "
+                              f"{_yes(t['candidate_inversion_removed'])}. Esto prueba el camino del déficit, no el "
+                              "observable (ver la nota que sigue).")
 
 
 def render_acidemia(data: dict) -> str:
@@ -254,7 +254,8 @@ def render_eficiencia(data: dict) -> str:
         f"{e['trajectory_simulations']}; trayectorias GI: {e['gi_trajectories']}.",
         f"- Registros reutilizados: {', '.join(e['records_read'])} (con huella fijada).",
         f"- Barrido cartesiano: {_yes(e['cartesian_sweep'])}; región reconstruida: {_yes(e['region_rebuilt'])}; "
-        f"motor heredado leído: {_yes(e['legacy_read'])}."])
+        f"motor heredado consultado o ajustado: {_yes(e['legacy_read'])} (campos declarados por el módulo; sus módulos se "
+        "importan por las guardas de la corrida)."])
 
 
 RENDERERS = {name: globals()[f"render_{name}"] for name in NAMES}
