@@ -1,0 +1,2816 @@
+{
+ "algebra": {
+  "1": {
+   "by_tone_gain": {
+    "0.25": 33600,
+    "0.5": 28236,
+    "1": 20904
+   },
+   "by_value": {
+    "B": {
+     "13.4": 52,
+     "19.4": 52,
+     "28": 52
+    },
+    "drive_gain": {
+     "1": 18,
+     "1.41421": 72,
+     "2": 18,
+     "2.82843": 36,
+     "4": 12
+    },
+    "intrinsic_57m": {
+     "12": 48,
+     "16": 54,
+     "20": 54
+    },
+    "intrinsic_72f": {
+     "12": 30,
+     "16": 72,
+     "20": 54
+    },
+    "tau": {
+     "120": 54,
+     "240": 48,
+     "60": 54
+    },
+    "ventilation_gain": {
+     "0.03": 78,
+     "0.04": 78
+    }
+   },
+   "classes_other": {
+    "B": "POORLY_IDENTIFIED",
+    "drive_gain": "POORLY_IDENTIFIED",
+    "intrinsic_57m": "POORLY_IDENTIFIED",
+    "intrinsic_72f": "POORLY_IDENTIFIED",
+    "tau": "POORLY_IDENTIFIED"
+   },
+   "entering": 165480,
+   "exact": true,
+   "kept": 82740,
+   "latent_combinations": 156,
+   "rejected": 82740
+  },
+  "1.1": {
+   "by_tone_gain": {
+    "0.25": 170352,
+    "0.5": 170352,
+    "1": 170352
+   },
+   "by_value": {
+    "B": {
+     "13.4": 52,
+     "19.4": 52,
+     "28": 52
+    },
+    "drive_gain": {
+     "1": 18,
+     "1.41421": 72,
+     "2": 18,
+     "2.82843": 36,
+     "4": 12
+    },
+    "intrinsic_57m": {
+     "12": 48,
+     "16": 54,
+     "20": 54
+    },
+    "intrinsic_72f": {
+     "12": 30,
+     "16": 72,
+     "20": 54
+    },
+    "tau": {
+     "120": 54,
+     "240": 48,
+     "60": 54
+    },
+    "ventilation_gain": {
+     "0.03": 78,
+     "0.04": 78
+    }
+   },
+   "classes_other": {
+    "B": "NON_IDENTIFIABLE",
+    "drive_gain": "POORLY_IDENTIFIED",
+    "intrinsic_57m": "POORLY_IDENTIFIED",
+    "intrinsic_72f": "POORLY_IDENTIFIED",
+    "tau": "POORLY_IDENTIFIED"
+   },
+   "entering": 1022112,
+   "exact": true,
+   "kept": 511056,
+   "latent_combinations": 156,
+   "rejected": 511056
+  }
+ },
+ "analytic": {
+  "classes": {
+   "0.03": "STRUCTURALLY_ADMISSIBLE_PRIMARY_SUPPORT",
+   "0.04": "STRUCTURALLY_ADMISSIBLE_PRIMARY_SUPPORT",
+   "0.05": "REJECTED_BY_ACID_BASE_MONOTONICITY",
+   "0.06": "REJECTED_BY_ACID_BASE_MONOTONICITY"
+  },
+  "critical_gain": "1/24",
+  "critical_gain_float": 0.041666666666666664,
+  "equation": "pH(A) = pK + log10[(HCO3_reference - A) x (1 + g_v x A) / (s x PaCO2_reference)], pK 6.1, s 0.03, for 0 <= A < HCO3_reference (the P2K-3 mapping at efficiency 1 and the baseline demand)",
+  "gains": {
+   "0.03": {
+    "class": "STRUCTURALLY_ADMISSIBLE_PRIMARY_SUPPORT",
+    "exact": "3/100",
+    "gain": 0.03,
+    "monotone": true,
+    "n0": "-7/25",
+    "n0_float": -0.28,
+    "n_slope": "-3/50",
+    "peak": null,
+    "rising_interval": null,
+    "slope_at_0": -0.005066768955537937,
+    "strictly_decreasing": true
+   },
+   "0.04": {
+    "class": "STRUCTURALLY_ADMISSIBLE_PRIMARY_SUPPORT",
+    "exact": "1/25",
+    "gain": 0.04,
+    "monotone": true,
+    "n0": "-1/25",
+    "n0_float": -0.04,
+    "n_slope": "-2/25",
+    "peak": null,
+    "rising_interval": null,
+    "slope_at_0": -0.0007238241365054183,
+    "strictly_decreasing": true
+   },
+   "0.05": {
+    "class": "REJECTED_BY_ACID_BASE_MONOTONICITY",
+    "exact": "1/20",
+    "gain": 0.05,
+    "monotone": false,
+    "n0": "1/5",
+    "n0_float": 0.2,
+    "n_slope": "-1/10",
+    "peak": {
+     "burden": 2.0,
+     "ph": 7.4046341199328065,
+     "ph_at_0": 7.401029995663981
+    },
+    "rising_interval": [
+     0.0,
+     2.0
+    ],
+    "rising_interval_exact": [
+     "0",
+     "2"
+    ],
+    "slope_at_0": 0.0036191206825271004,
+    "strictly_decreasing": false
+   },
+   "0.06": {
+    "class": "REJECTED_BY_ACID_BASE_MONOTONICITY",
+    "exact": "3/50",
+    "gain": 0.06,
+    "monotone": false,
+    "n0": "11/25",
+    "n0_float": 0.44,
+    "n_slope": "-3/25",
+    "peak": {
+     "burden": 3.6666666666666665,
+     "ph": 7.4153871649182275,
+     "ph_at_0": 7.401029995663981
+    },
+    "rising_interval": [
+     0.0,
+     3.6666666666666665
+    ],
+    "rising_interval_exact": [
+     "0",
+     "11/3"
+    ],
+    "slope_at_0": 0.007962065501559616,
+    "strictly_decreasing": false
+   },
+   "0.08": {
+    "class": "REJECTED_BY_ACID_BASE_MONOTONICITY",
+    "exact": "2/25",
+    "gain": 0.08,
+    "monotone": false,
+    "n0": "23/25",
+    "n0_float": 0.92,
+    "n_slope": "-4/25",
+    "peak": {
+     "burden": 5.75,
+     "ph": 7.446434478529305,
+     "ph_at_0": 7.401029995663981
+    },
+    "rising_interval": [
+     0.0,
+     5.75
+    ],
+    "rising_interval_exact": [
+     "0",
+     "23/4"
+    ],
+    "slope_at_0": 0.016647955139624655,
+    "strictly_decreasing": false
+   }
+  },
+  "hco3_reference": 24.0,
+  "inequality": "d pH / dA = (1 / ln 10) x [g_v / (1 + g_v A) - 1 / (HCO3_reference - A)] = (1 / ln 10) x N(A) / [(1 + g_v A)(HCO3_reference - A)], with N(A) = (g_v x HCO3_reference - 1) - 2 g_v x A. On 0 <= A < HCO3_reference the denominator is positive (g_v >= 0), so the sign of the slope is the sign of N. N is linear in A with slope -2 g_v <= 0, so its largest value on the domain is N(0) = g_v x HCO3_reference - 1. pH is non-increasing on the whole domain if and only if N(0) <= 0, i.e. g_v <= 1 / HCO3_reference (strictly decreasing when g_v < 1 / HCO3_reference). When g_v > 1 / HCO3_reference, pH rises on 0 <= A < A* = (g_v x HCO3_reference - 1) / (2 g_v). Efficiency and demand ratio multiply PaCO2 by constants independent of A and drop out of the derivative.",
+  "paco2_reference": 40.0,
+  "previously_excluded": {
+   "0.08": "REJECTED_BY_ACID_BASE_MONOTONICITY"
+  },
+  "rejected": [
+   0.05,
+   0.06
+  ],
+  "retained": [
+   0.03,
+   0.04
+  ],
+  "scope": "The bicarbonate at zero burden is the case's authored HCO3 plus its arrival burden: HCO3_reference when the authored HCO3 is at or below it (both GI cases). A family authored above the reference would carry 1 / its own zero-burden bicarbonate as the critical gain; that is a generalization question, not decided here."
+ },
+ "approval": "none FACULTY_APPROVED",
+ "closed_unchanged": {
+  "clinical_core/acid_base.py": true,
+  "clinical_core/derived.py": true,
+  "clinical_core/integration.py": true,
+  "clinical_core/state.py": true,
+  "clinical_core/ventilation.py": true,
+  "clinical_core/ventilation_filter.py": true,
+  "clinical_core/ventilation_surface.py": true
+ },
+ "cross_demand": {
+  "DEMAND_1_0_ONLY": {
+   "count": 0,
+   "support": {
+    "B": [],
+    "drive_gain": [],
+    "intrinsic_57m": [],
+    "intrinsic_72f": [],
+    "tau": [],
+    "ventilation_gain": []
+   }
+  },
+  "DEMAND_1_1_ONLY": {
+   "count": 0,
+   "support": {
+    "B": [],
+    "drive_gain": [],
+    "intrinsic_57m": [],
+    "intrinsic_72f": [],
+    "tau": [],
+    "ventilation_gain": []
+   }
+  },
+  "DEMAND_INCOMPATIBLE": {
+   "count": 654,
+   "support": {
+    "B": [
+     13.4,
+     19.4,
+     28.0
+    ],
+    "drive_gain": [
+     1.0,
+     1.4142135623730951,
+     2.0,
+     2.8284271247461903,
+     4.0
+    ],
+    "intrinsic_57m": [
+     12.0,
+     16.0,
+     20.0
+    ],
+    "intrinsic_72f": [
+     12.0,
+     16.0,
+     20.0
+    ],
+    "tau": [
+     60.0,
+     120.0,
+     240.0
+    ],
+    "ventilation_gain": [
+     0.03,
+     0.04
+    ]
+   }
+  },
+  "REJECTED_BY_ACID_BASE_MONOTONICITY": {
+   "count": 810,
+   "support": {
+    "B": [
+     13.4,
+     19.4,
+     28.0
+    ],
+    "drive_gain": [
+     1.0,
+     1.4142135623730951,
+     2.0,
+     2.8284271247461903,
+     4.0
+    ],
+    "intrinsic_57m": [
+     12.0,
+     16.0,
+     20.0
+    ],
+    "intrinsic_72f": [
+     12.0,
+     16.0,
+     20.0
+    ],
+    "tau": [
+     60.0,
+     120.0,
+     240.0
+    ],
+    "ventilation_gain": [
+     0.05,
+     0.06
+    ]
+   }
+  },
+  "ROBUST_ACROSS_DEMAND": {
+   "count": 156,
+   "support": {
+    "B": [
+     13.4,
+     19.4,
+     28.0
+    ],
+    "drive_gain": [
+     1.0,
+     1.4142135623730951,
+     2.0,
+     2.8284271247461903,
+     4.0
+    ],
+    "intrinsic_57m": [
+     12.0,
+     16.0,
+     20.0
+    ],
+    "intrinsic_72f": [
+     12.0,
+     16.0,
+     20.0
+    ],
+    "tau": [
+     60.0,
+     120.0,
+     240.0
+    ],
+    "ventilation_gain": [
+     0.03,
+     0.04
+    ]
+   }
+  }
+ },
+ "decided": "2026-11-01",
+ "demands": {
+  "1": {
+   "algebra_equal": true,
+   "by_tone_gain": {
+    "0.25": {
+     "entering": 67200,
+     "survivors": 33600,
+     "units": 216
+    },
+    "0.5": {
+     "entering": 56472,
+     "survivors": 28236,
+     "units": 181
+    },
+    "1": {
+     "entering": 41808,
+     "survivors": 20904,
+     "units": 134
+    }
+   },
+   "entering": 165480,
+   "envelopes": {
+    "arrival_compatible": true,
+    "envelopes_hold": true
+   },
+   "failed_by_semantic_correction": 0,
+   "latent_combinations": 156,
+   "latent_support": {
+    "B": {
+     "class": "POORLY_IDENTIFIED",
+     "filter_reads_it": true,
+     "latent_combinations_by_value": {
+      "13.4": 52,
+      "19.4": 52,
+      "28": 52
+     },
+     "values": [
+      13.4,
+      19.4,
+      28.0
+     ]
+    },
+    "drive_gain": {
+     "class": "POORLY_IDENTIFIED",
+     "filter_reads_it": true,
+     "latent_combinations_by_value": {
+      "1": 18,
+      "1.41421": 72,
+      "2": 18,
+      "2.82843": 36,
+      "4": 12
+     },
+     "values": [
+      1.0,
+      1.4142135623730951,
+      2.0,
+      2.8284271247461903,
+      4.0
+     ]
+    },
+    "intrinsic_57m": {
+     "class": "POORLY_IDENTIFIED",
+     "filter_reads_it": true,
+     "latent_combinations_by_value": {
+      "12": 48,
+      "16": 54,
+      "20": 54
+     },
+     "values": [
+      12.0,
+      16.0,
+      20.0
+     ]
+    },
+    "intrinsic_72f": {
+     "class": "POORLY_IDENTIFIED",
+     "filter_reads_it": true,
+     "latent_combinations_by_value": {
+      "12": 30,
+      "16": 72,
+      "20": 54
+     },
+     "values": [
+      12.0,
+      16.0,
+      20.0
+     ]
+    },
+    "tau": {
+     "class": "POORLY_IDENTIFIED",
+     "filter_reads_it": true,
+     "latent_combinations_by_value": {
+      "120": 54,
+      "240": 48,
+      "60": 54
+     },
+     "values": [
+      60.0,
+      120.0,
+      240.0
+     ]
+    },
+    "ventilation_gain": {
+     "admissible_support": [
+      0.03,
+      0.04
+     ],
+     "class": "STRUCTURALLY_BOUNDED_NON_IDENTIFIABLE",
+     "filter_reads_it_within_support": false,
+     "latent_combinations_by_value": {
+      "0.03": 78,
+      "0.04": 78
+     },
+     "narrowed_by": "ACID_BASE_MONOTONICITY (structural)",
+     "rejected_support": {
+      "0.05": "REJECTED_BY_ACID_BASE_MONOTONICITY",
+      "0.06": "REJECTED_BY_ACID_BASE_MONOTONICITY"
+     },
+     "values": [
+      0.03,
+      0.04
+     ]
+    }
+   },
+   "observed": {
+    "extreme_acidemia": {
+     "by_case": {
+      "gi_bleed_57m": 0,
+      "gi_bleed_72f": 0
+     },
+     "flagged": 0,
+     "lowest": {
+      "burden": 16.001715260353546,
+      "case": "gi_bleed_57m",
+      "deficit": 0.7374451869940079,
+      "flag": null,
+      "minute": 120,
+      "paco2": 27.026087362645313,
+      "ph": 7.094092429973695,
+      "rr": {
+       "high": 35.06791180716916,
+       "low": 30.888411774838687,
+       "median": 33.480126289269684,
+       "n": 6
+      }
+     },
+     "survivors": 82740
+    },
+    "observables": {
+     "arrival_paco2 gi_bleed_57m": {
+      "high": 33.30557868442964,
+      "low": 31.545741324921135,
+      "median": 32.425660004675386,
+      "n": 6
+     },
+     "arrival_paco2 gi_bleed_72f": {
+      "high": 35.52397868561279,
+      "low": 34.24657534246575,
+      "median": 34.885277014039275,
+      "n": 6
+     },
+     "arrival_ph_diagnostic gi_bleed_57m": {
+      "high": 7.361984110626884,
+      "low": 7.3384078644840764,
+      "median": 7.35019598755548,
+      "n": 6
+     },
+     "arrival_ph_diagnostic gi_bleed_72f": {
+      "high": 7.384926786990286,
+      "low": 7.369022334729234,
+      "median": 7.37697456085976,
+      "n": 6
+     },
+     "arrival_rr gi_bleed_57m": {
+      "high": 28.441920351405297,
+      "low": 23.886517722221193,
+      "median": 26.12510381631786,
+      "n": 18
+     },
+     "arrival_rr gi_bleed_72f": {
+      "high": 25.455605863893048,
+      "low": 21.286810166726596,
+      "median": 23.86615413288353,
+      "n": 21
+     },
+     "definitive_paco2_120 gi_bleed_57m": {
+      "high": 38.70883558079966,
+      "low": 33.77140726325622,
+      "median": 36.299542248540654,
+      "n": 972
+     },
+     "definitive_paco2_120 gi_bleed_72f": {
+      "high": 39.311284304310455,
+      "low": 36.21057072303465,
+      "median": 37.886098651135555,
+      "n": 972
+     },
+     "definitive_ph_120 gi_bleed_57m": {
+      "high": 7.3993270546392,
+      "low": 7.364644013412568,
+      "median": 7.387895013819506,
+      "n": 972
+     },
+     "definitive_ph_120 gi_bleed_72f": {
+      "high": 7.400359925103288,
+      "low": 7.3837177776835965,
+      "median": 7.395981571553303,
+      "n": 972
+     },
+     "definitive_rr_120 gi_bleed_57m": {
+      "high": 25.73968260098836,
+      "low": 14.955057686634166,
+      "median": 21.395695949154256,
+      "n": 2752
+     },
+     "definitive_rr_120 gi_bleed_72f": {
+      "high": 23.439161279680206,
+      "low": 13.598374294776619,
+      "median": 19.217940910083467,
+      "n": 3240
+     },
+     "residual_rr_above_intrinsic_120 gi_bleed_57m": {
+      "high": 10.161606947573173,
+      "low": 1.0874980442199131,
+      "median": 4.058427273695543,
+      "n": 2752
+     },
+     "residual_rr_above_intrinsic_120 gi_bleed_72f": {
+      "high": 6.4052093470543525,
+      "low": 0.5772167702473148,
+      "median": 2.4127213517405597,
+      "n": 3240
+     },
+     "untreated_paco2_120 gi_bleed_57m": {
+      "high": 33.208511333657434,
+      "low": 24.38922356418943,
+      "median": 30.266963376786144,
+      "n": 972
+     },
+     "untreated_paco2_120 gi_bleed_72f": {
+      "high": 35.82822633835336,
+      "low": 28.708559251898194,
+      "median": 33.64050994117832,
+      "n": 972
+     },
+     "untreated_ph_120 gi_bleed_57m": {
+      "high": 7.360636776474634,
+      "low": 7.094092429973695,
+      "median": 7.310766132652588,
+      "n": 972
+     },
+     "untreated_ph_120 gi_bleed_72f": {
+      "high": 7.387095575538236,
+      "low": 7.284366824739806,
+      "median": 7.364346951981666,
+      "n": 972
+     },
+     "untreated_ph_lowest_0_120 gi_bleed_57m": {
+      "high": 7.360636776474634,
+      "low": 7.094092429973695,
+      "median": 7.310766132652588,
+      "n": 972
+     },
+     "untreated_ph_lowest_0_120 gi_bleed_72f": {
+      "high": 7.384926786990286,
+      "low": 7.284366824739806,
+      "median": 7.364346951981666,
+      "n": 972
+     },
+     "untreated_rr_120 gi_bleed_57m": {
+      "high": 35.06791180716916,
+      "low": 24.000962742244894,
+      "median": 28.880823320027304,
+      "n": 2752
+     },
+     "untreated_rr_120 gi_bleed_72f": {
+      "high": 32.781238440828055,
+      "low": 20.884848299055392,
+      "median": 25.38786730247802,
+      "n": 3240
+     }
+    }
+   },
+   "rejected_by_monotonicity": 82740,
+   "reproduced": {
+    "extreme_acidemia": true,
+    "observables": true,
+    "tally": true
+   },
+   "survivors": 82740,
+   "upstream_units": 531,
+   "upstream_units_with_survivors": 531
+  },
+  "1.1": {
+   "algebra_equal": true,
+   "by_tone_gain": {
+    "0.25": {
+     "entering": 340704,
+     "survivors": 170352,
+     "units": 1092
+    },
+    "0.5": {
+     "entering": 340704,
+     "survivors": 170352,
+     "units": 1092
+    },
+    "1": {
+     "entering": 340704,
+     "survivors": 170352,
+     "units": 1092
+    }
+   },
+   "entering": 1022112,
+   "envelopes": {
+    "arrival_compatible": true,
+    "envelopes_hold": true
+   },
+   "failed_by_semantic_correction": 0,
+   "latent_combinations": 156,
+   "latent_support": {
+    "B": {
+     "class": "NON_IDENTIFIABLE",
+     "filter_reads_it": false,
+     "latent_combinations_by_value": {
+      "13.4": 52,
+      "19.4": 52,
+      "28": 52
+     },
+     "values": [
+      13.4,
+      19.4,
+      28.0
+     ]
+    },
+    "drive_gain": {
+     "class": "POORLY_IDENTIFIED",
+     "filter_reads_it": true,
+     "latent_combinations_by_value": {
+      "1": 18,
+      "1.41421": 72,
+      "2": 18,
+      "2.82843": 36,
+      "4": 12
+     },
+     "values": [
+      1.0,
+      1.4142135623730951,
+      2.0,
+      2.8284271247461903,
+      4.0
+     ]
+    },
+    "intrinsic_57m": {
+     "class": "POORLY_IDENTIFIED",
+     "filter_reads_it": true,
+     "latent_combinations_by_value": {
+      "12": 48,
+      "16": 54,
+      "20": 54
+     },
+     "values": [
+      12.0,
+      16.0,
+      20.0
+     ]
+    },
+    "intrinsic_72f": {
+     "class": "POORLY_IDENTIFIED",
+     "filter_reads_it": true,
+     "latent_combinations_by_value": {
+      "12": 30,
+      "16": 72,
+      "20": 54
+     },
+     "values": [
+      12.0,
+      16.0,
+      20.0
+     ]
+    },
+    "tau": {
+     "class": "POORLY_IDENTIFIED",
+     "filter_reads_it": true,
+     "latent_combinations_by_value": {
+      "120": 54,
+      "240": 48,
+      "60": 54
+     },
+     "values": [
+      60.0,
+      120.0,
+      240.0
+     ]
+    },
+    "ventilation_gain": {
+     "admissible_support": [
+      0.03,
+      0.04
+     ],
+     "class": "STRUCTURALLY_BOUNDED_NON_IDENTIFIABLE",
+     "filter_reads_it_within_support": false,
+     "latent_combinations_by_value": {
+      "0.03": 78,
+      "0.04": 78
+     },
+     "narrowed_by": "ACID_BASE_MONOTONICITY (structural)",
+     "rejected_support": {
+      "0.05": "REJECTED_BY_ACID_BASE_MONOTONICITY",
+      "0.06": "REJECTED_BY_ACID_BASE_MONOTONICITY"
+     },
+     "values": [
+      0.03,
+      0.04
+     ]
+    }
+   },
+   "observed": {
+    "extreme_acidemia": {
+     "by_case": {
+      "gi_bleed_57m": 17604,
+      "gi_bleed_72f": 0
+     },
+     "flagged": 17604,
+     "lowest": {
+      "burden": 18.37918705414266,
+      "case": "gi_bleed_57m",
+      "deficit": 0.8351209656884006,
+      "flag": "CONSCIOUSNESS_COLLAPSE_REVIEW",
+      "minute": 120,
+      "paco2": 25.78356891798774,
+      "ph": 6.961334846510912,
+      "rr": {
+       "high": 36.16083866118893,
+       "low": 32.16083866118893,
+       "median": 34.56427852093174,
+       "n": 6
+      }
+     },
+     "survivors": 511056
+    },
+    "observables": {
+     "arrival_paco2 gi_bleed_57m": {
+      "high": 33.30557868442964,
+      "low": 31.545741324921135,
+      "median": 32.425660004675386,
+      "n": 6
+     },
+     "arrival_paco2 gi_bleed_72f": {
+      "high": 35.52397868561279,
+      "low": 34.24657534246575,
+      "median": 34.885277014039275,
+      "n": 6
+     },
+     "arrival_ph_diagnostic gi_bleed_57m": {
+      "high": 7.361984110626884,
+      "low": 7.3384078644840764,
+      "median": 7.35019598755548,
+      "n": 6
+     },
+     "arrival_ph_diagnostic gi_bleed_72f": {
+      "high": 7.384926786990286,
+      "low": 7.369022334729234,
+      "median": 7.37697456085976,
+      "n": 6
+     },
+     "arrival_rr gi_bleed_57m": {
+      "high": 28.441920351405297,
+      "low": 23.886517722221193,
+      "median": 26.12510381631786,
+      "n": 18
+     },
+     "arrival_rr gi_bleed_72f": {
+      "high": 25.455605863893048,
+      "low": 21.286810166726596,
+      "median": 23.86615413288353,
+      "n": 21
+     },
+     "definitive_paco2_120 gi_bleed_57m": {
+      "high": 38.54527081571055,
+      "low": 33.21297771545165,
+      "median": 35.85837802813141,
+      "n": 4914
+     },
+     "definitive_paco2_120 gi_bleed_72f": {
+      "high": 39.2595184979529,
+      "low": 36.00362183999858,
+      "median": 37.73633997367228,
+      "n": 4914
+     },
+     "definitive_ph_120 gi_bleed_57m": {
+      "high": 7.398968976660195,
+      "low": 7.359008057345485,
+      "median": 7.385420334827044,
+      "n": 4914
+     },
+     "definitive_ph_120 gi_bleed_72f": {
+      "high": 7.4002881821339495,
+      "low": 7.3823952903307,
+      "median": 7.3954054071072886,
+      "n": 4914
+     },
+     "definitive_rr_120 gi_bleed_57m": {
+      "high": 26.27455301540458,
+      "low": 15.316613422090564,
+      "median": 21.810344403797682,
+      "n": 13923
+     },
+     "definitive_rr_120 gi_bleed_72f": {
+      "high": 23.63190211256941,
+      "low": 13.71648038593122,
+      "median": 19.421126565220355,
+      "n": 16380
+     },
+     "residual_rr_above_intrinsic_120 gi_bleed_57m": {
+      "high": 11.456517947294927,
+      "low": 1.2268982215586703,
+      "median": 4.611492187858218,
+      "n": 13923
+     },
+     "residual_rr_above_intrinsic_120 gi_bleed_72f": {
+      "high": 6.736175706927376,
+      "low": 0.6208669738588775,
+      "median": 2.5465569370864998,
+      "n": 16380
+     },
+     "untreated_paco2_120 gi_bleed_57m": {
+      "high": 32.79602596002365,
+      "low": 23.05252974777685,
+      "median": 29.516428746972554,
+      "n": 1998
+     },
+     "untreated_paco2_120 gi_bleed_72f": {
+      "high": 35.270341160447636,
+      "low": 26.93590202711877,
+      "median": 32.800451268084565,
+      "n": 1998
+     },
+     "untreated_ph_120 gi_bleed_57m": {
+      "high": 7.354520953807521,
+      "low": 6.961334846510912,
+      "median": 7.29461635689439,
+      "n": 1998
+     },
+     "untreated_ph_120 gi_bleed_72f": {
+      "high": 7.382961790097836,
+      "low": 7.2301824843364475,
+      "median": 7.354590054394091,
+      "n": 1998
+     },
+     "untreated_ph_lowest_0_120 gi_bleed_57m": {
+      "high": 7.354520953807521,
+      "low": 6.961334846510912,
+      "median": 7.29461635689439,
+      "n": 1998
+     },
+     "untreated_ph_lowest_0_120 gi_bleed_72f": {
+      "high": 7.382961790097836,
+      "low": 7.2301824843364475,
+      "median": 7.354590054394091,
+      "n": 1998
+     },
+     "untreated_rr_120 gi_bleed_57m": {
+      "high": 36.16083866118893,
+      "low": 24.478195134185363,
+      "median": 29.76540485397503,
+      "n": 5661
+     },
+     "untreated_rr_120 gi_bleed_72f": {
+      "high": 34.65879260061513,
+      "low": 21.585514542343976,
+      "median": 26.425341041603026,
+      "n": 6660
+     }
+    }
+   },
+   "rejected_by_monotonicity": 511056,
+   "reproduced": {
+    "extreme_acidemia": true,
+    "observables": true,
+    "tally": true
+   },
+   "survivors": 511056,
+   "upstream_units": 3276,
+   "upstream_units_with_survivors": 3276
+  }
+ },
+ "design": {
+  "certified_full": [
+   "SIMULATION",
+   "E",
+   "F"
+  ],
+  "closed_at_p2k4": {
+   "clinical_core/acid_base.py": "9298b1f0a6defbe1a11627a0d76208c36792b01a390d80558e3cc1fda1827954",
+   "clinical_core/derived.py": "b9056ada72f4c651974eccd1069a67097d31814a5d691cbfc883e33d85bb77a6",
+   "clinical_core/integration.py": "dad171baff07805997272310f4f33545ed38956b531585ae246c0e26e8c07b7a",
+   "clinical_core/state.py": "578d32abad60fcda31a4d3344532b709c8c8f8b71ea2f4bdb2f88c37265a6d13",
+   "clinical_core/ventilation.py": "260393add18e2275ee21411512d18531a74387f853bb76a2f33f89d5cb1bafe9",
+   "clinical_core/ventilation_filter.py": "9edf6c7544924f90875bdc2abd56cf6d86346411901009e641267d14d47685b9",
+   "clinical_core/ventilation_surface.py": "d361b500ccaf059784ea7e7662b6be5dd7d02019174c2f66cc0ca0ff24245825"
+  },
+  "criteria": [
+   "upstream_unchanged",
+   "reuse_exact",
+   "region_nonempty",
+   "ph_monotone",
+   "envelopes_hold",
+   "treatment_responses_coherent",
+   "r3_r4_physiological",
+   "latent_uncertainty_kept",
+   "extreme_acidemia_carried",
+   "nothing_approved"
+  ],
+  "decided": "2026-11-01",
+  "domains": [
+   "blood_state",
+   "output",
+   "pressure_tone",
+   "delivery_deficit",
+   "D",
+   "lactate",
+   "hr_baroreflex"
+  ],
+  "equation": "pH(A) = pK + log10[(HCO3_reference - A) x (1 + g_v x A) / (s x PaCO2_reference)], pK 6.1, s 0.03, for 0 <= A < HCO3_reference (the P2K-3 mapping at efficiency 1 and the baseline demand)",
+  "faculty": {
+   "analytic": "pH is log[(HCO3_reference - A)(1 + g_v A)] up to constants; at A = 0 a non-increasing pH requires g_v <= 1 / HCO3_reference = 1/24; 0.03 and 0.04 STRUCTURALLY_ADMISSIBLE_PRIMARY_SUPPORT, 0.05 and 0.06 REJECTED_BY_ACID_BASE_MONOTONICITY, by the analysis, never by counts or fit",
+   "closed": "P2K-4 accepted and closed; RR_VENTILATION_OBSERVABLE_FILTER_SATISFIED accepted and MOVE_FORWARD agreed; one structural respiratory contradiction to close before consciousness, collapse, GI migration or a second family",
+   "decided": "2026-11-01",
+   "early_stop": "an empty region STOPs: no gain restored, no envelope widened, no HCO3 or PaCO2 reference, arrival tolerance, B or tau changed, no legacy fitting",
+   "exit": "non-empty, pH monotone, A-I held, treatment responses coherent, R3 / R4 physiological, upstream unchanged: GI_RESPIRATORY_PHYSIOLOGY_CLOSED_FOR_CURRENT_PHASE and MOVE_FORWARD_TO_CONSCIOUSNESS; the remaining broad latents are propagated, never a reason for another respiratory cycle",
+   "extreme_acidemia": "untreated pH < 7.00 kept, never filtered: CONSCIOUSNESS_COLLAPSE_REVIEW, carried forward",
+   "goal": "remove the paradox in which a higher metabolic acid burden raises pH at low burden because ventilation recruitment is too strong; then, with a non-empty coherent region, close the respiratory domain for the current GI calibration",
+   "identifiability": "the gain narrowed by a structural rule is not WELL_CONSTRAINED; no choice of 0.03 or 0.04",
+   "no_saturation": "no saturating recruitment and no new parameter now: the support already holds admissible values; a saturating form may be reconsidered if a second respiratory family shows the linear form is insufficient",
+   "priority": "a coherent common physiology with explicit plausible uncertainty and no causal contradiction, good enough to migrate other families; not identifying every latent, a tighter fit of two GI cases or one best candidate",
+   "r3_r4": "PHYSIOLOGICAL_RESPIRATORY_CONVERGENCE retained while the underlying states stay distinct",
+   "retained": "intrinsic RR 12 / 16 / 20 per patient, the P2K-4 drive gains, B 13.4 / 19.4 / 28, tau 60 / 120 / 240, ventilation gain 0.03 / 0.04, HCO3_reference 24 and PaCO2_reference 40 provisional, arrival RR and PaCO2 +/- 3, BASELINE_RELATIVE demand; nothing else narrowed",
+   "reuse": "P2K-4's survivors filtered by the gain alone when the subset is exact; never the full bitset pipeline again",
+   "rule": "for increasing metabolic acid burden A, other physiology fixed, pH must be non-increasing: compensation may reduce the fall in pH, never reverse the metabolic load into alkalinization",
+   "scope": "shadow only; no runtime integration, migration, parameter approval, consciousness or collapse; the upstream physiology reused, never reopened",
+   "treatment": "a higher burden with a higher pH produced by excessive compensation is never respiratory improvement; no new numeric treatment threshold; once 0.05 / 0.06 are removed the condition is unreachable"
+  },
+  "float_margin": 1e-12,
+  "gain_classes": {
+   "0.03": "STRUCTURALLY_ADMISSIBLE_PRIMARY_SUPPORT",
+   "0.04": "STRUCTURALLY_ADMISSIBLE_PRIMARY_SUPPORT",
+   "0.05": "REJECTED_BY_ACID_BASE_MONOTONICITY",
+   "0.06": "REJECTED_BY_ACID_BASE_MONOTONICITY"
+  },
+  "hco3_reference": 24.0,
+  "identifiability_rule": "Frozen. The other parameters: P2K-4's rule on the pruned bitsets. The ventilation gain: its support is fixed by the structural rule, not by the cases, so it is never WELL_CONSTRAINED. Within the admissible support it is STRUCTURALLY_BOUNDED_NON_IDENTIFIABLE when the filter does not read it (every unit's survivors identical at 0.03 and 0.04), STRUCTURALLY_BOUNDED_POORLY_IDENTIFIED when both values survive although it is read, and STRUCTURALLY_BOUNDED_PARTIALLY_CONSTRAINED when one does. No value is chosen; the cross-demand classes are read inside the admissible support, the rejected gains counted apart.",
+  "inequality": "d pH / dA = (1 / ln 10) x [g_v / (1 + g_v A) - 1 / (HCO3_reference - A)] = (1 / ln 10) x N(A) / [(1 + g_v A)(HCO3_reference - A)], with N(A) = (g_v x HCO3_reference - 1) - 2 g_v x A. On 0 <= A < HCO3_reference the denominator is positive (g_v >= 0), so the sign of the slope is the sign of N. N is linear in A with slope -2 g_v <= 0, so its largest value on the domain is N(0) = g_v x HCO3_reference - 1. pH is non-increasing on the whole domain if and only if N(0) <= 0, i.e. g_v <= 1 / HCO3_reference (strictly decreasing when g_v < 1 / HCO3_reference). When g_v > 1 / HCO3_reference, pH rises on 0 <= A < A* = (g_v x HCO3_reference - 1) / (2 g_v). Efficiency and demand ratio multiply PaCO2 by constants independent of A and drop out of the derivative.",
+  "mapping_tolerance": 1e-12,
+  "migration_gate": "MIGRATION_GATE_CLOSED: no runtime integration, GI or second-family migration or parameter approval is authorized; consciousness and collapse are not calibrated",
+  "n_inventory": [
+   {
+    "signal": "effective oxygen deficit",
+    "source": "derived.effective_oxygen_deficit, derived.acute_deficit_signal",
+    "status": "CORE: drives the acid burden and the sympathetic drive"
+   },
+   {
+    "signal": "D (accumulated oxygen-delivery debt)",
+    "source": "state Channel.D (C8)",
+    "status": "CORE: drives lactate and the sympathetic drive"
+   },
+   {
+    "signal": "pH / acidemia",
+    "source": "derived.respiration (P2K-2), ventilation.ventilated_respiration (P2K-3)",
+    "status": "SHADOW_CANDIDATE: output only; the untreated extreme-acidemia rows are carried to CONSCIOUSNESS_COLLAPSE_REVIEW"
+   },
+   {
+    "signal": "PaCO2",
+    "source": "ventilation.ventilated_respiration (PaCO2_reference / W)",
+    "status": "SHADOW_CANDIDATE: output only"
+   },
+   {
+    "signal": "glucose",
+    "source": "state Channel.GLUCOSE (C11, absolute from the case)",
+    "status": "CORE: the hypoglycaemia term of the sympathetic drive (threshold PROVISIONAL)"
+   },
+   {
+    "signal": "oxygenation",
+    "source": "SpO2 in derived._perfusion (FiO2 and gas exchange G); PaO2 authored only",
+    "status": "CORE: the hypoxaemia term of the sympathetic drive (threshold PROVISIONAL)"
+   },
+   {
+    "signal": "neurologic channel N",
+    "source": "state Channel.N (C9, CNS depression level, deviation from arrival)",
+    "status": "EXISTS: integration guard only; no module writes N yet"
+   },
+   {
+    "signal": "MAP / cerebral perfusion (not in the faculty's list)",
+    "source": "derived._perfusion (pressure_rel)",
+    "status": "CORE: offered for the faculty's decision, not assumed"
+   }
+  ],
+  "n_note": "Inventory only: no consciousness calibration, no rule, no N writer; nothing reaches N today. The next brief decides which of these may.",
+  "next_rule": "Predeclared. When CLOSED: MOVE_FORWARD_TO_CONSCIOUSNESS (consciousness / neurologic response N, not begun here), the untreated extreme acidemia carried to CONSCIOUSNESS_COLLAPSE_REVIEW, the cross-demand classes to the demand question, the remaining latent uncertainty (intrinsic RR, drive gain, B, tau, 0.03 against 0.04) propagated, never a reason for another respiratory cycle. Otherwise STOP_FOR_FACULTY_REVIEW with the blocker.",
+  "no_new_parameters": [
+   "saturation parameter",
+   "explicit tidal volume",
+   "dead-space state",
+   "fatigue state",
+   "mechanics state",
+   "CO2 time constant",
+   "hypoxaemic-drive gain",
+   "saturating recruitment form"
+  ],
+  "own": [
+   "clinical_core/respiratory_monotonicity.py"
+  ],
+  "p2k4_digest": "638b64f699ddd53afda7f2e11eebf77e418a28789da8c47e667343738c642773",
+  "p2k4_gains": [
+   0.03,
+   0.04,
+   0.05,
+   0.06
+  ],
+  "p2k4_record_sha": "faa5b3228dd5fccf3b41c765d5591bf02e04909f2f3562c52b576b01c4cfeb2f",
+  "paco2_reference": 40.0,
+  "paradox": [
+   "PH_RISES_WITH_HIGHER_ACID_BURDEN",
+   "PH_FALLS_WITH_LOWER_ACID_BURDEN"
+  ],
+  "perfusion_worse": [
+   "RESPIRATORY_IMPROVING_WITH_PERFUSION_WORSENING",
+   "RESPIRATORY_UNCHANGED_WITH_PERFUSION_WORSENING",
+   "RESPIRATORY_AND_PERFUSION_WORSEN"
+  ],
+  "policy": "Shadow only. P2K-4's frozen code and record reused, never edited; the gain rejected by the analysis alone; no envelope, window, reference, tolerance, B, tau or other support changed; no new respiratory parameter or functional form; untreated pH never filters and the extreme-acidemia rows stay; the legacy never read; nothing selected or approved.",
+  "previously_excluded": {
+   "0.08": "REJECTED_BY_ACID_BASE_MONOTONICITY"
+  },
+  "probe_burdens": [
+   0.0,
+   0.25,
+   0.5,
+   1.0,
+   1.5,
+   2.0,
+   2.5,
+   3.0,
+   3.5,
+   4.0,
+   5.0,
+   6.0,
+   8.0,
+   10.0,
+   12.0,
+   14.0,
+   16.0,
+   18.0,
+   20.0,
+   22.0,
+   23.0
+  ],
+  "r3r4_rule": "Not reopened. The underlying states (bleeding state, BloodState, chronology) read no respiratory latent, so P2K-4's result (no SCENARIO_STATE_COLLAPSE_BUG) holds for every pruned candidate; the respiratory gap is a maximum over the pair's surviving latent combinations, so the pruning can only keep a pair's class or move it from RESPIRATORY_OUTPUTS_DISTINCT to PHYSIOLOGICAL_RESPIRATORY_CONVERGENCE. P2K-4's counts are carried as the bound.",
+  "reach_rule": "Frozen. Only what the pruning reaches is rebuilt: the R1 and R4 trajectories of every P2J-3 upstream survivor (R1 decides A-D and the extreme acidemia, R4 G, G2, H and I), by P2K-4's trajectory and summarize; their rule bitsets by P2K-4's unit_rules, with the certified rules (SIMULATION of the other trajectories, E, F) FULL. The crystalloid, red-cell, counterfactual and no-red-cell trajectories, the no-red-cell blood runs, the R3 / R4 core states, the P2K-3 reconstruction and the comparator validation are not rerun.",
+  "reached_kinds": [
+   "P1",
+   "P4"
+  ],
+  "recomputed_never_failed": [
+   "ARRIVAL_PACO2",
+   "C",
+   "D",
+   "H_PACO2",
+   "H_PH"
+  ],
+  "report": "clinical_core/respiratory_monotonicity_report.py",
+  "retained_gains": [
+   0.03,
+   0.04
+  ],
+  "reuse_rule": "Frozen. P2K-5's region is P2K-4's survivors with the ventilation gain in the admissible support. The reuse is exact when (1) the closed files keep their P2K-4 bytes and P2K-4's freeze digest recomputes (the rule digest of the reused code), (2) the P2K-4 record is the pinned one, (3) its certificates hold at both demands: SIMULATION, E and F never failed (so their bitsets are FULL for every unit), the ventilation gain is NON_IDENTIFIABLE with the filter not reading it (every unit's survivors identical at every gain), no survivor reading has a worse perfusion (the only class the corrected signal can move), R3 / R4 has no state-collapse bug; and (4) the reached recomputation, P2K-4's own functions on the R1 / R4 trajectories with the certified rules FULL, reproduces P2K-4's tally exactly at every demand (candidate identity). The pruned region is then those survivors masked by the gain; nothing else is rerun.",
+  "revision": "P2K-5",
+  "rule_scope": "The bicarbonate at zero burden is the case's authored HCO3 plus its arrival burden: HCO3_reference when the authored HCO3 is at or below it (both GI cases). A family authored above the reference would carry 1 / its own zero-burden bicarbonate as the critical gain; that is a generalization question, not decided here.",
+  "seen_tags": [
+   "arrival_rr",
+   "arrival_paco2",
+   "arrival_ph_diagnostic",
+   "untreated_rr_120",
+   "definitive_rr_120",
+   "residual_rr_above_intrinsic_120",
+   "untreated_paco2_120",
+   "untreated_ph_120",
+   "untreated_ph_lowest_0_120",
+   "definitive_paco2_120",
+   "definitive_ph_120"
+  ],
+  "semantic_rule": "Frozen before any recount. The respiratory signal of a matched reading follows the metabolic acid load: a higher burden is respiratory worsening whatever the pH does (a pH rise beside it is excessive compensation, flagged PH_RISES_WITH_HIGHER_ACID_BURDEN, never improvement); a lower burden is improvement only when pH is also higher (a pH fall beside it is flagged PH_FALLS_WITH_LOWER_ACID_BURDEN and is not improvement); no burden change is no respiratory change. Perfusion, the classes, the rejecting classes (RESPIRATORY_AND_PERFUSION_WORSEN and a treated arrest), the comparators, the minutes and P2J-3's no-change tolerance (1e-9 of the scale) are P2K-4's; no numeric threshold is added. Against P2K-4 the only class that moves is RESPIRATORY_UNCHANGED_WITH_PERFUSION_WORSENING with a higher burden, which becomes RESPIRATORY_AND_PERFUSION_WORSEN (M1: the conjunction could not fire when overcompensation raised pH). M2: the pH direction is now read, through the paradox flags.",
+  "status": {
+   "approved": "none FACULTY_APPROVED",
+   "hco3_reference": "COMMON_REFERENCE_PROVISIONAL 24 mEq/L: the rule's critical gain is read from it; not approved as physiology",
+   "latent": "EXPLORATORY (intrinsic RR, drive gain, B, tau, ventilation gain within 0.03 / 0.04)",
+   "paco2_reference": "COMMON_REFERENCE_PROVISIONAL 40 mmHg: a constant factor of PaCO2, it never enters the rule"
+  },
+  "strategic_note": "The current GI respiratory model is a MINIMAL spontaneous-breathing acid-compensation model. It does not yet establish general respiratory physiology for COPD, asthma, opioid hypoventilation, pneumonia, pulmonary edema or mechanical ventilation; those families will test whether the current RR / W / acid-base decomposition generalizes. Their physiology is not added preemptively.",
+  "structural_classes": [
+   "STRUCTURALLY_BOUNDED_NON_IDENTIFIABLE",
+   "STRUCTURALLY_BOUNDED_POORLY_IDENTIFIED",
+   "STRUCTURALLY_BOUNDED_PARTIALLY_CONSTRAINED"
+  ],
+  "stubbed_kinds": [
+   "P2",
+   "P3",
+   "CF1",
+   "CF2",
+   "NP"
+  ],
+  "tolerance_floor": 1e-09,
+  "tuple_at_p2k4": {
+   "clinical_core/decision_pack.py": "8812ec2e07dba978a2253d8da1fccaa79a0146cd07e05a78d8ad30ce4604486d",
+   "clinical_core/lactate_slice.py": "5b12c7c6a46f09089eb3f0b7b776762dc31491ebb3a23e0e031628f9bc8378da"
+  },
+  "tuples_added": {
+   "DOWNSTREAM_REPORTS": [
+    "clinical_core/respiratory_monotonicity_report.py"
+   ],
+   "PACK_DIGEST_EXCLUDED": [
+    "clinical_core/respiratory_monotonicity.py",
+    "clinical_core/respiratory_monotonicity_report.py"
+   ]
+  },
+  "verdict_rule": "Frozen. EMPTY when no candidate survives the pruning at either demand (a STOP: no gain restored, nothing widened). CLOSED when every criterion holds: the upstream is unchanged (closed files at P2K-4's bytes, the P2J-3 region reproduced, every domain equal); the reuse is exact (REUSE_RULE, and the record's algebra equals the recomputed pruning); some candidate survives; pH is non-increasing in the burden for every retained gain (the analytic rule, the executable mapping equal to the analysed one, the probes); every pruned survivor's observables lie in A-I and its arrival windows; the treatment responses stay coherent under the corrected signal (no rejecting or perfusion-worse reading among the survivors, the declared transition only, no paradox reachable); no R3 / R4 state collapse; every other latent keeps its P2K-4 support and both admissible gains survive (no value chosen); the extreme-acidemia candidates stay in the region; nothing is approved. Otherwise NOT_READY with the first failing criterion as the blocker; an early stop lists what it never reached as not evaluated."
+ },
+ "efficiency": {
+  "analytic_rejections": 593796,
+  "candidates_retallied": 6167340,
+  "cartesian_sweep": false,
+  "legacy_read": false,
+  "not_rerun": {
+   "comparator_core_runs": 36,
+   "direct_check_candidates": 19440,
+   "no_prbc_runs": 182,
+   "p2k3_validation_runs": 96,
+   "r3r4_state_runs": 364
+  },
+  "p2j3_blood_runs": 1326,
+  "p2j3_counterfactual_runs": 364,
+  "reached_trajectories": 984,
+  "trajectories_not_rebuilt": 6342,
+  "upstream_units": 3807
+ },
+ "equivalence": {
+  "certificates": {
+   "1": {
+    "certified_full": {
+     "E": true,
+     "F": true,
+     "SIMULATION": true
+    },
+    "gain_invariant": true,
+    "holds": true,
+    "perfusion_worse_readings": 0,
+    "r3r4_bug": false,
+    "readings": 103680,
+    "recomputed_never_failed": {
+     "ARRIVAL_PACO2": true,
+     "C": true,
+     "D": true,
+     "H_PACO2": true,
+     "H_PH": true
+    },
+    "rejecting_readings": 0
+   },
+   "1.1": {
+    "certified_full": {
+     "E": true,
+     "F": true,
+     "SIMULATION": true
+    },
+    "gain_invariant": true,
+    "holds": true,
+    "perfusion_worse_readings": 0,
+    "r3r4_bug": false,
+    "readings": 329400,
+    "recomputed_never_failed": {
+     "ARRIVAL_PACO2": true,
+     "C": true,
+     "D": true,
+     "H_PACO2": true,
+     "H_PH": true
+    },
+    "rejecting_readings": 0
+   }
+  },
+  "p2k4_freeze_digest": true,
+  "record_pinned": true
+ },
+ "freeze_digest": "561a8878ecf13899d660e9a11db530212678ba0f426f6f5aeb4dbd461efbc112",
+ "mapping": {
+  "gi_bleed_57m": {
+   "arrival_burden": 6.699999999999999,
+   "authored_hco3": 17.3,
+   "equal": true,
+   "gas_error": {
+    "0.03": {
+     "paco2": 0.0,
+     "ph": 0.0
+    },
+    "0.04": {
+     "paco2": 0.0,
+     "ph": 8.881784197001252e-16
+    },
+    "0.05": {
+     "paco2": 0.0,
+     "ph": 0.0
+    },
+    "0.06": {
+     "paco2": 0.0,
+     "ph": 0.0
+    }
+   },
+   "hco3_error": 0.0,
+   "reference_is_zero_burden": true,
+   "zero_burden_bicarbonate": 24.0
+  },
+  "gi_bleed_72f": {
+   "arrival_burden": 4.199999999999999,
+   "authored_hco3": 19.8,
+   "equal": true,
+   "gas_error": {
+    "0.03": {
+     "paco2": 0.0,
+     "ph": 0.0
+    },
+    "0.04": {
+     "paco2": 0.0,
+     "ph": 8.881784197001252e-16
+    },
+    "0.05": {
+     "paco2": 0.0,
+     "ph": 0.0
+    },
+    "0.06": {
+     "paco2": 0.0,
+     "ph": 0.0
+    }
+   },
+   "hco3_error": 0.0,
+   "reference_is_zero_burden": true,
+   "zero_burden_bicarbonate": 24.0
+  }
+ },
+ "migration_gate": "MIGRATION_GATE_CLOSED: no runtime integration, GI or second-family migration or parameter approval is authorized; consciousness and collapse are not calibrated",
+ "n_inventory": {
+  "note": "Inventory only: no consciousness calibration, no rule, no N writer; nothing reaches N today. The next brief decides which of these may.",
+  "signals": [
+   {
+    "signal": "effective oxygen deficit",
+    "source": "derived.effective_oxygen_deficit, derived.acute_deficit_signal",
+    "status": "CORE: drives the acid burden and the sympathetic drive"
+   },
+   {
+    "signal": "D (accumulated oxygen-delivery debt)",
+    "source": "state Channel.D (C8)",
+    "status": "CORE: drives lactate and the sympathetic drive"
+   },
+   {
+    "signal": "pH / acidemia",
+    "source": "derived.respiration (P2K-2), ventilation.ventilated_respiration (P2K-3)",
+    "status": "SHADOW_CANDIDATE: output only; the untreated extreme-acidemia rows are carried to CONSCIOUSNESS_COLLAPSE_REVIEW"
+   },
+   {
+    "signal": "PaCO2",
+    "source": "ventilation.ventilated_respiration (PaCO2_reference / W)",
+    "status": "SHADOW_CANDIDATE: output only"
+   },
+   {
+    "signal": "glucose",
+    "source": "state Channel.GLUCOSE (C11, absolute from the case)",
+    "status": "CORE: the hypoglycaemia term of the sympathetic drive (threshold PROVISIONAL)"
+   },
+   {
+    "signal": "oxygenation",
+    "source": "SpO2 in derived._perfusion (FiO2 and gas exchange G); PaO2 authored only",
+    "status": "CORE: the hypoxaemia term of the sympathetic drive (threshold PROVISIONAL)"
+   },
+   {
+    "signal": "neurologic channel N",
+    "source": "state Channel.N (C9, CNS depression level, deviation from arrival)",
+    "status": "EXISTS: integration guard only; no module writes N yet"
+   },
+   {
+    "signal": "MAP / cerebral perfusion (not in the faculty's list)",
+    "source": "derived._perfusion (pressure_rel)",
+    "status": "CORE: offered for the faculty's decision, not assumed"
+   }
+  ]
+ },
+ "non_regression": {
+  "D": {
+   "evidence": "closed files at P2K-4 bytes; P2J-3 region reproduced; P2K-4 comparator validation",
+   "unchanged": true
+  },
+  "blood_state": {
+   "evidence": "closed files at P2K-4 bytes; P2J-3 region reproduced; P2K-4 comparator validation",
+   "unchanged": true
+  },
+  "delivery_deficit": {
+   "evidence": "closed files at P2K-4 bytes; P2J-3 region reproduced; P2K-4 comparator validation",
+   "unchanged": true
+  },
+  "hr_baroreflex": {
+   "evidence": "closed files at P2K-4 bytes; P2J-3 region reproduced; P2K-4 comparator validation",
+   "unchanged": true
+  },
+  "lactate": {
+   "evidence": "closed files at P2K-4 bytes; P2J-3 region reproduced; P2K-4 comparator validation",
+   "unchanged": true
+  },
+  "output": {
+   "evidence": "closed files at P2K-4 bytes; P2J-3 region reproduced; P2K-4 comparator validation",
+   "unchanged": true
+  },
+  "pressure_tone": {
+   "evidence": "closed files at P2K-4 bytes; P2J-3 region reproduced; P2K-4 comparator validation",
+   "unchanged": true
+  }
+ },
+ "paradox_unreachable": {
+  "0.03": true,
+  "0.04": true
+ },
+ "policy": "Shadow only. P2K-4's frozen code and record reused, never edited; the gain rejected by the analysis alone; no envelope, window, reference, tolerance, B, tau or other support changed; no new respiratory parameter or functional form; untreated pH never filters and the extreme-acidemia rows stay; the legacy never read; nothing selected or approved.",
+ "probes": {
+  "admissible_non_increasing": true,
+  "paco2_falls_with_burden": true,
+  "rejected_rise_at_low_burden": true,
+  "rows": {
+   "gi_bleed_57m": {
+    "0.03": {
+     "burdens": [
+      0.0,
+      0.25,
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      2.5,
+      3.0,
+      3.5,
+      4.0,
+      5.0,
+      6.0,
+      6.699999999999999,
+      8.0,
+      10.0,
+      12.0,
+      14.0,
+      16.0,
+      18.0,
+      20.0,
+      22.0,
+      23.0
+     ],
+     "hco3": [
+      24.0,
+      23.75,
+      23.5,
+      23.0,
+      22.5,
+      22.0,
+      21.5,
+      21.0,
+      20.5,
+      20.0,
+      19.0,
+      18.0,
+      17.3,
+      16.0,
+      14.0,
+      12.0,
+      10.0,
+      8.0,
+      6.0,
+      4.0,
+      2.0,
+      1.0
+     ],
+     "hco3_falls": true,
+     "paco2": [
+      40.0,
+      39.702233250620345,
+      39.40886699507389,
+      38.83495145631068,
+      38.27751196172249,
+      37.73584905660377,
+      37.2093023255814,
+      36.69724770642202,
+      36.199095022624434,
+      35.71428571428571,
+      34.78260869565218,
+      33.898305084745765,
+      33.30557868442964,
+      32.25806451612903,
+      30.769230769230766,
+      29.411764705882355,
+      28.169014084507044,
+      27.027027027027028,
+      25.974025974025974,
+      25.0,
+      24.096385542168676,
+      23.668639053254438
+     ],
+     "paco2_falls": true,
+     "ph": [
+      7.401029995663981,
+      7.399727422726407,
+      7.398352658473343,
+      7.39538381467514,
+      7.39211756251081,
+      7.388547300039352,
+      7.384665678119604,
+      7.380464546626918,
+      7.3759348930292585,
+      7.371066772286538,
+      7.360270195258815,
+      7.347973266361806,
+      7.3384078644840764,
+      7.318360421770535,
+      7.28089014193745,
+      7.2335389083702175,
+      7.173107098335431,
+      7.094170456339276,
+      6.986490725172482,
+      6.826998727936262,
+      6.541956837656411,
+      6.248705458566048
+     ],
+     "ph_change_0_to_arrival": -0.06262213117990445,
+     "ph_non_increasing": true,
+     "ph_rising_steps": []
+    },
+    "0.04": {
+     "burdens": [
+      0.0,
+      0.25,
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      2.5,
+      3.0,
+      3.5,
+      4.0,
+      5.0,
+      6.0,
+      6.699999999999999,
+      8.0,
+      10.0,
+      12.0,
+      14.0,
+      16.0,
+      18.0,
+      20.0,
+      22.0,
+      23.0
+     ],
+     "hco3": [
+      24.0,
+      23.75,
+      23.5,
+      23.0,
+      22.5,
+      22.0,
+      21.5,
+      21.0,
+      20.5,
+      20.0,
+      19.0,
+      18.0,
+      17.3,
+      16.0,
+      14.0,
+      12.0,
+      10.0,
+      8.0,
+      6.0,
+      4.0,
+      2.0,
+      1.0
+     ],
+     "hco3_falls": true,
+     "paco2": [
+      40.0,
+      39.603960396039604,
+      39.21568627450981,
+      38.46153846153846,
+      37.73584905660377,
+      37.03703703703704,
+      36.36363636363636,
+      35.71428571428571,
+      35.08771929824561,
+      34.48275862068966,
+      33.333333333333336,
+      32.25806451612903,
+      31.545741324921135,
+      30.3030303030303,
+      28.571428571428573,
+      27.027027027027028,
+      25.64102564102564,
+      24.39024390243902,
+      23.25581395348837,
+      22.22222222222222,
+      21.27659574468085,
+      20.833333333333336
+     ],
+     "paco2_falls": true,
+     "ph": [
+      7.401029995663981,
+      7.400803741695903,
+      7.400486787986028,
+      7.399579929268748,
+      7.398307137328508,
+      7.396665190261531,
+      7.394649899026206,
+      7.392256071356476,
+      7.3894774663446015,
+      7.386306738843274,
+      7.3787536009528285,
+      7.369512944217916,
+      7.361984110626884,
+      7.34551266781415,
+      7.313074825308851,
+      7.270261715394957,
+      7.213943352306837,
+      7.138752588992016,
+      7.034498451243567,
+      6.8781512503836435,
+      6.596006598880036,
+      6.304119982655925
+     ],
+     "ph_change_0_to_arrival": -0.03904588503709672,
+     "ph_non_increasing": true,
+     "ph_rising_steps": []
+    },
+    "0.05": {
+     "burdens": [
+      0.0,
+      0.25,
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      2.5,
+      3.0,
+      3.5,
+      4.0,
+      5.0,
+      6.0,
+      6.699999999999999,
+      8.0,
+      10.0,
+      12.0,
+      14.0,
+      16.0,
+      18.0,
+      20.0,
+      22.0,
+      23.0
+     ],
+     "hco3": [
+      24.0,
+      23.75,
+      23.5,
+      23.0,
+      22.5,
+      22.0,
+      21.5,
+      21.0,
+      20.5,
+      20.0,
+      19.0,
+      18.0,
+      17.3,
+      16.0,
+      14.0,
+      12.0,
+      10.0,
+      8.0,
+      6.0,
+      4.0,
+      2.0,
+      1.0
+     ],
+     "hco3_falls": true,
+     "paco2": [
+      40.0,
+      39.50617283950618,
+      39.024390243902445,
+      38.095238095238095,
+      37.2093023255814,
+      36.36363636363636,
+      35.55555555555556,
+      34.78260869565218,
+      34.04255319148936,
+      33.333333333333336,
+      32.0,
+      30.769230769230766,
+      29.962546816479403,
+      28.571428571428573,
+      26.666666666666668,
+      25.0,
+      23.52941176470588,
+      22.22222222222222,
+      21.05263157894737,
+      20.0,
+      19.047619047619047,
+      18.604651162790695
+     ],
+     "paco2_falls": true,
+     "ph": [
+      7.401029995663981,
+      7.401877399799966,
+      7.402610481615884,
+      7.403735889039906,
+      7.404409736315362,
+      7.4046341199328065,
+      7.404409736315362,
+      7.403735889039906,
+      7.402610481615884,
+      7.401029995663981,
+      7.3964823679132605,
+      7.390034611362518,
+      7.384346122781764,
+      7.371066772286538,
+      7.343038048686294,
+      7.304119982655925,
+      7.251267675330649,
+      7.179181246047625,
+      7.077723605288847,
+      6.923908740944318,
+      6.644068044350275,
+      6.35325721386798
+     ],
+     "ph_change_0_to_arrival": -0.016683872882216733,
+     "ph_non_increasing": false,
+     "ph_rising_steps": [
+      [
+       0.0,
+       0.25
+      ],
+      [
+       0.25,
+       0.5
+      ],
+      [
+       0.5,
+       1.0
+      ],
+      [
+       1.0,
+       1.5
+      ],
+      [
+       1.5,
+       2.0
+      ]
+     ]
+    },
+    "0.06": {
+     "burdens": [
+      0.0,
+      0.25,
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      2.5,
+      3.0,
+      3.5,
+      4.0,
+      5.0,
+      6.0,
+      6.699999999999999,
+      8.0,
+      10.0,
+      12.0,
+      14.0,
+      16.0,
+      18.0,
+      20.0,
+      22.0,
+      23.0
+     ],
+     "hco3": [
+      24.0,
+      23.75,
+      23.5,
+      23.0,
+      22.5,
+      22.0,
+      21.5,
+      21.0,
+      20.5,
+      20.0,
+      19.0,
+      18.0,
+      17.3,
+      16.0,
+      14.0,
+      12.0,
+      10.0,
+      8.0,
+      6.0,
+      4.0,
+      2.0,
+      1.0
+     ],
+     "hco3_falls": true,
+     "paco2": [
+      40.0,
+      39.40886699507389,
+      38.83495145631068,
+      37.73584905660377,
+      36.69724770642202,
+      35.71428571428571,
+      34.78260869565218,
+      33.898305084745765,
+      33.057851239669425,
+      32.25806451612903,
+      30.769230769230766,
+      29.411764705882355,
+      28.530670470756064,
+      27.027027027027028,
+      25.0,
+      23.25581395348837,
+      21.73913043478261,
+      20.408163265306122,
+      19.23076923076923,
+      18.18181818181818,
+      17.24137931034483,
+      16.80672268907563
+     ],
+     "paco2_falls": true,
+     "ph": [
+      7.401029995663981,
+      7.402948410162492,
+      7.404723840929283,
+      7.407852455234738,
+      7.410427770004361,
+      7.412459457444763,
+      7.413955054221592,
+      7.41492005599242,
+      7.4153579853245795,
+      7.415270434778591,
+      7.41351570721204,
+      7.409630167425899,
+      7.40561287071181,
+      7.395200452003257,
+      7.371066772286538,
+      7.335528446907548,
+      7.285636576961911,
+      7.216164812300795,
+      7.11703333929878,
+      6.965301426102544,
+      6.687336734507255,
+      6.397395711008887
+     ],
+     "ph_change_0_to_arrival": 0.004582875047828949,
+     "ph_non_increasing": false,
+     "ph_rising_steps": [
+      [
+       0.0,
+       0.25
+      ],
+      [
+       0.25,
+       0.5
+      ],
+      [
+       0.5,
+       1.0
+      ],
+      [
+       1.0,
+       1.5
+      ],
+      [
+       1.5,
+       2.0
+      ],
+      [
+       2.0,
+       2.5
+      ],
+      [
+       2.5,
+       3.0
+      ],
+      [
+       3.0,
+       3.5
+      ]
+     ]
+    }
+   },
+   "gi_bleed_72f": {
+    "0.03": {
+     "burdens": [
+      0.0,
+      0.25,
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      2.5,
+      3.0,
+      3.5,
+      4.0,
+      4.199999999999999,
+      5.0,
+      6.0,
+      8.0,
+      10.0,
+      12.0,
+      14.0,
+      16.0,
+      18.0,
+      20.0,
+      22.0,
+      23.0
+     ],
+     "hco3": [
+      24.0,
+      23.75,
+      23.5,
+      23.0,
+      22.5,
+      22.0,
+      21.5,
+      21.0,
+      20.5,
+      20.0,
+      19.8,
+      19.0,
+      18.0,
+      16.0,
+      14.0,
+      12.0,
+      10.0,
+      8.0,
+      6.0,
+      4.0,
+      2.0,
+      1.0
+     ],
+     "hco3_falls": true,
+     "paco2": [
+      40.0,
+      39.702233250620345,
+      39.40886699507389,
+      38.83495145631068,
+      38.27751196172249,
+      37.73584905660377,
+      37.2093023255814,
+      36.69724770642202,
+      36.199095022624434,
+      35.71428571428571,
+      35.52397868561279,
+      34.78260869565218,
+      33.898305084745765,
+      32.25806451612903,
+      30.769230769230766,
+      29.411764705882355,
+      28.169014084507044,
+      27.027027027027028,
+      25.974025974025974,
+      25.0,
+      24.096385542168676,
+      23.668639053254438
+     ],
+     "paco2_falls": true,
+     "ph": [
+      7.401029995663981,
+      7.399727422726407,
+      7.398352658473343,
+      7.39538381467514,
+      7.39211756251081,
+      7.388547300039352,
+      7.384665678119604,
+      7.380464546626918,
+      7.3759348930292585,
+      7.371066772286538,
+      7.369022334729234,
+      7.360270195258815,
+      7.347973266361806,
+      7.318360421770535,
+      7.28089014193745,
+      7.2335389083702175,
+      7.173107098335431,
+      7.094170456339276,
+      6.986490725172482,
+      6.826998727936262,
+      6.541956837656411,
+      6.248705458566048
+     ],
+     "ph_change_0_to_arrival": -0.03200766093474705,
+     "ph_non_increasing": true,
+     "ph_rising_steps": []
+    },
+    "0.04": {
+     "burdens": [
+      0.0,
+      0.25,
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      2.5,
+      3.0,
+      3.5,
+      4.0,
+      4.199999999999999,
+      5.0,
+      6.0,
+      8.0,
+      10.0,
+      12.0,
+      14.0,
+      16.0,
+      18.0,
+      20.0,
+      22.0,
+      23.0
+     ],
+     "hco3": [
+      24.0,
+      23.75,
+      23.5,
+      23.0,
+      22.5,
+      22.0,
+      21.5,
+      21.0,
+      20.5,
+      20.0,
+      19.8,
+      19.0,
+      18.0,
+      16.0,
+      14.0,
+      12.0,
+      10.0,
+      8.0,
+      6.0,
+      4.0,
+      2.0,
+      1.0
+     ],
+     "hco3_falls": true,
+     "paco2": [
+      40.0,
+      39.603960396039604,
+      39.21568627450981,
+      38.46153846153846,
+      37.73584905660377,
+      37.03703703703704,
+      36.36363636363636,
+      35.71428571428571,
+      35.08771929824561,
+      34.48275862068966,
+      34.24657534246575,
+      33.333333333333336,
+      32.25806451612903,
+      30.3030303030303,
+      28.571428571428573,
+      27.027027027027028,
+      25.64102564102564,
+      24.39024390243902,
+      23.25581395348837,
+      22.22222222222222,
+      21.27659574468085,
+      20.833333333333336
+     ],
+     "paco2_falls": true,
+     "ph": [
+      7.401029995663981,
+      7.400803741695903,
+      7.400486787986028,
+      7.399579929268748,
+      7.398307137328508,
+      7.396665190261531,
+      7.394649899026206,
+      7.392256071356476,
+      7.3894774663446015,
+      7.386306738843274,
+      7.384926786990286,
+      7.3787536009528285,
+      7.369512944217916,
+      7.34551266781415,
+      7.313074825308851,
+      7.270261715394957,
+      7.213943352306837,
+      7.138752588992016,
+      7.034498451243567,
+      6.8781512503836435,
+      6.596006598880036,
+      6.304119982655925
+     ],
+     "ph_change_0_to_arrival": -0.016103208673694525,
+     "ph_non_increasing": true,
+     "ph_rising_steps": []
+    },
+    "0.05": {
+     "burdens": [
+      0.0,
+      0.25,
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      2.5,
+      3.0,
+      3.5,
+      4.0,
+      4.199999999999999,
+      5.0,
+      6.0,
+      8.0,
+      10.0,
+      12.0,
+      14.0,
+      16.0,
+      18.0,
+      20.0,
+      22.0,
+      23.0
+     ],
+     "hco3": [
+      24.0,
+      23.75,
+      23.5,
+      23.0,
+      22.5,
+      22.0,
+      21.5,
+      21.0,
+      20.5,
+      20.0,
+      19.8,
+      19.0,
+      18.0,
+      16.0,
+      14.0,
+      12.0,
+      10.0,
+      8.0,
+      6.0,
+      4.0,
+      2.0,
+      1.0
+     ],
+     "hco3_falls": true,
+     "paco2": [
+      40.0,
+      39.50617283950618,
+      39.024390243902445,
+      38.095238095238095,
+      37.2093023255814,
+      36.36363636363636,
+      35.55555555555556,
+      34.78260869565218,
+      34.04255319148936,
+      33.333333333333336,
+      33.057851239669425,
+      32.0,
+      30.769230769230766,
+      28.571428571428573,
+      26.666666666666668,
+      25.0,
+      23.52941176470588,
+      22.22222222222222,
+      21.05263157894737,
+      20.0,
+      19.047619047619047,
+      18.604651162790695
+     ],
+     "paco2_falls": true,
+     "ph": [
+      7.401029995663981,
+      7.401877399799966,
+      7.402610481615884,
+      7.403735889039906,
+      7.404409736315362,
+      7.4046341199328065,
+      7.404409736315362,
+      7.403735889039906,
+      7.402610481615884,
+      7.401029995663981,
+      7.400269314530356,
+      7.3964823679132605,
+      7.390034611362518,
+      7.371066772286538,
+      7.343038048686294,
+      7.304119982655925,
+      7.251267675330649,
+      7.179181246047625,
+      7.077723605288847,
+      6.923908740944318,
+      6.644068044350275,
+      6.35325721386798
+     ],
+     "ph_change_0_to_arrival": -0.0007606811336247077,
+     "ph_non_increasing": false,
+     "ph_rising_steps": [
+      [
+       0.0,
+       0.25
+      ],
+      [
+       0.25,
+       0.5
+      ],
+      [
+       0.5,
+       1.0
+      ],
+      [
+       1.0,
+       1.5
+      ],
+      [
+       1.5,
+       2.0
+      ]
+     ]
+    },
+    "0.06": {
+     "burdens": [
+      0.0,
+      0.25,
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      2.5,
+      3.0,
+      3.5,
+      4.0,
+      4.199999999999999,
+      5.0,
+      6.0,
+      8.0,
+      10.0,
+      12.0,
+      14.0,
+      16.0,
+      18.0,
+      20.0,
+      22.0,
+      23.0
+     ],
+     "hco3": [
+      24.0,
+      23.75,
+      23.5,
+      23.0,
+      22.5,
+      22.0,
+      21.5,
+      21.0,
+      20.5,
+      20.0,
+      19.8,
+      19.0,
+      18.0,
+      16.0,
+      14.0,
+      12.0,
+      10.0,
+      8.0,
+      6.0,
+      4.0,
+      2.0,
+      1.0
+     ],
+     "hco3_falls": true,
+     "paco2": [
+      40.0,
+      39.40886699507389,
+      38.83495145631068,
+      37.73584905660377,
+      36.69724770642202,
+      35.71428571428571,
+      34.78260869565218,
+      33.898305084745765,
+      33.057851239669425,
+      32.25806451612903,
+      31.94888178913738,
+      30.769230769230766,
+      29.411764705882355,
+      27.027027027027028,
+      25.0,
+      23.25581395348837,
+      21.73913043478261,
+      20.408163265306122,
+      19.23076923076923,
+      18.18181818181818,
+      17.24137931034483,
+      16.80672268907563
+     ],
+     "paco2_falls": true,
+     "ph": [
+      7.401029995663981,
+      7.402948410162492,
+      7.404723840929283,
+      7.407852455234738,
+      7.410427770004361,
+      7.412459457444763,
+      7.413955054221592,
+      7.41492005599242,
+      7.4153579853245795,
+      7.415270434778591,
+      7.415088273088317,
+      7.41351570721204,
+      7.409630167425899,
+      7.395200452003257,
+      7.371066772286538,
+      7.335528446907548,
+      7.285636576961911,
+      7.216164812300795,
+      7.11703333929878,
+      6.965301426102544,
+      6.687336734507255,
+      6.397395711008887
+     ],
+     "ph_change_0_to_arrival": 0.014058277424336296,
+     "ph_non_increasing": false,
+     "ph_rising_steps": [
+      [
+       0.0,
+       0.25
+      ],
+      [
+       0.25,
+       0.5
+      ],
+      [
+       0.5,
+       1.0
+      ],
+      [
+       1.0,
+       1.5
+      ],
+      [
+       1.5,
+       2.0
+      ],
+      [
+       2.0,
+       2.5
+      ],
+      [
+       2.5,
+       3.0
+      ],
+      [
+       3.0,
+       3.5
+      ]
+     ]
+    }
+   }
+  }
+ },
+ "r3r4": {
+  "1": {
+   "bug": false,
+   "p2k4_classes": {
+    "PHYSIOLOGICAL_RESPIRATORY_CONVERGENCE": 108,
+    "RESPIRATORY_OUTPUTS_DISTINCT": 0,
+    "SCENARIO_STATE_COLLAPSE_BUG": 0
+   },
+   "status": "PHYSIOLOGICAL_RESPIRATORY_CONVERGENCE"
+  },
+  "1.1": {
+   "bug": false,
+   "p2k4_classes": {
+    "PHYSIOLOGICAL_RESPIRATORY_CONVERGENCE": 526,
+    "RESPIRATORY_OUTPUTS_DISTINCT": 20,
+    "SCENARIO_STATE_COLLAPSE_BUG": 0
+   },
+   "status": "PHYSIOLOGICAL_RESPIRATORY_CONVERGENCE"
+  }
+ },
+ "recommendation": {
+  "forwarded": {
+   "cross_demand": "the demand question (diagnostic)",
+   "latent": "explicit uncertainty propagated; no respiratory cycle for identifiability",
+   "untreated_extreme_acidemia": "CONSCIOUSNESS_COLLAPSE_REVIEW"
+  },
+  "next": "CONSCIOUSNESS / NEUROLOGIC RESPONSE N (not begun)",
+  "recommendation": "MOVE_FORWARD_TO_CONSCIOUSNESS",
+  "rule": "Predeclared. When CLOSED: MOVE_FORWARD_TO_CONSCIOUSNESS (consciousness / neurologic response N, not begun here), the untreated extreme acidemia carried to CONSCIOUSNESS_COLLAPSE_REVIEW, the cross-demand classes to the demand question, the remaining latent uncertainty (intrinsic RR, drive gain, B, tau, 0.03 against 0.04) propagated, never a reason for another respiratory cycle. Otherwise STOP_FOR_FACULTY_REVIEW with the blocker."
+ },
+ "record": "638b64f699ddd53afda7f2e11eebf77e418a28789da8c47e667343738c642773",
+ "region_unchanged": {
+  "demand_class": true,
+  "primary": true,
+  "support": true,
+  "units": true
+ },
+ "revision": "P2K-5",
+ "semantics": {
+  "changed": [
+   {
+    "burden": 1,
+    "changed": true,
+    "p2k4": "RESPIRATORY_UNCHANGED_WITH_PERFUSION_WORSENING",
+    "p2k5": "RESPIRATORY_AND_PERFUSION_WORSEN",
+    "paradox": null,
+    "perfusion": -1,
+    "ph": 0,
+    "rejecting": [
+     false,
+     true
+    ]
+   },
+   {
+    "burden": 1,
+    "changed": true,
+    "p2k4": "RESPIRATORY_UNCHANGED_WITH_PERFUSION_WORSENING",
+    "p2k5": "RESPIRATORY_AND_PERFUSION_WORSEN",
+    "paradox": "PH_RISES_WITH_HIGHER_ACID_BURDEN",
+    "perfusion": -1,
+    "ph": 1,
+    "rejecting": [
+     false,
+     true
+    ]
+   }
+  ],
+  "classes": [
+   "RESPIRATORY_AND_PERFUSION_IMPROVE",
+   "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT",
+   "RESPIRATORY_IMPROVING_WITH_PERFUSION_WORSENING",
+   "RESPIRATORY_UNCHANGED_WITH_PERFUSION_WORSENING",
+   "RESPIRATORY_AND_PERFUSION_WORSEN",
+   "NO_PERFUSION_CHANGE",
+   "COMPARATOR_ARREST_WITH_TREATED_BREATHING",
+   "TREATED_ARREST_WITH_COMPARATOR_BREATHING",
+   "NO_COMPARISON_BOTH_ARRESTED",
+   "NO_COMPARISON_IMPOSSIBLE_VALUE",
+   "PH_RISES_WITH_HIGHER_ACID_BURDEN",
+   "PH_FALLS_WITH_LOWER_ACID_BURDEN"
+  ],
+  "never_unrejects": true,
+  "only_perfusion_worse_higher_burden": true,
+  "paradox_directions": [
+   [
+    -1,
+    -1
+   ],
+   [
+    1,
+    1
+   ]
+  ],
+  "rejecting": [
+   "RESPIRATORY_AND_PERFUSION_WORSEN",
+   "TREATED_ARREST_WITH_COMPARATOR_BREATHING"
+  ],
+  "rule": "Frozen before any recount. The respiratory signal of a matched reading follows the metabolic acid load: a higher burden is respiratory worsening whatever the pH does (a pH rise beside it is excessive compensation, flagged PH_RISES_WITH_HIGHER_ACID_BURDEN, never improvement); a lower burden is improvement only when pH is also higher (a pH fall beside it is flagged PH_FALLS_WITH_LOWER_ACID_BURDEN and is not improvement); no burden change is no respiratory change. Perfusion, the classes, the rejecting classes (RESPIRATORY_AND_PERFUSION_WORSEN and a treated arrest), the comparators, the minutes and P2J-3's no-change tolerance (1e-9 of the scale) are P2K-4's; no numeric threshold is added. Against P2K-4 the only class that moves is RESPIRATORY_UNCHANGED_WITH_PERFUSION_WORSENING with a higher burden, which becomes RESPIRATORY_AND_PERFUSION_WORSEN (M1: the conjunction could not fire when overcompensation raised pH). M2: the pH direction is now read, through the paradox flags.",
+  "transitions": [
+   {
+    "burden": -1,
+    "changed": false,
+    "p2k4": "RESPIRATORY_UNCHANGED_WITH_PERFUSION_WORSENING",
+    "p2k5": "RESPIRATORY_UNCHANGED_WITH_PERFUSION_WORSENING",
+    "paradox": "PH_FALLS_WITH_LOWER_ACID_BURDEN",
+    "perfusion": -1,
+    "ph": -1,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": -1,
+    "changed": false,
+    "p2k4": "RESPIRATORY_UNCHANGED_WITH_PERFUSION_WORSENING",
+    "p2k5": "RESPIRATORY_UNCHANGED_WITH_PERFUSION_WORSENING",
+    "paradox": null,
+    "perfusion": -1,
+    "ph": 0,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": -1,
+    "changed": false,
+    "p2k4": "RESPIRATORY_IMPROVING_WITH_PERFUSION_WORSENING",
+    "p2k5": "RESPIRATORY_IMPROVING_WITH_PERFUSION_WORSENING",
+    "paradox": null,
+    "perfusion": -1,
+    "ph": 1,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": 0,
+    "changed": false,
+    "p2k4": "RESPIRATORY_UNCHANGED_WITH_PERFUSION_WORSENING",
+    "p2k5": "RESPIRATORY_UNCHANGED_WITH_PERFUSION_WORSENING",
+    "paradox": null,
+    "perfusion": -1,
+    "ph": -1,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": 0,
+    "changed": false,
+    "p2k4": "RESPIRATORY_UNCHANGED_WITH_PERFUSION_WORSENING",
+    "p2k5": "RESPIRATORY_UNCHANGED_WITH_PERFUSION_WORSENING",
+    "paradox": null,
+    "perfusion": -1,
+    "ph": 0,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": 0,
+    "changed": false,
+    "p2k4": "RESPIRATORY_UNCHANGED_WITH_PERFUSION_WORSENING",
+    "p2k5": "RESPIRATORY_UNCHANGED_WITH_PERFUSION_WORSENING",
+    "paradox": null,
+    "perfusion": -1,
+    "ph": 1,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": 1,
+    "changed": false,
+    "p2k4": "RESPIRATORY_AND_PERFUSION_WORSEN",
+    "p2k5": "RESPIRATORY_AND_PERFUSION_WORSEN",
+    "paradox": null,
+    "perfusion": -1,
+    "ph": -1,
+    "rejecting": [
+     true,
+     true
+    ]
+   },
+   {
+    "burden": 1,
+    "changed": true,
+    "p2k4": "RESPIRATORY_UNCHANGED_WITH_PERFUSION_WORSENING",
+    "p2k5": "RESPIRATORY_AND_PERFUSION_WORSEN",
+    "paradox": null,
+    "perfusion": -1,
+    "ph": 0,
+    "rejecting": [
+     false,
+     true
+    ]
+   },
+   {
+    "burden": 1,
+    "changed": true,
+    "p2k4": "RESPIRATORY_UNCHANGED_WITH_PERFUSION_WORSENING",
+    "p2k5": "RESPIRATORY_AND_PERFUSION_WORSEN",
+    "paradox": "PH_RISES_WITH_HIGHER_ACID_BURDEN",
+    "perfusion": -1,
+    "ph": 1,
+    "rejecting": [
+     false,
+     true
+    ]
+   },
+   {
+    "burden": -1,
+    "changed": false,
+    "p2k4": "NO_PERFUSION_CHANGE",
+    "p2k5": "NO_PERFUSION_CHANGE",
+    "paradox": "PH_FALLS_WITH_LOWER_ACID_BURDEN",
+    "perfusion": 0,
+    "ph": -1,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": -1,
+    "changed": false,
+    "p2k4": "NO_PERFUSION_CHANGE",
+    "p2k5": "NO_PERFUSION_CHANGE",
+    "paradox": null,
+    "perfusion": 0,
+    "ph": 0,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": -1,
+    "changed": false,
+    "p2k4": "NO_PERFUSION_CHANGE",
+    "p2k5": "NO_PERFUSION_CHANGE",
+    "paradox": null,
+    "perfusion": 0,
+    "ph": 1,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": 0,
+    "changed": false,
+    "p2k4": "NO_PERFUSION_CHANGE",
+    "p2k5": "NO_PERFUSION_CHANGE",
+    "paradox": null,
+    "perfusion": 0,
+    "ph": -1,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": 0,
+    "changed": false,
+    "p2k4": "NO_PERFUSION_CHANGE",
+    "p2k5": "NO_PERFUSION_CHANGE",
+    "paradox": null,
+    "perfusion": 0,
+    "ph": 0,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": 0,
+    "changed": false,
+    "p2k4": "NO_PERFUSION_CHANGE",
+    "p2k5": "NO_PERFUSION_CHANGE",
+    "paradox": null,
+    "perfusion": 0,
+    "ph": 1,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": 1,
+    "changed": false,
+    "p2k4": "NO_PERFUSION_CHANGE",
+    "p2k5": "NO_PERFUSION_CHANGE",
+    "paradox": null,
+    "perfusion": 0,
+    "ph": -1,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": 1,
+    "changed": false,
+    "p2k4": "NO_PERFUSION_CHANGE",
+    "p2k5": "NO_PERFUSION_CHANGE",
+    "paradox": null,
+    "perfusion": 0,
+    "ph": 0,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": 1,
+    "changed": false,
+    "p2k4": "NO_PERFUSION_CHANGE",
+    "p2k5": "NO_PERFUSION_CHANGE",
+    "paradox": "PH_RISES_WITH_HIGHER_ACID_BURDEN",
+    "perfusion": 0,
+    "ph": 1,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": -1,
+    "changed": false,
+    "p2k4": "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT",
+    "p2k5": "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT",
+    "paradox": "PH_FALLS_WITH_LOWER_ACID_BURDEN",
+    "perfusion": 1,
+    "ph": -1,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": -1,
+    "changed": false,
+    "p2k4": "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT",
+    "p2k5": "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT",
+    "paradox": null,
+    "perfusion": 1,
+    "ph": 0,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": -1,
+    "changed": false,
+    "p2k4": "RESPIRATORY_AND_PERFUSION_IMPROVE",
+    "p2k5": "RESPIRATORY_AND_PERFUSION_IMPROVE",
+    "paradox": null,
+    "perfusion": 1,
+    "ph": 1,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": 0,
+    "changed": false,
+    "p2k4": "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT",
+    "p2k5": "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT",
+    "paradox": null,
+    "perfusion": 1,
+    "ph": -1,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": 0,
+    "changed": false,
+    "p2k4": "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT",
+    "p2k5": "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT",
+    "paradox": null,
+    "perfusion": 1,
+    "ph": 0,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": 0,
+    "changed": false,
+    "p2k4": "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT",
+    "p2k5": "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT",
+    "paradox": null,
+    "perfusion": 1,
+    "ph": 1,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": 1,
+    "changed": false,
+    "p2k4": "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT",
+    "p2k5": "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT",
+    "paradox": null,
+    "perfusion": 1,
+    "ph": -1,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": 1,
+    "changed": false,
+    "p2k4": "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT",
+    "p2k5": "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT",
+    "paradox": null,
+    "perfusion": 1,
+    "ph": 0,
+    "rejecting": [
+     false,
+     false
+    ]
+   },
+   {
+    "burden": 1,
+    "changed": false,
+    "p2k4": "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT",
+    "p2k5": "RESPIRATORY_SIGNAL_NONIMPROVING_WITH_PERFUSION_IMPROVEMENT",
+    "paradox": "PH_RISES_WITH_HIGHER_ACID_BURDEN",
+    "perfusion": 1,
+    "ph": 1,
+    "rejecting": [
+     false,
+     false
+    ]
+   }
+  ]
+ },
+ "strategic_note": "The current GI respiratory model is a MINIMAL spontaneous-breathing acid-compensation model. It does not yet establish general respiratory physiology for COPD, asthma, opioid hypoventilation, pneumonia, pulmonary edema or mechanical ventilation; those families will test whether the current RR / W / acid-base decomposition generalizes. Their physiology is not added preemptively.",
+ "verdict": {
+  "checks": {
+   "envelopes_hold": true,
+   "extreme_acidemia_carried": true,
+   "latent_uncertainty_kept": true,
+   "nothing_approved": true,
+   "ph_monotone": true,
+   "r3_r4_physiological": true,
+   "region_nonempty": true,
+   "reuse_exact": true,
+   "treatment_responses_coherent": true,
+   "upstream_unchanged": true
+  },
+  "failing": [],
+  "not_evaluated": [],
+  "verdict": "GI_RESPIRATORY_PHYSIOLOGY_CLOSED_FOR_CURRENT_PHASE"
+ }
+}

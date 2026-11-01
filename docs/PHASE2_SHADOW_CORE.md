@@ -3550,3 +3550,43 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   de diseño y ligados al hallazgo, quedan declarados para el próximo congelamiento. Los bajos son de documentación y de
   robustez del código (informe §15).
 - **Veredicto: RR_VENTILATION_OBSERVABLE_FILTER_SATISFIED.** Recomendación predeclarada: MOVE_FORWARD. Nada se aprueba.
+
+## 50. P2K-5 · Cierre de la monotonía respiratoria (2026-11-01)
+
+- **Encargo:** cerrar la contradicción estructural que dejó P2K-4. Con el reclutamiento lineal, más carga ácida
+  metabólica podía subir el pH a cargas bajas. Si la región sigue no vacía y coherente, se cierra el dominio
+  respiratorio para la calibración GI actual. Sólo sombra.
+- **Regla analítica, congelada antes del recuento (`e17ecee`, digest `561a8878…`)** en un módulo de cierre
+  (`clinical_core/respiratory_monotonicity.py`):
+  - la pendiente del pH respecto de la carga tiene el signo de N(A) = (g·24 − 1) − 2g·A, lineal y no creciente en A;
+  - por eso el pH no sube en 0 ≤ A < 24 si y sólo si g ≤ 1/24, demostrado con racionales exactos;
+  - 0,03 y 0,04 son STRUCTURALLY_ADMISSIBLE_PRIMARY_SUPPORT; 0,05 y 0,06, REJECTED_BY_ACID_BASE_MONOTONICITY, por el
+    análisis, nunca por conteos;
+  - el mapeo ejecutable del filtro es exactamente el analizado (error ≤ 10⁻¹⁵ en ambos casos);
+  - la señal de tratamiento queda corregida (M1 de P2K-4): una carga mayor cuenta como empeoramiento respiratorio,
+    también cuando la sobrecompensación sube el pH. Sólo cambia una clase y no se añade ningún umbral; las marcas de
+    paradoja (M2) quedan definidas e inalcanzables con 0,03 y 0,04, sin recuento sobre lecturas reales.
+- **Sin parámetros nuevos:** ni saturación, ni volumen corriente, espacio muerto, fatiga, mecánica, constante de tiempo
+  del CO2 ni impulso hipoxémico. HCO3_referencia (24) y PaCO2_referencia (40) siguen provisionales.
+- **Reutilización exacta de P2K-4.**
+  - Los archivos cerrados conservan sus bytes de `b6908e5` y el congelamiento de P2K-4 se recalcula igual.
+  - Los certificados del registro se cumplen: SIMULATION, E y F nunca fallan; la ganancia es invariante por unidad; no
+    hay ninguna lectura de superviviente con perfusión peor.
+  - El recuento de P2K-4 se reproduce exactamente con su propio código, reconstruyendo sólo R1 y R4: 984 trayectorias
+    reconstruidas y 6342 no. SIMULATION de los otros tipos, E y F se toman como FULL por el certificado.
+- **Resultados** (`docs/revision/P2K5_CIERRE_MONOTONIA_RESPIRATORIA.md`):
+  - quedan 82 740 de 165 480 supervivientes (demanda 1,0) y 511 056 de 1 022 112 (1,1), con 156 combinaciones
+    latentes en ambas; ninguno falla por la semántica corregida;
+  - todos siguen dentro de A–I y de las ventanas de llegada, y el pH ya no supera el de carga cero (7,401);
+  - la ganancia de ventilación queda acotada por estructura y no identificable dentro de {0,03, 0,04}; el resto del
+    soporte, intacto;
+  - las 17 604 filas de 57m con pH < 7,00 sin tratamiento (demanda 1,1) son las mismas que en P2K-4 y siguen todas en la
+    región, con mínimo 6,961; pasan a CONSCIOUSNESS_COLLAPSE_REVIEW;
+  - R3 / R4 no se reabre: no hay colapso de estados.
+- **Revisión adversarial:** sin hallazgos altos. Tres medios declarados: la corrección alcanza a 0,03 / 0,04 en el hueco
+  de tolerancia; la M2 no se aplicó a lecturas reales; un criterio tautológico. Detalle en el informe, §17 y §18.
+- **Nota de generalización:** es un modelo mínimo de compensación ácida con respiración espontánea. La EPOC, el asma, la
+  hipoventilación por opioides, la neumonía, el edema pulmonar y la ventilación mecánica pondrán a prueba la
+  descomposición FR / W / ácido-base. El umbral es 1 / HCO3 a carga cero.
+- **Veredicto: GI_RESPIRATORY_PHYSIOLOGY_CLOSED_FOR_CURRENT_PHASE.** Recomendación predeclarada:
+  MOVE_FORWARD_TO_CONSCIOUSNESS, con el inventario de señales que podrían llegar a N (informe §13). Nada se aprueba.

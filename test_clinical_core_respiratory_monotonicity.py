@@ -256,8 +256,9 @@ def test_m2_a_lower_burden_with_a_lower_ph_is_never_improvement():
     assert rm.corrected_reading(dead, c, 1, 0.03)["class"] == vf.TREATED_ARREST
 
 
-def test_no_paradox_and_no_class_change_is_reachable_at_a_retained_gain():
-    """The analytic unreachability, shown on a dense grid of matched readings in the valid domain."""
+def test_no_paradox_is_reachable_at_a_retained_gain_on_a_dense_grid():
+    """The analytic unreachability of the paradox flags, shown on a grid of matched readings (burden steps of 0.1 mEq/L,
+    far above the no-change tolerance): no flag and no class change at 0.03 / 0.04, both at 0.05 / 0.06."""
     grid = [k / 10 for k in range(0, 231)]
     for gain in rm.P2K4_GAINS:
         hco3 = vs.hco3_series(grid, C57)
@@ -274,6 +275,41 @@ def test_no_paradox_and_no_class_change_is_reachable_at_a_retained_gain():
         else:
             assert paradox > 0 and changed > 0, gain
     assert all(rm.paradox_unreachable().values()) and rm.FLOAT_MARGIN < rm.TOLERANCE_FLOOR
+
+
+def test_the_correction_reaches_a_retained_gain_only_in_the_tolerance_gap():
+    """Review M-1: at 0.03 / 0.04 the corrected signal still moves one reading class, a burden higher beyond its
+    tolerance with a pH change within its own (a burden difference below about 1e-5 mEq/L) and a worse perfusion:
+    P2K-4 does not reject it, P2K-5 does. No paradox is flagged. No survivor reading of the P2K-4 record has a worse
+    perfusion, so the region is not reached; the case is pinned here so the claim stays exact."""
+    for gain, a_c in ((0.04, 1.0), (0.03, 10.0)):
+        c, t = _bundle([a_c] * 3, [0.10] * 3), _bundle([a_c + 1e-7] * 3, [0.20] * 3)
+        old, new = vf.reading(t, c, 1, gain), rm.corrected_reading(t, c, 1, gain)
+        assert old["burden"] > 0 and abs(old["ph"]) <= 1e-9 * max(1.0, abs(c["gas"][gain][2][1]))
+        assert old["class"] == vf.CLASSES[3] and new["class"] == vf.WORSEN and new["paradox"] is None
+    # The same readings with a perfusion that is not worse keep their class.
+    c, t = _bundle([1.0] * 3, [0.20] * 3), _bundle([1.0 + 1e-7] * 3, [0.10] * 3)
+    assert vf.reading(t, c, 1, 0.04)["class"] == rm.corrected_reading(t, c, 1, 0.04)["class"] == vf.CLASSES[1]
+
+
+def test_the_burden_never_leaves_the_analysed_domain():
+    """Review L-7: the rule is proved on 0 <= A < 24; the burden algebra keeps A >= 0 for any non-negative deficit
+    (first-order clearance with tau >= 60, arrival burden max(0, 24 - HCO3)), and A >= 24 would fail SIMULATION."""
+    patterns = ([0.0] * N, [0.8] * N, [max(0.0, 0.9 - 0.01 * m) for m in range(N)], [0.0 if m % 7 else 2.0 for m in range(N)])
+    for case in vf.CASES:
+        a0 = vf.ab.arrival_burden(case)
+        assert a0 >= 0.0
+        for b in vf.STEADY_BURDENS:
+            for tau in vf.ACID_TAUS:
+                for deficit in patterns:
+                    assert min(vf.ab.burden_series(deficit, a0, b, tau)) >= 0.0
+
+
+def test_the_admissibility_of_0_04_depends_on_the_provisional_reference():
+    """Review L-2: 0.04 is at 96 % of 1/24; with the reference above 25 mEq/L it would be rejected, below 20 the gain
+    0.05 would be admissible. The classes are conditional on HCO3_reference 24, which stays provisional."""
+    assert rm.classify_gain(0.04, 25.0) == rm.ADMISSIBLE and rm.classify_gain(0.04, 25.5) == rm.REJECTED
+    assert rm.classify_gain(0.05, 20.0) == rm.ADMISSIBLE and rm.classify_gain(0.03, 24.0) == rm.ADMISSIBLE
 
 
 # P2K-5-4 / -5: the reuse, its certificates and the reached recomputation ---------------------------------------------------
@@ -406,3 +442,114 @@ def test_the_n_inventory_names_existing_signals_and_adds_no_rule():
     assert {"effective oxygen deficit", "pH / acidemia", "PaCO2", "glucose", "oxygenation", "neurologic channel N"} <= \
         {s.split(" (")[0] for s in signals}
     assert "no rule" in rm.N_NOTE and "nothing reaches N today" in rm.N_NOTE
+
+
+# The record and the report (generated once, after the frozen evaluation) -----------------------------------------------------
+
+RECORD = ROOT / "docs" / "revision" / "P2K5_respiratory_monotonicity.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2K5_CIERRE_MONOTONIA_RESPIRATORIA.md"
+
+
+@pytest.fixture(scope="module")
+def record():
+    return json.loads(RECORD.read_text(encoding="utf-8"))
+
+
+def _json(value):
+    return json.loads(json.dumps(value, sort_keys=True, default=str))
+
+
+def test_the_record_comes_from_the_frozen_package(record):
+    assert record["freeze_digest"] == FROZEN_DIGEST and record["record"] == rm.P2K4_DIGEST and "stopped" not in record
+    assert record["design"] == _json(rm.design()) and record["closed_unchanged"] == _json(rm.closed_unchanged())
+    assert record["analytic"] == _json(rm.analytic_proof()) and record["semantics"] == _json(rm.semantics())
+    assert record["mapping"] == _json(rm.mapping_check()) and record["probes"] == _json(rm.probes())
+    p2k4 = rm.p2k4_record()
+    assert record["equivalence"]["certificates"] == _json(rm.certificates(p2k4))
+    assert record["equivalence"]["p2k4_freeze_digest"] is True and record["algebra"] == _json(rm.record_algebra(p2k4))
+
+
+def test_the_verdict_closes_the_gi_respiratory_domain(record):
+    v = record["verdict"]
+    assert v["verdict"] == rm.CLOSED and not v["failing"] and not v["not_evaluated"]
+    assert set(v["checks"]) == set(rm.CRITERIA) and all(v["checks"].values())
+    assert record["recommendation"]["recommendation"] == "MOVE_FORWARD_TO_CONSCIOUSNESS"
+    assert all(record["region_unchanged"].values()) and set(record["non_regression"]) == set(rm.DOMAINS)
+    assert all(d["unchanged"] for d in record["non_regression"].values())
+
+
+def test_the_pruning_is_the_exact_gain_subset_of_p2k4(record):
+    p2k4 = rm.p2k4_record()
+    for key, d in record["demands"].items():
+        f = p2k4["demands"][key]["filter"]
+        assert d["reproduced"] == {"tally": True, "observables": True, "extreme_acidemia": True} and d["algebra_equal"]
+        assert d["entering"] == f["survivors"] and d["rejected_by_monotonicity"] + d["survivors"] == d["entering"]
+        assert 2 * d["survivors"] == d["entering"] and d["failed_by_semantic_correction"] == 0
+        assert d["upstream_units_with_survivors"] == d["upstream_units"] == f["upstream_units"]
+        assert sum(t["survivors"] for t in d["by_tone_gain"].values()) == d["survivors"]
+        assert sum(t["entering"] for t in d["by_tone_gain"].values()) == d["entering"]
+        assert d["latent_combinations"] == f["latent_survivors"] // 2
+    cross = record["cross_demand"]
+    assert sum(item["count"] for item in cross.values()) == vf.N_LATENT
+    assert cross[rm.REJECTED]["count"] == vf.N_LATENT // 2
+    assert cross["DEMAND_1_0_ONLY"]["count"] == cross["DEMAND_1_1_ONLY"]["count"] == 0
+    assert cross[rm.REJECTED]["support"]["ventilation_gain"] == [0.05, 0.06]
+    assert cross["ROBUST_ACROSS_DEMAND"]["support"]["ventilation_gain"] == [0.03, 0.04]
+
+
+def test_the_latent_uncertainty_is_kept(record):
+    p2k4 = rm.p2k4_record()
+    for key, d in record["demands"].items():
+        s = d["latent_support"]
+        assert s["ventilation_gain"]["class"] == "STRUCTURALLY_BOUNDED_NON_IDENTIFIABLE"
+        assert s["ventilation_gain"]["values"] == [0.03, 0.04]
+        for dim in vf.DIMS:
+            if dim != "ventilation_gain":
+                old = p2k4["demands"][key]["latent_support"][dim]
+                assert s[dim]["values"] == old["values"] and s[dim]["class"] == old["class"] != "WELL_CONSTRAINED"
+
+
+def test_every_pruned_survivor_observable_lies_in_its_envelope_and_ph_never_alkalinizes(record):
+    e, zero = vf.ENVELOPES, rm.closed_form_ph(0.0, 0.03)
+    for d in record["demands"].values():
+        o = d["observed"]["observables"]
+        within = lambda name, case, bounds: bounds[0] <= o[f"{name} {case}"]["low"] <= o[f"{name} {case}"]["high"] <= \
+            bounds[1]
+        for case, a, g in ((C57, "A", "G"), (C72, "B", "G2")):
+            assert within("untreated_rr_120", case, e[a]["rr"]) and within("definitive_rr_120", case, e[g]["rr"])
+            assert within("untreated_paco2_120", case, e["C" if case == C57 else "D"]["paco2"])
+            assert within("definitive_paco2_120", case, e["H"]["paco2"]) and within("definitive_ph_120", case, e["H"]["ph"])
+            assert within("residual_rr_above_intrinsic_120", case, e["I"]["residual"][case])
+            assert within("arrival_rr", case, vf.ARRIVAL_RR[case]) and within("arrival_paco2", case, vf.ARRIVAL_PACO2[case])
+            for name in ("arrival_ph_diagnostic", "untreated_ph_120", "untreated_ph_lowest_0_120", "definitive_ph_120"):
+                assert o[f"{name} {case}"]["high"] < zero, (name, case)
+
+
+def test_untreated_extreme_acidemia_is_carried_never_filtered(record):
+    p2k4 = rm.p2k4_record()
+    for key, d in record["demands"].items():
+        x, old = d["observed"]["extreme_acidemia"], p2k4["demands"][key]["observed"]["extreme_acidemia"]
+        # Review M-3: the run's criterion only checks that the region keeps its own rows; that every P2K-4 flagged row
+        # is still there is the record's observation, pinned here.
+        assert x["survivors"] == d["survivors"] and x["flagged"] == old["flagged"] and x["by_case"] == old["by_case"]
+        assert x["lowest"] == old["lowest"]
+    x = record["demands"]["1.1"]["observed"]["extreme_acidemia"]
+    assert x["flagged"] > 0 and x["by_case"][C72] == 0 and x["lowest"]["flag"] == "CONSCIOUSNESS_COLLAPSE_REVIEW"
+
+
+def test_r3_r4_is_carried_and_the_efficiency_is_recorded(record):
+    for r in record["r3r4"].values():
+        assert not r["bug"] and r["status"] == vf.R3R4_CLASSES[0]
+    e = record["efficiency"]
+    assert e["cartesian_sweep"] is False and e["legacy_read"] is False
+    assert e["trajectories_not_rebuilt"] > e["reached_trajectories"] > 0
+    assert e["analytic_rejections"] == sum(d["rejected_by_monotonicity"] for d in record["demands"].values())
+
+
+def test_the_document_is_generated_from_the_record():
+    from clinical_core import respiratory_monotonicity_report as rep
+    document = DOCUMENT.read_text(encoding="utf-8")
+    data = json.loads(RECORD.read_text(encoding="utf-8"))
+    for name, render in rep.RENDERERS.items():
+        assert rep.apply(document, name, render(data)) == document, name
+    assert "GI_RESPIRATORY_PHYSIOLOGY_CLOSED_FOR_CURRENT_PHASE" in document and "MOVE_FORWARD_TO_CONSCIOUSNESS" in document
