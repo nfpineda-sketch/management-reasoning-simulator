@@ -3590,3 +3590,42 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   descomposición FR / W / ácido-base. El umbral es 1 / HCO3 a carga cero.
 - **Veredicto: GI_RESPIRATORY_PHYSIOLOGY_CLOSED_FOR_CURRENT_PHASE.** Recomendación predeclarada:
   MOVE_FORWARD_TO_CONSCIOUSNESS, con el inventario de señales que podrían llegar a N (informe §13). Nada se aprueba.
+
+## 51. P2L-1 · Auditoría estructural de la conciencia y la respuesta neurológica (2026-11-01)
+
+- **Encargo:** separar el estado neurológico primario N de la conciencia observable, auditar cada camino causal hacia
+  ella, decidir qué señales sistémicas deberían llegar, encontrar el doble conteo y decidir si hace falta un estado de
+  recuperación diferida. Sólo sombra y sólo lectura; sin colapso.
+- **Congelamientos** de un módulo de auditoría (`clinical_core/consciousness_audit.py`), sin cambios en el núcleo ni
+  umbrales nuevos:
+  - el primero, `8f36bbb` (digest `a7de4d6c…`);
+  - el vigente, `0239dce` (digest `f3ec29e6…`), tras la revisión adversarial y antes de la corrida. Es una desviación
+    declarada del congelamiento único: en el primero, parte de los criterios estaba escrita a mano y dos clases de
+    camino eran erróneas.
+- **Hallazgos** (`docs/revision/P2L1_AUDITORIA_CONCIENCIA.md`):
+  - N es un marcador sin uso: vale 0, sin escritor clínico, sin lector y sin efecto observable. Su definición declarada
+    mezcla depresión farmacológica y lesión primaria;
+  - la conciencia observable es el máximo entre el piso de autoría, la escalera de PAS (80 / 65) y la de SpO2 (87 / 80),
+    adoptadas de `family_engine`; sin pulso, 3;
+  - con el estado fijo mueven el nivel la PAS, la SpO2, la PAM (por la PAS) y el piso de autoría;
+  - el déficit efectivo y la demanda llegan con el signo invertido por el bucle del tono: más déficit sube el tono y la
+    PAS, y la escalera lee al paciente compensado como menos deteriorado (fuga semántica);
+  - D, la glucosa, el pH, la PaCO2, N, el lactato y la FC no lo mueven;
+  - PAM y déficit son distintos con el tono fijo, pero se acoplan por la respuesta del tono. Una regla aditiva contaría
+    dos veces el shock de bajo gasto; un máximo no;
+  - la SpO2 no se cuenta dos veces en el rango de su escalera (el déficit sistémico empieza con SpO2 < 38,8 %), pero
+    el déficit sistémico no ve la hipoxemia cerebral: la oxigenación necesita su propia entrada;
+  - pH y PaCO2 son separables. La hipercapnia compensada de autoría a la llegada es representable; falta la
+    compensación renal durante el encuentro. La glucosa es ortogonal y nadie la lee para la conciencia;
+  - la recuperación diferida (N9) no es representable: el observable no tiene memoria, y D cubre sólo las agresiones
+    por déficit;
+  - las 17 604 filas de acidemia extrema ya salen obnubiladas a los 120 min por el proxy de la PAS; se arrastran.
+- **Veredicto: CONSCIOUSNESS_STRUCTURE_NOT_READY - RECOVERY_LAG_STATE_REQUIRED.** Fallan seis criterios calculados
+  desde la evidencia. Se describe la estructura mínima que falta, sin implementarla:
+  - una memoria común: un estado fisiológico F, distinto de N y de D, o un retraso en la capa de observación;
+  - con dinámica asimétrica;
+  - hacia un objetivo dado por el máximo de los modificadores causales (PAM, déficit, oxigenación propia, glucosa,
+    pH, PaCO2), sin lactato y sin la escalera de PAS;
+  - la alteración de llegada la lleva N o una causa declarada, nunca F.
+
+  Se piden las decisiones docentes, empezando por confirmar el concepto previo de N9; nada se aprueba.

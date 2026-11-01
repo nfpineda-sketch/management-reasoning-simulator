@@ -1,0 +1,2143 @@
+{
+ "acid_base": {
+  "compensated_at_arrival": {
+   "burden": 0.0,
+   "hco3": 32.0,
+   "level": 0,
+   "paco2": 50.0,
+   "ph": 7.429058719264225
+  },
+  "compensated_at_arrival_representable": true,
+  "distinguishes": true,
+  "reading": "metabolic acidemia (burden up, PaCO2 down) and acute hypercapnia (W down, PaCO2 up) reach the same pH by different signals, so the architecture can keep them apart; a compensated chronic hypercapnia is representable when the case authors its HCO3 above the reference (the burden starts at 0), but no renal compensation moves HCO3 during the encounter; neither pH nor PaCO2 reaches consciousness today",
+  "renal_compensation_during_encounter": false,
+  "rows": {
+   "A_metabolic_acidemia": {
+    "D": 0.0,
+    "N": 0.0,
+    "burden": 15.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.0,
+    "efficiency": 1.0,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hco3": 9.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 0,
+    "level_name": "alert",
+    "map": 90.0,
+    "paco2": 25.0,
+    "ph": 7.179181246047625,
+    "pulse": true,
+    "rr": 33.47014470219494,
+    "sbp": 120.0,
+    "spo2": 97.0,
+    "w": 1.6
+   },
+   "B_hypercapnia": {
+    "D": 0.0,
+    "N": 0.0,
+    "burden": 4.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.0,
+    "efficiency": 0.6,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hco3": 20.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 0,
+    "level_name": "alert",
+    "map": 90.0,
+    "paco2": 57.4712643678161,
+    "ph": 7.164457989226918,
+    "pulse": true,
+    "rr": 22.846274073157726,
+    "sbp": 120.0,
+    "spo2": 97.0,
+    "w": 0.696
+   },
+   "C_both": {
+    "D": 0.0,
+    "N": 0.0,
+    "burden": 15.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.0,
+    "efficiency": 0.6,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hco3": 9.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 0,
+    "level_name": "alert",
+    "map": 90.0,
+    "paco2": 41.66666666666667,
+    "ph": 6.957332496431269,
+    "pulse": true,
+    "rr": 33.47014470219494,
+    "sbp": 120.0,
+    "spo2": 97.0,
+    "w": 0.96
+   },
+   "D_neither": {
+    "D": 0.0,
+    "N": 0.0,
+    "burden": 4.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.0,
+    "efficiency": 1.0,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hco3": 20.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 0,
+    "level_name": "alert",
+    "map": 90.0,
+    "paco2": 34.48275862068966,
+    "ph": 7.386306738843274,
+    "pulse": true,
+    "rr": 22.846274073157726,
+    "sbp": 120.0,
+    "spo2": 97.0,
+    "w": 1.16
+   }
+  }
+ },
+ "approval": "none FACULTY_APPROVED",
+ "authored": {
+  "gi_bleed_57m": {
+   "abg": {
+    "class": "AUTHORED_OBSERVATION",
+    "note": "",
+    "source": "clinical_cases.py:901",
+    "value": "pH 7.37, PaCO2 31, HCO3 17.3, PaO2 91 on FiO2 21%"
+   },
+   "absent": {
+    "focal_deficits": "none stated (72f: 'moving all limbs symmetrically'; 57m: not stated)",
+    "gcs": "not authored",
+    "later_neurologic_anchors": "none authored; none invented",
+    "orientation_detail": "only in the examination text"
+   },
+   "core_arrival_level": {
+    "class": "MODEL_DERIVED",
+    "note": "Anchors.consciousness_level through the legacy adapter's ladder",
+    "value": 0
+   },
+   "dbp": {
+    "class": "AUTHORED_OBSERVATION",
+    "note": "",
+    "source": "clinical_cases.py:881",
+    "value": 54
+   },
+   "glucose_mg_dl": {
+    "class": "AUTHORED_OBSERVATION",
+    "note": "",
+    "source": "clinical_cases.py:882",
+    "value": 118
+   },
+   "hb_g_dl": {
+    "class": "AUTHORED_OBSERVATION",
+    "note": "",
+    "source": "clinical_cases.py:900",
+    "value": 6.7
+   },
+   "lactate_mmol_l": {
+    "class": "AUTHORED_OBSERVATION",
+    "note": "",
+    "source": "clinical_cases.py:900",
+    "value": 4.4
+   },
+   "legacy_arrival": {
+    "class": "LEGACY_REFERENCE",
+    "note": "family_engine reads the same authored arrival",
+    "value": "Alert"
+   },
+   "map": {
+    "class": "MODEL_DERIVED",
+    "note": "(SBP + 2 DBP) / 3 of the authored values",
+    "source": "clinical_cases.py:881",
+    "value": "65.3 (derived, not authored)"
+   },
+   "mental_status": {
+    "class": "AUTHORED_OBSERVATION",
+    "note": "the bank default 'Alert' (the case passes none), consistent with the authored examination",
+    "source": "clinical_cases.py:202",
+    "value": "Alert"
+   },
+   "neurological_exam": {
+    "class": "AUTHORED_OBSERVATION",
+    "note": "",
+    "source": "clinical_cases.py:899",
+    "value": "Awake and oriented, reporting persistent faintness"
+   },
+   "presentation": {
+    "class": "AUTHORED_OBSERVATION",
+    "reading": "near-syncope / presyncope on standing",
+    "source": "clinical_cases.py:885",
+    "value": "A 57-year-old man presents after nearly fainting when standing. He looks pale and says he feels profoundly weak."
+   },
+   "sbp": {
+    "class": "AUTHORED_OBSERVATION",
+    "note": "",
+    "source": "clinical_cases.py:881",
+    "value": 88
+   },
+   "spo2": {
+    "class": "AUTHORED_OBSERVATION",
+    "note": "",
+    "source": "clinical_cases.py:881",
+    "value": 97
+   }
+  },
+  "gi_bleed_72f": {
+   "abg": {
+    "class": "AUTHORED_OBSERVATION",
+    "note": "",
+    "source": "clinical_cases.py:930",
+    "value": "pH 7.40, PaCO2 33, HCO3 19.8, PaO2 84 on FiO2 21%"
+   },
+   "absent": {
+    "focal_deficits": "none stated (72f: 'moving all limbs symmetrically'; 57m: not stated)",
+    "gcs": "not authored",
+    "later_neurologic_anchors": "none authored; none invented",
+    "orientation_detail": "only in the examination text"
+   },
+   "core_arrival_level": {
+    "class": "MODEL_DERIVED",
+    "note": "Anchors.consciousness_level through the legacy adapter's ladder",
+    "value": 0
+   },
+   "dbp": {
+    "class": "AUTHORED_OBSERVATION",
+    "note": "",
+    "source": "clinical_cases.py:910",
+    "value": 62
+   },
+   "glucose_mg_dl": {
+    "class": "AUTHORED_OBSERVATION",
+    "note": "",
+    "source": "clinical_cases.py:911",
+    "value": 130
+   },
+   "hb_g_dl": {
+    "class": "AUTHORED_OBSERVATION",
+    "note": "",
+    "source": "clinical_cases.py:929",
+    "value": 6.4
+   },
+   "lactate_mmol_l": {
+    "class": "AUTHORED_OBSERVATION",
+    "note": "",
+    "source": "clinical_cases.py:929",
+    "value": 3.4
+   },
+   "legacy_arrival": {
+    "class": "LEGACY_REFERENCE",
+    "note": "family_engine reads the same authored arrival",
+    "value": "Alert"
+   },
+   "map": {
+    "class": "MODEL_DERIVED",
+    "note": "(SBP + 2 DBP) / 3 of the authored values",
+    "source": "clinical_cases.py:910",
+    "value": "74.0 (derived, not authored)"
+   },
+   "mental_status": {
+    "class": "AUTHORED_OBSERVATION",
+    "note": "the bank default 'Alert' (the case passes none), consistent with the authored examination",
+    "source": "clinical_cases.py:202",
+    "value": "Alert"
+   },
+   "neurological_exam": {
+    "class": "AUTHORED_OBSERVATION",
+    "note": "",
+    "source": "clinical_cases.py:928",
+    "value": "Alert, oriented and moving all limbs symmetrically"
+   },
+   "presentation": {
+    "class": "AUTHORED_OBSERVATION",
+    "reading": "lightheadedness and presyncope on walking",
+    "source": "clinical_cases.py:914",
+    "value": "A 72-year-old woman presents with worsening fatigue and lightheadedness. She had to stop walking from the waiting room because she felt faint."
+   },
+   "sbp": {
+    "class": "AUTHORED_OBSERVATION",
+    "note": "",
+    "source": "clinical_cases.py:910",
+    "value": 98
+   },
+   "spo2": {
+    "class": "AUTHORED_OBSERVATION",
+    "note": "",
+    "source": "clinical_cases.py:910",
+    "value": 96
+   }
+  }
+ },
+ "closed_unchanged": {
+  "clinical_core/acid_base.py": true,
+  "clinical_core/derived.py": true,
+  "clinical_core/integration.py": true,
+  "clinical_core/respiratory_monotonicity.py": true,
+  "clinical_core/state.py": true,
+  "clinical_core/ventilation.py": true,
+  "clinical_core/ventilation_filter.py": true,
+  "clinical_core/ventilation_surface.py": true
+ },
+ "decided": "2026-11-01",
+ "deficit_map": {
+  "current_a_impaired": true,
+  "current_b_alert": true,
+  "current_level_reads": "pressure only: A impaired, B alert",
+  "overlap": "output lowers both MAP (pressure = output x tone) and delivery; at fixed tone, tone and Hb separate them, but with the tone response on, tone itself follows the deficit (tone_loop), so the two signals are coupled through compensation; in low-output shock (C) they coincide: an additive rule would count that shock twice, a maximum would not",
+  "rows": {
+   "A_low_map_no_deficit": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.1976047904191618,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 2,
+    "level_name": "obtunded",
+    "map": 48.50299401197606,
+    "pulse": true,
+    "sbp": 64.67065868263474,
+    "spo2": 97.0
+   },
+   "B2_vasoconstricted_low_output_map_52": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.19354838709677402,
+    "deficit_fraction": 0.19354838709677402,
+    "demand": 1.0,
+    "do2": 0.32258064516129037,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 1,
+    "level_name": "drowsy",
+    "map": 52.258064516129046,
+    "pulse": true,
+    "sbp": 69.67741935483873,
+    "spo2": 97.0
+   },
+   "B_adequate_map_high_deficit_anaemia": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.25,
+    "deficit_fraction": 0.25,
+    "demand": 1.0,
+    "do2": 0.3,
+    "glucose": 100.0,
+    "hb": 3.9,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 0,
+    "level_name": "alert",
+    "map": 90.0,
+    "pulse": true,
+    "sbp": 120.0,
+    "spo2": 97.0
+   },
+   "C_low_map_and_high_deficit": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.25,
+    "deficit_fraction": 0.25,
+    "demand": 1.0,
+    "do2": 0.3,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 2,
+    "level_name": "obtunded",
+    "map": 27.0,
+    "pulse": true,
+    "sbp": 36.0,
+    "spo2": 97.0
+   },
+   "D_neither": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.0,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 0,
+    "level_name": "alert",
+    "map": 90.0,
+    "pulse": true,
+    "sbp": 120.0,
+    "spo2": 97.0
+   }
+  },
+  "signals_distinguish_a_from_b": true
+ },
+ "design": {
+  "closed_at_p2k5": {
+   "clinical_core/acid_base.py": "9298b1f0a6defbe1a11627a0d76208c36792b01a390d80558e3cc1fda1827954",
+   "clinical_core/derived.py": "b9056ada72f4c651974eccd1069a67097d31814a5d691cbfc883e33d85bb77a6",
+   "clinical_core/integration.py": "dad171baff07805997272310f4f33545ed38956b531585ae246c0e26e8c07b7a",
+   "clinical_core/respiratory_monotonicity.py": "ba6bac3ea1f4f1f9b0bff5503b4ff846f1ae5a097ee88d8480dd3ee52fbba672",
+   "clinical_core/state.py": "578d32abad60fcda31a4d3344532b709c8c8f8b71ea2f4bdb2f88c37265a6d13",
+   "clinical_core/ventilation.py": "260393add18e2275ee21411512d18531a74387f853bb76a2f33f89d5cb1bafe9",
+   "clinical_core/ventilation_filter.py": "9edf6c7544924f90875bdc2abd56cf6d86346411901009e641267d14d47685b9",
+   "clinical_core/ventilation_surface.py": "d361b500ccaf059784ea7e7662b6be5dd7d02019174c2f66cc0ca0ff24245825"
+  },
+  "criteria": [
+   "n_semantics_explicit",
+   "observable_separated_from_n",
+   "causal_modifiers_explicit",
+   "lactate_not_proxy",
+   "double_counting_resolved",
+   "recovery_lag_coherent",
+   "generalization_plausible",
+   "upstream_unchanged",
+   "nothing_approved"
+  ],
+  "decided": "2026-11-01",
+  "decision_surface": {
+   "numeric": "none: P2L-1-11 forbids a numeric surface while a new structure is required",
+   "options": {
+    "aggregation": [
+     "maximum",
+     "additive"
+    ],
+    "arrival": [
+     "N or a declared arrival cause",
+     "floor (today)"
+    ],
+    "lactate": [
+     "never"
+    ],
+    "map": [
+     "enters as cerebral perfusion",
+     "does not enter"
+    ],
+    "memory": [
+     "physiological state F",
+     "observation-layer lag"
+    ],
+    "n": [
+     "primary injury / reserve",
+     "plus drug CNS depression",
+     "separate channel"
+    ],
+    "oxygenation": [
+     "its own input beside the deficit",
+     "through the deficit only"
+    ],
+    "sbp_spo2_ladders": [
+     "retired",
+     "kept"
+    ]
+   },
+   "structural_only": true
+  },
+  "decisions": [
+   "confirm the prior concept that mental status recovers more slowly than the physiology (N9), and where the memory lives: a physiological state F separate from N and D, or an observation-layer lag",
+   "retire the SBP and SpO2 ladders as consciousness inputs: with the tone response on, the SBP ladder reads a worse deficit as less impairment",
+   "the aggregation rule of the systemic modifiers: maximum (no double counting) or additive",
+   "which modifiers enter: MAP as cerebral perfusion (relative to autoregulation), the effective deficit, oxygenation as its own input, glucose, pH and PaCO2 separately; confirm no lactate path",
+   "N's semantics: primary injury / reserve only, or also a drug's primary CNS depression (opioids), or a separate pharmacologic channel",
+   "the authored arrival level: carried by N or a declared arrival cause instead of a permanent floor",
+   "the carried extreme-acidemia subset once the rules exist (kept, never filtered, today)",
+   "renal compensation of hypercapnia during an encounter: a respiratory-family question"
+  ],
+  "double_counting": {
+   "map_and_deficit": {
+    "finding": "distinct at fixed tone (tone against Hb or output), coupled through the tone response, coincident in low-output shock: an additive rule counts that shock twice, a maximum does not",
+    "status": "PENDING_FACULTY"
+   },
+   "ph_and_paco2": {
+    "finding": "distinct signals (burden against W); not to be collapsed",
+    "status": "SEPARABLE"
+   },
+   "spo2_and_delivery": {
+    "finding": "no double count in the SpO2 ladder's range (the systemic deficit is 0 down to the onset SpO2); the systemic deficit misses cerebral hypoxaemia, so oxygenation needs its own input or a cerebral delivery measure",
+    "status": "PENDING_FACULTY"
+   }
+  },
+  "equation": "derived.derive: without a pulse the level is 3 (unresponsive; derived.check enforces it); with a pulse level = max(anchors.consciousness_level, L(SBP), L(SpO2)), L(SBP) = 1 below 80 and 2 below 65 mmHg (profile.pressure_levels), L(SpO2) = 1 below 87 and 2 below 80 % (profile.oxygen_levels), on the raw derived values; ladder 0 alert, 1 drowsy, 2 obtunded, 3 unresponsive",
+  "equation_source": "level = max(anchors.consciousness_level, _level(sbp, profile.pressure_levels), _level(spo2, profile.oxygen_levels))",
+  "faculty": {
+   "closed": "P2K-5 accepted and closed: GI_RESPIRATORY_PHYSIOLOGY_CLOSED_FOR_CURRENT_PHASE and MOVE_FORWARD_TO_CONSCIOUSNESS; no respiratory cycle reopened, the respiratory uncertainty propagated",
+   "decided": "2026-11-01",
+   "early_stop": "if common consciousness physiology needs a genuinely new state: STOP and report the smallest required structure; no arbitrary threshold, GI offset, lactate proxy or legacy matching",
+   "goals": "separate the primary neurologic state N from the observable consciousness; audit every causal path into mental status; decide which systemic signals should reach it; find the double counting among oxygen deficit, pressure, oxygenation, pH and PaCO2; decide whether a recovery-lag state is structurally required; prepare a minimal common-physiology decision surface; no collapse calibration",
+   "lactate": "no direct lactate -> consciousness path; a direct use is BIOMARKER_PROXY_REQUIRES_REFACTOR",
+   "n_concept": "N is the PRIMARY NEUROLOGIC STATE / neurologic injury or reserve, never a container for every systemic cause; observable consciousness is primary N plus relevant systemic modifiers; no shock, acidemia or glucose written into N unless a persistent neurologic consequence is explicitly modeled",
+   "no_numbers": "no numeric consciousness threshold invented to make a surface; numeric support only when the signals are explicit, no new state is required and the ranges stand without the GI outcomes",
+   "priority": "a coherent common physiology with explicit plausible uncertainty and no causal contradiction, good enough to migrate other families; not a tighter fit of two GI cases",
+   "probes": "MAP against deficit, SpO2 against delivery, pH against PaCO2, glucose, recovery lag, N1-N9, the extreme-acidemia subset, a qualitative generalization test and the upstream dependency, each on representative states; no Cartesian product",
+   "respiratory": "closed: ventilation gain 0.03 / 0.04, intrinsic RR, acid-to-RR gain, B, tau, HCO3 and PaCO2 references not reopened; P2K-5 M-1 is DOCUMENTED_SEMANTIC_DEBT; HCO3_reference 24 COMMON_REFERENCE_PROVISIONAL, g <= 1 / HCO3_reference the general rule for the linear mapping",
+   "reuse": "BloodState, preload / pump, pressure / tone, DO2 / deficit, D, lactate, HR / baroreflex, acid-base and RR / W / PaCO2 closed for the current GI calibration; reopened only on a direct causal contradiction",
+   "scope": "shadow only; no runtime integration, migration, consciousness parameter approval, collapse activation or legacy fitting"
+  },
+  "freeze": "second freeze, after the adversarial review: a declared deviation from the single-freeze rule (the first freeze's criteria were partly hard-coded and two path classes were wrong); the first freeze stays in history",
+  "generalization": {
+   "distributive_shock": [
+    "low tone gives a low MAP with preserved delivery: the MAP path is distinct from the deficit",
+    "the observable reads SBP, not MAP",
+    "recovery lag missing"
+   ],
+   "hemorrhagic_shock": [
+    "deficit and MAP exist",
+    "the observable reads SBP only, and the compensating tone makes it read a worse deficit as less impairment",
+    "recovery lag missing"
+   ],
+   "hypercapnia_opioid": [
+    "acute hypercapnia representable (efficiency, demand); a compensated chronic hypercapnia at arrival when the case authors its HCO3 above the reference",
+    "PaCO2 not read; no renal compensation during the encounter; whether N carries a drug's primary CNS depression is a pending decision",
+    "recovery lag missing"
+   ],
+   "hypoglycaemia": [
+    "glucose state exists, orthogonal to shock",
+    "not read; no glucose writer or dextrose in the core",
+    "post-hypoglycaemic recovery lag missing"
+   ],
+   "primary_neurologic_injury": [
+    "N exists",
+    "no N writer and no N reader",
+    "N's own dynamics undefined"
+   ],
+   "severe_hypoxaemia": [
+    "SpO2 (through FiO2) and DO2 exist",
+    "SpO2 moves only with FiO2 (gas exchange G has no writer); the systemic deficit misses cerebral hypoxaemia; the SpO2 ladder is legacy",
+    "recovery lag missing"
+   ]
+  },
+  "generalization_classes": [
+   "COMMON_NEUROLOGIC_ARCHITECTURE_PLAUSIBLE",
+   "GI_SPECIFIC_OVERFIT_RISK",
+   "STRUCTURAL_GAP"
+  ],
+  "ladder": {
+   "0": "alert",
+   "1": "drowsy",
+   "2": "obtunded",
+   "3": "unresponsive"
+  },
+  "lag_expectation": "FACULTY_PRIOR_CONCEPT: mental status may recover more slowly than instantaneous physiology (to confirm; the probes do not decide it)",
+  "legacy": {
+   "class": "LEGACY_REFERENCE: a hidden recovery memory (the counter), threshold anchoring and family-specific rules; the core adopted only the two threshold ladders",
+   "dc1": "family_engine._anchored_levels (DC1, faculty 2026-09-29): an arrival already past a threshold moves that threshold below it, so the written arrival reads as written",
+   "families": "family branches: hypoglycaemia (glucose_rescue.CONSCIOUSNESS_BY_GLUCOSE, post-ictal), opioid (sedation from the drug), trauma, bradycardia, anaphylaxis and asthma rules; invasive airway pharmacology overrides",
+   "margin": "family_engine._RECOVERY_MARGIN (SBP 2, SpO2 1, glucose 1): a level is left only past its threshold plus the margin (no flicker)",
+   "recovery": "family_engine.MENTAL_RECOVERY (30 min of SpO2 >= 92, SBP >= 100 and CRT < 3.5 s, a counter that discounts a minute without them): one step up from the arrival state, never more",
+   "thresholds": "family_engine._PRESSURE_LEVELS ((80, 1), (65, 2)) and _OXYGEN_LEVELS ((87, 1), (80, 2)) on systolic pressure and saturation; ladder Alert / Drowsy / Obtunded / Unresponsive"
+  },
+  "memories": {
+   "D": "accumulated oxygen-delivery debt: accrues only while the effective deficit is positive, repays first-order (debt_clearance_tau_min 60, PROVISIONAL, set for lactate and the sympathetic drive); systemic, read by lactate and the sympathetic drive",
+   "N": "the unused placeholder: no writer, no reader, no dynamics",
+   "aux.collapse_burden": "the collapse rule's burden (P2E-3): accrues below an output threshold; off by default",
+   "aux.lactate_excess_mmol_l": "a biomarker: never a neurologic controller (faculty)",
+   "aux.metabolic_acid_burden": "the acid burden: produced by the deficit, cleared with tau_acid; read by RR, W, pH",
+   "aux.sympathetic_drive": "the drive: decays with its own tau; read by the heart rate",
+   "state.internal": "each contributor's own frozen memory (family specific, e.g. a bleed's schedule); not common physiology",
+   "terminal_since": "the arrest minute: a pulse-state record, not a recovery memory"
+  },
+  "migration_gate": "MIGRATION_GATE_CLOSED: no runtime integration, GI or second-family migration, consciousness parameter approval or collapse activation is authorized",
+  "n_classes": [
+   "PRIMARY_NEUROLOGIC_STATE",
+   "MIXED_NEUROLOGIC_CONSTRUCT",
+   "UNUSED_PLACEHOLDER"
+  ],
+  "neuro_items": [
+   "mental_status",
+   "neurological_exam",
+   "glucose_mg_dl",
+   "spo2",
+   "sbp",
+   "dbp",
+   "map",
+   "abg",
+   "lactate_mmol_l",
+   "hb_g_dl"
+  ],
+  "neuro_probes": [
+   [
+    "N1",
+    "normal systemic physiology and normal N",
+    "alert",
+    "none"
+   ],
+   [
+    "N2",
+    "isolated primary neurologic injury (N = 5)",
+    "impaired by N alone",
+    "N"
+   ],
+   [
+    "N3",
+    "isolated severe oxygen deficit (Hb 25 %, SBP and SpO2 kept)",
+    "impaired by cerebral oxygen under-delivery",
+    "effective_oxygen_deficit"
+   ],
+   [
+    "N4",
+    "isolated very low MAP with adequate delivery (tone 0.45; output rises)",
+    "vulnerable from cerebral perfusion failure",
+    "map"
+   ],
+   [
+    "N5",
+    "isolated severe metabolic acidemia (burden 15, pH about 7.18)",
+    "impaired when severe",
+    "ph"
+   ],
+   [
+    "N6",
+    "acute hypercapnia (efficiency 0.6, PaCO2 about 57) on the probe arrival (HCO3 20)",
+    "impaired (hypercapnic encephalopathy)",
+    "paco2"
+   ],
+   [
+    "N7",
+    "isolated hypoglycaemia (glucose 30)",
+    "impaired, independently of shock",
+    "glucose"
+   ],
+   [
+    "N8",
+    "combined low-output shock and acidemia (pump 0.3, burden 15)",
+    "impaired, both mechanisms, not counted twice",
+    "map, effective_oxygen_deficit, ph"
+   ],
+   [
+    "N9",
+    "physiology restored after a prolonged prior insult (D 600, no deficit)",
+    "recovery delayed after the physiology normalizes (the faculty's prior concept, to confirm)",
+    "a memory"
+   ]
+  ],
+  "next_rule": "Predeclared. READY: a small observable-consciousness decision pack, no hard filter. NOT_READY: report the smallest missing structure and the faculty decisions; nothing implemented, nothing filtered.",
+  "observation_classes": [
+   "AUTHORED_OBSERVATION",
+   "MODEL_DERIVED",
+   "LEGACY_REFERENCE"
+  ],
+  "own": [
+   "clinical_core/consciousness_audit.py"
+  ],
+  "path_classes": [
+   "VALID_CAUSAL_PATH",
+   "BIOMARKER_PROXY",
+   "SEMANTIC_LEAK",
+   "LEGACY_ARTIFACT",
+   "NOT_CURRENTLY_MODELED",
+   "BIOMARKER_PROXY_REQUIRES_REFACTOR"
+  ],
+  "paths": {
+   "D": [
+    "NOT_CURRENTLY_MODELED",
+    "the accumulated oxygen-delivery debt: read by lactate and the sympathetic drive"
+   ],
+   "N": [
+    "NOT_CURRENTLY_MODELED",
+    "the channel exists (an unused placeholder); derive never reads it"
+   ],
+   "arrival_level": [
+    "SEMANTIC_LEAK",
+    "the authored arrival level is a permanent floor, cause-agnostic and never recovered: it holds whatever made the arrival impaired (a primary neurologic state and the arrival's systemic causes alike)"
+   ],
+   "effective_oxygen_deficit": [
+    "SEMANTIC_LEAK",
+    "no direct path; with the P2J-2 tone response on (every P2J-3 / P2K calibration, tone gain 0.25-1), the deficit raises tone, tone raises SBP and the SBP ladder reads the patient as less impaired: an indirect path with the sign inverted (tone_loop)"
+   ],
+   "glucose": [
+    "NOT_CURRENTLY_MODELED",
+    "a state value (C11, absolute, from the case, no writer); read only by the sympathetic drive's hypoglycaemia term (threshold PROVISIONAL)"
+   ],
+   "hr": [
+    "NOT_CURRENTLY_MODELED",
+    "correctly absent: the rate never reaches consciousness"
+   ],
+   "lactate": [
+    "NOT_CURRENTLY_MODELED",
+    "correctly absent: no direct lactate -> consciousness path exists (no BIOMARKER_PROXY to refactor)"
+   ],
+   "map": [
+    "LEGACY_ARTIFACT",
+    "read through SBP: within a case SBP and MAP scale with the same pressure_rel, so the SBP ladder is a pressure ladder (80 / 65 mmHg of SBP), MAP-equivalent up to the case's ratio"
+   ],
+   "paco2": [
+    "NOT_CURRENTLY_MODELED",
+    "the P2K-3 ventilation candidate's output (PaCO2_reference / W), read by nothing"
+   ],
+   "ph": [
+    "NOT_CURRENTLY_MODELED",
+    "the P2K-2 / P2K-3 respiration candidate's output, read by nothing downstream"
+   ],
+   "pulse": [
+    "VALID_CAUSAL_PATH",
+    "circulatory arrest -> unresponsive (level 3), an invariant of derive / check"
+   ],
+   "sbp": [
+    "LEGACY_ARTIFACT",
+    "thresholds 80 / 65 adopted from family_engine._PRESSURE_LEVELS without its DC1 anchoring or recovery margin; raw SBP, not MAP, stands in for both cerebral perfusion pressure and systemic oxygen delivery"
+   ],
+   "spo2": [
+    "LEGACY_ARTIFACT",
+    "thresholds 87 / 80 adopted from family_engine._OXYGEN_LEVELS; SpO2 also enters delivery (delivery_rel = output x Hb ratio x SpO2 ratio), but in the ladder's range the systemic deficit is 0 (with reserve 2.5 it begins only near 39 % at normal output and Hb), so the ladder carries cerebral-hypoxaemia information the deficit lacks: no double count today"
+   ]
+  },
+  "perturbations": {
+   "D": "D = 600 index-minutes, no deficit",
+   "N": "N = 5",
+   "arrival_level": "authored arrival level 2 with every signal normal",
+   "demand": "oxygen demand 1.6 with delivery 1 (deficit 0 at reserve 2.5)",
+   "effective_oxygen_deficit": "Hb at 30 % of arrival (SBP kept)",
+   "glucose": "glucose 30 mg/dL",
+   "hr": "sympathetic drive 40",
+   "lactate": "lactate excess 8 mmol/L",
+   "map": "the same state (MAP and SBP move together)",
+   "paco2": "ventilation efficiency 0.6 (PaCO2 about 58 mmHg)",
+   "ph": "metabolic acid burden 15 mEq/L (pH about 7.18)",
+   "sbp": "tone T 0.45 (vasodilation: output and delivery rise about 20 %, CRT falls; SBP is what moves the level)",
+   "spo2": "authored arrival SpO2 82 % (delivery index 1)"
+  },
+  "policy": "Shadow only and read-only: no core file, channel, rule, threshold or parameter changed or added; synthetic fixed states and committed records read through the certified core; the legacy read as text, never fitted; the extreme-acidemia rows kept; nothing selected or approved; collapse off.",
+  "presentation": {
+   "gi_bleed_57m": [
+    "clinical_cases.py:885",
+    "A 57-year-old man presents after nearly fainting when standing. He looks pale and says he feels profoundly weak."
+   ],
+   "gi_bleed_72f": [
+    "clinical_cases.py:914",
+    "A 72-year-old woman presents with worsening fatigue and lightheadedness. She had to stop walking from the waiting room because she felt faint."
+   ]
+  },
+  "records": {
+   "p2j3": "bcecbe1651df99b9351f58162e99b312b01b23a109e785722d282faeae3151de",
+   "p2k5": "4c567527096d11253b6ebb054436b19a1797ae4f0aeee802fe5c7e824e7de523"
+  },
+  "report": "clinical_core/consciousness_audit_report.py",
+  "revision": "P2L-1",
+  "smallest_structure": {
+   "arrival": "an arrival impairment of unmodeled cause is carried by N or by a declared arrival cause, never as the arrival value of F (F would let it recover by itself: the inverse of today's permanent floor)",
+   "dynamics": "first order toward an instantaneous target F*, faster while F* rises than while it falls (two time constants, for a later faculty calibration)",
+   "memory": "one memory the core lacks, common to every insult: a physiological auxiliary scalar F >= 0 (NEUROLOGIC_FUNCTIONAL_IMPAIRMENT, reversible, distinct from N and from D) or an observation-layer lag (as the legacy's counter); the faculty chooses",
+   "not_added_here": "no state, parameter, threshold or rule is added in P2L-1",
+   "observable": "level = the ladder of max(primary N, F); without a pulse 3, as now",
+   "target": "F* from the causal modifiers combined by maximum, not by sum, so a shock that lowers both MAP and delivery is not counted twice: cerebral perfusion failure (MAP), cerebral oxygen delivery (the effective deficit, and oxygenation as its own input: the systemic deficit with its extraction reserve misses cerebral hypoxaemia), hypoglycaemia (glucose), acidemia (pH) and hypercapnia (PaCO2) as separate inputs; no lactate term; no SBP ladder (it reads compensation as recovery)"
+  },
+  "status": {
+   "approved": "none FACULTY_APPROVED",
+   "collapse": "OFF (not calibrated)",
+   "consciousness": "AUDITED, not recalibrated: the core's derivation is unchanged"
+  },
+  "tone_start_pump": 0.62,
+  "tuple_at_p2k5": {
+   "clinical_core/decision_pack.py": "26105802528f516e69b221251da56f7f2e2a4837ab5d96ff6eac92381e22adc8",
+   "clinical_core/lactate_slice.py": "af1d59f5e00b326dbb6018598bcdfc735da516dcfaaec87592330fb78fd9dce9"
+  },
+  "tuples_added": {
+   "DOWNSTREAM_REPORTS": [
+    "clinical_core/consciousness_audit_report.py"
+   ],
+   "PACK_DIGEST_EXCLUDED": [
+    "clinical_core/consciousness_audit.py",
+    "clinical_core/consciousness_audit_report.py"
+   ]
+  },
+  "upstream": {
+   "baroreflex_gain": [
+    "no",
+    "no",
+    "the same path as MAP_set"
+   ],
+   "demand": [
+    "yes (through the tone response and SBP, sign inverted)",
+    "yes (deficit, acid burden)",
+    "demand moves the deficit and the burden; the deficit moves tone and SBP when the tone response is on"
+   ],
+   "hr_latent_region": [
+    "no",
+    "no",
+    "the heart rate reaches no output, pressure or delivery in the core"
+   ],
+   "map_set": [
+    "no",
+    "no",
+    "P2J-4: the baroreflex acts on the heart rate only; the rate never feeds output or pressure"
+   ],
+   "respiratory_latents": [
+    "no",
+    "yes (pH, PaCO2)",
+    "B, tau and the ventilation gain move the burden, pH and PaCO2; RR is no consciousness input"
+   ],
+   "tone_gain": [
+    "yes (SBP; it also sets the strength of the inverted deficit path)",
+    "yes (deficit through output)",
+    "pressure = output x tone; P2J-3's untreated SBP differs by tone gain"
+   ]
+  },
+  "verdict_rule": "Frozen before the run (review revision). Every criterion is computed from the audit's evidence: N's declared semantics (not mixed); the observable reads N beside explicit modifiers; no path that moves the level (at a fixed state or through the tone response) is a legacy artifact, a semantic leak or a proxy; lactate moves nothing; every double-counting question is decided; the restored state shows the lag or an existing memory covers every insult kind; no family misses a common structure; the closed files unchanged; nothing approved. READY when all hold. Otherwise NOT_READY: with the early-stop blocker RECOVERY_LAG_STATE_REQUIRED when the faculty's lag concept needs a memory the core lacks (report the smallest structure, never invent it), else the first failing criterion; every failing criterion is listed. No numeric surface is prepared while NOT_READY."
+ },
+ "double_counting": {
+  "map_and_deficit": {
+   "finding": "distinct at fixed tone (tone against Hb or output), coupled through the tone response, coincident in low-output shock: an additive rule counts that shock twice, a maximum does not",
+   "status": "PENDING_FACULTY"
+  },
+  "ph_and_paco2": {
+   "finding": "distinct signals (burden against W); not to be collapsed",
+   "status": "SEPARABLE"
+  },
+  "spo2_and_delivery": {
+   "finding": "no double count in the SpO2 ladder's range (the systemic deficit is 0 down to the onset SpO2); the systemic deficit misses cerebral hypoxaemia, so oxygenation needs its own input or a cerebral delivery measure",
+   "status": "PENDING_FACULTY"
+  }
+ },
+ "efficiency": {
+  "cartesian_sweep": false,
+  "fixed_state_readings": 37,
+  "integrator_steps": 29,
+  "legacy_read": false,
+  "records_read": [
+   "P2K5_respiratory_monotonicity.json",
+   "P2J3_pressure_tone_filter.json"
+  ],
+  "region_rebuilt": false,
+  "trajectory_simulations": 0
+ },
+ "equation": {
+  "anchors_field": "Anchors.consciousness_level (0-3, from the case's authored mental status through the legacy adapter's ladder)",
+  "equation": "derived.derive: without a pulse the level is 3 (unresponsive; derived.check enforces it); with a pulse level = max(anchors.consciousness_level, L(SBP), L(SpO2)), L(SBP) = 1 below 80 and 2 below 65 mmHg (profile.pressure_levels), L(SpO2) = 1 below 87 and 2 below 80 % (profile.oxygen_levels), on the raw derived values; ladder 0 alert, 1 drowsy, 2 obtunded, 3 unresponsive",
+  "ladder": {
+   "0": "alert",
+   "1": "drowsy",
+   "2": "obtunded",
+   "3": "unresponsive"
+  },
+  "oxygen_levels": [
+   [
+    87.0,
+    1
+   ],
+   [
+    80.0,
+    2
+   ]
+  ],
+  "pressure_levels": [
+   [
+    80.0,
+    1
+   ],
+   [
+    65.0,
+    2
+   ]
+  ],
+  "provenance": {
+   "oxygen_levels": [
+    "adopted",
+    "family_engine._OXYGEN_LEVELS, same reservation"
+   ],
+   "pressure_levels": [
+    "adopted",
+    "family_engine._PRESSURE_LEVELS, without the DC1 anchoring or the recovery margin, which belong to the observation layer"
+   ]
+  },
+  "pulseless_level": true,
+  "source_line_present": true
+ },
+ "extreme_acidemia": {
+  "by_case": {
+   "gi_bleed_57m": 17604,
+   "gi_bleed_72f": 0
+  },
+  "classification": "CONSCIOUSNESS_COLLAPSE_REVIEW",
+  "current_level_at_120": 2,
+  "current_level_name": "obtunded",
+  "filtered": false,
+  "flagged": 17604,
+  "fully_alert_plausible": false,
+  "highest_untreated_sbp120": 62.37748940774566,
+  "lowest": {
+   "burden": 18.37918705414266,
+   "case": "gi_bleed_57m",
+   "deficit": 0.8351209656884006,
+   "flag": "CONSCIOUSNESS_COLLAPSE_REVIEW",
+   "minute": 120,
+   "paco2": 25.78356891798774,
+   "ph": 6.961334846510912,
+   "rr": {
+    "high": 36.16083866118893,
+    "low": 32.16083866118893,
+    "median": 34.56427852093174,
+    "n": 6
+   }
+  },
+  "reading": "every candidate row of the subset already reads obtunded at minute 120 today, through the SBP proxy alone (untreated SBP at 120 below 65 at every tone gain; the arrival floor is 0 and SpO2 stays at 97); pH 6.96 with a deficit of 0.84 and MAP 32-46 at 120 make full alertness implausible under any plausible consciousness physiology, so the direction agrees but for a proxy reason; the rows are kept and carried, never filtered",
+  "survivors": 511056,
+  "unit": "candidate rows (upstream unit x latent combination), not trajectories",
+  "units": {
+   "0.25": {
+    "p2j3": 1092,
+    "p2k5": 1092
+   },
+   "0.5": {
+    "p2j3": 1092,
+    "p2k5": 1092
+   },
+   "1": {
+    "p2j3": 1092,
+    "p2k5": 1092
+   }
+  },
+  "units_match": true,
+  "untreated_pressure_57m_d1.1": {
+   "g0.25 x1.1": {
+    "map120": {
+     "high": 43.52976442788333,
+     "low": 32.53874403031299,
+     "median": 33.97465928841085,
+     "n": 37
+    },
+    "minutes_below_65": {
+     "high": 56,
+     "low": 24,
+     "median": 47,
+     "n": 37
+    },
+    "minutes_below_80": {
+     "high": 97,
+     "low": 87,
+     "median": 96,
+     "n": 37
+    },
+    "sbp120": {
+     "high": 58.631927596740816,
+     "low": 43.82769604082974,
+     "median": 45.76178598030849,
+     "n": 37
+    }
+   },
+   "g0.5 x1.1": {
+    "map120": {
+     "high": 44.616720826474534,
+     "low": 33.66767722320506,
+     "median": 35.11300782495761,
+     "n": 37
+    },
+    "minutes_below_65": {
+     "high": 52,
+     "low": 19,
+     "median": 44,
+     "n": 37
+    },
+    "minutes_below_80": {
+     "high": 95,
+     "low": 84,
+     "median": 94,
+     "n": 37
+    },
+    "sbp120": {
+     "high": 60.095991317292224,
+     "low": 45.348299933296616,
+     "median": 47.29507176422862,
+     "n": 37
+    }
+   },
+   "g1 x1.1": {
+    "map120": {
+     "high": 46.31056031787178,
+     "low": 35.383121016558675,
+     "median": 36.848084598599804,
+     "n": 37
+    },
+    "minutes_below_65": {
+     "high": 46,
+     "low": 10,
+     "median": 38,
+     "n": 37
+    },
+    "minutes_below_80": {
+     "high": 92,
+     "low": 79,
+     "median": 90,
+     "n": 37
+    },
+    "sbp120": {
+     "high": 62.37748940774566,
+     "low": 47.65889769577291,
+     "median": 49.63211394913443,
+     "n": 37
+    }
+   }
+  }
+ },
+ "freeze_digest": "f3ec29e684331fd7750e4471d2cdc1b21374123bf2ab79c0e187a27ff2edf83c",
+ "generalization": {
+  "families": {
+   "distributive_shock": {
+    "lag": "recovery lag missing",
+    "missing": "the observable reads SBP, not MAP",
+    "present": "low tone gives a low MAP with preserved delivery: the MAP path is distinct from the deficit"
+   },
+   "hemorrhagic_shock": {
+    "lag": "recovery lag missing",
+    "missing": "the observable reads SBP only, and the compensating tone makes it read a worse deficit as less impairment",
+    "present": "deficit and MAP exist"
+   },
+   "hypercapnia_opioid": {
+    "lag": "recovery lag missing",
+    "missing": "PaCO2 not read; no renal compensation during the encounter; whether N carries a drug's primary CNS depression is a pending decision",
+    "present": "acute hypercapnia representable (efficiency, demand); a compensated chronic hypercapnia at arrival when the case authors its HCO3 above the reference"
+   },
+   "hypoglycaemia": {
+    "lag": "post-hypoglycaemic recovery lag missing",
+    "missing": "not read; no glucose writer or dextrose in the core",
+    "present": "glucose state exists, orthogonal to shock"
+   },
+   "primary_neurologic_injury": {
+    "lag": "N's own dynamics undefined",
+    "missing": "no N writer and no N reader",
+    "present": "N exists"
+   },
+   "severe_hypoxaemia": {
+    "lag": "recovery lag missing",
+    "missing": "SpO2 moves only with FiO2 (gas exchange G has no writer); the systemic deficit misses cerebral hypoxaemia; the SpO2 ladder is legacy",
+    "present": "SpO2 (through FiO2) and DO2 exist"
+   }
+  },
+  "reading": "no GI-specific term is needed, and every systemic signal a family needs exists or is a family's own writer; the common gap is one recovery memory, which no family can supply",
+  "result": "STRUCTURAL_GAP"
+ },
+ "glucose": {
+  "level_unchanged": true,
+  "reader": "the sympathetic drive's hypoglycaemia term (threshold PROVISIONAL, TBD)",
+  "reading": "an independent path is representable (the state exists and is orthogonal to shock), but the observable does not read it, and nothing in the core moves glucose",
+  "rows": {
+   "normal": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.0,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 0,
+    "level_name": "alert",
+    "map": 90.0,
+    "pulse": true,
+    "sbp": 120.0,
+    "spo2": 97.0
+   },
+   "severe_hypoglycaemia": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.0,
+    "glucose": 30.0,
+    "hb": 13.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 0,
+    "level_name": "alert",
+    "map": 90.0,
+    "pulse": true,
+    "sbp": 120.0,
+    "spo2": 97.0
+   }
+  },
+  "state": "CoreState.glucose (C11, absolute, from the case), guarded 15-350 (ADOPTED)",
+  "writers": [
+   "bands.py:38",
+   "legacy_adapter.py:201",
+   "state.py:697"
+  ],
+  "writers_rule": "constructors only (anchors, the arrival state, the legacy adapter): no contributor, dextrose or consumption"
+ },
+ "migration_gate": "MIGRATION_GATE_CLOSED: no runtime integration, GI or second-family migration, consciousness parameter approval or collapse activation is authorized",
+ "n": {
+  "arrival_value": 0.0,
+  "cases": "no case declares or changes N (the legacy adapter builds the state with N = 0)",
+  "classification": "UNUSED_PLACEHOLDER",
+  "declared_semantics": "MIXED_NEUROLOGIC_CONSTRUCT: 'CNS depression / neurological state' joins drug-induced depression with primary neurologic injury; the faculty's concept (primary neurologic state / injury or reserve) is narrower",
+  "meaning": {
+   "carried_note": "acid_base: no RR term; a future family may scale the drive (depressants)",
+   "definition": "level deviation from arrival \u2014 CNS depression / neurological state (state.CHANNEL_DEFINITIONS)",
+   "enum": "C9 CNS depression level, deviation from arrival (state.Channel.N)",
+   "guard": "integration.CHANNEL_BOUNDS: (-10, 10), PROVISIONAL, 'guard only; no module writes N yet'"
+  },
+  "observable_effect": {
+   "-5.0": 0,
+   "0.0": 0,
+   "5.0": 0
+  },
+  "readers": [],
+  "readers_rule": "no reader: N is touched only by the generic scalar-channel loops (finiteness, guard, deltas, the shadow payload)",
+  "references": {
+   "files_scanned": 63,
+   "generic_scalar_loops": [
+    "contracts_output.py:86",
+    "integration.py:430",
+    "integration.py:515",
+    "state.py:611",
+    "state.py:651"
+   ],
+   "mentions": [
+    "integration.py:65",
+    "state.py:66"
+   ],
+   "reads": [],
+   "writes": [
+    "state.py:697"
+   ]
+  },
+  "serialization": "a scalar channel of CoreState: serialized with the state and in the Contracts-v2 shadow payload's channels (contracts_output, always 0), its per-minute delta recorded and guarded by integration (always 0), its bound named in the golden's channel_bounds",
+  "writers": [
+   "state.py:697"
+  ],
+  "writers_rule": "only the arrival constructors (anchored_state, N=0.0); no contributor, integrator step or case writes N"
+ },
+ "neuro_probes": {
+  "represented": [
+   "N1",
+   "N4",
+   "N8"
+  ],
+  "rows": {
+   "N1": {
+    "carrier": "none",
+    "current_derivation_represents": true,
+    "expected": "alert",
+    "gap": "none",
+    "isolated": "normal systemic physiology and normal N",
+    "level": 0,
+    "level_name": "alert",
+    "reading": {
+     "D": 0.0,
+     "N": 0.0,
+     "deficit_fraction": 0.0,
+     "do2": 1.0,
+     "glucose": 100.0,
+     "map": 90.0,
+     "paco2": null,
+     "ph": null,
+     "sbp": 120.0,
+     "spo2": 97.0
+    },
+    "signal_exists_in_core": true
+   },
+   "N2": {
+    "carrier": "N",
+    "current_derivation_represents": false,
+    "expected": "impaired by N alone",
+    "gap": "the observable does not read the signal",
+    "isolated": "isolated primary neurologic injury (N = 5)",
+    "level": 0,
+    "level_name": "alert",
+    "reading": {
+     "D": 0.0,
+     "N": 5.0,
+     "deficit_fraction": 0.0,
+     "do2": 1.0,
+     "glucose": 100.0,
+     "map": 90.0,
+     "paco2": null,
+     "ph": null,
+     "sbp": 120.0,
+     "spo2": 97.0
+    },
+    "signal_exists_in_core": true
+   },
+   "N3": {
+    "carrier": "effective_oxygen_deficit",
+    "current_derivation_represents": false,
+    "expected": "impaired by cerebral oxygen under-delivery",
+    "gap": "the observable does not read the signal",
+    "isolated": "isolated severe oxygen deficit (Hb 25 %, SBP and SpO2 kept)",
+    "level": 0,
+    "level_name": "alert",
+    "reading": {
+     "D": 0.0,
+     "N": 0.0,
+     "deficit_fraction": 0.375,
+     "do2": 0.25,
+     "glucose": 100.0,
+     "map": 90.0,
+     "paco2": null,
+     "ph": null,
+     "sbp": 120.0,
+     "spo2": 97.0
+    },
+    "signal_exists_in_core": true
+   },
+   "N4": {
+    "carrier": "map",
+    "current_derivation_represents": true,
+    "expected": "vulnerable from cerebral perfusion failure",
+    "gap": "none",
+    "isolated": "isolated very low MAP with adequate delivery (tone 0.45; output rises)",
+    "level": 2,
+    "level_name": "obtunded",
+    "reading": {
+     "D": 0.0,
+     "N": 0.0,
+     "deficit_fraction": 0.0,
+     "do2": 1.1976047904191618,
+     "glucose": 100.0,
+     "map": 48.50299401197606,
+     "paco2": null,
+     "ph": null,
+     "sbp": 64.67065868263474,
+     "spo2": 97.0
+    },
+    "signal_exists_in_core": true
+   },
+   "N5": {
+    "carrier": "ph",
+    "current_derivation_represents": false,
+    "expected": "impaired when severe",
+    "gap": "the observable does not read the signal",
+    "isolated": "isolated severe metabolic acidemia (burden 15, pH about 7.18)",
+    "level": 0,
+    "level_name": "alert",
+    "reading": {
+     "D": 0.0,
+     "N": 0.0,
+     "deficit_fraction": 0.0,
+     "do2": 1.0,
+     "glucose": 100.0,
+     "map": 90.0,
+     "paco2": 25.0,
+     "ph": 7.179181246047625,
+     "sbp": 120.0,
+     "spo2": 97.0
+    },
+    "signal_exists_in_core": true
+   },
+   "N6": {
+    "carrier": "paco2",
+    "current_derivation_represents": false,
+    "expected": "impaired (hypercapnic encephalopathy)",
+    "gap": "the observable does not read the signal",
+    "isolated": "acute hypercapnia (efficiency 0.6, PaCO2 about 57) on the probe arrival (HCO3 20)",
+    "level": 0,
+    "level_name": "alert",
+    "reading": {
+     "D": 0.0,
+     "N": 0.0,
+     "deficit_fraction": 0.0,
+     "do2": 1.0,
+     "glucose": 100.0,
+     "map": 90.0,
+     "paco2": 57.4712643678161,
+     "ph": 7.164457989226918,
+     "sbp": 120.0,
+     "spo2": 97.0
+    },
+    "signal_exists_in_core": true
+   },
+   "N7": {
+    "carrier": "glucose",
+    "current_derivation_represents": false,
+    "expected": "impaired, independently of shock",
+    "gap": "the observable does not read the signal",
+    "isolated": "isolated hypoglycaemia (glucose 30)",
+    "level": 0,
+    "level_name": "alert",
+    "reading": {
+     "D": 0.0,
+     "N": 0.0,
+     "deficit_fraction": 0.0,
+     "do2": 1.0,
+     "glucose": 30.0,
+     "map": 90.0,
+     "paco2": null,
+     "ph": null,
+     "sbp": 120.0,
+     "spo2": 97.0
+    },
+    "signal_exists_in_core": true
+   },
+   "N8": {
+    "carrier": "map, effective_oxygen_deficit, ph",
+    "current_derivation_represents": true,
+    "expected": "impaired, both mechanisms, not counted twice",
+    "gap": "none",
+    "isolated": "combined low-output shock and acidemia (pump 0.3, burden 15)",
+    "level": 2,
+    "level_name": "obtunded",
+    "reading": {
+     "D": 0.0,
+     "N": 0.0,
+     "deficit_fraction": 0.25,
+     "do2": 0.3,
+     "glucose": 100.0,
+     "map": 27.0,
+     "paco2": 25.0,
+     "ph": 7.179181246047625,
+     "sbp": 36.0,
+     "spo2": 97.0
+    },
+    "signal_exists_in_core": true
+   },
+   "N9": {
+    "carrier": "a memory",
+    "current_derivation_represents": false,
+    "expected": "recovery delayed after the physiology normalizes (the faculty's prior concept, to confirm)",
+    "gap": "a common memory (D covers deficit insults only)",
+    "isolated": "physiology restored after a prolonged prior insult (D 600, no deficit)",
+    "level": 0,
+    "level_name": "alert",
+    "reading": {
+     "D": 600.0,
+     "N": 0.0,
+     "deficit_fraction": 0.0,
+     "do2": 1.0,
+     "glucose": 100.0,
+     "map": 90.0,
+     "paco2": null,
+     "ph": null,
+     "sbp": 120.0,
+     "spo2": 97.0
+    },
+    "signal_exists_in_core": false
+   }
+  },
+  "signal_missing": [
+   "N9"
+  ]
+ },
+ "oxygenation": {
+  "current_a_impaired_b_alert": true,
+  "deficit_misses_hypoxaemia": true,
+  "deficit_onset_spo2": 38.8,
+  "double_count_in_ladder_range": false,
+  "ladder_top": 87.0,
+  "reading": "no double count today: in the SpO2 ladder's range the systemic deficit is 0 (with the extraction reserve it begins only below the onset SpO2 at normal output and Hb); the converse matters: the systemic deficit misses a cerebral hypoxaemia (SpO2 73 % after FiO2 falls reads deficit 0), so oxygenation needs its own input, or a cerebral delivery measure, beside the deficit; only below the onset would both count the same hypoxaemia",
+  "rows": {
+   "A2_fio2_falls_from_1_to_room_air": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 0.7556701030927835,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 2,
+    "level_name": "obtunded",
+    "map": 90.0,
+    "pulse": true,
+    "sbp": 120.0,
+    "spo2": 73.3
+   },
+   "A_low_spo2_adequate_delivery": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.0,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 1,
+    "level_name": "drowsy",
+    "map": 90.0,
+    "pulse": true,
+    "sbp": 120.0,
+    "spo2": 82.0
+   },
+   "B_normal_spo2_critical_deficit": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.375,
+    "deficit_fraction": 0.375,
+    "demand": 1.0,
+    "do2": 0.25,
+    "glucose": 100.0,
+    "hb": 3.25,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 0,
+    "level_name": "alert",
+    "map": 90.0,
+    "pulse": true,
+    "sbp": 120.0,
+    "spo2": 97.0
+   },
+   "C_both": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.25,
+    "deficit_fraction": 0.25,
+    "demand": 1.0,
+    "do2": 0.3,
+    "glucose": 100.0,
+    "hb": 3.9,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 1,
+    "level_name": "drowsy",
+    "map": 90.0,
+    "pulse": true,
+    "sbp": 120.0,
+    "spo2": 82.0
+   }
+  },
+  "spo2_in_delivery": "delivery_rel = output x (Hb / Hb0) x (SpO2 / SpO2_0), arrival-relative; an authored arrival hypoxaemia reaches DO2 only through the case's arrival_delivery_ratio; during the encounter SpO2 moves only with FiO2"
+ },
+ "paths": {
+  "D": {
+   "class": "NOT_CURRENTLY_MODELED",
+   "moves_level": false,
+   "why": "the accumulated oxygen-delivery debt: read by lactate and the sympathetic drive"
+  },
+  "N": {
+   "class": "NOT_CURRENTLY_MODELED",
+   "moves_level": false,
+   "why": "the channel exists (an unused placeholder); derive never reads it"
+  },
+  "arrival_level": {
+   "class": "SEMANTIC_LEAK",
+   "moves_level": true,
+   "why": "the authored arrival level is a permanent floor, cause-agnostic and never recovered: it holds whatever made the arrival impaired (a primary neurologic state and the arrival's systemic causes alike)"
+  },
+  "demand": {
+   "class": "SEMANTIC_LEAK",
+   "moves_level": false,
+   "moves_level_dynamic": true,
+   "why": "demand reaches the deficit and the acid burden; through the tone response and the SBP ladder, sign inverted, like the deficit"
+  },
+  "effective_oxygen_deficit": {
+   "class": "SEMANTIC_LEAK",
+   "moves_level": false,
+   "moves_level_dynamic": true,
+   "why": "no direct path; with the P2J-2 tone response on (every P2J-3 / P2K calibration, tone gain 0.25-1), the deficit raises tone, tone raises SBP and the SBP ladder reads the patient as less impaired: an indirect path with the sign inverted (tone_loop)"
+  },
+  "glucose": {
+   "class": "NOT_CURRENTLY_MODELED",
+   "moves_level": false,
+   "why": "a state value (C11, absolute, from the case, no writer); read only by the sympathetic drive's hypoglycaemia term (threshold PROVISIONAL)"
+  },
+  "hr": {
+   "class": "NOT_CURRENTLY_MODELED",
+   "moves_level": false,
+   "why": "correctly absent: the rate never reaches consciousness"
+  },
+  "lactate": {
+   "class": "NOT_CURRENTLY_MODELED",
+   "moves_level": false,
+   "why": "correctly absent: no direct lactate -> consciousness path exists (no BIOMARKER_PROXY to refactor)"
+  },
+  "map": {
+   "class": "LEGACY_ARTIFACT",
+   "moves_level": true,
+   "why": "read through SBP: within a case SBP and MAP scale with the same pressure_rel, so the SBP ladder is a pressure ladder (80 / 65 mmHg of SBP), MAP-equivalent up to the case's ratio"
+  },
+  "paco2": {
+   "class": "NOT_CURRENTLY_MODELED",
+   "moves_level": false,
+   "why": "the P2K-3 ventilation candidate's output (PaCO2_reference / W), read by nothing"
+  },
+  "ph": {
+   "class": "NOT_CURRENTLY_MODELED",
+   "moves_level": false,
+   "why": "the P2K-2 / P2K-3 respiration candidate's output, read by nothing downstream"
+  },
+  "pulse": {
+   "class": "VALID_CAUSAL_PATH",
+   "why": "circulatory arrest -> unresponsive (level 3), an invariant of derive / check"
+  },
+  "sbp": {
+   "class": "LEGACY_ARTIFACT",
+   "moves_level": true,
+   "why": "thresholds 80 / 65 adopted from family_engine._PRESSURE_LEVELS without its DC1 anchoring or recovery margin; raw SBP, not MAP, stands in for both cerebral perfusion pressure and systemic oxygen delivery"
+  },
+  "spo2": {
+   "class": "LEGACY_ARTIFACT",
+   "moves_level": true,
+   "why": "thresholds 87 / 80 adopted from family_engine._OXYGEN_LEVELS; SpO2 also enters delivery (delivery_rel = output x Hb ratio x SpO2 ratio), but in the ladder's range the systemic deficit is 0 (with reserve 2.5 it begins only near 39 % at normal output and Hb), so the ladder carries cerebral-hypoxaemia information the deficit lacks: no double count today"
+  }
+ },
+ "perturbations": {
+  "reference": {
+   "acid_neutral": {
+    "D": 0.0,
+    "N": 0.0,
+    "burden": 4.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.0,
+    "efficiency": 1.0,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hco3": 20.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 0,
+    "level_name": "alert",
+    "map": 90.0,
+    "paco2": 34.48275862068966,
+    "ph": 7.386306738843274,
+    "pulse": true,
+    "rr": 22.846274073157726,
+    "sbp": 120.0,
+    "spo2": 97.0,
+    "w": 1.16
+   },
+   "neutral": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.0,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 0,
+    "level_name": "alert",
+    "map": 90.0,
+    "pulse": true,
+    "sbp": 120.0,
+    "spo2": 97.0
+   }
+  },
+  "rows": {
+   "D": {
+    "D": 600.0,
+    "N": 0.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.0,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 0,
+    "level_name": "alert",
+    "map": 90.0,
+    "moves_level": false,
+    "pulse": true,
+    "sbp": 120.0,
+    "spo2": 97.0
+   },
+   "N": {
+    "D": 0.0,
+    "N": 5.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.0,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 0,
+    "level_name": "alert",
+    "map": 90.0,
+    "moves_level": false,
+    "pulse": true,
+    "sbp": 120.0,
+    "spo2": 97.0
+   },
+   "arrival_level": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.0,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 2,
+    "level_name": "obtunded",
+    "map": 90.0,
+    "moves_level": true,
+    "pulse": true,
+    "sbp": 120.0,
+    "spo2": 97.0
+   },
+   "demand": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.6,
+    "do2": 1.0,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 0,
+    "level_name": "alert",
+    "map": 90.0,
+    "moves_level": false,
+    "pulse": true,
+    "sbp": 120.0,
+    "spo2": 97.0
+   },
+   "effective_oxygen_deficit": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.25,
+    "deficit_fraction": 0.25,
+    "demand": 1.0,
+    "do2": 0.3,
+    "glucose": 100.0,
+    "hb": 3.9,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 0,
+    "level_name": "alert",
+    "map": 90.0,
+    "moves_level": false,
+    "pulse": true,
+    "sbp": 120.0,
+    "spo2": 97.0
+   },
+   "glucose": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.0,
+    "glucose": 30.0,
+    "hb": 13.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 0,
+    "level_name": "alert",
+    "map": 90.0,
+    "moves_level": false,
+    "pulse": true,
+    "sbp": 120.0,
+    "spo2": 97.0
+   },
+   "hr": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.0,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hr": 174.99999986331784,
+    "lactate": 1.0,
+    "level": 0,
+    "level_name": "alert",
+    "map": 90.0,
+    "moves_level": false,
+    "pulse": true,
+    "sbp": 120.0,
+    "spo2": 97.0
+   },
+   "lactate": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.0,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hr": 80.0,
+    "lactate": 9.0,
+    "level": 0,
+    "level_name": "alert",
+    "map": 90.0,
+    "moves_level": false,
+    "pulse": true,
+    "sbp": 120.0,
+    "spo2": 97.0
+   },
+   "map": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.1976047904191618,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 2,
+    "level_name": "obtunded",
+    "map": 48.50299401197606,
+    "moves_level": true,
+    "pulse": true,
+    "sbp": 64.67065868263474,
+    "spo2": 97.0
+   },
+   "paco2": {
+    "D": 0.0,
+    "N": 0.0,
+    "burden": 4.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.0,
+    "efficiency": 0.6,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hco3": 20.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 0,
+    "level_name": "alert",
+    "map": 90.0,
+    "moves_level": false,
+    "paco2": 57.4712643678161,
+    "ph": 7.164457989226918,
+    "pulse": true,
+    "rr": 22.846274073157726,
+    "sbp": 120.0,
+    "spo2": 97.0,
+    "w": 0.696
+   },
+   "ph": {
+    "D": 0.0,
+    "N": 0.0,
+    "burden": 15.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.0,
+    "efficiency": 1.0,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hco3": 9.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 0,
+    "level_name": "alert",
+    "map": 90.0,
+    "moves_level": false,
+    "paco2": 25.0,
+    "ph": 7.179181246047625,
+    "pulse": true,
+    "rr": 33.47014470219494,
+    "sbp": 120.0,
+    "spo2": 97.0,
+    "w": 1.6
+   },
+   "sbp": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.1976047904191618,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 2,
+    "level_name": "obtunded",
+    "map": 48.50299401197606,
+    "moves_level": true,
+    "pulse": true,
+    "sbp": 64.67065868263474,
+    "spo2": 97.0
+   },
+   "spo2": {
+    "D": 0.0,
+    "N": 0.0,
+    "deficit": 0.0,
+    "deficit_fraction": 0.0,
+    "demand": 1.0,
+    "do2": 1.0,
+    "glucose": 100.0,
+    "hb": 13.0,
+    "hr": 80.0,
+    "lactate": 1.0,
+    "level": 1,
+    "level_name": "drowsy",
+    "map": 90.0,
+    "moves_level": true,
+    "pulse": true,
+    "sbp": 120.0,
+    "spo2": 82.0
+   }
+  },
+  "what": {
+   "D": "D = 600 index-minutes, no deficit",
+   "N": "N = 5",
+   "arrival_level": "authored arrival level 2 with every signal normal",
+   "demand": "oxygen demand 1.6 with delivery 1 (deficit 0 at reserve 2.5)",
+   "effective_oxygen_deficit": "Hb at 30 % of arrival (SBP kept)",
+   "glucose": "glucose 30 mg/dL",
+   "hr": "sympathetic drive 40",
+   "lactate": "lactate excess 8 mmol/L",
+   "map": "the same state (MAP and SBP move together)",
+   "paco2": "ventilation efficiency 0.6 (PaCO2 about 58 mmHg)",
+   "ph": "metabolic acid burden 15 mEq/L (pH about 7.18)",
+   "sbp": "tone T 0.45 (vasodilation: output and delivery rise about 20 %, CRT falls; SBP is what moves the level)",
+   "spo2": "authored arrival SpO2 82 % (delivery index 1)"
+  }
+ },
+ "policy": "Shadow only and read-only: no core file, channel, rule, threshold or parameter changed or added; synthetic fixed states and committed records read through the certified core; the legacy read as text, never fitted; the extreme-acidemia rows kept; nothing selected or approved; collapse off.",
+ "recommendation": {
+  "blocker": "CONSCIOUSNESS_STRUCTURE_NOT_READY - RECOVERY_LAG_STATE_REQUIRED",
+  "decisions": [
+   "confirm the prior concept that mental status recovers more slowly than the physiology (N9), and where the memory lives: a physiological state F separate from N and D, or an observation-layer lag",
+   "retire the SBP and SpO2 ladders as consciousness inputs: with the tone response on, the SBP ladder reads a worse deficit as less impairment",
+   "the aggregation rule of the systemic modifiers: maximum (no double counting) or additive",
+   "which modifiers enter: MAP as cerebral perfusion (relative to autoregulation), the effective deficit, oxygenation as its own input, glucose, pH and PaCO2 separately; confirm no lactate path",
+   "N's semantics: primary injury / reserve only, or also a drug's primary CNS depression (opioids), or a separate pharmacologic channel",
+   "the authored arrival level: carried by N or a declared arrival cause instead of a permanent floor",
+   "the carried extreme-acidemia subset once the rules exist (kept, never filtered, today)",
+   "renal compensation of hypercapnia during an encounter: a respiratory-family question"
+  ],
+  "recommendation": "STOP_FOR_FACULTY_STRUCTURAL_DECISION",
+  "rule": "Predeclared. READY: a small observable-consciousness decision pack, no hard filter. NOT_READY: report the smallest missing structure and the faculty decisions; nothing implemented, nothing filtered.",
+  "smallest_structure": {
+   "arrival": "an arrival impairment of unmodeled cause is carried by N or by a declared arrival cause, never as the arrival value of F (F would let it recover by itself: the inverse of today's permanent floor)",
+   "dynamics": "first order toward an instantaneous target F*, faster while F* rises than while it falls (two time constants, for a later faculty calibration)",
+   "memory": "one memory the core lacks, common to every insult: a physiological auxiliary scalar F >= 0 (NEUROLOGIC_FUNCTIONAL_IMPAIRMENT, reversible, distinct from N and from D) or an observation-layer lag (as the legacy's counter); the faculty chooses",
+   "not_added_here": "no state, parameter, threshold or rule is added in P2L-1",
+   "observable": "level = the ladder of max(primary N, F); without a pulse 3, as now",
+   "target": "F* from the causal modifiers combined by maximum, not by sum, so a shock that lowers both MAP and delivery is not counted twice: cerebral perfusion failure (MAP), cerebral oxygen delivery (the effective deficit, and oxygenation as its own input: the systemic deficit with its extraction reserve misses cerebral hypoxaemia), hypoglycaemia (glucose), acidemia (pH) and hypercapnia (PaCO2) as separate inputs; no lactate term; no SBP ladder (it reads compensation as recovery)"
+  }
+ },
+ "recovery_lag": {
+  "d_after_one_minute": {
+   "deficit_shock": 0.25,
+   "hypercapnia": 0.0,
+   "hypoglycaemia": 0.0,
+   "low_map": 0.0,
+   "restored_d600_no_deficit": 590.0
+  },
+  "d_covers_insult": {
+   "deficit_shock": true,
+   "hypercapnia": false,
+   "hypoglycaemia": false,
+   "low_map": false
+  },
+  "d_sufficient": false,
+  "expectation": "FACULTY_PRIOR_CONCEPT: mental status may recover more slowly than instantaneous physiology (to confirm; the probes do not decide it)",
+  "instantaneous": "derive reads only the current state and the anchors: the observable has no memory",
+  "insult_level": 2,
+  "lag_represented": false,
+  "memories": {
+   "D": "accumulated oxygen-delivery debt: accrues only while the effective deficit is positive, repays first-order (debt_clearance_tau_min 60, PROVISIONAL, set for lactate and the sympathetic drive); systemic, read by lactate and the sympathetic drive",
+   "N": "the unused placeholder: no writer, no reader, no dynamics",
+   "aux.collapse_burden": "the collapse rule's burden (P2E-3): accrues below an output threshold; off by default",
+   "aux.lactate_excess_mmol_l": "a biomarker: never a neurologic controller (faculty)",
+   "aux.metabolic_acid_burden": "the acid burden: produced by the deficit, cleared with tau_acid; read by RR, W, pH",
+   "aux.sympathetic_drive": "the drive: decays with its own tau; read by the heart rate",
+   "state.internal": "each contributor's own frozen memory (family specific, e.g. a bleed's schedule); not common physiology",
+   "terminal_since": "the arrest minute: a pulse-state record, not a recovery memory"
+  },
+  "new_state_required": true,
+  "options": [
+   "a physiological auxiliary state (F, distinct from N and D)",
+   "an observation-layer lag (as the legacy's 30-min counter)"
+  ],
+  "restored_level": 0,
+  "verdict": "RECOVERY_LAG_STATE_REQUIRED",
+  "why_not_d": "D accrues only with a deficit: it carries a deficit insult (and repays on the lactate / sympathetic time constant), not a MAP-only, hypoglycaemic or hypercapnic one; using it as neurologic memory would also tie brain recovery to debt repayment"
+ },
+ "revision": "P2L-1",
+ "tone_loop": {
+  "inverted_at_some_primary_gain": true,
+  "level_improves_with_deficit": {
+   "anaemia g0": false,
+   "anaemia g0.25": false,
+   "anaemia g0.5": true,
+   "anaemia g1": true,
+   "demand_x2 g0": false,
+   "demand_x2 g0.25": false,
+   "demand_x2 g0.5": true,
+   "demand_x2 g1": true
+  },
+  "reading": "with the tone response on, a rising deficit raises tone and SBP, and the SBP ladder reads the compensated patient as less impaired: the deficit reaches the level, with the sign inverted",
+  "rows": {
+   "anaemia g0": [
+    {
+     "T": 1.0,
+     "deficit": 0.22499999999999998,
+     "level": 1,
+     "minute": 1,
+     "sbp": 74.4
+    },
+    {
+     "T": 1.0,
+     "deficit": 0.22499999999999998,
+     "level": 1,
+     "minute": 2,
+     "sbp": 74.4
+    },
+    {
+     "T": 1.0,
+     "deficit": 0.22499999999999998,
+     "level": 1,
+     "minute": 3,
+     "sbp": 74.4
+    }
+   ],
+   "anaemia g0.25": [
+    {
+     "T": 1.0,
+     "deficit": 0.22499999999999998,
+     "level": 1,
+     "minute": 1,
+     "sbp": 74.4
+    },
+    {
+     "T": 1.05625,
+     "deficit": 0.23786109403810696,
+     "level": 1,
+     "minute": 2,
+     "sbp": 77.28088506453594
+    },
+    {
+     "T": 1.0594652735095267,
+     "deficit": 0.23858335471988645,
+     "level": 1,
+     "minute": 3,
+     "sbp": 77.44267145725456
+    }
+   ],
+   "anaemia g0.5": [
+    {
+     "T": 1.0,
+     "deficit": 0.22499999999999998,
+     "level": 1,
+     "minute": 1,
+     "sbp": 74.4
+    },
+    {
+     "T": 1.1125,
+     "deficit": 0.2503022974607013,
+     "level": 0,
+     "minute": 2,
+     "sbp": 80.0677146311971
+    },
+    {
+     "T": 1.1251511487303507,
+     "deficit": 0.2530446943651302,
+     "level": 0,
+     "minute": 3,
+     "sbp": 80.68201153778918
+    }
+   ],
+   "anaemia g1": [
+    {
+     "T": 1.0,
+     "deficit": 0.22499999999999998,
+     "level": 1,
+     "minute": 1,
+     "sbp": 74.4
+    },
+    {
+     "T": 1.225,
+     "deficit": 0.2740046838407495,
+     "level": 0,
+     "minute": 2,
+     "sbp": 85.37704918032787
+    },
+    {
+     "T": 1.2740046838407495,
+     "deficit": 0.28386712832720185,
+     "level": 0,
+     "minute": 3,
+     "sbp": 87.58623674529323
+    }
+   ],
+   "demand_x2 g0": [
+    {
+     "T": 1.0,
+     "deficit": 0.44999999999999996,
+     "level": 1,
+     "minute": 1,
+     "sbp": 74.4
+    },
+    {
+     "T": 1.0,
+     "deficit": 0.44999999999999996,
+     "level": 1,
+     "minute": 2,
+     "sbp": 74.4
+    },
+    {
+     "T": 1.0,
+     "deficit": 0.44999999999999996,
+     "level": 1,
+     "minute": 3,
+     "sbp": 74.4
+    }
+   ],
+   "demand_x2 g0.25": [
+    {
+     "T": 1.0,
+     "deficit": 0.44999999999999996,
+     "level": 1,
+     "minute": 1,
+     "sbp": 74.4
+    },
+    {
+     "T": 1.05625,
+     "deficit": 0.4757221880762139,
+     "level": 1,
+     "minute": 2,
+     "sbp": 77.28088506453594
+    },
+    {
+     "T": 1.0594652735095267,
+     "deficit": 0.4771667094397729,
+     "level": 1,
+     "minute": 3,
+     "sbp": 77.44267145725456
+    }
+   ],
+   "demand_x2 g0.5": [
+    {
+     "T": 1.0,
+     "deficit": 0.44999999999999996,
+     "level": 1,
+     "minute": 1,
+     "sbp": 74.4
+    },
+    {
+     "T": 1.1125,
+     "deficit": 0.5006045949214026,
+     "level": 0,
+     "minute": 2,
+     "sbp": 80.0677146311971
+    },
+    {
+     "T": 1.1251511487303507,
+     "deficit": 0.5060893887302604,
+     "level": 0,
+     "minute": 3,
+     "sbp": 80.68201153778918
+    }
+   ],
+   "demand_x2 g1": [
+    {
+     "T": 1.0,
+     "deficit": 0.44999999999999996,
+     "level": 1,
+     "minute": 1,
+     "sbp": 74.4
+    },
+    {
+     "T": 1.225,
+     "deficit": 0.548009367681499,
+     "level": 0,
+     "minute": 2,
+     "sbp": 85.37704918032787
+    },
+    {
+     "T": 1.2740046838407495,
+     "deficit": 0.5677342566544037,
+     "level": 0,
+     "minute": 3,
+     "sbp": 87.58623674529323
+    }
+   ]
+  },
+  "start_level": 1
+ },
+ "upstream": {
+  "design": "representative and boundary states only; no dimension without a causal path is multiplied",
+  "evidence": {
+   "demand_moves_level_fixed": false,
+   "demand_moves_level_with_tone_response": true,
+   "hr_moves_level": false,
+   "sbp_moves_level": true
+  },
+  "table": {
+   "baroreflex_gain": {
+    "candidate": "no",
+    "current": "no",
+    "why": "the same path as MAP_set"
+   },
+   "demand": {
+    "candidate": "yes (deficit, acid burden)",
+    "current": "yes (through the tone response and SBP, sign inverted)",
+    "why": "demand moves the deficit and the burden; the deficit moves tone and SBP when the tone response is on"
+   },
+   "hr_latent_region": {
+    "candidate": "no",
+    "current": "no",
+    "why": "the heart rate reaches no output, pressure or delivery in the core"
+   },
+   "map_set": {
+    "candidate": "no",
+    "current": "no",
+    "why": "P2J-4: the baroreflex acts on the heart rate only; the rate never feeds output or pressure"
+   },
+   "respiratory_latents": {
+    "candidate": "yes (pH, PaCO2)",
+    "current": "no",
+    "why": "B, tau and the ventilation gain move the burden, pH and PaCO2; RR is no consciousness input"
+   },
+   "tone_gain": {
+    "candidate": "yes (deficit through output)",
+    "current": "yes (SBP; it also sets the strength of the inverted deficit path)",
+    "why": "pressure = output x tone; P2J-3's untreated SBP differs by tone gain"
+   }
+  }
+ },
+ "verdict": {
+  "checks": {
+   "causal_modifiers_explicit": false,
+   "double_counting_resolved": false,
+   "generalization_plausible": false,
+   "lactate_not_proxy": true,
+   "n_semantics_explicit": false,
+   "nothing_approved": true,
+   "observable_separated_from_n": false,
+   "recovery_lag_coherent": false,
+   "upstream_unchanged": true
+  },
+  "failing": [
+   "n_semantics_explicit",
+   "observable_separated_from_n",
+   "causal_modifiers_explicit",
+   "double_counting_resolved",
+   "recovery_lag_coherent",
+   "generalization_plausible"
+  ],
+  "not_evaluated": [],
+  "verdict": "CONSCIOUSNESS_STRUCTURE_NOT_READY - RECOVERY_LAG_STATE_REQUIRED"
+ }
+}

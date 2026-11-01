@@ -118,7 +118,14 @@ def test_every_path_is_classified_and_checked_by_a_perturbation():
         assert table[name]["class"] == "NOT_CURRENTLY_MODELED" and not table[name].get("moves_level"), name
     # No direct lactate path: nothing to refactor as a biomarker proxy.
     assert all(row["class"] not in ("BIOMARKER_PROXY", "BIOMARKER_PROXY_REQUIRES_REFACTOR") for row in table.values())
-    assert "lactate" not in inspect.getsource(dv.derive).split("level = max(")[1].split(")")[0]
+    # The whole level expression (every argument of the max), read by AST: no name in it mentions lactate.
+    tree = ast.parse(inspect.getsource(dv.derive).strip())
+    level = [node.value for node in ast.walk(tree) if isinstance(node, ast.Assign)
+             and any(getattr(t, "id", None) == "level" for t in node.targets)]
+    assert level and all(isinstance(v, ast.Call) and getattr(v.func, "id", None) == "max" for v in level)
+    names = {getattr(n, "id", None) or getattr(n, "attr", None) for v in level for n in ast.walk(v)}
+    assert {"consciousness_level", "sbp", "spo2", "pressure_levels", "oxygen_levels"} <= names
+    assert not any("lactate" in (name or "") for name in names)
 
 
 # P2L-1-3 to -6: double counting and orthogonality ---------------------------------------------------------------------------
@@ -274,3 +281,52 @@ def test_the_scope_adds_and_reads_nothing_it_should_not():
         assert name in engine and name in ca.LEGACY[{"_PRESSURE_LEVELS": "thresholds", "_OXYGEN_LEVELS": "thresholds",
                                                      "_anchored_levels": "dc1", "_RECOVERY_MARGIN": "margin",
                                                      "MENTAL_RECOVERY": "recovery"}[name]]
+
+
+# The record and the report (generated once, after the frozen evaluation) -----------------------------------------------------
+
+RECORD = ROOT / "docs" / "revision" / "P2L1_consciousness_audit.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2L1_AUDITORIA_CONCIENCIA.md"
+
+
+@pytest.fixture(scope="module")
+def record():
+    return json.loads(RECORD.read_text(encoding="utf-8"))
+
+
+def _json(value):
+    return json.loads(json.dumps(value, sort_keys=True, default=str))
+
+
+def test_the_record_comes_from_the_frozen_package_and_is_reproduced_live(record):
+    assert record["freeze_digest"] == FROZEN_DIGEST and "stopped" not in record
+    assert record["design"] == _json(ca.design()) and record["closed_unchanged"] == _json(ca.closed_unchanged())
+    live = ca.run()
+    for key in ("n", "equation", "paths", "perturbations", "tone_loop", "authored", "deficit_map", "oxygenation",
+                "acid_base", "glucose", "recovery_lag", "neuro_probes", "extreme_acidemia", "upstream",
+                "generalization", "double_counting", "verdict", "recommendation", "efficiency"):
+        assert record[key] == _json(live[key]), key
+
+
+def test_the_record_states_the_structural_verdict(record):
+    v = record["verdict"]
+    assert v["verdict"] == f"{ca.NOT_READY} - {ca.BLOCKER}" and not v["not_evaluated"]
+    assert set(v["checks"]) == set(ca.CRITERIA)
+    assert v["checks"]["upstream_unchanged"] and v["checks"]["nothing_approved"] and v["checks"]["lactate_not_proxy"]
+    assert v["failing"] == ["n_semantics_explicit", "observable_separated_from_n", "causal_modifiers_explicit",
+                            "double_counting_resolved", "recovery_lag_coherent", "generalization_plausible"]
+    r = record["recommendation"]
+    assert r["recommendation"] == "STOP_FOR_FACULTY_STRUCTURAL_DECISION" and r["smallest_structure"]["memory"]
+    e = record["efficiency"]
+    assert e["trajectory_simulations"] == 0 and e["cartesian_sweep"] is False and e["integrator_steps"] == 29
+    assert record["extreme_acidemia"]["flagged"] == 17604 and record["extreme_acidemia"]["filtered"] is False
+
+
+def test_the_document_is_generated_from_the_record():
+    from clinical_core import consciousness_audit_report as rep
+    document = DOCUMENT.read_text(encoding="utf-8")
+    data = json.loads(RECORD.read_text(encoding="utf-8"))
+    for name, render in rep.RENDERERS.items():
+        assert rep.apply(document, name, render(data)) == document, name
+    assert "RECOVERY_LAG_STATE_REQUIRED" in document and "STOP_FOR_FACULTY_STRUCTURAL_DECISION" in document
+    assert "NEUROLOGIC_RECOVERY_STATE_REQUIRED" not in document
