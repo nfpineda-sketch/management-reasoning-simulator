@@ -44,7 +44,8 @@ LATER_MODULES = ("clinical_core/pressure_tone_filter.py", "clinical_core/baroref
                  "clinical_core/acid_base.py",
                  "clinical_core/ventilation.py", "clinical_core/ventilation_surface.py",
                  "clinical_core/ventilation_filter.py",
-                 "clinical_core/respiratory_monotonicity.py")
+                 "clinical_core/respiratory_monotonicity.py",
+                 "clinical_core/consciousness_audit.py")
 #: derived.py, integration.py and shadow.py as the latest package leaves them (derived.py: P2J-4, proven by
 #: baroreflex.P2J4_CHANGES; integration.py and shadow.py: P2J-2): the AST proofs cover the declared statements; these pins
 #: make any later change of the three files fail the closed packages' guards until it is proven again.

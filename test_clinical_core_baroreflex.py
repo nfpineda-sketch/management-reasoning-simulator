@@ -44,7 +44,8 @@ P2J4_RECORD_SHA = "e67682cf989edc08a6b56ffb185136a4da2778934d46a27f7a9255bace429
 LATER_MODULES = ("clinical_core/rr_audit.py", "clinical_core/acid_base.py",
                  "clinical_core/ventilation.py", "clinical_core/ventilation_surface.py",
                  "clinical_core/ventilation_filter.py",
-                 "clinical_core/respiratory_monotonicity.py")
+                 "clinical_core/respiratory_monotonicity.py",
+                 "clinical_core/consciousness_audit.py")
 C57, C72 = br.C57, br.C72
 
 

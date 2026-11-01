@@ -9,6 +9,7 @@ closure maps and the policy. No clinical count is read here.
 """
 import ast
 import hashlib
+import inspect
 import json
 
 import pytest
@@ -86,9 +87,16 @@ def test_the_package_is_frozen():
     # P2K-4 is closed (P2K-5): its freeze is recomputed with its own formula on the sources it froze, P2K-5's module
     # left out and the two tuple-only files at their P2K-4 hashes while only their tuples changed
     # (respiratory_monotonicity.p2k4_freeze_digest; the formula is pinned in test_clinical_core_respiratory_monotonicity).
+    # Since P2L-1 the sources also drop P2L-1's module (consciousness_audit.p2k5_sources) before P2K-5's map.
+    from clinical_core import consciousness_audit as ca
     from clinical_core import respiratory_monotonicity as rm
+    assert '"sources": p2k4_sources(bf.freeze_sources())}' in inspect.getsource(rm.p2k4_freeze_digest)
+    text = json.dumps({"revision": vf.REVISION, "p2k3": hashlib.sha256(vf.P2K3_RECORD.read_bytes()).hexdigest(),
+                       "design": vf.design(), "sources": rm.p2k4_sources(ca.p2k5_sources(bf.freeze_sources()))},
+                      sort_keys=True, default=str)
     if FROZEN_DIGEST is not None:
-        assert rm.p2k4_freeze_digest() == FROZEN_DIGEST, "a source, a rule or a support changed after the freeze"
+        assert hashlib.sha256(text.encode("utf-8")).hexdigest() == FROZEN_DIGEST, \
+            "a source, a rule or a support changed after the freeze"
 
 
 def test_the_closed_files_keep_their_ef2cfe8_bytes_and_nothing_imports_the_filter():

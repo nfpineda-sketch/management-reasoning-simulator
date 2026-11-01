@@ -89,13 +89,24 @@ def test_the_package_is_frozen():
     # The closed P2K-4 record and freeze it builds on, pinned (test_clinical_core_ventilation_filter.FROZEN_DIGEST).
     record = rm.p2k4_record()
     assert record["freeze_digest"] == rm.P2K4_DIGEST == "638b64f699ddd53afda7f2e11eebf77e418a28789da8c47e667343738c642773"
-    assert rm.p2k4_freeze_digest() == rm.P2K4_DIGEST
+    # P2K-5 is closed (P2L-1): both freezes are recomputed with their own formulas on the sources they froze, P2L-1's
+    # module left out and the tuple-only files at their P2K-5 hashes (consciousness_audit.p2k5_sources).
+    from clinical_core import consciousness_audit as ca
+    sources = ca.p2k5_sources(bf.freeze_sources())
+    p2k4 = json.dumps({"revision": vf.REVISION, "p2k3": hashlib.sha256(vf.P2K3_RECORD.read_bytes()).hexdigest(),
+                       "design": vf.design(), "sources": rm.p2k4_sources(sources)}, sort_keys=True, default=str)
+    assert hashlib.sha256(p2k4.encode("utf-8")).hexdigest() == rm.P2K4_DIGEST
     # The recomputation is ventilation_filter.freeze_digest's own formula (its source unchanged since P2K-4).
     assert '"sources": bf.freeze_sources()}, sort_keys=True, default=str)' in inspect.getsource(vf.freeze_digest)
     assert '"design": vf.design(), "sources": p2k4_sources(bf.freeze_sources())}' in inspect.getsource(
         rm.p2k4_freeze_digest)
+    assert '"design": design(), "sources": bf.freeze_sources()}, sort_keys=True, default=str)' in inspect.getsource(
+        rm.freeze_digest)
+    own = json.dumps({"revision": rm.REVISION, "p2k4": hashlib.sha256(rm.P2K4_RECORD.read_bytes()).hexdigest(),
+                      "design": rm.design(), "sources": sources}, sort_keys=True, default=str)
     if FROZEN_DIGEST is not None:
-        assert rm.freeze_digest() == FROZEN_DIGEST, "a source, a rule or a support changed after the freeze"
+        assert hashlib.sha256(own.encode("utf-8")).hexdigest() == FROZEN_DIGEST, \
+            "a source, a rule or a support changed after the freeze"
 
 
 def test_the_closed_files_keep_their_p2k4_bytes_and_nothing_imports_the_closure():
