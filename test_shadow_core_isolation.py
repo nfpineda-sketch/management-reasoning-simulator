@@ -47,7 +47,10 @@ ANALYSIS_ONLY = {
     "baroreflex.py": {"statistics"},
     # P2K-1: the offline RR audit lists the files that name W (re) and evaluates the RR function on a bare W holder
     # (types.SimpleNamespace); nothing the application runs imports it.
-    "rr_audit.py": {"re", "types"}}
+    "rr_audit.py": {"re", "types"},
+    # P2K-5: the offline monotonicity closure proves its rule with exact rationals (fractions.Fraction); nothing the
+    # application runs imports it.
+    "respiratory_monotonicity.py": {"fractions"}}
 
 
 def _imports(path):
