@@ -206,3 +206,46 @@ def test_the_scope_adds_and_reads_nothing_it_should_not():
     assert "UNSET" not in cm.RANGES["existing_committed_candidates"] and cm.RANGES["unset"]
     assert json.loads(json.dumps(cm.design(), default=str))["revision"] == "P2M-1"
     assert hashlib.sha256(SOURCE.read_bytes()).hexdigest()
+
+
+# The record and the report (generated once, after the frozen evaluation) -----------------------------------------------------
+
+RECORD = ROOT / "docs" / "revision" / "P2M1_collapse_audit.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2M1_AUDITORIA_COLAPSO.md"
+
+
+def _json(value):
+    return json.loads(json.dumps(value, sort_keys=True, default=str))
+
+
+@pytest.fixture(scope="module")
+def record():
+    return json.loads(RECORD.read_text(encoding="utf-8"))
+
+
+def test_the_record_comes_from_the_frozen_package_and_is_reproduced_live(record, result):
+    assert record["freeze_digest"] == FROZEN_DIGEST and "stopped" not in record
+    assert record["design"] == _json(cm.design())
+    for key in ("upstream", "pulse", "legacy_quoted", "zero_flow", "probes", "persistence", "event_order", "rosc",
+                "extreme_subset", "generalization", "trigger_audit", "redundancy", "redundancy_evidence", "minimum",
+                "ranges", "verdict", "decisions", "efficiency"):
+        assert record[key] == _json(result[key]), key
+
+
+def test_the_record_states_the_structural_verdict(record):
+    v = record["verdict"]
+    assert v["verdict"] == cm.READY and v["failing"] == [] and not v["not_evaluated"]
+    assert record["minimum"]["classification"] == "DERIVED_COLLAPSE_SIGNAL_ONLY_REQUIRED"
+    assert record["extreme_subset"]["flagged"] == 17604 and record["extreme_subset"]["filtered"] is False
+    assert record["approval"] == "none FACULTY_APPROVED" and record["efficiency"]["gi_trajectories"] == 0
+
+
+def test_the_document_is_generated_from_the_record(record):
+    from clinical_core import collapse_audit_report as rep
+    document = DOCUMENT.read_text(encoding="utf-8")
+    for name, render in rep.RENDERERS.items():
+        assert rep.apply(document, name, render(record)) == document, name
+    assert "COLLAPSE_STRUCTURE_READY_FOR_FACULTY_DECISION" in document
+    assert "DERIVED_COLLAPSE_SIGNAL_ONLY_REQUIRED" in document
+    for placeholder in ("SUMMARY_TEXT", "LIMITS_TEXT", "REVIEW_TEXT", "FREEZE_COMMIT", "FREEZE_SHORT"):
+        assert placeholder not in document

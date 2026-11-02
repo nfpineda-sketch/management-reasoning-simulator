@@ -3676,3 +3676,33 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - NaN en la rampa (no alcanzable desde el núcleo certificado);
   - seis interpretaciones pendientes de la docencia, entre ellas F0 a la llegada frente a P2L-1, «suficientemente
     grave», la lectura de la acidemia y su memoria propia, y la regla de paro.
+
+## 53. P2M-1 · Auditoría estructural de colapso y paro (2026-11-02)
+
+- **Encargo:** hacer explícita la semántica de pulso, paro y colapso; separar el colapso hemodinámico (con pulso) del
+  paro (sin circulación efectiva); identificar las entradas causales, el doble conteo, los bucles y la necesidad de
+  persistencia; diseñar la arquitectura común mínima antes de migrar familias de shock. Estructural: sin umbrales y sin
+  activar el colapso.
+- **Congelamiento** `033c272` (digest `c4aa95f6…`): un módulo de auditoría de sólo lectura
+  (`clinical_core/collapse_audit.py`). El núcleo no cambia.
+- **Hallazgos** (`docs/revision/P2M1_AUDITORIA_COLAPSO.md`):
+  - el pulso es un campo del ritmo R, atado al código del ritmo y cambiado sólo por transiciones (evento guionizado o
+    la regla P2E-3); sin pulso no hay flujo, presión ni aporte; con pulso es representable una PAM de 1,8 mmHg
+    (gasto 0,02); el gasto en el cero numérico detiene la corrida (una guarda);
+  - la regla P2E-3 ya da carga propia, retraso explícito de un minuto (acíclico, sin redisparo) y transición a AESP o
+    asistolia, pero está apagada y lee sólo el gasto;
+  - el gasto solo no ve la vasoplejía (gasto 1,2, PAM 48,5), la anemia grave (déficit 0,375 con PAM 90) ni la
+    hipoxemia arterial; bomba y ritmo llegan sólo por el flujo; un ritmo sin pulso es paro;
+  - el flujo es redundante con la PAM y el aporte; la presión de perfusión y el aporte de O2 son necesarios; la
+    oxigenación arterial es distinta; la acidemia no llega a ninguna entrada; lactato, D, I y F quedan excluidos;
+  - con los valores sintéticos de P2E-3 la carga persiste (criterio en el minuto 14 con gasto 0,1), pero el perfil
+    admite un paro en un minuto y, sin repago, minutos críticos aislados acumulan hasta la transición;
+  - el ROSC no está modelado: lo impiden dos guardas explícitas, que se pueden levantar;
+  - el subconjunto extremo (17 604 filas) conserva el pulso con PAM 32,5–46,3, pH 6,961 y DO2 0,106: falta una regla
+    común activa;
+  - la generalización es STRUCTURAL_GAP con la regla actual y plausible con la señal propuesta;
+  - ninguna regla de colapso lee la conciencia.
+- **Veredicto: COLLAPSE_STRUCTURE_READY_FOR_FACULTY_DECISION.** Estructura mínima:
+  DERIVED_COLLAPSE_SIGNAL_ONLY_REQUIRED. La carga existente pasa a leer el máximo de la falla de presión de perfusión y
+  la falla de aporte de O2 (y, si se decide, la de oxigenación arterial), con dos invariantes de persistencia. Los
+  valores quedan UNSET y se piden las decisiones docentes; nada se aprueba.

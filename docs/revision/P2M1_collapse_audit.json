@@ -1,0 +1,1424 @@
+{
+ "approval": "none FACULTY_APPROVED",
+ "decided": "2026-11-02",
+ "decisions": [
+  "the input of the existing collapse burden: replace output_rel by the maximum of perfusion-pressure failure (MAP) and oxygen-delivery failure (the effective deficit); confirm both mechanisms",
+  "whether arterial oxygenation (SpO2) is a third input (the systemic deficit misses hypoxaemia to about 39 %)",
+  "the two persistence invariants: no one-minute arrest (a floor on the limit) and a mandatory repayment",
+  "acidemia: a consequence only (minimum), an amplifier of the burden, or a myocardial-depression path into P later",
+  "zero flow: keep the run-stopping guard, or a same-minute definitional arrest when output reaches the numerical zero",
+  "pulse semantics: the state's pulse stays rhythm semantics; whether a palpable-pulse observation is derived from pressure (a pulse with MAP about 2 mmHg is representable today)",
+  "the terminal-rhythm selection rule (PEA or asystole, still TBD)",
+  "the values: the new signals' bounds and the persistence floor stay UNSET until decided from general physiology; the P2F registry ranges for the persistence parameters are offered for review",
+  "ROSC in a later package: lift the two guards and decide how the burden resets",
+  "the next package: implement the decided collapse signal in the shadow core (off by default), then a second family"
+ ],
+ "design": {
+  "criteria": [
+   "pulse_semantics_explicit",
+   "collapse_vs_arrest_separated",
+   "causal_inputs_explicit",
+   "redundancy_resolved",
+   "persistence_classified",
+   "event_order_safe",
+   "generalization_plausible",
+   "no_gi_threshold",
+   "upstream_unchanged"
+  ],
+  "decided": "2026-11-02",
+  "decisions": [
+   "the input of the existing collapse burden: replace output_rel by the maximum of perfusion-pressure failure (MAP) and oxygen-delivery failure (the effective deficit); confirm both mechanisms",
+   "whether arterial oxygenation (SpO2) is a third input (the systemic deficit misses hypoxaemia to about 39 %)",
+   "the two persistence invariants: no one-minute arrest (a floor on the limit) and a mandatory repayment",
+   "acidemia: a consequence only (minimum), an amplifier of the burden, or a myocardial-depression path into P later",
+   "zero flow: keep the run-stopping guard, or a same-minute definitional arrest when output reaches the numerical zero",
+   "pulse semantics: the state's pulse stays rhythm semantics; whether a palpable-pulse observation is derived from pressure (a pulse with MAP about 2 mmHg is representable today)",
+   "the terminal-rhythm selection rule (PEA or asystole, still TBD)",
+   "the values: the new signals' bounds and the persistence floor stay UNSET until decided from general physiology; the P2F registry ranges for the persistence parameters are offered for review",
+   "ROSC in a later package: lift the two guards and decide how the burden resets",
+   "the next package: implement the decided collapse signal in the shadow core (off by default), then a second family"
+  ],
+  "faculty": {
+   "acidemia": "no pH arrest threshold unless a committed common rule exists; the P2K-5 / P2L-2 subset (57m, demand 1.1, 17,604 rows, pH < 7.00) carried as a diagnostic stress subset, never filtered",
+   "brief": "P2M-1 collapse / arrest safety architecture audit (2026-11-02): structural; no arrest threshold chosen",
+   "candidate_domains": "A flow, B MAP / perfusion pressure, C pump P, D rhythm / pulse R, E effective oxygen delivery / deficit, F arterial oxygenation, G severe acid-base failure, H future respiratory failure; necessity, redundancy and order to be determined",
+   "closed": "BloodState, V, P, T, R, pressure, DO2 / deficit, D, lactate, HR / baroreflex, acid-base, RR / W / PaCO2 and the consciousness architecture closed; P2L-2's carried debts untouched unless collapse depends on them",
+   "no_biomarker_arrest": "lactate, D alone, consciousness I and the systemic encephalopathy burden F are never direct collapse or arrest triggers",
+   "order": "no implicit recursive pulse / collapse feedback; an explicit lag if needed",
+   "persistence": "if an instantaneous rule would flip or arrest in one minute: PERSISTENCE_STATE_OR_TIMER_REQUIRED; D and F are not collapse memory without strong causal justification",
+   "rosc": "no ACLS here; no proposed state may make a future return of circulation impossible",
+   "scope": "shadow only; no collapse activation, runtime integration, GI or second-family migration, death model or parameter approval",
+   "three_states": "consciousness impairment, hemodynamic collapse (circulation present, not viable) and cardiac arrest (no effective circulation) stay distinct; unconscious with a pulse, profound shock with a pulse and collapse progressing to arrest stay representable",
+   "thresholds": "the GI cases cannot identify minimum viable MAP or flow, an arrest pH or DO2 or a persistence duration; ranges only from general physiology, otherwise UNSET"
+  },
+  "forbidden_triggers": [
+   "consciousness_level",
+   "lactate",
+   "lactate_excess_mmol_l",
+   "D",
+   "encephalopathy",
+   "systemic_encephalopathy_burden",
+   "impairment",
+   "mental_status"
+  ],
+  "generalization": {
+   "anaphylaxis": [
+    "T and V fall, airway: MAP first, flow later, hypoxaemia",
+    "only once flow falls",
+    "yes",
+    "flow_B_flow_kept_low_tone"
+   ],
+   "cardiogenic": [
+    "P falls: flow, MAP and delivery fall",
+    "yes",
+    "yes",
+    "pump_A_pump_failure_organized_rhythm"
+   ],
+   "distributive_sepsis": [
+    "T falls: MAP falls while flow is kept or rises; demand rises",
+    "no (flow rises)",
+    "yes (perfusion pressure; demand through the deficit)",
+    "flow_B_flow_kept_low_tone"
+   ],
+   "hemorrhagic": [
+    "V and Hb fall: flow, MAP and delivery fall together",
+    "yes (flow falls)",
+    "yes",
+    "flow_C_both"
+   ],
+   "hypoxaemia_respiratory_failure": [
+    "SpO2 falls; the systemic deficit (extraction reserve) misses it to about 39 %; apnoea needs the respiratory family's writer",
+    "no",
+    "yes with arterial oxygenation; apnoea is the family's writer",
+    "oxygen_E_arterial_hypoxaemia"
+   ],
+   "malignant_arrhythmia": [
+    "a pulseless rhythm is arrest at once (a rhythm transition, not collapse); a perfusing low-output rhythm lowers flow",
+    "pulseless: not collapse; with a pulse: yes",
+    "same",
+    "pump_B_rhythm_low_output_with_pulse"
+   ],
+   "obstructive_pe": [
+    "no obstruction channel: the family's writer lowers effective preload / pump; PE adds hypoxaemia",
+    "yes for the flow part, no for the hypoxaemia",
+    "yes (with arterial oxygenation)",
+    "flow_C_both"
+   ]
+  },
+  "generalization_classes": [
+   "COMMON_COLLAPSE_ARCHITECTURE_PLAUSIBLE",
+   "STRUCTURAL_GAP",
+   "DISEASE_SPECIFIC_OVERFIT_RISK"
+  ],
+  "inputs": {
+   "arterial_oxygenation": [
+    "spo2",
+    "low"
+   ],
+   "output": [
+    "output_rel",
+    "low"
+   ],
+   "oxygen_delivery": [
+    "deficit_fraction",
+    "high"
+   ],
+   "perfusion_pressure": [
+    "map",
+    "low"
+   ]
+  },
+  "legacy": {
+   "acs_reperfusion.py": "VF_AT_MIN",
+   "airway_pharmacology.py": "APNOEA_TO_ARREST_MIN",
+   "anaphylaxis_reaction.py": "ARREST_AFTER_MIN",
+   "bradycardia_toxicology.py": "ARREST_RATE",
+   "clinical_physiology.py": "low_flow_burden"
+  },
+  "mechanism_classes": [
+   "VALID_COMMON_PHYSIOLOGY",
+   "LEGACY_ARTIFACT",
+   "CASE_SCRIPTED_EVENT",
+   "SAFETY_GUARD",
+   "NOT_CURRENTLY_MODELED"
+  ],
+  "mechanisms": {
+   "bicarbonate_guard": [
+    "derived.bicarbonate (P2K-2)",
+    "an acid burden that takes HCO3 to or below 0 stops the run",
+    "SAFETY_GUARD",
+    true
+   ],
+   "blood_channel_guard": [
+    "integration.step",
+    "a blood-state move outside the V / Hb guard stops the run",
+    "SAFETY_GUARD",
+    true
+   ],
+   "hemodynamic_collapse_with_pulse": [
+    "none",
+    "no observable or state names a collapse while a pulse is present; only the hidden P2E-3 burden exists, and only when the rule is declared",
+    "NOT_CURRENTLY_MODELED",
+    false
+   ],
+   "legacy_engine_arrests": [
+    "family_engine and its family modules (read as text)",
+    "anaphylaxis untreated minutes, apnoea minutes, a closed coronary artery's minutes to VF, a bradycardia rate at or below 20, and the older generic low-flow conjunction in clinical_physiology",
+    "LEGACY_ARTIFACT",
+    true
+   ],
+   "no_return_of_pulse": [
+    "integration._rhythm_after; CoreState docstring",
+    "a transition back to a pulse after arrest raises ('resuscitation is out of scope'); terminal_since never cleared",
+    "SAFETY_GUARD",
+    true
+   ],
+   "p2e3_collapse_rule": [
+    "derived.collapse_burden_after_minute / collapse_reached / terminal_rhythm; integration.step",
+    "aux.collapse_burden accrues the share by which output_rel falls below a declared threshold (read on the minute's start state, only with a pulse), held or repaid when declared; at the declared limit R moves to PEA (or asystole) the same step, so the new state is pulseless one minute after the state that met the criterion; off by default (threshold and limit None)",
+    "VALID_COMMON_PHYSIOLOGY",
+    false
+   ],
+   "resuscitation_rosc": [
+    "none",
+    "no CPR, defibrillation, epinephrine-for-arrest or return of circulation",
+    "NOT_CURRENTLY_MODELED",
+    false
+   ],
+   "rhythm_state_invariants": [
+    "state.RhythmState.__post_init__",
+    "a pulse exactly when the rhythm perfuses; a non-perfusing rhythm has no output",
+    "SAFETY_GUARD",
+    true
+   ],
+   "scripted_pump_change": [
+    "modules/rhythm_events.ScriptedPumpChange",
+    "a declared change of P per minute over an interval; reaches flow, never the pulse directly",
+    "CASE_SCRIPTED_EVENT",
+    false
+   ],
+   "scripted_rhythm_event": [
+    "modules/rhythm_events.ScriptedRhythmEvent",
+    "a declared natural-history change of R at a declared minute, cause class and preventability; not applied once in arrest; no GI case declares one",
+    "CASE_SCRIPTED_EVENT",
+    false
+   ],
+   "zero_output_guard": [
+    "derived.derive",
+    "a pulse with effective output at the numerical zero stops the run (UnresolvedBoundary), it is never shown",
+    "SAFETY_GUARD",
+    true
+   ]
+  },
+  "migration_gate": "MIGRATION_GATE_CLOSED: no collapse activation, numeric collapse filtering, arrest threshold, ROSC / ACLS, runtime integration, GI or second-family migration is authorized",
+  "minimum": {
+   "classification": "DERIVED_COLLAPSE_SIGNAL_ONLY_REQUIRED",
+   "invariants": "a persistence floor (no one-minute arrest: the limit above one minute's maximal accrual) and a mandatory repayment whenever the rule is declared",
+   "new": "one derived common non-viability signal replacing output_rel as the burden's input: the maximum (never a sum) of perfusion-pressure failure (MAP), oxygen-delivery failure (the effective deficit) and, if the faculty decides, arterial-oxygenation failure (SpO2), with the dominant mechanism recorded (CIRCULATORY_COLLAPSE / METABOLIC_NONVIABILITY_RISK)",
+   "not_added_here": "nothing is implemented, activated or valued in P2M-1",
+   "not_needed": "no new collapse state, no timer beside the burden, no pump or rhythm input, no flow input, no pH, lactate, D, I or F input",
+   "reuse": "the P2E-3 structure: aux.collapse_burden (a dedicated persistence memory, neither D nor F), its explicit one-minute lag, the terminal transition to a pulseless rhythm and the CO1 / CO2 rules"
+  },
+  "own": [
+   "clinical_core/collapse_audit.py"
+  ],
+  "policy": "Shadow only and read-only: no core file, channel, rule, threshold or parameter changed or added; fixed core states, P2E-3's committed synthetic test values and committed records read with pinned hashes; the legacy engine quoted as text, never imported or fitted; the extreme subset kept; nothing selected, approved or activated.",
+  "probe_gain": 0.04,
+  "probe_rule": "Fixed states on P2K-2's neutral probe arrival (bands.ARRIVAL with HCO3 20, extraction reserve 2.5), read through derive, the deficit and the ventilation candidate (gain 0.04): illustrative extremes, P2L-1's sizes where they exist. Each candidate input is classified threshold-free against the neutral reference: zero under every admissible bound (the reading is on the reference's side), or positive under some. The current P2E-3 input is output_rel, whose admissible thresholds lie below arrival output (1).",
+  "probes": {
+   "acid_severe_metabolic": [
+    "metabolic acid burden 15 (pH about 7.18)",
+    {
+     "burden": 15.0
+    },
+    "acid",
+    []
+   ],
+   "flow_A_low_flow_high_tone": [
+    "pump 0.55, tone 3.0 (the tone guard's ceiling): low flow, MAP kept",
+    {
+     "P": 0.55,
+     "T": 3.0
+    },
+    "flow_map",
+    [
+     "output",
+     "oxygen_delivery"
+    ]
+   ],
+   "flow_B_flow_kept_low_tone": [
+    "tone 0.45 (vasodilation: flow rises, MAP falls)",
+    {
+     "T": 0.45
+    },
+    "flow_map",
+    [
+     "perfusion_pressure"
+    ]
+   ],
+   "flow_C_both": [
+    "pump 0.3",
+    {
+     "P": 0.3
+    },
+    "flow_map",
+    [
+     "output",
+     "perfusion_pressure",
+     "oxygen_delivery"
+    ]
+   ],
+   "oxygen_A_low_flow_delivery_kept": [
+    "pump 0.5 (extraction reserve keeps consumption)",
+    {
+     "P": 0.5
+    },
+    "oxygen",
+    [
+     "output",
+     "perfusion_pressure"
+    ]
+   ],
+   "oxygen_B_content_failure": [
+    "Hb at 25 % (flow and MAP kept)",
+    {
+     "hb_share": 0.25
+    },
+    "oxygen",
+    [
+     "oxygen_delivery"
+    ]
+   ],
+   "oxygen_C_both": [
+    "pump 0.3, Hb at 60 %",
+    {
+     "P": 0.3,
+     "hb_share": 0.6
+    },
+    "oxygen",
+    [
+     "output",
+     "perfusion_pressure",
+     "oxygen_delivery"
+    ]
+   ],
+   "oxygen_E2_authored_hypoxaemia": [
+    "authored arrival SpO2 60 (delivery index 1)",
+    {
+     "arrival_spo2": 60.0
+    },
+    "oxygen",
+    [
+     "arterial_oxygenation"
+    ]
+   ],
+   "oxygen_E_arterial_hypoxaemia": [
+    "arrival on FiO2 1, then room air (SpO2 73)",
+    {
+     "arrival_fio2": 1.0,
+     "fio2": 0.21
+    },
+    "oxygen",
+    [
+     "arterial_oxygenation"
+    ]
+   ],
+   "pump_A_pump_failure_organized_rhythm": [
+    "pump 0.25, sinus",
+    {
+     "P": 0.25
+    },
+    "pump_rhythm",
+    [
+     "output",
+     "perfusion_pressure",
+     "oxygen_delivery"
+    ]
+   ],
+   "pump_B2_pulseless_rhythm": [
+    "pump 1, VF (no pulse)",
+    {
+     "rhythm": "vf"
+    },
+    "pump_rhythm",
+    []
+   ],
+   "pump_B_rhythm_low_output_with_pulse": [
+    "complete AV block at 30 / min, output factor 0.5, pump 1",
+    {
+     "rhythm": "avb"
+    },
+    "pump_rhythm",
+    [
+     "output",
+     "perfusion_pressure"
+    ]
+   ],
+   "pump_C_both": [
+    "pump 0.4 with the AV block",
+    {
+     "P": 0.4,
+     "rhythm": "avb"
+    },
+    "pump_rhythm",
+    [
+     "output",
+     "perfusion_pressure",
+     "oxygen_delivery"
+    ]
+   ],
+   "reference": [
+    "the neutral probe arrival",
+    {},
+    "all",
+    []
+   ]
+  },
+  "pulse_semantics": {
+   "changed_by": "a RhythmTransition: a contributor's (modules/rhythm_events.ScriptedRhythmEvent) or the core's P2E-3 collapse rule (integration.step); the arrival constructor sets the arrival rhythm",
+   "class": "AUTHORITATIVE_STATE: pulse is a field of the rhythm state R, changed only by rhythm transitions; it is bound by invariant to the rhythm code (pulse exactly when the code perfuses: NON_PERFUSING = pulseless VT, VF, PEA, asystole), so it is ELECTRICAL / RHYTHM semantics, never read from pressure or flow",
+   "default": "the case's arrival rhythm (Anchors.rhythm; bands.ARRIVAL: sinus 80, pulse); terminal_since None",
+   "field": "CoreState.R (channel C4, 'state machine: code, rate, effective-output factor, pulse'): RhythmState.pulse_present",
+   "invariants": "a perfusing rhythm has output_factor > 0, a pulseless one exactly 0; terminal_since is set exactly when there is no pulse, within the encounter, and never cleared",
+   "when_false": "derive's pulseless branch: output, pressure and delivery 0; SBP, DBP, MAP, SpO2, CRT and pulse rate not measurable; RR 0; the legacy level 3; the integrator keeps T and P as latent values, accrues D at the full demand (lactate follows it a minute later), accrues the acid burden, holds the collapse burden; nothing restores a pulse"
+  },
+  "ranges": {
+   "existing_committed_candidates": "the P2F calibration registry (CANDIDATE, not approved): burden per minute 0.5 / 1 / 2, limit 5 / 15 / 30 minutes at full severity, repayment 30 / 60 / 240 min; the output threshold 0.2 / 0.3 / 0.4 belongs to the output input the minimum replaces",
+   "unset": "the bounds of the perfusion-pressure, oxygen-delivery and arterial-oxygenation failure signals, the persistence floor, the terminal-rhythm selection rule: no committed common range; never from the GI cases"
+  },
+  "records": {
+   "p2k5": "4c567527096d11253b6ebb054436b19a1797ae4f0aeee802fe5c7e824e7de523",
+   "p2l1": "dcb1b40ae92cd785bec0723d6262948ab616d7b2513656ecd3cf81e2fadf607b"
+  },
+  "redundancy": {
+   "A_flow": "REDUNDANT_GIVEN_B_AND_E: flow reaches viability through perfusion pressure (pressure = flow x tone) and through delivery (delivery = flow x content); a low flow that neither lowers MAP nor exhausts extraction is not by itself non-viable",
+   "B_perfusion_pressure": "NECESSARY: vasoplegia keeps flow and delivery while MAP falls (flow_B); only pressure sees it",
+   "C_pump": "REDUNDANT_VIA_FLOW: P enters output multiplicatively; reading it beside its consequences counts it twice",
+   "D_rhythm": "SPLIT: a pulseless rhythm is arrest itself (a transition, not collapse); a perfusing rhythm's output factor enters flow like P",
+   "E_oxygen_delivery": "NECESSARY: an oxygen-content failure keeps flow and MAP (oxygen_B); only the deficit sees it",
+   "F_arterial_oxygenation": "DISTINCT_CANDIDATE: the systemic deficit misses arterial hypoxaemia to about 39 % at normal flow and Hb (oxygen_E); the myocardium extracts near its maximum at rest, so a separate input is plausible: faculty decision",
+   "G_acid_base": "MODIFIER_NOT_INPUT: no path to P or R today; the acid burden integrates the deficit (P2L-2 M4), so an additive pH input would recount a prolonged deficit; amplifier or myocardial depression are later decisions",
+   "H_respiratory_failure": "FUTURE: no apnoea or ventilatory-failure writer; it reaches viability through SpO2",
+   "lactate_D_I_F": "EXCLUDED (faculty): consequences and markers, never triggers"
+  },
+  "report": "clinical_core/collapse_audit_report.py",
+  "revision": "P2M-1",
+  "sources_at_p2l2": [
+   "04bbfdd8f425384ee7dc6d7467818474d306e13a3ebac1153b88931ceed690fa",
+   66
+  ],
+  "status": {
+   "approved": "none FACULTY_APPROVED",
+   "collapse": "OFF (P2E-3 rule declared, not activated)",
+   "probe_values": "SYNTHETIC_PROBE_ONLY: illustrative fixed states (P2L-1's sizes) and P2E-3's committed synthetic test values (threshold 0.4, limit 10, repayment tau 30)"
+  },
+  "structure_classes": [
+   "EXISTING_PULSE_ARREST_STRUCTURE_SUFFICIENT",
+   "DERIVED_COLLAPSE_SIGNAL_ONLY_REQUIRED",
+   "SHORT_PERSISTENCE_TIMER_REQUIRED",
+   "NEW_COLLAPSE_STATE_REQUIRED",
+   "MULTI_MECHANISM_SAFETY_ARCHITECTURE_REQUIRED"
+  ],
+  "test_rule": [
+   0.4,
+   10.0,
+   30.0
+  ],
+  "tuple_at_p2l2": {
+   "clinical_core/decision_pack.py": "8f9e8e8ffff8195abd2b47710e0befa2f247f823ac93b065ce5ab07a001eec5b",
+   "clinical_core/lactate_slice.py": "03411e630d78b211bd8d00b47af05a72cc8f2f6afb78eafab1d1daf01763c2f3"
+  },
+  "tuples_added": {
+   "DOWNSTREAM_REPORTS": [
+    "clinical_core/collapse_audit_report.py"
+   ],
+   "PACK_DIGEST_EXCLUDED": [
+    "clinical_core/collapse_audit.py",
+    "clinical_core/collapse_audit_report.py"
+   ]
+  },
+  "verdict_rule": "Predeclared. READY iff every criterion holds; otherwise NOT_READY - the first failing criterion as the blocker, every failing criterion listed. A changed upstream file stops the run before any probe."
+ },
+ "efficiency": {
+  "burden_updates": 638,
+  "cartesian_sweep": false,
+  "fixed_state_readings": 18,
+  "gi_trajectories": 0,
+  "integrator_steps": 21,
+  "legacy_engine_fitted": false,
+  "legacy_text_quoted": 5,
+  "records_read": [
+   "P2L1_consciousness_audit.json",
+   "P2K5_respiratory_monotonicity.json"
+  ],
+  "region_rebuilt": false,
+  "trajectory_simulations": 1
+ },
+ "event_order": {
+  "burden_when_met": 10.500000000000002,
+  "classification": "EXPLICIT_LAG_REQUIRED: already implemented (the criterion is read on the minute's start state, the pulseless rhythm is the next state's; the detector never reads its own result in the same step, needs a pulse to fire and freezes after arrest): ACYCLIC",
+  "derive_on_new_state": true,
+  "frozen_after_arrest": true,
+  "no_retrigger": true,
+  "previous_state_burden": 9.750000000000002,
+  "pulse_lost_minute": 14,
+  "reads_start_state": true,
+  "trajectory_steps": 20
+ },
+ "extreme_subset": {
+  "P": "1 (arrival): the untreated GI scenario writes no pump change (modules/gi_haemorrhage writes the blood state only)",
+  "R": "sinus with a pulse: no rhythm transition is declared and the collapse rule is off",
+  "bounds_reading": "output_rel at minute 120 lies between the effective delivery over the largest arrival delivery ratio (Hb ratio at most 1) and the pressure the MAP implies (tone at least 1 under the tone response); not reconstructed: the structural conclusion does not depend on it",
+  "by_case": {
+   "gi_bleed_57m": 17604,
+   "gi_bleed_72f": 0
+  },
+  "deficit_fraction_lowest": 0.7592008778985458,
+  "delivery_rel_lowest": [
+   0.10595161372463982,
+   0.1765860228743997
+  ],
+  "effective_delivery_lowest": 0.10595161372463982,
+  "filtered": false,
+  "flagged": 17604,
+  "lowest": {
+   "case": "gi_bleed_57m",
+   "deficit": 0.8351209656884006,
+   "minute": 120,
+   "paco2": 25.78356891798774,
+   "ph": 6.961334846510912
+  },
+  "map120": [
+   32.53874403031299,
+   46.31056031787178
+  ],
+  "missing_safety_mechanism": "ACTIVE_COMMON_COLLAPSE_RULE_MISSING: the P2E-3 structure exists but is off and reads output only; with it off, MAP 31-46 mmHg, a deficit of 0.84 and pH 6.96 keep a pulse until a guard stops the run (zero output, HCO3 at 0, blood bounds), never an arrest",
+  "output_rel_bounds": [
+   0.10595161372463982,
+   0.7088351069062006
+  ],
+  "pressure_rel120": [
+   0.4980420004639743,
+   0.7088351069062006
+  ],
+  "pulse": true,
+  "sbp120": [
+   43.82769604082974,
+   62.37748940774566
+  ],
+  "spo2": "97 (authored arrival; untreated FiO2 unchanged, and SpO2 moves only with FiO2)",
+  "stability_problem": true
+ },
+ "freeze_digest": "c4aa95f62273136934b1b7a31bbb7637fa71fdb00638ddc1fd3974eeeecea9f1",
+ "generalization": {
+  "condition": "the arterial-oxygenation input (a faculty decision) and each family's own writer of its signal; no family term in the collapse layer",
+  "current": "STRUCTURAL_GAP",
+  "current_gap": [
+   "anaphylaxis",
+   "distributive_sepsis",
+   "hypoxaemia_respiratory_failure"
+  ],
+  "proposed": "COMMON_COLLAPSE_ARCHITECTURE_PLAUSIBLE",
+  "rows": {
+   "anaphylaxis": {
+    "current_output_rule": "only once flow falls",
+    "current_sees": false,
+    "mechanism": "CIRCULATORY_COLLAPSE_RISK",
+    "pathway": "T and V fall, airway: MAP first, flow later, hypoxaemia",
+    "probe": "flow_B_flow_kept_low_tone",
+    "proposed_sees": true,
+    "proposed_signal": "yes"
+   },
+   "cardiogenic": {
+    "current_output_rule": "yes",
+    "current_sees": true,
+    "mechanism": "CIRCULATORY_COLLAPSE_RISK",
+    "pathway": "P falls: flow, MAP and delivery fall",
+    "probe": "pump_A_pump_failure_organized_rhythm",
+    "proposed_sees": true,
+    "proposed_signal": "yes"
+   },
+   "distributive_sepsis": {
+    "current_output_rule": "no (flow rises)",
+    "current_sees": false,
+    "mechanism": "CIRCULATORY_COLLAPSE_RISK",
+    "pathway": "T falls: MAP falls while flow is kept or rises; demand rises",
+    "probe": "flow_B_flow_kept_low_tone",
+    "proposed_sees": true,
+    "proposed_signal": "yes (perfusion pressure; demand through the deficit)"
+   },
+   "hemorrhagic": {
+    "current_output_rule": "yes (flow falls)",
+    "current_sees": true,
+    "mechanism": "CIRCULATORY_COLLAPSE_RISK",
+    "pathway": "V and Hb fall: flow, MAP and delivery fall together",
+    "probe": "flow_C_both",
+    "proposed_sees": true,
+    "proposed_signal": "yes"
+   },
+   "hypoxaemia_respiratory_failure": {
+    "current_output_rule": "no",
+    "current_sees": false,
+    "mechanism": "METABOLIC_NONVIABILITY_RISK",
+    "pathway": "SpO2 falls; the systemic deficit (extraction reserve) misses it to about 39 %; apnoea needs the respiratory family's writer",
+    "probe": "oxygen_E_arterial_hypoxaemia",
+    "proposed_sees": true,
+    "proposed_signal": "yes with arterial oxygenation; apnoea is the family's writer"
+   },
+   "malignant_arrhythmia": {
+    "current_output_rule": "pulseless: not collapse; with a pulse: yes",
+    "current_sees": true,
+    "mechanism": "CIRCULATORY_COLLAPSE_RISK",
+    "pathway": "a pulseless rhythm is arrest at once (a rhythm transition, not collapse); a perfusing low-output rhythm lowers flow",
+    "probe": "pump_B_rhythm_low_output_with_pulse",
+    "proposed_sees": true,
+    "proposed_signal": "same"
+   },
+   "obstructive_pe": {
+    "current_output_rule": "yes for the flow part, no for the hypoxaemia",
+    "current_sees": true,
+    "mechanism": "CIRCULATORY_COLLAPSE_RISK",
+    "pathway": "no obstruction channel: the family's writer lowers effective preload / pump; PE adds hypoxaemia",
+    "probe": "flow_C_both",
+    "proposed_sees": true,
+    "proposed_signal": "yes (with arterial oxygenation)"
+   }
+  }
+ },
+ "legacy_quoted": {
+  "acs_reperfusion.py": true,
+  "airway_pharmacology.py": true,
+  "anaphylaxis_reaction.py": true,
+  "bradycardia_toxicology.py": true,
+  "clinical_physiology.py": true
+ },
+ "migration_gate": "MIGRATION_GATE_CLOSED: no collapse activation, numeric collapse filtering, arrest threshold, ROSC / ACLS, runtime integration, GI or second-family migration is authorized",
+ "minimum": {
+  "classification": "DERIVED_COLLAPSE_SIGNAL_ONLY_REQUIRED",
+  "invariants": "a persistence floor (no one-minute arrest: the limit above one minute's maximal accrual) and a mandatory repayment whenever the rule is declared",
+  "new": "one derived common non-viability signal replacing output_rel as the burden's input: the maximum (never a sum) of perfusion-pressure failure (MAP), oxygen-delivery failure (the effective deficit) and, if the faculty decides, arterial-oxygenation failure (SpO2), with the dominant mechanism recorded (CIRCULATORY_COLLAPSE / METABOLIC_NONVIABILITY_RISK)",
+  "not_added_here": "nothing is implemented, activated or valued in P2M-1",
+  "not_needed": "no new collapse state, no timer beside the burden, no pump or rhythm input, no flow input, no pH, lactate, D, I or F input",
+  "reuse": "the P2E-3 structure: aux.collapse_burden (a dedicated persistence memory, neither D nor F), its explicit one-minute lag, the terminal transition to a pulseless rhythm and the CO1 / CO2 rules"
+ },
+ "persistence": {
+  "burden_updates": 638,
+  "classification": "PERSISTENCE_STATE_OR_TIMER_REQUIRED: already present (P2E-3 collapse burden); two invariants missing (a persistence floor, a mandatory repayment)",
+  "committed_rules": {
+   "CO1": {
+    "probe": "five minutes at 90% of the collapse threshold, then recovery: no arrest",
+    "rule": "brief, moderate low flow need not cause arrest"
+   },
+   "CO2": {
+    "probe": "output 0.1 (the pump bound) for 240 min: the criterion is met",
+    "rule": "severe, prolonged low flow can accumulate burden to the terminal transition"
+   }
+  },
+  "findings": {
+   "persistence_exists": "aux.collapse_burden: a dedicated collapse memory (neither D nor F)",
+   "repayment_optional": "without a declared repayment the burden never falls: brief dips separated by normal flow accumulate to the transition",
+   "single_minute_arrest_not_excluded": "the profile accepts a limit at or below one minute's maximal accrual, so an instantaneous one-minute arrest is constructible"
+  },
+  "intermittent_1_in_10_for_4h": {
+   "held_criterion_minute": 131,
+   "repaid_criterion_minute": null,
+   "repaid_max": 2.8915615234024035
+  },
+  "one_transient_minute": {
+   "arrest": false,
+   "burden": 0.9975
+  },
+  "restored_after_8_min": {
+   "burden_at_8": 6.000000000000001,
+   "held_after_60": 6.000000000000001,
+   "repaid_after_60": 0.8120116994196765
+  },
+  "single_minute_limit_0_5": {
+   "criterion_minute": 1,
+   "profile_accepts_it": true
+  },
+  "sustained_output_0_1": {
+   "criterion_minute": 14,
+   "per_minute": 0.7500000000000001
+  },
+  "values": {
+   "limit": 10.0,
+   "repayment_tau_min": 30.0,
+   "threshold": 0.4
+  }
+ },
+ "policy": "Shadow only and read-only: no core file, channel, rule, threshold or parameter changed or added; fixed core states, P2E-3's committed synthetic test values and committed records read with pinned hashes; the legacy engine quoted as text, never imported or fitted; the extreme subset kept; nothing selected, approved or activated.",
+ "probes": {
+  "all_as_expected": true,
+  "groups": {
+   "flow_map": {
+    "current_rule_blind": [
+     "flow_B_flow_kept_low_tone"
+    ],
+    "distinguishable": true,
+    "probes": [
+     "reference",
+     "flow_A_low_flow_high_tone",
+     "flow_B_flow_kept_low_tone",
+     "flow_C_both"
+    ]
+   },
+   "oxygen": {
+    "current_rule_blind": [
+     "oxygen_B_content_failure",
+     "oxygen_E2_authored_hypoxaemia",
+     "oxygen_E_arterial_hypoxaemia"
+    ],
+    "distinguishable": true,
+    "probes": [
+     "reference",
+     "oxygen_A_low_flow_delivery_kept",
+     "oxygen_B_content_failure",
+     "oxygen_C_both"
+    ]
+   },
+   "pump_rhythm": {
+    "current_rule_blind": [],
+    "pulseless_rhythm_is_arrest": true,
+    "pump_and_rhythm_failures_share_inputs": true,
+    "rhythm_equals_pump_at_equal_output": true
+   }
+  },
+  "rows": {
+   "acid_severe_metabolic": {
+    "as_expected": true,
+    "expected": [],
+    "group": "acid",
+    "mechanism": "NONE",
+    "positive": [],
+    "reading": {
+     "P": 1.0,
+     "T": 1.0,
+     "deficit_fraction": 0.0,
+     "delivery_rel": 1.0,
+     "effective_delivery": 1.0,
+     "hb": 13.0,
+     "legacy_level": 0,
+     "map": 90.0,
+     "output_rel": 1.0,
+     "paco2": 25.0,
+     "ph": 7.179181246047625,
+     "pressure_rel": 1.0,
+     "pulse": true,
+     "rhythm": "sinus",
+     "sbp": 120.0,
+     "spo2": 97.0
+    },
+    "support": {
+     "arterial_oxygenation": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "output": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "oxygen_delivery": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "perfusion_pressure": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND"
+    },
+    "what": "metabolic acid burden 15 (pH about 7.18)"
+   },
+   "flow_A_low_flow_high_tone": {
+    "as_expected": true,
+    "expected": [
+     "output",
+     "oxygen_delivery"
+    ],
+    "group": "flow_map",
+    "mechanism": "CIRCULATORY_COLLAPSE_RISK",
+    "positive": [
+     "output",
+     "oxygen_delivery"
+    ],
+    "reading": {
+     "P": 0.55,
+     "T": 3.0,
+     "deficit_fraction": 0.140625,
+     "delivery_rel": 0.34375,
+     "effective_delivery": 0.34375,
+     "hb": 13.0,
+     "legacy_level": 0,
+     "map": 92.8125,
+     "output_rel": 0.34375,
+     "paco2": 34.48275862068966,
+     "ph": 7.386306738843274,
+     "pressure_rel": 1.03125,
+     "pulse": true,
+     "rhythm": "sinus",
+     "sbp": 123.75,
+     "spo2": 97.0
+    },
+    "support": {
+     "arterial_oxygenation": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "output": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND",
+     "oxygen_delivery": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND",
+     "perfusion_pressure": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND"
+    },
+    "what": "pump 0.55, tone 3.0 (the tone guard's ceiling): low flow, MAP kept"
+   },
+   "flow_B_flow_kept_low_tone": {
+    "as_expected": true,
+    "expected": [
+     "perfusion_pressure"
+    ],
+    "group": "flow_map",
+    "mechanism": "CIRCULATORY_COLLAPSE_RISK",
+    "positive": [
+     "perfusion_pressure"
+    ],
+    "reading": {
+     "P": 1.0,
+     "T": 0.45,
+     "deficit_fraction": 0.0,
+     "delivery_rel": 1.1976047904191618,
+     "effective_delivery": 1.1976047904191618,
+     "hb": 13.0,
+     "legacy_level": 2,
+     "map": 48.50299401197606,
+     "output_rel": 1.1976047904191618,
+     "paco2": 34.48275862068966,
+     "ph": 7.386306738843274,
+     "pressure_rel": 0.5389221556886228,
+     "pulse": true,
+     "rhythm": "sinus",
+     "sbp": 64.67065868263474,
+     "spo2": 97.0
+    },
+    "support": {
+     "arterial_oxygenation": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "output": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "oxygen_delivery": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "perfusion_pressure": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND"
+    },
+    "what": "tone 0.45 (vasodilation: flow rises, MAP falls)"
+   },
+   "flow_C_both": {
+    "as_expected": true,
+    "expected": [
+     "output",
+     "perfusion_pressure",
+     "oxygen_delivery"
+    ],
+    "group": "flow_map",
+    "mechanism": "CIRCULATORY_COLLAPSE_RISK",
+    "positive": [
+     "output",
+     "oxygen_delivery",
+     "perfusion_pressure"
+    ],
+    "reading": {
+     "P": 0.3,
+     "T": 1.0,
+     "deficit_fraction": 0.25,
+     "delivery_rel": 0.3,
+     "effective_delivery": 0.3,
+     "hb": 13.0,
+     "legacy_level": 2,
+     "map": 27.0,
+     "output_rel": 0.3,
+     "paco2": 34.48275862068966,
+     "ph": 7.386306738843274,
+     "pressure_rel": 0.3,
+     "pulse": true,
+     "rhythm": "sinus",
+     "sbp": 36.0,
+     "spo2": 97.0
+    },
+    "support": {
+     "arterial_oxygenation": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "output": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND",
+     "oxygen_delivery": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND",
+     "perfusion_pressure": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND"
+    },
+    "what": "pump 0.3"
+   },
+   "oxygen_A_low_flow_delivery_kept": {
+    "as_expected": true,
+    "expected": [
+     "output",
+     "perfusion_pressure"
+    ],
+    "group": "oxygen",
+    "mechanism": "CIRCULATORY_COLLAPSE_RISK",
+    "positive": [
+     "output",
+     "perfusion_pressure"
+    ],
+    "reading": {
+     "P": 0.5,
+     "T": 1.0,
+     "deficit_fraction": 0.0,
+     "delivery_rel": 0.5,
+     "effective_delivery": 0.5,
+     "hb": 13.0,
+     "legacy_level": 2,
+     "map": 45.0,
+     "output_rel": 0.5,
+     "paco2": 34.48275862068966,
+     "ph": 7.386306738843274,
+     "pressure_rel": 0.5,
+     "pulse": true,
+     "rhythm": "sinus",
+     "sbp": 60.0,
+     "spo2": 97.0
+    },
+    "support": {
+     "arterial_oxygenation": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "output": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND",
+     "oxygen_delivery": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "perfusion_pressure": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND"
+    },
+    "what": "pump 0.5 (extraction reserve keeps consumption)"
+   },
+   "oxygen_B_content_failure": {
+    "as_expected": true,
+    "expected": [
+     "oxygen_delivery"
+    ],
+    "group": "oxygen",
+    "mechanism": "METABOLIC_NONVIABILITY_RISK",
+    "positive": [
+     "oxygen_delivery"
+    ],
+    "reading": {
+     "P": 1.0,
+     "T": 1.0,
+     "deficit_fraction": 0.375,
+     "delivery_rel": 0.25,
+     "effective_delivery": 0.25,
+     "hb": 3.25,
+     "legacy_level": 0,
+     "map": 90.0,
+     "output_rel": 1.0,
+     "paco2": 34.48275862068966,
+     "ph": 7.386306738843274,
+     "pressure_rel": 1.0,
+     "pulse": true,
+     "rhythm": "sinus",
+     "sbp": 120.0,
+     "spo2": 97.0
+    },
+    "support": {
+     "arterial_oxygenation": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "output": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "oxygen_delivery": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND",
+     "perfusion_pressure": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND"
+    },
+    "what": "Hb at 25 % (flow and MAP kept)"
+   },
+   "oxygen_C_both": {
+    "as_expected": true,
+    "expected": [
+     "output",
+     "perfusion_pressure",
+     "oxygen_delivery"
+    ],
+    "group": "oxygen",
+    "mechanism": "CIRCULATORY_COLLAPSE_RISK",
+    "positive": [
+     "output",
+     "oxygen_delivery",
+     "perfusion_pressure"
+    ],
+    "reading": {
+     "P": 0.3,
+     "T": 1.0,
+     "deficit_fraction": 0.55,
+     "delivery_rel": 0.18,
+     "effective_delivery": 0.18,
+     "hb": 7.8,
+     "legacy_level": 2,
+     "map": 27.0,
+     "output_rel": 0.3,
+     "paco2": 34.48275862068966,
+     "ph": 7.386306738843274,
+     "pressure_rel": 0.3,
+     "pulse": true,
+     "rhythm": "sinus",
+     "sbp": 36.0,
+     "spo2": 97.0
+    },
+    "support": {
+     "arterial_oxygenation": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "output": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND",
+     "oxygen_delivery": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND",
+     "perfusion_pressure": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND"
+    },
+    "what": "pump 0.3, Hb at 60 %"
+   },
+   "oxygen_E2_authored_hypoxaemia": {
+    "as_expected": true,
+    "expected": [
+     "arterial_oxygenation"
+    ],
+    "group": "oxygen",
+    "mechanism": "METABOLIC_NONVIABILITY_RISK",
+    "positive": [
+     "arterial_oxygenation"
+    ],
+    "reading": {
+     "P": 1.0,
+     "T": 1.0,
+     "deficit_fraction": 0.0,
+     "delivery_rel": 1.0,
+     "effective_delivery": 1.0,
+     "hb": 13.0,
+     "legacy_level": 2,
+     "map": 90.0,
+     "output_rel": 1.0,
+     "paco2": 34.48275862068966,
+     "ph": 7.386306738843274,
+     "pressure_rel": 1.0,
+     "pulse": true,
+     "rhythm": "sinus",
+     "sbp": 120.0,
+     "spo2": 60.0
+    },
+    "support": {
+     "arterial_oxygenation": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND",
+     "output": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "oxygen_delivery": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "perfusion_pressure": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND"
+    },
+    "what": "authored arrival SpO2 60 (delivery index 1)"
+   },
+   "oxygen_E_arterial_hypoxaemia": {
+    "as_expected": true,
+    "expected": [
+     "arterial_oxygenation"
+    ],
+    "group": "oxygen",
+    "mechanism": "METABOLIC_NONVIABILITY_RISK",
+    "positive": [
+     "arterial_oxygenation"
+    ],
+    "reading": {
+     "P": 1.0,
+     "T": 1.0,
+     "deficit_fraction": 0.0,
+     "delivery_rel": 0.7556701030927835,
+     "effective_delivery": 0.7556701030927835,
+     "hb": 13.0,
+     "legacy_level": 2,
+     "map": 90.0,
+     "output_rel": 1.0,
+     "paco2": 34.48275862068966,
+     "ph": 7.386306738843274,
+     "pressure_rel": 1.0,
+     "pulse": true,
+     "rhythm": "sinus",
+     "sbp": 120.0,
+     "spo2": 73.3
+    },
+    "support": {
+     "arterial_oxygenation": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND",
+     "output": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "oxygen_delivery": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "perfusion_pressure": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND"
+    },
+    "what": "arrival on FiO2 1, then room air (SpO2 73)"
+   },
+   "pump_A_pump_failure_organized_rhythm": {
+    "as_expected": true,
+    "expected": [
+     "output",
+     "perfusion_pressure",
+     "oxygen_delivery"
+    ],
+    "group": "pump_rhythm",
+    "mechanism": "CIRCULATORY_COLLAPSE_RISK",
+    "positive": [
+     "output",
+     "oxygen_delivery",
+     "perfusion_pressure"
+    ],
+    "reading": {
+     "P": 0.25,
+     "T": 1.0,
+     "deficit_fraction": 0.375,
+     "delivery_rel": 0.25,
+     "effective_delivery": 0.25,
+     "hb": 13.0,
+     "legacy_level": 2,
+     "map": 22.5,
+     "output_rel": 0.25,
+     "paco2": 34.48275862068966,
+     "ph": 7.386306738843274,
+     "pressure_rel": 0.25,
+     "pulse": true,
+     "rhythm": "sinus",
+     "sbp": 30.0,
+     "spo2": 97.0
+    },
+    "support": {
+     "arterial_oxygenation": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "output": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND",
+     "oxygen_delivery": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND",
+     "perfusion_pressure": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND"
+    },
+    "what": "pump 0.25, sinus"
+   },
+   "pump_B2_pulseless_rhythm": {
+    "as_expected": true,
+    "expected": [],
+    "group": "pump_rhythm",
+    "mechanism": "ARREST",
+    "positive": [],
+    "reading": {
+     "P": 1.0,
+     "T": 1.0,
+     "deficit_fraction": null,
+     "delivery_rel": 0.0,
+     "effective_delivery": null,
+     "hb": 13.0,
+     "legacy_level": 3,
+     "map": null,
+     "output_rel": 0.0,
+     "paco2": null,
+     "ph": null,
+     "pressure_rel": 0.0,
+     "pulse": false,
+     "rhythm": "vf",
+     "sbp": null,
+     "spo2": null
+    },
+    "support": {
+     "arterial_oxygenation": "ARREST_NOT_COLLAPSE",
+     "output": "ARREST_NOT_COLLAPSE",
+     "oxygen_delivery": "ARREST_NOT_COLLAPSE",
+     "perfusion_pressure": "ARREST_NOT_COLLAPSE"
+    },
+    "what": "pump 1, VF (no pulse)"
+   },
+   "pump_B_rhythm_low_output_with_pulse": {
+    "as_expected": true,
+    "expected": [
+     "output",
+     "perfusion_pressure"
+    ],
+    "group": "pump_rhythm",
+    "mechanism": "CIRCULATORY_COLLAPSE_RISK",
+    "positive": [
+     "output",
+     "perfusion_pressure"
+    ],
+    "reading": {
+     "P": 1.0,
+     "T": 1.0,
+     "deficit_fraction": 0.0,
+     "delivery_rel": 0.5,
+     "effective_delivery": 0.5,
+     "hb": 13.0,
+     "legacy_level": 2,
+     "map": 45.0,
+     "output_rel": 0.5,
+     "paco2": 34.48275862068966,
+     "ph": 7.386306738843274,
+     "pressure_rel": 0.5,
+     "pulse": true,
+     "rhythm": "complete_av_block",
+     "sbp": 60.0,
+     "spo2": 97.0
+    },
+    "support": {
+     "arterial_oxygenation": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "output": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND",
+     "oxygen_delivery": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "perfusion_pressure": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND"
+    },
+    "what": "complete AV block at 30 / min, output factor 0.5, pump 1"
+   },
+   "pump_C_both": {
+    "as_expected": true,
+    "expected": [
+     "output",
+     "perfusion_pressure",
+     "oxygen_delivery"
+    ],
+    "group": "pump_rhythm",
+    "mechanism": "CIRCULATORY_COLLAPSE_RISK",
+    "positive": [
+     "output",
+     "oxygen_delivery",
+     "perfusion_pressure"
+    ],
+    "reading": {
+     "P": 0.4,
+     "T": 1.0,
+     "deficit_fraction": 0.5,
+     "delivery_rel": 0.2,
+     "effective_delivery": 0.2,
+     "hb": 13.0,
+     "legacy_level": 2,
+     "map": 18.0,
+     "output_rel": 0.2,
+     "paco2": 34.48275862068966,
+     "ph": 7.386306738843274,
+     "pressure_rel": 0.2,
+     "pulse": true,
+     "rhythm": "complete_av_block",
+     "sbp": 24.0,
+     "spo2": 97.0
+    },
+    "support": {
+     "arterial_oxygenation": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "output": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND",
+     "oxygen_delivery": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND",
+     "perfusion_pressure": "POSITIVE_UNDER_SOME_ADMISSIBLE_BOUND"
+    },
+    "what": "pump 0.4 with the AV block"
+   },
+   "reference": {
+    "as_expected": true,
+    "expected": [],
+    "group": "all",
+    "mechanism": "NONE",
+    "positive": [],
+    "reading": {
+     "P": 1.0,
+     "T": 1.0,
+     "deficit_fraction": 0.0,
+     "delivery_rel": 1.0,
+     "effective_delivery": 1.0,
+     "hb": 13.0,
+     "legacy_level": 0,
+     "map": 90.0,
+     "output_rel": 1.0,
+     "paco2": 34.48275862068966,
+     "ph": 7.386306738843274,
+     "pressure_rel": 1.0,
+     "pulse": true,
+     "rhythm": "sinus",
+     "sbp": 120.0,
+     "spo2": 97.0
+    },
+    "support": {
+     "arterial_oxygenation": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "output": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "oxygen_delivery": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND",
+     "perfusion_pressure": "ZERO_UNDER_EVERY_ADMISSIBLE_BOUND"
+    },
+    "what": "the neutral probe arrival"
+   }
+  },
+  "rule": "Fixed states on P2K-2's neutral probe arrival (bands.ARRIVAL with HCO3 20, extraction reserve 2.5), read through derive, the deficit and the ventilation candidate (gain 0.04): illustrative extremes, P2L-1's sizes where they exist. Each candidate input is classified threshold-free against the neutral reference: zero under every admissible bound (the reading is on the reference's side), or positive under some. The current P2E-3 input is output_rel, whose admissible thresholds lie below arrival output (1)."
+ },
+ "pulse": {
+  "files_scanned": 31,
+  "pulse_reads": [
+   "calibration.py:433",
+   "calibration.py:436",
+   "calibration.py:864",
+   "calibration.py:865",
+   "calibration.py:868",
+   "calibration.py:890",
+   "comparison.py:160",
+   "comparison.py:74",
+   "comparison.py:94",
+   "contracts_output.py:87",
+   "decision_pack.py:465",
+   "derived.py:1108",
+   "derived.py:1199",
+   "derived.py:1211",
+   "derived.py:1238",
+   "derived.py:1311",
+   "derived.py:1314",
+   "derived.py:1325",
+   "derived.py:1368",
+   "derived.py:632",
+   "encephalopathy.py:126",
+   "integration.py:456",
+   "integration.py:495",
+   "migration_authority.py:533",
+   "migration_authority.py:539",
+   "modules/rhythm_events.py:44",
+   "modules/rhythm_events.py:50",
+   "shadow.py:237",
+   "state.py:118",
+   "state.py:133",
+   "state.py:135",
+   "state.py:144",
+   "state.py:148",
+   "state.py:409",
+   "state.py:621",
+   "ventilation.py:107",
+   "ventilation.py:110"
+  ],
+  "r_keyword_writes": [
+   "derived.py:992",
+   "integration.py:458",
+   "state.py:696"
+  ],
+  "rhythm_constructors": [
+   "bands.py:38",
+   "derived.py:1222",
+   "derived.py:1223",
+   "legacy_adapter.py:202",
+   "modules/rhythm_events.py:38",
+   "state.py:429",
+   "state.py:658"
+  ],
+  "terminal_since_reads": [
+   "contracts_output.py:88",
+   "integration.py:456",
+   "integration.py:495",
+   "state.py:621",
+   "state.py:623",
+   "state.py:649"
+  ],
+  "terminal_since_writes": [
+   "integration.py:458"
+  ],
+  "transitions": [
+   "integration.py:421",
+   "modules/rhythm_events.py:52"
+  ],
+  "unresolved_boundaries": [
+   "derived.py:1337",
+   "derived.py:629",
+   "integration.py:442"
+  ]
+ },
+ "ranges": {
+  "existing_committed_candidates": "the P2F calibration registry (CANDIDATE, not approved): burden per minute 0.5 / 1 / 2, limit 5 / 15 / 30 minutes at full severity, repayment 30 / 60 / 240 min; the output threshold 0.2 / 0.3 / 0.4 belongs to the output input the minimum replaces",
+  "unset": "the bounds of the perfusion-pressure, oxygen-delivery and arterial-oxygenation failure signals, the persistence floor, the terminal-rhythm selection rule: no committed common range; never from the GI cases"
+ },
+ "redundancy": {
+  "A_flow": "REDUNDANT_GIVEN_B_AND_E: flow reaches viability through perfusion pressure (pressure = flow x tone) and through delivery (delivery = flow x content); a low flow that neither lowers MAP nor exhausts extraction is not by itself non-viable",
+  "B_perfusion_pressure": "NECESSARY: vasoplegia keeps flow and delivery while MAP falls (flow_B); only pressure sees it",
+  "C_pump": "REDUNDANT_VIA_FLOW: P enters output multiplicatively; reading it beside its consequences counts it twice",
+  "D_rhythm": "SPLIT: a pulseless rhythm is arrest itself (a transition, not collapse); a perfusing rhythm's output factor enters flow like P",
+  "E_oxygen_delivery": "NECESSARY: an oxygen-content failure keeps flow and MAP (oxygen_B); only the deficit sees it",
+  "F_arterial_oxygenation": "DISTINCT_CANDIDATE: the systemic deficit misses arterial hypoxaemia to about 39 % at normal flow and Hb (oxygen_E); the myocardium extracts near its maximum at rest, so a separate input is plausible: faculty decision",
+  "G_acid_base": "MODIFIER_NOT_INPUT: no path to P or R today; the acid burden integrates the deficit (P2L-2 M4), so an additive pH input would recount a prolonged deficit; amplifier or myocardial depression are later decisions",
+  "H_respiratory_failure": "FUTURE: no apnoea or ventilatory-failure writer; it reaches viability through SpO2",
+  "lactate_D_I_F": "EXCLUDED (faculty): consequences and markers, never triggers"
+ },
+ "redundancy_evidence": {
+  "acid_reaches_no_input": true,
+  "arterial_distinct": true,
+  "delivery_needed": true,
+  "flow_never_alone": true,
+  "pressure_needed": true,
+  "pulseless_rhythm_is_arrest": true,
+  "pump_and_rhythm_through_flow": true
+ },
+ "revision": "P2M-1",
+ "rosc": {
+  "guards": {
+   "return_of_pulse_raises": true,
+   "terminal_since_never_cleared": true
+  },
+  "reading": "a future return of circulation needs those two explicit guards lifted (and a rule that clears terminal_since); the collapse burden is an ordinary auxiliary state a future rule can reset or repay, so nothing in the existing structure, or in the minimum proposed here, makes it architecturally impossible",
+  "status": "ROSC_NOT_CURRENTLY_MODELED"
+ },
+ "trigger_audit": {
+  "collapse_rule_reads": [],
+  "integration_block_reads": [],
+  "reading": "no collapse code reads consciousness, lactate, D or the encephalopathy burden; consciousness is downstream (derive's pulseless level 3; the P2L-2 candidate's maximal hypoperfusion without a pulse)",
+  "terminal_rhythm_reads": "derive's monitor rate only (the PEA rate)"
+ },
+ "upstream": {
+  "digest": "04bbfdd8f425384ee7dc6d7467818474d306e13a3ebac1153b88931ceed690fa",
+  "files": 66,
+  "unchanged": true
+ },
+ "verdict": {
+  "checks": {
+   "causal_inputs_explicit": true,
+   "collapse_vs_arrest_separated": true,
+   "event_order_safe": true,
+   "generalization_plausible": true,
+   "no_gi_threshold": true,
+   "persistence_classified": true,
+   "pulse_semantics_explicit": true,
+   "redundancy_resolved": true,
+   "upstream_unchanged": true
+  },
+  "failing": [],
+  "not_evaluated": [],
+  "verdict": "COLLAPSE_STRUCTURE_READY_FOR_FACULTY_DECISION"
+ },
+ "zero_flow": {
+  "acid_burden_30": "STOPS_THE_RUN",
+  "events": 0,
+  "impossible_rhythms": {
+   "perfusing_without_output": "RAISES",
+   "pulseless_organized_sinus": "RAISES",
+   "pulseless_with_output": "RAISES"
+  },
+  "one_minute": {
+   "D": [
+    0.0,
+    1.0
+   ],
+   "P": [
+    1.0,
+    1.0
+   ],
+   "T": [
+    1.0,
+    1.0
+   ],
+   "acid_burden": [
+    4.0,
+    4.128333333333334
+   ],
+   "collapse_burden": [
+    0.0,
+    0.0
+   ],
+   "lactate_excess": [
+    0.0,
+    0.0
+   ],
+   "sympathetic_drive": [
+    0.0,
+    0.0
+   ],
+   "terminal_since": [
+    0,
+    0
+   ]
+  },
+  "pulse_with_near_zero_flow": {
+   "P": 0.02,
+   "T": 1.0,
+   "deficit_fraction": 0.95,
+   "delivery_rel": 0.02,
+   "effective_delivery": 0.02,
+   "hb": 13.0,
+   "legacy_level": 2,
+   "map": 1.8,
+   "output_rel": 0.02,
+   "paco2": 34.48275862068966,
+   "ph": 7.386306738843274,
+   "pressure_rel": 0.02,
+   "pulse": true,
+   "rhythm": "sinus",
+   "sbp": 2.4,
+   "spo2": 97.0
+  },
+  "pulse_with_zero_output": "STOPS_THE_RUN",
+  "pulseless": {
+   "P": 1.0,
+   "T": 1.0,
+   "deficit_fraction": null,
+   "delivery_rel": 0.0,
+   "effective_delivery": null,
+   "hb": 13.0,
+   "legacy_level": 3,
+   "map": null,
+   "output_rel": 0.0,
+   "paco2": null,
+   "ph": null,
+   "pressure_rel": 0.0,
+   "pulse": false,
+   "rhythm": "vf",
+   "sbp": null,
+   "spo2": null
+  },
+  "reading": "pulse=false can never carry flow, pressure or delivery (the rhythm invariant and derive's pulseless branch); pulse=true with output at the numerical zero is not representable (the run stops), but pulse=true with output 0.02 is: MAP about 2 mmHg with a pulse, because the pulse is rhythm semantics and nothing reads pressure to end it while the collapse rule is off",
+  "readings": 4,
+  "steps": 1
+ }
+}
