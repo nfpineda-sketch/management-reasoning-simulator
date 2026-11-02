@@ -3706,3 +3706,13 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   DERIVED_COLLAPSE_SIGNAL_ONLY_REQUIRED. La carga existente pasa a leer el máximo de la falla de presión de perfusión y
   la falla de aporte de O2 (y, si se decide, la de oxigenación arterial), con dos invariantes de persistencia. Los
   valores quedan UNSET y se piden las decisiones docentes; nada se aprueba.
+- **Revisión adversarial (contradicción señalada, sin recongelar).** Cuatro hallazgos altos, confirmados con sondas:
+  - el criterio de P2E-3 mira la carga y no la severidad del minuto, así que una carga vieja para a un paciente con
+    gasto normal (el repago no lo evita);
+  - el flujo puede fallar solo dentro de las guardas, así que su redundancia es una premisa;
+  - la guarda de P deja un pulso con PAM 9 mmHg durante la ventana de persistencia;
+  - con el déficit como entrada, la carga se parece a una D con umbral.
+
+  Lectura corregida: el mínimo incluye también la forma de la persistencia (la carga con tres invariantes, o un contador
+  de minutos consecutivos), la señal nula a la llegada y, si se agrega, el contenido de O2 en vez de sólo la SpO2.
+  Siete decisiones adicionales, incluida la de aceptar el registro con las correcciones o recongelar.

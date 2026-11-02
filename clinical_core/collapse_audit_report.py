@@ -124,7 +124,8 @@ def render_sondas(data: dict) -> str:
 def render_redundancia(data: dict) -> str:
     rows = [f"- **{k}** {FROZEN}: {v}" for k, v in data["redundancy"].items()]
     ev = [f"- {EVIDENCE_ES[k]}: {_yes(v)}" for k, v in data["redundancy_evidence"].items()]
-    return "\n".join(rows + ["", "Comprobado sobre las sondas:", ""] + ev)
+    return "\n".join(rows + ["", "Comprobado sobre las sondas elegidas (no sobre todo el espacio de estados: ver la nota "
+                              "que sigue):", ""] + ev)
 
 
 def render_persistencia(data: dict) -> str:

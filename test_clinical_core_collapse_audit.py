@@ -205,7 +205,67 @@ def test_the_scope_adds_and_reads_nothing_it_should_not():
         "MIGRATION_GATE_CLOSED")
     assert "UNSET" not in cm.RANGES["existing_committed_candidates"] and cm.RANGES["unset"]
     assert json.loads(json.dumps(cm.design(), default=str))["revision"] == "P2M-1"
-    assert hashlib.sha256(SOURCE.read_bytes()).hexdigest()
+    assert hashlib.sha256(SOURCE.read_bytes()).hexdigest() != hashlib.sha256(b"").hexdigest()
+
+
+def test_the_trigger_audit_catches_a_planted_trigger(monkeypatch, tmp_path):
+    """P2M-1 review L11: the trigger audit can fail. A planted copy of the integrator's collapse block that reads the
+    lactate is caught."""
+    source = (ROOT / "clinical_core" / "integration.py").read_text(encoding="utf-8")
+    planted = source.replace("    burden = collapse_burden_after_minute(state, anchors, profile)",
+                             "    burden = collapse_burden_after_minute(state, anchors, profile) + state.aux.lactate_excess_mmol_l")
+    assert planted != source
+    root = tmp_path / "clinical_core"
+    root.mkdir()
+    (root / "integration.py").write_text(planted, encoding="utf-8")
+    (root / "derived.py").write_text((ROOT / "clinical_core" / "derived.py").read_text(encoding="utf-8"), encoding="utf-8")
+    monkeypatch.setattr(cm, "CORE_DIR", root)
+    assert "lactate" in cm.trigger_audit()["integration_block_reads"]
+
+
+# P2M-1 review findings, pinned as the current behaviour they describe (TD-109; the record and verdict stay frozen) --------------
+
+def test_review_h1_a_stale_burden_arrests_a_patient_whose_output_is_normal():
+    """HIGH-1: collapse_reached reads the burden and the pulse, never the current severity, so a burden left at the limit
+    (a contributor moved the rhythm the minute it was met, or a future return of circulation) arrests a patient with
+    normal output the next minute; a repayment tau from the P2F candidates (30 / 60 / 240) does not prevent it."""
+    from dataclasses import replace
+    from clinical_core.integration import step
+    for tau in (None, 30.0, 240.0):
+        profile = cm._rule() if tau is None else cm._rule(collapse_repayment_tau_min=tau)
+        state, anchors, _ = cm._probe_state({})
+        state = state.evolve(aux=replace(state.aux, collapse_burden=10.5))
+        assert dv.derive(state, anchors, profile).output_rel == 1.0
+        after, _ = step(state, (), anchors, profile)
+        assert not after.R.pulse_present and after.R.code.value == "pea", tau
+
+
+def test_review_h2_flow_can_fail_alone_inside_the_guards():
+    """HIGH-2: the probes' 'flow never fails alone' holds for the chosen probes only; inside the guards a low flow with
+    MAP kept and no deficit exists (flow redundancy is a physiological premise, for the faculty to confirm)."""
+    for spec in ({"P": 0.7, "T": 2.0}, {"P": 0.8, "T": 1.5}):
+        r = cm.reading(*cm._probe_state(spec))
+        assert r["output_rel"] < 0.7 and r["map"] > 90.0 and r["deficit_fraction"] == 0.0, spec
+
+
+def test_review_h3_the_pump_guard_keeps_a_pulse_at_a_map_near_zero():
+    """HIGH-3: P is held at its guard floor 0.1 (a silent clamp), so the numerical-zero guard is out of reach through the
+    pump while a pulse with MAP 9 mmHg (4.5 with an AV block) is reachable for the whole persistence window."""
+    from clinical_core.integration import CHANNEL_BOUNDS
+    from clinical_core.state import Channel
+    assert CHANNEL_BOUNDS[Channel.P][:2] == (0.1, 3.0)
+    floor = cm.reading(*cm._probe_state({"P": 0.1}))
+    blocked = cm.reading(*cm._probe_state({"P": 0.1, "rhythm": "avb"}))
+    assert floor["pulse"] and floor["map"] == pytest.approx(9.0) and blocked["map"] == pytest.approx(4.5)
+
+
+def test_review_m5_content_and_saturation_failures_of_equal_delivery_read_alike_in_the_deficit():
+    """MEDIUM-5: Hb at 75.6 % and SpO2 73.3 give the same delivery and no deficit; the arterial input flags only the
+    second: the myocardial-extraction argument applies to oxygen content (CaO2), not to SpO2 alone."""
+    anaemia = cm.reading(*cm._probe_state({"hb_share": 0.756}))
+    hypoxaemia = cm.reading(*cm._probe_state({"arrival_fio2": 1.0, "fio2": 0.21}))
+    assert anaemia["delivery_rel"] == pytest.approx(hypoxaemia["delivery_rel"], abs=1e-3)
+    assert anaemia["deficit_fraction"] == 0.0 == hypoxaemia["deficit_fraction"]
 
 
 # The record and the report (generated once, after the frozen evaluation) -----------------------------------------------------

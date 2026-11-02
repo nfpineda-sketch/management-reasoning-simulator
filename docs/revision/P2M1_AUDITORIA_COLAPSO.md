@@ -6,53 +6,60 @@ Sólo sombra y sólo lectura. Un módulo de auditoría (`clinical_core/collapse_
 
 ## Resumen
 
-**Veredicto: `COLLAPSE_STRUCTURE_READY_FOR_FACULTY_DECISION`**, con los nueve criterios calculados desde la
-evidencia. Estructura mínima: **`DERIVED_COLLAPSE_SIGNAL_ONLY_REQUIRED`**. Nada se implementa, se activa ni recibe un
-valor.
+**Veredicto congelado: `COLLAPSE_STRUCTURE_READY_FOR_FACULTY_DECISION`**, con estructura mínima
+`DERIVED_COLLAPSE_SIGNAL_ONLY_REQUIRED`. **La revisión adversarial lo contradice en parte.** Dos criterios congelados
+(`redundancy_resolved` y `persistence_classified`) se apoyaban en la elección de las sondas, y la estructura reutilizada
+tiene un defecto que el criterio de orden no veía. No se recongeló: el registro sigue siendo el de `c4aa95f6`, y la
+contradicción queda señalada para que la docencia decida (decisión 17). **Lectura corregida:** la estructura es
+explícita y queda lista para decidir, pero el mínimo incluye también la forma de la persistencia y tres invariantes.
+Nada se implementa, se activa ni recibe un valor.
 
-- **El pulso es estado de ritmo, no de presión.** Es un campo de R, atado por invariante al código del ritmo, y sólo lo
-  cambian transiciones de ritmo: un evento guionizado o la regla de colapso P2E-3. Un estado sin pulso nunca lleva
-  flujo, presión ni aporte. En cambio, un pulso con gasto 0,02 y PAM de 1,8 mmHg es representable: nada lee la presión
-  para quitarlo mientras el colapso está apagado. Con gasto en el cero numérico la corrida se detiene (una guarda), no
-  hay paro.
-- **Ya existe la estructura de colapso (P2E-3), apagada:**
-  - una carga propia (`aux.collapse_burden`, ni D ni F);
-  - un retraso explícito de un minuto (el criterio se lee sobre el estado del minuto anterior y el estado nuevo es el
-    que queda sin pulso), acíclico, sin redisparo, con la carga congelada tras el paro;
-  - la transición a AESP o asistolia.
-
-  Su única entrada es el gasto.
-- **El gasto solo no basta.** En las sondas, la vasoplejía (tono 0,45) sube el gasto a 1,2 con PAM 48,5; la anemia
-  grave (Hb al 25 %) deja gasto 1 y PAM 90 con déficit 0,375; la hipoxemia arterial (SpO2 73) no deja déficit. La regla
-  actual no ve ninguno de los tres. Bomba y ritmo llegan a las entradas sólo a través del flujo: un bloqueo AV con pulso
-  y gasto 0,5 lee igual que una bomba en 0,5. Un ritmo sin pulso es paro, no colapso.
-- **Redundancia, comprobada en las sondas:**
-  - el flujo nunca falla solo, así que es redundante con la PAM y el aporte;
+- **El pulso es estado de ritmo, no de presión.** Es un campo de R, atado al código del ritmo, y sólo lo cambian
+  transiciones de ritmo: un evento guionizado o la regla P2E-3.
+  - Sin pulso nunca hay flujo, presión ni aporte.
+  - Con pulso es alcanzable una PAM de 9 mmHg (4,5 con bloqueo AV): la guarda de P la recorta en 0,1, y nada lee la
+    presión para quitar el pulso mientras el colapso está apagado.
+  - El cero numérico de gasto detiene la corrida (una guarda), pero por la bomba no se alcanza.
+- **Ya existe una estructura de colapso (P2E-3), apagada.** Tiene una carga propia, un orden acíclico sin redisparo (la
+  carga del minuto lee el gasto del estado anterior) y la transición a AESP o asistolia. Lee sólo el gasto.
+  - Su criterio mira la carga y no la severidad del minuto: una carga que quedó en el límite para a un paciente con
+    gasto normal al minuto siguiente, y el repago (τ 30–240) no lo evita.
+- **El gasto solo no basta.** La vasoplejía (tono 0,45: gasto 1,2, PAM 48,5), la anemia grave (Hb al 25 %: PAM 90,
+  déficit 0,375) y la hipoxemia arterial no se ven por el gasto. Bomba y ritmo llegan sólo por el flujo, y un ritmo sin
+  pulso es paro.
+- **Redundancia:**
   - la presión de perfusión y el aporte de O2 son necesarios;
-  - la oxigenación arterial es distinta del déficit;
-  - la acidemia no llega a ninguna entrada (modificador, no entrada);
+  - la redundancia del flujo es una premisa fisiológica, porque existen estados de flujo bajo con PAM conservada y sin
+    déficit;
+  - la oxigenación «distinta» vale igual para el contenido de O2 que para la SpO2;
+  - la acidemia no llega a ninguna entrada;
   - lactato, D, I y F quedan excluidos.
-- **Persistencia.** La carga existente da persistencia. Con los valores sintéticos de P2E-3, el gasto 0,1 sostenido
-  cumple el criterio en el minuto 14 y un minuto crítico aislado no basta. Faltan dos invariantes: el perfil acepta un
-  límite que produce paro en un minuto, y sin repago un minuto crítico cada 10 llega a la transición en el minuto 131.
-- **ROSC no está modelado.** Lo impiden dos guardas explícitas que un paquete futuro puede levantar. La carga no hace
-  imposible el retorno de la circulación.
+- **Persistencia:**
+  - con los valores sintéticos de P2E-3, el gasto 0,1 sostenido cumple el criterio en el minuto 14 y un minuto crítico
+    aislado no basta;
+  - el perfil admite paro en un minuto y no exige repago (minutos críticos aislados llegan a la transición en el minuto
+    131);
+  - con el déficit como entrada, la carga se parece a una D con umbral.
+- **ROSC no está modelado** (dos guardas explícitas). Un retorno futuro tendría que reiniciar la carga.
 - **Subconjunto extremo (17 604 filas, 57m):**
-  - PAM 32,5–46,3, PAS 43,8–62,4, pH 6,961, déficit 0,835 y DO2 efectivo 0,106;
-  - gasto acotado entre 0,106 y 0,709;
+  - PAM 32,5–46,3, pH 6,961, DO2 0,106 y gasto entre 0,106 y 0,709;
   - P = 1, R sinusal y SpO2 97, con pulso.
 
-  Sin colapso activo, el pulso se mantiene hasta que una guarda detiene la corrida. Falta la regla común activa.
+  Falta la regla común activa.
 - **Generalización:**
-  - con la regla actual, STRUCTURAL_GAP: no ve anafilaxia, shock distributivo ni hipoxemia;
-  - con la señal propuesta, COMMON_COLLAPSE_ARCHITECTURE_PLAUSIBLE para las siete familias, sin términos de enfermedad.
-- **Ninguna regla de colapso lee conciencia, lactato, D ni F.** El núcleo, el golden y todo lo cerrado quedan sin
-  cambios.
+  - con la regla actual, STRUCTURAL_GAP;
+  - con la señal propuesta, plausible para las siete familias, siempre que la hipoxemia entre por contenido o por SpO2.
+- **Ninguna regla lee conciencia, lactato, D ni F.** El núcleo, el golden y todo lo cerrado quedan sin cambios.
 
-**Lo mínimo antes de una segunda familia** es una sola decisión docente: reemplazar el gasto, como entrada de la carga
-existente, por una señal común de no viabilidad igual al máximo de la falla de presión de perfusión (PAM) y la falla de
-aporte de O2 (déficit), y, si la docencia lo decide, la falla de oxigenación arterial (SpO2). A eso se suman dos
-invariantes de persistencia y los valores, que hoy quedan UNSET.
+**Lo mínimo antes de una segunda familia:**
+
+1. Reemplazar el gasto por una señal común de no viabilidad: el máximo de la falla de presión de perfusión (PAM) y la de
+   aporte de O2 (déficit), con contenido de O2 o SpO2 si se decide.
+2. Elegir la persistencia: la carga existente con tres invariantes (piso, repago o reinicio obligatorio y severidad en
+   el minuto que decide), o un contador de minutos consecutivos.
+3. Exigir la señal nula a la llegada.
+
+Los valores quedan UNSET.
 
 ## 1. Decisiones de la docencia
 
@@ -163,7 +170,7 @@ Regla (texto congelado, en inglés): Fixed states on P2K-2's neutral probe arriv
 - **H_respiratory_failure** (texto congelado, en inglés): FUTURE: no apnoea or ventilatory-failure writer; it reaches viability through SpO2
 - **lactate_D_I_F** (texto congelado, en inglés): EXCLUDED (faculty): consequences and markers, never triggers
 
-Comprobado sobre las sondas:
+Comprobado sobre las sondas elegidas (no sobre todo el espacio de estados: ver la nota que sigue):
 
 - la acidemia no llega a ninguna entrada: sí
 - hay un estado donde falla la oxigenación arterial sin déficit: sí
@@ -173,6 +180,15 @@ Comprobado sobre las sondas:
 - un ritmo sin pulso es paro, no colapso: sí
 - bomba y ritmo llegan a las entradas sólo por el flujo: sí
 <!-- /generado:redundancia -->
+
+**Nota (revisión, ALTO-2).** «El flujo nunca falla solo» vale para las sondas elegidas, no para el modelo.
+
+- Dentro de las guardas existen estados con flujo bajo, PAM conservada y sin déficit: bomba 0,7 con tono 2,0 (Q 0,538,
+  PAM 96,9) y bomba 0,8 con tono 1,5 (Q 0,696, PAM 93,9). La prueba `test_review_h2_flow_can_fail_alone_inside_the_guards`
+  los fija.
+- La redundancia del flujo es, por lo tanto, una **premisa fisiológica**: un flujo bajo que no baja la PAM ni agota la
+  extracción no es por sí solo no viable. Queda para que la docencia la confirme (decisión 13).
+- Con la sonda de flujo solo incluida, el criterio congelado `redundancy_resolved` habría fallado.
 
 ## 7. Persistencia
 
@@ -194,6 +210,22 @@ Con los valores sintéticos comprometidos de P2E-3 (umbral 0,4, límite 10, τ d
 **Clasificación** (texto congelado, en inglés): PERSISTENCE_STATE_OR_TIMER_REQUIRED: already present (P2E-3 collapse burden); two invariants missing (a persistence floor, a mandatory repayment)
 <!-- /generado:persistencia -->
 
+**Nota (revisión, ALTO-1, ALTO-4 y MEDIO-7).**
+
+- **Carga vieja.** `collapse_reached` lee la carga y el pulso, nunca la severidad del minuto. Un paciente con pulso,
+  gasto 1 y una carga de 10,5 pasa a AESP al minuto siguiente, con τ 30 o 240 (los candidatos P2F no lo evitan). Eso
+  ocurre si un contribuyente movió el ritmo el minuto en que se cumplió el criterio, o tras un retorno futuro de la
+  circulación sin reiniciar la carga. La prueba `test_review_h1_a_stale_burden_arrests_a_patient_whose_output_is_normal`
+  lo fija.
+- **Tercera invariante.** Hace falta una: la transición sólo con no viabilidad en el minuto que decide, y la carga
+  reiniciada cuando otra fuente mueve R y en un ROSC (decisión 11).
+- **Parecido con D.** Con el déficit como entrada, la carga se parece a una D con umbral: integra el déficit más allá de
+  una cota y lo repaga. La docencia excluyó D como memoria de colapso salvo justificación causal fuerte. Las opciones
+  son dos: justificarla como tiempo isquémico miocárdico más allá de una cota no viable, o usar un contador de minutos
+  críticos consecutivos que se reinicia al recuperar (decisión 12).
+- **El criterio congelado exige el defecto.** `persistence_classified` pide que el límite de 0,5 produzca paro en un
+  minuto. Si se agrega el piso, el criterio falla; la brecha es un hallazgo, no una condición de preparación.
+
 ## 8. Orden de eventos y bucles
 
 <!-- generado:orden -->
@@ -203,6 +235,14 @@ Con los valores sintéticos comprometidos de P2E-3 (umbral 0,4, límite 10, τ d
 - **Clasificación** (texto congelado, en inglés): EXPLICIT_LAG_REQUIRED: already implemented (the criterion is read on the minute's start state, the pulseless rhythm is the next state's; the detector never reads its own result in the same step, needs a pulse to fire and freezes after arrest): ACYCLIC
 <!-- /generado:orden -->
 
+**Nota (revisión, ALTO-1 y BAJO-9).**
+
+- El primer estado con la carga en el límite ya es el que queda sin pulso: el «retraso» está en la entrada (la carga
+  del minuto m lee el gasto del estado m − 1). No hay un minuto extra después de cumplir el criterio. El texto congelado
+  de MECHANISMS («one minute after the state that met the criterion») lo dice mal.
+- El orden es acíclico y sin redisparo, pero la trayectoria de prueba no tiene contribuyentes. El aplazamiento cuando un
+  contribuyente mueve el ritmo es justamente el camino de la carga vieja de §7.
+
 ## 9. Retorno de la circulación (ROSC)
 
 <!-- generado:rosc -->
@@ -210,6 +250,9 @@ Con los valores sintéticos comprometidos de P2E-3 (umbral 0,4, límite 10, τ d
 - El regreso del pulso tras el paro lanza un error: sí; terminal_since nunca se borra: sí.
 - Lectura (texto congelado, en inglés): a future return of circulation needs those two explicit guards lifted (and a rule that clears terminal_since); the collapse burden is an ordinary auxiliary state a future rule can reset or repay, so nothing in the existing structure, or in the minimum proposed here, makes it architecturally impossible
 <!-- /generado:rosc -->
+
+**Nota (revisión, ALTO-1).** «reset or repay» es inexacto: el repago no basta (τ 30 deja la carga en 10,16 ≥ 10). Un
+retorno futuro de la circulación tiene que **reiniciar** la carga, o volvería a parar en un minuto.
 
 ## 10. Subconjunto extremo GI
 
@@ -226,6 +269,16 @@ Con los valores sintéticos comprometidos de P2E-3 (umbral 0,4, límite 10, τ d
 - **Mecanismo de seguridad que falta** (texto congelado, en inglés): ACTIVE_COMMON_COLLAPSE_RULE_MISSING: the P2E-3 structure exists but is off and reads output only; with it off, MAP 31-46 mmHg, a deficit of 0.84 and pH 6.96 keep a pulse until a guard stops the run (zero output, HCO3 at 0, blood bounds), never an arrest
 <!-- /generado:subconjunto -->
 
+**Nota (revisión, BAJO-8 y ALTO-3).**
+
+- El texto congelado «MAP 31-46 mmHg» viene del rango de referencia de P2J-3. El rango del subconjunto en el registro
+  de P2L-1 es 32,5–46,3.
+- **El cero numérico no se alcanza por la bomba.** La guarda de P la recorta en 0,1 (un recorte silencioso que la tabla
+  de mecanismos no clasificaba, SAFETY_GUARD), así que el cero numérico de gasto no se alcanza por esa vía.
+- **Pulso con PAM casi nula.** Es alcanzable un pulso con PAM de 9 mmHg (4,5 con bloqueo AV) durante toda la ventana de
+  persistencia. Las sondas congeladas de «gasto 0,02» y «cero numérico» usan P fuera de la guarda.
+- La prueba `test_review_h3_the_pump_guard_keeps_a_pulse_at_a_map_near_zero` lo fija.
+
 ## 11. Generalización
 
 <!-- generado:generalizacion -->
@@ -241,6 +294,14 @@ Con los valores sintéticos comprometidos de P2E-3 (umbral 0,4, límite 10, τ d
 
 **Con la regla actual:** STRUCTURAL_GAP (no ve: anaphylaxis, distributive_sepsis, hypoxaemia_respiratory_failure). **Con la señal propuesta:** COMMON_COLLAPSE_ARCHITECTURE_PLAUSIBLE. Condición (texto congelado, en inglés): the arterial-oxygenation input (a faculty decision) and each family's own writer of its signal; no family term in the collapse layer
 <!-- /generado:generalizacion -->
+
+**Nota (revisión, MEDIO-5).**
+
+- La generalización «plausible» depende de la entrada opcional de oxigenación. Sin ella, la hipoxemia queda fuera
+  (STRUCTURAL_GAP).
+- Además, Hb al 75,6 % y SpO2 73,3 dan el mismo aporte y ningún déficit, y la entrada arterial sólo marca la segunda.
+  El argumento de la extracción miocárdica vale igual para el contenido: justifica una entrada de contenido de O2
+  (CaO2), no sólo de SpO2 (decisión 14).
 
 ## 12. La conciencia no es disparador
 
@@ -264,6 +325,26 @@ Con los valores sintéticos comprometidos de P2E-3 (umbral 0,4, límite 10, τ d
 - **Rangos candidatos ya comprometidos** (texto congelado, en inglés): the P2F calibration registry (CANDIDATE, not approved): burden per minute 0.5 / 1 / 2, limit 5 / 15 / 30 minutes at full severity, repayment 30 / 60 / 240 min; the output threshold 0.2 / 0.3 / 0.4 belongs to the output input the minimum replaces
 - **Sin valor (UNSET)** (texto congelado, en inglés): the bounds of the perfusion-pressure, oxygen-delivery and arterial-oxygenation failure signals, the persistence floor, the terminal-rhythm selection rule: no committed common range; never from the GI cases
 <!-- /generado:minimo -->
+
+**Lectura corregida tras la revisión (señalada, no recongelada).** La clasificación congelada
+`DERIVED_COLLAPSE_SIGNAL_ONLY_REQUIRED` se queda corta. La estructura de P2E-3 sólo es reutilizable con tres invariantes
+y no con dos:
+
+1. un piso de persistencia;
+2. el repago o reinicio obligatorio;
+3. la transición sólo con no viabilidad en el minuto que decide, con la carga reiniciada cuando otra fuente mueve R y en
+   un ROSC.
+
+A eso se suman dos decisiones más:
+
+- **La forma de la persistencia:** la carga integrada, que con el déficit como entrada se parece a D y debe
+  justificarse, o un contador de minutos consecutivos (`SHORT_PERSISTENCE_TIMER_REQUIRED`), que no acarrea memoria
+  vieja.
+- **La invariante de llegada:** la señal nula a la llegada, como el umbral de gasto bajo 1.
+
+La entrada mínima sigue siendo una señal común derivada, el máximo de la falla de presión de perfusión y la de aporte de
+O2, con el contenido de O2 o la SpO2 como posible tercera entrada. Pero la persistencia también es parte del mínimo, y
+la elige la docencia.
 
 ## 14. Veredicto
 
@@ -300,6 +381,21 @@ Decisiones pedidas a la docencia (texto congelado, en inglés):
 10. the next package: implement the decided collapse signal in the shadow core (off by default), then a second family
 <!-- /generado:pedidas -->
 
+Decisiones adicionales que salen de la revisión adversarial (§18):
+
+11. **Tercera invariante:** la transición sólo con no viabilidad en el minuto que decide, y la carga reiniciada cuando
+    otra fuente mueve R y en un ROSC. Sin ella, la carga vieja para a un paciente con gasto normal.
+12. **La forma de la persistencia:** la carga integrada, que con el déficit como entrada se parece a una D con umbral y
+    necesita justificación causal (tiempo isquémico miocárdico), o un contador de minutos críticos consecutivos que se
+    reinicia al recuperar.
+13. **Confirmar la premisa del flujo:** un flujo bajo con PAM conservada y sin déficit no es por sí solo no viable.
+14. **La tercera entrada,** si se agrega: el contenido arterial de O2 (anemia e hipoxemia por igual) o sólo la SpO2.
+15. **La señal nula a la llegada,** como invariante de punto fijo, igual que el umbral de gasto bajo 1.
+16. **El pulso con PAM de 9 mmHg** (alcanzable durante la ventana de persistencia): un pulso palpable derivado de la
+    presión en la capa de observación, un paro definicional, o aceptar la ventana. Amplía la decisión 6.
+17. **El proceso:** aceptar este registro con las correcciones declaradas, como en P2L-2, o autorizar un segundo
+    congelamiento que recalcule los criterios con las sondas de la revisión.
+
 ## 16. Eficiencia
 
 <!-- generado:eficiencia -->
@@ -332,4 +428,53 @@ Decisiones pedidas a la docencia (texto congelado, en inglés):
 
 ## 18. Revisión adversarial
 
-Pendiente.
+Una revisión independiente, de sólo lectura, sobre `033c272` y `361c219`. Confirmé cada hallazgo con una sonda propia
+antes de actuar. Las sondas del revisor y las mías quedaron fuera del repositorio.
+
+**Revisado y limpio:**
+- el núcleo sin cambios (el árbol de P2L-2 coincide byte a byte);
+- el congelamiento íntegro y el registro reproducible byte a byte;
+- el colapso apagado y sin umbrales nuevos;
+- el subconjunto sin filtrar;
+- sin lectura de lactato, D, I ni F;
+- máximo sin doble conteo de Q;
+- bomba y ritmo no agregados como entradas;
+- sin términos de enfermedad;
+- las cifras del informe correctas;
+- las adaptaciones de las pruebas cerradas, que sólo excluyen el módulo nuevo.
+
+**Hallazgos:**
+
+- **ALTO-1. La carga vieja para a un paciente con gasto normal.** Pasa cuando un contribuyente movió el ritmo el minuto
+  del criterio, o tras un ROSC futuro; el repago no lo evita, y el «reset or repay» de ROSC es inexacto.
+  - *Confirmado:* con τ None, 30 y 240, AESP con gasto 1.
+  - *Resuelto en pruebas y texto:* prueba nueva, notas en §7, §8 y §9, decisión 11.
+- **ALTO-2. «El flujo nunca falla solo» dependía de las sondas elegidas.**
+  - *Confirmado:* bomba 0,7 con tono 2,0 da Q 0,538, PAM 96,9 y déficit 0.
+  - *Resuelto en pruebas y texto:* prueba nueva, nota en §6, decisión 13.
+  - El criterio `redundancy_resolved` congelado habría fallado con esa sonda.
+- **ALTO-3. No estaba demostrado que el mínimo B bastara sin flujo.**
+  - *Confirmado:* la guarda de P (0,1) deja pulso con PAM 9 (4,5 con bloqueo AV) durante la ventana; las sondas
+    congeladas de gasto 0,02 y del cero numérico usan P fuera de la guarda.
+  - *Resuelto en pruebas y texto:* prueba nueva, nota en §10, decisión 16, y el recorte de P declarado como guarda.
+- **ALTO-4. Con el déficit como entrada, la carga se parece a una D con umbral.**
+  - *Declarado:* nota en §7, decisión 12, con un contador de minutos consecutivos como alternativa.
+- **MEDIO-5. La oxigenación arterial «distinta» vale igual para el contenido.**
+  - *Confirmado:* Hb al 75,6 % y SpO2 73,3 dan igual aporte y ningún déficit.
+  - *Resuelto en pruebas y texto:* prueba nueva, nota en §11, decisión 14; la generalización queda condicionada a esa
+    entrada.
+- **MEDIO-6. Falta la invariante de llegada para la señal nueva.**
+  - *Declarado:* decisión 15.
+- **MEDIO-7. `persistence_classified` exige el defecto,** y `event_order_safe` deja fijo el minuto 14.
+  - *Declarado:* nota en §7.
+- **Bajos.**
+  - El rango «MAP 31-46» del texto congelado frente al 32,5–46,3 del registro: nota en §10.
+  - La descripción del retraso en MECHANISMS: nota en §8.
+  - El escaneo de disparadores no es recursivo; la conclusión se mantiene.
+  - Dos aserciones que no podían fallar: corregidas, y se agregó la prueba de un disparador plantado.
+  - La etiqueta B se queda corta: lectura corregida en §13.
+
+**Sin segundo congelamiento.** Corregir los criterios dentro del módulo congelado exigiría recongelar. En P2L-1 se señaló
+que esa desviación la decide la docencia, y en P2L-2 se aceptó este mismo tratamiento. Por eso sólo se corrigió lo no
+congelado (pruebas, informe y documentos) y la contradicción queda pedida como decisión 17. El registro sigue siendo el
+de la corrida del congelamiento `c4aa95f6`.
