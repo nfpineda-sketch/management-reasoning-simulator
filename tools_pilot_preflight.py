@@ -178,7 +178,7 @@ def committed_file(commit, relative, root=ROOT):
 
 
 def _fast_reruns(view, expected):
-    import toml                                      # the parser Streamlit reads its config.toml with
+    import tomllib                                   # the parser Streamlit reads its config.toml with
     if view.is_set(FAST_RERUNS_OVERRIDE):
         return False, (f"{FAST_RERUNS_OVERRIDE} está definido: sobrescribe la configuración del repositorio. "
                        "El congelamiento exige [runner] fastReruns = false de .streamlit/config.toml.")
@@ -192,7 +192,7 @@ def _fast_reruns(view, expected):
     if text is None:
         return False, ("No se pudo leer .streamlit/config.toml del commit que se despliega: el congelamiento exige "
                        "[runner] fastReruns = false.")
-    if (toml.loads(text).get("runner") or {}).get("fastReruns") is False:
+    if (tomllib.loads(text).get("runner") or {}).get("fastReruns") is False:
         return True, ("[runner] fastReruns = false en .streamlit/config.toml del commit que se despliega: un segundo "
                       "clic nunca inicia una ejecución concurrente.")
     return False, ("[runner] fastReruns no es el booleano false en .streamlit/config.toml del commit que se "
