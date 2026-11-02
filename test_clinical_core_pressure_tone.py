@@ -43,14 +43,18 @@ LATER_MODULES = ("clinical_core/vascular_tone.py", "clinical_core/pressure_tone_
                  "clinical_core/ventilation_filter.py",
                  "clinical_core/respiratory_monotonicity.py",
                  "clinical_core/consciousness_audit.py",
-                 "clinical_core/encephalopathy.py", "clinical_core/encephalopathy_architecture.py")
+                 "clinical_core/encephalopathy.py", "clinical_core/encephalopathy_architecture.py",
+                 "clinical_core/collapse_audit.py")
 #: What P2J-2 added to tone's paths (its analysis module, and the integrator's tone response): the P2J-1 audit's view
 #: of the tree leaves them out; test_clinical_core_vascular_tone pins them.
 P2J2_TONE_ROWS = (("clinical_core/vascular_tone.py", None), ("clinical_core/vascular_tone_report.py", None),
                   ("clinical_core/integration.py", "_vascular_tone"),
                   # P2L-1: the consciousness audit sets T only in synthetic fixed-state probes read through derive (a
                   # probe module like hemodynamic_probes); no clinical mechanism writes tone there.
-                  ("clinical_core/consciousness_audit.py", None))
+                  ("clinical_core/consciousness_audit.py", None),
+                  # P2M-1: the collapse audit reads T only on synthetic fixed-state probes (a probe module); it writes
+                  # no tone.
+                  ("clinical_core/collapse_audit.py", None))
 C57, C72 = pt.C57, pt.C72
 NEUTRAL = Anchors(**ARRIVAL)
 

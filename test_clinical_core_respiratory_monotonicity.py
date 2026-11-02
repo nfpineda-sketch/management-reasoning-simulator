@@ -93,8 +93,9 @@ def test_the_package_is_frozen():
     # module left out and the tuple-only files at their P2K-5 hashes (consciousness_audit.p2k5_sources), after P2L-2's
     # modules and tuple entries are left out (encephalopathy_architecture.p2l1_sources).
     from clinical_core import consciousness_audit as ca
+    from clinical_core import collapse_audit as cm
     from clinical_core import encephalopathy_architecture as ea
-    sources = ca.p2k5_sources(ea.p2l1_sources(bf.freeze_sources()))
+    sources = ca.p2k5_sources(ea.p2l1_sources(cm.p2l2_sources(bf.freeze_sources())))
     p2k4 = json.dumps({"revision": vf.REVISION, "p2k3": hashlib.sha256(vf.P2K3_RECORD.read_bytes()).hexdigest(),
                        "design": vf.design(), "sources": rm.p2k4_sources(sources)}, sort_keys=True, default=str)
     assert hashlib.sha256(p2k4.encode("utf-8")).hexdigest() == rm.P2K4_DIGEST

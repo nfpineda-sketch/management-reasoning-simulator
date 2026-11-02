@@ -37,9 +37,38 @@ FROZEN_DIGEST = "970db00d1f7e84c1f5fd752f34af452955f873f4ba0ebae32a5cd5c2887e70d
 TEST_MAPPING = enc.SignalMapping(normal=10.0, severe=0.0)
 
 
+#: P2M-1's layer, added after P2L-2 closed: this package's view of the tree leaves it out (collapse_audit.p2l2_sources:
+#: the audit removed, the tuple-only files at their P2L-2 hashes while only their tuples changed; P2L-1's frozen N scan
+#: without the audit); the record is unchanged.
+_FREEZE_SOURCES, _PYTHON = bf.freeze_sources, ca._python
+LATER_MODULES = ("clinical_core/collapse_audit.py",)
+
+
+def _p2l2_view() -> dict:
+    from clinical_core import collapse_audit as cm
+    return cm.p2l2_sources(_FREEZE_SOURCES())
+
+
+def _p2l2_python() -> list:
+    later = {ROOT / relative for relative in LATER_MODULES}
+    return [p for p in _PYTHON() if p not in later]
+
+
+def _patch(patch) -> None:
+    patch.setattr(bf, "freeze_sources", _p2l2_view)
+    patch.setattr(ca, "_python", _p2l2_python)
+
+
+@pytest.fixture(autouse=True)
+def _p2l2_tree(monkeypatch):
+    _patch(monkeypatch)
+
+
 @pytest.fixture(scope="module")
 def result():
-    return ea.run()
+    with pytest.MonkeyPatch.context() as patch:
+        _patch(patch)
+        return ea.run()
 
 
 # The frozen package and its closure ------------------------------------------------------------------------------------

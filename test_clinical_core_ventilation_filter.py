@@ -90,11 +90,12 @@ def test_the_package_is_frozen():
     # Since P2L-1 the sources also drop P2L-1's module (consciousness_audit.p2k5_sources) before P2K-5's map, and since
     # P2L-2 P2L-2's modules first (encephalopathy_architecture.p2l1_sources).
     from clinical_core import consciousness_audit as ca
+    from clinical_core import collapse_audit as cm
     from clinical_core import encephalopathy_architecture as ea
     from clinical_core import respiratory_monotonicity as rm
     assert '"sources": p2k4_sources(bf.freeze_sources())}' in inspect.getsource(rm.p2k4_freeze_digest)
     text = json.dumps({"revision": vf.REVISION, "p2k3": hashlib.sha256(vf.P2K3_RECORD.read_bytes()).hexdigest(),
-                       "design": vf.design(), "sources": rm.p2k4_sources(ca.p2k5_sources(ea.p2l1_sources(bf.freeze_sources())))},
+                       "design": vf.design(), "sources": rm.p2k4_sources(ca.p2k5_sources(ea.p2l1_sources(cm.p2l2_sources(bf.freeze_sources()))))},
                       sort_keys=True, default=str)
     if FROZEN_DIGEST is not None:
         assert hashlib.sha256(text.encode("utf-8")).hexdigest() == FROZEN_DIGEST, \

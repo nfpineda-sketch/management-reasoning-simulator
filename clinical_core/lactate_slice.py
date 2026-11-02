@@ -529,7 +529,8 @@ DOWNSTREAM_REPORTS = ("clinical_core/blood_filter_report.py", "clinical_core/blo
                       "clinical_core/ventilation_filter_report.py",
                       "clinical_core/respiratory_monotonicity_report.py",
                       "clinical_core/consciousness_audit_report.py",
-                      "clinical_core/encephalopathy_architecture_report.py")
+                      "clinical_core/encephalopathy_architecture_report.py",
+                      "clinical_core/collapse_audit_report.py")
 
 
 def slice_sources() -> dict[str, str]:

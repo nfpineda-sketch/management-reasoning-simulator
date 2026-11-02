@@ -39,7 +39,8 @@ LATER_MODULES = ("clinical_core/baroreflex.py", "clinical_core/rr_audit.py", "cl
                  "clinical_core/ventilation_filter.py",
                  "clinical_core/respiratory_monotonicity.py",
                  "clinical_core/consciousness_audit.py",
-                 "clinical_core/encephalopathy.py", "clinical_core/encephalopathy_architecture.py")
+                 "clinical_core/encephalopathy.py", "clinical_core/encephalopathy_architecture.py",
+                 "clinical_core/collapse_audit.py")
 C57, C72 = pf.C57, pf.C72
 
 

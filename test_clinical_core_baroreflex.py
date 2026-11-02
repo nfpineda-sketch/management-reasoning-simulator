@@ -46,7 +46,8 @@ LATER_MODULES = ("clinical_core/rr_audit.py", "clinical_core/acid_base.py",
                  "clinical_core/ventilation_filter.py",
                  "clinical_core/respiratory_monotonicity.py",
                  "clinical_core/consciousness_audit.py",
-                 "clinical_core/encephalopathy.py", "clinical_core/encephalopathy_architecture.py")
+                 "clinical_core/encephalopathy.py", "clinical_core/encephalopathy_architecture.py",
+                 "clinical_core/collapse_audit.py")
 C57, C72 = br.C57, br.C72
 
 

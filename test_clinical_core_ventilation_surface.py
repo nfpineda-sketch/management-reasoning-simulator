@@ -55,12 +55,13 @@ def _freeze_digest_at_p2k3() -> str:
     (respiratory_monotonicity.p2k4_sources, then ventilation_filter.p2k3_sources; the tuple content is pinned in
     test_clinical_core_rr_audit)."""
     from clinical_core import consciousness_audit as ca
+    from clinical_core import collapse_audit as cm
     from clinical_core import encephalopathy_architecture as ea
     from clinical_core import respiratory_monotonicity as rm
     from clinical_core import ventilation_filter as vf
     text = json.dumps({"revision": vs.REVISION, "p2k2": hashlib.sha256(vs.P2K2_RECORD.read_bytes()).hexdigest(),
                        "design": vs.design(),
-                       "sources": vf.p2k3_sources(rm.p2k4_sources(ca.p2k5_sources(ea.p2l1_sources(bf.freeze_sources()))))},
+                       "sources": vf.p2k3_sources(rm.p2k4_sources(ca.p2k5_sources(ea.p2l1_sources(cm.p2l2_sources(bf.freeze_sources())))))},
                       sort_keys=True, default=str)
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
