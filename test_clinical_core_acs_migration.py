@@ -276,3 +276,119 @@ def test_the_document_is_generated_from_the_record(record):
     assert an.READY in document and "IMPLEMENT_EXPECTED_RESPIRATORY_EXTENSION" in document
     for placeholder in ("SUMMARY_TEXT", "LIMITS_TEXT", "REVIEW_TEXT", "FREEZE_COMMIT", "FREEZE_DIGEST"):
         assert placeholder not in document
+
+
+# The adversarial review (P2N-2), pinned on the frozen package -------------------------------------------------------------
+# The review ran once on the freeze and the evaluation. These tests give the weak criteria a non-vacuous check on the frozen
+# outputs and pin what the review found, without touching the frozen modules (no refreeze): docs/revision/
+# P2N2_MIGRACION_CARDIOGENICA_ACS.md §19.
+
+def test_review_the_untreated_fall_is_the_writers_and_not_the_arrival_debt(record):
+    # Without writers the arrival debt still accumulates (D_up holds with no ischaemia at all); with them every
+    # downstream direction is strictly worse than the writer-free course.
+    s, a, p = _start()
+    bare, _ = an.course((), an.HORIZON, a, p, s)
+    first, last = an.row(bare[0], a, p), an.row(bare[-1], a, p)
+    assert (last["P"], last["L"], last["output_rel"]) == (1.0, 0.0, 1.0) and last["map"] == pytest.approx(first["map"])
+    assert last["D"] > first["D"]
+    ref = record["reperfusion"]["ongoing"]
+    assert ref["P"] < last["P"] and ref["output_rel"] < last["output_rel"] and ref["map"] < last["map"]
+    assert ref["delivery_index"] < last["delivery_index"] and ref["deficit"] > last["deficit"]
+    assert ref["D"] > last["D"] and ref["L"] > last["L"]
+
+
+def test_review_reperfusion_improves_p_strictly_and_in_the_order_of_the_declared_share(record):
+    # The frozen criterion compares with >=, so a reperfusion that changed nothing would pass it; the frozen outputs
+    # pass the strict comparison, ordered by the declared recovery share, and every downstream reading follows.
+    rp = record["reperfusion"]
+    shares = [rp["shares"][str(float(share))] for share in an.RECOVERY_SHARES]
+    assert rp["ongoing"]["P"] < shares[0]["P"] < shares[1]["P"] < shares[2]["P"] <= 1.0
+    for row in shares:
+        assert row["map"] > rp["ongoing"]["map"] and row["deficit"] < rp["ongoing"]["deficit"]
+        assert row["D"] < rp["ongoing"]["D"] and row["writes"] == {"channels": ["L", "P"], "other_writes": 0}
+
+
+def test_review_the_arrival_d_does_not_follow_the_authored_lactate_through_the_mapping(monkeypatch):
+    # The permanent guard moves the lactate of finished anchors; this one moves the authored lactate the mapping reads,
+    # and shows that the same check catches a planted lactate -> D rule in the mapping.
+    base, authored = ar.anchors(), ar.truth()
+    monkeypatch.setattr(ar, "truth", lambda: {**authored, "lactate_mmol_l": 2.0 * authored["lactate_mmol_l"]})
+    moved = ar.anchors()
+    assert moved.lactate == 2.0 * base.lactate and moved.arrival_oxygen_debt == base.arrival_oxygen_debt
+    monkeypatch.setattr(ar, "arrival_oxygen_debt", lambda point="midpoint": 5.0 * ar.truth()["lactate_mmol_l"])
+    assert ar.anchors().arrival_oxygen_debt != base.arrival_oxygen_debt
+
+
+def test_review_the_arrival_impairment_counts_once_and_the_pump_reserve_reaches_no_course_run():
+    # Declared limitation (faculty decision): the arrival LV impairment acts through the arrival delivery ratio only.
+    # pump_reserve enters the congestion shortfall alone, above the common preload knee, and no course this package
+    # runs gets there: not the untreated region, not 4000 mL on the weak pump.
+    p = ar.common_profile()
+    courses = []
+    for reserve in (0.3, 1.0):
+        a = ar.anchors(pump_reserve=reserve)
+        arrival = an.row(dv.arrival_state(a, p), a, p)
+        assert arrival["output_rel"] == 1.0
+        assert arrival["deficit"] == pytest.approx(1.0 - a.arrival_delivery_ratio * ar.RESERVE)
+        states, _ = an.course(an.writers(), an.HORIZON, a, p)
+        courses.append([an.row(x, a, p) for x in states])
+    assert courses[0] == courses[1]
+    a = ar.anchors(pump_reserve=0.3)
+    weak = dv.arrival_state(a, p).evolve(P=an.FLUID["pump_failure_P"])
+    bag = replace(an._bag(), volume_ml=4000.0, untimed_rate_ml_per_min=4000.0 / an.FLUID["duration_min"])
+    wet, _ = an.course((bag,), an.FLUID["read_minute"], a, p, weak)
+    assert dv.preload_position(wet[-1], a, p) < p.congestion_preload_knee and wet[-1].L == 0.0
+
+
+def test_review_the_authored_arrival_hr_lies_just_above_the_intrinsic_band_alone():
+    # The frozen "intrinsic band" row moved every band to the same point; the intrinsic rate alone spans 71.9 / 91.8 /
+    # 111.8 and does not reach the authored 112: a faculty decision, never an ACS residual.
+    p, b = ar.common_profile(), ar.bands()["intrinsic_sinus_rate"]
+    hr = {}
+    for point in ("lower", "midpoint", "upper"):
+        a = ar.anchors(intrinsic_sinus_rate=getattr(b, point))
+        hr[point] = an.row(dv.arrival_state(a, p), a, p)["hr"]
+    assert hr["lower"] < hr["midpoint"] < hr["upper"] < float(ar.truth()["hr"]) < hr["upper"] + 1.0
+
+
+def test_review_the_weak_pump_gains_less_than_a_normal_pump_at_the_same_neutral_preload(record):
+    # The frozen comparison is confounded by preload (the preload-deficient arm sits low on the curve); the matched
+    # control, the arrival pump at the same neutral preload, still gains more than the weak pump.
+    s, a, p = _start()
+    minute = an.FLUID["read_minute"]
+    dry, _ = an.course((), minute, a, p, s)
+    wet, _ = an.course((an._bag(),), minute, a, p, s)
+    normal = an.row(wet[-1], a, p)["output_rel"] - an.row(dry[-1], a, p)["output_rel"]
+    fl = record["fluid"]
+    assert fl["pump_failure"]["output_gain"] < normal < fl["preload_deficiency"]["output_gain"]
+
+
+def test_review_known_limitation_a_pump_with_no_loss_still_records_its_start():
+    # Declared (no runtime reader, Trace integration is M2): the start event fires even when the declared loss is 0.
+    s, a, p = _start()
+    states, records = an.course((IschaemicPump("acs-pump", 0.0, 0.5, 0.5, 30.0),), 3, a, p, s)
+    assert {x.P for x in states} == {1.0}
+    assert [e.kind for r in records for e in r.events] == ["ischaemic_pump_loss"]
+
+
+def test_review_the_channels_that_move_in_the_reference_course(record):
+    # CHANNEL_ROLES are the brief's expectations; the reference course shows which hold: P and L written by the family,
+    # T and D moved by the common core, V, R, G, W and N unchanged (G and W carry no role until the respiratory extension).
+    region = record["untreated"]["region"][min(record["untreated"]["region"], key=lambda k: abs(float(k) - 0.1 / 60))]
+    first, last = region["first"], region["last"]
+    moved = {c for c in ("V", "T", "P", "R", "L", "G", "W", "D", "N") if first[c] != last[c]}
+    assert moved == {"T", "P", "L", "D"}
+    assert set(ar.CHANNEL_ROLES) == {"V", "T", "P", "R", "L", "G", "W", "D", "N"}
+
+
+def test_review_every_common_reference_value_equals_its_source():
+    from clinical_core import blood_anchors as ba
+    from clinical_core import calibration
+    from clinical_core import hr_primary as hp
+    ref = ar.COMMON_REFERENCE
+    assert ref["sympathetic_per_pressure_deficit"][0] == hp.PRIMARY_HR_CALIBRATION["sympathetic_per_pressure_deficit"]
+    assert ref["debt_clearance_tau_min"][0] == ba.KINETICS["debt_clearance_tau_min"]
+    assert ref["lactate_clearance_tau_min"][0] == ba.KINETICS["lactate_clearance_tau_min"]
+    for name in ("debt_clearance_tau_min", "debt_per_delivery_deficit", "lactate_clearance_tau_min"):
+        points = tuple(calibration.REGISTRY[name].points())
+        assert ref[name][0] == points[len(points) // 2]

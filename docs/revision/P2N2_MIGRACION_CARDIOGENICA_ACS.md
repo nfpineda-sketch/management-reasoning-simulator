@@ -17,15 +17,16 @@ Sólo sombra. El mapeo de llegada del caso (`clinical_core/acs_reference.py`) y 
   - gases 7,39 / 30,8 frente a 7,36 / 33 autorizados (con la ventilación candidata de P2K-3, sin ajustar).
 - **La falla de bomba entra por P:**
   - P es relativo a la llegada;
-  - la disfunción ventricular de llegada queda en la capa de llegada (reserva de bomba y razón de aporte), sin contarse
-    dos veces.
+  - la disfunción ventricular de llegada queda en la capa de llegada y se cuenta una sola vez. Actúa sólo por la razón
+    de aporte; la reserva de bomba queda guardada y no actúa en ningún curso de este paquete (§19, decisión pedida).
 - **La isquemia sólo escribe P y la congestión sólo L.** En los tres puntos de la región predeclarada, Q, PAM, aporte,
   déficit, D, FC y tono responden por la fisiología común; el lactato es siempre el del núcleo.
 - **La D de llegada no depende del lactato**, y una prueba permanente lo fija.
 - **La reperfusión detiene la pérdida de P y deja recuperar una fracción declarada.** Lo demás sigue por la fisiología
   común.
 - **Contrafactual de fluidos:** el volumen da mucho menos en la bomba débil (+0,05 de gasto) que en el déficit de
-  precarga (+0,26), y no normaliza la falla de bomba.
+  precarga (+0,26), y no normaliza la falla de bomba. Con el control emparejado de la revisión (la bomba de llegada en
+  la misma precarga neutra, +0,09), la bomba débil sigue ganando menos. Los fluidos no producen congestión (§19).
 - **El colapso sólo se lee:** máximo de las dos señales, cota inferior con el mapeo de PAM UNSET y ninguna regla
   cardiogénica. Nunca actúa.
 - **El legado se compara al final y no elige nada.** Su caída de SpO2 y su FV a los 120 min son extensiones esperadas:
@@ -163,7 +164,7 @@ Capa de observación (congelada, en inglés):
 | mental_status | 0 | Alert |
 
 Canales: V 0,000, T 1,000, P 1,000, R sinus, L 0,000, G 0,000, W 0,000, D 20,000, N 0,000.
-FC de llegada en la banda intrínseca: inferior 73,1, media 91,8, superior 117,8 (autorizada 112); déficit de llegada 0,150, impulso simpático 0,476.
+FC de llegada con todas las bandas del mapeo en el mismo punto (no sólo la intrínseca): inferior 73,1, media 91,8, superior 117,8 (autorizada 112); déficit de llegada 0,150, impulso simpático 0,476.
 <!-- /generado:llegada -->
 
 ## 7. Isquemia sin tratar (región de familia predeclarada)
@@ -317,21 +318,106 @@ Decisiones pedidas a la docencia (texto congelado, en inglés):
 
 - **Ningún valor de la familia está aprobado.** Las pérdidas de P (5, 10 y 20 % por hora), el piso, la recuperación, la
   ganancia de congestión y el minuto de reperfusión son FAMILY_CANDIDATE o SYNTHETIC_ONLY. Las bandas de llegada usan
-  las reglas de GI, y la reserva de bomba (0,3-0,7) es candidata.
+  las reglas de GI, y la reserva de bomba (0,3-0,7) es candidata. La evidencia de GI sobre la banda de aporte de
+  llegada no se traslada a un caso cardiogénico: la banda es la regla, no un dato de este caso.
 - **El perfil común es un solo punto** (el centro de cada conjunto certificado). Sólo se barrieron, en 1-D, la ganancia
   de tono y k_LD.
 - **Lactato bajo isquemia.** Con el k_LD medio baja (3,1 → 2,4 en 120 min) aunque D sube, porque el exceso de llegada
-  (2,3) supera el estado estacionario de la D de llegada. Sólo sube con los dos k_LD superiores (3,7 y 7,5). Es
+  (2,1 en el punto medio) supera el estado estacionario de la D de llegada. Sólo sube con los dos k_LD superiores (3,7 y 7,5). Es
   incertidumbre común, que una segunda familia ayuda a discriminar; no se eligió ningún valor.
-- **FC de llegada.** La fisiología común da 91,8 con la intrínseca media, frente a 112 autorizado. La banda (73-118)
-  contiene lo autorizado. Se informa y no se absorbe.
+- **FC de llegada.** La fisiología común da 91,8 con la intrínseca media, frente a 112 autorizado. La fila «73-118» de
+  §6 movía todas las bandas a la vez; la intrínseca sola da 71,9 / 91,8 / 111,8 y no llega a 112 (corrección de la
+  revisión, §19). Se informa y no se absorbe.
 - **Congestión con fluidos.** Con 1000 mL, la posición de precarga de la bomba débil (0,67) no llega a la rodilla común
-  (0,85): L no sube por fluidos. El criterio «congestión visible» se cumplió sólo porque L no bajó (es débil, y queda
-  declarado). La congestión que muestra el caso la da el escritor de familia.
+  (0,85): L no sube por fluidos. Tampoco con 4000 mL (posición 0,77). El criterio «congestión visible» se cumplió sólo
+  porque L no bajó (es débil, y queda declarado). La congestión que muestra el caso la da el escritor de familia, que no
+  depende del volumen.
 - **El legado se leyó del motor de familia sólo como referencia.** No se usó para elegir parámetros.
 - **Fuera del alcance:** L → G / SpO2, VNI, barorreflejo → tono, poscarga dependiente de P, ROSC / ACLS y la FV
   heredada.
 
 ## 19. Revisión adversarial
 
-Pendiente: la revisión adversarial independiente corre sobre el congelamiento y esta evaluación.
+Una revisión independiente, de sólo lectura, corrió sobre el congelamiento (`ab248db`) y la evaluación (`15bed68`). Sin
+hallazgos altos: no encontró reajuste oculto del núcleo, regla lactato → D, escritura de observables por la familia,
+residual de FC del SCA, camino L → G, barorreflejo → tono, poscarga dependiente de P, umbrales ni colapso activo, ni
+gancho de ejecución. Cada hallazgo se confirmó con una sonda propia antes de actuar.
+
+No hubo recongelamiento. Los módulos congelados no cambian. Los hallazgos quedan fijados en pruebas no congeladas
+(`test_clinical_core_acs_migration.py`, bloque «adversarial review») y declarados aquí. El registro congelado se
+conserva tal cual.
+
+**Medios**
+
+- **M1. Seis criterios son débiles por construcción.**
+  - Son literales: `double_counting`, colapso activo, umbrales elegidos y legado usado para parámetros.
+  - `arrival_representable` sale fijo por la normalización de llegada.
+  - La reperfusión compara con «≥», y D sube aun sin escritores (la deuda de llegada se acumula: D 20 → 38).
+
+  Ahora hay pruebas no vacías sobre las salidas congeladas, y las cumplen:
+  - con los escritores, P, Q, PAM y aporte quedan estrictamente por debajo del curso sin escritores, y déficit, D y L
+    por encima;
+  - la reperfusión mejora P estrictamente (0,800 < 0,902 < 0,944 < 0,987), en el orden de la fracción declarada;
+  - la deficiencia de llegada se cuenta una sola vez: gasto 1 y déficit 1 − razón × reserva, sea cual sea la reserva
+    de bomba.
+
+  Los literales quedan como declaraciones, respaldadas por las pruebas de colapso, de aislamiento y de frontera.
+- **M2. La recomendación sale de una regla predeclarada,** y las clases del legado están escritas en el código: con
+  READY, la brecha respiratoria la implica el propio criterio 10.
+
+  La recomendación no es evidencia independiente: queda como regla, y la cola de esta noche ya ordena P2N-3 antes que
+  cualquier extensión respiratoria.
+- **M3. La guarda lactato → D movía el lactato de anclas ya construidas.** Una regla plantada en el mapeo no la
+  habría hecho fallar.
+
+  Una prueba nueva mueve el lactato autorizado que lee el mapeo. D de llegada no cambia, y la misma prueba detecta una
+  regla plantada.
+- **M4. La reserva de bomba no tiene efecto causal en ningún curso del paquete.**
+  - Los cursos sin tratar son idénticos con reserva 0,3 y 1,0.
+  - Con 4000 mL sobre la bomba débil, la posición de precarga es 0,77, bajo la rodilla común 0,85, y L queda en 0.
+  - La disfunción ventricular de llegada actúa sólo por la razón de aporte. No cambia la respuesta a volumen en la
+    llegada, ni produce congestión por fluidos.
+
+  No es una contradicción estructural, y no se corrige aquí. Hay tres salidas, todas fuera de lo autorizado esta
+  noche:
+  - un mapeo de precarga de llegada más alto (juicio clínico con VCI 1,9 y colapso del 50 %);
+  - la calibración común de la rodilla;
+  - un acoplamiento común de la reserva con la curva de precarga.
+
+  Se clasifica POSSIBLE_COMMON_CORE_GAP y es una decisión pedida. Si la docencia exige congestión inducida por volumen
+  para esta etapa, el veredicto pasa a `CARDIOGENIC_SHADOW_MIGRATION_NOT_READY — COMMON_CONGESTION_UNREACHABLE`.
+- **M5. La FC de llegada estaba mal etiquetada.** La fila «banda intrínseca» movía todas las bandas a la vez. La
+  intrínseca sola da 71,9 / 91,8 / 111,8, que no llega a 112.
+
+  La clase del legado (`LEGACY_DIFFERENCE_NOT_CLINICALLY_RELEVANT`, escrita en el código) se corrige aquí a
+  POSSIBLE_COMMON_CORE_GAP: la ganancia simpática común aporta unos 12 lpm con el impulso de llegada. Las salidas son un
+  mapeo de caso de la intrínseca (en el borde de la banda) o revisar las ganancias comunes. Nunca un residual de SCA.
+  La etiqueta del renderer queda corregida.
+- **M6. El contrafactual de fluidos está confundido por la precarga.** El control emparejado (la bomba de llegada en
+  la misma precarga neutra) gana +0,086 frente a +0,046 de la bomba débil. La dirección «menos beneficio con bomba
+  débil» se sostiene; la magnitud congelada (+0,26) la exageraba.
+
+**Bajos**
+
+- **L1.** `CHANNEL_ROLES` venían del encargo sin comprobarse. En el curso de referencia se mueven T, P, L y D; V, R, G,
+  W y N no cambian. Los papeles de G («leve») y W quedan sin representar hasta la extensión respiratoria.
+- **L2.** Un escritor de bomba con pérdida 0 registra igual su evento de inicio. Queda fijado como limitación conocida;
+  no tiene lector en ejecución, y la integración del Trace es M2.
+- **L3.** La vista P2M-2 de la prueba de colapso sacaba también el mapeo y los escritores ACS del escaneo de imports.
+  Corregido: sólo se excluye el análisis.
+- **L4.** El exceso de lactato de llegada en el punto medio es 2,1, no 2,3. Corregido en §18.
+- **L5.** `P_at_reperfusion` se lee un minuto después: 0,9017 frente a 0,9000, una pérdida de un minuto. Queda
+  declarado.
+- **L6.** La prueba de la referencia común no cubría cuatro valores. Ahora los compara con su fuente.
+- **L7.** La evidencia de GI sobre la banda de aporte no se traslada a este caso. Declarado en §18.
+
+**Sin confirmar:** un posible doble conteo del déficit de congestión cuando los fluidos pasan la rodilla. Ningún curso
+del paquete llega a la rodilla (M4), así que no se puede observar aquí.
+
+**Veredicto tras la revisión:** se mantiene `CARDIOGENIC_SHADOW_MIGRATION_READY`. Los criterios sustantivos se cumplen
+con pruebas no vacías sobre las salidas congeladas. Hay dos decisiones nuevas:
+- M4: la reserva de bomba es inerte y los fluidos no producen congestión;
+- M5: la FC de llegada en el borde de la banda.
+
+Ninguna exige cambiar la fisiología común para esta migración en sombra, pero M4 puede bloquear el despliegue
+cardiogénico completo.

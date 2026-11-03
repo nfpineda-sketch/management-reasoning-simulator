@@ -3760,8 +3760,8 @@ Ninguno. `clinical_core` sigue sólo en sombra.
     reperfusión como señal logística;
   - `clinical_core/acs_migration.py`: la evaluación.
 - **Resultados** (`docs/revision/P2N2_MIGRACION_CARDIOGENICA_ACS.md`):
-  - la llegada autorizada es representable; la FC de llegada común (91,8) queda bajo la autorizada (112), dentro de la
-    banda intrínseca, y se informa sin absorberla;
+  - la llegada autorizada es representable; la FC de llegada común (91,8) queda bajo la autorizada (112). La intrínseca
+    sola da 71,9-111,8 y no llega a 112 (corrección de la revisión); se informa sin absorberla;
   - la isquemia escribe sólo P y la congestión sólo L; Q, PAM, aporte, déficit, D, FC y tono responden por la
     fisiología común;
   - la D de llegada no depende del lactato (prueba permanente);
@@ -3772,3 +3772,16 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - el legado se compara al final, sin elegir nada.
 - **Veredicto: CARDIOGENIC_SHADOW_MIGRATION_READY.** Recomendación: IMPLEMENT_EXPECTED_RESPIRATORY_EXTENSION (L no tiene
   camino a G / SpO2).
+- **Revisión adversarial** (una, sin hallazgos altos; §19 del informe). No hubo recongelamiento. Los hallazgos quedan
+  fijados en pruebas no congeladas y declarados:
+  - seis criterios eran débiles por construcción; ahora tienen pruebas no vacías sobre las salidas congeladas, que las
+    cumplen;
+  - la recomendación sale de una regla predeclarada;
+  - la guarda lactato → D se refuerza en el mapeo;
+  - la reserva de bomba no actúa en ningún curso del paquete: los fluidos no llegan a la rodilla común, ni con
+    4000 mL, y no congestionan. Es POSSIBLE_COMMON_CORE_GAP, decisión docente;
+  - la FC de llegada se reclasifica a POSSIBLE_COMMON_CORE_GAP;
+  - el contrafactual de fluidos tiene ahora el control emparejado (+0,09 frente a +0,05);
+  - la vista P2M-2 de la prueba de colapso excluye sólo el análisis.
+
+  El veredicto se mantiene.

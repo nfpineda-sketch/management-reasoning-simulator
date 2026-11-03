@@ -105,7 +105,8 @@ def render_llegada(data: dict) -> str:
         lines.append(f"| {k} | {core if isinstance(core, (int, str)) else _n(core, 2)} | {shown} |")
     lines += ["", "Canales: " + ", ".join(f"{k} {row[k] if isinstance(row[k], str) else _n(row[k], 3)}"
                                           for k in ("V", "T", "P", "R", "L", "G", "W", "D", "N")) + ".",
-              f"FC de llegada en la banda intrínseca: inferior {_n(hr['lower'], 1)}, media {_n(hr['midpoint'], 1)}, "
+              f"FC de llegada con todas las bandas del mapeo en el mismo punto (no sólo la intrínseca): inferior "
+              f"{_n(hr['lower'], 1)}, media {_n(hr['midpoint'], 1)}, "
               f"superior {_n(hr['upper'], 1)} (autorizada {r['hr'][1]}); déficit de llegada "
               f"{_n(data['arrival']['arrival_deficit'], 3)}, impulso simpático {_n(data['arrival']['arrival_drive'], 3)}."]
     return "\n".join(lines)
