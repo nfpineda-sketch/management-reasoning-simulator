@@ -3785,3 +3785,28 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - la vista P2M-2 de la prueba de colapso excluye sólo el análisis.
 
   El veredicto se mantiene.
+
+## 56. P2N-3 · Expansión a la familia ACS (2026-11-03)
+
+- **Encargo:** comprobar, sólo con sondas en sombra, si las reglas de mapeo, los escritores de familia y el perfil de
+  referencia de P2N-2 generalizan a otros casos ACS, sin ajustar ningún valor.
+- **Casos** (elegidos antes de simular, con la razón escrita):
+  - acs_54m_inferior: infarto inferior con VD y bradicardia de 58;
+  - acs_52m_de_winter: oclusión anterior activa con llegada preservada;
+  - acs_66f_nonst: no oclusivo e hipertenso.
+
+  Quedan fuera acs_61m_posterior (el mismo mecanismo que de Winter) y acs_48m_wellens (sin oclusión activa).
+- **Resultados** (`docs/revision/P2N3_EXPANSION_FAMILIA_ACS.md`):
+  - los escritores de P2N-2 se reutilizan sin variantes: la bomba isquémica y la reperfusión sobre P, la congestión
+    sobre L encendida o apagada por configuración, y ningún escritor en el caso no oclusivo;
+  - las reglas de llegada de GI no se trasladan. Faltan tres reglas de mapeo:
+    - el punto de aporte con perfusión preservada (con el punto medio de GI, la D sube de 20 a 38 sin escritores);
+    - el borde del exceso de lactato dentro de la línea basal;
+    - la FC intrínseca fuera de la banda de reposo.
+  - la FC de llegada en el punto medio de la banda falla en los cuatro casos ACS, lo que amplía la M5 de P2N-2;
+  - el infarto con VD expone un hueco común (COMMON_CORE_STRUCTURAL_GAP): un solo P y una sola precarga no separan
+    el llenado de la AD del llenado del VI;
+  - la FR, el pH y la PaCO2 de llegada necesitan un impulso no metabólico (EXPECTED_RESPIRATORY_EXTENSION).
+- **Clasificación:** ACS_FAMILY_WRITERS_GENERALIZE_WITH_CASE_MAPPINGS, con un COMMON_CORE_GAP_EXPOSED (VD).
+- **Veredicto: ACS_FAMILY_GENERALIZATION_PARTIAL.** No se implementó nada: elegir cada regla de mapeo es una decisión
+  docente (§I del informe). No cambió el núcleo, GI, el colapso ni el tiempo de ejecución.
