@@ -156,20 +156,29 @@ def play(language, numbers, out, seed):
     # is set and never reads a key's value (test_offline_cases).
     if {"OPENAI_API_KEY", "ANTHROPIC_API_KEY"} & set(os.environ):
         raise SystemExit("A provider key is set: this measurement must not be able to spend.")
+    # Offline only while playing: called in-process (tools_contract_baseline), the
+    # previous value comes back so later code in the same process is not left offline.
+    previous = os.environ.get("MRS_OFFLINE_CASES")
     os.environ["MRS_OFFLINE_CASES"] = "1"
-    import tools_tanda20
-    by_number, _ = tools_tanda20._scripts(language)
-    folder = Path(out) / language
-    folder.mkdir(parents=True, exist_ok=True)
-    for number in numbers:
-        script = by_number[number]
-        result = tools_tanda20.rehearse(script, folder / "db", seed=seed)
-        stored = stored_encounter(folder / "db" / f"rehearsal-{number:02d}.sqlite3")
-        (folder / f"{number:02d}.json").write_text(
-            json.dumps({"result": result, "stored": stored}, indent=1, ensure_ascii=False, default=str),
-            encoding="utf-8")
-        print(f"{language} {number:>2} {script['case_id']:<30} stopped={result['stopped']} "
-              f"holds={len(result.get('unanticipated_holds', []))} ({result['seconds']} s)", flush=True)
+    try:
+        import tools_tanda20
+        by_number, _ = tools_tanda20._scripts(language)
+        folder = Path(out) / language
+        folder.mkdir(parents=True, exist_ok=True)
+        for number in numbers:
+            script = by_number[number]
+            result = tools_tanda20.rehearse(script, folder / "db", seed=seed)
+            stored = stored_encounter(folder / "db" / f"rehearsal-{number:02d}.sqlite3")
+            (folder / f"{number:02d}.json").write_text(
+                json.dumps({"result": result, "stored": stored}, indent=1, ensure_ascii=False, default=str),
+                encoding="utf-8")
+            print(f"{language} {number:>2} {script['case_id']:<30} stopped={result['stopped']} "
+                  f"holds={len(result.get('unanticipated_holds', []))} ({result['seconds']} s)", flush=True)
+    finally:
+        if previous is None:
+            os.environ.pop("MRS_OFFLINE_CASES", None)
+        else:
+            os.environ["MRS_OFFLINE_CASES"] = previous
 
 
 # --- comparing ----------------------------------------------------------------------
