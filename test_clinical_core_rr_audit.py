@@ -17,6 +17,7 @@ import pytest
 from clinical_core import baroreflex as br
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import gas_exchange_architecture as go
+from clinical_core import lung_water_reference as lw
 from clinical_core import decision_pack, gi_reference, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import lactate_adequacy as la
@@ -47,19 +48,28 @@ LATER_MODULES = ("clinical_core/acid_base.py", "clinical_core/ventilation.py",
                  "clinical_core/collapse_audit.py",
                  "clinical_core/collapse.py", "clinical_core/collapse_architecture.py",
                  "clinical_core/acs_reference.py", "clinical_core/modules/acs_ischaemia.py",
-                 "clinical_core/acs_migration.py", "clinical_core/gas_exchange_architecture.py")
+                 "clinical_core/acs_migration.py", "clinical_core/gas_exchange_architecture.py",
+                 "clinical_core/lung_water_reference.py")
 C57, C72 = ra.C57, ra.C72
 
 
 #: P2O-1 inserted its declared, inert names into derived.py and integration.py, proven byte for byte against the P2N-2
 #: files (gas_exchange_architecture.proved): this package's guards read the P2N-2 core (go.p2n2_text, go.p2n2_sources,
 #: go.p2n2_unchanged), never the live one; the record is unchanged.
-_LIVE_SOURCES_P2O1 = bf.freeze_sources
+#: P2O-3 replaced declared lines of derived.py, integration.py, state.py, modules/acs_ischaemia.py and two tuple
+#: files, proven byte for byte against the P2O-1 files (lung_water_reference.proved): this package's guards read
+#: the P2O-1 files through P2O-1's view of the P2N-2 core (lw.chain, lw.p2o1_sources); the record is unchanged.
+_LIVE_SOURCES_P2O3 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2O1() -> dict:
+    return lw.p2o1_sources(_LIVE_SOURCES_P2O3())
 
 
 @pytest.fixture(autouse=True, scope="module")
 def _p2n2_core():
     with pytest.MonkeyPatch.context() as patch:
+        lw.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         yield
@@ -432,10 +442,11 @@ def test_the_exclusion_tuples_hold_exactly_their_p2k1_content():
     from clinical_core import ventilation_surface as vs
     for name, values in (("DOWNSTREAM_REPORTS", lactate_slice.DOWNSTREAM_REPORTS),
                          ("PACK_DIGEST_EXCLUDED", decision_pack.PACK_DIGEST_EXCLUDED)):
-        # What P2K-2 to P2K-5, P2L-1, P2L-2, P2M-1, P2M-2 and P2N-2 (their modules' TUPLES_ADDED, frozen with them) added, exactly.
+        # What P2K-2 to P2K-5, P2L-1, P2L-2, P2M-1, P2M-2, P2N-2, P2O-1 and P2O-3 (their modules' TUPLES_ADDED, frozen with
+        # them) added, exactly.
         added = TUPLES_ADDED_BY_P2K2[name] + vs.TUPLES_ADDED[name] + vf.TUPLES_ADDED[name] + rm.TUPLES_ADDED[name] + \
             ca.TUPLES_ADDED[name] + ea.TUPLES_ADDED[name] + cm.TUPLES_ADDED[name] + \
-            cy.TUPLES_ADDED[name] + an.TUPLES_ADDED[name] + go.TUPLES_ADDED[name]
+            cy.TUPLES_ADDED[name] + an.TUPLES_ADDED[name] + go.TUPLES_ADDED[name] + lw.TUPLES_ADDED[name]
         assert set(added) <= set(values), name
         values = [v for v in values if v not in added]
         assert (hashlib.sha256(json.dumps(sorted(values)).encode("utf-8")).hexdigest(), len(values)) == \

@@ -149,6 +149,10 @@ class Contributor:
     type_name: ClassVar[str]
     #: Signal names this contributor reads (its declared action capabilities).
     responds_to: ClassVar[frozenset[str]] = frozenset()
+    #: P2O-3: a family writer of lung water L that owns L's generation for the whole run. While one is present the core's
+    #: common overload coupling (``congestion_rate``) adds nothing: one generator of L, never two. Only a disease module
+    #: may declare it; the clearance and every reader of L stay common.
+    lung_water_authority: ClassVar[bool] = False
 
     @property
     def source(self) -> Source:
@@ -357,6 +361,9 @@ def _ordered(contributors: Sequence[Contributor]) -> tuple[Contributor, ...]:
             raise ProvenanceError(f"{type(item).__name__} must be a frozen dataclass Contributor")
         if item.source.kind in RESERVED_KINDS:
             raise ProvenanceError(f"{item.source.key}: only the integrator writes {item.source.kind.value} changes")
+        if item.lung_water_authority is not False and (item.lung_water_authority is not True
+                                                       or item.source.kind is not SourceKind.DISEASE_MODULE):
+            raise ProvenanceError(f"{item.source.key}: only a disease module (a family writer) owns lung water (P2O-3)")
     ordered = tuple(sorted(contributors, key=lambda item: (item.source.kind.value, item.source.id)))
     keys = [item.source.key for item in ordered]
     if len(set(keys)) != len(keys):
@@ -380,7 +387,9 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
             signals.append(signal)
     signals = tuple(sorted(signals))
     deltas = []
-    congestion = congestion_rate(state, anchors, profile)
+    # P2O-3: a family writer that owns lung water replaces the common overload coupling for the run (never both).
+    owned = any(contributor.lung_water_authority for contributor in ordered)
+    congestion = 0.0 if owned else congestion_rate(state, anchors, profile)
     if congestion:
         deltas.append(ChannelDelta(Channel.L, congestion, PRELOAD_CONGESTION, minute,
                                    "excess preload on a pump without reserve"))
@@ -432,10 +441,12 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
         before = state.value(channel)
         if channel is Channel.G and lung_water_gas_exchange_active(profile):
             # P2O-1: G follows the minute's bounded lung water (L precedes G here), recorded as a core coupling.
-            coupling = lung_water_gas_exchange(state.L, values[Channel.L.value], profile)
+            coupling = lung_water_gas_exchange(state.L, values[Channel.L.value], profile, anchors.reversible_lung_water)
             if coupling:
                 deltas.append(ChannelDelta(Channel.G, coupling, LUNG_WATER_GAS_EXCHANGE, minute,
-                                           "gas exchange following lung water above arrival (L -> G)"))
+                                           "gas exchange following lung water above arrival (L -> G)"
+                                           if max(state.L, values[Channel.L.value]) > 0.0 else
+                                           "gas exchange following lung water below arrival, down to L_rev (L -> G)"))
         proposed = before + math.fsum(delta.amount for delta in deltas if delta.channel is channel)
         lower, upper, _, why = CHANNEL_BOUNDS[channel]
         if channel is Channel.V:

@@ -89,6 +89,8 @@ class IschaemicPump(Contributor):
 class IschaemicCongestion(Contributor):
     kind = SourceKind.DISEASE_MODULE
     type_name = "acs_ischaemic_congestion"
+    #: P2O-3: the family owns lung water; the core's common overload coupling adds nothing while this writer is present.
+    lung_water_authority = True
 
     id: str
     lung_water_per_shortfall_per_min: float

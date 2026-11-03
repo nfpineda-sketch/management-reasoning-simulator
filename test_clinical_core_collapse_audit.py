@@ -15,6 +15,7 @@ import pytest
 
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import gas_exchange_architecture as go
+from clinical_core import lung_water_reference as lw
 from clinical_core import collapse_audit as cm
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
@@ -29,7 +30,14 @@ FROZEN_DIGEST = "c4aa95f62273136934b1b7a31bbb7637fa71fdb00638ddc1fd3974eeeecea9f
 #: P2M-2's layer, added after P2M-1 closed: this package's view of the tree leaves it out (collapse_architecture.
 #: p2m1_sources: the candidate and its analysis removed, the tuple-only files at their P2M-1 hashes while only their
 #: tuples changed; the audit's core-file scan without the candidate); the record is unchanged.
-_LIVE_SOURCES_P2O1 = bf.freeze_sources
+#: P2O-3 replaced declared lines of derived.py, integration.py, state.py, modules/acs_ischaemia.py and two tuple
+#: files, proven byte for byte against the P2O-1 files (lung_water_reference.proved): this package's guards read
+#: the P2O-1 files through P2O-1's view of the P2N-2 core (lw.chain, lw.p2o1_sources); the record is unchanged.
+_LIVE_SOURCES_P2O3 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2O1() -> dict:
+    return lw.p2o1_sources(_LIVE_SOURCES_P2O3())
 
 
 def _FREEZE_SOURCES() -> dict:
@@ -41,7 +49,8 @@ def _FREEZE_SOURCES() -> dict:
 _CORE_FILES = cm.core_files
 LATER_MODULES = ("clinical_core/collapse.py", "clinical_core/collapse_architecture.py",
                  "clinical_core/acs_reference.py", "clinical_core/modules/acs_ischaemia.py",
-                 "clinical_core/acs_migration.py", "clinical_core/gas_exchange_architecture.py")
+                 "clinical_core/acs_migration.py", "clinical_core/gas_exchange_architecture.py",
+                 "clinical_core/lung_water_reference.py")
 
 
 def _p2m1_view() -> dict:
@@ -57,6 +66,7 @@ def _p2m1_core_files() -> list:
 
 
 def _patch(patch) -> None:
+    lw.chain(patch)
     patch.setattr(bf, "freeze_sources", _p2m1_view)
     patch.setattr(cm, "core_files", _p2m1_core_files)
 

@@ -1128,7 +1128,7 @@ def _perfusion(state: CoreState, anchors: Anchors, profile: CoreProfile) -> tupl
     oxygen = (max(0.0, state.fio2 - profile.room_air_fio2) - max(0.0, anchors.fio2 - profile.room_air_fio2))
     spo2 = min(100.0, max(0.0, anchors.spo2 + profile.spo2_per_fio2 * oxygen))
     if gas_exchange_active(profile):
-        spo2 = oxygenation(state.G, state.fio2, anchors, profile)
+        spo2 = oxygenation(state.G, state.fio2, anchors, profile, lung_water_gas_credit(state.L, anchors, profile))
     delivery_rel = relative_delivery(output_rel, state.hb, spo2, anchors)
     return output_rel, pressure_rel, spo2, delivery_rel
 
@@ -1294,16 +1294,29 @@ def lung_water_gas_exchange_active(profile: CoreProfile) -> bool:
     return profile.lung_water_to_gas_exchange_gain is not None
 
 
-def lung_water_gas_exchange(before_l: float, after_l: float, profile: CoreProfile) -> float:
-    """The change of G one minute's lung water makes (P2O-1): gain x (max(0, L after) - max(0, L before)).
+def lung_water_gas_exchange(before_l: float, after_l: float, profile: CoreProfile, reversible: float = 0.0) -> float:
+    """The change of G one minute's lung water makes (P2O-1, P2O-3): gain x (max(L_rev, L after) - max(L_rev, L before)).
 
-    Summed from arrival (L = 0, G = 0) it is G_from_L = gain x max(0, L): continuous, never decreasing in L, zero at
-    arrival, no threshold. It follows L both ways above arrival, so lung water clearing back toward arrival never worsens
-    G. Lung water below arrival moves no G: crediting it would need the arrival congestion's share of the arrival
-    impairment, which L, a deviation from arrival, does not carry (O1). Its dynamics are L's own (the writers, the
-    clearance), with no second time constant. L reaches nothing else through it: SpO2, delivery, D, lactate, RR,
-    ventilation, consciousness and collapse see lung water only through G."""
-    return profile.lung_water_to_gas_exchange_gain * (max(0.0, after_l) - max(0.0, before_l))
+    Summed from arrival (L = 0, G = 0) it is G_from_L = gain x max(L_rev, L): continuous, never decreasing in L, zero at
+    arrival, no threshold. It follows L both ways, so lung water clearing toward arrival never worsens G. Lung water
+    below arrival moves G below 0 only down to the case's reversible lung water L_rev (``Anchors.reversible_lung_water``,
+    <= 0): the arrival congestion's reversible share, which L, a deviation from arrival, does not carry by itself (O1).
+    With the default L_rev = 0 it is P2O-1's gain x max(0, L) exactly. L itself has no floor at L_rev. Its dynamics are
+    L's own (the writers, the clearance), with no second time constant. L reaches nothing else through it: SpO2,
+    delivery, D, lactate, RR, ventilation, consciousness and collapse see lung water only through G."""
+    return profile.lung_water_to_gas_exchange_gain * (max(reversible, after_l) - max(reversible, before_l))
+
+
+def lung_water_gas_credit(lung_water: float, anchors: Anchors, profile: CoreProfile) -> float:
+    """How far below arrival gas exchange G is credited (P2O-3): the lung-water path's own share below arrival,
+    gain x min(0, max(L_rev, L)), never above 0.
+
+    0 without the L -> G coupling, with the default L_rev = 0, or with L at or above arrival: G below 0 then counts as
+    arrival, as in P2O-1. A direct writer of G gets no credit below arrival from it: only lung water below arrival,
+    down to L_rev, is credited (direct G reversibility is deferred)."""
+    if not lung_water_gas_exchange_active(profile):
+        return 0.0
+    return profile.lung_water_to_gas_exchange_gain * min(0.0, max(anchors.reversible_lung_water, lung_water))
 
 
 def oxygen_response_retained(gas_exchange: float, profile: CoreProfile) -> float:
@@ -1314,17 +1327,21 @@ def oxygen_response_retained(gas_exchange: float, profile: CoreProfile) -> float
     return 1.0 / (1.0 + profile.oxygen_response_loss_per_gas_exchange_unit * max(0.0, gas_exchange))
 
 
-def oxygenation(gas_exchange: float, fio2: float, anchors: Anchors, profile: CoreProfile) -> float:
-    """SpO2 from gas exchange G and inspired oxygen (P2O-1), anchored to the authored arrival:
+def oxygenation(gas_exchange: float, fio2: float, anchors: Anchors, profile: CoreProfile, credit: float = 0.0) -> float:
+    """SpO2 from gas exchange G and inspired oxygen (P2O-1, P2O-3), anchored to the authored arrival:
 
-        SpO2 = arrival SpO2 - scale x max(0, G) + spo2_per_fio2 x (benefit(FiO2) x retained(G) - benefit(arrival FiO2))
+        SpO2 = arrival SpO2 - scale x max(credit, G) + spo2_per_fio2 x (benefit(FiO2) x retained(G) - benefit(arrival FiO2))
 
-    with benefit(F) = max(0, F - room air). At G = 0 it is the core's SpO2 exactly; it never rises with G and never falls
-    with FiO2; above the authored arrival only through FiO2. It reads no L, ventilation, PaCO2, RR, acid burden, D or
+    with benefit(F) = max(0, F - room air) and credit <= 0 (``lung_water_gas_credit``; 0 by default, P2O-1's max(0, G)).
+    At G = 0 it is the core's SpO2 exactly; it never rises with G and never falls with FiO2; above the authored arrival
+    through FiO2, or by at most scale x |credit| for lung water below arrival, always within [0, 100]. The oxygen response
+    is never better than at arrival (retained reads max(0, G)). It reads no ventilation, PaCO2, RR, acid burden, D or
     lactate: hypoventilation reaches PaCO2, never G (alveolar-gas hypoxaemia is not modelled)."""
+    if credit > 0.0:
+        raise CoreInvariantError("the gas-exchange credit below arrival is never positive (P2O-3)")
     oxygen = (max(0.0, fio2 - profile.room_air_fio2) * oxygen_response_retained(gas_exchange, profile)
               - max(0.0, anchors.fio2 - profile.room_air_fio2))
-    return min(100.0, max(0.0, anchors.spo2 - profile.spo2_per_gas_exchange_unit * max(0.0, gas_exchange)
+    return min(100.0, max(0.0, anchors.spo2 - profile.spo2_per_gas_exchange_unit * max(credit, gas_exchange)
                           + profile.spo2_per_fio2 * oxygen))
 
 

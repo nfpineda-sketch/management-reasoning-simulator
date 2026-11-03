@@ -18,6 +18,7 @@ from clinical_core import acs_migration as an
 from clinical_core import acs_reference as ar
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import gas_exchange_architecture as go
+from clinical_core import lung_water_reference as lw
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import vascular_tone as vt
@@ -36,7 +37,14 @@ FROZEN_DIGEST = "e7ff21e577cfadc3990ac9a27a3524d4e3bb80a7870d47e27dcc6e9420b7a71
 #: P2O-1 inserted its declared, inert names into derived.py and integration.py, proven byte for byte against the P2N-2
 #: files (gas_exchange_architecture.proved): this package's guards read the P2N-2 core (go.p2n2_text, go.p2n2_sources,
 #: go.p2n2_unchanged), never the live one; the record is unchanged.
-_LIVE_SOURCES_P2O1 = bf.freeze_sources
+#: P2O-3 replaced declared lines of derived.py, integration.py, state.py, modules/acs_ischaemia.py and two tuple
+#: files, proven byte for byte against the P2O-1 files (lung_water_reference.proved): this package's guards read
+#: the P2O-1 files through P2O-1's view of the P2N-2 core (lw.chain, lw.p2o1_sources); the record is unchanged.
+_LIVE_SOURCES_P2O3 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2O1() -> dict:
+    return lw.p2o1_sources(_LIVE_SOURCES_P2O3())
 
 
 _UPSTREAM_P2N2 = an.upstream_unchanged
@@ -46,12 +54,13 @@ def _p2n2_upstream() -> dict:
     # P2O-1's analysis reads the ACS case for its post-freeze validation: an analysis module, never common
     # physiology; the common-core readers of the family stay what P2N-2 froze.
     up = _UPSTREAM_P2N2()
-    return {**up, "core_readers_of_family": [r for r in up["core_readers_of_family"] if r not in go.OWN]}
+    return {**up, "core_readers_of_family": [r for r in up["core_readers_of_family"] if r not in go.OWN + lw.OWN]}
 
 
 @pytest.fixture(autouse=True, scope="module")
 def _p2n2_core():
     with pytest.MonkeyPatch.context() as patch:
+        lw.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         patch.setattr(an, "upstream_unchanged", _p2n2_upstream)
@@ -281,9 +290,13 @@ def result():
 def test_the_record_comes_from_the_frozen_package_and_is_reproduced_live(record, result):
     assert record["freeze_digest"] == FROZEN_DIGEST and "stopped" not in record
     assert record["design"] == _json(an.design())
+    # P2O-3 gave the anchors one candidate input (reversible_lung_water), 0 at this arrival: the frozen record predates
+    # the field, so it is removed (and checked neutral) before the comparison; nothing else moves.
+    live = _json(result)
+    assert live["arrival"]["anchors"].pop("reversible_lung_water") == 0.0
     for key in ("upstream", "arrival", "lactate_d", "pump", "untreated", "reperfusion", "fluid", "collapse", "boundary",
                 "gi", "legacy", "legacy_comparison", "verdict", "recommendation", "decisions", "efficiency"):
-        assert record[key] == _json(result[key]), key
+        assert record[key] == live[key], key
 
 
 def test_the_record_states_the_verdict_and_the_recommendation(record):

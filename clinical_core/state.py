@@ -264,7 +264,7 @@ ARRIVAL_LAYERS: Mapping[str, tuple[str, ...]] = {
     "authored_observation": ("sbp", "dbp", "hr", "spo2", "respiratory_rate", "crt_s", "lactate", "hb", "glucose",
                              "k", "fio2", "rhythm", "consciousness_level"),
     "physiological_reference": ("intrinsic_sinus_rate", "metabolic_demand_baseline", "reference_preload_fraction",
-                                "beta_blockade", "pump_reserve", "intrinsic_respiratory_rate"),
+                                "beta_blockade", "pump_reserve", "intrinsic_respiratory_rate", "reversible_lung_water"),
     "arrival_dynamic_state": ("preload_fraction", "arrival_oxygen_debt", "arrival_lactate_excess",
                               "arrival_delivery_ratio", "arrival_bicarbonate", "arrival_paco2"),
 }
@@ -352,6 +352,12 @@ class Anchors:
     intrinsic_respiratory_rate: float | None = None
     arrival_bicarbonate: float | None = None
     arrival_paco2: float | None = None
+    # P2O-3 candidate input, read only by the lung-water coupling L -> G (off by default) and outside the case-parameter /
+    # migration registry until the faculty adopts that physiology, as P2K-2's: ``reversible_lung_water`` (L_rev) is how far
+    # below arrival the case's lung water can reversibly go (L is arrival-relative, so L_rev <= 0). Gas exchange is
+    # credited for lung water below arrival only down to it; L itself has no floor there. 0, the default, credits nothing
+    # below arrival (P2O-1). No value other than 0 is approved: a case or family reference, never inferred.
+    reversible_lung_water: float = 0.0
     declared: FrozenRecord = field(default=EMPTY)
 
     def __post_init__(self):
@@ -401,6 +407,8 @@ class Anchors:
             raise CoreInvariantError("the arrival oxygen delivery ratio is positive")
         if self.reference_preload_fraction is not None and not 0.0 < self.reference_preload_fraction < 1.0:
             raise CoreInvariantError("the reference preload fraction is strictly between 0 and 1")
+        if not self.reversible_lung_water <= 0.0:
+            raise CoreInvariantError("the reversible lung water is at or below arrival (L_rev <= 0, P2O-3)")
         for name in ("intrinsic_respiratory_rate", "arrival_bicarbonate", "arrival_paco2"):
             if getattr(self, name) is not None and not (math.isfinite(getattr(self, name)) and getattr(self, name) > 0.0):
                 raise CoreInvariantError(f"{name} is finite and positive when declared (P2K-2)")

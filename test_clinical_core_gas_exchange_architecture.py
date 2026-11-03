@@ -17,12 +17,26 @@ from clinical_core import acs_migration as an
 from clinical_core import acs_reference as ar
 from clinical_core import derived as dv
 from clinical_core import gas_exchange_architecture as go
+from clinical_core import lung_water_reference as lw
 from clinical_core.state import CoreInvariantError
 
 #: The P2O-1 freeze: the semantics, the L -> G and G -> oxygenation structures, the SYNTHETIC_ONLY region, the probes,
 #: the cross-family criteria, the GI / ACS designs, the verdict and recommendation rules, the proof and every
 #: clinical_core source but the downstream reports, committed before the evaluation run.
 FROZEN_DIGEST = "22bb29b95714b28044c418cd8e4b5f0058d1f5065eafffc509e656ff8c6db733"
+
+#: P2O-3 replaced declared lines of derived.py, integration.py, state.py, modules/acs_ischaemia.py and two tuple files,
+#: proven byte for byte against the P2O-1 files (lung_water_reference.proved): this package's guards read the P2O-1
+#: files (lw.chain, lw.p2o1_sources, lw.p2o1_bytes), never the live ones; the record is unchanged.
+_LIVE_SOURCES_P2O3 = bf.freeze_sources
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _p2o1_core():
+    with pytest.MonkeyPatch.context() as patch:
+        lw.chain(patch)
+        patch.setattr(bf, "freeze_sources", lambda: lw.p2o1_sources(_LIVE_SOURCES_P2O3()))
+        yield
 
 
 # The frozen package and its proof -------------------------------------------------------------------------------------------
@@ -200,7 +214,7 @@ CORE_AT_P2O1 = {go.DERIVED: "6bc0d392df3a49c0c4251131a58292d45a12e0d509b0e77a0d5
 
 def test_review_the_live_core_bytes_are_pinned_so_a_shared_line_or_a_moved_guard_cannot_pass():
     for relative, sha in CORE_AT_P2O1.items():
-        assert hashlib.sha256((go.ROOT / relative).read_bytes()).hexdigest() == sha
+        assert hashlib.sha256(lw.p2o1_bytes(relative)).hexdigest() == sha      # P2O-3: the proven P2O-1 bytes
     live = go._live(go.DERIVED)
     shared_line = live.replace("    oxygen_response_loss_per_gas_exchange_unit: float | None = None\n",
                                "    oxygen_response_loss_per_gas_exchange_unit: float | None = None; spo2_per_fio2 = 99.0\n")

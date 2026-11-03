@@ -21,6 +21,7 @@ from clinical_core import blood_anchors as ba
 from clinical_core import derived as dv
 from clinical_core import encephalopathy as enc
 from clinical_core import gas_exchange_architecture as go
+from clinical_core import lung_water_reference as lw
 from clinical_core.bands import ARRIVAL
 from clinical_core.integration import CHANNEL_BOUNDS
 from clinical_core.state import CHANNEL_DEFINITIONS, Anchors, Channel
@@ -30,7 +31,8 @@ P2O1_RECORD = ROOT / "docs" / "revision" / "P2O1_gas_exchange.json"
 
 
 def _functions_naming_l(relative: str) -> set:
-    tree = ast.parse((ROOT / relative).read_text(encoding="utf-8"))
+    # The audit describes the core at 96b9d65: P2O-3's changed files are read as P2O-1 left them (lw.p2o1_text, proven).
+    tree = ast.parse(lw.p2o1_text(relative))
     out = set()
     for fn in (n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)):
         if any(isinstance(n, ast.Attribute) and n.attr == "L" and isinstance(n.value, ast.Name) for n in ast.walk(fn)):
@@ -228,6 +230,7 @@ def test_review_pump_failure_is_counted_twice_above_the_knee_in_acs():
         rates[P] = (dv.congestion_rate(state, a, p), sum(d.amount for d in writer.contribute(state, 1, (), a, p).deltas))
     assert rates[0.7][0] > rates[1.0][0] > 0.0          # the core coupling rises with the pump failure
     assert rates[1.0][1] == 0.0 < rates[0.7][1]          # and the family writer adds its own share for the same failure
+    # P2O-3: the writer's authority now keeps step from adding the core coupling at all (lung_water_reference R7).
 
 
 @pytest.mark.parametrize("fraction, P, congests", [(0.5, 0.7, False), (0.6, 0.7, True), (0.7, 0.7, True),

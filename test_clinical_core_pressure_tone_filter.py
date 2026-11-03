@@ -16,6 +16,7 @@ from clinical_core import acid_base as ab
 from clinical_core import baroreflex as br
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import gas_exchange_architecture as go
+from clinical_core import lung_water_reference as lw
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import hr_envelope_filter as hf
 from clinical_core import hr_primary as hp
@@ -51,12 +52,20 @@ C57, C72 = pf.C57, pf.C72
 #: P2O-1 inserted its declared, inert names into derived.py and integration.py, proven byte for byte against the P2N-2
 #: files (gas_exchange_architecture.proved): this package's guards read the P2N-2 core (go.p2n2_text, go.p2n2_sources,
 #: go.p2n2_unchanged), never the live one; the record is unchanged.
-_LIVE_SOURCES_P2O1 = bf.freeze_sources
+#: P2O-3 replaced declared lines of derived.py, integration.py, state.py, modules/acs_ischaemia.py and two tuple
+#: files, proven byte for byte against the P2O-1 files (lung_water_reference.proved): this package's guards read
+#: the P2O-1 files through P2O-1's view of the P2N-2 core (lw.chain, lw.p2o1_sources); the record is unchanged.
+_LIVE_SOURCES_P2O3 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2O1() -> dict:
+    return lw.p2o1_sources(_LIVE_SOURCES_P2O3())
 
 
 @pytest.fixture(autouse=True, scope="module")
 def _p2n2_core():
     with pytest.MonkeyPatch.context() as patch:
+        lw.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         yield

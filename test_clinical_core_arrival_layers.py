@@ -32,7 +32,10 @@ def test_every_arrival_field_belongs_to_exactly_one_layer_and_no_layer_is_a_chan
     assert sorted(layered) == sorted(names) and len(layered) == len(set(layered))
     # P2K-2: the reference and dynamic layers also hold the acid-base physiology's three candidate inputs, which stay
     # outside the case-parameter / migration registry until the faculty adopts that physiology.
-    from clinical_core.acid_base import CANDIDATE_INPUTS
+    # P2O-3: so does the lung-water coupling's candidate input (reversible_lung_water), on the same terms.
+    from clinical_core.acid_base import CANDIDATE_INPUTS as P2K2_INPUTS
+    from clinical_core.lung_water_reference import CANDIDATE_INPUTS as P2O3_INPUTS
+    CANDIDATE_INPUTS = P2K2_INPUTS + P2O3_INPUTS
     assert set(CASE_PARAMETERS) | set(CANDIDATE_INPUTS) == set(ARRIVAL_LAYERS["physiological_reference"]) | set(
         ARRIVAL_LAYERS["arrival_dynamic_state"]) and not set(CASE_PARAMETERS) & set(CANDIDATE_INPUTS)
 

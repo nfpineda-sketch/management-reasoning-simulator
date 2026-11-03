@@ -15,6 +15,7 @@ import pytest
 
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import gas_exchange_architecture as go
+from clinical_core import lung_water_reference as lw
 from clinical_core import collapse as cx
 from clinical_core import collapse_architecture as cy
 from clinical_core import decision_pack, lactate_slice
@@ -35,7 +36,14 @@ FROZEN_DIGEST = "5f96f8603f2ecdcbf585cfac38e8abf4d4aec9ea9c64772d7d0c46da2f2544a
 #: the ACS mapping, family writers and analysis removed, the tuple-only files at their P2M-2 hashes while only their
 #: tuples changed; the import scan without the ACS analysis alone, which reads the candidate structurally: the ACS
 #: mapping and family writers stay in the scan, so a collapse import there is caught); the record is unchanged.
-_LIVE_SOURCES_P2O1 = bf.freeze_sources
+#: P2O-3 replaced declared lines of derived.py, integration.py, state.py, modules/acs_ischaemia.py and two tuple
+#: files, proven byte for byte against the P2O-1 files (lung_water_reference.proved): this package's guards read
+#: the P2O-1 files through P2O-1's view of the P2N-2 core (lw.chain, lw.p2o1_sources); the record is unchanged.
+_LIVE_SOURCES_P2O3 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2O1() -> dict:
+    return lw.p2o1_sources(_LIVE_SOURCES_P2O3())
 
 
 def _FREEZE_SOURCES() -> dict:
@@ -59,6 +67,7 @@ def _p2m2_imported_by() -> list:
 
 
 def _patch(patch) -> None:
+    lw.chain(patch)
     patch.setattr(bf, "freeze_sources", _p2m2_view)
     patch.setattr(cy, "imported_by", _p2m2_imported_by)
 
