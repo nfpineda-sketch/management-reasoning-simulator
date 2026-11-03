@@ -1303,7 +1303,8 @@ def lung_water_gas_exchange(before_l: float, after_l: float, profile: CoreProfil
     <= 0): the arrival congestion's reversible share, which L, a deviation from arrival, does not carry by itself (O1).
     With the default L_rev = 0 it is P2O-1's gain x max(0, L) exactly. L itself has no floor at L_rev. Its dynamics are
     L's own (the writers, the clearance), with no second time constant. L reaches nothing else through it: SpO2,
-    delivery, D, lactate, RR, ventilation, consciousness and collapse see lung water only through G."""
+    delivery, D, lactate, RR, ventilation, consciousness and collapse see lung water through G, and SpO2 also through
+    the bound of the credit below arrival (``lung_water_gas_credit``), which only ever denies credit."""
     return profile.lung_water_to_gas_exchange_gain * (max(reversible, after_l) - max(reversible, before_l))
 
 

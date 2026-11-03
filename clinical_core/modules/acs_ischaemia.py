@@ -7,8 +7,9 @@ The family owns its disease process, never an observable (proposal §8.1 point 3
   encounter (never above the arrival pump, P = 1). It writes P only.
 - ``IschaemicCongestion`` owns the cardiogenic filling-state congestion of the family on the common L channel: lung
   water added per minute in proportion to the pump's shortfall below arrival (1 - P). It writes L only; the common
-  clearance (``derived.lung_water_clearance``) and the common preload congestion (``derived.congestion_rate``) stay
-  the core's. Whether a common P -> L coupling should exist is a pending common decision; this is the family's.
+  clearance (``derived.lung_water_clearance``) stays the core's. Since P2O-3 it owns L (``lung_water_authority``):
+  while it is present the core's common preload congestion (``derived.congestion_rate``) adds nothing (decision B:
+  congestion generation stays a family writer).
 - ``CoronaryReperfusion`` is the logistic process (a PCI completed at a declared minute): it publishes the signal and
   writes nothing.
 

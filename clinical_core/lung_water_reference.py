@@ -32,10 +32,10 @@ from . import blood_fluid_calibration as bf
 from . import derived as dv
 from . import gas_exchange_architecture as go
 from .bands import ARRIVAL, Drift
-from .integration import CHANNEL_BOUNDS, step
+from .integration import _REGISTRY, CHANNEL_BOUNDS, step
 from .modules.acs_ischaemia import IschaemicCongestion
 from .provenance import ProvenanceError, SourceKind
-from .state import Anchors, Channel
+from .state import Anchors, Channel, UnresolvedBoundary
 
 ROOT = Path(__file__).resolve().parents[1]
 CORE_DIR = ROOT / "clinical_core"
@@ -86,15 +86,21 @@ COMPOSITION = {
 
 AUTHORITY = {
     "declaration": "Contributor.lung_water_authority, a ClassVar, False by default; only a DISEASE_MODULE may set it "
-                   "(integration._ordered refuses any other kind, and any value but True or False)",
+                   "(integration._ordered refuses any other kind, any value but True or False, a value that differs "
+                   "from its registered type's, and a second owner in the same run)",
     "effect": "while any present contributor declares it, step adds no PRELOAD_CONGESTION delta: congestion = 0.0 in "
               "place of congestion_rate(...)",
     "scope": "the run, by presence, not the minute: a family writer silent in a minute (P back at 1) still owns L, so "
              "the overload coupling never returns mid-course",
     "unchanged": "LUNG_WATER_CLEARANCE, every reader of L (the clearance, L -> G, the contracts export), L -> G and "
                  "G -> SpO2 stay active; any other writer of L (a scripted probe) still adds",
-    "trace": "no new record field: the authority is a ClassVar of the contributor's type, reproducible from the run's "
-             "spec (its type); an owned minute's record simply carries no PRELOAD_CONGESTION delta",
+    "trace": "no new record field: the authority is a ClassVar of the contributor's registered type, so a replay from "
+             "the run's spec reproduces it (a differing instance is refused); an owned minute's record simply carries "
+             "no PRELOAD_CONGESTION delta",
+    "one_owner": "at most one owner per run: a second is refused (one generator of L, never two); whether two families "
+                 "may ever co-own L is a faculty decision",
+    "volume": "under the authority the family's L no longer answers to volume through the core (the ACS writer has no V "
+              "term): an owner with a zero gain suppresses every generation of L; a faculty decision, not a defect",
     "family": "acs_ischaemic_congestion (IschaemicCongestion) is the only writer that declares it",
 }
 
@@ -129,7 +135,10 @@ G_SIGN = {
         "consistency: summed from arrival, lung water's share of G is k x max(L_rev, L); with L <= 0 that is c, so G "
         "written by lung water alone is credited exactly"),
     "reads_L": "c reads L (through _perfusion): at a fixed G, L moves SpO2 only where G < c <= 0, i.e. only to deny "
-               "credit below arrival that lung water does not explain; at or above arrival c = 0",
+               "credit below arrival that lung water does not explain; at or above arrival c = 0. This holds for a run "
+               "from arrival (G's lung share is then k x max(L_rev, L)) with G inside its guard: the core stops the run "
+               "when the G guard acts while L_rev < 0; a run started away from arrival (L != 0 at G = 0) can credit a "
+               "direct writer's G (a known limit, NON_ARRIVAL_START_CREDIT)",
 }
 
 DIRECT_G = ("DIRECT_G_REVERSIBILITY_DEFERRED: a writer of G directly (pneumonia, PE, anaphylaxis) has no reversible "
@@ -177,8 +186,10 @@ def _p2o1_oxygenation(g: float, fio2: float, anchors: Anchors, prof: dv.CoreProf
 
 @dataclass(frozen=True)
 class NonOwningCongestion(IschaemicCongestion):
-    """SYNTHETIC_ONLY: the ACS congestion writer without the authority, to show the composition before P2O-3."""
+    """SYNTHETIC_ONLY: the ACS congestion writer without the authority, to show the composition before P2O-3 (its own
+    type, never registered: a replay cannot turn it into the owner)."""
 
+    type_name = "p2o3_probe_non_owning_congestion"
     lung_water_authority = False
 
 
@@ -186,7 +197,15 @@ class NonOwningCongestion(IschaemicCongestion):
 class ScriptedOwner(Drift):
     """SYNTHETIC_ONLY: a scripted event that claims the authority; the core refuses it."""
 
+    type_name = "p2o3_probe_scripted_owner"
     lung_water_authority = True
+
+
+@dataclass(frozen=True)
+class UnregisteredClaim(IschaemicCongestion):
+    """SYNTHETIC_ONLY: the ACS writer's registered type with the authority withdrawn; the core refuses it."""
+
+    lung_water_authority = False
 
 
 # P2O-3-5: probes R1-R8 --------------------------------------------------------------------------------------------------------
@@ -340,27 +359,67 @@ def probe_r7_r8() -> dict:
     return {"R7": r7, "R8": r8, "composition": composition}
 
 
-def authority_guard() -> dict:
-    """The declaration is refused outside a disease module; only the ACS congestion writer declares it."""
-    refused = False
+def _refused(items, anchors=None, prof=None, error=ProvenanceError) -> bool:
+    anchors = NEUTRAL if anchors is None else anchors
+    prof = profile() if prof is None else prof
     try:
-        step(dv.arrival_state(NEUTRAL, profile()), (ScriptedOwner("p2o3-owner", "L", 0, 1, 0.0),), NEUTRAL, profile())
-    except ProvenanceError:
-        refused = True
-    declaring = []
-    for path in sorted((CORE_DIR / "modules").rglob("*.py")) + sorted((CORE_DIR / "interventions").rglob("*.py")):
-        tree = ast.parse(path.read_text(encoding="utf-8"))
-        for node in ast.walk(tree):
-            if isinstance(node, ast.ClassDef):
-                for item in node.body:
-                    if (isinstance(item, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "lung_water_authority"
-                                                             for t in item.targets)
-                            and isinstance(item.value, ast.Constant) and item.value.value is True):
-                        declaring.append(f"{path.relative_to(ROOT).as_posix()}:{node.name}")
-    kinds = {IschaemicCongestion.kind.value}
-    return {"refused_outside_disease_module": refused, "declaring": declaring, "declaring_kinds": sorted(kinds),
-            "pass": refused and declaring == ["clinical_core/modules/acs_ischaemia.py:IschaemicCongestion"]
-            and kinds == {SourceKind.DISEASE_MODULE.value}}
+        step(dv.arrival_state(anchors, prof), tuple(items), anchors, prof)
+    except error:
+        return True
+    return False
+
+
+def authority_guard() -> dict:
+    """Only the ACS congestion writer's registered type declares the authority; the core refuses the claim outside a
+    disease module, a second owner, and an instance whose authority differs from its registered type's."""
+    gain = an.writers()[1].lung_water_per_shortfall_per_min
+    declaring = sorted(name for name, cls in _REGISTRY.items() if getattr(cls, "lung_water_authority", False) is not False)
+    kinds = sorted({_REGISTRY[name].kind.value for name in declaring})
+    out = {"declaring": declaring, "declaring_kinds": kinds,
+           "refused_outside_disease_module": _refused((ScriptedOwner("p2o3-owner", "L", 0, 1, 0.0),)),
+           "second_owner_refused": _refused((IschaemicCongestion("acs-congestion", gain),
+                                             IschaemicCongestion("acs-congestion-2", gain))),
+           "registry_mismatch_refused": _refused((UnregisteredClaim("acs-congestion", gain),)),
+           "unregistered_probe_accepted": not _refused((NonOwningCongestion("acs-congestion", gain),))}
+    out["pass"] = (declaring == ["acs_ischaemic_congestion"] and kinds == [SourceKind.DISEASE_MODULE.value]
+                   and out["refused_outside_disease_module"] and out["second_owner_refused"]
+                   and out["registry_mismatch_refused"] and out["unregistered_probe_accepted"])
+    return out
+
+
+def edges() -> dict:
+    """The review's edges: the G guard stops the run while L_rev < 0 (and clamps as in P2O-1 at L_rev = 0); a minute
+    crossing arrival is recorded as such; a run started away from arrival can credit a direct writer (a known limit);
+    an owner with a zero gain suppresses every generation of L (a faculty decision)."""
+    prof = profile()
+    push = (Drift("p2o3-g-up", "G", 0, 20, 0.6),)
+    stops = False
+    try:
+        _run(push, 20, neutral(PROBE_LREV[0]), prof)
+    except UnresolvedBoundary:
+        stops = True
+    states, records = _run(push, 20, neutral(), prof)
+    clamps_at_default = any(d.source.kind is SourceKind.CLAMP and d.channel is Channel.G for r in records
+                            for d in r.deltas) and states[-1].G == CHANNEL_BOUNDS[Channel.G][1]
+    labels = {}
+    for l_rev in (0.0, PROBE_LREV[0]):
+        a = neutral(l_rev)
+        start = dv.arrival_state(a, prof).evolve(L=0.1, G=prof.lung_water_to_gas_exchange_gain * 0.1)
+        _, record = step(start, (Drift("p2o3-cross", "L", 0, 1, -0.3),), a, prof)
+        labels[str(l_rev)] = [d.description for d in record.deltas if d.source == dv.LUNG_WATER_GAS_EXCHANGE]
+    a = neutral(PROBE_LREV[0])
+    start = dv.arrival_state(a, prof).evolve(L=PROBE_LREV[0])
+    away, _ = _run((Drift("p2o3-g-down", "G", 0, 25, -0.02),), 25, a, prof, start)
+    gain = an.writers()[1].lung_water_per_shortfall_per_min
+    zero_owner, _ = _overload_course((IschaemicCongestion("acs-congestion", 0.0),))
+    common, _ = _overload_course(())
+    out = {"g_guard_stops_with_l_rev": stops, "g_guard_clamps_at_default": clamps_at_default,
+           "labels": labels, "across_label": any("across arrival" in n for n in labels[str(PROBE_LREV[0])])
+           and not any("across arrival" in n for n in labels["0.0"]),
+           "non_arrival_start_credit": {"G": away[-1].G, "spo2": _spo2(away[-1], a, prof), "arrival_spo2": a.spo2},
+           "zero_gain_owner": {"L_end": zero_owner[-1].L, "L_end_common_alone": common[-1].L, "gain_reference": gain}}
+    out["pass"] = out["g_guard_stops_with_l_rev"] and out["g_guard_clamps_at_default"] and out["across_label"]
+    return out
 
 
 def g_sign() -> dict:
@@ -407,7 +466,7 @@ def probes() -> dict:
     out = {"R1": probe_r1(), "R2": probe_r2(), "R3": probe_r3(), "R4": probe_r4(), "R5": probe_r5(),
            "R6": probe_r6(), "R7": owned["R7"], "R8": owned["R8"]}
     return {"probes": out, "composition": owned["composition"], "authority": authority_guard(), "g_sign": g_sign(),
-            "direct_g": direct_g(), "pass": {k: v["pass"] for k, v in out.items()}}
+            "direct_g": direct_g(), "edges": edges(), "pass": {k: v["pass"] for k, v in out.items()}}
 
 
 # P2O-3-6 / 7 / 8: the ACS arrival mapping, its decongestion and a partial recovery of P -------------------------------------
@@ -531,7 +590,15 @@ DEBTS = {
     "PUMP_RESERVE_INERT_UNDER_AUTHORITY": "pump_reserve is read only by the common overload coupling (and reported); "
                                           "under the ACS writer's authority it acts nowhere in ACS",
     "L_GUARD_REASON_TEXT_OUTDATED": "CHANNEL_BOUNDS[L]'s reason still says only the core writes L (ACS writes it since "
-                                    "P2N-2); text only, left unchanged",
+                                    "P2N-2), and G's still says no module writes G (TD-113 (11)); text only, unchanged",
+    "G_GUARD_WITH_L_TO_G": "TD-113 (10), redeclared: with L_rev < 0 the core now stops the run when the G guard acts "
+                           "(UnresolvedBoundary, as V and Hb); at L_rev = 0 the guard still holds G as in P2O-1 and can "
+                           "part G from lung water (no credit is possible there)",
+    "NON_ARRIVAL_START_CREDIT": "a run started away from arrival (L != 0 with G = 0) can credit a direct writer's G below "
+                                "arrival, down to k x L_rev: the credit is read from L, not from the G lung water wrote",
+    "OWNER_SUPPRESSES_VOLUME_RESPONSE": "under the authority the family's L no longer answers to volume through the core; "
+                                        "an owner with a zero gain suppresses every generation of L (faculty decision)",
+    "SINGLE_OWNER": "a second owner of L is refused; whether two families may co-own L is a faculty decision",
     "LEGACY_SPO2_CONSCIOUSNESS_LADDER_MUST_BE_DISABLED_ON_P2L2_INTEGRATION": CONSCIOUSNESS_GUARD,
     "FUTURE_GAS_EXCHANGE_SUBTYPE_REQUIREMENT": SUBTYPES,
 }
@@ -592,7 +659,7 @@ def gi() -> dict:
     """GI exactly unchanged: P2O-1's GI probe (O12) reproduces; no GI writer owns L; L_rev is 0 there."""
     record = json.loads(go.RECORD.read_text(encoding="utf-8"))
     o12 = go._plain(go.probe_o12()) == record["probes"]["O12"]
-    owners = [d for d in authority_guard()["declaring"] if "acs_ischaemia" not in d]
+    owners = [d for d in authority_guard()["declaring"] if d != "acs_ischaemic_congestion"]
     return {"o12_reproduced": o12, "other_owners": owners, "pass": o12 and not owners}
 
 
@@ -641,7 +708,9 @@ REVERSAL = {'clinical_core/decision_pack.py': (('                        "clinic
                                "    L's own (the writers, the clearance), with no second time constant. L reaches "
                                'nothing else through it: SpO2,\n'
                                '    delivery, D, lactate, RR, ventilation, consciousness and collapse see lung water '
-                               'only through G."""\n'
+                               'through G, and SpO2 also through\n'
+                               '    the bound of the credit below arrival (``lung_water_gas_credit``), which only '
+                               'ever denies credit."""\n'
                                '    return profile.lung_water_to_gas_exchange_gain * (max(reversible, after_l) - '
                                'max(reversible, before_l))\n'
                                '\n'
@@ -748,12 +817,26 @@ REVERSAL = {'clinical_core/decision_pack.py': (('                        "clinic
                                    'not SourceKind.DISEASE_MODULE):\n'
                                    '            raise ProvenanceError(f"{item.source.key}: only a disease module (a '
                                    'family writer) owns lung water (P2O-3)")\n'
+                                   '        registered = _REGISTRY.get(item.type_name)\n'
+                                   '        if registered is not None and registered.lung_water_authority is not '
+                                   'item.lung_water_authority:\n'
+                                   '            raise ProvenanceError(f"{item.source.key}: its authority over lung '
+                                   'water differs from its registered type\'s, "\n'
+                                   '                                  "so a replay would not reproduce it (P2O-3)")\n'
                                    '    ordered = tuple(sorted(contributors, key=lambda item: '
                                    '(item.source.kind.value, item.source.id)))\n',
                                    '            raise ProvenanceError(f"{item.source.key}: only the integrator '
                                    'writes {item.source.kind.value} changes")\n'
                                    '    ordered = tuple(sorted(contributors, key=lambda item: '
                                    '(item.source.kind.value, item.source.id)))\n'),
+                                  ('        raise ProvenanceError("the core\'s own coupling is not a contributor")\n'
+                                   '    owners = [item.source.key for item in ordered if item.lung_water_authority]\n'
+                                   '    if len(owners) > 1:\n'
+                                   '        raise ProvenanceError(f"more than one owner of lung water {owners}: one '
+                                   'generator of L, never two (P2O-3)")\n'
+                                   '    return ordered\n',
+                                   '        raise ProvenanceError("the core\'s own coupling is not a contributor")\n'
+                                   '    return ordered\n'),
                                   ('    deltas = []\n'
                                    '    # P2O-3: a family writer that owns lung water replaces the common overload '
                                    'coupling for the run (never both).\n'
@@ -768,12 +851,15 @@ REVERSAL = {'clinical_core/decision_pack.py': (('                        "clinic
                                    '            coupling = lung_water_gas_exchange(state.L, values[Channel.L.value], '
                                    'profile, anchors.reversible_lung_water)\n'
                                    '            if coupling:\n'
+                                   '                low, high = sorted((state.L, values[Channel.L.value]))\n'
                                    '                deltas.append(ChannelDelta(Channel.G, coupling, '
                                    'LUNG_WATER_GAS_EXCHANGE, minute,\n'
                                    '                                           "gas exchange following lung water '
-                                   'above arrival (L -> G)"\n'
-                                   '                                           if max(state.L, '
-                                   'values[Channel.L.value]) > 0.0 else\n'
+                                   'across arrival, down to L_rev (L -> G)"\n'
+                                   '                                           if high > 0.0 and low < 0.0 and '
+                                   'anchors.reversible_lung_water < 0.0 else\n'
+                                   '                                           "gas exchange following lung water '
+                                   'above arrival (L -> G)" if high > 0.0 else\n'
                                    '                                           "gas exchange following lung water '
                                    'below arrival, down to L_rev (L -> G)"))\n'
                                    '        proposed = before + math.fsum(delta.amount for delta in deltas if '
@@ -788,7 +874,21 @@ REVERSAL = {'clinical_core/decision_pack.py': (('                        "clinic
                                    '                                           "gas exchange following lung water '
                                    'above arrival (L -> G)"))\n'
                                    '        proposed = before + math.fsum(delta.amount for delta in deltas if '
-                                   'delta.channel is channel)\n')),
+                                   'delta.channel is channel)\n'),
+                                  ('        if bounded != proposed:\n'
+                                   '            if channel is Channel.G and lung_water_gas_exchange_active(profile) '
+                                   'and anchors.reversible_lung_water < 0.0:\n'
+                                   '                # P2O-3: a held G would part G from lung water and let another '
+                                   'writer take the credit below arrival.\n'
+                                   '                raise UnresolvedBoundary(f"minute {minute}: G reaches its guard '
+                                   '[{lower:g}, {upper:g}] while lung water "\n'
+                                   '                                         "is credited below arrival (L_rev < 0); '
+                                   'no rule for that boundary is decided")\n'
+                                   '            if channel in BLOOD_CHANNELS and any(delta.channel is channel and '
+                                   'delta.source.kind not in _OUTSIDE_BLOOD\n',
+                                   '        if bounded != proposed:\n'
+                                   '            if channel in BLOOD_CHANNELS and any(delta.channel is channel and '
+                                   'delta.source.kind not in _OUTSIDE_BLOOD\n')),
  'clinical_core/lactate_slice.py': (('                      "clinical_core/acs_migration_report.py",\n'
                                      '                      "clinical_core/gas_exchange_architecture_report.py",\n'
                                      '                      "clinical_core/lung_water_reference_report.py")\n'
@@ -796,12 +896,29 @@ REVERSAL = {'clinical_core/decision_pack.py': (('                        "clinic
                                      '                      "clinical_core/acs_migration_report.py",\n'
                                      '                      "clinical_core/gas_exchange_architecture_report.py")\n'
                                      '\n'),),
- 'clinical_core/modules/acs_ischaemia.py': (('    type_name = "acs_ischaemic_congestion"\n'
+ 'clinical_core/modules/acs_ischaemia.py': (("  water added per minute in proportion to the pump's shortfall below "
+                                             'arrival (1 - P). It writes L only; the common\n'
+                                             "  clearance (``derived.lung_water_clearance``) stays the core's. Since "
+                                             'P2O-3 it owns L (``lung_water_authority``):\n'
+                                             "  while it is present the core's common preload congestion "
+                                             '(``derived.congestion_rate``) adds nothing (decision B:\n'
+                                             '  congestion generation stays a family writer).\n'
+                                             '- ``CoronaryReperfusion`` is the logistic process (a PCI completed at '
+                                             'a declared minute): it publishes the signal and\n',
+                                             "  water added per minute in proportion to the pump's shortfall below "
+                                             'arrival (1 - P). It writes L only; the common\n'
+                                             '  clearance (``derived.lung_water_clearance``) and the common preload '
+                                             'congestion (``derived.congestion_rate``) stay\n'
+                                             "  the core's. Whether a common P -> L coupling should exist is a "
+                                             "pending common decision; this is the family's.\n"
+                                             '- ``CoronaryReperfusion`` is the logistic process (a PCI completed at '
+                                             'a declared minute): it publishes the signal and\n'),
+                                            ('    type_name = "acs_ischaemic_congestion"\n'
                                              "    #: P2O-3: the family owns lung water; the core's common overload "
                                              'coupling adds nothing while this writer is present.\n'
                                              '    lung_water_authority = True\n'
                                              '\n',
-                                             '    type_name = "acs_ischaemic_congestion"\n\n'),),
+                                             '    type_name = "acs_ischaemic_congestion"\n\n')),
  'clinical_core/state.py': (('    "physiological_reference": ("intrinsic_sinus_rate", "metabolic_demand_baseline", '
                              '"reference_preload_fraction",\n'
                              '                                "beta_blockade", "pump_reserve", '
@@ -941,7 +1058,7 @@ VERDICT_CRITERIA = (
     "L_rev = 0 preserves P2O-1 (R1)",
     "below-arrival improvement representable (R4, R5)",
     "negative G coherent (G sign, R6, direct G uncredited)",
-    "authority prevents double writing (R7)",
+    "authority prevents double writing (R7, one owner)",
     "common overload available without authority (R8)",
     "ACS V and L stay separate",
     "GI unchanged",
@@ -958,7 +1075,7 @@ def verdict(found: dict, mapping: dict, representation: dict, relative: dict, pa
         VERDICT_CRITERIA[0]: relative["pass"],
         VERDICT_CRITERIA[1]: p["R1"] and p["R2"] and p["R3"] and all(proof["proofs"].values()),
         VERDICT_CRITERIA[2]: p["R4"] and p["R5"],
-        VERDICT_CRITERIA[3]: found["g_sign"]["pass"] and p["R6"] and found["direct_g"]["pass"],
+        VERDICT_CRITERIA[3]: found["g_sign"]["pass"] and p["R6"] and found["direct_g"]["pass"] and found["edges"]["pass"],
         VERDICT_CRITERIA[4]: p["R7"] and found["authority"]["pass"],
         VERDICT_CRITERIA[5]: p["R8"],
         VERDICT_CRITERIA[6]: mapping["pass"] and representation["pass"],

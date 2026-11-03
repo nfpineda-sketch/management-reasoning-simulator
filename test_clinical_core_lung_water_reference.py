@@ -20,7 +20,7 @@ from clinical_core import derived as dv
 from clinical_core import gas_exchange_architecture as go
 from clinical_core import lung_water_reference as lw
 from clinical_core.bands import ARRIVAL
-from clinical_core.integration import Contributor, step
+from clinical_core.integration import Contributor, from_spec, step
 from clinical_core.modules.acs_ischaemia import IschaemicCongestion
 from clinical_core.provenance import ProvenanceError, SourceKind
 from clinical_core.state import ARRIVAL_LAYERS, CASE_PARAMETERS, Anchors, Channel, CoreInvariantError
@@ -28,13 +28,13 @@ from clinical_core.state import ARRIVAL_LAYERS, CASE_PARAMETERS, Anchors, Channe
 #: The P2O-3 freeze: the decisions, the authority and L_rev semantics, the G-sign audit, the SYNTHETIC_ONLY probe values,
 #: the ACS / recovery / HR designs, the debts, the verdict and recommendation rules, the reversal proof and every
 #: clinical_core source but the downstream reports, committed before the evaluation run.
-FROZEN_DIGEST = "ecb7ec088a3c8bc256bd00a9c89e0e84c417895f58e435153ee8813dc864323d"
+FROZEN_DIGEST = "3ae766808ce23a0b166afc68f7f1d1165ff30a5a993f1274ccdd86bf9ac8244d"
 #: The live bytes of every file P2O-3 changed, as frozen: with the reversal proof, the closed packages' views are exact.
 CORE_AT_P2O3 = {'clinical_core/decision_pack.py': 'a176cb385e896bbc96c39e66f7e9b9c07bdcf25c491b82df71480f6162578d2d',
- 'clinical_core/derived.py': '19caba4f5a508507e1c63c64f098f2a3d1255832ec96bbc16a9ad16cc03b3030',
- 'clinical_core/integration.py': '3d4475f3d94fa2cc8832ed758cc9c85bd22913cc1911afc2fee0e306fbac5e82',
+ 'clinical_core/derived.py': '99faa383feca1d78a129ddc0b7fcaacdcd8427a0f4514f62f118f9bcdbc92c08',
+ 'clinical_core/integration.py': 'c725fbe8ab4daa69952dfd06a8f584e303ef6ff66bd67441deaa70e4cce887af',
  'clinical_core/lactate_slice.py': '27fa0e3b3df18e796bd32ce311313c4569ca2a11df19b6df90c24462e85e35c1',
- 'clinical_core/modules/acs_ischaemia.py': '6db1b0f09946d448c7b18462b0e80fd616e0602a593f76b0e45d145c1ef4a6a0',
+ 'clinical_core/modules/acs_ischaemia.py': '3199b9173594aea07c905e55b46e8705621b5c9ed7e936987024aa2d2079993d',
  'clinical_core/state.py': '141cd5a2aada89a58e7de9ee1436b2f52fd68141df132bcb26e934e6e9ddc7d1'}
 
 
@@ -266,3 +266,48 @@ def test_the_verdict_follows_the_predeclared_rule(record):
     assert record["verdict"]["verdict"] == "L_REFERENCE_AND_WRITER_AUTHORITY_READY"
     assert all(record["verdict"]["criteria"].values())
     assert record["recommendation"] == "MIGRATE_PULMONARY_EDEMA_SHADOW"
+
+
+def test_the_document_is_generated_from_the_record(record):
+    from clinical_core import lung_water_reference_report as report
+    text = lw.DOCUMENT.read_text(encoding="utf-8")
+    for name, render in report.RENDERERS.items():
+        opening, closing = report.MARKERS[name]
+        start = text.index(opening) + len(opening)
+        assert text[start:text.index(closing, start)] == render(record) + "\n", name
+
+
+# The adversarial review -----------------------------------------------------------------------------------------------------
+
+def test_review_one_owner_per_run_and_a_replay_reproduces_the_authority(result):
+    a = result["probes"]["authority"]
+    assert a["second_owner_refused"] and a["registry_mismatch_refused"] and a["unregistered_probe_accepted"]
+    owner = IschaemicCongestion("acs-congestion", 0.05)
+    assert type(from_spec(owner.to_spec())).lung_water_authority is True
+    # The synthetic non-owning clone has its own, unregistered type: a replay refuses it, never turns it into the owner.
+    with pytest.raises(ProvenanceError):
+        from_spec(lw.NonOwningCongestion("acs-congestion", 0.05).to_spec())
+
+
+def test_review_the_g_guard_stops_the_run_only_where_credit_below_arrival_is_possible(result):
+    e = result["probes"]["edges"]
+    assert e["g_guard_stops_with_l_rev"] and e["g_guard_clamps_at_default"]
+    assert "G_GUARD_WITH_L_TO_G" in lw.DEBTS and "TD-113 (10)" in lw.DEBTS["G_GUARD_WITH_L_TO_G"]
+
+
+def test_review_a_minute_crossing_arrival_is_recorded_as_such(result):
+    labels = result["probes"]["edges"]["labels"]
+    assert labels["0.0"] == ["gas exchange following lung water above arrival (L -> G)"]
+    assert labels[str(lw.PROBE_LREV[0])] == ["gas exchange following lung water across arrival, down to L_rev (L -> G)"]
+
+
+def test_review_known_limit_a_run_started_away_from_arrival_can_credit_a_direct_writer(result):
+    x = result["probes"]["edges"]["non_arrival_start_credit"]
+    assert x["spo2"] > x["arrival_spo2"] and abs(x["G"] - lw.PROBE_LREV[0]) < 1e-12
+    assert "NON_ARRIVAL_START_CREDIT" in lw.DEBTS and "NON_ARRIVAL_START_CREDIT" in lw.G_SIGN["reads_L"]
+
+
+def test_review_an_owner_with_a_zero_gain_suppresses_every_generation_of_l(result):
+    z = result["probes"]["edges"]["zero_gain_owner"]
+    assert z["L_end"] == 0.0 < z["L_end_common_alone"]
+    assert "OWNER_SUPPRESSES_VOLUME_RESPONSE" in lw.DEBTS and "SINGLE_OWNER" in lw.DEBTS

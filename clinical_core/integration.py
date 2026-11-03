@@ -364,12 +364,19 @@ def _ordered(contributors: Sequence[Contributor]) -> tuple[Contributor, ...]:
         if item.lung_water_authority is not False and (item.lung_water_authority is not True
                                                        or item.source.kind is not SourceKind.DISEASE_MODULE):
             raise ProvenanceError(f"{item.source.key}: only a disease module (a family writer) owns lung water (P2O-3)")
+        registered = _REGISTRY.get(item.type_name)
+        if registered is not None and registered.lung_water_authority is not item.lung_water_authority:
+            raise ProvenanceError(f"{item.source.key}: its authority over lung water differs from its registered type's, "
+                                  "so a replay would not reproduce it (P2O-3)")
     ordered = tuple(sorted(contributors, key=lambda item: (item.source.kind.value, item.source.id)))
     keys = [item.source.key for item in ordered]
     if len(set(keys)) != len(keys):
         raise ProvenanceError(f"two contributors share a source: {keys}")
     if any(item.source == OXYGEN_DEBT for item in ordered):
         raise ProvenanceError("the core's own coupling is not a contributor")
+    owners = [item.source.key for item in ordered if item.lung_water_authority]
+    if len(owners) > 1:
+        raise ProvenanceError(f"more than one owner of lung water {owners}: one generator of L, never two (P2O-3)")
     return ordered
 
 
@@ -443,9 +450,11 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
             # P2O-1: G follows the minute's bounded lung water (L precedes G here), recorded as a core coupling.
             coupling = lung_water_gas_exchange(state.L, values[Channel.L.value], profile, anchors.reversible_lung_water)
             if coupling:
+                low, high = sorted((state.L, values[Channel.L.value]))
                 deltas.append(ChannelDelta(Channel.G, coupling, LUNG_WATER_GAS_EXCHANGE, minute,
-                                           "gas exchange following lung water above arrival (L -> G)"
-                                           if max(state.L, values[Channel.L.value]) > 0.0 else
+                                           "gas exchange following lung water across arrival, down to L_rev (L -> G)"
+                                           if high > 0.0 and low < 0.0 and anchors.reversible_lung_water < 0.0 else
+                                           "gas exchange following lung water above arrival (L -> G)" if high > 0.0 else
                                            "gas exchange following lung water below arrival, down to L_rev (L -> G)"))
         proposed = before + math.fsum(delta.amount for delta in deltas if delta.channel is channel)
         lower, upper, _, why = CHANNEL_BOUNDS[channel]
@@ -453,6 +462,10 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
             lower, upper = lower * profile.volume_preload_kappa, upper * profile.volume_preload_kappa
         bounded = min(upper, max(lower, proposed))
         if bounded != proposed:
+            if channel is Channel.G and lung_water_gas_exchange_active(profile) and anchors.reversible_lung_water < 0.0:
+                # P2O-3: a held G would part G from lung water and let another writer take the credit below arrival.
+                raise UnresolvedBoundary(f"minute {minute}: G reaches its guard [{lower:g}, {upper:g}] while lung water "
+                                         "is credited below arrival (L_rev < 0); no rule for that boundary is decided")
             if channel in BLOOD_CHANNELS and any(delta.channel is channel and delta.source.kind not in _OUTSIDE_BLOOD
                                                  for delta in deltas):
                 # A bound on V or Hb is a guard, not physiology: cutting what the blood state moved
