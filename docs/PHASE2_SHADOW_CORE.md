@@ -3866,3 +3866,34 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - la escalera ADOPTED de conciencia ahora lee G (decisión docente).
 
   El veredicto se mantiene.
+
+## 58. P2O-2 · Auditoría de generación común de congestión y semántica de referencia (2026-11-03)
+
+- **Encargo:** decidir, sin implementar, si el estado común (V, P y la hemodinámica) puede generar agua pulmonar, y
+  aclarar la semántica de referencia de L y G.
+- **Alcance:** auditoría de sólo lectura; ningún archivo de `clinical_core` cambia. Los hechos estructurales quedan
+  fijados en `test_clinical_core_congestion_generation_audit.py` (`docs/revision/P2O2_GENERACION_CONGESTION_Y_REFERENCIA.md`).
+- **Resultados:**
+  - L es una coordenada de congestión relativa a la llegada: L = 0 es el pulmón de llegada, no un pulmón normal;
+  - V no es un indicador de la presión de llenado izquierda (INSUFFICIENT_PROXY): con P forma un índice ordinal de
+    precarga sin lado, anclado en la VCI;
+  - con el volumen de llegada, ninguna P congestiona. Con volumen sobre la rodilla, una P baja congestiona aunque la
+    reserva sea completa, así que un VD débil más fluidos también lo haría (el acoplamiento no tiene lado);
+  - en ACS la causa depende de valores provisionales y de una fracción de llegada no declarada:
+    - la rodilla exige +1003 mL-eq (+529 con P = 0,7) y 4000 mL de cristaloide dan 386;
+    - con una fracción de 0,7, esos 4000 mL sí congestionan;
+    - por encima de la rodilla, la falla de bomba se contaría dos veces (núcleo y escritor ACS);
+  - un generador común cardiogénico necesitaría un estado de presión de llenado izquierda o un P con lado;
+  - descongestionar por debajo de la llegada debe poder mejorar el intercambio (BELOW_BASELINE_IMPROVEMENT_REQUIRED).
+    La representación mínima es un crédito sólo en L → G, hasta una cota de llegada L_rev (por defecto 0);
+  - G → SpO2 → FC es una alcanzabilidad válida. Con la referencia sintética (k = 1, s = 5), el quimiorreflejo aporta
+    +1,16 lpm y la vía del aporte +0,56 netos, de +1,72 en ACS;
+  - las escaleras ADOPTED de conciencia (PAS y SpO2) son sólo de `derive`. P2L-2 ya las retiró del candidato, y debe
+    quedar una sola fuente al integrar. En 360 min sin tratar, la SpO2 las alcanza en los minutos 211 / 317;
+  - una sola respuesta al O2 sirve a todas las familias (FUTURE_GAS_EXCHANGE_SUBTYPE_REQUIREMENT).
+- **Decisión: B, CONGESTION_GENERATION_REMAINS_FAMILY_WRITER.** El motivo principal es que P no tiene lado.
+  Preparación: CONGESTION_GENERATION_STRUCTURE_READY_FOR_FACULTY_DECISION.
+- **Revisión adversarial** (una; 6 medios, 8 bajos, ninguno alto; §18 del informe). Todos los hallazgos se confirmaron
+  y se incorporaron al texto y a las pruebas. La decisión se mantiene y su motivo se precisa.
+- **Recomendación:** migrar en sombra `pulmonary_edema` con su propio escritor de L, empezando por la decisión sobre
+  L_rev. No se inicia.
