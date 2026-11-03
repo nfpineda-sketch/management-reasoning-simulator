@@ -3934,3 +3934,33 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   R1–R8 no cambian.
 - **Veredicto:** L_REFERENCE_AND_WRITER_AUTHORITY_READY. **Recomendación:** MIGRATE_PULMONARY_EDEMA_SHADOW (no se
   inicia).
+
+## 60. P2P-1 · Migración en sombra del edema pulmonar con escritor de L de familia (2026-11-03)
+
+- **Encargo:** probar la frontera escritor de familia → L → G común → SpO2 / aporte en una familia respiratoria y
+  congestiva, sin cambiar el núcleo común ni calibrar k, s y r.
+- **Alcance:** sombra. Ningún archivo común cambia (23 fijados en sus bytes de P2O-3). Informe:
+  `docs/revision/P2P1_EDEMA_PULMONAR_SOMBRA.md`. Congelamiento `ea1eaa2`; recongelamiento por la revisión `ddd5d4b`.
+- **Caso:** `pulmonary_edema_58m`, elegido por una regla predeclarada: el diagnóstico autoral de edema pulmonar
+  cardiogénico agudo. `pulmonary_edema_75f` queda para después.
+- **Escritor:** `EdemaCongestion` es el único coordinador de L y su dueño. Sin tratar progresa a un ritmo declarado;
+  tras la señal de `DecongestiveTreatment` descongestiona sin bajar de L_rev (0). Escribe sólo L.
+- **Resultados:**
+  - L sube, G sube y la SpO2 baja por la vía común (81 → 78,6 a los 120 min con la progresión media);
+  - el oxígeno usa la FiO2 común, y su respuesta se atenúa al empeorar G;
+  - la autoridad funciona: sin doble escritura, la sobrecarga común sigue disponible sin la familia y un segundo dueño
+    se rechaza;
+  - la descongestión vuelve a la llegada y nunca la mejora (L_rev = 0);
+  - la FC conserva el signo;
+  - GI y ACS no cambian.
+- **Brechas:**
+  - la FR autoral (38) exige una extensión respiratoria esperable, y la VNI está diferida;
+  - la FC de llegada no se reproduce (brecha compartida con ACS);
+  - la escalera de SpO2 lee 81 % como somnolencia;
+  - nitrato y diurético necesitan mecanismos comunes nuevos;
+  - el bolo de volumen autoral es inerte en L;
+  - L_rev = 0 contradice la reducción de soporte que espera el texto autoral.
+- **Revisión adversarial** (una; 2 medios, 4 bajos, ninguno alto, sin cambio de letra). Incorporada en el
+  recongelamiento.
+- **Veredicto:** B, PULMONARY_EDEMA_NEEDS_EXPECTED_RESPIRATORY_EXTENSION; la arquitectura familia / lector común
+  funciona para el EAP sin sobrecarga. **Recomendación:** IMPLEMENT_ONLY_THE_MINIMUM_RESPIRATORY_EXTENSION_REQUIRED (no se inicia).

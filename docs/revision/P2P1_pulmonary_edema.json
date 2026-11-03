@@ -1,0 +1,1830 @@
+{
+ "arrival": {
+  "anchors": {
+   "arrival_bicarbonate": 22.8,
+   "arrival_delivery_ratio": 1.0,
+   "arrival_lactate_excess": 1.8,
+   "arrival_oxygen_debt": 0.0,
+   "arrival_paco2": 49.0,
+   "beta_blockade": 0.0,
+   "case_id": "pulmonary_edema_58m",
+   "consciousness_level": 0,
+   "crt_s": 2.0,
+   "dbp": 116.0,
+   "declared": {
+    "arrival_lactate_excess": "synthetic_probe",
+    "intrinsic_sinus_rate": "synthetic_probe"
+   },
+   "fio2": 0.21,
+   "glucose": 148.0,
+   "hb": 14.3,
+   "hr": 126.0,
+   "intrinsic_respiratory_rate": 16.0,
+   "intrinsic_sinus_rate": 80.0,
+   "k": 4.1,
+   "lactate": 2.8,
+   "metabolic_demand_baseline": 1.0,
+   "preload_fraction": null,
+   "pump_reserve": 1.0,
+   "reference_preload_fraction": null,
+   "respiratory_rate": 38.0,
+   "reversible_lung_water": 0.0,
+   "rhythm": {
+    "code": "sinus",
+    "output_factor": 1.0,
+    "pulse_present": true,
+    "rate_bpm": 126.0
+   },
+   "sbp": 218.0,
+   "spo2": 81.0
+  },
+  "arrival_L_is_arrival_congestion": true,
+  "authored": {
+   "consciousness_level": 0,
+   "hr": 126,
+   "map": 150.0,
+   "paco2": 49,
+   "rr": 38,
+   "spo2": 81
+  },
+  "channel_roles": {
+   "D": "NORMAL_OR_NEUTRAL (perfusion preserved; lactate 2.8 mapped as clearable excess, no prior debt)",
+   "G": "SECONDARY_RESPONSE (severe hypoxaemia: SpO2 81, PaO2 46 on room air)",
+   "Glu": "NORMAL_OR_NEUTRAL (148: mild stress hyperglycaemia)",
+   "Hb": "NORMAL_OR_NEUTRAL (14.3)",
+   "K": "NORMAL_OR_NEUTRAL (4.1)",
+   "L": "PRIMARY_DRIVER (diffuse bilateral B-lines, widespread crackles, perihilar edema on the radiograph)",
+   "N": "NORMAL_OR_NEUTRAL (awake, oriented, distressed)",
+   "P": "NORMAL_OR_NEUTRAL (P = 1 is the authored moderately reduced LV; no ischaemic process: a single troponin 28)",
+   "R": "SECONDARY_RESPONSE (sinus tachycardia 126)",
+   "T": "PRIMARY_DRIVER (the precipitant: uncontrolled hypertension, SBP 218 after missing antihypertensives; T = 1 is that arrival tone; its coupling to congestion is not modelled: the family writer does not read T)",
+   "V": "NORMAL_OR_NEUTRAL (V = 0 at arrival; the full IVC and JVP read a full filling state that no common rule maps to a preload position: CASE_MAPPING_GAP)",
+   "W": "SECONDARY_RESPONSE (RR 38, severe work of breathing, PaCO2 49 with pH 7.29: ventilation failing)"
+  },
+  "classes": {
+   "arrival_bicarbonate": "CASE_AUTHORED",
+   "arrival_delivery_ratio": "CASE_MAPPING (neutral 1: perfusion authored as preserved, warm extremities, CRT 2 s)",
+   "arrival_lactate_excess": "CASE_MAPPING",
+   "arrival_oxygen_debt": "CASE_MAPPING (neutral 0: no delivery deficit is read, so no pre-arrival debt is declared; never computed from the lactate)",
+   "arrival_paco2": "CASE_AUTHORED",
+   "beta_blockade": "CASE_MAPPING (0: no beta-blocker authored)",
+   "consciousness_level": "CASE_AUTHORED",
+   "crt_s": "CASE_AUTHORED",
+   "dbp": "CASE_AUTHORED",
+   "fio2": "CASE_AUTHORED",
+   "glucose": "CASE_AUTHORED",
+   "hb": "CASE_AUTHORED",
+   "hr": "CASE_AUTHORED",
+   "intrinsic_respiratory_rate": "FAMILY_CANDIDATE (P2K-2's candidate input, the middle of its 12 / 16 / 20)",
+   "intrinsic_sinus_rate": "CASE_MAPPING",
+   "k": "CASE_AUTHORED",
+   "lactate": "CASE_AUTHORED",
+   "metabolic_demand_baseline": "CASE_MAPPING (1: afebrile 36.6, no hypermetabolic evidence; the respiratory muscles' demand under severe work of breathing is not modelled)",
+   "preload_fraction": "CASE_MAPPING_GAP (the IVC 2.4 cm with <50% collapse and the raised JVP read a full filling state; no common IVC -> fraction rule exists, so the profile's provisional position stays, nothing declared, below the knee; B-lines are not read; the legacy engine's congestion block is not evidence of V)",
+   "pump_reserve": "CASE_MAPPING (neutral 1, nothing declared: read only by the common overload coupling, which the family's authority keeps off; the moderately reduced LV is an observation of P, never a reserve value; B-lines are never pump evidence)",
+   "reference_preload_fraction": "UNDEFINED_BY_CASE (no euvolemic reference is authored)",
+   "respiratory_rate": "CASE_AUTHORED",
+   "reversible_lung_water": "CASE/FAMILY REFERENCE PARAMETER at its default 0 (P2O-3): no value after arrival is authored; the authored assessment text expects support to 'continue, escalate or be reduced', which implies improvement below the arrival congestion: a contradiction left to the faculty, not resolved by choosing a value",
+   "rhythm": "CASE_AUTHORED",
+   "sbp": "CASE_AUTHORED",
+   "spo2": "CASE_AUTHORED"
+  },
+  "core": {
+   "D": 0.0,
+   "G": 0.0,
+   "L": 0.0,
+   "P": 1.0,
+   "V": 0.0,
+   "consciousness_level": 1,
+   "delivery_index": 1.0,
+   "fio2": 0.21,
+   "hr": 80.0,
+   "lactate": 2.8,
+   "map": 150.0,
+   "minute": 0,
+   "paco2": 49.0,
+   "rr": 18.288399598282346,
+   "spo2": 81.0
+  },
+  "exact": {
+   "map": true,
+   "paco2": true,
+   "spo2": true
+  },
+  "l_rev": 0.0,
+  "mismatches": {
+   "consciousness_level": {
+    "authored": 0,
+    "class": "LEGACY_SPO2_LADDER_ARRIVAL_MISREAD: derive's ADOPTED absolute SpO2 ladder (87 / 80) reads 81 % as drowsy against the authored alert patient; ONE_HYPOXEMIA_CONSCIOUSNESS_SOURCE_ONLY must resolve it at integration",
+    "core": 1
+   },
+   "hr": {
+    "authored": 126,
+    "class": "ARRIVAL_HR_COMMON_GAP (shared with ACS's M5): the intrinsic rate is the GI rule's band midpoint; the common drive has no arrival term for respiratory distress or hypoxaemia, so the sympathetic share of the arrival tachycardia is not reproduced (reported, not absorbed)",
+    "core": 80.0
+   },
+   "rr": {
+    "authored": 38,
+    "class": "EXPECTED_RESPIRATORY_FAMILY_EXTENSION: the common RR is the acid-base drive's (HCO3 22.8), with no congestion, hypoxaemia or mechanics drive",
+    "core": 18.288399598282346
+   }
+  },
+  "observation_layer": {
+   "b_lines_crackles_radiograph": "an observation of L: the authored diffuse B-lines, widespread crackles and perihilar edema are the arrival reading (L = 0 is that congestion, never dry lungs); L above 0 reads more congestion, L back at 0 the arrival finding again",
+   "ivc_jvp": "an observation of the filling state (V and the preload position), never of L",
+   "lv_function": "an observation of P: the authored moderately reduced global contraction is the arrival reading (P = 1)",
+   "rhythm": "R (sinus, its rate from the common HR physiology)",
+   "work_of_breathing": "an observation of W and the respiratory load; the common model has no congestion-driven drive or mechanics (an expected respiratory extension)"
+  },
+  "pass": true
+ },
+ "authority": {
+  "common_only": {
+   "L_end": 0.30495389373375287,
+   "common_writes": 113
+  },
+  "owned": {
+   "L_end": 0.4731475648018543,
+   "L_equals_writer_alone": true,
+   "V_moved": true,
+   "common_writes": 0
+  },
+  "pass": true,
+  "second_owner_refused": true,
+  "zero_gain_owner": {
+   "L_end": 0.0,
+   "common_writes": 0
+  }
+ },
+ "case": {
+  "available": true,
+  "case": "pulmonary_edema_58m",
+  "classes": {
+   "abg_fio2_percent": "AUTHORED_CASE_TRUTH",
+   "abg_hco3": "AUTHORED_CASE_TRUTH",
+   "abg_paco2": "AUTHORED_CASE_TRUTH",
+   "abg_pao2": "AUTHORED_CASE_TRUTH",
+   "abg_ph": "AUTHORED_CASE_TRUTH",
+   "cardiac_exam": "AUTHORED_CASE_TRUTH",
+   "chest_xray": "AUTHORED_CASE_TRUTH",
+   "congestion_block": "LEGACY_ENGINE_BEHAVIOR (the case's input to the legacy engine: fluid sensitivity 1.0, no volume overload; read as context for V, never as a rate)",
+   "creatinine_mg_dl": "AUTHORED_CASE_TRUTH",
+   "crt_s": "AUTHORED_CASE_TRUTH",
+   "dbp": "AUTHORED_CASE_TRUTH",
+   "definitive_actions": "AUTHORED_CASE_TRUTH (faculty-declared definitive actions; also the TDFC declarations)",
+   "diagnosis": "AUTHORED_CASE_TRUTH",
+   "ecg_profile": "AUTHORED_CASE_TRUTH",
+   "extremities": "AUTHORED_CASE_TRUTH",
+   "glucose_mg_dl": "AUTHORED_CASE_TRUTH",
+   "hb_g_dl": "AUTHORED_CASE_TRUTH",
+   "hr": "AUTHORED_CASE_TRUTH",
+   "lactate_mmol_l": "AUTHORED_CASE_TRUTH",
+   "mental_status": "AUTHORED_CASE_TRUTH",
+   "neurological_exam": "AUTHORED_CASE_TRUTH",
+   "onset": "AUTHORED_CASE_TRUTH",
+   "peripheral_perfusion": "AUTHORED_CASE_TRUTH",
+   "pocus_consolidation": "AUTHORED_CASE_TRUTH",
+   "pocus_ivc": "AUTHORED_CASE_TRUTH",
+   "pocus_lungs": "AUTHORED_CASE_TRUTH",
+   "pocus_lv": "AUTHORED_CASE_TRUTH",
+   "potassium_mmol_l": "AUTHORED_CASE_TRUTH",
+   "respiratory_exam": "AUTHORED_CASE_TRUTH",
+   "respiratory_rate": "AUTHORED_CASE_TRUTH",
+   "rhythm": "AUTHORED_CASE_TRUTH",
+   "sbp": "AUTHORED_CASE_TRUTH",
+   "spo2": "AUTHORED_CASE_TRUTH",
+   "temperature_c": "AUTHORED_CASE_TRUTH",
+   "troponin_ng_l": "AUTHORED_CASE_TRUTH",
+   "vbg_pco2": "AUTHORED_CASE_TRUTH",
+   "vbg_ph": "AUTHORED_CASE_TRUTH",
+   "work_of_breathing": "AUTHORED_CASE_TRUTH"
+  },
+  "family": "pulmonary_edema",
+  "later_observations": "NONE_AUTHORED: the case states the arrival only; the TDFC declarations and the assessment bank ask the resident to reassess SpO2, respiratory rate and pressure and to decide whether support continues, escalates or can be reduced (an improvement is expected), but no value after arrival is authored: the course is INSUFFICIENT_AUTHORED_TRUTH (as P2N-3), the arrival is not",
+  "legacy_constants": "family_engine.EDEMA (drift 0.003/min, NIV, nitrate, diuretic, recruitment): LEGACY_ENGINE_BEHAVIOR",
+  "other_variant": "pulmonary_edema_75f",
+  "other_variant_diagnosis": "Acute decompensated systolic heart failure with pulmonary edema",
+  "presentation": "A 58-year-old man arrives with rapidly worsening breathlessness. He remains upright and can speak only a few words at a time.",
+  "selection_rule": "the variant whose authored faculty diagnosis names acute cardiogenic pulmonary edema; the other variant (pulmonary_edema_75f: decompensated HFrEF with volume overload and CKD) is left for later",
+  "source": "clinical_cases.py",
+  "truth": {
+   "abg_fio2_percent": 21,
+   "abg_hco3": 22.8,
+   "abg_paco2": 49,
+   "abg_pao2": 46,
+   "abg_ph": 7.29,
+   "cardiac_exam": "Rapid regular pulse; elevated jugular venous pressure.",
+   "chest_xray": "Bilateral perihilar air-space and interstitial opacities with vascular congestion.",
+   "congestion_block": {
+    "fluid_sensitivity": 1.0,
+    "volume_overload": false
+   },
+   "creatinine_mg_dl": 1.2,
+   "crt_s": 2,
+   "dbp": 116,
+   "definitive_actions": [
+    "niv",
+    "nitroglycerin",
+    "diuretic"
+   ],
+   "diagnosis": "Hypertensive acute cardiogenic pulmonary edema",
+   "ecg_profile": "baseline",
+   "extremities": "Warm",
+   "glucose_mg_dl": 148,
+   "hb_g_dl": 14.3,
+   "hr": 126,
+   "lactate_mmol_l": 2.8,
+   "mental_status": "Alert",
+   "neurological_exam": "Awake, oriented and distressed; answers are brief because of breathlessness.",
+   "onset": [
+    "Severe breathlessness began about an hour ago and worsened rapidly."
+   ],
+   "peripheral_perfusion": "preserved",
+   "pocus_consolidation": "No consolidation or pleural effusion",
+   "pocus_ivc": "2.4 cm; <50% inspiratory collapse",
+   "pocus_lungs": "Diffuse bilateral B-lines in the anterior and lateral zones",
+   "pocus_lv": "Moderately reduced global contraction",
+   "potassium_mmol_l": 4.1,
+   "respiratory_exam": "Severe respiratory effort with widespread bilateral crackles and some expiratory wheeze.",
+   "respiratory_rate": 38,
+   "rhythm": "Sinus tachycardia",
+   "sbp": 218,
+   "spo2": 81,
+   "temperature_c": 36.6,
+   "troponin_ng_l": 28,
+   "vbg_pco2": 56,
+   "vbg_ph": 7.25,
+   "work_of_breathing": "Severe"
+  }
+ },
+ "consciousness": {
+  "arrival_level_authored": 0,
+  "arrival_level_core": 1,
+  "derive_reads_p2l2_candidate": false,
+  "guard": "ONE_HYPOXEMIA_CONSCIOUSNESS_SOURCE_ONLY: derive's ADOPTED SpO2 ladder (87 / 80) and P2L-2's hypoxaemia signal must never both act in one candidate pathway; P2P-1 is shadow only and runs derive's ladder alone (the P2L-2 candidate is not wired into derive); at runtime integration one source remains (LEGACY_SPO2_CONSCIOUSNESS_LADDER_MUST_BE_DISABLED_ON_P2L2_INTEGRATION)",
+  "ladder": [
+   [
+    87.0,
+    1
+   ],
+   [
+    80.0,
+    2
+   ]
+  ],
+  "levels": {
+   "oxygen": [
+    0,
+    1
+   ],
+   "untreated": [
+    1,
+    2
+   ]
+  },
+  "pass": true
+ },
+ "decongestion": {
+  "L_min": 0.0,
+  "V_P_unchanged": true,
+  "at": {
+   "0": {
+    "D": 0.0,
+    "G": 0.0,
+    "L": 0.0,
+    "P": 1.0,
+    "V": 0.0,
+    "consciousness_level": 1,
+    "delivery_index": 1.0,
+    "fio2": 0.21,
+    "hr": 80.0,
+    "lactate": 2.8,
+    "map": 150.0,
+    "minute": 0,
+    "paco2": 49.0,
+    "rr": 18.288399598282346,
+    "spo2": 81.0
+   },
+   "120": {
+    "D": 0.0,
+    "G": 0.0,
+    "L": 0.0,
+    "P": 1.0,
+    "V": 0.0,
+    "consciousness_level": 1,
+    "delivery_index": 1.0,
+    "fio2": 0.21,
+    "hr": 80.00376213719429,
+    "lactate": 1.659414278000765,
+    "map": 150.0,
+    "minute": 120,
+    "paco2": 53.13892704124658,
+    "rr": 16.863938175120758,
+    "spo2": 81.0
+   },
+   "150": {
+    "D": 0.0,
+    "G": 0.0,
+    "L": 0.0,
+    "P": 1.0,
+    "V": 0.0,
+    "consciousness_level": 1,
+    "delivery_index": 1.0,
+    "fio2": 0.21,
+    "hr": 80.00000932540577,
+    "lactate": 1.5130146967042806,
+    "map": 150.0,
+    "minute": 150,
+    "paco2": 53.741840656992046,
+    "rr": 16.674746703139657,
+    "spo2": 81.0
+   },
+   "180": {
+    "D": 0.0,
+    "G": 0.0,
+    "L": 0.0,
+    "P": 1.0,
+    "V": 0.0,
+    "consciousness_level": 1,
+    "delivery_index": 1.0,
+    "fio2": 0.21,
+    "hr": 80.00000002311538,
+    "lactate": 1.3991179563665437,
+    "map": 150.0,
+    "minute": 180,
+    "paco2": 54.22380831014889,
+    "rr": 16.52653342218512,
+    "spo2": 81.0
+   },
+   "60": {
+    "D": 0.0,
+    "G": 0.2559924423829427,
+    "L": 0.2559924423829427,
+    "P": 1.0,
+    "V": 0.0,
+    "consciousness_level": 2,
+    "delivery_index": 0.984197997383769,
+    "fio2": 0.21,
+    "hr": 80.65243548595137,
+    "lactate": 2.0894703761008735,
+    "map": 150.0,
+    "minute": 60,
+    "paco2": 51.46859609082806,
+    "rr": 17.411230310894954,
+    "spo2": 79.72003778808529
+   },
+   "90": {
+    "D": 0.0,
+    "G": 0.08461485884761438,
+    "L": 0.08461485884761438,
+    "P": 1.0,
+    "V": 0.0,
+    "consciousness_level": 1,
+    "delivery_index": 0.9947768605649621,
+    "fio2": 0.21,
+    "hr": 80.27324320362962,
+    "lactate": 1.8475920725560022,
+    "map": 150.0,
+    "minute": 90,
+    "paco2": 52.39015997244776,
+    "rr": 17.104959801365656,
+    "spo2": 80.57692570576192
+   }
+  },
+  "back_to_arrival": true,
+  "improves_after_treatment": true,
+  "l_rev": 0.0,
+  "never_below_arrival": true,
+  "no_below_arrival_credit": true,
+  "pass": true,
+  "scripted_below_arrival": {
+   "G": 0.0,
+   "L": -0.6000000000000003,
+   "spo2": 81.0
+  },
+  "spo2_max": 81.0
+ },
+ "design": {
+  "arrival_classes": {
+   "arrival_bicarbonate": "CASE_AUTHORED",
+   "arrival_delivery_ratio": "CASE_MAPPING (neutral 1: perfusion authored as preserved, warm extremities, CRT 2 s)",
+   "arrival_lactate_excess": "CASE_MAPPING",
+   "arrival_oxygen_debt": "CASE_MAPPING (neutral 0: no delivery deficit is read, so no pre-arrival debt is declared; never computed from the lactate)",
+   "arrival_paco2": "CASE_AUTHORED",
+   "beta_blockade": "CASE_MAPPING (0: no beta-blocker authored)",
+   "consciousness_level": "CASE_AUTHORED",
+   "crt_s": "CASE_AUTHORED",
+   "dbp": "CASE_AUTHORED",
+   "fio2": "CASE_AUTHORED",
+   "glucose": "CASE_AUTHORED",
+   "hb": "CASE_AUTHORED",
+   "hr": "CASE_AUTHORED",
+   "intrinsic_respiratory_rate": "FAMILY_CANDIDATE (P2K-2's candidate input, the middle of its 12 / 16 / 20)",
+   "intrinsic_sinus_rate": "CASE_MAPPING",
+   "k": "CASE_AUTHORED",
+   "lactate": "CASE_AUTHORED",
+   "metabolic_demand_baseline": "CASE_MAPPING (1: afebrile 36.6, no hypermetabolic evidence; the respiratory muscles' demand under severe work of breathing is not modelled)",
+   "preload_fraction": "CASE_MAPPING_GAP (the IVC 2.4 cm with <50% collapse and the raised JVP read a full filling state; no common IVC -> fraction rule exists, so the profile's provisional position stays, nothing declared, below the knee; B-lines are not read; the legacy engine's congestion block is not evidence of V)",
+   "pump_reserve": "CASE_MAPPING (neutral 1, nothing declared: read only by the common overload coupling, which the family's authority keeps off; the moderately reduced LV is an observation of P, never a reserve value; B-lines are never pump evidence)",
+   "reference_preload_fraction": "UNDEFINED_BY_CASE (no euvolemic reference is authored)",
+   "respiratory_rate": "CASE_AUTHORED",
+   "reversible_lung_water": "CASE/FAMILY REFERENCE PARAMETER at its default 0 (P2O-3): no value after arrival is authored; the authored assessment text expects support to 'continue, escalate or be reduced', which implies improvement below the arrival congestion: a contradiction left to the faculty, not resolved by choosing a value",
+   "rhythm": "CASE_AUTHORED",
+   "sbp": "CASE_AUTHORED",
+   "spo2": "CASE_AUTHORED"
+  },
+  "case": "pulmonary_edema_58m",
+  "channel_roles": {
+   "D": "NORMAL_OR_NEUTRAL (perfusion preserved; lactate 2.8 mapped as clearable excess, no prior debt)",
+   "G": "SECONDARY_RESPONSE (severe hypoxaemia: SpO2 81, PaO2 46 on room air)",
+   "Glu": "NORMAL_OR_NEUTRAL (148: mild stress hyperglycaemia)",
+   "Hb": "NORMAL_OR_NEUTRAL (14.3)",
+   "K": "NORMAL_OR_NEUTRAL (4.1)",
+   "L": "PRIMARY_DRIVER (diffuse bilateral B-lines, widespread crackles, perihilar edema on the radiograph)",
+   "N": "NORMAL_OR_NEUTRAL (awake, oriented, distressed)",
+   "P": "NORMAL_OR_NEUTRAL (P = 1 is the authored moderately reduced LV; no ischaemic process: a single troponin 28)",
+   "R": "SECONDARY_RESPONSE (sinus tachycardia 126)",
+   "T": "PRIMARY_DRIVER (the precipitant: uncontrolled hypertension, SBP 218 after missing antihypertensives; T = 1 is that arrival tone; its coupling to congestion is not modelled: the family writer does not read T)",
+   "V": "NORMAL_OR_NEUTRAL (V = 0 at arrival; the full IVC and JVP read a full filling state that no common rule maps to a preload position: CASE_MAPPING_GAP)",
+   "W": "SECONDARY_RESPONSE (RR 38, severe work of breathing, PaCO2 49 with pH 7.29: ventilation failing)"
+  },
+  "common_at_p2o3": {
+   "clinical_core/acs_reference.py": "b7b69c7892314375de236aec35016178218dfa4b114874b165c7191a0de2cfa1",
+   "clinical_core/bands.py": "9facbd34dc643d45f7ad3d668619f344717824c921924247f65396fae6aa81bc",
+   "clinical_core/collapse.py": "6076dd315f8bd335af8a425ac4d78e3bcbbd5f1198b45e511b4f122532d65fc9",
+   "clinical_core/contracts_output.py": "bc7371c7ccb57ea2f138a6bbc58c266851f6dbf0fbdb5eb2d625b1ea70ab3751",
+   "clinical_core/derived.py": "99faa383feca1d78a129ddc0b7fcaacdcd8427a0f4514f62f118f9bcdbc92c08",
+   "clinical_core/encephalopathy.py": "04aea64d6f2a23cf5a77a530114b3174eab9c9adc527708a97ac25f9c5ce3539",
+   "clinical_core/gi_reference.py": "ee3114ce9eeeb426a7b843943819aa88095b6cb09674e4c895c93a6ad1de0867",
+   "clinical_core/integration.py": "c725fbe8ab4daa69952dfd06a8f584e303ef6ff66bd67441deaa70e4cce887af",
+   "clinical_core/interventions/__init__.py": "d0dedb08f0d35bff6ba458af009b3a35f85018e9ea2a76373158d9c373551b79",
+   "clinical_core/interventions/fluids.py": "7dc615d2eea80e3afdab0774bb1f234f7ea887be1654ae02e6ca312513fb9aef",
+   "clinical_core/interventions/modifiers.py": "46c8970630a77960d7ba2e81023d31b96b2b08f611a87eae9f94cb85f1b1aa6a",
+   "clinical_core/interventions/oxygen.py": "d7bcc0393ed562d02d6070f09ab8d501c506e6931f5efd33b3492d7e34664095",
+   "clinical_core/interventions/timing.py": "498493e6143d691d582b68f568491b9275eef49bb13bcf94e251f17aea49c6a1",
+   "clinical_core/legacy_adapter.py": "f8fafd17bcda03a4293e5717145c6f4672760a07d553c965fa7c2505b69ad115",
+   "clinical_core/modules/__init__.py": "1cf73c2ddf4fe370c8d34fff2ea8132149c02239ee81f3329bd87cfec729f23d",
+   "clinical_core/modules/acs_ischaemia.py": "3199b9173594aea07c905e55b46e8705621b5c9ed7e936987024aa2d2079993d",
+   "clinical_core/modules/gi_haemorrhage.py": "edb61d903bc9f4607c1d3b819f28ac065ba86656b75ba29c89d3a7c124777673",
+   "clinical_core/modules/rhythm_events.py": "1036a2443e44fe5e2fde80736984b6828542b69454cc49a36e660ee8d436c86b",
+   "clinical_core/provenance.py": "3e670fc4aebb296232e8418f448cb14f6da46c387d4af4fc2ae7b95ba1e328d8",
+   "clinical_core/shadow.py": "66ef25c952509f0765731cfc0c0b97274bc5a4d263dcb486b595a8585a99ef35",
+   "clinical_core/signals.py": "f02f5494a8aac0361ace94a40e15a4df81970f456de7af0f6762a1196a27ee7f",
+   "clinical_core/state.py": "141cd5a2aada89a58e7de9ee1436b2f52fd68141df132bcb26e934e6e9ddc7d1",
+   "clinical_core/ventilation.py": "260393add18e2275ee21411512d18531a74387f853bb76a2f33f89d5cb1bafe9"
+  },
+  "consciousness_guard": "ONE_HYPOXEMIA_CONSCIOUSNESS_SOURCE_ONLY: derive's ADOPTED SpO2 ladder (87 / 80) and P2L-2's hypoxaemia signal must never both act in one candidate pathway; P2P-1 is shadow only and runs derive's ladder alone (the P2L-2 candidate is not wired into derive); at runtime integration one source remains (LEGACY_SPO2_CONSCIOUSNESS_LADDER_MUST_BE_DISABLED_ON_P2L2_INTEGRATION)",
+  "core_at_p2o3": {
+   "clinical_core/decision_pack.py": "a176cb385e896bbc96c39e66f7e9b9c07bdcf25c491b82df71480f6162578d2d",
+   "clinical_core/lactate_slice.py": "27fa0e3b3df18e796bd32ce311313c4569ca2a11df19b6df90c24462e85e35c1"
+  },
+  "decided": {
+   "acs_mapping_debt": "the ACS pump_reserve band citing B-lines is stale under the authority model: MAPPING_DOCUMENTATION_DEBT; B-lines are never pump or preload evidence",
+   "g_guard": "the G guard behaviour stays as it is; no special exception is added for L_rev = 0",
+   "goal": "test family-specific congestion writer -> L -> common G -> SpO2 / oxygen delivery in a respiratory / congestive family without changing the common core; not to fit one case",
+   "l_rev": "L_rev <= 0, default 0 (P2O-1 exactly); a declared case / family parameter with provenance only when a migrated family adopts a nonzero value; default 0 unless pulmonary_edema's authored truth requires otherwise",
+   "one_owner": "one authoritative L owner per run; several congestion mechanisms compose inside one family writer / coordinator",
+   "override": "FAMILY_CONGESTION_WRITER_OVERRIDES_COMMON_OVERLOAD_WRITER: with the family writer present the common overload generator adds no L, by design",
+   "v_l_apart": "V from preload evidence (IVC, filling context); L from pulmonary congestion evidence (B-lines, edema, crackles, radiograph); B-lines never inform V",
+   "zero_gain_owner": "an owner with zero gain still suppresses the common overload writer (accepted)"
+  },
+  "decongestion": {
+   "begins_at_minute": 60,
+   "per_min": 0.005
+  },
+  "deferred_actions": {
+   "niv": "VNI_COMMON_EXTENSION_DEFERRED"
+  },
+  "family_types": [
+   "pulmonary_edema_congestion",
+   "edema_decongestive_treatment"
+  ],
+  "fio2": [
+   0.4,
+   0.6
+  ],
+  "horizon": 120,
+  "l_rev": 0.0,
+  "later_observations": "NONE_AUTHORED: the case states the arrival only; the TDFC declarations and the assessment bank ask the resident to reassess SpO2, respiratory rate and pressure and to decide whether support continues, escalates or can be reduced (an improvement is expected), but no value after arrival is authored: the course is INSUFFICIENT_AUTHORED_TRUTH (as P2N-3), the arrival is not",
+  "legacy_constants": "family_engine.EDEMA (drift 0.003/min, NIV, nitrate, diuretic, recruitment): LEGACY_ENGINE_BEHAVIOR",
+  "legacy_minutes": [
+   0,
+   30,
+   60,
+   90,
+   120
+  ],
+  "observation_layer": {
+   "b_lines_crackles_radiograph": "an observation of L: the authored diffuse B-lines, widespread crackles and perihilar edema are the arrival reading (L = 0 is that congestion, never dry lungs); L above 0 reads more congestion, L back at 0 the arrival finding again",
+   "ivc_jvp": "an observation of the filling state (V and the preload position), never of L",
+   "lv_function": "an observation of P: the authored moderately reduced global contraction is the arrival reading (P = 1)",
+   "rhythm": "R (sinus, its rate from the common HR physiology)",
+   "work_of_breathing": "an observation of W and the respiratory load; the common model has no congestion-driven drive or mechanics (an expected respiratory extension)"
+  },
+  "overload": {
+   "P": 0.7,
+   "preload_fraction": 0.7,
+   "volume_ml": 4000.0
+  },
+  "own": [
+   "clinical_core/edema_migration.py",
+   "clinical_core/edema_reference.py",
+   "clinical_core/modules/pulmonary_edema.py"
+  ],
+  "p2o3": {
+   "freeze_digest": "3ae766808ce23a0b166afc68f7f1d1165ff30a5a993f1274ccdd86bf9ac8244d",
+   "head": "4178a95",
+   "record": "efc8882c5c8bf3d7c8d18e7f9b1d61f80e713d0fd1d2f2a0d1b7149587834f8b"
+  },
+  "progression": [
+   0.0025,
+   0.005,
+   0.01
+  ],
+  "read": [
+   0,
+   30,
+   60,
+   90,
+   120
+  ],
+  "recommendations": {
+   "A": "PROCEED_TO_NEXT_FAMILY_OR_TREATMENT_EXTENSION",
+   "B": "IMPLEMENT_ONLY_THE_MINIMUM_RESPIRATORY_EXTENSION_REQUIRED"
+  },
+  "report": "clinical_core/edema_migration_report.py",
+  "reversal": {
+   "clinical_core/decision_pack.py": [
+    [
+     "                        \"clinical_core/gas_exchange_architecture.py\", \"clinical_core/gas_exchange_architecture_report.py\",\n                        \"clinical_core/lung_water_reference.py\", \"clinical_core/lung_water_reference_report.py\",\n                        \"clinical_core/edema_migration.py\", \"clinical_core/edema_migration_report.py\")\n\n",
+     "                        \"clinical_core/gas_exchange_architecture.py\", \"clinical_core/gas_exchange_architecture_report.py\",\n                        \"clinical_core/lung_water_reference.py\", \"clinical_core/lung_water_reference_report.py\")\n\n"
+    ]
+   ],
+   "clinical_core/lactate_slice.py": [
+    [
+     "                      \"clinical_core/gas_exchange_architecture_report.py\",\n                      \"clinical_core/lung_water_reference_report.py\",\n                      \"clinical_core/edema_migration_report.py\")\n\n",
+     "                      \"clinical_core/gas_exchange_architecture_report.py\",\n                      \"clinical_core/lung_water_reference_report.py\")\n\n"
+    ]
+   ]
+  },
+  "revision": "P2P-1",
+  "rr_gap": 5.0,
+  "selection_rule": "the variant whose authored faculty diagnosis names acute cardiogenic pulmonary edema; the other variant (pulmonary_edema_75f: decompensated HFrEF with volume overload and CKD) is left for later",
+  "truth_classes": {
+   "abg_fio2_percent": "AUTHORED_CASE_TRUTH",
+   "abg_hco3": "AUTHORED_CASE_TRUTH",
+   "abg_paco2": "AUTHORED_CASE_TRUTH",
+   "abg_pao2": "AUTHORED_CASE_TRUTH",
+   "abg_ph": "AUTHORED_CASE_TRUTH",
+   "cardiac_exam": "AUTHORED_CASE_TRUTH",
+   "chest_xray": "AUTHORED_CASE_TRUTH",
+   "congestion_block": "LEGACY_ENGINE_BEHAVIOR (the case's input to the legacy engine: fluid sensitivity 1.0, no volume overload; read as context for V, never as a rate)",
+   "creatinine_mg_dl": "AUTHORED_CASE_TRUTH",
+   "crt_s": "AUTHORED_CASE_TRUTH",
+   "dbp": "AUTHORED_CASE_TRUTH",
+   "definitive_actions": "AUTHORED_CASE_TRUTH (faculty-declared definitive actions; also the TDFC declarations)",
+   "diagnosis": "AUTHORED_CASE_TRUTH",
+   "ecg_profile": "AUTHORED_CASE_TRUTH",
+   "extremities": "AUTHORED_CASE_TRUTH",
+   "glucose_mg_dl": "AUTHORED_CASE_TRUTH",
+   "hb_g_dl": "AUTHORED_CASE_TRUTH",
+   "hr": "AUTHORED_CASE_TRUTH",
+   "lactate_mmol_l": "AUTHORED_CASE_TRUTH",
+   "mental_status": "AUTHORED_CASE_TRUTH",
+   "neurological_exam": "AUTHORED_CASE_TRUTH",
+   "onset": "AUTHORED_CASE_TRUTH",
+   "peripheral_perfusion": "AUTHORED_CASE_TRUTH",
+   "pocus_consolidation": "AUTHORED_CASE_TRUTH",
+   "pocus_ivc": "AUTHORED_CASE_TRUTH",
+   "pocus_lungs": "AUTHORED_CASE_TRUTH",
+   "pocus_lv": "AUTHORED_CASE_TRUTH",
+   "potassium_mmol_l": "AUTHORED_CASE_TRUTH",
+   "respiratory_exam": "AUTHORED_CASE_TRUTH",
+   "respiratory_rate": "AUTHORED_CASE_TRUTH",
+   "rhythm": "AUTHORED_CASE_TRUTH",
+   "sbp": "AUTHORED_CASE_TRUTH",
+   "spo2": "AUTHORED_CASE_TRUTH",
+   "temperature_c": "AUTHORED_CASE_TRUTH",
+   "troponin_ng_l": "AUTHORED_CASE_TRUTH",
+   "vbg_pco2": "AUTHORED_CASE_TRUTH",
+   "vbg_ph": "AUTHORED_CASE_TRUTH",
+   "work_of_breathing": "AUTHORED_CASE_TRUTH"
+  },
+  "truth_paths": {
+   "abg_fio2_percent": [
+    "investigations",
+    "abg",
+    "result",
+    "fio2_percent"
+   ],
+   "abg_hco3": [
+    "investigations",
+    "abg",
+    "result",
+    "bicarbonate_mmol_l"
+   ],
+   "abg_paco2": [
+    "investigations",
+    "abg",
+    "result",
+    "paco2_mm_hg"
+   ],
+   "abg_pao2": [
+    "investigations",
+    "abg",
+    "result",
+    "pao2_mm_hg"
+   ],
+   "abg_ph": [
+    "investigations",
+    "abg",
+    "result",
+    "ph"
+   ],
+   "cardiac_exam": [
+    "examination",
+    "Cardiac"
+   ],
+   "chest_xray": [
+    "investigations",
+    "chest_xray",
+    "result",
+    "report"
+   ],
+   "congestion_block": [
+    "engine",
+    "congestion"
+   ],
+   "creatinine_mg_dl": [
+    "investigations",
+    "basic_labs",
+    "result",
+    "creatinine_mg_dl"
+   ],
+   "crt_s": [
+    "observable",
+    "crt"
+   ],
+   "dbp": [
+    "observable",
+    "dbp"
+   ],
+   "definitive_actions": [
+    "engine",
+    "definitive_actions"
+   ],
+   "diagnosis": [
+    "faculty",
+    "diagnosis"
+   ],
+   "ecg_profile": [
+    "ecg_profile"
+   ],
+   "extremities": [
+    "observable",
+    "extremities"
+   ],
+   "glucose_mg_dl": [
+    "investigations",
+    "basic_labs",
+    "result",
+    "glucose_mg_dl"
+   ],
+   "hb_g_dl": [
+    "investigations",
+    "basic_labs",
+    "result",
+    "hemoglobin_g_dl"
+   ],
+   "hr": [
+    "observable",
+    "hr"
+   ],
+   "lactate_mmol_l": [
+    "investigations",
+    "lactate",
+    "result",
+    "lactate_mmol_l"
+   ],
+   "mental_status": [
+    "observable",
+    "mental_status"
+   ],
+   "neurological_exam": [
+    "examination",
+    "Neurological"
+   ],
+   "onset": [
+    "history",
+    "onset"
+   ],
+   "peripheral_perfusion": [
+    "observable",
+    "peripheral_perfusion"
+   ],
+   "pocus_consolidation": [
+    "investigations",
+    "pocus",
+    "result",
+    "lung_consolidation"
+   ],
+   "pocus_ivc": [
+    "investigations",
+    "pocus",
+    "result",
+    "ivc"
+   ],
+   "pocus_lungs": [
+    "investigations",
+    "pocus",
+    "result",
+    "lungs"
+   ],
+   "pocus_lv": [
+    "investigations",
+    "pocus",
+    "result",
+    "lv"
+   ],
+   "potassium_mmol_l": [
+    "investigations",
+    "basic_labs",
+    "result",
+    "potassium_mmol_l"
+   ],
+   "respiratory_exam": [
+    "examination",
+    "Respiratory"
+   ],
+   "respiratory_rate": [
+    "observable",
+    "respiratory_rate"
+   ],
+   "rhythm": [
+    "observable",
+    "rhythm"
+   ],
+   "sbp": [
+    "observable",
+    "sbp"
+   ],
+   "spo2": [
+    "observable",
+    "spo2"
+   ],
+   "temperature_c": [
+    "observable",
+    "temperature_c"
+   ],
+   "troponin_ng_l": [
+    "investigations",
+    "troponin",
+    "result",
+    "value_ng_l"
+   ],
+   "vbg_pco2": [
+    "investigations",
+    "vbg",
+    "result",
+    "pco2_mm_hg"
+   ],
+   "vbg_ph": [
+    "investigations",
+    "vbg",
+    "result",
+    "ph"
+   ],
+   "work_of_breathing": [
+    "observable",
+    "work_of_breathing"
+   ]
+  },
+  "tuples_added": {
+   "DOWNSTREAM_REPORTS": [
+    "clinical_core/edema_migration_report.py"
+   ],
+   "PACK_DIGEST_EXCLUDED": [
+    "clinical_core/edema_migration.py",
+    "clinical_core/edema_migration_report.py"
+   ]
+  },
+  "verdict_criteria": [
+   "case truth sufficient (every item read)",
+   "arrival exact where the core models it (SpO2, MAP, PaCO2; L = 0 is the arrival congestion; L_rev 0)",
+   "family writer writes L only and owns it (no SpO2, G, DO2, RR or lactate scripting)",
+   "L worsening -> G worsening -> SpO2 worsening (every progression rate)",
+   "oxygen through the common FiO2 path (monotone, attenuated by the common r, no family function)",
+   "decongestion back to arrival improves G and SpO2, none below arrival (L_rev 0), V and P unchanged",
+   "authority: no double writing; common overload without the family; second owner refused",
+   "HR sign physiological",
+   "GI and ACS unchanged; no common file changed"
+  ],
+  "verdict_rule": "Predeclared. E if the case truth is insufficient; D if the authority, the GI / ACS non-regression or the proof (P2O-3's tree, digest and record reproduced, common files untouched) fails; C if the arrival, the writer, the L -> G -> SpO2 direction, oxygen, decongestion or the HR sign fails; otherwise B when an expected respiratory extension is required (authored RR above the common arrival RR by more than RR_GAP, or a definitive action needing a deferred common extension), else A. Every criterion decides a letter. The verdict covers the case it ran: acute cardiogenic pulmonary edema without volume overload (the other variant is not tested)",
+  "verdicts": {
+   "A": "PULMONARY_EDEMA_MIGRATES_WITH_FAMILY_L_WRITER",
+   "B": "PULMONARY_EDEMA_NEEDS_EXPECTED_RESPIRATORY_EXTENSION",
+   "C": "COMMON_L_TO_G_PATH_INSUFFICIENT",
+   "D": "TRUE_CROSS_FAMILY_CONFLICT",
+   "E": "INSUFFICIENT_CASE_TRUTH"
+  },
+  "volume_loading_ml": 2000.0
+ },
+ "freeze_digest": "2c7dc8b184529edea5a77c6beb8bf9b270391d4ae49f5a0d4221aa1a7a3a5c2e",
+ "heart_rate": {
+  "gains_untouched": true,
+  "hr_120": {
+   "no_writer": 80.0,
+   "oxygen": 80.0,
+   "untreated": 82.36524891993038
+  },
+  "oxygen_minus_untreated": -2.36524891993038,
+  "pass": true,
+  "target_120": {
+   "no_writer": 0.0,
+   "oxygen": 0.0,
+   "untreated": 0.0946295129603709
+  },
+  "threshold": 94.0,
+  "untreated_minus_no_writer": 2.36524891993038
+ },
+ "legacy": {
+  "0": {
+   "dbp": 116,
+   "hr": 126,
+   "mental_status": "Alert",
+   "respiratory_rate": 38,
+   "sbp": 218,
+   "spo2": 81,
+   "work_of_breathing": "Severe"
+  },
+  "120": {
+   "dbp": 116,
+   "hr": 126,
+   "mental_status": "Obtunded",
+   "respiratory_rate": 44,
+   "sbp": 218,
+   "spo2": 75,
+   "work_of_breathing": "Exhausted: shallow and ineffective effort"
+  },
+  "30": {
+   "dbp": 116,
+   "hr": 126,
+   "mental_status": "Obtunded",
+   "respiratory_rate": 40,
+   "sbp": 218,
+   "spo2": 79,
+   "work_of_breathing": "Severe"
+  },
+  "60": {
+   "dbp": 116,
+   "hr": 126,
+   "mental_status": "Obtunded",
+   "respiratory_rate": 41,
+   "sbp": 218,
+   "spo2": 78,
+   "work_of_breathing": "Severe"
+  },
+  "90": {
+   "dbp": 116,
+   "hr": 126,
+   "mental_status": "Obtunded",
+   "respiratory_rate": 43,
+   "sbp": 218,
+   "spo2": 76,
+   "work_of_breathing": "Severe"
+  }
+ },
+ "legacy_comparison": {
+  "classes": {
+   "consciousness": "POSSIBLE_COMMON_CORE_GAP: the legacy shows the authored alert patient at arrival and its own ladder afterwards (obtunded from minute 30, SpO2 79); derive's absolute SpO2 ladder already reads 81 % as drowsy at arrival (no arrival anchoring; ONE_HYPOXEMIA_CONSCIOUSNESS_SOURCE_ONLY)",
+   "hr_arrival": "EXPECTED_EXTENSION_NOT_YET_MODELED: the legacy shows the authored HR; the core's is the common HR physiology's at the GI-rule intrinsic rate (ARRIVAL_HR_COMMON_GAP, shared with ACS)",
+   "niv_nitrate_diuretic": "EXPECTED_EXTENSION_NOT_YET_MODELED: legacy treatment effects (NIV recruitment, nitrate pressure, delayed diuretic) are not migrated",
+   "rr_course": "EXPECTED_EXTENSION_NOT_YET_MODELED: the legacy RR follows its lung index; the common RR has no congestion or hypoxaemia drive (EXPECTED_RESPIRATORY_FAMILY_EXTENSION)",
+   "spo2_course": "LEGACY_DIFFERENCE_NOT_CLINICALLY_RELEVANT: both fall untreated; the size is the family span's and the legacy drift's, neither authored"
+  },
+  "possible_common_core_gap": [
+   "consciousness"
+  ],
+  "rows": {
+   "0": {
+    "core": {
+     "consciousness_level": 1,
+     "hr": 80.0,
+     "map": 150.0,
+     "rr": 18.288399598282346,
+     "spo2": 81.0
+    },
+    "legacy": {
+     "dbp": 116,
+     "hr": 126,
+     "mental_status": "Alert",
+     "respiratory_rate": 38,
+     "sbp": 218,
+     "spo2": 81,
+     "work_of_breathing": "Severe"
+    }
+   },
+   "120": {
+    "core": {
+     "consciousness_level": 2,
+     "hr": 81.18280778762603,
+     "map": 150.0,
+     "rr": 16.863938175120758,
+     "spo2": 78.63426217599073
+    },
+    "legacy": {
+     "dbp": 116,
+     "hr": 126,
+     "mental_status": "Obtunded",
+     "respiratory_rate": 44,
+     "sbp": 218,
+     "spo2": 75,
+     "work_of_breathing": "Exhausted: shallow and ineffective effort"
+    }
+   },
+   "60": {
+    "core": {
+     "consciousness_level": 2,
+     "hr": 80.66497024542933,
+     "map": 150.0,
+     "rr": 17.411230310894954,
+     "spo2": 79.67003778808528
+    },
+    "legacy": {
+     "dbp": 116,
+     "hr": 126,
+     "mental_status": "Obtunded",
+     "respiratory_rate": 41,
+     "sbp": 218,
+     "spo2": 78,
+     "work_of_breathing": "Severe"
+    }
+   }
+  },
+  "used_for_parameters": false
+ },
+ "non_regression": {
+  "acs_authority_r7": true,
+  "acs_evaluation": true,
+  "common_files_untouched": {
+   "clinical_core/acs_reference.py": true,
+   "clinical_core/bands.py": true,
+   "clinical_core/collapse.py": true,
+   "clinical_core/contracts_output.py": true,
+   "clinical_core/derived.py": true,
+   "clinical_core/encephalopathy.py": true,
+   "clinical_core/gi_reference.py": true,
+   "clinical_core/integration.py": true,
+   "clinical_core/interventions/__init__.py": true,
+   "clinical_core/interventions/fluids.py": true,
+   "clinical_core/interventions/modifiers.py": true,
+   "clinical_core/interventions/oxygen.py": true,
+   "clinical_core/interventions/timing.py": true,
+   "clinical_core/legacy_adapter.py": true,
+   "clinical_core/modules/__init__.py": true,
+   "clinical_core/modules/acs_ischaemia.py": true,
+   "clinical_core/modules/gi_haemorrhage.py": true,
+   "clinical_core/modules/rhythm_events.py": true,
+   "clinical_core/provenance.py": true,
+   "clinical_core/shadow.py": true,
+   "clinical_core/signals.py": true,
+   "clinical_core/state.py": true,
+   "clinical_core/ventilation.py": true
+  },
+  "common_overload_r8": true,
+  "gi_o12": true,
+  "pass": true
+ },
+ "oxygen": {
+  "attenuated_as_G_worsens": true,
+  "family_oxygen_function": false,
+  "fio2": {
+   "0.4": {
+    "0": {
+     "D": 0.0,
+     "G": 0.0,
+     "L": 0.0,
+     "P": 1.0,
+     "V": 0.0,
+     "consciousness_level": 1,
+     "delivery_index": 1.0,
+     "fio2": 0.21,
+     "hr": 80.0,
+     "lactate": 2.8,
+     "map": 150.0,
+     "minute": 0,
+     "paco2": 49.0,
+     "rr": 18.288399598282346,
+     "spo2": 81.0
+    },
+    "120": {
+     "D": 0.0,
+     "G": 0.4731475648018543,
+     "L": 0.4731475648018543,
+     "P": 1.0,
+     "V": 0.0,
+     "consciousness_level": 1,
+     "delivery_index": 1.0277008988917427,
+     "fio2": 0.4,
+     "hr": 80.0,
+     "lactate": 1.659414278000765,
+     "map": 150.0,
+     "minute": 120,
+     "paco2": 53.13892704124658,
+     "rr": 16.863938175120758,
+     "spo2": 83.24377281023116
+    },
+    "30": {
+     "D": 0.0,
+     "G": 0.14129767864039802,
+     "L": 0.14129767864039802,
+     "P": 1.0,
+     "V": 0.0,
+     "consciousness_level": 1,
+     "delivery_index": 1.0570047661266326,
+     "fio2": 0.4,
+     "hr": 80.0,
+     "lactate": 2.4003737633151987,
+     "map": 150.0,
+     "minute": 30,
+     "paco2": 50.34689523666749,
+     "rr": 17.799142848895777,
+     "spo2": 85.61738605625725
+    },
+    "60": {
+     "D": 0.0,
+     "G": 0.26599244238294273,
+     "L": 0.26599244238294273,
+     "P": 1.0,
+     "V": 0.0,
+     "consciousness_level": 1,
+     "delivery_index": 1.0456906914314614,
+     "fio2": 0.4,
+     "hr": 80.0,
+     "lactate": 2.0894703761008735,
+     "map": 150.0,
+     "minute": 60,
+     "paco2": 51.46859609082806,
+     "rr": 17.411230310894954,
+     "spo2": 84.70094600594837
+    },
+    "90": {
+     "D": 0.0,
+     "G": 0.37603518515425643,
+     "L": 0.37603518515425643,
+     "P": 1.0,
+     "V": 0.0,
+     "consciousness_level": 1,
+     "delivery_index": 1.0360213928649042,
+     "fio2": 0.4,
+     "hr": 80.0,
+     "lactate": 1.8475920725560022,
+     "map": 150.0,
+     "minute": 90,
+     "paco2": 52.39015997244776,
+     "rr": 17.104959801365656,
+     "spo2": 83.91773282205725
+    }
+   },
+   "0.6": {
+    "0": {
+     "D": 0.0,
+     "G": 0.0,
+     "L": 0.0,
+     "P": 1.0,
+     "V": 0.0,
+     "consciousness_level": 1,
+     "delivery_index": 1.0,
+     "fio2": 0.21,
+     "hr": 80.0,
+     "lactate": 2.8,
+     "map": 150.0,
+     "minute": 0,
+     "paco2": 49.0,
+     "rr": 18.288399598282346,
+     "spo2": 81.0
+    },
+    "120": {
+     "D": 0.0,
+     "G": 0.4731475648018543,
+     "L": 0.4731475648018543,
+     "P": 1.0,
+     "V": 0.0,
+     "consciousness_level": 0,
+     "delivery_index": 1.0876035712015601,
+     "fio2": 0.6,
+     "hr": 80.0,
+     "lactate": 1.659414278000765,
+     "map": 150.0,
+     "minute": 120,
+     "paco2": 53.13892704124658,
+     "rr": 16.863938175120758,
+     "spo2": 88.09588926732637
+    },
+    "30": {
+     "D": 0.0,
+     "G": 0.14129767864039802,
+     "L": 0.14129767864039802,
+     "P": 1.0,
+     "V": 0.0,
+     "consciousness_level": 0,
+     "delivery_index": 1.1261909188161616,
+     "fio2": 0.6,
+     "hr": 80.0,
+     "lactate": 2.4003737633151987,
+     "map": 150.0,
+     "minute": 30,
+     "paco2": 50.34689523666749,
+     "rr": 17.799142848895777,
+     "spo2": 91.22146442410909
+    },
+    "60": {
+     "D": 0.0,
+     "G": 0.26599244238294273,
+     "L": 0.26599244238294273,
+     "P": 1.0,
+     "V": 0.0,
+     "consciousness_level": 0,
+     "delivery_index": 1.1110696156402085,
+     "fio2": 0.6,
+     "hr": 80.0,
+     "lactate": 2.0894703761008735,
+     "map": 150.0,
+     "minute": 60,
+     "paco2": 51.46859609082806,
+     "rr": 17.411230310894954,
+     "spo2": 89.99663886685688
+    },
+    "90": {
+     "D": 0.0,
+     "G": 0.37603518515425643,
+     "L": 0.37603518515425643,
+     "P": 1.0,
+     "V": 0.0,
+     "consciousness_level": 0,
+     "delivery_index": 1.0983723837398691,
+     "fio2": 0.6,
+     "hr": 80.0,
+     "lactate": 1.8475920725560022,
+     "map": 150.0,
+     "minute": 90,
+     "paco2": 52.39015997244776,
+     "rr": 17.104959801365656,
+     "spo2": 88.9681630829294
+    }
+   }
+  },
+  "gain_at_120": 9.461627091335643,
+  "gain_at_30": 10.92795281731108,
+  "monotone_in_fio2": true,
+  "pass": true,
+  "room_air": {
+   "0": {
+    "D": 0.0,
+    "G": 0.0,
+    "L": 0.0,
+    "P": 1.0,
+    "V": 0.0,
+    "consciousness_level": 1,
+    "delivery_index": 1.0,
+    "fio2": 0.21,
+    "hr": 80.0,
+    "lactate": 2.8,
+    "map": 150.0,
+    "minute": 0,
+    "paco2": 49.0,
+    "rr": 18.288399598282346,
+    "spo2": 81.0
+   },
+   "120": {
+    "D": 0.0,
+    "G": 0.4731475648018543,
+    "L": 0.4731475648018543,
+    "P": 1.0,
+    "V": 0.0,
+    "consciousness_level": 2,
+    "delivery_index": 0.9707933601974164,
+    "fio2": 0.21,
+    "hr": 81.18280778762603,
+    "lactate": 1.659414278000765,
+    "map": 150.0,
+    "minute": 120,
+    "paco2": 53.13892704124658,
+    "rr": 16.863938175120758,
+    "spo2": 78.63426217599073
+   },
+   "30": {
+    "D": 0.0,
+    "G": 0.14129767864039802,
+    "L": 0.14129767864039802,
+    "P": 1.0,
+    "V": 0.0,
+    "consciousness_level": 1,
+    "delivery_index": 0.9912779210715803,
+    "fio2": 0.21,
+    "hr": 80.3532425686016,
+    "lactate": 2.4003737633151987,
+    "map": 150.0,
+    "minute": 30,
+    "paco2": 50.34689523666749,
+    "rr": 17.799142848895777,
+    "spo2": 80.293511606798
+   },
+   "60": {
+    "D": 0.0,
+    "G": 0.26599244238294273,
+    "L": 0.26599244238294273,
+    "P": 1.0,
+    "V": 0.0,
+    "consciousness_level": 2,
+    "delivery_index": 0.9835807134331516,
+    "fio2": 0.21,
+    "hr": 80.66497024542933,
+    "lactate": 2.0894703761008735,
+    "map": 150.0,
+    "minute": 60,
+    "paco2": 51.46859609082806,
+    "rr": 17.411230310894954,
+    "spo2": 79.67003778808528
+   },
+   "90": {
+    "D": 0.0,
+    "G": 0.37603518515425643,
+    "L": 0.37603518515425643,
+    "P": 1.0,
+    "V": 0.0,
+    "consciousness_level": 2,
+    "delivery_index": 0.9767879515336879,
+    "fio2": 0.21,
+    "hr": 80.94005727831862,
+    "lactate": 1.8475920725560022,
+    "map": 150.0,
+    "minute": 90,
+    "paco2": 52.39015997244776,
+    "rr": 17.104959801365656,
+    "spo2": 79.11982407422872
+   }
+  }
+ },
+ "proof": {
+  "common_untouched": {
+   "clinical_core/acs_reference.py": true,
+   "clinical_core/bands.py": true,
+   "clinical_core/collapse.py": true,
+   "clinical_core/contracts_output.py": true,
+   "clinical_core/derived.py": true,
+   "clinical_core/encephalopathy.py": true,
+   "clinical_core/gi_reference.py": true,
+   "clinical_core/integration.py": true,
+   "clinical_core/interventions/__init__.py": true,
+   "clinical_core/interventions/fluids.py": true,
+   "clinical_core/interventions/modifiers.py": true,
+   "clinical_core/interventions/oxygen.py": true,
+   "clinical_core/interventions/timing.py": true,
+   "clinical_core/legacy_adapter.py": true,
+   "clinical_core/modules/__init__.py": true,
+   "clinical_core/modules/acs_ischaemia.py": true,
+   "clinical_core/modules/gi_haemorrhage.py": true,
+   "clinical_core/modules/rhythm_events.py": true,
+   "clinical_core/provenance.py": true,
+   "clinical_core/shadow.py": true,
+   "clinical_core/signals.py": true,
+   "clinical_core/state.py": true,
+   "clinical_core/ventilation.py": true
+  },
+  "p2o3_freeze_digest": true,
+  "p2o3_record": true,
+  "proofs": {
+   "clinical_core/decision_pack.py": true,
+   "clinical_core/lactate_slice.py": true
+  }
+ },
+ "respiration": {
+  "authored_rr": 38,
+  "classification": "EXPECTED_RESPIRATORY_FAMILY_EXTENSION",
+  "core_rr_arrival": 18.288399598282346,
+  "deferred_actions": [
+   "VNI_COMMON_EXTENSION_DEFERRED"
+  ],
+  "extension_expected": true,
+  "gap": 19.711600401717654,
+  "needs": [
+   "congestion / hypoxaemia respiratory drive",
+   "respiratory mechanics and work of breathing",
+   "respiratory-muscle oxygen demand",
+   "NIV (EPAP, recruitment, afterload, preload)"
+  ],
+  "paco2": 49,
+  "ph": 7.29,
+  "rr_follows_L_or_G": false,
+  "untreated_trends": {
+   "lactate": [
+    2.8,
+    1.659414278000765
+   ],
+   "paco2": [
+    49.0,
+    53.13892704124658
+   ],
+   "rr": [
+    18.288399598282346,
+    16.863938175120758
+   ],
+   "spo2": [
+    81.0,
+    76.26852435198145
+   ]
+  },
+  "work_of_breathing": "Severe"
+ },
+ "revision": "P2P-1",
+ "treatments": {
+  "authored": [
+   "niv",
+   "nitroglycerin",
+   "diuretic"
+  ],
+  "magnitudes": "UNSET: no treatment magnitude is calibrated, to legacy or otherwise",
+  "map": {
+   "diuretic": {
+    "class": "FAMILY_WRITER_REQUIRED + NEW_COMMON_MECHANISM_REQUIRED",
+    "diuresis_blood_process": false,
+    "target": "L through the family writer's decongestion (the signal); V outflow needs a renal plasma-loss blood process the core does not have"
+   },
+   "nitroglycerin": {
+    "class": "NEW_COMMON_MECHANISM_REQUIRED",
+    "t_writer_refused": true,
+    "target": "T / V: a writer of T is refused while the common tone response is on (the integrator's rule; the profile's tone response is on); venodilation has no blood process; its decongestive effect on L is the family's (FAMILY_WRITER_REQUIRED, via the decongestion signal)"
+   },
+   "niv": {
+    "class": "VNI_COMMON_EXTENSION_DEFERRED",
+    "target": "W, G, afterload and preload (outside P2P-1)"
+   },
+   "oxygen": {
+    "class": "COMMON_TARGET_EXISTS",
+    "target": "FiO2 (interventions.oxygen.Oxygen)"
+   }
+  },
+  "pass": true
+ },
+ "untreated": {
+  "no_writer": {
+   "0": {
+    "D": 0.0,
+    "G": 0.0,
+    "L": 0.0,
+    "P": 1.0,
+    "V": 0.0,
+    "consciousness_level": 1,
+    "delivery_index": 1.0,
+    "fio2": 0.21,
+    "hr": 80.0,
+    "lactate": 2.8,
+    "map": 150.0,
+    "minute": 0,
+    "paco2": 49.0,
+    "rr": 18.288399598282346,
+    "spo2": 81.0
+   },
+   "120": {
+    "D": 0.0,
+    "G": 0.0,
+    "L": 0.0,
+    "P": 1.0,
+    "V": 0.0,
+    "consciousness_level": 1,
+    "delivery_index": 1.0,
+    "fio2": 0.21,
+    "hr": 80.0,
+    "lactate": 1.659414278000765,
+    "map": 150.0,
+    "minute": 120,
+    "paco2": 53.13892704124658,
+    "rr": 16.863938175120758,
+    "spo2": 81.0
+   },
+   "30": {
+    "D": 0.0,
+    "G": 0.0,
+    "L": 0.0,
+    "P": 1.0,
+    "V": 0.0,
+    "consciousness_level": 1,
+    "delivery_index": 1.0,
+    "fio2": 0.21,
+    "hr": 80.0,
+    "lactate": 2.4003737633151987,
+    "map": 150.0,
+    "minute": 30,
+    "paco2": 50.34689523666749,
+    "rr": 17.799142848895777,
+    "spo2": 81.0
+   },
+   "60": {
+    "D": 0.0,
+    "G": 0.0,
+    "L": 0.0,
+    "P": 1.0,
+    "V": 0.0,
+    "consciousness_level": 1,
+    "delivery_index": 1.0,
+    "fio2": 0.21,
+    "hr": 80.0,
+    "lactate": 2.0894703761008735,
+    "map": 150.0,
+    "minute": 60,
+    "paco2": 51.46859609082806,
+    "rr": 17.411230310894954,
+    "spo2": 81.0
+   },
+   "90": {
+    "D": 0.0,
+    "G": 0.0,
+    "L": 0.0,
+    "P": 1.0,
+    "V": 0.0,
+    "consciousness_level": 1,
+    "delivery_index": 1.0,
+    "fio2": 0.21,
+    "hr": 80.0,
+    "lactate": 1.8475920725560022,
+    "map": 150.0,
+    "minute": 90,
+    "paco2": 52.39015997244776,
+    "rr": 17.104959801365656,
+    "spo2": 81.0
+   }
+  },
+  "pass": true,
+  "region": {
+   "0.0025": {
+    "at": {
+     "0": {
+      "D": 0.0,
+      "G": 0.0,
+      "L": 0.0,
+      "P": 1.0,
+      "V": 0.0,
+      "consciousness_level": 1,
+      "delivery_index": 1.0,
+      "fio2": 0.21,
+      "hr": 80.0,
+      "lactate": 2.8,
+      "map": 150.0,
+      "minute": 0,
+      "paco2": 49.0,
+      "rr": 18.288399598282346,
+      "spo2": 81.0
+     },
+     "120": {
+      "D": 0.0,
+      "G": 0.23657378240092716,
+      "L": 0.23657378240092716,
+      "P": 1.0,
+      "V": 0.0,
+      "consciousness_level": 2,
+      "delivery_index": 0.9853966800987082,
+      "fio2": 0.21,
+      "hr": 80.59142681509964,
+      "lactate": 1.659414278000765,
+      "map": 150.0,
+      "minute": 120,
+      "paco2": 53.13892704124658,
+      "rr": 16.863938175120758,
+      "spo2": 79.81713108799536
+     },
+     "30": {
+      "D": 0.0,
+      "G": 0.07064883932019901,
+      "L": 0.07064883932019901,
+      "P": 1.0,
+      "V": 0.0,
+      "consciousness_level": 1,
+      "delivery_index": 0.9956389605357902,
+      "fio2": 0.21,
+      "hr": 80.17662189479972,
+      "lactate": 2.4003737633151987,
+      "map": 150.0,
+      "minute": 30,
+      "paco2": 50.34689523666749,
+      "rr": 17.799142848895777,
+      "spo2": 80.646755803399
+     },
+     "60": {
+      "D": 0.0,
+      "G": 0.13299622119147136,
+      "L": 0.13299622119147136,
+      "P": 1.0,
+      "V": 0.0,
+      "consciousness_level": 1,
+      "delivery_index": 0.9917903567165759,
+      "fio2": 0.21,
+      "hr": 80.33248919539271,
+      "lactate": 2.0894703761008735,
+      "map": 150.0,
+      "minute": 60,
+      "paco2": 51.46859609082806,
+      "rr": 17.411230310894954,
+      "spo2": 80.33501889404265
+     },
+     "90": {
+      "D": 0.0,
+      "G": 0.18801759257712822,
+      "L": 0.18801759257712822,
+      "P": 1.0,
+      "V": 0.0,
+      "consciousness_level": 1,
+      "delivery_index": 0.988393975766844,
+      "fio2": 0.21,
+      "hr": 80.47004014575927,
+      "lactate": 1.8475920725560022,
+      "map": 150.0,
+      "minute": 90,
+      "paco2": 52.39015997244776,
+      "rr": 17.104959801365656,
+      "spo2": 80.05991203711436
+     }
+    },
+    "common_overload_writes": 0,
+    "directions": {
+     "G_is_lung_share": true,
+     "G_up": true,
+     "L_up": true,
+     "V_P_untouched": true,
+     "spo2_down": true
+    },
+    "family_L_sources": [
+     "core_coupling:lung_water_clearance",
+     "disease_module:edema-congestion"
+    ]
+   },
+   "0.005": {
+    "at": {
+     "0": {
+      "D": 0.0,
+      "G": 0.0,
+      "L": 0.0,
+      "P": 1.0,
+      "V": 0.0,
+      "consciousness_level": 1,
+      "delivery_index": 1.0,
+      "fio2": 0.21,
+      "hr": 80.0,
+      "lactate": 2.8,
+      "map": 150.0,
+      "minute": 0,
+      "paco2": 49.0,
+      "rr": 18.288399598282346,
+      "spo2": 81.0
+     },
+     "120": {
+      "D": 0.0,
+      "G": 0.4731475648018543,
+      "L": 0.4731475648018543,
+      "P": 1.0,
+      "V": 0.0,
+      "consciousness_level": 2,
+      "delivery_index": 0.9707933601974164,
+      "fio2": 0.21,
+      "hr": 81.18280778762603,
+      "lactate": 1.659414278000765,
+      "map": 150.0,
+      "minute": 120,
+      "paco2": 53.13892704124658,
+      "rr": 16.863938175120758,
+      "spo2": 78.63426217599073
+     },
+     "30": {
+      "D": 0.0,
+      "G": 0.14129767864039802,
+      "L": 0.14129767864039802,
+      "P": 1.0,
+      "V": 0.0,
+      "consciousness_level": 1,
+      "delivery_index": 0.9912779210715803,
+      "fio2": 0.21,
+      "hr": 80.3532425686016,
+      "lactate": 2.4003737633151987,
+      "map": 150.0,
+      "minute": 30,
+      "paco2": 50.34689523666749,
+      "rr": 17.799142848895777,
+      "spo2": 80.293511606798
+     },
+     "60": {
+      "D": 0.0,
+      "G": 0.26599244238294273,
+      "L": 0.26599244238294273,
+      "P": 1.0,
+      "V": 0.0,
+      "consciousness_level": 2,
+      "delivery_index": 0.9835807134331516,
+      "fio2": 0.21,
+      "hr": 80.66497024542933,
+      "lactate": 2.0894703761008735,
+      "map": 150.0,
+      "minute": 60,
+      "paco2": 51.46859609082806,
+      "rr": 17.411230310894954,
+      "spo2": 79.67003778808528
+     },
+     "90": {
+      "D": 0.0,
+      "G": 0.37603518515425643,
+      "L": 0.37603518515425643,
+      "P": 1.0,
+      "V": 0.0,
+      "consciousness_level": 2,
+      "delivery_index": 0.9767879515336879,
+      "fio2": 0.21,
+      "hr": 80.94005727831862,
+      "lactate": 1.8475920725560022,
+      "map": 150.0,
+      "minute": 90,
+      "paco2": 52.39015997244776,
+      "rr": 17.104959801365656,
+      "spo2": 79.11982407422872
+     }
+    },
+    "common_overload_writes": 0,
+    "directions": {
+     "G_is_lung_share": true,
+     "G_up": true,
+     "L_up": true,
+     "V_P_untouched": true,
+     "spo2_down": true
+    },
+    "family_L_sources": [
+     "core_coupling:lung_water_clearance",
+     "disease_module:edema-congestion"
+    ]
+   },
+   "0.01": {
+    "at": {
+     "0": {
+      "D": 0.0,
+      "G": 0.0,
+      "L": 0.0,
+      "P": 1.0,
+      "V": 0.0,
+      "consciousness_level": 1,
+      "delivery_index": 1.0,
+      "fio2": 0.21,
+      "hr": 80.0,
+      "lactate": 2.8,
+      "map": 150.0,
+      "minute": 0,
+      "paco2": 49.0,
+      "rr": 18.288399598282346,
+      "spo2": 81.0
+     },
+     "120": {
+      "D": 0.0,
+      "G": 0.9462951296037087,
+      "L": 0.9462951296037087,
+      "P": 1.0,
+      "V": 0.0,
+      "consciousness_level": 2,
+      "delivery_index": 0.9415867203948328,
+      "fio2": 0.21,
+      "hr": 82.36524891993038,
+      "lactate": 1.659414278000765,
+      "map": 150.0,
+      "minute": 120,
+      "paco2": 53.13892704124658,
+      "rr": 16.863938175120758,
+      "spo2": 76.26852435198145
+     },
+     "30": {
+      "D": 0.0,
+      "G": 0.28259535728079604,
+      "L": 0.28259535728079604,
+      "P": 1.0,
+      "V": 0.0,
+      "consciousness_level": 2,
+      "delivery_index": 0.9825558421431608,
+      "fio2": 0.21,
+      "hr": 80.70647536942289,
+      "lactate": 2.4003737633151987,
+      "map": 150.0,
+      "minute": 30,
+      "paco2": 50.34689523666749,
+      "rr": 17.799142848895777,
+      "spo2": 79.58702321359603
+     },
+     "60": {
+      "D": 0.0,
+      "G": 0.5319848847658855,
+      "L": 0.5319848847658855,
+      "P": 1.0,
+      "V": 0.0,
+      "consciousness_level": 2,
+      "delivery_index": 0.9671614268663035,
+      "fio2": 0.21,
+      "hr": 81.32987533279857,
+      "lactate": 2.0894703761008735,
+      "map": 150.0,
+      "minute": 60,
+      "paco2": 51.46859609082806,
+      "rr": 17.411230310894954,
+      "spo2": 78.34007557617058
+     },
+     "90": {
+      "D": 0.0,
+      "G": 0.7520703703085129,
+      "L": 0.7520703703085129,
+      "P": 1.0,
+      "V": 0.0,
+      "consciousness_level": 2,
+      "delivery_index": 0.9535759030673757,
+      "fio2": 0.21,
+      "hr": 81.87993047807616,
+      "lactate": 1.8475920725560022,
+      "map": 150.0,
+      "minute": 90,
+      "paco2": 52.39015997244776,
+      "rr": 17.104959801365656,
+      "spo2": 77.23964814845743
+     }
+    },
+    "common_overload_writes": 0,
+    "directions": {
+     "G_is_lung_share": true,
+     "G_up": true,
+     "L_up": true,
+     "V_P_untouched": true,
+     "spo2_down": true
+    },
+    "family_L_sources": [
+     "core_coupling:lung_water_clearance",
+     "disease_module:edema-congestion"
+    ]
+   }
+  }
+ },
+ "verdict": {
+  "architecture_successful": true,
+  "criteria": {
+   "GI and ACS unchanged; no common file changed": true,
+   "HR sign physiological": true,
+   "L worsening -> G worsening -> SpO2 worsening (every progression rate)": true,
+   "arrival exact where the core models it (SpO2, MAP, PaCO2; L = 0 is the arrival congestion; L_rev 0)": true,
+   "authority: no double writing; common overload without the family; second owner refused": true,
+   "case truth sufficient (every item read)": true,
+   "decongestion back to arrival improves G and SpO2, none below arrival (L_rev 0), V and P unchanged": true,
+   "family writer writes L only and owns it (no SpO2, G, DO2, RR or lactate scripting)": true,
+   "oxygen through the common FiO2 path (monotone, attenuated by the common r, no family function)": true
+  },
+  "letter": "B",
+  "recommendation": "IMPLEMENT_ONLY_THE_MINIMUM_RESPIRATORY_EXTENSION_REQUIRED",
+  "verdict": "PULMONARY_EDEMA_NEEDS_EXPECTED_RESPIRATORY_EXTENSION"
+ },
+ "volume_loading": {
+  "L_unchanged": true,
+  "class": "AUTHORED_DANGEROUS_ACTION_NOT_REPRESENTED: FAMILY_WRITER_REQUIRED (a volume term inside the family's L coordinator) and CASE_MAPPING_GAP (an IVC -> preload rule); a faculty decision before treatments are composed",
+  "event": "edema_volume_loading",
+  "knee": 0.85,
+  "position_with": 0.559003415336223,
+  "volume_ml": 2000.0,
+  "with": {
+   "L": 0.4731475648018543,
+   "delivery_index": 1.0576839420500435,
+   "map": 167.70102460086687,
+   "spo2": 78.63426217599073
+  },
+  "without": {
+   "L": 0.4731475648018543,
+   "delivery_index": 0.9707933601974164,
+   "map": 150.0,
+   "spo2": 78.63426217599073
+  }
+ },
+ "writer": {
+  "authority": true,
+  "blood_flows": false,
+  "channels_written": [
+   "L"
+  ],
+  "demand": false,
+  "kind": "disease_module",
+  "never_written": [
+   "sbp",
+   "dbp",
+   "map",
+   "spo2",
+   "delivery_rel",
+   "lactate",
+   "lactate_excess_mmol_l",
+   "sympathetic_drive",
+   "consciousness_level",
+   "metabolic_acid_burden",
+   "collapse_burden",
+   "monitor_rate_bpm"
+  ],
+  "pass": true,
+  "registered": true,
+  "settings": false,
+  "signal": "edema_decongestion",
+  "treatment_writes": true
+ }
+}
