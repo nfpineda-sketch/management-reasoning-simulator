@@ -43,3 +43,33 @@ def test_the_two_languages_are_compared_decision_by_decision():
     differences = reading.paired_differences(spanish, english)
     # Future actions are kept in each language's words: only their number is compared.
     assert {d["what"] for d in differences} == {"provenance", "minute_at_close"}
+
+
+def test_play_restores_offline_mode_even_when_a_rehearsal_raises(monkeypatch, tmp_path):
+    import pytest
+    import tools_tanda20
+
+    seen = []
+
+    def rehearse(script, folder, seed):
+        seen.append(reading.os.environ.get("MRS_OFFLINE_CASES"))
+        raise RuntimeError("rehearsal failed")
+
+    monkeypatch.setattr(tools_tanda20, "_scripts", lambda language: ({1: {"case_id": "case-1", "steps": []}}, None))
+    monkeypatch.setattr(tools_tanda20, "rehearse", rehearse)
+    for name in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY"):
+        monkeypatch.delenv(name, raising=False)
+    # setenv first so monkeypatch records the original state and restores it even if this fails.
+    monkeypatch.setenv("MRS_OFFLINE_CASES", "placeholder")
+
+    monkeypatch.delenv("MRS_OFFLINE_CASES")
+    with pytest.raises(RuntimeError, match="rehearsal failed"):
+        reading.play("es", [1], tmp_path, 0)
+    assert "MRS_OFFLINE_CASES" not in reading.os.environ
+
+    monkeypatch.setenv("MRS_OFFLINE_CASES", "0")
+    with pytest.raises(RuntimeError, match="rehearsal failed"):
+        reading.play("es", [1], tmp_path, 0)
+    assert reading.os.environ.get("MRS_OFFLINE_CASES") == "0"
+
+    assert seen == ["1", "1"]
