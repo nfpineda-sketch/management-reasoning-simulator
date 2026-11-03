@@ -30,9 +30,39 @@ CANDIDATE = ROOT / "clinical_core" / "collapse.py"
 FROZEN_DIGEST = "5f96f8603f2ecdcbf585cfac38e8abf4d4aec9ea9c64772d7d0c46da2f2544ae"
 
 
+#: P2N-2's files, added after P2M-2 closed: this package's view of the tree leaves them out (acs_migration.p2m2_sources:
+#: the ACS mapping, family writers and analysis removed, the tuple-only files at their P2M-2 hashes while only their
+#: tuples changed; the import scan without the ACS analysis, which reads the candidate structurally); the record is
+#: unchanged.
+_FREEZE_SOURCES, _IMPORTED_BY = bf.freeze_sources, cy.imported_by
+LATER_MODULES = ("clinical_core/acs_reference.py", "clinical_core/modules/acs_ischaemia.py",
+                 "clinical_core/acs_migration.py")
+
+
+def _p2m2_view() -> dict:
+    from clinical_core import acs_migration as an
+    return an.p2m2_sources(_FREEZE_SOURCES())
+
+
+def _p2m2_imported_by() -> list:
+    return [path for path in _IMPORTED_BY() if path not in LATER_MODULES]
+
+
+def _patch(patch) -> None:
+    patch.setattr(bf, "freeze_sources", _p2m2_view)
+    patch.setattr(cy, "imported_by", _p2m2_imported_by)
+
+
+@pytest.fixture(autouse=True)
+def _p2m2_tree(monkeypatch):
+    _patch(monkeypatch)
+
+
 @pytest.fixture(scope="module")
 def result():
-    return cy.run()
+    with pytest.MonkeyPatch.context() as patch:
+        _patch(patch)
+        return cy.run()
 
 
 # The frozen package and its closure ----------------------------------------------------------------------------------------

@@ -45,7 +45,9 @@ LATER_MODULES = ("clinical_core/vascular_tone.py", "clinical_core/pressure_tone_
                  "clinical_core/consciousness_audit.py",
                  "clinical_core/encephalopathy.py", "clinical_core/encephalopathy_architecture.py",
                  "clinical_core/collapse_audit.py",
-                 "clinical_core/collapse.py", "clinical_core/collapse_architecture.py")
+                 "clinical_core/collapse.py", "clinical_core/collapse_architecture.py",
+                 "clinical_core/acs_reference.py", "clinical_core/modules/acs_ischaemia.py",
+                 "clinical_core/acs_migration.py")
 #: What P2J-2 added to tone's paths (its analysis module, and the integrator's tone response): the P2J-1 audit's view
 #: of the tree leaves them out; test_clinical_core_vascular_tone pins them.
 P2J2_TONE_ROWS = (("clinical_core/vascular_tone.py", None), ("clinical_core/vascular_tone_report.py", None),
@@ -58,7 +60,11 @@ P2J2_TONE_ROWS = (("clinical_core/vascular_tone.py", None), ("clinical_core/vasc
                   ("clinical_core/collapse_audit.py", None),
                   # P2M-2: the collapse analysis sets T only on synthetic fixed probe states and reads it for its
                   # non-regression comparison (a probe module); the candidate reads no tone.
-                  ("clinical_core/collapse_architecture.py", None))
+                  ("clinical_core/collapse_architecture.py", None),
+                  # P2N-2: the ACS migration analysis reads T only to report the closed physiology's response to the
+                  # family writers (and its 1-D tone-gain sensitivity); it writes no tone. The family writers never
+                  # read or write T.
+                  ("clinical_core/acs_migration.py", None))
 C57, C72 = pt.C57, pt.C72
 NEUTRAL = Anchors(**ARRIVAL)
 

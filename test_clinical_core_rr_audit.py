@@ -44,7 +44,9 @@ LATER_MODULES = ("clinical_core/acid_base.py", "clinical_core/ventilation.py",
                  "clinical_core/consciousness_audit.py",
                  "clinical_core/encephalopathy.py", "clinical_core/encephalopathy_architecture.py",
                  "clinical_core/collapse_audit.py",
-                 "clinical_core/collapse.py", "clinical_core/collapse_architecture.py")
+                 "clinical_core/collapse.py", "clinical_core/collapse_architecture.py",
+                 "clinical_core/acs_reference.py", "clinical_core/modules/acs_ischaemia.py",
+                 "clinical_core/acs_migration.py")
 C57, C72 = ra.C57, ra.C72
 
 
@@ -132,10 +134,16 @@ def test_the_same_debt_with_faster_clearance_gives_a_lower_rr(probes):
 
 # W, acid-base, probes ------------------------------------------------------------------------------------------------------
 
+P2N2_FILES = ("clinical_core/acs_reference.py", "clinical_core/modules/acs_ischaemia.py",
+              "clinical_core/acs_migration.py")
+
+
 def _readers_of_w():
     out = set()
     for path in sorted((ROOT / "clinical_core").glob("*.py")):
-        if path.name.endswith("_report.py") or path.name == "rr_audit.py":
+        # P2N-2's files are outside this package's view (its analysis reads W only to report the channel).
+        if path.name.endswith("_report.py") or path.name == "rr_audit.py" or \
+                path.relative_to(ROOT).as_posix() in P2N2_FILES:
             continue
         for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
             if isinstance(node, ast.FunctionDef):
@@ -152,7 +160,9 @@ def test_w_is_a_mixed_construct_read_only_by_rr(probes):
     assert {r[1] for r in readers if r[0] == "decision_pack.py"} <= {"rr_parts", "rr_bounds"}, readers
     # P2K-2 adds one file that names W: its probe writes the W channel to show the candidate RR does not read it. P2K-3
     # adds one more for the same reason (its W-channel probe: neither RR nor the effective ventilation reads the channel).
-    assert ra.w_references() == ["clinical_core/acid_base.py", "clinical_core/bands.py", "clinical_core/decision_pack.py",
+    # P2N-2's analysis and case reference name W only to report the arrival channel (outside this view).
+    assert [r for r in ra.w_references() if r not in P2N2_FILES] == [
+        "clinical_core/acid_base.py", "clinical_core/bands.py", "clinical_core/decision_pack.py",
                                  "clinical_core/derived.py", "clinical_core/integration.py", "clinical_core/state.py",
                                  "clinical_core/ventilation_surface.py"]
     assert probes["D"]["w_minus_half_rr"] < probes["arrival_rr"] < probes["E"]["w_plus_half_rr"]
@@ -398,16 +408,17 @@ def test_the_exclusion_tuples_hold_exactly_their_p2k1_content():
     from clinical_core import consciousness_audit as ca
     from clinical_core import collapse_audit as cm
     from clinical_core import collapse_architecture as cy
+    from clinical_core import acs_migration as an
     from clinical_core import encephalopathy_architecture as ea
     from clinical_core import respiratory_monotonicity as rm
     from clinical_core import ventilation_filter as vf
     from clinical_core import ventilation_surface as vs
     for name, values in (("DOWNSTREAM_REPORTS", lactate_slice.DOWNSTREAM_REPORTS),
                          ("PACK_DIGEST_EXCLUDED", decision_pack.PACK_DIGEST_EXCLUDED)):
-        # What P2K-2 to P2K-5, P2L-1, P2L-2, P2M-1 and P2M-2 (their modules' TUPLES_ADDED, frozen with them) added, exactly.
+        # What P2K-2 to P2K-5, P2L-1, P2L-2, P2M-1, P2M-2 and P2N-2 (their modules' TUPLES_ADDED, frozen with them) added, exactly.
         added = TUPLES_ADDED_BY_P2K2[name] + vs.TUPLES_ADDED[name] + vf.TUPLES_ADDED[name] + rm.TUPLES_ADDED[name] + \
             ca.TUPLES_ADDED[name] + ea.TUPLES_ADDED[name] + cm.TUPLES_ADDED[name] + \
-            cy.TUPLES_ADDED[name]
+            cy.TUPLES_ADDED[name] + an.TUPLES_ADDED[name]
         assert set(added) <= set(values), name
         values = [v for v in values if v not in added]
         assert (hashlib.sha256(json.dumps(sorted(values)).encode("utf-8")).hexdigest(), len(values)) == \

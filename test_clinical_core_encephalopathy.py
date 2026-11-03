@@ -42,13 +42,16 @@ TEST_MAPPING = enc.SignalMapping(normal=10.0, severe=0.0)
 #: without the audit); the record is unchanged.
 _FREEZE_SOURCES, _PYTHON = bf.freeze_sources, ca._python
 LATER_MODULES = ("clinical_core/collapse_audit.py", "clinical_core/collapse.py",
-                 "clinical_core/collapse_architecture.py")
+                 "clinical_core/collapse_architecture.py",
+                 "clinical_core/acs_reference.py", "clinical_core/modules/acs_ischaemia.py",
+                 "clinical_core/acs_migration.py")
 
 
 def _p2l2_view() -> dict:
     from clinical_core import collapse_audit as cm
     from clinical_core import collapse_architecture as cy
-    return cm.p2l2_sources(cy.p2m1_sources(_FREEZE_SOURCES()))
+    from clinical_core import acs_migration as an
+    return cm.p2l2_sources(cy.p2m1_sources(an.p2m2_sources(_FREEZE_SOURCES())))
 
 
 def _p2l2_python() -> list:

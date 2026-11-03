@@ -29,12 +29,15 @@ FROZEN_DIGEST = "c4aa95f62273136934b1b7a31bbb7637fa71fdb00638ddc1fd3974eeeecea9f
 #: p2m1_sources: the candidate and its analysis removed, the tuple-only files at their P2M-1 hashes while only their
 #: tuples changed; the audit's core-file scan without the candidate); the record is unchanged.
 _FREEZE_SOURCES, _CORE_FILES = bf.freeze_sources, cm.core_files
-LATER_MODULES = ("clinical_core/collapse.py", "clinical_core/collapse_architecture.py")
+LATER_MODULES = ("clinical_core/collapse.py", "clinical_core/collapse_architecture.py",
+                 "clinical_core/acs_reference.py", "clinical_core/modules/acs_ischaemia.py",
+                 "clinical_core/acs_migration.py")
 
 
 def _p2m1_view() -> dict:
     from clinical_core import collapse_architecture as cy
-    return cy.p2m1_sources(_FREEZE_SOURCES())
+    from clinical_core import acs_migration as an
+    return cy.p2m1_sources(an.p2m2_sources(_FREEZE_SOURCES()))
 
 
 def _p2m1_core_files() -> list:

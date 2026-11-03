@@ -41,7 +41,9 @@ LATER_MODULES = ("clinical_core/baroreflex.py", "clinical_core/rr_audit.py", "cl
                  "clinical_core/consciousness_audit.py",
                  "clinical_core/encephalopathy.py", "clinical_core/encephalopathy_architecture.py",
                  "clinical_core/collapse_audit.py",
-                 "clinical_core/collapse.py", "clinical_core/collapse_architecture.py")
+                 "clinical_core/collapse.py", "clinical_core/collapse_architecture.py",
+                 "clinical_core/acs_reference.py", "clinical_core/modules/acs_ischaemia.py",
+                 "clinical_core/acs_migration.py")
 C57, C72 = pf.C57, pf.C72
 
 

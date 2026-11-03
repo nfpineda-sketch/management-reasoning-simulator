@@ -31,7 +31,9 @@ FROZEN_DIGEST = "f3ec29e684331fd7750e4471d2cdc1b21374123bf2ab79c0e187a27ff2edf83
 #: p2l1_sources); the record is unchanged.
 LATER_MODULES = ("clinical_core/encephalopathy.py", "clinical_core/encephalopathy_architecture.py",
                  "clinical_core/collapse_audit.py",
-                 "clinical_core/collapse.py", "clinical_core/collapse_architecture.py")
+                 "clinical_core/collapse.py", "clinical_core/collapse_architecture.py",
+                 "clinical_core/acs_reference.py", "clinical_core/modules/acs_ischaemia.py",
+                 "clinical_core/acs_migration.py")
 
 
 @pytest.fixture(autouse=True)
@@ -46,11 +48,12 @@ def _freeze_digest_at_p2l1() -> str:
     files at their P2L-1 hashes while only their tuples changed)."""
     from clinical_core import collapse_audit as cm
     from clinical_core import collapse_architecture as cy
+    from clinical_core import acs_migration as an
     from clinical_core import encephalopathy_architecture as ea
     assert '"sources": bf.freeze_sources()}, sort_keys=True, default=str)' in inspect.getsource(ca.freeze_digest)
     text = json.dumps({"revision": ca.REVISION, "p2k5": hashlib.sha256(ca.P2K5_RECORD.read_bytes()).hexdigest(),
                        "p2j3": hashlib.sha256(ca.P2J3_RECORD.read_bytes()).hexdigest(), "design": ca.design(),
-                       "sources": ea.p2l1_sources(cm.p2l2_sources(cy.p2m1_sources(bf.freeze_sources())))}, sort_keys=True, default=str)
+                       "sources": ea.p2l1_sources(cm.p2l2_sources(cy.p2m1_sources(an.p2m2_sources(bf.freeze_sources()))))}, sort_keys=True, default=str)
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
