@@ -3897,3 +3897,40 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   y se incorporaron al texto y a las pruebas. La decisión se mantiene y su motivo se precisa.
 - **Recomendación:** migrar en sombra `pulmonary_edema` con su propio escritor de L, empezando por la decisión sobre
   L_rev. No se inicia.
+
+## 59. P2O-3 · Reversibilidad de L y autoridad del escritor de congestión (2026-11-03)
+
+- **Encargo:** sobre la decisión B aceptada, un paquete estructural pequeño: que un escritor de L de familia sea
+  dueño de la generación de L, y una cota reversible L_rev para acreditar en el intercambio gaseoso el agua pulmonar
+  bajo la llegada.
+- **Alcance:** sombra. Cambian `derived.py`, `integration.py`, `state.py` y `modules/acs_ischaemia.py` (y dos tuplas).
+  La demostración (`clinical_core/lung_water_reference.py`) los reconstruye byte a byte como los dejó P2O-1. Informe:
+  `docs/revision/P2O3_REVERSIBILIDAD_L_Y_AUTORIDAD.md`. Congelamiento `7135e08`; recongelamiento por la revisión
+  `fa42f2a`.
+- **Resultados:**
+  - la composición de L era ADDS: el escritor ACS y la sobrecarga común se sumaban en el mismo minuto;
+  - **autoridad:** `Contributor.lung_water_authority` (sólo un módulo de enfermedad; la declara `IschaemicCongestion`).
+    Con un dueño presente, `step` no añade congestión común en toda la corrida. Sin dueño, la sobrecarga común sigue
+    disponible para una futura familia TACO (R7, R8);
+  - **L_rev:** `Anchors.reversible_lung_water`, ≤ 0, por defecto 0, insumo candidato fuera del registro de parámetros
+    de caso (precedente P2K-2). L → G lee max(L_rev, L); L no tiene suelo;
+  - **G negativa:** la SpO2 acredita G bajo la llegada sólo hasta k × min(0, max(L_rev, L)). Es exacta en G = 0,
+    monótona en G y en FiO2 y acotada por s × k × |L_rev| y 100. La G negativa de un escritor directo no se acredita
+    (NEGATIVE_G_SUPPORTED_BOUNDED; DIRECT_G_REVERSIBILITY_DEFERRED);
+  - con L_rev = 0 y sin dueño, P2O-1 se reproduce exactamente (R1); GI y el golden quedan idénticos;
+  - **ACS:** V desde la VCI, L desde la congestión; las líneas B no llegan a `preload_fraction`. La descongestión
+    llega a L_rev sin mover V. Con la autoridad, `pump_reserve` ya no actúa en ACS;
+  - una recuperación de P no limpia L de golpe (CONGESTION_CLEARANCE_KINETICS_UNSET);
+  - la FC conserva el signo. Quedan registradas la escalera de SpO2 que debe retirarse al integrar P2L-2 y el
+    requisito futuro de subtipos de G.
+- **Revisión adversarial** (una; 2 medios, 5 bajos, ninguno alto; §18 del informe). Todos los hallazgos se
+  confirmaron con sondas:
+  - se rechaza un segundo dueño de L;
+  - con L_rev < 0, la guarda de G detiene la corrida (TD-113 (10));
+  - la autoridad debe coincidir con la del tipo registrado;
+  - queda declarado el límite de las corridas que empiezan fuera de la llegada;
+  - un dueño con ganancia 0 suprime toda generación de L (decisión docente).
+
+  R1–R8 no cambian.
+- **Veredicto:** L_REFERENCE_AND_WRITER_AUTHORITY_READY. **Recomendación:** MIGRATE_PULMONARY_EDEMA_SHADOW (no se
+  inicia).
