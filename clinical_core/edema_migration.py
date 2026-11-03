@@ -17,7 +17,7 @@ import argparse
 import ast
 import hashlib
 import json
-from dataclasses import replace
+from dataclasses import fields, replace
 from pathlib import Path
 
 from . import acs_migration as an
@@ -77,9 +77,10 @@ TRUTH_CLASSES = {
                         "overload; read as context for V, never as a rate)",
 }
 LEGACY_CONSTANTS = "family_engine.EDEMA (drift 0.003/min, NIV, nitrate, diuretic, recruitment): LEGACY_ENGINE_BEHAVIOR"
-LATER_OBSERVATIONS = ("NONE_AUTHORED: the case states the arrival only; the TDFC declarations ask the resident to "
-                      "reassess SpO2, respiratory rate and pressure and to judge the response, but no value after "
-                      "arrival is authored")
+LATER_OBSERVATIONS = ("NONE_AUTHORED: the case states the arrival only; the TDFC declarations and the assessment bank "
+                      "ask the resident to reassess SpO2, respiratory rate and pressure and to decide whether support "
+                      "continues, escalates or can be reduced (an improvement is expected), but no value after arrival "
+                      "is authored: the course is INSUFFICIENT_AUTHORED_TRUTH (as P2N-3), the arrival is not")
 
 
 def case() -> dict:
@@ -110,6 +111,9 @@ OVERLOAD = {"preload_fraction": 0.7, "P": 0.7, "volume_ml": 4000.0}
 #: this (breaths/min), or when a definitive action needs a deferred common extension.
 RR_GAP = 5.0
 DEFERRED_ACTIONS = {"niv": "VNI_COMMON_EXTENSION_DEFERRED"}
+#: The authored critical event edema_volume_loading (case_assessment_bank): a SYNTHETIC_ONLY bolus, deliberately large,
+#: only to show what the migrated family does with volume (nothing is calibrated from it).
+VOLUME_LOADING_ML = 2000.0
 L_REV = 0.0
 
 
@@ -184,9 +188,13 @@ def writer_semantics() -> dict:
     """The writer writes L only (AST), owns it, is a registered disease module; the treatment writes nothing."""
     path = CORE_DIR / "modules" / "pulmonary_edema.py"
     tree = ast.parse(path.read_text(encoding="utf-8"))
-    written = sorted({node.args[0].attr for node in ast.walk(tree) if isinstance(node, ast.Call)
-                      and getattr(node.func, "id", None) == "ChannelDelta" and node.args
-                      and isinstance(node.args[0], ast.Attribute)})
+    calls = [node for node in ast.walk(tree) if isinstance(node, ast.Call)
+             and getattr(node.func, "id", getattr(node.func, "attr", None)) == "ChannelDelta"]
+    # Every delta names its channel as the literal Channel.L, positionally (no keyword, variable or alias).
+    literal = [c for c in calls if c.args and isinstance(c.args[0], ast.Attribute)
+               and isinstance(c.args[0].value, ast.Name) and c.args[0].value.id == "Channel"
+               and not any(k.arg == "channel" for k in c.keywords)]
+    written = sorted({c.args[0].attr for c in literal}) + (["<not a literal channel>"] if len(literal) != len(calls) else [])
     flows = any(isinstance(n, ast.Name) and n.id == "BloodFlow" for n in ast.walk(tree))
     settings = any(isinstance(n, ast.Name) and n.id == "SettingChange" for n in ast.walk(tree))
     demand = any(isinstance(n, ast.Name) and n.id == "DemandModifier" for n in ast.walk(tree))
@@ -242,10 +250,13 @@ def oxygen() -> dict:
     # The attenuation is the common r's: the same FiO2 step gains less at a later (worse) G.
     gain_early = by_fio2[0.6][30] - by_fio2[0.21][30]
     gain_late = by_fio2[0.6][120] - by_fio2[0.21][120]
+    family_text = (CORE_DIR / "modules" / "pulmonary_edema.py").read_text(encoding="utf-8")
+    family_oxygen = any(isinstance(n, (ast.Name, ast.Attribute)) and getattr(n, "id", getattr(n, "attr", "")) in
+                        ("fio2", "spo2", "oxygenation", "Oxygen", "SettingChange")
+                        for n in ast.walk(ast.parse(family_text)))
     out.update({"monotone_in_fio2": monotone, "gain_at_30": gain_early, "gain_at_120": gain_late,
-                "attenuated_as_G_worsens": gain_late < gain_early, "family_oxygen_function": False,
-                "representable": True})
-    out["pass"] = monotone and gain_late < gain_early
+                "attenuated_as_G_worsens": gain_late < gain_early, "family_oxygen_function": family_oxygen})
+    out["pass"] = monotone and gain_late < gain_early and not family_oxygen
     return out
 
 
@@ -283,6 +294,26 @@ def authority() -> dict:
                    and out["zero_gain_owner"]["common_writes"] == 0 and out["zero_gain_owner"]["L_end"] == 0.0
                    and second)
     return out
+
+
+def volume_loading() -> dict:
+    """The authored dangerous action (edema_volume_loading): under the family's authority, with the provisional preload
+    position below the knee, a bolus leaves L unchanged (the family writer has no volume term) while pressure and
+    delivery rise. Reported, not repaired here: a family-writer and mapping requirement before treatments compose."""
+    a, prof = er.anchors(), profile()
+    without, _ = course((writer(),), anchors=a, prof=prof)
+    bag = replace(an._bag(), volume_ml=VOLUME_LOADING_ML,
+                  untimed_rate_ml_per_min=VOLUME_LOADING_ML / an.FLUID["duration_min"])
+    with_bag, _ = course((bag, writer()), anchors=a, prof=prof)
+    keys = ("L", "spo2", "map", "delivery_index")
+    r0, r1 = reading(without[-1], a, prof), reading(with_bag[-1], a, prof)
+    return {"event": "edema_volume_loading", "volume_ml": VOLUME_LOADING_ML,
+            "without": {k: r0[k] for k in keys}, "with": {k: r1[k] for k in keys},
+            "position_with": dv.preload_position(with_bag[-1], a, prof), "knee": prof.congestion_preload_knee,
+            "L_unchanged": r0["L"] == r1["L"],
+            "class": "AUTHORED_DANGEROUS_ACTION_NOT_REPRESENTED: FAMILY_WRITER_REQUIRED (a volume term inside the "
+                     "family's L coordinator) and CASE_MAPPING_GAP (an IVC -> preload rule); a faculty decision before "
+                     "treatments are composed"}
 
 
 # P2P-1-13: decongestion -------------------------------------------------------------------------------------------------------
@@ -328,9 +359,12 @@ def heart_rate() -> dict:
     out = {"hr_120": {k: v[-1] for k, v in hr.items()}, "target_120": target,
            "untreated_minus_no_writer": hr["untreated"][-1] - hr["no_writer"][-1],
            "oxygen_minus_untreated": hr["oxygen"][-1] - hr["untreated"][-1],
-           "threshold": prof.hypoxaemia_threshold_spo2, "gains_untouched": True}
+           "threshold": prof.hypoxaemia_threshold_spo2,
+           # Every profile value is the ACS package's common point except P2O-1's three SYNTHETIC_ONLY gas gains.
+           "gains_untouched": all(getattr(prof, f.name) == getattr(er.common_profile(), f.name)
+                                  for f in fields(prof) if f.name not in go.REFERENCE)}
     out["pass"] = out["untreated_minus_no_writer"] >= 0.0 and out["oxygen_minus_untreated"] <= 0.0 and \
-        target["untreated"] >= target["no_writer"] and target["oxygen"] <= target["untreated"]
+        target["untreated"] >= target["no_writer"] and target["oxygen"] <= target["untreated"] and out["gains_untouched"]
     return out
 
 
@@ -362,13 +396,17 @@ def respiration() -> dict:
     rr = [reading(s, a, prof)["rr"] for s in worse]
     rr_plain = [reading(s, a, prof)["rr"] for s in plain]
     gap = t["respiratory_rate"] - rr[0]
+    ends = [reading(worse[m], a, prof) for m in (0, HORIZON)]
     deferred = sorted(DEFERRED_ACTIONS[x] for x in t["definitive_actions"] if x in DEFERRED_ACTIONS)
     out = {"authored_rr": t["respiratory_rate"], "core_rr_arrival": rr[0], "gap": gap,
            "rr_follows_L_or_G": rr != rr_plain, "work_of_breathing": t["work_of_breathing"],
            "paco2": t["abg_paco2"], "ph": t["abg_ph"], "deferred_actions": deferred,
            "needs": ["congestion / hypoxaemia respiratory drive", "respiratory mechanics and work of breathing",
                      "respiratory-muscle oxygen demand", "NIV (EPAP, recruitment, afterload, preload)"],
-           "classification": "EXPECTED_RESPIRATORY_FAMILY_EXTENSION"}
+           "classification": "EXPECTED_RESPIRATORY_FAMILY_EXTENSION",
+           # While SpO2 worsens, the common RR follows the acid-base drive alone (it falls as the arrival acid clears),
+           # PaCO2 rises and lactate falls (the arrival excess clears, no debt): directions the extension must address.
+           "untreated_trends": {k: [ends[0][k], ends[1][k]] for k in ("rr", "paco2", "lactate", "spo2")}}
     out["extension_expected"] = gap > RR_GAP or bool(deferred)
     return out
 
@@ -602,10 +640,13 @@ VERDICT_CRITERIA = (
 VERDICTS = {"A": "PULMONARY_EDEMA_MIGRATES_WITH_FAMILY_L_WRITER",
             "B": "PULMONARY_EDEMA_NEEDS_EXPECTED_RESPIRATORY_EXTENSION",
             "C": "COMMON_L_TO_G_PATH_INSUFFICIENT", "D": "TRUE_CROSS_FAMILY_CONFLICT", "E": "INSUFFICIENT_CASE_TRUTH"}
-VERDICT_RULE = ("Predeclared. E if the case truth is insufficient; D if the authority or the GI / ACS non-regression "
-                "fails; C if the writer, the L -> G -> SpO2 direction, oxygen or decongestion fails; otherwise B when an "
-                "expected respiratory extension is required (authored RR above the common arrival RR by more than "
-                "RR_GAP, or a definitive action needing a deferred common extension), else A")
+VERDICT_RULE = ("Predeclared. E if the case truth is insufficient; D if the authority, the GI / ACS non-regression or "
+                "the proof (P2O-3's tree, digest and record reproduced, common files untouched) fails; C if the arrival, "
+                "the writer, the L -> G -> SpO2 direction, oxygen, decongestion or the HR sign fails; otherwise B when "
+                "an expected respiratory extension is required (authored RR above the common arrival RR by more than "
+                "RR_GAP, or a definitive action needing a deferred common extension), else A. Every criterion decides "
+                "a letter. The verdict covers the case it ran: acute cardiogenic pulmonary edema without volume "
+                "overload (the other variant is not tested)")
 RECOMMENDATIONS = {"A": "PROCEED_TO_NEXT_FAMILY_OR_TREATMENT_EXTENSION",
                    "B": "IMPLEMENT_ONLY_THE_MINIMUM_RESPIRATORY_EXTENSION_REQUIRED"}
 
@@ -617,9 +658,10 @@ def verdict(found: dict) -> dict:
         found["non_regression"]["pass"] and all(found["proof"]["proofs"].values()))))
     if not criteria[VERDICT_CRITERIA[0]]:
         letter = "E"
-    elif not (criteria[VERDICT_CRITERIA[6]] and criteria[VERDICT_CRITERIA[8]]):
+    elif not (criteria[VERDICT_CRITERIA[6]] and criteria[VERDICT_CRITERIA[8]] and found["proof"]["p2o3_freeze_digest"]
+              and found["proof"]["p2o3_record"] and all(found["proof"]["common_untouched"].values())):
         letter = "D"
-    elif not all(criteria[VERDICT_CRITERIA[i]] for i in (2, 3, 4, 5)):
+    elif not all(criteria[VERDICT_CRITERIA[i]] for i in (1, 2, 3, 4, 5, 7)):
         letter = "C"
     elif found["respiration"]["extension_expected"]:
         letter = "B"
@@ -637,7 +679,7 @@ def design() -> dict:
             "arrival_classes": er.ARRIVAL_CLASSES, "channel_roles": er.CHANNEL_ROLES,
             "observation_layer": er.OBSERVATION_LAYER, "progression": list(PROGRESSION), "decongestion": DECONGESTION,
             "horizon": HORIZON, "read": list(READ), "fio2": list(FIO2), "overload": OVERLOAD, "rr_gap": RR_GAP,
-            "deferred_actions": DEFERRED_ACTIONS, "l_rev": L_REV, "consciousness_guard": CONSCIOUSNESS_GUARD,
+            "deferred_actions": DEFERRED_ACTIONS, "volume_loading_ml": VOLUME_LOADING_ML, "l_rev": L_REV, "consciousness_guard": CONSCIOUSNESS_GUARD,
             "legacy_constants": LEGACY_CONSTANTS, "later_observations": LATER_OBSERVATIONS,
             "legacy_minutes": list(LEGACY_MINUTES), "verdict_criteria": list(VERDICT_CRITERIA), "verdicts": VERDICTS,
             "verdict_rule": VERDICT_RULE, "recommendations": RECOMMENDATIONS, "own": list(OWN), "report": REPORT,
@@ -657,7 +699,7 @@ def run() -> dict:
     found = {"proof": upstream_unchanged(), "case": case(), "arrival": arrival(), "writer": writer_semantics(),
              "untreated": untreated(), "oxygen": oxygen(), "authority": authority(), "decongestion": decongestion(),
              "heart_rate": heart_rate(), "consciousness": consciousness(), "respiration": respiration(),
-             "treatments": treatments(), "non_regression": non_regression()}
+             "treatments": treatments(), "non_regression": non_regression(), "volume_loading": volume_loading()}
     found["legacy"] = legacy()
     found["legacy_comparison"] = legacy_comparison(found["untreated"], found["legacy"])
     found["verdict"] = verdict(found)

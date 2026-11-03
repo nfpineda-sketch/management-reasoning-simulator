@@ -62,13 +62,11 @@ def test_the_writers_and_readers_of_l():
     literal_l, variable = set(), set()
     for path in (ROOT / "clinical_core").rglob("*.py"):
         relative = path.relative_to(ROOT).as_posix()
-        if relative in pe.OWN:
-            continue        # P2P-1's family writer postdates this audit (it owns L in its own runs)
         for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
             if isinstance(node, ast.Call) and getattr(node.func, "id", None) == "ChannelDelta" and node.args:
                 first = node.args[0]
                 if isinstance(first, ast.Attribute) and isinstance(first.value, ast.Name) and first.value.id == "Channel":
-                    if first.attr == "L":
+                    if first.attr == "L" and relative not in pe.OWN:   # P2P-1's family writer postdates this audit
                         literal_l.add(relative)
                 else:
                     variable.add(relative)

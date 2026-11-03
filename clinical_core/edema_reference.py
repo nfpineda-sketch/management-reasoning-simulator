@@ -122,9 +122,9 @@ ARRIVAL_CLASSES = {
     "glucose": CASE_AUTHORED, "k": CASE_AUTHORED, "fio2": CASE_AUTHORED, "rhythm": CASE_AUTHORED,
     "consciousness_level": CASE_AUTHORED, "arrival_bicarbonate": CASE_AUTHORED, "arrival_paco2": CASE_AUTHORED,
     "preload_fraction": "CASE_MAPPING_GAP (the IVC 2.4 cm with <50% collapse and the raised JVP read a full filling "
-                        "state, but the case's own congestion block says little excess circulating volume "
-                        "(volume_overload false); no common IVC -> fraction rule exists, so the profile's provisional "
-                        "position stays, nothing declared; B-lines are not read)",
+                        "state; no common IVC -> fraction rule exists, so the profile's provisional position stays, "
+                        "nothing declared, below the knee; B-lines are not read; the legacy engine's congestion block "
+                        "is not evidence of V)",
     "pump_reserve": "CASE_MAPPING (neutral 1, nothing declared: read only by the common overload coupling, which the "
                     "family's authority keeps off; the moderately reduced LV is an observation of P, never a reserve "
                     "value; B-lines are never pump evidence)",
@@ -136,13 +136,15 @@ ARRIVAL_CLASSES = {
                                  "demand under severe work of breathing is not modelled)",
     "reference_preload_fraction": "UNDEFINED_BY_CASE (no euvolemic reference is authored)",
     "intrinsic_respiratory_rate": "FAMILY_CANDIDATE (P2K-2's candidate input, the middle of its 12 / 16 / 20)",
-    "reversible_lung_water": "CASE/FAMILY REFERENCE PARAMETER at its default 0 (P2O-3): no authored observation "
-                             "after arrival states an improvement below the arrival congestion",
+    "reversible_lung_water": "CASE/FAMILY REFERENCE PARAMETER at its default 0 (P2O-3): no value after arrival is "
+                             "authored; the authored assessment text expects support to 'continue, escalate or be "
+                             "reduced', which implies improvement below the arrival congestion: a contradiction left "
+                             "to the faculty, not resolved by choosing a value",
     **{name: band.classification for name, band in bands().items()}}
 #: The channels at arrival (P2P-1 channel interpretation), checked rather than forced.
 CHANNEL_ROLES = {
-    "V": "NORMAL_OR_NEUTRAL (no excess circulating volume by the case's congestion block; the full IVC and JVP read a "
-         "full filling state, mapped to no V deviation)",
+    "V": "NORMAL_OR_NEUTRAL (V = 0 at arrival; the full IVC and JVP read a full filling state that no common rule "
+         "maps to a preload position: CASE_MAPPING_GAP)",
     "T": "PRIMARY_DRIVER (the precipitant: uncontrolled hypertension, SBP 218 after missing antihypertensives; T = 1 "
          "is that arrival tone; its coupling to congestion is not modelled: the family writer does not read T)",
     "P": "NORMAL_OR_NEUTRAL (P = 1 is the authored moderately reduced LV; no ischaemic process: a single troponin 28)",

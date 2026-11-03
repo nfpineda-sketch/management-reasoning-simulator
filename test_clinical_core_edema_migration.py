@@ -6,6 +6,7 @@ decongestion never below L_rev), the common L -> G -> SpO2 path, oxygen, the aut
 HR sign, the consciousness guard, the expected respiratory extension, GI / ACS non-regression and the frozen record.
 """
 import ast
+import copy
 import hashlib
 import json
 from dataclasses import replace
@@ -24,7 +25,7 @@ from clinical_core.state import CoreInvariantError, RhythmState
 
 #: The P2P-1 freeze: the case and its mapping, the writer, the predeclared spans, probes and verdict rule, the proof and
 #: every clinical_core source but the downstream reports, committed before the evaluation run.
-FROZEN_DIGEST = "76d09bc8dad138769efe79e986dc2281a9a902e163dff3635a8128880dbe9d84"
+FROZEN_DIGEST = "2c7dc8b184529edea5a77c6beb8bf9b270391d4ae49f5a0d4221aa1a7a3a5c2e"
 
 
 # The frozen package and its proof -------------------------------------------------------------------------------------------
@@ -212,3 +213,46 @@ def test_the_document_is_generated_from_the_record(record):
         opening, closing = report.MARKERS[name]
         start = text.index(opening) + len(opening)
         assert text[start:text.index(closing, start)] == render(record) + "\n", name
+
+
+# The adversarial review -----------------------------------------------------------------------------------------------------
+
+def test_review_the_authored_volume_loading_is_inert_in_l_and_declared(result):
+    v = result["volume_loading"]
+    assert v["event"] == "edema_volume_loading" and v["L_unchanged"] and v["position_with"] < v["knee"]
+    assert v["with"]["map"] > v["without"]["map"] and v["class"].startswith("AUTHORED_DANGEROUS_ACTION_NOT_REPRESENTED")
+
+
+@pytest.mark.parametrize("key, letter", [("arrival", "C"), ("heart_rate", "C"), ("writer", "C"), ("untreated", "C"),
+                                         ("oxygen", "C"), ("decongestion", "C"), ("authority", "D"),
+                                         ("non_regression", "D")])
+def test_review_every_criterion_decides_a_letter(result, key, letter):
+    found = copy.deepcopy(result)
+    found[key]["pass"] = False
+    assert pe.verdict(found)["letter"] == letter
+
+
+def test_review_the_proof_and_the_extension_decide_their_letters(result):
+    for name in ("p2o3_freeze_digest", "p2o3_record"):
+        found = copy.deepcopy(result)
+        found["proof"][name] = False
+        assert pe.verdict(found)["letter"] == "D"
+    found = copy.deepcopy(result)
+    found["respiration"]["extension_expected"] = False
+    assert pe.verdict(found)["letter"] == "A"
+
+
+@pytest.mark.parametrize("extra", ["ChannelDelta(channel=Channel.G, amount=1.0)", "ChannelDelta(Channel.G, 1.0)",
+                                   "ChannelDelta(chosen, 1.0)"])
+def test_review_the_writer_guard_refuses_any_channel_but_a_literal_l(tmp_path, monkeypatch, extra):
+    (tmp_path / "modules").mkdir()
+    source = (pe.CORE_DIR / "modules" / "pulmonary_edema.py").read_text(encoding="utf-8")
+    (tmp_path / "modules" / "pulmonary_edema.py").write_text(source + f"\n\ndef _probe(chosen):\n    return {extra}\n",
+                                                            encoding="utf-8")
+    monkeypatch.setattr(pe, "CORE_DIR", tmp_path)
+    assert not pe.writer_semantics()["pass"]
+
+
+def test_review_the_profile_differs_from_the_acs_point_only_in_the_gas_gains(result):
+    assert result["heart_rate"]["gains_untouched"] and not result["oxygen"]["family_oxygen_function"]
+    assert set(result["respiration"]["untreated_trends"]) == {"rr", "paco2", "lactate", "spo2"}
