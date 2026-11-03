@@ -3810,3 +3810,49 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Clasificación:** ACS_FAMILY_WRITERS_GENERALIZE_WITH_CASE_MAPPINGS, con un COMMON_CORE_GAP_EXPOSED (VD).
 - **Veredicto: ACS_FAMILY_GENERALIZATION_PARTIAL.** No se implementó nada: elegir cada regla de mapeo es una decisión
   docente (§I del informe). No cambió el núcleo, GI, el colapso ni el tiempo de ejecución.
+
+## 57. P2O-1 · Arquitectura común de agua pulmonar e intercambio gaseoso (2026-11-03)
+
+- **Encargo:** el camino común L → G → oxigenación → contenido de O2 / aporte, con las decisiones docentes O1–O6:
+  - L sigue siendo un desvío desde la llegada;
+  - G es una sola coordenada;
+  - L sólo actúa a través de G;
+  - L → G es monótono y nulo en la llegada;
+  - no hay VNI;
+  - no hay SpO2 directa en el colapso.
+- **Congelamiento** `5d1db63` (digest `22bb29b9…`):
+  - dos inserciones inertes en el núcleo, apagadas por defecto (tres valores del perfil en `None`):
+    - `derived.lung_water_gas_exchange` y `derived.oxygenation`, guardadas en `_perfusion`;
+    - el acoplamiento L → G en `integration.step`;
+  - la evaluación está en `clinical_core/gas_exchange_architecture.py`;
+  - una prueba demuestra que el núcleo vivo es el de P2N-2, byte a byte, más esas inserciones;
+  - los paquetes cerrados leen el núcleo P2N-2 por esa vista. Sus guardas se adaptaron y sus registros no cambian;
+  - el golden sólo gana tres entradas de parámetros.
+- **Resultados** (`docs/revision/P2O1_INTERCAMBIO_GASEOSO_COMUN.md`):
+  - las formas de L → G se compararon antes de ver casos y quedó el término de primer orden k·max(0, L), sin umbral y
+    sin crédito bajo la llegada;
+  - G → SpO2 es exacta en G = 0, monótona, y responde a la FiO2 de forma incompleta con G grave;
+  - O1–O12 pasan, y GI queda idéntico en 16 cursos;
+  - las siete familias sintéticas se distinguen por sus entradas comunes. La neumonía y el TEP usan G sin L; el opioide
+    y la acidosis no usan G;
+  - en acs_70f_left_main, después del congelamiento:
+    - la llegada es exacta;
+    - la SpO2 baja de 94 a 91,5 a los 120 min (88,9–92,7 en la región 1-D);
+    - el aporte queda 3 % bajo el control;
+    - D y el lactato nunca quedan bajo el control;
+    - el O2 al 40 % la recupera a 96–97,5.
+
+    El legado es sólo referencia.
+  - la conciencia lee la misma SpO2 y el colapso sigue viendo sólo el aporte;
+  - ningún valor se aprueba.
+- **Veredicto: COMMON_GAS_EXCHANGE_ARCHITECTURE_READY_FOR_GENERALIZATION.** Recomendación:
+  CARDIOGENIC_CONGESTION_GENERATION. El volumen común no genera L en el caso ACS (la posición llega a 0,69, bajo la
+  rodilla de 0,85), así que todo efecto respiratorio cardiogénico depende hoy de un L escrito por la familia.
+- **Diferido:**
+  - el gas alveolar;
+  - el impulso hipoxémico;
+  - la PaO2;
+  - la respuesta al O2 propia de cada familia (G única);
+  - la mecánica dinámica;
+  - la VNI;
+  - la SpO2 directa en el colapso.

@@ -175,3 +175,11 @@ def test_the_verdict_follows_the_predeclared_rule(record):
     assert judged["verdict"].startswith("COMMON_GAS_EXCHANGE_ARCHITECTURE_READY") == ready
     assert record["recommendation"] == (go.recommendation(ready, record["congestion_generation"]))
     assert all(not s["approved"] for s in record["design"]["parameter_status"].values())
+
+
+def test_the_document_is_generated_from_the_record(record):
+    from clinical_core import gas_exchange_architecture_report as report
+    text = go.DOCUMENT.read_text(encoding="utf-8")
+    for name, render in report.RENDERERS.items():
+        assert report.apply(text, name, render(record)) == text, name
+    assert "PENDIENTE" not in text and "FREEZE_" not in text

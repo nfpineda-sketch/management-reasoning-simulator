@@ -83,7 +83,7 @@ def render_region(data: dict) -> str:
 def render_sondas(data: dict) -> str:
     p = data["probes"]
     rows = ["| Sonda | Qué prueba | Cumple |", "|---|---|---|"]
-    rows += [f"| {k} | {PROBES_ES[k]} | {_yes(v)} |" for k, v in p["pass"].items()]
+    rows += [f"| {k} | {PROBES_ES[k]} | {_yes(p['pass'][k])} |" for k in sorted(p["pass"], key=lambda k: int(k[1:]))]
     o2 = p["O2"]["rows"]
     o11 = p["O11"]
     extra = [
