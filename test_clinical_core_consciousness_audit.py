@@ -17,6 +17,7 @@ import pytest
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import gas_exchange_architecture as go
 from clinical_core import lung_water_reference as lw
+from clinical_core import edema_migration as pe
 from clinical_core import consciousness_audit as ca
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
@@ -36,7 +37,9 @@ LATER_MODULES = ("clinical_core/encephalopathy.py", "clinical_core/encephalopath
                  "clinical_core/collapse.py", "clinical_core/collapse_architecture.py",
                  "clinical_core/acs_reference.py", "clinical_core/modules/acs_ischaemia.py",
                  "clinical_core/acs_migration.py", "clinical_core/gas_exchange_architecture.py",
-                 "clinical_core/lung_water_reference.py")
+                 "clinical_core/lung_water_reference.py",
+                 "clinical_core/edema_migration.py", "clinical_core/edema_reference.py",
+                 "clinical_core/modules/pulmonary_edema.py")
 
 
 #: P2O-1 inserted its declared, inert names into derived.py and integration.py, proven byte for byte against the P2N-2
@@ -45,7 +48,13 @@ LATER_MODULES = ("clinical_core/encephalopathy.py", "clinical_core/encephalopath
 #: P2O-3 replaced declared lines of derived.py, integration.py, state.py, modules/acs_ischaemia.py and two tuple
 #: files, proven byte for byte against the P2O-1 files (lung_water_reference.proved): this package's guards read
 #: the P2O-1 files through P2O-1's view of the P2N-2 core (lw.chain, lw.p2o1_sources); the record is unchanged.
-_LIVE_SOURCES_P2O3 = bf.freeze_sources
+#: P2P-1 added files (the edema family, its mapping and analysis) and two tuple entries, proven against the P2O-3
+#: files (edema_migration.proved): this package's guards read the tree as P2O-3 left it (pe.chain, pe.p2o3_sources).
+_LIVE_SOURCES_P2P1 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2O3() -> dict:
+    return pe.p2o3_sources(_LIVE_SOURCES_P2P1())
 
 
 def _LIVE_SOURCES_P2O1() -> dict:
@@ -56,6 +65,7 @@ def _LIVE_SOURCES_P2O1() -> dict:
 def _p2n2_core():
     with pytest.MonkeyPatch.context() as patch:
         lw.chain(patch)
+        pe.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         patch.setattr(ca, "closed_unchanged", lambda: go.p2n2_unchanged(ca.CLOSED_AT_P2K5))

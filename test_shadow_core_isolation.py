@@ -34,6 +34,8 @@ LEGACY_READERS = {"legacy_adapter.py": {"family_engine", "family_parser", "cogni
                   "gi_reference.py": {"clinical_cases"},
                   # P2N-2: the ACS reference reads acs_70f_left_main's repository truth, read-only and offline.
                   "acs_reference.py": {"clinical_cases"},
+                  # P2P-1: the edema reference reads pulmonary_edema_58m's repository truth, read-only and offline.
+                  "edema_reference.py": {"clinical_cases"},
                   # P2H-0: the migration authority reads repository case truth itself, read-only.
                   "migration_authority.py": {"clinical_cases"}}
 #: The live runtime: the page, the engine, the reader, the submission guard and the order path.

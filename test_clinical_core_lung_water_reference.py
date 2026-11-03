@@ -19,6 +19,7 @@ from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import gas_exchange_architecture as go
 from clinical_core import lung_water_reference as lw
+from clinical_core import edema_migration as pe
 from clinical_core.bands import ARRIVAL
 from clinical_core.integration import Contributor, from_spec, step
 from clinical_core.modules.acs_ischaemia import IschaemicCongestion
@@ -38,6 +39,20 @@ CORE_AT_P2O3 = {'clinical_core/decision_pack.py': 'a176cb385e896bbc96c39e66f7e9b
  'clinical_core/state.py': '141cd5a2aada89a58e7de9ee1436b2f52fd68141df132bcb26e934e6e9ddc7d1'}
 
 
+#: P2P-1 added files and two tuple entries, proven against the P2O-3 files (edema_migration.proved): this package's
+#: guards read the tree, the tuple files and the contributor registry as P2O-3 left them (pe.chain, pe.p2o3_sources,
+#: pe.p2o3_bytes); the record is unchanged.
+_LIVE_SOURCES_P2P1 = bf.freeze_sources
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _p2o3_tree():
+    with pytest.MonkeyPatch.context() as patch:
+        pe.chain(patch)
+        patch.setattr(bf, "freeze_sources", lambda: pe.p2o3_sources(_LIVE_SOURCES_P2P1()))
+        yield
+
+
 # The frozen package and its proof -------------------------------------------------------------------------------------------
 
 def test_the_package_is_frozen():
@@ -53,7 +68,7 @@ def test_the_live_files_are_the_p2o1_files_plus_exactly_the_declared_replacement
     assert set(lw.REVERSAL) == set(lw.CORE_AT_P2O1) == set(CORE_AT_P2O3)
     assert all(lw.proofs().values())
     for relative, sha in CORE_AT_P2O3.items():
-        assert hashlib.sha256((lw.ROOT / relative).read_bytes()).hexdigest() == sha
+        assert hashlib.sha256(pe.p2o3_bytes(relative)).hexdigest() == sha       # P2P-1: the proven P2O-3 bytes
         assert hashlib.sha256(lw.p2o1_bytes(relative)).hexdigest() == lw.CORE_AT_P2O1[relative]
     proof = lw.upstream_unchanged()
     assert proof["p2o1_freeze_digest"] and proof["p2o1_record"]
