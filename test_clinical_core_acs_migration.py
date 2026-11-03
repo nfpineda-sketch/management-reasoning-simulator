@@ -230,3 +230,49 @@ def test_a_changed_upstream_file_stops_before_any_probe(monkeypatch):
     monkeypatch.setattr(an, "upstream_unchanged", lambda: {"unchanged": False, "core_readers_of_family": []})
     out = an.run()
     assert "stopped" in out and out["verdict"]["verdict"].startswith(an.NOT_READY) and "arrival" not in out
+
+
+# The committed record and its document -------------------------------------------------------------------------------------------
+
+RECORD = ROOT / "docs" / "revision" / "P2N2_acs_migration.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2N2_MIGRACION_CARDIOGENICA_ACS.md"
+
+
+def _json(value):
+    return json.loads(json.dumps(value, sort_keys=True, default=str))
+
+
+@pytest.fixture(scope="module")
+def record():
+    return json.loads(RECORD.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="module")
+def result():
+    return an.run()
+
+
+def test_the_record_comes_from_the_frozen_package_and_is_reproduced_live(record, result):
+    assert record["freeze_digest"] == FROZEN_DIGEST and "stopped" not in record
+    assert record["design"] == _json(an.design())
+    for key in ("upstream", "arrival", "lactate_d", "pump", "untreated", "reperfusion", "fluid", "collapse", "boundary",
+                "gi", "legacy", "legacy_comparison", "verdict", "recommendation", "decisions", "efficiency"):
+        assert record[key] == _json(result[key]), key
+
+
+def test_the_record_states_the_verdict_and_the_recommendation(record):
+    assert record["verdict"]["verdict"] == an.READY and record["verdict"]["failing"] == []
+    assert record["recommendation"] == "IMPLEMENT_EXPECTED_RESPIRATORY_EXTENSION"
+    u = record["untreated"]
+    assert all(r["first"]["spo2"] == r["last"]["spo2"] for r in u["region"].values())     # no L -> SpO2 path
+    assert record["collapse"]["active"] is False and record["legacy_comparison"]["used_for_parameters"] is False
+
+
+def test_the_document_is_generated_from_the_record(record):
+    from clinical_core import acs_migration_report as rep
+    document = DOCUMENT.read_text(encoding="utf-8")
+    for name, render in rep.RENDERERS.items():
+        assert rep.apply(document, name, render(record)) == document, name
+    assert an.READY in document and "IMPLEMENT_EXPECTED_RESPIRATORY_EXTENSION" in document
+    for placeholder in ("SUMMARY_TEXT", "LIMITS_TEXT", "REVIEW_TEXT", "FREEZE_COMMIT", "FREEZE_DIGEST"):
+        assert placeholder not in document

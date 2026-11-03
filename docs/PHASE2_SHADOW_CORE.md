@@ -3748,3 +3748,27 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 
   Lectura corregida: el veredicto se mantiene, pero hay que corregir los dos primeros antes de usar la capa sobre la
   trayectoria de una familia o de integrarla.
+
+## 55. P2N-2 · Migración en sombra del caso cardiogénico acs_70f_left_main (2026-11-03)
+
+- **Encargo:** migrar el caso ACS canónico (P2N-1: GENERALIZES_WITH_NEW_FAMILY_WRITERS_ONLY) al núcleo común en sombra,
+  sólo con mapeos de llegada y escritores de familia. Ningún archivo común cambia y GI no se reajusta.
+- **Congelamiento** `ab248db` (digest `e7ff21e5…`):
+  - `clinical_core/acs_reference.py`: la verdad del caso leída del banco, el mapeo de llegada con las reglas de banda de
+    GI y un punto de referencia común predeclarado;
+  - `clinical_core/modules/acs_ischaemia.py`: el escritor de bomba isquémica sobre P, el de congestión sobre L y la
+    reperfusión como señal logística;
+  - `clinical_core/acs_migration.py`: la evaluación.
+- **Resultados** (`docs/revision/P2N2_MIGRACION_CARDIOGENICA_ACS.md`):
+  - la llegada autorizada es representable; la FC de llegada común (91,8) queda bajo la autorizada (112), dentro de la
+    banda intrínseca, y se informa sin absorberla;
+  - la isquemia escribe sólo P y la congestión sólo L; Q, PAM, aporte, déficit, D, FC y tono responden por la
+    fisiología común;
+  - la D de llegada no depende del lactato (prueba permanente);
+  - la reperfusión detiene la pérdida de P;
+  - el volumen da mucho menos en la bomba débil;
+  - el colapso sólo se lee;
+  - GI queda idéntico;
+  - el legado se compara al final, sin elegir nada.
+- **Veredicto: CARDIOGENIC_SHADOW_MIGRATION_READY.** Recomendación: IMPLEMENT_EXPECTED_RESPIRATORY_EXTENSION (L no tiene
+  camino a G / SpO2).

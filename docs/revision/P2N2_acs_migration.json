@@ -1,0 +1,1830 @@
+{
+  "arrival": {
+    "anchors": {
+      "arrival_bicarbonate": 18.0,
+      "arrival_delivery_ratio": 0.33999999999999997,
+      "arrival_lactate_excess": 2.1,
+      "arrival_oxygen_debt": 20.0,
+      "arrival_paco2": 33.0,
+      "beta_blockade": 0.0,
+      "case_id": "acs_70f_left_main",
+      "consciousness_level": 0,
+      "crt_s": 3.0,
+      "dbp": 66.0,
+      "declared": {
+        "arrival_delivery_ratio": "synthetic_probe",
+        "arrival_lactate_excess": "synthetic_probe",
+        "arrival_oxygen_debt": "synthetic_probe",
+        "intrinsic_sinus_rate": "synthetic_probe",
+        "pump_reserve": "synthetic_probe"
+      },
+      "fio2": 0.21,
+      "glucose": 168.0,
+      "hb": 12.2,
+      "hr": 112.0,
+      "intrinsic_respiratory_rate": 16.0,
+      "intrinsic_sinus_rate": 80.0,
+      "k": 4.1,
+      "lactate": 3.1,
+      "metabolic_demand_baseline": 1.0,
+      "preload_fraction": null,
+      "pump_reserve": 0.5,
+      "reference_preload_fraction": null,
+      "respiratory_rate": 26.0,
+      "rhythm": {
+        "code": "sinus",
+        "output_factor": 1.0,
+        "pulse_present": true,
+        "rate_bpm": 112.0
+      },
+      "sbp": 104.0,
+      "spo2": 94.0
+    },
+    "arrival_deficit": 0.15000000000000013,
+    "arrival_drive": 0.47592592592592603,
+    "authored_map": 78.66666666666667,
+    "bands": {
+      "arrival_delivery_ratio": {
+        "classification": "FAMILY_CANDIDATE",
+        "lower": 0.24,
+        "midpoint": 0.33999999999999997,
+        "name": "arrival_delivery_ratio",
+        "rule": "gi_reference.delivery_ratio_band (0.6-1.0, at or below adequacy: cool extremities, CRT 3 s, mildly impaired perfusion, lactate 3.1) read under the extraction reserve as ratio / reserve (P2I-2P), as every GI package does",
+        "upper": 0.4
+      },
+      "arrival_lactate_excess": {
+        "classification": "CASE_MAPPING",
+        "lower": 1.1,
+        "midpoint": 2.1,
+        "name": "arrival_lactate_excess",
+        "rule": "gi_reference.lactate_excess_band's rule: the arrival lactate less a non-shock clearance baseline of 0.8-2.0 mmol/L; the baseline is not stated",
+        "upper": 2.3
+      },
+      "arrival_oxygen_debt": {
+        "classification": "FAMILY_CANDIDATE",
+        "lower": 0.0,
+        "midpoint": 20.0,
+        "name": "arrival_oxygen_debt",
+        "rule": "gi_reference.arrival_debt_band's scale (0-60 index-minutes, the same for every case): a latent arrival-state variable, never computed from the arrival lactate; the authored onset (60 min) does not set it (no history is reconstructed)",
+        "upper": 60.0
+      },
+      "intrinsic_sinus_rate": {
+        "classification": "CASE_MAPPING",
+        "lower": 60.0,
+        "midpoint": 80.0,
+        "name": "intrinsic_sinus_rate",
+        "rule": "gi_reference.intrinsic_hr_band's rule: the resting adult sinus rate, at most the observed HR; no beta-blocker or rate control is authored (metformin, losartan, statin)",
+        "upper": 100.0
+      },
+      "pump_reserve": {
+        "classification": "FAMILY_CANDIDATE",
+        "lower": 0.3,
+        "midpoint": 0.5,
+        "name": "pump_reserve",
+        "rule": "the case shows reduced reserve (globally mildly reduced LV contraction, bibasal B-lines, mild congestion on the radiograph, basal crackles, troponin 260): below the GI band's 0.7-1.0, which had no such evidence; the value is not stated: faculty decision",
+        "upper": 0.7
+      }
+    },
+    "channel_roles": {
+      "D": "SECONDARY_RESPONSE (prior oxygen-delivery debt)",
+      "G": "SECONDARY_RESPONSE (mild gas-exchange impairment)",
+      "L": "SECONDARY_RESPONSE (congestion present)",
+      "N": "NORMAL_OR_NEUTRAL",
+      "P": "PRIMARY_DRIVER",
+      "R": "SECONDARY_RESPONSE (sinus tachycardia)",
+      "T": "SECONDARY_RESPONSE",
+      "V": "NORMAL_OR_NEUTRAL",
+      "W": "SECONDARY_RESPONSE"
+    },
+    "classes": {
+      "arrival_bicarbonate": "CASE_AUTHORED",
+      "arrival_delivery_ratio": "FAMILY_CANDIDATE",
+      "arrival_lactate_excess": "CASE_MAPPING",
+      "arrival_oxygen_debt": "FAMILY_CANDIDATE",
+      "arrival_paco2": "CASE_AUTHORED",
+      "beta_blockade": "CASE_MAPPING (0: no beta-blocker authored)",
+      "consciousness_level": "CASE_AUTHORED",
+      "crt_s": "CASE_AUTHORED",
+      "dbp": "CASE_AUTHORED",
+      "fio2": "CASE_AUTHORED",
+      "glucose": "CASE_AUTHORED",
+      "hb": "CASE_AUTHORED",
+      "hr": "CASE_AUTHORED",
+      "intrinsic_respiratory_rate": "FAMILY_CANDIDATE (P2K-2's candidate input, the middle of its 12 / 16 / 20)",
+      "intrinsic_sinus_rate": "CASE_MAPPING",
+      "k": "CASE_AUTHORED",
+      "lactate": "CASE_AUTHORED",
+      "metabolic_demand_baseline": "CASE_MAPPING (1: afebrile 36.9, alert, no hypermetabolic evidence; gi_reference.demand_band's rule)",
+      "preload_fraction": "CASE_MAPPING (neutral: IVC 1.9 cm with ~50% collapse is neither collapsing nor plethoric; the profile's provisional arrival position, nothing declared)",
+      "pump_reserve": "FAMILY_CANDIDATE",
+      "respiratory_rate": "CASE_AUTHORED",
+      "rhythm": "CASE_AUTHORED",
+      "sbp": "CASE_AUTHORED",
+      "spo2": "CASE_AUTHORED"
+    },
+    "hr_over_intrinsic_band": {
+      "lower": 73.09115638492106,
+      "midpoint": 91.83632467016479,
+      "upper": 117.80204808205443
+    },
+    "lv_impairment_kept": {
+      "P": 1.0,
+      "arrival_delivery_ratio": 0.33999999999999997,
+      "pump_reserve": 0.5
+    },
+    "reconstruction": {
+      "dbp": [
+        66.0,
+        66
+      ],
+      "hr": [
+        91.83632467016479,
+        112
+      ],
+      "lactate": [
+        3.1,
+        3.1
+      ],
+      "map": [
+        78.66666666666667,
+        78.66666666666667
+      ],
+      "mental_status": [
+        0,
+        "Alert"
+      ],
+      "paco2": [
+        30.769230769230766,
+        33
+      ],
+      "ph": [
+        7.390034611362518,
+        7.36
+      ],
+      "rr": [
+        25.530415204846477,
+        26
+      ],
+      "sbp": [
+        104.0,
+        104
+      ],
+      "spo2": [
+        94.0,
+        94
+      ]
+    },
+    "row": {
+      "D": 20.0,
+      "G": 0.0,
+      "L": 0.0,
+      "N": 0.0,
+      "P": 1.0,
+      "R": "sinus",
+      "T": 1.0,
+      "V": 0.0,
+      "W": 0.0,
+      "consciousness_level": 0,
+      "dbp": 66.0,
+      "deficit": 0.15000000000000013,
+      "delivery_index": 0.33999999999999997,
+      "delivery_rel": 1.0,
+      "drive": 0.47592592592592603,
+      "hr": 91.83632467016479,
+      "lactate": 3.1,
+      "map": 78.66666666666667,
+      "minute": 0,
+      "output_rel": 1.0,
+      "paco2": 30.769230769230766,
+      "ph": 7.390034611362518,
+      "pulse": true,
+      "rr": 25.530415204846477,
+      "sbp": 104.0,
+      "spo2": 94.0
+    },
+    "truth": {
+      "abg_fio2_percent": 21,
+      "abg_hco3": 18.0,
+      "abg_paco2": 33,
+      "abg_pao2": 72,
+      "abg_ph": 7.36,
+      "cardiac_exam": "Regular tachycardia; no new murmur; extremities are cool.",
+      "chest_xray": "Mild pulmonary congestion without focal consolidation.",
+      "coronary": {
+        "active_occlusion": true,
+        "omi": true,
+        "pci_capable": true,
+        "rv_involvement": false,
+        "symptom_onset_min": 60,
+        "territory": "left_main"
+      },
+      "creatinine_mg_dl": 1.6,
+      "crt_s": 3,
+      "dbp": 66,
+      "definitive_actions": [
+        "aspirin",
+        "consult",
+        "reperfusion_referral"
+      ],
+      "diagnosis": "Left main or severe three-vessel ischemia with diffuse ST depression and ST elevation in aVR",
+      "ecg_profile": "diffuse_st_depression_avr",
+      "extremities": "Cool",
+      "glucose_mg_dl": 168,
+      "hb_g_dl": 12.2,
+      "hr": 112,
+      "lactate_mmol_l": 3.1,
+      "mental_status": "Alert",
+      "peripheral_perfusion": "mildly impaired",
+      "pocus_ivc": "1.9 cm; about 50% inspiratory collapse",
+      "pocus_lungs": "Scattered B-lines at both bases; no diffuse B-line pattern",
+      "pocus_lv": "Globally mildly reduced contraction without a single focal defect",
+      "potassium_mmol_l": 4.1,
+      "respiratory_exam": "Mildly increased effort; scattered basal crackles.",
+      "respiratory_rate": 26,
+      "rhythm": "Sinus tachycardia",
+      "sbp": 104,
+      "spo2": 94,
+      "temperature_c": 36.9,
+      "troponin_ng_l": 260,
+      "work_of_breathing": "Mildly increased"
+    }
+  },
+  "boundary": {
+    "classes": {
+      "CoronaryReperfusion": "FAMILY_WRITER (logistic signal, no write)",
+      "IschaemicCongestion": "FAMILY_WRITER (L)",
+      "IschaemicPump": "FAMILY_WRITER (P)",
+      "OBSERVATION_LAYER": "OBSERVATION_LAYER",
+      "anchors": "ARRIVAL_MAPPING",
+      "legacy": "LEGACY_ONLY"
+    },
+    "common_files_name_acs": [],
+    "pass": true,
+    "writer_channels": [
+      "L",
+      "P"
+    ],
+    "writer_never_names": [],
+    "writer_other_writes": []
+  },
+  "collapse": {
+    "active": false,
+    "m1": "REQUIRED_BEFORE_ACTIVE_FAMILY_COLLAPSE",
+    "m2": "REQUIRED_BEFORE_RUNTIME_TRACE_INTEGRATION",
+    "max_holds": true,
+    "no_family_rule": true,
+    "rows": [
+      {
+        "delivery": 0.15000000000000013,
+        "max_holds": true,
+        "minute": 0,
+        "structural_perfusion": 0.9213333333333333,
+        "structural_value": 0.9213333333333333,
+        "unset_complete": false,
+        "unset_perfusion": null
+      },
+      {
+        "delivery": 0.24482775586338112,
+        "max_holds": true,
+        "minute": 60,
+        "structural_perfusion": 0.9270777186030978,
+        "structural_value": 0.9270777186030978,
+        "unset_complete": false,
+        "unset_perfusion": null
+      },
+      {
+        "delivery": 0.3371705919367587,
+        "max_holds": true,
+        "minute": 120,
+        "structural_perfusion": 0.9333587166170567,
+        "structural_value": 0.9333587166170567,
+        "unset_complete": false,
+        "unset_perfusion": null
+      }
+    ],
+    "terminal_transition": false,
+    "thresholds_selected": false,
+    "unset_is_lower_bound": true
+  },
+  "decided": "2026-11-03",
+  "decisions": [
+    "the arrival mapping's candidates (pump reserve, arrival delivery ratio, arrival D, lactate excess, intrinsic sinus rate): FAMILY_CANDIDATE / CASE_MAPPING values to accept, narrow or replace",
+    "the ischaemic family writer's kinetics (loss per minute, floor, recovery share and time) and the congestion gain",
+    "whether a common P -> L coupling replaces the family congestion writer (derived.congestion_rate's pending note)",
+    "the arrival HR: the common physiology at the midpoint intrinsic rate reads below the authored 112; accept the gap, narrow the intrinsic band, or revisit the common HR gains (never an ACS residual)",
+    "the next package (the recommendation)"
+  ],
+  "design": {
+    "arrival_classes": {
+      "arrival_bicarbonate": "CASE_AUTHORED",
+      "arrival_delivery_ratio": "FAMILY_CANDIDATE",
+      "arrival_lactate_excess": "CASE_MAPPING",
+      "arrival_oxygen_debt": "FAMILY_CANDIDATE",
+      "arrival_paco2": "CASE_AUTHORED",
+      "beta_blockade": "CASE_MAPPING (0: no beta-blocker authored)",
+      "consciousness_level": "CASE_AUTHORED",
+      "crt_s": "CASE_AUTHORED",
+      "dbp": "CASE_AUTHORED",
+      "fio2": "CASE_AUTHORED",
+      "glucose": "CASE_AUTHORED",
+      "hb": "CASE_AUTHORED",
+      "hr": "CASE_AUTHORED",
+      "intrinsic_respiratory_rate": "FAMILY_CANDIDATE (P2K-2's candidate input, the middle of its 12 / 16 / 20)",
+      "intrinsic_sinus_rate": "CASE_MAPPING",
+      "k": "CASE_AUTHORED",
+      "lactate": "CASE_AUTHORED",
+      "metabolic_demand_baseline": "CASE_MAPPING (1: afebrile 36.9, alert, no hypermetabolic evidence; gi_reference.demand_band's rule)",
+      "preload_fraction": "CASE_MAPPING (neutral: IVC 1.9 cm with ~50% collapse is neither collapsing nor plethoric; the profile's provisional arrival position, nothing declared)",
+      "pump_reserve": "FAMILY_CANDIDATE",
+      "respiratory_rate": "CASE_AUTHORED",
+      "rhythm": "CASE_AUTHORED",
+      "sbp": "CASE_AUTHORED",
+      "spo2": "CASE_AUTHORED"
+    },
+    "bands": {
+      "arrival_delivery_ratio": {
+        "classification": "FAMILY_CANDIDATE",
+        "lower": 0.24,
+        "midpoint": 0.33999999999999997,
+        "name": "arrival_delivery_ratio",
+        "rule": "gi_reference.delivery_ratio_band (0.6-1.0, at or below adequacy: cool extremities, CRT 3 s, mildly impaired perfusion, lactate 3.1) read under the extraction reserve as ratio / reserve (P2I-2P), as every GI package does",
+        "upper": 0.4
+      },
+      "arrival_lactate_excess": {
+        "classification": "CASE_MAPPING",
+        "lower": 1.1,
+        "midpoint": 2.1,
+        "name": "arrival_lactate_excess",
+        "rule": "gi_reference.lactate_excess_band's rule: the arrival lactate less a non-shock clearance baseline of 0.8-2.0 mmol/L; the baseline is not stated",
+        "upper": 2.3
+      },
+      "arrival_oxygen_debt": {
+        "classification": "FAMILY_CANDIDATE",
+        "lower": 0.0,
+        "midpoint": 20.0,
+        "name": "arrival_oxygen_debt",
+        "rule": "gi_reference.arrival_debt_band's scale (0-60 index-minutes, the same for every case): a latent arrival-state variable, never computed from the arrival lactate; the authored onset (60 min) does not set it (no history is reconstructed)",
+        "upper": 60.0
+      },
+      "intrinsic_sinus_rate": {
+        "classification": "CASE_MAPPING",
+        "lower": 60.0,
+        "midpoint": 80.0,
+        "name": "intrinsic_sinus_rate",
+        "rule": "gi_reference.intrinsic_hr_band's rule: the resting adult sinus rate, at most the observed HR; no beta-blocker or rate control is authored (metformin, losartan, statin)",
+        "upper": 100.0
+      },
+      "pump_reserve": {
+        "classification": "FAMILY_CANDIDATE",
+        "lower": 0.3,
+        "midpoint": 0.5,
+        "name": "pump_reserve",
+        "rule": "the case shows reduced reserve (globally mildly reduced LV contraction, bibasal B-lines, mild congestion on the radiograph, basal crackles, troponin 260): below the GI band's 0.7-1.0, which had no such evidence; the value is not stated: faculty decision",
+        "upper": 0.7
+      }
+    },
+    "case": "acs_70f_left_main",
+    "channel_roles": {
+      "D": "SECONDARY_RESPONSE (prior oxygen-delivery debt)",
+      "G": "SECONDARY_RESPONSE (mild gas-exchange impairment)",
+      "L": "SECONDARY_RESPONSE (congestion present)",
+      "N": "NORMAL_OR_NEUTRAL",
+      "P": "PRIMARY_DRIVER",
+      "R": "SECONDARY_RESPONSE (sinus tachycardia)",
+      "T": "SECONDARY_RESPONSE",
+      "V": "NORMAL_OR_NEUTRAL",
+      "W": "SECONDARY_RESPONSE"
+    },
+    "common_files": [
+      "derived.py",
+      "integration.py",
+      "state.py",
+      "provenance.py",
+      "collapse.py",
+      "encephalopathy.py",
+      "ventilation.py",
+      "signals.py",
+      "legacy_adapter.py"
+    ],
+    "common_reference": {
+      "acid": [
+        [
+          2.0,
+          19.4,
+          120.0
+        ],
+        "acid_base DRIVE_GAINS[2], STEADY_BURDENS[1], ACID_TAUS[1]: P2K-2 drive gain 1-4, B 13.4 / 19.4 / 28, tau 60 / 120 / 240, the middles; acid_base.candidate_profile's construction (efficiency 1)"
+      ],
+      "acute_deficit_to_sympathetic_gain": [
+        1.0,
+        "baroreflex.PROBE_GAINS['acute']: P2J-4 probe gains"
+      ],
+      "afterload_sensitivity": [
+        0.3,
+        "baroreflex.AFTERLOAD: P2J-1 / P2J-4 afterload"
+      ],
+      "baroreflex_map_set_mmhg": [
+        90.0,
+        "baroreflex.MAP_SETS[1]: P2J-4 exploratory MAP set 80 / 90 / 100, the middle"
+      ],
+      "baroreflex_to_sympathetic_gain": [
+        1.0,
+        "baroreflex.PROBE_GAINS['baro']: P2J-4 probe gains (inside 0.25-1.5)"
+      ],
+      "debt_clearance_tau_min": [
+        60.0,
+        "blood_anchors.KINETICS; lambda set 30 / 60 / 120: the middle"
+      ],
+      "debt_per_delivery_deficit": [
+        1.0,
+        "lambda set 0.5 / 1 / 2: the middle"
+      ],
+      "debt_to_lactate_gain": [
+        0.00024532669073132904,
+        "lactate_closure.K_LD[2]: P2I-2AD k_LD's five points, the middle"
+      ],
+      "debt_to_sympathetic_gain": [
+        0.01,
+        "baroreflex.PROBE_GAINS['debt']: P2J-4 probe gains"
+      ],
+      "deficit_to_tone_gain": [
+        0.5,
+        "baroreflex.TONE_GAINS[1]: P2J-3 primary tone gains 0.25 / 0.5 / 1.0, the middle"
+      ],
+      "lactate_clearance_tau_min": [
+        120.0,
+        "blood_anchors.KINETICS; lambda set 45 / 120 / 240: the middle"
+      ],
+      "oxygen_extraction_reserve": [
+        2.5,
+        "vascular_tone.RESERVE: the P2I-2P reserve, every GI package"
+      ],
+      "sympathetic_per_pressure_deficit": [
+        0.0,
+        "retired whenever the baroreflex is active (P2J-4)"
+      ]
+    },
+    "congestion_shares": [
+      0.5,
+      1.0,
+      2.0
+    ],
+    "counterfactuals": {
+      "fluid": "FLUID, pump failure vs pure preload deficiency, each against its own no-fluid course",
+      "reperfusion": "the same, with CoronaryReperfusion at REPERFUSION_MINUTE, recovery share 0 / 0.5 / 1",
+      "untreated": "the reference arrival, the ischaemic pump and congestion writers, no reperfusion"
+    },
+    "criteria": [
+      "arrival_representable",
+      "pump_through_P",
+      "ischaemia_writer_evolves_P",
+      "common_downstream",
+      "d_lactate_coherent",
+      "reperfusion_targets_P",
+      "L_represents_congestion",
+      "no_core_retuning",
+      "gi_unchanged",
+      "respiratory_deferred",
+      "collapse_structural",
+      "collapse_inactive",
+      "legacy_not_target",
+      "boundaries_hold"
+    ],
+    "crystalloid": {
+      "crystalloid_effective_ml_per_ml": 0.125,
+      "crystalloid_leak_tau_min": 30.0,
+      "crystalloid_transient_share": 0.6
+    },
+    "decided": "2026-11-03",
+    "decisions": [
+      "the arrival mapping's candidates (pump reserve, arrival delivery ratio, arrival D, lactate excess, intrinsic sinus rate): FAMILY_CANDIDATE / CASE_MAPPING values to accept, narrow or replace",
+      "the ischaemic family writer's kinetics (loss per minute, floor, recovery share and time) and the congestion gain",
+      "whether a common P -> L coupling replaces the family congestion writer (derived.congestion_rate's pending note)",
+      "the arrival HR: the common physiology at the midpoint intrinsic rate reads below the authored 112; accept the gap, narrow the intrinsic band, or revisit the common HR gains (never an ACS residual)",
+      "the next package (the recommendation)"
+    ],
+    "faculty": {
+      "arrival_d": "a latent arrival-state variable; no lactate -> D rule",
+      "authorized": "arrival mapping; ischaemic pump writer; reperfusion writer; congestion / L writer; observation layer; case intrinsic sinus rate; family arrival latent mapping",
+      "deferred": {
+        "baroreflex_to_tone": "BAROREFLEX_TO_TONE_COMMON_REFINEMENT_DEFERRED",
+        "collapse_m1": "REQUIRED_BEFORE_ACTIVE_FAMILY_COLLAPSE",
+        "collapse_m2": "REQUIRED_BEFORE_RUNTIME_TRACE_INTEGRATION",
+        "legacy_vf_120": "LEGACY_FAMILY_EVENT_DEFERRED",
+        "p_afterload": "P_DEPENDENT_AFTERLOAD_REFINEMENT_DEFERRED",
+        "respiratory": "EXPECTED_RESPIRATORY_FAMILY_EXTENSION (L -> gas exchange, oxygenation, congestion drive, NIV)"
+      },
+      "hr": "the common HR physiology only (intrinsic rate as a case mapping); no ACS sympathetic gain or HR residual",
+      "not_authorized": "common-core retuning; GI changes; runtime; collapse activation or thresholds; ROSC / ACLS; NIV; common L -> G / SpO2; pressure -> tone baroreflex; P-dependent afterload; full ACS rollout; a third family",
+      "objective": "acs_70f_left_main through the existing common physiology without retuning the GI core; shadow only",
+      "p2n1": "GENERALIZES_WITH_NEW_FAMILY_WRITERS_ONLY; PROCEED_TO_CARDIOGENIC_SHADOW_MIGRATION",
+      "pump": "the common P channel; no second pump equation; LV impairment kept through the arrival layer"
+    },
+    "floor": 0.5,
+    "fluid": {
+      "duration_min": 30.0,
+      "preload_deficiency_fraction": 0.25,
+      "pump_failure_P": 0.7,
+      "read_minute": 60,
+      "volume_ml": 1000.0
+    },
+    "horizon": 120,
+    "legacy_minutes": [
+      0,
+      30,
+      60,
+      90,
+      120
+    ],
+    "loss_per_min": [
+      0.0008333333333333334,
+      0.0016666666666666668,
+      0.0033333333333333335
+    ],
+    "migration_gate": "MIGRATION_GATE_CLOSED: no runtime hook, collapse activation, clinical collapse threshold, ROSC / ACLS, NIV, common L -> G / SpO2, baroreflex -> tone, P-dependent afterload, full ACS rollout or third family.",
+    "never_written": [
+      "sbp",
+      "dbp",
+      "map",
+      "spo2",
+      "delivery_rel",
+      "lactate",
+      "lactate_excess_mmol_l",
+      "sympathetic_drive",
+      "consciousness_level",
+      "metabolic_acid_burden",
+      "collapse_burden",
+      "monitor_rate_bpm"
+    ],
+    "observation_layer": {
+      "b_lines_congestion": "an observation of L: the authored bibasal B-lines and mild congestion are the arrival reading (L = 0 is arrival); L above 0 reads more congestion",
+      "ecg_ischaemia": "a family observation (diffuse ST depression with aVR elevation while the artery is occluded); no common channel",
+      "lv_function": "an observation of P: the authored 'globally mildly reduced contraction' is the arrival reading (P = 1 with the reduced reserve and delivery the arrival layer declares); a fall of P from arrival reads worse, a recovery toward 1 reads back to the authored finding",
+      "rhythm": "R (sinus, its rate from the common HR physiology)",
+      "troponin": "a family observation (the legacy curve is LEGACY_REFERENCE_ONLY); no common channel"
+    },
+    "own": [
+      "clinical_core/acs_reference.py",
+      "clinical_core/modules/acs_ischaemia.py",
+      "clinical_core/acs_migration.py"
+    ],
+    "p2m2_record": "460acee4e937a028b73980a1650c3e6af3a0fe20928b3acc3c08a8dfb8fbe6cf",
+    "policy": "Shadow only: no common file changes; the case mapping and the family writers are declared, never approved; the common profile is one predeclared point of the GI-carried uncertainty; no legacy output is a target; collapse is read structurally and never acts; nothing reaches runtime.",
+    "recommendation_rule": "Predeclared. With READY: IMPLEMENT_EXPECTED_RESPIRATORY_EXTENSION when the case's authored congestion has no downstream path in the core (L rises with no SpO2 / G change) and the legacy comparison carries a respiratory EXPECTED_EXTENSION; otherwise PROCEED_TO_CARDIOGENIC_CASE_EXPANSION; TEST_THIRD_MECHANISTIC_FAMILY only if both the respiratory extension and case expansion are found unnecessary.",
+    "recovery_shares": [
+      0.0,
+      0.5,
+      1.0
+    ],
+    "recovery_tau_min": 30.0,
+    "reference_writer": {
+      "congestion_share": 1.0,
+      "floor": 0.5,
+      "loss_per_min": 0.0016666666666666668,
+      "recovery_share": 0.5,
+      "recovery_tau_min": 30.0
+    },
+    "reperfusion_minute": 60,
+    "report": "clinical_core/acs_migration_report.py",
+    "revision": "P2N-2",
+    "sources_at_p2m2": [
+      "96e4e100a51132cbe19271da5bb9ab32837aea9abbf73f88ccc004051af9a423",
+      69
+    ],
+    "structural_ramp": [
+      1000.0,
+      0.0
+    ],
+    "tone_sensitivity": [
+      0.25,
+      0.5,
+      1.0
+    ],
+    "truth_paths": {
+      "abg_fio2_percent": [
+        "investigations",
+        "abg",
+        "result",
+        "fio2_percent"
+      ],
+      "abg_hco3": [
+        "investigations",
+        "abg",
+        "result",
+        "bicarbonate_mmol_l"
+      ],
+      "abg_paco2": [
+        "investigations",
+        "abg",
+        "result",
+        "paco2_mm_hg"
+      ],
+      "abg_pao2": [
+        "investigations",
+        "abg",
+        "result",
+        "pao2_mm_hg"
+      ],
+      "abg_ph": [
+        "investigations",
+        "abg",
+        "result",
+        "ph"
+      ],
+      "cardiac_exam": [
+        "examination",
+        "Cardiac"
+      ],
+      "chest_xray": [
+        "investigations",
+        "chest_xray",
+        "result",
+        "report"
+      ],
+      "coronary": [
+        "engine",
+        "coronary"
+      ],
+      "creatinine_mg_dl": [
+        "investigations",
+        "basic_labs",
+        "result",
+        "creatinine_mg_dl"
+      ],
+      "crt_s": [
+        "observable",
+        "crt"
+      ],
+      "dbp": [
+        "observable",
+        "dbp"
+      ],
+      "definitive_actions": [
+        "engine",
+        "definitive_actions"
+      ],
+      "diagnosis": [
+        "faculty",
+        "diagnosis"
+      ],
+      "ecg_profile": [
+        "ecg_profile"
+      ],
+      "extremities": [
+        "observable",
+        "extremities"
+      ],
+      "glucose_mg_dl": [
+        "investigations",
+        "basic_labs",
+        "result",
+        "glucose_mg_dl"
+      ],
+      "hb_g_dl": [
+        "investigations",
+        "basic_labs",
+        "result",
+        "hemoglobin_g_dl"
+      ],
+      "hr": [
+        "observable",
+        "hr"
+      ],
+      "lactate_mmol_l": [
+        "investigations",
+        "lactate",
+        "result",
+        "lactate_mmol_l"
+      ],
+      "mental_status": [
+        "observable",
+        "mental_status"
+      ],
+      "peripheral_perfusion": [
+        "observable",
+        "peripheral_perfusion"
+      ],
+      "pocus_ivc": [
+        "investigations",
+        "pocus",
+        "result",
+        "ivc"
+      ],
+      "pocus_lungs": [
+        "investigations",
+        "pocus",
+        "result",
+        "lungs"
+      ],
+      "pocus_lv": [
+        "investigations",
+        "pocus",
+        "result",
+        "lv"
+      ],
+      "potassium_mmol_l": [
+        "investigations",
+        "basic_labs",
+        "result",
+        "potassium_mmol_l"
+      ],
+      "respiratory_exam": [
+        "examination",
+        "Respiratory"
+      ],
+      "respiratory_rate": [
+        "observable",
+        "respiratory_rate"
+      ],
+      "rhythm": [
+        "observable",
+        "rhythm"
+      ],
+      "sbp": [
+        "observable",
+        "sbp"
+      ],
+      "spo2": [
+        "observable",
+        "spo2"
+      ],
+      "temperature_c": [
+        "observable",
+        "temperature_c"
+      ],
+      "troponin_ng_l": [
+        "investigations",
+        "troponin",
+        "result",
+        "value_ng_l"
+      ],
+      "work_of_breathing": [
+        "observable",
+        "work_of_breathing"
+      ]
+    },
+    "tuple_at_p2m2": {
+      "clinical_core/decision_pack.py": "4752c81f9f247e7c9a96f5dd600e782645719983bd6ce50cf79ec4d427042af4",
+      "clinical_core/lactate_slice.py": "895f47a37055c045160d3553ac015fe32ff87b2866853cf07cea989c2c6c53be"
+    },
+    "tuples_added": {
+      "DOWNSTREAM_REPORTS": [
+        "clinical_core/acs_migration_report.py"
+      ],
+      "PACK_DIGEST_EXCLUDED": [
+        "clinical_core/acs_migration.py",
+        "clinical_core/acs_migration_report.py"
+      ]
+    },
+    "verdict_rule": "Predeclared. READY iff every criterion holds; otherwise NOT_READY - the first failing criterion."
+  },
+  "efficiency": {
+    "cartesian_sweep": false,
+    "fixed_state_readings": 6,
+    "gi_trajectories": 2,
+    "gi_trajectory_purpose": "non-regression only",
+    "integrator_steps": 2760,
+    "legacy_minutes": 120,
+    "records_read": [
+      "P2M2_collapse_architecture.json"
+    ]
+  },
+  "fluid": {
+    "congestion_visible": true,
+    "design": {
+      "duration_min": 30.0,
+      "preload_deficiency_fraction": 0.25,
+      "pump_failure_P": 0.7,
+      "read_minute": 60,
+      "volume_ml": 1000.0
+    },
+    "less_benefit_in_weak_pump": true,
+    "no_normalization_of_pump_failure": true,
+    "preload_deficiency": {
+      "L_with": 0.0,
+      "L_without": 0.0,
+      "deficit_with": 0.0,
+      "map_gain": 13.435931686768413,
+      "output_gain": 0.2586054224145262,
+      "output_start": 1.0,
+      "output_with": 1.2586054224145262,
+      "output_without": 1.0,
+      "position_with": 0.3080656295561136
+    },
+    "pump_failure": {
+      "L_with": 0.0,
+      "L_without": 0.0,
+      "deficit_with": 0.39802640798304456,
+      "map_gain": 3.325544508399595,
+      "output_gain": 0.04615639694363971,
+      "output_start": 0.7,
+      "output_with": 0.7200935135656822,
+      "output_without": 0.6739371166220425,
+      "position_with": 0.6688975840344318
+    },
+    "volume_improves_preload": true
+  },
+  "freeze_digest": "e7ff21e577cfadc3990ac9a27a3524d4e3bb80a7870d47e27dcc6e9420b7a718",
+  "gi": {
+    "digest": "c3a3f0bf6f6d548ac818e33e3802a7270c7423ce03fd994fed18c09685438ae9",
+    "identical": true,
+    "inert_writes": 0,
+    "minutes": 120
+  },
+  "lactate_d": {
+    "d_base": 20.0,
+    "d_other_lactate": 20.0,
+    "lactates": [
+      3.1,
+      6.2
+    ],
+    "mapping_takes_no_lactate": true,
+    "pass": true
+  },
+  "legacy": {
+    "0": {
+      "dbp": 66,
+      "hr": 112,
+      "mental_status": "Alert",
+      "pulse_present": true,
+      "respiratory_rate": 26,
+      "rhythm": "Sinus tachycardia",
+      "sbp": 104,
+      "spo2": 94
+    },
+    "120": {
+      "dbp": 0,
+      "hr": 0,
+      "mental_status": "Unresponsive",
+      "pulse_present": false,
+      "respiratory_rate": 0,
+      "rhythm": "VF",
+      "sbp": 0,
+      "spo2": 0
+    },
+    "30": {
+      "dbp": 64,
+      "hr": 114,
+      "mental_status": "Alert",
+      "pulse_present": true,
+      "respiratory_rate": 28,
+      "rhythm": "Sinus tachycardia",
+      "sbp": 101,
+      "spo2": 92
+    },
+    "60": {
+      "dbp": 63,
+      "hr": 115,
+      "mental_status": "Alert",
+      "pulse_present": true,
+      "respiratory_rate": 31,
+      "rhythm": "Sinus tachycardia",
+      "sbp": 98,
+      "spo2": 90
+    },
+    "90": {
+      "dbp": 61,
+      "hr": 117,
+      "mental_status": "Alert",
+      "pulse_present": true,
+      "respiratory_rate": 33,
+      "rhythm": "Sinus tachycardia",
+      "sbp": 95,
+      "spo2": 88
+    }
+  },
+  "legacy_comparison": {
+    "classes": {
+      "hr_arrival": "LEGACY_DIFFERENCE_NOT_CLINICALLY_RELEVANT: the legacy shows the authored HR; the core's is the common HR physiology's at the midpoint intrinsic rate (reported, not absorbed)",
+      "sbp_course": "LEGACY_DIFFERENCE_NOT_CLINICALLY_RELEVANT: both fall under untreated ischaemia; the size is the family candidate's and the legacy drift's, neither authored",
+      "spo2_course": "EXPECTED_EXTENSION_NOT_YET_MODELED: the legacy SpO2 falls with congestion; the core's L has no gas-exchange path (EXPECTED_RESPIRATORY_FAMILY_EXTENSION)",
+      "vf_120": "EXPECTED_EXTENSION_NOT_YET_MODELED: LEGACY_FAMILY_EVENT_DEFERRED (no scripted VF, no ROSC / ACLS)"
+    },
+    "possible_common_core_gap": [],
+    "rows": {
+      "0": {
+        "core": {
+          "hr": 91.83632467016479,
+          "rr": 25.530415204846477,
+          "sbp": 104.0,
+          "spo2": 94.0
+        },
+        "legacy": {
+          "dbp": 66,
+          "hr": 112,
+          "mental_status": "Alert",
+          "pulse_present": true,
+          "respiratory_rate": 26,
+          "rhythm": "Sinus tachycardia",
+          "sbp": 104,
+          "spo2": 94
+        }
+      },
+      "120": {
+        "core": {
+          "hr": 106.50409446019196,
+          "rr": 24.746397028449316,
+          "sbp": 88.10203565880633,
+          "spo2": 94.0
+        },
+        "legacy": {
+          "dbp": 0,
+          "hr": 0,
+          "mental_status": "Unresponsive",
+          "pulse_present": false,
+          "respiratory_rate": 0,
+          "rhythm": "VF",
+          "sbp": 0,
+          "spo2": 0
+        }
+      },
+      "60": {
+        "core": {
+          "hr": 98.5735586994762,
+          "rr": 24.46650788817803,
+          "sbp": 96.40572794844681,
+          "spo2": 94.0
+        },
+        "legacy": {
+          "dbp": 63,
+          "hr": 115,
+          "mental_status": "Alert",
+          "pulse_present": true,
+          "respiratory_rate": 31,
+          "rhythm": "Sinus tachycardia",
+          "sbp": 98,
+          "spo2": 90
+        }
+      },
+      "90": {
+        "core": {
+          "hr": 102.40637361074846,
+          "rr": 24.47734820969272,
+          "sbp": 92.34618781126406,
+          "spo2": 94.0
+        },
+        "legacy": {
+          "dbp": 61,
+          "hr": 117,
+          "mental_status": "Alert",
+          "pulse_present": true,
+          "respiratory_rate": 33,
+          "rhythm": "Sinus tachycardia",
+          "sbp": 95,
+          "spo2": 88
+        }
+      }
+    },
+    "used_for_parameters": false
+  },
+  "migration_gate": "MIGRATION_GATE_CLOSED: no runtime hook, collapse activation, clinical collapse threshold, ROSC / ACLS, NIV, common L -> G / SpO2, baroreflex -> tone, P-dependent afterload, full ACS rollout or third family.",
+  "policy": "Shadow only: no common file changes; the case mapping and the family writers are declared, never approved; the common profile is one predeclared point of the GI-carried uncertainty; no legacy output is a target; collapse is read structurally and never acts; nothing reaches runtime.",
+  "pump": {
+    "P_relative_to_arrival": "Channel.P: multiplier, arrival = 1",
+    "absolute_impairment": "the arrival layer: arrival_delivery_ratio (DO2 index against normal, derived.effective_delivery) and pump_reserve; never multiplied into output again",
+    "double_counting": false,
+    "output": "output_rel = P x rhythm share x preload response (on the current pump's curve, relative to arrival filling) x afterload (derived._perfusion)",
+    "pending_common_decision": "a depressed pump without added volume does not congest through the common coupling (derived.congestion_rate's own note): the family congestion writer carries the cardiogenic part",
+    "preload": "the curve's scale is preload_curve_scale_ml x P^c (derived.preload_position): a falling P lowers the plateau and the gain per mL",
+    "reserve": "pump_reserve enters only the congestion shortfall 1 - reserve x P (derived.congestion_rate)",
+    "second_pump_equation": true
+  },
+  "recommendation": "IMPLEMENT_EXPECTED_RESPIRATORY_EXTENSION",
+  "reperfusion": {
+    "P_better_than_ongoing": true,
+    "downstream_follow": true,
+    "ongoing": {
+      "D": 49.23186954716825,
+      "L": 0.5084675785187747,
+      "P": 0.7999999999999954,
+      "deficit": 0.3371705919367587,
+      "delivery_index": 0.2651317632252965,
+      "hr": 106.50409446019196,
+      "lactate": 2.4231730996907244,
+      "map": 66.64128338294326,
+      "output_rel": 0.7797993036038133
+    },
+    "only_P_and_L_written": true,
+    "reperfusion_minute": 60,
+    "shares": {
+      "0.0": {
+        "D": 46.41203313923446,
+        "L": 0.36772054756107925,
+        "P": 0.9016666666666644,
+        "P_at_reperfusion": 0.9016666666666644,
+        "P_stops_falling": true,
+        "deficit": 0.24344822964615853,
+        "delivery_index": 0.3026207081415366,
+        "hr": 101.98858515982704,
+        "lactate": 2.4110604710003845,
+        "map": 73.06141290310883,
+        "output_rel": 0.890060906298637,
+        "writes": {
+          "channels": [
+            "L",
+            "P"
+          ],
+          "other_writes": 0
+        }
+      },
+      "0.5": {
+        "D": 44.82083847833948,
+        "L": 0.29038879771069936,
+        "P": 0.9443974921419361,
+        "P_at_reperfusion": 0.9032785417262992,
+        "P_stops_falling": true,
+        "deficit": 0.2032000886433275,
+        "delivery_index": 0.318719964542669,
+        "hr": 99.98910104161838,
+        "lactate": 2.403324732165805,
+        "map": 75.57489093797393,
+        "output_rel": 0.9374116604196148,
+        "writes": {
+          "channels": [
+            "L",
+            "P"
+          ],
+          "other_writes": 0
+        }
+      },
+      "1.0": {
+        "D": 43.214406701282556,
+        "L": 0.2130570478603185,
+        "P": 0.9871283176172082,
+        "P_at_reperfusion": 0.9048904167859338,
+        "P_stops_falling": true,
+        "deficit": 0.16244448643376563,
+        "delivery_index": 0.33502220542649375,
+        "hr": 97.98435859927976,
+        "lactate": 2.395527252611747,
+        "map": 77.9787838861046,
+        "output_rel": 0.9853594277249818,
+        "writes": {
+          "channels": [
+            "L",
+            "P"
+          ],
+          "other_writes": 0
+        }
+      }
+    }
+  },
+  "revision": "P2N-2",
+  "untreated": {
+    "congestion": {
+      "0.5": 0.25423378925938733,
+      "1.0": 0.5084675785187747,
+      "2.0": 1.0169351570375493
+    },
+    "directions": {
+      "D_up": true,
+      "L_up": true,
+      "P_nonincreasing": true,
+      "Q_down": true,
+      "deficit_up": true,
+      "delivery_down": true,
+      "map_down": true,
+      "pulse_kept": true
+    },
+    "family_writes_only_P_and_L": true,
+    "hr_up_through_drive": true,
+    "k_ld": {
+      "0.000245327": [
+        3.1,
+        2.5711091489153475,
+        2.4231730996907244
+      ],
+      "0.000729069": [
+        3.1,
+        3.162776561427703,
+        3.71246545256694
+      ],
+      "0.00216667": [
+        3.1,
+        4.921110265454869,
+        7.544020394524127
+      ],
+      "2.77778e-05": [
+        3.1,
+        2.3050239194681623,
+        1.8433513209605925
+      ],
+      "8.25508e-05": [
+        3.1,
+        2.3720170617721106,
+        1.9893349331065906
+      ]
+    },
+    "lactate_core_only": true,
+    "region": {
+      "0.000833333": {
+        "D_up": true,
+        "L_up": true,
+        "P_nonincreasing": true,
+        "Q_down": true,
+        "at": {
+          "0": {
+            "D": 20.0,
+            "G": 0.0,
+            "L": 0.0,
+            "N": 0.0,
+            "P": 1.0,
+            "R": "sinus",
+            "T": 1.0,
+            "V": 0.0,
+            "W": 0.0,
+            "consciousness_level": 0,
+            "dbp": 66.0,
+            "deficit": 0.15000000000000013,
+            "delivery_index": 0.33999999999999997,
+            "delivery_rel": 1.0,
+            "drive": 0.47592592592592603,
+            "hr": 91.83632467016479,
+            "lactate": 3.1,
+            "map": 78.66666666666667,
+            "minute": 0,
+            "output_rel": 1.0,
+            "paco2": 30.769230769230766,
+            "ph": 7.390034611362518,
+            "pulse": true,
+            "rr": 25.530415204846477,
+            "sbp": 104.0,
+            "spo2": 94.0
+          },
+          "120": {
+            "D": 43.669401313333864,
+            "G": 0.0,
+            "L": 0.25423378925938733,
+            "N": 0.0,
+            "P": 0.8999999999999977,
+            "R": "sinus",
+            "T": 1.0437851107878293,
+            "V": 0.0,
+            "W": 0.0,
+            "consciousness_level": 0,
+            "dbp": 61.1969806080556,
+            "deficit": 0.2449183994600499,
+            "delivery_index": 0.30203264021598003,
+            "delivery_rel": 0.8883312947528825,
+            "drive": 0.8711473495461876,
+            "hr": 101.40500919660538,
+            "lactate": 2.3801751187806754,
+            "map": 72.94185567424809,
+            "minute": 120,
+            "output_rel": 0.8883312947528825,
+            "paco2": 32.36393264063529,
+            "ph": 7.397949830655621,
+            "pulse": true,
+            "rr": 23.860841121844256,
+            "sbp": 96.43160580663307,
+            "spo2": 94.0
+          },
+          "30": {
+            "D": 24.845662514397173,
+            "G": 0.0,
+            "L": 0.017440927571856772,
+            "N": 0.0,
+            "P": 0.9749999999999994,
+            "R": "sinus",
+            "T": 1.010751991820955,
+            "V": 0.0,
+            "W": 0.0,
+            "consciousness_level": 0,
+            "dbp": 64.83276626190506,
+            "deficit": 0.17391461897804805,
+            "delivery_index": 0.33043415240878077,
+            "delivery_rel": 0.971865154143473,
+            "drive": 0.5637554844245116,
+            "hr": 93.9913886008522,
+            "lactate": 2.780063802532724,
+            "map": 77.27541837277573,
+            "minute": 30,
+            "output_rel": 0.971865154143473,
+            "paco2": 31.538578441759817,
+            "ph": 7.394348324261701,
+            "pulse": true,
+            "rr": 24.725246305106943,
+            "sbp": 102.16072259451707,
+            "spo2": 94.0
+          },
+          "60": {
+            "D": 30.409265359078262,
+            "G": 0.0,
+            "L": 0.06815691179232296,
+            "N": 0.0,
+            "P": 0.9499999999999988,
+            "R": "sinus",
+            "T": 1.0218443967226944,
+            "V": 0.0,
+            "W": 0.0,
+            "consciousness_level": 0,
+            "dbp": 63.652508480221876,
+            "deficit": 0.19775735200122613,
+            "delivery_index": 0.32089705919950956,
+            "delivery_rel": 0.9438148799985576,
+            "drive": 0.6588650447989468,
+            "hr": 96.30852743797377,
+            "lactate": 2.565197557886205,
+            "map": 75.86864647137557,
+            "minute": 60,
+            "output_rel": 0.9438148799985576,
+            "paco2": 32.031531841633544,
+            "ph": 7.39661679951615,
+            "pulse": true,
+            "rr": 24.20897319488825,
+            "sbp": 100.30092245368296,
+            "spo2": 94.0
+          },
+          "90": {
+            "D": 36.68558713396076,
+            "G": 0.0,
+            "L": 0.14823803043851397,
+            "N": 0.0,
+            "P": 0.9249999999999983,
+            "R": "sinus",
+            "T": 1.0328548393808907,
+            "V": 0.0,
+            "W": 0.0,
+            "consciousness_level": 0,
+            "dbp": 62.44034766616561,
+            "deficit": 0.2214239968587085,
+            "delivery_index": 0.3114304012565166,
+            "delivery_rel": 0.9159717684015195,
+            "drive": 0.7613482156048771,
+            "hr": 98.78304548047687,
+            "lactate": 2.4367497128534388,
+            "map": 74.42384873340951,
+            "minute": 90,
+            "output_rel": 0.9159717684015195,
+            "paco2": 32.2919229592084,
+            "ph": 7.3976738450928625,
+            "pulse": true,
+            "rr": 23.936254423513052,
+            "sbp": 98.39085086789731,
+            "spo2": 94.0
+          }
+        },
+        "deficit_up": true,
+        "delivery_down": true,
+        "first": {
+          "D": 20.0,
+          "G": 0.0,
+          "L": 0.0,
+          "N": 0.0,
+          "P": 1.0,
+          "R": "sinus",
+          "T": 1.0,
+          "V": 0.0,
+          "W": 0.0,
+          "consciousness_level": 0,
+          "dbp": 66.0,
+          "deficit": 0.15000000000000013,
+          "delivery_index": 0.33999999999999997,
+          "delivery_rel": 1.0,
+          "drive": 0.47592592592592603,
+          "hr": 91.83632467016479,
+          "lactate": 3.1,
+          "map": 78.66666666666667,
+          "minute": 0,
+          "output_rel": 1.0,
+          "paco2": 30.769230769230766,
+          "ph": 7.390034611362518,
+          "pulse": true,
+          "rr": 25.530415204846477,
+          "sbp": 104.0,
+          "spo2": 94.0
+        },
+        "lactate": {
+          "core_lactate_every_minute": true,
+          "no_family_lactate_write": true
+        },
+        "last": {
+          "D": 43.669401313333864,
+          "G": 0.0,
+          "L": 0.25423378925938733,
+          "N": 0.0,
+          "P": 0.8999999999999977,
+          "R": "sinus",
+          "T": 1.0437851107878293,
+          "V": 0.0,
+          "W": 0.0,
+          "consciousness_level": 0,
+          "dbp": 61.1969806080556,
+          "deficit": 0.2449183994600499,
+          "delivery_index": 0.30203264021598003,
+          "delivery_rel": 0.8883312947528825,
+          "drive": 0.8711473495461876,
+          "hr": 101.40500919660538,
+          "lactate": 2.3801751187806754,
+          "map": 72.94185567424809,
+          "minute": 120,
+          "output_rel": 0.8883312947528825,
+          "paco2": 32.36393264063529,
+          "ph": 7.397949830655621,
+          "pulse": true,
+          "rr": 23.860841121844256,
+          "sbp": 96.43160580663307,
+          "spo2": 94.0
+        },
+        "map_down": true,
+        "pulse_kept": true,
+        "writes": {
+          "channels": [
+            "L",
+            "P"
+          ],
+          "other_writes": 0
+        }
+      },
+      "0.00166667": {
+        "D_up": true,
+        "L_up": true,
+        "P_nonincreasing": true,
+        "Q_down": true,
+        "at": {
+          "0": {
+            "D": 20.0,
+            "G": 0.0,
+            "L": 0.0,
+            "N": 0.0,
+            "P": 1.0,
+            "R": "sinus",
+            "T": 1.0,
+            "V": 0.0,
+            "W": 0.0,
+            "consciousness_level": 0,
+            "dbp": 66.0,
+            "deficit": 0.15000000000000013,
+            "delivery_index": 0.33999999999999997,
+            "delivery_rel": 1.0,
+            "drive": 0.47592592592592603,
+            "hr": 91.83632467016479,
+            "lactate": 3.1,
+            "map": 78.66666666666667,
+            "minute": 0,
+            "output_rel": 1.0,
+            "paco2": 30.769230769230766,
+            "ph": 7.390034611362518,
+            "pulse": true,
+            "rr": 25.530415204846477,
+            "sbp": 104.0,
+            "spo2": 94.0
+          },
+          "120": {
+            "D": 49.23186954716825,
+            "G": 0.0,
+            "L": 0.5084675785187747,
+            "N": 0.0,
+            "P": 0.7999999999999954,
+            "R": "sinus",
+            "T": 1.0863499804920966,
+            "V": 0.0,
+            "W": 0.0,
+            "consciousness_level": 0,
+            "dbp": 55.910907245011714,
+            "deficit": 0.3371705919367587,
+            "delivery_index": 0.2651317632252965,
+            "delivery_rel": 0.7797993036038133,
+            "drive": 1.089030583153516,
+            "hr": 106.50409446019196,
+            "lactate": 2.4231730996907244,
+            "map": 66.64128338294326,
+            "minute": 120,
+            "output_rel": 0.7797993036038133,
+            "paco2": 31.51837993868213,
+            "ph": 7.394247529282855,
+            "pulse": true,
+            "rr": 24.746397028449316,
+            "sbp": 88.10203565880633,
+            "spo2": 94.0
+          },
+          "30": {
+            "D": 25.18973413901131,
+            "G": 0.0,
+            "L": 0.034881855143713544,
+            "N": 0.0,
+            "P": 0.9499999999999988,
+            "R": "sinus",
+            "T": 1.021429721062353,
+            "V": 0.0,
+            "W": 0.0,
+            "consciousness_level": 0,
+            "dbp": 63.634542362779996,
+            "deficit": 0.1976581883659949,
+            "delivery_index": 0.320936724653602,
+            "delivery_rel": 0.9439315430988295,
+            "drive": 0.6068085040761935,
+            "hr": 95.04256879596934,
+            "lactate": 2.7808074272820793,
+            "map": 75.84723231119231,
+            "minute": 30,
+            "output_rel": 0.9439315430988295,
+            "paco2": 31.474624435296157,
+            "ph": 7.394026983239025,
+            "pulse": true,
+            "rr": 24.792213857843514,
+            "sbp": 100.27261220801697,
+            "spo2": 94.0
+          },
+          "60": {
+            "D": 31.805160504745032,
+            "G": 0.0,
+            "L": 0.13631382358464592,
+            "N": 0.0,
+            "P": 0.8999999999999977,
+            "R": "sinus",
+            "T": 1.0433797540436842,
+            "V": 0.0,
+            "W": 0.0,
+            "consciousness_level": 0,
+            "dbp": 61.18055812112971,
+            "deficit": 0.24482775586338112,
+            "delivery_index": 0.30206889765464756,
+            "delivery_rel": 0.8884379342783753,
+            "drive": 0.7526317898341417,
+            "hr": 98.5735586994762,
+            "lactate": 2.5711091489153475,
+            "map": 72.92228139690208,
+            "minute": 60,
+            "output_rel": 0.8884379342783753,
+            "paco2": 31.785642769447854,
+            "ph": 7.395530448800131,
+            "pulse": true,
+            "rr": 24.46650788817803,
+            "sbp": 96.40572794844681,
+            "spo2": 94.0
+          },
+          "90": {
+            "D": 39.82581603905505,
+            "G": 0.0,
+            "L": 0.29647606087702794,
+            "N": 0.0,
+            "P": 0.8499999999999965,
+            "R": "sinus",
+            "T": 1.0650154618321286,
+            "V": 0.0,
+            "W": 0.0,
+            "consciousness_level": 0,
+            "dbp": 58.604311495609885,
+            "deficit": 0.291322498514734,
+            "delivery_index": 0.2834710005941064,
+            "delivery_rel": 0.8337382370414895,
+            "drive": 0.9134517300071963,
+            "hr": 102.40637361074846,
+            "lactate": 2.4558468735622343,
+            "map": 69.85160360082794,
+            "minute": 90,
+            "output_rel": 0.8337382370414895,
+            "paco2": 31.775292287737027,
+            "ph": 7.3954827777416385,
+            "pulse": true,
+            "rr": 24.47734820969272,
+            "sbp": 92.34618781126406,
+            "spo2": 94.0
+          }
+        },
+        "deficit_up": true,
+        "delivery_down": true,
+        "first": {
+          "D": 20.0,
+          "G": 0.0,
+          "L": 0.0,
+          "N": 0.0,
+          "P": 1.0,
+          "R": "sinus",
+          "T": 1.0,
+          "V": 0.0,
+          "W": 0.0,
+          "consciousness_level": 0,
+          "dbp": 66.0,
+          "deficit": 0.15000000000000013,
+          "delivery_index": 0.33999999999999997,
+          "delivery_rel": 1.0,
+          "drive": 0.47592592592592603,
+          "hr": 91.83632467016479,
+          "lactate": 3.1,
+          "map": 78.66666666666667,
+          "minute": 0,
+          "output_rel": 1.0,
+          "paco2": 30.769230769230766,
+          "ph": 7.390034611362518,
+          "pulse": true,
+          "rr": 25.530415204846477,
+          "sbp": 104.0,
+          "spo2": 94.0
+        },
+        "lactate": {
+          "core_lactate_every_minute": true,
+          "no_family_lactate_write": true
+        },
+        "last": {
+          "D": 49.23186954716825,
+          "G": 0.0,
+          "L": 0.5084675785187747,
+          "N": 0.0,
+          "P": 0.7999999999999954,
+          "R": "sinus",
+          "T": 1.0863499804920966,
+          "V": 0.0,
+          "W": 0.0,
+          "consciousness_level": 0,
+          "dbp": 55.910907245011714,
+          "deficit": 0.3371705919367587,
+          "delivery_index": 0.2651317632252965,
+          "delivery_rel": 0.7797993036038133,
+          "drive": 1.089030583153516,
+          "hr": 106.50409446019196,
+          "lactate": 2.4231730996907244,
+          "map": 66.64128338294326,
+          "minute": 120,
+          "output_rel": 0.7797993036038133,
+          "paco2": 31.51837993868213,
+          "ph": 7.394247529282855,
+          "pulse": true,
+          "rr": 24.746397028449316,
+          "sbp": 88.10203565880633,
+          "spo2": 94.0
+        },
+        "map_down": true,
+        "pulse_kept": true,
+        "writes": {
+          "channels": [
+            "L",
+            "P"
+          ],
+          "other_writes": 0
+        }
+      },
+      "0.00333333": {
+        "D_up": true,
+        "L_up": true,
+        "P_nonincreasing": true,
+        "Q_down": true,
+        "at": {
+          "0": {
+            "D": 20.0,
+            "G": 0.0,
+            "L": 0.0,
+            "N": 0.0,
+            "P": 1.0,
+            "R": "sinus",
+            "T": 1.0,
+            "V": 0.0,
+            "W": 0.0,
+            "consciousness_level": 0,
+            "dbp": 66.0,
+            "deficit": 0.15000000000000013,
+            "delivery_index": 0.33999999999999997,
+            "delivery_rel": 1.0,
+            "drive": 0.47592592592592603,
+            "hr": 91.83632467016479,
+            "lactate": 3.1,
+            "map": 78.66666666666667,
+            "minute": 0,
+            "output_rel": 1.0,
+            "paco2": 30.769230769230766,
+            "ph": 7.390034611362518,
+            "pulse": true,
+            "rr": 25.530415204846477,
+            "sbp": 104.0,
+            "spo2": 94.0
+          },
+          "120": {
+            "D": 60.061173226302685,
+            "G": 0.0,
+            "L": 1.016935157037515,
+            "N": 0.0,
+            "P": 0.6000000000000041,
+            "R": "sinus",
+            "T": 1.168191990358933,
+            "V": 0.0,
+            "W": 0.0,
+            "consciousness_level": 1,
+            "dbp": 44.038334289348775,
+            "deficit": 0.5144972996489982,
+            "delivery_index": 0.19420108014040074,
+            "delivery_rel": 0.571179647471767,
+            "drive": 1.5318853005828268,
+            "hr": 116.34908692082539,
+            "lactate": 2.5073576154558235,
+            "map": 52.49013581962783,
+            "minute": 120,
+            "output_rel": 0.571179647471767,
+            "paco2": 29.995744657625494,
+            "ph": 7.384606389537122,
+            "pulse": true,
+            "rr": 26.338282480056016,
+            "sbp": 69.39373888018595,
+            "spo2": 94.0
+          },
+          "30": {
+            "D": 25.873200308985243,
+            "G": 0.0,
+            "L": 0.06976371028742476,
+            "N": 0.0,
+            "P": 0.900000000000001,
+            "R": "sinus",
+            "T": 1.0425682845856221,
+            "V": 0.0,
+            "W": 0.0,
+            "consciousness_level": 0,
+            "dbp": 61.14767067033323,
+            "deficit": 0.24464623421937048,
+            "delivery_index": 0.3021415063122518,
+            "delivery_rel": 0.8886514891536818,
+            "drive": 0.6935662127189512,
+            "hr": 97.14914924869743,
+            "lactate": 2.782287265101166,
+            "map": 72.88308221312445,
+            "minute": 30,
+            "output_rel": 0.8886514891536818,
+            "paco2": 31.348370201177104,
+            "ph": 7.393373547436584,
+            "pulse": true,
+            "rr": 24.924403374532645,
+            "sbp": 96.3539052987069,
+            "spo2": 94.0
+          },
+          "60": {
+            "D": 34.55847623831768,
+            "G": 0.0,
+            "L": 0.2726276471692828,
+            "N": 0.0,
+            "P": 0.800000000000002,
+            "R": "sinus",
+            "T": 1.085573042682078,
+            "V": 0.0,
+            "W": 0.0,
+            "consciousness_level": 0,
+            "dbp": 55.88361730300419,
+            "deficit": 0.33701996563346237,
+            "delivery_index": 0.26519201374661505,
+            "delivery_rel": 0.7799765110194561,
+            "drive": 0.9425074393797711,
+            "hr": 103.09111012943973,
+            "lactate": 2.5828082066708813,
+            "map": 66.60875597731813,
+            "minute": 60,
+            "output_rel": 0.7799765110194561,
+            "paco2": 31.311804799879575,
+            "ph": 7.393179503431534,
+            "pulse": true,
+            "rr": 24.962683799403514,
+            "sbp": 88.059033325946,
+            "spo2": 94.0
+          },
+          "90": {
+            "D": 45.978393519658965,
+            "G": 0.0,
+            "L": 0.592952121754036,
+            "N": 0.0,
+            "P": 0.7000000000000031,
+            "R": "sinus",
+            "T": 1.1274178889818298,
+            "V": 0.0,
+            "W": 0.0,
+            "consciousness_level": 1,
+            "dbp": 50.1689788574439,
+            "deficit": 0.42690670148588794,
+            "delivery_index": 0.22923731940564482,
+            "delivery_rel": 0.6742274100166025,
+            "drive": 1.2222754284694157,
+            "hr": 109.54494183433776,
+            "lactate": 2.49343547460425,
+            "map": 59.79736873917557,
+            "minute": 90,
+            "output_rel": 0.6742274100166025,
+            "paco2": 30.810657331674022,
+            "ph": 7.390292925767547,
+            "pulse": true,
+            "rr": 25.48709132362987,
+            "sbp": 79.05414850263888,
+            "spo2": 94.0
+          }
+        },
+        "deficit_up": true,
+        "delivery_down": true,
+        "first": {
+          "D": 20.0,
+          "G": 0.0,
+          "L": 0.0,
+          "N": 0.0,
+          "P": 1.0,
+          "R": "sinus",
+          "T": 1.0,
+          "V": 0.0,
+          "W": 0.0,
+          "consciousness_level": 0,
+          "dbp": 66.0,
+          "deficit": 0.15000000000000013,
+          "delivery_index": 0.33999999999999997,
+          "delivery_rel": 1.0,
+          "drive": 0.47592592592592603,
+          "hr": 91.83632467016479,
+          "lactate": 3.1,
+          "map": 78.66666666666667,
+          "minute": 0,
+          "output_rel": 1.0,
+          "paco2": 30.769230769230766,
+          "ph": 7.390034611362518,
+          "pulse": true,
+          "rr": 25.530415204846477,
+          "sbp": 104.0,
+          "spo2": 94.0
+        },
+        "lactate": {
+          "core_lactate_every_minute": true,
+          "no_family_lactate_write": true
+        },
+        "last": {
+          "D": 60.061173226302685,
+          "G": 0.0,
+          "L": 1.016935157037515,
+          "N": 0.0,
+          "P": 0.6000000000000041,
+          "R": "sinus",
+          "T": 1.168191990358933,
+          "V": 0.0,
+          "W": 0.0,
+          "consciousness_level": 1,
+          "dbp": 44.038334289348775,
+          "deficit": 0.5144972996489982,
+          "delivery_index": 0.19420108014040074,
+          "delivery_rel": 0.571179647471767,
+          "drive": 1.5318853005828268,
+          "hr": 116.34908692082539,
+          "lactate": 2.5073576154558235,
+          "map": 52.49013581962783,
+          "minute": 120,
+          "output_rel": 0.571179647471767,
+          "paco2": 29.995744657625494,
+          "ph": 7.384606389537122,
+          "pulse": true,
+          "rr": 26.338282480056016,
+          "sbp": 69.39373888018595,
+          "spo2": 94.0
+        },
+        "map_down": true,
+        "pulse_kept": true,
+        "writes": {
+          "channels": [
+            "L",
+            "P"
+          ],
+          "other_writes": 0
+        }
+      }
+    },
+    "steps": 1680,
+    "tone": {
+      "0.25": {
+        "D": 48.66917834757714,
+        "P": 0.7999999999999954,
+        "T": 1.0426813437736462,
+        "map": 64.7898176244363,
+        "output_rel": 0.7898859814649287
+      },
+      "0.5": {
+        "D": 49.23186954716825,
+        "P": 0.7999999999999954,
+        "T": 1.0863499804920966,
+        "map": 66.64128338294326,
+        "output_rel": 0.7797993036038133
+      },
+      "1.0": {
+        "D": 50.3779137807644,
+        "P": 0.7999999999999954,
+        "T": 1.176103886329649,
+        "map": 70.30200122335668,
+        "output_rel": 0.759855925538607
+      }
+    }
+  },
+  "upstream": {
+    "core_readers_of_family": [],
+    "digest": "96e4e100a51132cbe19271da5bb9ab32837aea9abbf73f88ccc004051af9a423",
+    "files": 69,
+    "unchanged": true
+  },
+  "verdict": {
+    "checks": {
+      "L_represents_congestion": true,
+      "arrival_representable": true,
+      "boundaries_hold": true,
+      "collapse_inactive": true,
+      "collapse_structural": true,
+      "common_downstream": true,
+      "d_lactate_coherent": true,
+      "gi_unchanged": true,
+      "ischaemia_writer_evolves_P": true,
+      "legacy_not_target": true,
+      "no_core_retuning": true,
+      "pump_through_P": true,
+      "reperfusion_targets_P": true,
+      "respiratory_deferred": true
+    },
+    "failing": [],
+    "rule": "Predeclared. READY iff every criterion holds; otherwise NOT_READY - the first failing criterion.",
+    "verdict": "CARDIOGENIC_SHADOW_MIGRATION_READY"
+  }
+}
