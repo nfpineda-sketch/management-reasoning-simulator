@@ -16,6 +16,7 @@ from fractions import Fraction
 import pytest
 
 from clinical_core import blood_fluid_calibration as bf
+from clinical_core import gas_exchange_architecture as go
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import respiratory_monotonicity as rm
@@ -36,6 +37,21 @@ N = 121
 
 
 # Synthetic, non-clinical blood records (the shape of P2J-3's cached records, as in P2K-4's tests) ---------------------------
+
+#: P2O-1 inserted its declared, inert names into derived.py and integration.py, proven byte for byte against the P2N-2
+#: files (gas_exchange_architecture.proved): this package's guards read the P2N-2 core (go.p2n2_text, go.p2n2_sources,
+#: go.p2n2_unchanged), never the live one; the record is unchanged.
+_LIVE_SOURCES_P2O1 = bf.freeze_sources
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _p2n2_core():
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(vt, "_live", go.p2n2_text)
+        patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
+        patch.setattr(rm, "closed_unchanged", lambda: go.p2n2_unchanged(rm.CLOSED_AT_P2K4))
+        yield
+
 
 def _record(output, crystalloid=None, prbc=None, controlled_at=None):
     return {"output1": list(output), "hb": [7.0] * N, "spo2": [0.97] * N, "pulse": [True] * N, "bleed": [1.0] * N,

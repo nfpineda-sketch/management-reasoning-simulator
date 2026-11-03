@@ -14,6 +14,7 @@ import math
 import pytest
 
 from clinical_core import blood_fluid_calibration as bf
+from clinical_core import gas_exchange_architecture as go
 from clinical_core import collapse as cx
 from clinical_core import collapse_architecture as cy
 from clinical_core import decision_pack, lactate_slice
@@ -34,7 +35,16 @@ FROZEN_DIGEST = "5f96f8603f2ecdcbf585cfac38e8abf4d4aec9ea9c64772d7d0c46da2f2544a
 #: the ACS mapping, family writers and analysis removed, the tuple-only files at their P2M-2 hashes while only their
 #: tuples changed; the import scan without the ACS analysis alone, which reads the candidate structurally: the ACS
 #: mapping and family writers stay in the scan, so a collapse import there is caught); the record is unchanged.
-_FREEZE_SOURCES, _IMPORTED_BY = bf.freeze_sources, cy.imported_by
+_LIVE_SOURCES_P2O1 = bf.freeze_sources
+
+
+def _FREEZE_SOURCES() -> dict:
+    # P2O-1 inserted its declared, inert names into derived.py and integration.py, proven byte for byte against the
+    # P2N-2 files (gas_exchange_architecture.proved): this view starts from the P2N-2 core, P2O-1's analysis left out.
+    return go.p2n2_sources(_LIVE_SOURCES_P2O1())
+
+
+_IMPORTED_BY = cy.imported_by
 ACS_ANALYSIS = "clinical_core/acs_migration.py"
 
 
@@ -44,7 +54,8 @@ def _p2m2_view() -> dict:
 
 
 def _p2m2_imported_by() -> list:
-    return [path for path in _IMPORTED_BY() if path != ACS_ANALYSIS]
+    # P2O-1's analysis reads the collapse layer only to show it unchanged (delivery only, no SpO2 input).
+    return [path for path in _IMPORTED_BY() if path not in (ACS_ANALYSIS, go.OWN[0])]
 
 
 def _patch(patch) -> None:

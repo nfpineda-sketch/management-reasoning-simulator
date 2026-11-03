@@ -17,6 +17,7 @@ import pytest
 from clinical_core import acs_migration as an
 from clinical_core import acs_reference as ar
 from clinical_core import blood_fluid_calibration as bf
+from clinical_core import gas_exchange_architecture as go
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import vascular_tone as vt
@@ -30,6 +31,31 @@ ROOT = an.ROOT
 #: counterfactuals, the criteria, the boundary rules and every clinical_core source but the downstream reports, committed
 #: before the evaluation run.
 FROZEN_DIGEST = "e7ff21e577cfadc3990ac9a27a3524d4e3bb80a7870d47e27dcc6e9420b7a718"
+
+
+#: P2O-1 inserted its declared, inert names into derived.py and integration.py, proven byte for byte against the P2N-2
+#: files (gas_exchange_architecture.proved): this package's guards read the P2N-2 core (go.p2n2_text, go.p2n2_sources,
+#: go.p2n2_unchanged), never the live one; the record is unchanged.
+_LIVE_SOURCES_P2O1 = bf.freeze_sources
+
+
+_UPSTREAM_P2N2 = an.upstream_unchanged
+
+
+def _p2n2_upstream() -> dict:
+    # P2O-1's analysis reads the ACS case for its post-freeze validation: an analysis module, never common
+    # physiology; the common-core readers of the family stay what P2N-2 froze.
+    up = _UPSTREAM_P2N2()
+    return {**up, "core_readers_of_family": [r for r in up["core_readers_of_family"] if r not in go.OWN]}
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _p2n2_core():
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(vt, "_live", go.p2n2_text)
+        patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
+        patch.setattr(an, "upstream_unchanged", _p2n2_upstream)
+        yield
 
 
 def _start():

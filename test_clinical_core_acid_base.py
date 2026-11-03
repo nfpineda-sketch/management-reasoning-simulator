@@ -18,6 +18,7 @@ import pytest
 
 from clinical_core import acid_base as ab
 from clinical_core import blood_fluid_calibration as bf
+from clinical_core import gas_exchange_architecture as go
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import integration
@@ -35,6 +36,20 @@ SOURCE = ROOT / "clinical_core" / "acid_base.py"
 FROZEN_DIGEST = "7540ee76a681d272e8ac290781771d83d19c1562ea152209c88809aa4e8b710c"
 C57, C72 = ab.C57, ab.C72
 GAINS = ("deficit_to_acid_gain", "acid_clearance_tau_min", "acid_to_drive_gain")
+
+
+#: P2O-1 inserted its declared, inert names into derived.py and integration.py, proven byte for byte against the P2N-2
+#: files (gas_exchange_architecture.proved): this package's guards read the P2N-2 core (go.p2n2_text, go.p2n2_sources,
+#: go.p2n2_unchanged), never the live one; the record is unchanged.
+_LIVE_SOURCES_P2O1 = bf.freeze_sources
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _p2n2_core():
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(vt, "_live", go.p2n2_text)
+        patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
+        yield
 
 
 @pytest.fixture(scope="module")

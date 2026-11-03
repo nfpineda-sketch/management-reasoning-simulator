@@ -18,6 +18,7 @@ import math
 import pytest
 
 from clinical_core import blood_fluid_calibration as bf
+from clinical_core import gas_exchange_architecture as go
 from clinical_core import consciousness_audit as ca
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import encephalopathy as enc
@@ -40,11 +41,20 @@ TEST_MAPPING = enc.SignalMapping(normal=10.0, severe=0.0)
 #: P2M-1's layer, added after P2L-2 closed: this package's view of the tree leaves it out (collapse_audit.p2l2_sources:
 #: the audit removed, the tuple-only files at their P2L-2 hashes while only their tuples changed; P2L-1's frozen N scan
 #: without the audit); the record is unchanged.
-_FREEZE_SOURCES, _PYTHON = bf.freeze_sources, ca._python
+_LIVE_SOURCES_P2O1 = bf.freeze_sources
+
+
+def _FREEZE_SOURCES() -> dict:
+    # P2O-1 inserted its declared, inert names into derived.py and integration.py, proven byte for byte against the
+    # P2N-2 files (gas_exchange_architecture.proved): this view starts from the P2N-2 core, P2O-1's analysis left out.
+    return go.p2n2_sources(_LIVE_SOURCES_P2O1())
+
+
+_PYTHON, _EA_IMPORTED_BY = ca._python, ea.imported_by
 LATER_MODULES = ("clinical_core/collapse_audit.py", "clinical_core/collapse.py",
                  "clinical_core/collapse_architecture.py",
                  "clinical_core/acs_reference.py", "clinical_core/modules/acs_ischaemia.py",
-                 "clinical_core/acs_migration.py")
+                 "clinical_core/acs_migration.py", "clinical_core/gas_exchange_architecture.py")
 
 
 def _p2l2_view() -> dict:
@@ -56,12 +66,15 @@ def _p2l2_view() -> dict:
 
 def _p2l2_python() -> list:
     later = {ROOT / relative for relative in LATER_MODULES}
-    return [p for p in _PYTHON() if p not in later]
+    # P2O-1: the scans read the two core files as P2N-2 left them (go.p2n2_path, proven).
+    return [go.p2n2_path(p) for p in _PYTHON() if p not in later]
 
 
 def _patch(patch) -> None:
     patch.setattr(bf, "freeze_sources", _p2l2_view)
     patch.setattr(ca, "_python", _p2l2_python)
+    # P2O-1's analysis imports the candidate only to read its hypoxaemia signal (the candidate unchanged).
+    patch.setattr(ea, "imported_by", lambda: [p for p in _EA_IMPORTED_BY() if p != go.OWN[0]])
 
 
 @pytest.fixture(autouse=True)

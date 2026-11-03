@@ -17,6 +17,7 @@ import pytest
 from clinical_core import bands, decision_pack, lactate_slice
 from clinical_core import baroreflex as br
 from clinical_core import blood_fluid_calibration as bf
+from clinical_core import gas_exchange_architecture as go
 from clinical_core import derived as dv
 from clinical_core import hr_primary as hp
 from clinical_core import lactate_adequacy as la
@@ -58,6 +59,20 @@ P2J2_SOURCES = {"clinical_core/derived.py": "87f773f54d6bc4d125ef7817eb79383e7b7
                 "clinical_core/integration.py": "cb54d2eec3754eecdd7267dba58b0389203b233b16a86455f5280d1eafa520f0",
                 "clinical_core/shadow.py": "66ef25c952509f0765731cfc0c0b97274bc5a4d263dcb486b595a8585a99ef35"}
 C57, C72 = vt.C57, vt.C72
+
+
+#: P2O-1 inserted its declared, inert names into derived.py and integration.py, proven byte for byte against the P2N-2
+#: files (gas_exchange_architecture.proved): this package's guards read the P2N-2 core (go.p2n2_text, go.p2n2_sources,
+#: go.p2n2_unchanged), never the live one; the record is unchanged.
+_LIVE_SOURCES_P2O1 = bf.freeze_sources
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _p2n2_core():
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(vt, "_live", go.p2n2_text)
+        patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
+        yield
 
 
 def _ab():

@@ -42,6 +42,7 @@ from .derived import (ADOPTED, AUXILIARY_SOURCES, BLOOD_COMPOSITION, COLLAPSE, D
                       blood_haemoglobin, collapse_burden_after_minute, collapse_reached, congestion_rate,
                       delivery_rel_of, derive, effective_delivery, effective_oxygen_deficit, lactate_after_minute, lung_water_clearance,
                       acid_base_active, acid_burden_after_minute,
+                      LUNG_WATER_GAS_EXCHANGE, lung_water_gas_exchange, lung_water_gas_exchange_active,
                       oxygen_demand, plasma_refill, red_cell_content, sympathetic_after_minute, terminal_rhythm,
                       tone_target)
 from .provenance import (BLOOD_PROCESSES, AuxiliaryChange, BloodChange, BloodFlow, BloodProcess, ChannelDelta,
@@ -429,6 +430,12 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
     values = {}
     for channel in SCALAR_CHANNELS:
         before = state.value(channel)
+        if channel is Channel.G and lung_water_gas_exchange_active(profile):
+            # P2O-1: G follows the minute's bounded lung water (L precedes G here), recorded as a core coupling.
+            coupling = lung_water_gas_exchange(state.L, values[Channel.L.value], profile)
+            if coupling:
+                deltas.append(ChannelDelta(Channel.G, coupling, LUNG_WATER_GAS_EXCHANGE, minute,
+                                           "gas exchange following lung water above arrival (L -> G)"))
         proposed = before + math.fsum(delta.amount for delta in deltas if delta.channel is channel)
         lower, upper, _, why = CHANNEL_BOUNDS[channel]
         if channel is Channel.V:

@@ -47,6 +47,8 @@ AUXILIARY_SOURCES = {"lactate_excess_mmol_l": LACTATE_KINETICS, "sympathetic_dri
 PRELOAD_CONGESTION = Source(SourceKind.CORE_COUPLING, "preload_congestion")
 #: The core's slow clearance of lung water above arrival (P2D-6).
 LUNG_WATER_CLEARANCE = Source(SourceKind.CORE_COUPLING, "lung_water_clearance")
+#: The core's coupling from lung water above arrival to gas exchange G (P2O-1); off unless the profile declares it.
+LUNG_WATER_GAS_EXCHANGE = Source(SourceKind.CORE_COUPLING, "lung_water_gas_exchange")
 #: The core's terminal collapse from sustained critically low output (P2E-3): it accumulates the
 #: burden and, when the rule is on and the criterion is met, moves R to a pulseless rhythm.
 COLLAPSE = Source(SourceKind.CORE_COUPLING, "collapse")
@@ -157,6 +159,13 @@ class CoreProfile:
     plasma_refill_target_share: float = 0.5
     plasma_refill_tau_min: float = 120.0
     plasma_refill_capacity_ml: float = 1000.0
+    # P2O-1: gas exchange G, the effective gas-exchange impairment relative to arrival (G = 0 is the arrival lung state,
+    # never normal lungs). Off by default (None): no clinical value is chosen. Lung water above arrival raises G (L -> G,
+    # first order); G lowers SpO2 and the share of the oxygen benefit it keeps (G -> oxygenation). Only G above arrival
+    # acts: an improvement below the arrival state needs the arrival impairment, which L and G do not carry (O1).
+    lung_water_to_gas_exchange_gain: float | None = None
+    spo2_per_gas_exchange_unit: float | None = None
+    oxygen_response_loss_per_gas_exchange_unit: float | None = None
 
     def __post_init__(self):
         for item in fields(self):
@@ -238,6 +247,16 @@ class CoreProfile:
         if not 0.0 < self.ventilation_efficiency <= 1.0:
             # Effective ventilation is never more than the ventilation RR moves (P2K-2).
             raise CoreInvariantError("the ventilation efficiency is above 0 and at most 1")
+        if (self.spo2_per_gas_exchange_unit is None) != (self.oxygen_response_loss_per_gas_exchange_unit is None):
+            # P2O-1: the oxygenation mapping of G is one structure; half of it would leave SpO2 half-defined.
+            raise CoreInvariantError("the oxygenation mapping of gas exchange declares its SpO2 scale and its oxygen-"
+                                     "response loss together, or neither")
+        if self.spo2_per_gas_exchange_unit is not None and self.spo2_per_gas_exchange_unit <= 0.0:
+            # P2O-1: a worse G that lowers no SpO2 would not be an impairment.
+            raise CoreInvariantError("the SpO2 scale of gas exchange is positive")
+        if self.lung_water_to_gas_exchange_gain is not None and self.spo2_per_gas_exchange_unit is None:
+            # P2O-1: L -> G without G -> oxygenation would write a G nothing reads.
+            raise CoreInvariantError("the lung-water coupling to gas exchange needs the oxygenation mapping of G")
 
     def to_dict(self) -> dict:
         return {item.name: (list(map(list, getattr(self, item.name))) if isinstance(getattr(self, item.name), tuple)
@@ -405,6 +424,16 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
                                            "(P2I-2T): TBD"),
     "plasma_refill_capacity_ml": (PROVISIONAL, "SYNTHETIC/CANDIDATE finite interstitial reserve: the most plasma "
                                                "refill can add in an encounter (P2I-2T): TBD"),
+    "lung_water_to_gas_exchange_gain": (PROVISIONAL, "UNSET (P2O-1): G added per unit of lung water above arrival, "
+                                                     "G = gain x max(0, L) (first order, no threshold); None by "
+                                                     "default (off); SYNTHETIC_ONLY values in probes; not approved"),
+    "spo2_per_gas_exchange_unit": (PROVISIONAL, "UNSET (P2O-1): SpO2 points lost per unit of G above arrival with no "
+                                                "oxygen benefit; None by default (off); SYNTHETIC_ONLY values in "
+                                                "probes; not approved"),
+    "oxygen_response_loss_per_gas_exchange_unit": (PROVISIONAL, "UNSET (P2O-1): the oxygen benefit G keeps is 1 / (1 "
+                                                                "+ loss x max(0, G)), its effective shunt-like share "
+                                                                "lost, internal to the mapping, never a shunt state; "
+                                                                "None by default (off); not approved"),
 }
 
 
@@ -1098,6 +1127,8 @@ def _perfusion(state: CoreState, anchors: Anchors, profile: CoreProfile) -> tupl
     pressure_rel = output_rel * state.T
     oxygen = (max(0.0, state.fio2 - profile.room_air_fio2) - max(0.0, anchors.fio2 - profile.room_air_fio2))
     spo2 = min(100.0, max(0.0, anchors.spo2 + profile.spo2_per_fio2 * oxygen))
+    if gas_exchange_active(profile):
+        spo2 = oxygenation(state.G, state.fio2, anchors, profile)
     delivery_rel = relative_delivery(output_rel, state.hb, spo2, anchors)
     return output_rel, pressure_rel, spo2, delivery_rel
 
@@ -1251,6 +1282,50 @@ def lung_water_clearance(state: CoreState, profile: CoreProfile) -> float:
     treatments (diuretics, NIV) are not modelled here.
     """
     return max(0.0, state.L) * -math.expm1(-1.0 / profile.lung_water_clearance_tau_min)
+
+
+def gas_exchange_active(profile: CoreProfile) -> bool:
+    """P2O-1: whether the profile declares the oxygenation mapping of gas exchange G (off by default)."""
+    return profile.spo2_per_gas_exchange_unit is not None
+
+
+def lung_water_gas_exchange_active(profile: CoreProfile) -> bool:
+    """P2O-1: whether the profile declares the lung-water coupling L -> G (off by default)."""
+    return profile.lung_water_to_gas_exchange_gain is not None
+
+
+def lung_water_gas_exchange(before_l: float, after_l: float, profile: CoreProfile) -> float:
+    """The change of G one minute's lung water makes (P2O-1): gain x (max(0, L after) - max(0, L before)).
+
+    Summed from arrival (L = 0, G = 0) it is G_from_L = gain x max(0, L): continuous, never decreasing in L, zero at
+    arrival, no threshold. It follows L both ways above arrival, so lung water clearing back toward arrival never worsens
+    G. Lung water below arrival moves no G: crediting it would need the arrival congestion's share of the arrival
+    impairment, which L, a deviation from arrival, does not carry (O1). Its dynamics are L's own (the writers, the
+    clearance), with no second time constant. L reaches nothing else through it: SpO2, delivery, D, lactate, RR,
+    ventilation, consciousness and collapse see lung water only through G."""
+    return profile.lung_water_to_gas_exchange_gain * (max(0.0, after_l) - max(0.0, before_l))
+
+
+def oxygen_response_retained(gas_exchange: float, profile: CoreProfile) -> float:
+    """The share of the oxygen benefit gas exchange G keeps (P2O-1): 1 / (1 + loss x max(0, G)).
+
+    1 at the arrival lung state, never below 0 and never 0: a worse G answers less to oxygen, never paradoxically worse.
+    1 minus it is the mapping's effective shunt-like share: internal, never a shunt or V/Q state of its own."""
+    return 1.0 / (1.0 + profile.oxygen_response_loss_per_gas_exchange_unit * max(0.0, gas_exchange))
+
+
+def oxygenation(gas_exchange: float, fio2: float, anchors: Anchors, profile: CoreProfile) -> float:
+    """SpO2 from gas exchange G and inspired oxygen (P2O-1), anchored to the authored arrival:
+
+        SpO2 = arrival SpO2 - scale x max(0, G) + spo2_per_fio2 x (benefit(FiO2) x retained(G) - benefit(arrival FiO2))
+
+    with benefit(F) = max(0, F - room air). At G = 0 it is the core's SpO2 exactly; it never rises with G and never falls
+    with FiO2; above the authored arrival only through FiO2. It reads no L, ventilation, PaCO2, RR, acid burden, D or
+    lactate: hypoventilation reaches PaCO2, never G (alveolar-gas hypoxaemia is not modelled)."""
+    oxygen = (max(0.0, fio2 - profile.room_air_fio2) * oxygen_response_retained(gas_exchange, profile)
+              - max(0.0, anchors.fio2 - profile.room_air_fio2))
+    return min(100.0, max(0.0, anchors.spo2 - profile.spo2_per_gas_exchange_unit * max(0.0, gas_exchange)
+                          + profile.spo2_per_fio2 * oxygen))
 
 
 def sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:

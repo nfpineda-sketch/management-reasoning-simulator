@@ -17,6 +17,7 @@ import pytest
 
 from clinical_core import baroreflex as br
 from clinical_core import blood_fluid_calibration as bf
+from clinical_core import gas_exchange_architecture as go
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import hr_envelope_filter as hf
@@ -52,6 +53,20 @@ LATER_MODULES = ("clinical_core/rr_audit.py", "clinical_core/acid_base.py",
                  "clinical_core/acs_reference.py", "clinical_core/modules/acs_ischaemia.py",
                  "clinical_core/acs_migration.py")
 C57, C72 = br.C57, br.C72
+
+
+#: P2O-1 inserted its declared, inert names into derived.py and integration.py, proven byte for byte against the P2N-2
+#: files (gas_exchange_architecture.proved): this package's guards read the P2N-2 core (go.p2n2_text, go.p2n2_sources,
+#: go.p2n2_unchanged), never the live one; the record is unchanged.
+_LIVE_SOURCES_P2O1 = bf.freeze_sources
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _p2n2_core():
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(vt, "_live", go.p2n2_text)
+        patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
+        yield
 
 
 @pytest.fixture(scope="module")

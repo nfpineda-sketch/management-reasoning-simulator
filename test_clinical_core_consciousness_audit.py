@@ -15,6 +15,7 @@ import json
 import pytest
 
 from clinical_core import blood_fluid_calibration as bf
+from clinical_core import gas_exchange_architecture as go
 from clinical_core import consciousness_audit as ca
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
@@ -33,14 +34,30 @@ LATER_MODULES = ("clinical_core/encephalopathy.py", "clinical_core/encephalopath
                  "clinical_core/collapse_audit.py",
                  "clinical_core/collapse.py", "clinical_core/collapse_architecture.py",
                  "clinical_core/acs_reference.py", "clinical_core/modules/acs_ischaemia.py",
-                 "clinical_core/acs_migration.py")
+                 "clinical_core/acs_migration.py", "clinical_core/gas_exchange_architecture.py")
+
+
+#: P2O-1 inserted its declared, inert names into derived.py and integration.py, proven byte for byte against the P2N-2
+#: files (gas_exchange_architecture.proved): this package's guards read the P2N-2 core (go.p2n2_text, go.p2n2_sources,
+#: go.p2n2_unchanged), never the live one; the record is unchanged.
+_LIVE_SOURCES_P2O1 = bf.freeze_sources
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _p2n2_core():
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(vt, "_live", go.p2n2_text)
+        patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
+        patch.setattr(ca, "closed_unchanged", lambda: go.p2n2_unchanged(ca.CLOSED_AT_P2K5))
+        yield
 
 
 @pytest.fixture(autouse=True)
 def _p2l1_tree(monkeypatch):
     original = ca._python
     later = {ROOT / relative for relative in LATER_MODULES}
-    monkeypatch.setattr(ca, "_python", lambda: [p for p in original() if p not in later])
+    # P2O-1: the scan reads the two core files as P2N-2 left them (go.p2n2_path, proven).
+    monkeypatch.setattr(ca, "_python", lambda: [go.p2n2_path(p) for p in original() if p not in later])
 
 
 def _freeze_digest_at_p2l1() -> str:

@@ -16,6 +16,7 @@ import pytest
 
 from clinical_core import baroreflex as br
 from clinical_core import blood_fluid_calibration as bf
+from clinical_core import gas_exchange_architecture as go
 from clinical_core import decision_pack, gi_reference, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import lactate_adequacy as la
@@ -46,8 +47,22 @@ LATER_MODULES = ("clinical_core/acid_base.py", "clinical_core/ventilation.py",
                  "clinical_core/collapse_audit.py",
                  "clinical_core/collapse.py", "clinical_core/collapse_architecture.py",
                  "clinical_core/acs_reference.py", "clinical_core/modules/acs_ischaemia.py",
-                 "clinical_core/acs_migration.py")
+                 "clinical_core/acs_migration.py", "clinical_core/gas_exchange_architecture.py")
 C57, C72 = ra.C57, ra.C72
+
+
+#: P2O-1 inserted its declared, inert names into derived.py and integration.py, proven byte for byte against the P2N-2
+#: files (gas_exchange_architecture.proved): this package's guards read the P2N-2 core (go.p2n2_text, go.p2n2_sources,
+#: go.p2n2_unchanged), never the live one; the record is unchanged.
+_LIVE_SOURCES_P2O1 = bf.freeze_sources
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _p2n2_core():
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(vt, "_live", go.p2n2_text)
+        patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
+        yield
 
 
 @pytest.fixture(scope="module")
@@ -135,7 +150,9 @@ def test_the_same_debt_with_faster_clearance_gives_a_lower_rr(probes):
 # W, acid-base, probes ------------------------------------------------------------------------------------------------------
 
 P2N2_FILES = ("clinical_core/acs_reference.py", "clinical_core/modules/acs_ischaemia.py",
-              "clinical_core/acs_migration.py")
+              "clinical_core/acs_migration.py",
+              # P2O-1's analysis names W only in its audit and semantics (it reads no W channel).
+              "clinical_core/gas_exchange_architecture.py")
 
 
 def _readers_of_w():
@@ -418,7 +435,7 @@ def test_the_exclusion_tuples_hold_exactly_their_p2k1_content():
         # What P2K-2 to P2K-5, P2L-1, P2L-2, P2M-1, P2M-2 and P2N-2 (their modules' TUPLES_ADDED, frozen with them) added, exactly.
         added = TUPLES_ADDED_BY_P2K2[name] + vs.TUPLES_ADDED[name] + vf.TUPLES_ADDED[name] + rm.TUPLES_ADDED[name] + \
             ca.TUPLES_ADDED[name] + ea.TUPLES_ADDED[name] + cm.TUPLES_ADDED[name] + \
-            cy.TUPLES_ADDED[name] + an.TUPLES_ADDED[name]
+            cy.TUPLES_ADDED[name] + an.TUPLES_ADDED[name] + go.TUPLES_ADDED[name]
         assert set(added) <= set(values), name
         values = [v for v in values if v not in added]
         assert (hashlib.sha256(json.dumps(sorted(values)).encode("utf-8")).hexdigest(), len(values)) == \
@@ -430,6 +447,10 @@ def test_the_other_ventilation_related_channels_are_named_and_read_by_neither_rr
     them today, which the decisions on W and support must take into account."""
     from clinical_core.state import Channel
     assert {"L", "G", "N"} <= {c.value for c in Channel}
-    text = inspect.getsource(dv.respiratory_rate) + inspect.getsource(dv._perfusion)
+    # P2O-1 makes SpO2 read G (its declared, inert insertion in _perfusion, off by default): this closed check reads the
+    # two functions as P2N-2 left them (go.p2n2_text, proven), where the M6 statement holds.
+    tree = ast.parse(go.p2n2_text("clinical_core/derived.py"))
+    text = "".join(ast.unparse(node) for node in tree.body
+                   if isinstance(node, ast.FunctionDef) and node.name in ("respiratory_rate", "_perfusion"))
     for name in ("state.L", "state.G", "state.N"):
         assert name not in text

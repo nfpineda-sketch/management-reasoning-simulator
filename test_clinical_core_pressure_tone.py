@@ -16,6 +16,8 @@ import pytest
 
 from clinical_core import baroreflex as br
 from clinical_core import blood_fluid_calibration as bf
+from clinical_core import gas_exchange_architecture as go
+from clinical_core import vascular_tone as vt
 from clinical_core import calibration, decision_pack, gi_reference, lactate_slice
 from clinical_core import hr_primary as hp
 from clinical_core import lactate_adequacy as la
@@ -67,6 +69,27 @@ P2J2_TONE_ROWS = (("clinical_core/vascular_tone.py", None), ("clinical_core/vasc
                   ("clinical_core/acs_migration.py", None))
 C57, C72 = pt.C57, pt.C72
 NEUTRAL = Anchors(**ARRIVAL)
+
+
+#: P2O-1 inserted its declared, inert names into derived.py and integration.py, proven byte for byte against the P2N-2
+#: files (gas_exchange_architecture.proved): this package's guards read the P2N-2 core (go.p2n2_text, go.p2n2_sources,
+#: go.p2n2_unchanged), never the live one; the record is unchanged.
+_LIVE_SOURCES_P2O1 = bf.freeze_sources
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _p2n2_core():
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(vt, "_live", go.p2n2_text)
+        patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
+        patch.setattr(pt, "_function", _p2n2_function)
+        yield
+
+
+def _p2n2_function(relative: str, name: str):
+    """pressure_tone._function on the P2N-2 text of the file (its AST path audit reads the core as P2N-2 left it)."""
+    tree = ast.parse(go.p2n2_text(relative))
+    return next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == name)
 
 
 def _ab():

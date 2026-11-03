@@ -14,6 +14,7 @@ import json
 import pytest
 
 from clinical_core import blood_fluid_calibration as bf
+from clinical_core import gas_exchange_architecture as go
 from clinical_core import collapse_audit as cm
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
@@ -28,10 +29,19 @@ FROZEN_DIGEST = "c4aa95f62273136934b1b7a31bbb7637fa71fdb00638ddc1fd3974eeeecea9f
 #: P2M-2's layer, added after P2M-1 closed: this package's view of the tree leaves it out (collapse_architecture.
 #: p2m1_sources: the candidate and its analysis removed, the tuple-only files at their P2M-1 hashes while only their
 #: tuples changed; the audit's core-file scan without the candidate); the record is unchanged.
-_FREEZE_SOURCES, _CORE_FILES = bf.freeze_sources, cm.core_files
+_LIVE_SOURCES_P2O1 = bf.freeze_sources
+
+
+def _FREEZE_SOURCES() -> dict:
+    # P2O-1 inserted its declared, inert names into derived.py and integration.py, proven byte for byte against the
+    # P2N-2 files (gas_exchange_architecture.proved): this view starts from the P2N-2 core, P2O-1's analysis left out.
+    return go.p2n2_sources(_LIVE_SOURCES_P2O1())
+
+
+_CORE_FILES = cm.core_files
 LATER_MODULES = ("clinical_core/collapse.py", "clinical_core/collapse_architecture.py",
                  "clinical_core/acs_reference.py", "clinical_core/modules/acs_ischaemia.py",
-                 "clinical_core/acs_migration.py")
+                 "clinical_core/acs_migration.py", "clinical_core/gas_exchange_architecture.py")
 
 
 def _p2m1_view() -> dict:
@@ -42,7 +52,8 @@ def _p2m1_view() -> dict:
 
 def _p2m1_core_files() -> list:
     later = {ROOT / relative for relative in LATER_MODULES}
-    return [p for p in _CORE_FILES() if p not in later]
+    # P2O-1: the scans read the two core files as P2N-2 left them (go.p2n2_path, proven).
+    return [go.p2n2_path(p) for p in _CORE_FILES() if p not in later]
 
 
 def _patch(patch) -> None:
