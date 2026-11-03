@@ -3856,3 +3856,13 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - la mecánica dinámica;
   - la VNI;
   - la SpO2 directa en el colapso.
+- **Revisión adversarial** (una, sin hallazgos altos; §20 del informe). No hubo recongelamiento; los hallazgos quedan
+  fijados en pruebas no congeladas y declarados:
+  - la prueba de inserciones, por sí sola, aceptaría código en la misma línea o una guarda movida. Una prueba fija byte
+    a byte los dos archivos del núcleo congelados, así que las vistas P2N-2 son exactas;
+  - un clamp de G separaría G de L (fuera de todo curso evaluado);
+  - la sonda de fluidos que nombra la regla da la misma recomendación;
+  - tres criterios débiles se reforzaron en pruebas;
+  - la escalera ADOPTED de conciencia ahora lee G (decisión docente).
+
+  El veredicto se mantiene.

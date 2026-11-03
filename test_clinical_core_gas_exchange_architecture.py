@@ -13,6 +13,8 @@ import pytest
 
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import decision_pack, lactate_slice
+from clinical_core import acs_migration as an
+from clinical_core import acs_reference as ar
 from clinical_core import derived as dv
 from clinical_core import gas_exchange_architecture as go
 from clinical_core.state import CoreInvariantError
@@ -183,3 +185,91 @@ def test_the_document_is_generated_from_the_record(record):
     for name, render in report.RENDERERS.items():
         assert report.apply(text, name, render(record)) == text, name
     assert "PENDIENTE" not in text and "FREEZE_" not in text
+
+
+# The adversarial review (P2O-1), pinned on the frozen package ---------------------------------------------------------------
+# P2O1_INTERCAMBIO_GASEOSO_COMUN.md §20. No refreeze: the physiology and the evaluation are unchanged; what the review
+# found is pinned here, outside the frozen sources, and declared.
+
+#: The two core files as P2O-1 froze them (5d1db63), byte for byte. go.proved strips whole lines and pins the inserted
+#: nodes' AST without their positions (review M1): alone it would accept code sharing a line with an insertion or a moved
+#: guard. This pin closes that gap for the whole suite: the closed packages' P2N-2 views are exact while it holds.
+CORE_AT_P2O1 = {go.DERIVED: "6bc0d392df3a49c0c4251131a58292d45a12e0d509b0e77a0d51a0d1d8cbddb8",
+                go.INTEGRATION: "c5ad9593408a89df6b5f5d69a4a2730364e1238db2644b2239d1cf2187774e6b"}
+
+
+def test_review_the_live_core_bytes_are_pinned_so_a_shared_line_or_a_moved_guard_cannot_pass():
+    for relative, sha in CORE_AT_P2O1.items():
+        assert hashlib.sha256((go.ROOT / relative).read_bytes()).hexdigest() == sha
+    live = go._live(go.DERIVED)
+    shared_line = live.replace("    oxygen_response_loss_per_gas_exchange_unit: float | None = None\n",
+                               "    oxygen_response_loss_per_gas_exchange_unit: float | None = None; spo2_per_fio2 = 99.0\n")
+    moved = live.replace("    if gas_exchange_active(profile):\n        spo2 = oxygenation(state.G, state.fio2, anchors, profile)\n"
+                         "    delivery_rel = relative_delivery(output_rel, state.hb, spo2, anchors)\n",
+                         "    delivery_rel = relative_delivery(output_rel, state.hb, spo2, anchors)\n"
+                         "    if gas_exchange_active(profile):\n        spo2 = oxygenation(state.G, state.fio2, anchors, profile)\n")
+    for mutated in (shared_line, moved):
+        assert mutated != live
+        # Known limitation of the line-based strip (declared, TD-113 (9)): go.proved alone accepts these...
+        assert go.proved(go.DERIVED, mutated)
+        # ...the byte pin does not.
+        assert hashlib.sha256(mutated.encode("utf-8")).hexdigest() != CORE_AT_P2O1[go.DERIVED]
+
+
+def test_review_known_limitation_a_g_guard_clamp_parts_g_from_lung_water(record):
+    from clinical_core.bands import Drift
+    p = go.probe_profile(lung_water_to_gas_exchange_gain=2.0)
+    states, records = go.course((Drift("review-l", "L", 0, 40, 0.2),), 400, go.NEUTRAL, p)
+    clamps = sum(1 for r in records for d in r.deltas if d.channel.value == "G" and d.source.kind.value == "clamp")
+    last = states[-1]
+    assert clamps > 0 and last.L > 0.0 and last.G < 0.0                     # G no longer k x max(0, L)
+    assert dv.derive(last, go.NEUTRAL, p).spo2 == go.NEUTRAL.spo2            # lung water above arrival, arrival SpO2
+    # Every frozen course stays far from the guard: the evaluation is unaffected.
+    g_max = max([r["G"] for run in record["acs"]["runs"].values() for r in run["rows"]]
+                + [r["G_max"] for r in record["cross_family"]["rows"].values()])
+    assert g_max < 0.25 * 10.0
+
+
+def test_review_the_p2n2_fluid_probe_itself_generates_no_lung_water():
+    """The recommendation rule names P2N-2's fluid probe (a failing pump, P 0.7); the frozen run read the ACS arrival
+    (P 1). The probe the rule names gives the same answer: the common coupling produces no L, the gap is open."""
+    anchors, profile = ar.anchors(), go.gas_profile(ar.common_profile())
+    start = dv.arrival_state(anchors, profile).evolve(P=an.FLUID["pump_failure_P"])
+    for volume in (1000.0, 4000.0):
+        bag = replace(an._bag(), volume_ml=volume, untimed_rate_ml_per_min=volume / an.FLUID["duration_min"])
+        states, _ = an.course((bag,), an.HORIZON, anchors, profile, start)
+        assert max(s.L for s in states) == 0.0 and max(s.G for s in states) == 0.0
+        assert max(dv.preload_position(s, anchors, profile) for s in states) < profile.congestion_preload_knee
+
+
+def test_review_acid_burden_and_debt_never_move_g_while_lung_water_does():
+    from clinical_core.bands import BloodLoss, Demand, Drift
+    items = (Drift("review-l2", "L", 0, 60, 0.01),)
+    base, _ = go.course(items, 60, go.NEUTRAL, go.probe_profile())
+    loaded, _ = go.course(items + (BloodLoss("review-b", 0, 60, 8.0), Demand("review-d", 0, 60, 1.5)), 60, go.NEUTRAL,
+                          go.probe_profile())
+    assert loaded[-1].aux.metabolic_acid_burden > base[-1].aux.metabolic_acid_burden and loaded[-1].D > base[-1].D
+    assert base[-1].G > 0.0 and [s.G for s in base] == [s.G for s in loaded]
+
+
+def test_review_the_oxygen_response_is_attenuated_only_by_r(record):
+    o56 = record["probes"]["O5_O6"]
+    assert o56["attenuated_when_r_positive"]
+    # "severe_incomplete" alone also holds at r = 0 (the s offset): the attenuation is r's alone.
+    zero_r = [r for r in o56["rows"] if r["point"]["oxygen_response_loss_per_gas_exchange_unit"] == 0.0]
+    assert zero_r and all(r["first_step"]["8.0"] == r["first_step"]["0.0"] for r in zero_r
+                          if r["curves"]["0.0"][1] < 100.0)
+
+
+def test_review_severe_g_reaches_the_adopted_consciousness_ladder():
+    """derive's ADOPTED absolute oxygen ladder (87 / 80) now reads G through SpO2: declared for the faculty (§18)."""
+    p = go.probe_profile()
+    arrival = dv.arrival_state(go.NEUTRAL, p)
+    levels = [dv.derive(arrival.evolve(G=g), go.NEUTRAL, p).consciousness_level for g in (0.0, 2.0, 2.2, 4.0)]
+    assert levels == [0, 0, 1, 2]
+
+
+def test_review_the_sign_fingerprints_of_three_families_coincide_and_are_declared(record):
+    f = record["cross_family"]["fingerprints"]
+    assert f["asthma"] == f["anaphylaxis"] == f["pulmonary_embolism"]
+    assert len({tuple(v) for v in f.values()}) == 5

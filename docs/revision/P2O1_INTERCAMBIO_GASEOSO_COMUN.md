@@ -358,7 +358,11 @@ Diferido o no representado (texto congelado, en inglés):
 7. **Término de hipoxemia de la FC.** Ya existía y ahora G lo alcanza: es `sympathetic_per_hypoxaemia_point`
    PROVISIONAL, con un umbral de 94 relativo a la llegada. Hay que confirmar que debe actuar (en el caso ACS suma
    +1,7 lpm a los 120 min).
-8. **Paquete siguiente:** generación común de congestión P / V / llenado → L (la M4). Siguen pendientes la M5
+8. **Escalera de conciencia.** `derive` aplica la escalera absoluta ADOPTED de SpO2 (87 → nivel 1, 80 → nivel 2), y
+   ahora G la alcanza a través de la SpO2: con la referencia sintética, G 2,2 da nivel 1 y G 4 da nivel 2. Hay que
+   confirmar que esa escalera, heredada del legado, debe leer la oxigenación nueva o si la encefalopatía de P2L-2 la
+   sustituye (revisión, §20).
+9. **Paquete siguiente:** generación común de congestión P / V / llenado → L (la M4). Siguen pendientes la M5
    (`ACS_ARRIVAL_HR_COMMON_GAP_CANDIDATE`) y `RV_LV_INTERDEPENDENCE_COMMON_GAP`.
 
 ## 19. Limitaciones
@@ -380,5 +384,51 @@ Diferido o no representado (texto congelado, en inglés):
   construya fuera del integrador con L ≠ 0 conserva la G que se le dé; las sondas estáticas fijan G directamente. Si
   la guarda de G (±10) actuara, se registraría como un clamp y la igualdad dejaría de cumplirse.
 - **Adaptación de los paquetes cerrados.** Se adaptaron 16 archivos de prueba de paquetes cerrados para que sus
-  guardas lean el núcleo P2N-2 por la vista demostrada (fixtures y vistas). Ningún registro ni módulo cerrado cambió.
+  guardas lean el núcleo P2N-2 por la vista demostrada (fixtures y vistas). No cambió ni el contenido de ningún
+  registro cerrado ni ningún módulo de análisis cerrado. Sí cambiaron:
+  - los digests acumulados de P2G, P2I, P2I-2T y P2I-2U, regenerados;
+  - las dos tuplas de exclusión, que ganan las entradas de P2O-1;
+  - el `profile_digest` por defecto de `contracts_output`, porque `CoreProfile` tiene tres campos más (ningún
+    consumidor del repositorio lo fija).
 - **Origen del aumento de FC en ACS.** Incluye el término de hipoxemia existente, PROVISIONAL (decisión 7).
+
+## 20. Revisión adversarial
+
+Hubo una sola revisión, independiente y de sólo lectura, con la lista del encargo. Cada hallazgo se confirmó con una
+sonda propia. No hubo recongelamiento: la física y la evaluación no cambian, y lo encontrado queda fijado en pruebas
+no congeladas (`test_review_*` en `test_clinical_core_gas_exchange_architecture.py`) y declarado (TD-113).
+
+- **Sin defecto en la física del camino.**
+  - L no llega a la SpO2, el aporte, D, el lactato, la FR, la ventilación, la conciencia ni el colapso sin pasar por G.
+  - G no mueve la PaCO2, la ventilación ni la FR.
+  - Ni la FR, ni la carga ácida, ni D, ni el lactato mueven G.
+  - La llegada es exacta. El legado no es objetivo. GI queda idéntico. El colapso no cambia. Nada se aprueba.
+  - No hay términos de enfermedad en las inserciones.
+  - `oxygenation` es exacta bit a bit en G = 0 (también en −0,0), monótona en G y en FiO2, también para quien llegó con
+    O2.
+- **M1 (medio, confirmado).** La prueba de inserciones (`gas_exchange_architecture.proved`) quita líneas enteras y fija
+  el AST de los nodos insertados sin sus posiciones. Por sí sola aceptaría:
+  - código que comparta línea con una inserción (por ejemplo `...; spo2_per_fio2 = 99.0`);
+  - una guarda movida (el `if` de `_perfusion` debajo del aporte, que cortaría G → aporte).
+
+  Hoy no se cuela nada: la prueba fija byte a byte los dos archivos del núcleo tal como se congelaron (`CORE_AT_P2O1`),
+  así que las vistas P2N-2 de los paquetes cerrados son exactas mientras se cumpla. El próximo paquete que cambie el
+  núcleo debe sustituir el recorte por líneas por uno a nivel de token (TD-113 (9)).
+- **Bajos (confirmados y declarados):**
+  - Si la guarda de G (±10) actuara con el acoplamiento activo, G dejaría de ser k·max(0, L) de forma permanente. En
+    una sonda extrema (k = 2, L sube 8 en 40 min) queda agua pulmonar sobre la llegada con la SpO2 de llegada. Ningún
+    curso evaluado se acerca: G ≤ 1,5. La corrección natural es la de V y Hb (detener la corrida, como P2D-2), y exige
+    tocar el núcleo (TD-113 (10)).
+  - El texto de la guarda de G («no module writes G yet») sale en la traza si actúa. Es texto P2N-2 que la prueba de
+    bytes protege (TD-113 (11)).
+  - La sonda de §10 partió de la llegada ACS (P = 1), no de la sonda de fluidos de P2N-2 que nombra la regla (P = 0,7,
+    lectura a los 60 min). La sonda nombrada da lo mismo: L = 0 con 1000 y 4000 mL, la brecha sigue abierta y la
+    recomendación no cambia. Queda fijado en la prueba.
+  - Hay criterios débiles por construcción:
+    - O9 / O10 corrían sin escritor de L, así que G = 0 trivialmente. La propiedad se comprueba ahora con L en
+      movimiento: G es idéntica con y sin carga ácida y D.
+    - En O6, «incompleta» se cumple también con r = 0, por el desplazamiento de s. La atenuación es sólo de r, y se
+      comprueba.
+    - «Entradas distintas» compara etiquetas declaradas. Las huellas de signos del asma, el TEP y la anafilaxia
+      coinciden (5 huellas para 7 familias), como ya decía el resumen.
+  - La escalera ADOPTED de conciencia (87 / 80) ahora lee G a través de la SpO2: va a la §18 (decisión 8).
