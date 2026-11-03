@@ -260,3 +260,45 @@ def test_the_scope_adds_and_reads_nothing_it_should_not():
         "MIGRATION_GATE_CLOSED")
     assert json.loads(json.dumps(cy.design(), default=str))["revision"] == "P2M-2"
     assert cy.SYNTHETIC_RULE.startswith("SYNTHETIC_ONLY")
+
+
+# The record and the report (generated once, after the frozen evaluation) -----------------------------------------------------
+
+RECORD = ROOT / "docs" / "revision" / "P2M2_collapse_architecture.json"
+DOCUMENT = ROOT / "docs" / "revision" / "P2M2_ARQUITECTURA_COLAPSO.md"
+
+
+def _json(value):
+    return json.loads(json.dumps(value, sort_keys=True, default=str))
+
+
+@pytest.fixture(scope="module")
+def record():
+    return json.loads(RECORD.read_text(encoding="utf-8"))
+
+
+def test_the_record_comes_from_the_frozen_package_and_is_reproduced_live(record, result):
+    assert record["freeze_digest"] == FROZEN_DIGEST and "stopped" not in record
+    assert record["design"] == _json(cy.design())
+    for key in ("upstream", "candidate_scan", "signals", "no_q", "no_spo2", "no_markers", "persistence", "no_pulse",
+                "event_order", "arrival", "rosc", "generalization", "extreme_subset", "nonregression", "supersession",
+                "parameters", "structural", "verdict", "recommendation", "decisions", "efficiency"):
+        assert record[key] == _json(result[key]), key
+
+
+def test_the_record_states_the_structural_verdict(record):
+    assert record["verdict"]["verdict"] == cy.READY and record["verdict"]["failing"] == []
+    assert record["recommendation"]["recommendation"] == \
+        "MOVE_TO_SECOND_FAMILY_GENERALIZATION_WITH_COLLAPSE_THRESHOLDS_UNSET"
+    assert record["approval"] == "none FACULTY_APPROVED" and record["extreme_subset"]["classification"] is None
+    assert record["efficiency"]["gi_trajectories"] == 0
+
+
+def test_the_document_is_generated_from_the_record(record):
+    from clinical_core import collapse_architecture_report as rep
+    document = DOCUMENT.read_text(encoding="utf-8")
+    for name, render in rep.RENDERERS.items():
+        assert rep.apply(document, name, render(record)) == document, name
+    assert cy.READY in document and "MOVE_TO_SECOND_FAMILY_GENERALIZATION_WITH_COLLAPSE_THRESHOLDS_UNSET" in document
+    for placeholder in ("SUMMARY_TEXT", "LIMITS_TEXT", "REVIEW_TEXT", "FREEZE_COMMIT", "FREEZE_SHORT"):
+        assert placeholder not in document

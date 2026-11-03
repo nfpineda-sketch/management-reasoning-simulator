@@ -3716,3 +3716,27 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   Lectura corregida: el mínimo incluye también la forma de la persistencia (la carga con tres invariantes, o un contador
   de minutos consecutivos), la señal nula a la llegada y, si se agrega, el contenido de O2 en vez de sólo la SpO2.
   Siete decisiones adicionales, incluida la de aceptar el registro con las correcciones o recongelar.
+
+## 54. P2M-2 · Capa común mínima de seguridad ante colapso (2026-11-03)
+
+- **Encargo:** implementar en sombra la señal común de colapso, formalizar la persistencia en la carga existente y las
+  invariantes de la transición terminal, y probar la generalización a siete familias, sin umbrales clínicos, sin ROSC y
+  sin activar nada.
+- **Congelamiento** `2213173` (digest `5f96f860…`): un candidato (`clinical_core/collapse.py`) que ningún paso del núcleo
+  lee y su análisis congelado (`clinical_core/collapse_architecture.py`). El núcleo no cambia.
+- **Candidato** (`docs/revision/P2M2_ARQUITECTURA_COLAPSO.md`):
+  - `collapse_signal = max(falla de PAM, falla de aporte de O2)`; la PAM pasa por una rampa sin valor
+    (`UNSET_CLINICAL_MAPPING`) y el aporte es el déficit efectivo normalizado ya certificado;
+  - Q, P y R sólo por la PAM y el aporte; SpO2 directa DEFERRED; lactato, D, pH, I y F fuera;
+  - la carga `aux.collapse_burden` se relaja exactamente hacia `señal × τ`: se repaga, queda acotada y cae a 0 con
+    señal 0;
+  - el criterio terminal exige persistencia y no viabilidad actual; toda pérdida del pulso pone la carga en 0; la regla
+    P2E-3 nunca está activa a la vez;
+  - el orden tiene un retraso explícito y es acíclico;
+  - τ, el límite terminal, el piso de no viabilidad actual y el fenotipo terminal quedan UNSET; el ROSC, no modelado.
+- **Evaluación:** C1–C14 cumplen; las siete familias pasan con la misma función; la llegada no se fuerza a 0; el árbol de
+  P2M-1 coincide byte a byte; en sombra activa todo el estado del núcleo salvo la carga es idéntico; el subconjunto GI
+  queda evaluable y sin clasificar; cinco puntos de P2M-1 quedan `SUPERSEDED_BY_P2M2`.
+- **Veredicto: COMMON_COLLAPSE_SAFETY_ARCHITECTURE_READY_FOR_GENERALIZATION.** Recomendación:
+  `MOVE_TO_SECOND_FAMILY_GENERALIZATION_WITH_COLLAPSE_THRESHOLDS_UNSET`; la calibración numérica del colapso no hace
+  falta antes de la segunda familia. Los valores quedan para la docencia.

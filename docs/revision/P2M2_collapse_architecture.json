@@ -1,0 +1,1628 @@
+{
+ "approval": "none FACULTY_APPROVED",
+ "arrival": {
+  "expected_low_signal": 0.2222222222222222,
+  "pass": true,
+  "rows": {
+   "authored_map_70": {
+    "arrival_burden": 0.0,
+    "arrival_map": 70.0,
+    "arrival_signal": 0.2222222222222222,
+    "burden_after_30": 4.214137058857051,
+    "terminal": false
+   },
+   "reference": {
+    "arrival_burden": 0.0,
+    "arrival_map": 90.0,
+    "arrival_signal": 0.0,
+    "burden_after_30": 0.0,
+    "terminal": false
+   }
+  },
+  "steps": 60
+ },
+ "candidate_scan": {
+  "disease_terms": [],
+  "evaluate_before_step": true,
+  "evaluate_calls_in_shadow_step": 1,
+  "evaluate_reads_start_state": true,
+  "forbidden_imports": [],
+  "forbidden_reads": [],
+  "imports": [
+   "Anchors",
+   "CoreInvariantError",
+   "CoreProfile",
+   "CoreState",
+   "ScriptedRhythmEvent",
+   "Sequence",
+   "UnresolvedBoundary",
+   "__future__",
+   "acute_deficit_signal",
+   "annotations",
+   "dataclass",
+   "dataclasses",
+   "derive",
+   "derived",
+   "integration",
+   "math",
+   "modules.rhythm_events",
+   "replace",
+   "state",
+   "step",
+   "terminal_rhythm",
+   "typing"
+  ],
+  "signal_adds": false,
+  "signal_by_max": true,
+  "state_writes": [
+   "aux",
+   "collapse_burden",
+   "collapse_terminal_rhythm"
+  ],
+  "sum_calls": false
+ },
+ "decided": "2026-11-03",
+ "decisions": [
+  "the MAP failure mapping (viable and failed bounds; absolute or relative to the patient's autoregulation), from general physiology, never from the GI cases",
+  "whether the delivery-failure signal needs an onset threshold above the certified normalized deficit",
+  "the burden time constant (one tau for accrual and repayment, as structured) and the terminal burden",
+  "the minimum current non-viability floor",
+  "the terminal rhythm phenotype (PEA / asystole) or its selection rule",
+  "direct SpO2: stays DEFERRED unless a respiratory family shows delivery is insufficient",
+  "runtime integration: the core's own collapse source replacing the scripted-rhythm primitive, and the P2E-3 output rule's retirement",
+  "ROSC in a later package (the reset burden and the candidate's indifference to terminal_since keep it possible)"
+ ],
+ "design": {
+  "alone": {
+   "D": {
+    "D": 5.0
+   },
+   "acid_pH": {
+    "metabolic_acid_burden": 15.0
+   },
+   "lactate": {
+    "lactate_excess_mmol_l": 6.0
+   }
+  },
+  "arrival_low": [
+   95.0,
+   57.5
+  ],
+  "arrival_minutes": 30,
+  "candidate_status": {
+   "aggregation": "MAXIMUM (faculty): no sum and no interaction term",
+   "approved": "none FACULTY_APPROVED",
+   "burden_kinetics": "UNSET (tau); the form is structural: exact first-order relaxation toward signal x tau, never from tau_D, lactate or the encephalopathy memory",
+   "current_nonviability": "UNSET",
+   "delivery_failure": "STRUCTURAL_IDENTITY_ON_THE_CERTIFIED_NORMALIZED_DEFICIT: no clinical onset threshold; whether one is needed is UNSET",
+   "map_mapping": "UNSET_CLINICAL_MAPPING",
+   "p2e3": "the P2E-3 output rule and this candidate are never active together (shadow_step refuses it)",
+   "pulse": "RhythmState.pulse_present is the EFFECTIVE PERFUSING RHYTHM STATE, not a guaranteed palpable peripheral pulse; never derived from pressure. pulse=true with an extremely low MAP is a transient profound collapse",
+   "ramp_shape": "STRUCTURAL_SHAPE_PROVISIONAL: linear between the two MAP bounds, saturating at 0 and 1",
+   "rosc": "ROSC_NOT_CURRENTLY_MODELED",
+   "terminal_burden": "UNSET",
+   "terminal_machinery": "STRUCTURAL_TEST_ONLY: the shadow transition is carried by the existing scripted-rhythm primitive and derived.terminal_rhythm; its provenance reads scripted, so a runtime integration needs the core's own collapse source (not done here)",
+   "terminal_rhythm": "TERMINAL_RHYTHM_PHENOTYPE_UNSET",
+   "zero_flow": "pulse=true with Q at the numerical zero stays an inconsistent state that fails loudly (derive's UnresolvedBoundary, the RhythmState invariant): a coding invariant, never a clinical arrest rule"
+  },
+  "criteria": [
+   "max_of_map_and_delivery",
+   "no_duplicate_inputs",
+   "persistence_repays",
+   "historical_burden_cannot_arrest",
+   "arrival_semantics",
+   "event_order_acyclic",
+   "no_pulse_consistent",
+   "future_rosc_possible",
+   "seven_family_probes_pass",
+   "upstream_unchanged",
+   "no_clinical_threshold_approved"
+  ],
+  "decided": "2026-11-03",
+  "decisions": [
+   "the MAP failure mapping (viable and failed bounds; absolute or relative to the patient's autoregulation), from general physiology, never from the GI cases",
+   "whether the delivery-failure signal needs an onset threshold above the certified normalized deficit",
+   "the burden time constant (one tau for accrual and repayment, as structured) and the terminal burden",
+   "the minimum current non-viability floor",
+   "the terminal rhythm phenotype (PEA / asystole) or its selection rule",
+   "direct SpO2: stays DEFERRED unless a respiratory family shows delivery is insufficient",
+   "runtime integration: the core's own collapse source replacing the scripted-rhythm primitive, and the P2E-3 output rule's retirement",
+   "ROSC in a later package (the reset burden and the candidate's indifference to terminal_since keep it possible)"
+  ],
+  "excluded": {
+   "D": "NOT_AN_INPUT: the oxygen debt is not collapse memory",
+   "F": "NOT_AN_INPUT: the encephalopathy memory is not collapse memory",
+   "I": "NOT_AN_INPUT: consciousness is downstream",
+   "P": "NOT_A_GRADED_INPUT: the pump reaches Q, hence MAP and delivery",
+   "Q": "NOT_A_GRADED_INPUT: flow reaches MAP (pressure = flow x tone) and delivery (delivery = flow x content)",
+   "R": "NOT_A_GRADED_INPUT: a perfusing rhythm's output factor reaches Q; a non-perfusing rhythm is arrest; R stays authoritative for pulse_present",
+   "SpO2": "DEFERRED: oxygenation already reaches oxygen content and so delivery; revisit in generalization if a respiratory family shows that is insufficient",
+   "acidemia_pH": "NOT_AN_INPUT: no path to P or R today; the acid burden integrates the deficit",
+   "lactate": "NOT_AN_INPUT: a marker and a consequence"
+  },
+  "faculty": {
+   "brief": "P2M-2 minimal common collapse safety layer (2026-11-03): structural; no clinical threshold chosen",
+   "delivery": "the certified effective oxygen-delivery deficit, not recalibrated, not replaced by D or lactate",
+   "gi_subset": "57m, demand 1.1, 17,604 rows, untreated pH < 7.00, MAP about 32.5-46.3, pulse present: diagnostic only, never used to choose a threshold, never classified as arrest / non-arrest while UNSET",
+   "order": "EXPLICIT_LAG_REQUIRED: state(t) -> derive(t) -> collapse_signal(t) -> burden -> terminal decision -> terminal rhythm / pulse transition -> state(t+1); no recursive same-step loop",
+   "perfusion": "MAP is the source; its clinical mapping stays UNSET_CLINICAL_MAPPING; synthetic tests may inject the normalized value",
+   "persistence": "the existing aux.collapse_burden; no second persistence variable, no consecutive-minute counter; non-negative, 0 at arrival by default, arrival signal from the actual arrival physiology, rises while the signal persists, repays as it improves, tends monotonically to 0 at zero signal, never arrests alone, terminal needs persistence AND current non-viability, reset or frozen at the transition; never from tau_D, lactate or the encephalopathy memory; numbers UNSET",
+   "pulse": "pulse_present is the effective perfusing rhythm state, not a guaranteed palpable pulse; pulse with an extremely low MAP is allowed as transient profound collapse; never derived from pressure",
+   "q_p_r": "Q reaches MAP and DO2; P and R reach Q; rhythm stays authoritative for pulse_present; a no-pulse rhythm is arrest, not collapse",
+   "rosc": "ROSC_NOT_CURRENTLY_MODELED; no ACLS; the architecture must not make a future ROSC impossible",
+   "scope": "shadow only: no clinical threshold, GI collapse filtering, ROSC / ACLS, runtime activation, GI or second-family migration",
+   "signal": "collapse_signal = MAX(perfusion_failure_signal, oxygen_delivery_failure_signal); never a sum; no Q, direct SpO2, P, R, lactate, D, pH, I or F as a graded input",
+   "spo2": "direct SpO2 DEFERRED: oxygenation already reaches oxygen content and DO2; revisit in generalization",
+   "terminal_rhythm": "TERMINAL_RHYTHM_PHENOTYPE_UNSET; the existing machinery only for structural tests",
+   "zero_flow": "pulse=true + Q=0 stays an inconsistent state that fails loudly; not a clinical arrest rule; near-zero Q with a pulse stays representable"
+  },
+  "families": {
+   "anaphylaxis": [
+    "T falls and V leaks",
+    {
+     "T": 0.45,
+     "V": -150.0
+    },
+    "the same distributive / common path"
+   ],
+   "cardiogenic": [
+    "P falls",
+    {
+     "P": 0.3
+    },
+    "derived MAP / DO2 failure"
+   ],
+   "distributive": [
+    "T falls: flow kept or raised",
+    {
+     "T": 0.45
+    },
+    "MAP failure dominates despite preserved flow"
+   ],
+   "hemorrhagic": [
+    "V and Hb fall",
+    {
+     "V": -300.0,
+     "hb_share": 0.6
+    },
+    "MAP + delivery failure"
+   ],
+   "malignant_arrhythmia": [
+    "a non-perfusing rhythm; a perfusing VT with a low output factor",
+    {
+     "pulseless": {
+      "rhythm": "RhythmState(code=<RhythmCode.VF: 'vf'>, rate_bpm=None, output_factor=0.0, pulse_present=False)"
+     },
+     "with_pulse": {
+      "rhythm": "RhythmState(code=<RhythmCode.VT_WITH_PULSE: 'vt_with_pulse'>, rate_bpm=180.0, output_factor=0.3, pulse_present=True)"
+     }
+    },
+    "no-pulse rhythm = arrest; pulse-present rhythm collapses through MAP / DO2"
+   ],
+   "obstructive": [
+    "effective preload falls, Hb kept (no obstruction channel: the writer lowers preload)",
+    {
+     "V": -400.0
+    },
+    "derived MAP / DO2 failure"
+   ],
+   "respiratory_failure": [
+    "SpO2 falls (FiO2 1.0 withdrawn), flow and Hb kept",
+    {
+     "neutral_reserve": {
+      "arrival_fio2": 1.0,
+      "fio2": 0.21,
+      "reserve": 1.0
+     },
+     "probe_reserve": {
+      "arrival_fio2": 1.0,
+      "fio2": 0.21
+     }
+    },
+    "delivery failure may drive collapse without a direct SpO2 input"
+   ]
+  },
+  "forbidden_imports": [
+   "encephalopathy",
+   "encephalopathy_architecture",
+   "consciousness_audit",
+   "collapse_audit",
+   "family_engine",
+   "legacy_adapter",
+   "lactate_slice",
+   "lactate_rebuild"
+  ],
+  "forbidden_reads": [
+   "output_rel",
+   "spo2",
+   "lactate",
+   "lactate_excess_mmol_l",
+   "metabolic_acid_burden",
+   "ph",
+   "paco2",
+   "D",
+   "P",
+   "T",
+   "output_factor",
+   "consciousness_level",
+   "sympathetic_drive",
+   "pulse_rate_bpm",
+   "terminal_since",
+   "glucose",
+   "N",
+   "oxygen_debt"
+  ],
+  "forbidden_terms": [
+   "gi",
+   "bleed",
+   "haemorrhag",
+   "hemorrhag",
+   "sepsis",
+   "septic",
+   "distributive",
+   "anaphyla",
+   "cardiogenic",
+   "obstructive",
+   "embol",
+   "tamponade",
+   "asthma",
+   "copd",
+   "57m",
+   "72f"
+  ],
+  "injected": {
+   "C1": [
+    0.0,
+    0.0
+   ],
+   "C2": [
+    0.6,
+    0.0
+   ],
+   "C3": [
+    0.0,
+    0.5
+   ],
+   "C4": [
+    0.6,
+    0.5
+   ]
+  },
+  "inputs": {
+   "oxygen_delivery_failure": [
+    "deficit_fraction",
+    "derived.acute_deficit_signal: the certified effective oxygen-delivery deficit over the current demand (0 when availability is adequate or compensated by extraction, 1 at no delivery); read as it is, not recalibrated, no onset threshold"
+   ],
+   "perfusion_failure": [
+    "map",
+    "derive's MAP, the perfusion-pressure source; mapped through a monotone saturating ramp whose bounds are UNSET_CLINICAL_MAPPING (synthetic tests may inject the normalized value directly)"
+   ]
+  },
+  "migration_gate": "MIGRATION_GATE_CLOSED: no clinical collapse threshold, GI collapse filtering, ROSC / ACLS, runtime activation, GI or second-family migration is authorized",
+  "next_rule": "Predeclared. READY: numeric collapse calibration is not required before second-family generalization while the layer stays shadow / inactive and can be exercised structurally without enforcing a clinical arrest: MOVE_TO_SECOND_FAMILY_GENERALIZATION_WITH_COLLAPSE_THRESHOLDS_UNSET; no GI collapse-calibration package is opened because thresholds stay UNSET. NOT_READY: the blocker and the smallest correction.",
+  "nonregression": {
+   "contributor": [
+    "probe_pump_decline",
+    0,
+    20,
+    -0.03
+   ],
+   "items": {
+    "BloodState": [
+     "blood",
+     "V",
+     "hb"
+    ],
+    "D": [
+     "D"
+    ],
+    "DO2_deficit": [
+     "delivery_rel",
+     "deficit"
+    ],
+    "HR_baroreflex": [
+     "pulse_rate_bpm",
+     "sympathetic_drive"
+    ],
+    "RR_W": [
+     "respiratory_rate"
+    ],
+    "acid_base": [
+     "metabolic_acid_burden"
+    ],
+    "consciousness": [
+     "consciousness_level"
+    ],
+    "lactate": [
+     "lactate",
+     "lactate_excess_mmol_l"
+    ],
+    "output": [
+     "output_rel"
+    ],
+    "pressure_tone": [
+     "T",
+     "pressure_rel",
+     "sbp",
+     "dbp",
+     "map"
+    ]
+   },
+   "minutes": 30
+  },
+  "order_minutes": 20,
+  "own": [
+   "clinical_core/collapse.py",
+   "clinical_core/collapse_architecture.py"
+  ],
+  "parameters": {
+   "burden_tau_repayment_kinetics": "UNSET",
+   "delivery_failure_threshold": "UNSET (the structural signal is the certified normalized deficit itself)",
+   "map_failure_mapping": "UNSET_CLINICAL_MAPPING",
+   "minimum_current_nonviability": "UNSET",
+   "rosc": "NOT_MODELED",
+   "terminal_burden_threshold": "UNSET",
+   "terminal_rhythm_phenotype": "TERMINAL_RHYTHM_PHENOTYPE_UNSET",
+   "test_numbers": "SYNTHETIC_ONLY"
+  },
+  "policy": "Shadow only: one candidate physiology module no core step reads (collapse.py) and this analysis; no core file, channel, rule or parameter changed; synthetic numbers labelled SYNTHETIC_ONLY; fixed core states and short probe trajectories read through the certified core; the P2M-1 record read with a pinned hash; the extreme subset kept and unclassified; nothing selected, approved or activated.",
+  "probe_rule": "Fixed states on P2K-2's neutral probe arrival (bands.ARRIVAL with HCO3 20, extraction reserve 2.5), read through derive and derived.acute_deficit_signal: illustrative extremes, P2M-1's sizes where they exist; the respiratory probe is also read at the neutral extraction reserve 1 (DEFAULT_PROFILE's).",
+  "records": {
+   "p2m1": "443df2b4d4a3bb5e04a28ddff2fb98ff7939ed375c3d9cc60cc14179657c8df5"
+  },
+  "report": "clinical_core/collapse_architecture_report.py",
+  "revision": "P2M-2",
+  "sequences": {
+   "intermittent": "([1.0] * 5 + [0.0] * 25) * 48",
+   "partial": 0.3,
+   "prolonged": [
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9,
+    0.9
+   ],
+   "restored_from": [
+    9.9,
+    12.0
+   ],
+   "transient": [
+    1.0,
+    1.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "sources_at_p2m1": [
+   "ecbcfefce945843ad063317c9ce30cb99fac50bbbf898f373cff89c438c92e2c",
+   67
+  ],
+  "state_probes": {
+   "C1": {},
+   "C2": {
+    "T": 0.45
+   },
+   "C3": {
+    "hb_share": 0.25
+   },
+   "C4": {
+    "P": 0.3
+   }
+  },
+  "structural": {
+   "C1": "normal perfusion + normal delivery -> collapse_signal = 0",
+   "C10": "near-threshold burden + physiology restored -> burden decays, no delayed arrest",
+   "C11": "intermittent insults with recovery -> no indefinite accumulation",
+   "C12": "pulse=false -> Q / pressure / DO2 terminal consistency",
+   "C13": "pulse=true + Q=0 -> the invariant fires",
+   "C14": "pulse=true + near-zero Q / MAP -> representable profound collapse before arrest",
+   "C2": "perfusion failure only -> signal > 0",
+   "C3": "delivery failure only -> signal > 0",
+   "C4": "both abnormal -> signal = max, not sum",
+   "C5": "Q changes with MAP / DO2 fixed -> no independent Q term",
+   "C6": "SpO2 changes with effective delivery fixed -> no direct SpO2 term",
+   "C7": "lactate / D / I / F (and pH) changed alone -> signal unchanged",
+   "C8": "one transient severe insult -> burden rises, no terminal transition (persistence required)",
+   "C9": "prolonged severe insult -> burden rises further and meets the synthetic terminal criterion"
+  },
+  "supersession": {
+   "ambiguous_arrival_zero_semantics": [
+    "P2M-1 minimum 3: require a null signal at arrival (review MEDIUM-6)",
+    "the arrival burden is 0 by default; the arrival signal is the arrival physiology's, never forced to 0",
+    "arrival"
+   ],
+   "flow_only_overstatement": [
+    "P2M-1 redundancy: 'the low flow never fails alone', which held only for the chosen probes (review HIGH-2)",
+    "Q is not a graded input by decision; a flow fall that keeps MAP and delivery reads no collapse signal",
+    "C5 (flow_alone_h2)"
+   ],
+   "incomplete_persistence_invariants": [
+    "P2M-1 minimum: a persistence floor and a mandatory repayment, still to decide (review MEDIUM-7)",
+    "the nine burden semantics formalized: repayment by construction (relaxation toward signal x tau), the floor enforced by the profile, the terminal criterion needs current non-viability",
+    "C8-C11"
+   ],
+   "probe_dependent_frozen_verdict": [
+    "P2M-1's frozen redundancy_resolved / persistence_classified leaned on the probe choice (review HIGH-2, MEDIUM-7)",
+    "each P2M-2 criterion is a property of the candidate checked by construction (its profile invariants and code scan) and on probes; the probes illustrate, they do not define the property",
+    "criteria"
+   ],
+   "stale_burden_on_rhythm_deferral": [
+    "P2M-1 review HIGH-1: a burden left at the limit arrests a patient with normal output the next minute",
+    "any loss of the pulse resets the burden; the terminal criterion reads the current signal, so a stale burden never arrests normal physiology",
+    "event_order.deferral / stale_burden_normal_physiology / C10"
+   ]
+  },
+  "synthetic": {
+   "current_nonviability": 0.5,
+   "map": [
+    90.0,
+    0.0
+   ],
+   "rule": "SYNTHETIC_ONLY: perfusion mapping (viable 90, failed 0 mmHg) anchored to the neutral probe arrival's own MAP; burden tau 30 min (P2E-3's committed synthetic repayment); terminal burden 10 (P2E-3's synthetic limit, minutes at full signal); current non-viability floor 0.5; PEA only to exercise the existing terminal machinery. None is a candidate, a range or an approval.",
+   "tau": 30.0,
+   "terminal_burden": 10.0,
+   "terminal_rhythm": "pea"
+  },
+  "tuple_at_p2m1": {
+   "clinical_core/decision_pack.py": "94d7ba269af29fa65e246115a1217c3f948564e904d767462d54df4f24157b57",
+   "clinical_core/lactate_slice.py": "c81b5ecbf6307fc30c7f2adb2e1669d397ef65d9b4c5f5d7ea2043363de5b3bb"
+  },
+  "tuples_added": {
+   "DOWNSTREAM_REPORTS": [
+    "clinical_core/collapse_architecture_report.py"
+   ],
+   "PACK_DIGEST_EXCLUDED": [
+    "clinical_core/collapse_architecture.py",
+    "clinical_core/collapse_architecture_report.py"
+   ]
+  },
+  "verdict_rule": "Predeclared. READY iff every criterion holds; otherwise NOT_READY - the first failing criterion as the blocker, every failing criterion listed. A changed upstream file stops the run before any probe."
+ },
+ "efficiency": {
+  "burden_updates": 1923,
+  "cartesian_sweep": false,
+  "fixed_state_sections": [
+   "signals",
+   "no_q",
+   "no_spo2",
+   "no_markers",
+   "no_pulse",
+   "generalization"
+  ],
+  "gi_trajectories": 0,
+  "legacy_engine_fitted": false,
+  "records_read": [
+   "P2M1_collapse_audit.json"
+  ],
+  "region_rebuilt": false,
+  "shadow_minutes": 179
+ },
+ "event_order": {
+  "after_transition": {
+   "burdens": [
+    0.0
+   ],
+   "pulse": false,
+   "statuses": [
+    "ARREST"
+   ]
+  },
+  "burden_when_met": 9.494702792959234,
+  "code": {
+   "evaluate_before_step": true,
+   "evaluate_calls_in_shadow_step": 1,
+   "evaluate_reads_start_state": true
+  },
+  "deferral": {
+   "minute_14": {
+    "applied": null,
+    "deferred": true,
+    "due": true,
+    "rhythm": "complete_av_block"
+   },
+   "minute_15": {
+    "applied": "pea",
+    "due": true,
+    "rhythm": "pea",
+    "signal": 0.95,
+    "status": "EVALUATED"
+   }
+  },
+  "pass": true,
+  "reads_start_state": true,
+  "rows": [
+   {
+    "applied": null,
+    "burden": 0.8851652869858406,
+    "burden_before": 0.0,
+    "deferred": false,
+    "due": false,
+    "minute": 1,
+    "pulse": true,
+    "read_minute": 0,
+    "rhythm": "sinus",
+    "signal": 0.9,
+    "start_pulse": true,
+    "status": "EVALUATED",
+    "transitions": 0
+   },
+   {
+    "applied": null,
+    "burden": 1.741311404146321,
+    "burden_before": 0.8851652869858406,
+    "deferred": false,
+    "due": false,
+    "minute": 2,
+    "pulse": true,
+    "read_minute": 1,
+    "rhythm": "sinus",
+    "signal": 0.9,
+    "start_pulse": true,
+    "status": "EVALUATED",
+    "transitions": 0
+   },
+   {
+    "applied": null,
+    "burden": 2.569389713029091,
+    "burden_before": 1.741311404146321,
+    "deferred": false,
+    "due": false,
+    "minute": 3,
+    "pulse": true,
+    "read_minute": 2,
+    "rhythm": "sinus",
+    "signal": 0.9,
+    "start_pulse": true,
+    "status": "EVALUATED",
+    "transitions": 0
+   },
+   {
+    "applied": null,
+    "burden": 3.3703203858404183,
+    "burden_before": 2.569389713029091,
+    "deferred": false,
+    "due": false,
+    "minute": 4,
+    "pulse": true,
+    "read_minute": 3,
+    "rhythm": "sinus",
+    "signal": 0.9,
+    "start_pulse": true,
+    "status": "EVALUATED",
+    "transitions": 0
+   },
+   {
+    "applied": null,
+    "burden": 4.14499342795342,
+    "burden_before": 3.3703203858404183,
+    "deferred": false,
+    "due": false,
+    "minute": 5,
+    "pulse": true,
+    "read_minute": 4,
+    "rhythm": "sinus",
+    "signal": 0.9,
+    "start_pulse": true,
+    "status": "EVALUATED",
+    "transitions": 0
+   },
+   {
+    "applied": null,
+    "burden": 4.894269666894489,
+    "burden_before": 4.14499342795342,
+    "deferred": false,
+    "due": false,
+    "minute": 6,
+    "pulse": true,
+    "read_minute": 5,
+    "rhythm": "sinus",
+    "signal": 0.9,
+    "start_pulse": true,
+    "status": "EVALUATED",
+    "transitions": 0
+   },
+   {
+    "applied": null,
+    "burden": 5.618981708906894,
+    "burden_before": 4.894269666894489,
+    "deferred": false,
+    "due": false,
+    "minute": 7,
+    "pulse": true,
+    "read_minute": 6,
+    "rhythm": "sinus",
+    "signal": 0.9,
+    "start_pulse": true,
+    "status": "EVALUATED",
+    "transitions": 0
+   },
+   {
+    "applied": null,
+    "burden": 6.319934864154485,
+    "burden_before": 5.618981708906894,
+    "deferred": false,
+    "due": false,
+    "minute": 8,
+    "pulse": true,
+    "read_minute": 7,
+    "rhythm": "sinus",
+    "signal": 0.9,
+    "start_pulse": true,
+    "status": "EVALUATED",
+    "transitions": 0
+   },
+   {
+    "applied": null,
+    "burden": 6.997908041593616,
+    "burden_before": 6.319934864154485,
+    "deferred": false,
+    "due": false,
+    "minute": 9,
+    "pulse": true,
+    "read_minute": 8,
+    "rhythm": "sinus",
+    "signal": 0.9,
+    "start_pulse": true,
+    "status": "EVALUATED",
+    "transitions": 0
+   },
+   {
+    "applied": null,
+    "burden": 7.653654614507689,
+    "burden_before": 6.997908041593616,
+    "deferred": false,
+    "due": false,
+    "minute": 10,
+    "pulse": true,
+    "read_minute": 9,
+    "rhythm": "sinus",
+    "signal": 0.9,
+    "start_pulse": true,
+    "status": "EVALUATED",
+    "transitions": 0
+   },
+   {
+    "applied": null,
+    "burden": 8.287903257666077,
+    "burden_before": 7.653654614507689,
+    "deferred": false,
+    "due": false,
+    "minute": 11,
+    "pulse": true,
+    "read_minute": 10,
+    "rhythm": "sinus",
+    "signal": 0.9,
+    "start_pulse": true,
+    "status": "EVALUATED",
+    "transitions": 0
+   },
+   {
+    "applied": null,
+    "burden": 8.901358757037736,
+    "burden_before": 8.287903257666077,
+    "deferred": false,
+    "due": false,
+    "minute": 12,
+    "pulse": true,
+    "read_minute": 11,
+    "rhythm": "sinus",
+    "signal": 0.9,
+    "start_pulse": true,
+    "status": "EVALUATED",
+    "transitions": 0
+   },
+   {
+    "applied": null,
+    "burden": 9.494702792959234,
+    "burden_before": 8.901358757037736,
+    "deferred": false,
+    "due": false,
+    "minute": 13,
+    "pulse": true,
+    "read_minute": 12,
+    "rhythm": "sinus",
+    "signal": 0.9,
+    "start_pulse": true,
+    "status": "EVALUATED",
+    "transitions": 0
+   },
+   {
+    "applied": "pea",
+    "burden": 0.0,
+    "burden_before": 9.494702792959234,
+    "deferred": false,
+    "due": true,
+    "minute": 14,
+    "pulse": false,
+    "read_minute": 13,
+    "rhythm": "pea",
+    "signal": 0.9,
+    "start_pulse": true,
+    "status": "EVALUATED",
+    "transitions": 1
+   },
+   {
+    "applied": null,
+    "burden": 0.0,
+    "burden_before": 0.0,
+    "deferred": false,
+    "due": false,
+    "minute": 15,
+    "pulse": false,
+    "read_minute": 14,
+    "rhythm": "pea",
+    "signal": null,
+    "start_pulse": false,
+    "status": "ARREST",
+    "transitions": 0
+   },
+   {
+    "applied": null,
+    "burden": 0.0,
+    "burden_before": 0.0,
+    "deferred": false,
+    "due": false,
+    "minute": 16,
+    "pulse": false,
+    "read_minute": 15,
+    "rhythm": "pea",
+    "signal": null,
+    "start_pulse": false,
+    "status": "ARREST",
+    "transitions": 0
+   },
+   {
+    "applied": null,
+    "burden": 0.0,
+    "burden_before": 0.0,
+    "deferred": false,
+    "due": false,
+    "minute": 17,
+    "pulse": false,
+    "read_minute": 16,
+    "rhythm": "pea",
+    "signal": null,
+    "start_pulse": false,
+    "status": "ARREST",
+    "transitions": 0
+   },
+   {
+    "applied": null,
+    "burden": 0.0,
+    "burden_before": 0.0,
+    "deferred": false,
+    "due": false,
+    "minute": 18,
+    "pulse": false,
+    "read_minute": 17,
+    "rhythm": "pea",
+    "signal": null,
+    "start_pulse": false,
+    "status": "ARREST",
+    "transitions": 0
+   },
+   {
+    "applied": null,
+    "burden": 0.0,
+    "burden_before": 0.0,
+    "deferred": false,
+    "due": false,
+    "minute": 19,
+    "pulse": false,
+    "read_minute": 18,
+    "rhythm": "pea",
+    "signal": null,
+    "start_pulse": false,
+    "status": "ARREST",
+    "transitions": 0
+   },
+   {
+    "applied": null,
+    "burden": 0.0,
+    "burden_before": 0.0,
+    "deferred": false,
+    "due": false,
+    "minute": 20,
+    "pulse": false,
+    "read_minute": 19,
+    "rhythm": "pea",
+    "signal": null,
+    "start_pulse": false,
+    "status": "ARREST",
+    "transitions": 0
+   }
+  ],
+  "scripted_arrest": {
+   "burden_after": 0.0,
+   "burden_before": 3.3703203858404183,
+   "pulse": false
+  },
+  "stale_burden_normal_physiology": {
+   "burden_after": 10.155769055061063,
+   "burden_before": 10.5,
+   "pulse": true,
+   "signal": 0.0,
+   "transition": null
+  },
+  "terminal_minute": 14,
+  "trajectory_steps": 43,
+  "transitions": 1
+ },
+ "extreme_subset": {
+  "by_case": {
+   "gi_bleed_57m": 17604,
+   "gi_bleed_72f": 0
+  },
+  "classification": null,
+  "filtered": false,
+  "flagged": 17604,
+  "inputs_available": [
+   "MAP",
+   "effective deficit"
+  ],
+  "map120": [
+   32.53874403031299,
+   46.31056031787178
+  ],
+  "pulse": true,
+  "reading": "the rows keep a pulse with MAP and an effective deficit, the two inputs the layer reads; with the MAP mapping, the kinetics and the terminal criterion UNSET no row is classified as arrest or non-arrest and no number was chosen from them",
+  "status": "EVALUABLE_ONCE_MAPPINGS_DEFINED"
+ },
+ "freeze_digest": "5f96f8603f2ecdcbf585cfac38e8abf4d4aec9ea9c64772d7d0c46da2f2544ae",
+ "generalization": {
+  "checks": {
+   "anaphylaxis": true,
+   "cardiogenic": true,
+   "distributive": true,
+   "hemorrhagic": true,
+   "malignant_arrhythmia": true,
+   "obstructive": true,
+   "respiratory_failure": true
+  },
+  "disease_terms": [],
+  "one_function": "every family is read by the same collapse.readings / signal_at; no family branch",
+  "pass": true,
+  "rows": {
+   "anaphylaxis": {
+    "logic": "the same distributive / common path",
+    "reading": {
+     "delivery": 0.0,
+     "delivery_rel": 0.9614163315906464,
+     "dominant": [
+      "perfusion_failure"
+     ],
+     "map": 38.93736142942118,
+     "output_rel": 0.9614163315906464,
+     "perfusion": 0.5673626507842091,
+     "pulse": true,
+     "rhythm": "sinus",
+     "signal": 0.5673626507842091,
+     "spo2": 97.0,
+     "status": "COLLAPSE_SIGNAL"
+    },
+    "what": "T falls and V leaks"
+   },
+   "cardiogenic": {
+    "logic": "derived MAP / DO2 failure",
+    "reading": {
+     "delivery": 0.25,
+     "delivery_rel": 0.3,
+     "dominant": [
+      "perfusion_failure"
+     ],
+     "map": 27.0,
+     "output_rel": 0.3,
+     "perfusion": 0.7,
+     "pulse": true,
+     "rhythm": "sinus",
+     "signal": 0.7,
+     "spo2": 97.0,
+     "status": "COLLAPSE_SIGNAL"
+    },
+    "what": "P falls"
+   },
+   "distributive": {
+    "logic": "MAP failure dominates despite preserved flow",
+    "reading": {
+     "delivery": 0.0,
+     "delivery_rel": 1.1976047904191618,
+     "dominant": [
+      "perfusion_failure"
+     ],
+     "map": 48.50299401197606,
+     "output_rel": 1.1976047904191618,
+     "perfusion": 0.46107784431137716,
+     "pulse": true,
+     "rhythm": "sinus",
+     "signal": 0.46107784431137716,
+     "spo2": 97.0,
+     "status": "COLLAPSE_SIGNAL"
+    },
+    "what": "T falls: flow kept or raised"
+   },
+   "hemorrhagic": {
+    "logic": "MAP + delivery failure",
+    "reading": {
+     "delivery": 0.14999412184051053,
+     "delivery_rel": 0.3400023512637958,
+     "dominant": [
+      "perfusion_failure"
+     ],
+     "map": 51.000352689569375,
+     "output_rel": 0.5666705854396596,
+     "perfusion": 0.4333294145603403,
+     "pulse": true,
+     "rhythm": "sinus",
+     "signal": 0.4333294145603403,
+     "spo2": 97.0,
+     "status": "COLLAPSE_SIGNAL"
+    },
+    "what": "V and Hb fall"
+   },
+   "malignant_arrhythmia": {
+    "logic": "no-pulse rhythm = arrest; pulse-present rhythm collapses through MAP / DO2",
+    "variants": {
+     "pulseless": {
+      "delivery": null,
+      "delivery_rel": 0.0,
+      "dominant": [],
+      "map": null,
+      "output_rel": 0.0,
+      "perfusion": null,
+      "pulse": false,
+      "rhythm": "vf",
+      "signal": null,
+      "spo2": null,
+      "status": "ARREST"
+     },
+     "with_pulse": {
+      "delivery": 0.25,
+      "delivery_rel": 0.3,
+      "dominant": [
+       "perfusion_failure"
+      ],
+      "map": 27.0,
+      "output_rel": 0.3,
+      "perfusion": 0.7,
+      "pulse": true,
+      "rhythm": "vt_with_pulse",
+      "signal": 0.7,
+      "spo2": 97.0,
+      "status": "COLLAPSE_SIGNAL"
+     }
+    },
+    "what": "a non-perfusing rhythm; a perfusing VT with a low output factor"
+   },
+   "obstructive": {
+    "logic": "derived MAP / DO2 failure",
+    "reading": {
+     "delivery": 0.04018600548223372,
+     "delivery_rel": 0.3839255978071065,
+     "dominant": [
+      "perfusion_failure"
+     ],
+     "map": 34.55330380263958,
+     "output_rel": 0.3839255978071065,
+     "perfusion": 0.6160744021928936,
+     "pulse": true,
+     "rhythm": "sinus",
+     "signal": 0.6160744021928936,
+     "spo2": 97.0,
+     "status": "COLLAPSE_SIGNAL"
+    },
+    "what": "effective preload falls, Hb kept (no obstruction channel: the writer lowers preload)"
+   },
+   "respiratory_failure": {
+    "logic": "delivery failure may drive collapse without a direct SpO2 input",
+    "variants": {
+     "neutral_reserve": {
+      "delivery": 0.24432989690721651,
+      "delivery_rel": 0.7556701030927835,
+      "dominant": [
+       "oxygen_delivery_failure"
+      ],
+      "map": 90.0,
+      "output_rel": 1.0,
+      "perfusion": 0.0,
+      "pulse": true,
+      "rhythm": "sinus",
+      "signal": 0.24432989690721651,
+      "spo2": 73.3,
+      "status": "COLLAPSE_SIGNAL"
+     },
+     "probe_reserve": {
+      "delivery": 0.0,
+      "delivery_rel": 0.7556701030927835,
+      "dominant": [],
+      "map": 90.0,
+      "output_rel": 1.0,
+      "perfusion": 0.0,
+      "pulse": true,
+      "rhythm": "sinus",
+      "signal": 0.0,
+      "spo2": 73.3,
+      "status": "NONE"
+     }
+    },
+    "what": "SpO2 falls (FiO2 1.0 withdrawn), flow and Hb kept"
+   }
+  }
+ },
+ "migration_gate": "MIGRATION_GATE_CLOSED: no clinical collapse threshold, GI collapse filtering, ROSC / ACLS, runtime activation, GI or second-family migration is authorized",
+ "no_markers": {
+  "I_F": "not readable: the candidate imports neither the encephalopathy candidate nor any consciousness code",
+  "base_signal": 0.7,
+  "pass": true,
+  "rows": {
+   "D": {
+    "same": true,
+    "signal": 0.7,
+    "spec": {
+     "D": 5.0
+    }
+   },
+   "acid_pH": {
+    "same": true,
+    "signal": 0.7,
+    "spec": {
+     "metabolic_acid_burden": 15.0
+    }
+   },
+   "lactate": {
+    "same": true,
+    "signal": 0.7,
+    "spec": {
+     "lactate_excess_mmol_l": 6.0
+    }
+   }
+  }
+ },
+ "no_pulse": {
+  "C12": {
+   "burden_after": 0.0,
+   "delivery_rel": 0.0,
+   "map": null,
+   "next_minute_burden": 0.0,
+   "next_minute_pulse": false,
+   "output_rel": 0.0,
+   "pass": true,
+   "spo2": null,
+   "status": "ARREST",
+   "transition": null
+  },
+  "C13": {
+   "fired": {
+    "evaluate": "UnresolvedBoundary",
+    "rhythm": "CoreInvariantError",
+    "shadow_step": "UnresolvedBoundary"
+   },
+   "pass": true
+  },
+  "C14": {
+   "first_minute_burden": 0.9638466458290265,
+   "first_minute_terminal": false,
+   "pass": true,
+   "rows": {
+    "P_0_02": {
+     "delivery": 0.95,
+     "delivery_rel": 0.02,
+     "dominant": [
+      "perfusion_failure"
+     ],
+     "map": 1.8,
+     "output_rel": 0.02,
+     "perfusion": 0.98,
+     "pulse": true,
+     "rhythm": "sinus",
+     "signal": 0.98,
+     "spo2": 97.0,
+     "status": "COLLAPSE_SIGNAL"
+    },
+    "P_0_1_avb": {
+     "delivery": 0.875,
+     "delivery_rel": 0.05,
+     "dominant": [
+      "perfusion_failure"
+     ],
+     "map": 4.5,
+     "output_rel": 0.05,
+     "perfusion": 0.95,
+     "pulse": true,
+     "rhythm": "complete_av_block",
+     "signal": 0.95,
+     "spo2": 97.0,
+     "status": "COLLAPSE_SIGNAL"
+    }
+   }
+  },
+  "readings": 6,
+  "steps": 1
+ },
+ "no_q": {
+  "a": {
+   "delivery": 0.0,
+   "delivery_rel": 0.5,
+   "dominant": [
+    "perfusion_failure"
+   ],
+   "map": 45.0,
+   "output_rel": 0.5,
+   "perfusion": 0.5,
+   "pulse": true,
+   "rhythm": "sinus",
+   "signal": 0.5,
+   "spo2": 97.0,
+   "status": "COLLAPSE_SIGNAL"
+  },
+  "b": {
+   "delivery": 0.0,
+   "delivery_rel": 0.5,
+   "dominant": [
+    "perfusion_failure"
+   ],
+   "map": 44.99999999999999,
+   "output_rel": 0.3571428571428572,
+   "perfusion": 0.5000000000000001,
+   "pulse": true,
+   "rhythm": "sinus",
+   "signal": 0.5000000000000001,
+   "spo2": 97.0,
+   "status": "COLLAPSE_SIGNAL"
+  },
+  "b_construction": {
+   "P": 0.4,
+   "T": 1.3999999999999995,
+   "hb_share": 1.3999999999999997
+  },
+  "flow_alone_h2": {
+   "delivery": 0.0,
+   "delivery_rel": 0.5384615384615383,
+   "dominant": [],
+   "map": 96.9230769230769,
+   "output_rel": 0.5384615384615383,
+   "perfusion": 0.0,
+   "pulse": true,
+   "rhythm": "sinus",
+   "signal": 0.0,
+   "spo2": 97.0,
+   "status": "NONE"
+  },
+  "flow_difference": 0.1428571428571428,
+  "pass": true,
+  "signal_difference": -1.1102230246251565e-16
+ },
+ "no_spo2": {
+  "a": {
+   "delivery": 0.25,
+   "delivery_rel": 0.3,
+   "dominant": [
+    "perfusion_failure"
+   ],
+   "map": 27.0,
+   "output_rel": 0.3,
+   "perfusion": 0.7,
+   "pulse": true,
+   "rhythm": "sinus",
+   "signal": 0.7,
+   "spo2": 97.0,
+   "status": "COLLAPSE_SIGNAL"
+  },
+  "b": {
+   "delivery": 0.25,
+   "delivery_rel": 0.3,
+   "dominant": [
+    "perfusion_failure"
+   ],
+   "map": 27.0,
+   "output_rel": 0.3,
+   "perfusion": 0.7,
+   "pulse": true,
+   "rhythm": "sinus",
+   "signal": 0.7,
+   "spo2": 73.3,
+   "status": "COLLAPSE_SIGNAL"
+  },
+  "pass": true,
+  "spo2_difference": 23.700000000000003
+ },
+ "nonregression": {
+  "contributor": [
+   "probe_pump_decline",
+   0,
+   20,
+   -0.03
+  ],
+  "identical": {
+   "BloodState": true,
+   "D": true,
+   "DO2_deficit": true,
+   "HR_baroreflex": true,
+   "RR_W": true,
+   "acid_base": true,
+   "consciousness": true,
+   "lactate": true,
+   "output": true,
+   "pressure_tone": true
+  },
+  "minutes": 30,
+  "pass": true,
+  "plain_burden": 0.0,
+  "records_identical": true,
+  "shadow_burden_last": 8.428634571372942,
+  "shadow_burden_moved": true,
+  "steps": 60,
+  "whole_state_but_burden": true
+ },
+ "parameters": {
+  "burden_tau_repayment_kinetics": "UNSET",
+  "delivery_failure_threshold": "UNSET (the structural signal is the certified normalized deficit itself)",
+  "map_failure_mapping": "UNSET_CLINICAL_MAPPING",
+  "minimum_current_nonviability": "UNSET",
+  "rosc": "NOT_MODELED",
+  "terminal_burden_threshold": "UNSET",
+  "terminal_rhythm_phenotype": "TERMINAL_RHYTHM_PHENOTYPE_UNSET",
+  "test_numbers": "SYNTHETIC_ONLY"
+ },
+ "persistence": {
+  "C10": {
+   "from": {
+    "12.0": {
+     "after_120": 0.2197876666648102,
+     "after_60": 1.6240233988393522,
+     "falls_monotonically": true,
+     "terminal": null
+    },
+    "9.9": {
+     "after_120": 0.1813248249984684,
+     "after_60": 1.3398193040424657,
+     "falls_monotonically": true,
+     "terminal": null
+    }
+   },
+   "partial_after_120": 9.054946916666216,
+   "partial_ceiling": 9.0,
+   "partial_signal": 0.3,
+   "partial_terminal": null,
+   "pass": true,
+   "terminal_without_floor_refused": true
+  },
+  "C11": {
+   "bound": 30.0,
+   "cycle_peaks_first_last": [
+    4.605548253281578,
+    7.2858700590541705
+   ],
+   "max": 7.2858700590541705,
+   "pass": true,
+   "pattern": "5 min at 1.0, 25 min at 0, for 24 h",
+   "peak_growth_last_cycle": 0.0,
+   "terminal": null
+  },
+  "C8": {
+   "one_minute_ceiling": 0.9835169855398229,
+   "pass": true,
+   "peak": 2.8548774589212127,
+   "single_minute_limit_refused": true,
+   "terminal": null
+  },
+  "C9": {
+   "burden_at_14": 10.068594697627482,
+   "burden_at_3": 2.569389713029091,
+   "burden_at_60": 23.34594735261148,
+   "pass": true,
+   "terminal_minute": 14
+  },
+  "burden_updates": 1923,
+  "form": "b(t+1) = b(t) e^(-1/tau) + s(t) tau (1 - e^(-1/tau)): exact first-order relaxation toward s tau"
+ },
+ "policy": "Shadow only: one candidate physiology module no core step reads (collapse.py) and this analysis; no core file, channel, rule or parameter changed; synthetic numbers labelled SYNTHETIC_ONLY; fixed core states and short probe trajectories read through the certified core; the P2M-1 record read with a pinned hash; the extreme subset kept and unclassified; nothing selected, approved or activated.",
+ "recommendation": {
+  "numeric_collapse_calibration_required_before_second_family": false,
+  "recommendation": "MOVE_TO_SECOND_FAMILY_GENERALIZATION_WITH_COLLAPSE_THRESHOLDS_UNSET",
+  "rule": "Predeclared. READY: numeric collapse calibration is not required before second-family generalization while the layer stays shadow / inactive and can be exercised structurally without enforcing a clinical arrest: MOVE_TO_SECOND_FAMILY_GENERALIZATION_WITH_COLLAPSE_THRESHOLDS_UNSET; no GI collapse-calibration package is opened because thresholds stay UNSET. NOT_READY: the blocker and the smallest correction.",
+  "why": "the layer is shadow and inactive; a second family is exercised structurally with synthetic numbers, and no family needs a clinical arrest enforced to be migrated in shadow; the clinical numbers stay faculty decisions from general physiology"
+ },
+ "revision": "P2M-2",
+ "rosc": {
+  "burden": 0.0,
+  "candidate_reads_terminal_since": false,
+  "core_guards": {
+   "return_of_pulse_raises": true,
+   "terminal_since_never_cleared": true
+  },
+  "pass": true,
+  "post_arrest_pulse_state": "EVALUATED",
+  "status": "ROSC_NOT_CURRENTLY_MODELED",
+  "steps": 15
+ },
+ "signals": {
+  "C1": {
+   "injected": [
+    0.0,
+    0.0
+   ],
+   "injected_signal": 0.0,
+   "pass": true,
+   "reading": {
+    "delivery": 0.0,
+    "delivery_rel": 1.0,
+    "dominant": [],
+    "map": 90.0,
+    "output_rel": 1.0,
+    "perfusion": 0.0,
+    "pulse": true,
+    "rhythm": "sinus",
+    "signal": 0.0,
+    "spo2": 97.0,
+    "status": "NONE"
+   },
+   "state": {}
+  },
+  "C2": {
+   "injected": [
+    0.6,
+    0.0
+   ],
+   "injected_signal": 0.6,
+   "pass": true,
+   "reading": {
+    "delivery": 0.0,
+    "delivery_rel": 1.1976047904191618,
+    "dominant": [
+     "perfusion_failure"
+    ],
+    "map": 48.50299401197606,
+    "output_rel": 1.1976047904191618,
+    "perfusion": 0.46107784431137716,
+    "pulse": true,
+    "rhythm": "sinus",
+    "signal": 0.46107784431137716,
+    "spo2": 97.0,
+    "status": "COLLAPSE_SIGNAL"
+   },
+   "state": {
+    "T": 0.45
+   }
+  },
+  "C3": {
+   "injected": [
+    0.0,
+    0.5
+   ],
+   "injected_signal": 0.5,
+   "pass": true,
+   "reading": {
+    "delivery": 0.375,
+    "delivery_rel": 0.25,
+    "dominant": [
+     "oxygen_delivery_failure"
+    ],
+    "map": 90.0,
+    "output_rel": 1.0,
+    "perfusion": 0.0,
+    "pulse": true,
+    "rhythm": "sinus",
+    "signal": 0.375,
+    "spo2": 97.0,
+    "status": "COLLAPSE_SIGNAL"
+   },
+   "state": {
+    "hb_share": 0.25
+   }
+  },
+  "C4": {
+   "injected": [
+    0.6,
+    0.5
+   ],
+   "injected_signal": 0.6,
+   "pass": true,
+   "reading": {
+    "delivery": 0.25,
+    "delivery_rel": 0.3,
+    "dominant": [
+     "perfusion_failure"
+    ],
+    "map": 27.0,
+    "output_rel": 0.3,
+    "perfusion": 0.7,
+    "pulse": true,
+    "rhythm": "sinus",
+    "signal": 0.7,
+    "spo2": 97.0,
+    "status": "COLLAPSE_SIGNAL"
+   },
+   "state": {
+    "P": 0.3
+   }
+  }
+ },
+ "structural": {
+  "C1": true,
+  "C10": true,
+  "C11": true,
+  "C12": true,
+  "C13": true,
+  "C14": true,
+  "C2": true,
+  "C3": true,
+  "C4": true,
+  "C5": true,
+  "C6": true,
+  "C7": true,
+  "C8": true,
+  "C9": true
+ },
+ "supersession": {
+  "ambiguous_arrival_zero_semantics": {
+   "evidence": "arrival",
+   "p2m1": "P2M-1 minimum 3: require a null signal at arrival (review MEDIUM-6)",
+   "p2m2": "the arrival burden is 0 by default; the arrival signal is the arrival physiology's, never forced to 0",
+   "status": "SUPERSEDED_BY_P2M2"
+  },
+  "flow_only_overstatement": {
+   "evidence": "C5 (flow_alone_h2)",
+   "p2m1": "P2M-1 redundancy: 'the low flow never fails alone', which held only for the chosen probes (review HIGH-2)",
+   "p2m2": "Q is not a graded input by decision; a flow fall that keeps MAP and delivery reads no collapse signal",
+   "status": "SUPERSEDED_BY_P2M2"
+  },
+  "incomplete_persistence_invariants": {
+   "evidence": "C8-C11",
+   "p2m1": "P2M-1 minimum: a persistence floor and a mandatory repayment, still to decide (review MEDIUM-7)",
+   "p2m2": "the nine burden semantics formalized: repayment by construction (relaxation toward signal x tau), the floor enforced by the profile, the terminal criterion needs current non-viability",
+   "status": "SUPERSEDED_BY_P2M2"
+  },
+  "probe_dependent_frozen_verdict": {
+   "evidence": "criteria",
+   "p2m1": "P2M-1's frozen redundancy_resolved / persistence_classified leaned on the probe choice (review HIGH-2, MEDIUM-7)",
+   "p2m2": "each P2M-2 criterion is a property of the candidate checked by construction (its profile invariants and code scan) and on probes; the probes illustrate, they do not define the property",
+   "status": "SUPERSEDED_BY_P2M2"
+  },
+  "stale_burden_on_rhythm_deferral": {
+   "evidence": "event_order.deferral / stale_burden_normal_physiology / C10",
+   "p2m1": "P2M-1 review HIGH-1: a burden left at the limit arrests a patient with normal output the next minute",
+   "p2m2": "any loss of the pulse resets the burden; the terminal criterion reads the current signal, so a stale burden never arrests normal physiology",
+   "status": "SUPERSEDED_BY_P2M2"
+  }
+ },
+ "upstream": {
+  "digest": "ecbcfefce945843ad063317c9ce30cb99fac50bbbf898f373cff89c438c92e2c",
+  "files": 67,
+  "imported_by": [
+   "clinical_core/collapse_architecture.py"
+  ],
+  "unchanged": true
+ },
+ "verdict": {
+  "checks": {
+   "arrival_semantics": true,
+   "event_order_acyclic": true,
+   "future_rosc_possible": true,
+   "historical_burden_cannot_arrest": true,
+   "max_of_map_and_delivery": true,
+   "no_clinical_threshold_approved": true,
+   "no_duplicate_inputs": true,
+   "no_pulse_consistent": true,
+   "persistence_repays": true,
+   "seven_family_probes_pass": true,
+   "upstream_unchanged": true
+  },
+  "failing": [],
+  "not_evaluated": [],
+  "verdict": "COMMON_COLLAPSE_SAFETY_ARCHITECTURE_READY_FOR_GENERALIZATION"
+ }
+}
