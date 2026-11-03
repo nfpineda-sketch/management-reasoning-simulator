@@ -302,3 +302,79 @@ def test_the_document_is_generated_from_the_record(record):
     assert cy.READY in document and "MOVE_TO_SECOND_FAMILY_GENERALIZATION_WITH_COLLAPSE_THRESHOLDS_UNSET" in document
     for placeholder in ("SUMMARY_TEXT", "LIMITS_TEXT", "REVIEW_TEXT", "FREEZE_COMMIT", "FREEZE_SHORT"):
         assert placeholder not in document
+
+
+# P2M-2 review findings, pinned as the current behaviour they describe (TD-110; the freeze and the record stay) ------------
+
+def test_review_m1_the_counterfactual_core_minute_fails_loudly_where_the_declared_order_would_not():
+    """MEDIUM-1: on a due minute shadow_step first runs the core's minute without the transition; if that counterfactual
+    state(t+1) has a pulse and no output (V emptied this minute) it raises, although the declared order (the transition
+    applied in the same core minute) gives a valid pulseless state. It fails loudly, never silently; the fix (one core
+    minute with the transition, the deferral decided without materializing state(t+1)) needs a refreeze."""
+    from dataclasses import replace
+    from clinical_core.bands import Drift
+    from clinical_core.integration import step
+    from clinical_core.modules.rhythm_events import ScriptedRhythmEvent
+    state, anchors, profile = cy._state({"P": 0.1, "collapse_burden": 9.95})
+    assert cx.evaluate(state, anchors, profile, SYN).terminal_due
+    empty = Drift("probe_v", "V", 0, 1, -(dv.arrival_filling(anchors, profile) + state.V) - 50.0)
+    with pytest.raises(UnresolvedBoundary, match="effective output reached zero"):
+        cx.shadow_step(state, (empty,), anchors, profile, SYN)
+    target = dv.terminal_rhythm(state, anchors, replace(profile, collapse_terminal_rhythm="pea"))
+    event = ScriptedRhythmEvent(id="probe", at_minute=1, target=target, preventability="not assessed")
+    after, _ = step(state, (empty, event), anchors, profile)
+    assert not after.R.pulse_present
+
+
+def test_review_m2_the_burden_write_is_not_in_the_core_record():
+    """MEDIUM-2: the layer writes aux.collapse_burden after the core's conservation check; the core record carries no
+    AuxiliaryChange for it (the ShadowMinute does), so the core's own conservation check of that minute fails. The
+    non-regression's 'records identical' holds partly for that reason. Trace fidelity needs it recorded at integration."""
+    from clinical_core.integration import _check_conservation
+    from clinical_core.provenance import ProvenanceError
+    state, anchors, profile = cy._state({"P": 0.3})
+    after, record, shadow = cx.shadow_step(state, (), anchors, profile, SYN)
+    assert after.aux.collapse_burden == shadow.collapse.burden_after > 0.0
+    assert "collapse_burden" not in {change.quantity for change in record.auxiliary}
+    with pytest.raises(ProvenanceError, match="collapse_burden"):
+        _check_conservation(state, after, record)
+
+
+def test_review_m3_markers_change_neither_input_where_delivery_dominates():
+    """MEDIUM-3: the frozen C7 compares the signal only, at a perfusion-dominated state, where the maximum would hide a
+    leak into the delivery branch. Here, at a delivery-dominated state (Hb 25 %), lactate, D and the acid burden changed
+    alone leave both inputs, not only their maximum; and the code scan finds no indirect read (getattr is used only by the
+    records' to_dict)."""
+    base_state, anchors, profile = cy._state({"hb_share": 0.25})
+    base = cy.reading(base_state, anchors, profile)
+    assert base["perfusion"] == 0.0 and base["delivery"] > 0.0 and base["dominant"] == ["oxygen_delivery_failure"]
+    for spec in cy.ALONE.values():
+        row = cy.reading(*cy._state({"hb_share": 0.25, **spec}))
+        assert (row["perfusion"], row["delivery"], row["signal"]) == (base["perfusion"], base["delivery"],
+                                                                       base["signal"]), spec
+    tree = ast.parse(CANDIDATE.read_text(encoding="utf-8"))
+    for fn in ast.walk(tree):
+        if isinstance(fn, ast.FunctionDef):
+            uses = {getattr(n.func, "id", None) for n in ast.walk(fn) if isinstance(n, ast.Call)}
+            if "getattr" in uses or "vars" in uses:
+                assert fn.name == "to_dict", fn.name
+    assert "to_dict()" not in CANDIDATE.read_text(encoding="utf-8").split("def readings", 1)[1].split("def signal_at")[0]
+
+
+def test_review_b3_the_persistence_floor_holds_from_zero_burden_only():
+    """LOW-3: the floor refuses a limit one minute can reach from 0; from a burden already near the limit one minute can
+    meet it, because the persistence is the burden itself."""
+    assert cx.first_terminal([1.0], SYN) is None
+    assert cx.first_terminal([0.55], SYN, 9.9) == 1
+
+
+def test_review_b4_the_profile_does_not_check_its_field_types():
+    """LOW-4: a tuple in place of a PerfusionMapping is accepted and fails only on use; a terminal criterion with the MAP
+    mapping UNSET is accepted and never evaluates (NOT_EVALUATED_UNSET)."""
+    loose = cx.CollapseProfile(perfusion_mapping=(90.0, 0.0))
+    with pytest.raises(AttributeError):
+        cx.perfusion_failure(50.0, loose)
+    unmapped = cx.CollapseProfile(None, 30.0, 10.0, 0.5, "pea")
+    state, anchors, profile = cy._state({"P": 0.1, "collapse_burden": 20.0})
+    m = cx.evaluate(state, anchors, profile, unmapped)
+    assert m.status == cx.NOT_EVALUATED and not m.terminal_due

@@ -3740,3 +3740,11 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Veredicto: COMMON_COLLAPSE_SAFETY_ARCHITECTURE_READY_FOR_GENERALIZATION.** Recomendación:
   `MOVE_TO_SECOND_FAMILY_GENERALIZATION_WITH_COLLAPSE_THRESHOLDS_UNSET`; la calibración numérica del colapso no hace
   falta antes de la segunda familia. Los valores quedan para la docencia.
+- **Revisión adversarial (sin recongelar).** Tres hallazgos medios, confirmados con sondas propias:
+  - el minuto contrafactual de `shadow_step` puede fallar cuando el gasto llega a 0 en el minuto terminal;
+  - la escritura de la carga no queda en el registro del núcleo;
+  - el C7 congelado no habría visto una fuga de lactato o D hacia el aporte, aunque el candidato está limpio y una
+    prueba nueva lo comprueba.
+
+  Lectura corregida: el veredicto se mantiene, pero hay que corregir los dos primeros antes de usar la capa sobre la
+  trayectoria de una familia o de integrarla.

@@ -6,7 +6,10 @@ Sólo sombra. Un candidato de fisiología (`clinical_core/collapse.py`) que ning
 
 ## Resumen
 
-**Veredicto: `COMMON_COLLAPSE_SAFETY_ARCHITECTURE_READY_FOR_GENERALIZATION`.** Recomendación:
+**Veredicto congelado: `COMMON_COLLAPSE_SAFETY_ARCHITECTURE_READY_FOR_GENERALIZATION`.** La revisión adversarial
+deja tres hallazgos medios sin recongelar (§18). La lectura corregida mantiene el veredicto, pero antes de usar la capa
+sobre la trayectoria de una familia o de integrarla hay que corregir dos defectos de implementación: un minuto
+contrafactual que puede fallar (M1) y la escritura de la carga sin registro (M2). Recomendación:
 `MOVE_TO_SECOND_FAMILY_GENERALIZATION_WITH_COLLAPSE_THRESHOLDS_UNSET`. No hace falta calibrar el colapso con números
 antes de la segunda familia: la capa está en sombra, inactiva, y se ejercita con valores sintéticos sin imponer un paro
 clínico. Ningún umbral recibe valor.
@@ -18,7 +21,9 @@ clínico. Ningún umbral recibe valor.
   - Q, P y R llegan sólo por la PAM y el aporte (C5: mismo par PAM/aporte con gasto 0,500 frente a 0,357, la misma
     señal);
   - la SpO2 directa queda DEFERRED (C6);
-  - lactato, D, pH, I y F no se leen (C7, y un escaneo del código que detecta una lectura plantada).
+  - lactato, D, pH, I y F no se leen. El C7 congelado sólo compara la señal en un estado dominado por la PAM, y el
+    escaneo sólo ve atributos (M3). Una prueba nueva compara las dos entradas en un estado dominado por el aporte y
+    detecta una fuga plantada.
 - **Pulso:** `pulse_present` es el estado de ritmo que perfunde, no un pulso palpable garantizado.
   - Con pulso y PAM 1,8 mmHg el estado es colapso profundo representable (C14).
   - Con pulso y gasto en el cero numérico el núcleo falla en voz alta (C13).
@@ -27,7 +32,7 @@ clínico. Ningún umbral recibe valor.
   - Se relaja exactamente hacia `señal × τ`: nunca negativa, se repaga, cae siempre a 0 con señal 0 y queda acotada por
     τ.
   - El criterio terminal exige persistencia (carga ≥ límite) **y** no viabilidad actual (señal ≥ piso).
-  - El perfil rechaza un límite alcanzable en un minuto y un criterio sin piso.
+  - El perfil rechaza un límite alcanzable en un minuto desde carga 0 y un criterio sin piso.
   - Toda pérdida del pulso pone la carga en 0.
 - **Orden:** `state(t) → derive(t) → señal(t) → carga(t+1) → decisión → transición en el minuto del núcleo →
   state(t+1)`.
@@ -38,7 +43,8 @@ clínico. Ningún umbral recibe valor.
 - **ROSC:** no está modelado, pero sigue siendo posible: la carga queda en 0 y el candidato no lee `terminal_since`.
 - **Subconjunto extremo GI** (17 604 filas): evaluable cuando existan los mapeos; no se clasifica ni se filtra.
 - **No regresión:** el árbol de P2M-1 (67 archivos) coincide byte a byte. En sombra activa, todo el estado del núcleo
-  salvo la carga es idéntico durante 30 minutos.
+  salvo la carga es idéntico durante 30 minutos. Los registros del núcleo coinciden en parte porque la escritura de la
+  carga no queda registrada (M2).
 - **P2M-1:** cinco puntos quedan `SUPERSEDED_BY_P2M2` sin reescribir su registro.
 
 ## 1. Decisiones de la docencia
@@ -295,6 +301,16 @@ Decisiones pedidas a la docencia (texto congelado, en inglés):
 8. ROSC in a later package (the reset burden and the candidate's indifference to terminal_since keep it possible)
 <!-- /generado:pedidas -->
 
+Decisiones agregadas por la revisión adversarial (§18):
+
+9. Corregir `shadow_step`, recongelando, antes de usar la capa sobre la trayectoria de una familia: un solo minuto del
+   núcleo con la transición, y el diferimiento decidido sin materializar state(t+1).
+10. Decidir cómo registra el Trace la escritura de la carga: un `AuxiliaryChange` de la capa o la fuente de colapso del
+    propio núcleo en la integración.
+11. Confirmar la lectura adoptada de «se repaga cuando la señal mejora»: con una sola τ, la acumulación baja de inmediato
+    y la carga cae una vez que supera `señal × τ`.
+12. Aceptar el registro con estas correcciones o recongelar.
+
 ## 16. Eficiencia
 
 <!-- generado:eficiencia -->
@@ -329,7 +345,63 @@ Decisiones pedidas a la docencia (texto congelado, en inglés):
   tono 0, barorreflejo apagado).
   - La garantía de la capa inactiva es el árbol idéntico byte a byte, más el golden.
 - **Sin trayectorias GI.** Las cifras del subconjunto vienen del registro fijado de P2M-1.
+  - Con la rampa sintética y el piso 0,5, el límite cae en PAM 45, dentro del rango GI (32,5–46,3). Si se aplicara al
+    subconjunto lo partiría; no se aplicó.
+- **Criterios que no pueden fallar** (revisión B1). Tres comprobaciones de `no_clinical_threshold_approved` comparan
+  constantes: la clasificación del subconjunto, el estado de aprobación y el perfil por defecto. Lo mismo pasa con la
+  desigualdad 0,6 ≠ 1,1 de C4.
+- **Semántica previa de la carga** (B2). `state.py` y `derived.py` todavía la describen como la de P2E-3 (gasto
+  críticamente bajo, 0 con la regla apagada). El núcleo no se toca; se actualiza con la integración.
+- **Tipos del perfil** (B4). No se validan: una tupla en lugar del mapeo falla recién al usarla. Un criterio terminal con
+  el mapeo UNSET se acepta y nunca evalúa.
+- **Proceso** (B6). Las sondas estructurales se ejercitaron (pasa / no pasa) mientras se escribían los módulos, antes del
+  congelamiento. No había ningún número clínico que ajustar.
 
 ## 18. Revisión adversarial
 
-Pendiente: se agrega tras la revisión adversarial única del paquete.
+Una revisión independiente, de sólo lectura, sobre `2213173` y `fb50c3e`. Confirmé cada hallazgo medio con una sonda
+propia antes de actuar. Las sondas quedaron fuera del repositorio.
+
+**Revisado y limpio:**
+- `derived.py`, `integration.py` y `state.py` son byte a byte los de `61628ec`. Las pruebas cerradas sólo excluyen los
+  módulos nuevos.
+- Los JSON de P2G, P2I, P2I-2T y P2I-2U sólo cambian el digest.
+- La no regresión se mantiene también con ganancia de tono 0,5 y barorreflejo 0,5.
+- Los mutantes de suma, término de Q, término de SpO2, carga sin decaimiento, carga histórica que basta para el paro y
+  llegada forzada a 0 dan NOT_READY.
+- La carga queda acotada.
+- No hay paro tardío por debajo del piso.
+- El fenotipo UNSET falla en voz alta.
+- No hay ningún umbral GI.
+- Las cifras del informe coinciden con el registro.
+- El congelamiento está íntegro.
+
+**Hallazgos:**
+
+- **MEDIO-1. El minuto contrafactual puede fallar donde el orden declarado no falla.** En un minuto con la transición
+  debida, `shadow_step` corre primero el minuto del núcleo sin la transición. Si ese estado t+1 tiene pulso y gasto 0
+  (V vaciado en ese minuto), lanza un error, aunque con la transición aplicada en el mismo minuto el estado sin pulso
+  es válido.
+  - No hay bucle: la decisión se toma una sola vez, sobre state(t).
+  - *Confirmado y fijado en una prueba.* La corrección (un solo minuto del núcleo con la transición, y el diferimiento
+    decidido sin materializar state(t+1)) exige recongelar. Decisión 9.
+- **MEDIO-2. La carga se escribe sin registro de procedencia.** El registro del minuto del núcleo no la lleva (sí el
+  `ShadowMinute`), y la comprobación de conservación del núcleo fallaría sobre ese minuto.
+  - *Confirmado y fijado en una prueba.* Se resuelve en la integración. Decisión 10.
+- **MEDIO-3. `no_duplicate_inputs` no podía fallar por una fuga de lactato o D hacia el aporte.** El C7 congelado
+  compara sólo la señal en un estado donde domina la PAM, y el escaneo sólo ve atributos.
+  - El candidato está limpio.
+  - *Reforzado en pruebas:* una prueba nueva compara las dos entradas en un estado dominado por el aporte (Hb al 25 %),
+    detecta una fuga plantada de lactato y revisa las lecturas indirectas. La redacción del resumen quedó corregida.
+- **Bajos.**
+  - B1: comprobaciones constantes dentro de los criterios.
+  - B2: semántica previa de `aux.collapse_burden` en el núcleo.
+  - B3: el piso de persistencia vale desde carga 0 (redacción corregida y fijada en una prueba).
+  - B4: tipos del perfil sin validar (fijado en una prueba).
+  - B5: el piso sintético cae dentro del rango GI.
+  - B6: nota de proceso.
+
+  Todos quedan declarados en §17.
+
+**Sin segundo congelamiento,** como pide el encargo y como se trató en P2L-1, P2L-2 y P2M-1. Sólo se corrigió lo no
+congelado: pruebas, informe y documentos. El registro sigue siendo el de la corrida del congelamiento `5f96f860`.
