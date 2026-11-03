@@ -1,0 +1,262 @@
+"""P2M-2: the minimal common collapse safety layer (shadow candidate, nothing activated or valued).
+
+The candidate (clinical_core/collapse.py): collapse_signal = max(MAP failure, delivery failure), the existing
+aux.collapse_burden with repaying kinetics, the terminal transition on persistence AND current non-viability, the
+explicit lag, every clinical slot UNSET. The frozen analysis (clinical_core/collapse_architecture.py): C1-C14, the seven
+families, the P2M-1 supersession, the carried subset, the upstream non-regression, the verdict and the exit rule.
+"""
+from __future__ import annotations
+
+import ast
+import json
+import math
+
+import pytest
+
+from clinical_core import blood_fluid_calibration as bf
+from clinical_core import collapse as cx
+from clinical_core import collapse_architecture as cy
+from clinical_core import decision_pack, lactate_slice
+from clinical_core import derived as dv
+from clinical_core import vascular_tone as vt
+from clinical_core.state import CoreInvariantError, UnresolvedBoundary
+
+ROOT = cy.ROOT
+SOURCE = ROOT / "clinical_core" / "collapse_architecture.py"
+CANDIDATE = ROOT / "clinical_core" / "collapse.py"
+#: The P2M-2 freeze: the candidate, the synthetic settings, the probes C1-C14, the families, the supersession, the
+#: non-regression, the criteria, the verdict and exit rules and every clinical_core source but the downstream reports,
+#: committed before the evaluation run.
+FROZEN_DIGEST = "5f96f8603f2ecdcbf585cfac38e8abf4d4aec9ea9c64772d7d0c46da2f2544ae"
+
+
+@pytest.fixture(scope="module")
+def result():
+    return cy.run()
+
+
+# The frozen package and its closure ----------------------------------------------------------------------------------------
+
+def test_the_package_is_frozen():
+    sources = bf.freeze_sources()
+    assert set(cy.OWN) <= set(sources) and cy.REPORT not in sources
+    assert cy.REPORT in lactate_slice.DOWNSTREAM_REPORTS
+    assert {cy.OWN[1], cy.REPORT} <= set(decision_pack.PACK_DIGEST_EXCLUDED)
+    assert cy.OWN[0] not in decision_pack.PACK_DIGEST_EXCLUDED, "the candidate physiology stays in the pack digest"
+    assert cy._record(cy.P2M1_RECORD, cy.P2M1_RECORD_SHA)["extreme_subset"]["flagged"] == 17604
+    if FROZEN_DIGEST is not None:
+        assert cy.freeze_digest() == FROZEN_DIGEST, "a source, a rule or a probe changed after the freeze"
+
+
+def test_the_p2m1_tree_is_byte_identical_and_only_the_analysis_reads_the_candidate():
+    up = cy.upstream_unchanged()
+    assert up["unchanged"] and (up["digest"], up["files"]) == cy.SOURCES_AT_P2M1
+    assert up["imported_by"] == ["clinical_core/collapse_architecture.py"]
+    mapped = cy.p2m1_sources(bf.freeze_sources())
+    assert not set(cy.OWN) & set(mapped)
+    for relative, sha in cy.TUPLE_AT_P2M1.items():
+        assert mapped[relative] == sha
+    original = vt._live
+    try:
+        vt._live = lambda relative: original(relative) + "\nX = 1\n"
+        assert cy.p2m1_sources(bf.freeze_sources())["clinical_core/decision_pack.py"] == \
+            bf.freeze_sources()["clinical_core/decision_pack.py"]
+    finally:
+        vt._live = original
+    own = {a.name for n in ast.walk(ast.parse(SOURCE.read_text(encoding="utf-8")))
+           if isinstance(n, (ast.Import, ast.ImportFrom)) for a in n.names}
+    assert not own & {"family_engine", "legacy_adapter", "collapse_audit", "encephalopathy",
+                      "encephalopathy_architecture", "consciousness_audit"}
+
+
+# The candidate, by construction ------------------------------------------------------------------------------------------
+
+SYN = cy.synthetic()
+
+
+def test_every_clinical_slot_is_unset_by_default_and_nothing_is_approved():
+    d = cx.DEFAULT_COLLAPSE
+    assert (d.perfusion_mapping, d.burden_tau_min, d.terminal_burden, d.current_nonviability, d.terminal_rhythm) == \
+        (None,) * 5
+    assert cx.STATUS["approved"] == "none FACULTY_APPROVED"
+    assert cx.STATUS["map_mapping"] == cx.UNSET_CLINICAL_MAPPING
+    assert cx.STATUS["terminal_rhythm"] == cx.TERMINAL_RHYTHM_PHENOTYPE_UNSET
+    assert cx.STATUS["rosc"] == cx.ROSC_NOT_CURRENTLY_MODELED
+    assert cx.perfusion_failure(40.0, d) is None
+    assert dv.DEFAULT_PROFILE.collapse_output_threshold is None and dv.DEFAULT_PROFILE.collapse_burden_limit is None
+    assert set(cy.PARAMETERS.values()) >= {cx.UNSET_CLINICAL_MAPPING, cx.UNSET, cx.TERMINAL_RHYTHM_PHENOTYPE_UNSET,
+                                           "NOT_MODELED", cx.SYNTHETIC_ONLY}
+
+
+@pytest.mark.parametrize("kwargs, message", [
+    ({"burden_tau_min": 0.0}, "time constant"),
+    ({"burden_tau_min": 30.0, "terminal_burden": 10.0}, "together"),
+    ({"terminal_burden": 10.0, "current_nonviability": 0.5}, "kinetics"),
+    ({"burden_tau_min": 30.0, "terminal_burden": 10.0, "current_nonviability": 0.0}, "zero signal"),
+    ({"burden_tau_min": 30.0, "terminal_burden": 0.9, "current_nonviability": 0.5}, "persistence floor"),
+    ({"burden_tau_min": 30.0, "terminal_burden": 30.0, "current_nonviability": 0.5}, "reachable"),
+    ({"terminal_rhythm": "vf"}, "terminal rhythm")])
+def test_the_profile_refuses_what_would_break_an_invariant(kwargs, message):
+    with pytest.raises(CoreInvariantError, match=message):
+        cx.CollapseProfile(**kwargs)
+
+
+def test_the_signal_is_the_maximum_never_the_sum():
+    assert cx.signal_value(0.6, 0.5) == 0.6 and cx.signal_value(0.0, 0.0) == 0.0
+    for p in (0.0, 0.2, 1.0):
+        for d in (0.0, 0.3, 1.0):
+            assert cx.signal_value(p, d) == max(p, d) <= 1.0
+    with pytest.raises(CoreInvariantError):
+        cx.signal_value(1.2, 0.0)
+    unset = cx.CollapseSignal(None, 0.4)
+    assert not unset.complete and unset.value == 0.4
+    assert cx.CollapseSignal(0.6, 0.6).dominant == ("perfusion_failure", "oxygen_delivery_failure")
+
+
+def test_the_burden_relaxes_toward_signal_times_tau_and_repays():
+    tau = cy.SYNTHETIC_TAU
+    for burden in (0.0, 3.0, 12.0, 29.0):
+        for signal in (0.0, 0.25, 1.0):
+            after = cx.burden_after(burden, signal, SYN)
+            target = signal * tau
+            assert after >= 0.0 and min(burden, target) - 1e-12 <= after <= max(burden, target) + 1e-12
+            assert math.isclose(after, target + (burden - target) * math.exp(-1.0 / tau))
+    course = cx.burden_course([0.0] * 200, SYN, 9.9)
+    assert all(b < a for a, b in zip(course, course[1:])) and course[-1] == pytest.approx(9.9 * math.exp(-200 / tau))
+    with pytest.raises(CoreInvariantError, match="UNSET"):
+        cx.burden_after(1.0, 0.5, cx.DEFAULT_COLLAPSE)
+    with pytest.raises(CoreInvariantError):
+        cx.burden_after(-1.0, 0.5, SYN)
+
+
+def test_historical_burden_alone_never_meets_the_terminal_criterion():
+    for burden in (10.0, 20.0, 29.0):
+        for current in (0.0, 0.2, 0.49):
+            assert not cx.terminal_due(burden, cx.CollapseSignal(current, current), SYN)
+        assert cx.terminal_due(burden, cx.CollapseSignal(0.5, 0.0), SYN)
+    assert not cx.terminal_due(20.0, cx.CollapseSignal(None, 1.0), SYN), "never on a lower bound"
+    assert not cx.terminal_due(20.0, cx.CollapseSignal(1.0, 1.0), cy.synthetic(terminal=False))
+
+
+def test_an_unset_mapping_holds_the_burden_and_decides_nothing():
+    state, anchors, profile = cy._state({"P": 0.1, "collapse_burden": 3.0})
+    m = cx.evaluate(state, anchors, profile, cx.CollapseProfile(burden_tau_min=30.0))
+    assert m.status == cx.NOT_EVALUATED and m.burden_after == 3.0 and not m.terminal_due and m.perfusion is None
+
+
+def test_the_shadow_refuses_the_p2e3_rule_and_an_unset_phenotype():
+    from dataclasses import replace
+    state, anchors, profile = cy._state({"P": 0.1})
+    p2e3 = replace(profile, collapse_output_threshold=0.4, collapse_burden_limit=10.0)
+    with pytest.raises(CoreInvariantError, match="never active together"):
+        cx.shadow_step(state, (), anchors, p2e3, SYN)
+    no_phenotype = cx.CollapseProfile(cx.PerfusionMapping(*cy.SYNTHETIC_MAP), 30.0, 10.0, 0.5)
+    due = state.evolve(aux=replace(state.aux, collapse_burden=9.9))
+    with pytest.raises(UnresolvedBoundary, match=cx.TERMINAL_RHYTHM_PHENOTYPE_UNSET):
+        cx.shadow_step(due, (), anchors, profile, no_phenotype)
+
+
+def test_the_candidate_reads_no_marker_and_names_no_disease():
+    scan = cy.candidate_scan()
+    assert scan["forbidden_reads"] == [] and scan["forbidden_imports"] == [] and scan["disease_terms"] == []
+    assert scan["signal_by_max"] and not scan["signal_adds"] and not scan["sum_calls"]
+    assert set(scan["state_writes"]) == {"aux", "collapse_burden", "collapse_terminal_rhythm"}
+    tree = ast.parse(CANDIDATE.read_text(encoding="utf-8"))
+    identifiers = {n.attr for n in ast.walk(tree) if isinstance(n, ast.Attribute)} | {
+        n.id for n in ast.walk(tree) if isinstance(n, ast.Name)}
+    assert not identifiers & {"debt_clearance_tau_min", "lactate_clearance_tau_min", "burden_rise_tau",
+                              "burden_clear_tau", "acid_clearance_tau_min"}, "no borrowed kinetics"
+
+
+def test_a_planted_marker_read_is_caught(monkeypatch, tmp_path):
+    planted = CANDIDATE.read_text(encoding="utf-8").replace(
+        '"deficit_fraction": acute_deficit_signal(state, anchors, core_profile)}',
+        '"deficit_fraction": acute_deficit_signal(state, anchors, core_profile) + state.D}')
+    path = tmp_path / "collapse.py"
+    path.write_text(planted, encoding="utf-8")
+    monkeypatch.setattr(cy, "CANDIDATE_SOURCE", path)
+    assert "D" in cy.candidate_scan()["forbidden_reads"]
+
+
+# The evaluation (the frozen run) ---------------------------------------------------------------------------------------------
+
+def test_c1_to_c14_hold(result):
+    assert result["structural"] == {f"C{i}": True for i in range(1, 15)}
+    s = result["signals"]
+    assert s["C4"]["injected_signal"] == 0.6 and s["C4"]["reading"]["signal"] < (
+        s["C4"]["reading"]["perfusion"] + s["C4"]["reading"]["delivery"])
+    q = result["no_q"]
+    assert abs(q["flow_difference"]) > 0.05 and abs(q["signal_difference"]) < 1e-6
+    assert q["flow_alone_h2"]["signal"] == 0.0
+    assert result["no_spo2"]["spo2_difference"] > 20.0
+    assert all(r["same"] for r in result["no_markers"]["rows"].values())
+    per = result["persistence"]
+    assert per["C8"]["terminal"] is None and per["C8"]["peak"] < cy.SYNTHETIC_TERMINAL
+    assert per["C9"]["terminal_minute"] == 14
+    assert all(v["terminal"] is None for v in per["C10"]["from"].values()) and per["C10"]["partial_terminal"] is None
+    assert per["C11"]["terminal"] is None and abs(per["C11"]["peak_growth_last_cycle"]) < 1e-6
+    np_ = result["no_pulse"]
+    assert np_["C12"]["map"] is None and np_["C12"]["burden_after"] == 0.0
+    assert set(np_["C13"]["fired"].values()) <= {"UnresolvedBoundary", "CoreInvariantError"}
+    assert all(r["pulse"] and r["map"] < 5.0 for r in np_["C14"]["rows"].values())
+
+
+def test_the_event_order_is_an_explicit_lag_without_retrigger(result):
+    o = result["event_order"]
+    assert o["pass"] and o["transitions"] == 1 and o["terminal_minute"] == 14 and o["reads_start_state"]
+    assert o["after_transition"] == {"statuses": [cx.ARREST], "burdens": [0.0], "pulse": False}
+    assert o["deferral"]["minute_14"]["deferred"] and o["deferral"]["minute_15"]["applied"] == "pea"
+    assert o["scripted_arrest"]["burden_after"] == 0.0
+    assert o["stale_burden_normal_physiology"]["transition"] is None
+
+
+def test_arrival_rosc_and_the_families(result):
+    a = result["arrival"]["rows"]
+    assert a["reference"]["arrival_signal"] == 0.0 and a["authored_map_70"]["arrival_burden"] == 0.0
+    assert a["authored_map_70"]["arrival_signal"] == pytest.approx(result["arrival"]["expected_low_signal"])
+    assert result["rosc"]["pass"] and result["rosc"]["status"] == cx.ROSC_NOT_CURRENTLY_MODELED
+    g = result["generalization"]
+    assert g["pass"] and set(g["checks"]) == set(cy.FAMILIES) and all(g["checks"].values())
+    assert g["rows"]["malignant_arrhythmia"]["variants"]["pulseless"]["status"] == cx.ARREST
+
+
+def test_upstream_is_unchanged_and_the_subset_is_not_classified(result):
+    n = result["nonregression"]
+    assert n["pass"] and set(n["identical"]) == set(cy.NONREG_ITEMS) and all(n["identical"].values())
+    assert n["whole_state_but_burden"] and n["records_identical"] and n["plain_burden"] == 0.0
+    e = result["extreme_subset"]
+    assert e["flagged"] == 17604 and not e["filtered"] and e["classification"] is None and e["pulse"]
+    assert set(result["supersession"]) == set(cy.SUPERSESSION)
+    assert all(v["status"] == cy.SUPERSEDED for v in result["supersession"].values())
+
+
+def test_the_verdict_and_the_exit_rule(result):
+    v = result["verdict"]
+    assert v["verdict"] == cy.READY and v["failing"] == [] and not v["not_evaluated"]
+    r = result["recommendation"]
+    assert r["recommendation"] == "MOVE_TO_SECOND_FAMILY_GENERALIZATION_WITH_COLLAPSE_THRESHOLDS_UNSET"
+    assert r["numeric_collapse_calibration_required_before_second_family"] is False
+    assert result["efficiency"]["gi_trajectories"] == 0 and result["efficiency"]["cartesian_sweep"] is False
+
+
+def test_the_verdict_rule_and_the_stop(monkeypatch):
+    checks = {c: True for c in cy.CRITERIA}
+    assert cy.verdict(checks)["verdict"] == cy.READY
+    v = cy.verdict(dict(checks, event_order_acyclic=False))
+    assert v["verdict"] == f"{cy.NOT_READY} - EVENT_ORDER_ACYCLIC" and v["failing"] == ["event_order_acyclic"]
+    assert cy.recommendation(v)["recommendation"] == "STOP_FOR_STRUCTURAL_CORRECTION"
+    monkeypatch.setattr(cy, "upstream_unchanged", lambda: {"unchanged": False, "imported_by": []})
+    monkeypatch.setattr(cy, "candidate_scan", lambda: pytest.fail("no probe after a STOP"))
+    out = cy.run()
+    assert out["stopped"].startswith("an upstream file changed") and out["verdict"]["checks"]["upstream_unchanged"] \
+        is False
+
+
+def test_the_scope_adds_and_reads_nothing_it_should_not():
+    source = SOURCE.read_text(encoding="utf-8")
+    for forbidden in ("import family_engine", "import legacy_adapter", "snapshot(", "clinical_cases", "gi_reference"):
+        assert forbidden not in source
+    assert "nothing selected, approved or activated" in cy.POLICY and cy.MIGRATION_GATE.startswith(
+        "MIGRATION_GATE_CLOSED")
+    assert json.loads(json.dumps(cy.design(), default=str))["revision"] == "P2M-2"
+    assert cy.SYNTHETIC_RULE.startswith("SYNTHETIC_ONLY")

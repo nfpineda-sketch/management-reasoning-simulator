@@ -41,12 +41,14 @@ TEST_MAPPING = enc.SignalMapping(normal=10.0, severe=0.0)
 #: the audit removed, the tuple-only files at their P2L-2 hashes while only their tuples changed; P2L-1's frozen N scan
 #: without the audit); the record is unchanged.
 _FREEZE_SOURCES, _PYTHON = bf.freeze_sources, ca._python
-LATER_MODULES = ("clinical_core/collapse_audit.py",)
+LATER_MODULES = ("clinical_core/collapse_audit.py", "clinical_core/collapse.py",
+                 "clinical_core/collapse_architecture.py")
 
 
 def _p2l2_view() -> dict:
     from clinical_core import collapse_audit as cm
-    return cm.p2l2_sources(_FREEZE_SOURCES())
+    from clinical_core import collapse_architecture as cy
+    return cm.p2l2_sources(cy.p2m1_sources(_FREEZE_SOURCES()))
 
 
 def _p2l2_python() -> list:

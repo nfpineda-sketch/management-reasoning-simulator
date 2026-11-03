@@ -25,11 +25,38 @@ SOURCE = ROOT / "clinical_core" / "collapse_audit.py"
 #: generalization, the redundancy and minimum structure, the criteria and every clinical_core source but the downstream
 #: reports, committed before the evaluation run.
 FROZEN_DIGEST = "c4aa95f62273136934b1b7a31bbb7637fa71fdb00638ddc1fd3974eeeecea9f1"
+#: P2M-2's layer, added after P2M-1 closed: this package's view of the tree leaves it out (collapse_architecture.
+#: p2m1_sources: the candidate and its analysis removed, the tuple-only files at their P2M-1 hashes while only their
+#: tuples changed; the audit's core-file scan without the candidate); the record is unchanged.
+_FREEZE_SOURCES, _CORE_FILES = bf.freeze_sources, cm.core_files
+LATER_MODULES = ("clinical_core/collapse.py", "clinical_core/collapse_architecture.py")
+
+
+def _p2m1_view() -> dict:
+    from clinical_core import collapse_architecture as cy
+    return cy.p2m1_sources(_FREEZE_SOURCES())
+
+
+def _p2m1_core_files() -> list:
+    later = {ROOT / relative for relative in LATER_MODULES}
+    return [p for p in _CORE_FILES() if p not in later]
+
+
+def _patch(patch) -> None:
+    patch.setattr(bf, "freeze_sources", _p2m1_view)
+    patch.setattr(cm, "core_files", _p2m1_core_files)
+
+
+@pytest.fixture(autouse=True)
+def _p2m1_tree(monkeypatch):
+    _patch(monkeypatch)
 
 
 @pytest.fixture(scope="module")
 def result():
-    return cm.run()
+    with pytest.MonkeyPatch.context() as patch:
+        _patch(patch)
+        return cm.run()
 
 
 # The frozen package and its closure ---------------------------------------------------------------------------------------
