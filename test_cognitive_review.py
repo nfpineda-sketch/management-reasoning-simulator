@@ -95,9 +95,11 @@ def test_shared_app_displays_focus_after_its_actual_snapshot_is_frozen(monkeypat
     assert not app.exception
     assert not any("Cognitive focus:" in item.value for item in app.markdown)
     next(item for item in app.radio if item.label == "Encounter").set_value("Treat").run()
-    app.text_area[0].set_value("Reassess now").run()
+    # Typing into the form does not rerun the page; only Send submits what was typed.
+    app.text_area[0].set_value("Reassess now")
     next(item for item in app.button if item.label == "Send").click().run()
     assert not app.exception
+    assert len(app.session_state["management_trace"]) == 1
     next(item for item in app.button if item.label == "Complete Encounter & Begin Review").click().run()
     # Closing without a destination warns without blocking (faculty decision 9).
     if any(item.label == "Finish now" for item in app.button):

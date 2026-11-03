@@ -126,14 +126,15 @@ def test_unresponsive_patient_cannot_supply_new_history(bedside):
 def test_patient_answers_screenshot_question_and_targeted_followup(bedside):
     before = deepcopy(bedside.session_state.state)
     widget(bedside.radio, 'Encounter').set_value('Talk').run()
-    widget(bedside.text_input, 'Ask the patient').set_value('How can I help you?').run()
+    # Typing into the form does not rerun the page; only Ask submits what was typed.
+    widget(bedside.text_input, 'Ask the patient').set_value('How can I help you?')
     widget(bedside.button, 'Ask').click().run()
     assert not bedside.exception
     reply = bedside.session_state.events[-1]
     assert reply['kind'] == 'patient_history'
     assert 'presents with' in reply['text']
     assert 'urinate' not in reply['text'] and 'unavailable' not in reply['text']
-    widget(bedside.text_input, 'Ask the patient').set_value('¿Le arde al orinar?').run()
+    widget(bedside.text_input, 'Ask the patient').set_value('¿Le arde al orinar?')
     widget(bedside.button, 'Ask').click().run()
     assert not bedside.exception
     assert 'burned when I urinate' in bedside.session_state.events[-1]['text']
