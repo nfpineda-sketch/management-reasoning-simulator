@@ -3968,3 +3968,39 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   autorización nocturna; la forma del impulso hipoxémico común y su composición con la depresión central son
   decisiones clínicas. STOP_FOR_FACULTY (MINIMUM_RESPIRATORY_EXTENSION_REQUIRES_FACULTY_DECISION). Paquete de
   decisión, sin código: `docs/revision/P2P2_PAQUETE_DECISION_RESPIRATORIA.md`.
+
+## 61. P2P-2 · Composición común del impulso respiratorio (2026-11-04)
+
+- **Encargo:** tras las decisiones docentes, una arquitectura común del impulso respiratorio que separe el impulso
+  excitatorio (basal + ácido + hipoxémico) de la disponibilidad central (depresión del SNC), sin ecuaciones de FR por
+  enfermedad ni calibración. El impulso hipoxémico lee la oxigenación **absoluta actual**; el relativo a la llegada
+  queda rechazado.
+- **Núcleo** (`derived.py`, `derive` sin cambios):
+  - FR expresada = disponibilidad × FR excitatoria;
+  - FR excitatoria = `rate_from_drive(impulso ácido + impulso hipoxémico)`, sin cambios;
+  - tres entradas del perfil, UNSET o neutrales: la tabla (SpO2, impulso normalizado) y su ganancia, ambas `None`, y la
+    disponibilidad, 1;
+  - la depresión baja también la cuota intrínseca, nunca reescribe la FR intrínseca y, colocada tras la saturación,
+    acota la FR por disponibilidad × (intrínseca + S) para todo impulso;
+  - el ancla de PaCO2 sigue siendo la de P2K-2, así que la hipoventilación central sube la PaCO2.
+- **Análisis:** `clinical_core/respiratory_drive.py`, congelado en `0c35a29` antes de la evaluación. Registro:
+  `docs/revision/P2P2_respiratory_drive.json`; informe: `docs/revision/P2P2_IMPULSO_RESPIRATORIO_COMUN.md`.
+- **Resultados:**
+  - D1–D10 se cumplen. D8 compara bit a bit 24 cursos de GI, ACS, edema y acidosis contra el núcleo de P2P-1.
+  - El edema (sólo diagnóstico) gira la FR en la dirección correcta con ganancias sintéticas, y deja la brecha de
+    mecánica (a más impulso, menos PaCO2).
+  - El contraste opioide sintético da FR 5,8 con hipoxemia y PaCO2 en alza.
+  - La acidosis sintética sube el impulso y la depresión lo atenúa.
+  - FC, conciencia, GI, ACS y el caso base de P2P-1 no cambian.
+- **Revisión adversarial** (una, antes del congelamiento; 1 media, 1 baja, ninguna alta). Ambas se corrigieron antes de
+  congelar: el ancla que absorbía la depresión y un criterio de preparación que decidía con evidencia ajena.
+- **Veredicto:** `COMMON_RESPIRATORY_DRIVE_ARCHITECTURE_READY`. **Recomendación:** PROCEED_TO_PE_GENERALIZATION_AUDIT
+  (no se inicia aquí).
+- **Queda abierto:**
+  - la mecánica y la fatiga (RESPIRATORY_MECHANICS_EFFICIENCY_GAP);
+  - el mapeo clínico y la ganancia de la hipoxemia;
+  - la interacción ácido–hipoxemia y la forma de la atenuación;
+  - la ruta por minuto de la disponibilidad y el escritor opioide;
+  - una sola fuente de depresión en la integración;
+  - la división P2K-2 / P2K-3 del enlace impulso → ventilación;
+  - el enlace hipoventilación → oxigenación (gas alveolar). TD-117.

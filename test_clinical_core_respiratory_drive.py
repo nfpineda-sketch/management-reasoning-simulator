@@ -6,6 +6,7 @@ profile's inputs and their refusals, the absolute signal, the composition's exac
 diagnostics, the boundaries, the proof against the P2P-1 core and the freeze.
 """
 import copy
+import json
 import hashlib
 import math
 from dataclasses import replace
@@ -236,3 +237,28 @@ def test_readiness_is_ready_only_when_every_criterion_holds():
         out = rd.readiness(found)
         assert not out["ready"] and out["blocker"] == rd.READINESS_CRITERIA[index], (key, sub)
         assert out["verdict"].startswith(rd.NOT_READY) and out["recommendation"] is None
+
+
+# The frozen record and the document ------------------------------------------------------------------------------------------
+
+@pytest.fixture(scope="module")
+def record():
+    if not rd.RECORD.exists():
+        pytest.skip("the P2P-2 record is written by the evaluation run, after the freeze")
+    return json.loads(rd.RECORD.read_text(encoding="utf-8"))
+
+
+def test_the_record_comes_from_the_frozen_package_and_is_reproduced_live(record):
+    assert record["freeze_digest"] == FROZEN_DIGEST
+    assert record == rd.go._plain(json.loads(json.dumps(rd.run(), sort_keys=True, default=str)))
+    assert record["readiness"]["verdict"] == rd.READY
+    assert record["readiness"]["recommendation"] == "PROCEED_TO_PE_GENERALIZATION_AUDIT"
+
+
+def test_the_document_is_generated_from_the_record(record):
+    from clinical_core import respiratory_drive_report as report
+    text = rd.DOC.read_text(encoding="utf-8")
+    for name, render in report.RENDERERS.items():
+        opening, closing = report.MARKERS[name]
+        start = text.index(opening) + len(opening)
+        assert text[start:text.index(closing, start)] == render(record) + "\n", name
