@@ -3960,7 +3960,7 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - nitrato y diurético necesitan mecanismos comunes nuevos;
   - el bolo de volumen autoral es inerte en L;
   - L_rev = 0 contradice la reducción de soporte que espera el texto autoral.
-- **Revisión adversarial** (una; 2 medios, 4 bajos, ninguno alto, sin cambio de letra). Incorporada en el
+- **Revisión adversarial** (una; 2 medios, 5 bajos, ninguno alto, sin cambio de letra). Incorporada en el
   recongelamiento.
 - **Veredicto:** B, PULMONARY_EDEMA_NEEDS_EXPECTED_RESPIRATORY_EXTENSION; la arquitectura familia / lector común
   funciona para el EAP sin sobrecarga. **Recomendación:** IMPLEMENT_ONLY_THE_MINIMUM_RESPIRATORY_EXTENSION_REQUIRED (no se inicia).

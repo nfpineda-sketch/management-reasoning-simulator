@@ -280,7 +280,7 @@ Usado para parámetros: no.
 
 ## 18. Revisión adversarial
 
-Hubo una revisión independiente y de sólo lectura. Encontró 2 hallazgos medios, 4 bajos y ningún alto, todos
+Hubo una revisión independiente y de sólo lectura. Encontró 2 hallazgos medios, 5 bajos y ningún alto, todos
 confirmados con sondas, y ninguno cambia la letra. El recongelamiento `ddd5d4b` los incorpora; los resultados de
 §5–§8 y §9b–§14 no cambian.
 
