@@ -1,0 +1,3730 @@
+{
+ "arrival": {
+  "anchors": {
+   "arrival_bicarbonate": 18.0,
+   "arrival_delivery_ratio": 0.33999999999999997,
+   "arrival_lactate_excess": 3.8,
+   "arrival_oxygen_debt": 20.0,
+   "arrival_paco2": 28.0,
+   "beta_blockade": 0.0,
+   "case_id": "pulmonary_embolism_61m",
+   "consciousness_level": 0,
+   "crt_s": 5.0,
+   "dbp": 54.0,
+   "declared": {
+    "arrival_delivery_ratio": "synthetic_probe",
+    "arrival_lactate_excess": "synthetic_probe",
+    "arrival_oxygen_debt": "synthetic_probe",
+    "intrinsic_sinus_rate": "synthetic_probe",
+    "preload_fraction": "synthetic_probe"
+   },
+   "fio2": 0.21,
+   "glucose": 136.0,
+   "hb": 11.6,
+   "hr": 132.0,
+   "intrinsic_respiratory_rate": 16.0,
+   "intrinsic_sinus_rate": 80.0,
+   "k": 4.1,
+   "lactate": 4.8,
+   "metabolic_demand_baseline": 1.0,
+   "preload_fraction": 0.35,
+   "pump_reserve": 1.0,
+   "reference_preload_fraction": null,
+   "respiratory_rate": 32.0,
+   "reversible_lung_water": 0.0,
+   "rhythm": {
+    "code": "sinus",
+    "output_factor": 1.0,
+    "pulse_present": true,
+    "rate_bpm": 132.0
+   },
+   "sbp": 86.0,
+   "spo2": 88.0
+  },
+  "authored": {
+   "consciousness_level": 0,
+   "dbp": 54,
+   "hr": 132,
+   "lactate": 4.8,
+   "map": 64.66666666666667,
+   "paco2": 28,
+   "ph": 7.43,
+   "rr": 32,
+   "sbp": 86,
+   "spo2": 88
+  },
+  "bands": {
+   "arrival_delivery_ratio": {
+    "classification": "FAMILY_CANDIDATE",
+    "lower": 0.24,
+    "midpoint": 0.33999999999999997,
+    "name": "arrival_delivery_ratio",
+    "rule": "gi_reference.delivery_ratio_band (0.6-1.0, at or below adequacy: CRT 5 s, cool extremities, impaired perfusion, hypotension, lactate 4.8) read under the extraction reserve as ratio / reserve (P2I-2P), as ACS does",
+    "upper": 0.4
+   },
+   "arrival_lactate_excess": {
+    "classification": "CASE_MAPPING",
+    "lower": 2.8,
+    "midpoint": 3.8,
+    "name": "arrival_lactate_excess",
+    "rule": "gi_reference.lactate_excess_band's rule: the arrival lactate less a non-shock clearance baseline of 0.8-2.0 mmol/L; the baseline is not stated",
+    "upper": 4.0
+   },
+   "arrival_oxygen_debt": {
+    "classification": "FAMILY_CANDIDATE",
+    "lower": 0.0,
+    "midpoint": 20.0,
+    "name": "arrival_oxygen_debt",
+    "rule": "gi_reference.arrival_debt_band's scale (0-60 index-minutes, the same for every case): a latent arrival-state variable constrained by the authored shock, never computed from the arrival lactate; the authored onset (45 min) does not set it (no history is reconstructed)",
+    "upper": 60.0
+   },
+   "intrinsic_sinus_rate": {
+    "classification": "CASE_MAPPING",
+    "lower": 60.0,
+    "midpoint": 80.0,
+    "name": "intrinsic_sinus_rate",
+    "rule": "gi_reference.intrinsic_hr_band's rule: the resting adult sinus rate, at most the observed HR; no beta-blocker or rate control is authored",
+    "upper": 100.0
+   },
+   "preload_fraction": {
+    "classification": "FAMILY_CANDIDATE",
+    "lower": 0.2,
+    "midpoint": 0.35,
+    "name": "preload_fraction",
+    "rule": "the authored small, underfilled LV with vigorous contraction (V_EVIDENCE) places arrival below the neutral position: from the deepest GI underfilling point (min of gi_reference.PRELOAD_BANDS, whose GI bands also read a collapsing IVC and are not transferred as such) up to the neutral position, midpoint the middle; the plethoric IVC and the raised JVP are right-sided observations and are not read (IVC_IS_NOT_UNIVERSAL_V_MAPPING); the magnitude is the faculty's",
+    "upper": 0.5
+   }
+  },
+  "case": "pulmonary_embolism_61m",
+  "channel_roles": {
+   "D": "SECONDARY_RESPONSE (obstructive shock: a latent arrival debt, never from the lactate 4.8)",
+   "G": "PRIMARY_DRIVER (dead space / V/Q mismatch: SpO2 88, PaO2 55 on room air): direct, never through L",
+   "Glu": "NORMAL_OR_NEUTRAL (136: stress)",
+   "Hb": "NORMAL_OR_NEUTRAL (11.6)",
+   "K": "NORMAL_OR_NEUTRAL (4.1)",
+   "L": "NORMAL_OR_NEUTRAL (no B-lines, no edema on the radiograph): family-owned at zero generation",
+   "N": "NORMAL_OR_NEUTRAL (alert, faint)",
+   "P": "PRIMARY_DRIVER (the obstruction: unsided forward-flow capacity of the series circuit; not LV contractility, the authored LV contracts vigorously)",
+   "R": "SECONDARY_RESPONSE (sinus tachycardia 132)",
+   "T": "SECONDARY_RESPONSE (vasoconstriction: the existing common tone response to the deficit)",
+   "V": "NORMAL_OR_NEUTRAL as a deviation (V = 0 at arrival; no volume lost or gained); its arrival POSITION is the underfilled LV's (low on the preload curve). Never the plethoric IVC (IVC_IS_NOT_UNIVERSAL_V_MAPPING)",
+   "W": "SECONDARY_RESPONSE (RR 32, markedly increased work, PaCO2 28: hyperventilation)"
+  },
+  "channels_at_arrival": {
+   "D": 20.0,
+   "G": 0.0,
+   "L": 0.0,
+   "P": 1.0,
+   "T": 1.0,
+   "V": 0.0
+  },
+  "classes": {
+   "arrival_bicarbonate": "CASE_AUTHORED",
+   "arrival_delivery_ratio": "FAMILY_CANDIDATE",
+   "arrival_lactate_excess": "CASE_MAPPING",
+   "arrival_oxygen_debt": "FAMILY_CANDIDATE",
+   "arrival_paco2": "CASE_AUTHORED",
+   "beta_blockade": "CASE_MAPPING (0: no beta-blocker authored)",
+   "consciousness_level": "CASE_AUTHORED",
+   "crt_s": "CASE_AUTHORED",
+   "dbp": "CASE_AUTHORED",
+   "fio2": "CASE_AUTHORED",
+   "glucose": "CASE_AUTHORED",
+   "hb": "CASE_AUTHORED",
+   "hr": "CASE_AUTHORED",
+   "intrinsic_respiratory_rate": "FAMILY_CANDIDATE (P2K-2's candidate input, the middle of its 12 / 16 / 20)",
+   "intrinsic_sinus_rate": "CASE_MAPPING",
+   "k": "CASE_AUTHORED",
+   "lactate": "CASE_AUTHORED",
+   "metabolic_demand_baseline": "CASE_MAPPING (1: afebrile, no hypermetabolic evidence; the respiratory muscles' demand under the authored work of breathing is not modelled)",
+   "preload_fraction": "FAMILY_CANDIDATE",
+   "pump_reserve": "CASE_MAPPING (neutral 1, nothing declared: read only by the common overload coupling, which the family's L authority keeps off; RV dysfunction is never a left reserve)",
+   "reference_preload_fraction": "UNDEFINED_BY_CASE (no euvolemic reference is authored)",
+   "respiratory_rate": "CASE_AUTHORED",
+   "reversible_lung_water": "CASE_MAPPING (default 0: no authored pulmonary edema; L is family-owned at zero generation)",
+   "rhythm": "CASE_AUTHORED",
+   "sbp": "CASE_AUTHORED",
+   "spo2": "CASE_AUTHORED"
+  },
+  "core": {
+   "D": 20.0,
+   "G": 0.0,
+   "L": 0.0,
+   "P": 1.0,
+   "T": 1.0,
+   "V": 0.0,
+   "consciousness_level": 0,
+   "dbp": 54.0,
+   "deficit": 0.15000000000000013,
+   "delivery_index": 0.33999999999999997,
+   "fio2": 0.21,
+   "hb": 11.6,
+   "hr": 95.6433018733792,
+   "lactate": 4.8,
+   "map": 64.66666666666667,
+   "minute": 0,
+   "output_rel": 1.0,
+   "paco2": 28.000000000000004,
+   "ph": 7.430993219041424,
+   "preload_position": 0.35,
+   "rr": 25.530415204846477,
+   "sbp": 86.0,
+   "spo2": 88.0
+  },
+  "exact": {
+   "consciousness_level": true,
+   "dbp": true,
+   "lactate": true,
+   "map": true,
+   "paco2": true,
+   "sbp": true,
+   "spo2": true
+  },
+  "mapping": {
+   "authored_pulmonary_edema": false,
+   "band_at_or_below_neutral": true,
+   "default_position": 0.5,
+   "ivc": "2.3 cm; minimal inspiratory collapse",
+   "ivc_status": "RIGHT_SIDED / OBSERVATIONAL (not mapped)",
+   "lung_water_generation": 0.0,
+   "lv_underfilled": true,
+   "preload_position": 0.35,
+   "pump_reserve": 1.0,
+   "reversible_lung_water": 0.0,
+   "v_evidence": [
+    "pocus_lv"
+   ]
+  },
+  "pass": true,
+  "ph_within_rounding": true,
+  "reconstruction": "exact (SBP, DBP, SpO2, CRT, lactate, consciousness level)"
+ },
+ "case": {
+  "available": true,
+  "cases": {
+   "pulmonary_embolism_33f": {
+    "classes": {
+     "abg_fio2_percent": "AUTHORED_CASE_TRUTH",
+     "abg_hco3": "AUTHORED_CASE_TRUTH",
+     "abg_paco2": "AUTHORED_CASE_TRUTH",
+     "abg_pao2": "AUTHORED_CASE_TRUTH",
+     "abg_ph": "AUTHORED_CASE_TRUTH",
+     "cardiac_exam": "AUTHORED_CASE_TRUTH",
+     "chest_xray": "AUTHORED_CASE_TRUTH",
+     "creatinine_mg_dl": "AUTHORED_CASE_TRUTH",
+     "crt_s": "AUTHORED_CASE_TRUTH",
+     "ctpa": "AUTHORED_CASE_TRUTH",
+     "d_dimer_ng_ml": "AUTHORED_CASE_TRUTH",
+     "dbp": "AUTHORED_CASE_TRUTH",
+     "definitive_actions": "AUTHORED_CASE_TRUTH (faculty-declared definitive actions: anticoagulation, consult, oxygen)",
+     "diagnosis": "AUTHORED_CASE_TRUTH",
+     "ecg_profile": "AUTHORED_CASE_TRUTH",
+     "extremities": "AUTHORED_CASE_TRUTH",
+     "extremities_exam": "AUTHORED_CASE_TRUTH",
+     "glucose_mg_dl": "AUTHORED_CASE_TRUTH",
+     "hb_g_dl": "AUTHORED_CASE_TRUTH",
+     "hr": "AUTHORED_CASE_TRUTH",
+     "lactate_mmol_l": "AUTHORED_CASE_TRUTH",
+     "mental_status": "AUTHORED_CASE_TRUTH",
+     "neurological_exam": "AUTHORED_CASE_TRUTH",
+     "onset": "AUTHORED_CASE_TRUTH",
+     "peripheral_perfusion": "AUTHORED_CASE_TRUTH",
+     "pocus_consolidation": "AUTHORED_CASE_TRUTH",
+     "pocus_dvt_popliteal": "AUTHORED_CASE_TRUTH",
+     "pocus_ivc": "AUTHORED_CASE_TRUTH",
+     "pocus_lungs": "AUTHORED_CASE_TRUTH",
+     "pocus_lv": "AUTHORED_CASE_TRUTH",
+     "pocus_rv": "AUTHORED_CASE_TRUTH",
+     "potassium_mmol_l": "AUTHORED_CASE_TRUTH",
+     "respiratory_exam": "AUTHORED_CASE_TRUTH",
+     "respiratory_rate": "AUTHORED_CASE_TRUTH",
+     "rhythm": "AUTHORED_CASE_TRUTH",
+     "sbp": "AUTHORED_CASE_TRUTH",
+     "spo2": "AUTHORED_CASE_TRUTH",
+     "temperature_c": "AUTHORED_CASE_TRUTH",
+     "troponin_ng_l": "AUTHORED_CASE_TRUTH",
+     "vbg_pco2": "AUTHORED_CASE_TRUTH",
+     "vbg_ph": "AUTHORED_CASE_TRUTH",
+     "work_of_breathing": "AUTHORED_CASE_TRUTH"
+    },
+    "missing": [],
+    "presentation": "A 33-year-old woman arrives with sudden breathlessness and sharp right-sided chest discomfort. She wonders whether anxiety could explain the episode; this has not been assessed.",
+    "truth": {
+     "abg_fio2_percent": 21,
+     "abg_hco3": 21.1,
+     "abg_paco2": 30,
+     "abg_pao2": 59,
+     "abg_ph": 7.47,
+     "cardiac_exam": "Regular tachycardia; no new murmur.",
+     "chest_xray": "No focal consolidation, edema or pneumothorax.",
+     "creatinine_mg_dl": 0.8,
+     "crt_s": 3,
+     "ctpa": "Acute lobar and segmental filling defects in the right and left pulmonary arteries. Mild RV enlargement.",
+     "d_dimer_ng_ml": 2400,
+     "dbp": 70,
+     "definitive_actions": [
+      "anticoagulation",
+      "consult",
+      "oxygen"
+     ],
+     "diagnosis": "Acute pulmonary embolism with hypoxemia, initially without hypotension",
+     "ecg_profile": "baseline",
+     "extremities": "Warm",
+     "extremities_exam": "Unilateral calf swelling and tenderness on the operated side.",
+     "glucose_mg_dl": 108,
+     "hb_g_dl": 12.6,
+     "hr": 124,
+     "lactate_mmol_l": 2.0,
+     "mental_status": "Alert",
+     "neurological_exam": "Alert and oriented.",
+     "onset": [
+      "The breathing and chest discomfort started abruptly about two hours ago."
+     ],
+     "peripheral_perfusion": "preserved",
+     "pocus_consolidation": "No consolidation or pleural effusion",
+     "pocus_dvt_popliteal": "Non-compressible on the operated (symptomatic) side, with echogenic intraluminal material; compressible on the other side",
+     "pocus_ivc": "2.0 cm; <50% inspiratory collapse",
+     "pocus_lungs": "No B-lines; A-line pattern bilaterally",
+     "pocus_lv": "Preserved contraction",
+     "pocus_rv": "Mildly enlarged, approximately equal to the LV; no septal flattening (no D-sign); no McConnell sign",
+     "potassium_mmol_l": 4.1,
+     "respiratory_exam": "Increased effort; breath sounds are equal without focal crackles or wheeze.",
+     "respiratory_rate": 30,
+     "rhythm": "Sinus tachycardia",
+     "sbp": 110,
+     "spo2": 90,
+     "temperature_c": 37.1,
+     "troponin_ng_l": 31,
+     "vbg_pco2": 37,
+     "vbg_ph": 7.43,
+     "work_of_breathing": "Increased"
+    }
+   },
+   "pulmonary_embolism_61m": {
+    "classes": {
+     "abg_fio2_percent": "AUTHORED_CASE_TRUTH",
+     "abg_hco3": "AUTHORED_CASE_TRUTH",
+     "abg_paco2": "AUTHORED_CASE_TRUTH",
+     "abg_pao2": "AUTHORED_CASE_TRUTH",
+     "abg_ph": "AUTHORED_CASE_TRUTH",
+     "cardiac_exam": "AUTHORED_CASE_TRUTH",
+     "chest_xray": "AUTHORED_CASE_TRUTH",
+     "creatinine_mg_dl": "AUTHORED_CASE_TRUTH",
+     "crt_s": "AUTHORED_CASE_TRUTH",
+     "ctpa": "AUTHORED_CASE_TRUTH",
+     "d_dimer_ng_ml": "AUTHORED_CASE_TRUTH",
+     "dbp": "AUTHORED_CASE_TRUTH",
+     "definitive_actions": "AUTHORED_CASE_TRUTH (faculty-declared definitive actions: anticoagulation, consult, oxygen)",
+     "diagnosis": "AUTHORED_CASE_TRUTH",
+     "ecg_profile": "AUTHORED_CASE_TRUTH",
+     "extremities": "AUTHORED_CASE_TRUTH",
+     "extremities_exam": "AUTHORED_CASE_TRUTH",
+     "glucose_mg_dl": "AUTHORED_CASE_TRUTH",
+     "hb_g_dl": "AUTHORED_CASE_TRUTH",
+     "hr": "AUTHORED_CASE_TRUTH",
+     "lactate_mmol_l": "AUTHORED_CASE_TRUTH",
+     "mental_status": "AUTHORED_CASE_TRUTH",
+     "neurological_exam": "AUTHORED_CASE_TRUTH",
+     "onset": "AUTHORED_CASE_TRUTH",
+     "peripheral_perfusion": "AUTHORED_CASE_TRUTH",
+     "pocus_consolidation": "AUTHORED_CASE_TRUTH",
+     "pocus_dvt_popliteal": "AUTHORED_CASE_TRUTH",
+     "pocus_ivc": "AUTHORED_CASE_TRUTH",
+     "pocus_lungs": "AUTHORED_CASE_TRUTH",
+     "pocus_lv": "AUTHORED_CASE_TRUTH",
+     "pocus_rv": "AUTHORED_CASE_TRUTH",
+     "potassium_mmol_l": "AUTHORED_CASE_TRUTH",
+     "respiratory_exam": "AUTHORED_CASE_TRUTH",
+     "respiratory_rate": "AUTHORED_CASE_TRUTH",
+     "rhythm": "AUTHORED_CASE_TRUTH",
+     "sbp": "AUTHORED_CASE_TRUTH",
+     "spo2": "AUTHORED_CASE_TRUTH",
+     "temperature_c": "AUTHORED_CASE_TRUTH",
+     "troponin_ng_l": "AUTHORED_CASE_TRUTH",
+     "vbg_pco2": "AUTHORED_CASE_TRUTH",
+     "vbg_ph": "AUTHORED_CASE_TRUTH",
+     "work_of_breathing": "AUTHORED_CASE_TRUTH"
+    },
+    "missing": [],
+    "presentation": "A 61-year-old man is brought in after nearly collapsing. He is breathless and says he feels faint even while lying on the trolley.",
+    "truth": {
+     "abg_fio2_percent": 21,
+     "abg_hco3": 18.0,
+     "abg_paco2": 28,
+     "abg_pao2": 55,
+     "abg_ph": 7.43,
+     "cardiac_exam": "Rapid regular pulse; elevated jugular venous pressure.",
+     "chest_xray": "No focal consolidation or pulmonary edema.",
+     "creatinine_mg_dl": 1.3,
+     "crt_s": 5,
+     "ctpa": "Extensive acute bilateral main and lobar pulmonary arterial filling defects with RV enlargement and septal flattening.",
+     "d_dimer_ng_ml": 5200,
+     "dbp": 54,
+     "definitive_actions": [
+      "anticoagulation",
+      "consult",
+      "oxygen"
+     ],
+     "diagnosis": "High-risk pulmonary embolism with obstructive shock",
+     "ecg_profile": "right_strain",
+     "extremities": "Cool",
+     "extremities_exam": "Left calf swelling and tenderness.",
+     "glucose_mg_dl": 136,
+     "hb_g_dl": 11.6,
+     "hr": 132,
+     "lactate_mmol_l": 4.8,
+     "mental_status": "Alert",
+     "neurological_exam": "Awake and answers appropriately, but reports persistent faintness.",
+     "onset": [
+      "The severe breathlessness and near-collapse began about 45 minutes ago."
+     ],
+     "peripheral_perfusion": "impaired",
+     "pocus_consolidation": "No consolidation or pleural effusion",
+     "pocus_dvt_popliteal": "Left popliteal vein non-compressible; right popliteal vein compressible",
+     "pocus_ivc": "2.3 cm; minimal inspiratory collapse",
+     "pocus_lungs": "No B-lines; A-line pattern bilaterally",
+     "pocus_lv": "Small, underfilled cavity with vigorous contraction",
+     "pocus_rv": "Larger than the LV; septal flattening with a D-shaped LV; reduced free-wall contraction with apical sparing (McConnell sign)",
+     "potassium_mmol_l": 4.1,
+     "respiratory_exam": "Marked respiratory effort with equal breath sounds and no widespread crackles.",
+     "respiratory_rate": 32,
+     "rhythm": "Sinus tachycardia",
+     "sbp": 86,
+     "spo2": 88,
+     "temperature_c": 36.7,
+     "troponin_ng_l": 76,
+     "vbg_pco2": 35,
+     "vbg_ph": 7.39,
+     "work_of_breathing": "Markedly increased"
+    }
+   }
+  },
+  "later_observations": "NONE_AUTHORED: both cases state the arrival only; the TDFC declarations and the assessment bank describe the expected management (oxygen, anticoagulation, a reperfusion-capable team, cautious bounded volume), not a physiological course",
+  "legacy_constants": "pe_obstruction (TOLERATED_ML_PER_MIN 10, RV_STRAIN_PER_ML 0.0006, RV_STRAIN_TAU_MIN 45, RV_STRAIN_LUNG_SHARE 0.35, lysis targets 0.62 / 0.80): LEGACY_ENGINE_BEHAVIOR",
+  "selection_rule": "primary: the variant with the richest authored RV, preload, gas-exchange and haemodynamic physiology (pulmonary_embolism_61m, high-risk PE with obstructive shock); secondary diagnostic: pulmonary_embolism_33f (PE with hypoxaemia, initially without hypotension)",
+  "source": "clinical_cases.py"
+ },
+ "central_depression": {
+  "at_or_below_intrinsic": true,
+  "availability": 0.3,
+  "bound": 12.299999999999999,
+  "composition_file_unchanged": true,
+  "depressed": {
+   "0": {
+    "acid": 12.0,
+    "excitatory": 14.4,
+    "excitatory_rr": 26.94643887007944,
+    "expressed_rr": 8.083931661023831,
+    "hypoxaemic": 2.4,
+    "intrinsic": 16.0,
+    "paco2": 88.42870718246094,
+    "ph": 6.931557974657525,
+    "spo2": 88.0
+   },
+   "120": {
+    "acid": 11.717221601873065,
+    "excitatory": 15.617221601873062,
+    "excitatory_rr": 27.614300162761495,
+    "expressed_rr": 8.284290048828447,
+    "hypoxaemic": 3.899999999999997,
+    "intrinsic": 16.0,
+    "paco2": 86.29002865934115,
+    "ph": 6.9455886726782925,
+    "spo2": 80.50000000000001
+   },
+   "30": {
+    "acid": 10.919174138298208,
+    "excitatory": 13.694174138298209,
+    "excitatory_rr": 26.544010031790556,
+    "expressed_rr": 7.963203009537167,
+    "hypoxaemic": 2.7749999999999995,
+    "intrinsic": 16.0,
+    "paco2": 89.76935849551444,
+    "ph": 6.937870026109548,
+    "spo2": 86.125
+   },
+   "60": {
+    "acid": 10.641322819822161,
+    "excitatory": 13.79132281982216,
+    "excitatory_rr": 26.600076240693795,
+    "expressed_rr": 7.9800228722081386,
+    "hypoxaemic": 3.1499999999999995,
+    "intrinsic": 16.0,
+    "paco2": 89.5801474736746,
+    "ph": 6.94202846659322,
+    "spo2": 84.25
+   },
+   "90": {
+    "acid": 10.960309802126531,
+    "excitatory": 14.485309802126528,
+    "excitatory_rr": 26.994313401054896,
+    "expressed_rr": 8.098294020316468,
+    "hypoxaemic": 3.524999999999997,
+    "intrinsic": 16.0,
+    "paco2": 88.27187848975706,
+    "ph": 6.944693726389066,
+    "spo2": 82.37500000000001
+   }
+  },
+  "hypoxaemic_drive_unchanged": true,
+  "intact": {
+   "0": {
+    "acid": 12.0,
+    "excitatory": 14.4,
+    "excitatory_rr": 26.94643887007944,
+    "expressed_rr": 26.94643887007944,
+    "hypoxaemic": 2.4,
+    "intrinsic": 16.0,
+    "paco2": 26.528612154738276,
+    "ph": 7.454436719937863,
+    "spo2": 88.0
+   },
+   "120": {
+    "acid": 11.717221601873065,
+    "excitatory": 15.617221601873062,
+    "excitatory_rr": 27.614300162761495,
+    "expressed_rr": 27.614300162761495,
+    "hypoxaemic": 3.899999999999997,
+    "intrinsic": 16.0,
+    "paco2": 25.887008597802343,
+    "ph": 7.46846741795863,
+    "spo2": 80.50000000000001
+   },
+   "30": {
+    "acid": 10.919174138298208,
+    "excitatory": 13.694174138298209,
+    "excitatory_rr": 26.544010031790556,
+    "expressed_rr": 26.544010031790556,
+    "hypoxaemic": 2.7749999999999995,
+    "intrinsic": 16.0,
+    "paco2": 26.930807548654332,
+    "ph": 7.460748771389885,
+    "spo2": 86.125
+   },
+   "60": {
+    "acid": 10.641322819822161,
+    "excitatory": 13.79132281982216,
+    "excitatory_rr": 26.600076240693795,
+    "expressed_rr": 26.600076240693795,
+    "hypoxaemic": 3.1499999999999995,
+    "intrinsic": 16.0,
+    "paco2": 26.87404424210238,
+    "ph": 7.464907211873557,
+    "spo2": 84.25
+   },
+   "90": {
+    "acid": 10.960309802126531,
+    "excitatory": 14.485309802126528,
+    "excitatory_rr": 26.994313401054896,
+    "expressed_rr": 26.994313401054896,
+    "hypoxaemic": 3.524999999999997,
+    "intrinsic": 16.0,
+    "paco2": 26.481563546927113,
+    "ph": 7.4675724716694045,
+    "spo2": 82.37500000000001
+   }
+  },
+  "paco2_higher": true,
+  "pass": true,
+  "states_identical": true,
+  "within_bound": true
+ },
+ "collapse": {
+  "active": false,
+  "delivery_signal_rises": true,
+  "max_holds": true,
+  "no_family_rule": true,
+  "pass": true,
+  "perfusion_signal_rises": true,
+  "rows": [
+   {
+    "delivery": 0.15000000000000013,
+    "map": 64.66666666666667,
+    "max_holds": true,
+    "minute": 0,
+    "structural_perfusion": 0.9353333333333333,
+    "structural_value": 0.9353333333333333,
+    "unset_complete": false,
+    "unset_perfusion": null
+   },
+   {
+    "delivery": 0.28049232055658946,
+    "map": 60.5905692687021,
+    "max_holds": true,
+    "minute": 60,
+    "structural_perfusion": 0.9394094307312979,
+    "structural_value": 0.9394094307312979,
+    "unset_complete": false,
+    "unset_perfusion": null
+   },
+   {
+    "delivery": 0.3986619980303636,
+    "map": 55.751720720366926,
+    "max_holds": true,
+    "minute": 120,
+    "structural_perfusion": 0.9442482792796331,
+    "structural_value": 0.9442482792796331,
+    "unset_complete": false,
+    "unset_perfusion": null
+   },
+   {
+    "delivery": 0.601949116016981,
+    "map": 44.1535091064413,
+    "max_holds": true,
+    "minute": 240,
+    "structural_perfusion": 0.9558464908935587,
+    "structural_value": 0.9558464908935587,
+    "unset_complete": false,
+    "unset_perfusion": null
+   }
+  ],
+  "terminal_transition": false,
+  "thresholds_selected": false,
+  "unset_is_lower_bound": true
+ },
+ "d_lactate": {
+  "D": {
+   "0": 20.0,
+   "120": 53.28251763107641,
+   "180": 80.4073190601079,
+   "240": 113.63140508374566,
+   "30": 25.47223861703438,
+   "60": 32.90730966267037,
+   "90": 42.20809284589151
+  },
+  "arrival_D": 20.0,
+  "arrival_D_band": {
+   "classification": "FAMILY_CANDIDATE",
+   "lower": 0.0,
+   "midpoint": 20.0,
+   "name": "arrival_oxygen_debt",
+   "rule": "gi_reference.arrival_debt_band's scale (0-60 index-minutes, the same for every case): a latent arrival-state variable constrained by the authored shock, never computed from the arrival lactate; the authored onset (45 min) does not set it (no history is reconstructed)",
+   "upper": 60.0
+  },
+  "arrival_excess_clears_first": true,
+  "d_independent_of_lactate": true,
+  "kinetics_untouched": true,
+  "lactate": {
+   "0": 4.8,
+   "120": 3.078413926474459,
+   "180": 3.039074119256084,
+   "240": 3.3688766433615127,
+   "30": 4.103999121226492,
+   "60": 3.6048089456151766,
+   "90": 3.271241432849117
+  },
+  "lactate_core_only": {
+   "core_lactate_every_minute": true,
+   "no_family_lactate_write": true
+  },
+  "minimum_lactate_minute": 155,
+  "pass": true,
+  "rises_after_minimum": true,
+  "secondary_arrival_D": 0.0
+ },
+ "design": {
+  "arrival_classes": {
+   "pulmonary_embolism_33f": {
+    "arrival_bicarbonate": "CASE_AUTHORED",
+    "arrival_delivery_ratio": "CASE_MAPPING (neutral 1: perfusion authored as preserved, warm extremities)",
+    "arrival_lactate_excess": "CASE_MAPPING",
+    "arrival_oxygen_debt": "CASE_MAPPING (neutral 0: no delivery deficit is read, so no pre-arrival debt; never from the lactate)",
+    "arrival_paco2": "CASE_AUTHORED",
+    "beta_blockade": "CASE_MAPPING (0: no beta-blocker authored)",
+    "consciousness_level": "CASE_AUTHORED",
+    "crt_s": "CASE_AUTHORED",
+    "dbp": "CASE_AUTHORED",
+    "fio2": "CASE_AUTHORED",
+    "glucose": "CASE_AUTHORED",
+    "hb": "CASE_AUTHORED",
+    "hr": "CASE_AUTHORED",
+    "intrinsic_respiratory_rate": "FAMILY_CANDIDATE (P2K-2's candidate input, the middle of its 12 / 16 / 20)",
+    "intrinsic_sinus_rate": "CASE_MAPPING",
+    "k": "CASE_AUTHORED",
+    "lactate": "CASE_AUTHORED",
+    "metabolic_demand_baseline": "CASE_MAPPING (1: afebrile, no hypermetabolic evidence; the respiratory muscles' demand under the authored work of breathing is not modelled)",
+    "preload_fraction": "CASE_MAPPING (neutral: the authored LV 'Preserved contraction' is not read as underfilled; the profile's provisional position, nothing declared; the IVC is not read)",
+    "pump_reserve": "CASE_MAPPING (neutral 1, nothing declared: read only by the common overload coupling, which the family's L authority keeps off; RV dysfunction is never a left reserve)",
+    "reference_preload_fraction": "UNDEFINED_BY_CASE (no euvolemic reference is authored)",
+    "respiratory_rate": "CASE_AUTHORED",
+    "reversible_lung_water": "CASE_MAPPING (default 0: no authored pulmonary edema; L is family-owned at zero generation)",
+    "rhythm": "CASE_AUTHORED",
+    "sbp": "CASE_AUTHORED",
+    "spo2": "CASE_AUTHORED"
+   },
+   "pulmonary_embolism_61m": {
+    "arrival_bicarbonate": "CASE_AUTHORED",
+    "arrival_delivery_ratio": "FAMILY_CANDIDATE",
+    "arrival_lactate_excess": "CASE_MAPPING",
+    "arrival_oxygen_debt": "FAMILY_CANDIDATE",
+    "arrival_paco2": "CASE_AUTHORED",
+    "beta_blockade": "CASE_MAPPING (0: no beta-blocker authored)",
+    "consciousness_level": "CASE_AUTHORED",
+    "crt_s": "CASE_AUTHORED",
+    "dbp": "CASE_AUTHORED",
+    "fio2": "CASE_AUTHORED",
+    "glucose": "CASE_AUTHORED",
+    "hb": "CASE_AUTHORED",
+    "hr": "CASE_AUTHORED",
+    "intrinsic_respiratory_rate": "FAMILY_CANDIDATE (P2K-2's candidate input, the middle of its 12 / 16 / 20)",
+    "intrinsic_sinus_rate": "CASE_MAPPING",
+    "k": "CASE_AUTHORED",
+    "lactate": "CASE_AUTHORED",
+    "metabolic_demand_baseline": "CASE_MAPPING (1: afebrile, no hypermetabolic evidence; the respiratory muscles' demand under the authored work of breathing is not modelled)",
+    "preload_fraction": "FAMILY_CANDIDATE",
+    "pump_reserve": "CASE_MAPPING (neutral 1, nothing declared: read only by the common overload coupling, which the family's L authority keeps off; RV dysfunction is never a left reserve)",
+    "reference_preload_fraction": "UNDEFINED_BY_CASE (no euvolemic reference is authored)",
+    "respiratory_rate": "CASE_AUTHORED",
+    "reversible_lung_water": "CASE_MAPPING (default 0: no authored pulmonary edema; L is family-owned at zero generation)",
+    "rhythm": "CASE_AUTHORED",
+    "sbp": "CASE_AUTHORED",
+    "spo2": "CASE_AUTHORED"
+   }
+  },
+  "cases": [
+   "pulmonary_embolism_61m",
+   "pulmonary_embolism_33f"
+  ],
+  "channel_roles": {
+   "pulmonary_embolism_33f": {
+    "D": "NORMAL_OR_NEUTRAL (perfusion preserved; lactate 2.0 mapped as clearable excess, no prior debt)",
+    "G": "PRIMARY_DRIVER (SpO2 90, PaO2 59 on room air): direct",
+    "Glu": "NORMAL_OR_NEUTRAL (108)",
+    "Hb": "NORMAL_OR_NEUTRAL (12.6)",
+    "K": "NORMAL_OR_NEUTRAL (4.1)",
+    "L": "NORMAL_OR_NEUTRAL (no B-lines, no edema): family-owned at zero generation",
+    "N": "NORMAL_OR_NEUTRAL (alert)",
+    "P": "NORMAL_OR_NEUTRAL at arrival (mild RV enlargement, no D-sign, no McConnell, normotension)",
+    "R": "SECONDARY_RESPONSE (sinus tachycardia 124)",
+    "T": "NORMAL_OR_NEUTRAL (no shock)",
+    "V": "NORMAL_OR_NEUTRAL (V = 0; the LV is preserved, not read as underfilled: the profile's position)",
+    "W": "SECONDARY_RESPONSE (RR 30, PaCO2 30)"
+   },
+   "pulmonary_embolism_61m": {
+    "D": "SECONDARY_RESPONSE (obstructive shock: a latent arrival debt, never from the lactate 4.8)",
+    "G": "PRIMARY_DRIVER (dead space / V/Q mismatch: SpO2 88, PaO2 55 on room air): direct, never through L",
+    "Glu": "NORMAL_OR_NEUTRAL (136: stress)",
+    "Hb": "NORMAL_OR_NEUTRAL (11.6)",
+    "K": "NORMAL_OR_NEUTRAL (4.1)",
+    "L": "NORMAL_OR_NEUTRAL (no B-lines, no edema on the radiograph): family-owned at zero generation",
+    "N": "NORMAL_OR_NEUTRAL (alert, faint)",
+    "P": "PRIMARY_DRIVER (the obstruction: unsided forward-flow capacity of the series circuit; not LV contractility, the authored LV contracts vigorously)",
+    "R": "SECONDARY_RESPONSE (sinus tachycardia 132)",
+    "T": "SECONDARY_RESPONSE (vasoconstriction: the existing common tone response to the deficit)",
+    "V": "NORMAL_OR_NEUTRAL as a deviation (V = 0 at arrival; no volume lost or gained); its arrival POSITION is the underfilled LV's (low on the preload curve). Never the plethoric IVC (IVC_IS_NOT_UNIVERSAL_V_MAPPING)",
+    "W": "SECONDARY_RESPONSE (RR 32, markedly increased work, PaCO2 28: hyperventilation)"
+   }
+  },
+  "common_at_p2p2": {
+   "clinical_core/__init__.py": "acb1d8137d2dab84a0c3f5b4d68b3e904d8e85564a657233bb0e622e539338c2",
+   "clinical_core/a9.py": "64006b57e37ab69dd9dfd61d5c87b01112779f19e7007b96440cfad345ad5b92",
+   "clinical_core/acid_base.py": "9298b1f0a6defbe1a11627a0d76208c36792b01a390d80558e3cc1fda1827954",
+   "clinical_core/acid_base_report.py": "9f0b9f5b03369066e4ac7916b372453c41ef7793b36c20553b88d726b83afa78",
+   "clinical_core/acs_migration.py": "4fae25400e94b7c1f3b6b77f277dd5e04b72d150c52da738faddf95b37edd971",
+   "clinical_core/acs_migration_report.py": "dbe33c01e165f9471dcb720919c3fac257f3d0903972117a420e91632b4c2d6b",
+   "clinical_core/acs_reference.py": "b7b69c7892314375de236aec35016178218dfa4b114874b165c7191a0de2cfa1",
+   "clinical_core/arrival_severity.py": "c5c0e4c125303b463ec1d2a5373464c09576f7d83ca975834e6b059c67b2b229",
+   "clinical_core/arrival_severity_report.py": "a1806dc772a4f0a540a621271e8dd24b4c77b36da2b55af5e1da623cf30ac2eb",
+   "clinical_core/bands.py": "9facbd34dc643d45f7ad3d668619f344717824c921924247f65396fae6aa81bc",
+   "clinical_core/baroreflex.py": "cd9072b8c97bfc3a15e8d314c88aae7ec6a622a8c4b7e1fad9fa73c38e5aca6e",
+   "clinical_core/baroreflex_report.py": "0044b585240c36e9fd5e049c394f053f443d1408c23c77299d9cc5a65efef405",
+   "clinical_core/blood_anchors.py": "bd870314a723dc420ef6d27189275cb3a2b4bba0fd3515fac166c017fb69b89e",
+   "clinical_core/blood_constraints.py": "2d139733ed529a03f9c58cd4aa5eb70c8812bb25ba0737f90172546b4e2a65a8",
+   "clinical_core/blood_extension.py": "87429c2ed0b453bb33b2107fdfa453ffe6d78e5ffbb26364eab7e8228556ce47",
+   "clinical_core/blood_extension_report.py": "028efe15446ddc8d9b424465cbcdb74732f00361efea09de3225cea9f3bbde54",
+   "clinical_core/blood_filter_report.py": "4667b87efb27cfef4a1f705c9767bb6dd311d6c67625b9505dead9ef3293c394",
+   "clinical_core/blood_fluid_calibration.py": "46e73e3314190dd6fc18695346a16e9c6c55059606ac80a16081695f1d9fdd19",
+   "clinical_core/blood_fluid_readiness.py": "40b93a69c8b70190e7d92a056f0987b81a30ee32331629d18132f0aa534a15cf",
+   "clinical_core/blood_fluid_readiness_report.py": "8bcf365b433ba584760775d23a23bbf4b750e6f2253b67fcf818df2a679dc650",
+   "clinical_core/blood_fluid_report.py": "6ba467991a3e7ac9c8193f1ecff225541c069c89073872e8dc4ffca4487edc0a",
+   "clinical_core/blood_fluid_tau_closure.py": "c16a56a77c3957ae1186f4e2b016ddbadd8fee7bae0d405414fb031af735621b",
+   "clinical_core/blood_fluid_tau_closure_report.py": "16d703dfa0ecf52a29763d7a94a4dc0534ae1ff886021444e4884d3a0477af46",
+   "clinical_core/blood_probes.py": "846de76dbfe99f3dd7fc6ace431dc1d1325441e13bc0c1148c009f33016bf3d5",
+   "clinical_core/blood_rate_boundary.py": "435db3cf1d1fdba4e9ff059b889a2e8180ca80db1d2fdbeff433663692ee9f83",
+   "clinical_core/blood_rate_report.py": "3bcf35d15d3611f2564e23bf0392703bd31236c21ff128836c6201b45e6e380f",
+   "clinical_core/calibration.py": "f3fa65375ddaa48bac9ecf850838c78606bb46c3a15f12f968b146b84592ace5",
+   "clinical_core/collapse.py": "6076dd315f8bd335af8a425ac4d78e3bcbbd5f1198b45e511b4f122532d65fc9",
+   "clinical_core/collapse_architecture.py": "0d6ed0d28695c016c1834bd931e4bfbcac561b8d94c70f8d316c999d3e2d6699",
+   "clinical_core/collapse_architecture_report.py": "3b116d0a28933ccbbc2c5f45c97d1cdfb822bee5f79a4877320bd67464c6ebbf",
+   "clinical_core/collapse_audit.py": "7c1fb59a26bfda77ba84e0a38640e3aabcccdf69d41b222e93ad48cf414e1521",
+   "clinical_core/collapse_audit_report.py": "08b63fa519e985eea0619becdd5d9b21bb92b0e8def1f72a4d89d34847af5061",
+   "clinical_core/comparison.py": "fd1dbb232399f6eae33cfe758670b80a551161fea183e5dd4820575636a2b0d4",
+   "clinical_core/consciousness_audit.py": "534bc27d96f7ffd31da70e9ff90ffdf92e82c62fe8e015fb3fd6df040885fe8c",
+   "clinical_core/consciousness_audit_report.py": "8f769dbafb2b76a6013b518038f842aa3d23be482a6ff7d355472ca75eaa0e53",
+   "clinical_core/contracts_input.py": "2185469e423f2104ec81705849e57d6fffe01a316f1a7b35eba6883467f89117",
+   "clinical_core/contracts_legacy.py": "1afe36c5ccbf07df3f3e632916fd083d0fcfc8258ede6bf56eef70fb98f7d80a",
+   "clinical_core/contracts_output.py": "bc7371c7ccb57ea2f138a6bbc58c266851f6dbf0fbdb5eb2d625b1ea70ab3751",
+   "clinical_core/contracts_shadow.py": "bd2fc07a7b91f05c89c96294f440b0510c2896a7666cb77fd97a5bdab001cf65",
+   "clinical_core/decision_pack_markdown.py": "e0f9471a8e21284a1cf8976b3d7f89002d0d4fb023d02c087240d45ef6836328",
+   "clinical_core/derived.py": "e701e99bfa4a2ad2e1d17a7408d91b566abf6d76fa7da1678213c54db0ecbedb",
+   "clinical_core/edema_migration.py": "7d2bd34a883c0253aed4d254f025b400bf178346e348fd3982986c228ef2b464",
+   "clinical_core/edema_migration_report.py": "02c20561397d1d4ab7b9a83e1e1be1ce8abe5b027a7f8679cd5ba9af0b418467",
+   "clinical_core/edema_reference.py": "fd8702e4d5ed03cf6dbe72cf0053ad9af6966e40e2b197cf42261bf61a66eb76",
+   "clinical_core/encephalopathy.py": "04aea64d6f2a23cf5a77a530114b3174eab9c9adc527708a97ac25f9c5ce3539",
+   "clinical_core/encephalopathy_architecture.py": "55d47c033d381fb2b1cb69fab67adb27a05d7393807575561bc8d7a4d5e58a2c",
+   "clinical_core/encephalopathy_architecture_report.py": "e35278b85196763ef1b87f30acb19c20d8dc5a007cdc55dad266bcf07b0c990a",
+   "clinical_core/faculty_constraints.py": "092c32cf5a20cbf62e3e9df32a47896ccdef701f97170634740a8f8399d7982a",
+   "clinical_core/gas_exchange_architecture.py": "b9dcfe241f91e0ef973ca77b32e149b0ddbc76ac09f19092f7cfca5a16601835",
+   "clinical_core/gas_exchange_architecture_report.py": "2a4a589ae2c40f7ffa856a7daf4405c066ed26998d5f25a849cc59646742dd48",
+   "clinical_core/gi_reference.py": "ee3114ce9eeeb426a7b843943819aa88095b6cb09674e4c895c93a6ad1de0867",
+   "clinical_core/haemorrhage_probes.py": "df55cdcd16e5ea091a0b27042c22723029c9f19722a332c98c64bf606ef2df00",
+   "clinical_core/hemodynamic_probes.py": "1e6e96a0397f379aa4a8112aef8198963b9120fd239d2444c22ad2db22ea2ebb",
+   "clinical_core/hr_envelope_filter.py": "6bfe0ef46ed1f2b1a4555b7322ca7d3747c237f2cc185caf3dcd479e8a50d885",
+   "clinical_core/hr_envelope_filter_report.py": "e85579aed3751aafb11cc9a5abd5b38176c2bc126692384db80192cf787232bf",
+   "clinical_core/hr_observables.py": "47c21f35d7a38ccee60df3df2053edcc776e86d8fdeb5ff8881bf4e105764f05",
+   "clinical_core/hr_observables_report.py": "705578a792a9aeb28aaf75cd1f47b61254f55f381df325b010f33fa03d3d4a9f",
+   "clinical_core/hr_primary.py": "f9c5807fb6ddb6f2ced9ee8b209a047eed60b229ba450ccde56454cb0d8812f9",
+   "clinical_core/hr_primary_report.py": "9551cab1a2e068a2c6cfb977160bae38d50bb96b17335504a47176d25144cf92",
+   "clinical_core/hr_shock.py": "2fbf78d2ed5a0fd0592ef48b90fd4dc385a5c27c6fd523b1dbc195ae2ca2b419",
+   "clinical_core/hr_shock_report.py": "64043971e9d2404924dc3251e53c52b5ddc356cdff9a367ce9d0ba48a483e9c5",
+   "clinical_core/hr_structure.py": "1109ca9dded7b8e67c588932326f510e10e0ad51f6091f0a17fe9ef09f218f16",
+   "clinical_core/hr_structure_report.py": "bdf83176d06b212a877a423724425dcbbe18287d823fec84a13a6c0d87a0d384",
+   "clinical_core/integration.py": "c725fbe8ab4daa69952dfd06a8f584e303ef6ff66bd67441deaa70e4cce887af",
+   "clinical_core/interventions/__init__.py": "d0dedb08f0d35bff6ba458af009b3a35f85018e9ea2a76373158d9c373551b79",
+   "clinical_core/interventions/fluids.py": "7dc615d2eea80e3afdab0774bb1f234f7ea887be1654ae02e6ca312513fb9aef",
+   "clinical_core/interventions/modifiers.py": "46c8970630a77960d7ba2e81023d31b96b2b08f611a87eae9f94cb85f1b1aa6a",
+   "clinical_core/interventions/oxygen.py": "d7bcc0393ed562d02d6070f09ab8d501c506e6931f5efd33b3492d7e34664095",
+   "clinical_core/interventions/timing.py": "498493e6143d691d582b68f568491b9275eef49bb13bcf94e251f17aea49c6a1",
+   "clinical_core/lactate_adequacy.py": "ec49d1da4ca2494d804605669fe59617f7a1d7841572ae4be9f2e6e2b6ef7638",
+   "clinical_core/lactate_adequacy_report.py": "4f50500d46ea3a4eb1aebc545f718a8e7f78ea77f532041736fbd4cd54881044",
+   "clinical_core/lactate_closure.py": "2ae56c334031da561a9d402795c1a81ec70646ea15ed0e71cc8b6991bc04dbc3",
+   "clinical_core/lactate_closure_report.py": "e8a62c16b97d9800a357150e69f9ecb97ad0a8796f1db2c31a7c2995ee267b3f",
+   "clinical_core/lactate_constraints.py": "cf9522168fd7012e52ca797752ce8d5ab9456db7ff54422f917ccf0628d021be",
+   "clinical_core/lactate_rebuild.py": "d969a8c89b678204b4b258c35731f64b0e87ef3cf97b80ef5b92b073ccc9733f",
+   "clinical_core/lactate_rebuild_report.py": "22948e39f94661d3ef66e7a129be1be8cbded1dc124ff581fbf9b9144c56b162",
+   "clinical_core/legacy_adapter.py": "f8fafd17bcda03a4293e5717145c6f4672760a07d553c965fa7c2505b69ad115",
+   "clinical_core/logistics.py": "8b7b28c7cee688d38bbaa124e9bc83f760e3b952d7f34b0df0cf6ba6159855b9",
+   "clinical_core/lung_water_reference.py": "23a6f40d17dcf51bd1fa42ec4dc5151297c4f3a47fed241b2edaec64f069ddff",
+   "clinical_core/lung_water_reference_report.py": "1c7da3d2797237e24dbd085edcf2780a4b26f1fbc9658bf383982a910e1c289f",
+   "clinical_core/migration.py": "aa5d5c8001514994dda67a8dbfbf60e18f9048e1b18edc599ddf0399f80b349e",
+   "clinical_core/migration_authority.py": "baf342106c2a611ddc5b8f43e75a9726c11ce1a53465c5bd3d2761a0e9a8f907",
+   "clinical_core/modules/__init__.py": "1cf73c2ddf4fe370c8d34fff2ea8132149c02239ee81f3329bd87cfec729f23d",
+   "clinical_core/modules/acs_ischaemia.py": "3199b9173594aea07c905e55b46e8705621b5c9ed7e936987024aa2d2079993d",
+   "clinical_core/modules/gi_haemorrhage.py": "edb61d903bc9f4607c1d3b819f28ac065ba86656b75ba29c89d3a7c124777673",
+   "clinical_core/modules/pulmonary_edema.py": "01e68556c919efa24ff6186eacf22c98e2ec882bf5cd52109bbafaffd8351679",
+   "clinical_core/modules/rhythm_events.py": "1036a2443e44fe5e2fde80736984b6828542b69454cc49a36e660ee8d436c86b",
+   "clinical_core/oxygen_probes.py": "450cec663ae0c47ba32b6df8b4fadc136cad6c9a2e14f8f08d649d166651febd",
+   "clinical_core/pressure_tone.py": "2e350c8a42bcacfa31e8e5349d284c7d276808e396d36421e1dc369dbcb9ec26",
+   "clinical_core/pressure_tone_filter.py": "54bff406686b2b8e47757f10c5ec42cb6e0a0d170f2627cb926f99eea1c7e650",
+   "clinical_core/pressure_tone_filter_report.py": "6eebe11b816eeb901f10d9f1431182b71ab26db84652771af741076f33734f92",
+   "clinical_core/pressure_tone_report.py": "bc0fe73c681a35432baec5acf8062027b63f0e5821146133fb9211ae9240d7ac",
+   "clinical_core/provenance.py": "3e670fc4aebb296232e8418f448cb14f6da46c387d4af4fc2ae7b95ba1e328d8",
+   "clinical_core/respiratory_drive.py": "246f4ad5070fb50a64eec686ee4441e896d79c6d717303e1a43c11f7bf5af21b",
+   "clinical_core/respiratory_drive_report.py": "7bb2ee04e3204b4de2bf542cac2f8166d72de7af4892cc7f098699f5adc94f2a",
+   "clinical_core/respiratory_monotonicity.py": "ba6bac3ea1f4f1f9b0bff5503b4ff846f1ae5a097ee88d8480dd3ee52fbba672",
+   "clinical_core/respiratory_monotonicity_report.py": "373cdac40c02f1e0bd4683f9ab6329ce08805b4a41e38939e89ff28a8fc83fcb",
+   "clinical_core/rr_audit.py": "4b663ffad81ff88f728707e7c96a255d882cbf62247107980652331fff885bf1",
+   "clinical_core/rr_audit_report.py": "f3951b39f4b0b9d6b82a6fffa687457f68257743e6e86fb4d5c10c0dc81797e5",
+   "clinical_core/shadow.py": "66ef25c952509f0765731cfc0c0b97274bc5a4d263dcb486b595a8585a99ef35",
+   "clinical_core/signals.py": "f02f5494a8aac0361ace94a40e15a4df81970f456de7af0f6762a1196a27ee7f",
+   "clinical_core/state.py": "141cd5a2aada89a58e7de9ee1436b2f52fd68141df132bcb26e934e6e9ddc7d1",
+   "clinical_core/vascular_tone.py": "8314c34accd082511b8e5cbe73da90c054fdbd2a0b8a6f3a56ab0aa0c12f7cf5",
+   "clinical_core/vascular_tone_report.py": "19db9e1005755fbb229f1e739c3c1607f97e376df784c929f63c0cb97440ba4a",
+   "clinical_core/ventilation.py": "260393add18e2275ee21411512d18531a74387f853bb76a2f33f89d5cb1bafe9",
+   "clinical_core/ventilation_filter.py": "9edf6c7544924f90875bdc2abd56cf6d86346411901009e641267d14d47685b9",
+   "clinical_core/ventilation_filter_report.py": "6d5789040d650c2b7241d18399c6fe2038fd91eb1ca58e5f7c93e29f63a39c49",
+   "clinical_core/ventilation_surface.py": "d361b500ccaf059784ea7e7662b6be5dd7d02019174c2f66cc0ca0ff24245825",
+   "clinical_core/ventilation_surface_report.py": "64de449f56f34cc77ec3a6ca663ee2389ea32f3c3373a289237e69f212d16a3c"
+  },
+  "core_at_p2p2": {
+   "clinical_core/decision_pack.py": "46d4465a6fe51ac41bd41569017ffc4d94e12b05165b58c0d68bf179afa5303d",
+   "clinical_core/lactate_slice.py": "c9cd9ec1c1af6906a58a9a3f48136d415297935a64d7c2dc6435d642b118bfbd"
+  },
+  "decided": {
+   "collapse": "P2M-2 exercised structurally; no thresholds; no arrest calibration",
+   "d_lactate": "arrival D a latent case state constrained by the authored physiology, never from lactate; common D / lactate kinetics not retuned; lactate never forced monotonic",
+   "drive": "P2P-2 exercised structurally: the hypoxaemic drive UNSET or SYNTHETIC_ONLY; no threshold, gain or curve from PE; no PE RR residual; central depression preserved; no opioid code",
+   "g": "direct G, never through L; no L_rev semantics on direct G; the common G -> SpO2 -> DO2 path; no G subtype; no PE oxygen-response function",
+   "goal": "a family migration on the closed common core; generalization over case fitting; a family mapping is acceptable where the disease mechanism has information the common channels do not hold",
+   "l_owner": "PE_L_ZERO_OWNER_AUTHORIZED: the PE family owns L (lung_water_authority) with zero intrinsic congestion generation unless a case independently authors pulmonary edema; it suppresses the provisional common overload writer; a family authority decision over the common L channel, not a derived equation",
+   "no_double_count": "the obstruction is never encoded as low V and low P at once without independent authored mechanisms",
+   "no_sided_state": "SIDED_PRELOAD_COMMON_STATE_DEFERRED: no RV / LV preload, RA / LA pressure, PCWP, sided P or sided V as common state",
+   "one_owner": "one authoritative L owner per run (P2O-3); two independent owners are never composed; common downstream L readers unchanged",
+   "p2q1": "TRUE_CROSS_FAMILY_CONFLICT accepted for the current unsided common congestion coupling, resolved for this migration by family authority",
+   "preload": "IVC_IS_NOT_UNIVERSAL_V_MAPPING: V (effective forward preload) from the authored small / underfilled LV; the plethoric IVC is RIGHT_SIDED / OBSERVATIONAL evidence, never common V",
+   "tone_hr": "no pressure -> tone compensation and no HR retuning (P2J not reopened); the gaps are recorded"
+  },
+  "depression": 0.3,
+  "family_types": [
+   "pe_obstructive_forward_flow",
+   "pe_embolic_gas_exchange",
+   "pe_lung_water"
+  ],
+  "fio2": [
+   0.4,
+   0.6
+  ],
+  "floor": 0.5,
+  "fluid_stress": {
+   "begins_at_minute": 30,
+   "duration_min": 30.0,
+   "volume_ml": 2000.0
+  },
+  "forbidden_names": [
+   "BloodFlow",
+   "SettingChange",
+   "DemandModifier",
+   "Signal",
+   "RhythmTransition",
+   "reversible_lung_water",
+   "lung_water_gas_credit",
+   "fio2",
+   "spo2",
+   "oxygenation",
+   "Oxygen",
+   "lactate",
+   "respiration",
+   "central_drive_availability",
+   "hypoxaemic_drive",
+   "sympathetic_target",
+   "congestion_rate"
+  ],
+  "g_rates": [
+   0.00625,
+   0.0125,
+   0.025
+  ],
+  "horizon": 120,
+  "hypoxaemic": {
+   "gain": 10.0,
+   "mapping": [
+    [
+     100.0,
+     0.0
+    ],
+    [
+     50.0,
+     1.0
+    ]
+   ]
+  },
+  "l_evidence": [
+   "pocus_lungs",
+   "chest_xray",
+   "respiratory_exam"
+  ],
+  "l_rev_probe": -0.5,
+  "later_observations": "NONE_AUTHORED: both cases state the arrival only; the TDFC declarations and the assessment bank describe the expected management (oxygen, anticoagulation, a reperfusion-capable team, cautious bounded volume), not a physiological course",
+  "legacy_constants": "pe_obstruction (TOLERATED_ML_PER_MIN 10, RV_STRAIN_PER_ML 0.0006, RV_STRAIN_TAU_MIN 45, RV_STRAIN_LUNG_SHARE 0.35, lysis targets 0.62 / 0.80): LEGACY_ENGINE_BEHAVIOR",
+  "legacy_minutes": [
+   0,
+   30,
+   60,
+   90,
+   120
+  ],
+  "long_horizon": 240,
+  "long_read": [
+   0,
+   30,
+   60,
+   90,
+   120,
+   180,
+   240
+  ],
+  "loss_per_min": [
+   0.0008333333333333334,
+   0.0016666666666666668,
+   0.0033333333333333335
+  ],
+  "observation_layer": {
+   "ecg_ctpa_troponin_d_dimer": "family observations of the embolism; no common channel",
+   "ivc_jvp": "RIGHT_SIDED / OBSERVATIONAL evidence: the plethoric IVC and the raised JVP are the obstructed right heart's filling; never V, never L, never the pump reserve (IVC_IS_NOT_UNIVERSAL_V_MAPPING)",
+   "lungs": "an observation of L: no B-lines and no edema are the arrival reading (L = 0, family-owned, zero generation)",
+   "lv_underfilled": "an observation of the arrival preload position (V_EVIDENCE): low on the curve; the vigorous contraction says P is not LV contractility",
+   "rhythm": "R (sinus, its rate from the common HR physiology)",
+   "rv_findings": "an observation of the obstruction (P): the authored RV larger than the LV, the D-sign and McConnell's sign are the arrival reading (P = 1); P below arrival reads a more obstructed circuit",
+   "work_of_breathing": "an observation of W and the respiratory load; the common model has no dead-space, mechanics or receptor drive (an expected respiratory extension); the hypoxaemic drive is UNSET"
+  },
+  "own": [
+   "clinical_core/embolism_reference.py",
+   "clinical_core/modules/pulmonary_embolism.py",
+   "clinical_core/embolism_migration.py"
+  ],
+  "p2p2": {
+   "freeze_digest": "5e705336b733be87c4bf1cc16fd8fdb664a11050aa9bed32ea82b539afe5f449",
+   "head": "2a44327",
+   "record": "e362f67b073726cdb89520a25302ee3795c5eb2bfe654b75861adb556858e659"
+  },
+  "read": [
+   0,
+   30,
+   60,
+   90,
+   120
+  ],
+  "recommendation": {
+   "PE_SHADOW_MIGRATION_READY": "PROCEED_TO_P2R0_CROSS_FAMILY_GENERALIZATION_CHECKPOINT (read-only; do not tune PE)"
+  },
+  "rejected_ivc_preload": 0.8,
+  "report": "clinical_core/embolism_migration_report.py",
+  "reversal": {
+   "clinical_core/decision_pack.py": [
+    [
+     "                        \"clinical_core/edema_migration.py\", \"clinical_core/edema_migration_report.py\",\n                        \"clinical_core/respiratory_drive.py\", \"clinical_core/respiratory_drive_report.py\",\n                        \"clinical_core/embolism_migration.py\", \"clinical_core/embolism_migration_report.py\")\n\n",
+     "                        \"clinical_core/edema_migration.py\", \"clinical_core/edema_migration_report.py\",\n                        \"clinical_core/respiratory_drive.py\", \"clinical_core/respiratory_drive_report.py\")\n\n"
+    ]
+   ],
+   "clinical_core/lactate_slice.py": [
+    [
+     "                      \"clinical_core/edema_migration_report.py\",\n                      \"clinical_core/respiratory_drive_report.py\",\n                      \"clinical_core/embolism_migration_report.py\")\n\n",
+     "                      \"clinical_core/edema_migration_report.py\",\n                      \"clinical_core/respiratory_drive_report.py\")\n\n"
+    ]
+   ]
+  },
+  "revision": "P2Q-2",
+  "right_sided_observation": [
+   "pocus_ivc",
+   "cardiac_exam",
+   "pocus_rv"
+  ],
+  "rr_gap": 5.0,
+  "secondary_loss": [
+   0.0,
+   0.0008333333333333334
+  ],
+  "selection_rule": "primary: the variant with the richest authored RV, preload, gas-exchange and haemodynamic physiology (pulmonary_embolism_61m, high-risk PE with obstructive shock); secondary diagnostic: pulmonary_embolism_33f (PE with hypoxaemia, initially without hypotension)",
+  "structural_ramp": [
+   1000.0,
+   0.0
+  ],
+  "truth_classes": {
+   "abg_fio2_percent": "AUTHORED_CASE_TRUTH",
+   "abg_hco3": "AUTHORED_CASE_TRUTH",
+   "abg_paco2": "AUTHORED_CASE_TRUTH",
+   "abg_pao2": "AUTHORED_CASE_TRUTH",
+   "abg_ph": "AUTHORED_CASE_TRUTH",
+   "arrival_delivery_and_debt": "MODEL_DERIVED latent arrival states (bands, FAMILY_CANDIDATE)",
+   "arrival_hr_prediction": "MODEL_DERIVED (derived.heart_rate_decomposition)",
+   "arrival_rr": "MODEL_DERIVED (the P2P-2 composition on the arrival acid burden)",
+   "assessment_cautious_volume": "AUTHORED_CASE_TRUTH as an assessment expectation (case_assessment_bank: 'cautious volume with a stated limit'), never a physiological rate",
+   "cardiac_exam": "AUTHORED_CASE_TRUTH",
+   "chest_xray": "AUTHORED_CASE_TRUTH",
+   "creatinine_mg_dl": "AUTHORED_CASE_TRUTH",
+   "crt_s": "AUTHORED_CASE_TRUTH",
+   "ctpa": "AUTHORED_CASE_TRUTH",
+   "d_dimer_ng_ml": "AUTHORED_CASE_TRUTH",
+   "dbp": "AUTHORED_CASE_TRUTH",
+   "definitive_actions": "AUTHORED_CASE_TRUTH (faculty-declared definitive actions: anticoagulation, consult, oxygen)",
+   "diagnosis": "AUTHORED_CASE_TRUTH",
+   "ecg_profile": "AUTHORED_CASE_TRUTH",
+   "extremities": "AUTHORED_CASE_TRUTH",
+   "extremities_exam": "AUTHORED_CASE_TRUTH",
+   "glucose_mg_dl": "AUTHORED_CASE_TRUTH",
+   "hb_g_dl": "AUTHORED_CASE_TRUTH",
+   "hr": "AUTHORED_CASE_TRUTH",
+   "lactate_mmol_l": "AUTHORED_CASE_TRUTH",
+   "mental_status": "AUTHORED_CASE_TRUTH",
+   "neurological_exam": "AUTHORED_CASE_TRUTH",
+   "onset": "AUTHORED_CASE_TRUTH",
+   "peripheral_perfusion": "AUTHORED_CASE_TRUTH",
+   "pocus_consolidation": "AUTHORED_CASE_TRUTH",
+   "pocus_dvt_popliteal": "AUTHORED_CASE_TRUTH",
+   "pocus_ivc": "AUTHORED_CASE_TRUTH",
+   "pocus_lungs": "AUTHORED_CASE_TRUTH",
+   "pocus_lv": "AUTHORED_CASE_TRUTH",
+   "pocus_rv": "AUTHORED_CASE_TRUTH",
+   "potassium_mmol_l": "AUTHORED_CASE_TRUTH",
+   "respiratory_exam": "AUTHORED_CASE_TRUTH",
+   "respiratory_rate": "AUTHORED_CASE_TRUTH",
+   "rhythm": "AUTHORED_CASE_TRUTH",
+   "sbp": "AUTHORED_CASE_TRUTH",
+   "spo2": "AUTHORED_CASE_TRUTH",
+   "tdfc_f1_volume": "LEGACY_ENGINE_BEHAVIOR (tdfc_declarations F1: 'the engine punishes rapid volume (the dilated right ventricle lowers the output) and tolerates slow, bounded volume'; pe_obstruction's RV strain)",
+   "temperature_c": "AUTHORED_CASE_TRUTH",
+   "troponin_ng_l": "AUTHORED_CASE_TRUTH",
+   "vbg_pco2": "AUTHORED_CASE_TRUTH",
+   "vbg_ph": "AUTHORED_CASE_TRUTH",
+   "work_of_breathing": "AUTHORED_CASE_TRUTH"
+  },
+  "truth_paths": {
+   "abg_fio2_percent": [
+    "investigations",
+    "abg",
+    "result",
+    "fio2_percent"
+   ],
+   "abg_hco3": [
+    "investigations",
+    "abg",
+    "result",
+    "bicarbonate_mmol_l"
+   ],
+   "abg_paco2": [
+    "investigations",
+    "abg",
+    "result",
+    "paco2_mm_hg"
+   ],
+   "abg_pao2": [
+    "investigations",
+    "abg",
+    "result",
+    "pao2_mm_hg"
+   ],
+   "abg_ph": [
+    "investigations",
+    "abg",
+    "result",
+    "ph"
+   ],
+   "cardiac_exam": [
+    "examination",
+    "Cardiac"
+   ],
+   "chest_xray": [
+    "investigations",
+    "chest_xray",
+    "result",
+    "report"
+   ],
+   "creatinine_mg_dl": [
+    "investigations",
+    "basic_labs",
+    "result",
+    "creatinine_mg_dl"
+   ],
+   "crt_s": [
+    "observable",
+    "crt"
+   ],
+   "ctpa": [
+    "investigations",
+    "ctpa",
+    "result",
+    "report"
+   ],
+   "d_dimer_ng_ml": [
+    "investigations",
+    "d_dimer",
+    "result",
+    "d_dimer_ng_ml_feu"
+   ],
+   "dbp": [
+    "observable",
+    "dbp"
+   ],
+   "definitive_actions": [
+    "engine",
+    "definitive_actions"
+   ],
+   "diagnosis": [
+    "faculty",
+    "diagnosis"
+   ],
+   "ecg_profile": [
+    "ecg_profile"
+   ],
+   "extremities": [
+    "observable",
+    "extremities"
+   ],
+   "extremities_exam": [
+    "examination",
+    "Extremities"
+   ],
+   "glucose_mg_dl": [
+    "investigations",
+    "basic_labs",
+    "result",
+    "glucose_mg_dl"
+   ],
+   "hb_g_dl": [
+    "investigations",
+    "basic_labs",
+    "result",
+    "hemoglobin_g_dl"
+   ],
+   "hr": [
+    "observable",
+    "hr"
+   ],
+   "lactate_mmol_l": [
+    "investigations",
+    "lactate",
+    "result",
+    "lactate_mmol_l"
+   ],
+   "mental_status": [
+    "observable",
+    "mental_status"
+   ],
+   "neurological_exam": [
+    "examination",
+    "Neurological"
+   ],
+   "onset": [
+    "history",
+    "onset"
+   ],
+   "peripheral_perfusion": [
+    "observable",
+    "peripheral_perfusion"
+   ],
+   "pocus_consolidation": [
+    "investigations",
+    "pocus",
+    "result",
+    "lung_consolidation"
+   ],
+   "pocus_dvt_popliteal": [
+    "investigations",
+    "pocus",
+    "result",
+    "dvt_popliteal"
+   ],
+   "pocus_ivc": [
+    "investigations",
+    "pocus",
+    "result",
+    "ivc"
+   ],
+   "pocus_lungs": [
+    "investigations",
+    "pocus",
+    "result",
+    "lungs"
+   ],
+   "pocus_lv": [
+    "investigations",
+    "pocus",
+    "result",
+    "lv"
+   ],
+   "pocus_rv": [
+    "investigations",
+    "pocus",
+    "result",
+    "rv"
+   ],
+   "potassium_mmol_l": [
+    "investigations",
+    "basic_labs",
+    "result",
+    "potassium_mmol_l"
+   ],
+   "respiratory_exam": [
+    "examination",
+    "Respiratory"
+   ],
+   "respiratory_rate": [
+    "observable",
+    "respiratory_rate"
+   ],
+   "rhythm": [
+    "observable",
+    "rhythm"
+   ],
+   "sbp": [
+    "observable",
+    "sbp"
+   ],
+   "spo2": [
+    "observable",
+    "spo2"
+   ],
+   "temperature_c": [
+    "observable",
+    "temperature_c"
+   ],
+   "troponin_ng_l": [
+    "investigations",
+    "troponin",
+    "result",
+    "value_ng_l"
+   ],
+   "vbg_pco2": [
+    "investigations",
+    "vbg",
+    "result",
+    "pco2_mm_hg"
+   ],
+   "vbg_ph": [
+    "investigations",
+    "vbg",
+    "result",
+    "ph"
+   ],
+   "work_of_breathing": [
+    "observable",
+    "work_of_breathing"
+   ]
+  },
+  "tuples_added": {
+   "DOWNSTREAM_REPORTS": [
+    "clinical_core/embolism_migration_report.py"
+   ],
+   "PACK_DIGEST_EXCLUDED": [
+    "clinical_core/embolism_migration.py",
+    "clinical_core/embolism_migration_report.py"
+   ]
+  },
+  "v_evidence": [
+   "pocus_lv"
+  ],
+  "verdict_criteria": [
+   "PE arrival mapping coherent (arrival exact where the core models it; V from the underfilled LV, the IVC not read; L 0; pump reserve neutral; the secondary neutral)",
+   "obstructive / forward-flow failure uses existing channels cleanly (the writer writes P only; Q, MAP, DO2, the deficit and D follow in the common core; V, Hb and L untouched)",
+   "no V / P double counting (no PE source writes V or the blood state; the arrival position never changes the arrival; the V mapping reads only the LV)",
+   "PE owns L with zero generation (no common overload write, no L write; a second owner refused)",
+   "fluid stress creates no false L (every LV-band point; SpO2 and G unchanged by the fluid)",
+   "direct G path works (G linear, the common SpO2 mapping, delivery down, no L_rev credit)",
+   "oxygen response common (monotone in FiO2, attenuated as G worsens, no family oxygen function)",
+   "P2P-2 respiratory-drive architecture accepts hypoxaemia structurally (UNSET none, synthetic drives and grows; central depression still dominates)",
+   "D / lactate remain common (arrival D latent, never from lactate; lactate the core's; kinetics untouched)",
+   "collapse accepts the outputs structurally (signals rise, max holds, UNSET stays a lower bound, no family rule)",
+   "no prior family retuned (GI, ACS, pulmonary edema, P2P-2 reproduced; tone and HR gains untouched; every common file at its P2P-2 bytes; the P2P-2 tree proven)"
+  ],
+  "verdict_rule": "Predeclared. READY when every criterion holds; otherwise NOT_READY with the first failing criterion as the blocker. The HR, RR, consciousness and tone gaps, the lactate shape and the legacy differences are reported and never decide it"
+ },
+ "direct_g": {
+  "pass": true,
+  "rates": {
+   "0.00625": {
+    "G_linear": true,
+    "L_zero": true,
+    "at": {
+     "0": {
+      "G": 0.0,
+      "L": 0.0,
+      "deficit": 0.15000000000000013,
+      "delivery_index": 0.33999999999999997,
+      "map": 64.66666666666667,
+      "spo2": 88.0
+     },
+     "120": {
+      "G": 0.7499999999999983,
+      "L": 0.0,
+      "deficit": 0.19078902872367498,
+      "delivery_index": 0.32368438851053,
+      "map": 65.51355030134256,
+      "spo2": 84.25000000000001
+     },
+     "30": {
+      "G": 0.18750000000000008,
+      "L": 0.0,
+      "deficit": 0.16021203573919485,
+      "delivery_index": 0.33591518570432205,
+      "map": 64.87419974791112,
+      "spo2": 87.0625
+     },
+     "60": {
+      "G": 0.37499999999999967,
+      "L": 0.0,
+      "deficit": 0.17043705394696362,
+      "delivery_index": 0.33182517842121456,
+      "map": 65.088605738927,
+      "spo2": 86.125
+     },
+     "90": {
+      "G": 0.562499999999999,
+      "L": 0.0,
+      "deficit": 0.18062928043423865,
+      "delivery_index": 0.32774828782630455,
+      "map": 65.30171761293684,
+      "spo2": 85.1875
+     }
+    },
+    "credit_zero": true,
+    "delivery_down": true,
+    "g_sources": [
+     "disease_module:pe-gas-exchange"
+    ],
+    "negative_l_rev_changes_nothing": true,
+    "spo2_down": true,
+    "spo2_is_common_mapping": true
+   },
+   "0.0125": {
+    "G_linear": true,
+    "L_zero": true,
+    "at": {
+     "0": {
+      "G": 0.0,
+      "L": 0.0,
+      "deficit": 0.15000000000000013,
+      "delivery_index": 0.33999999999999997,
+      "map": 64.66666666666667,
+      "spo2": 88.0
+     },
+     "120": {
+      "G": 1.4999999999999967,
+      "L": 0.0,
+      "deficit": 0.23106969500721086,
+      "delivery_index": 0.30757212199711564,
+      "map": 66.34068579895545,
+      "spo2": 80.50000000000001
+     },
+     "30": {
+      "G": 0.37500000000000017,
+      "L": 0.0,
+      "deficit": 0.1703926323716798,
+      "delivery_index": 0.3318429470513281,
+      "map": 65.08054850955,
+      "spo2": 86.125
+     },
+     "60": {
+      "G": 0.7499999999999993,
+      "L": 0.0,
+      "deficit": 0.19074624691040953,
+      "delivery_index": 0.3237015012358362,
+      "map": 65.50561779760913,
+      "spo2": 84.25
+     },
+     "90": {
+      "G": 1.124999999999998,
+      "L": 0.0,
+      "deficit": 0.21097113021188973,
+      "delivery_index": 0.3156115479152441,
+      "map": 65.92562538977326,
+      "spo2": 82.37500000000001
+     }
+    },
+    "credit_zero": true,
+    "delivery_down": true,
+    "g_sources": [
+     "disease_module:pe-gas-exchange"
+    ],
+    "negative_l_rev_changes_nothing": true,
+    "spo2_down": true,
+    "spo2_is_common_mapping": true
+   },
+   "0.025": {
+    "G_linear": true,
+    "L_zero": true,
+    "at": {
+     "0": {
+      "G": 0.0,
+      "L": 0.0,
+      "deficit": 0.15000000000000013,
+      "delivery_index": 0.33999999999999997,
+      "map": 64.66666666666667,
+      "spo2": 88.0
+     },
+     "120": {
+      "G": 2.9999999999999933,
+      "L": 0.0,
+      "deficit": 0.3101786797372805,
+      "delivery_index": 0.2759285281050878,
+      "map": 67.93910456320886,
+      "spo2": 73.00000000000003
+     },
+     "30": {
+      "G": 0.7500000000000003,
+      "L": 0.0,
+      "deficit": 0.19066063392261878,
+      "delivery_index": 0.3237357464309525,
+      "map": 65.48974363769304,
+      "spo2": 84.25
+     },
+     "60": {
+      "G": 1.4999999999999987,
+      "L": 0.0,
+      "deficit": 0.23099036317410415,
+      "delivery_index": 0.30760385473035834,
+      "map": 66.32529104982446,
+      "spo2": 80.5
+     },
+     "90": {
+      "G": 2.249999999999996,
+      "L": 0.0,
+      "deficit": 0.27082374658159236,
+      "delivery_index": 0.29167050136736306,
+      "map": 67.14146347573887,
+      "spo2": 76.75000000000001
+     }
+    },
+    "credit_zero": true,
+    "delivery_down": true,
+    "g_sources": [
+     "disease_module:pe-gas-exchange"
+    ],
+    "negative_l_rev_changes_nothing": true,
+    "spo2_down": true,
+    "spo2_is_common_mapping": true
+   }
+  }
+ },
+ "fluid_stress": {
+  "design": {
+   "begins_at_minute": 30,
+   "duration_min": 30.0,
+   "volume_ml": 2000.0
+  },
+  "pass": true,
+  "points": {
+   "lower": {
+    "G_unchanged_by_fluid": true,
+    "L_max": 0.0,
+    "L_writes": 0,
+    "at": {
+     "120": {
+      "map_gain": 19.490483307655474,
+      "output_gain": 0.42298346198085457,
+      "output_with": 1.1963520286352645,
+      "output_without": 0.7733685666544099,
+      "position_with": 0.36100507319214303,
+      "spo2_with": 80.50000000000001,
+      "spo2_without": 80.50000000000001,
+      "unobstructed_output_gain": 0.5489191018108313
+     },
+     "60": {
+      "map_gain": 39.34477512853677,
+      "output_gain": 0.7771395605198755,
+      "output_with": 1.6612963179437907,
+      "output_without": 0.8841567574239152,
+      "position_with": 0.3968560342180005,
+      "spo2_with": 84.25,
+      "spo2_without": 84.25,
+      "unobstructed_output_gain": 0.8725212147443795
+     }
+    },
+    "common_overload_writes": 0,
+    "no_owner": {
+     "L_max": 0.0,
+     "common_writes": 0,
+     "position_max": 0.3968560342180005
+    },
+    "preload_fraction": 0.2,
+    "response_limited_vs_unobstructed": true,
+    "spo2_unchanged_by_fluid": true
+   },
+   "midpoint": {
+    "G_unchanged_by_fluid": true,
+    "L_max": 0.0,
+    "L_writes": 0,
+    "at": {
+     "120": {
+      "map_gain": 9.728415808293981,
+      "output_gain": 0.18452560675450935,
+      "output_with": 0.9578941734089192,
+      "output_without": 0.7733685666544099,
+      "position_with": 0.5070797929560777,
+      "spo2_with": 80.50000000000001,
+      "spo2_without": 80.50000000000001,
+      "unobstructed_output_gain": 0.2630200544748713
+     },
+     "60": {
+      "map_gain": 15.952110280275946,
+      "output_gain": 0.37000215045468166,
+      "output_with": 1.2541589078785969,
+      "output_without": 0.8841567574239152,
+      "position_with": 0.5211221702593902,
+      "spo2_with": 84.25,
+      "spo2_without": 84.25,
+      "unobstructed_output_gain": 0.41953006287272165
+     }
+    },
+    "common_overload_writes": 0,
+    "no_owner": {
+     "L_max": 0.0,
+     "common_writes": 0,
+     "position_max": 0.5211221702593902
+    },
+    "preload_fraction": 0.35,
+    "response_limited_vs_unobstructed": true,
+    "spo2_unchanged_by_fluid": true
+   },
+   "upper": {
+    "G_unchanged_by_fluid": true,
+    "L_max": 0.0,
+    "L_writes": 0,
+    "at": {
+     "120": {
+      "map_gain": 5.319879844428421,
+      "output_gain": 0.09361281317485892,
+      "output_with": 0.8669813798292688,
+      "output_without": 0.7733685666544099,
+      "position_with": 0.6449026495432073,
+      "spo2_with": 80.50000000000001,
+      "spo2_without": 80.50000000000001,
+      "unobstructed_output_gain": 0.1380214324319502
+     },
+     "60": {
+      "map_gain": 9.374329830103719,
+      "output_gain": 0.18960690522736534,
+      "output_with": 1.0737636626512805,
+      "output_without": 0.8841567574239152,
+      "position_with": 0.6422159247286199,
+      "spo2_with": 84.25,
+      "spo2_without": 84.25,
+      "unobstructed_output_gain": 0.22918339814989297
+     }
+    },
+    "common_overload_writes": 0,
+    "no_owner": {
+     "L_max": 0.0,
+     "common_writes": 0,
+     "position_max": 0.6449026495432073
+    },
+    "preload_fraction": 0.5,
+    "response_limited_vs_unobstructed": true,
+    "spo2_unchanged_by_fluid": true
+   }
+  }
+ },
+ "freeze_digest": "6eabb72188b5aa9e8b6c0c17f9234fbf1ce5413cc01841a58a33ca79da797e6e",
+ "heart_rate": {
+  "cases": {
+   "pulmonary_embolism_33f": {
+    "authored": 124.0,
+    "authored_inside_band": false,
+    "decomposition": {
+     "acute_bpm": 0.0,
+     "acute_deficit_signal": 0.0,
+     "acute_unconstrained_bpm": 0.0,
+     "arrival_drive": 0.07407407407407413,
+     "arrival_sympathetic_bpm": 44.0,
+     "debt_bpm": 0.0,
+     "debt_unconstrained_bpm": 0.0,
+     "intrinsic_sinus_rate": 80.0,
+     "mismatch_bpm": -42.1483826705052,
+     "observed_arrival_hr": 124.0,
+     "predicted_arrival_hr": 81.8516173294948,
+     "saturated_bpm": 1.8516173294948004,
+     "source": "synthetic_probe",
+     "unconstrained_bpm": 1.8518518518518532
+    },
+    "mismatch_bpm": -42.1483826705052,
+    "predicted": 81.8516173294948,
+    "predicted_over_bands": {
+     "lower": 61.85169180146029,
+     "midpoint": 81.8516173294948,
+     "upper": 101.85147560831969
+    }
+   },
+   "pulmonary_embolism_61m": {
+    "authored": 132.0,
+    "authored_inside_band": false,
+    "decomposition": {
+     "acute_bpm": 3.715857629746969,
+     "acute_deficit_signal": 0.15000000000000013,
+     "acute_unconstrained_bpm": 3.7500000000000036,
+     "arrival_drive": 0.6314814814814815,
+     "arrival_sympathetic_bpm": 52.0,
+     "debt_bpm": 4.95447683966262,
+     "debt_unconstrained_bpm": 5.0,
+     "intrinsic_sinus_rate": 80.0,
+     "mismatch_bpm": -36.3566981266208,
+     "observed_arrival_hr": 132.0,
+     "predicted_arrival_hr": 95.6433018733792,
+     "saturated_bpm": 15.643301873379201,
+     "source": "synthetic_probe",
+     "unconstrained_bpm": 15.787037037037038
+    },
+    "mismatch_bpm": -36.3566981266208,
+    "predicted": 95.6433018733792,
+    "predicted_over_bands": {
+     "lower": 76.91347940840433,
+     "midpoint": 95.6433018733792,
+     "upper": 121.42401358004575
+    }
+   }
+  },
+  "classification": "MULTI_FAMILY_COMMON_HR_GAP (ACS, pulmonary edema, PE): the arrival sympathetic share is not reproduced; no arrival hypoxaemia, distress, pain or RV-load term; not retuned",
+  "gains_untouched": true,
+  "hr_rises_with_deterioration": true,
+  "pass": true
+ },
+ "legacy": {
+  "pulmonary_embolism_33f": {
+   "0": {
+    "crt": 3,
+    "dbp": 70,
+    "hr": 124,
+    "mental_status": "Alert",
+    "respiratory_rate": 30,
+    "sbp": 110,
+    "spo2": 90
+   },
+   "120": {
+    "crt": 3.5,
+    "dbp": 67,
+    "hr": 127,
+    "mental_status": "Alert",
+    "respiratory_rate": 31,
+    "sbp": 105,
+    "spo2": 89
+   },
+   "30": {
+    "crt": 3.1,
+    "dbp": 69,
+    "hr": 125,
+    "mental_status": "Alert",
+    "respiratory_rate": 30,
+    "sbp": 109,
+    "spo2": 90
+   },
+   "60": {
+    "crt": 3.2,
+    "dbp": 69,
+    "hr": 125,
+    "mental_status": "Alert",
+    "respiratory_rate": 31,
+    "sbp": 107,
+    "spo2": 90
+   },
+   "90": {
+    "crt": 3.4,
+    "dbp": 68,
+    "hr": 126,
+    "mental_status": "Alert",
+    "respiratory_rate": 31,
+    "sbp": 106,
+    "spo2": 89
+   }
+  },
+  "pulmonary_embolism_61m": {
+   "0": {
+    "crt": 5,
+    "dbp": 54,
+    "hr": 132,
+    "mental_status": "Alert",
+    "respiratory_rate": 32,
+    "sbp": 86,
+    "spo2": 88
+   },
+   "120": {
+    "crt": 5.5,
+    "dbp": 51,
+    "hr": 135,
+    "mental_status": "Alert",
+    "respiratory_rate": 33,
+    "sbp": 81,
+    "spo2": 87
+   },
+   "30": {
+    "crt": 5.1,
+    "dbp": 53,
+    "hr": 133,
+    "mental_status": "Alert",
+    "respiratory_rate": 32,
+    "sbp": 85,
+    "spo2": 88
+   },
+   "60": {
+    "crt": 5.2,
+    "dbp": 53,
+    "hr": 133,
+    "mental_status": "Alert",
+    "respiratory_rate": 33,
+    "sbp": 83,
+    "spo2": 88
+   },
+   "90": {
+    "crt": 5.4,
+    "dbp": 52,
+    "hr": 134,
+    "mental_status": "Alert",
+    "respiratory_rate": 33,
+    "sbp": 82,
+    "spo2": 87
+   }
+  }
+ },
+ "legacy_comparison": {
+  "classes": {
+   "bp_spo2_course": "LEGACY_DIFFERENCE_NOT_CLINICALLY_RELEVANT: both worsen untreated; the size is the family span's (the ACS P scale, P2O-1's G scale) and the legacy drift's, neither authored",
+   "consciousness": "POSSIBLE_COMMON_CORE_GAP: the legacy stays alert; derive's ADOPTED absolute SpO2 ladder (87 / 80) reads the worsening SpO2 as drowsy (ONE_HYPOXEMIA_CONSCIOUSNESS_SOURCE_ONLY, shared with pulmonary edema)",
+   "hr": "POSSIBLE_COMMON_CORE_GAP: the legacy shows the authored HR and lets it drift; the core's arrival HR is the common physiology's (MULTI_FAMILY_COMMON_HR_GAP); it rises with the deficit afterwards",
+   "rapid_volume": "EXPECTED_EXTENSION: the legacy punishes volume above 10 mL/min (RV strain, part of it as worse oxygenation); the core's unsided P gives a forward-flow response that may be limited, never harm: ventricular interdependence needs sided state (SIDED_PRELOAD_COMMON_STATE_DEFERRED)",
+   "rr": "EXPECTED_EXTENSION: the legacy holds the authored RR; the common RR is the P2P-2 composition with the hypoxaemic drive UNSET and no dead-space or mechanics drive",
+   "thrombolysis_reperfusion": "EXPECTED_EXTENSION: the legacy lysis and its bleeding are not migrated (reperfusion writer deferred)"
+  },
+  "possible_common_core_gap": [
+   "consciousness",
+   "hr"
+  ],
+  "rows": {
+   "0": {
+    "core": {
+     "consciousness_level": 0,
+     "dbp": 54.0,
+     "hr": 95.6433018733792,
+     "map": 64.66666666666667,
+     "rr": 25.530415204846477,
+     "sbp": 86.0,
+     "spo2": 88.0
+    },
+    "legacy": {
+     "crt": 5,
+     "dbp": 54,
+     "hr": 132,
+     "mental_status": "Alert",
+     "respiratory_rate": 32,
+     "sbp": 86,
+     "spo2": 88
+    }
+   },
+   "120": {
+    "core": {
+     "consciousness_level": 1,
+     "dbp": 46.55556060154351,
+     "hr": 114.84784655870575,
+     "map": 55.751720720366926,
+     "rr": 25.35444328353984,
+     "sbp": 74.14404095801373,
+     "spo2": 80.50000000000001
+    },
+    "legacy": {
+     "crt": 5.5,
+     "dbp": 51,
+     "hr": 135,
+     "mental_status": "Alert",
+     "respiratory_rate": 33,
+     "sbp": 81,
+     "spo2": 87
+    }
+   },
+   "60": {
+    "core": {
+     "consciousness_level": 1,
+     "dbp": 50.59624856458628,
+     "hr": 104.70291194500356,
+     "map": 60.5905692687021,
+     "rr": 24.66642325518391,
+     "sbp": 80.57921067693371,
+     "spo2": 84.25
+    },
+    "legacy": {
+     "crt": 5.2,
+     "dbp": 53,
+     "hr": 133,
+     "mental_status": "Alert",
+     "respiratory_rate": 33,
+     "sbp": 83,
+     "spo2": 88
+    }
+   }
+  },
+  "secondary_legacy": {
+   "0": {
+    "crt": 3,
+    "dbp": 70,
+    "hr": 124,
+    "mental_status": "Alert",
+    "respiratory_rate": 30,
+    "sbp": 110,
+    "spo2": 90
+   },
+   "120": {
+    "crt": 3.5,
+    "dbp": 67,
+    "hr": 127,
+    "mental_status": "Alert",
+    "respiratory_rate": 31,
+    "sbp": 105,
+    "spo2": 89
+   },
+   "30": {
+    "crt": 3.1,
+    "dbp": 69,
+    "hr": 125,
+    "mental_status": "Alert",
+    "respiratory_rate": 30,
+    "sbp": 109,
+    "spo2": 90
+   },
+   "60": {
+    "crt": 3.2,
+    "dbp": 69,
+    "hr": 125,
+    "mental_status": "Alert",
+    "respiratory_rate": 31,
+    "sbp": 107,
+    "spo2": 90
+   },
+   "90": {
+    "crt": 3.4,
+    "dbp": 68,
+    "hr": 126,
+    "mental_status": "Alert",
+    "respiratory_rate": 31,
+    "sbp": 106,
+    "spo2": 89
+   }
+  },
+  "used_for_parameters": false
+ },
+ "lung_water_owner": {
+  "authored_pulmonary_edema": {
+   "pulmonary_embolism_33f": false,
+   "pulmonary_embolism_61m": false
+  },
+  "counterfactual_lv_mapping_no_owner": {
+   "L_max": 0.0,
+   "common_writes": 0,
+   "position_max": 0.5211221702593902
+  },
+  "counterfactual_rejected_ivc_no_owner": {
+   "L_max": 0.06625931879530028,
+   "common_writes": 73,
+   "spo2_end": 80.1687034060235
+  },
+  "generation": {
+   "pulmonary_embolism_33f": 0.0,
+   "pulmonary_embolism_61m": 0.0
+  },
+  "knee": 0.85,
+  "owned": {
+   "L_max": 0.0,
+   "L_writes": 0,
+   "common_writes": 0
+  },
+  "pass": true,
+  "rejected_ivc_owned": {
+   "L_max": 0.0,
+   "common_writes": 0
+  },
+  "rejected_ivc_preload": 0.8,
+  "second_owner_refused": true
+ },
+ "no_double_count": {
+  "arrival_position_invariant": true,
+  "p_sources_untreated": [
+   "disease_module:pe-obstruction"
+  ],
+  "p_sources_with_fluid": [
+   "disease_module:pe-obstruction"
+  ],
+  "pass": true,
+  "untreated_family_channels": [
+   "G",
+   "P"
+  ],
+  "v_mapping_reads": [
+   "pocus_lv"
+  ],
+  "v_mapping_reads_right_side": false,
+  "v_sources_untreated": [],
+  "v_sources_with_fluid": [
+   "intervention:pe-fluid-stress"
+  ]
+ },
+ "non_regression": {
+  "acs_authority_r7": true,
+  "acs_evaluation": true,
+  "common_files_untouched": {
+   "clinical_core/__init__.py": true,
+   "clinical_core/a9.py": true,
+   "clinical_core/acid_base.py": true,
+   "clinical_core/acid_base_report.py": true,
+   "clinical_core/acs_migration.py": true,
+   "clinical_core/acs_migration_report.py": true,
+   "clinical_core/acs_reference.py": true,
+   "clinical_core/arrival_severity.py": true,
+   "clinical_core/arrival_severity_report.py": true,
+   "clinical_core/bands.py": true,
+   "clinical_core/baroreflex.py": true,
+   "clinical_core/baroreflex_report.py": true,
+   "clinical_core/blood_anchors.py": true,
+   "clinical_core/blood_constraints.py": true,
+   "clinical_core/blood_extension.py": true,
+   "clinical_core/blood_extension_report.py": true,
+   "clinical_core/blood_filter_report.py": true,
+   "clinical_core/blood_fluid_calibration.py": true,
+   "clinical_core/blood_fluid_readiness.py": true,
+   "clinical_core/blood_fluid_readiness_report.py": true,
+   "clinical_core/blood_fluid_report.py": true,
+   "clinical_core/blood_fluid_tau_closure.py": true,
+   "clinical_core/blood_fluid_tau_closure_report.py": true,
+   "clinical_core/blood_probes.py": true,
+   "clinical_core/blood_rate_boundary.py": true,
+   "clinical_core/blood_rate_report.py": true,
+   "clinical_core/calibration.py": true,
+   "clinical_core/collapse.py": true,
+   "clinical_core/collapse_architecture.py": true,
+   "clinical_core/collapse_architecture_report.py": true,
+   "clinical_core/collapse_audit.py": true,
+   "clinical_core/collapse_audit_report.py": true,
+   "clinical_core/comparison.py": true,
+   "clinical_core/consciousness_audit.py": true,
+   "clinical_core/consciousness_audit_report.py": true,
+   "clinical_core/contracts_input.py": true,
+   "clinical_core/contracts_legacy.py": true,
+   "clinical_core/contracts_output.py": true,
+   "clinical_core/contracts_shadow.py": true,
+   "clinical_core/decision_pack_markdown.py": true,
+   "clinical_core/derived.py": true,
+   "clinical_core/edema_migration.py": true,
+   "clinical_core/edema_migration_report.py": true,
+   "clinical_core/edema_reference.py": true,
+   "clinical_core/encephalopathy.py": true,
+   "clinical_core/encephalopathy_architecture.py": true,
+   "clinical_core/encephalopathy_architecture_report.py": true,
+   "clinical_core/faculty_constraints.py": true,
+   "clinical_core/gas_exchange_architecture.py": true,
+   "clinical_core/gas_exchange_architecture_report.py": true,
+   "clinical_core/gi_reference.py": true,
+   "clinical_core/haemorrhage_probes.py": true,
+   "clinical_core/hemodynamic_probes.py": true,
+   "clinical_core/hr_envelope_filter.py": true,
+   "clinical_core/hr_envelope_filter_report.py": true,
+   "clinical_core/hr_observables.py": true,
+   "clinical_core/hr_observables_report.py": true,
+   "clinical_core/hr_primary.py": true,
+   "clinical_core/hr_primary_report.py": true,
+   "clinical_core/hr_shock.py": true,
+   "clinical_core/hr_shock_report.py": true,
+   "clinical_core/hr_structure.py": true,
+   "clinical_core/hr_structure_report.py": true,
+   "clinical_core/integration.py": true,
+   "clinical_core/interventions/__init__.py": true,
+   "clinical_core/interventions/fluids.py": true,
+   "clinical_core/interventions/modifiers.py": true,
+   "clinical_core/interventions/oxygen.py": true,
+   "clinical_core/interventions/timing.py": true,
+   "clinical_core/lactate_adequacy.py": true,
+   "clinical_core/lactate_adequacy_report.py": true,
+   "clinical_core/lactate_closure.py": true,
+   "clinical_core/lactate_closure_report.py": true,
+   "clinical_core/lactate_constraints.py": true,
+   "clinical_core/lactate_rebuild.py": true,
+   "clinical_core/lactate_rebuild_report.py": true,
+   "clinical_core/legacy_adapter.py": true,
+   "clinical_core/logistics.py": true,
+   "clinical_core/lung_water_reference.py": true,
+   "clinical_core/lung_water_reference_report.py": true,
+   "clinical_core/migration.py": true,
+   "clinical_core/migration_authority.py": true,
+   "clinical_core/modules/__init__.py": true,
+   "clinical_core/modules/acs_ischaemia.py": true,
+   "clinical_core/modules/gi_haemorrhage.py": true,
+   "clinical_core/modules/pulmonary_edema.py": true,
+   "clinical_core/modules/rhythm_events.py": true,
+   "clinical_core/oxygen_probes.py": true,
+   "clinical_core/pressure_tone.py": true,
+   "clinical_core/pressure_tone_filter.py": true,
+   "clinical_core/pressure_tone_filter_report.py": true,
+   "clinical_core/pressure_tone_report.py": true,
+   "clinical_core/provenance.py": true,
+   "clinical_core/respiratory_drive.py": true,
+   "clinical_core/respiratory_drive_report.py": true,
+   "clinical_core/respiratory_monotonicity.py": true,
+   "clinical_core/respiratory_monotonicity_report.py": true,
+   "clinical_core/rr_audit.py": true,
+   "clinical_core/rr_audit_report.py": true,
+   "clinical_core/shadow.py": true,
+   "clinical_core/signals.py": true,
+   "clinical_core/state.py": true,
+   "clinical_core/vascular_tone.py": true,
+   "clinical_core/vascular_tone_report.py": true,
+   "clinical_core/ventilation.py": true,
+   "clinical_core/ventilation_filter.py": true,
+   "clinical_core/ventilation_filter_report.py": true,
+   "clinical_core/ventilation_surface.py": true,
+   "clinical_core/ventilation_surface_report.py": true
+  },
+  "common_overload_r8": true,
+  "edema_authority": true,
+  "edema_heart_rate": true,
+  "edema_oxygen": true,
+  "edema_respiration": true,
+  "edema_untreated": true,
+  "gi_o12": true,
+  "p2p2_acidosis": true,
+  "p2p2_d1_d7_d9_d10": true,
+  "p2p2_edema_diagnostic": true,
+  "p2p2_opioid": true,
+  "pass": true
+ },
+ "observables": {
+  "pulmonary_embolism_33f": {
+   "contradictions": [],
+   "pass": true,
+   "rows": {
+    "dbp": {
+     "authored": 70,
+     "core": 70.0,
+     "status": "EXACT_ANCHORED"
+    },
+    "hr": {
+     "authored": 124,
+     "band": {
+      "lower": 61.85169180146029,
+      "midpoint": 81.8516173294948,
+      "upper": 101.85147560831969
+     },
+     "core": 81.8516173294948,
+     "status": "GAP: MULTI_FAMILY_COMMON_HR_GAP (outside the mapped bands)"
+    },
+    "ivc": {
+     "authored": "2.0 cm; <50% inspiratory collapse",
+     "status": "RIGHT_SIDED / OBSERVATIONAL (never V or L)"
+    },
+    "lactate": {
+     "authored": 2.0,
+     "core": 2.0,
+     "status": "EXACT_ANCHORED"
+    },
+    "lungs": {
+     "authored": "No B-lines; A-line pattern bilaterally",
+     "status": "OBSERVATION_LAYER (L = 0, family-owned, zero generation)"
+    },
+    "lv": {
+     "authored": "Preserved contraction",
+     "status": "OBSERVATION_LAYER (the arrival preload position, V_EVIDENCE)"
+    },
+    "map": {
+     "authored": 83.33333333333333,
+     "core": 83.33333333333333,
+     "status": "EXACT_ANCHORED"
+    },
+    "mental_status": {
+     "authored": "Alert",
+     "core": 0,
+     "status": "EXACT_ANCHORED"
+    },
+    "paco2": {
+     "authored": 30,
+     "core": 30.0,
+     "status": "EXACT_ANCHORED"
+    },
+    "pao2": {
+     "authored": 59,
+     "core": null,
+     "status": "NOT_MODELLED (the core carries SpO2, not PaO2)"
+    },
+    "ph": {
+     "authored": 7.47,
+     "core": 7.4700399458583675,
+     "status": "WITHIN_ROUNDING"
+    },
+    "rr": {
+     "authored": 30,
+     "core": 21.176346917332907,
+     "status": "GAP: EXPECTED_RESPIRATORY_FAMILY_EXTENSION (no dead-space, mechanics or receptor drive; the hypoxaemic drive UNSET)",
+     "synthetic_hypoxaemic": null
+    },
+    "rv": {
+     "authored": "Mildly enlarged, approximately equal to the LV; no septal flattening (no D-sign); no McConnell sign",
+     "status": "OBSERVATION_LAYER (the obstruction, P = 1 at arrival)"
+    },
+    "sbp": {
+     "authored": 110,
+     "core": 110.0,
+     "status": "EXACT_ANCHORED"
+    },
+    "spo2": {
+     "authored": 90,
+     "core": 90.0,
+     "status": "EXACT_ANCHORED"
+    }
+   }
+  },
+  "pulmonary_embolism_61m": {
+   "contradictions": [],
+   "pass": true,
+   "rows": {
+    "dbp": {
+     "authored": 54,
+     "core": 54.0,
+     "status": "EXACT_ANCHORED"
+    },
+    "hr": {
+     "authored": 132,
+     "band": {
+      "lower": 76.91347940840433,
+      "midpoint": 95.6433018733792,
+      "upper": 121.42401358004575
+     },
+     "core": 95.6433018733792,
+     "status": "GAP: MULTI_FAMILY_COMMON_HR_GAP (outside the mapped bands)"
+    },
+    "ivc": {
+     "authored": "2.3 cm; minimal inspiratory collapse",
+     "status": "RIGHT_SIDED / OBSERVATIONAL (never V or L)"
+    },
+    "lactate": {
+     "authored": 4.8,
+     "core": 4.8,
+     "status": "EXACT_ANCHORED"
+    },
+    "lungs": {
+     "authored": "No B-lines; A-line pattern bilaterally",
+     "status": "OBSERVATION_LAYER (L = 0, family-owned, zero generation)"
+    },
+    "lv": {
+     "authored": "Small, underfilled cavity with vigorous contraction",
+     "status": "OBSERVATION_LAYER (the arrival preload position, V_EVIDENCE)"
+    },
+    "map": {
+     "authored": 64.66666666666667,
+     "core": 64.66666666666667,
+     "status": "EXACT_ANCHORED"
+    },
+    "mental_status": {
+     "authored": "Alert",
+     "core": 0,
+     "status": "EXACT_ANCHORED"
+    },
+    "paco2": {
+     "authored": 28,
+     "core": 28.000000000000004,
+     "status": "EXACT_ANCHORED"
+    },
+    "pao2": {
+     "authored": 55,
+     "core": null,
+     "status": "NOT_MODELLED (the core carries SpO2, not PaO2)"
+    },
+    "ph": {
+     "authored": 7.43,
+     "core": 7.430993219041424,
+     "status": "WITHIN_ROUNDING"
+    },
+    "rr": {
+     "authored": 32,
+     "core": 25.530415204846477,
+     "status": "GAP: EXPECTED_RESPIRATORY_FAMILY_EXTENSION (no dead-space, mechanics or receptor drive; the hypoxaemic drive UNSET)",
+     "synthetic_hypoxaemic": 26.94643887007944
+    },
+    "rv": {
+     "authored": "Larger than the LV; septal flattening with a D-shaped LV; reduced free-wall contraction with apical sparing (McConnell sign)",
+     "status": "OBSERVATION_LAYER (the obstruction, P = 1 at arrival)"
+    },
+    "sbp": {
+     "authored": 86,
+     "core": 86.0,
+     "status": "EXACT_ANCHORED"
+    },
+    "spo2": {
+     "authored": 88,
+     "core": 88.0,
+     "status": "EXACT_ANCHORED"
+    }
+   }
+  }
+ },
+ "obstruction": {
+  "pass": true,
+  "region": {
+   "0.000833333": {
+    "G_zero": true,
+    "L_zero": true,
+    "V_zero": true,
+    "at": {
+     "0": {
+      "D": 20.0,
+      "G": 0.0,
+      "L": 0.0,
+      "P": 1.0,
+      "T": 1.0,
+      "V": 0.0,
+      "consciousness_level": 0,
+      "dbp": 54.0,
+      "deficit": 0.15000000000000013,
+      "delivery_index": 0.33999999999999997,
+      "fio2": 0.21,
+      "hb": 11.6,
+      "hr": 95.6433018733792,
+      "lactate": 4.8,
+      "map": 64.66666666666667,
+      "minute": 0,
+      "output_rel": 1.0,
+      "paco2": 28.000000000000004,
+      "ph": 7.430993219041424,
+      "preload_position": 0.35,
+      "rr": 25.530415204846477,
+      "sbp": 86.0,
+      "spo2": 88.0
+     },
+     "120": {
+      "D": 43.669401313333864,
+      "G": 0.0,
+      "L": 0.0,
+      "P": 0.8999999999999977,
+      "T": 1.0437851107878293,
+      "V": 0.0,
+      "consciousness_level": 1,
+      "dbp": 50.0702568611364,
+      "deficit": 0.2449183994600499,
+      "delivery_index": 0.30203264021598003,
+      "fio2": 0.21,
+      "hb": 11.6,
+      "hr": 104.79719150536707,
+      "lactate": 3.0029552702258413,
+      "map": 59.96067796950902,
+      "minute": 120,
+      "output_rel": 0.8883312947528825,
+      "paco2": 29.959196412454425,
+      "ph": 7.431480959037347,
+      "preload_position": 0.3803792517937772,
+      "rr": 23.860841121844256,
+      "sbp": 79.74152018625426,
+      "spo2": 88.0
+     },
+     "30": {
+      "D": 24.845662514397173,
+      "G": 0.0,
+      "L": 0.0,
+      "P": 0.9749999999999994,
+      "T": 1.010751991820955,
+      "V": 0.0,
+      "consciousness_level": 0,
+      "dbp": 53.04499057792232,
+      "deficit": 0.17391461897804805,
+      "delivery_index": 0.33043415240878077,
+      "fio2": 0.21,
+      "hb": 11.6,
+      "hr": 97.70464780233971,
+      "lactate": 4.102639023441522,
+      "map": 63.5230134081292,
+      "minute": 30,
+      "output_rel": 0.971865154143473,
+      "paco2": 28.911810095418563,
+      "ph": 7.432115155863981,
+      "preload_position": 0.35714020831567994,
+      "rr": 24.725246305106943,
+      "sbp": 84.47905906854295,
+      "spo2": 88.0
+     },
+     "60": {
+      "D": 30.409265359078262,
+      "G": 0.0,
+      "L": 0.0,
+      "P": 0.9499999999999988,
+      "T": 1.0218443967226944,
+      "V": 0.0,
+      "consciousness_level": 0,
+      "dbp": 52.07932512018154,
+      "deficit": 0.19775735200122613,
+      "delivery_index": 0.32089705919950956,
+      "fio2": 0.21,
+      "hb": 11.6,
+      "hr": 99.92219765697881,
+      "lactate": 3.594141801981473,
+      "map": 62.36659921799517,
+      "minute": 60,
+      "output_rel": 0.9438148799985576,
+      "paco2": 29.528374457725576,
+      "ph": 7.431954968275724,
+      "preload_position": 0.3645714978604119,
+      "rr": 24.20897319488825,
+      "sbp": 82.94114741362245,
+      "spo2": 88.0
+     },
+     "90": {
+      "D": 36.68558713396076,
+      "G": 0.0,
+      "L": 0.0,
+      "P": 0.9249999999999983,
+      "T": 1.0328548393808907,
+      "V": 0.0,
+      "consciousness_level": 0,
+      "dbp": 51.08755718140822,
+      "deficit": 0.2214239968587085,
+      "delivery_index": 0.3114304012565166,
+      "fio2": 0.21,
+      "hb": 11.6,
+      "hr": 102.28976205790781,
+      "lactate": 3.237253336934107,
+      "map": 61.178926501192564,
+      "minute": 90,
+      "output_rel": 0.9159717684015195,
+      "paco2": 29.86480729555952,
+      "ph": 7.431608036001666,
+      "preload_position": 0.3723115037410868,
+      "rr": 23.936254423513052,
+      "sbp": 81.36166514076125,
+      "spo2": 88.0
+     }
+    },
+    "common_overload_writes": 0,
+    "directions": {
+     "D_up": true,
+     "P_nonincreasing": true,
+     "Q_down": true,
+     "deficit_up": true,
+     "delivery_down": true,
+     "map_down": true
+    },
+    "family": {
+     "channels": [
+      "P"
+     ],
+     "other_writes": 0
+    },
+    "hb_constant": true,
+    "lactate": {
+     "core_lactate_every_minute": true,
+     "no_family_lactate_write": true
+    }
+   },
+   "0.00166667": {
+    "G_zero": true,
+    "L_zero": true,
+    "V_zero": true,
+    "at": {
+     "0": {
+      "D": 20.0,
+      "G": 0.0,
+      "L": 0.0,
+      "P": 1.0,
+      "T": 1.0,
+      "V": 0.0,
+      "consciousness_level": 0,
+      "dbp": 54.0,
+      "deficit": 0.15000000000000013,
+      "delivery_index": 0.33999999999999997,
+      "fio2": 0.21,
+      "hb": 11.6,
+      "hr": 95.6433018733792,
+      "lactate": 4.8,
+      "map": 64.66666666666667,
+      "minute": 0,
+      "output_rel": 1.0,
+      "paco2": 28.000000000000004,
+      "ph": 7.430993219041424,
+      "preload_position": 0.35,
+      "rr": 25.530415204846477,
+      "sbp": 86.0,
+      "spo2": 88.0
+     },
+     "120": {
+      "D": 49.23186954716825,
+      "G": 0.0,
+      "L": 0.0,
+      "P": 0.7999999999999954,
+      "T": 1.0863499804920966,
+      "V": 0.0,
+      "consciousness_level": 1,
+      "dbp": 45.745287745918674,
+      "deficit": 0.3371705919367587,
+      "delivery_index": 0.2651317632252965,
+      "fio2": 0.21,
+      "hb": 11.6,
+      "hr": 109.51178080781622,
+      "lactate": 3.045953251135892,
+      "map": 54.78139396733471,
+      "minute": 120,
+      "output_rel": 0.7797993036038133,
+      "paco2": 28.88709919726428,
+      "ph": 7.4321074829293945,
+      "preload_position": 0.41636450599230035,
+      "rr": 24.746397028449316,
+      "sbp": 72.85360641016678,
+      "spo2": 88.0
+     },
+     "30": {
+      "D": 25.18973413901131,
+      "G": 0.0,
+      "L": 0.0,
+      "P": 0.9499999999999988,
+      "T": 1.021429721062353,
+      "V": 0.0,
+      "consciousness_level": 0,
+      "dbp": 52.064625569547275,
+      "deficit": 0.1976581883659949,
+      "delivery_index": 0.320936724653602,
+      "fio2": 0.21,
+      "hb": 11.6,
+      "hr": 98.67349260893056,
+      "lactate": 4.103382648190879,
+      "map": 62.34899605242081,
+      "minute": 30,
+      "output_rel": 0.9439315430988295,
+      "paco2": 28.833714884624705,
+      "ph": 7.432086940194343,
+      "preload_position": 0.3645714978604119,
+      "rr": 24.792213857843514,
+      "sbp": 82.91773701816788,
+      "spo2": 88.0
+     },
+     "60": {
+      "D": 31.805160504745032,
+      "G": 0.0,
+      "L": 0.0,
+      "P": 0.8999999999999977,
+      "T": 1.0433797540436842,
+      "V": 0.0,
+      "consciousness_level": 1,
+      "dbp": 50.056820280924306,
+      "deficit": 0.24482775586338112,
+      "delivery_index": 0.30206889765464756,
+      "fio2": 0.21,
+      "hb": 11.6,
+      "hr": 102.01350551349823,
+      "lactate": 3.600053393010617,
+      "map": 59.94458724999578,
+      "minute": 60,
+      "output_rel": 0.8884379342783753,
+      "paco2": 29.217558509079694,
+      "ph": 7.432117524559545,
+      "preload_position": 0.3803792517937772,
+      "rr": 24.46650788817803,
+      "sbp": 79.7201211881387,
+      "spo2": 88.0
+     },
+     "90": {
+      "D": 39.82581603905505,
+      "G": 0.0,
+      "L": 0.0,
+      "P": 0.8499999999999965,
+      "T": 1.0650154618321286,
+      "V": 0.0,
+      "consciousness_level": 1,
+      "dbp": 47.948982132771725,
+      "deficit": 0.291322498514734,
+      "delivery_index": 0.2834710005941064,
+      "fio2": 0.21,
+      "hb": 11.6,
+      "hr": 105.63826814297225,
+      "lactate": 3.2563504976429036,
+      "map": 57.42038601085009,
+      "minute": 90,
+      "output_rel": 0.8337382370414895,
+      "paco2": 29.204618883210117,
+      "ph": 7.432120788759351,
+      "preload_position": 0.39758182423381716,
+      "rr": 24.47734820969272,
+      "sbp": 76.36319376700682,
+      "spo2": 88.0
+     }
+    },
+    "common_overload_writes": 0,
+    "directions": {
+     "D_up": true,
+     "P_nonincreasing": true,
+     "Q_down": true,
+     "deficit_up": true,
+     "delivery_down": true,
+     "map_down": true
+    },
+    "family": {
+     "channels": [
+      "P"
+     ],
+     "other_writes": 0
+    },
+    "hb_constant": true,
+    "lactate": {
+     "core_lactate_every_minute": true,
+     "no_family_lactate_write": true
+    }
+   },
+   "0.00333333": {
+    "G_zero": true,
+    "L_zero": true,
+    "V_zero": true,
+    "at": {
+     "0": {
+      "D": 20.0,
+      "G": 0.0,
+      "L": 0.0,
+      "P": 1.0,
+      "T": 1.0,
+      "V": 0.0,
+      "consciousness_level": 0,
+      "dbp": 54.0,
+      "deficit": 0.15000000000000013,
+      "delivery_index": 0.33999999999999997,
+      "fio2": 0.21,
+      "hb": 11.6,
+      "hr": 95.6433018733792,
+      "lactate": 4.8,
+      "map": 64.66666666666667,
+      "minute": 0,
+      "output_rel": 1.0,
+      "paco2": 28.000000000000004,
+      "ph": 7.430993219041424,
+      "preload_position": 0.35,
+      "rr": 25.530415204846477,
+      "sbp": 86.0,
+      "spo2": 88.0
+     },
+     "120": {
+      "D": 60.061173226302685,
+      "G": 0.0,
+      "L": 0.0,
+      "P": 0.6000000000000041,
+      "T": 1.168191990358933,
+      "V": 0.0,
+      "consciousness_level": 2,
+      "dbp": 36.031364418558084,
+      "deficit": 0.5144972996489982,
+      "delivery_index": 0.19420108014040074,
+      "fio2": 0.21,
+      "hb": 11.6,
+      "hr": 118.54060456707151,
+      "lactate": 3.130137766900987,
+      "map": 43.14867097037203,
+      "minute": 120,
+      "output_rel": 0.571179647471767,
+      "paco2": 27.141163296316087,
+      "ph": 7.428037579495902,
+      "preload_position": 0.5122593780458227,
+      "rr": 26.338282480056016,
+      "sbp": 57.38328407399992,
+      "spo2": 88.0
+     },
+     "30": {
+      "D": 25.873200308985243,
+      "G": 0.0,
+      "L": 0.0,
+      "P": 0.900000000000001,
+      "T": 1.0425682845856221,
+      "V": 0.0,
+      "consciousness_level": 1,
+      "dbp": 50.02991236663628,
+      "deficit": 0.24464623421937048,
+      "delivery_index": 0.3021415063122518,
+      "fio2": 0.21,
+      "hb": 11.6,
+      "hr": 100.6093693527062,
+      "lactate": 4.104862486009964,
+      "map": 59.912364192144686,
+      "minute": 30,
+      "output_rel": 0.8886514891536818,
+      "paco2": 28.680791872680302,
+      "ph": 7.43199737628928,
+      "preload_position": 0.3803792517937761,
+      "rr": 24.924403374532645,
+      "sbp": 79.67726784316149,
+      "spo2": 88.0
+     },
+     "60": {
+      "D": 34.55847623831768,
+      "G": 0.0,
+      "L": 0.0,
+      "P": 0.800000000000002,
+      "T": 1.085573042682078,
+      "V": 0.0,
+      "consciousness_level": 1,
+      "dbp": 45.72295961154889,
+      "deficit": 0.33701996563346237,
+      "delivery_index": 0.26519201374661505,
+      "fio2": 0.21,
+      "hb": 11.6,
+      "hr": 106.16227207426427,
+      "lactate": 3.6117524507661494,
+      "map": 54.75465533728694,
+      "minute": 60,
+      "output_rel": 0.7799765110194561,
+      "paco2": 28.63680970684662,
+      "ph": 7.431962970717954,
+      "preload_position": 0.4163645059922977,
+      "rr": 24.962683799403514,
+      "sbp": 72.81804678876304,
+      "spo2": 88.0
+     },
+     "90": {
+      "D": 45.978393519658965,
+      "G": 0.0,
+      "L": 0.0,
+      "P": 0.7000000000000031,
+      "T": 1.1274178889818298,
+      "V": 0.0,
+      "consciousness_level": 1,
+      "dbp": 41.04734633790865,
+      "deficit": 0.42690670148588794,
+      "delivery_index": 0.22923731940564482,
+      "fio2": 0.21,
+      "hb": 11.6,
+      "hr": 112.18867479170802,
+      "lactate": 3.2939390986849166,
+      "map": 49.15546413305109,
+      "minute": 90,
+      "output_rel": 0.6742274100166025,
+      "paco2": 28.04759541442614,
+      "ph": 7.431098255550655,
+      "preload_position": 0.4595775691248079,
+      "rr": 25.48709132362987,
+      "sbp": 65.371699723336,
+      "spo2": 88.0
+     }
+    },
+    "common_overload_writes": 0,
+    "directions": {
+     "D_up": true,
+     "P_nonincreasing": true,
+     "Q_down": true,
+     "deficit_up": true,
+     "delivery_down": true,
+     "map_down": true
+    },
+    "family": {
+     "channels": [
+      "P"
+     ],
+     "other_writes": 0
+    },
+    "hb_constant": true,
+    "lactate": {
+     "core_lactate_every_minute": true,
+     "no_family_lactate_write": true
+    }
+   }
+  }
+ },
+ "oxygen": {
+  "attenuated_as_G_worsens": true,
+  "family_oxygen_function": false,
+  "fio2": {
+   "0.4": {
+    "0": 88.0,
+    "120": 83.75714285714288,
+    "30": 90.925,
+    "60": 88.39545454545454,
+    "90": 86.02300000000001
+   },
+   "0.6": {
+    "0": 88.0,
+    "120": 87.18571428571431,
+    "30": 95.97763157894737,
+    "60": 92.75909090909092,
+    "90": 89.86300000000001
+   }
+  },
+  "gain_at_120": 6.6857142857142975,
+  "gain_at_30": 9.852631578947367,
+  "monotone_in_fio2": true,
+  "pass": true,
+  "room_air": {
+   "0": 88.0,
+   "120": 80.50000000000001,
+   "30": 86.125,
+   "60": 84.25,
+   "90": 82.37500000000001
+  }
+ },
+ "position": {
+  "pass": true,
+  "points": [
+   0.2,
+   0.35,
+   0.5,
+   0.5,
+   0.8
+  ],
+  "rows": {
+   "0.2": {
+    "dbp": 54.0,
+    "deficit": 0.15000000000000013,
+    "delivery_index": 0.33999999999999997,
+    "hr": 95.6433018733792,
+    "lactate": 4.8,
+    "map": 64.66666666666667,
+    "output_rel": 1.0,
+    "paco2": 28.000000000000004,
+    "rr": 25.530415204846477,
+    "sbp": 86.0,
+    "spo2": 88.0
+   },
+   "0.35": {
+    "dbp": 54.0,
+    "deficit": 0.15000000000000013,
+    "delivery_index": 0.33999999999999997,
+    "hr": 95.6433018733792,
+    "lactate": 4.8,
+    "map": 64.66666666666667,
+    "output_rel": 1.0,
+    "paco2": 28.000000000000004,
+    "rr": 25.530415204846477,
+    "sbp": 86.0,
+    "spo2": 88.0
+   },
+   "0.5": {
+    "dbp": 54.0,
+    "deficit": 0.15000000000000013,
+    "delivery_index": 0.33999999999999997,
+    "hr": 95.6433018733792,
+    "lactate": 4.8,
+    "map": 64.66666666666667,
+    "output_rel": 1.0,
+    "paco2": 28.000000000000004,
+    "rr": 25.530415204846477,
+    "sbp": 86.0,
+    "spo2": 88.0
+   },
+   "0.8": {
+    "dbp": 54.0,
+    "deficit": 0.15000000000000013,
+    "delivery_index": 0.33999999999999997,
+    "hr": 95.6433018733792,
+    "lactate": 4.8,
+    "map": 64.66666666666667,
+    "output_rel": 1.0,
+    "paco2": 28.000000000000004,
+    "rr": 25.530415204846477,
+    "sbp": 86.0,
+    "spo2": 88.0
+   }
+  }
+ },
+ "proof": {
+  "common_untouched": {
+   "clinical_core/__init__.py": true,
+   "clinical_core/a9.py": true,
+   "clinical_core/acid_base.py": true,
+   "clinical_core/acid_base_report.py": true,
+   "clinical_core/acs_migration.py": true,
+   "clinical_core/acs_migration_report.py": true,
+   "clinical_core/acs_reference.py": true,
+   "clinical_core/arrival_severity.py": true,
+   "clinical_core/arrival_severity_report.py": true,
+   "clinical_core/bands.py": true,
+   "clinical_core/baroreflex.py": true,
+   "clinical_core/baroreflex_report.py": true,
+   "clinical_core/blood_anchors.py": true,
+   "clinical_core/blood_constraints.py": true,
+   "clinical_core/blood_extension.py": true,
+   "clinical_core/blood_extension_report.py": true,
+   "clinical_core/blood_filter_report.py": true,
+   "clinical_core/blood_fluid_calibration.py": true,
+   "clinical_core/blood_fluid_readiness.py": true,
+   "clinical_core/blood_fluid_readiness_report.py": true,
+   "clinical_core/blood_fluid_report.py": true,
+   "clinical_core/blood_fluid_tau_closure.py": true,
+   "clinical_core/blood_fluid_tau_closure_report.py": true,
+   "clinical_core/blood_probes.py": true,
+   "clinical_core/blood_rate_boundary.py": true,
+   "clinical_core/blood_rate_report.py": true,
+   "clinical_core/calibration.py": true,
+   "clinical_core/collapse.py": true,
+   "clinical_core/collapse_architecture.py": true,
+   "clinical_core/collapse_architecture_report.py": true,
+   "clinical_core/collapse_audit.py": true,
+   "clinical_core/collapse_audit_report.py": true,
+   "clinical_core/comparison.py": true,
+   "clinical_core/consciousness_audit.py": true,
+   "clinical_core/consciousness_audit_report.py": true,
+   "clinical_core/contracts_input.py": true,
+   "clinical_core/contracts_legacy.py": true,
+   "clinical_core/contracts_output.py": true,
+   "clinical_core/contracts_shadow.py": true,
+   "clinical_core/decision_pack_markdown.py": true,
+   "clinical_core/derived.py": true,
+   "clinical_core/edema_migration.py": true,
+   "clinical_core/edema_migration_report.py": true,
+   "clinical_core/edema_reference.py": true,
+   "clinical_core/encephalopathy.py": true,
+   "clinical_core/encephalopathy_architecture.py": true,
+   "clinical_core/encephalopathy_architecture_report.py": true,
+   "clinical_core/faculty_constraints.py": true,
+   "clinical_core/gas_exchange_architecture.py": true,
+   "clinical_core/gas_exchange_architecture_report.py": true,
+   "clinical_core/gi_reference.py": true,
+   "clinical_core/haemorrhage_probes.py": true,
+   "clinical_core/hemodynamic_probes.py": true,
+   "clinical_core/hr_envelope_filter.py": true,
+   "clinical_core/hr_envelope_filter_report.py": true,
+   "clinical_core/hr_observables.py": true,
+   "clinical_core/hr_observables_report.py": true,
+   "clinical_core/hr_primary.py": true,
+   "clinical_core/hr_primary_report.py": true,
+   "clinical_core/hr_shock.py": true,
+   "clinical_core/hr_shock_report.py": true,
+   "clinical_core/hr_structure.py": true,
+   "clinical_core/hr_structure_report.py": true,
+   "clinical_core/integration.py": true,
+   "clinical_core/interventions/__init__.py": true,
+   "clinical_core/interventions/fluids.py": true,
+   "clinical_core/interventions/modifiers.py": true,
+   "clinical_core/interventions/oxygen.py": true,
+   "clinical_core/interventions/timing.py": true,
+   "clinical_core/lactate_adequacy.py": true,
+   "clinical_core/lactate_adequacy_report.py": true,
+   "clinical_core/lactate_closure.py": true,
+   "clinical_core/lactate_closure_report.py": true,
+   "clinical_core/lactate_constraints.py": true,
+   "clinical_core/lactate_rebuild.py": true,
+   "clinical_core/lactate_rebuild_report.py": true,
+   "clinical_core/legacy_adapter.py": true,
+   "clinical_core/logistics.py": true,
+   "clinical_core/lung_water_reference.py": true,
+   "clinical_core/lung_water_reference_report.py": true,
+   "clinical_core/migration.py": true,
+   "clinical_core/migration_authority.py": true,
+   "clinical_core/modules/__init__.py": true,
+   "clinical_core/modules/acs_ischaemia.py": true,
+   "clinical_core/modules/gi_haemorrhage.py": true,
+   "clinical_core/modules/pulmonary_edema.py": true,
+   "clinical_core/modules/rhythm_events.py": true,
+   "clinical_core/oxygen_probes.py": true,
+   "clinical_core/pressure_tone.py": true,
+   "clinical_core/pressure_tone_filter.py": true,
+   "clinical_core/pressure_tone_filter_report.py": true,
+   "clinical_core/pressure_tone_report.py": true,
+   "clinical_core/provenance.py": true,
+   "clinical_core/respiratory_drive.py": true,
+   "clinical_core/respiratory_drive_report.py": true,
+   "clinical_core/respiratory_monotonicity.py": true,
+   "clinical_core/respiratory_monotonicity_report.py": true,
+   "clinical_core/rr_audit.py": true,
+   "clinical_core/rr_audit_report.py": true,
+   "clinical_core/shadow.py": true,
+   "clinical_core/signals.py": true,
+   "clinical_core/state.py": true,
+   "clinical_core/vascular_tone.py": true,
+   "clinical_core/vascular_tone_report.py": true,
+   "clinical_core/ventilation.py": true,
+   "clinical_core/ventilation_filter.py": true,
+   "clinical_core/ventilation_filter_report.py": true,
+   "clinical_core/ventilation_surface.py": true,
+   "clinical_core/ventilation_surface_report.py": true
+  },
+  "p2p2_freeze_digest": true,
+  "p2p2_record": true,
+  "proofs": {
+   "clinical_core/decision_pack.py": true,
+   "clinical_core/lactate_slice.py": true
+  }
+ },
+ "repeated_gaps": {
+  "ARRIVAL_EXCESS_LACTATE_CLEARS_FIRST": {
+   "families": [
+    "pulmonary_edema",
+    "pulmonary_embolism"
+   ],
+   "pe": true,
+   "status": "reported, not a gap: the common kinetics are not retuned"
+  },
+  "MULTI_FAMILY_COMMON_HR_GAP": {
+   "families": [
+    "acs",
+    "pulmonary_edema",
+    "pulmonary_embolism"
+   ],
+   "pe": {
+    "pulmonary_embolism_33f": -42.1483826705052,
+    "pulmonary_embolism_61m": -36.3566981266208
+   }
+  },
+  "ONE_HYPOXEMIA_CONSCIOUSNESS_SOURCE": {
+   "families": [
+    "pulmonary_edema",
+    "pulmonary_embolism"
+   ]
+  },
+  "PRESSURE_TONE_COMPENSATION": {
+   "class": "CROSS_FAMILY_COMMON_REFINEMENT_EVIDENCE_INCREASED",
+   "families": [
+    "acs",
+    "pulmonary_embolism"
+   ],
+   "pe": {
+    "T_change": 0.11478543131033847,
+    "map_change": -0.13785998886030537,
+    "output_change": -0.2266314333455901
+   }
+  },
+  "RESPIRATORY_DRIVE_AND_MECHANICS": {
+   "families": [
+    "pulmonary_edema",
+    "pulmonary_embolism"
+   ],
+   "pe_arrival_rr_gap": {
+    "synthetic": 5.05356112992056,
+    "unset": 6.469584795153523
+   }
+  },
+  "SIDED_PRELOAD_RIGHT_LEFT": {
+   "families": [
+    "pulmonary_embolism"
+   ],
+   "status": "SIDED_PRELOAD_COMMON_STATE_DEFERRED: the false L is closed by family authority; ventricular interdependence (volume harm) is not representable"
+  }
+ },
+ "respiratory_drive": {
+  "arrival_rr": {
+   "synthetic": 26.94643887007944,
+   "unset": 25.530415204846477
+  },
+  "arrival_rr_gap": {
+   "synthetic": 5.05356112992056,
+   "unset": 6.469584795153523
+  },
+  "authored_rr": 32,
+  "excitatory_at_least_acid": true,
+  "family_writes_w": false,
+  "parameter_status": {
+   "chosen_from_pe": false,
+   "hypoxaemic_drive_mapping": "UNSET by default; SYNTHETIC_ONLY here (P2P-2's)",
+   "hypoxaemic_to_drive_gain": "UNSET by default; SYNTHETIC_ONLY 10 here"
+  },
+  "pass": true,
+  "rr_at_least_unset": true,
+  "states_identical": true,
+  "synthetic": {
+   "0": {
+    "acid": 12.0,
+    "excitatory": 14.4,
+    "excitatory_rr": 26.94643887007944,
+    "expressed_rr": 26.94643887007944,
+    "hypoxaemic": 2.4,
+    "intrinsic": 16.0,
+    "paco2": 26.528612154738276,
+    "ph": 7.454436719937863,
+    "spo2": 88.0
+   },
+   "120": {
+    "acid": 11.717221601873065,
+    "excitatory": 15.617221601873062,
+    "excitatory_rr": 27.614300162761495,
+    "expressed_rr": 27.614300162761495,
+    "hypoxaemic": 3.899999999999997,
+    "intrinsic": 16.0,
+    "paco2": 25.887008597802343,
+    "ph": 7.46846741795863,
+    "spo2": 80.50000000000001
+   },
+   "30": {
+    "acid": 10.919174138298208,
+    "excitatory": 13.694174138298209,
+    "excitatory_rr": 26.544010031790556,
+    "expressed_rr": 26.544010031790556,
+    "hypoxaemic": 2.7749999999999995,
+    "intrinsic": 16.0,
+    "paco2": 26.930807548654332,
+    "ph": 7.460748771389885,
+    "spo2": 86.125
+   },
+   "60": {
+    "acid": 10.641322819822161,
+    "excitatory": 13.79132281982216,
+    "excitatory_rr": 26.600076240693795,
+    "expressed_rr": 26.600076240693795,
+    "hypoxaemic": 3.1499999999999995,
+    "intrinsic": 16.0,
+    "paco2": 26.87404424210238,
+    "ph": 7.464907211873557,
+    "spo2": 84.25
+   },
+   "90": {
+    "acid": 10.960309802126531,
+    "excitatory": 14.485309802126528,
+    "excitatory_rr": 26.994313401054896,
+    "expressed_rr": 26.994313401054896,
+    "hypoxaemic": 3.524999999999997,
+    "intrinsic": 16.0,
+    "paco2": 26.481563546927113,
+    "ph": 7.4675724716694045,
+    "spo2": 82.37500000000001
+   }
+  },
+  "synthetic_drives_at_arrival": true,
+  "synthetic_rises_with_G": true,
+  "unset": {
+   "0": {
+    "acid": 12.0,
+    "excitatory": 12.0,
+    "excitatory_rr": 25.530415204846477,
+    "expressed_rr": 25.530415204846477,
+    "hypoxaemic": 0.0,
+    "intrinsic": 16.0,
+    "paco2": 28.000000000000004,
+    "ph": 7.430993219041424,
+    "spo2": null
+   },
+   "120": {
+    "acid": 11.717221601873065,
+    "excitatory": 11.717221601873065,
+    "excitatory_rr": 25.35444328353984,
+    "expressed_rr": 25.35444328353984,
+    "hypoxaemic": 0.0,
+    "intrinsic": 16.0,
+    "paco2": 28.194333345894627,
+    "ph": 7.4313874557421595,
+    "spo2": null
+   },
+   "30": {
+    "acid": 10.919174138298208,
+    "excitatory": 10.919174138298208,
+    "excitatory_rr": 24.846950435983626,
+    "expressed_rr": 24.846950435983626,
+    "hypoxaemic": 0.0,
+    "intrinsic": 16.0,
+    "paco2": 28.770195665559243,
+    "ph": 7.4320553322455485,
+    "spo2": null
+   },
+   "60": {
+    "acid": 10.641322819822161,
+    "excitatory": 10.641322819822161,
+    "excitatory_rr": 24.66642325518391,
+    "expressed_rr": 24.66642325518391,
+    "hypoxaemic": 0.0,
+    "intrinsic": 16.0,
+    "paco2": 28.98075729668134,
+    "ph": 7.432130509830976,
+    "spo2": null
+   },
+   "90": {
+    "acid": 10.960309802126531,
+    "excitatory": 10.960309802126531,
+    "excitatory_rr": 24.873507238024985,
+    "expressed_rr": 24.873507238024985,
+    "hypoxaemic": 0.0,
+    "intrinsic": 16.0,
+    "paco2": 28.73947846980273,
+    "ph": 7.432037212371998,
+    "spo2": null
+   }
+  },
+  "unset_no_hypoxaemic_drive": true
+ },
+ "revision": "P2Q-2",
+ "secondary": {
+  "arrival": {
+   "anchors": {
+    "arrival_bicarbonate": 21.1,
+    "arrival_delivery_ratio": 1.0,
+    "arrival_lactate_excess": 1.0,
+    "arrival_oxygen_debt": 0.0,
+    "arrival_paco2": 30.0,
+    "beta_blockade": 0.0,
+    "case_id": "pulmonary_embolism_33f",
+    "consciousness_level": 0,
+    "crt_s": 3.0,
+    "dbp": 70.0,
+    "declared": {
+     "arrival_lactate_excess": "synthetic_probe",
+     "intrinsic_sinus_rate": "synthetic_probe"
+    },
+    "fio2": 0.21,
+    "glucose": 108.0,
+    "hb": 12.6,
+    "hr": 124.0,
+    "intrinsic_respiratory_rate": 16.0,
+    "intrinsic_sinus_rate": 80.0,
+    "k": 4.1,
+    "lactate": 2.0,
+    "metabolic_demand_baseline": 1.0,
+    "preload_fraction": null,
+    "pump_reserve": 1.0,
+    "reference_preload_fraction": null,
+    "respiratory_rate": 30.0,
+    "reversible_lung_water": 0.0,
+    "rhythm": {
+     "code": "sinus",
+     "output_factor": 1.0,
+     "pulse_present": true,
+     "rate_bpm": 124.0
+    },
+    "sbp": 110.0,
+    "spo2": 90.0
+   },
+   "authored": {
+    "consciousness_level": 0,
+    "dbp": 70,
+    "hr": 124,
+    "lactate": 2.0,
+    "map": 83.33333333333333,
+    "paco2": 30,
+    "ph": 7.47,
+    "rr": 30,
+    "sbp": 110,
+    "spo2": 90
+   },
+   "bands": {
+    "arrival_lactate_excess": {
+     "classification": "CASE_MAPPING",
+     "lower": 0.0,
+     "midpoint": 1.0,
+     "name": "arrival_lactate_excess",
+     "rule": "gi_reference.lactate_excess_band's rule: the arrival lactate less a non-shock clearance baseline of 0.8-2.0 mmol/L; the baseline is not stated",
+     "upper": 1.2
+    },
+    "intrinsic_sinus_rate": {
+     "classification": "CASE_MAPPING",
+     "lower": 60.0,
+     "midpoint": 80.0,
+     "name": "intrinsic_sinus_rate",
+     "rule": "gi_reference.intrinsic_hr_band's rule: the resting adult sinus rate, at most the observed HR; no beta-blocker or rate control is authored",
+     "upper": 100.0
+    }
+   },
+   "case": "pulmonary_embolism_33f",
+   "channel_roles": {
+    "D": "NORMAL_OR_NEUTRAL (perfusion preserved; lactate 2.0 mapped as clearable excess, no prior debt)",
+    "G": "PRIMARY_DRIVER (SpO2 90, PaO2 59 on room air): direct",
+    "Glu": "NORMAL_OR_NEUTRAL (108)",
+    "Hb": "NORMAL_OR_NEUTRAL (12.6)",
+    "K": "NORMAL_OR_NEUTRAL (4.1)",
+    "L": "NORMAL_OR_NEUTRAL (no B-lines, no edema): family-owned at zero generation",
+    "N": "NORMAL_OR_NEUTRAL (alert)",
+    "P": "NORMAL_OR_NEUTRAL at arrival (mild RV enlargement, no D-sign, no McConnell, normotension)",
+    "R": "SECONDARY_RESPONSE (sinus tachycardia 124)",
+    "T": "NORMAL_OR_NEUTRAL (no shock)",
+    "V": "NORMAL_OR_NEUTRAL (V = 0; the LV is preserved, not read as underfilled: the profile's position)",
+    "W": "SECONDARY_RESPONSE (RR 30, PaCO2 30)"
+   },
+   "channels_at_arrival": {
+    "D": 0.0,
+    "G": 0.0,
+    "L": 0.0,
+    "P": 1.0,
+    "T": 1.0,
+    "V": 0.0
+   },
+   "classes": {
+    "arrival_bicarbonate": "CASE_AUTHORED",
+    "arrival_delivery_ratio": "CASE_MAPPING (neutral 1: perfusion authored as preserved, warm extremities)",
+    "arrival_lactate_excess": "CASE_MAPPING",
+    "arrival_oxygen_debt": "CASE_MAPPING (neutral 0: no delivery deficit is read, so no pre-arrival debt; never from the lactate)",
+    "arrival_paco2": "CASE_AUTHORED",
+    "beta_blockade": "CASE_MAPPING (0: no beta-blocker authored)",
+    "consciousness_level": "CASE_AUTHORED",
+    "crt_s": "CASE_AUTHORED",
+    "dbp": "CASE_AUTHORED",
+    "fio2": "CASE_AUTHORED",
+    "glucose": "CASE_AUTHORED",
+    "hb": "CASE_AUTHORED",
+    "hr": "CASE_AUTHORED",
+    "intrinsic_respiratory_rate": "FAMILY_CANDIDATE (P2K-2's candidate input, the middle of its 12 / 16 / 20)",
+    "intrinsic_sinus_rate": "CASE_MAPPING",
+    "k": "CASE_AUTHORED",
+    "lactate": "CASE_AUTHORED",
+    "metabolic_demand_baseline": "CASE_MAPPING (1: afebrile, no hypermetabolic evidence; the respiratory muscles' demand under the authored work of breathing is not modelled)",
+    "preload_fraction": "CASE_MAPPING (neutral: the authored LV 'Preserved contraction' is not read as underfilled; the profile's provisional position, nothing declared; the IVC is not read)",
+    "pump_reserve": "CASE_MAPPING (neutral 1, nothing declared: read only by the common overload coupling, which the family's L authority keeps off; RV dysfunction is never a left reserve)",
+    "reference_preload_fraction": "UNDEFINED_BY_CASE (no euvolemic reference is authored)",
+    "respiratory_rate": "CASE_AUTHORED",
+    "reversible_lung_water": "CASE_MAPPING (default 0: no authored pulmonary edema; L is family-owned at zero generation)",
+    "rhythm": "CASE_AUTHORED",
+    "sbp": "CASE_AUTHORED",
+    "spo2": "CASE_AUTHORED"
+   },
+   "core": {
+    "D": 0.0,
+    "G": 0.0,
+    "L": 0.0,
+    "P": 1.0,
+    "T": 1.0,
+    "V": 0.0,
+    "consciousness_level": 0,
+    "dbp": 70.0,
+    "deficit": 0.0,
+    "delivery_index": 1.0,
+    "fio2": 0.21,
+    "hb": 12.6,
+    "hr": 81.8516173294948,
+    "lactate": 2.0,
+    "map": 83.33333333333333,
+    "minute": 0,
+    "output_rel": 1.0,
+    "paco2": 30.0,
+    "ph": 7.4700399458583675,
+    "preload_position": 0.5,
+    "rr": 21.176346917332907,
+    "sbp": 110.0,
+    "spo2": 90.0
+   },
+   "exact": {
+    "consciousness_level": true,
+    "dbp": true,
+    "lactate": true,
+    "map": true,
+    "paco2": true,
+    "sbp": true,
+    "spo2": true
+   },
+   "mapping": {
+    "authored_pulmonary_edema": false,
+    "band_at_or_below_neutral": true,
+    "default_position": 0.5,
+    "ivc": "2.0 cm; <50% inspiratory collapse",
+    "ivc_status": "RIGHT_SIDED / OBSERVATIONAL (not mapped)",
+    "lung_water_generation": 0.0,
+    "lv_underfilled": false,
+    "preload_position": 0.5,
+    "pump_reserve": 1.0,
+    "reversible_lung_water": 0.0,
+    "v_evidence": [
+     "pocus_lv"
+    ]
+   },
+   "pass": true,
+   "ph_within_rounding": true,
+   "reconstruction": "exact (SBP, DBP, SpO2, CRT, lactate, consciousness level)"
+  },
+  "hypoxaemia_without_hypotension": true,
+  "pass": true,
+  "runs": {
+   "0": {
+    "L_zero": true,
+    "at": {
+     "0": {
+      "D": 0.0,
+      "G": 0.0,
+      "L": 0.0,
+      "P": 1.0,
+      "consciousness_level": 0,
+      "deficit": 0.0,
+      "delivery_index": 1.0,
+      "hr": 81.8516173294948,
+      "lactate": 2.0,
+      "map": 83.33333333333333,
+      "output_rel": 1.0,
+      "spo2": 90.0
+     },
+     "120": {
+      "D": 0.0,
+      "G": 1.4999999999999967,
+      "L": 0.0,
+      "P": 1.0,
+      "consciousness_level": 1,
+      "deficit": 0.0,
+      "delivery_index": 0.9166666666666669,
+      "hr": 85.59536815368175,
+      "lactate": 1.3663412655559806,
+      "map": 83.33333333333333,
+      "output_rel": 1.0,
+      "spo2": 82.50000000000001
+     },
+     "30": {
+      "D": 0.0,
+      "G": 0.37500000000000017,
+      "L": 0.0,
+      "P": 1.0,
+      "consciousness_level": 0,
+      "deficit": 0.0,
+      "delivery_index": 0.9791666666666666,
+      "hr": 82.78855055820628,
+      "lactate": 1.7779854240639992,
+      "map": 83.33333333333333,
+      "output_rel": 1.0,
+      "spo2": 88.125
+     },
+     "60": {
+      "D": 0.0,
+      "G": 0.7499999999999993,
+      "L": 0.0,
+      "P": 1.0,
+      "consciousness_level": 1,
+      "deficit": 0.0,
+      "delivery_index": 0.9583333333333334,
+      "hr": 83.72494115998111,
+      "lactate": 1.6052613200560404,
+      "map": 83.33333333333333,
+      "output_rel": 1.0,
+      "spo2": 86.25
+     },
+     "90": {
+      "D": 0.0,
+      "G": 1.124999999999998,
+      "L": 0.0,
+      "P": 1.0,
+      "consciousness_level": 1,
+      "deficit": 0.0,
+      "delivery_index": 0.9375000000000001,
+      "hr": 84.66060741183178,
+      "lactate": 1.4708844847533344,
+      "map": 83.33333333333333,
+      "output_rel": 1.0,
+      "spo2": 84.37500000000001
+     }
+    },
+    "common_overload_writes": 0,
+    "family": {
+     "channels": [
+      "G"
+     ],
+     "other_writes": 0
+    },
+    "map_unchanged": true,
+    "spo2_down": true
+   },
+   "0.000833333": {
+    "L_zero": true,
+    "at": {
+     "0": {
+      "D": 0.0,
+      "G": 0.0,
+      "L": 0.0,
+      "P": 1.0,
+      "consciousness_level": 0,
+      "deficit": 0.0,
+      "delivery_index": 1.0,
+      "hr": 81.8516173294948,
+      "lactate": 2.0,
+      "map": 83.33333333333333,
+      "output_rel": 1.0,
+      "spo2": 90.0
+     },
+     "120": {
+      "D": 0.0,
+      "G": 1.4999999999999967,
+      "L": 0.0,
+      "P": 0.8999999999999977,
+      "consciousness_level": 1,
+      "deficit": 0.0,
+      "delivery_index": 0.8249999999999981,
+      "hr": 87.89839181119201,
+      "lactate": 1.3663412655559806,
+      "map": 74.99999999999982,
+      "output_rel": 0.8999999999999977,
+      "spo2": 82.50000000000001
+     },
+     "30": {
+      "D": 0.0,
+      "G": 0.37500000000000017,
+      "L": 0.0,
+      "P": 0.9749999999999994,
+      "consciousness_level": 0,
+      "deficit": 0.0,
+      "delivery_index": 0.9546874999999994,
+      "hr": 83.36664512736671,
+      "lactate": 1.7779854240639992,
+      "map": 81.24999999999996,
+      "output_rel": 0.9749999999999994,
+      "spo2": 88.125
+     },
+     "60": {
+      "D": 0.0,
+      "G": 0.7499999999999993,
+      "L": 0.0,
+      "P": 0.9499999999999988,
+      "consciousness_level": 1,
+      "deficit": 0.0,
+      "delivery_index": 0.9104166666666655,
+      "hr": 84.87996024667602,
+      "lactate": 1.6052613200560404,
+      "map": 79.16666666666657,
+      "output_rel": 0.9499999999999988,
+      "spo2": 86.25
+     },
+     "90": {
+      "D": 0.0,
+      "G": 1.124999999999998,
+      "L": 0.0,
+      "P": 0.9249999999999983,
+      "consciousness_level": 1,
+      "deficit": 0.0,
+      "delivery_index": 0.8671874999999984,
+      "hr": 86.39079627054325,
+      "lactate": 1.4708844847533344,
+      "map": 77.08333333333319,
+      "output_rel": 0.9249999999999983,
+      "spo2": 84.37500000000001
+     }
+    },
+    "common_overload_writes": 0,
+    "family": {
+     "channels": [
+      "G",
+      "P"
+     ],
+     "other_writes": 0
+    },
+    "map_unchanged": false,
+    "spo2_down": true
+   }
+  }
+ },
+ "tone": {
+  "T_change": 0.11478543131033847,
+  "classification": "CROSS_FAMILY_COMMON_REFINEMENT_EVIDENCE_INCREASED (the missing pressure -> tone compensation, now independently in ACS and PE); P2J not reopened",
+  "family_writes_T": false,
+  "gains_untouched": true,
+  "map_change": -0.13785998886030537,
+  "output_change": -0.2266314333455901,
+  "pass": true,
+  "sensitivity": {
+   "0.25": {
+    "D": 52.56660124016484,
+    "T": 1.0570082726732681,
+    "deficit": 0.3884141807978039,
+    "map": 53.76307922227929,
+    "output_rel": 0.7865480758464487
+   },
+   "0.5": {
+    "D": 53.28251763107641,
+    "T": 1.1147854313103385,
+    "deficit": 0.3986619980303636,
+    "map": 55.751720720366926,
+    "output_rel": 0.7733685666544099
+   },
+   "1": {
+    "D": 54.71339356305519,
+    "T": 1.2316864455982455,
+    "deficit": 0.41838054847868167,
+    "map": 59.578206577186315,
+    "output_rel": 0.7480089402100989
+   }
+  },
+  "tone_gain": 0.5
+ },
+ "untreated": {
+  "L_max": 0.0,
+  "V_max": 0.0,
+  "at": {
+   "0": {
+    "D": 20.0,
+    "G": 0.0,
+    "L": 0.0,
+    "P": 1.0,
+    "T": 1.0,
+    "V": 0.0,
+    "consciousness_level": 0,
+    "dbp": 54.0,
+    "deficit": 0.15000000000000013,
+    "delivery_index": 0.33999999999999997,
+    "fio2": 0.21,
+    "hb": 11.6,
+    "hr": 95.6433018733792,
+    "lactate": 4.8,
+    "map": 64.66666666666667,
+    "minute": 0,
+    "output_rel": 1.0,
+    "paco2": 28.000000000000004,
+    "ph": 7.430993219041424,
+    "preload_position": 0.35,
+    "rr": 25.530415204846477,
+    "sbp": 86.0,
+    "spo2": 88.0
+   },
+   "120": {
+    "D": 53.28251763107641,
+    "G": 1.4999999999999967,
+    "L": 0.0,
+    "P": 0.7999999999999954,
+    "T": 1.1147854313103385,
+    "V": 0.0,
+    "consciousness_level": 1,
+    "dbp": 46.55556060154351,
+    "deficit": 0.3986619980303636,
+    "delivery_index": 0.24053520078785456,
+    "fio2": 0.21,
+    "hb": 11.6,
+    "hr": 114.84784655870575,
+    "lactate": 3.078413926474459,
+    "map": 55.751720720366926,
+    "minute": 120,
+    "output_rel": 0.7733685666544099,
+    "paco2": 28.194333345894627,
+    "ph": 7.4313874557421595,
+    "preload_position": 0.41636450599230035,
+    "rr": 25.35444328353984,
+    "sbp": 74.14404095801373,
+    "spo2": 80.50000000000001
+   },
+   "180": {
+    "D": 80.4073190601079,
+    "G": 2.2499999999999982,
+    "L": 0.0,
+    "P": 0.6999999999999931,
+    "T": 1.1645509713223194,
+    "V": 0.0,
+    "consciousness_level": 2,
+    "dbp": 41.949192599455024,
+    "deficit": 0.5054775840735054,
+    "delivery_index": 0.19780896637059783,
+    "fio2": 0.21,
+    "hb": 11.6,
+    "hr": 125.38881510758841,
+    "lactate": 3.039074119256084,
+    "map": 50.23545286601404,
+    "minute": 180,
+    "output_rel": 0.6670699000043153,
+    "paco2": 26.705716867358785,
+    "ph": 7.425647711830841,
+    "preload_position": 0.4595775691248126,
+    "rr": 26.76773775765716,
+    "sbp": 66.80797339913208,
+    "spo2": 76.75000000000001
+   },
+   "240": {
+    "D": 113.63140508374566,
+    "G": 3.000000000000009,
+    "L": 0.0,
+    "P": 0.5999999999999908,
+    "T": 1.2094983233033358,
+    "V": 0.0,
+    "consciousness_level": 2,
+    "dbp": 36.87045605795613,
+    "deficit": 0.601949116016981,
+    "delivery_index": 0.1592203535932076,
+    "fio2": 0.21,
+    "hb": 11.6,
+    "hr": 135.60052224010707,
+    "lactate": 3.3688766433615127,
+    "map": 44.1535091064413,
+    "minute": 240,
+    "output_rel": 0.5645201900162079,
+    "paco2": 25.198791405244638,
+    "ph": 7.410890649703842,
+    "preload_position": 0.5122593780458303,
+    "rr": 28.368488561198177,
+    "sbp": 58.71961520341162,
+    "spo2": 72.99999999999996
+   },
+   "30": {
+    "D": 25.47223861703438,
+    "G": 0.37500000000000017,
+    "L": 0.0,
+    "P": 0.9499999999999988,
+    "T": 1.0300384524162196,
+    "V": 0.0,
+    "consciousness_level": 1,
+    "dbp": 52.36904707039991,
+    "deficit": 0.21676342010258653,
+    "delivery_index": 0.3132946319589654,
+    "fio2": 0.21,
+    "hb": 11.6,
+    "hr": 100.0005961923431,
+    "lactate": 4.103999121226492,
+    "map": 62.71355019541718,
+    "minute": 30,
+    "output_rel": 0.9415154994412689,
+    "paco2": 28.770195665559243,
+    "ph": 7.4320553322455485,
+    "preload_position": 0.3645714978604119,
+    "rr": 24.846950435983626,
+    "sbp": 83.40255644545171,
+    "spo2": 86.125
+   },
+   "60": {
+    "D": 32.90730966267037,
+    "G": 0.7499999999999993,
+    "L": 0.0,
+    "P": 0.8999999999999977,
+    "T": 1.0597301419047136,
+    "V": 0.0,
+    "consciousness_level": 1,
+    "dbp": 50.59624856458628,
+    "deficit": 0.28049232055658946,
+    "delivery_index": 0.2878030717773642,
+    "fio2": 0.21,
+    "hb": 11.6,
+    "hr": 104.70291194500356,
+    "lactate": 3.6048089456151766,
+    "map": 60.5905692687021,
+    "minute": 60,
+    "output_rel": 0.8841567574239152,
+    "paco2": 28.98075729668134,
+    "ph": 7.432130509830976,
+    "preload_position": 0.3803792517937772,
+    "rr": 24.66642325518391,
+    "sbp": 80.57921067693371,
+    "spo2": 84.25
+   },
+   "90": {
+    "D": 42.20809284589151,
+    "G": 1.124999999999998,
+    "L": 0.0,
+    "P": 0.8499999999999965,
+    "T": 1.0879528939984489,
+    "V": 0.0,
+    "consciousness_level": 1,
+    "dbp": 48.653278831797586,
+    "deficit": 0.3410689950580781,
+    "delivery_index": 0.2635724019767688,
+    "fio2": 0.21,
+    "hb": 11.6,
+    "hr": 109.68034243989595,
+    "lactate": 3.271241432849117,
+    "map": 58.26380304548601,
+    "minute": 90,
+    "output_rel": 0.8281485807000144,
+    "paco2": 28.73947846980273,
+    "ph": 7.432037212371998,
+    "preload_position": 0.39758182423381716,
+    "rr": 24.873507238024985,
+    "sbp": 77.48485147286283,
+    "spo2": 82.37500000000001
+   }
+  },
+  "common_overload_writes": 0,
+  "family": {
+   "channels": [
+    "G",
+    "P"
+   ],
+   "other_writes": 0
+  },
+  "lactate": {
+   "core_lactate_every_minute": true,
+   "no_family_lactate_write": true
+  },
+  "minimum_lactate_minute": 155,
+  "pulse_kept": true
+ },
+ "verdict": {
+  "blocker": null,
+  "criteria": {
+   "D / lactate remain common (arrival D latent, never from lactate; lactate the core's; kinetics untouched)": true,
+   "P2P-2 respiratory-drive architecture accepts hypoxaemia structurally (UNSET none, synthetic drives and grows; central depression still dominates)": true,
+   "PE arrival mapping coherent (arrival exact where the core models it; V from the underfilled LV, the IVC not read; L 0; pump reserve neutral; the secondary neutral)": true,
+   "PE owns L with zero generation (no common overload write, no L write; a second owner refused)": true,
+   "collapse accepts the outputs structurally (signals rise, max holds, UNSET stays a lower bound, no family rule)": true,
+   "direct G path works (G linear, the common SpO2 mapping, delivery down, no L_rev credit)": true,
+   "fluid stress creates no false L (every LV-band point; SpO2 and G unchanged by the fluid)": true,
+   "no V / P double counting (no PE source writes V or the blood state; the arrival position never changes the arrival; the V mapping reads only the LV)": true,
+   "no prior family retuned (GI, ACS, pulmonary edema, P2P-2 reproduced; tone and HR gains untouched; every common file at its P2P-2 bytes; the P2P-2 tree proven)": true,
+   "obstructive / forward-flow failure uses existing channels cleanly (the writer writes P only; Q, MAP, DO2, the deficit and D follow in the common core; V, Hb and L untouched)": true,
+   "oxygen response common (monotone in FiO2, attenuated as G worsens, no family oxygen function)": true
+  },
+  "ready": true,
+  "recommendation": "PROCEED_TO_P2R0_CROSS_FAMILY_GENERALIZATION_CHECKPOINT (read-only; do not tune PE)",
+  "verdict": "PE_SHADOW_MIGRATION_READY"
+ },
+ "writer": {
+  "authority": {
+   "EmbolicGasExchange": false,
+   "EmbolicLungWater": true,
+   "ObstructiveForwardFlow": false
+  },
+  "classes": {
+   "EmbolicGasExchange": {
+    "reads_state": [
+     "R"
+    ],
+    "writes": [
+     "G"
+    ]
+   },
+   "EmbolicLungWater": {
+    "reads_state": [
+     "R"
+    ],
+    "writes": [
+     "L"
+    ]
+   },
+   "ObstructiveForwardFlow": {
+    "reads_state": [
+     "P",
+     "R"
+    ],
+    "writes": [
+     "P"
+    ]
+   }
+  },
+  "forbidden_names_used": [],
+  "kinds": {
+   "EmbolicGasExchange": "disease_module",
+   "EmbolicLungWater": "disease_module",
+   "ObstructiveForwardFlow": "disease_module"
+  },
+  "never_written": [
+   "sbp",
+   "dbp",
+   "map",
+   "spo2",
+   "delivery_rel",
+   "lactate",
+   "lactate_excess_mmol_l",
+   "sympathetic_drive",
+   "consciousness_level",
+   "metabolic_acid_burden",
+   "collapse_burden",
+   "monitor_rate_bpm"
+  ],
+  "opioid_code": false,
+  "pass": true,
+  "refusals": {
+   "floor_above_one": true,
+   "floor_zero": true,
+   "nan_g": true,
+   "negative_g": true,
+   "negative_l": true,
+   "negative_loss": true
+  },
+  "registered": true,
+  "writes_v": false,
+  "zero_owner_writes": true
+ }
+}

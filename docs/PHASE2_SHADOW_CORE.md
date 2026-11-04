@@ -4004,3 +4004,43 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - una sola fuente de depresión en la integración;
   - la división P2K-2 / P2K-3 del enlace impulso → ventilación;
   - el enlace hipoventilación → oxigenación (gas alveolar). TD-117.
+
+## 62. P2Q-2 · Migración en sombra del TEP / shock obstructivo (2026-11-04)
+
+- **Encargo:** migrar la familia del TEP sobre el núcleo común cerrado, sin rediseñarlo. Casos: `pulmonary_embolism_61m`
+  (primario, shock obstructivo) y `pulmonary_embolism_33f` (secundario diagnóstico, hipoxemia sin hipotensión).
+- **Decisiones docentes:**
+  - PE_L_ZERO_OWNER_AUTHORIZED: la familia es dueña de L con generación cero; un solo dueño por corrida.
+  - IVC_IS_NOT_UNIVERSAL_V_MAPPING: V se lee del VI hipollenado, nunca de la VCI pletórica.
+  - SIDED_PRELOAD_COMMON_STATE_DEFERRED: sin estado común con lado.
+- **Escritores de familia** (`clinical_core/modules/pulmonary_embolism.py`):
+  - la obstrucción baja P sin lado hasta un piso: capacidad de flujo anterógrado, no contractilidad del VI;
+  - el intercambio gaseoso escribe G directa;
+  - el dueño de L no escribe nada sin edema autoral.
+  V queda en el estado sanguíneo: escribirlo sería una hemorragia falsa, así que la obstrucción no se codifica dos veces.
+- **Mapeo de llegada** (`clinical_core/embolism_reference.py`):
+  - la posición de V va de 0,2 a 0,5 (punto medio 0,35), leída sólo del VI y FAMILY_CANDIDATE;
+  - aporte y deuda de llegada latentes por las reglas de GI, nunca desde el lactato;
+  - el secundario es neutro.
+- **Ningún archivo de fisiología común cambia:** sólo las dos tuplas de registro, como en P2P-1. Los otros 111 archivos de
+  `clinical_core` están fijados por hash.
+- **Análisis:** `clinical_core/embolism_migration.py`, congelado en `f26c877` antes de la evaluación. Registro:
+  `docs/revision/P2Q2_pulmonary_embolism.json`. Informe: `docs/revision/P2Q2_TEP_SOMBRA.md`.
+- **Resultados:**
+  - La obstrucción baja el gasto, la PAM y el aporte por el núcleo común; D sube; el lactato de llegada se aclara antes
+    de que domine la deuda nueva.
+  - Sin L falso con el bolo sintético; G directa sin crédito de L_rev; el O2 común es monótono y atenuado.
+  - El impulso de P2P-2 acepta la hipoxemia estructuralmente y la depresión central sigue dominando.
+  - El colapso recibe las salidas sólo de forma estructural.
+  - GI, ACS, el edema y P2P-2 se reproducen.
+- **Revisión adversarial:** una, antes del congelamiento; 2 medias y 3 bajas, ninguna alta; todas corregidas antes de
+  congelar.
+- **Veredicto:** `PE_SHADOW_MIGRATION_READY`. **Recomendación:** P2R-0, punto de control de generalización entre familias,
+  de sólo lectura; no se inicia aquí y el TEP no se ajusta.
+- **Queda abierto:**
+  - MULTI_FAMILY_COMMON_HR_GAP (ACS, edema, TEP);
+  - la compensación presión → tono (ACS, TEP);
+  - la lateralidad de la precarga: la interdependencia ventricular y el daño del volumen no son representables;
+  - el impulso respiratorio y la mecánica (edema, TEP);
+  - la magnitud de la banda del VI;
+  - la reperfusión y la anticoagulación. TD-118.
