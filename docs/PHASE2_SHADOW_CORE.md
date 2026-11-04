@@ -3964,3 +3964,7 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   recongelamiento.
 - **Veredicto:** B, PULMONARY_EDEMA_NEEDS_EXPECTED_RESPIRATORY_EXTENSION; la arquitectura familia / lector común
   funciona para el EAP sin sobrecarga. **Recomendación:** IMPLEMENT_ONLY_THE_MINIMUM_RESPIRATORY_EXTENSION_REQUIRED (no se inicia).
+- **P2P-2 (evaluado, no abierto):** ninguna extensión respiratoria mínima cumple a la vez las condiciones de la
+  autorización nocturna; la forma del impulso hipoxémico común y su composición con la depresión central son
+  decisiones clínicas. STOP_FOR_FACULTY (MINIMUM_RESPIRATORY_EXTENSION_REQUIRES_FACULTY_DECISION). Paquete de
+  decisión, sin código: `docs/revision/P2P2_PAQUETE_DECISION_RESPIRATORIA.md`.
