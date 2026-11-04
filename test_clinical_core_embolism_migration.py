@@ -18,6 +18,7 @@ from clinical_core import embolism_migration as em
 from clinical_core import embolism_reference as mr
 from clinical_core import respiratory_drive as rd
 from clinical_core import respiratory_mechanics as mc
+from clinical_core import asthma_migration as sm
 from clinical_core.integration import from_spec, step
 from clinical_core.modules.pulmonary_edema import EdemaCongestion
 from clinical_core.modules.pulmonary_embolism import EmbolicGasExchange, EmbolicLungWater, ObstructiveForwardFlow
@@ -31,13 +32,21 @@ FROZEN_DIGEST = "6eabb72188b5aa9e8b6c0c17f9234fbf1ce5413cc01841a58a33ca79da797e6
 #: P2S-2 changed the core (the common respiratory mechanics candidate, off by default) and two tuple files, proven against
 #: the P2Q-2 files (respiratory_mechanics.proved): this package's guards read the tree as P2Q-2 left it (mc.chain,
 #: mc.p2q2_sources); its record is unchanged and reproduced with P2S-2's new anchor input, at its reference 1, left out.
-_LIVE_SOURCES_P2S2 = bf.freeze_sources
+#: P2S-3 added files (the asthma family, its mapping and analysis) and two tuple entries, proven against the
+#: P2S-2 files (asthma_migration.proved): this package's guards read the tree as P2S-2 left it (sm.chain,
+#: sm.p2s2_sources).
+_LIVE_SOURCES_P2S3 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2S2() -> dict:
+    return sm.p2s2_sources(_LIVE_SOURCES_P2S3())
 
 
 @pytest.fixture(autouse=True, scope="module")
 def _p2q2_tree():
     with pytest.MonkeyPatch.context() as patch:
         mc.chain(patch)
+        sm.chain(patch)
         patch.setattr(bf, "freeze_sources", lambda: mc.p2q2_sources(_LIVE_SOURCES_P2S2()))
         yield
 

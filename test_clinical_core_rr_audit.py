@@ -22,6 +22,7 @@ from clinical_core import edema_migration as pe
 from clinical_core import respiratory_drive as rd
 from clinical_core import embolism_migration as em
 from clinical_core import respiratory_mechanics as mc
+from clinical_core import asthma_migration as sm
 from clinical_core import decision_pack, gi_reference, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import lactate_adequacy as la
@@ -59,7 +60,8 @@ LATER_MODULES = ("clinical_core/acid_base.py", "clinical_core/ventilation.py",
                  "clinical_core/respiratory_drive.py",
                  "clinical_core/embolism_reference.py", "clinical_core/modules/pulmonary_embolism.py",
                  "clinical_core/embolism_migration.py",
-                 "clinical_core/respiratory_mechanics.py")
+                 "clinical_core/respiratory_mechanics.py",
+                 "clinical_core/asthma_reference.py", "clinical_core/modules/asthma.py", "clinical_core/asthma_migration.py")
 C57, C72 = ra.C57, ra.C72
 
 
@@ -80,7 +82,14 @@ C57, C72 = ra.C57, ra.C72
 #: P2S-2 changed the core (the common respiratory mechanics candidate, off by default) and two tuple files,
 #: proven against the P2Q-2 files (respiratory_mechanics.proved): this package's guards read the tree as
 #: P2Q-2 left it (mc.chain, mc.p2q2_sources).
-_LIVE_SOURCES_P2S2 = bf.freeze_sources
+#: P2S-3 added files (the asthma family, its mapping and analysis) and two tuple entries, proven against the
+#: P2S-2 files (asthma_migration.proved): this package's guards read the tree as P2S-2 left it (sm.chain,
+#: sm.p2s2_sources).
+_LIVE_SOURCES_P2S3 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2S2() -> dict:
+    return sm.p2s2_sources(_LIVE_SOURCES_P2S3())
 
 
 def _LIVE_SOURCES_P2Q2() -> dict:
@@ -111,6 +120,7 @@ def _p2n2_core():
         rd.chain(patch)
         em.chain(patch)
         mc.chain(patch)
+        sm.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         yield
@@ -212,7 +222,9 @@ P2N2_FILES = ("clinical_core/acs_reference.py", "clinical_core/modules/acs_ischa
               # family writes no W.
               "clinical_core/embolism_migration.py", "clinical_core/embolism_reference.py",
               # P2S-2's analysis names W only to probe that the candidate refuses W writes and reads no W channel.
-              "clinical_core/respiratory_mechanics.py")
+              "clinical_core/respiratory_mechanics.py",
+              # P2S-3's analysis and case reference name W only to report the arrival channel and the respiration.
+              "clinical_core/asthma_migration.py", "clinical_core/asthma_reference.py")
 
 
 def _readers_of_w():
@@ -497,7 +509,7 @@ def test_the_exclusion_tuples_hold_exactly_their_p2k1_content():
         added = TUPLES_ADDED_BY_P2K2[name] + vs.TUPLES_ADDED[name] + vf.TUPLES_ADDED[name] + rm.TUPLES_ADDED[name] + \
             ca.TUPLES_ADDED[name] + ea.TUPLES_ADDED[name] + cm.TUPLES_ADDED[name] + \
             cy.TUPLES_ADDED[name] + an.TUPLES_ADDED[name] + go.TUPLES_ADDED[name] + lw.TUPLES_ADDED[name] + \
-            pe.TUPLES_ADDED[name] + rd.TUPLES_ADDED[name] + em.TUPLES_ADDED[name] + mc.TUPLES_ADDED[name]
+            pe.TUPLES_ADDED[name] + rd.TUPLES_ADDED[name] + em.TUPLES_ADDED[name] + mc.TUPLES_ADDED[name] + sm.TUPLES_ADDED[name]
         assert set(added) <= set(values), name
         values = [v for v in values if v not in added]
         assert (hashlib.sha256(json.dumps(sorted(values)).encode("utf-8")).hexdigest(), len(values)) == \

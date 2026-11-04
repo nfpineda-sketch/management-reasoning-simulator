@@ -41,6 +41,8 @@ LEGACY_READERS = {"legacy_adapter.py": {"family_engine", "family_parser", "cogni
                   # P2S-2: the mechanics analysis reads nine cases' authored RR and blood gas, as diagnostics only,
                   # read-only and offline.
                   "respiratory_mechanics.py": {"clinical_cases"},
+                  # P2S-3: the asthma reference reads asthma_49m's and asthma_24f's repository truth, read-only and offline.
+                  "asthma_reference.py": {"clinical_cases"},
                   # P2H-0: the migration authority reads repository case truth itself, read-only.
                   "migration_authority.py": {"clinical_cases"}}
 #: The live runtime: the page, the engine, the reader, the submission guard and the order path.

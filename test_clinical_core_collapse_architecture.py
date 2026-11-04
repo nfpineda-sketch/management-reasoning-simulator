@@ -20,6 +20,7 @@ from clinical_core import edema_migration as pe
 from clinical_core import respiratory_drive as rd
 from clinical_core import embolism_migration as em
 from clinical_core import respiratory_mechanics as mc
+from clinical_core import asthma_migration as sm
 from clinical_core import collapse as cx
 from clinical_core import collapse_architecture as cy
 from clinical_core import decision_pack, lactate_slice
@@ -54,7 +55,14 @@ FROZEN_DIGEST = "5f96f8603f2ecdcbf585cfac38e8abf4d4aec9ea9c64772d7d0c46da2f2544a
 #: P2S-2 changed the core (the common respiratory mechanics candidate, off by default) and two tuple files,
 #: proven against the P2Q-2 files (respiratory_mechanics.proved): this package's guards read the tree as
 #: P2Q-2 left it (mc.chain, mc.p2q2_sources).
-_LIVE_SOURCES_P2S2 = bf.freeze_sources
+#: P2S-3 added files (the asthma family, its mapping and analysis) and two tuple entries, proven against the
+#: P2S-2 files (asthma_migration.proved): this package's guards read the tree as P2S-2 left it (sm.chain,
+#: sm.p2s2_sources).
+_LIVE_SOURCES_P2S3 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2S2() -> dict:
+    return sm.p2s2_sources(_LIVE_SOURCES_P2S3())
 
 
 def _LIVE_SOURCES_P2Q2() -> dict:
@@ -95,7 +103,7 @@ def _p2m2_view() -> dict:
 def _p2m2_imported_by() -> list:
     # P2O-1's analysis reads the collapse layer only to show it unchanged (delivery only, no SpO2 input).
     # P2Q-2's analysis reads it only to exercise the PE outputs structurally (as ACS's does), never in the core.
-    return [path for path in _IMPORTED_BY() if path not in (ACS_ANALYSIS, go.OWN[0], em.OWN[2])]
+    return [path for path in _IMPORTED_BY() if path not in (ACS_ANALYSIS, go.OWN[0], em.OWN[2], sm.OWN[2])]
 
 
 def _patch(patch) -> None:
@@ -104,6 +112,7 @@ def _patch(patch) -> None:
     rd.chain(patch)
     em.chain(patch)
     mc.chain(patch)
+    sm.chain(patch)
     patch.setattr(bf, "freeze_sources", _p2m2_view)
     patch.setattr(cy, "imported_by", _p2m2_imported_by)
 

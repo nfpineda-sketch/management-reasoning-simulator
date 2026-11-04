@@ -24,6 +24,7 @@ from clinical_core import edema_migration as pe
 from clinical_core import respiratory_drive as rd
 from clinical_core import embolism_migration as em
 from clinical_core import respiratory_mechanics as mc
+from clinical_core import asthma_migration as sm
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import integration
@@ -60,7 +61,14 @@ GAINS = ("deficit_to_acid_gain", "acid_clearance_tau_min", "acid_to_drive_gain")
 #: P2S-2 changed the core (the common respiratory mechanics candidate, off by default) and two tuple files,
 #: proven against the P2Q-2 files (respiratory_mechanics.proved): this package's guards read the tree as
 #: P2Q-2 left it (mc.chain, mc.p2q2_sources).
-_LIVE_SOURCES_P2S2 = bf.freeze_sources
+#: P2S-3 added files (the asthma family, its mapping and analysis) and two tuple entries, proven against the
+#: P2S-2 files (asthma_migration.proved): this package's guards read the tree as P2S-2 left it (sm.chain,
+#: sm.p2s2_sources).
+_LIVE_SOURCES_P2S3 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2S2() -> dict:
+    return sm.p2s2_sources(_LIVE_SOURCES_P2S3())
 
 
 def _LIVE_SOURCES_P2Q2() -> dict:
@@ -91,6 +99,7 @@ def _p2n2_core():
         rd.chain(patch)
         em.chain(patch)
         mc.chain(patch)
+        sm.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         yield

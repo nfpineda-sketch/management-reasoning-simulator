@@ -22,6 +22,7 @@ from clinical_core import edema_migration as pe
 from clinical_core import respiratory_drive as rd
 from clinical_core import embolism_migration as em
 from clinical_core import respiratory_mechanics as mc
+from clinical_core import asthma_migration as sm
 from clinical_core.state import CoreInvariantError
 
 #: The P2O-1 freeze: the semantics, the L -> G and G -> oxygenation structures, the SYNTHETIC_ONLY region, the probes,
@@ -43,7 +44,14 @@ FROZEN_DIGEST = "22bb29b95714b28044c418cd8e4b5f0058d1f5065eafffc509e656ff8c6db73
 #: P2S-2 changed the core (the common respiratory mechanics candidate, off by default) and two tuple files,
 #: proven against the P2Q-2 files (respiratory_mechanics.proved): this package's guards read the tree as
 #: P2Q-2 left it (mc.chain, mc.p2q2_sources).
-_LIVE_SOURCES_P2S2 = bf.freeze_sources
+#: P2S-3 added files (the asthma family, its mapping and analysis) and two tuple entries, proven against the
+#: P2S-2 files (asthma_migration.proved): this package's guards read the tree as P2S-2 left it (sm.chain,
+#: sm.p2s2_sources).
+_LIVE_SOURCES_P2S3 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2S2() -> dict:
+    return sm.p2s2_sources(_LIVE_SOURCES_P2S3())
 
 
 def _LIVE_SOURCES_P2Q2() -> dict:
@@ -70,6 +78,7 @@ def _p2o1_core():
         rd.chain(patch)
         em.chain(patch)
         mc.chain(patch)
+        sm.chain(patch)
         patch.setattr(bf, "freeze_sources", lambda: lw.p2o1_sources(_LIVE_SOURCES_P2O3()))
         yield
 

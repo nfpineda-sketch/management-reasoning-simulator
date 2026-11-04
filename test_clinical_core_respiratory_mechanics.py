@@ -20,6 +20,7 @@ from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import embolism_migration as em
 from clinical_core import respiratory_mechanics as mc
+from clinical_core import asthma_migration as sm
 from clinical_core.integration import Contribution, _check_conservation, step
 from clinical_core.provenance import MechanicsChange, MinuteRecord, ProvenanceError, Source, SourceKind
 from clinical_core.state import AUXILIARY_FIELDS, Anchors, AuxiliaryState, CoreInvariantError
@@ -28,6 +29,19 @@ from clinical_core.state import AUXILIARY_FIELDS, Anchors, AuxiliaryState, CoreI
 #: M1-M12, the contrasts, the arrival ordering rule, the readiness rule and every clinical_core source but the
 #: downstream reports, committed before the evaluation run.
 FROZEN_DIGEST = "ba6e9997495dd2009526841189e622fc6c6b9b92f0c987535cfff2e8a8462e64"
+
+#: P2S-3 added files (the asthma family, its mapping and analysis) and two tuple entries, proven against the P2S-2 files
+#: (asthma_migration.proved): this package's guards read the tree as P2S-2 left it (sm.chain, sm.p2s2_sources); its
+#: record is unchanged.
+_LIVE_SOURCES_P2S3 = bf.freeze_sources
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _p2s2_tree():
+    with pytest.MonkeyPatch.context() as patch:
+        sm.chain(patch)
+        patch.setattr(bf, "freeze_sources", lambda: sm.p2s2_sources(_LIVE_SOURCES_P2S3()))
+        yield
 
 
 # The frozen package and its proof -------------------------------------------------------------------------------------------
