@@ -4044,3 +4044,47 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - el impulso respiratorio y la mecánica (edema, TEP);
   - la magnitud de la banda del VI;
   - la reperfusión y la anticoagulación. TD-118.
+
+## 63. P2S-2 · Mecánica respiratoria común y significado único de W (2026-11-04)
+
+- **Encargo:** paquete estructural común, no una migración del asma ni una calibración. Decisiones docentes
+  W_SEMANTICS_COMMON_GAP y RESPIRATORY_MECHANICS_REPEATED_COMMON_GAP (P2S-1, opción C).
+- **W tiene un solo significado en el candidato:** ventilación alveolar efectiva relativa a la necesidad ventilatoria
+  metabólica actual, derivada después de la FR y nunca leída por ella. Impulso + disponibilidad → FR (P2P-2, sin
+  cambios); factor de frecuencia = FR / FR intrínseca; capacidad = factor × eficiencia mecánica; W = capacidad / razón de
+  demanda; PaCO2 = 40 / W (COMMON_REFERENCE_PROVISIONAL), nunca anclada a la PaCO2 autoral de llegada.
+- **Núcleo** (todo tras `CoreProfile.respiratory_mechanics`, apagado por defecto):
+  - `AuxiliaryState.mechanics_efficiency` (mayor que 0, sin tope; 1 es la referencia estructural) y
+    `Anchors.arrival_mechanics_efficiency`, su valor latente de llegada, fuera del registro de parámetros de caso;
+  - `provenance.MechanicsChange` en `Contribution.mechanics` y `MinuteRecord.mechanics`: el destino común para
+    familias; el núcleo compone los factores del minuto sobre el valor con que empieza, sin cinética propia;
+  - con el candidato apagado se rechazan los cambios y cualquier eficiencia distinta de 1; con él encendido, ninguna
+    fuente puede escribir el canal W, y el lector P2K-1 de W queda RETIRED_FROM_COMMON_MECHANICS_CANDIDATE (su
+    comportamiento histórico, con la fisiología ácido-base apagada, se conserva).
+- **Análisis:** `clinical_core/respiratory_mechanics.py`, congelado en `b107783` antes de la evaluación. Registro:
+  `docs/revision/P2S2_respiratory_mechanics.json`. Informe: `docs/revision/P2S2_MECANICA_RESPIRATORIA_COMUN.md`.
+- **Resultados:**
+  - M1–M12 pasan; las direcciones exigidas (FR, mecánica, demanda, depresión central; PaCO2 estrictamente decreciente en
+    W) se cumplen.
+  - FR alta con PaCO2 alta es representable con disponibilidad 1 (edema 58m, asma 49m; rejilla sintética 1 / 0,75 / 0,5
+    / 0,25, ningún valor ajustado). El asma 24f con mecánica leve queda en PaCO2 baja o normal; el opioide (FR baja,
+    mecánica conservada) y la falla mecánica (FR alta, disponibilidad 1) son ortogonales.
+  - Las regiones de eficiencia de llegada siguen el orden clínico predeclarado (graves < asma 24f < GI y SCA ≤
+    opioide). Con una FR intrínseca común, ese orden es uno solo: el de los productos PaCO2 × FR autorales.
+  - Las regiones se solapan entre FR intrínsecas distintas, y las referencias leen E < 1 por la linealidad del factor
+    de frecuencia.
+  - Con el candidato apagado, el núcleo de P2Q-2 lee exactamente igual los cursos de GI, SCA, edema, TEP y P2P-2; los
+    registros cerrados se reproducen (con la entrada nueva de las anclas en su referencia 1 retirada).
+- **Revisión adversarial:** una, al final, sobre el candidato congelado. Encontró 1 hallazgo medio y 6 bajos, ninguno
+  alto. No se volvió a congelar.
+  - Medio: sin una FR intrínseca declarada, el candidato usa la FR autoral como referencia de W, lo que es un ancla nueva.
+    Hoy no tiene efecto (todo caso comprometido declara 16); queda como decisión docente para la migración del asma.
+  - Bajos: los rechazos con el candidato apagado son más estrechos de lo que se afirmaba (sólo con la fisiología
+    ácido-base); la narrativa y el golden se corrigieron en el documento; la descripción de `paco2_reference_mmhg`
+    quedó desactualizada; la serialización gana tres campos.
+- **Veredicto:** `COMMON_RESPIRATORY_MECHANICS_ARCHITECTURE_READY`. **Recomendación:** PROCEED_TO_ASTHMA_SHADOW_MIGRATION,
+  sin calibrar la mecánica antes; la familia aporta su escritor y su mapeo de llegada, después de mapear la
+  disponibilidad y el impulso excitador.
+- **Queda abierto:** HYPOVENTILATION_TO_OXYGENATION_LINK_DEFERRED; la linealidad del factor de frecuencia; la
+  identificabilidad de la eficiencia de llegada sin la FR intrínseca; la FR de llegada sin un impulso excitador mapeado;
+  HR_GAP_DISTRESS_AROUSAL_DOMINANT (sin implementar). TD-119.

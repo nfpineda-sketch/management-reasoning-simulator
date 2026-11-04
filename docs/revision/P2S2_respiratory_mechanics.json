@@ -1,0 +1,2115 @@
+{
+ "arrival_regions": {
+  "class": "CLINICALLY_COHERENT_ORDERING",
+  "coherent": true,
+  "ordering": {
+   "compensated_below_references": {
+    "12": true,
+    "16": true,
+    "20": true
+   },
+   "opioid_preserved": {
+    "12": true,
+    "16": true,
+    "20": true
+   },
+   "severe_below_compensated": {
+    "12": true,
+    "16": true,
+    "20": true
+   }
+  },
+  "overlaps_across_intrinsic": {
+   "asthma_24f|acs_70f_left_main": [
+    0.5594405594405595,
+    0.7590132827324478
+   ],
+   "asthma_24f|gi_bleed_57m": [
+    0.5955334987593052,
+    0.7590132827324478
+   ],
+   "asthma_49m|asthma_24f": [
+    0.45540796963946867,
+    0.5228758169934641
+   ],
+   "pulmonary_edema_58m|asthma_24f": null
+  },
+  "pass": true,
+  "reading": "the arrival efficiency is read with the authored RR: a region per case over the intrinsic RR, linear in it and in the demand ratio. With the model's arrival RR (acid drive only) the reading would absorb the drive gap (the opioid would read as a mechanical failure); the asthma migration must map availability and the excitatory drive before it maps mechanics",
+  "references_below_1": {
+   "acs_70f_left_main": [
+    "12",
+    "16",
+    "20"
+   ],
+   "gi_bleed_57m": [
+    "12",
+    "16",
+    "20"
+   ],
+   "gi_bleed_72f": [
+    "12",
+    "16"
+   ]
+  },
+  "regions": {
+   "acs_70f_left_main": {
+    "authored_hco3": 18.0,
+    "authored_paco2": 33,
+    "authored_rr": 26,
+    "by_intrinsic": {
+     "12": 0.5594405594405595,
+     "16": 0.745920745920746,
+     "20": 0.9324009324009324
+    },
+    "counterfactual_efficiency_at_model_rr": {
+     "12": 0.6755770572497077,
+     "16": 0.7596405792201066,
+     "20": 0.8209306938036421
+    },
+    "counterfactual_model_rr": {
+     "12": 21.530415204846477,
+     "16": 25.530415204846477,
+     "20": 29.530415204846477
+    },
+    "demand_sensitivity": {
+     "1": [
+      0.5594405594405595,
+      0.9324009324009324
+     ],
+     "1.2": [
+      0.6713286713286714,
+      1.118881118881119
+     ]
+    },
+    "fio2_percent": 21,
+    "region": [
+     0.5594405594405595,
+     0.9324009324009324
+    ],
+    "work_of_breathing": "Mildly increased"
+   },
+   "asthma_24f": {
+    "authored_hco3": 20.8,
+    "authored_paco2": 31,
+    "authored_rr": 34,
+    "by_intrinsic": {
+     "12": 0.45540796963946867,
+     "16": 0.6072106261859582,
+     "20": 0.7590132827324478
+    },
+    "counterfactual_efficiency_at_model_rr": {
+     "12": 0.8774495880565903,
+     "16": 0.9537434797030387,
+     "20": 1.0062387124862129
+    },
+    "counterfactual_model_rr": {
+     "12": 17.64645078019379,
+     "16": 21.64645078019379,
+     "20": 25.64645078019379
+    },
+    "demand_sensitivity": {
+     "1": [
+      0.45540796963946867,
+      0.7590132827324478
+     ],
+     "1.2": [
+      0.5464895635673624,
+      0.9108159392789373
+     ]
+    },
+    "fio2_percent": 21,
+    "region": [
+     0.45540796963946867,
+     0.7590132827324478
+    ],
+    "work_of_breathing": "Markedly increased"
+   },
+   "asthma_49m": {
+    "authored_hco3": 24.2,
+    "authored_paco2": 51,
+    "authored_rr": 30,
+    "by_intrinsic": {
+     "12": 0.3137254901960784,
+     "16": 0.41830065359477125,
+     "20": 0.5228758169934641
+    },
+    "counterfactual_efficiency_at_model_rr": {
+     "12": 0.7843137254901961,
+     "16": 0.7843137254901961,
+     "20": 0.7843137254901961
+    },
+    "counterfactual_model_rr": {
+     "12": 12.0,
+     "16": 16.0,
+     "20": 20.0
+    },
+    "demand_sensitivity": {
+     "1": [
+      0.3137254901960784,
+      0.5228758169934641
+     ],
+     "1.2": [
+      0.3764705882352941,
+      0.6274509803921569
+     ]
+    },
+    "fio2_percent": 21,
+    "region": [
+     0.3137254901960784,
+     0.5228758169934641
+    ],
+    "work_of_breathing": "Severe"
+   },
+   "gi_bleed_57m": {
+    "authored_hco3": 17.3,
+    "authored_paco2": 31,
+    "authored_rr": 26,
+    "by_intrinsic": {
+     "12": 0.5955334987593052,
+     "16": 0.794044665012407,
+     "20": 0.9925558312655087
+    },
+    "counterfactual_efficiency_at_model_rr": {
+     "12": 0.6920814678786603,
+     "16": 0.7828171948960919,
+     "20": 0.8496537958994654
+    },
+    "counterfactual_model_rr": {
+     "12": 22.372902160207325,
+     "16": 26.372902160207325,
+     "20": 30.372902160207325
+    },
+    "demand_sensitivity": {
+     "1": [
+      0.5955334987593052,
+      0.9925558312655087
+     ],
+     "1.2": [
+      0.7146401985111662,
+      1.1910669975186103
+     ]
+    },
+    "fio2_percent": 21,
+    "region": [
+     0.5955334987593052,
+     0.9925558312655087
+    ],
+    "work_of_breathing": "Normal"
+   },
+   "gi_bleed_72f": {
+    "authored_hco3": 19.8,
+    "authored_paco2": 33,
+    "authored_rr": 24,
+    "by_intrinsic": {
+     "12": 0.6060606060606061,
+     "16": 0.8080808080808081,
+     "20": 1.0101010101010102
+    },
+    "counterfactual_efficiency_at_model_rr": {
+     "12": 0.7601721272740091,
+     "16": 0.8383152644433478,
+     "20": 0.8934195806941803
+    },
+    "counterfactual_model_rr": {
+     "12": 19.134422354598566,
+     "16": 23.134422354598566,
+     "20": 27.134422354598566
+    },
+    "demand_sensitivity": {
+     "1": [
+      0.6060606060606061,
+      1.0101010101010102
+     ],
+     "1.2": [
+      0.7272727272727273,
+      1.2121212121212122
+     ]
+    },
+    "fio2_percent": 21,
+    "region": [
+     0.6060606060606061,
+     1.0101010101010102
+    ],
+    "work_of_breathing": "Normal"
+   },
+   "opioid_35m": {
+    "authored_hco3": 26.7,
+    "authored_paco2": 69,
+    "authored_rr": 6,
+    "by_intrinsic": {
+     "12": 1.1594202898550725,
+     "16": 1.5458937198067633,
+     "20": 1.932367149758454
+    },
+    "counterfactual_efficiency_at_model_rr": {
+     "12": 0.5797101449275363,
+     "16": 0.5797101449275363,
+     "20": 0.5797101449275363
+    },
+    "counterfactual_model_rr": {
+     "12": 12.0,
+     "16": 16.0,
+     "20": 20.0
+    },
+    "demand_sensitivity": {
+     "1": [
+      1.1594202898550725,
+      1.932367149758454
+     ],
+     "1.2": [
+      1.391304347826087,
+      2.318840579710145
+     ]
+    },
+    "fio2_percent": 21,
+    "region": [
+     1.1594202898550725,
+     1.932367149758454
+    ],
+    "work_of_breathing": "Reduced"
+   },
+   "pulmonary_edema_58m": {
+    "authored_hco3": 22.8,
+    "authored_paco2": 49,
+    "authored_rr": 38,
+    "by_intrinsic": {
+     "12": 0.2577873254564984,
+     "16": 0.34371643394199786,
+     "20": 0.4296455424274973
+    },
+    "counterfactual_efficiency_at_model_rr": {
+     "12": 0.6855854149351015,
+     "16": 0.7141808346654146,
+     "20": 0.7325124686611909
+    },
+    "counterfactual_model_rr": {
+     "12": 14.288399598282345,
+     "16": 18.288399598282346,
+     "20": 22.288399598282346
+    },
+    "demand_sensitivity": {
+     "1": [
+      0.2577873254564984,
+      0.4296455424274973
+     ],
+     "1.2": [
+      0.30934479054779807,
+      0.5155746509129968
+     ]
+    },
+    "fio2_percent": 21,
+    "region": [
+     0.2577873254564984,
+     0.4296455424274973
+    ],
+    "work_of_breathing": "Severe"
+   },
+   "pulmonary_embolism_33f": {
+    "authored_hco3": 21.1,
+    "authored_paco2": 30,
+    "authored_rr": 30,
+    "by_intrinsic": {
+     "12": 0.5333333333333333,
+     "16": 0.7111111111111111,
+     "20": 0.8888888888888888
+    },
+    "counterfactual_efficiency_at_model_rr": {
+     "12": 0.9315135562297104,
+     "16": 1.00741329071597,
+     "20": 1.0591952340912387
+    },
+    "counterfactual_model_rr": {
+     "12": 17.176346917332907,
+     "16": 21.176346917332907,
+     "20": 25.176346917332907
+    },
+    "demand_sensitivity": {
+     "1": [
+      0.5333333333333333,
+      0.8888888888888888
+     ],
+     "1.2": [
+      0.64,
+      1.0666666666666667
+     ]
+    },
+    "fio2_percent": 21,
+    "region": [
+     0.5333333333333333,
+     0.8888888888888888
+    ],
+    "work_of_breathing": "Increased"
+   },
+   "pulmonary_embolism_61m": {
+    "authored_hco3": 18.0,
+    "authored_paco2": 28,
+    "authored_rr": 32,
+    "by_intrinsic": {
+     "12": 0.5357142857142857,
+     "16": 0.7142857142857143,
+     "20": 0.8928571428571429
+    },
+    "counterfactual_efficiency_at_model_rr": {
+     "12": 0.7962158174728697,
+     "16": 0.8952906826522684,
+     "20": 0.9675254605542924
+    },
+    "counterfactual_model_rr": {
+     "12": 21.530415204846477,
+     "16": 25.530415204846477,
+     "20": 29.530415204846477
+    },
+    "demand_sensitivity": {
+     "1": [
+      0.5357142857142857,
+      0.8928571428571429
+     ],
+     "1.2": [
+      0.6428571428571429,
+      1.0714285714285714
+     ]
+    },
+    "fio2_percent": 21,
+    "region": [
+     0.5357142857142857,
+     0.8928571428571429
+    ],
+    "work_of_breathing": "Markedly increased"
+   }
+  },
+  "rule": "Predeclared, at each carried intrinsic RR (12 / 16 / 20, the same for every case): (a) the severe cases (oedema 58m, asthma 49m) below compensated asthma 24f; (b) asthma 24f below every reference without major mechanics impairment (GI 57m, GI 72f, ACS 70f); (c) opioid 35m not below the lowest of those references (mechanics relatively preserved). PE is informative only. Coherent when (a), (b) and (c) hold at every level; otherwise STOP with a semantic problem. Regions across different intrinsic RRs may overlap; that is reported as an identifiability limit, never decided here"
+ },
+ "audit": {
+  "arrival_mechanics_readers": [
+   "arrival_state"
+  ],
+  "candidate_branch_reads": [
+   "mechanics_efficiency",
+   "paco2_reference_mmhg"
+  ],
+  "composition_reads_mechanics_or_w": {
+   "_composition": false,
+   "arrival_drive_composition": false,
+   "expressed_respiratory_rate": false,
+   "hypoxaemic_drive": false,
+   "hypoxaemic_drive_signal": false,
+   "rate_from_drive": false,
+   "respiratory_drive": false,
+   "respiratory_drive_composition": false
+  },
+  "heart_rate_reads_respiration": {
+   "arrival_sympathetic_drive": false,
+   "heart_rate_decomposition": false,
+   "sympathetic_after_minute": false,
+   "sympathetic_drive": false,
+   "sympathetic_increment": false,
+   "sympathetic_target": false
+  },
+  "integration_composition": [
+   "mechanics_efficiency=state.aux.mechanics_efficiency * math.prod((item.factor for item in mechanics))"
+  ],
+  "integration_reads_respiration": false,
+  "integration_refuses_w_writes": [
+   "respiratory_mechanics_active(profile) and any((delta.channel is Channel.W for delta in deltas))"
+  ],
+  "mechanics_readers": [
+   "respiration"
+  ],
+  "oxygenation_reads_ventilation": {
+   "_perfusion": false,
+   "effective_delivery": false,
+   "lung_water_gas_credit": false,
+   "oxygen_response_retained": false,
+   "oxygenation": false,
+   "relative_delivery": false
+  },
+  "p2k2_branch_reads": [
+   "arrival_alveolar_ventilation",
+   "arrival_paco2",
+   "mechanics_efficiency",
+   "ventilation_efficiency"
+  ],
+  "pass": true,
+  "w_channel_readers": [
+   "respiratory_rate"
+  ]
+ },
+ "compensated": {
+  "authored": {
+   "asthma_24f": {
+    "fio2_percent": 21,
+    "hco3": 20.8,
+    "mental_status": "Alert",
+    "paco2": 31,
+    "rr": 34,
+    "spo2": 90,
+    "work_of_breathing": "Markedly increased"
+   },
+   "asthma_49m": {
+    "fio2_percent": 21,
+    "hco3": 24.2,
+    "mental_status": "Drowsy",
+    "paco2": 51,
+    "rr": 30,
+    "spo2": 89,
+    "work_of_breathing": "Severe"
+   }
+  },
+  "by_intrinsic": {
+   "12": {
+    "asthma_24f_mild": 18.823529411764707,
+    "asthma_49m_low": 64.0,
+    "boundary_24f": 0.35294117647058826,
+    "boundary_49m": 0.4
+   },
+   "16": {
+    "asthma_24f_mild": 25.098039215686274,
+    "asthma_49m_low": 85.33333333333333,
+    "boundary_24f": 0.47058823529411764,
+    "boundary_49m": 0.5333333333333333
+   },
+   "20": {
+    "asthma_24f_mild": 31.372549019607845,
+    "asthma_49m_low": 106.66666666666667,
+    "boundary_24f": 0.5882352941176471,
+    "boundary_49m": 0.6666666666666666
+   }
+  },
+  "efficiencies": {
+   "low": 0.25,
+   "mild": 0.75
+  },
+  "pass": true
+ },
+ "design": {
+  "candidate_inputs": [
+   "arrival_mechanics_efficiency"
+  ],
+  "cases": {
+   "compensated": "asthma_24f",
+   "diagnostic": [
+    "pulmonary_edema_58m",
+    "asthma_49m",
+    "asthma_24f",
+    "opioid_35m",
+    "gi_bleed_57m",
+    "gi_bleed_72f",
+    "acs_70f_left_main",
+    "pulmonary_embolism_61m",
+    "pulmonary_embolism_33f"
+   ],
+   "high_rr": [
+    "pulmonary_edema_58m",
+    "asthma_49m"
+   ],
+   "informative": [
+    "pulmonary_embolism_61m",
+    "pulmonary_embolism_33f"
+   ],
+   "opioid": "opioid_35m",
+   "references": [
+    "gi_bleed_57m",
+    "gi_bleed_72f",
+    "acs_70f_left_main"
+   ],
+   "severe": [
+    "pulmonary_edema_58m",
+    "asthma_49m"
+   ]
+  },
+  "common_at_p2q2": {
+   "clinical_core/__init__.py": "acb1d8137d2dab84a0c3f5b4d68b3e904d8e85564a657233bb0e622e539338c2",
+   "clinical_core/a9.py": "64006b57e37ab69dd9dfd61d5c87b01112779f19e7007b96440cfad345ad5b92",
+   "clinical_core/acid_base.py": "9298b1f0a6defbe1a11627a0d76208c36792b01a390d80558e3cc1fda1827954",
+   "clinical_core/acid_base_report.py": "9f0b9f5b03369066e4ac7916b372453c41ef7793b36c20553b88d726b83afa78",
+   "clinical_core/acs_migration.py": "4fae25400e94b7c1f3b6b77f277dd5e04b72d150c52da738faddf95b37edd971",
+   "clinical_core/acs_migration_report.py": "dbe33c01e165f9471dcb720919c3fac257f3d0903972117a420e91632b4c2d6b",
+   "clinical_core/acs_reference.py": "b7b69c7892314375de236aec35016178218dfa4b114874b165c7191a0de2cfa1",
+   "clinical_core/arrival_severity.py": "c5c0e4c125303b463ec1d2a5373464c09576f7d83ca975834e6b059c67b2b229",
+   "clinical_core/arrival_severity_report.py": "a1806dc772a4f0a540a621271e8dd24b4c77b36da2b55af5e1da623cf30ac2eb",
+   "clinical_core/bands.py": "9facbd34dc643d45f7ad3d668619f344717824c921924247f65396fae6aa81bc",
+   "clinical_core/baroreflex.py": "cd9072b8c97bfc3a15e8d314c88aae7ec6a622a8c4b7e1fad9fa73c38e5aca6e",
+   "clinical_core/baroreflex_report.py": "0044b585240c36e9fd5e049c394f053f443d1408c23c77299d9cc5a65efef405",
+   "clinical_core/blood_anchors.py": "bd870314a723dc420ef6d27189275cb3a2b4bba0fd3515fac166c017fb69b89e",
+   "clinical_core/blood_constraints.py": "2d139733ed529a03f9c58cd4aa5eb70c8812bb25ba0737f90172546b4e2a65a8",
+   "clinical_core/blood_extension.py": "87429c2ed0b453bb33b2107fdfa453ffe6d78e5ffbb26364eab7e8228556ce47",
+   "clinical_core/blood_extension_report.py": "028efe15446ddc8d9b424465cbcdb74732f00361efea09de3225cea9f3bbde54",
+   "clinical_core/blood_filter_report.py": "4667b87efb27cfef4a1f705c9767bb6dd311d6c67625b9505dead9ef3293c394",
+   "clinical_core/blood_fluid_calibration.py": "46e73e3314190dd6fc18695346a16e9c6c55059606ac80a16081695f1d9fdd19",
+   "clinical_core/blood_fluid_readiness.py": "40b93a69c8b70190e7d92a056f0987b81a30ee32331629d18132f0aa534a15cf",
+   "clinical_core/blood_fluid_readiness_report.py": "8bcf365b433ba584760775d23a23bbf4b750e6f2253b67fcf818df2a679dc650",
+   "clinical_core/blood_fluid_report.py": "6ba467991a3e7ac9c8193f1ecff225541c069c89073872e8dc4ffca4487edc0a",
+   "clinical_core/blood_fluid_tau_closure.py": "c16a56a77c3957ae1186f4e2b016ddbadd8fee7bae0d405414fb031af735621b",
+   "clinical_core/blood_fluid_tau_closure_report.py": "16d703dfa0ecf52a29763d7a94a4dc0534ae1ff886021444e4884d3a0477af46",
+   "clinical_core/blood_probes.py": "846de76dbfe99f3dd7fc6ace431dc1d1325441e13bc0c1148c009f33016bf3d5",
+   "clinical_core/blood_rate_boundary.py": "435db3cf1d1fdba4e9ff059b889a2e8180ca80db1d2fdbeff433663692ee9f83",
+   "clinical_core/blood_rate_report.py": "3bcf35d15d3611f2564e23bf0392703bd31236c21ff128836c6201b45e6e380f",
+   "clinical_core/calibration.py": "f3fa65375ddaa48bac9ecf850838c78606bb46c3a15f12f968b146b84592ace5",
+   "clinical_core/collapse.py": "6076dd315f8bd335af8a425ac4d78e3bcbbd5f1198b45e511b4f122532d65fc9",
+   "clinical_core/collapse_architecture.py": "0d6ed0d28695c016c1834bd931e4bfbcac561b8d94c70f8d316c999d3e2d6699",
+   "clinical_core/collapse_architecture_report.py": "3b116d0a28933ccbbc2c5f45c97d1cdfb822bee5f79a4877320bd67464c6ebbf",
+   "clinical_core/collapse_audit.py": "7c1fb59a26bfda77ba84e0a38640e3aabcccdf69d41b222e93ad48cf414e1521",
+   "clinical_core/collapse_audit_report.py": "08b63fa519e985eea0619becdd5d9b21bb92b0e8def1f72a4d89d34847af5061",
+   "clinical_core/comparison.py": "fd1dbb232399f6eae33cfe758670b80a551161fea183e5dd4820575636a2b0d4",
+   "clinical_core/consciousness_audit.py": "534bc27d96f7ffd31da70e9ff90ffdf92e82c62fe8e015fb3fd6df040885fe8c",
+   "clinical_core/consciousness_audit_report.py": "8f769dbafb2b76a6013b518038f842aa3d23be482a6ff7d355472ca75eaa0e53",
+   "clinical_core/contracts_input.py": "2185469e423f2104ec81705849e57d6fffe01a316f1a7b35eba6883467f89117",
+   "clinical_core/contracts_legacy.py": "1afe36c5ccbf07df3f3e632916fd083d0fcfc8258ede6bf56eef70fb98f7d80a",
+   "clinical_core/contracts_output.py": "bc7371c7ccb57ea2f138a6bbc58c266851f6dbf0fbdb5eb2d625b1ea70ab3751",
+   "clinical_core/contracts_shadow.py": "bd2fc07a7b91f05c89c96294f440b0510c2896a7666cb77fd97a5bdab001cf65",
+   "clinical_core/decision_pack_markdown.py": "e0f9471a8e21284a1cf8976b3d7f89002d0d4fb023d02c087240d45ef6836328",
+   "clinical_core/edema_migration.py": "7d2bd34a883c0253aed4d254f025b400bf178346e348fd3982986c228ef2b464",
+   "clinical_core/edema_migration_report.py": "02c20561397d1d4ab7b9a83e1e1be1ce8abe5b027a7f8679cd5ba9af0b418467",
+   "clinical_core/edema_reference.py": "fd8702e4d5ed03cf6dbe72cf0053ad9af6966e40e2b197cf42261bf61a66eb76",
+   "clinical_core/embolism_migration.py": "1f67472c5fa7079989973f11cb2df356ef048efa3d64acad97ca02b38650c22f",
+   "clinical_core/embolism_migration_report.py": "ad307663a3f2f73fbde5d771cbfc57896cddf5d43f5a3e291e52ade3ce448b0c",
+   "clinical_core/embolism_reference.py": "55ecc2418844c05185d8e933d3c62456da31fd73c7704a6877c396f221469d74",
+   "clinical_core/encephalopathy.py": "04aea64d6f2a23cf5a77a530114b3174eab9c9adc527708a97ac25f9c5ce3539",
+   "clinical_core/encephalopathy_architecture.py": "55d47c033d381fb2b1cb69fab67adb27a05d7393807575561bc8d7a4d5e58a2c",
+   "clinical_core/encephalopathy_architecture_report.py": "e35278b85196763ef1b87f30acb19c20d8dc5a007cdc55dad266bcf07b0c990a",
+   "clinical_core/faculty_constraints.py": "092c32cf5a20cbf62e3e9df32a47896ccdef701f97170634740a8f8399d7982a",
+   "clinical_core/gas_exchange_architecture.py": "b9dcfe241f91e0ef973ca77b32e149b0ddbc76ac09f19092f7cfca5a16601835",
+   "clinical_core/gas_exchange_architecture_report.py": "2a4a589ae2c40f7ffa856a7daf4405c066ed26998d5f25a849cc59646742dd48",
+   "clinical_core/gi_reference.py": "ee3114ce9eeeb426a7b843943819aa88095b6cb09674e4c895c93a6ad1de0867",
+   "clinical_core/haemorrhage_probes.py": "df55cdcd16e5ea091a0b27042c22723029c9f19722a332c98c64bf606ef2df00",
+   "clinical_core/hemodynamic_probes.py": "1e6e96a0397f379aa4a8112aef8198963b9120fd239d2444c22ad2db22ea2ebb",
+   "clinical_core/hr_envelope_filter.py": "6bfe0ef46ed1f2b1a4555b7322ca7d3747c237f2cc185caf3dcd479e8a50d885",
+   "clinical_core/hr_envelope_filter_report.py": "e85579aed3751aafb11cc9a5abd5b38176c2bc126692384db80192cf787232bf",
+   "clinical_core/hr_observables.py": "47c21f35d7a38ccee60df3df2053edcc776e86d8fdeb5ff8881bf4e105764f05",
+   "clinical_core/hr_observables_report.py": "705578a792a9aeb28aaf75cd1f47b61254f55f381df325b010f33fa03d3d4a9f",
+   "clinical_core/hr_primary.py": "f9c5807fb6ddb6f2ced9ee8b209a047eed60b229ba450ccde56454cb0d8812f9",
+   "clinical_core/hr_primary_report.py": "9551cab1a2e068a2c6cfb977160bae38d50bb96b17335504a47176d25144cf92",
+   "clinical_core/hr_shock.py": "2fbf78d2ed5a0fd0592ef48b90fd4dc385a5c27c6fd523b1dbc195ae2ca2b419",
+   "clinical_core/hr_shock_report.py": "64043971e9d2404924dc3251e53c52b5ddc356cdff9a367ce9d0ba48a483e9c5",
+   "clinical_core/hr_structure.py": "1109ca9dded7b8e67c588932326f510e10e0ad51f6091f0a17fe9ef09f218f16",
+   "clinical_core/hr_structure_report.py": "bdf83176d06b212a877a423724425dcbbe18287d823fec84a13a6c0d87a0d384",
+   "clinical_core/interventions/__init__.py": "d0dedb08f0d35bff6ba458af009b3a35f85018e9ea2a76373158d9c373551b79",
+   "clinical_core/interventions/fluids.py": "7dc615d2eea80e3afdab0774bb1f234f7ea887be1654ae02e6ca312513fb9aef",
+   "clinical_core/interventions/modifiers.py": "46c8970630a77960d7ba2e81023d31b96b2b08f611a87eae9f94cb85f1b1aa6a",
+   "clinical_core/interventions/oxygen.py": "d7bcc0393ed562d02d6070f09ab8d501c506e6931f5efd33b3492d7e34664095",
+   "clinical_core/interventions/timing.py": "498493e6143d691d582b68f568491b9275eef49bb13bcf94e251f17aea49c6a1",
+   "clinical_core/lactate_adequacy.py": "ec49d1da4ca2494d804605669fe59617f7a1d7841572ae4be9f2e6e2b6ef7638",
+   "clinical_core/lactate_adequacy_report.py": "4f50500d46ea3a4eb1aebc545f718a8e7f78ea77f532041736fbd4cd54881044",
+   "clinical_core/lactate_closure.py": "2ae56c334031da561a9d402795c1a81ec70646ea15ed0e71cc8b6991bc04dbc3",
+   "clinical_core/lactate_closure_report.py": "e8a62c16b97d9800a357150e69f9ecb97ad0a8796f1db2c31a7c2995ee267b3f",
+   "clinical_core/lactate_constraints.py": "cf9522168fd7012e52ca797752ce8d5ab9456db7ff54422f917ccf0628d021be",
+   "clinical_core/lactate_rebuild.py": "d969a8c89b678204b4b258c35731f64b0e87ef3cf97b80ef5b92b073ccc9733f",
+   "clinical_core/lactate_rebuild_report.py": "22948e39f94661d3ef66e7a129be1be8cbded1dc124ff581fbf9b9144c56b162",
+   "clinical_core/legacy_adapter.py": "f8fafd17bcda03a4293e5717145c6f4672760a07d553c965fa7c2505b69ad115",
+   "clinical_core/logistics.py": "8b7b28c7cee688d38bbaa124e9bc83f760e3b952d7f34b0df0cf6ba6159855b9",
+   "clinical_core/lung_water_reference.py": "23a6f40d17dcf51bd1fa42ec4dc5151297c4f3a47fed241b2edaec64f069ddff",
+   "clinical_core/lung_water_reference_report.py": "1c7da3d2797237e24dbd085edcf2780a4b26f1fbc9658bf383982a910e1c289f",
+   "clinical_core/migration.py": "aa5d5c8001514994dda67a8dbfbf60e18f9048e1b18edc599ddf0399f80b349e",
+   "clinical_core/migration_authority.py": "baf342106c2a611ddc5b8f43e75a9726c11ce1a53465c5bd3d2761a0e9a8f907",
+   "clinical_core/modules/__init__.py": "1cf73c2ddf4fe370c8d34fff2ea8132149c02239ee81f3329bd87cfec729f23d",
+   "clinical_core/modules/acs_ischaemia.py": "3199b9173594aea07c905e55b46e8705621b5c9ed7e936987024aa2d2079993d",
+   "clinical_core/modules/gi_haemorrhage.py": "edb61d903bc9f4607c1d3b819f28ac065ba86656b75ba29c89d3a7c124777673",
+   "clinical_core/modules/pulmonary_edema.py": "01e68556c919efa24ff6186eacf22c98e2ec882bf5cd52109bbafaffd8351679",
+   "clinical_core/modules/pulmonary_embolism.py": "147881394c9208b35e2e2fdb7bb0ab42d589785000784379a8b1c1460df204c7",
+   "clinical_core/modules/rhythm_events.py": "1036a2443e44fe5e2fde80736984b6828542b69454cc49a36e660ee8d436c86b",
+   "clinical_core/oxygen_probes.py": "450cec663ae0c47ba32b6df8b4fadc136cad6c9a2e14f8f08d649d166651febd",
+   "clinical_core/pressure_tone.py": "2e350c8a42bcacfa31e8e5349d284c7d276808e396d36421e1dc369dbcb9ec26",
+   "clinical_core/pressure_tone_filter.py": "54bff406686b2b8e47757f10c5ec42cb6e0a0d170f2627cb926f99eea1c7e650",
+   "clinical_core/pressure_tone_filter_report.py": "6eebe11b816eeb901f10d9f1431182b71ab26db84652771af741076f33734f92",
+   "clinical_core/pressure_tone_report.py": "bc0fe73c681a35432baec5acf8062027b63f0e5821146133fb9211ae9240d7ac",
+   "clinical_core/respiratory_drive.py": "246f4ad5070fb50a64eec686ee4441e896d79c6d717303e1a43c11f7bf5af21b",
+   "clinical_core/respiratory_drive_report.py": "7bb2ee04e3204b4de2bf542cac2f8166d72de7af4892cc7f098699f5adc94f2a",
+   "clinical_core/respiratory_monotonicity.py": "ba6bac3ea1f4f1f9b0bff5503b4ff846f1ae5a097ee88d8480dd3ee52fbba672",
+   "clinical_core/respiratory_monotonicity_report.py": "373cdac40c02f1e0bd4683f9ab6329ce08805b4a41e38939e89ff28a8fc83fcb",
+   "clinical_core/rr_audit.py": "4b663ffad81ff88f728707e7c96a255d882cbf62247107980652331fff885bf1",
+   "clinical_core/rr_audit_report.py": "f3951b39f4b0b9d6b82a6fffa687457f68257743e6e86fb4d5c10c0dc81797e5",
+   "clinical_core/shadow.py": "66ef25c952509f0765731cfc0c0b97274bc5a4d263dcb486b595a8585a99ef35",
+   "clinical_core/signals.py": "f02f5494a8aac0361ace94a40e15a4df81970f456de7af0f6762a1196a27ee7f",
+   "clinical_core/vascular_tone.py": "8314c34accd082511b8e5cbe73da90c054fdbd2a0b8a6f3a56ab0aa0c12f7cf5",
+   "clinical_core/vascular_tone_report.py": "19db9e1005755fbb229f1e739c3c1607f97e376df784c929f63c0cb97440ba4a",
+   "clinical_core/ventilation.py": "260393add18e2275ee21411512d18531a74387f853bb76a2f33f89d5cb1bafe9",
+   "clinical_core/ventilation_filter.py": "9edf6c7544924f90875bdc2abd56cf6d86346411901009e641267d14d47685b9",
+   "clinical_core/ventilation_filter_report.py": "6d5789040d650c2b7241d18399c6fe2038fd91eb1ca58e5f7c93e29f63a39c49",
+   "clinical_core/ventilation_surface.py": "d361b500ccaf059784ea7e7662b6be5dd7d02019174c2f66cc0ca0ff24245825",
+   "clinical_core/ventilation_surface_report.py": "64de449f56f34cc77ec3a6ca663ee2389ea32f3c3373a289237e69f212d16a3c"
+  },
+  "core_at_p2q2": {
+   "clinical_core/decision_pack.py": "6937b6e427a4340b0fe6519eea7a5422f38a052870ba300d53d8eaf6d75c8da8",
+   "clinical_core/derived.py": "e701e99bfa4a2ad2e1d17a7408d91b566abf6d76fa7da1678213c54db0ecbedb",
+   "clinical_core/integration.py": "c725fbe8ab4daa69952dfd06a8f584e303ef6ff66bd67441deaa70e4cce887af",
+   "clinical_core/lactate_slice.py": "a113894726dea752b99de300adf4e78372bd34c03bf10ea4632121934ee07f6c",
+   "clinical_core/provenance.py": "3e670fc4aebb296232e8418f448cb14f6da46c387d4af4fc2ae7b95ba1e328d8",
+   "clinical_core/state.py": "141cd5a2aada89a58e7de9ee1436b2f52fd68141df132bcb26e934e6e9ddc7d1"
+  },
+  "decided": "2026-11-04",
+  "decisions": {
+   "ARRIVAL_MECHANICS_LATENT": "a CASE / FAMILY LATENT ARRIVAL MAPPING constrained by the authored RR, the authored PaCO2, the intrinsic-RR uncertainty and the demand; never from the disease label; regions reported, no value selected",
+   "COMBINED_FORM": "frequency factor = expressed RR / intrinsic RR; capacity = frequency factor x mechanics efficiency; W = capacity / metabolic demand ratio; PaCO2 = PaCO2_reference / W",
+   "DOMAIN": "mechanics_efficiency > 0 only; 1 is STRUCTURAL_REFERENCE / DEFAULT, never a universal normal value; no upper bound (a stricter one would need faculty review)",
+   "MINIMAL_MECHANICS_COORDINATE": "one common state-like quantity, mechanics_efficiency: the effectiveness of each expressed breath in producing alveolar ventilation relative to a eupnoeic reference; family-writable; distinct from drive, central depression, G and L; not a canonical channel",
+   "PACO2_REFERENCE": "40 mmHg, COMMON_REFERENCE_PROVISIONAL, not FACULTY_APPROVED; the resting PaCO2 is never anchored to the authored arrival PaCO2",
+   "STOP_BEFORE": "asthma migration; mechanics calibration; hypoventilation -> oxygenation; fatigue state; NIV; the alveolar gas equation; HR / distress sympathetic implementation; opioid migration",
+   "UNIQUE_W_SEMANTICS": "W = effective alveolar ventilation relative to the current metabolic ventilatory need, derived; never drive, frequency, central availability or mechanics severity. Drive + availability -> expressed RR; RR + mechanics efficiency + need -> W; W -> PaCO2; no W -> RR",
+   "W_SEMANTICS_COMMON_GAP": "P2K-2 (W tied to RR) loses high RR with high PaCO2; P2K-3 (W free of RR) loses low-RR hypoventilation: neither pure reading is enough"
+  },
+  "dimensions": {
+   "PaCO2": "mmHg (the reference carries the unit)",
+   "W": "1",
+   "capacity": "1 (VA / VA_ref)",
+   "demand_ratio": "1 (VCO2 / VCO2_baseline, through VO2)",
+   "equivalence": "the core computes W = efficiency x RR / intrinsic / demand (alveolar_ventilation, the one W formula, P2K-2's), algebraically the faculty's form; no dimensionally cleaner equivalent exists",
+   "frequency_factor": "1 (bpm / bpm)",
+   "mechanics_efficiency": "1 (per-breath alveolar ventilation over its reference)"
+  },
+  "forbidden_names": [
+   "fatigue",
+   "compliance",
+   "resistance",
+   "dead_space",
+   "deadspace",
+   "tidal",
+   "muscle",
+   "asthma",
+   "bronch",
+   "opioid",
+   "oedema",
+   "edema"
+  ],
+  "interface": {
+   "composition": "the core multiplies the efficiency the minute starts with by every factor of the minute (RESPIRATORY_MECHANICS, a core composition, no kinetics): it stays where its writers leave it",
+   "families": "no family writer exists: no asthma obstruction, oedema mechanics or opioid writer (P2S-2-4)",
+   "off": "with the candidate off a change, an arrival value other than 1 and a state value other than 1 are refused (nothing would read them)",
+   "provenance": "each change in MinuteRecord.mechanics with its source; the aux change under RESPIRATORY_MECHANICS; the conservation check holds the efficiency to exactly its recorded factors",
+   "target": "aux.mechanics_efficiency (AUXILIARY_FIELDS), arrival value Anchors.arrival_mechanics_efficiency",
+   "writer": "Contribution.mechanics: a tuple of provenance.MechanicsChange(factor > 0, source, minute, description); any non-reserved source kind (a family module, an order, a scripted probe)"
+  },
+  "ordering_rule": "Predeclared, at each carried intrinsic RR (12 / 16 / 20, the same for every case): (a) the severe cases (oedema 58m, asthma 49m) below compensated asthma 24f; (b) asthma 24f below every reference without major mechanics impairment (GI 57m, GI 72f, ACS 70f); (c) opioid 35m not below the lowest of those references (mechanics relatively preserved). PE is informative only. Coherent when (a), (b) and (c) hold at every level; otherwise STOP with a semantic problem. Regions across different intrinsic RRs may overlap; that is reported as an identifiability limit, never decided here",
+  "own": [
+   "clinical_core/respiratory_mechanics.py"
+  ],
+  "p2q2": {
+   "freeze_digest": "6eabb72188b5aa9e8b6c0c17f9234fbf1ce5413cc01841a58a33ca79da797e6e",
+   "head": "100d541",
+   "record": "bc743e79bfe3bee845dc56411089993b5da091e4a1a2ce4fb31447afbc4f9ada"
+  },
+  "parameter_status": {
+   "acid_parameters": "unchanged (the P2N-2 common point)",
+   "approved": "none",
+   "arrival_mechanics_efficiency": "CASE / FAMILY LATENT ARRIVAL MAPPING, UNSET in every committed case",
+   "central_drive_availability_family_values": "UNSET",
+   "hypoxaemic_drive_mapping_and_gain": "UNSET",
+   "k_s_r": "UNSET (P2O-1 gas-exchange values SYNTHETIC_ONLY)",
+   "mechanics_efficiency_clinical_values": "UNSET (1 the STRUCTURAL_REFERENCE; synthetic values in probes only)",
+   "paco2_reference_mmhg": "40, COMMON_REFERENCE_PROVISIONAL, not approved",
+   "respiratory_mechanics": "STRUCTURAL_SWITCH, off by default"
+  },
+  "paths": {
+   "P2K2_path": [
+    "ACTIVE_CURRENT",
+    "every migration profile (acid-base on, mechanics off); unchanged"
+   ],
+   "P2K3_candidate": [
+    "SHADOW_CANDIDATE",
+    "clinical_core/ventilation.py (W from the acid recruitment, no RR term), off, unchanged for its closed records; superseded as W semantics: RETIRED from the common candidate"
+   ],
+   "P2P2_path": [
+    "ACTIVE_CURRENT",
+    "the drive composition; unchanged"
+   ],
+   "P2S2_candidate": [
+    "SHADOW_CANDIDATE",
+    "profile.respiratory_mechanics, off by default: W from RR, the state's mechanics efficiency and the demand; PaCO2 from W and the common reference"
+   ],
+   "PaCO2_P2K2": [
+    "ACTIVE_CURRENT",
+    "resting PaCO2 = authored arrival PaCO2 x arrival W at the reference (the arrival anchor); the P2K-2 path whenever the mechanics candidate is off; the candidate never reads it"
+   ],
+   "W_P2K2": [
+    "ACTIVE_CURRENT",
+    "Respiration.ventilation = efficiency x RR / intrinsic / demand ratio with the profile constant; the P2K-2 path whenever the mechanics candidate is off"
+   ],
+   "W_channel_P2K1_reader": [
+    "ACTIVE_CURRENT",
+    "derived.respiratory_rate reads state.W (above 0 multiplies the ventilatory RR, below 0 depresses it) only with the acid-base physiology off (DEFAULT_PROFILE, the golden); with it on that RR is replaced by P2K-2's. In the P2S-2 candidate RETIRED_FROM_COMMON_MECHANICS_CANDIDATE: no source may write the W channel (the integration refuses it) and nothing reads it; historical behaviour kept"
+   ],
+   "acid_drive": [
+    "ACTIVE_CURRENT",
+    "P2K-2: the burden from the authored HCO3 and the effective oxygen deficit; unchanged"
+   ],
+   "central_drive_availability": [
+    "ACTIVE_CURRENT",
+    "P2P-2 STRUCTURAL_INPUT, 1 by default; family values UNSET; it moves the RR only"
+   ],
+   "expressed_rr": [
+    "ACTIVE_CURRENT",
+    "availability x rate_from_drive(excitatory, intrinsic) whenever the acid-base physiology is on; P2S-2 begins after it"
+   ],
+   "intrinsic_rr": [
+    "ACTIVE_CURRENT",
+    "Anchors.intrinsic_respiratory_rate (None: the arrival RR), a P2K-2 candidate input (12 / 16 / 20 carried); the reference frequency of W, never a mechanics input"
+   ],
+   "legacy_engine": [
+    "LEGACY_ONLY",
+    "family_engine.py's respiratory model, the runtime source of truth; not read"
+   ],
+   "metabolic_demand": [
+    "ACTIVE_CURRENT",
+    "aux.oxygen_demand / anchors.metabolic_demand_baseline (BASELINE_RELATIVE), shared by P2K-2, P2K-3 and the candidate; CO2 production read proportional to it (a constant respiratory quotient, implicit)"
+   ],
+   "respiratory_drive": [
+    "ACTIVE_CURRENT",
+    "P2P-2 composition: excitatory drive = acid drive (acid_to_drive_gain x burden) + hypoxaemic drive (UNSET by default); unchanged; reads no mechanics, W or PaCO2"
+   ],
+   "ventilation_efficiency": [
+    "ACTIVE_CURRENT",
+    "P2K-2 profile constant, STRUCTURAL_REFERENCE 1 in every migration; in the P2S-2 candidate RETIRED: it must be 1, mechanics live in the state"
+   ]
+  },
+  "probes": {
+   "M1": "normal drive + availability 1 + mechanics reference: the W reference state (W 1, PaCO2 the reference)",
+   "M10": "a mechanics change alone moves no drive, intrinsic RR, availability, G, SpO2, D or lactate",
+   "M11": "a G impairment alone does not change the mechanics efficiency",
+   "M12": "an L impairment alone does not change the mechanics efficiency unless a writer declares it",
+   "M2": "RR up, mechanics fixed: W up, PaCO2 down",
+   "M3": "RR high + mechanics sufficiently reduced: W can stay low, PaCO2 high (the asthma / oedema property)",
+   "M4": "RR low from central depression + mechanics normal: W low, PaCO2 high (the opioid property)",
+   "M5": "same RR, lower mechanics: higher PaCO2",
+   "M6": "same mechanics, lower RR: higher PaCO2",
+   "M7": "the acid drive raises RR; W responds through RR only, no direct lactate control",
+   "M8": "the hypoxaemic drive raises RR; W responds through RR only, no SpO2 -> PaCO2 shortcut",
+   "M9": "central depression suppresses RR: W falls, PaCO2 rises"
+  },
+  "readiness_criteria": [
+   "RR and mechanics are distinct (M5, M6, M10; the drive reads no mechanics; the mechanics read no drive)",
+   "both contribute to W (M1, M2, M3, M5; the directions, demand included; the faculty's form reproduced)",
+   "W has one meaning (W channel writes refused and the channel inert, RR never read from W, W after RR; P2K-1 retired from the candidate)",
+   "high RR / high PaCO2 representable (M3; oedema 58m and asthma 49m; availability 1)",
+   "low RR / high PaCO2 representable (M4, M9; the opioid contrast)",
+   "central depression remains distinct from mechanics (the opioid contrast; M10, M11, M12)",
+   "arrival PaCO2 not hidden in a case-specific reference anchor (no anchor absorption; arrival ordering coherent)",
+   "default prior behaviour unchanged (exact P2Q-2 reading; GI, ACS, oedema, PE and P2P-2 reproduced; the P2Q-2 tree proven)",
+   "no clinical mechanics value approved (no family writer; committed arrivals at the reference; parameter state)"
+  ],
+  "readiness_rule": "Predeclared. READY when every criterion holds; otherwise NOT_READY with the first failing criterion as the blocker. An incoherent arrival ordering (P2S-2-11) is a STOP: it fails the seventh criterion. The region overlaps, the frequency-factor linearity and the HR gap are reported and never decide it",
+  "recommendation": {
+   "COMMON_RESPIRATORY_MECHANICS_ARCHITECTURE_READY": "PROCEED_TO_ASTHMA_SHADOW_MIGRATION (no numerical mechanics calibration before it; the family provides the mechanics writer and its arrival mapping, after availability and the excitatory drive)"
+  },
+  "report": "clinical_core/respiratory_mechanics_report.py",
+  "reversal": {
+   "clinical_core/decision_pack.py": [
+    [
+     "                        \"clinical_core/respiratory_drive.py\", \"clinical_core/respiratory_drive_report.py\",\n                        \"clinical_core/embolism_migration.py\", \"clinical_core/embolism_migration_report.py\",\n                        \"clinical_core/respiratory_mechanics.py\", \"clinical_core/respiratory_mechanics_report.py\")\n\n",
+     "                        \"clinical_core/respiratory_drive.py\", \"clinical_core/respiratory_drive_report.py\",\n                        \"clinical_core/embolism_migration.py\", \"clinical_core/embolism_migration_report.py\")\n\n"
+    ]
+   ],
+   "clinical_core/derived.py": [
+    [
+     "AUXILIARY_SOURCES[\"metabolic_acid_burden\"] = ACID_BASE\n#: P2S-2: the core's composition of the families' mechanics changes into the common respiratory mechanics efficiency\n#: (the arrival value times every factor since). It adds no kinetics of its own. Off unless a profile declares it.\nRESPIRATORY_MECHANICS = Source(SourceKind.CORE_COUPLING, \"respiratory_mechanics\")\nAUXILIARY_SOURCES[\"mechanics_efficiency\"] = RESPIRATORY_MECHANICS\n#: The rhythms the collapse rule may end in (P2E-3). Which one, and when, is TBD.\n",
+     "AUXILIARY_SOURCES[\"metabolic_acid_burden\"] = ACID_BASE\n#: The rhythms the collapse rule may end in (P2E-3). Which one, and when, is TBD.\n"
+    ],
+    [
+     "    central_drive_availability: float = 1.0\n    # P2S-2: the common respiratory mechanics candidate, off by default (False: every value is P2K-2's and P2P-2's). On,\n    # it needs the acid-base physiology and the structural-reference efficiency 1, and gives W one meaning: the effective\n    # alveolar ventilation relative to the current metabolic ventilatory need, derived after the RR and never read back\n    # into it. Frequency factor = expressed RR / intrinsic RR; capacity = frequency factor x the state's mechanics\n    # efficiency (aux.mechanics_efficiency, family-written); W = capacity / demand ratio; PaCO2 = paco2_reference_mmhg / W\n    # (the PaCO2 at W = 1, never anchored to the authored arrival PaCO2). The W channel holds no meaning there: no source\n    # may write it (the integration refuses it) and nothing in the candidate reads it.\n    respiratory_mechanics: bool = False\n    pressure_levels: tuple[tuple[float, int], ...] = ((80.0, 1), (65.0, 2))\n",
+     "    central_drive_availability: float = 1.0\n    pressure_levels: tuple[tuple[float, int], ...] = ((80.0, 1), (65.0, 2))\n"
+    ],
+    [
+     "            raise CoreInvariantError(\"the ventilation efficiency is above 0 and at most 1\")\n        if not isinstance(self.respiratory_mechanics, bool):\n            raise CoreInvariantError(\"the respiratory mechanics candidate is on (True) or off (False)\")\n        if self.respiratory_mechanics and (self.acid_to_drive_gain is None or self.ventilation_efficiency != 1.0):\n            # P2S-2: W lives in the acid-base respiration, and mechanics in one coordinate (the state's), never two.\n            raise CoreInvariantError(\"the respiratory mechanics candidate needs the acid-base physiology and the \"\n                                     \"structural-reference ventilation efficiency 1: mechanics live in the state's \"\n                                     \"mechanics efficiency, never also in the profile\")\n        if (self.hypoxaemic_drive_mapping is None) != (self.hypoxaemic_to_drive_gain is None):\n",
+     "            raise CoreInvariantError(\"the ventilation efficiency is above 0 and at most 1\")\n        if (self.hypoxaemic_drive_mapping is None) != (self.hypoxaemic_to_drive_gain is None):\n"
+    ],
+    [
+     "                                                \"in synthetic probes; no family mapping approved\"),\n    \"respiratory_mechanics\": (PROVISIONAL, \"STRUCTURAL_SWITCH (P2S-2): the common respiratory mechanics candidate, off \"\n                                           \"(False) by default. On: W = (expressed RR / intrinsic RR) x the state's \"\n                                           \"mechanics efficiency / demand ratio, and PaCO2 = paco2_reference_mmhg / W \"\n                                           \"(the PaCO2 at W = 1, COMMON_REFERENCE_PROVISIONAL, never the authored \"\n                                           \"arrival PaCO2). Mechanics efficiency 1 is the STRUCTURAL_REFERENCE; every \"\n                                           \"family mapping is UNSET; not approved\"),\n    \"pressure_levels\": (ADOPTED, \"family_engine._PRESSURE_LEVELS, without the DC1 anchoring or the recovery \"\n",
+     "                                                \"in synthetic probes; no family mapping approved\"),\n    \"pressure_levels\": (ADOPTED, \"family_engine._PRESSURE_LEVELS, without the DC1 anchoring or the recovery \"\n"
+    ],
+    [
+     "\ndef respiratory_mechanics_active(profile: CoreProfile) -> bool:\n    \"\"\"Whether the profile declares the P2S-2 common respiratory mechanics candidate (it needs the acid-base physiology).\"\"\"\n    return profile.respiratory_mechanics\n\n\ndef intrinsic_respiratory_rate(anchors: Anchors) -> float:\n",
+     "\ndef intrinsic_respiratory_rate(anchors: Anchors) -> float:\n"
+    ],
+    [
+     "    the arrival ventilation at the reference efficiency (anchored, not a parameter; eucapnic only when the authored\n    arrival makes it so). PaCO2 and pH are None without breathing.\n\n    P2S-2, with the respiratory mechanics candidate on: ``efficiency`` is the state's mechanics efficiency and\n    ``resting_paco2`` the common reference (paco2_reference_mmhg), the PaCO2 at W = 1, read from no arrival value.\"\"\"\n\n",
+     "    the arrival ventilation at the reference efficiency (anchored, not a parameter; eucapnic only when the authored\n    arrival makes it so). PaCO2 and pH are None without breathing.\"\"\"\n\n"
+    ],
+    [
+     "    No term reads lactate, D or the W channel; the ventilation feeds back into nothing (no CO2 chemoreflex in P2K-2).\n    ``drive`` is the excitatory drive; with the hypoxaemic drive UNSET and availability 1 every value is P2K-2's.\n\n    P2S-2, with the respiratory mechanics candidate on: the same drive and RR; W = (RR / intrinsic RR) x the state's\n    mechanics efficiency / demand ratio (the one W formula, ``alveolar_ventilation``), and PaCO2 = the common reference\n    / W, so the arrival mechanics are a case's latent state, never absorbed by an arrival PaCO2 anchor; the W channel is\n    not read. Off, a mechanics efficiency other than 1 is refused (nothing would read it).\"\"\"\n    if not acid_base_active(profile):\n",
+     "    No term reads lactate, D or the W channel; the ventilation feeds back into nothing (no CO2 chemoreflex in P2K-2).\n    ``drive`` is the excitatory drive; with the hypoxaemic drive UNSET and availability 1 every value is P2K-2's.\"\"\"\n    if not acid_base_active(profile):\n"
+    ],
+    [
+     "    demand_ratio = state.aux.oxygen_demand / anchors.metabolic_demand_baseline\n    if respiratory_mechanics_active(profile):\n        efficiency = state.aux.mechanics_efficiency\n        resting = profile.paco2_reference_mmhg\n    else:\n        if state.aux.mechanics_efficiency != 1.0:\n            raise CoreInvariantError(f\"minute {state.minute}: a mechanics efficiency other than 1 needs the respiratory \"\n                                     \"mechanics candidate (P2S-2); nothing else reads it\")\n        efficiency = profile.ventilation_efficiency\n        resting = arrival_paco2(anchors, profile) * arrival_alveolar_ventilation(anchors, profile)\n    ventilation = alveolar_ventilation(rate, intrinsic, efficiency, demand_ratio)\n    paco2 = resting / ventilation if ventilation > 0.0 else None\n    return Respiration(intrinsic, burden, hco3, drive, rate, efficiency, ventilation, resting,\n                       paco2, None if paco2 is None else carbonic_ph(hco3, paco2))\n",
+     "    demand_ratio = state.aux.oxygen_demand / anchors.metabolic_demand_baseline\n    ventilation = alveolar_ventilation(rate, intrinsic, profile.ventilation_efficiency, demand_ratio)\n    resting = arrival_paco2(anchors, profile) * arrival_alveolar_ventilation(anchors, profile)\n    paco2 = resting / ventilation if ventilation > 0.0 else None\n    return Respiration(intrinsic, burden, hco3, drive, rate, profile.ventilation_efficiency, ventilation, resting,\n                       paco2, None if paco2 is None else carbonic_ph(hco3, paco2))\n"
+    ],
+    [
+     "    \"\"\"\n    if anchors.arrival_mechanics_efficiency != 1.0 and not respiratory_mechanics_active(profile):\n        raise CoreInvariantError(\"an arrival mechanics efficiency other than 1 needs the respiratory mechanics candidate \"\n                                 \"(P2S-2); nothing else reads it\")\n    state = anchored_state(anchors).evolve(D=anchors.arrival_oxygen_debt)\n",
+     "    \"\"\"\n    state = anchored_state(anchors).evolve(D=anchors.arrival_oxygen_debt)\n"
+    ],
+    [
+     "                                            sympathetic_drive=0.0, oxygen_demand=anchors.metabolic_demand_baseline,\n                                            metabolic_acid_burden=arrival_acid_burden(anchors, profile),\n                                            mechanics_efficiency=anchors.arrival_mechanics_efficiency))\n    return state.evolve(aux=replace(state.aux, sympathetic_drive=sympathetic_target(state, anchors, profile)))\n",
+     "                                            sympathetic_drive=0.0, oxygen_demand=anchors.metabolic_demand_baseline,\n                                            metabolic_acid_burden=arrival_acid_burden(anchors, profile)))\n    return state.evolve(aux=replace(state.aux, sympathetic_drive=sympathetic_target(state, anchors, profile)))\n"
+    ]
+   ],
+   "clinical_core/integration.py": [
+    [
+     "                      oxygen_demand, plasma_refill, red_cell_content, sympathetic_after_minute, terminal_rhythm,\n                      tone_target, respiratory_mechanics_active)\nfrom .provenance import (BLOOD_PROCESSES, AuxiliaryChange, BloodChange, BloodFlow, BloodProcess, ChannelDelta,\n                         CoreEvent, DemandModifier, MinuteRecord, ProvenanceError, RhythmTransition, SettingChange,\n                         Source, SourceKind, MechanicsChange)\nfrom .state import (AUXILIARY_FIELDS, BLOOD_FIELDS, Anchors, AuxiliaryState, BloodState, Channel, CoreInvariantError,\n",
+     "                      oxygen_demand, plasma_refill, red_cell_content, sympathetic_after_minute, terminal_rhythm,\n                      tone_target)\nfrom .provenance import (BLOOD_PROCESSES, AuxiliaryChange, BloodChange, BloodFlow, BloodProcess, ChannelDelta,\n                         CoreEvent, DemandModifier, MinuteRecord, ProvenanceError, RhythmTransition, SettingChange,\n                         Source, SourceKind)\nfrom .state import (AUXILIARY_FIELDS, BLOOD_FIELDS, Anchors, AuxiliaryState, BloodState, Channel, CoreInvariantError,\n"
+    ],
+    [
+     "    blood: tuple[BloodFlow, ...] = ()        # what enters or leaves the circulation this minute (P2I-2T)\n    mechanics: tuple[MechanicsChange, ...] = ()  # changes to the respiratory mechanics efficiency this minute (P2S-2)\n\n",
+     "    blood: tuple[BloodFlow, ...] = ()        # what enters or leaves the circulation this minute (P2I-2T)\n\n"
+    ],
+    [
+     "        raise ProvenanceError(f\"{contributor.source.key}: the circulation changes only by a tuple of BloodFlow records\")\n    if not isinstance(contribution.mechanics, tuple) or any(not isinstance(item, MechanicsChange)\n                                                            for item in contribution.mechanics):\n        raise ProvenanceError(f\"{contributor.source.key}: the respiratory mechanics efficiency changes only by a tuple \"\n                              \"of MechanicsChange records\")\n    if contributor.source.kind is not SourceKind.SCRIPTED_EVENT and any(delta.channel in BLOOD_CHANNELS\n",
+     "        raise ProvenanceError(f\"{contributor.source.key}: the circulation changes only by a tuple of BloodFlow records\")\n    if contributor.source.kind is not SourceKind.SCRIPTED_EVENT and any(delta.channel in BLOOD_CHANNELS\n"
+    ],
+    [
+     "    for item in (contribution.deltas + contribution.transitions + contribution.settings + contribution.events\n                 + contribution.demand + contribution.blood + contribution.mechanics):\n        if item.source != contributor.source:\n",
+     "    for item in (contribution.deltas + contribution.transitions + contribution.settings + contribution.events\n                 + contribution.demand + contribution.blood):\n        if item.source != contributor.source:\n"
+    ],
+    [
+     "                                   \"lung water above arrival clearing slowly\"))\n    transitions, settings, events, modifiers, flows, mechanics = [], [], [], [], [], []\n    internal = {}\n",
+     "                                   \"lung water above arrival clearing slowly\"))\n    transitions, settings, events, modifiers, flows = [], [], [], [], []\n    internal = {}\n"
+    ],
+    [
+     "        flows.extend(contribution.blood)\n        mechanics.extend(contribution.mechanics)\n        if contribution.internal is not None:\n            internal[contributor.source.key] = contribution.internal\n    if respiratory_mechanics_active(profile) and any(delta.channel is Channel.W for delta in deltas):\n        # P2S-2: W is derived in the respiratory mechanics candidate; the W channel holds no meaning there.\n        raise ProvenanceError(f\"minute {minute}: the W channel was written while the respiratory mechanics candidate is \"\n                              \"on (P2S-2): W is derived from the RR, the mechanics efficiency and the demand\")\n    # V and Hb written directly this minute: only a scripted probe may (``_check_owned``).\n",
+     "        flows.extend(contribution.blood)\n        if contribution.internal is not None:\n            internal[contributor.source.key] = contribution.internal\n    # V and Hb written directly this minute: only a scripted probe may (``_check_owned``).\n"
+    ],
+    [
+     "    # demand (its acute deficit signal), so the demand is set before the drive is.\n    if mechanics and not respiratory_mechanics_active(profile):\n        # P2S-2: with the candidate off nothing reads the mechanics efficiency; a change would be silently inert.\n        raise ProvenanceError(f\"minute {minute}: {mechanics[0].source.key} changed the respiratory mechanics efficiency \"\n                              \"while the respiratory mechanics candidate is off (P2S-2)\")\n    # P2S-2: the mechanics efficiency stays where its writers leave it: the minute's factors compose on the value the\n    # minute starts with, and the core adds no kinetics of its own.\n    aux = AuxiliaryState(lactate_excess_mmol_l=lactate_after_minute(state, profile),\n                         sympathetic_drive=state.aux.sympathetic_drive, oxygen_demand=demand, collapse_burden=burden,\n                         metabolic_acid_burden=_acid_burden(state, anchors, profile, demand),\n                         mechanics_efficiency=state.aux.mechanics_efficiency * math.prod(item.factor\n                                                                                         for item in mechanics))\n    aux = replace(aux, sympathetic_drive=sympathetic_after_minute(state, new_state.evolve(aux=aux), anchors, profile))\n",
+     "    # demand (its acute deficit signal), so the demand is set before the drive is.\n    aux = AuxiliaryState(lactate_excess_mmol_l=lactate_after_minute(state, profile),\n                         sympathetic_drive=state.aux.sympathetic_drive, oxygen_demand=demand, collapse_burden=burden,\n                         metabolic_acid_burden=_acid_burden(state, anchors, profile, demand))\n    aux = replace(aux, sympathetic_drive=sympathetic_after_minute(state, new_state.evolve(aux=aux), anchors, profile))\n"
+    ],
+    [
+     "                          settings=tuple(settings), events=tuple(events), internal_updates=tuple(sorted(internal)),\n                          auxiliary=changes, demand=tuple(modifiers), blood=blood_changes,\n                          mechanics=tuple(mechanics))\n    _check_conservation(state, new_state, record)\n",
+     "                          settings=tuple(settings), events=tuple(events), internal_updates=tuple(sorted(internal)),\n                          auxiliary=changes, demand=tuple(modifiers), blood=blood_changes)\n    _check_conservation(state, new_state, record)\n"
+    ],
+    [
+     "            raise ProvenanceError(f\"auxiliary {name} changed without a record of the change\")\n    if after.aux.mechanics_efficiency != before.aux.mechanics_efficiency * math.prod(item.factor\n                                                                                   for item in record.mechanics):\n        # P2S-2: the mechanics efficiency moves by exactly the minute's recorded changes, never otherwise.\n        raise ProvenanceError(\"the respiratory mechanics efficiency changed by other than its recorded changes\")\n    for channel in SCALAR_CHANNELS:\n",
+     "            raise ProvenanceError(f\"auxiliary {name} changed without a record of the change\")\n    for channel in SCALAR_CHANNELS:\n"
+    ]
+   ],
+   "clinical_core/lactate_slice.py": [
+    [
+     "                      \"clinical_core/respiratory_drive_report.py\",\n                      \"clinical_core/embolism_migration_report.py\",\n                      \"clinical_core/respiratory_mechanics_report.py\")\n\n",
+     "                      \"clinical_core/respiratory_drive_report.py\",\n                      \"clinical_core/embolism_migration_report.py\")\n\n"
+    ]
+   ],
+   "clinical_core/provenance.py": [
+    [
+     "@dataclass(frozen=True)\nclass MechanicsChange:\n    \"\"\"P2S-2: one source's change to the common respiratory mechanics efficiency in one minute.\n\n    The factor multiplies the efficiency the minute starts with (above 0; 1 changes nothing), so the efficiency stays\n    where its writers leave it: it never moves, back to arrival or anywhere else, without a change that names its\n    source. The efficiency is a common coordinate, never a disease term: a family declares what its own mechanism does\n    to it, and the core only composes the factors. No factor is approved; with the mechanics candidate off a change is\n    refused, because nothing would read it.\n    \"\"\"\n\n    factor: float\n    source: Source\n    minute: int\n    description: str\n\n    def __post_init__(self):\n        if isinstance(self.factor, bool) or not isinstance(self.factor, (int, float)) \\\n                or not math.isfinite(self.factor) or self.factor <= 0:\n            raise ProvenanceError(f\"a mechanics factor is a finite positive number, not {self.factor!r}\")\n        object.__setattr__(self, \"factor\", float(self.factor))\n        if not isinstance(self.source, Source):\n            raise ProvenanceError(\"every mechanics change names its Source\")\n        _minute(self.minute)\n        _description(self.description)\n\n    def to_dict(self) -> dict:\n        return {\"type\": \"mechanics\", \"factor\": self.factor, \"source\": self.source.to_dict(), \"minute\": self.minute,\n                \"description\": self.description}\n\n\n@dataclass(frozen=True)\nclass AuxiliaryChange:\n",
+     "@dataclass(frozen=True)\nclass AuxiliaryChange:\n"
+    ],
+    [
+     "    blood: tuple[BloodChange, ...] = field(default=())\n    mechanics: tuple[MechanicsChange, ...] = field(default=())\n\n",
+     "    blood: tuple[BloodChange, ...] = field(default=())\n\n"
+    ],
+    [
+     "        for item in (self.deltas + self.transitions + self.settings + self.events + self.auxiliary + self.demand\n                     + self.blood + self.mechanics):\n            if item.minute != self.minute:\n",
+     "        for item in (self.deltas + self.transitions + self.settings + self.events + self.auxiliary + self.demand\n                     + self.blood):\n            if item.minute != self.minute:\n"
+    ],
+    [
+     "                \"demand\": [item.to_dict() for item in self.demand],\n                \"blood\": [item.to_dict() for item in self.blood],\n                \"mechanics\": [item.to_dict() for item in self.mechanics]}\n\n",
+     "                \"demand\": [item.to_dict() for item in self.demand],\n                \"blood\": [item.to_dict() for item in self.blood]}\n\n"
+    ]
+   ],
+   "clinical_core/state.py": [
+    [
+     "    \"arrival_dynamic_state\": (\"preload_fraction\", \"arrival_oxygen_debt\", \"arrival_lactate_excess\",\n                              \"arrival_delivery_ratio\", \"arrival_bicarbonate\", \"arrival_paco2\",\n                              \"arrival_mechanics_efficiency\"),\n}\n",
+     "    \"arrival_dynamic_state\": (\"preload_fraction\", \"arrival_oxygen_debt\", \"arrival_lactate_excess\",\n                              \"arrival_delivery_ratio\", \"arrival_bicarbonate\", \"arrival_paco2\"),\n}\n"
+    ],
+    [
+     "    reversible_lung_water: float = 0.0\n    # P2S-2 candidate input, read only by the common respiratory mechanics candidate (off by default) and outside the\n    # case-parameter / migration registry until the faculty adopts that physiology, as P2K-2's: the arrival respiratory\n    # mechanics efficiency, a case / family latent arrival state (never read from the disease label), above 0 with no\n    # upper bound. 1, the default, is the structural reference; no other value is approved.\n    arrival_mechanics_efficiency: float = 1.0\n    declared: FrozenRecord = field(default=EMPTY)\n",
+     "    reversible_lung_water: float = 0.0\n    declared: FrozenRecord = field(default=EMPTY)\n"
+    ],
+    [
+     "            raise CoreInvariantError(\"the reversible lung water is at or below arrival (L_rev <= 0, P2O-3)\")\n        if not self.arrival_mechanics_efficiency > 0.0:\n            raise CoreInvariantError(\"the arrival respiratory mechanics efficiency is above 0 (P2S-2)\")\n        for name in (\"intrinsic_respiratory_rate\", \"arrival_bicarbonate\", \"arrival_paco2\"):\n",
+     "            raise CoreInvariantError(\"the reversible lung water is at or below arrival (L_rev <= 0, P2O-3)\")\n        for name in (\"intrinsic_respiratory_rate\", \"arrival_bicarbonate\", \"arrival_paco2\"):\n"
+    ],
+    [
+     "                             \"clearance (P2K-2); not lactate, D or pH; constant while the acid-base physiology is off\",\n    \"mechanics_efficiency\": \"the common respiratory mechanics efficiency (P2S-2): the effective alveolar ventilation one \"\n                            \"breath at the intrinsic-RR frequency moves, relative to the structural reference 1, above \"\n                            \"0 with no upper bound; the case's latent arrival value times every family change since \"\n                            \"(provenance.MechanicsChange); not drive, central depression, RR, G or L; 1 and constant \"\n                            \"while the mechanics candidate is off\",\n}\n",
+     "                             \"clearance (P2K-2); not lactate, D or pH; constant while the acid-base physiology is off\",\n}\n"
+    ],
+    [
+     "    metabolic_acid_burden: float = 0.0\n    mechanics_efficiency: float = 1.0\n\n",
+     "    metabolic_acid_burden: float = 0.0\n\n"
+    ],
+    [
+     "            raise CoreInvariantError(\"the metabolic acid burden is never negative\")\n        if not self.mechanics_efficiency > 0:\n            # P2S-2: the domain is above 0 only; 1 is the structural reference, not a ceiling.\n            raise CoreInvariantError(\"the respiratory mechanics efficiency is above 0\")\n\n",
+     "            raise CoreInvariantError(\"the metabolic acid burden is never negative\")\n\n"
+    ]
+   ]
+  },
+  "revision": "P2S-2",
+  "semantics": {
+   "PaCO2": "PaCO2_reference / W: the alveolar ventilation equation relative to its reference (PaCO2 = k VCO2 / VA, so PaCO2 / PaCO2_ref = (VCO2 / VCO2_ref) / (VA / VA_ref)); 40 mmHg at W = 1",
+   "W": "effective alveolar ventilation relative to the current metabolic ventilatory need (dimensionless; 1: the patient's need met at the eupnoeic reference); derived, never a state the drive reads",
+   "capacity": "frequency factor x mechanics efficiency: the alveolar ventilation relative to its reference",
+   "demand_ratio": "aux.oxygen_demand / metabolic_demand_baseline (BASELINE_RELATIVE): CO2 production relative to the patient's baseline, read proportional to the oxygen demand (constant respiratory quotient, implicit)",
+   "frequency_factor": "expressed RR / intrinsic RR (bpm / bpm): the breaths taken relative to the reference rate",
+   "mechanics_efficiency": "effective alveolar ventilation per breath relative to the eupnoeic reference (VT - VD over its reference, implicitly): above 0, 1 the structural reference; the state's value, the case's latent arrival value times every family change since",
+   "pH": "carbonic_ph(HCO3, PaCO2), unchanged"
+  },
+  "synthetic": {
+   "availabilities": [
+    1.0,
+    0.75,
+    0.5,
+    0.25,
+    0.1,
+    0.0
+   ],
+   "bicarbonates": [
+    24.0,
+    21.0,
+    18.0,
+    15.0
+   ],
+   "course_minutes": 30,
+   "demand_ratios": [
+    1.0,
+    1.2,
+    1.5
+   ],
+   "demand_sensitivity": [
+    1.0,
+    1.2
+   ],
+   "depressed": 0.5,
+   "efficiencies": [
+    1.0,
+    0.75,
+    0.5,
+    0.25
+   ],
+   "g_per_min": 0.01,
+   "hypoxaemic_gain": 10.0,
+   "hypoxaemic_mapping": [
+    [
+     100.0,
+     0.0
+    ],
+    [
+     50.0,
+     1.0
+    ]
+   ],
+   "hypoxaemic_spo2s": [
+    97.0,
+    91.0,
+    85.0
+   ],
+   "intrinsic_rr": [
+    12.0,
+    16.0,
+    20.0
+   ],
+   "l_per_min": 0.02,
+   "low": 0.25,
+   "mechanics_factor": 0.98,
+   "mild": 0.75,
+   "strong_drive": 40.0
+  },
+  "truth_paths": {
+   "fio2_percent": [
+    "investigations",
+    "abg",
+    "result",
+    "fio2_percent"
+   ],
+   "hco3": [
+    "investigations",
+    "abg",
+    "result",
+    "bicarbonate_mmol_l"
+   ],
+   "mental_status": [
+    "observable",
+    "mental_status"
+   ],
+   "paco2": [
+    "investigations",
+    "abg",
+    "result",
+    "paco2_mm_hg"
+   ],
+   "rr": [
+    "observable",
+    "respiratory_rate"
+   ],
+   "spo2": [
+    "observable",
+    "spo2"
+   ],
+   "work_of_breathing": [
+    "observable",
+    "work_of_breathing"
+   ]
+  },
+  "tuples_added": {
+   "DOWNSTREAM_REPORTS": [
+    "clinical_core/respiratory_mechanics_report.py"
+   ],
+   "PACK_DIGEST_EXCLUDED": [
+    "clinical_core/respiratory_mechanics.py",
+    "clinical_core/respiratory_mechanics_report.py"
+   ]
+  }
+ },
+ "directions": {
+  "demand": {
+   "W": [
+    1.0,
+    0.8333333333333334,
+    0.6666666666666666
+   ],
+   "paco2": [
+    40.0,
+    48.0,
+    60.0
+   ],
+   "ratio": [
+    1.0,
+    1.2,
+    1.5
+   ],
+   "rr": [
+    16.0,
+    16.0,
+    16.0
+   ]
+  },
+  "paco2_against_w": {
+   "form_matches": true,
+   "points": 24,
+   "reference_over_w": true,
+   "strictly_decreasing": true
+  },
+  "pass": true
+ },
+ "freeze_digest": "ba6e9997495dd2009526841189e622fc6c6b9b92f0c987535cfff2e8a8462e64",
+ "heart_rate": {
+  "carried_forward": "HR_GAP_DISTRESS_AROUSAL_DOMINANT (diagnostic hypothesis; no sympathetic gain, no reader)",
+  "hr_reads_respiration": {
+   "arrival_sympathetic_drive": false,
+   "heart_rate_decomposition": false,
+   "sympathetic_after_minute": false,
+   "sympathetic_drive": false,
+   "sympathetic_increment": false,
+   "sympathetic_target": false
+  },
+  "pass": true
+ },
+ "high_rr_high_paco2": {
+  "cases": {
+   "asthma_49m": {
+    "authored_paco2": 51,
+    "authored_rr": 30,
+    "boundary_efficiency": {
+     "12": 0.4,
+     "16": 0.5333333333333333,
+     "20": 0.6666666666666666
+    },
+    "hypercapnic_at_every_intrinsic": true,
+    "paco2_by_intrinsic": {
+     "12": {
+      "0.25": 64.0,
+      "0.5": 32.0,
+      "0.75": 21.333333333333332,
+      "1": 16.0
+     },
+     "16": {
+      "0.25": 85.33333333333333,
+      "0.5": 42.666666666666664,
+      "0.75": 28.444444444444443,
+      "1": 21.333333333333332
+     },
+     "20": {
+      "0.25": 106.66666666666667,
+      "0.5": 53.333333333333336,
+      "0.75": 35.55555555555556,
+      "1": 26.666666666666668
+     }
+    },
+    "rr_above_intrinsic_band": true
+   },
+   "pulmonary_edema_58m": {
+    "authored_paco2": 49,
+    "authored_rr": 38,
+    "boundary_efficiency": {
+     "12": 0.3157894736842105,
+     "16": 0.42105263157894735,
+     "20": 0.5263157894736842
+    },
+    "hypercapnic_at_every_intrinsic": true,
+    "paco2_by_intrinsic": {
+     "12": {
+      "0.25": 50.526315789473685,
+      "0.5": 25.263157894736842,
+      "0.75": 16.842105263157894,
+      "1": 12.631578947368421
+     },
+     "16": {
+      "0.25": 67.36842105263158,
+      "0.5": 33.68421052631579,
+      "0.75": 22.45614035087719,
+      "1": 16.842105263157894
+     },
+     "20": {
+      "0.25": 84.21052631578948,
+      "0.5": 42.10526315789474,
+      "0.75": 28.07017543859649,
+      "1": 21.05263157894737
+     }
+    },
+    "rr_above_intrinsic_band": true
+   }
+  },
+  "class": "HIGH_RR_HIGH_PACO2_STRUCTURALLY_REPRESENTABLE",
+  "core": {
+   "neutral_probe": {
+    "W": 0.5617591726583377,
+    "availability": 1.0,
+    "intrinsic_rr": 16.0,
+    "mechanics_efficiency": 0.25,
+    "paco2": 71.20488982977056,
+    "pass": true,
+    "rr": 35.952587050133616
+   },
+   "pulmonary_edema_58m_committed_arrival": {
+    "W": 0.5689782337626124,
+    "availability": 1.0,
+    "intrinsic_rr": 16.0,
+    "mechanics_efficiency": 0.25,
+    "paco2": 70.30145904788459,
+    "pass": true,
+    "rr": 36.41460696080719
+   }
+  },
+  "pass": true
+ },
+ "interface": {
+  "aux_source": [
+   "core_coupling:respiratory_mechanics"
+  ],
+  "burst": [
+   1.0,
+   0.9,
+   0.81,
+   0.7290000000000001,
+   0.6561000000000001,
+   0.5904900000000002,
+   0.5904900000000002,
+   0.5904900000000002,
+   0.5904900000000002,
+   0.5904900000000002,
+   0.5904900000000002
+  ],
+  "compose": true,
+  "family_writers": [],
+  "pass": true,
+  "persists": true,
+  "records": [
+   2,
+   2,
+   2
+  ],
+  "refused": {
+   "arrival_when_off": true,
+   "change_when_off": true,
+   "factor_boolean": true,
+   "factor_infinite": true,
+   "factor_nan": true,
+   "factor_negative": true,
+   "factor_zero": true,
+   "profile_needs_acid_base": true,
+   "profile_needs_reference_efficiency": true,
+   "state_when_off": true
+  },
+  "two_writers": [
+   1.0,
+   1.08,
+   1.1664,
+   1.2597120000000002
+  ]
+ },
+ "no_anchor_absorption": {
+  "by_authored_paco2": {
+   "30": {
+    "candidate": 40.0,
+    "p2k2": 30.0
+   },
+   "40": {
+    "candidate": 40.0,
+    "p2k2": 40.0
+   },
+   "60": {
+    "candidate": 40.0,
+    "p2k2": 60.0
+   }
+  },
+  "candidate_reads_anchor": false,
+  "edema_candidate_arrival": {
+   "authored_paco2": 49.0,
+   "authored_rr": 38.0,
+   "candidate_paco2": 34.99486089860531,
+   "mismatch_reported": -14.00513910139469,
+   "model_rr": 18.288399598282346
+  },
+  "pass": true,
+  "references": [
+   40.0
+  ]
+ },
+ "no_extra_state": {
+  "added_fields": {
+   "Anchors": [
+    "arrival_mechanics_efficiency"
+   ],
+   "AuxiliaryState": [
+    "mechanics_efficiency"
+   ],
+   "Contribution": [
+    "mechanics"
+   ],
+   "CoreProfile": [
+    "respiratory_mechanics"
+   ],
+   "MinuteRecord": [
+    "mechanics"
+   ]
+  },
+  "auxiliary": [
+   "lactate_excess_mmol_l",
+   "sympathetic_drive",
+   "oxygen_demand",
+   "collapse_burden",
+   "metabolic_acid_burden",
+   "mechanics_efficiency"
+  ],
+  "channels": [
+   "V",
+   "T",
+   "P",
+   "R",
+   "L",
+   "G",
+   "W",
+   "D",
+   "N",
+   "hb",
+   "glucose",
+   "k"
+  ],
+  "core_kinetics": "none: the integration composes the minute's declared factors only",
+  "forbidden_in_insertions": [],
+  "pass": true
+ },
+ "non_regression": {
+  "exact_reading_p2q2_core": {
+   "acs": true,
+   "gi_57m": true,
+   "p2p2_hypoxaemic": true,
+   "pulmonary_edema": true,
+   "pulmonary_embolism": true
+  },
+  "mechanics_constant": {
+   "acs": true,
+   "gi_57m": true,
+   "p2p2_hypoxaemic": true,
+   "pulmonary_edema": true,
+   "pulmonary_embolism": true
+  },
+  "p2q2_common_files_untouched": true,
+  "p2q2_non_regression": {
+   "acs_authority_r7": true,
+   "acs_evaluation": true,
+   "common_overload_r8": true,
+   "edema_authority": true,
+   "edema_heart_rate": true,
+   "edema_oxygen": true,
+   "edema_respiration": true,
+   "edema_untreated": true,
+   "gi_o12": true,
+   "p2p2_acidosis": true,
+   "p2p2_d1_d7_d9_d10": true,
+   "p2p2_edema_diagnostic": true,
+   "p2p2_opioid": true,
+   "pass": true
+  },
+  "p2q2_sections": {
+   "arrival": true,
+   "central_depression": true,
+   "oxygen": true,
+   "respiratory_drive": true,
+   "secondary": true,
+   "untreated": true
+  },
+  "pass": true
+ },
+ "opioid": {
+  "CENTRAL_DRIVE_FAILURE": {
+   "W": 0.3,
+   "availability": 0.3,
+   "mechanics_efficiency": 1.0,
+   "paco2": 133.33333333333334,
+   "rr": 4.8
+  },
+  "MECHANICAL_VENTILATORY_FAILURE": {
+   "W": 0.5617591726583377,
+   "availability": 1.0,
+   "mechanics_efficiency": 0.25,
+   "paco2": 71.20488982977056,
+   "rr": 35.952587050133616
+  },
+  "opioid_35m_authored": {
+   "implied_efficiency": {
+    "12": 1.1594202898550725,
+    "16": 1.5458937198067633,
+    "20": 1.932367149758454
+   },
+   "paco2": 69,
+   "rr": 6
+  },
+  "pass": true,
+  "reference": {
+   "W": 1.0,
+   "availability": 1.0,
+   "mechanics_efficiency": 1.0,
+   "paco2": 40.0,
+   "rr": 16.0
+  }
+ },
+ "oxygenation": {
+  "oxygenation_reads_ventilation": {
+   "_perfusion": false,
+   "effective_delivery": false,
+   "lung_water_gas_credit": false,
+   "oxygen_response_retained": false,
+   "oxygenation": false,
+   "relative_delivery": false
+  },
+  "pass": true,
+  "spo2_unchanged_by_mechanics": true,
+  "status": "HYPOVENTILATION_TO_OXYGENATION_LINK_DEFERRED"
+ },
+ "parameter_state": {
+  "committed_arrival_efficiency": {
+   "acs_70f_left_main": 1.0,
+   "pulmonary_edema_58m": 1.0,
+   "pulmonary_embolism_33f": 1.0,
+   "pulmonary_embolism_61m": 1.0
+  },
+  "committed_profiles_on": {
+   "acs": false,
+   "default": false,
+   "edema": false,
+   "pe": false
+  },
+  "pass": true,
+  "registry": [
+   "provisional",
+   "STRUCTURAL_SWITCH (P2S-2): the common respiratory mechanics candidate, off (False) by default. On: W = (expressed RR / intrinsic RR) x the state's mechanics efficiency / demand ratio, and PaCO2 = paco2_reference_mmhg / W (the PaCO2 at W = 1, COMMON_REFERENCE_PROVISIONAL, never the authored arrival PaCO2). Mechanics efficiency 1 is the STRUCTURAL_REFERENCE; every family mapping is UNSET; not approved"
+  ],
+  "status": {
+   "acid_parameters": "unchanged (the P2N-2 common point)",
+   "approved": "none",
+   "arrival_mechanics_efficiency": "CASE / FAMILY LATENT ARRIVAL MAPPING, UNSET in every committed case",
+   "central_drive_availability_family_values": "UNSET",
+   "hypoxaemic_drive_mapping_and_gain": "UNSET",
+   "k_s_r": "UNSET (P2O-1 gas-exchange values SYNTHETIC_ONLY)",
+   "mechanics_efficiency_clinical_values": "UNSET (1 the STRUCTURAL_REFERENCE; synthetic values in probes only)",
+   "paco2_reference_mmhg": "40, COMMON_REFERENCE_PROVISIONAL, not approved",
+   "respiratory_mechanics": "STRUCTURAL_SWITCH, off by default"
+  }
+ },
+ "probes": {
+  "pass": {
+   "M1": true,
+   "M10": true,
+   "M11": true,
+   "M12": true,
+   "M2": true,
+   "M3": true,
+   "M4": true,
+   "M5": true,
+   "M6": true,
+   "M7": true,
+   "M8": true,
+   "M9": true
+  },
+  "probes": {
+   "M1": {
+    "W": 1.0,
+    "acid_drive": 0.0,
+    "availability": 1.0,
+    "capacity": 1.0,
+    "demand_ratio": 1.0,
+    "excitatory_drive": 0.0,
+    "form_matches": true,
+    "frequency_factor": 1.0,
+    "hypoxaemic_drive": 0.0,
+    "intrinsic_rr": 16.0,
+    "mechanics_efficiency": 1.0,
+    "paco2": 40.0,
+    "paco2_reference": 40.0,
+    "pass": true,
+    "ph": 7.401029995663981,
+    "respiratory_load_signal": 1.0,
+    "rr": 16.0
+   },
+   "M10": {
+    "derived_identical": true,
+    "efficiency_end": 0.5454843193824369,
+    "paco2": [
+     33.993752118838366,
+     62.31847719715199
+    ],
+    "pass": true,
+    "states_identical_but_mechanics": true,
+    "unchanged": {
+     "D": true,
+     "G": true,
+     "L": true,
+     "acid_burden": true,
+     "acid_drive": true,
+     "availability": true,
+     "consciousness_level": true,
+     "delivery_rel": true,
+     "demand_ratio": true,
+     "excitatory_drive": true,
+     "hypoxaemic_drive": true,
+     "intrinsic_rr": true,
+     "lactate": true,
+     "monitor_rate_bpm": true,
+     "rr": true,
+     "spo2": true
+    },
+    "writer_sources": [
+     "scripted_event:p2s2-mechanics"
+    ]
+   },
+   "M11": {
+    "hypoxaemic_drive_unset": {
+     "G_end": 0.3000000000000001,
+     "W": [
+      1.0,
+      1.0
+     ],
+     "efficiency_constant": true,
+     "no_mechanics_records": true,
+     "rr": [
+      16.0,
+      16.0
+     ],
+     "spo2": [
+      97.0,
+      95.5
+     ],
+     "w_through_rr_only": true
+    },
+    "pass": true,
+    "synthetic_hypoxaemic_drive": {
+     "G_end": 0.3000000000000001,
+     "W": [
+      1.0370535785032666,
+      1.0552495414326202
+     ],
+     "efficiency_constant": true,
+     "no_mechanics_records": true,
+     "rr": [
+      16.592857256052266,
+      16.883992662921923
+     ],
+     "spo2": [
+      97.0,
+      95.5
+     ],
+     "w_through_rr_only": true
+    }
+   },
+   "M12": {
+    "G_end": 0.5651907145615921,
+    "L_end": 0.5651907145615921,
+    "efficiency_constant": true,
+    "no_mechanics_records": true,
+    "pass": true,
+    "spo2": [
+     97.0,
+     94.17404642719204
+    ],
+    "with_declared_writer": 0.5454843193824369,
+    "writer_recorded": true
+   },
+   "M2": {
+    "0.5": {
+     "W": [
+      0.5,
+      0.6666969835417551,
+      0.7978254751514524,
+      0.9009748000312721
+     ],
+     "efficiency_fixed": true,
+     "paco2": [
+      80.0,
+      59.99727160531664,
+      50.13627822852703,
+      44.396358253984054
+     ],
+     "rr": [
+      16.0,
+      21.334303473336163,
+      25.530415204846477,
+      28.831193601000706
+     ]
+    },
+    "1": {
+     "W": [
+      1.0,
+      1.3333939670835102,
+      1.5956509503029048,
+      1.8019496000625441
+     ],
+     "efficiency_fixed": true,
+     "paco2": [
+      40.0,
+      29.99863580265832,
+      25.068139114263516,
+      22.198179126992027
+     ],
+     "rr": [
+      16.0,
+      21.334303473336163,
+      25.530415204846477,
+      28.831193601000706
+     ]
+    },
+    "pass": true
+   },
+   "M3": {
+    "availability": 1.0,
+    "boundary_efficiency": 0.445030561436066,
+    "hypercapnic_points": [
+     0.25
+    ],
+    "pass": true,
+    "points": [
+     {
+      "W": 2.247036690633351,
+      "efficiency": 1.0,
+      "paco2": 17.80122245744264,
+      "rr": 35.952587050133616
+     },
+     {
+      "W": 1.6852775179750132,
+      "efficiency": 0.75,
+      "paco2": 23.73496327659019,
+      "rr": 35.952587050133616
+     },
+     {
+      "W": 1.1235183453166755,
+      "efficiency": 0.5,
+      "paco2": 35.60244491488528,
+      "rr": 35.952587050133616
+     },
+     {
+      "W": 0.5617591726583377,
+      "efficiency": 0.25,
+      "paco2": 71.20488982977056,
+      "rr": 35.952587050133616
+     }
+    ]
+   },
+   "M4": {
+    "W": 0.5,
+    "acid_drive": 0.0,
+    "availability": 0.5,
+    "capacity": 0.5,
+    "demand_ratio": 1.0,
+    "excitatory_drive": 0.0,
+    "form_matches": true,
+    "frequency_factor": 0.5,
+    "hypoxaemic_drive": 0.0,
+    "intrinsic_rr": 16.0,
+    "mechanics_efficiency": 1.0,
+    "paco2": 80.0,
+    "paco2_reference": 40.0,
+    "pass": true,
+    "ph": 7.1,
+    "respiratory_load_signal": 1.0,
+    "rr": 8.0
+   },
+   "M5": {
+    "efficiency": [
+     1.0,
+     0.75,
+     0.5,
+     0.25
+    ],
+    "paco2": [
+     17.80122245744264,
+     23.73496327659019,
+     35.60244491488528,
+     71.20488982977056
+    ],
+    "pass": true,
+    "rr": [
+     35.952587050133616,
+     35.952587050133616,
+     35.952587050133616,
+     35.952587050133616
+    ]
+   },
+   "M6": {
+    "0.25": {
+     "availability": [
+      1.0,
+      0.75,
+      0.5,
+      0.25,
+      0.1
+     ],
+     "efficiency_fixed": true,
+     "paco2": [
+      71.20488982977056,
+      94.93985310636076,
+      142.40977965954113,
+      284.81955931908226,
+      712.0488982977056
+     ],
+     "rr": [
+      35.952587050133616,
+      26.964440287600212,
+      17.976293525066808,
+      8.988146762533404,
+      3.5952587050133618
+     ]
+    },
+    "1": {
+     "availability": [
+      1.0,
+      0.75,
+      0.5,
+      0.25,
+      0.1
+     ],
+     "efficiency_fixed": true,
+     "paco2": [
+      17.80122245744264,
+      23.73496327659019,
+      35.60244491488528,
+      71.20488982977056,
+      178.0122245744264
+     ],
+     "rr": [
+      35.952587050133616,
+      26.964440287600212,
+      17.976293525066808,
+      8.988146762533404,
+      3.5952587050133618
+     ]
+    },
+    "pass": true
+   },
+   "M7": {
+    "W": [
+     1.0,
+     1.3333939670835102,
+     1.5956509503029048,
+     1.8019496000625441
+    ],
+    "acid_drive": [
+     0.0,
+     6.0,
+     12.0,
+     18.0
+    ],
+    "lactate_independent": true,
+    "matched_rr": {
+     "W": [
+      1.3333939670835102,
+      1.3333939670835102
+     ],
+     "inputs_differ": true,
+     "paco2": [
+      29.99863580265832,
+      29.99863580265832
+     ],
+     "rr": [
+      21.334303473336163,
+      21.334303473336163
+     ],
+     "same": true
+    },
+    "pass": true,
+    "respiration_reads_lactate": false,
+    "rr": [
+     16.0,
+     21.334303473336163,
+     25.530415204846477,
+     28.831193601000706
+    ]
+   },
+   "M8": {
+    "W": [
+     1.0370535785032666,
+     1.108545475294991,
+     1.1766868176294414
+    ],
+    "hypoxaemic_drive": [
+     0.6000000000000005,
+     1.8000000000000005,
+     3.0000000000000004
+    ],
+    "matched_rr": {
+     "W": [
+      1.108545475294991,
+      1.108545475294991
+     ],
+     "inputs_differ": true,
+     "paco2": [
+      36.08331899000873,
+      36.08331899000873
+     ],
+     "rr": [
+      17.736727604719857,
+      17.736727604719857
+     ],
+     "same": true
+    },
+    "paco2": [
+     38.57081333997249,
+     36.08331899000873,
+     33.993752118838366
+    ],
+    "pass": true,
+    "rr": [
+     16.592857256052266,
+     17.736727604719857,
+     18.826989082071062
+    ],
+    "spo2": [
+     97.0,
+     91.0,
+     85.0
+    ],
+    "ventilation_reads_spo2": false
+   },
+   "M9": {
+    "W": [
+     1.0,
+     0.75,
+     0.5,
+     0.25,
+     0.1,
+     0.0
+    ],
+    "availability": [
+     1.0,
+     0.75,
+     0.5,
+     0.25,
+     0.1,
+     0.0
+    ],
+    "intrinsic_rr": 16.0,
+    "paco2": [
+     40.0,
+     53.333333333333336,
+     80.0,
+     160.0,
+     400.0,
+     null
+    ],
+    "pass": true,
+    "rr": [
+     16.0,
+     12.0,
+     8.0,
+     4.0,
+     1.6,
+     0.0
+    ]
+   }
+  }
+ },
+ "proof": {
+  "common_untouched": {
+   "clinical_core/__init__.py": true,
+   "clinical_core/a9.py": true,
+   "clinical_core/acid_base.py": true,
+   "clinical_core/acid_base_report.py": true,
+   "clinical_core/acs_migration.py": true,
+   "clinical_core/acs_migration_report.py": true,
+   "clinical_core/acs_reference.py": true,
+   "clinical_core/arrival_severity.py": true,
+   "clinical_core/arrival_severity_report.py": true,
+   "clinical_core/bands.py": true,
+   "clinical_core/baroreflex.py": true,
+   "clinical_core/baroreflex_report.py": true,
+   "clinical_core/blood_anchors.py": true,
+   "clinical_core/blood_constraints.py": true,
+   "clinical_core/blood_extension.py": true,
+   "clinical_core/blood_extension_report.py": true,
+   "clinical_core/blood_filter_report.py": true,
+   "clinical_core/blood_fluid_calibration.py": true,
+   "clinical_core/blood_fluid_readiness.py": true,
+   "clinical_core/blood_fluid_readiness_report.py": true,
+   "clinical_core/blood_fluid_report.py": true,
+   "clinical_core/blood_fluid_tau_closure.py": true,
+   "clinical_core/blood_fluid_tau_closure_report.py": true,
+   "clinical_core/blood_probes.py": true,
+   "clinical_core/blood_rate_boundary.py": true,
+   "clinical_core/blood_rate_report.py": true,
+   "clinical_core/calibration.py": true,
+   "clinical_core/collapse.py": true,
+   "clinical_core/collapse_architecture.py": true,
+   "clinical_core/collapse_architecture_report.py": true,
+   "clinical_core/collapse_audit.py": true,
+   "clinical_core/collapse_audit_report.py": true,
+   "clinical_core/comparison.py": true,
+   "clinical_core/consciousness_audit.py": true,
+   "clinical_core/consciousness_audit_report.py": true,
+   "clinical_core/contracts_input.py": true,
+   "clinical_core/contracts_legacy.py": true,
+   "clinical_core/contracts_output.py": true,
+   "clinical_core/contracts_shadow.py": true,
+   "clinical_core/decision_pack_markdown.py": true,
+   "clinical_core/edema_migration.py": true,
+   "clinical_core/edema_migration_report.py": true,
+   "clinical_core/edema_reference.py": true,
+   "clinical_core/embolism_migration.py": true,
+   "clinical_core/embolism_migration_report.py": true,
+   "clinical_core/embolism_reference.py": true,
+   "clinical_core/encephalopathy.py": true,
+   "clinical_core/encephalopathy_architecture.py": true,
+   "clinical_core/encephalopathy_architecture_report.py": true,
+   "clinical_core/faculty_constraints.py": true,
+   "clinical_core/gas_exchange_architecture.py": true,
+   "clinical_core/gas_exchange_architecture_report.py": true,
+   "clinical_core/gi_reference.py": true,
+   "clinical_core/haemorrhage_probes.py": true,
+   "clinical_core/hemodynamic_probes.py": true,
+   "clinical_core/hr_envelope_filter.py": true,
+   "clinical_core/hr_envelope_filter_report.py": true,
+   "clinical_core/hr_observables.py": true,
+   "clinical_core/hr_observables_report.py": true,
+   "clinical_core/hr_primary.py": true,
+   "clinical_core/hr_primary_report.py": true,
+   "clinical_core/hr_shock.py": true,
+   "clinical_core/hr_shock_report.py": true,
+   "clinical_core/hr_structure.py": true,
+   "clinical_core/hr_structure_report.py": true,
+   "clinical_core/interventions/__init__.py": true,
+   "clinical_core/interventions/fluids.py": true,
+   "clinical_core/interventions/modifiers.py": true,
+   "clinical_core/interventions/oxygen.py": true,
+   "clinical_core/interventions/timing.py": true,
+   "clinical_core/lactate_adequacy.py": true,
+   "clinical_core/lactate_adequacy_report.py": true,
+   "clinical_core/lactate_closure.py": true,
+   "clinical_core/lactate_closure_report.py": true,
+   "clinical_core/lactate_constraints.py": true,
+   "clinical_core/lactate_rebuild.py": true,
+   "clinical_core/lactate_rebuild_report.py": true,
+   "clinical_core/legacy_adapter.py": true,
+   "clinical_core/logistics.py": true,
+   "clinical_core/lung_water_reference.py": true,
+   "clinical_core/lung_water_reference_report.py": true,
+   "clinical_core/migration.py": true,
+   "clinical_core/migration_authority.py": true,
+   "clinical_core/modules/__init__.py": true,
+   "clinical_core/modules/acs_ischaemia.py": true,
+   "clinical_core/modules/gi_haemorrhage.py": true,
+   "clinical_core/modules/pulmonary_edema.py": true,
+   "clinical_core/modules/pulmonary_embolism.py": true,
+   "clinical_core/modules/rhythm_events.py": true,
+   "clinical_core/oxygen_probes.py": true,
+   "clinical_core/pressure_tone.py": true,
+   "clinical_core/pressure_tone_filter.py": true,
+   "clinical_core/pressure_tone_filter_report.py": true,
+   "clinical_core/pressure_tone_report.py": true,
+   "clinical_core/respiratory_drive.py": true,
+   "clinical_core/respiratory_drive_report.py": true,
+   "clinical_core/respiratory_monotonicity.py": true,
+   "clinical_core/respiratory_monotonicity_report.py": true,
+   "clinical_core/rr_audit.py": true,
+   "clinical_core/rr_audit_report.py": true,
+   "clinical_core/shadow.py": true,
+   "clinical_core/signals.py": true,
+   "clinical_core/vascular_tone.py": true,
+   "clinical_core/vascular_tone_report.py": true,
+   "clinical_core/ventilation.py": true,
+   "clinical_core/ventilation_filter.py": true,
+   "clinical_core/ventilation_filter_report.py": true,
+   "clinical_core/ventilation_surface.py": true,
+   "clinical_core/ventilation_surface_report.py": true
+  },
+  "p2q2_common_untouched": {
+   "clinical_core/__init__.py": true,
+   "clinical_core/a9.py": true,
+   "clinical_core/acid_base.py": true,
+   "clinical_core/acid_base_report.py": true,
+   "clinical_core/acs_migration.py": true,
+   "clinical_core/acs_migration_report.py": true,
+   "clinical_core/acs_reference.py": true,
+   "clinical_core/arrival_severity.py": true,
+   "clinical_core/arrival_severity_report.py": true,
+   "clinical_core/bands.py": true,
+   "clinical_core/baroreflex.py": true,
+   "clinical_core/baroreflex_report.py": true,
+   "clinical_core/blood_anchors.py": true,
+   "clinical_core/blood_constraints.py": true,
+   "clinical_core/blood_extension.py": true,
+   "clinical_core/blood_extension_report.py": true,
+   "clinical_core/blood_filter_report.py": true,
+   "clinical_core/blood_fluid_calibration.py": true,
+   "clinical_core/blood_fluid_readiness.py": true,
+   "clinical_core/blood_fluid_readiness_report.py": true,
+   "clinical_core/blood_fluid_report.py": true,
+   "clinical_core/blood_fluid_tau_closure.py": true,
+   "clinical_core/blood_fluid_tau_closure_report.py": true,
+   "clinical_core/blood_probes.py": true,
+   "clinical_core/blood_rate_boundary.py": true,
+   "clinical_core/blood_rate_report.py": true,
+   "clinical_core/calibration.py": true,
+   "clinical_core/collapse.py": true,
+   "clinical_core/collapse_architecture.py": true,
+   "clinical_core/collapse_architecture_report.py": true,
+   "clinical_core/collapse_audit.py": true,
+   "clinical_core/collapse_audit_report.py": true,
+   "clinical_core/comparison.py": true,
+   "clinical_core/consciousness_audit.py": true,
+   "clinical_core/consciousness_audit_report.py": true,
+   "clinical_core/contracts_input.py": true,
+   "clinical_core/contracts_legacy.py": true,
+   "clinical_core/contracts_output.py": true,
+   "clinical_core/contracts_shadow.py": true,
+   "clinical_core/decision_pack_markdown.py": true,
+   "clinical_core/derived.py": true,
+   "clinical_core/edema_migration.py": true,
+   "clinical_core/edema_migration_report.py": true,
+   "clinical_core/edema_reference.py": true,
+   "clinical_core/encephalopathy.py": true,
+   "clinical_core/encephalopathy_architecture.py": true,
+   "clinical_core/encephalopathy_architecture_report.py": true,
+   "clinical_core/faculty_constraints.py": true,
+   "clinical_core/gas_exchange_architecture.py": true,
+   "clinical_core/gas_exchange_architecture_report.py": true,
+   "clinical_core/gi_reference.py": true,
+   "clinical_core/haemorrhage_probes.py": true,
+   "clinical_core/hemodynamic_probes.py": true,
+   "clinical_core/hr_envelope_filter.py": true,
+   "clinical_core/hr_envelope_filter_report.py": true,
+   "clinical_core/hr_observables.py": true,
+   "clinical_core/hr_observables_report.py": true,
+   "clinical_core/hr_primary.py": true,
+   "clinical_core/hr_primary_report.py": true,
+   "clinical_core/hr_shock.py": true,
+   "clinical_core/hr_shock_report.py": true,
+   "clinical_core/hr_structure.py": true,
+   "clinical_core/hr_structure_report.py": true,
+   "clinical_core/integration.py": true,
+   "clinical_core/interventions/__init__.py": true,
+   "clinical_core/interventions/fluids.py": true,
+   "clinical_core/interventions/modifiers.py": true,
+   "clinical_core/interventions/oxygen.py": true,
+   "clinical_core/interventions/timing.py": true,
+   "clinical_core/lactate_adequacy.py": true,
+   "clinical_core/lactate_adequacy_report.py": true,
+   "clinical_core/lactate_closure.py": true,
+   "clinical_core/lactate_closure_report.py": true,
+   "clinical_core/lactate_constraints.py": true,
+   "clinical_core/lactate_rebuild.py": true,
+   "clinical_core/lactate_rebuild_report.py": true,
+   "clinical_core/legacy_adapter.py": true,
+   "clinical_core/logistics.py": true,
+   "clinical_core/lung_water_reference.py": true,
+   "clinical_core/lung_water_reference_report.py": true,
+   "clinical_core/migration.py": true,
+   "clinical_core/migration_authority.py": true,
+   "clinical_core/modules/__init__.py": true,
+   "clinical_core/modules/acs_ischaemia.py": true,
+   "clinical_core/modules/gi_haemorrhage.py": true,
+   "clinical_core/modules/pulmonary_edema.py": true,
+   "clinical_core/modules/rhythm_events.py": true,
+   "clinical_core/oxygen_probes.py": true,
+   "clinical_core/pressure_tone.py": true,
+   "clinical_core/pressure_tone_filter.py": true,
+   "clinical_core/pressure_tone_filter_report.py": true,
+   "clinical_core/pressure_tone_report.py": true,
+   "clinical_core/provenance.py": true,
+   "clinical_core/respiratory_drive.py": true,
+   "clinical_core/respiratory_drive_report.py": true,
+   "clinical_core/respiratory_monotonicity.py": true,
+   "clinical_core/respiratory_monotonicity_report.py": true,
+   "clinical_core/rr_audit.py": true,
+   "clinical_core/rr_audit_report.py": true,
+   "clinical_core/shadow.py": true,
+   "clinical_core/signals.py": true,
+   "clinical_core/state.py": true,
+   "clinical_core/vascular_tone.py": true,
+   "clinical_core/vascular_tone_report.py": true,
+   "clinical_core/ventilation.py": true,
+   "clinical_core/ventilation_filter.py": true,
+   "clinical_core/ventilation_filter_report.py": true,
+   "clinical_core/ventilation_surface.py": true,
+   "clinical_core/ventilation_surface_report.py": true
+  },
+  "p2q2_freeze_digest": true,
+  "p2q2_proof": true,
+  "p2q2_record": true,
+  "proofs": {
+   "clinical_core/decision_pack.py": true,
+   "clinical_core/derived.py": true,
+   "clinical_core/integration.py": true,
+   "clinical_core/lactate_slice.py": true,
+   "clinical_core/provenance.py": true,
+   "clinical_core/state.py": true
+  }
+ },
+ "readiness": {
+  "blocker": null,
+  "criteria": {
+   "RR and mechanics are distinct (M5, M6, M10; the drive reads no mechanics; the mechanics read no drive)": true,
+   "W has one meaning (W channel writes refused and the channel inert, RR never read from W, W after RR; P2K-1 retired from the candidate)": true,
+   "arrival PaCO2 not hidden in a case-specific reference anchor (no anchor absorption; arrival ordering coherent)": true,
+   "both contribute to W (M1, M2, M3, M5; the directions, demand included; the faculty's form reproduced)": true,
+   "central depression remains distinct from mechanics (the opioid contrast; M10, M11, M12)": true,
+   "default prior behaviour unchanged (exact P2Q-2 reading; GI, ACS, oedema, PE and P2P-2 reproduced; the P2Q-2 tree proven)": true,
+   "high RR / high PaCO2 representable (M3; oedema 58m and asthma 49m; availability 1)": true,
+   "low RR / high PaCO2 representable (M4, M9; the opioid contrast)": true,
+   "no clinical mechanics value approved (no family writer; committed arrivals at the reference; parameter state)": true
+  },
+  "ready": true,
+  "recommendation": "PROCEED_TO_ASTHMA_SHADOW_MIGRATION (no numerical mechanics calibration before it; the family provides the mechanics writer and its arrival mapping, after availability and the excitatory drive)",
+  "verdict": "COMMON_RESPIRATORY_MECHANICS_ARCHITECTURE_READY"
+ },
+ "respiratory_load": {
+  "definition": "demand_ratio / mechanics_efficiency (dimensionless)",
+  "pass": true,
+  "readers": [],
+  "required_frequency_factor_at_baseline_demand": {
+   "0.25": 4.0,
+   "0.5": 2.0,
+   "0.75": 1.3333333333333333,
+   "1": 1.0
+  },
+  "status": "EXPOSED_DIAGNOSTIC_ONLY"
+ },
+ "revision": "P2S-2",
+ "w_uniqueness": {
+  "derive_rr_is_respiration_rr": true,
+  "drive_reads_w_or_mechanics": {
+   "_composition": false,
+   "arrival_drive_composition": false,
+   "expressed_respiratory_rate": false,
+   "hypoxaemic_drive": false,
+   "hypoxaemic_drive_signal": false,
+   "rate_from_drive": false,
+   "respiratory_drive": false,
+   "respiratory_drive_composition": false
+  },
+  "p2k1_reader_default_profile": [
+   8.0,
+   16.0,
+   24.0
+  ],
+  "p2k1_status": "RETIRED_FROM_COMMON_MECHANICS_CANDIDATE (still ACTIVE_CURRENT with the acid-base physiology off)",
+  "pass": true,
+  "w_channel_inert": true,
+  "w_channel_readers": [
+   "respiratory_rate"
+  ],
+  "w_channel_write_refused": true
+ }
+}
