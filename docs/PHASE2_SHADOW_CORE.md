@@ -4022,8 +4022,8 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - la posición de V va de 0,2 a 0,5 (punto medio 0,35), leída sólo del VI y FAMILY_CANDIDATE;
   - aporte y deuda de llegada latentes por las reglas de GI, nunca desde el lactato;
   - el secundario es neutro.
-- **Ningún archivo de fisiología común cambia:** sólo las dos tuplas de registro, como en P2P-1. Los otros 111 archivos de
-  `clinical_core` están fijados por hash.
+- **Ningún archivo de fisiología común cambia:** sólo las dos tuplas de registro, como en P2P-1. Los otros 109 archivos de
+  `clinical_core` (111 en `2a44327`) están fijados por hash.
 - **Análisis:** `clinical_core/embolism_migration.py`, congelado en `f26c877` antes de la evaluación. Registro:
   `docs/revision/P2Q2_pulmonary_embolism.json`. Informe: `docs/revision/P2Q2_TEP_SOMBRA.md`.
 - **Resultados:**

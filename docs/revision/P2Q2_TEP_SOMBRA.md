@@ -526,7 +526,7 @@ Sin hallazgo, comprobado por el revisor:
 - el segundo dueño se rechaza por la razón correcta;
 - todos los números están trazados;
 - no hay D desde el lactato ni ganancias reajustadas;
-- los 111 hashes comunes coinciden con `2a44327`;
+- los 109 hashes comunes coinciden con `2a44327` y las 2 tuplas se reconstruyen exactas (111 archivos);
 - las adaptaciones de los paquetes cerrados sólo filtran los archivos de P2Q-2.
 
 El crédito de L_rev vale 0 por construcción (L ≡ 0 en el TEP), así que la sonda con L_rev negativo es informativa.
