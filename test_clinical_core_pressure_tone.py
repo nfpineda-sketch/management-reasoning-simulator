@@ -20,6 +20,7 @@ from clinical_core import gas_exchange_architecture as go
 from clinical_core import lung_water_reference as lw
 from clinical_core import edema_migration as pe
 from clinical_core import respiratory_drive as rd
+from clinical_core import embolism_migration as em
 from clinical_core import vascular_tone as vt
 from clinical_core import calibration, decision_pack, gi_reference, lactate_slice
 from clinical_core import hr_primary as hp
@@ -69,7 +70,10 @@ P2J2_TONE_ROWS = (("clinical_core/vascular_tone.py", None), ("clinical_core/vasc
                   # P2N-2: the ACS migration analysis reads T only to report the closed physiology's response to the
                   # family writers (and its 1-D tone-gain sensitivity); it writes no tone. The family writers never
                   # read or write T.
-                  ("clinical_core/acs_migration.py", None))
+                  ("clinical_core/acs_migration.py", None),
+                  # P2Q-2: the PE migration analysis reads T only to report the closed physiology's tone response (and
+                  # the same 1-D tone-gain sensitivity); it writes no tone. The family writers never read or write T.
+                  ("clinical_core/embolism_migration.py", None))
 C57, C72 = pt.C57, pt.C72
 NEUTRAL = Anchors(**ARRIVAL)
 
@@ -85,7 +89,14 @@ NEUTRAL = Anchors(**ARRIVAL)
 #: P2P-2 changed the core (the respiratory-drive composition, inert by default) and two tuple files, proven against
 #: the P2P-1 files (respiratory_drive.proved): this package's guards read the tree as P2P-1 left it (rd.chain,
 #: rd.p2p1_sources).
-_LIVE_SOURCES_P2P2 = bf.freeze_sources
+#: P2Q-2 added files (the PE family, its mapping and analysis) and two tuple entries, proven against the P2P-2
+#: files (embolism_migration.proved): this package's guards read the tree as P2P-2 left it (em.chain,
+#: em.p2p2_sources).
+_LIVE_SOURCES_P2Q2 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2P2() -> dict:
+    return em.p2p2_sources(_LIVE_SOURCES_P2Q2())
 
 
 def _LIVE_SOURCES_P2P1() -> dict:
@@ -106,6 +117,7 @@ def _p2n2_core():
         lw.chain(patch)
         pe.chain(patch)
         rd.chain(patch)
+        em.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         patch.setattr(pt, "_function", _p2n2_function)

@@ -21,6 +21,7 @@ from clinical_core import gas_exchange_architecture as go
 from clinical_core import lung_water_reference as lw
 from clinical_core import edema_migration as pe
 from clinical_core import respiratory_drive as rd
+from clinical_core import embolism_migration as em
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import vascular_tone as vt
@@ -47,7 +48,14 @@ FROZEN_DIGEST = "e7ff21e577cfadc3990ac9a27a3524d4e3bb80a7870d47e27dcc6e9420b7a71
 #: P2P-2 changed the core (the respiratory-drive composition, inert by default) and two tuple files, proven against
 #: the P2P-1 files (respiratory_drive.proved): this package's guards read the tree as P2P-1 left it (rd.chain,
 #: rd.p2p1_sources).
-_LIVE_SOURCES_P2P2 = bf.freeze_sources
+#: P2Q-2 added files (the PE family, its mapping and analysis) and two tuple entries, proven against the P2P-2
+#: files (embolism_migration.proved): this package's guards read the tree as P2P-2 left it (em.chain,
+#: em.p2p2_sources).
+_LIVE_SOURCES_P2Q2 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2P2() -> dict:
+    return em.p2p2_sources(_LIVE_SOURCES_P2Q2())
 
 
 def _LIVE_SOURCES_P2P1() -> dict:
@@ -69,7 +77,7 @@ def _p2n2_upstream() -> dict:
     # P2O-1's analysis reads the ACS case for its post-freeze validation: an analysis module, never common
     # physiology; the common-core readers of the family stay what P2N-2 froze.
     up = _UPSTREAM_P2N2()
-    return {**up, "core_readers_of_family": [r for r in up["core_readers_of_family"] if r not in go.OWN + lw.OWN + pe.OWN + rd.OWN]}
+    return {**up, "core_readers_of_family": [r for r in up["core_readers_of_family"] if r not in go.OWN + lw.OWN + pe.OWN + rd.OWN + em.OWN]}
 
 
 @pytest.fixture(autouse=True, scope="module")
@@ -78,6 +86,7 @@ def _p2n2_core():
         lw.chain(patch)
         pe.chain(patch)
         rd.chain(patch)
+        em.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         patch.setattr(an, "upstream_unchanged", _p2n2_upstream)

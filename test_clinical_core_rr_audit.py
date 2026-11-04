@@ -20,6 +20,7 @@ from clinical_core import gas_exchange_architecture as go
 from clinical_core import lung_water_reference as lw
 from clinical_core import edema_migration as pe
 from clinical_core import respiratory_drive as rd
+from clinical_core import embolism_migration as em
 from clinical_core import decision_pack, gi_reference, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import lactate_adequacy as la
@@ -54,7 +55,9 @@ LATER_MODULES = ("clinical_core/acid_base.py", "clinical_core/ventilation.py",
                  "clinical_core/lung_water_reference.py",
                  "clinical_core/edema_migration.py", "clinical_core/edema_reference.py",
                  "clinical_core/modules/pulmonary_edema.py",
-                 "clinical_core/respiratory_drive.py")
+                 "clinical_core/respiratory_drive.py",
+                 "clinical_core/embolism_reference.py", "clinical_core/modules/pulmonary_embolism.py",
+                 "clinical_core/embolism_migration.py")
 C57, C72 = ra.C57, ra.C72
 
 
@@ -69,7 +72,14 @@ C57, C72 = ra.C57, ra.C72
 #: P2P-2 changed the core (the respiratory-drive composition, inert by default) and two tuple files, proven against
 #: the P2P-1 files (respiratory_drive.proved): this package's guards read the tree as P2P-1 left it (rd.chain,
 #: rd.p2p1_sources).
-_LIVE_SOURCES_P2P2 = bf.freeze_sources
+#: P2Q-2 added files (the PE family, its mapping and analysis) and two tuple entries, proven against the P2P-2
+#: files (embolism_migration.proved): this package's guards read the tree as P2P-2 left it (em.chain,
+#: em.p2p2_sources).
+_LIVE_SOURCES_P2Q2 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2P2() -> dict:
+    return em.p2p2_sources(_LIVE_SOURCES_P2Q2())
 
 
 def _LIVE_SOURCES_P2P1() -> dict:
@@ -90,6 +100,7 @@ def _p2n2_core():
         lw.chain(patch)
         pe.chain(patch)
         rd.chain(patch)
+        em.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         yield
@@ -186,7 +197,10 @@ P2N2_FILES = ("clinical_core/acs_reference.py", "clinical_core/modules/acs_ischa
               # P2P-1's analysis and case reference name W only to report the arrival channel and the respiration.
               "clinical_core/edema_migration.py", "clinical_core/edema_reference.py",
               # P2P-2's analysis names W only in its audit of the P2K-1 path (it reads no W channel).
-              "clinical_core/respiratory_drive.py")
+              "clinical_core/respiratory_drive.py",
+              # P2Q-2's analysis and case reference name W only to report the arrival channel and to check the
+              # family writes no W.
+              "clinical_core/embolism_migration.py", "clinical_core/embolism_reference.py")
 
 
 def _readers_of_w():
@@ -471,7 +485,7 @@ def test_the_exclusion_tuples_hold_exactly_their_p2k1_content():
         added = TUPLES_ADDED_BY_P2K2[name] + vs.TUPLES_ADDED[name] + vf.TUPLES_ADDED[name] + rm.TUPLES_ADDED[name] + \
             ca.TUPLES_ADDED[name] + ea.TUPLES_ADDED[name] + cm.TUPLES_ADDED[name] + \
             cy.TUPLES_ADDED[name] + an.TUPLES_ADDED[name] + go.TUPLES_ADDED[name] + lw.TUPLES_ADDED[name] + \
-            pe.TUPLES_ADDED[name] + rd.TUPLES_ADDED[name]
+            pe.TUPLES_ADDED[name] + rd.TUPLES_ADDED[name] + em.TUPLES_ADDED[name]
         assert set(added) <= set(values), name
         values = [v for v in values if v not in added]
         assert (hashlib.sha256(json.dumps(sorted(values)).encode("utf-8")).hexdigest(), len(values)) == \

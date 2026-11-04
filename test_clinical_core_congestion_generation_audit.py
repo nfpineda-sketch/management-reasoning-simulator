@@ -24,6 +24,7 @@ from clinical_core import gas_exchange_architecture as go
 from clinical_core import lung_water_reference as lw
 from clinical_core import edema_migration as pe
 from clinical_core import respiratory_drive as rd
+from clinical_core import embolism_migration as em
 from clinical_core.bands import ARRIVAL
 from clinical_core.integration import CHANNEL_BOUNDS
 from clinical_core.state import CHANNEL_DEFINITIONS, Anchors, Channel
@@ -39,6 +40,7 @@ def _p2o1_core_through_the_chain():
     with pytest.MonkeyPatch.context() as patch:
         pe.chain(patch)
         rd.chain(patch)
+        em.chain(patch)
         yield
 
 
@@ -77,7 +79,8 @@ def test_the_writers_and_readers_of_l():
             if isinstance(node, ast.Call) and getattr(node.func, "id", None) == "ChannelDelta" and node.args:
                 first = node.args[0]
                 if isinstance(first, ast.Attribute) and isinstance(first.value, ast.Name) and first.value.id == "Channel":
-                    if first.attr == "L" and relative not in pe.OWN:   # P2P-1's family writer postdates this audit
+                    # P2P-1's and P2Q-2's family writers postdate this audit.
+                    if first.attr == "L" and relative not in pe.OWN + em.OWN:
                         literal_l.add(relative)
                 else:
                     variable.add(relative)

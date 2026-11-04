@@ -19,12 +19,26 @@ from clinical_core import derived as dv
 from clinical_core import edema_migration as pe
 from clinical_core import edema_reference as er
 from clinical_core import respiratory_drive as rd
+from clinical_core import embolism_migration as em
 from clinical_core.state import CoreInvariantError
 
 #: The P2P-2 freeze: the core insertions (by the proof), the audit, the semantics, the synthetic values, probes D1-D10,
 #: the diagnostics, the readiness rule and every clinical_core source but the downstream reports, committed before the
 #: evaluation run.
 FROZEN_DIGEST = "5e705336b733be87c4bf1cc16fd8fdb664a11050aa9bed32ea82b539afe5f449"
+
+#: P2Q-2 added files (the PE family, its mapping and analysis) and two tuple entries, proven against the P2P-2 files
+#: (embolism_migration.proved): this package's guards read the tree as P2P-2 left it (em.chain, em.p2p2_sources);
+#: the record is unchanged.
+_LIVE_SOURCES_P2Q2 = bf.freeze_sources
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _p2p2_tree():
+    with pytest.MonkeyPatch.context() as patch:
+        em.chain(patch)
+        patch.setattr(bf, "freeze_sources", lambda: em.p2p2_sources(_LIVE_SOURCES_P2Q2()))
+        yield
 
 
 # The frozen package and its proof -------------------------------------------------------------------------------------------
