@@ -4088,3 +4088,48 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Queda abierto:** HYPOVENTILATION_TO_OXYGENATION_LINK_DEFERRED; la linealidad del factor de frecuencia; la
   identificabilidad de la eficiencia de llegada sin la FR intrínseca; la FR de llegada sin un impulso excitador mapeado;
   HR_GAP_DISTRESS_AROUSAL_DOMINANT (sin implementar). TD-119.
+
+## 64. P2S-3 · Migración en sombra del asma (2026-11-04)
+
+- **Encargo:** migrar la familia del asma sobre el núcleo común que cerró P2S-2, sin retocarlo. Casos: `asthma_49m`
+  (primario: asma con riesgo vital, fatiga e hipercapnia) y `asthma_24f` (secundario: asma aguda grave compensada).
+- **Escritor de familia** (`clinical_core/modules/asthma.py`): `AirwayObstruction` escribe sólo la eficiencia mecánica
+  común (`MechanicsChange`): una fracción declarada por minuto mientras la obstrucción empeora sin tratamiento.
+  - La FR, W, la PaCO2, el pH, la SpO2, el aporte, D, el lactato, la FC y la conciencia siguen en el núcleo común.
+  - El núcleo rechaza el escritor con el candidato de mecánica apagado.
+  - No hay escritor de broncodilatador, esteroide, fatiga ni G directa.
+- **Mapeo de llegada** (`clinical_core/asthma_reference.py`):
+  - la eficiencia de llegada es FAMILY_CANDIDATE: la región analítica de la FR y la PaCO2 autorales, con la FR
+    intrínseca 12 / 16 / 20 declarada junto con su propia eficiencia;
+  - bandas: 49m 0,314–0,523; 24f 0,455–0,759;
+  - disponibilidad 1 y perfusión neutra.
+- **Ningún archivo de fisiología común cambia:** sólo las dos tuplas de registro. Los otros 115 archivos `.py` de
+  `clinical_core` en `daa23d6` están fijados por hash.
+- **Análisis:** `clinical_core/asthma_migration.py`, congelado en `2c055ca` antes de la evaluación. Registro:
+  `docs/revision/P2S3_asthma_migration.json`. Informe: `docs/revision/P2S3_ASMA_SOMBRA.md`.
+- **Resultados:**
+  - El escritor apunta sólo a la mecánica común. A cada punto, la E y la PaCO2 del núcleo quedan ordenadas y el 49m
+    es hipercápnico.
+  - Una parte del contraste viene del impulso ácido del 24f (su carga ácida sube su FR), no sólo de la mecánica.
+  - El empeoramiento baja E, W y el pH y sube la PaCO2 sin mover nada más; el alivio estructural hace lo inverso. El O2
+    sube la SpO2 sin cambiar la PaCO2 ni la FR. No hay G ni L falsos.
+  - El registro de P2S-2 (y con él GI, SCA, edema, TEP y P2P-2) se reproduce.
+  - **Lo más importante:** la FR de llegada del núcleo (impulso de P2P-2 sin cambios) es 16 en el 49m y 21,6 en el 24f,
+    frente a 30 y 34 autorales. Sin el ancla de PaCO2, esa brecha de impulso común pasa 1:1 a la llegada: PaCO2 95,6 y
+    pH 7,03 en el 49m (51 y 7,30 autorales); 48,7 y 7,25 en el 24f (31 y 7,45). Con la FR autoral, el mapeo da la PaCO2
+    autoral exacta: la mecánica está bien mapeada y lo que falta es el impulso excitador no químico.
+- **Veredicto de la regla congelada:** `ASTHMA_SHADOW_MIGRATION_READY`.
+- **Revisión adversarial (1 alta, 2 medias, 8 bajas):** la regla decidía sobre identidades del mapeo, y la única
+  comprobación no tautológica (el 24f hipocápnico en el núcleo) falla.
+- **Clasificación del paquete:** `ASTHMA_SHADOW_MIGRATION_NOT_READY — COMMON_CORE_BLOCKER_FOUND (COMMON_DRIVE_GAP)`.
+  Representar la llegada exige un impulso excitador no químico común, prohibido en P2S-3. Queda señalada la tensión entre
+  P2S-2 (mapear el impulso antes que la mecánica) y el mandato de P2S-3 (impulso sin cambios).
+- **Detención:** no se inicia P2T-0 (condicionado a READY) ni ninguna fisiología ejecutable.
+- **Recomendación:** decisión docente sobre el impulso excitador no químico común. Probablemente comparte raíz con la
+  brecha de FC (distrés / activación), así que conviene auditarlos juntos, en sólo lectura, antes de implementar.
+- **Queda abierto:**
+  - COMMON_DRIVE_GAP, ahora visible en la PaCO2 y el pH de llegada (bloqueo; primera decisión docente);
+  - EXPECTED_ALVEOLAR_GAS_EXTENSION;
+  - el broncodilatador y el esteroide;
+  - HR_GAP_DISTRESS_AROUSAL_DOMINANT, con el β-agonista como factor de confusión;
+  - la conciencia no lee la PaCO2. TD-120.
