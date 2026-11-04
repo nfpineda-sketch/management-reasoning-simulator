@@ -57,6 +57,10 @@ AUXILIARY_SOURCES["collapse_burden"] = COLLAPSE
 #: first-order (``acid_burden_after_minute``). Off unless a profile declares the acid-base physiology.
 ACID_BASE = Source(SourceKind.CORE_COUPLING, "acid_base")
 AUXILIARY_SOURCES["metabolic_acid_burden"] = ACID_BASE
+#: P2S-2: the core's composition of the families' mechanics changes into the common respiratory mechanics efficiency
+#: (the arrival value times every factor since). It adds no kinetics of its own. Off unless a profile declares it.
+RESPIRATORY_MECHANICS = Source(SourceKind.CORE_COUPLING, "respiratory_mechanics")
+AUXILIARY_SOURCES["mechanics_efficiency"] = RESPIRATORY_MECHANICS
 #: The rhythms the collapse rule may end in (P2E-3). Which one, and when, is TBD.
 TERMINAL_RHYTHMS = ("pea", "asystole")
 #: The shared blood state's two core couplings (P2I-2T): plasma refill into the circulation, and
@@ -156,6 +160,14 @@ class CoreProfile:
     hypoxaemic_drive_mapping: tuple[tuple[float, float], ...] | None = None
     hypoxaemic_to_drive_gain: float | None = None
     central_drive_availability: float = 1.0
+    # P2S-2: the common respiratory mechanics candidate, off by default (False: every value is P2K-2's and P2P-2's). On,
+    # it needs the acid-base physiology and the structural-reference efficiency 1, and gives W one meaning: the effective
+    # alveolar ventilation relative to the current metabolic ventilatory need, derived after the RR and never read back
+    # into it. Frequency factor = expressed RR / intrinsic RR; capacity = frequency factor x the state's mechanics
+    # efficiency (aux.mechanics_efficiency, family-written); W = capacity / demand ratio; PaCO2 = paco2_reference_mmhg / W
+    # (the PaCO2 at W = 1, never anchored to the authored arrival PaCO2). The W channel holds no meaning there: no source
+    # may write it (the integration refuses it) and nothing in the candidate reads it.
+    respiratory_mechanics: bool = False
     pressure_levels: tuple[tuple[float, int], ...] = ((80.0, 1), (65.0, 2))
     oxygen_levels: tuple[tuple[float, int], ...] = ((87.0, 1), (80.0, 2))
     # P2E-3: the collapse rule is off (None) unless a profile declares it. No clinical threshold,
@@ -259,6 +271,13 @@ class CoreProfile:
         if not 0.0 < self.ventilation_efficiency <= 1.0:
             # Effective ventilation is never more than the ventilation RR moves (P2K-2).
             raise CoreInvariantError("the ventilation efficiency is above 0 and at most 1")
+        if not isinstance(self.respiratory_mechanics, bool):
+            raise CoreInvariantError("the respiratory mechanics candidate is on (True) or off (False)")
+        if self.respiratory_mechanics and (self.acid_to_drive_gain is None or self.ventilation_efficiency != 1.0):
+            # P2S-2: W lives in the acid-base respiration, and mechanics in one coordinate (the state's), never two.
+            raise CoreInvariantError("the respiratory mechanics candidate needs the acid-base physiology and the "
+                                     "structural-reference ventilation efficiency 1: mechanics live in the state's "
+                                     "mechanics efficiency, never also in the profile")
         if (self.hypoxaemic_drive_mapping is None) != (self.hypoxaemic_to_drive_gain is None):
             # P2P-2: the hypoxaemic drive is one structure; a mapping without its gain, or the reverse, is half-defined.
             raise CoreInvariantError("the hypoxaemic drive declares its oxygenation mapping and its gain together, or "
@@ -446,6 +465,12 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
                                                 "the excitatory drive gives, intrinsic share included, never the "
                                                 "intrinsic RR itself; 1 (no central depression) by default, lower only "
                                                 "in synthetic probes; no family mapping approved"),
+    "respiratory_mechanics": (PROVISIONAL, "STRUCTURAL_SWITCH (P2S-2): the common respiratory mechanics candidate, off "
+                                           "(False) by default. On: W = (expressed RR / intrinsic RR) x the state's "
+                                           "mechanics efficiency / demand ratio, and PaCO2 = paco2_reference_mmhg / W "
+                                           "(the PaCO2 at W = 1, COMMON_REFERENCE_PROVISIONAL, never the authored "
+                                           "arrival PaCO2). Mechanics efficiency 1 is the STRUCTURAL_REFERENCE; every "
+                                           "family mapping is UNSET; not approved"),
     "pressure_levels": (ADOPTED, "family_engine._PRESSURE_LEVELS, without the DC1 anchoring or the recovery "
                                  "margin, which belong to the observation layer"),
     "oxygen_levels": (ADOPTED, "family_engine._OXYGEN_LEVELS, same reservation"),
@@ -610,6 +635,11 @@ def arrival_paco2(anchors: Anchors, profile: CoreProfile) -> float:
     return profile.paco2_reference_mmhg if anchors.arrival_paco2 is None else anchors.arrival_paco2
 
 
+def respiratory_mechanics_active(profile: CoreProfile) -> bool:
+    """Whether the profile declares the P2S-2 common respiratory mechanics candidate (it needs the acid-base physiology)."""
+    return profile.respiratory_mechanics
+
+
 def intrinsic_respiratory_rate(anchors: Anchors) -> float:
     """The patient's RR without respiratory drive; undeclared, the arrival RR is read as intrinsic."""
     return anchors.respiratory_rate if anchors.intrinsic_respiratory_rate is None else anchors.intrinsic_respiratory_rate
@@ -678,7 +708,10 @@ class Respiration:
     ``ventilation`` is the effective alveolar ventilation relative to need (1: the patient's eupnoea at the intrinsic RR
     with mechanics preserved). ``resting_paco2`` is the PaCO2 the model implies at ventilation 1: the arrival PaCO2 times
     the arrival ventilation at the reference efficiency (anchored, not a parameter; eucapnic only when the authored
-    arrival makes it so). PaCO2 and pH are None without breathing."""
+    arrival makes it so). PaCO2 and pH are None without breathing.
+
+    P2S-2, with the respiratory mechanics candidate on: ``efficiency`` is the state's mechanics efficiency and
+    ``resting_paco2`` the common reference (paco2_reference_mmhg), the PaCO2 at W = 1, read from no arrival value."""
 
     intrinsic_rr: float
     acid_burden: float
@@ -781,7 +814,12 @@ def respiration(state: CoreState, anchors: Anchors, profile: CoreProfile) -> Res
     those, moved from the anchor by any of them), pH from HCO3 and PaCO2.
 
     No term reads lactate, D or the W channel; the ventilation feeds back into nothing (no CO2 chemoreflex in P2K-2).
-    ``drive`` is the excitatory drive; with the hypoxaemic drive UNSET and availability 1 every value is P2K-2's."""
+    ``drive`` is the excitatory drive; with the hypoxaemic drive UNSET and availability 1 every value is P2K-2's.
+
+    P2S-2, with the respiratory mechanics candidate on: the same drive and RR; W = (RR / intrinsic RR) x the state's
+    mechanics efficiency / demand ratio (the one W formula, ``alveolar_ventilation``), and PaCO2 = the common reference
+    / W, so the arrival mechanics are a case's latent state, never absorbed by an arrival PaCO2 anchor; the W channel is
+    not read. Off, a mechanics efficiency other than 1 is refused (nothing would read it)."""
     if not acid_base_active(profile):
         raise CoreInvariantError("the acid-base physiology is off in this profile (P2K-2 gains undeclared)")
     intrinsic = intrinsic_respiratory_rate(anchors)
@@ -793,10 +831,18 @@ def respiration(state: CoreState, anchors: Anchors, profile: CoreProfile) -> Res
     composition = respiratory_drive_composition(state, anchors, profile)
     drive, rate = composition.excitatory_drive, composition.expressed_rr
     demand_ratio = state.aux.oxygen_demand / anchors.metabolic_demand_baseline
-    ventilation = alveolar_ventilation(rate, intrinsic, profile.ventilation_efficiency, demand_ratio)
-    resting = arrival_paco2(anchors, profile) * arrival_alveolar_ventilation(anchors, profile)
+    if respiratory_mechanics_active(profile):
+        efficiency = state.aux.mechanics_efficiency
+        resting = profile.paco2_reference_mmhg
+    else:
+        if state.aux.mechanics_efficiency != 1.0:
+            raise CoreInvariantError(f"minute {state.minute}: a mechanics efficiency other than 1 needs the respiratory "
+                                     "mechanics candidate (P2S-2); nothing else reads it")
+        efficiency = profile.ventilation_efficiency
+        resting = arrival_paco2(anchors, profile) * arrival_alveolar_ventilation(anchors, profile)
+    ventilation = alveolar_ventilation(rate, intrinsic, efficiency, demand_ratio)
     paco2 = resting / ventilation if ventilation > 0.0 else None
-    return Respiration(intrinsic, burden, hco3, drive, rate, profile.ventilation_efficiency, ventilation, resting,
+    return Respiration(intrinsic, burden, hco3, drive, rate, efficiency, ventilation, resting,
                        paco2, None if paco2 is None else carbonic_ph(hco3, paco2))
 
 
@@ -1149,13 +1195,17 @@ def arrival_state(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> C
     derived arrival HR is the model's; its mismatch with the authored HR is reported
     (``heart_rate_decomposition``), never absorbed by a residual.
     """
+    if anchors.arrival_mechanics_efficiency != 1.0 and not respiratory_mechanics_active(profile):
+        raise CoreInvariantError("an arrival mechanics efficiency other than 1 needs the respiratory mechanics candidate "
+                                 "(P2S-2); nothing else reads it")
     state = anchored_state(anchors).evolve(D=anchors.arrival_oxygen_debt)
     if state.R.code is RhythmCode.SINUS:
         state = state.evolve(R=replace(state.R, rate_bpm=intrinsic_sinus_rate(anchors)))
         sinus_rate_reserve(state.R.rate_bpm, profile)
     state = state.evolve(aux=AuxiliaryState(lactate_excess_mmol_l=anchors.arrival_lactate_excess,
                                             sympathetic_drive=0.0, oxygen_demand=anchors.metabolic_demand_baseline,
-                                            metabolic_acid_burden=arrival_acid_burden(anchors, profile)))
+                                            metabolic_acid_burden=arrival_acid_burden(anchors, profile),
+                                            mechanics_efficiency=anchors.arrival_mechanics_efficiency))
     return state.evolve(aux=replace(state.aux, sympathetic_drive=sympathetic_target(state, anchors, profile)))
 
 

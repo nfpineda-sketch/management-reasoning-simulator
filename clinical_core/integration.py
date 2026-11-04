@@ -44,10 +44,10 @@ from .derived import (ADOPTED, AUXILIARY_SOURCES, BLOOD_COMPOSITION, COLLAPSE, D
                       acid_base_active, acid_burden_after_minute,
                       LUNG_WATER_GAS_EXCHANGE, lung_water_gas_exchange, lung_water_gas_exchange_active,
                       oxygen_demand, plasma_refill, red_cell_content, sympathetic_after_minute, terminal_rhythm,
-                      tone_target)
+                      tone_target, respiratory_mechanics_active)
 from .provenance import (BLOOD_PROCESSES, AuxiliaryChange, BloodChange, BloodFlow, BloodProcess, ChannelDelta,
                          CoreEvent, DemandModifier, MinuteRecord, ProvenanceError, RhythmTransition, SettingChange,
-                         Source, SourceKind)
+                         Source, SourceKind, MechanicsChange)
 from .state import (AUXILIARY_FIELDS, BLOOD_FIELDS, Anchors, AuxiliaryState, BloodState, Channel, CoreInvariantError,
                     CoreState, FrozenRecord, SCALAR_CHANNELS, UnresolvedBoundary, digest, initial_state)
 
@@ -119,6 +119,7 @@ class Contribution:
     internal: FrozenRecord | None = None     # the contributor's own internal state after this minute
     demand: tuple[DemandModifier, ...] = ()  # factors on metabolic oxygen demand for this minute (P2E-2)
     blood: tuple[BloodFlow, ...] = ()        # what enters or leaves the circulation this minute (P2I-2T)
+    mechanics: tuple[MechanicsChange, ...] = ()  # changes to the respiratory mechanics efficiency this minute (P2S-2)
 
 
 NOTHING = Contribution()
@@ -337,12 +338,16 @@ def _check_owned(contributor: Contributor, contribution: Contribution, minute: i
         raise ProvenanceError(f"{contributor.source.key}: demand is modified only by a tuple of DemandModifier records")
     if not isinstance(contribution.blood, tuple) or any(not isinstance(item, BloodFlow) for item in contribution.blood):
         raise ProvenanceError(f"{contributor.source.key}: the circulation changes only by a tuple of BloodFlow records")
+    if not isinstance(contribution.mechanics, tuple) or any(not isinstance(item, MechanicsChange)
+                                                            for item in contribution.mechanics):
+        raise ProvenanceError(f"{contributor.source.key}: the respiratory mechanics efficiency changes only by a tuple "
+                              "of MechanicsChange records")
     if contributor.source.kind is not SourceKind.SCRIPTED_EVENT and any(delta.channel in BLOOD_CHANNELS
                                                                          for delta in contribution.deltas):
         raise ProvenanceError(f"{contributor.source.key} wrote V or Hb directly: volume and red cells move only "
                               "through the shared blood state (a BloodFlow, P2I-2T)")
     for item in (contribution.deltas + contribution.transitions + contribution.settings + contribution.events
-                 + contribution.demand + contribution.blood):
+                 + contribution.demand + contribution.blood + contribution.mechanics):
         if item.source != contributor.source:
             raise ProvenanceError(f"{contributor.source.key} wrote a change attributed to {item.source.key}")
         if item.minute != minute:
@@ -404,7 +409,7 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
     if clearance:
         deltas.append(ChannelDelta(Channel.L, -clearance, LUNG_WATER_CLEARANCE, minute,
                                    "lung water above arrival clearing slowly"))
-    transitions, settings, events, modifiers, flows = [], [], [], [], []
+    transitions, settings, events, modifiers, flows, mechanics = [], [], [], [], [], []
     internal = {}
     for contributor in ordered:
         # A contributor sees only the signals it declares it responds to.
@@ -417,8 +422,13 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
         events.extend(contribution.events)
         modifiers.extend(contribution.demand)
         flows.extend(contribution.blood)
+        mechanics.extend(contribution.mechanics)
         if contribution.internal is not None:
             internal[contributor.source.key] = contribution.internal
+    if respiratory_mechanics_active(profile) and any(delta.channel is Channel.W for delta in deltas):
+        # P2S-2: W is derived in the respiratory mechanics candidate; the W channel holds no meaning there.
+        raise ProvenanceError(f"minute {minute}: the W channel was written while the respiratory mechanics candidate is "
+                              "on (P2S-2): W is derived from the RR, the mechanics efficiency and the demand")
     # V and Hb written directly this minute: only a scripted probe may (``_check_owned``).
     direct = {channel: [delta.amount for delta in deltas if delta.channel is channel] for channel in BLOOD_CHANNELS}
     blood, blood_changes, blood_deltas = _blood_minute(state, flows, anchors, profile, minute)
@@ -496,9 +506,17 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
     # drive answers to the state the minute ends in, so a fall in pressure raises the rate in
     # the same minute and only its decay is lagged. P2I-2AF: the drive reads the minute's own
     # demand (its acute deficit signal), so the demand is set before the drive is.
+    if mechanics and not respiratory_mechanics_active(profile):
+        # P2S-2: with the candidate off nothing reads the mechanics efficiency; a change would be silently inert.
+        raise ProvenanceError(f"minute {minute}: {mechanics[0].source.key} changed the respiratory mechanics efficiency "
+                              "while the respiratory mechanics candidate is off (P2S-2)")
+    # P2S-2: the mechanics efficiency stays where its writers leave it: the minute's factors compose on the value the
+    # minute starts with, and the core adds no kinetics of its own.
     aux = AuxiliaryState(lactate_excess_mmol_l=lactate_after_minute(state, profile),
                          sympathetic_drive=state.aux.sympathetic_drive, oxygen_demand=demand, collapse_burden=burden,
-                         metabolic_acid_burden=_acid_burden(state, anchors, profile, demand))
+                         metabolic_acid_burden=_acid_burden(state, anchors, profile, demand),
+                         mechanics_efficiency=state.aux.mechanics_efficiency * math.prod(item.factor
+                                                                                         for item in mechanics))
     aux = replace(aux, sympathetic_drive=sympathetic_after_minute(state, new_state.evolve(aux=aux), anchors, profile))
     new_state = new_state.evolve(aux=aux)
     changes = tuple(AuxiliaryChange(name, getattr(state.aux, name), getattr(aux, name), AUXILIARY_SOURCES[name],
@@ -506,7 +524,8 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
                     for name in AUXILIARY_FIELDS if getattr(aux, name) != getattr(state.aux, name))
     record = MinuteRecord(minute=minute, deltas=tuple(deltas), transitions=tuple(transitions),
                           settings=tuple(settings), events=tuple(events), internal_updates=tuple(sorted(internal)),
-                          auxiliary=changes, demand=tuple(modifiers), blood=blood_changes)
+                          auxiliary=changes, demand=tuple(modifiers), blood=blood_changes,
+                          mechanics=tuple(mechanics))
     _check_conservation(state, new_state, record)
     _check_blood(state, new_state, record, anchors, profile)
     derive(new_state, anchors, profile)   # the observation invariants hold, or this minute fails
@@ -543,6 +562,10 @@ def _check_conservation(before: CoreState, after: CoreState, record: MinuteRecor
                                                                                                   change.after)
         if (getattr(before.aux, name), getattr(after.aux, name)) != expected:
             raise ProvenanceError(f"auxiliary {name} changed without a record of the change")
+    if after.aux.mechanics_efficiency != before.aux.mechanics_efficiency * math.prod(item.factor
+                                                                                   for item in record.mechanics):
+        # P2S-2: the mechanics efficiency moves by exactly the minute's recorded changes, never otherwise.
+        raise ProvenanceError("the respiratory mechanics efficiency changed by other than its recorded changes")
     for channel in SCALAR_CHANNELS:
         change = after.value(channel) - before.value(channel)
         total = record.total(channel)

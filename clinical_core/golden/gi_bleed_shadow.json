@@ -350,6 +350,10 @@
    "provisional",
    "how far a depressed pump shrinks the preload curve: scale x P^c, so it lowers and flattens the usable curve (c = 0: P only scales output): TBD (P2D-5)"
   ],
+  "respiratory_mechanics": [
+   "provisional",
+   "STRUCTURAL_SWITCH (P2S-2): the common respiratory mechanics candidate, off (False) by default. On: W = (expressed RR / intrinsic RR) x the state's mechanics efficiency / demand ratio, and PaCO2 = paco2_reference_mmhg / W (the PaCO2 at W = 1, COMMON_REFERENCE_PROVISIONAL, never the authored arrival PaCO2). Mechanics efficiency 1 is the STRUCTURAL_REFERENCE; every family mapping is UNSET; not approved"
+  ],
   "room_air_fio2": [
    "adopted",
    "family_engine._initialize: oxygen_fio2 = .21"

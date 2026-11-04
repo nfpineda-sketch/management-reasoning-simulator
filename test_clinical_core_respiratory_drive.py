@@ -20,6 +20,7 @@ from clinical_core import edema_migration as pe
 from clinical_core import edema_reference as er
 from clinical_core import respiratory_drive as rd
 from clinical_core import embolism_migration as em
+from clinical_core import respiratory_mechanics as mc
 from clinical_core.state import CoreInvariantError
 
 #: The P2P-2 freeze: the core insertions (by the proof), the audit, the semantics, the synthetic values, probes D1-D10,
@@ -30,13 +31,21 @@ FROZEN_DIGEST = "5e705336b733be87c4bf1cc16fd8fdb664a11050aa9bed32ea82b539afe5f44
 #: P2Q-2 added files (the PE family, its mapping and analysis) and two tuple entries, proven against the P2P-2 files
 #: (embolism_migration.proved): this package's guards read the tree as P2P-2 left it (em.chain, em.p2p2_sources);
 #: the record is unchanged.
-_LIVE_SOURCES_P2Q2 = bf.freeze_sources
+#: P2S-2 changed the core (the common respiratory mechanics candidate, off by default) and two tuple files,
+#: proven against the P2Q-2 files (respiratory_mechanics.proved): this package's guards read the tree as
+#: P2Q-2 left it (mc.chain, mc.p2q2_sources).
+_LIVE_SOURCES_P2S2 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2Q2() -> dict:
+    return mc.p2q2_sources(_LIVE_SOURCES_P2S2())
 
 
 @pytest.fixture(autouse=True, scope="module")
 def _p2p2_tree():
     with pytest.MonkeyPatch.context() as patch:
         em.chain(patch)
+        mc.chain(patch)
         patch.setattr(bf, "freeze_sources", lambda: em.p2p2_sources(_LIVE_SOURCES_P2Q2()))
         yield
 

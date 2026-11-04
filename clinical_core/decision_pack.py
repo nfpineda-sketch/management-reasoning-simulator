@@ -806,7 +806,8 @@ PACK_DIGEST_EXCLUDED = ("clinical_core/decision_pack_markdown.py", "clinical_cor
                         "clinical_core/lung_water_reference.py", "clinical_core/lung_water_reference_report.py",
                         "clinical_core/edema_migration.py", "clinical_core/edema_migration_report.py",
                         "clinical_core/respiratory_drive.py", "clinical_core/respiratory_drive_report.py",
-                        "clinical_core/embolism_migration.py", "clinical_core/embolism_migration_report.py")
+                        "clinical_core/embolism_migration.py", "clinical_core/embolism_migration_report.py",
+                        "clinical_core/respiratory_mechanics.py", "clinical_core/respiratory_mechanics_report.py")
 
 
 def pack_sources() -> dict[str, str]:

@@ -21,6 +21,7 @@ from clinical_core import lung_water_reference as lw
 from clinical_core import edema_migration as pe
 from clinical_core import respiratory_drive as rd
 from clinical_core import embolism_migration as em
+from clinical_core import respiratory_mechanics as mc
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import respiratory_monotonicity as rm
@@ -56,7 +57,14 @@ N = 121
 #: P2Q-2 added files (the PE family, its mapping and analysis) and two tuple entries, proven against the P2P-2
 #: files (embolism_migration.proved): this package's guards read the tree as P2P-2 left it (em.chain,
 #: em.p2p2_sources).
-_LIVE_SOURCES_P2Q2 = bf.freeze_sources
+#: P2S-2 changed the core (the common respiratory mechanics candidate, off by default) and two tuple files,
+#: proven against the P2Q-2 files (respiratory_mechanics.proved): this package's guards read the tree as
+#: P2Q-2 left it (mc.chain, mc.p2q2_sources).
+_LIVE_SOURCES_P2S2 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2Q2() -> dict:
+    return mc.p2q2_sources(_LIVE_SOURCES_P2S2())
 
 
 def _LIVE_SOURCES_P2P2() -> dict:
@@ -82,6 +90,7 @@ def _p2n2_core():
         pe.chain(patch)
         rd.chain(patch)
         em.chain(patch)
+        mc.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         patch.setattr(rm, "closed_unchanged", lambda: go.p2n2_unchanged(rm.CLOSED_AT_P2K4))

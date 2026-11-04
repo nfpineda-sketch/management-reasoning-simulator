@@ -23,6 +23,7 @@ from clinical_core import lung_water_reference as lw
 from clinical_core import edema_migration as pe
 from clinical_core import respiratory_drive as rd
 from clinical_core import embolism_migration as em
+from clinical_core import respiratory_mechanics as mc
 from clinical_core import consciousness_audit as ca
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import encephalopathy as enc
@@ -56,7 +57,14 @@ TEST_MAPPING = enc.SignalMapping(normal=10.0, severe=0.0)
 #: P2Q-2 added files (the PE family, its mapping and analysis) and two tuple entries, proven against the P2P-2
 #: files (embolism_migration.proved): this package's guards read the tree as P2P-2 left it (em.chain,
 #: em.p2p2_sources).
-_LIVE_SOURCES_P2Q2 = bf.freeze_sources
+#: P2S-2 changed the core (the common respiratory mechanics candidate, off by default) and two tuple files,
+#: proven against the P2Q-2 files (respiratory_mechanics.proved): this package's guards read the tree as
+#: P2Q-2 left it (mc.chain, mc.p2q2_sources).
+_LIVE_SOURCES_P2S2 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2Q2() -> dict:
+    return mc.p2q2_sources(_LIVE_SOURCES_P2S2())
 
 
 def _LIVE_SOURCES_P2P2() -> dict:
@@ -91,7 +99,8 @@ LATER_MODULES = ("clinical_core/collapse_audit.py", "clinical_core/collapse.py",
                  "clinical_core/modules/pulmonary_edema.py",
                  "clinical_core/respiratory_drive.py",
                  "clinical_core/embolism_reference.py", "clinical_core/modules/pulmonary_embolism.py",
-                 "clinical_core/embolism_migration.py")
+                 "clinical_core/embolism_migration.py",
+                 "clinical_core/respiratory_mechanics.py")
 
 
 def _p2l2_view() -> dict:
@@ -112,6 +121,7 @@ def _patch(patch) -> None:
     pe.chain(patch)
     rd.chain(patch)
     em.chain(patch)
+    mc.chain(patch)
     patch.setattr(bf, "freeze_sources", _p2l2_view)
     patch.setattr(ca, "_python", _p2l2_python)
     # P2O-1's analysis imports the candidate only to read its hypoxaemia signal (the candidate unchanged).

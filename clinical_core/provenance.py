@@ -229,6 +229,37 @@ class DemandModifier:
 
 
 @dataclass(frozen=True)
+class MechanicsChange:
+    """P2S-2: one source's change to the common respiratory mechanics efficiency in one minute.
+
+    The factor multiplies the efficiency the minute starts with (above 0; 1 changes nothing), so the efficiency stays
+    where its writers leave it: it never moves, back to arrival or anywhere else, without a change that names its
+    source. The efficiency is a common coordinate, never a disease term: a family declares what its own mechanism does
+    to it, and the core only composes the factors. No factor is approved; with the mechanics candidate off a change is
+    refused, because nothing would read it.
+    """
+
+    factor: float
+    source: Source
+    minute: int
+    description: str
+
+    def __post_init__(self):
+        if isinstance(self.factor, bool) or not isinstance(self.factor, (int, float)) \
+                or not math.isfinite(self.factor) or self.factor <= 0:
+            raise ProvenanceError(f"a mechanics factor is a finite positive number, not {self.factor!r}")
+        object.__setattr__(self, "factor", float(self.factor))
+        if not isinstance(self.source, Source):
+            raise ProvenanceError("every mechanics change names its Source")
+        _minute(self.minute)
+        _description(self.description)
+
+    def to_dict(self) -> dict:
+        return {"type": "mechanics", "factor": self.factor, "source": self.source.to_dict(), "minute": self.minute,
+                "description": self.description}
+
+
+@dataclass(frozen=True)
 class AuxiliaryChange:
     """One change of the core's auxiliary dynamic state in one minute (P2D-1).
 
@@ -405,11 +436,12 @@ class MinuteRecord:
     auxiliary: tuple[AuxiliaryChange, ...] = field(default=())
     demand: tuple[DemandModifier, ...] = field(default=())
     blood: tuple[BloodChange, ...] = field(default=())
+    mechanics: tuple[MechanicsChange, ...] = field(default=())
 
     def __post_init__(self):
         _minute(self.minute)
         for item in (self.deltas + self.transitions + self.settings + self.events + self.auxiliary + self.demand
-                     + self.blood):
+                     + self.blood + self.mechanics):
             if item.minute != self.minute:
                 raise ProvenanceError("a record holds only changes applied in its own minute")
 
@@ -431,7 +463,8 @@ class MinuteRecord:
                 "internal_updates": list(self.internal_updates),
                 "auxiliary": [item.to_dict() for item in self.auxiliary],
                 "demand": [item.to_dict() for item in self.demand],
-                "blood": [item.to_dict() for item in self.blood]}
+                "blood": [item.to_dict() for item in self.blood],
+                "mechanics": [item.to_dict() for item in self.mechanics]}
 
 
 def attribution(records: Iterable[MinuteRecord], channel: Channel) -> dict[str, float]:

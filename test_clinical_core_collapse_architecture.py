@@ -19,6 +19,7 @@ from clinical_core import lung_water_reference as lw
 from clinical_core import edema_migration as pe
 from clinical_core import respiratory_drive as rd
 from clinical_core import embolism_migration as em
+from clinical_core import respiratory_mechanics as mc
 from clinical_core import collapse as cx
 from clinical_core import collapse_architecture as cy
 from clinical_core import decision_pack, lactate_slice
@@ -50,7 +51,14 @@ FROZEN_DIGEST = "5f96f8603f2ecdcbf585cfac38e8abf4d4aec9ea9c64772d7d0c46da2f2544a
 #: P2Q-2 added files (the PE family, its mapping and analysis) and two tuple entries, proven against the P2P-2
 #: files (embolism_migration.proved): this package's guards read the tree as P2P-2 left it (em.chain,
 #: em.p2p2_sources).
-_LIVE_SOURCES_P2Q2 = bf.freeze_sources
+#: P2S-2 changed the core (the common respiratory mechanics candidate, off by default) and two tuple files,
+#: proven against the P2Q-2 files (respiratory_mechanics.proved): this package's guards read the tree as
+#: P2Q-2 left it (mc.chain, mc.p2q2_sources).
+_LIVE_SOURCES_P2S2 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2Q2() -> dict:
+    return mc.p2q2_sources(_LIVE_SOURCES_P2S2())
 
 
 def _LIVE_SOURCES_P2P2() -> dict:
@@ -95,6 +103,7 @@ def _patch(patch) -> None:
     pe.chain(patch)
     rd.chain(patch)
     em.chain(patch)
+    mc.chain(patch)
     patch.setattr(bf, "freeze_sources", _p2m2_view)
     patch.setattr(cy, "imported_by", _p2m2_imported_by)
 

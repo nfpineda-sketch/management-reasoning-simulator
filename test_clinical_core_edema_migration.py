@@ -20,6 +20,7 @@ from clinical_core import edema_migration as pe
 from clinical_core import edema_reference as er
 from clinical_core import respiratory_drive as rd
 from clinical_core import embolism_migration as em
+from clinical_core import respiratory_mechanics as mc
 from clinical_core.bands import Drift
 from clinical_core.integration import from_spec, step
 from clinical_core.modules.pulmonary_edema import DecongestiveTreatment, EdemaCongestion
@@ -35,7 +36,14 @@ FROZEN_DIGEST = "2c7dc8b184529edea5a77c6beb8bf9b270391d4ae49f5a0d4221aa1a7a3a5c2
 #: P2Q-2 added files (the PE family, its mapping and analysis) and two tuple entries, proven against the P2P-2
 #: files (embolism_migration.proved): this package's guards read the tree as P2P-2 left it (em.chain,
 #: em.p2p2_sources).
-_LIVE_SOURCES_P2Q2 = bf.freeze_sources
+#: P2S-2 changed the core (the common respiratory mechanics candidate, off by default) and two tuple files,
+#: proven against the P2Q-2 files (respiratory_mechanics.proved): this package's guards read the tree as
+#: P2Q-2 left it (mc.chain, mc.p2q2_sources).
+_LIVE_SOURCES_P2S2 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2Q2() -> dict:
+    return mc.p2q2_sources(_LIVE_SOURCES_P2S2())
 
 
 def _LIVE_SOURCES_P2P2() -> dict:
@@ -47,6 +55,7 @@ def _p2p1_tree():
     with pytest.MonkeyPatch.context() as patch:
         rd.chain(patch)
         em.chain(patch)
+        mc.chain(patch)
         patch.setattr(bf, "freeze_sources", lambda: rd.p2p1_sources(_LIVE_SOURCES_P2P2()))
         yield
 
@@ -226,7 +235,9 @@ def record():
 
 
 def test_the_record_comes_from_the_frozen_package_and_is_reproduced_live(record, result):
-    assert record["freeze_digest"] == FROZEN_DIGEST and record == result
+    # P2S-2 gave the anchors one candidate input (arrival_mechanics_efficiency), at its reference 1 here: the frozen record
+    # predates it, so it is removed (and checked at the reference) before the comparison; nothing else moves.
+    assert record["freeze_digest"] == FROZEN_DIGEST and record == mc.without_new_anchor_key(result)
 
 
 def test_the_document_is_generated_from_the_record(record):

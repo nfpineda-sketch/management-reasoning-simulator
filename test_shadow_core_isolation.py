@@ -38,6 +38,9 @@ LEGACY_READERS = {"legacy_adapter.py": {"family_engine", "family_parser", "cogni
                   "edema_reference.py": {"clinical_cases"},
                   # P2Q-2: the embolism reference reads the two PE cases' repository truth, read-only and offline.
                   "embolism_reference.py": {"clinical_cases"},
+                  # P2S-2: the mechanics analysis reads nine cases' authored RR and blood gas, as diagnostics only,
+                  # read-only and offline.
+                  "respiratory_mechanics.py": {"clinical_cases"},
                   # P2H-0: the migration authority reads repository case truth itself, read-only.
                   "migration_authority.py": {"clinical_cases"}}
 #: The live runtime: the page, the engine, the reader, the submission guard and the order path.
@@ -59,7 +62,10 @@ ANALYSIS_ONLY = {
     "respiratory_monotonicity.py": {"fractions"},
     # P2P-2: the offline D8 probe runs the P2P-1 derived.py (proven by the reversal) beside the live one as its own
     # module (types.ModuleType, registered in sys.modules for its dataclasses); nothing the application runs imports it.
-    "respiratory_drive.py": {"sys", "types"}}
+    "respiratory_drive.py": {"sys", "types"},
+    # P2S-2: the offline non-regression runs the P2Q-2 derived.py (proven by the reversal) beside the live one, as P2P-2's
+    # D8 does; nothing the application runs imports it.
+    "respiratory_mechanics.py": {"sys", "types"}}
 
 
 def _imports(path):
