@@ -144,6 +144,18 @@ class CoreProfile:
     acid_to_drive_gain: float | None = None
     rr_drive_saturation: float = 25.0
     ventilation_efficiency: float = 1.0
+    # P2P-2: the common respiratory-drive composition of P2K-2's RR. The excitatory drive is the acid drive plus a
+    # hypoxaemic drive read from the CURRENT absolute SpO2, never from its change since arrival; the expressed RR is the
+    # central drive availability times the RR that excitatory drive gives with the central machinery intact (the
+    # intrinsic RR plus the common saturating response), so central depression lowers the intrinsic share too and never
+    # rewrites the intrinsic RR. The hypoxaemic mapping is a table of (SpO2, normalized drive) points read by linear
+    # interpolation (no threshold or curve is chosen here) with its gain: both None, UNSET (no hypoxaemic drive). The
+    # availability is 1 (no central depression); no value below 1 is approved. The arrival PaCO2 anchor stays P2K-2's
+    # (the acid drive only, availability 1, the reference efficiency): a central depression or a hypoxaemic drive moves
+    # PaCO2 from that anchor, never absorbed by it, as a lower efficiency does.
+    hypoxaemic_drive_mapping: tuple[tuple[float, float], ...] | None = None
+    hypoxaemic_to_drive_gain: float | None = None
+    central_drive_availability: float = 1.0
     pressure_levels: tuple[tuple[float, int], ...] = ((80.0, 1), (65.0, 2))
     oxygen_levels: tuple[tuple[float, int], ...] = ((87.0, 1), (80.0, 2))
     # P2E-3: the collapse rule is off (None) unless a profile declares it. No clinical threshold,
@@ -247,6 +259,30 @@ class CoreProfile:
         if not 0.0 < self.ventilation_efficiency <= 1.0:
             # Effective ventilation is never more than the ventilation RR moves (P2K-2).
             raise CoreInvariantError("the ventilation efficiency is above 0 and at most 1")
+        if (self.hypoxaemic_drive_mapping is None) != (self.hypoxaemic_to_drive_gain is None):
+            # P2P-2: the hypoxaemic drive is one structure; a mapping without its gain, or the reverse, is half-defined.
+            raise CoreInvariantError("the hypoxaemic drive declares its oxygenation mapping and its gain together, or "
+                                     "neither")
+        if self.hypoxaemic_drive_mapping is not None:
+            points = self.hypoxaemic_drive_mapping
+            if len(points) < 2 or any(len(point) != 2 or any(isinstance(x, bool) or not isinstance(x, (int, float))
+                                                             or not math.isfinite(x) for x in point)
+                                      for point in points):
+                raise CoreInvariantError("the hypoxaemic mapping is at least two finite (SpO2, normalized drive) points")
+            if not all(0.0 <= spo2 <= 100.0 and 0.0 <= drive <= 1.0 for spo2, drive in points):
+                raise CoreInvariantError("the hypoxaemic mapping reads SpO2 from 0 to 100 into a drive from 0 to 1")
+            if any(low >= high or at_low < at_high for (high, at_high), (low, at_low) in zip(points, points[1:])):
+                # Monotone: a lower SpO2 never drives less.
+                raise CoreInvariantError("the hypoxaemic mapping lists SpO2 strictly decreasing with a drive that "
+                                         "never decreases")
+        if not 0.0 <= self.central_drive_availability <= 1.0:
+            raise CoreInvariantError("the central drive availability is between 0 (no spontaneous drive) and 1 (no "
+                                     "central depression)")
+        if (self.hypoxaemic_drive_mapping is not None or self.central_drive_availability != 1.0) \
+                and self.acid_to_drive_gain is None:
+            # P2P-2: the composition is P2K-2's RR; with the acid-base physiology off, P2K-1's RR would ignore it.
+            raise CoreInvariantError("the respiratory-drive composition (hypoxaemic drive, central availability) needs "
+                                     "the P2K-2 acid-base physiology")
         if (self.spo2_per_gas_exchange_unit is None) != (self.oxygen_response_loss_per_gas_exchange_unit is None):
             # P2O-1: the oxygenation mapping of G is one structure; half of it would leave SpO2 half-defined.
             raise CoreInvariantError("the oxygenation mapping of gas exchange declares its SpO2 scale and its oxygen-"
@@ -398,6 +434,18 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
     "ventilation_efficiency": (PROVISIONAL, "STRUCTURAL_REFERENCE (P2K-2): the share of the ventilation RR moves that "
                                             "is effective alveolar ventilation; 1 for the current GI cases (mechanics "
                                             "preserved), below 1 only in synthetic probes; not an approved value"),
+    "hypoxaemic_drive_mapping": (PROVISIONAL, "UNSET (P2P-2): (SpO2, normalized hypoxaemic drive 0-1) points, linear "
+                                              "between them, read on the CURRENT absolute SpO2, never relative to "
+                                              "arrival; no threshold, curve or saturation is chosen; None by default "
+                                              "(no hypoxaemic drive); SYNTHETIC_ONLY tables in probes; not approved"),
+    "hypoxaemic_to_drive_gain": (PROVISIONAL, "UNSET (P2P-2): respiratory drive (breaths/min-equivalent) at the full "
+                                              "normalized hypoxaemic drive, added to the acid drive before the common "
+                                              "saturation; None by default; not approved"),
+    "central_drive_availability": (PROVISIONAL, "STRUCTURAL_INPUT (P2P-2): the share of the excitatory respiratory "
+                                                "drive the central machinery expresses, 0 to 1; it multiplies the RR "
+                                                "the excitatory drive gives, intrinsic share included, never the "
+                                                "intrinsic RR itself; 1 (no central depression) by default, lower only "
+                                                "in synthetic probes; no family mapping approved"),
     "pressure_levels": (ADOPTED, "family_engine._PRESSURE_LEVELS, without the DC1 anchoring or the recovery "
                                  "margin, which belong to the observation layer"),
     "oxygen_levels": (ADOPTED, "family_engine._OXYGEN_LEVELS, same reservation"),
@@ -644,11 +692,96 @@ class Respiration:
     ph: float | None
 
 
-def respiration(state: CoreState, anchors: Anchors, profile: CoreProfile) -> Respiration:
-    """Drive from the acid burden, RR from the drive, effective ventilation from RR x efficiency relative to need,
-    PaCO2 from the ventilation anchored to the arrival PaCO2 (exact at arrival by construction), pH from HCO3 and PaCO2.
+# P2P-2: the common respiratory-drive composition ---------------------------------------------------------------------------
 
-    No term reads lactate, D or the W channel; the ventilation feeds back into nothing (no CO2 chemoreflex in P2K-2)."""
+def hypoxaemic_drive_signal(spo2: float, profile: CoreProfile) -> float:
+    """The normalized hypoxaemic drive (0 to 1) of an absolute SpO2: the profile's points, linear between them, held at
+    the end values outside them. It reads only the SpO2 it is given, never the arrival's: 81 % drives the same at arrival
+    as later. 0 when the mapping is UNSET."""
+    points = profile.hypoxaemic_drive_mapping
+    if points is None:
+        return 0.0
+    if spo2 >= points[0][0]:
+        return float(points[0][1])
+    for (high, at_high), (low, at_low) in zip(points, points[1:]):
+        if spo2 >= low:
+            return at_low + (at_high - at_low) * (spo2 - low) / (high - low)
+    return float(points[-1][1])
+
+
+def hypoxaemic_drive(spo2: float, profile: CoreProfile) -> float:
+    """The hypoxaemic respiratory drive (breaths/min-equivalent): the gain times the normalized signal; 0 when UNSET."""
+    if profile.hypoxaemic_drive_mapping is None:
+        return 0.0
+    return profile.hypoxaemic_to_drive_gain * hypoxaemic_drive_signal(spo2, profile)
+
+
+def expressed_respiratory_rate(excitatory_rr: float, availability: float) -> float:
+    """The expressed spontaneous RR: the central drive availability times the RR the excitatory drive gives with the
+    central machinery intact. Availability 1 is that RR exactly; a lower one lowers all of it, the intrinsic share
+    included, so central depression can take the RR below the intrinsic RR and toward apnoea at 0, whatever the
+    excitatory drive: the RR is never above availability x (intrinsic RR + the drive saturation)."""
+    return availability * excitatory_rr
+
+
+@dataclass(frozen=True)
+class DriveComposition:
+    """One minute of the respiratory-drive composition (P2P-2).
+
+    ``baseline_rr`` is the intrinsic RR, the baseline spontaneous drive; ``acid_drive`` and ``hypoxaemic_drive`` are
+    the excitatory terms (breaths/min-equivalent) and ``excitatory_drive`` their sum; ``excitatory_rr`` is the RR they
+    give with the central machinery intact (P2K-2's ``rate_from_drive``); ``availability`` is the central drive
+    availability and ``expressed_rr`` the RR the patient shows. ``spo2`` is the absolute SpO2 the hypoxaemic drive
+    read, None when its mapping is UNSET or there is no pulse."""
+
+    baseline_rr: float
+    acid_drive: float
+    spo2: float | None
+    hypoxaemic_drive: float
+    excitatory_drive: float
+    excitatory_rr: float
+    availability: float
+    expressed_rr: float
+
+
+def _composition(intrinsic: float, acid: float, spo2: float | None, profile: CoreProfile) -> DriveComposition:
+    hypoxaemic, excitatory = 0.0, acid
+    if profile.hypoxaemic_drive_mapping is not None:
+        hypoxaemic = hypoxaemic_drive(spo2, profile)
+        excitatory = acid + hypoxaemic
+    excitatory_rr = rate_from_drive(excitatory, intrinsic, profile)
+    availability = profile.central_drive_availability
+    return DriveComposition(intrinsic, acid, spo2, hypoxaemic, excitatory, excitatory_rr, availability,
+                            expressed_respiratory_rate(excitatory_rr, availability))
+
+
+def respiratory_drive_composition(state: CoreState, anchors: Anchors, profile: CoreProfile) -> DriveComposition:
+    """The minute's composition: the acid drive from the burden, the hypoxaemic drive from the state's current SpO2 (read
+    only when its mapping is declared), the availability from the profile. No breathing without a pulse."""
+    intrinsic = intrinsic_respiratory_rate(anchors)
+    acid = respiratory_drive(state.aux.metabolic_acid_burden, profile)
+    if not state.R.pulse_present:
+        return DriveComposition(intrinsic, acid, None, 0.0, acid, 0.0, profile.central_drive_availability, 0.0)
+    spo2 = _perfusion(state, anchors, profile)[2] if profile.hypoxaemic_drive_mapping is not None else None
+    return _composition(intrinsic, acid, spo2, profile)
+
+
+def arrival_drive_composition(anchors: Anchors, profile: CoreProfile) -> DriveComposition:
+    """The composition of the arrival state without building it: the arrival acid burden and the authored arrival SpO2,
+    which the arrival state reads exactly (P2F-1), each read like any later value (the hypoxaemic mapping is absolute)."""
+    spo2 = anchors.spo2 if profile.hypoxaemic_drive_mapping is not None else None
+    return _composition(intrinsic_respiratory_rate(anchors),
+                        respiratory_drive(arrival_acid_burden(anchors, profile), profile), spo2, profile)
+
+
+def respiration(state: CoreState, anchors: Anchors, profile: CoreProfile) -> Respiration:
+    """Drive from the acid burden (and, P2P-2, the hypoxaemic drive), RR from the drive times the central drive
+    availability, effective ventilation from RR x efficiency relative to need, PaCO2 from the ventilation anchored to
+    the arrival PaCO2 at the P2K-2 reference (efficiency 1, availability 1, no hypoxaemic drive: exact at arrival with
+    those, moved from the anchor by any of them), pH from HCO3 and PaCO2.
+
+    No term reads lactate, D or the W channel; the ventilation feeds back into nothing (no CO2 chemoreflex in P2K-2).
+    ``drive`` is the excitatory drive; with the hypoxaemic drive UNSET and availability 1 every value is P2K-2's."""
     if not acid_base_active(profile):
         raise CoreInvariantError("the acid-base physiology is off in this profile (P2K-2 gains undeclared)")
     intrinsic = intrinsic_respiratory_rate(anchors)
@@ -657,8 +790,8 @@ def respiration(state: CoreState, anchors: Anchors, profile: CoreProfile) -> Res
     if not hco3 > 0.0:
         raise UnresolvedBoundary(f"minute {state.minute}: the metabolic acid burden {burden!r} takes HCO3 to {hco3!r}; "
                                  "no bicarbonate is left and no rule for that boundary is decided")
-    drive = respiratory_drive(burden, profile)
-    rate = rate_from_drive(drive, intrinsic, profile) if state.R.pulse_present else 0.0
+    composition = respiratory_drive_composition(state, anchors, profile)
+    drive, rate = composition.excitatory_drive, composition.expressed_rr
     demand_ratio = state.aux.oxygen_demand / anchors.metabolic_demand_baseline
     ventilation = alveolar_ventilation(rate, intrinsic, profile.ventilation_efficiency, demand_ratio)
     resting = arrival_paco2(anchors, profile) * arrival_alveolar_ventilation(anchors, profile)
@@ -671,8 +804,8 @@ def respiratory_rate_decomposition(anchors: Anchors, profile: CoreProfile) -> di
     """The arrival RR the P2K-2 physiology derives against the authored one: reported, never absorbed by a residual."""
     intrinsic = intrinsic_respiratory_rate(anchors)
     burden = arrival_acid_burden(anchors, profile)
-    drive = respiratory_drive(burden, profile)
-    rate = rate_from_drive(drive, intrinsic, profile)
+    composition = arrival_drive_composition(anchors, profile)
+    drive, rate = composition.excitatory_drive, composition.expressed_rr
     return {"authored_rr": anchors.respiratory_rate, "intrinsic_rr": intrinsic, "arrival_acid_burden": burden,
             "arrival_drive": drive, "model_rr": rate, "mismatch": rate - anchors.respiratory_rate}
 

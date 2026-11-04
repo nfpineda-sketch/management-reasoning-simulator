@@ -19,6 +19,7 @@ from clinical_core import derived as dv
 from clinical_core import gas_exchange_architecture as go
 from clinical_core import lung_water_reference as lw
 from clinical_core import edema_migration as pe
+from clinical_core import respiratory_drive as rd
 from clinical_core.state import CoreInvariantError
 
 #: The P2O-1 freeze: the semantics, the L -> G and G -> oxygenation structures, the SYNTHETIC_ONLY region, the probes,
@@ -31,7 +32,14 @@ FROZEN_DIGEST = "22bb29b95714b28044c418cd8e4b5f0058d1f5065eafffc509e656ff8c6db73
 #: files (lw.chain, lw.p2o1_sources, lw.p2o1_bytes), never the live ones; the record is unchanged.
 #: P2P-1 added files (the edema family, its mapping and analysis) and two tuple entries, proven against the P2O-3
 #: files (edema_migration.proved): this package's guards read the tree as P2O-3 left it (pe.chain, pe.p2o3_sources).
-_LIVE_SOURCES_P2P1 = bf.freeze_sources
+#: P2P-2 changed the core (the respiratory-drive composition, inert by default) and two tuple files, proven against
+#: the P2P-1 files (respiratory_drive.proved): this package's guards read the tree as P2P-1 left it (rd.chain,
+#: rd.p2p1_sources).
+_LIVE_SOURCES_P2P2 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2P1() -> dict:
+    return rd.p2p1_sources(_LIVE_SOURCES_P2P2())
 
 
 def _LIVE_SOURCES_P2O3() -> dict:
@@ -43,6 +51,7 @@ def _p2o1_core():
     with pytest.MonkeyPatch.context() as patch:
         lw.chain(patch)
         pe.chain(patch)
+        rd.chain(patch)
         patch.setattr(bf, "freeze_sources", lambda: lw.p2o1_sources(_LIVE_SOURCES_P2O3()))
         yield
 

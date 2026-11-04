@@ -21,6 +21,7 @@ from clinical_core import blood_fluid_calibration as bf
 from clinical_core import gas_exchange_architecture as go
 from clinical_core import lung_water_reference as lw
 from clinical_core import edema_migration as pe
+from clinical_core import respiratory_drive as rd
 from clinical_core import consciousness_audit as ca
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import encephalopathy as enc
@@ -48,7 +49,14 @@ TEST_MAPPING = enc.SignalMapping(normal=10.0, severe=0.0)
 #: the P2O-1 files through P2O-1's view of the P2N-2 core (lw.chain, lw.p2o1_sources); the record is unchanged.
 #: P2P-1 added files (the edema family, its mapping and analysis) and two tuple entries, proven against the P2O-3
 #: files (edema_migration.proved): this package's guards read the tree as P2O-3 left it (pe.chain, pe.p2o3_sources).
-_LIVE_SOURCES_P2P1 = bf.freeze_sources
+#: P2P-2 changed the core (the respiratory-drive composition, inert by default) and two tuple files, proven against
+#: the P2P-1 files (respiratory_drive.proved): this package's guards read the tree as P2P-1 left it (rd.chain,
+#: rd.p2p1_sources).
+_LIVE_SOURCES_P2P2 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2P1() -> dict:
+    return rd.p2p1_sources(_LIVE_SOURCES_P2P2())
 
 
 def _LIVE_SOURCES_P2O3() -> dict:
@@ -72,7 +80,8 @@ LATER_MODULES = ("clinical_core/collapse_audit.py", "clinical_core/collapse.py",
                  "clinical_core/acs_migration.py", "clinical_core/gas_exchange_architecture.py",
                  "clinical_core/lung_water_reference.py",
                  "clinical_core/edema_migration.py", "clinical_core/edema_reference.py",
-                 "clinical_core/modules/pulmonary_edema.py")
+                 "clinical_core/modules/pulmonary_edema.py",
+                 "clinical_core/respiratory_drive.py")
 
 
 def _p2l2_view() -> dict:
@@ -91,6 +100,7 @@ def _p2l2_python() -> list:
 def _patch(patch) -> None:
     lw.chain(patch)
     pe.chain(patch)
+    rd.chain(patch)
     patch.setattr(bf, "freeze_sources", _p2l2_view)
     patch.setattr(ca, "_python", _p2l2_python)
     # P2O-1's analysis imports the candidate only to read its hypoxaemia signal (the candidate unchanged).

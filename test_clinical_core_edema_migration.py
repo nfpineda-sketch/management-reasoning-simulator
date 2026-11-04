@@ -18,6 +18,7 @@ from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import edema_migration as pe
 from clinical_core import edema_reference as er
+from clinical_core import respiratory_drive as rd
 from clinical_core.bands import Drift
 from clinical_core.integration import from_spec, step
 from clinical_core.modules.pulmonary_edema import DecongestiveTreatment, EdemaCongestion
@@ -26,6 +27,19 @@ from clinical_core.state import CoreInvariantError, RhythmState
 #: The P2P-1 freeze: the case and its mapping, the writer, the predeclared spans, probes and verdict rule, the proof and
 #: every clinical_core source but the downstream reports, committed before the evaluation run.
 FROZEN_DIGEST = "2c7dc8b184529edea5a77c6beb8bf9b270391d4ae49f5a0d4221aa1a7a3a5c2e"
+
+#: P2P-2 changed the core (the respiratory-drive composition, inert by default) and the two tuple files, proven against
+#: the P2P-1 files (respiratory_drive.proved): this package's guards read the tree as P2P-1 left it (rd.chain,
+#: rd.p2p1_sources); the record is unchanged.
+_LIVE_SOURCES_P2P2 = bf.freeze_sources
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _p2p1_tree():
+    with pytest.MonkeyPatch.context() as patch:
+        rd.chain(patch)
+        patch.setattr(bf, "freeze_sources", lambda: rd.p2p1_sources(_LIVE_SOURCES_P2P2()))
+        yield
 
 
 # The frozen package and its proof -------------------------------------------------------------------------------------------

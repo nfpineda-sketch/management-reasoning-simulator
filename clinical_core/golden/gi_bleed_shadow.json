@@ -198,6 +198,10 @@
    "provisional",
    "COMMON_REFERENCE_PROVISIONAL (P2K-2), not FACULTY_APPROVED: the bicarbonate the metabolic acid burden is read against, burden = max(0, reference - HCO3); 24 mEq/L. Not an approved normal"
   ],
+  "central_drive_availability": [
+   "provisional",
+   "STRUCTURAL_INPUT (P2P-2): the share of the excitatory respiratory drive the central machinery expresses, 0 to 1; it multiplies the RR the excitatory drive gives, intrinsic share included, never the intrinsic RR itself; 1 (no central depression) by default, lower only in synthetic probes; no family mapping approved"
+  ],
   "collapse_burden_limit": [
    "provisional",
    "burden (fraction below the threshold x minutes) at which R moves to a pulseless rhythm (P2E-3): TBD; off by default"
@@ -269,6 +273,14 @@
   "hypoxaemia_threshold_spo2": [
    "provisional",
    "SpO2 below which hypoxaemia drives the rate: TBD (KD-S2)"
+  ],
+  "hypoxaemic_drive_mapping": [
+   "provisional",
+   "UNSET (P2P-2): (SpO2, normalized hypoxaemic drive 0-1) points, linear between them, read on the CURRENT absolute SpO2, never relative to arrival; no threshold, curve or saturation is chosen; None by default (no hypoxaemic drive); SYNTHETIC_ONLY tables in probes; not approved"
+  ],
+  "hypoxaemic_to_drive_gain": [
+   "provisional",
+   "UNSET (P2P-2): respiratory drive (breaths/min-equivalent) at the full normalized hypoxaemic drive, added to the acid drive before the common saturation; None by default; not approved"
   ],
   "lactate_clearance_tau_min": [
    "provisional",

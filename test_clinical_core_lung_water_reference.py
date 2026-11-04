@@ -20,6 +20,7 @@ from clinical_core import derived as dv
 from clinical_core import gas_exchange_architecture as go
 from clinical_core import lung_water_reference as lw
 from clinical_core import edema_migration as pe
+from clinical_core import respiratory_drive as rd
 from clinical_core.bands import ARRIVAL
 from clinical_core.integration import Contributor, from_spec, step
 from clinical_core.modules.acs_ischaemia import IschaemicCongestion
@@ -42,13 +43,21 @@ CORE_AT_P2O3 = {'clinical_core/decision_pack.py': 'a176cb385e896bbc96c39e66f7e9b
 #: P2P-1 added files and two tuple entries, proven against the P2O-3 files (edema_migration.proved): this package's
 #: guards read the tree, the tuple files and the contributor registry as P2O-3 left them (pe.chain, pe.p2o3_sources,
 #: pe.p2o3_bytes); the record is unchanged.
-_LIVE_SOURCES_P2P1 = bf.freeze_sources
+#: P2P-2 changed the core (the respiratory-drive composition, inert by default) and two tuple files, proven against
+#: the P2P-1 files (respiratory_drive.proved): this package's guards read the tree as P2P-1 left it (rd.chain,
+#: rd.p2p1_sources).
+_LIVE_SOURCES_P2P2 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2P1() -> dict:
+    return rd.p2p1_sources(_LIVE_SOURCES_P2P2())
 
 
 @pytest.fixture(autouse=True, scope="module")
 def _p2o3_tree():
     with pytest.MonkeyPatch.context() as patch:
         pe.chain(patch)
+        rd.chain(patch)
         patch.setattr(bf, "freeze_sources", lambda: pe.p2o3_sources(_LIVE_SOURCES_P2P1()))
         yield
 

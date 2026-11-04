@@ -54,7 +54,10 @@ ANALYSIS_ONLY = {
     "rr_audit.py": {"re", "types"},
     # P2K-5: the offline monotonicity closure proves its rule with exact rationals (fractions.Fraction); nothing the
     # application runs imports it.
-    "respiratory_monotonicity.py": {"fractions"}}
+    "respiratory_monotonicity.py": {"fractions"},
+    # P2P-2: the offline D8 probe runs the P2P-1 derived.py (proven by the reversal) beside the live one as its own
+    # module (types.ModuleType, registered in sys.modules for its dataclasses); nothing the application runs imports it.
+    "respiratory_drive.py": {"sys", "types"}}
 
 
 def _imports(path):

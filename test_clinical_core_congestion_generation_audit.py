@@ -23,12 +23,23 @@ from clinical_core import encephalopathy as enc
 from clinical_core import gas_exchange_architecture as go
 from clinical_core import lung_water_reference as lw
 from clinical_core import edema_migration as pe
+from clinical_core import respiratory_drive as rd
 from clinical_core.bands import ARRIVAL
 from clinical_core.integration import CHANNEL_BOUNDS
 from clinical_core.state import CHANNEL_DEFINITIONS, Anchors, Channel
 
 ROOT = Path(__file__).resolve().parent
 P2O1_RECORD = ROOT / "docs" / "revision" / "P2O1_gas_exchange.json"
+
+
+#: P2P-2 changed the core (the respiratory-drive composition, inert by default), proven against the P2P-1 files
+#: (respiratory_drive.proved): the audit reads the core as P2O-1 left it through the chain (pe.chain, rd.chain).
+@pytest.fixture(autouse=True, scope="module")
+def _p2o1_core_through_the_chain():
+    with pytest.MonkeyPatch.context() as patch:
+        pe.chain(patch)
+        rd.chain(patch)
+        yield
 
 
 def _functions_naming_l(relative: str) -> set:
