@@ -30,6 +30,7 @@ from clinical_core import asthma_migration as sm
 from clinical_core import respiratory_distress as dm
 from clinical_core import distress_closure as xm
 from clinical_core import asthma_distress_migration as tm
+from clinical_core import oxygenation_link as om
 from clinical_core.bands import ARRIVAL
 from clinical_core.integration import CHANNEL_BOUNDS
 from clinical_core.state import CHANNEL_DEFINITIONS, Anchors, Channel
@@ -51,6 +52,7 @@ def _p2o1_core_through_the_chain():
         dm.chain(patch)
         xm.chain(patch, historical=False)
         tm.chain(patch)
+        om.chain(patch)
         yield
 
 

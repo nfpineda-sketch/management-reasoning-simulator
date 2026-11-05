@@ -20,6 +20,7 @@ from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import distress_closure as xm
 from clinical_core import asthma_distress_migration as tm
+from clinical_core import oxygenation_link as om
 from clinical_core import respiratory_distress as dm
 from clinical_core.integration import distress_sum, step
 from clinical_core.provenance import ProvenanceError
@@ -32,13 +33,21 @@ FROZEN_DIGEST = "476e18f0e30f80745d2426d264bcf2e9a8617f7cdc585cc506f6c4e143c7198
 #: P2T-3 added files (the asthma distress migration) and two tuple entries, proven against the P2T-1A files
 #: (asthma_distress_migration.proved): this package's guards read the tree as P2T-1A left it (tm.chain,
 #: tm.p2t1a_sources); P2T-3 changes no behaviour.
-_LIVE_SOURCES_P2T3 = bf.freeze_sources
+#: P2T-5 changed the core (the hypoventilation -> oxygenation link, off by default: one UNSET profile field) and
+#: two tuple files, proven against the P2T-3 files (oxygenation_link.proved): this package's guards read the
+#: tree as P2T-3 left it (om.chain, om.p2t3_sources).
+_LIVE_SOURCES_P2T5 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2T3() -> dict:
+    return om.p2t3_sources(_LIVE_SOURCES_P2T5())
 
 
 @pytest.fixture(autouse=True, scope="module")
 def _p2t1a_tree():
     with pytest.MonkeyPatch.context() as patch:
         tm.chain(patch)
+        om.chain(patch)
         patch.setattr(bf, "freeze_sources", lambda: tm.p2t1a_sources(_LIVE_SOURCES_P2T3()))
         yield
 
@@ -202,7 +211,9 @@ def test_l1_f_no_clinical_parameter_or_threshold():
     assert found["pass"], found
     assert found["profile_fields_are_p2t1s"] and found["parameter_names_are_p2t1s"]
     assert set(found["sum_constants"]) <= {0.0, 1.0}
-    assert sorted(f.name for f in fields(dv.CoreProfile)) == sorted(dm._class_fields(
+    # P2T-5: the profile as the closed listings read it (xm.fields: P2T-5's one new field, None in every closed profile,
+    # out through om.chain), against the P2T-1 text.
+    assert sorted(f.name for f in xm.fields(dv.CoreProfile)) == sorted(dm._class_fields(
         xm.p2t1_text("clinical_core/derived.py"), "CoreProfile"))
 
 

@@ -26,6 +26,7 @@ from clinical_core import asthma_migration as sm
 from clinical_core import respiratory_distress as dm
 from clinical_core import distress_closure as xm
 from clinical_core import asthma_distress_migration as tm
+from clinical_core import oxygenation_link as om
 from clinical_core.state import CoreInvariantError
 
 #: The P2O-1 freeze: the semantics, the L -> G and G -> oxygenation structures, the SYNTHETIC_ONLY region, the probes,
@@ -59,7 +60,14 @@ FROZEN_DIGEST = "22bb29b95714b28044c418cd8e4b5f0058d1f5065eafffc509e656ff8c6db73
 #: P2T-3 added files (the asthma distress migration) and two tuple entries, proven against the P2T-1A files
 #: (asthma_distress_migration.proved): this package's guards read the tree as P2T-1A left it (tm.chain,
 #: tm.p2t1a_sources).
-_LIVE_SOURCES_P2T3 = bf.freeze_sources
+#: P2T-5 changed the core (the hypoventilation -> oxygenation link, off by default: one UNSET profile field) and
+#: two tuple files, proven against the P2T-3 files (oxygenation_link.proved): this package's guards read the
+#: tree as P2T-3 left it (om.chain, om.p2t3_sources).
+_LIVE_SOURCES_P2T5 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2T3() -> dict:
+    return om.p2t3_sources(_LIVE_SOURCES_P2T5())
 
 
 def _LIVE_SOURCES_P2T1A() -> dict:
@@ -106,6 +114,7 @@ def _p2o1_core():
         dm.chain(patch)
         xm.chain(patch, historical=False)
         tm.chain(patch)
+        om.chain(patch)
         patch.setattr(bf, "freeze_sources", lambda: lw.p2o1_sources(_LIVE_SOURCES_P2O3()))
         yield
 

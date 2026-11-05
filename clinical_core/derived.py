@@ -181,6 +181,12 @@ class CoreProfile:
     # value is chosen here.
     distress_to_respiratory_drive_gain: float | None = None
     distress_to_sympathetic_gain: float | None = None
+    # P2T-5: the common hypoventilation -> oxygenation link (SYMMETRIC_RELATIVE_ALVEOLAR_LINK, full transmission), UNSET
+    # (None) by default, so SpO2 is P2O-3's exactly. Declared, the PaCO2 change from the model's own arrival PaCO2 moves
+    # the alveolar oxygen by -dPaCO2 / respiratory_quotient, carried to SpO2 through a latent PaO2 and the standard
+    # dissociation relation; it needs the common mechanics candidate (PaCO2 is W's) and refuses the hypoxaemic drive
+    # (HYPOXEMIC_FEEDBACK_LOOP_DEFERRED). No value is chosen here.
+    respiratory_quotient: float | None = None
     pressure_levels: tuple[tuple[float, int], ...] = ((80.0, 1), (65.0, 2))
     oxygen_levels: tuple[tuple[float, int], ...] = ((87.0, 1), (80.0, 2))
     # P2E-3: the collapse rule is off (None) unless a profile declares it. No clinical threshold,
@@ -301,6 +307,20 @@ class CoreProfile:
             # P2T-1: the respiratory reader lives in the P2P-2 composition, which only the acid-base physiology has.
             raise CoreInvariantError("the respiratory distress reader of the respiratory drive needs the P2K-2 acid-base "
                                      "physiology")
+        rq = self.respiratory_quotient
+        if rq is not None:
+            if isinstance(rq, bool) or not isinstance(rq, (int, float)) or not math.isfinite(rq) or rq <= 0.0:
+                # P2T-5: UNSET is None (the link off); a declared link has a finite positive respiratory quotient.
+                raise CoreInvariantError("respiratory_quotient is None (UNSET: the hypoventilation -> oxygenation link "
+                                         "off) or a finite positive ratio")
+            if not self.respiratory_mechanics:
+                # P2T-5: the link reads W's PaCO2, never the retired P2K-2 arrival PaCO2 anchor.
+                raise CoreInvariantError("the hypoventilation -> oxygenation link needs the common respiratory mechanics "
+                                         "candidate (P2T-5): its PaCO2 must be W's")
+            if self.hypoxaemic_drive_mapping is not None:
+                # P2T-5: SpO2 -> hypoxaemic drive -> RR -> PaCO2 -> SpO2 would be a loop no audit has examined.
+                raise CoreInvariantError("the hypoventilation -> oxygenation link refuses the hypoxaemic drive "
+                                         "(HYPOXEMIC_FEEDBACK_LOOP_DEFERRED)")
         if (self.hypoxaemic_drive_mapping is None) != (self.hypoxaemic_to_drive_gain is None):
             # P2P-2: the hypoxaemic drive is one structure; a mapping without its gain, or the reverse, is half-defined.
             raise CoreInvariantError("the hypoxaemic drive declares its oxygenation mapping and its gain together, or "
@@ -504,6 +524,11 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
                                                   "saturation and beta-blockade; independent of the respiratory "
                                                   "reader's gain; None by default (no reader); SYNTHETIC_ONLY values in "
                                                   "probes; not approved"),
+    "respiratory_quotient": (PROVISIONAL, "UNSET (P2T-5): the respiratory quotient of the common relative alveolar link "
+                                          "(dPAO2 = -dPaCO2 / R, from the model's own arrival PaCO2, full transmission "
+                                          "to a latent PaO2 and the standard dissociation relation); None by default "
+                                          "(the link off); needs the mechanics candidate; refuses the hypoxaemic drive; "
+                                          "0.8 only as a SYNTHETIC_PHYSIOLOGIC_REFERENCE in probes; not approved"),
     "pressure_levels": (ADOPTED, "family_engine._PRESSURE_LEVELS, without the DC1 anchoring or the recovery "
                                  "margin, which belong to the observation layer"),
     "oxygen_levels": (ADOPTED, "family_engine._OXYGEN_LEVELS, same reservation"),
@@ -1376,6 +1401,8 @@ def _perfusion(state: CoreState, anchors: Anchors, profile: CoreProfile) -> tupl
     spo2 = min(100.0, max(0.0, anchors.spo2 + profile.spo2_per_fio2 * oxygen))
     if gas_exchange_active(profile):
         spo2 = oxygenation(state.G, state.fio2, anchors, profile, lung_water_gas_credit(state.L, anchors, profile))
+    if hypoventilation_link_active(profile):
+        spo2 = ventilated_oxygenation(spo2, state, anchors, profile)
     delivery_rel = relative_delivery(output_rel, state.hb, spo2, anchors)
     return output_rel, pressure_rel, spo2, delivery_rel
 
@@ -1591,6 +1618,68 @@ def oxygenation(gas_exchange: float, fio2: float, anchors: Anchors, profile: Cor
               - max(0.0, anchors.fio2 - profile.room_air_fio2))
     return min(100.0, max(0.0, anchors.spo2 - profile.spo2_per_gas_exchange_unit * max(credit, gas_exchange)
                           + profile.spo2_per_fio2 * oxygen))
+
+
+def oxygen_saturation_from_pao2(pao2: float) -> float:
+    """P2T-5: the standard oxygen dissociation relation (Severinghaus 1979: pH 7.40, 37 C), SpO2 (%) from PaO2 (mmHg),
+    with no fitted parameter: 100 / (1 + 23400 / (PaO2^3 + 150 PaO2)). Continuous and strictly increasing on PaO2 > 0;
+    0 at or below 0 (no oxygen); below 100 for every finite PaO2 and 100 only as PaO2 -> inf (the plateau)."""
+    if pao2 <= 0.0:
+        return 0.0
+    if math.isinf(pao2):
+        return 100.0
+    return 100.0 / (1.0 + 23400.0 / (pao2 ** 3 + 150.0 * pao2))
+
+
+def pao2_from_oxygen_saturation(spo2: float) -> float:
+    """P2T-5: the exact inverse of ``oxygen_saturation_from_pao2`` (the one real root of PaO2^3 + 150 PaO2 = 23400 s /
+    (100 - s), by Cardano): strictly increasing on 0 < SpO2 < 100; 0 at or below 0; +inf at 100, where a saturated
+    SpO2 does not identify the PaO2 (ODC_PLATEAU_IDENTIFIABILITY_DEBT: no PaO2 ceiling and no epsilon is chosen; an
+    alveolar change on the plateau then moves no SpO2)."""
+    if spo2 <= 0.0:
+        return 0.0
+    if spo2 >= 100.0:
+        return math.inf
+    c = 23400.0 * spo2 / (100.0 - spo2)
+    u = (c / 2.0 + math.sqrt(c * c / 4.0 + 125000.0)) ** (1.0 / 3.0)
+    return u - 50.0 / u
+
+
+def hypoventilation_link_active(profile: CoreProfile) -> bool:
+    """P2T-5: whether the profile declares the hypoventilation -> oxygenation link (off by default)."""
+    return profile.respiratory_quotient is not None
+
+
+def arrival_paco2_reference(anchors: Anchors, profile: CoreProfile) -> float:
+    """P2T-5: the model-derived arrival PaCO2 of the common P2S-2 mechanics pathway (the reference / W of the arrival
+    state, computed from the anchors as ``respiration`` computes it there: the arrival composition's RR, the arrival
+    mechanics efficiency, the arrival demand ratio 1), never the authored PaCO2 as a hidden anchor."""
+    rate = arrival_drive_composition(anchors, profile).expressed_rr
+    ventilation = alveolar_ventilation(rate, intrinsic_respiratory_rate(anchors), anchors.arrival_mechanics_efficiency,
+                                       1.0)
+    return profile.paco2_reference_mmhg / ventilation
+
+
+def ventilated_oxygenation(spo2_base: float, state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:
+    """P2T-5 (SYMMETRIC_RELATIVE_ALVEOLAR_LINK, MINIMAL_RELATIVE_ALVEOLAR_GAS_LINK, FULL_RELATIVE_ALVEOLAR_TRANSMISSION):
+    the SpO2 of the existing G / L -> G / FiO2 path moved by the PaCO2 change from the model's arrival PaCO2:
+
+        PaO2_latent = ODC^-1(SpO2_base);  dPaO2 = -(PaCO2 - PaCO2_arrival) / respiratory_quotient;
+        SpO2 = ODC(PaO2_latent + dPaO2)
+
+    Exact at arrival (dPaCO2 = 0 returns SpO2_base itself). Symmetric: more PaCO2 never raises SpO2, less never lowers
+    it. G is not a transmission coefficient here (RETAINED_G_AS_ALVEOLAR_TRANSMISSION = REJECTED): it acts through
+    SpO2_base only, so worse G and less FiO2 never raise SpO2. PaO2 is latent, never a state; Patm, PH2O and the
+    absolute alveolar gas equation are not used (they cancel in the relative form); nothing is written back to PaCO2,
+    W, RR, the drive or the acid burden. No ventilation (PaCO2 undefined) is an undecided boundary."""
+    paco2 = respiration(state, anchors, profile).paco2
+    if paco2 is None:
+        raise UnresolvedBoundary(f"minute {state.minute}: no alveolar ventilation, so no PaCO2 for the hypoventilation -> "
+                                 "oxygenation link (APNOEA_BOUNDARY_UNRESOLVED)")
+    delta = paco2 - arrival_paco2_reference(anchors, profile)
+    if delta == 0.0:
+        return spo2_base
+    return oxygen_saturation_from_pao2(pao2_from_oxygen_saturation(spo2_base) - delta / profile.respiratory_quotient)
 
 
 def sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:

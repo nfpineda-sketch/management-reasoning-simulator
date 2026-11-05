@@ -362,6 +362,10 @@
    "provisional",
    "STRUCTURAL_SWITCH (P2S-2): the common respiratory mechanics candidate, off (False) by default. On: W = (expressed RR / intrinsic RR) x the state's mechanics efficiency / demand ratio, and PaCO2 = paco2_reference_mmhg / W (the PaCO2 at W = 1, COMMON_REFERENCE_PROVISIONAL, never the authored arrival PaCO2). Mechanics efficiency 1 is the STRUCTURAL_REFERENCE; every family mapping is UNSET; not approved"
   ],
+  "respiratory_quotient": [
+   "provisional",
+   "UNSET (P2T-5): the respiratory quotient of the common relative alveolar link (dPAO2 = -dPaCO2 / R, from the model's own arrival PaCO2, full transmission to a latent PaO2 and the standard dissociation relation); None by default (the link off); needs the mechanics candidate; refuses the hypoxaemic drive; 0.8 only as a SYNTHETIC_PHYSIOLOGIC_REFERENCE in probes; not approved"
+  ],
   "room_air_fio2": [
    "adopted",
    "family_engine._initialize: oxygen_fio2 = .21"

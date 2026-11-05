@@ -18,11 +18,24 @@ from clinical_core import blood_fluid_calibration as bf
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import distress_closure as xm
+from clinical_core import oxygenation_link as om
 from clinical_core.state import CoreInvariantError
 
 #: The P2T-3 freeze: the region rule, the witness rule, the probes, the verdict rule, the proof and every clinical_core
 #: source but the downstream reports, committed before the evaluation run.
 FROZEN_DIGEST = "3a648a9e055c9182fe670f5360f1cc73d1d799b9f1bd3d557df2ffdf67e2efb2"
+
+#: P2T-5 changed the core (the hypoventilation -> oxygenation link, off by default: one UNSET profile field) and two tuple
+#: files, proven against the P2T-3 files (oxygenation_link.proved): this package's guards read the tree as P2T-3 left it
+#: (om.tree: om.chain, om.p2t3_sources and P2T-1A's reader on the P2T-3 files); P2T-5 changes no behaviour with the link
+#: off.
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _p2t3_tree():
+    with pytest.MonkeyPatch.context() as patch:
+        om.tree(patch)
+        yield
 
 
 # The frozen package and its proof -------------------------------------------------------------------------------------------

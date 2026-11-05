@@ -49,6 +49,9 @@ LEGACY_READERS = {"legacy_adapter.py": {"family_engine", "family_parser", "cogni
                   # P2T-3: the asthma distress migration reads the cross-family cases' authored respiratory evidence, RR,
                   # HR and blood gas, as region constraints only, read-only and offline.
                   "asthma_distress_migration.py": {"clinical_cases"},
+                  # P2T-5: the oxygenation link analysis reads every variant's authored PaO2 / SpO2 pair, as a coherence
+                  # check of the standard dissociation relation only (nothing fitted), read-only and offline.
+                  "oxygenation_link.py": {"clinical_cases"},
                   # P2H-0: the migration authority reads repository case truth itself, read-only.
                   "migration_authority.py": {"clinical_cases"}}
 #: The live runtime: the page, the engine, the reader, the submission guard and the order path.
