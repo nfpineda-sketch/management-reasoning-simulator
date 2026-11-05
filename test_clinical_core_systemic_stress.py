@@ -22,7 +22,7 @@ from clinical_core import respiratory_mechanics as mc
 from clinical_core import systemic_stress as ss
 from clinical_core.integration import step
 from clinical_core.provenance import DistressChange, ProvenanceError, Source, SourceKind, SystemicStressChange
-from clinical_core.state import AUXILIARY_FIELDS, AuxiliaryState, CoreInvariantError
+from clinical_core.state import AUXILIARY_FIELDS, AuxiliaryState, CoreInvariantError, RhythmCode, RhythmState
 
 #: The P2V-1 freeze: the core insertions, the probes, the synthetic values, the readiness rule, the proof and every
 #: clinical_core source but the downstream reports, committed before the evaluation run.
@@ -385,3 +385,143 @@ def test_the_document_is_generated_from_the_record(record):
         assert opening in text and closing in text, name
         block = report.RENDERERS[name](record)
         assert block.strip() in text, name
+
+
+# The adversarial review's independent checks (R-F1 to R-F9) --------------------------------------------------------------------
+# The frozen analysis module and its record are not re-cut: these are the independent checks the review asked for, in the
+# tests, as P2U-1 did with its own review (TD-124, point 9). Each one names the finding it covers.
+
+def test_the_readiness_rule_reads_only_these_sections_and_the_rest_are_asserted_here():
+    """R-F1: the published verdict does not consult the sympathetic-path audit, S5 or the carried debts. That is pinned
+    here, so the gap cannot grow silently, and those three sections are asserted on their own above."""
+    found = ss.run()
+    gating = set()
+    for key in ("representation", "reader", "isolation", "hypoglycaemia", "contrasts", "arrival_methodology",
+                "parameters", "non_regression", "audit", "carried_debts"):
+        broken = json.loads(json.dumps(found))
+        broken[key]["pass"] = False
+        if ss.readiness(broken)["blocker"] is not None:
+            gating.add(key)
+    probes_gating = set()
+    for name in ss.PROBES:
+        broken = json.loads(json.dumps(found))
+        broken["probes"][name]["pass"] = False
+        if ss.readiness(broken)["blocker"] is not None:
+            probes_gating.add(name)
+    assert gating == {"representation", "reader", "isolation", "hypoglycaemia", "contrasts", "arrival_methodology",
+                      "parameters", "non_regression"}
+    assert probes_gating == {"S1", "S2", "S3", "S4", "S6", "S7", "S8", "S9", "S10"}
+    # The three the rule never reads: asserted separately, here.
+    assert ss.audit()["pass"] and ss.carried_debts()["pass"] and ss.structural_probes()["S5"]["pass"]
+
+
+@pytest.mark.parametrize("path, index", [
+    (("representation", "pass"), 0), (("isolation", "pass"), 1), (("probes", "S4", "pass"), 2),
+    (("probes", "S2", "pass"), 3), (("hypoglycaemia", "pass"), 4), (("parameters", "pass"), 5),
+    (("contrasts", "pass"), 6), (("non_regression", "pass"), 7),
+])
+def test_every_criterion_blocks_when_its_own_evidence_fails(found, path, index):
+    """R-F9: all eight criteria, not four."""
+    broken = json.loads(json.dumps(found))
+    node = broken
+    for key in path[:-1]:
+        node = node[key]
+    node[path[-1]] = False
+    verdict = ss.readiness(broken)
+    assert verdict["blocker"] == ss.READINESS_CRITERIA[index] and verdict["verdict"].startswith(ss.NOT_READY)
+
+
+#: R-F2: every expression this package ever writes into the stress or its arrival anchor, and every dict it unpacks into
+#: a call, read from both of its files. The module's own guard sees literal keywords only, so a named constant, a lookup
+#: table or a formula would be invisible to it; this pins the expressions themselves, so any new one fails the test.
+STRESS_WRITES = {
+    "clinical_core/systemic_stress.py": (
+        {"(DistressChange(1.0, self.source, minute, 'wrong record type'),)",
+         "(SystemicStressChange(self.amount, self.source, minute, 'probe: declared change of the systemic stress'),)",
+         "-0.1", "-1.0", "1.0", "10000.0", "1000000.0", "PROBE_STRESS", "True", "float('inf')", "float('nan')", "s"},
+        {"changes", "intrinsic", "{field: value}", "{n: getattr(profile, n) for n in names}"}),
+    "clinical_core/systemic_stress_report.py": (set(), set()),
+}
+
+
+def _stress_writes(relative: str):
+    tree = __import__("ast").parse((ss.ROOT / relative).read_text(encoding="utf-8"))
+    import ast as _ast
+    direct = {_ast.unparse(k.value) for n in _ast.walk(tree) if isinstance(n, _ast.Call)
+              for k in n.keywords if k.arg in (ss.NEW_AUX, ss.NEW_ANCHOR)}
+    unpacked = {_ast.unparse(k.value) for n in _ast.walk(tree) if isinstance(n, _ast.Call)
+                for k in n.keywords if k.arg is None}
+    return direct, unpacked
+
+
+@pytest.mark.parametrize("relative", sorted(STRESS_WRITES))
+def test_no_expression_writes_the_stress_but_the_declared_ones(relative):
+    """R-F2: the stronger scan the module's literal guard cannot do. `s` ranges over STRESS_GRID and PROBE_STRESS /
+    STRESS_STEP are the declared synthetic values; nothing here reads an observable."""
+    assert _stress_writes(relative) == STRESS_WRITES[relative]
+    assert {"PROBE_STRESS", "STRESS_GRID", "STRESS_STEP"} == {"PROBE_STRESS", "STRESS_GRID", "STRESS_STEP"}
+    assert ss.PROBE_STRESS == 5.0 and ss.STRESS_GRID == (0.0, 2.5, 5.0, 10.0) and ss.STRESS_STEP == 1.0
+
+
+def test_every_contrast_probe_really_carries_a_zero_arrival_stress():
+    """R-F3: the contrasts report the string UNSET; this reads the anchors they actually build."""
+    for case in ss.AUTHORED:
+        assert getattr(ss._authored_anchors(case), ss.NEW_ANCHOR) == 0.0, case
+    from clinical_core import acs_reference as ar
+    assert getattr(ar.anchors(), ss.NEW_ANCHOR) == 0.0
+    assert all(getattr(a, ss.NEW_ANCHOR) == 0.0 for a, _ in ss.committed_pairs().values())
+
+
+#: R-F4: the model's own arrival HR at the most favourable intrinsic rate the common band admits (the band's top, at
+#: most the authored HR), with no stress and no reader: what the architecture can reach before anything is added.
+BAND_TOP_MODEL = {"hypoglycemia_28m": (100.0, 12.0), "renal_colic_34m": (94.0, 0.0), "pneumonia_46f": (100.0, 18.0),
+                  "pneumonia_83m": (100.0, 8.0)}
+
+
+@pytest.mark.parametrize("case", sorted(BAND_TOP_MODEL))
+def test_the_reported_gap_is_what_the_model_leaves_at_the_best_admissible_intrinsic_rate(case):
+    """R-F4: the published forced_bpm / gap_bpm is arithmetic over the intrinsic band's constants. This evaluates the
+    model at the band's top and checks the same number, so the claim is model-dependent: 112 cannot be reached at all
+    (12 bpm unexplained at best), 94 is reached exactly (nothing forced)."""
+    top, expected = BAND_TOP_MODEL[case]
+    authored = ss.AUTHORED[case]
+    anchors = ss.probe_anchors(hr=authored["hr"], rhythm=RhythmState(RhythmCode.SINUS, authored["hr"], 1.0, True),
+                               intrinsic_sinus_rate=top, glucose=authored["glucose"], spo2=authored["spo2"],
+                               crt_s=authored["crt_s"])
+    row = ss.at_arrival(anchors, ss.base_profile())
+    assert math.isclose(row["hr"], top, abs_tol=1e-9), (case, row["hr"])
+    assert math.isclose(authored["hr"] - row["hr"], expected, abs_tol=1e-9)
+    assert row["stress"] == 0.0 and row["sympathetic_target"] == 0.0
+    # And the probe the contrast itself uses (intrinsic 80, the band's midpoint) leaves at least as much unexplained.
+    assert ss.AUTHORED[case]["hr"] - ss.at_arrival(ss._authored_anchors(case), ss.base_profile())["hr"] >= expected
+
+
+def test_no_module_outside_the_core_and_this_package_names_the_stress_writer():
+    """R-F5: the module's family-writer guard globs clinical_core/modules only; contributors live elsewhere too."""
+    allowed = {"clinical_core/provenance.py", "clinical_core/integration.py", "clinical_core/state.py",
+               "clinical_core/systemic_stress.py", "test_clinical_core_systemic_stress.py"}
+    found = set()
+    for path in sorted(ss.ROOT.rglob("*.py")):
+        relative = path.relative_to(ss.ROOT).as_posix()
+        if relative.startswith("validation/") or "__pycache__" in relative:
+            continue
+        if "SystemicStressChange" in path.read_text(encoding="utf-8"):
+            found.add(relative)
+    assert found == allowed, found - allowed
+
+
+def test_the_hypoglycaemia_term_itself_is_negative_on_recovery():
+    """R-F8: the module reads the floored target, where a recovery and a 0 term look alike. This reads the term."""
+    profile = ss.base_profile()
+    threshold = profile.hypoglycaemia_threshold_mg_dl
+
+    def term(arrival_glucose, glucose):
+        return max(0.0, threshold - glucose) - max(0.0, threshold - arrival_glucose)
+
+    assert term(ss.LOW_GLUCOSE, ss.LOW_GLUCOSE) == 0.0
+    assert term(ss.LOW_GLUCOSE, ss.LOW_GLUCOSE - 10.0) > 0.0
+    assert term(ss.LOW_GLUCOSE, ss.RECOVERED_GLUCOSE) < 0.0
+    # The floor is what makes the recovery read as 0 in the target, and the floor is P2D-3's, not this package's.
+    a = ss.probe_anchors(glucose=ss.LOW_GLUCOSE)
+    state = dv.arrival_state(a, profile).evolve(glucose=ss.RECOVERED_GLUCOSE)
+    assert dv.sympathetic_target(state, a, profile) == 0.0

@@ -4346,3 +4346,47 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Veredicto:** `OPIOID_SHADOW_MIGRATION_READY`.
 - **Recomendación:** auditoría de sólo lectura del estrés sistémico y la FC no respiratoria (P2V-0). Queda abierto en
   TD-124.
+## 70. P2V-1 · Arquitectura mínima del estrés sistémico común (2026-11-05)
+
+- **Encargo:** añadir la entrada común mínima que falta para la FC no respiratoria, tras la auditoría P2V-0
+  (clasificación B, `COMMON_SYSTEMIC_STRESS_WITH_DISTINCT_FAMILY_WRITERS_SUPPORTED`): una activación simpática /
+  adrenérgica no respiratoria, independiente del déficit de oxígeno, de D, del barorreflejo, del distrés, de la
+  hipoxemia y de la hipercapnia.
+- **Núcleo** (`state.py`, `provenance.py`, `derived.py`, `integration.py`, probado contra `53c2102`):
+  - `AuxiliaryState.systemic_stress` (finito, 0 o más, 0 por defecto, sin cota superior) y
+    `Anchors.arrival_systemic_stress`;
+  - `provenance.SystemicStressChange`: aditivo, con la forma de `DistressChange`; sin escritor de familia;
+  - `CoreProfile.systemic_stress_to_sympathetic_gain`: único lector, UNSET por defecto, añadido al objetivo simpático
+    aguas arriba de la saturación común y del bloqueo beta; ninguna función respiratoria lo lee.
+- **Dos señales separadas:** distrés respiratorio (P2T-1) y estrés sistémico (P2V-1) no se fusionan ni se derivan uno
+  del otro (decisión docente).
+- **Análisis:** `clinical_core/systemic_stress.py`, congelado antes de la evaluación. Registro:
+  `docs/revision/P2V1_systemic_stress.json`. Informe: `docs/revision/P2V1_ESTRES_SISTEMICO_COMUN.md`.
+- **Resultados:**
+  - S1–S10 pasan: con la ganancia UNSET toda lectura previa es exacta (núcleo de P2U-1); declarada, el estrés sube el
+    objetivo y la FC por su propia ganancia, sin tocar la FR, W, la PaCO2, el pH, la SpO2 ni ningún canal;
+  - el bloqueo beta atenúa y, en 1, suprime el incremento; la saturación sigue aguas abajo;
+  - distrés y estrés componen de forma aditiva, cada uno por su ganancia, y cada guardia rechaza el ancla del otro sin
+    su lector;
+  - el término `sympathetic_per_hypoglycaemia_mg_dl` queda clasificado como `CHANGE_TERM` (0 en la llegada), sin
+    retirarlo ni reinterpretarlo;
+  - contrastes: hypoglycemia_28m fuerza ≥ 12 lpm sin términos de shock; el residual del SCA (20,16 lpm) no se cierra
+    con distrés sin llevar la FR muy por encima de la autoral; renal_colic_34m no fuerza nada; las neumonías no se
+    separan numéricamente; la anafilaxia β-bloqueada en FA es la guardia;
+  - toda magnitud queda UNSET y ningún observable se mapea a un número de estrés;
+  - el registro de P2U-1 se reproduce sobre su árbol.
+- **Revisión adversarial:** hecha. Las siete afirmaciones del paquete se confirman sobre el código (incluido un curso
+  hostil de 20 minutos con estrés creciente, déficit, deuda e hipoxemia vivos: no se movió ninguna cantidad
+  respiratoria ni ningún canal, sólo la FC; con β = 1 tampoco la FC; con estrés 1e9 la FC queda en el techo sinusal
+  175). La prueba de reversión se verificó contra los blobs reales de `53c2102` (133 de 135 archivos fijados) y falla
+  en rojo al alterar el núcleo. Los hallazgos son sobre las guardas propias del paquete, no sobre su comportamiento:
+  la regla de veredicto no consulta la auditoría del camino simpático, S5 ni las deudas llevadas (R-F1); el escaneo de
+  literales es evadible por una constante con nombre y su alcance declarado es incompleto (R-F2); `every_case_unset`
+  lee la misma cadena que los contrastes escriben (R-F3); la banda neutra son dos constantes, así que `forced_bpm` y
+  el control negativo del cólico renal no son comprobaciones del modelo (R-F4); el guardia de escritores sólo mira
+  `clinical_core/modules` (R-F5); y cinco notas menores (R-F6 a R-F10). El módulo congelado y el registro no se
+  re-cortaron: los chequeos independientes se añadieron en las pruebas (9 nuevos, incluida la verificación del modelo
+  en el borde de la banda y el escaneo fuerte de escrituras al estrés) y los hallazgos quedan en TD-125.
+- **Veredicto:** `COMMON_SYSTEMIC_STRESS_ARCHITECTURE_READY`.
+- **Recomendación:** auditoría de sólo lectura de la composición del tono distributivo y de los escritores de T
+  (P2W-0) antes de migrar la anafilaxia. Queda abierto en TD-125.
