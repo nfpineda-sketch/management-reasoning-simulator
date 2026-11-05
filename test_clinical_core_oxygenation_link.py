@@ -19,6 +19,7 @@ from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import distress_closure as xm
 from clinical_core import oxygenation_link as om
+from clinical_core import opioid_migration as un
 from clinical_core import respiratory_drive as rd
 from clinical_core import respiratory_mechanics as mc
 from clinical_core.state import CoreInvariantError, UnresolvedBoundary
@@ -26,6 +27,18 @@ from clinical_core.state import CoreInvariantError, UnresolvedBoundary
 #: The P2T-5 freeze: the core change, the probes, the readiness rule, the proof and every clinical_core source but the
 #: downstream reports, committed before the evaluation run.
 FROZEN_DIGEST = "3a042f0fabeecff58f97e198fc3d65cb878eeada63d01039c89d0e0564798f2e"
+
+#: P2U-1 changed the core (the common central availability: one auxiliary field, one arrival anchor and one provenance
+#: record, all at their reference 1 by default) and two tuple files, proven against the P2T-5 files
+#: (opioid_migration.proved): this package's guards read the tree as P2T-5 left it (un.tree: un.chain, un.p2t5_sources and
+#: the closed representation listings as P2T-5 had them); P2U-1 changes no behaviour without an opioid writer.
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _p2t5_tree():
+    with pytest.MonkeyPatch.context() as patch:
+        un.tree(patch)
+        yield
 
 
 # The frozen package and its proof -------------------------------------------------------------------------------------------

@@ -19,6 +19,7 @@ from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import distress_closure as xm
 from clinical_core import oxygenation_link as om
+from clinical_core import opioid_migration as un
 from clinical_core.state import CoreInvariantError
 
 #: The P2T-3 freeze: the region rule, the witness rule, the probes, the verdict rule, the proof and every clinical_core
@@ -31,9 +32,15 @@ FROZEN_DIGEST = "3a648a9e055c9182fe670f5360f1cc73d1d799b9f1bd3d557df2ffdf67e2efb
 #: off.
 
 
+#: P2U-1 changed the core (the common central availability, at its reference 1 by default) and two tuple files, proven
+#: against the P2T-5 files (opioid_migration.proved): this view reads the P2T-5 tree first (un.tree), then P2T-5's own
+#: view of the P2T-3 tree on top (om.tree).
+
+
 @pytest.fixture(autouse=True, scope="module")
 def _p2t3_tree():
     with pytest.MonkeyPatch.context() as patch:
+        un.tree(patch)
         om.tree(patch)
         yield
 

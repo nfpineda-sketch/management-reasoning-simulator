@@ -52,6 +52,10 @@ LEGACY_READERS = {"legacy_adapter.py": {"family_engine", "family_parser", "cogni
                   # P2T-5: the oxygenation link analysis reads every variant's authored PaO2 / SpO2 pair, as a coherence
                   # check of the standard dissociation relation only (nothing fitted), read-only and offline.
                   "oxygenation_link.py": {"clinical_cases"},
+                  # P2U-1: the opioid reference and its analysis read the two opioid cases' authored truth, read-only
+                  # and offline, as every family mapping does.
+                  "opioid_reference.py": {"clinical_cases"},
+                  "opioid_migration.py": {"clinical_cases"},
                   # P2H-0: the migration authority reads repository case truth itself, read-only.
                   "migration_authority.py": {"clinical_cases"}}
 #: The live runtime: the page, the engine, the reader, the submission guard and the order path.

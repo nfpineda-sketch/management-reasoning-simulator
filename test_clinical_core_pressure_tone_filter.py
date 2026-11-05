@@ -26,6 +26,7 @@ from clinical_core import respiratory_distress as dm
 from clinical_core import distress_closure as xm
 from clinical_core import asthma_distress_migration as tm
 from clinical_core import oxygenation_link as om
+from clinical_core import opioid_migration as un
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import hr_envelope_filter as hf
 from clinical_core import hr_primary as hp
@@ -90,7 +91,15 @@ C57, C72 = pf.C57, pf.C72
 #: P2T-5 changed the core (the hypoventilation -> oxygenation link, off by default: one UNSET profile field) and
 #: two tuple files, proven against the P2T-3 files (oxygenation_link.proved): this package's guards read the
 #: tree as P2T-3 left it (om.chain, om.p2t3_sources).
-_LIVE_SOURCES_P2T5 = bf.freeze_sources
+#: P2U-1 changed the core (the common central respiratory drive availability: one auxiliary field, one arrival
+#: anchor and one provenance record, all at their reference 1 by default) and two tuple files, proven against the
+#: P2T-5 files (opioid_migration.proved): this package's guards read the tree as P2T-5 left it (un.chain,
+#: un.p2t5_sources).
+_LIVE_SOURCES_P2U1 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2T5() -> dict:
+    return un.p2t5_sources(_LIVE_SOURCES_P2U1())
 
 
 def _LIVE_SOURCES_P2T3() -> dict:
@@ -146,6 +155,7 @@ def _p2n2_core():
         xm.chain(patch, historical=False)
         tm.chain(patch)
         om.chain(patch)
+        un.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         yield

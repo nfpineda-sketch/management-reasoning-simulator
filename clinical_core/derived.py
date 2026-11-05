@@ -65,6 +65,10 @@ AUXILIARY_SOURCES["mechanics_efficiency"] = RESPIRATORY_MECHANICS
 #: every change since). It adds no kinetics and no coupling of its own. Read only when a profile declares a reader.
 RESPIRATORY_DISTRESS = Source(SourceKind.CORE_COUPLING, "respiratory_distress")
 AUXILIARY_SOURCES["respiratory_distress"] = RESPIRATORY_DISTRESS
+#: P2U-1: the core's sum of the families' availability changes into the common central respiratory drive availability
+#: (the arrival value plus every change since). It adds no kinetics and no coupling of its own.
+CENTRAL_AVAILABILITY = Source(SourceKind.CORE_COUPLING, "central_availability")
+AUXILIARY_SOURCES["central_availability"] = CENTRAL_AVAILABILITY
 #: The rhythms the collapse rule may end in (P2E-3). Which one, and when, is TBD.
 TERMINAL_RHYTHMS = ("pea", "asystole")
 #: The shared blood state's two core couplings (P2I-2T): plasma refill into the circulation, and
@@ -854,7 +858,7 @@ class DriveComposition:
 
 
 def _composition(intrinsic: float, acid: float, spo2: float | None, profile: CoreProfile,
-                 distress: float = 0.0) -> DriveComposition:
+                 distress: float = 0.0, central: float = 1.0) -> DriveComposition:
     hypoxaemic, excitatory = 0.0, acid
     if profile.hypoxaemic_drive_mapping is not None:
         hypoxaemic = hypoxaemic_drive(spo2, profile)
@@ -866,9 +870,17 @@ def _composition(intrinsic: float, acid: float, spo2: float | None, profile: Cor
         distress_drive = profile.distress_to_respiratory_drive_gain * distress
         excitatory = excitatory + distress_drive
     excitatory_rr = rate_from_drive(excitatory, intrinsic, profile)
-    availability = profile.central_drive_availability
+    # P2U-1: the profile's structural value times the state's common central availability (1 unless a family writes it).
+    availability = central_availability(profile, central)
     return DriveComposition(intrinsic, acid, spo2, hypoxaemic, excitatory, excitatory_rr, availability,
                             expressed_respiratory_rate(excitatory_rr, availability), distress_drive)
+
+
+def central_availability(profile: CoreProfile, central: float) -> float:
+    """P2U-1: the central drive availability the composition expresses: the profile's structural value (P2P-2, 1 except in
+    synthetic probes) times the state's common central availability (1 unless a family writes it). With both at 1 it is
+    1 exactly; nothing here chooses a value."""
+    return profile.central_drive_availability * central
 
 
 def respiratory_drive_composition(state: CoreState, anchors: Anchors, profile: CoreProfile) -> DriveComposition:
@@ -877,9 +889,10 @@ def respiratory_drive_composition(state: CoreState, anchors: Anchors, profile: C
     intrinsic = intrinsic_respiratory_rate(anchors)
     acid = respiratory_drive(state.aux.metabolic_acid_burden, profile)
     if not state.R.pulse_present:
-        return DriveComposition(intrinsic, acid, None, 0.0, acid, 0.0, profile.central_drive_availability, 0.0)
+        return DriveComposition(intrinsic, acid, None, 0.0, acid, 0.0,
+                                central_availability(profile, state.aux.central_availability), 0.0)
     spo2 = _perfusion(state, anchors, profile)[2] if profile.hypoxaemic_drive_mapping is not None else None
-    return _composition(intrinsic, acid, spo2, profile, state.aux.respiratory_distress)
+    return _composition(intrinsic, acid, spo2, profile, state.aux.respiratory_distress, state.aux.central_availability)
 
 
 def arrival_drive_composition(anchors: Anchors, profile: CoreProfile) -> DriveComposition:
@@ -888,7 +901,7 @@ def arrival_drive_composition(anchors: Anchors, profile: CoreProfile) -> DriveCo
     spo2 = anchors.spo2 if profile.hypoxaemic_drive_mapping is not None else None
     return _composition(intrinsic_respiratory_rate(anchors),
                         respiratory_drive(arrival_acid_burden(anchors, profile), profile), spo2, profile,
-                        anchors.arrival_respiratory_distress)
+                        anchors.arrival_respiratory_distress, anchors.arrival_central_availability)
 
 
 def respiration(state: CoreState, anchors: Anchors, profile: CoreProfile) -> Respiration:
@@ -1286,6 +1299,9 @@ def arrival_state(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> C
         raise CoreInvariantError("an arrival respiratory distress other than 0 needs a declared distress reader (P2T-1); "
                                  "nothing else reads it")
     check_distress_respiratory_effect(profile, anchors.arrival_respiratory_distress)
+    if anchors.arrival_central_availability != 1.0 and profile.acid_to_drive_gain is None:
+        raise CoreInvariantError("an arrival central drive availability other than 1 needs the P2K-2 acid-base physiology "
+                                 "(P2U-1); nothing else reads it")
     state = anchored_state(anchors).evolve(D=anchors.arrival_oxygen_debt)
     if state.R.code is RhythmCode.SINUS:
         state = state.evolve(R=replace(state.R, rate_bpm=intrinsic_sinus_rate(anchors)))
@@ -1294,7 +1310,8 @@ def arrival_state(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> C
                                             sympathetic_drive=0.0, oxygen_demand=anchors.metabolic_demand_baseline,
                                             metabolic_acid_burden=arrival_acid_burden(anchors, profile),
                                             mechanics_efficiency=anchors.arrival_mechanics_efficiency,
-                                            respiratory_distress=anchors.arrival_respiratory_distress))
+                                            respiratory_distress=anchors.arrival_respiratory_distress,
+                                            central_availability=anchors.arrival_central_availability))
     return state.evolve(aux=replace(state.aux, sympathetic_drive=sympathetic_target(state, anchors, profile)))
 
 
