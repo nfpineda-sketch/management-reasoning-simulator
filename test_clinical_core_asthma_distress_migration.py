@@ -148,6 +148,26 @@ def test_witnesses_are_drawn_only_after_nonemptiness_and_supported(witnesses):
             assert c["hr"] < c["authored"]["hr"]                 # distress never explains all the tachycardia
 
 
+def test_review_hardening_the_witnesses_stay_inside_the_declared_bands(witnesses):
+    # The adversarial review (finding 1): the frozen 'supported' flag does not read these; they are checked here.
+    for label in tm.WITNESS_RULE:
+        w = witnesses[label]
+        assert 0.0 < w["d24"] < 1.0                                        # the authored order is strict
+        for case in (tm.PRIMARY, tm.SECONDARY):
+            c = w["cases"][case]
+            assert tm.I_RR[0] <= c["intrinsic_rr"] <= tm.I_RR[1]
+            assert 0.0 < c["mechanics_efficiency"] <= 1.0
+        assert w["cases"][tm.PRIMARY]["mechanics_efficiency"] < w["cases"][tm.SECONDARY]["mechanics_efficiency"]
+
+
+def test_review_hardening_every_carried_k_and_the_mechanics_order(region):
+    # The adversarial review (finding 2): the frozen verdict reads only region['nonempty']; these are checked here.
+    assert region["every_carried_k"] and region["monotone_in_k"]
+    for pt in region["points"].values():
+        assert pt["nonempty"] and pt["contiguous_at_probes"]
+        assert all(at["asthma"]["mechanics_order_admissible"] for at in pt["at"].values())
+
+
 def test_49m_high_rr_and_high_paco2_coexist_without_contradiction(witnesses):
     c = witnesses["MID"]["cases"][tm.PRIMARY]
     assert c["rr"] == 30.0 and abs(c["paco2"] - 51.0) < 1e-6 and c["W"] < 1.0

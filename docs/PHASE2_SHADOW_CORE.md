@@ -4245,3 +4245,31 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Veredicto:** `P2T1A_SEMANTIC_CLOSURE_READY`.
 - **Queda abierto:** lo de TD-121, salvo el ancla de PaCO2 con la mecánica apagada (resuelto: opción 1) y el rechazo
   por redondeo (resuelto: L1).
+
+## 67. P2T-3 · Migración en sombra del asma con la región común de distrés (2026-11-05)
+
+- **Encargo:** reintentar la migración del asma con la mecánica de P2S-2, el distrés de P2T-1 / P2T-1A y la región entre
+  familias de P2T-2. Reemplaza a P2S-3 hacia adelante; su historia no se reescribe.
+- **Núcleo:** sin cambios. Sólo las dos tuplas ganan las entradas del paquete, probado contra `a2e6227`.
+- **Análisis:** `clinical_core/asthma_distress_migration.py`, congelado en `914ac31` antes de la evaluación. Registro:
+  `docs/revision/P2T3_asthma_distress_migration.json`. Informe: `docs/revision/P2T3_ASMA_DISTRES_SOMBRA.md`.
+- **Convenciones:**
+  - d(asthma_49m) = 1 (ANALYTIC_NORMALIZATION_ONLY);
+  - k ∈ [1, 2] (P2T3_ANALYSIS_SUBREGION_OF_EXISTING_ACID_UNCERTAINTY);
+  - ρ como intervalo condicional;
+  - la FC del TEP 33f sólo como cota superior.
+- **Resultados:**
+  - ASTHMA_FEASIBLE_SUBREGION_NONEMPTY en todo k llevado: ρ ∈ [0,023; 0,098], [0,023; 0,100] y [0,026; 0,102] (k = 1,
+    √2, 2), con el TEP 61m como cota inferior y el edema 58m como superior; d(24f) ∈ [0,44–0,54; 1);
+  - testigos en el núcleo vivo: FR y PaCO2 autorales exactas y FC por debajo de la autoral; con la mecánica apagada,
+    rechazados (M1);
+  - mecánica y distrés distintos e independientes en estructura: E(49m) < E(24f) y d(49m) > d(24f);
+  - opioides y GI con distrés 0 admisible, anafilaxia no forzada y residual del SCA no cerrado;
+  - el impulso hipoxémico sólo como sensibilidad;
+  - invariancia de escala exacta para λ potencia de 2.
+- **Revisión adversarial:** ningún hallazgo alto, 2 medios y 5 bajos, todos sobre la regla congelada salvo el del SCA:
+  criterios que no discriminan, `every_carried_k` sin leer, el residual del SCA admisible hasta 167 %, criterios
+  duplicados, evaluación sólo en el ρ medio y el borde abierto de d(24f). Chequeos independientes añadidos en las pruebas.
+  No se volvió a congelar.
+- **Veredicto:** `ASTHMA_SHADOW_MIGRATION_READY`.
+- **Recomendación:** auditoría de sólo lectura hipoventilación → oxigenación (no iniciada). Queda abierto en TD-122.
