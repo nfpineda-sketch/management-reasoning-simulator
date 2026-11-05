@@ -57,7 +57,7 @@ def _p2s2_tree():
     with pytest.MonkeyPatch.context() as patch:
         sm.chain(patch)
         dm.chain(patch)
-        xm.chain(patch)
+        xm.chain(patch, historical=False)
         patch.setattr(bf, "freeze_sources", lambda: sm.p2s2_sources(_LIVE_SOURCES_P2S3()))
         yield
 

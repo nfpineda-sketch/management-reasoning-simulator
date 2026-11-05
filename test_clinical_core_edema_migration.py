@@ -82,7 +82,7 @@ def _p2p1_tree():
         mc.chain(patch)
         sm.chain(patch)
         dm.chain(patch)
-        xm.chain(patch)
+        xm.chain(patch, historical=False)
         patch.setattr(bf, "freeze_sources", lambda: rd.p2p1_sources(_LIVE_SOURCES_P2P2()))
         yield
 

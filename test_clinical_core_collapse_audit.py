@@ -137,7 +137,7 @@ def _patch(patch) -> None:
     mc.chain(patch)
     sm.chain(patch)
     dm.chain(patch)
-    xm.chain(patch)
+    xm.chain(patch, historical=False)
     patch.setattr(bf, "freeze_sources", _p2m1_view)
     patch.setattr(cm, "core_files", _p2m1_core_files)
 

@@ -4193,3 +4193,55 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - WOB_OBSERVABLE_MAPPING_DEFERRED;
   - la tensión de composición de la anafilaxia (P2T-0X);
   - el impulso hipoxémico, la fiebre y el β-agonista. TD-121.
+
+## 66. P2T-1A · Cierre semántico y numérico del distrés respiratorio (2026-11-05)
+
+- **Encargo:** mantenimiento pequeño, en sombra, sobre P2T-1 aceptado y cerrado
+  (`COMMON_RESPIRATORY_DISTRESS_ARCHITECTURE_READY`). Sólo los dos puntos autorizados de su revisión, M1 y L1. Sin otro
+  cambio de fisiología, sin migrar el asma y sin calibrar.
+- **Núcleo:**
+  - M1, opción 1 docente (`DISTRESS_REQUIRES_COMMON_MECHANICS_FOR_RESPIRATORY_EFFECT`):
+    `derived.check_distress_respiratory_effect` rechaza un distrés mayor que 0 leído por el lector respiratorio con la
+    mecánica común de P2S-2 apagada. La llaman `arrival_state`, `_composition` (todo distrés que llega a la FR) e
+    `integration._distress_after` (escritores en evolución).
+  - No se rechazan el lector simpático solo, el distrés 0 ni el comportamiento por defecto.
+  - `DISTRESS_IN_ANCHOR = REJECTED`: el ancla de PaCO2 de P2K-2 no cambia y sus lectores son los de P2T-1.
+  - L1: `integration.distress_sum` suma el minuto con un único `math.fsum`. Un negativo dentro de
+    `math.ulp(1.0) × Σ|operandos|` (el redondeo binario64 de cada operando más el de la suma) queda en 0 exacto; un
+    negativo material se rechaza como antes. Sin épsilon clínico; la decisión no cambia al escalar.
+- **Análisis:** `clinical_core/distress_closure.py`, congelado en `c4754cb` antes de la evaluación. Registro:
+  `docs/revision/P2T1A_distress_closure.json`. Informe: `docs/revision/P2T1A_CIERRE_DISTRES.md`.
+- **Resultados:**
+  - M1:
+    - con la mecánica apagada se rechazan la llegada, el escritor en evolución, cualquier estado y la composición de
+      llegada;
+    - los mapeos comprometidos de edema y TEP (mecánica apagada) quedan rechazados con el lector respiratorio y aceptados
+      con el simpático solo; el asma (mecánica encendida) se acepta;
+    - el lector simpático solo sube la FC (80 → 86,24 sintético) sin tocar FR, PaCO2, pH ni W;
+    - con la mecánica encendida, la PaCO2 no lee la PaCO2 de llegada.
+  - L1:
+    - A: +0,3 −0,1 −0,2 da 0 exacto, en un minuto y en tres;
+    - B: el mismo resultado en todo orden; se rechazan sólo las secuencias con un minuto materialmente negativo;
+    - C: los negativos de redondeo dan 0;
+    - D: los negativos materiales se rechazan, también en la integración;
+    - E: los positivos pequeños se conservan;
+    - F: sin parámetro ni umbral nuevo.
+  - No regresión:
+    - D1–D12 y las demás secciones de P2T-1 pasan en vivo con la guarda;
+    - sus contrastes de edema y TEP con la mecánica apagada quedan rechazados en vivo, como se decidió;
+    - su registro y su digest se reproducen sobre su propio árbol, sin congelarlo de nuevo;
+    - los registros de P2S-2 y P2S-3 se reproducen;
+    - el veredicto histórico de P2S-3 no cambia.
+- **Revisión adversarial:** una, sobre el candidato congelado: ningún hallazgo alto, 1 medio y 5 bajos.
+  - Medio: L1 no cubre la deriva acumulada entre minutos (un curso simétrico +0,1 × 30 / −0,1 × 30 se rechaza en su
+    último minuto). Falla cerrado, no es una regresión y cubrirlo exige un campo de estado nuevo: decisión docente.
+  - Bajos:
+    - cancelaciones enormes y exactas ensanchan la cota;
+    - −inf en la función auxiliar;
+    - 1 ulp en sumas positivas;
+    - vistas históricas en las pruebas cerradas (corregido sólo en pruebas: `historical=False`);
+    - un estado sin pulso no llega a la guarda (sin efecto respiratorio).
+  - Sin hallazgo en anclaje de PaCO2, distrés sólo simpático, épsilon fijo ni cambios ajenos.
+- **Veredicto:** `P2T1A_SEMANTIC_CLOSURE_READY`.
+- **Queda abierto:** lo de TD-121, salvo el ancla de PaCO2 con la mecánica apagada (resuelto: opción 1) y el rechazo
+  por redondeo (resuelto: L1).

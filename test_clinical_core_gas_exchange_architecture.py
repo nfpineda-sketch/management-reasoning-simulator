@@ -96,7 +96,7 @@ def _p2o1_core():
         mc.chain(patch)
         sm.chain(patch)
         dm.chain(patch)
-        xm.chain(patch)
+        xm.chain(patch, historical=False)
         patch.setattr(bf, "freeze_sources", lambda: lw.p2o1_sources(_LIVE_SOURCES_P2O3()))
         yield
 

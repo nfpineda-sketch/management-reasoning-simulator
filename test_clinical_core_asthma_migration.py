@@ -45,7 +45,7 @@ def _LIVE_SOURCES_P2T1() -> dict:
 def _p2s3_tree():
     with pytest.MonkeyPatch.context() as patch:
         dm.chain(patch)
-        xm.chain(patch)
+        xm.chain(patch, historical=False)
         patch.setattr(bf, "freeze_sources", lambda: dm.p2s3_sources(_LIVE_SOURCES_P2T1()))
         yield
 
@@ -88,7 +88,7 @@ def test_closed_packages_read_the_p2s2_tree():
     with pytest.MonkeyPatch.context() as patch:
         sm.chain(patch)
         dm.chain(patch)
-        xm.chain(patch)
+        xm.chain(patch, historical=False)
         assert "asthma" not in mc._live("clinical_core/lactate_slice.py")
         assert "asthma" not in mc._live("clinical_core/decision_pack.py")
         assert all(mc.proofs().values())

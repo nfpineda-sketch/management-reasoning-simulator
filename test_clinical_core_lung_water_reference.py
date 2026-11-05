@@ -102,7 +102,7 @@ def _p2o3_tree():
         mc.chain(patch)
         sm.chain(patch)
         dm.chain(patch)
-        xm.chain(patch)
+        xm.chain(patch, historical=False)
         patch.setattr(bf, "freeze_sources", lambda: pe.p2o3_sources(_LIVE_SOURCES_P2P1()))
         yield
 

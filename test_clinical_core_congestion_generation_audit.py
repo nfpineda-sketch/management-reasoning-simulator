@@ -48,7 +48,7 @@ def _p2o1_core_through_the_chain():
         mc.chain(patch)
         sm.chain(patch)
         dm.chain(patch)
-        xm.chain(patch)
+        xm.chain(patch, historical=False)
         yield
 
 

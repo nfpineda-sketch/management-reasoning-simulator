@@ -64,7 +64,7 @@ def _p2q2_tree():
         mc.chain(patch)
         sm.chain(patch)
         dm.chain(patch)
-        xm.chain(patch)
+        xm.chain(patch, historical=False)
         patch.setattr(bf, "freeze_sources", lambda: mc.p2q2_sources(_LIVE_SOURCES_P2S2()))
         yield
 

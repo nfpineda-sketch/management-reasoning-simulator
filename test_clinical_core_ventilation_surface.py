@@ -114,7 +114,7 @@ def _p2n2_core():
         mc.chain(patch)
         sm.chain(patch)
         dm.chain(patch)
-        xm.chain(patch)
+        xm.chain(patch, historical=False)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         patch.setattr(vs, "core_unchanged", lambda: go.p2n2_unchanged(vs.CORE_AT_P2K2))

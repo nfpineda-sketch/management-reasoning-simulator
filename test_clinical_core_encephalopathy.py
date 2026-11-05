@@ -151,7 +151,7 @@ def _patch(patch) -> None:
     mc.chain(patch)
     sm.chain(patch)
     dm.chain(patch)
-    xm.chain(patch)
+    xm.chain(patch, historical=False)
     patch.setattr(bf, "freeze_sources", _p2l2_view)
     patch.setattr(ca, "_python", _p2l2_python)
     # P2O-1's analysis imports the candidate only to read its hypoxaemia signal (the candidate unchanged).
