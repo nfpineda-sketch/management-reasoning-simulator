@@ -58,7 +58,9 @@ from clinical_core.shadow import GOLDEN
 #: canonical arrival: again only scenario_inputs changed, and without the four fields it is the P2I-2AG digest. P2S-2 gave
 #: them one more (arrival_mechanics_efficiency, read only by the respiratory mechanics candidate, off by default), at its
 #: structural reference 1 at every canonical arrival: again only scenario_inputs changed, and without the five fields it
-#: is the P2I-2AG digest.
+#: is the P2I-2AG digest. P2T-1 gave them one more (arrival_respiratory_distress, read only by the two UNSET distress
+#: readers), at 0 at every canonical arrival: again only scenario_inputs changed, and without the six fields it is the
+#: P2I-2AG digest.
 FROZEN_COMPONENTS = {
     "rules": "af88ab18a117b24b79fb7654ac78d83404c93abc7c0c1e86ca1d6c4c156e0709",
     "bands": "99ca99f1b0d032056cfdabb90e1354683ef5ba093e896a0d5c10bc9c2ca192ca",
@@ -69,13 +71,14 @@ FROZEN_COMPONENTS = {
     "scenarios": "7380daec5536c8f9a23c857df2138c99a16d63eace51d62b295aa3f4ed100b58",
     "input_path_sources": "8bbff3d408efba2024917559156cfaa732c920b3bc7a45e0bac0e3e4838f65b9",
     "input_adapter_sources": "e83dca618fdaaa9239d861e1e1d6928dc703bfe33206a05cef44a5b0e9495bc5",
-    "scenario_inputs": "3c5ebfe47e9724cc17ec27da1aa0b31b5192af05a2600dc508ef687c9867c34d",
+    "scenario_inputs": "f2b468ae273d8222fc4ea0df2d2e7693ce5c35b4c59278d9cf1b61b034424b06",
 }
-FROZEN_DIGEST = "dd7dddcd78566a55f9dc011d68651bb7416c8ebd6ffe7492cb581a8d054a2cf2"
+FROZEN_DIGEST = "e0bdf85aa53ad7c243e8dd4cac020a0807a61acea95c8d2b1fedbe61f6273035"
 SCENARIO_INPUTS_BEFORE_P2K2 = "afb2051e7fa04f1765aaf920c82f51dc6675d19bcbcb425c2ee581d8fa60d347"
 P2K2_INPUTS = ("intrinsic_respiratory_rate", "arrival_bicarbonate", "arrival_paco2")
 P2O3_INPUTS = ("reversible_lung_water",)
 P2S2_INPUTS = ("arrival_mechanics_efficiency",)
+P2T1_INPUTS = ("arrival_respiratory_distress",)
 
 
 # P2F-2 / P2F-5 -- repository truth, candidate inference, faculty decision ---------------------
@@ -220,8 +223,9 @@ def test_the_rules_are_frozen():
         assert all(inputs[case]["arrival_anchors"].pop(name) is None for name in P2K2_INPUTS)
         assert all(inputs[case]["arrival_anchors"].pop(name) == 0.0 for name in P2O3_INPUTS)
         assert all(inputs[case]["arrival_anchors"].pop(name) == 1.0 for name in P2S2_INPUTS)
+        assert all(inputs[case]["arrival_anchors"].pop(name) == 0.0 for name in P2T1_INPUTS)
     assert hashlib.sha256(json.dumps(inputs, sort_keys=True, default=repr).encode("utf-8")).hexdigest() == \
-        SCENARIO_INPUTS_BEFORE_P2K2, "P2K-2, P2O-3 and P2S-2 added only five neutral anchor fields to the scenario inputs"
+        SCENARIO_INPUTS_BEFORE_P2K2, "P2K-2, P2O-3, P2S-2 and P2T-1 added only six neutral anchor fields to the scenario inputs"
     covered = {part for name in calibration.CHECKS for part in name.replace("-", "/").split("/")}
     assert {"DL1", "DL2", "DL3", "DL4", "RR1", "HR1", "PL1", "PL4", "PR1", "CO1", "DM1"} <= covered | {"HR1"}
     assert set(calibration.FROZEN_RULES) >= {"DL1", "DL2", "DL3", "DL4", "RR1", "HR1", "HR2", "HR3", "HR4", "PL1",

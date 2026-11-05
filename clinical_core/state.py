@@ -267,7 +267,7 @@ ARRIVAL_LAYERS: Mapping[str, tuple[str, ...]] = {
                                 "beta_blockade", "pump_reserve", "intrinsic_respiratory_rate", "reversible_lung_water"),
     "arrival_dynamic_state": ("preload_fraction", "arrival_oxygen_debt", "arrival_lactate_excess",
                               "arrival_delivery_ratio", "arrival_bicarbonate", "arrival_paco2",
-                              "arrival_mechanics_efficiency"),
+                              "arrival_mechanics_efficiency", "arrival_respiratory_distress"),
 }
 #: Where a declared case parameter comes from (P2D-8, P2E-6). One that is not declared is
 #: "default_unmapped".
@@ -364,6 +364,11 @@ class Anchors:
     # mechanics efficiency, a case / family latent arrival state (never read from the disease label), above 0 with no
     # upper bound. 1, the default, is the structural reference; no other value is approved.
     arrival_mechanics_efficiency: float = 1.0
+    # P2T-1 candidate input, read only by the respiratory distress readers (both UNSET by default) and outside the
+    # case-parameter / migration registry, as P2S-2's: the arrival respiratory distress, a case / family latent arrival
+    # state constrained by independent authored respiratory evidence (never read from the disease label, the RR or the
+    # HR), at or above 0 with no upper bound. 0, the default, is none; no other value is approved.
+    arrival_respiratory_distress: float = 0.0
     declared: FrozenRecord = field(default=EMPTY)
 
     def __post_init__(self):
@@ -417,6 +422,10 @@ class Anchors:
             raise CoreInvariantError("the reversible lung water is at or below arrival (L_rev <= 0, P2O-3)")
         if not self.arrival_mechanics_efficiency > 0.0:
             raise CoreInvariantError("the arrival respiratory mechanics efficiency is above 0 (P2S-2)")
+        if isinstance(self.arrival_respiratory_distress, bool) or not isinstance(self.arrival_respiratory_distress,
+                                                                                (int, float)) \
+                or not math.isfinite(self.arrival_respiratory_distress) or self.arrival_respiratory_distress < 0.0:
+            raise CoreInvariantError("the arrival respiratory distress is finite and at or above 0 (P2T-1)")
         for name in ("intrinsic_respiratory_rate", "arrival_bicarbonate", "arrival_paco2"):
             if getattr(self, name) is not None and not (math.isfinite(getattr(self, name)) and getattr(self, name) > 0.0):
                 raise CoreInvariantError(f"{name} is finite and positive when declared (P2K-2)")
@@ -467,6 +476,13 @@ AUXILIARY_FIELDS: Mapping[str, str] = {
                             "0 with no upper bound; the case's latent arrival value times every family change since "
                             "(provenance.MechanicsChange); not drive, central depression, RR, G or L; 1 and constant "
                             "while the mechanics candidate is off",
+    "respiratory_distress": "the common respiratory distress (P2T-1): non-chemical respiratory afferent / distress "
+                            "activation, the mismatch between respiratory demand and the respiratory system's ability to "
+                            "meet it plus respiratory / pulmonary afferent stress the gases do not carry; at or above 0 "
+                            "with no upper bound, 0 none; the case's latent arrival value plus every family change since "
+                            "(provenance.DistressChange); not SpO2, PaCO2, pH, RR, the work-of-breathing observable, the "
+                            "mechanics efficiency, G, L, the oxygen deficit, D, shock, pain, anxiety, systemic stress or "
+                            "central depression; 0 and constant while both of its readers are UNSET",
 }
 
 
@@ -480,6 +496,7 @@ class AuxiliaryState:
     collapse_burden: float = 0.0
     metabolic_acid_burden: float = 0.0
     mechanics_efficiency: float = 1.0
+    respiratory_distress: float = 0.0
 
     def __post_init__(self):
         for name in AUXILIARY_FIELDS:
@@ -500,6 +517,9 @@ class AuxiliaryState:
         if not self.mechanics_efficiency > 0:
             # P2S-2: the domain is above 0 only; 1 is the structural reference, not a ceiling.
             raise CoreInvariantError("the respiratory mechanics efficiency is above 0")
+        if self.respiratory_distress < 0:
+            # P2T-1: 0 is none; there is no ceiling (no clinical upper bound is chosen).
+            raise CoreInvariantError("the respiratory distress is never negative")
 
     def to_dict(self) -> dict:
         return {name: getattr(self, name) for name in AUXILIARY_FIELDS}

@@ -260,6 +260,38 @@ class MechanicsChange:
 
 
 @dataclass(frozen=True)
+class DistressChange:
+    """P2T-1: one source's change to the common respiratory distress in one minute.
+
+    The amount adds to the distress the minute starts with (finite; 0 changes nothing), as a channel delta adds to its
+    channel: the distress has no reference above 0 to scale, so the changes are additive. It stays where its writers
+    leave it: it never moves, back to arrival or anywhere else, without a change that names its source, and the core adds
+    no kinetics of its own. The distress is a common input, never a disease term: a family declares what its own
+    process does to it, and the core only sums the changes. A minute whose changes would take it below 0 is refused. No
+    amount is approved; with both of its readers UNSET a change is refused, because nothing would read it.
+    """
+
+    amount: float
+    source: Source
+    minute: int
+    description: str
+
+    def __post_init__(self):
+        if isinstance(self.amount, bool) or not isinstance(self.amount, (int, float)) \
+                or not math.isfinite(self.amount):
+            raise ProvenanceError(f"a distress change is a finite number, not {self.amount!r}")
+        object.__setattr__(self, "amount", float(self.amount))
+        if not isinstance(self.source, Source):
+            raise ProvenanceError("every distress change names its Source")
+        _minute(self.minute)
+        _description(self.description)
+
+    def to_dict(self) -> dict:
+        return {"type": "distress", "amount": self.amount, "source": self.source.to_dict(), "minute": self.minute,
+                "description": self.description}
+
+
+@dataclass(frozen=True)
 class AuxiliaryChange:
     """One change of the core's auxiliary dynamic state in one minute (P2D-1).
 
@@ -437,11 +469,12 @@ class MinuteRecord:
     demand: tuple[DemandModifier, ...] = field(default=())
     blood: tuple[BloodChange, ...] = field(default=())
     mechanics: tuple[MechanicsChange, ...] = field(default=())
+    distress: tuple[DistressChange, ...] = field(default=())
 
     def __post_init__(self):
         _minute(self.minute)
         for item in (self.deltas + self.transitions + self.settings + self.events + self.auxiliary + self.demand
-                     + self.blood + self.mechanics):
+                     + self.blood + self.mechanics + self.distress):
             if item.minute != self.minute:
                 raise ProvenanceError("a record holds only changes applied in its own minute")
 
@@ -464,7 +497,8 @@ class MinuteRecord:
                 "auxiliary": [item.to_dict() for item in self.auxiliary],
                 "demand": [item.to_dict() for item in self.demand],
                 "blood": [item.to_dict() for item in self.blood],
-                "mechanics": [item.to_dict() for item in self.mechanics]}
+                "mechanics": [item.to_dict() for item in self.mechanics],
+                "distress": [item.to_dict() for item in self.distress]}
 
 
 def attribution(records: Iterable[MinuteRecord], channel: Channel) -> dict[str, float]:

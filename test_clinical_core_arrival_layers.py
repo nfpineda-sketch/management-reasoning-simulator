@@ -37,7 +37,9 @@ def test_every_arrival_field_belongs_to_exactly_one_layer_and_no_layer_is_a_chan
     from clinical_core.lung_water_reference import CANDIDATE_INPUTS as P2O3_INPUTS
     # P2S-2: so does the respiratory mechanics candidate's latent arrival value (arrival_mechanics_efficiency).
     from clinical_core.respiratory_mechanics import CANDIDATE_INPUTS as P2S2_INPUTS
-    CANDIDATE_INPUTS = P2K2_INPUTS + P2O3_INPUTS + P2S2_INPUTS
+    # P2T-1: so does the respiratory distress's latent arrival value (arrival_respiratory_distress).
+    from clinical_core.respiratory_distress import CANDIDATE_INPUTS as P2T1_INPUTS
+    CANDIDATE_INPUTS = P2K2_INPUTS + P2O3_INPUTS + P2S2_INPUTS + P2T1_INPUTS
     assert set(CASE_PARAMETERS) | set(CANDIDATE_INPUTS) == set(ARRIVAL_LAYERS["physiological_reference"]) | set(
         ARRIVAL_LAYERS["arrival_dynamic_state"]) and not set(CASE_PARAMETERS) & set(CANDIDATE_INPUTS)
 

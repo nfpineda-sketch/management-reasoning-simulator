@@ -24,6 +24,7 @@ from clinical_core import respiratory_drive as rd
 from clinical_core import embolism_migration as em
 from clinical_core import respiratory_mechanics as mc
 from clinical_core import asthma_migration as sm
+from clinical_core import respiratory_distress as dm
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import vascular_tone as vt
@@ -59,7 +60,14 @@ FROZEN_DIGEST = "e7ff21e577cfadc3990ac9a27a3524d4e3bb80a7870d47e27dcc6e9420b7a71
 #: P2S-3 added files (the asthma family, its mapping and analysis) and two tuple entries, proven against the
 #: P2S-2 files (asthma_migration.proved): this package's guards read the tree as P2S-2 left it (sm.chain,
 #: sm.p2s2_sources).
-_LIVE_SOURCES_P2S3 = bf.freeze_sources
+#: P2T-1 changed four common files (the respiratory distress input and its two UNSET readers), proven against
+#: the P2S-3 files (respiratory_distress.proved): this package's guards read the tree as P2S-3 left it
+#: (dm.chain, dm.p2s3_sources).
+_LIVE_SOURCES_P2T1 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2S3() -> dict:
+    return dm.p2s3_sources(_LIVE_SOURCES_P2T1())
 
 
 def _LIVE_SOURCES_P2S2() -> dict:
@@ -93,7 +101,7 @@ def _p2n2_upstream() -> dict:
     # P2O-1's analysis reads the ACS case for its post-freeze validation: an analysis module, never common
     # physiology; the common-core readers of the family stay what P2N-2 froze.
     up = _UPSTREAM_P2N2()
-    return {**up, "core_readers_of_family": [r for r in up["core_readers_of_family"] if r not in go.OWN + lw.OWN + pe.OWN + rd.OWN + em.OWN + mc.OWN + sm.OWN]}
+    return {**up, "core_readers_of_family": [r for r in up["core_readers_of_family"] if r not in go.OWN + lw.OWN + pe.OWN + rd.OWN + em.OWN + mc.OWN + sm.OWN + dm.OWN]}
 
 
 @pytest.fixture(autouse=True, scope="module")
@@ -105,6 +113,7 @@ def _p2n2_core():
         em.chain(patch)
         mc.chain(patch)
         sm.chain(patch)
+        dm.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         patch.setattr(an, "upstream_unchanged", _p2n2_upstream)
@@ -340,6 +349,8 @@ def test_the_record_comes_from_the_frozen_package_and_is_reproduced_live(record,
     assert live["arrival"]["anchors"].pop("reversible_lung_water") == 0.0
     # P2S-2 gave the anchors one more candidate input (arrival_mechanics_efficiency), at its reference 1 here: the same.
     assert live["arrival"]["anchors"].pop("arrival_mechanics_efficiency") == 1.0
+    # P2T-1 gave them one more (arrival_respiratory_distress), at its reference 0 here: the same.
+    assert live["arrival"]["anchors"].pop("arrival_respiratory_distress") == 0.0
     for key in ("upstream", "arrival", "lactate_d", "pump", "untreated", "reperfusion", "fluid", "collapse", "boundary",
                 "gi", "legacy", "legacy_comparison", "verdict", "recommendation", "decisions", "efficiency"):
         assert record[key] == live[key], key

@@ -202,7 +202,7 @@ cinética del punto medio de P2F.
 ## 6. Tablas (generado)
 
 <!-- generado:anclas-hemorragia -->
-Generado desde las anclas `86001c3a52d8464cf0869f018a2681caae4619936d8737fe4f4945baf81ec74b` (`python -m clinical_core.blood_anchors`). Llegada: cada caso GI con sus bandas en el punto medio (posición de precarga: la que indique la tabla), cinética del lactato del punto medio de P2F (sólo contexto), ρ 2,5 con la banda de entrega de llegada re-anclada. κ = 1: la escala se explora como λ/κ. **Todos los rangos son exploraciones SINTÉTICAS, no valores aprobados ni bandas nuevas:** λ/κ reutiliza los tres puntos candidatos del registro de `preload_curve_scale_ml` y la posición recorre la banda del caso; el resto no es una banda candidata. Cada celda: referencia (mínimo–máximo en la cuadrícula).
+Generado desde las anclas `7ef00f31d8b4d22e092b2679d8b37bc60f3cf0232b87dc9f1f72e56465bc1197` (`python -m clinical_core.blood_anchors`). Llegada: cada caso GI con sus bandas en el punto medio (posición de precarga: la que indique la tabla), cinética del lactato del punto medio de P2F (sólo contexto), ρ 2,5 con la banda de entrega de llegada re-anclada. κ = 1: la escala se explora como λ/κ. **Todos los rangos son exploraciones SINTÉTICAS, no valores aprobados ni bandas nuevas:** λ/κ reutiliza los tres puntos candidatos del registro de `preload_curve_scale_ml` y la posición recorre la banda del caso; el resto no es una banda candidata. Cada celda: referencia (mínimo–máximo en la cuadrícula).
 
 | Parámetro | Referencia (provisional) | Exploración sintética |
 |---|---|---|

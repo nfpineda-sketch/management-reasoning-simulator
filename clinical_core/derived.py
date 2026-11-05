@@ -61,6 +61,10 @@ AUXILIARY_SOURCES["metabolic_acid_burden"] = ACID_BASE
 #: (the arrival value times every factor since). It adds no kinetics of its own. Off unless a profile declares it.
 RESPIRATORY_MECHANICS = Source(SourceKind.CORE_COUPLING, "respiratory_mechanics")
 AUXILIARY_SOURCES["mechanics_efficiency"] = RESPIRATORY_MECHANICS
+#: P2T-1: the core's sum of the families' distress changes into the common respiratory distress (the arrival value plus
+#: every change since). It adds no kinetics and no coupling of its own. Read only when a profile declares a reader.
+RESPIRATORY_DISTRESS = Source(SourceKind.CORE_COUPLING, "respiratory_distress")
+AUXILIARY_SOURCES["respiratory_distress"] = RESPIRATORY_DISTRESS
 #: The rhythms the collapse rule may end in (P2E-3). Which one, and when, is TBD.
 TERMINAL_RHYTHMS = ("pea", "asystole")
 #: The shared blood state's two core couplings (P2I-2T): plasma refill into the circulation, and
@@ -168,6 +172,15 @@ class CoreProfile:
     # (the PaCO2 at W = 1, never anchored to the authored arrival PaCO2). The W channel holds no meaning there: no source
     # may write it (the integration refuses it) and nothing in the candidate reads it.
     respiratory_mechanics: bool = False
+    # P2T-1: the two independent readers of the common respiratory distress (aux.respiratory_distress, non-chemical
+    # respiratory afferent / distress activation; 0 none), both UNSET (None) by default, so the distress is read by
+    # nothing and every value is P2S-2's. The respiratory reader adds gain x distress to the excitatory respiratory drive,
+    # with the acid and hypoxaemic drives, before the common saturation; the central drive availability still gates what
+    # is expressed. The sympathetic reader adds its own gain x distress to the sympathetic target, through the common
+    # saturation and beta-blockade. One upstream signal, two effectors, two gains: no RR / HR ratio is implied. No
+    # value is chosen here.
+    distress_to_respiratory_drive_gain: float | None = None
+    distress_to_sympathetic_gain: float | None = None
     pressure_levels: tuple[tuple[float, int], ...] = ((80.0, 1), (65.0, 2))
     oxygen_levels: tuple[tuple[float, int], ...] = ((87.0, 1), (80.0, 2))
     # P2E-3: the collapse rule is off (None) unless a profile declares it. No clinical threshold,
@@ -278,6 +291,16 @@ class CoreProfile:
             raise CoreInvariantError("the respiratory mechanics candidate needs the acid-base physiology and the "
                                      "structural-reference ventilation efficiency 1: mechanics live in the state's "
                                      "mechanics efficiency, never also in the profile")
+        for name in ("distress_to_respiratory_drive_gain", "distress_to_sympathetic_gain"):
+            value = getattr(self, name)
+            if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float))
+                                      or not math.isfinite(value) or value <= 0.0):
+                # P2T-1: UNSET is None; a declared reader has a finite positive gain (0 would read nothing).
+                raise CoreInvariantError(f"{name} is None (UNSET) or a finite positive gain")
+        if self.distress_to_respiratory_drive_gain is not None and self.acid_to_drive_gain is None:
+            # P2T-1: the respiratory reader lives in the P2P-2 composition, which only the acid-base physiology has.
+            raise CoreInvariantError("the respiratory distress reader of the respiratory drive needs the P2K-2 acid-base "
+                                     "physiology")
         if (self.hypoxaemic_drive_mapping is None) != (self.hypoxaemic_to_drive_gain is None):
             # P2P-2: the hypoxaemic drive is one structure; a mapping without its gain, or the reverse, is half-defined.
             raise CoreInvariantError("the hypoxaemic drive declares its oxygenation mapping and its gain together, or "
@@ -471,6 +494,16 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
                                            "(the PaCO2 at W = 1, COMMON_REFERENCE_PROVISIONAL, never the authored "
                                            "arrival PaCO2). Mechanics efficiency 1 is the STRUCTURAL_REFERENCE; every "
                                            "family mapping is UNSET; not approved"),
+    "distress_to_respiratory_drive_gain": (PROVISIONAL, "UNSET (P2T-1): respiratory drive (breaths/min-equivalent) per "
+                                                        "unit of the common respiratory distress, added to the acid and "
+                                                        "hypoxaemic drives before the common saturation, expressed "
+                                                        "through the central drive availability; None by default (no "
+                                                        "reader); SYNTHETIC_ONLY values in probes; not approved"),
+    "distress_to_sympathetic_gain": (PROVISIONAL, "UNSET (P2T-1): sympathetic drive per unit of the common respiratory "
+                                                  "distress, added to the sympathetic target, through the common "
+                                                  "saturation and beta-blockade; independent of the respiratory "
+                                                  "reader's gain; None by default (no reader); SYNTHETIC_ONLY values in "
+                                                  "probes; not approved"),
     "pressure_levels": (ADOPTED, "family_engine._PRESSURE_LEVELS, without the DC1 anchoring or the recovery "
                                  "margin, which belong to the observation layer"),
     "oxygen_levels": (ADOPTED, "family_engine._OXYGEN_LEVELS, same reservation"),
@@ -640,6 +673,11 @@ def respiratory_mechanics_active(profile: CoreProfile) -> bool:
     return profile.respiratory_mechanics
 
 
+def respiratory_distress_read(profile: CoreProfile) -> bool:
+    """Whether the profile declares either P2T-1 reader of the common respiratory distress (both UNSET by default)."""
+    return profile.distress_to_respiratory_drive_gain is not None or profile.distress_to_sympathetic_gain is not None
+
+
 def intrinsic_respiratory_rate(anchors: Anchors) -> float:
     """The patient's RR without respiratory drive; undeclared, the arrival RR is read as intrinsic."""
     return anchors.respiratory_rate if anchors.intrinsic_respiratory_rate is None else anchors.intrinsic_respiratory_rate
@@ -765,7 +803,8 @@ class DriveComposition:
     the excitatory terms (breaths/min-equivalent) and ``excitatory_drive`` their sum; ``excitatory_rr`` is the RR they
     give with the central machinery intact (P2K-2's ``rate_from_drive``); ``availability`` is the central drive
     availability and ``expressed_rr`` the RR the patient shows. ``spo2`` is the absolute SpO2 the hypoxaemic drive
-    read, None when its mapping is UNSET or there is no pulse."""
+    read, None when its mapping is UNSET or there is no pulse. P2T-1: ``distress_drive`` is the respiratory distress
+    reader's excitatory term (gain x distress), in the sum before the saturation; 0 while that reader is UNSET."""
 
     baseline_rr: float
     acid_drive: float
@@ -775,17 +814,24 @@ class DriveComposition:
     excitatory_rr: float
     availability: float
     expressed_rr: float
+    distress_drive: float = 0.0
 
 
-def _composition(intrinsic: float, acid: float, spo2: float | None, profile: CoreProfile) -> DriveComposition:
+def _composition(intrinsic: float, acid: float, spo2: float | None, profile: CoreProfile,
+                 distress: float = 0.0) -> DriveComposition:
     hypoxaemic, excitatory = 0.0, acid
     if profile.hypoxaemic_drive_mapping is not None:
         hypoxaemic = hypoxaemic_drive(spo2, profile)
         excitatory = acid + hypoxaemic
+    distress_drive = 0.0
+    if profile.distress_to_respiratory_drive_gain is not None:
+        # P2T-1: the non-chemical excitatory term joins the chemical ones before the common saturation.
+        distress_drive = profile.distress_to_respiratory_drive_gain * distress
+        excitatory = excitatory + distress_drive
     excitatory_rr = rate_from_drive(excitatory, intrinsic, profile)
     availability = profile.central_drive_availability
     return DriveComposition(intrinsic, acid, spo2, hypoxaemic, excitatory, excitatory_rr, availability,
-                            expressed_respiratory_rate(excitatory_rr, availability))
+                            expressed_respiratory_rate(excitatory_rr, availability), distress_drive)
 
 
 def respiratory_drive_composition(state: CoreState, anchors: Anchors, profile: CoreProfile) -> DriveComposition:
@@ -796,7 +842,7 @@ def respiratory_drive_composition(state: CoreState, anchors: Anchors, profile: C
     if not state.R.pulse_present:
         return DriveComposition(intrinsic, acid, None, 0.0, acid, 0.0, profile.central_drive_availability, 0.0)
     spo2 = _perfusion(state, anchors, profile)[2] if profile.hypoxaemic_drive_mapping is not None else None
-    return _composition(intrinsic, acid, spo2, profile)
+    return _composition(intrinsic, acid, spo2, profile, state.aux.respiratory_distress)
 
 
 def arrival_drive_composition(anchors: Anchors, profile: CoreProfile) -> DriveComposition:
@@ -804,7 +850,8 @@ def arrival_drive_composition(anchors: Anchors, profile: CoreProfile) -> DriveCo
     which the arrival state reads exactly (P2F-1), each read like any later value (the hypoxaemic mapping is absolute)."""
     spo2 = anchors.spo2 if profile.hypoxaemic_drive_mapping is not None else None
     return _composition(intrinsic_respiratory_rate(anchors),
-                        respiratory_drive(arrival_acid_burden(anchors, profile), profile), spo2, profile)
+                        respiratory_drive(arrival_acid_burden(anchors, profile), profile), spo2, profile,
+                        anchors.arrival_respiratory_distress)
 
 
 def respiration(state: CoreState, anchors: Anchors, profile: CoreProfile) -> Respiration:
@@ -1198,6 +1245,9 @@ def arrival_state(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> C
     if anchors.arrival_mechanics_efficiency != 1.0 and not respiratory_mechanics_active(profile):
         raise CoreInvariantError("an arrival mechanics efficiency other than 1 needs the respiratory mechanics candidate "
                                  "(P2S-2); nothing else reads it")
+    if anchors.arrival_respiratory_distress != 0.0 and not respiratory_distress_read(profile):
+        raise CoreInvariantError("an arrival respiratory distress other than 0 needs a declared distress reader (P2T-1); "
+                                 "nothing else reads it")
     state = anchored_state(anchors).evolve(D=anchors.arrival_oxygen_debt)
     if state.R.code is RhythmCode.SINUS:
         state = state.evolve(R=replace(state.R, rate_bpm=intrinsic_sinus_rate(anchors)))
@@ -1205,7 +1255,8 @@ def arrival_state(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> C
     state = state.evolve(aux=AuxiliaryState(lactate_excess_mmol_l=anchors.arrival_lactate_excess,
                                             sympathetic_drive=0.0, oxygen_demand=anchors.metabolic_demand_baseline,
                                             metabolic_acid_burden=arrival_acid_burden(anchors, profile),
-                                            mechanics_efficiency=anchors.arrival_mechanics_efficiency))
+                                            mechanics_efficiency=anchors.arrival_mechanics_efficiency,
+                                            respiratory_distress=anchors.arrival_respiratory_distress))
     return state.evolve(aux=replace(state.aux, sympathetic_drive=sympathetic_target(state, anchors, profile)))
 
 
@@ -1550,6 +1601,10 @@ def sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile)
     drive, but no core state carries them yet (no CO2, pain, temperature or withdrawal
     module). Hemostasis, or any disease module, never writes it: it moves only through
     these stimuli.
+
+    P2T-1: the common respiratory distress (aux.respiratory_distress) through its own gain, UNSET (None) by default; it
+    is respiratory afferent activation only. Non-respiratory stress (pain, hypoglycaemic counter-regulation, coronary
+    stress, fever, agitation) is SYSTEMIC_STRESS_DEFERRED: no state or gain carries it here.
     """
     _, pressure_rel, spo2, delivery_rel = _perfusion(state, anchors, profile)
     demand = state.aux.oxygen_demand
@@ -1566,6 +1621,10 @@ def sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile)
               + profile.debt_to_sympathetic_gain * state.D
               + profile.sympathetic_per_hypoxaemia_point * hypoxaemia
               + profile.sympathetic_per_hypoglycaemia_mg_dl * hypoglycaemia)
+    if profile.distress_to_sympathetic_gain is not None:
+        # P2T-1: the respiratory distress reader: its own gain times the state's absolute distress (never relative to
+        # arrival), through the same saturation and beta-blockade as every term; UNSET (None) by default.
+        target += profile.distress_to_sympathetic_gain * state.aux.respiratory_distress
     # P2J-4: the direct baroreflex, on the MAP of this same state, after the other terms (0 with the gain off).
     target += baroreflex_drive(pressure_rel, anchors, profile)
     # P2D-3: the drive is never negative. As its stimuli resolve, the rate falls back to the

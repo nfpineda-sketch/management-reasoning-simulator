@@ -27,6 +27,7 @@ from clinical_core import respiratory_drive as rd
 from clinical_core import embolism_migration as em
 from clinical_core import respiratory_mechanics as mc
 from clinical_core import asthma_migration as sm
+from clinical_core import respiratory_distress as dm
 from clinical_core.bands import ARRIVAL
 from clinical_core.integration import CHANNEL_BOUNDS
 from clinical_core.state import CHANNEL_DEFINITIONS, Anchors, Channel
@@ -45,6 +46,7 @@ def _p2o1_core_through_the_chain():
         em.chain(patch)
         mc.chain(patch)
         sm.chain(patch)
+        dm.chain(patch)
         yield
 
 

@@ -262,6 +262,14 @@
    "provisional",
    "vascular tone per unit of the acute shock signal, the current effective oxygen deficit over the current demand (P2J-2): tone relative to the tone with no deficit is 1 + g x signal, and T, relative to arrival, is that over its arrival value; reads no pressure, D, lactate or HR; g x a < 1. TBD. 0 by default (tone stays at arrival, P2J-1): the faculty sets it, nothing is chosen here"
   ],
+  "distress_to_respiratory_drive_gain": [
+   "provisional",
+   "UNSET (P2T-1): respiratory drive (breaths/min-equivalent) per unit of the common respiratory distress, added to the acid and hypoxaemic drives before the common saturation, expressed through the central drive availability; None by default (no reader); SYNTHETIC_ONLY values in probes; not approved"
+  ],
+  "distress_to_sympathetic_gain": [
+   "provisional",
+   "UNSET (P2T-1): sympathetic drive per unit of the common respiratory distress, added to the sympathetic target, through the common saturation and beta-blockade; independent of the respiratory reader's gain; None by default (no reader); SYNTHETIC_ONLY values in probes; not approved"
+  ],
   "hr_per_sympathetic_drive": [
    "adopted",
    "family_engine._surface: hr + (circulation - 1) * 25, read here as bpm per unit of sympathetic drive"
