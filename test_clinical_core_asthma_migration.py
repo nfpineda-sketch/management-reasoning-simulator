@@ -15,6 +15,7 @@ import pytest
 from clinical_core import asthma_migration as sm
 from clinical_core import respiratory_distress as dm
 from clinical_core import distress_closure as xm
+from clinical_core import asthma_distress_migration as tm
 from clinical_core import asthma_reference as sr
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import decision_pack, lactate_slice
@@ -34,7 +35,14 @@ FROZEN_DIGEST = "652d7138ff672fa9e43c92e06ac3042486e8f47ab504736726b0d53f42a7649
 #: P2T-1A changed two common files (the M1 guard and the L1 sum) and two tuple files, proven against the
 #: P2T-1 files (distress_closure.proved): this package's guards read the tree as P2T-1 left it
 #: (xm.chain, xm.p2t1_sources).
-_LIVE_SOURCES_P2T1A = bf.freeze_sources
+#: P2T-3 added files (the asthma distress migration) and two tuple entries, proven against the P2T-1A files
+#: (asthma_distress_migration.proved): this package's guards read the tree as P2T-1A left it (tm.chain,
+#: tm.p2t1a_sources).
+_LIVE_SOURCES_P2T3 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2T1A() -> dict:
+    return tm.p2t1a_sources(_LIVE_SOURCES_P2T3())
 
 
 def _LIVE_SOURCES_P2T1() -> dict:
@@ -46,6 +54,7 @@ def _p2s3_tree():
     with pytest.MonkeyPatch.context() as patch:
         dm.chain(patch)
         xm.chain(patch, historical=False)
+        tm.chain(patch)
         patch.setattr(bf, "freeze_sources", lambda: dm.p2s3_sources(_LIVE_SOURCES_P2T1()))
         yield
 
@@ -89,6 +98,7 @@ def test_closed_packages_read_the_p2s2_tree():
         sm.chain(patch)
         dm.chain(patch)
         xm.chain(patch, historical=False)
+        tm.chain(patch)
         assert "asthma" not in mc._live("clinical_core/lactate_slice.py")
         assert "asthma" not in mc._live("clinical_core/decision_pack.py")
         assert all(mc.proofs().values())

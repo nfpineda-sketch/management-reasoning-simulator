@@ -27,6 +27,7 @@ from clinical_core import respiratory_mechanics as mc
 from clinical_core import asthma_migration as sm
 from clinical_core import respiratory_distress as dm
 from clinical_core import distress_closure as xm
+from clinical_core import asthma_distress_migration as tm
 from clinical_core import consciousness_audit as ca
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import encephalopathy as enc
@@ -72,7 +73,14 @@ TEST_MAPPING = enc.SignalMapping(normal=10.0, severe=0.0)
 #: P2T-1A changed two common files (the M1 guard and the L1 sum) and two tuple files, proven against the
 #: P2T-1 files (distress_closure.proved): this package's guards read the tree as P2T-1 left it
 #: (xm.chain, xm.p2t1_sources).
-_LIVE_SOURCES_P2T1A = bf.freeze_sources
+#: P2T-3 added files (the asthma distress migration) and two tuple entries, proven against the P2T-1A files
+#: (asthma_distress_migration.proved): this package's guards read the tree as P2T-1A left it (tm.chain,
+#: tm.p2t1a_sources).
+_LIVE_SOURCES_P2T3 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2T1A() -> dict:
+    return tm.p2t1a_sources(_LIVE_SOURCES_P2T3())
 
 
 def _LIVE_SOURCES_P2T1() -> dict:
@@ -127,7 +135,8 @@ LATER_MODULES = ("clinical_core/collapse_audit.py", "clinical_core/collapse.py",
                  "clinical_core/respiratory_mechanics.py",
                  "clinical_core/asthma_reference.py", "clinical_core/modules/asthma.py", "clinical_core/asthma_migration.py",
                  "clinical_core/respiratory_distress.py",
-                 "clinical_core/distress_closure.py")
+                 "clinical_core/distress_closure.py",
+                 "clinical_core/asthma_distress_migration.py")
 
 
 def _p2l2_view() -> dict:
@@ -152,6 +161,7 @@ def _patch(patch) -> None:
     sm.chain(patch)
     dm.chain(patch)
     xm.chain(patch, historical=False)
+    tm.chain(patch)
     patch.setattr(bf, "freeze_sources", _p2l2_view)
     patch.setattr(ca, "_python", _p2l2_python)
     # P2O-1's analysis imports the candidate only to read its hypoxaemia signal (the candidate unchanged).

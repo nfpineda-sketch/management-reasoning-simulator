@@ -25,6 +25,7 @@ from clinical_core import respiratory_mechanics as mc
 from clinical_core import asthma_migration as sm
 from clinical_core import respiratory_distress as dm
 from clinical_core import distress_closure as xm
+from clinical_core import asthma_distress_migration as tm
 from clinical_core import decision_pack, gi_reference, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import lactate_adequacy as la
@@ -65,7 +66,8 @@ LATER_MODULES = ("clinical_core/acid_base.py", "clinical_core/ventilation.py",
                  "clinical_core/respiratory_mechanics.py",
                  "clinical_core/asthma_reference.py", "clinical_core/modules/asthma.py", "clinical_core/asthma_migration.py",
                  "clinical_core/respiratory_distress.py",
-                 "clinical_core/distress_closure.py")
+                 "clinical_core/distress_closure.py",
+                 "clinical_core/asthma_distress_migration.py")
 C57, C72 = ra.C57, ra.C72
 
 
@@ -95,7 +97,14 @@ C57, C72 = ra.C57, ra.C72
 #: P2T-1A changed two common files (the M1 guard and the L1 sum) and two tuple files, proven against the
 #: P2T-1 files (distress_closure.proved): this package's guards read the tree as P2T-1 left it
 #: (xm.chain, xm.p2t1_sources).
-_LIVE_SOURCES_P2T1A = bf.freeze_sources
+#: P2T-3 added files (the asthma distress migration) and two tuple entries, proven against the P2T-1A files
+#: (asthma_distress_migration.proved): this package's guards read the tree as P2T-1A left it (tm.chain,
+#: tm.p2t1a_sources).
+_LIVE_SOURCES_P2T3 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2T1A() -> dict:
+    return tm.p2t1a_sources(_LIVE_SOURCES_P2T3())
 
 
 def _LIVE_SOURCES_P2T1() -> dict:
@@ -141,6 +150,7 @@ def _p2n2_core():
         sm.chain(patch)
         dm.chain(patch)
         xm.chain(patch, historical=False)
+        tm.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         yield
@@ -249,7 +259,9 @@ P2N2_FILES = ("clinical_core/acs_reference.py", "clinical_core/modules/acs_ischa
               # it only through the RR.
               "clinical_core/respiratory_distress.py",
               # P2T-1A's analysis names W only to check that the sympathetic reader alone leaves it unchanged.
-              "clinical_core/distress_closure.py")
+              "clinical_core/distress_closure.py",
+              # P2T-3's analysis names W only to report the witnesses' ventilation and the courses' directions.
+              "clinical_core/asthma_distress_migration.py")
 
 
 def _readers_of_w():
@@ -535,7 +547,7 @@ def test_the_exclusion_tuples_hold_exactly_their_p2k1_content():
             ca.TUPLES_ADDED[name] + ea.TUPLES_ADDED[name] + cm.TUPLES_ADDED[name] + \
             cy.TUPLES_ADDED[name] + an.TUPLES_ADDED[name] + go.TUPLES_ADDED[name] + lw.TUPLES_ADDED[name] + \
             pe.TUPLES_ADDED[name] + rd.TUPLES_ADDED[name] + em.TUPLES_ADDED[name] + mc.TUPLES_ADDED[name] + sm.TUPLES_ADDED[name] + \
-            dm.TUPLES_ADDED[name] + xm.TUPLES_ADDED[name]
+            dm.TUPLES_ADDED[name] + xm.TUPLES_ADDED[name] + tm.TUPLES_ADDED[name]
         assert set(added) <= set(values), name
         values = [v for v in values if v not in added]
         assert (hashlib.sha256(json.dumps(sorted(values)).encode("utf-8")).hexdigest(), len(values)) == \

@@ -25,6 +25,7 @@ from clinical_core import respiratory_mechanics as mc
 from clinical_core import asthma_migration as sm
 from clinical_core import respiratory_distress as dm
 from clinical_core import distress_closure as xm
+from clinical_core import asthma_distress_migration as tm
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import respiratory_monotonicity as rm
@@ -72,7 +73,14 @@ N = 121
 #: P2T-1A changed two common files (the M1 guard and the L1 sum) and two tuple files, proven against the
 #: P2T-1 files (distress_closure.proved): this package's guards read the tree as P2T-1 left it
 #: (xm.chain, xm.p2t1_sources).
-_LIVE_SOURCES_P2T1A = bf.freeze_sources
+#: P2T-3 added files (the asthma distress migration) and two tuple entries, proven against the P2T-1A files
+#: (asthma_distress_migration.proved): this package's guards read the tree as P2T-1A left it (tm.chain,
+#: tm.p2t1a_sources).
+_LIVE_SOURCES_P2T3 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2T1A() -> dict:
+    return tm.p2t1a_sources(_LIVE_SOURCES_P2T3())
 
 
 def _LIVE_SOURCES_P2T1() -> dict:
@@ -118,6 +126,7 @@ def _p2n2_core():
         sm.chain(patch)
         dm.chain(patch)
         xm.chain(patch, historical=False)
+        tm.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         patch.setattr(rm, "closed_unchanged", lambda: go.p2n2_unchanged(rm.CLOSED_AT_P2K4))

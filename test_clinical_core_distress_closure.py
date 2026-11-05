@@ -19,6 +19,7 @@ from clinical_core import blood_fluid_calibration as bf
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import distress_closure as xm
+from clinical_core import asthma_distress_migration as tm
 from clinical_core import respiratory_distress as dm
 from clinical_core.integration import distress_sum, step
 from clinical_core.provenance import ProvenanceError
@@ -27,6 +28,19 @@ from clinical_core.state import CoreInvariantError
 #: The P2T-1A freeze: the guard and sum audit, the M1 and L1 probes, the readiness rule, the proof and every
 #: clinical_core source but the downstream reports, committed before the evaluation run.
 FROZEN_DIGEST = "476e18f0e30f80745d2426d264bcf2e9a8617f7cdc585cc506f6c4e143c71982"
+
+#: P2T-3 added files (the asthma distress migration) and two tuple entries, proven against the P2T-1A files
+#: (asthma_distress_migration.proved): this package's guards read the tree as P2T-1A left it (tm.chain,
+#: tm.p2t1a_sources); P2T-3 changes no behaviour.
+_LIVE_SOURCES_P2T3 = bf.freeze_sources
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _p2t1a_tree():
+    with pytest.MonkeyPatch.context() as patch:
+        tm.chain(patch)
+        patch.setattr(bf, "freeze_sources", lambda: tm.p2t1a_sources(_LIVE_SOURCES_P2T3()))
+        yield
 
 
 # The frozen package and its proof -------------------------------------------------------------------------------------------
