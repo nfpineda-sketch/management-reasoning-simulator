@@ -19,6 +19,7 @@ from clinical_core import derived as dv
 from clinical_core import opioid_migration as un
 from clinical_core import opioid_reference as orf
 from clinical_core import oxygenation_link as om
+from clinical_core import respiratory_mechanics as mc
 from clinical_core.integration import _REGISTRY, availability_sum, step
 from clinical_core.modules.opioid import NaloxoneReversal, OpioidCentralDepression
 from clinical_core.provenance import AvailabilityChange, ProvenanceError, Source, SourceKind
@@ -302,6 +303,72 @@ def test_the_legacy_is_classified_not_fitted():
 def test_the_non_regression():
     found = un.non_regression()
     assert found["pass"], found
+
+
+# Review hardening (the one adversarial review; test-only, no frozen source changed) --------------------------------------------
+
+def test_review_hardening_r1_the_arrival_exactness_is_algebraic_not_evidence():
+    """R1: with the authored HCO3 above the reference the acid burden is 0, so the excitatory RR is the intrinsic RR and
+    the pair (availability = RR / I, efficiency = 40 I / (PaCO2 RR)) reproduces ANY authored RR and PaCO2 exactly. The
+    reproduction is therefore algebraic, not evidence for the mapping; what carries information is that the pair is in
+    its domain (0 < availability < 1, i.e. the authored RR is below the intrinsic one) and that SpO2 and pH follow."""
+    t = dict(orf.truth())
+    for rr, paco2 in ((2.0, 200.0), (9.5, 55.0), (3.0, 120.0)):
+        fabricated = {**t, "respiratory_rate": rr, "abg_paco2": paco2}
+        for intrinsic in orf.INTRINSIC_POINTS.values():
+            e = orf.implied_efficiency(fabricated, intrinsic)
+            a = orf.implied_availability(fabricated, intrinsic)
+            assert mc.analytic_paco2(rr, intrinsic, e) == pytest.approx(paco2, rel=1e-12)
+            assert a * orf.excitatory_rr(fabricated, intrinsic) == pytest.approx(rr, rel=1e-12)
+    # What is not algebraic: both real cases are hypoventilating (RR below the intrinsic RR) at every carried point.
+    for case in orf.CASES:
+        for point in un.POINTS:
+            assert 0.0 < orf.anchors(case, point).arrival_central_availability < 1.0
+    for case in orf.CASES:
+        burden = dv.arrival_state(orf.anchors(case), un.profile()).aux.metabolic_acid_burden
+        assert burden == 0.0
+
+
+def test_review_hardening_r2_the_steady_state_tension_covers_both_cases(region):
+    """R2: the frozen tension statement names 35m and says 67f is near the reference only at the lower intrinsic RR; the
+    record's own numbers show 67f shares the tension at the midpoint and upper points (efficiency above the reference and
+    a hypocapnic restored PaCO2). Pinned here so the faculty decision covers both cases."""
+    for case in orf.CASES:
+        rows = region[case]["points"]
+        assert rows["midpoint"]["efficiency_above_reference"] and rows["upper"]["efficiency_above_reference"]
+        assert rows["midpoint"]["restored_paco2"] < 40.0 and rows["upper"]["restored_paco2"] < 40.0
+    assert not region[orf.SECONDARY]["points"]["lower"]["efficiency_above_reference"]
+    assert region[orf.SECONDARY]["points"]["lower"]["restored_paco2"] > 40.0
+
+
+def test_review_hardening_r3_the_recurrence_direction_holds_before_the_floor():
+    """R3: the frozen recurrence check reads minute 120, where SpO2 and delivery sit at P2T-5's M2 floor (0). The
+    direction holds strictly before the floor too: at the first minute after the antagonist stops, and on the way down
+    while SpO2 is still above 0."""
+    a, p = orf.anchors(orf.SECONDARY), un.link_profile()
+    items = (un.naloxone(start=un.RECURRENCE["naloxone_from"], stop=un.RECURRENCE["naloxone_to"]),
+             un.depression(un.RECURRENCE["deepening_per_min"], un.RECURRENCE["deepening_from"]))
+    states, _ = un.course(items, a, p, minutes=un.LONG_COURSE_MINUTES)
+    rows = [un._row(s, a, p) for s in states]
+    stop = un.RECURRENCE["naloxone_to"]
+    above = [r for r in rows[stop:] if r["spo2"] > 0.0]
+    assert len(above) >= 10
+    assert all(b["availability"] < x["availability"] for x, b in zip(above, above[1:]))
+    assert all(b["paco2"] > x["paco2"] for x, b in zip(above, above[1:]))
+    assert all(b["spo2"] < x["spo2"] for x, b in zip(above, above[1:]))
+    floor = [r["minute"] for r in rows if r["spo2"] == 0.0]
+    assert floor and min(floor) > stop                      # the floor is reached only well after the antagonist stops
+
+
+def test_review_hardening_r4_the_consciousness_ladder_cannot_move_here():
+    """R4: the ADOPTED ladder takes max(arrival level, the SpO2 level), and the SpO2 levels cap at the arrival level 2
+    (Obtunded) for both cases, so the level is structurally pinned: it registers neither the deepening nor the naloxone
+    recovery. The record's 'reads SpO2 only' is honest about the input but not about the reachability."""
+    a, p = orf.anchors(), un.link_profile()
+    down, _ = un.course((un.depression(un.SEVERE_DEEPENING_PER_MIN),), a, p, minutes=un.LONG_COURSE_MINUTES)
+    up, _ = un.course((un.naloxone(0.5, 0),), a, p)
+    assert {dv.derive(s, a, p).consciousness_level for s in down + up} == {orf.LEVEL_OF["Obtunded"]}
+    assert max(level for _, level in un.profile().oxygen_levels) <= orf.LEVEL_OF["Obtunded"]
 
 
 # The verdict, the frozen record and the document -----------------------------------------------------------------------------

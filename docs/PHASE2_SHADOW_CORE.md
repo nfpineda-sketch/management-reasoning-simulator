@@ -4313,3 +4313,36 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   docentes pendientes.
 - **Recomendación:** auditoría de sólo lectura de los requisitos de la migración opioide (no iniciada). Queda abierto en
   TD-123.
+
+## 69. P2U-1 · Migración en sombra de los opioides: depresión respiratoria central (2026-11-05)
+
+- **Encargo:** migrar la familia opioide en sombra como prueba de esfuerzo ortogonal de la cadena respiratoria común:
+  ¿puede representar la depresión central sin G ni L de familia, sin distrés y sin ecuación de oxígeno propia?
+- **Núcleo** (`state.py`, `provenance.py`, `derived.py`, `integration.py`, probado contra `98a2bb0`): la interfaz mínima
+  de disponibilidad central que P2T-5 dejó pendiente (`CENTRAL_AVAILABILITY_STATE_DEFERRED`, punto 5 de TD-123).
+  - `AuxiliaryState.central_availability` y `Anchors.arrival_central_availability`: 0 a 1, 1 por defecto;
+  - `provenance.AvailabilityChange`: aditivo, falla cerrado fuera del dominio, con la regla de redondeo de P2T-1A;
+  - la composición de P2P-2 expresa la disponibilidad estructural del perfil por la del estado (1 × 1 = 1 exacto);
+  - necesita la fisiología ácido-base de P2K-2, igual que el valor del perfil. No es un canal canónico.
+- **Familia:** `clinical_core/modules/opioid.py` (depresión central y reversión por naloxona), que escribe sólo la
+  disponibilidad; mapeo de llegada en `clinical_core/opioid_reference.py`.
+- **Análisis:** `clinical_core/opioid_migration.py`, congelado en `0b32a0e` antes de la evaluación. Registro:
+  `docs/revision/P2U1_opioid_migration.json`. Informe: `docs/revision/P2U1_OPIOIDE_SOMBRA.md`.
+- **Resultados:**
+  - región de llegada no vacía en los dos casos y en las tres FR intrínsecas llevadas (12 / 16 / 20), con FR, PaCO2, pH
+    y SpO2 autorales exactos; 35m disponibilidad 0,30–0,50 y 67f 0,40–0,67;
+  - U1–U12 pasan: la cascada disponibilidad → FR → W → PaCO2 → SpO2 → DO2 funciona con G, L y distrés en 0 y la mecánica
+    intacta;
+  - la naloxona revierte la cascada en estructura; al pararla, la depresión se reanuda (67f);
+  - `COMMON_OXYGENATION_LINK_INSUFFICIENT` no se activó: el enlace de P2T-5 basta;
+  - el registro de P2T-5 se reproduce sobre su árbol y la disponibilidad queda en 1 en todo perfil comprometido.
+- **Revisión adversarial:** ningún hallazgo alto, 4 medios y 3 bajos, confirmados con sondas. Refuerzos sólo en las
+  pruebas; no se volvió a congelar. R1: la exactitud de llegada es algebraica (el par reproduce cualquier FR / PaCO2
+  autoral), así que lo que informa es la hipoventilación (0 < disponibilidad < 1) y el pH. R2: la tensión de estado
+  estacionario también afecta al 67f en FR intrínseca 16 y 20. R3: la dirección de recurrencia se leía en el suelo M2;
+  queda fijada antes del suelo. R4: booleanos literales o circulares, y la escalera de conciencia está fija en 2 por
+  construcción. Una prueba del revisor mostró que la vista de árbol no esconde comportamiento: un cambio real en la
+  composición, con la prueba de hashes satisfecha a mano, deja 11 guardas cerradas en rojo.
+- **Veredicto:** `OPIOID_SHADOW_MIGRATION_READY`.
+- **Recomendación:** auditoría de sólo lectura del estrés sistémico y la FC no respiratoria (P2V-0). Queda abierto en
+  TD-124.
