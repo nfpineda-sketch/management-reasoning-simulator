@@ -218,6 +218,70 @@ def test_the_non_regression():
     assert found["pass"], found
 
 
+# Review hardening (the one adversarial review; test-only, no frozen source changed) --------------------------------------------
+
+def test_review_hardening_m1_the_link_closes_a_lagged_compensatory_metabolic_loop():
+    """M1: when delivery falls below the extraction reserve, a link-lowered SpO2 reaches the acid burden, the drive and the
+    RR through the existing minute-lagged path, and so PaCO2 and SpO2 again: a closed loop the frozen criterion 8 words as
+    'no feedback'. It is compensatory (more acid, more RR, less PaCO2 than with the link off) and does not oscillate.
+    Pending faculty decision (accept, or defer under HYPOXEMIC_FEEDBACK_LOOP_DEFERRED). The probe patient never exercises it."""
+    a, on = om.probe_anchors(spo2=85.0), om.probe_profile()
+    off = replace(on, respiratory_quotient=None)
+    on_course = om._course((mc.SyntheticMechanics("m1", 0.985, 0, 60),), a, on, minutes=240)
+    off_course = om._course((mc.SyntheticMechanics("m1", 0.985, 0, 60),), a, off, minutes=240)
+    r_on, r_off = dv.respiration(on_course[60], a, on), dv.respiration(off_course[60], a, off)
+    assert on_course[60].aux.metabolic_acid_burden > off_course[60].aux.metabolic_acid_burden == 0.0
+    assert r_on.respiratory_rate > r_off.respiratory_rate and r_on.paco2 < r_off.paco2
+    pc = [om.paco2(s, a, on) for s in on_course]
+    steps = [b - x for x, b in zip(pc, pc[1:])]
+    turns = sum(1 for x, y in zip(steps, steps[1:]) if x * y < 0 and abs(x) > 1e-9 and abs(y) > 1e-9)
+    assert turns <= 1                                   # one turn where the synthetic worsening stops; no oscillation
+    probe = om.probes()["O8"]
+    assert probe["course_respiration_same"]             # the frozen O8 course never falls below the extraction reserve
+
+
+def test_review_hardening_m2_the_latent_pao2_floor_is_reached_silently():
+    """M2: with full transmission the latent PaO2 reaches 0 once dPaCO2 >= R x PaO2_latent; SpO2 is then 0 (the curve's
+    domain), with no UnresolvedBoundary. Symmetrically, a SpO2_base already at the G path's 0 floor is read as PaO2 0, so
+    hyperventilation lifts it whatever the G. Monotone; pending faculty decision (unresolved boundary, declared floor or
+    other). Pinned here so a later decision is visible."""
+    r = om.SYNTHETIC_R
+    latent = dv.pao2_from_oxygen_saturation(85.0)
+    assert om.shift(85.0, r * latent * 0.999) > 0.0 and om.shift(85.0, r * latent) == 0.0
+    assert om.shift(85.0, 60.0) == 0.0
+    assert om.shift(0.0, -10.0) == dv.oxygen_saturation_from_pao2(10.0 / r) > 0.0
+    grid = [om.shift(85.0, d) for d in (0.0, 10.0, 20.0, 30.0, 39.0, 40.0, 41.0, 80.0)]
+    assert all(y <= x for x, y in zip(grid, grid[1:]))
+
+
+def test_review_hardening_b1_the_direction_holds_beyond_roundoff():
+    """B1: the strict direction holds for any PaCO2 change beyond roundoff; changes of a few ulp move SpO2 by at most a
+    few ulp, in either direction (the docstring's 'never' is exact only beyond roundoff)."""
+    for base in (40.0, 85.0, 97.0, 99.9):
+        for d in (1e-9, 1e-6, 1e-3, 1.0):
+            assert om.shift(base, d) < base < om.shift(base, -d)
+        for d in (1e-15, -1e-15):
+            assert abs(om.shift(base, d) - base) <= 1e-12
+
+
+def test_review_hardening_b2_drive_mediated_hypoventilation_in_the_integrated_core():
+    """B2: beyond the fixed-state opioid probe, a falling central drive in the integrated core (PE's arrival acid burden
+    clearing, no writer, G 0, mechanics constant) raises PaCO2 and, with the link, lowers SpO2; with the link off SpO2
+    does not move. A depression declared in the profile is absorbed by the arrival reference (exact at arrival), so a
+    time-varying availability still needs the opioid migration's writer (CENTRAL_AVAILABILITY_STATE_DEFERRED)."""
+    a, on = om.structural_pairs()["pe"]
+    off = replace(on, respiratory_quotient=None)
+    st_on, st_off = om._course((), a, on), om._course((), a, off)
+    assert all(s.G == 0.0 and s.aux.mechanics_efficiency == a.arrival_mechanics_efficiency for s in st_on)
+    r0, r1 = dv.respiration(st_on[0], a, on), dv.respiration(st_on[-1], a, on)
+    assert r1.drive < r0.drive and r1.respiratory_rate < r0.respiratory_rate and r1.paco2 > r0.paco2
+    assert om.spo2(st_on[-1], a, on) < om.spo2(st_on[0], a, on)
+    assert om.spo2(st_off[-1], a, off) == om.spo2(st_off[0], a, off)
+    depressed = replace(om.probe_profile(), central_drive_availability=om.DEPRESSED_AVAILABILITY)
+    pa = om.probe_anchors()
+    assert dv.derive(dv.arrival_state(pa, depressed), pa, depressed).spo2 == pa.spo2
+
+
 # The verdict, the frozen record and the document -----------------------------------------------------------------------------
 
 @pytest.fixture(scope="module")

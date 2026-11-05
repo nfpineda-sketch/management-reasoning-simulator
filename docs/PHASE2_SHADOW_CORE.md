@@ -4273,3 +4273,43 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   No se volvió a congelar.
 - **Veredicto:** `ASTHMA_SHADOW_MIGRATION_READY`.
 - **Recomendación:** auditoría de sólo lectura hipoventilación → oxigenación (no iniciada). Queda abierto en TD-122.
+
+## 68. P2T-5 · Enlace común mínimo hipoventilación → oxigenación (2026-11-05)
+
+- **Encargo:** después de P2T-4 = A (`MINIMAL_ALVEOLAR_GAS_LINK_SUPPORTED`), un enlace común, en sombra y apagado por
+  defecto, de la hipoventilación a la oxigenación. No migra la familia de opioides.
+- **Núcleo** (`derived.py`, probado contra `2c88e0d`):
+  - un campo UNSET, `respiratory_quotient` (`None` = apagado);
+  - guardas: se rechaza con la mecánica apagada y junto con el impulso hipoxémico (`HYPOXEMIC_FEEDBACK_LOOP_DEFERRED`);
+  - la curva estándar de Severinghaus y su inversa exacta (Cardano), sin parámetro ajustado; +∞ en SpO2 100
+    (`ODC_PLATEAU_IDENTIFIABILITY_DEBT`), sin techo ni épsilon;
+  - la PaCO2 de llegada del modelo (camino mecánica / W de P2S-2), nunca la autorada;
+  - el enlace relativo simétrico con transmisión completa (`FULL_RELATIVE_ALVEOLAR_TRANSMISSION`, decisión docente):
+    PaO2 = ODC⁻¹(SpO2_base) − ΔPaCO2/R y SpO2 = ODC(PaO2); `retained(G)` no es coeficiente de transmisión;
+  - `_perfusion` gana una sola inserción, que reemplaza la SpO2 de la regla de FiO2 y del camino de G;
+  - la apnea queda como frontera sin resolver (`APNOEA_BOUNDARY_UNRESOLVED`);
+  - sin tau, sin ganancia nueva y sin estado de PaO2.
+- **Análisis:** `clinical_core/oxygenation_link.py`, congelado en `ba9c64a` antes de la evaluación. Registro:
+  `docs/revision/P2T5_oxygenation_link.json`. Informe: `docs/revision/P2T5_ENLACE_HIPOVENTILACION_OXIGENACION.md`.
+- **Resultados** (R = 0,8 sólo `SYNTHETIC_PHYSIOLOGIC_REFERENCE`):
+  - O1–O11 y las guardas pasan;
+  - O5 revisado: con el mismo cambio de PaCO2, peor G nunca sube la SpO2 final;
+  - opioide en estado fijo: la disponibilidad 0,5 lleva la PaCO2 de 40 a 80 y la SpO2 de 97 a 75,7, sin G;
+  - asma 49m y 24f: la obstrucción sube la PaCO2 y baja la SpO2 sin G, y compone en serie con la G directa;
+  - TEP: la G no mueve la PaCO2;
+  - edema: L sólo por G, la mecánica sólo por la PaCO2, sin doble conteo;
+  - FiO2 enmascara de forma parcial a 0,25 y total en la meseta (0,5 y 1,0);
+  - aguas abajo (DO2, D, lactato, FC, conciencia) sólo por rutas existentes;
+  - el registro de P2T-3 se reproduce sobre su árbol.
+- **Revisión adversarial:** ningún hallazgo alto, 2 medios y 2 bajos, confirmados con sondas. Refuerzos sólo en las
+  pruebas; no se volvió a congelar.
+  - M1: el enlace cierra un bucle metabólico desfasado un minuto (SpO2 → DO2 → déficit → ácido → impulso → PaCO2 →
+    SpO2). Es compensador y no oscila, pero el criterio 8 dice «sin retroalimentación». Pendiente la decisión docente.
+  - M2: suelo silencioso de SpO2 0 cuando ΔPaCO2 ≥ R × PaO2 latente (desde 85 %, +40 mmHg). Pendiente la decisión
+    docente.
+  - Bajos: redondeo de unos pocos ulp; criterios estructurales que no pueden fallar; la sonda opioide sólo en estado
+    fijo. Para lo último se añadió la hipoventilación por caída del impulso en el núcleo integrado.
+- **Veredicto:** `COMMON_HYPOVENTILATION_OXYGENATION_LINK_READY` (regla congelada), con M1 y M2 como decisiones
+  docentes pendientes.
+- **Recomendación:** auditoría de sólo lectura de los requisitos de la migración opioide (no iniciada). Queda abierto en
+  TD-123.

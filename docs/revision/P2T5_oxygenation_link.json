@@ -1,0 +1,1304 @@
+{
+ "asthma": {
+  "asthma_24f": {
+   "arrival_exact": true,
+   "obstruction": {
+    "G": 0.0,
+    "paco2": [
+     30.999999999999996,
+     34.97869553681685
+    ],
+    "spo2_link_off": [
+     90.0,
+     90.0
+    ],
+    "spo2_link_on": [
+     90.0,
+     87.42958457236658
+    ]
+   },
+   "pass": true,
+   "relief": {
+    "paco2": [
+     30.999999999999996,
+     23.479925582891095
+    ],
+    "spo2": [
+     90.0,
+     93.29150073642563
+    ]
+   },
+   "serial_composition": true,
+   "serial_with_direct_G": {
+    "both": 86.63223519107764,
+    "g_only": 89.00154440122274,
+    "mechanics_only": 87.42958457236658
+   }
+  },
+  "asthma_49m": {
+   "arrival_exact": true,
+   "obstruction": {
+    "G": 0.0,
+    "paco2": [
+     50.99999999999999,
+     56.368419219803435
+    ],
+    "spo2_link_off": [
+     89.0,
+     89.0
+    ],
+    "spo2_link_on": [
+     89.0,
+     84.87184652797612
+    ]
+   },
+   "pass": true,
+   "relief": {
+    "paco2": [
+     50.99999999999999,
+     37.83806880714333
+    ],
+    "spo2": [
+     89.0,
+     94.47346223822181
+    ]
+   },
+   "serial_composition": true,
+   "serial_with_direct_G": {
+    "both": 83.985372248748,
+    "g_only": 88.4,
+    "mechanics_only": 84.87184652797612
+   }
+  },
+  "pass": true
+ },
+ "audit": {
+  "absolute_alveolar_terms": [],
+  "added": [
+   "arrival_paco2_reference",
+   "hypoventilation_link_active",
+   "oxygen_saturation_from_pao2",
+   "pao2_from_oxygen_saturation",
+   "ventilated_oxygenation"
+  ],
+  "changed": [
+   "__post_init__",
+   "_perfusion"
+  ],
+  "constants": {
+   "arrival_paco2_reference": [
+    1.0
+   ],
+   "oxygen_saturation_from_pao2": [
+    0.0,
+    1.0,
+    3,
+    100.0,
+    150.0,
+    23400.0
+   ],
+   "pao2_from_oxygen_saturation": [
+    0.0,
+    1.0,
+    2.0,
+    3.0,
+    4.0,
+    50.0,
+    100.0,
+    23400.0,
+    125000.0
+   ],
+   "ventilated_oxygenation": [
+    0.0
+   ]
+  },
+  "link_reads": [
+   "arrival_paco2_reference",
+   "oxygen_saturation_from_pao2",
+   "pao2_from_oxygen_saturation",
+   "respiration",
+   "respiratory_quotient"
+  ],
+  "new_profile_fields": [
+   "respiratory_quotient"
+  ],
+  "pass": true,
+  "perfusion_calls_link": true
+ },
+ "design": {
+  "common_at_p2t3": {
+   "clinical_core/__init__.py": "acb1d8137d2dab84a0c3f5b4d68b3e904d8e85564a657233bb0e622e539338c2",
+   "clinical_core/a9.py": "64006b57e37ab69dd9dfd61d5c87b01112779f19e7007b96440cfad345ad5b92",
+   "clinical_core/acid_base.py": "9298b1f0a6defbe1a11627a0d76208c36792b01a390d80558e3cc1fda1827954",
+   "clinical_core/acid_base_report.py": "9f0b9f5b03369066e4ac7916b372453c41ef7793b36c20553b88d726b83afa78",
+   "clinical_core/acs_migration.py": "4fae25400e94b7c1f3b6b77f277dd5e04b72d150c52da738faddf95b37edd971",
+   "clinical_core/acs_migration_report.py": "dbe33c01e165f9471dcb720919c3fac257f3d0903972117a420e91632b4c2d6b",
+   "clinical_core/acs_reference.py": "b7b69c7892314375de236aec35016178218dfa4b114874b165c7191a0de2cfa1",
+   "clinical_core/arrival_severity.py": "c5c0e4c125303b463ec1d2a5373464c09576f7d83ca975834e6b059c67b2b229",
+   "clinical_core/arrival_severity_report.py": "a1806dc772a4f0a540a621271e8dd24b4c77b36da2b55af5e1da623cf30ac2eb",
+   "clinical_core/asthma_distress_migration.py": "feacb1fc6bc5cc29fd76fa4584b22fa16476aec6e685880dab4fd15264b2e168",
+   "clinical_core/asthma_distress_migration_report.py": "81925051cca752dc9a37c1cc79b82ffc14ca1c3484c90b40c238ead1a545f315",
+   "clinical_core/asthma_migration.py": "ddbbfb562a93595985fe189c2d88e7a05a845ca7cee02282cca90f56dd044ca8",
+   "clinical_core/asthma_migration_report.py": "f9580ac9d821e4ba33e202f664b0de076df0fe5fb3c0d3792eae8decd26d1880",
+   "clinical_core/asthma_reference.py": "b6ed2ee6a495d8868a2cbb3039ecb3d7a8876928ad02e0eaeb4d90d699c1dcbe",
+   "clinical_core/bands.py": "9facbd34dc643d45f7ad3d668619f344717824c921924247f65396fae6aa81bc",
+   "clinical_core/baroreflex.py": "cd9072b8c97bfc3a15e8d314c88aae7ec6a622a8c4b7e1fad9fa73c38e5aca6e",
+   "clinical_core/baroreflex_report.py": "0044b585240c36e9fd5e049c394f053f443d1408c23c77299d9cc5a65efef405",
+   "clinical_core/blood_anchors.py": "bd870314a723dc420ef6d27189275cb3a2b4bba0fd3515fac166c017fb69b89e",
+   "clinical_core/blood_constraints.py": "2d139733ed529a03f9c58cd4aa5eb70c8812bb25ba0737f90172546b4e2a65a8",
+   "clinical_core/blood_extension.py": "87429c2ed0b453bb33b2107fdfa453ffe6d78e5ffbb26364eab7e8228556ce47",
+   "clinical_core/blood_extension_report.py": "028efe15446ddc8d9b424465cbcdb74732f00361efea09de3225cea9f3bbde54",
+   "clinical_core/blood_filter_report.py": "4667b87efb27cfef4a1f705c9767bb6dd311d6c67625b9505dead9ef3293c394",
+   "clinical_core/blood_fluid_calibration.py": "46e73e3314190dd6fc18695346a16e9c6c55059606ac80a16081695f1d9fdd19",
+   "clinical_core/blood_fluid_readiness.py": "40b93a69c8b70190e7d92a056f0987b81a30ee32331629d18132f0aa534a15cf",
+   "clinical_core/blood_fluid_readiness_report.py": "8bcf365b433ba584760775d23a23bbf4b750e6f2253b67fcf818df2a679dc650",
+   "clinical_core/blood_fluid_report.py": "6ba467991a3e7ac9c8193f1ecff225541c069c89073872e8dc4ffca4487edc0a",
+   "clinical_core/blood_fluid_tau_closure.py": "c16a56a77c3957ae1186f4e2b016ddbadd8fee7bae0d405414fb031af735621b",
+   "clinical_core/blood_fluid_tau_closure_report.py": "16d703dfa0ecf52a29763d7a94a4dc0534ae1ff886021444e4884d3a0477af46",
+   "clinical_core/blood_probes.py": "846de76dbfe99f3dd7fc6ace431dc1d1325441e13bc0c1148c009f33016bf3d5",
+   "clinical_core/blood_rate_boundary.py": "435db3cf1d1fdba4e9ff059b889a2e8180ca80db1d2fdbeff433663692ee9f83",
+   "clinical_core/blood_rate_report.py": "3bcf35d15d3611f2564e23bf0392703bd31236c21ff128836c6201b45e6e380f",
+   "clinical_core/calibration.py": "f3fa65375ddaa48bac9ecf850838c78606bb46c3a15f12f968b146b84592ace5",
+   "clinical_core/collapse.py": "6076dd315f8bd335af8a425ac4d78e3bcbbd5f1198b45e511b4f122532d65fc9",
+   "clinical_core/collapse_architecture.py": "0d6ed0d28695c016c1834bd931e4bfbcac561b8d94c70f8d316c999d3e2d6699",
+   "clinical_core/collapse_architecture_report.py": "3b116d0a28933ccbbc2c5f45c97d1cdfb822bee5f79a4877320bd67464c6ebbf",
+   "clinical_core/collapse_audit.py": "7c1fb59a26bfda77ba84e0a38640e3aabcccdf69d41b222e93ad48cf414e1521",
+   "clinical_core/collapse_audit_report.py": "08b63fa519e985eea0619becdd5d9b21bb92b0e8def1f72a4d89d34847af5061",
+   "clinical_core/comparison.py": "fd1dbb232399f6eae33cfe758670b80a551161fea183e5dd4820575636a2b0d4",
+   "clinical_core/consciousness_audit.py": "534bc27d96f7ffd31da70e9ff90ffdf92e82c62fe8e015fb3fd6df040885fe8c",
+   "clinical_core/consciousness_audit_report.py": "8f769dbafb2b76a6013b518038f842aa3d23be482a6ff7d355472ca75eaa0e53",
+   "clinical_core/contracts_input.py": "2185469e423f2104ec81705849e57d6fffe01a316f1a7b35eba6883467f89117",
+   "clinical_core/contracts_legacy.py": "1afe36c5ccbf07df3f3e632916fd083d0fcfc8258ede6bf56eef70fb98f7d80a",
+   "clinical_core/contracts_output.py": "bc7371c7ccb57ea2f138a6bbc58c266851f6dbf0fbdb5eb2d625b1ea70ab3751",
+   "clinical_core/contracts_shadow.py": "bd2fc07a7b91f05c89c96294f440b0510c2896a7666cb77fd97a5bdab001cf65",
+   "clinical_core/decision_pack_markdown.py": "e0f9471a8e21284a1cf8976b3d7f89002d0d4fb023d02c087240d45ef6836328",
+   "clinical_core/distress_closure.py": "17831ecad1a43acf6364d618938ceca3835347b37b7d8c2593e76909f794740b",
+   "clinical_core/distress_closure_report.py": "c91cdc709da5c3b3babb3bff7e05331c6d505b4314c133d3f5c75f71a94a359f",
+   "clinical_core/edema_migration.py": "7d2bd34a883c0253aed4d254f025b400bf178346e348fd3982986c228ef2b464",
+   "clinical_core/edema_migration_report.py": "02c20561397d1d4ab7b9a83e1e1be1ce8abe5b027a7f8679cd5ba9af0b418467",
+   "clinical_core/edema_reference.py": "fd8702e4d5ed03cf6dbe72cf0053ad9af6966e40e2b197cf42261bf61a66eb76",
+   "clinical_core/embolism_migration.py": "1f67472c5fa7079989973f11cb2df356ef048efa3d64acad97ca02b38650c22f",
+   "clinical_core/embolism_migration_report.py": "ad307663a3f2f73fbde5d771cbfc57896cddf5d43f5a3e291e52ade3ce448b0c",
+   "clinical_core/embolism_reference.py": "55ecc2418844c05185d8e933d3c62456da31fd73c7704a6877c396f221469d74",
+   "clinical_core/encephalopathy.py": "04aea64d6f2a23cf5a77a530114b3174eab9c9adc527708a97ac25f9c5ce3539",
+   "clinical_core/encephalopathy_architecture.py": "55d47c033d381fb2b1cb69fab67adb27a05d7393807575561bc8d7a4d5e58a2c",
+   "clinical_core/encephalopathy_architecture_report.py": "e35278b85196763ef1b87f30acb19c20d8dc5a007cdc55dad266bcf07b0c990a",
+   "clinical_core/faculty_constraints.py": "092c32cf5a20cbf62e3e9df32a47896ccdef701f97170634740a8f8399d7982a",
+   "clinical_core/gas_exchange_architecture.py": "b9dcfe241f91e0ef973ca77b32e149b0ddbc76ac09f19092f7cfca5a16601835",
+   "clinical_core/gas_exchange_architecture_report.py": "2a4a589ae2c40f7ffa856a7daf4405c066ed26998d5f25a849cc59646742dd48",
+   "clinical_core/gi_reference.py": "ee3114ce9eeeb426a7b843943819aa88095b6cb09674e4c895c93a6ad1de0867",
+   "clinical_core/haemorrhage_probes.py": "df55cdcd16e5ea091a0b27042c22723029c9f19722a332c98c64bf606ef2df00",
+   "clinical_core/hemodynamic_probes.py": "1e6e96a0397f379aa4a8112aef8198963b9120fd239d2444c22ad2db22ea2ebb",
+   "clinical_core/hr_envelope_filter.py": "6bfe0ef46ed1f2b1a4555b7322ca7d3747c237f2cc185caf3dcd479e8a50d885",
+   "clinical_core/hr_envelope_filter_report.py": "e85579aed3751aafb11cc9a5abd5b38176c2bc126692384db80192cf787232bf",
+   "clinical_core/hr_observables.py": "47c21f35d7a38ccee60df3df2053edcc776e86d8fdeb5ff8881bf4e105764f05",
+   "clinical_core/hr_observables_report.py": "705578a792a9aeb28aaf75cd1f47b61254f55f381df325b010f33fa03d3d4a9f",
+   "clinical_core/hr_primary.py": "f9c5807fb6ddb6f2ced9ee8b209a047eed60b229ba450ccde56454cb0d8812f9",
+   "clinical_core/hr_primary_report.py": "9551cab1a2e068a2c6cfb977160bae38d50bb96b17335504a47176d25144cf92",
+   "clinical_core/hr_shock.py": "2fbf78d2ed5a0fd0592ef48b90fd4dc385a5c27c6fd523b1dbc195ae2ca2b419",
+   "clinical_core/hr_shock_report.py": "64043971e9d2404924dc3251e53c52b5ddc356cdff9a367ce9d0ba48a483e9c5",
+   "clinical_core/hr_structure.py": "1109ca9dded7b8e67c588932326f510e10e0ad51f6091f0a17fe9ef09f218f16",
+   "clinical_core/hr_structure_report.py": "bdf83176d06b212a877a423724425dcbbe18287d823fec84a13a6c0d87a0d384",
+   "clinical_core/integration.py": "8640b4621cb2d6946d4606f9938f9310c7481d5866d919070bb7b89e6b193c0f",
+   "clinical_core/interventions/__init__.py": "d0dedb08f0d35bff6ba458af009b3a35f85018e9ea2a76373158d9c373551b79",
+   "clinical_core/interventions/fluids.py": "7dc615d2eea80e3afdab0774bb1f234f7ea887be1654ae02e6ca312513fb9aef",
+   "clinical_core/interventions/modifiers.py": "46c8970630a77960d7ba2e81023d31b96b2b08f611a87eae9f94cb85f1b1aa6a",
+   "clinical_core/interventions/oxygen.py": "d7bcc0393ed562d02d6070f09ab8d501c506e6931f5efd33b3492d7e34664095",
+   "clinical_core/interventions/timing.py": "498493e6143d691d582b68f568491b9275eef49bb13bcf94e251f17aea49c6a1",
+   "clinical_core/lactate_adequacy.py": "ec49d1da4ca2494d804605669fe59617f7a1d7841572ae4be9f2e6e2b6ef7638",
+   "clinical_core/lactate_adequacy_report.py": "4f50500d46ea3a4eb1aebc545f718a8e7f78ea77f532041736fbd4cd54881044",
+   "clinical_core/lactate_closure.py": "2ae56c334031da561a9d402795c1a81ec70646ea15ed0e71cc8b6991bc04dbc3",
+   "clinical_core/lactate_closure_report.py": "e8a62c16b97d9800a357150e69f9ecb97ad0a8796f1db2c31a7c2995ee267b3f",
+   "clinical_core/lactate_constraints.py": "cf9522168fd7012e52ca797752ce8d5ab9456db7ff54422f917ccf0628d021be",
+   "clinical_core/lactate_rebuild.py": "d969a8c89b678204b4b258c35731f64b0e87ef3cf97b80ef5b92b073ccc9733f",
+   "clinical_core/lactate_rebuild_report.py": "22948e39f94661d3ef66e7a129be1be8cbded1dc124ff581fbf9b9144c56b162",
+   "clinical_core/legacy_adapter.py": "f8fafd17bcda03a4293e5717145c6f4672760a07d553c965fa7c2505b69ad115",
+   "clinical_core/logistics.py": "8b7b28c7cee688d38bbaa124e9bc83f760e3b952d7f34b0df0cf6ba6159855b9",
+   "clinical_core/lung_water_reference.py": "23a6f40d17dcf51bd1fa42ec4dc5151297c4f3a47fed241b2edaec64f069ddff",
+   "clinical_core/lung_water_reference_report.py": "1c7da3d2797237e24dbd085edcf2780a4b26f1fbc9658bf383982a910e1c289f",
+   "clinical_core/migration.py": "aa5d5c8001514994dda67a8dbfbf60e18f9048e1b18edc599ddf0399f80b349e",
+   "clinical_core/migration_authority.py": "baf342106c2a611ddc5b8f43e75a9726c11ce1a53465c5bd3d2761a0e9a8f907",
+   "clinical_core/modules/__init__.py": "1cf73c2ddf4fe370c8d34fff2ea8132149c02239ee81f3329bd87cfec729f23d",
+   "clinical_core/modules/acs_ischaemia.py": "3199b9173594aea07c905e55b46e8705621b5c9ed7e936987024aa2d2079993d",
+   "clinical_core/modules/asthma.py": "44cbb45b5781d85c927c66892377518d9c15244deafc58ed66ef6e391f26af6d",
+   "clinical_core/modules/gi_haemorrhage.py": "edb61d903bc9f4607c1d3b819f28ac065ba86656b75ba29c89d3a7c124777673",
+   "clinical_core/modules/pulmonary_edema.py": "01e68556c919efa24ff6186eacf22c98e2ec882bf5cd52109bbafaffd8351679",
+   "clinical_core/modules/pulmonary_embolism.py": "147881394c9208b35e2e2fdb7bb0ab42d589785000784379a8b1c1460df204c7",
+   "clinical_core/modules/rhythm_events.py": "1036a2443e44fe5e2fde80736984b6828542b69454cc49a36e660ee8d436c86b",
+   "clinical_core/oxygen_probes.py": "450cec663ae0c47ba32b6df8b4fadc136cad6c9a2e14f8f08d649d166651febd",
+   "clinical_core/pressure_tone.py": "2e350c8a42bcacfa31e8e5349d284c7d276808e396d36421e1dc369dbcb9ec26",
+   "clinical_core/pressure_tone_filter.py": "54bff406686b2b8e47757f10c5ec42cb6e0a0d170f2627cb926f99eea1c7e650",
+   "clinical_core/pressure_tone_filter_report.py": "6eebe11b816eeb901f10d9f1431182b71ab26db84652771af741076f33734f92",
+   "clinical_core/pressure_tone_report.py": "bc0fe73c681a35432baec5acf8062027b63f0e5821146133fb9211ae9240d7ac",
+   "clinical_core/provenance.py": "619a4cba9c0b8d3c7d41de29165dfaab9ead59627c77fe3daab21e21c5bec2f4",
+   "clinical_core/respiratory_distress.py": "111b07fc869b4eed143f601db29da76287b95004e066a5a9bc721a798b2a5f2a",
+   "clinical_core/respiratory_distress_report.py": "a07dd0bf18e890633410e4c36da85e532082698c874788e2f48bccee63b017d8",
+   "clinical_core/respiratory_drive.py": "246f4ad5070fb50a64eec686ee4441e896d79c6d717303e1a43c11f7bf5af21b",
+   "clinical_core/respiratory_drive_report.py": "7bb2ee04e3204b4de2bf542cac2f8166d72de7af4892cc7f098699f5adc94f2a",
+   "clinical_core/respiratory_mechanics.py": "71c991ffc0217e478e2510bdb31849ac3ae82be8dfbb9b53b9d3d27df12b65e7",
+   "clinical_core/respiratory_mechanics_report.py": "cfd4fa9369da7e65c33090db48193b761135c69355c206fd76534a5070a49f9c",
+   "clinical_core/respiratory_monotonicity.py": "ba6bac3ea1f4f1f9b0bff5503b4ff846f1ae5a097ee88d8480dd3ee52fbba672",
+   "clinical_core/respiratory_monotonicity_report.py": "373cdac40c02f1e0bd4683f9ab6329ce08805b4a41e38939e89ff28a8fc83fcb",
+   "clinical_core/rr_audit.py": "4b663ffad81ff88f728707e7c96a255d882cbf62247107980652331fff885bf1",
+   "clinical_core/rr_audit_report.py": "f3951b39f4b0b9d6b82a6fffa687457f68257743e6e86fb4d5c10c0dc81797e5",
+   "clinical_core/shadow.py": "66ef25c952509f0765731cfc0c0b97274bc5a4d263dcb486b595a8585a99ef35",
+   "clinical_core/signals.py": "f02f5494a8aac0361ace94a40e15a4df81970f456de7af0f6762a1196a27ee7f",
+   "clinical_core/state.py": "90194bf77313fe178123e986b69378cfeeafe1e12531e382e79a71c0be5d0487",
+   "clinical_core/vascular_tone.py": "8314c34accd082511b8e5cbe73da90c054fdbd2a0b8a6f3a56ab0aa0c12f7cf5",
+   "clinical_core/vascular_tone_report.py": "19db9e1005755fbb229f1e739c3c1607f97e376df784c929f63c0cb97440ba4a",
+   "clinical_core/ventilation.py": "260393add18e2275ee21411512d18531a74387f853bb76a2f33f89d5cb1bafe9",
+   "clinical_core/ventilation_filter.py": "9edf6c7544924f90875bdc2abd56cf6d86346411901009e641267d14d47685b9",
+   "clinical_core/ventilation_filter_report.py": "6d5789040d650c2b7241d18399c6fe2038fd91eb1ca58e5f7c93e29f63a39c49",
+   "clinical_core/ventilation_surface.py": "d361b500ccaf059784ea7e7662b6be5dd7d02019174c2f66cc0ca0ff24245825",
+   "clinical_core/ventilation_surface_report.py": "64de449f56f34cc77ec3a6ca663ee2389ea32f3c3373a289237e69f212d16a3c"
+  },
+  "core_at_p2t3": {
+   "clinical_core/decision_pack.py": "7a51cece643da475edd7b70fd3588f84094db4f0c954512161b83587157a2375",
+   "clinical_core/derived.py": "6ebc433e0e6373c605caa465f2f71f3940f55011e7b52ccf1d52fea001c15368",
+   "clinical_core/lactate_slice.py": "754fee1097ed77a458c0b6f84575a65006798c03fdb61653a6a725c341d320c0"
+  },
+  "course_minutes": 60,
+  "decisions": {
+   "fio2": "the existing FiO2 rule unchanged (FIO2_RESPONSE_MAGNITUDE_DEBT)",
+   "hypoxaemic_drive": "UNSET; refused with the link (HYPOXEMIC_FEEDBACK_LOOP_DEFERRED)",
+   "link": "SYMMETRIC_RELATIVE_ALVEOLAR_LINK; MINIMAL_RELATIVE_ALVEOLAR_GAS_LINK (dPAO2 = -dPaCO2 / R)",
+   "mechanics": "the link needs the common mechanics candidate (refused with it off)",
+   "out_of_scope": "opioid migration, the full alveolar gas equation, a PaO2 state, FiO2 recalibration, consciousness integration, systemic_stress",
+   "pao2": "latent only (no state); no ABG observable yet",
+   "plateau": "ODC_PLATEAU_IDENTIFIABILITY_DEBT: SpO2_base 100 gives PaO2 +inf; no ceiling, no epsilon",
+   "reference": "the model-derived arrival PaCO2 of the P2S-2 mechanics / W pathway; dPaCO2 = 0 at arrival",
+   "respiratory_quotient": "None by default (off); finite positive when declared; 0.8 only SYNTHETIC_PHYSIOLOGIC_REFERENCE",
+   "transmission": "FULL_RELATIVE_ALVEOLAR_TRANSMISSION = ACCEPTED; RETAINED_G_AS_ALVEOLAR_TRANSMISSION = REJECTED"
+  },
+  "depressed_availability": 0.5,
+  "downstream_factors": {
+   "pe": 0.998,
+   "probe": 0.993
+  },
+  "dpaco2_values": [
+   -10.0,
+   0.0,
+   10.0,
+   20.0,
+   30.0
+  ],
+  "edema_mechanics_factor": 0.998,
+  "efficiency_factors": [
+   0.7,
+   1.0,
+   1.3
+  ],
+  "fio2_values": [
+   0.21,
+   0.3,
+   0.4,
+   0.5
+  ],
+  "g_values": [
+   0.0,
+   0.5,
+   1.0,
+   2.0
+  ],
+  "masking_fio2": 0.25,
+  "new_functions": [
+   "arrival_paco2_reference",
+   "hypoventilation_link_active",
+   "oxygen_saturation_from_pao2",
+   "pao2_from_oxygen_saturation",
+   "ventilated_oxygenation"
+  ],
+  "new_profile_fields": [
+   "respiratory_quotient"
+  ],
+  "obstruction_rate": 0.0016666666666666668,
+  "p2t3": {
+   "freeze_digest": "3a648a9e055c9182fe670f5360f1cc73d1d799b9f1bd3d557df2ffdf67e2efb2",
+   "head": "2c88e0d",
+   "record": "6fa395eaaf70dbf1f11c91e08d5758495e907b68b02e79ad83b509aae8ae13ac"
+  },
+  "plateau_fio2": [
+   0.5,
+   1.0
+  ],
+  "readiness": {
+   "criteria": [
+    "the relative symmetric alveolar link works (O3, O4) with full transmission and no new parameter (audit)",
+    "no new PaO2 state is required (O11) and the dissociation relation is the standard one, monotone, unfitted",
+    "arrival exact with the link on (O2) and the default off exact (O1)",
+    "G and hypoventilation compose independently and monotonically (O5, O6, O7, O9; asthma serial; edema)",
+    "opioid-like hypoventilation lowers SpO2 without G and better ventilation raises it (opioid probe)",
+    "asthma mixed physiology is representable (49m and 24f probes)",
+    "PE's G physiology stays orthogonal and edema avoids double counting",
+    "no feedback into PaCO2 or the drive (O8, the hypoxaemic loop refused) and the guards hold",
+    "the downstream SpO2 -> delivery -> D / lactate / HR directions hold through existing paths",
+    "the parameters stay UNSET clinically (R None everywhere committed; 0.8 synthetic only)",
+    "non-regression: P2T-3's record on its tree, every other file proven"
+   ],
+   "rule": "Predeclared. READY when every criterion holds; otherwise NOT_READY with the first failing criterion"
+  },
+  "relief": {
+   "factor_per_min": 1.01,
+   "from_minute": 30,
+   "to_minute": 60
+  },
+  "reversal": {
+   "clinical_core/decision_pack.py": [
+    [
+     "                        \"clinical_core/asthma_distress_migration.py\",\n                        \"clinical_core/asthma_distress_migration_report.py\",\n                        \"clinical_core/oxygenation_link.py\", \"clinical_core/oxygenation_link_report.py\")\n\n",
+     "                        \"clinical_core/asthma_distress_migration.py\",\n                        \"clinical_core/asthma_distress_migration_report.py\")\n\n"
+    ]
+   ],
+   "clinical_core/derived.py": [
+    [
+     "    distress_to_sympathetic_gain: float | None = None\n    # P2T-5: the common hypoventilation -> oxygenation link (SYMMETRIC_RELATIVE_ALVEOLAR_LINK, full transmission), UNSET\n    # (None) by default, so SpO2 is P2O-3's exactly. Declared, the PaCO2 change from the model's own arrival PaCO2 moves\n    # the alveolar oxygen by -dPaCO2 / respiratory_quotient, carried to SpO2 through a latent PaO2 and the standard\n    # dissociation relation; it needs the common mechanics candidate (PaCO2 is W's) and refuses the hypoxaemic drive\n    # (HYPOXEMIC_FEEDBACK_LOOP_DEFERRED). No value is chosen here.\n    respiratory_quotient: float | None = None\n    pressure_levels: tuple[tuple[float, int], ...] = ((80.0, 1), (65.0, 2))\n",
+     "    distress_to_sympathetic_gain: float | None = None\n    pressure_levels: tuple[tuple[float, int], ...] = ((80.0, 1), (65.0, 2))\n"
+    ],
+    [
+     "                                     \"physiology\")\n        rq = self.respiratory_quotient\n        if rq is not None:\n            if isinstance(rq, bool) or not isinstance(rq, (int, float)) or not math.isfinite(rq) or rq <= 0.0:\n                # P2T-5: UNSET is None (the link off); a declared link has a finite positive respiratory quotient.\n                raise CoreInvariantError(\"respiratory_quotient is None (UNSET: the hypoventilation -> oxygenation link \"\n                                         \"off) or a finite positive ratio\")\n            if not self.respiratory_mechanics:\n                # P2T-5: the link reads W's PaCO2, never the retired P2K-2 arrival PaCO2 anchor.\n                raise CoreInvariantError(\"the hypoventilation -> oxygenation link needs the common respiratory mechanics \"\n                                         \"candidate (P2T-5): its PaCO2 must be W's\")\n            if self.hypoxaemic_drive_mapping is not None:\n                # P2T-5: SpO2 -> hypoxaemic drive -> RR -> PaCO2 -> SpO2 would be a loop no audit has examined.\n                raise CoreInvariantError(\"the hypoventilation -> oxygenation link refuses the hypoxaemic drive \"\n                                         \"(HYPOXEMIC_FEEDBACK_LOOP_DEFERRED)\")\n        if (self.hypoxaemic_drive_mapping is None) != (self.hypoxaemic_to_drive_gain is None):\n",
+     "                                     \"physiology\")\n        if (self.hypoxaemic_drive_mapping is None) != (self.hypoxaemic_to_drive_gain is None):\n"
+    ],
+    [
+     "                                                  \"probes; not approved\"),\n    \"respiratory_quotient\": (PROVISIONAL, \"UNSET (P2T-5): the respiratory quotient of the common relative alveolar link \"\n                                          \"(dPAO2 = -dPaCO2 / R, from the model's own arrival PaCO2, full transmission \"\n                                          \"to a latent PaO2 and the standard dissociation relation); None by default \"\n                                          \"(the link off); needs the mechanics candidate; refuses the hypoxaemic drive; \"\n                                          \"0.8 only as a SYNTHETIC_PHYSIOLOGIC_REFERENCE in probes; not approved\"),\n    \"pressure_levels\": (ADOPTED, \"family_engine._PRESSURE_LEVELS, without the DC1 anchoring or the recovery \"\n",
+     "                                                  \"probes; not approved\"),\n    \"pressure_levels\": (ADOPTED, \"family_engine._PRESSURE_LEVELS, without the DC1 anchoring or the recovery \"\n"
+    ],
+    [
+     "        spo2 = oxygenation(state.G, state.fio2, anchors, profile, lung_water_gas_credit(state.L, anchors, profile))\n    if hypoventilation_link_active(profile):\n        spo2 = ventilated_oxygenation(spo2, state, anchors, profile)\n    delivery_rel = relative_delivery(output_rel, state.hb, spo2, anchors)\n",
+     "        spo2 = oxygenation(state.G, state.fio2, anchors, profile, lung_water_gas_credit(state.L, anchors, profile))\n    delivery_rel = relative_delivery(output_rel, state.hb, spo2, anchors)\n"
+    ],
+    [
+     "\ndef oxygen_saturation_from_pao2(pao2: float) -> float:\n    \"\"\"P2T-5: the standard oxygen dissociation relation (Severinghaus 1979: pH 7.40, 37 C), SpO2 (%) from PaO2 (mmHg),\n    with no fitted parameter: 100 / (1 + 23400 / (PaO2^3 + 150 PaO2)). Continuous and strictly increasing on PaO2 > 0;\n    0 at or below 0 (no oxygen); below 100 for every finite PaO2 and 100 only as PaO2 -> inf (the plateau).\"\"\"\n    if pao2 <= 0.0:\n        return 0.0\n    if math.isinf(pao2):\n        return 100.0\n    return 100.0 / (1.0 + 23400.0 / (pao2 ** 3 + 150.0 * pao2))\n\n\ndef pao2_from_oxygen_saturation(spo2: float) -> float:\n    \"\"\"P2T-5: the exact inverse of ``oxygen_saturation_from_pao2`` (the one real root of PaO2^3 + 150 PaO2 = 23400 s /\n    (100 - s), by Cardano): strictly increasing on 0 < SpO2 < 100; 0 at or below 0; +inf at 100, where a saturated\n    SpO2 does not identify the PaO2 (ODC_PLATEAU_IDENTIFIABILITY_DEBT: no PaO2 ceiling and no epsilon is chosen; an\n    alveolar change on the plateau then moves no SpO2).\"\"\"\n    if spo2 <= 0.0:\n        return 0.0\n    if spo2 >= 100.0:\n        return math.inf\n    c = 23400.0 * spo2 / (100.0 - spo2)\n    u = (c / 2.0 + math.sqrt(c * c / 4.0 + 125000.0)) ** (1.0 / 3.0)\n    return u - 50.0 / u\n\n\ndef hypoventilation_link_active(profile: CoreProfile) -> bool:\n    \"\"\"P2T-5: whether the profile declares the hypoventilation -> oxygenation link (off by default).\"\"\"\n    return profile.respiratory_quotient is not None\n\n\ndef arrival_paco2_reference(anchors: Anchors, profile: CoreProfile) -> float:\n    \"\"\"P2T-5: the model-derived arrival PaCO2 of the common P2S-2 mechanics pathway (the reference / W of the arrival\n    state, computed from the anchors as ``respiration`` computes it there: the arrival composition's RR, the arrival\n    mechanics efficiency, the arrival demand ratio 1), never the authored PaCO2 as a hidden anchor.\"\"\"\n    rate = arrival_drive_composition(anchors, profile).expressed_rr\n    ventilation = alveolar_ventilation(rate, intrinsic_respiratory_rate(anchors), anchors.arrival_mechanics_efficiency,\n                                       1.0)\n    return profile.paco2_reference_mmhg / ventilation\n\n\ndef ventilated_oxygenation(spo2_base: float, state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:\n    \"\"\"P2T-5 (SYMMETRIC_RELATIVE_ALVEOLAR_LINK, MINIMAL_RELATIVE_ALVEOLAR_GAS_LINK, FULL_RELATIVE_ALVEOLAR_TRANSMISSION):\n    the SpO2 of the existing G / L -> G / FiO2 path moved by the PaCO2 change from the model's arrival PaCO2:\n\n        PaO2_latent = ODC^-1(SpO2_base);  dPaO2 = -(PaCO2 - PaCO2_arrival) / respiratory_quotient;\n        SpO2 = ODC(PaO2_latent + dPaO2)\n\n    Exact at arrival (dPaCO2 = 0 returns SpO2_base itself). Symmetric: more PaCO2 never raises SpO2, less never lowers\n    it. G is not a transmission coefficient here (RETAINED_G_AS_ALVEOLAR_TRANSMISSION = REJECTED): it acts through\n    SpO2_base only, so worse G and less FiO2 never raise SpO2. PaO2 is latent, never a state; Patm, PH2O and the\n    absolute alveolar gas equation are not used (they cancel in the relative form); nothing is written back to PaCO2,\n    W, RR, the drive or the acid burden. No ventilation (PaCO2 undefined) is an undecided boundary.\"\"\"\n    paco2 = respiration(state, anchors, profile).paco2\n    if paco2 is None:\n        raise UnresolvedBoundary(f\"minute {state.minute}: no alveolar ventilation, so no PaCO2 for the hypoventilation -> \"\n                                 \"oxygenation link (APNOEA_BOUNDARY_UNRESOLVED)\")\n    delta = paco2 - arrival_paco2_reference(anchors, profile)\n    if delta == 0.0:\n        return spo2_base\n    return oxygen_saturation_from_pao2(pao2_from_oxygen_saturation(spo2_base) - delta / profile.respiratory_quotient)\n\n\ndef sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:\n",
+     "\ndef sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:\n"
+    ]
+   ],
+   "clinical_core/lactate_slice.py": [
+    [
+     "                      \"clinical_core/distress_closure_report.py\",\n                      \"clinical_core/asthma_distress_migration_report.py\",\n                      \"clinical_core/oxygenation_link_report.py\")\n\n",
+     "                      \"clinical_core/distress_closure_report.py\",\n                      \"clinical_core/asthma_distress_migration_report.py\")\n\n"
+    ]
+   ]
+  },
+  "synthetic_r": 0.8
+ },
+ "downstream": {
+  "acid_base": "respiration (W, PaCO2, pH, HCO3, acid burden, drive) never reads the link (O8)",
+  "consciousness_status": [
+   "CONSCIOUSNESS_INTEGRATION_DEBT",
+   "HYPERCAPNIA_SIGNAL_STRUCTURALLY_SUPPORTED_BOUNDS_NOT_IDENTIFIABLE",
+   "the ADOPTED ladder reads SpO2 only: a link-lowered SpO2 can move it; no CO2 narcosis is encoded"
+  ],
+  "hr_route": "existing: the sympathetic target's hypoxaemia term (relative to arrival); no new HR reader",
+  "hypoxaemic_loop": "HYPOXEMIC_FEEDBACK_LOOP_DEFERRED: the link refuses the hypoxaemic drive",
+  "pass": true,
+  "rows": {
+   "pe": {
+    "D": [
+     30.378970533000803,
+     28.999999999999915
+    ],
+    "consciousness": [
+     1,
+     0
+    ],
+    "delivery": [
+     0.942066543143117,
+     1.0
+    ],
+    "factor_per_min": 0.998,
+    "hr": [
+     101.23711494916034,
+     97.82338320099555
+    ],
+    "lactate": [
+     3.5938656237563484,
+     3.5881874263758213
+    ],
+    "paco2": 33.30339863000435,
+    "spo2": [
+     83.46068254912325,
+     88.0
+    ]
+   },
+   "probe": {
+    "D": [
+     0.0,
+     0.0
+    ],
+    "consciousness": [
+     0,
+     0
+    ],
+    "delivery": [
+     0.9504290870240472,
+     1.0
+    ],
+    "factor_per_min": 0.993,
+    "hr": [
+     80.90416197737167,
+     80.0
+    ],
+    "lactate": [
+     1.0,
+     1.0
+    ],
+    "paco2": 60.968439822786706,
+    "spo2": [
+     92.19162144133257,
+     97.0
+    ]
+   }
+  }
+ },
+ "edema": {
+  "arrival": 81.0,
+  "both": {
+   "G": 0.26599244238294273,
+   "L": 0.26599244238294273,
+   "paco2": 58.03765344703769,
+   "spo2": 62.99452128118794
+  },
+  "l_moves_no_paco2": true,
+  "l_only": {
+   "G": 0.26599244238294273,
+   "L": 0.26599244238294273,
+   "paco2": [
+    49.0,
+    51.46859609082805
+   ],
+   "spo2": 76.11138832560923
+  },
+  "label": "STRUCTURAL_PROBE (mechanics on)",
+  "mechanics_moves_no_g": true,
+  "mechanics_only": {
+   "G": 0.0,
+   "L": 0.0,
+   "paco2": [
+    49.0,
+    58.03765344703769
+   ],
+   "spo2": 65.49510228133376
+  },
+  "pass": true,
+  "plain": {
+   "paco2": 51.46859609082805,
+   "spo2": 77.70633926568772
+  },
+  "serial_composition": true
+ },
+ "fio2": {
+  "fio2_rule_unchanged": true,
+  "pass": true,
+  "plateau": "ODC_PLATEAU_IDENTIFIABILITY_DEBT: a SpO2_base of 100 gives an unresolved PaO2 (+inf) and no change",
+  "rows": {
+   "0.21": {
+    "drop": 3.4224202483700026,
+    "spo2_base_state": 97.0,
+    "spo2_hypoventilating": 93.57757975163
+   },
+   "0.25": {
+    "drop": 1.6128292038727494,
+    "spo2_base_state": 98.2,
+    "spo2_hypoventilating": 96.58717079612725
+   },
+   "0.5": {
+    "drop": 0.0,
+    "spo2_base_state": 100.0,
+    "spo2_hypoventilating": 100.0
+   },
+   "1.0": {
+    "drop": 0.0,
+    "spo2_base_state": 100.0,
+    "spo2_hypoventilating": 100.0
+   }
+  },
+  "status": "FIO2_RESPONSE_MAGNITUDE_DEBT: the FiO2 rule is unchanged"
+ },
+ "freeze_digest": "3a042f0fabeecff58f97e198fc3d65cb878eeada63d01039c89d0e0564798f2e",
+ "non_regression": {
+  "p2t3_record_reproduced_on_its_tree": true,
+  "p2t3_record_untouched": true,
+  "p2t3_verdict": "ASTHMA_SHADOW_MIGRATION_READY",
+  "pass": true
+ },
+ "odc": {
+  "authored_max_abs_gap": 1.7056462697234593,
+  "authored_pairs": {
+   "acs_48m_wellens": {
+    "odc": 96.74127385554651,
+    "pao2": 88.0,
+    "spo2": 97.0
+   },
+   "acs_52m_de_winter": {
+    "odc": 95.72524662038728,
+    "pao2": 80.0,
+    "spo2": 95.0
+   },
+   "acs_54m_inferior": {
+    "odc": 96.14901660037161,
+    "pao2": 83.0,
+    "spo2": 96.0
+   },
+   "acs_61m_posterior": {
+    "odc": 96.2780577187357,
+    "pao2": 84.0,
+    "spo2": 96.0
+   },
+   "acs_66f_nonst": {
+    "odc": 95.40863177226814,
+    "pao2": 78.0,
+    "spo2": 95.0
+   },
+   "acs_70f_left_main": {
+    "odc": 94.25693585439124,
+    "pao2": 72.0,
+    "spo2": 94.0
+   },
+   "anaphylaxis_29f": {
+    "odc": 90.98373604694623,
+    "pao2": 61.0,
+    "spo2": 91.0
+   },
+   "anaphylaxis_63m_betablocked": {
+    "odc": 89.22369130020309,
+    "pao2": 57.0,
+    "spo2": 89.0
+   },
+   "asthma_24f": {
+    "odc": 90.15271705052834,
+    "pao2": 59.0,
+    "spo2": 90.0
+   },
+   "asthma_49m": {
+    "odc": 89.22369130020309,
+    "pao2": 57.0,
+    "spo2": 89.0
+   },
+   "bradycardia_avb3_78f": {
+    "odc": 96.0140903609122,
+    "pao2": 82.0,
+    "spo2": 95.0
+   },
+   "bradycardia_bb_54f": {
+    "odc": 96.74127385554651,
+    "pao2": 88.0,
+    "spo2": 97.0
+   },
+   "bradycardia_ccb_68m": {
+    "odc": 96.2780577187357,
+    "pao2": 84.0,
+    "spo2": 96.0
+   },
+   "bradycardia_hyperk_63m": {
+    "odc": 96.51970087275193,
+    "pao2": 86.0,
+    "spo2": 96.0
+   },
+   "gi_bleed_57m": {
+    "odc": 97.04030123156355,
+    "pao2": 91.0,
+    "spo2": 97.0
+   },
+   "gi_bleed_72f": {
+    "odc": 96.2780577187357,
+    "pao2": 84.0,
+    "spo2": 96.0
+   },
+   "hypoglycemia_28m": {
+    "odc": 97.46351361898073,
+    "pao2": 96.0,
+    "spo2": 98.0
+   },
+   "hypoglycemia_54m_thiamine": {
+    "odc": 97.1319592885298,
+    "pao2": 92.0,
+    "spo2": 97.0
+   },
+   "hypoglycemia_76f": {
+    "odc": 97.04030123156355,
+    "pao2": 91.0,
+    "spo2": 97.0
+   },
+   "obstructive_pyelonephritis_58f": {
+    "odc": 95.40863177226814,
+    "pao2": 78.0,
+    "spo2": 95.0
+   },
+   "opioid_35m": {
+    "odc": 80.70500927643785,
+    "pao2": 45.0,
+    "spo2": 80.0
+   },
+   "opioid_67f": {
+    "odc": 84.99037844772289,
+    "pao2": 50.0,
+    "spo2": 84.0
+   },
+   "pneumonia_46f": {
+    "odc": 89.70124817351196,
+    "pao2": 58.0,
+    "spo2": 89.0
+   },
+   "pneumonia_83m": {
+    "odc": 91.36620570568354,
+    "pao2": 62.0,
+    "spo2": 91.0
+   },
+   "pulmonary_edema_58m": {
+    "odc": 81.66661443479896,
+    "pao2": 46.0,
+    "spo2": 81.0
+   },
+   "pulmonary_edema_75f": {
+    "odc": 85.70564626972346,
+    "pao2": 51.0,
+    "spo2": 84.0
+   },
+   "pulmonary_embolism_33f": {
+    "odc": 90.15271705052834,
+    "pao2": 59.0,
+    "spo2": 90.0
+   },
+   "pulmonary_embolism_61m": {
+    "odc": 88.18331018810757,
+    "pao2": 55.0,
+    "spo2": 88.0
+   },
+   "renal_colic_34m": {
+    "odc": 97.1319592885298,
+    "pao2": 92.0,
+    "spo2": 98.0
+   },
+   "trauma_hemothorax_41m": {
+    "odc": 92.7056447087869,
+    "pao2": 66.0,
+    "spo2": 91.0
+   },
+   "trauma_limb_hemorrhage_27m": {
+    "odc": 97.30440832914786,
+    "pao2": 94.0,
+    "spo2": 97.0
+   }
+  },
+  "domain": "forward: PaO2 > 0 (0 at or below 0, 100 only as PaO2 -> inf); inverse: 0 < SpO2 < 100 (0 at 0, +inf at 100: ODC_PLATEAU_IDENTIFIABILITY_DEBT)",
+  "fitted_parameters": [],
+  "forward": {
+   "1.0": 0.641161734108955,
+   "10.0": 9.652509652509654,
+   "120.0": 98.67751780264497,
+   "30.0": 57.377049180327866,
+   "300.0": 99.91355233408697,
+   "45.0": 80.70500927643785,
+   "57.0": 89.22369130020309,
+   "600.0": 99.9891723511823,
+   "80.0": 95.72524662038728
+  },
+  "forward_increasing": true,
+  "inverse": {
+   "0.5": 0.7807468219568099,
+   "20.0": 15.268763708185686,
+   "50.0": 26.856800143073958,
+   "80.0": 44.3027647316054,
+   "89.0": 56.550347540377366,
+   "95.0": 75.66809242950868,
+   "99.0": 131.9395397479292,
+   "99.9": 285.75560918857633
+  },
+  "inverse_increasing": true,
+  "limits": {
+   "pao2_0": 0.0,
+   "pao2_inf": 100.0,
+   "spo2_0": 0.0,
+   "spo2_100": "inf"
+  },
+  "pass": true,
+  "round_trip_max_abs": 2.1316282072803006e-14
+ },
+ "opioid": {
+  "arrival_reference": 40.0,
+  "gap": "CENTRAL_AVAILABILITY_IS_A_PROFILE_CONSTANT: depression / reversal over time needs an availability writer (opioid migration)",
+  "integrated_improvement": {
+   "paco2": [
+    40.0,
+    29.676916711484957
+   ],
+   "spo2": [
+    97.0,
+    97.95971295799426
+   ]
+  },
+  "label": "FIXED_STATE_COMPARATIVE_PROBE",
+  "no_opioid_writer": true,
+  "pass": true,
+  "rows": {
+   "depressed": {
+    "G": 0.0,
+    "W": 0.5,
+    "availability": 0.5,
+    "paco2": 80.0,
+    "rr": 8.0,
+    "spo2": 75.6949296003335
+   },
+   "restored": {
+    "G": 0.0,
+    "W": 1.0,
+    "availability": 1.0,
+    "paco2": 40.0,
+    "rr": 16.0,
+    "spo2": 97.0
+   }
+  },
+  "spo2_base": 97.0
+ },
+ "parameters": {
+  "committed_r_none": {
+   "acs": true,
+   "asthma": true,
+   "asthma_p2t3": true,
+   "default": true,
+   "edema": true,
+   "gi": true,
+   "p2p2_probe": true,
+   "p2s2_probe": true,
+   "pe": true
+  },
+  "new_profile_fields": [
+   "respiratory_quotient"
+  ],
+  "pass": true,
+  "registry": [
+   "provisional",
+   "UNSET (P2T-5): the respiratory quotient of the common relative alveolar link (dPAO2 = -dPaCO2 / R, from the model's own arrival PaCO2, full transmission to a latent PaO2 and the standard dissociation relation); None by default (the link off); needs the mechanics candidate; refuses the hypoxaemic drive; 0.8 only as a SYNTHETIC_PHYSIOLOGIC_REFERENCE in probes; not approved"
+  ],
+  "synthetic_r": {
+   "label": "SYNTHETIC_PHYSIOLOGIC_REFERENCE",
+   "value": 0.8
+  },
+  "unset": [
+   "respiratory_quotient (clinical value)",
+   "hypoxaemic drive",
+   "FiO2 magnitude (unchanged)",
+   "G parameters (unchanged)",
+   "no tau / transmission / hypoventilation gain"
+  ]
+ },
+ "pe": {
+  "G": [
+   0.0,
+   0.7499999999999993
+  ],
+  "committed_mechanics_off_refused": true,
+  "drift": "the committed mapping's arrival acid burden clears, the drive and RR fall and PaCO2 rises a little; with the link on, that model PaCO2 rise lowers SpO2 too (the plain course shows it without G)",
+  "existing_indirect_route": "delivery -> deficit -> acid burden -> drive (minute-lagged; predates P2T-5)",
+  "indirect_route_compensatory": true,
+  "label": "STRUCTURAL_PROBE (mechanics on)",
+  "paco2_end": {
+   "G_link_off": 29.575532795567575,
+   "G_link_on": 29.464584693566827,
+   "plain_link_off": 29.85415073405374,
+   "plain_link_on": 29.75123620637466
+  },
+  "pass": true,
+  "same_state_g_moves_no_paco2": true,
+  "serial_composition": true,
+  "spo2_off": [
+   88.0,
+   84.25
+  ],
+  "spo2_on": [
+   88.0,
+   82.74135532845125
+  ],
+  "spo2_plain_course_on": 86.6908627997084
+ },
+ "probes": {
+  "O1": {
+   "committed_profiles_r": {
+    "acs": null,
+    "asthma": null,
+    "edema": null,
+    "pe": null
+   },
+   "link_calls_with_r_none": 0,
+   "pass": true
+  },
+  "O10": {
+   "course_state_fields_moved": [
+    "aux.sympathetic_drive"
+   ],
+   "derive_fields_moved": [
+    "consciousness_level",
+    "delivery_rel",
+    "spo2"
+   ],
+   "one_step_state_fields_moved": [
+    "aux.sympathetic_drive"
+   ],
+   "pass": true,
+   "perfusion_insertion_only": true,
+   "routes": "SpO2 -> delivery (D, lactate, acid burden one minute later when delivery falls below the extraction reserve); SpO2 -> the sympathetic target's hypoxaemia term (HR); SpO2 -> the ADOPTED consciousness ladder. No direct write to V, T, P, R, L, D, G, W or lactate"
+  },
+  "O11": {
+   "pao2_in_state": false,
+   "pass": true,
+   "state_files_untouched": true
+  },
+  "O2": {
+   "pass": true,
+   "reference_equals_arrival_respiration": {
+    "E0.5": [
+     80.0,
+     80.0
+    ],
+    "E1.0": [
+     40.0,
+     40.0
+    ],
+    "asthma_24f": [
+     30.999999999999996,
+     30.999999999999996
+    ],
+    "asthma_49m": [
+     50.99999999999999,
+     50.99999999999999
+    ],
+    "edema": [
+     49.0,
+     49.0
+    ],
+    "pe": [
+     28.000000000000004,
+     28.000000000000004
+    ]
+   },
+   "rows": {
+    "E0.5_F0.21": [
+     97.0,
+     97.0
+    ],
+    "E0.5_F0.4": [
+     97.0,
+     97.0
+    ],
+    "E1.0_F0.21": [
+     97.0,
+     97.0
+    ],
+    "E1.0_F0.4": [
+     97.0,
+     97.0
+    ]
+   }
+  },
+  "O3": {
+   "paco2": [
+    40.0,
+    57.142857142857146
+   ],
+   "pass": true,
+   "spo2": [
+    97.0,
+    93.57757975163
+   ]
+  },
+  "O4": {
+   "paco2": [
+    40.0,
+    30.769230769230766
+   ],
+   "pass": true,
+   "spo2": [
+    97.0,
+    97.87929975951326
+   ]
+  },
+  "O5": {
+   "pass": true,
+   "spo2_by_G": {
+    "0.7": [
+     93.57757975163,
+     86.18230216974361,
+     77.87302590721454,
+     60.68654841359291
+    ],
+    "1.0": [
+     97.0,
+     94.5,
+     92.0,
+     87.0
+    ],
+    "1.3": [
+     97.87929975951326,
+     96.36108310738105,
+     94.93599788787361,
+     92.24041449852996
+    ]
+   },
+   "spo2_change_from_paco2_by_G": {
+    "0.7": [
+     -3.4224202483700026,
+     -8.317697830256392,
+     -14.12697409278546,
+     -26.31345158640709
+    ],
+    "1.0": [
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "1.3": [
+     0.879299759513259,
+     1.8610831073810488,
+     2.9359978878736115,
+     5.240414498529958
+    ]
+   },
+   "statement": "with the same PaCO2 change a worse G never raises the final SpO2; the size of the SpO2 change need not shrink (a lower PaO2 sits on a steeper part of the curve)"
+  },
+  "O6": {
+   "analytic_room_air": {
+    "-10.0": [
+     97.93635264645255,
+     96.4764719774931,
+     95.11284456686481,
+     92.54520033027164
+    ],
+    "0.0": [
+     97.0,
+     94.5,
+     92.0,
+     87.0
+    ],
+    "10.0": [
+     95.42072187303263,
+     90.83648592675146,
+     85.90309812268745,
+     75.56670142231833
+    ],
+    "20.0": [
+     92.57587430986486,
+     83.5334618549293,
+     73.27825872483291,
+     52.71371551488576
+    ],
+    "30.0": [
+     87.06141692136485,
+     68.36694784335518,
+     48.57925067513778,
+     20.47808543960873
+    ]
+   },
+   "pass": true
+  },
+  "O7": {
+   "pass": true,
+   "rows": {
+    "0.7_0.0": [
+     93.57757975163,
+     99.57781643817887,
+     100.0,
+     100.0
+    ],
+    "0.7_0.5": [
+     86.18230216974361,
+     92.65060294190944,
+     98.43472786143464,
+     100.0
+    ],
+    "0.7_1.0": [
+     77.87302590721454,
+     83.92056050068446,
+     90.18418237256243,
+     95.63356498285847
+    ],
+    "0.7_2.0": [
+     60.68654841359291,
+     65.26136335248758,
+     70.43821822320477,
+     75.63689192855671
+    ],
+    "1.0_0.0": [
+     97.0,
+     99.7,
+     100.0,
+     100.0
+    ],
+    "1.0_0.5": [
+     94.5,
+     96.66,
+     99.06,
+     100.0
+    ],
+    "1.0_1.0": [
+     92.0,
+     93.8,
+     95.8,
+     97.8
+    ],
+    "1.0_2.0": [
+     87.0,
+     88.35,
+     89.85,
+     91.35
+    ],
+    "1.3_0.0": [
+     97.87929975951326,
+     99.74668621352667,
+     100.0,
+     100.0
+    ],
+    "1.3_0.5": [
+     96.36108310738105,
+     97.66514172980702,
+     99.26294685028171,
+     100.0
+    ],
+    "1.3_1.0": [
+     94.93599788787361,
+     95.95466235202011,
+     97.13544526428946,
+     98.39627235054645
+    ],
+    "1.3_2.0": [
+     92.24041449852996,
+     92.95377430654553,
+     93.75753228767395,
+     94.57590071900923
+    ]
+   }
+  },
+  "O8": {
+   "course_respiration_same": true,
+   "fields": [
+    "intrinsic",
+    "burden",
+    "hco3",
+    "drive",
+    "rate",
+    "efficiency",
+    "ventilation",
+    "resting",
+    "paco2",
+    "ph"
+   ],
+   "note": "no direct write; a lower SpO2 can still reach the acid burden through the existing delivery -> deficit -> acid path, one minute later, only when delivery falls below the extraction reserve",
+   "pass": true,
+   "respiration_same_with_and_without_link": true
+  },
+  "O9": {
+   "pass": true
+  },
+  "guards": {
+   "apnoea_unresolved": true,
+   "committed_pe_refused": true,
+   "hypoxaemic_refused": true,
+   "mechanics_off_refused": true,
+   "non_positive_refused": true,
+   "pass": true
+  },
+  "pass": true
+ },
+ "proof": {
+  "common_untouched": {
+   "clinical_core/__init__.py": true,
+   "clinical_core/a9.py": true,
+   "clinical_core/acid_base.py": true,
+   "clinical_core/acid_base_report.py": true,
+   "clinical_core/acs_migration.py": true,
+   "clinical_core/acs_migration_report.py": true,
+   "clinical_core/acs_reference.py": true,
+   "clinical_core/arrival_severity.py": true,
+   "clinical_core/arrival_severity_report.py": true,
+   "clinical_core/asthma_distress_migration.py": true,
+   "clinical_core/asthma_distress_migration_report.py": true,
+   "clinical_core/asthma_migration.py": true,
+   "clinical_core/asthma_migration_report.py": true,
+   "clinical_core/asthma_reference.py": true,
+   "clinical_core/bands.py": true,
+   "clinical_core/baroreflex.py": true,
+   "clinical_core/baroreflex_report.py": true,
+   "clinical_core/blood_anchors.py": true,
+   "clinical_core/blood_constraints.py": true,
+   "clinical_core/blood_extension.py": true,
+   "clinical_core/blood_extension_report.py": true,
+   "clinical_core/blood_filter_report.py": true,
+   "clinical_core/blood_fluid_calibration.py": true,
+   "clinical_core/blood_fluid_readiness.py": true,
+   "clinical_core/blood_fluid_readiness_report.py": true,
+   "clinical_core/blood_fluid_report.py": true,
+   "clinical_core/blood_fluid_tau_closure.py": true,
+   "clinical_core/blood_fluid_tau_closure_report.py": true,
+   "clinical_core/blood_probes.py": true,
+   "clinical_core/blood_rate_boundary.py": true,
+   "clinical_core/blood_rate_report.py": true,
+   "clinical_core/calibration.py": true,
+   "clinical_core/collapse.py": true,
+   "clinical_core/collapse_architecture.py": true,
+   "clinical_core/collapse_architecture_report.py": true,
+   "clinical_core/collapse_audit.py": true,
+   "clinical_core/collapse_audit_report.py": true,
+   "clinical_core/comparison.py": true,
+   "clinical_core/consciousness_audit.py": true,
+   "clinical_core/consciousness_audit_report.py": true,
+   "clinical_core/contracts_input.py": true,
+   "clinical_core/contracts_legacy.py": true,
+   "clinical_core/contracts_output.py": true,
+   "clinical_core/contracts_shadow.py": true,
+   "clinical_core/decision_pack_markdown.py": true,
+   "clinical_core/distress_closure.py": true,
+   "clinical_core/distress_closure_report.py": true,
+   "clinical_core/edema_migration.py": true,
+   "clinical_core/edema_migration_report.py": true,
+   "clinical_core/edema_reference.py": true,
+   "clinical_core/embolism_migration.py": true,
+   "clinical_core/embolism_migration_report.py": true,
+   "clinical_core/embolism_reference.py": true,
+   "clinical_core/encephalopathy.py": true,
+   "clinical_core/encephalopathy_architecture.py": true,
+   "clinical_core/encephalopathy_architecture_report.py": true,
+   "clinical_core/faculty_constraints.py": true,
+   "clinical_core/gas_exchange_architecture.py": true,
+   "clinical_core/gas_exchange_architecture_report.py": true,
+   "clinical_core/gi_reference.py": true,
+   "clinical_core/haemorrhage_probes.py": true,
+   "clinical_core/hemodynamic_probes.py": true,
+   "clinical_core/hr_envelope_filter.py": true,
+   "clinical_core/hr_envelope_filter_report.py": true,
+   "clinical_core/hr_observables.py": true,
+   "clinical_core/hr_observables_report.py": true,
+   "clinical_core/hr_primary.py": true,
+   "clinical_core/hr_primary_report.py": true,
+   "clinical_core/hr_shock.py": true,
+   "clinical_core/hr_shock_report.py": true,
+   "clinical_core/hr_structure.py": true,
+   "clinical_core/hr_structure_report.py": true,
+   "clinical_core/integration.py": true,
+   "clinical_core/interventions/__init__.py": true,
+   "clinical_core/interventions/fluids.py": true,
+   "clinical_core/interventions/modifiers.py": true,
+   "clinical_core/interventions/oxygen.py": true,
+   "clinical_core/interventions/timing.py": true,
+   "clinical_core/lactate_adequacy.py": true,
+   "clinical_core/lactate_adequacy_report.py": true,
+   "clinical_core/lactate_closure.py": true,
+   "clinical_core/lactate_closure_report.py": true,
+   "clinical_core/lactate_constraints.py": true,
+   "clinical_core/lactate_rebuild.py": true,
+   "clinical_core/lactate_rebuild_report.py": true,
+   "clinical_core/legacy_adapter.py": true,
+   "clinical_core/logistics.py": true,
+   "clinical_core/lung_water_reference.py": true,
+   "clinical_core/lung_water_reference_report.py": true,
+   "clinical_core/migration.py": true,
+   "clinical_core/migration_authority.py": true,
+   "clinical_core/modules/__init__.py": true,
+   "clinical_core/modules/acs_ischaemia.py": true,
+   "clinical_core/modules/asthma.py": true,
+   "clinical_core/modules/gi_haemorrhage.py": true,
+   "clinical_core/modules/pulmonary_edema.py": true,
+   "clinical_core/modules/pulmonary_embolism.py": true,
+   "clinical_core/modules/rhythm_events.py": true,
+   "clinical_core/oxygen_probes.py": true,
+   "clinical_core/pressure_tone.py": true,
+   "clinical_core/pressure_tone_filter.py": true,
+   "clinical_core/pressure_tone_filter_report.py": true,
+   "clinical_core/pressure_tone_report.py": true,
+   "clinical_core/provenance.py": true,
+   "clinical_core/respiratory_distress.py": true,
+   "clinical_core/respiratory_distress_report.py": true,
+   "clinical_core/respiratory_drive.py": true,
+   "clinical_core/respiratory_drive_report.py": true,
+   "clinical_core/respiratory_mechanics.py": true,
+   "clinical_core/respiratory_mechanics_report.py": true,
+   "clinical_core/respiratory_monotonicity.py": true,
+   "clinical_core/respiratory_monotonicity_report.py": true,
+   "clinical_core/rr_audit.py": true,
+   "clinical_core/rr_audit_report.py": true,
+   "clinical_core/shadow.py": true,
+   "clinical_core/signals.py": true,
+   "clinical_core/state.py": true,
+   "clinical_core/vascular_tone.py": true,
+   "clinical_core/vascular_tone_report.py": true,
+   "clinical_core/ventilation.py": true,
+   "clinical_core/ventilation_filter.py": true,
+   "clinical_core/ventilation_filter_report.py": true,
+   "clinical_core/ventilation_surface.py": true,
+   "clinical_core/ventilation_surface_report.py": true
+  },
+  "p2t3_freeze_digest": true,
+  "p2t3_proof": true,
+  "p2t3_record": true,
+  "proofs": {
+   "clinical_core/decision_pack.py": true,
+   "clinical_core/derived.py": true,
+   "clinical_core/lactate_slice.py": true
+  }
+ },
+ "readiness": {
+  "blocker": null,
+  "criteria": [
+   {
+    "criterion": "the relative symmetric alveolar link works (O3, O4) with full transmission and no new parameter (audit)",
+    "holds": true
+   },
+   {
+    "criterion": "no new PaO2 state is required (O11) and the dissociation relation is the standard one, monotone, unfitted",
+    "holds": true
+   },
+   {
+    "criterion": "arrival exact with the link on (O2) and the default off exact (O1)",
+    "holds": true
+   },
+   {
+    "criterion": "G and hypoventilation compose independently and monotonically (O5, O6, O7, O9; asthma serial; edema)",
+    "holds": true
+   },
+   {
+    "criterion": "opioid-like hypoventilation lowers SpO2 without G and better ventilation raises it (opioid probe)",
+    "holds": true
+   },
+   {
+    "criterion": "asthma mixed physiology is representable (49m and 24f probes)",
+    "holds": true
+   },
+   {
+    "criterion": "PE's G physiology stays orthogonal and edema avoids double counting",
+    "holds": true
+   },
+   {
+    "criterion": "no feedback into PaCO2 or the drive (O8, the hypoxaemic loop refused) and the guards hold",
+    "holds": true
+   },
+   {
+    "criterion": "the downstream SpO2 -> delivery -> D / lactate / HR directions hold through existing paths",
+    "holds": true
+   },
+   {
+    "criterion": "the parameters stay UNSET clinically (R None everywhere committed; 0.8 synthetic only)",
+    "holds": true
+   },
+   {
+    "criterion": "non-regression: P2T-3's record on its tree, every other file proven",
+    "holds": true
+   }
+  ],
+  "rule": "Predeclared. READY when every criterion holds; otherwise NOT_READY with the first failing criterion",
+  "verdict": "COMMON_HYPOVENTILATION_OXYGENATION_LINK_READY"
+ },
+ "retained": {
+  "as_alveolar_transmission": "REJECTED (faculty): a retained(G) x dPAO2 cross-term can make a worse G raise SpO2 when PaCO2 rises (shown before implementation)",
+  "link_reads_retained": false,
+  "non_increasing": true,
+  "one_at_or_below_arrival": true,
+  "pass": true,
+  "semantics": "the share of the FiO2 benefit the existing G path keeps (P2O-1); stays in that path",
+  "values": [
+   1.0,
+   1.0,
+   0.8,
+   0.6666666666666666,
+   0.5
+  ]
+ },
+ "revision": "P2T-5"
+}
