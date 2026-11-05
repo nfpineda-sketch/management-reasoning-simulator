@@ -48,7 +48,8 @@ from .derived import (ADOPTED, AUXILIARY_SOURCES, BLOOD_COMPOSITION, COLLAPSE, D
                       check_distress_respiratory_effect)
 from .provenance import (BLOOD_PROCESSES, AuxiliaryChange, BloodChange, BloodFlow, BloodProcess, ChannelDelta,
                          CoreEvent, DemandModifier, MinuteRecord, ProvenanceError, RhythmTransition, SettingChange,
-                         Source, SourceKind, MechanicsChange, DistressChange, AvailabilityChange)
+                         Source, SourceKind, MechanicsChange, DistressChange, AvailabilityChange,
+                         SystemicStressChange)
 from .state import (AUXILIARY_FIELDS, BLOOD_FIELDS, Anchors, AuxiliaryState, BloodState, Channel, CoreInvariantError,
                     CoreState, FrozenRecord, SCALAR_CHANNELS, UnresolvedBoundary, digest, initial_state)
 
@@ -123,6 +124,7 @@ class Contribution:
     mechanics: tuple[MechanicsChange, ...] = ()  # changes to the respiratory mechanics efficiency this minute (P2S-2)
     distress: tuple[DistressChange, ...] = ()  # changes to the common respiratory distress this minute (P2T-1)
     availability: tuple[AvailabilityChange, ...] = ()  # changes to the common central availability this minute (P2U-1)
+    systemic_stress: tuple[SystemicStressChange, ...] = ()  # changes to the common systemic stress this minute (P2V-1)
 
 
 NOTHING = Contribution()
@@ -353,13 +355,17 @@ def _check_owned(contributor: Contributor, contribution: Contribution, minute: i
                                                                for item in contribution.availability):
         raise ProvenanceError(f"{contributor.source.key}: the central drive availability changes only by a tuple of "
                               "AvailabilityChange records")
+    if not isinstance(contribution.systemic_stress, tuple) or any(not isinstance(item, SystemicStressChange)
+                                                                  for item in contribution.systemic_stress):
+        raise ProvenanceError(f"{contributor.source.key}: the systemic stress changes only by a tuple of "
+                              "SystemicStressChange records")
     if contributor.source.kind is not SourceKind.SCRIPTED_EVENT and any(delta.channel in BLOOD_CHANNELS
                                                                          for delta in contribution.deltas):
         raise ProvenanceError(f"{contributor.source.key} wrote V or Hb directly: volume and red cells move only "
                               "through the shared blood state (a BloodFlow, P2I-2T)")
     for item in (contribution.deltas + contribution.transitions + contribution.settings + contribution.events
                  + contribution.demand + contribution.blood + contribution.mechanics + contribution.distress
-                 + contribution.availability):
+                 + contribution.availability + contribution.systemic_stress):
         if item.source != contributor.source:
             raise ProvenanceError(f"{contributor.source.key} wrote a change attributed to {item.source.key}")
         if item.minute != minute:
@@ -422,7 +428,7 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
         deltas.append(ChannelDelta(Channel.L, -clearance, LUNG_WATER_CLEARANCE, minute,
                                    "lung water above arrival clearing slowly"))
     transitions, settings, events, modifiers, flows, mechanics, distress = [], [], [], [], [], [], []
-    availability = []
+    availability, systemic_stress = [], []
     internal = {}
     for contributor in ordered:
         # A contributor sees only the signals it declares it responds to.
@@ -438,6 +444,7 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
         mechanics.extend(contribution.mechanics)
         distress.extend(contribution.distress)
         availability.extend(contribution.availability)
+        systemic_stress.extend(contribution.systemic_stress)
         if contribution.internal is not None:
             internal[contributor.source.key] = contribution.internal
     if respiratory_mechanics_active(profile) and any(delta.channel is Channel.W for delta in deltas):
@@ -533,7 +540,8 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
                          mechanics_efficiency=state.aux.mechanics_efficiency * math.prod(item.factor
                                                                                          for item in mechanics),
                          respiratory_distress=_distress_after(state, distress, profile, minute),
-                         central_availability=_availability_after(state, availability, profile, minute))
+                         central_availability=_availability_after(state, availability, profile, minute),
+                         systemic_stress=_systemic_stress_after(state, systemic_stress, profile, minute))
     aux = replace(aux, sympathetic_drive=sympathetic_after_minute(state, new_state.evolve(aux=aux), anchors, profile))
     new_state = new_state.evolve(aux=aux)
     changes = tuple(AuxiliaryChange(name, getattr(state.aux, name), getattr(aux, name), AUXILIARY_SOURCES[name],
@@ -542,7 +550,8 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
     record = MinuteRecord(minute=minute, deltas=tuple(deltas), transitions=tuple(transitions),
                           settings=tuple(settings), events=tuple(events), internal_updates=tuple(sorted(internal)),
                           auxiliary=changes, demand=tuple(modifiers), blood=blood_changes,
-                          mechanics=tuple(mechanics), distress=tuple(distress), availability=tuple(availability))
+                          mechanics=tuple(mechanics), distress=tuple(distress), availability=tuple(availability),
+                          systemic_stress=tuple(systemic_stress))
     _check_conservation(state, new_state, record)
     _check_blood(state, new_state, record, anchors, profile)
     derive(new_state, anchors, profile)   # the observation invariants hold, or this minute fails
@@ -598,6 +607,20 @@ def distress_sum(before: float, amounts) -> float:
     return value + 0.0
 
 
+def _systemic_stress_after(state: CoreState, stress: list, profile: CoreProfile, minute: int) -> float:
+    """P2V-1: the systemic stress after the minute: the value it starts with plus the minute's changes, summed once by
+    P2T-1A's rule (``distress_sum``: math.fsum and the binary64 roundoff bound at 0). The core adds no kinetics and no
+    coupling of its own. With its reader UNSET nothing reads it, so a change is refused; a minute that would take it
+    materially below 0 is refused, never held."""
+    if stress and profile.systemic_stress_to_sympathetic_gain is None:
+        raise ProvenanceError(f"minute {minute}: {stress[0].source.key} changed the systemic stress while its reader is "
+                              "UNSET (P2V-1): nothing would read it")
+    value = distress_sum(state.aux.systemic_stress, [item.amount for item in stress])
+    if value < 0.0:
+        raise ProvenanceError(f"minute {minute}: the systemic stress changes take it to {value!r}, below 0 (P2V-1)")
+    return value
+
+
 def _availability_after(state: CoreState, availability: list, profile: CoreProfile, minute: int) -> float:
     """P2U-1: the central drive availability after the minute: the value it starts with plus the minute's changes. The
     core adds no kinetics and no coupling of its own. With the acid-base physiology off nothing reads it, so a change is
@@ -647,6 +670,10 @@ def _check_conservation(before: CoreState, after: CoreState, record: MinuteRecor
                                                           [item.amount for item in record.availability]):
         # P2U-1: the availability moves by exactly the minute's recorded changes, never otherwise.
         raise ProvenanceError("the central drive availability changed by other than its recorded changes")
+    if after.aux.systemic_stress != distress_sum(before.aux.systemic_stress,
+                                                 [item.amount for item in record.systemic_stress]):
+        # P2V-1: the systemic stress moves by exactly the minute's recorded changes, never otherwise.
+        raise ProvenanceError("the systemic stress changed by other than its recorded changes")
     for channel in SCALAR_CHANNELS:
         change = after.value(channel) - before.value(channel)
         total = record.total(channel)

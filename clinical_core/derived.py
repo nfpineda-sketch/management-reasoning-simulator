@@ -69,6 +69,10 @@ AUXILIARY_SOURCES["respiratory_distress"] = RESPIRATORY_DISTRESS
 #: (the arrival value plus every change since). It adds no kinetics and no coupling of its own.
 CENTRAL_AVAILABILITY = Source(SourceKind.CORE_COUPLING, "central_availability")
 AUXILIARY_SOURCES["central_availability"] = CENTRAL_AVAILABILITY
+#: P2V-1: the core's sum of the families' systemic-stress changes into the common systemic stress (the arrival value
+#: plus every change since). It adds no kinetics and no coupling of its own. Read only when a profile declares the gain.
+SYSTEMIC_STRESS = Source(SourceKind.CORE_COUPLING, "systemic_stress")
+AUXILIARY_SOURCES["systemic_stress"] = SYSTEMIC_STRESS
 #: The rhythms the collapse rule may end in (P2E-3). Which one, and when, is TBD.
 TERMINAL_RHYTHMS = ("pea", "asystole")
 #: The shared blood state's two core couplings (P2I-2T): plasma refill into the circulation, and
@@ -191,6 +195,11 @@ class CoreProfile:
     # dissociation relation; it needs the common mechanics candidate (PaCO2 is W's) and refuses the hypoxaemic drive
     # (HYPOXEMIC_FEEDBACK_LOOP_DEFERRED). No value is chosen here.
     respiratory_quotient: float | None = None
+    # P2V-1: the systemic-stress reader of the sympathetic HR target, UNSET (None) by default. Declared, it is the drive
+    # per unit of the state's common systemic stress, added to the target like the distress reader: upstream of the
+    # common saturation and of the beta-blockade, never a respiratory reader (the stress never feeds the respiratory
+    # drive) and never solved from an observed HR. No value is chosen here.
+    systemic_stress_to_sympathetic_gain: float | None = None
     pressure_levels: tuple[tuple[float, int], ...] = ((80.0, 1), (65.0, 2))
     oxygen_levels: tuple[tuple[float, int], ...] = ((87.0, 1), (80.0, 2))
     # P2E-3: the collapse rule is off (None) unless a profile declares it. No clinical threshold,
@@ -311,6 +320,13 @@ class CoreProfile:
             # P2T-1: the respiratory reader lives in the P2P-2 composition, which only the acid-base physiology has.
             raise CoreInvariantError("the respiratory distress reader of the respiratory drive needs the P2K-2 acid-base "
                                      "physiology")
+        gain = self.systemic_stress_to_sympathetic_gain
+        if gain is not None and (isinstance(gain, bool) or not isinstance(gain, (int, float))
+                                 or not math.isfinite(gain) or gain <= 0.0):
+            # P2V-1: UNSET is None (no reader); declared, the gain is finite and positive (a stress never lowers the
+            # drive).
+            raise CoreInvariantError("systemic_stress_to_sympathetic_gain is None (UNSET: no systemic-stress reader) "
+                                     "or a finite positive drive per unit of stress")
         rq = self.respiratory_quotient
         if rq is not None:
             if isinstance(rq, bool) or not isinstance(rq, (int, float)) or not math.isfinite(rq) or rq <= 0.0:
@@ -528,6 +544,12 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
                                                   "saturation and beta-blockade; independent of the respiratory "
                                                   "reader's gain; None by default (no reader); SYNTHETIC_ONLY values in "
                                                   "probes; not approved"),
+    "systemic_stress_to_sympathetic_gain": (PROVISIONAL, "UNSET (P2V-1): sympathetic drive per unit of the common "
+                                                         "systemic stress (non-respiratory adrenergic activation), "
+                                                         "added to the HR target upstream of the common saturation and "
+                                                         "the beta-blockade; None by default (no reader); it never "
+                                                         "feeds the respiratory drive and is never solved from an "
+                                                         "observed HR; SYNTHETIC_ONLY in probes; not approved"),
     "respiratory_quotient": (PROVISIONAL, "UNSET (P2T-5): the respiratory quotient of the common relative alveolar link "
                                           "(dPAO2 = -dPaCO2 / R, from the model's own arrival PaCO2, full transmission "
                                           "to a latent PaO2 and the standard dissociation relation); None by default "
@@ -1299,6 +1321,9 @@ def arrival_state(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> C
         raise CoreInvariantError("an arrival respiratory distress other than 0 needs a declared distress reader (P2T-1); "
                                  "nothing else reads it")
     check_distress_respiratory_effect(profile, anchors.arrival_respiratory_distress)
+    if anchors.arrival_systemic_stress != 0.0 and profile.systemic_stress_to_sympathetic_gain is None:
+        raise CoreInvariantError("an arrival systemic stress other than 0 needs a declared systemic-stress reader "
+                                 "(P2V-1); nothing else reads it")
     if anchors.arrival_central_availability != 1.0 and profile.acid_to_drive_gain is None:
         raise CoreInvariantError("an arrival central drive availability other than 1 needs the P2K-2 acid-base physiology "
                                  "(P2U-1); nothing else reads it")
@@ -1311,7 +1336,8 @@ def arrival_state(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> C
                                             metabolic_acid_burden=arrival_acid_burden(anchors, profile),
                                             mechanics_efficiency=anchors.arrival_mechanics_efficiency,
                                             respiratory_distress=anchors.arrival_respiratory_distress,
-                                            central_availability=anchors.arrival_central_availability))
+                                            central_availability=anchors.arrival_central_availability,
+                                            systemic_stress=anchors.arrival_systemic_stress))
     return state.evolve(aux=replace(state.aux, sympathetic_drive=sympathetic_target(state, anchors, profile)))
 
 
@@ -1722,8 +1748,9 @@ def sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile)
     these stimuli.
 
     P2T-1: the common respiratory distress (aux.respiratory_distress) through its own gain, UNSET (None) by default; it
-    is respiratory afferent activation only. Non-respiratory stress (pain, hypoglycaemic counter-regulation, coronary
-    stress, fever, agitation) is SYSTEMIC_STRESS_DEFERRED: no state or gain carries it here.
+    is respiratory afferent activation only. P2V-1: non-respiratory stress (pain, hypoglycaemic counter-regulation,
+    coronary stress, fever, agitation) is its own input (aux.systemic_stress) through its own gain, UNSET (None) by
+    default and independent of the distress reader; it never feeds the respiratory drive.
     """
     _, pressure_rel, spo2, delivery_rel = _perfusion(state, anchors, profile)
     demand = state.aux.oxygen_demand
@@ -1744,6 +1771,11 @@ def sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile)
         # P2T-1: the respiratory distress reader: its own gain times the state's absolute distress (never relative to
         # arrival), through the same saturation and beta-blockade as every term; UNSET (None) by default.
         target += profile.distress_to_sympathetic_gain * state.aux.respiratory_distress
+    if profile.systemic_stress_to_sympathetic_gain is not None:
+        # P2V-1: the systemic-stress reader: its own gain times the state's absolute stress (never relative to arrival),
+        # independent of the distress reader and of every other term, through the same saturation and beta-blockade;
+        # UNSET (None) by default. It is the only reader of the stress: nothing respiratory reads it.
+        target += profile.systemic_stress_to_sympathetic_gain * state.aux.systemic_stress
     # P2J-4: the direct baroreflex, on the MAP of this same state, after the other terms (0 with the gain off).
     target += baroreflex_drive(pressure_rel, anchors, profile)
     # P2D-3: the drive is never negative. As its stimuli resolve, the rate falls back to the

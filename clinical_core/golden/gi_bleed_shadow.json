@@ -426,6 +426,10 @@
    "provisional",
    "MAP/output deficit -> sympathetic drive gain: TBD (KD-S2). The term is 1 - pressure_rel, relative to the shocked arrival and below 0 above it; 0 in every primary HR calibration (P2I-2AG) and never active together with the baroreflex (P2J-4); the common default stays for the historical records"
   ],
+  "systemic_stress_to_sympathetic_gain": [
+   "provisional",
+   "UNSET (P2V-1): sympathetic drive per unit of the common systemic stress (non-respiratory adrenergic activation), added to the HR target upstream of the common saturation and the beta-blockade; None by default (no reader); it never feeds the respiratory drive and is never solved from an observed HR; SYNTHETIC_ONLY in probes; not approved"
+  ],
   "ventilation_efficiency": [
    "provisional",
    "STRUCTURAL_REFERENCE (P2K-2): the share of the ventilation RR moves that is effective alveolar ventilation; 1 for the current GI cases (mechanics preserved), below 1 only in synthetic probes; not an approved value"

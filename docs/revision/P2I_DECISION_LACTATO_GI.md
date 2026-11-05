@@ -7,8 +7,8 @@ no se migra y el golden canónico no cambia. Su aplicación a la región candida
 `docs/revision/P2I2_RESTRICCIONES_LACTATO_GI.md`. FC, PA, FR, volumen y colapso siguen sin abrirse.
 
 - **Generado desde:** el congelamiento de calibración
-  `4f1ea34e4e324006b80478b525550e8663c5483c2cb77decbd7688cad370c20f` y el corte
-  `4f4c53eb44ee69e22d58ca96ba7b97d2b4f8d7cd4b08431a38499caf3319d02d` (`python -m clinical_core.lactate_slice`).
+  `4a61589b2e7101cff880e24db583f657e7777da75e9cbb713fc7eced5b6b30c7` y el corte
+  `969b5bcbbb7dcad9d8ffffad53527acc5cf3604cefe7f28edcd28127f955a7ae` (`python -m clinical_core.lactate_slice`).
   Los números están en `docs/revision/P2I_lactate_slice.json`. Una prueba falla si el código o las entradas cambian
   sin regenerarlos.
 - **Base:** la región estructuralmente admisible de P2F que P2G ya usa: 1054 conjuntos (`decision_pack.admissible`).

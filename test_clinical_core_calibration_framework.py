@@ -73,15 +73,17 @@ FROZEN_COMPONENTS = {
     "input_adapter_sources": "e83dca618fdaaa9239d861e1e1d6928dc703bfe33206a05cef44a5b0e9495bc5",
     # P2U-1: the materialized inputs gained the arrival central drive availability, 1 (its reference) in every GI
     # scenario; the test below pops it and checks the hash of the inputs before P2K-2 is unchanged.
-    "scenario_inputs": "9dcca549b898f39d46a0611a626e4c410dc4f9a61641123b761869cb1e87d5dd",
+    # P2V-1: and the arrival systemic stress, 0 (its reference) in every GI scenario; the same.
+    "scenario_inputs": "7d5f65d128910c154dd260f56e26ec8bad518d94b860338d376ddb985ff51313",
 }
-FROZEN_DIGEST = "4f1ea34e4e324006b80478b525550e8663c5483c2cb77decbd7688cad370c20f"
+FROZEN_DIGEST = "4a61589b2e7101cff880e24db583f657e7777da75e9cbb713fc7eced5b6b30c7"
 SCENARIO_INPUTS_BEFORE_P2K2 = "afb2051e7fa04f1765aaf920c82f51dc6675d19bcbcb425c2ee581d8fa60d347"
 P2K2_INPUTS = ("intrinsic_respiratory_rate", "arrival_bicarbonate", "arrival_paco2")
 P2O3_INPUTS = ("reversible_lung_water",)
 P2S2_INPUTS = ("arrival_mechanics_efficiency",)
 P2T1_INPUTS = ("arrival_respiratory_distress",)
 P2U1_INPUTS = ("arrival_central_availability",)
+P2V1_INPUTS = ("arrival_systemic_stress",)
 
 
 # P2F-2 / P2F-5 -- repository truth, candidate inference, faculty decision ---------------------
@@ -228,9 +230,10 @@ def test_the_rules_are_frozen():
         assert all(inputs[case]["arrival_anchors"].pop(name) == 1.0 for name in P2S2_INPUTS)
         assert all(inputs[case]["arrival_anchors"].pop(name) == 0.0 for name in P2T1_INPUTS)
         assert all(inputs[case]["arrival_anchors"].pop(name) == 1.0 for name in P2U1_INPUTS)
+        assert all(inputs[case]["arrival_anchors"].pop(name) == 0.0 for name in P2V1_INPUTS)
     assert hashlib.sha256(json.dumps(inputs, sort_keys=True, default=repr).encode("utf-8")).hexdigest() == \
-        SCENARIO_INPUTS_BEFORE_P2K2, ("P2K-2, P2O-3, P2S-2, P2T-1 and P2U-1 added only seven neutral anchor fields to "
-                                      "the scenario inputs")
+        SCENARIO_INPUTS_BEFORE_P2K2, ("P2K-2, P2O-3, P2S-2, P2T-1, P2U-1 and P2V-1 added only eight neutral anchor "
+                                      "fields to the scenario inputs")
     covered = {part for name in calibration.CHECKS for part in name.replace("-", "/").split("/")}
     assert {"DL1", "DL2", "DL3", "DL4", "RR1", "HR1", "PL1", "PL4", "PR1", "CO1", "DM1"} <= covered | {"HR1"}
     assert set(calibration.FROZEN_RULES) >= {"DL1", "DL2", "DL3", "DL4", "RR1", "HR1", "HR2", "HR3", "HR4", "PL1",

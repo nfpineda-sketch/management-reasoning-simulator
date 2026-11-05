@@ -268,7 +268,7 @@ ARRIVAL_LAYERS: Mapping[str, tuple[str, ...]] = {
     "arrival_dynamic_state": ("preload_fraction", "arrival_oxygen_debt", "arrival_lactate_excess",
                               "arrival_delivery_ratio", "arrival_bicarbonate", "arrival_paco2",
                               "arrival_mechanics_efficiency", "arrival_respiratory_distress",
-                              "arrival_central_availability"),
+                              "arrival_central_availability", "arrival_systemic_stress"),
 }
 #: Where a declared case parameter comes from (P2D-8, P2E-6). One that is not declared is
 #: "default_unmapped".
@@ -375,6 +375,12 @@ class Anchors:
     # case / family latent arrival state (never read from the disease label), 0 (no spontaneous drive) to 1 (no central
     # depression). 1, the default, is none; no other value is approved.
     arrival_central_availability: float = 1.0
+    # P2V-1 candidate input, read only by the systemic-stress reader of the sympathetic target (UNSET by default) and
+    # outside the case-parameter / migration registry, as P2S-2's, P2T-1's and P2U-1's: the arrival non-respiratory
+    # sympathetic / adrenergic activation, a case / family latent arrival state constrained by independent authored
+    # evidence (measured hypoglycaemia, diaphoresis / tremor, severe pain, fever, agitation, ischaemic descriptors),
+    # never inverted from the HR residual. At or above 0 with no upper bound; 0, the default, is none.
+    arrival_systemic_stress: float = 0.0
     declared: FrozenRecord = field(default=EMPTY)
 
     def __post_init__(self):
@@ -436,6 +442,9 @@ class Anchors:
                                                                                 (int, float)) \
                 or not 0.0 <= self.arrival_central_availability <= 1.0:
             raise CoreInvariantError("the arrival central drive availability is between 0 and 1 (P2U-1)")
+        if isinstance(self.arrival_systemic_stress, bool) or not isinstance(self.arrival_systemic_stress, (int, float)) \
+                or not math.isfinite(self.arrival_systemic_stress) or self.arrival_systemic_stress < 0.0:
+            raise CoreInvariantError("the arrival systemic stress is finite and at or above 0 (P2V-1)")
         for name in ("intrinsic_respiratory_rate", "arrival_bicarbonate", "arrival_paco2"):
             if getattr(self, name) is not None and not (math.isfinite(getattr(self, name)) and getattr(self, name) > 0.0):
                 raise CoreInvariantError(f"{name} is finite and positive when declared (P2K-2)")
@@ -498,6 +507,15 @@ AUXILIARY_FIELDS: Mapping[str, str] = {
                             "depression), multiplying the profile's structural value; the case's latent arrival value plus "
                             "every family change since (provenance.AvailabilityChange); not the drive, RR, W, PaCO2, "
                             "SpO2, mechanics, distress, consciousness or N; 1 and constant unless a family writes it",
+    "systemic_stress": "the common systemic stress (P2V-1): non-respiratory central / adrenergic stress activation "
+                       "(hypoglycaemic counter-regulation, ischaemic / coronary stress, severe pain, fever or "
+                       "inflammatory stress, authored agitation), at or above 0 with no upper bound, 0 none; the case's "
+                       "latent arrival value plus every family change since (provenance.SystemicStressChange); it "
+                       "raises the sympathetic HR target only, through its own UNSET gain, upstream of the common "
+                       "saturation and the beta-blockade. Not the respiratory distress (that is respiratory afferent "
+                       "activation), not the oxygen deficit, D, the baroreflex, hypoxaemia, hypercapnia, the "
+                       "respiratory drive, RR, pain, temperature or glucose themselves, and never a residual solved "
+                       "from the observed HR; 0 and constant unless a family writes it",
 }
 
 
@@ -513,6 +531,7 @@ class AuxiliaryState:
     mechanics_efficiency: float = 1.0
     respiratory_distress: float = 0.0
     central_availability: float = 1.0
+    systemic_stress: float = 0.0
 
     def __post_init__(self):
         for name in AUXILIARY_FIELDS:
@@ -539,6 +558,9 @@ class AuxiliaryState:
         if not 0.0 <= self.central_availability <= 1.0:
             # P2U-1: 0 is no spontaneous drive, 1 no central depression; nothing is above 1.
             raise CoreInvariantError("the central drive availability is between 0 and 1")
+        if self.systemic_stress < 0:
+            # P2V-1: 0 is none; there is no ceiling (no clinical upper bound is chosen).
+            raise CoreInvariantError("the systemic stress is never negative")
 
     def to_dict(self) -> dict:
         return {name: getattr(self, name) for name in AUXILIARY_FIELDS}

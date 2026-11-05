@@ -83,7 +83,10 @@ ANALYSIS_ONLY = {
     "respiratory_mechanics.py": {"sys", "types"},
     # P2T-1: the offline non-regression runs the P2S-3 derived.py (proven by the reversal) beside the live one, as P2S-2's
     # does; nothing the application runs imports it.
-    "respiratory_distress.py": {"sys", "types"}}
+    "respiratory_distress.py": {"sys", "types"},
+    # P2V-1: the offline S10 probe runs the P2U-1 derived.py (proven by the reversal) beside the live one, as P2T-1's
+    # non-regression does; nothing the application runs imports it.
+    "systemic_stress.py": {"sys", "types"}}
 
 
 def _imports(path):

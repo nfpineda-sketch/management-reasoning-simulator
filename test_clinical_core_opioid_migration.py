@@ -17,6 +17,7 @@ from clinical_core import blood_fluid_calibration as bf
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import opioid_migration as un
+from clinical_core import systemic_stress as ss
 from clinical_core import opioid_reference as orf
 from clinical_core import oxygenation_link as om
 from clinical_core import respiratory_mechanics as mc
@@ -29,6 +30,19 @@ from clinical_core.state import AuxiliaryState, CoreInvariantError
 #: clinical_core source but the downstream reports, committed before the evaluation run.
 FROZEN_DIGEST = "6638a22d34afcdef746f9718291b346b07d51e91d1e848dd82952f034178d2e5"
 PROBE_SOURCE = Source(SourceKind.DISEASE_MODULE, "p2u1-test")
+
+#: P2V-1 changed the core (the common systemic stress: one auxiliary field, one arrival anchor, one provenance record
+#: and one UNSET profile reader, the stress 0 by default) and two tuple files, proven against the P2U-1 files
+#: (systemic_stress.proved): these tests read the tree as P2U-1 left it (ss.tree: ss.chain, ss.p2u1_sources, the closed
+#: representation listings as P2U-1 had them and this package's own nested view composed with P2V-1's); P2V-1 changes
+#: no behaviour with its reader UNSET.
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _p2u1_tree():
+    with pytest.MonkeyPatch.context() as patch:
+        ss.tree(patch)
+        yield
 
 
 # The frozen package and its proof -------------------------------------------------------------------------------------------
