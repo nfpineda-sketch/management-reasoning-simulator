@@ -4133,3 +4133,63 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - el broncodilatador y el esteroide;
   - HR_GAP_DISTRESS_AROUSAL_DOMINANT, con el β-agonista como factor de confusión;
   - la conciencia no lee la PaCO2. TD-120.
+
+## 65. P2T-1 · Arquitectura común mínima del distrés respiratorio (2026-11-05)
+
+- **Encargo:** paquete estructural común, en sombra e inerte por defecto. Decisión docente tras P2T-0X: B
+  (SEPARATE_RESPIRATORY_DISTRESS_AND_GENERAL_AROUSAL_SIGNALS_SUPPORTED). Sólo se implementa `respiratory_distress`; el
+  estrés sistémico queda SYSTEMIC_STRESS_DEFERRED. No se vuelve a migrar el asma.
+- **Núcleo:**
+  - `AuxiliaryState.respiratory_distress` (≥ 0, 0 ninguno, sin techo) y `Anchors.arrival_respiratory_distress` (latente
+    de llegada, 0), fuera del registro de parámetros de caso;
+  - `provenance.DistressChange` en `Contribution.distress` y `MinuteRecord.distress`: cambios aditivos, conservados,
+    rechazados por debajo de 0 y mientras ambos lectores estén UNSET; el núcleo no añade cinética ni acoplamiento;
+  - dos lectores independientes, ambos UNSET (None):
+    - `distress_to_respiratory_drive_gain`: suma al impulso excitador con el ácido y el hipoxémico, antes de la
+      saturación común; la disponibilidad central sigue siendo la compuerta de la expresión;
+    - `distress_to_sympathetic_gain`: suma al objetivo simpático, con la saturación y el β-bloqueo comunes.
+  - La ranura mecánica → distrés queda sólo declarada (UNSET, apagada). Sin mapeo del WOB y con lo hipoxémico UNSET.
+- **Análisis:** `clinical_core/respiratory_distress.py`, congelado en `d67cfba` antes de la evaluación. Registro:
+  `docs/revision/P2T1_respiratory_distress.json`. Informe: `docs/revision/P2T1_DISTRES_RESPIRATORIO_COMUN.md`.
+- **Resultados:**
+  - D1–D12 pasan:
+    - el distrés 0 no cambia nada;
+    - cada lector mueve sólo su efector, con ganancias independientes;
+    - la depresión central suprime la FR, no la señal ni la FC;
+    - nada se fabrica desde la SpO2 ni desde la mecánica;
+    - el ácido y el distrés se suman antes de la saturación;
+    - lo hipoxémico y el distrés son separables;
+    - con los lectores UNSET la lectura es exactamente la de P2S-3.
+  - Contrastes sintéticos sobre los mapeos comprometidos:
+    - edema, TEP y asma suben la FR y la FC, y en el TEP los términos del shock no cambian;
+    - el opioide sintético no se vuelve taquicárdico ni taquipneico;
+    - el residual de FC del SCA (+20) y los de la hipoglucemia y el dolor quedan intencionalmente sin resolver.
+  - El β-bloqueo actúa después del lector simpático.
+  - El WOB de las ocho llegadas de las cuatro familias respiratorias admite un orden no vacío, sólo como evidencia.
+  - La mecánica y el distrés son ortogonales.
+  - Los registros de P2S-2 y P2S-3 se reproducen en vivo. El de P2S-3 queda intacto y sigue diciendo READY
+    (P2S3_FROZEN_VERDICT_DOCUMENTATION_DEBT).
+- **Revisión adversarial:** una, al final, sobre el candidato congelado: ningún hallazgo alto, 1 medio y 6 bajos. No se
+  volvió a congelar.
+  - Medio: con la mecánica apagada (ruta P2K-2), un distrés de llegada mueve la PaCO2 de llegada lejos del ancla autoral
+    (edema: 49 → 29,1 con distrés sintético 20). Es la convención que P2P-2 declaró para el impulso hipoxémico. Con la
+    mecánica encendida no ocurre. Decisión docente antes de cualquier valor: rechazarlo o incluir el término en el ancla.
+  - Bajos:
+    - un rechazo por redondeo al deshacer cambios;
+    - `initial_state` descarta el distrés de llegada (como ya pasaba con la mecánica);
+    - las descomposiciones de FC y FR no muestran el distrés;
+    - algunas comprobaciones pasan por construcción;
+    - las regiones del WOB son una tabla numérica común;
+    - cobertura de pruebas.
+- **Veredicto:** `COMMON_RESPIRATORY_DISTRESS_ARCHITECTURE_READY`; composición `STRUCTURAL_COMPOSITION_READY` y
+  `CLINICAL_COMPOSITION_MAGNITUDE_UNSET`.
+- **Recomendación:** RETRY_ASTHMA_SHADOW_MIGRATION_AFTER_DISTRESS_ARCHITECTURE, en un paquete nuevo que reemplace a
+  P2S-3, no iniciado. Antes de elegir valores de distrés para el edema o el TEP, hay que decidir la semántica del ancla de
+  PaCO2 con la mecánica apagada.
+- **Queda abierto:**
+  - las dos ganancias, las regiones de llegada y el mapeo WOB → distrés (UNSET);
+  - el acoplamiento mecánica → distrés (UNSET, apagado);
+  - SYSTEMIC_STRESS_DEFERRED;
+  - WOB_OBSERVABLE_MAPPING_DEFERRED;
+  - la tensión de composición de la anafilaxia (P2T-0X);
+  - el impulso hipoxémico, la fiebre y el β-agonista. TD-121.
