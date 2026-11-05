@@ -44,7 +44,8 @@ from .derived import (ADOPTED, AUXILIARY_SOURCES, BLOOD_COMPOSITION, COLLAPSE, D
                       acid_base_active, acid_burden_after_minute,
                       LUNG_WATER_GAS_EXCHANGE, lung_water_gas_exchange, lung_water_gas_exchange_active,
                       oxygen_demand, plasma_refill, red_cell_content, sympathetic_after_minute, terminal_rhythm,
-                      tone_target, respiratory_mechanics_active, respiratory_distress_read)
+                      tone_target, respiratory_mechanics_active, respiratory_distress_read,
+                      check_distress_respiratory_effect)
 from .provenance import (BLOOD_PROCESSES, AuxiliaryChange, BloodChange, BloodFlow, BloodProcess, ChannelDelta,
                          CoreEvent, DemandModifier, MinuteRecord, ProvenanceError, RhythmTransition, SettingChange,
                          Source, SourceKind, MechanicsChange, DistressChange)
@@ -568,10 +569,24 @@ def _distress_after(state: CoreState, distress: list, profile: CoreProfile, minu
     if distress and not respiratory_distress_read(profile):
         raise ProvenanceError(f"minute {minute}: {distress[0].source.key} changed the respiratory distress while both of "
                               "its readers are UNSET (P2T-1): nothing would read it")
-    value = state.aux.respiratory_distress + math.fsum(item.amount for item in distress)
+    value = distress_sum(state.aux.respiratory_distress, [item.amount for item in distress])
     if value < 0.0:
         raise ProvenanceError(f"minute {minute}: the respiratory distress changes take it to {value!r}, below 0 (P2T-1)")
+    check_distress_respiratory_effect(profile, value)
     return value
+
+
+def distress_sum(before: float, amounts) -> float:
+    """P2T-1A (L1): the respiratory distress after a minute's changes, summed once (math.fsum over the value it starts
+    with and every change, so the order of the changes does not matter). A negative sum no larger in size than the
+    roundoff of the operands (the binary64 epsilon, math.ulp(1.0), times the sum of their magnitudes: each operand's own
+    rounding plus the sum's) cannot be told from 0 and is 0 exactly; a sum below that is returned as it is and refused by
+    the caller. No clinical threshold: the bound is floating-point precision at the operands' scale."""
+    terms = (before, *amounts)
+    value = math.fsum(terms)
+    if value < 0.0 and -value <= math.ulp(1.0) * math.fsum(abs(term) for term in terms):
+        return 0.0
+    return value + 0.0
 
 
 def _check_conservation(before: CoreState, after: CoreState, record: MinuteRecord) -> None:
@@ -586,8 +601,8 @@ def _check_conservation(before: CoreState, after: CoreState, record: MinuteRecor
                                                                                    for item in record.mechanics):
         # P2S-2: the mechanics efficiency moves by exactly the minute's recorded changes, never otherwise.
         raise ProvenanceError("the respiratory mechanics efficiency changed by other than its recorded changes")
-    if after.aux.respiratory_distress != before.aux.respiratory_distress + math.fsum(item.amount
-                                                                                     for item in record.distress):
+    if after.aux.respiratory_distress != distress_sum(before.aux.respiratory_distress,
+                                                     [item.amount for item in record.distress]):
         # P2T-1: the distress moves by exactly the minute's recorded changes, never otherwise.
         raise ProvenanceError("the respiratory distress changed by other than its recorded changes")
     for channel in SCALAR_CHANNELS:

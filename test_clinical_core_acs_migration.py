@@ -25,6 +25,7 @@ from clinical_core import embolism_migration as em
 from clinical_core import respiratory_mechanics as mc
 from clinical_core import asthma_migration as sm
 from clinical_core import respiratory_distress as dm
+from clinical_core import distress_closure as xm
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import vascular_tone as vt
@@ -63,7 +64,14 @@ FROZEN_DIGEST = "e7ff21e577cfadc3990ac9a27a3524d4e3bb80a7870d47e27dcc6e9420b7a71
 #: P2T-1 changed four common files (the respiratory distress input and its two UNSET readers), proven against
 #: the P2S-3 files (respiratory_distress.proved): this package's guards read the tree as P2S-3 left it
 #: (dm.chain, dm.p2s3_sources).
-_LIVE_SOURCES_P2T1 = bf.freeze_sources
+#: P2T-1A changed two common files (the M1 guard and the L1 sum) and two tuple files, proven against the
+#: P2T-1 files (distress_closure.proved): this package's guards read the tree as P2T-1 left it
+#: (xm.chain, xm.p2t1_sources).
+_LIVE_SOURCES_P2T1A = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2T1() -> dict:
+    return xm.p2t1_sources(_LIVE_SOURCES_P2T1A())
 
 
 def _LIVE_SOURCES_P2S3() -> dict:
@@ -101,7 +109,7 @@ def _p2n2_upstream() -> dict:
     # P2O-1's analysis reads the ACS case for its post-freeze validation: an analysis module, never common
     # physiology; the common-core readers of the family stay what P2N-2 froze.
     up = _UPSTREAM_P2N2()
-    return {**up, "core_readers_of_family": [r for r in up["core_readers_of_family"] if r not in go.OWN + lw.OWN + pe.OWN + rd.OWN + em.OWN + mc.OWN + sm.OWN + dm.OWN]}
+    return {**up, "core_readers_of_family": [r for r in up["core_readers_of_family"] if r not in go.OWN + lw.OWN + pe.OWN + rd.OWN + em.OWN + mc.OWN + sm.OWN + dm.OWN + xm.OWN]}
 
 
 @pytest.fixture(autouse=True, scope="module")
@@ -114,6 +122,7 @@ def _p2n2_core():
         mc.chain(patch)
         sm.chain(patch)
         dm.chain(patch)
+        xm.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         patch.setattr(an, "upstream_unchanged", _p2n2_upstream)

@@ -678,6 +678,17 @@ def respiratory_distress_read(profile: CoreProfile) -> bool:
     return profile.distress_to_respiratory_drive_gain is not None or profile.distress_to_sympathetic_gain is not None
 
 
+def check_distress_respiratory_effect(profile: CoreProfile, distress: float) -> None:
+    """P2T-1A (M1, faculty option 1; DISTRESS_REQUIRES_COMMON_MECHANICS_FOR_RESPIRATORY_EFFECT): a respiratory distress
+    above 0 read by the respiratory reader needs the P2S-2 common respiratory mechanics candidate, so its RR effect reaches
+    the PaCO2 through W and never through the retired P2K-2 arrival PaCO2 anchor (DISTRESS_IN_ANCHOR = REJECTED: the
+    anchor is not changed to absorb it). The sympathetic reader alone, and a distress of 0, need nothing."""
+    if distress > 0.0 and profile.distress_to_respiratory_drive_gain is not None and not profile.respiratory_mechanics:
+        raise CoreInvariantError("a respiratory distress above 0 read by the respiratory drive needs the common "
+                                 "respiratory mechanics candidate (P2T-1A, M1): with it off, its RR effect would move the "
+                                 "PaCO2 through the retired arrival PaCO2 anchor")
+
+
 def intrinsic_respiratory_rate(anchors: Anchors) -> float:
     """The patient's RR without respiratory drive; undeclared, the arrival RR is read as intrinsic."""
     return anchors.respiratory_rate if anchors.intrinsic_respiratory_rate is None else anchors.intrinsic_respiratory_rate
@@ -826,6 +837,7 @@ def _composition(intrinsic: float, acid: float, spo2: float | None, profile: Cor
     distress_drive = 0.0
     if profile.distress_to_respiratory_drive_gain is not None:
         # P2T-1: the non-chemical excitatory term joins the chemical ones before the common saturation.
+        check_distress_respiratory_effect(profile, distress)
         distress_drive = profile.distress_to_respiratory_drive_gain * distress
         excitatory = excitatory + distress_drive
     excitatory_rr = rate_from_drive(excitatory, intrinsic, profile)
@@ -1248,6 +1260,7 @@ def arrival_state(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> C
     if anchors.arrival_respiratory_distress != 0.0 and not respiratory_distress_read(profile):
         raise CoreInvariantError("an arrival respiratory distress other than 0 needs a declared distress reader (P2T-1); "
                                  "nothing else reads it")
+    check_distress_respiratory_effect(profile, anchors.arrival_respiratory_distress)
     state = anchored_state(anchors).evolve(D=anchors.arrival_oxygen_debt)
     if state.R.code is RhythmCode.SINUS:
         state = state.evolve(R=replace(state.R, rate_bpm=intrinsic_sinus_rate(anchors)))

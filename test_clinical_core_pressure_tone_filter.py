@@ -23,6 +23,7 @@ from clinical_core import embolism_migration as em
 from clinical_core import respiratory_mechanics as mc
 from clinical_core import asthma_migration as sm
 from clinical_core import respiratory_distress as dm
+from clinical_core import distress_closure as xm
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import hr_envelope_filter as hf
 from clinical_core import hr_primary as hp
@@ -78,7 +79,14 @@ C57, C72 = pf.C57, pf.C72
 #: P2T-1 changed four common files (the respiratory distress input and its two UNSET readers), proven against
 #: the P2S-3 files (respiratory_distress.proved): this package's guards read the tree as P2S-3 left it
 #: (dm.chain, dm.p2s3_sources).
-_LIVE_SOURCES_P2T1 = bf.freeze_sources
+#: P2T-1A changed two common files (the M1 guard and the L1 sum) and two tuple files, proven against the
+#: P2T-1 files (distress_closure.proved): this package's guards read the tree as P2T-1 left it
+#: (xm.chain, xm.p2t1_sources).
+_LIVE_SOURCES_P2T1A = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2T1() -> dict:
+    return xm.p2t1_sources(_LIVE_SOURCES_P2T1A())
 
 
 def _LIVE_SOURCES_P2S3() -> dict:
@@ -119,6 +127,7 @@ def _p2n2_core():
         mc.chain(patch)
         sm.chain(patch)
         dm.chain(patch)
+        xm.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         yield
