@@ -1,0 +1,1396 @@
+{
+ "contradictions": {
+  "checks": {
+   "clamp_defines_physiology": {
+    "holds": true,
+    "probes": {
+     "A8": true,
+     "A9": true
+    },
+    "statement": "no accepted tone minute carries a clamp on T: the boundary is refused before the channel reconstruction, the rounding included"
+   },
+   "endpoint_accepted_as_interior": {
+    "holds": true,
+    "probes": {
+     "A4": true,
+     "A5": true,
+     "A6": true,
+     "A7": true
+    },
+    "statement": "the exact endpoints of T's supported range fail closed, above and below, at the parameter level and at the minute"
+   },
+   "hidden_point_calibration": {
+    "holds": true,
+    "probes": {
+     "A22": true
+    },
+    "statement": "no clinical magnitude is selected: every value this package adds is declared synthetic and every committed profile keeps the reader UNSET"
+   },
+   "incompatible_writer_ownership": {
+    "holds": true,
+    "probes": {
+     "A1": true,
+     "A2": true,
+     "A3": true
+    },
+    "statement": "T keeps exactly one clinical owner on every profile, the core's response, and a clinical delta on T is refused before the channel is rebuilt"
+   },
+   "negative_burden_as_vasoconstriction": {
+    "holds": true,
+    "probes": {
+     "A10": true
+    },
+    "statement": "a burden below physiologic zero is refused everywhere and is never read as vasoconstriction"
+   },
+   "pressure_driven_vasodilation": {
+    "holds": true,
+    "probes": {
+     "A16": true
+    },
+    "statement": "no writer of the burden reads a same-loop pressure or tone observable, and the scan rejects each bypass the review found"
+   },
+   "prior_families_change": {
+    "holds": true,
+    "probes": {
+     "A21": true
+    },
+    "statement": "every committed family trajectory is byte-identical to the predecessor's"
+   },
+   "unstable_feedback": {
+    "holds": true,
+    "probes": {
+     "A13": true,
+     "A14": true,
+     "A15": true
+    },
+    "statement": "the delayed loop's derived bound carries the distributive factor, holds for every accepted witness against the live slope, and refuses a combination that is not a contraction"
+   }
+  },
+  "declared_not_executable": {
+   "disease_specific_rule_in_the_common_core": "the tone equation names no family; read from the source by P2W-1 and P2X-1, not re-derived here",
+   "impossible_ordering": "the tone answers the previous minute's signal and the burden is written before it is read (P2J-2's timing probe)",
+   "same_mechanism_double_counted": "the compensation reads the oxygen deficit and the burden is written by a family: independent factors, multiplied once (P2W-1's reader audit)",
+   "worse_state_improves_output": "the distributive regime where a rising burden raises output is reachable only with a declared reader, which no migrated family declares: FUTURE_RESEARCH_DEBT (FACULTY DECISION 6)"
+  },
+  "inside_certified_scope": [],
+  "pass": true
+ },
+ "debt_classification": {
+  "blockers": [],
+  "classes": {
+   "ACCEPTABLE_PHASE2_DEBT": {
+    "COLLAPSE_THRESHOLDS": "TD-109",
+    "CUMULATIVE_FLOATING_POINT_CANCELLATION": "TD-121",
+    "DISTRIBUTIVE_TONE_MAGNITUDE": "TD-126",
+    "FIO2_MAGNITUDE": "TD-123",
+    "HYPOXAEMIC_FEEDBACK_STABILITY": "TD-117",
+    "OPIOID_HR_RESIDUAL": "TD-124",
+    "PHYSICAL_PAO2_BOUNDARY": "TD-123",
+    "PRESSURE_TO_TONE": "TD-118",
+    "RESPIRATORY_DISTRESS_CALIBRATION": "TD-121",
+    "SIDED_PRELOAD_AND_INTERDEPENDENCE": "TD-118",
+    "STEADY_STATE_W_ARRIVAL_TENSION": "TD-124",
+    "SYSTEMIC_STRESS_CALIBRATION": "TD-125",
+    "TONE_DOMAIN_LIMITS": "TD-127"
+   },
+   "FUTURE_RESEARCH_DEBT": {
+    "ADDITIONAL_FAMILY_MIGRATIONS": "TD-126",
+    "DRUG_KINETICS": "TD-126",
+    "MALDISTRIBUTION_AND_EXTRACTION": "TD-126",
+    "PLASMA_LEAK": "TD-126",
+    "UPPER_AIRWAY": "TD-126"
+   },
+   "NEXT_PHASE_INTEGRATION_DEBT": {
+    "CONSCIOUSNESS_WIRING": "TD-107",
+    "RESIDENT_VISIBLE_BEHAVIOUR": "TD-127",
+    "RUNTIME_INTEGRATION": "TD-127"
+   }
+  },
+  "classes_are_disjoint": true,
+  "closure_blockers_resolved": {
+   "P2X1_R_F1_CONDITIONAL_T_OWNERSHIP": true,
+   "P2X1_R_F4_CLAMP_IN_AN_ACCEPTED_MINUTE": true
+  },
+  "counts": {
+   "ACCEPTABLE_PHASE2_DEBT": 13,
+   "FUTURE_RESEARCH_DEBT": 5,
+   "NEXT_PHASE_INTEGRATION_DEBT": 3
+  },
+  "duplicated": [],
+  "every_entry_traced": true,
+  "every_required_entry_classified": true,
+  "pass": true,
+  "required": [
+   "ADDITIONAL_FAMILY_MIGRATIONS",
+   "COLLAPSE_THRESHOLDS",
+   "CONSCIOUSNESS_WIRING",
+   "CUMULATIVE_FLOATING_POINT_CANCELLATION",
+   "DISTRIBUTIVE_TONE_MAGNITUDE",
+   "DRUG_KINETICS",
+   "FIO2_MAGNITUDE",
+   "HYPOXAEMIC_FEEDBACK_STABILITY",
+   "MALDISTRIBUTION_AND_EXTRACTION",
+   "OPIOID_HR_RESIDUAL",
+   "PHYSICAL_PAO2_BOUNDARY",
+   "PLASMA_LEAK",
+   "PRESSURE_TO_TONE",
+   "RESIDENT_VISIBLE_BEHAVIOUR",
+   "RESPIRATORY_DISTRESS_CALIBRATION",
+   "RUNTIME_INTEGRATION",
+   "SIDED_PRELOAD_AND_INTERDEPENDENCE",
+   "STEADY_STATE_W_ARRIVAL_TENSION",
+   "SYSTEMIC_STRESS_CALIBRATION",
+   "TONE_DOMAIN_LIMITS",
+   "UPPER_AIRWAY"
+  ],
+  "unset_is_not_a_blocker": "an UNSET magnitude leaves its term inert, which is the design",
+  "untraced": []
+ },
+ "design": {
+  "core_files": [
+   "clinical_core/integration.py",
+   "clinical_core/provenance.py"
+  ],
+  "criteria": [
+   "1. the T single-owner invariant is unconditional: every clinical writer of T is refused on every profile, before the channel is rebuilt, whether or not the core has a response to compute",
+   "2. the supported tone domain is the open interval: both endpoints fail closed, at the parameter level and at the minute, with no epsilon, margin or tolerance",
+   "3. no accepted tone minute carries a clamp on T, the floating reconstruction included",
+   "4. the contraction guard carries the distributive factor and holds against the live slope with B != 1, and a combination that is not a contraction is refused",
+   "5. the pressure-driven vasodilation contract is enforced by a scan that rejects each bypass the P2X-1 review found",
+   "6. the predecessor and reversion integrity holds, and the readiness rule reads it",
+   "7. the contradictions check is executable: each row is decided by its probes and can become false",
+   "8. the debt classification is executable: disjoint classes, every entry traced to the register, no demonstrated blocker classified as acceptable, and a mutation makes it fail",
+   "9. the supersession check verifies the repository's own artifacts and immutable references",
+   "10. every prior migrated family keeps its default trajectory exactly",
+   "11. no new clinical magnitude is selected"
+  ],
+  "debt_register": "docs/REGISTRO_DEUDA_TECNICA.md",
+  "decided": "2026-11-06",
+  "decisions": {
+   "1_unconditional_ownership": "T_CHANNEL_SINGLE_OWNER_INVARIANT_UNCONDITIONAL: the common core is the only owner and writer of Channel.T for the certified Phase-2 architecture; the ownership invariant executes independently of whether the core has a tone response to compute, with no profile-dependent behaviour",
+   "2_strict_domain": "TONE_DOMAIN_ENDPOINTS = UNRESOLVED_BOUNDARY: the supported tone domain is the open interval T_lo < target < T_hi; the exact endpoints are unresolved boundaries, not accepted interior physiology, and fail closed before the channel clamp - with no epsilon, clinical margin, floating tolerance or alternative floor",
+   "3_zero_clamp": "ACCEPTED_TONE_MINUTE_HAS_ZERO_CLAMP: no accepted Phase-2 tone update carries a clamp:bounds:T or equivalent clipping; a floating adjustment of 2.8e-17 means the candidate reached the boundary and should have been refused before the channel was rebuilt",
+   "4_keep_p2x1_analysis": "the accepted P2X-1 analytic results stand: B(b) = (1 + k b0) / (1 + k b), b >= 0, b < b0 is allowed recovery, Bmax = 1 + k b0, and the analytically derived contraction bound; they are reopened only on an actual mathematical error, and this package found none",
+   "5_no_pressure_driven_writer": "PRESSURE_DRIVEN_FAMILY_VASODILATION_NOT_AUTHORIZED: a future VasodilationChange writer may not depend on the current MAP, pressure_rel, SBP, DBP, T or an equivalent same-loop observable; pressure -> tone stays a separate future common mechanism and is not implemented",
+   "6_maldistribution": "the distributive CRT, extraction heterogeneity, maldistribution, distributive lactate, plasma leak, upper airway and epinephrine targets stay FUTURE_RESEARCH_DEBT, outside the Phase-2 closure scope",
+   "7_p2x1_supersession": "P2X1_FROZEN_VERDICT_SUPERSEDED_BY_P2X1A: P2X-1 is not recut; its frozen rule said CLOSED, its review demonstrated two real blockers, its operative verdict became NOT_CLOSED, and P2X-1A repairs those exact blockers with every P2X-1 digest and artifact preserved",
+   "8_decision_file": "the eight faculty decisions behind P2X-1 and P2X-1A are recorded in the project's authoritative Decision File, using the repository's existing convention",
+   "scope": "a closure repair package: guards, falsifiability and traceability only. No new clinical physiology, no magnitude, no new canonical state, no runtime integration, no Phase 3"
+  },
+  "document": "docs/revision/P2X1A_REPARACION_GUARDAS_CIERRE.md",
+  "forbidden_reads": [
+   "crt_s",
+   "dbp",
+   "delivery_rel",
+   "map",
+   "mean_arterial_pressure",
+   "output_rel",
+   "pressure_rel",
+   "sbp",
+   "sympathetic_drive",
+   "T"
+  ],
+  "interpretation": {
+   "decision": "FACULTY DECISION 1, 'a family or any other contribution must NOT directly write Channel.T'",
+   "if_the_faculty_wants_the_wider_reading": "bands.PROBES['vasodilation'], bands.PROBES['vasodilation_with_demand'] and bands.HISTORICAL_PROBES['vasodilation_with_preload_loss'] are the only remaining T writers; refusing them retires those probes and the closed readings that cite them, and needs a separate authorization",
+   "implemented_as": "every clinical source (disease module, treatment, intervention, case) is refused on every profile, unconditionally; a declared synthetic probe (SourceKind.SCRIPTED_EVENT) still writes T, as it still writes V and Hb",
+   "repository_basis": "integration._check_owned (P2I-2T) and pressure_tone.TONE_RULE / PROBE_MODULES (P2J-1)",
+   "what_the_review_demonstrated": "a DISEASE_MODULE writer of T accepted on the GI profile: refused now"
+  },
+  "own": [
+   "clinical_core/closure_guard.py"
+  ],
+  "predecessor": {
+   "freeze_digest": "3afa71b2dfa0f47eb1a00e8987c79cd18b246788e366ac07fe58eacc21815a0e",
+   "head": "e0e520d",
+   "revision": "P2X-1"
+  },
+  "probes": {
+   "A1": "GI, the committed profile with the compensation off and no distributive reader, plus a clinical writer of T:",
+   "A10": "A negative burden stays invalid everywhere: the state, the arrival anchor and a writer's minute (P2X-1's X5).",
+   "A11": "A burden below the arrival one is still allowed recovery, and the target still rises as it resolves.",
+   "A12": "The maximum recovery factor is still exactly 1 + k b0.",
+   "A13": "The contraction guard exercised with an arrival burden above 0, so the distributive factor is really in it: the",
+   "A14": "The LIVE slope where the distributive factor is not 1: measured on the real equations, at a state whose burden",
+   "A15": "A combination whose derived bound is not a contraction is refused, with its largest target inside the range.",
+   "A16": "Each bypass the P2X-1 review found, rejected by the scan; the allowed pattern still accepted.",
+   "A17": "P2S-3 -> P2T-3: both artifacts on disk, both digests where they were, nothing recut.",
+   "A18": "P2X-1 -> P2X-1A: the historical artifacts exist, its freeze digest still recomputes to the frozen value on the",
+   "A19": "The reversion criterion is read, not merely computed: with a protected predecessor source mutated, the",
+   "A2": "ACS, where the response does run: the same writer, the same refusal, from the same guard.",
+   "A20": "A known debt removed or misclassified makes the readiness rule fail.",
+   "A21": "Every committed family keeps its default trajectory exactly, by digest, against the predecessor's record.",
+   "A22": "No clinical magnitude: no new state, no new profile field, no new calibration entry, every value this package",
+   "A3": "Every committed profile: one ownership invariant, one message, no profile-dependent behaviour.",
+   "A4": "A target exactly on the lower guard is an unresolved boundary, not accepted physiology.",
+   "A5": "Below the lower guard, refused, with no clinical maximum burden declared anywhere.",
+   "A6": "A parameter domain whose largest reachable target is exactly the upper guard: refused before execution, now on",
+   "A7": "Above the upper guard, refused before execution (P2X-1's X6, kept).",
+   "A8": "An interior target - including one next to the lower guard - runs, and the channel holds exactly it.",
+   "A9": "The accepted minutes themselves, not the arithmetic of the target: no clamp record of any kind on T, over a"
+  },
+  "record": "docs/revision/P2X1A_closure_guard.json",
+  "report": "clinical_core/closure_guard_report.py",
+  "revision": "P2X-1A"
+ },
+ "freeze_digest": "f54dbb441507c27182bfcc65f6636589db1f9df2a6c074d3ec9ce9bde303b289",
+ "guards": {
+  "clamp_still_the_last_layer": true,
+  "delta_expression": "amount",
+  "ownership": {
+   "at_statement_level": true,
+   "before_the_channel_rebuild": true,
+   "called": true,
+   "function": "integration._tone_ownership",
+   "inside_a_condition": [],
+   "out_of_the_response": true,
+   "refuses": "every clinical writer of T (a source whose kind is not SCRIPTED_EVENT)"
+  },
+  "p2j2_untouched": {
+   "composition_refusal": true,
+   "gain_check": true,
+   "profile_invariant": true
+  },
+  "p2x1_untouched": {
+   "contraction_guard": true,
+   "reader_conditional_contraction": true,
+   "tone_domain_closed_form": true
+  },
+  "pass": true,
+  "refusals": {
+   "_tone_ownership": [
+    "f\"minute {minute}: {clinical} write T, whose only clinical o"
+   ],
+   "_vascular_tone": [
+    "f\"the tone response's largest target 1 + {profile.deficit_to",
+    "f\"the tone target's largest reachable value {domain['largest",
+    "f'minute {minute}: {writers} write T while the vascular-tone",
+    "f\"minute {minute}: the tone target {target!r} is not inside ",
+    "f\"the tone loop's derived bound with the distributive factor"
+   ]
+  },
+  "strict_domain": {
+   "exception": "UnresolvedBoundary",
+   "floats_below_the_lower_guard": [],
+   "no_tolerance_constant": true,
+   "parameter_level": true,
+   "per_minute": [
+    "not lower < target < upper or not lower < reconstructed < upper"
+   ],
+   "reconstruction_checked": true,
+   "strict": true,
+   "unconditional_parameter_level": true
+  }
+ },
+ "non_regression": {
+  "p2x1_frozen_verdict": "PHASE2_DECLARED_PROPERTIES_CLOSED",
+  "p2x1_record_reproduced_on_its_tree": true,
+  "p2x1_record_untouched": true,
+  "pass": true,
+  "tuples": {
+   "DOWNSTREAM_REPORTS": true,
+   "PACK_DIGEST_EXCLUDED": true
+  }
+ },
+ "probes": {
+  "A1": {
+   "gain": 0.0,
+   "message": "minute 1: ['disease_module:fam'] write T, whose only clinical owner is the core's vascular-tone response; how a family, a disease module or a drug would compose",
+   "pass": true,
+   "profile": "gi",
+   "reader": null,
+   "refused": true,
+   "response_runs": false,
+   "says_why": true
+  },
+  "A10": {
+   "contract_names_it": true,
+   "negative_arrival": true,
+   "negative_state": true,
+   "pass": true,
+   "writer_below_zero": true
+  },
+  "A11": {
+   "above_one_below_the_arrival_burden": true,
+   "arrival_burden": 2.0,
+   "grid": [
+    2.0,
+    1.0,
+    0.5,
+    0.25,
+    0.0
+   ],
+   "pass": true,
+   "rises_as_it_resolves": true,
+   "target": [
+    1.0,
+    1.5,
+    2.0,
+    2.4,
+    3.0
+   ]
+  },
+  "A12": {
+   "pass": true,
+   "rows": {
+    "b0=0.5 k=1.0": {
+     "observed": 1.5,
+     "predicted": 1.5
+    },
+    "b0=1.0 k=0.25": {
+     "observed": 1.25,
+     "predicted": 1.25
+    },
+    "b0=2.0 k=1.0": {
+     "observed": 3.0,
+     "predicted": 3.0
+    }
+   }
+  },
+  "A13": {
+   "any_arrival_burden_above_zero": true,
+   "pass": true,
+   "witnesses": {
+    "k0.25_b2": {
+     "accepted": true,
+     "arrival_burden": 2.0,
+     "bound": 0.28671551449506205,
+     "bound_without_the_factor": 0.19114367633004137,
+     "contraction": true,
+     "factor_is_in_the_bound": true,
+     "recovery_max": 1.5
+    },
+    "k1_b0.5": {
+     "accepted": true,
+     "arrival_burden": 0.5,
+     "bound": 0.28671551449506205,
+     "bound_without_the_factor": 0.19114367633004137,
+     "contraction": true,
+     "factor_is_in_the_bound": true,
+     "recovery_max": 1.5
+    },
+    "k1_b1": {
+     "accepted": true,
+     "arrival_burden": 1.0,
+     "bound": 0.38228735266008274,
+     "bound_without_the_factor": 0.19114367633004137,
+     "contraction": true,
+     "factor_is_in_the_bound": true,
+     "recovery_max": 2.0
+    }
+   }
+  },
+  "A14": {
+   "pass": true,
+   "witnesses": {
+    "k0.25_b2": {
+     "bound": 0.28671551449506205,
+     "distributive_factor": 1.5,
+     "factor_is_not_one": true,
+     "live_slope": {
+      "1.0": 0.17790697670605482,
+      "1.5": 0.1345232338856306,
+      "2.0": 0.10527040061880655
+     },
+     "live_slope_at_the_arrival_burden": {
+      "1.0": 0.1186046511558736,
+      "1.5": 0.08968215592375373,
+      "2.0": 0.07018026704219693
+     },
+     "ratio_matches_the_factor": true,
+     "under_the_bound": true
+    },
+    "k1_b0.5": {
+     "bound": 0.28671551449506205,
+     "distributive_factor": 1.5,
+     "factor_is_not_one": true,
+     "live_slope": {
+      "1.0": 0.17790697670605482,
+      "1.5": 0.1345232338856306,
+      "2.0": 0.10527040061880655
+     },
+     "live_slope_at_the_arrival_burden": {
+      "1.0": 0.1186046511558736,
+      "1.5": 0.08968215592375373,
+      "2.0": 0.07018026704219693
+     },
+     "ratio_matches_the_factor": true,
+     "under_the_bound": true
+    },
+    "k1_b1": {
+     "bound": 0.38228735266008274,
+     "distributive_factor": 2.0,
+     "factor_is_not_one": true,
+     "live_slope": {
+      "1.0": 0.2372093023117472,
+      "1.5": 0.17936431184750745,
+      "2.0": 0.14036053408439386
+     },
+     "live_slope_at_the_arrival_burden": {
+      "1.0": 0.1186046511558736,
+      "1.5": 0.08968215592375373,
+      "2.0": 0.07018026704219693
+     },
+     "ratio_matches_the_factor": true,
+     "under_the_bound": true
+    }
+   }
+  },
+  "A15": {
+   "afterload_sensitivity": 0.95,
+   "arrival_burden": 0.0,
+   "gain": 1.0,
+   "inside_the_upper_range": true,
+   "largest_target": 1.3953488372093021,
+   "loop_slope_bound": 3.0473135525260617,
+   "p2j2_bound_would_pass": true,
+   "pass": true,
+   "refused": true
+  },
+  "A16": {
+   "allowed": {
+    "offenders": [],
+    "writers": [
+     "<probe>:write"
+    ]
+   },
+   "bypasses": {
+    "alias": {
+     "reads": [
+      "sbp"
+     ],
+     "writers": [
+      "<probe>:write"
+     ]
+    },
+    "helper_function": {
+     "reads": [
+      "pressure_rel"
+     ],
+     "writers": [
+      "<probe>:write"
+     ]
+    },
+    "positional_access": {
+     "reads": [
+      "map"
+     ],
+     "writers": [
+      "<probe>:write"
+     ]
+    },
+    "qualified_constructor": {
+     "reads": [
+      "map"
+     ],
+     "writers": [
+      "<probe>:write"
+     ]
+    },
+    "same_loop_observable": {
+     "reads": [
+      "output_rel"
+     ],
+     "writers": [
+      "<probe>:write"
+     ]
+    },
+    "subscript_access": {
+     "reads": [
+      "map"
+     ],
+     "writers": [
+      "<probe>:write"
+     ]
+    },
+    "tone_feedback": {
+     "reads": [
+      "T"
+     ],
+     "writers": [
+      "<probe>:write"
+     ]
+    }
+   },
+   "pass": true
+  },
+  "A17": {
+   "historical": {
+    "document": "docs/revision/P2S3_ASMA_SOMBRA.md",
+    "document_exists": true,
+    "freeze_digest_matches": true,
+    "record": "docs/revision/P2S3_asthma_migration.json",
+    "record_exists": true,
+    "record_sha_matches": true
+   },
+   "pass": true,
+   "status": "P2S3_FROZEN_VERDICT_SUPERSEDED_BY_P2T3",
+   "superseding": {
+    "document": "docs/revision/P2T3_ASMA_DISTRES_SOMBRA.md",
+    "document_exists": true,
+    "freeze_digest_matches": true,
+    "record": "docs/revision/P2T3_asthma_distress_migration.json",
+    "record_exists": true,
+    "record_sha_matches": true
+   }
+  },
+  "A18": {
+   "historical": {
+    "document": "docs/revision/P2X1_CIERRE_PROPIEDADES_DECLARADAS.md",
+    "document_exists": true,
+    "freeze_digest_matches": true,
+    "record": "docs/revision/P2X1_tone_domain.json",
+    "record_exists": true,
+    "record_sha_matches": true
+   },
+   "live": {
+    "p2w1_record_sha": "1ad221db80ed989b9a5f35a199fdb88962533db05c70a3666705f3ab8437e645",
+    "p2w1_record_sha_expected": "1ad221db80ed989b9a5f35a199fdb88962533db05c70a3666705f3ab8437e645",
+    "p2w1_record_untouched": true,
+    "p2x1_digest_holds": true,
+    "p2x1_freeze_digest_expected": "3afa71b2dfa0f47eb1a00e8987c79cd18b246788e366ac07fe58eacc21815a0e",
+    "p2x1_freeze_digest_recomputed": "3afa71b2dfa0f47eb1a00e8987c79cd18b246788e366ac07fe58eacc21815a0e"
+   },
+   "pass": true,
+   "status": "P2X1_FROZEN_VERDICT_SUPERSEDED_BY_P2X1A"
+  },
+  "A19": {
+   "blocker": "6: ['upstream']",
+   "criterion_reads_it": true,
+   "intact": {
+    "pass": true,
+    "proofs": {
+     "clinical_core/decision_pack.py": true,
+     "clinical_core/integration.py": true,
+     "clinical_core/lactate_slice.py": true,
+     "clinical_core/provenance.py": true
+    }
+   },
+   "mutated": {
+    "pass": false,
+    "proofs": {
+     "clinical_core/decision_pack.py": false,
+     "clinical_core/integration.py": false,
+     "clinical_core/lactate_slice.py": false,
+     "clinical_core/provenance.py": false
+    }
+   },
+   "pass": true,
+   "readiness_with_the_mutation": "PHASE2_DECLARED_PROPERTIES_NOT_CLOSED - 6: ['upstream']"
+  },
+  "A2": {
+   "gain": 0.5,
+   "message": "minute 1: ['disease_module:fam'] write T, whose only clinical owner is the core's vascular-tone response; how a family, a disease module or a drug would compose",
+   "pass": true,
+   "profile": "acs",
+   "refused": true,
+   "response_runs": true,
+   "says_why": true
+  },
+  "A20": {
+   "every_mutation_fails": true,
+   "intact": true,
+   "mutations": {
+    "misclassified_twice": {
+     "counts": {
+      "ACCEPTABLE_PHASE2_DEBT": 13,
+      "FUTURE_RESEARCH_DEBT": 6,
+      "NEXT_PHASE_INTEGRATION_DEBT": 3
+     },
+     "duplicated": [
+      "PRESSURE_TO_TONE: ACCEPTABLE_PHASE2_DEBT and FUTURE_RESEARCH_DEBT"
+     ],
+     "pass": false,
+     "untraced": []
+    },
+    "removed": {
+     "counts": {
+      "ACCEPTABLE_PHASE2_DEBT": 12,
+      "FUTURE_RESEARCH_DEBT": 5,
+      "NEXT_PHASE_INTEGRATION_DEBT": 3
+     },
+     "duplicated": [],
+     "pass": false,
+     "untraced": []
+    },
+    "untraced": {
+     "counts": {
+      "ACCEPTABLE_PHASE2_DEBT": 13,
+      "FUTURE_RESEARCH_DEBT": 5,
+      "NEXT_PHASE_INTEGRATION_DEBT": 3
+     },
+     "duplicated": [],
+     "pass": false,
+     "untraced": [
+      "PRESSURE_TO_TONE: TD-999 is not a row of REGISTRO_DEUDA_TECNICA.md"
+     ]
+    }
+   },
+   "pass": true
+  },
+  "A21": {
+   "committed_profiles_unset": {
+    "acs": true,
+    "asthma": true,
+    "edema": true,
+    "gi": true,
+    "opioid_35m": true,
+    "opioid_67f": true,
+    "pe": true
+   },
+   "compared_against": "docs/revision/P2X1_tone_domain.json: X12",
+   "courses": [
+    "acs",
+    "asthma_49m",
+    "gi_57m",
+    "opioid_35m_opioid",
+    "opioid_67f_opioid",
+    "p2p2_hypoxaemic",
+    "p2s2_mechanics",
+    "pulmonary_edema",
+    "pulmonary_embolism"
+   ],
+   "digests_match_the_predecessor": {
+    "acs": true,
+    "asthma_49m": true,
+    "gi_57m": true,
+    "opioid_35m_opioid": true,
+    "opioid_67f_opioid": true,
+    "p2p2_hypoxaemic": true,
+    "p2s2_mechanics": true,
+    "pulmonary_edema": true,
+    "pulmonary_embolism": true
+   },
+   "no_refusal_in_any_committed_course": true,
+   "pass": true
+  },
+  "A22": {
+   "calibration_entries": 58,
+   "committed_readers_unset": {
+    "acs": true,
+    "asthma": true,
+    "edema": true,
+    "gi": true,
+    "opioid_35m": true,
+    "opioid_67f": true,
+    "pe": true
+   },
+   "declared_synthetic": true,
+   "no_calibration_entry_added": true,
+   "no_field_added": true,
+   "pass": true,
+   "probe_values": {
+    "COURSE_BURDEN": 2.0,
+    "ENDPOINT_BURDEN": 9.0,
+    "INSIDE_BURDEN": 8.9,
+    "P2J2_ENDPOINT_GAIN": 2.0,
+    "SEVERE_BURDEN": 50.0,
+    "TONE_GAIN": 1.0,
+    "WITNESS_READERS": [
+     [
+      0.25,
+      2.0
+     ],
+     [
+      1.0,
+      0.5
+     ],
+     [
+      1.0,
+      1.0
+     ]
+    ]
+   },
+   "state_shape": {
+    "Anchors": 33,
+    "AuxiliaryState": 10,
+    "CoreProfile": 70
+   },
+   "state_shape_at_p2x1": {
+    "Anchors": 33,
+    "AuxiliaryState": 10,
+    "CoreProfile": 70
+   }
+  },
+  "A3": {
+   "both_regimes_present": true,
+   "one_message": true,
+   "pass": true,
+   "profiles": {
+    "acs": {
+     "refused": true,
+     "response_runs": true,
+     "says_why": true
+    },
+    "asthma": {
+     "refused": true,
+     "response_runs": true,
+     "says_why": true
+    },
+    "edema": {
+     "refused": true,
+     "response_runs": true,
+     "says_why": true
+    },
+    "gi": {
+     "refused": true,
+     "response_runs": false,
+     "says_why": true
+    },
+    "opioid_35m": {
+     "refused": true,
+     "response_runs": true,
+     "says_why": true
+    },
+    "opioid_67f": {
+     "refused": true,
+     "response_runs": true,
+     "says_why": true
+    },
+    "pe": {
+     "refused": true,
+     "response_runs": true,
+     "says_why": true
+    }
+   }
+  },
+  "A4": {
+   "burden": 9.0,
+   "domain_admissible": true,
+   "is_the_endpoint": true,
+   "message": "minute 1: the tone target 0.1 is not inside T's supported range (0.1, 3.0) (the channel rebuilds it as 0.09999999999999998); the endpoints are unresolved bounda",
+   "pass": true,
+   "refused": true,
+   "says_why": true,
+   "target": 0.1
+  },
+  "A5": {
+   "below_the_guard": true,
+   "burden": 50.0,
+   "message": "minute 1: the tone target 0.0196078431372549 is not inside T's supported range (0.1, 3.0) (the channel rebuilds it as 0.019607843137254943); the endpoints are u",
+   "no_maximum_burden_declared": true,
+   "pass": true,
+   "refused": true,
+   "says_why": true,
+   "target": 0.0196078431372549
+  },
+  "A6": {
+   "gain": 2.0,
+   "is_the_endpoint": true,
+   "largest_target": 3.0,
+   "message": "the tone target's largest reachable value 3.0 (the compensation's 3.0 times the distributive recovery 1.0) reaches or passes T's guard 3.0: the guard would shap",
+   "p2j2_gain_check_would_pass": true,
+   "pass": true,
+   "reader": null,
+   "refused": true,
+   "says_why": true
+  },
+  "A7": {
+   "above_the_guard": true,
+   "arrival_burden": 10.0,
+   "gain": 2.0,
+   "largest_target": 29.302325581395344,
+   "message": "the tone target's largest reachable value 29.302325581395344 (the compensation's 1.3953488372093021 times the distributive recovery 21.0) reaches or passes T's ",
+   "pass": true,
+   "refused": true,
+   "says_why": true
+  },
+  "A8": {
+   "burden": 8.9,
+   "channel_holds_the_rebuilt_value": true,
+   "clamps": [],
+   "distance_to_the_guard": 0.0010101010101010027,
+   "interior": true,
+   "pass": true,
+   "rebuild_difference": -1.3877787807814457e-17,
+   "rebuilt": 0.101010101010101,
+   "rebuilt_interior": true,
+   "target": 0.10101010101010101
+  },
+  "A9": {
+   "burden_trail": [
+    0.0,
+    2.0,
+    2.0,
+    2.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "clamps": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    []
+   ],
+   "interior": true,
+   "pass": true,
+   "tone": [
+    1.0,
+    1.0,
+    0.33333333333333326,
+    0.3100775193798449,
+    0.3100775193798449,
+    0.9302325581395348,
+    0.9915483621499197
+   ],
+   "tone_clamps": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    []
+   ]
+  }
+ },
+ "proof": {
+  "common_untouched": {
+   "clinical_core/__init__.py": true,
+   "clinical_core/a9.py": true,
+   "clinical_core/acid_base.py": true,
+   "clinical_core/acid_base_report.py": true,
+   "clinical_core/acs_migration.py": true,
+   "clinical_core/acs_migration_report.py": true,
+   "clinical_core/acs_reference.py": true,
+   "clinical_core/arrival_severity.py": true,
+   "clinical_core/arrival_severity_report.py": true,
+   "clinical_core/asthma_distress_migration.py": true,
+   "clinical_core/asthma_distress_migration_report.py": true,
+   "clinical_core/asthma_migration.py": true,
+   "clinical_core/asthma_migration_report.py": true,
+   "clinical_core/asthma_reference.py": true,
+   "clinical_core/bands.py": true,
+   "clinical_core/baroreflex.py": true,
+   "clinical_core/baroreflex_report.py": true,
+   "clinical_core/blood_anchors.py": true,
+   "clinical_core/blood_constraints.py": true,
+   "clinical_core/blood_extension.py": true,
+   "clinical_core/blood_extension_report.py": true,
+   "clinical_core/blood_filter_report.py": true,
+   "clinical_core/blood_fluid_calibration.py": true,
+   "clinical_core/blood_fluid_readiness.py": true,
+   "clinical_core/blood_fluid_readiness_report.py": true,
+   "clinical_core/blood_fluid_report.py": true,
+   "clinical_core/blood_fluid_tau_closure.py": true,
+   "clinical_core/blood_fluid_tau_closure_report.py": true,
+   "clinical_core/blood_probes.py": true,
+   "clinical_core/blood_rate_boundary.py": true,
+   "clinical_core/blood_rate_report.py": true,
+   "clinical_core/calibration.py": true,
+   "clinical_core/collapse.py": true,
+   "clinical_core/collapse_architecture.py": true,
+   "clinical_core/collapse_architecture_report.py": true,
+   "clinical_core/collapse_audit.py": true,
+   "clinical_core/collapse_audit_report.py": true,
+   "clinical_core/comparison.py": true,
+   "clinical_core/consciousness_audit.py": true,
+   "clinical_core/consciousness_audit_report.py": true,
+   "clinical_core/contracts_input.py": true,
+   "clinical_core/contracts_legacy.py": true,
+   "clinical_core/contracts_output.py": true,
+   "clinical_core/contracts_shadow.py": true,
+   "clinical_core/decision_pack_markdown.py": true,
+   "clinical_core/derived.py": true,
+   "clinical_core/distress_closure.py": true,
+   "clinical_core/distress_closure_report.py": true,
+   "clinical_core/distributive_tone.py": true,
+   "clinical_core/distributive_tone_report.py": true,
+   "clinical_core/edema_migration.py": true,
+   "clinical_core/edema_migration_report.py": true,
+   "clinical_core/edema_reference.py": true,
+   "clinical_core/embolism_migration.py": true,
+   "clinical_core/embolism_migration_report.py": true,
+   "clinical_core/embolism_reference.py": true,
+   "clinical_core/encephalopathy.py": true,
+   "clinical_core/encephalopathy_architecture.py": true,
+   "clinical_core/encephalopathy_architecture_report.py": true,
+   "clinical_core/faculty_constraints.py": true,
+   "clinical_core/gas_exchange_architecture.py": true,
+   "clinical_core/gas_exchange_architecture_report.py": true,
+   "clinical_core/gi_reference.py": true,
+   "clinical_core/haemorrhage_probes.py": true,
+   "clinical_core/hemodynamic_probes.py": true,
+   "clinical_core/hr_envelope_filter.py": true,
+   "clinical_core/hr_envelope_filter_report.py": true,
+   "clinical_core/hr_observables.py": true,
+   "clinical_core/hr_observables_report.py": true,
+   "clinical_core/hr_primary.py": true,
+   "clinical_core/hr_primary_report.py": true,
+   "clinical_core/hr_shock.py": true,
+   "clinical_core/hr_shock_report.py": true,
+   "clinical_core/hr_structure.py": true,
+   "clinical_core/hr_structure_report.py": true,
+   "clinical_core/interventions/__init__.py": true,
+   "clinical_core/interventions/fluids.py": true,
+   "clinical_core/interventions/modifiers.py": true,
+   "clinical_core/interventions/oxygen.py": true,
+   "clinical_core/interventions/timing.py": true,
+   "clinical_core/lactate_adequacy.py": true,
+   "clinical_core/lactate_adequacy_report.py": true,
+   "clinical_core/lactate_closure.py": true,
+   "clinical_core/lactate_closure_report.py": true,
+   "clinical_core/lactate_constraints.py": true,
+   "clinical_core/lactate_rebuild.py": true,
+   "clinical_core/lactate_rebuild_report.py": true,
+   "clinical_core/legacy_adapter.py": true,
+   "clinical_core/logistics.py": true,
+   "clinical_core/lung_water_reference.py": true,
+   "clinical_core/lung_water_reference_report.py": true,
+   "clinical_core/migration.py": true,
+   "clinical_core/migration_authority.py": true,
+   "clinical_core/modules/__init__.py": true,
+   "clinical_core/modules/acs_ischaemia.py": true,
+   "clinical_core/modules/asthma.py": true,
+   "clinical_core/modules/gi_haemorrhage.py": true,
+   "clinical_core/modules/opioid.py": true,
+   "clinical_core/modules/pulmonary_edema.py": true,
+   "clinical_core/modules/pulmonary_embolism.py": true,
+   "clinical_core/modules/rhythm_events.py": true,
+   "clinical_core/opioid_migration.py": true,
+   "clinical_core/opioid_migration_report.py": true,
+   "clinical_core/opioid_reference.py": true,
+   "clinical_core/oxygen_probes.py": true,
+   "clinical_core/oxygenation_link.py": true,
+   "clinical_core/oxygenation_link_report.py": true,
+   "clinical_core/pressure_tone.py": true,
+   "clinical_core/pressure_tone_filter.py": true,
+   "clinical_core/pressure_tone_filter_report.py": true,
+   "clinical_core/pressure_tone_report.py": true,
+   "clinical_core/respiratory_distress.py": true,
+   "clinical_core/respiratory_distress_report.py": true,
+   "clinical_core/respiratory_drive.py": true,
+   "clinical_core/respiratory_drive_report.py": true,
+   "clinical_core/respiratory_mechanics.py": true,
+   "clinical_core/respiratory_mechanics_report.py": true,
+   "clinical_core/respiratory_monotonicity.py": true,
+   "clinical_core/respiratory_monotonicity_report.py": true,
+   "clinical_core/rr_audit.py": true,
+   "clinical_core/rr_audit_report.py": true,
+   "clinical_core/shadow.py": true,
+   "clinical_core/signals.py": true,
+   "clinical_core/state.py": true,
+   "clinical_core/systemic_stress.py": true,
+   "clinical_core/systemic_stress_report.py": true,
+   "clinical_core/tone_domain.py": true,
+   "clinical_core/tone_domain_report.py": true,
+   "clinical_core/vascular_tone.py": true,
+   "clinical_core/vascular_tone_report.py": true,
+   "clinical_core/ventilation.py": true,
+   "clinical_core/ventilation_filter.py": true,
+   "clinical_core/ventilation_filter_report.py": true,
+   "clinical_core/ventilation_surface.py": true,
+   "clinical_core/ventilation_surface_report.py": true
+  },
+  "p2x1_record_sha": "dd37487c3689076822180c262b5cb7f93cf06ed889ce8f99e73b0a4a733120d1",
+  "proofs": {
+   "clinical_core/decision_pack.py": true,
+   "clinical_core/integration.py": true,
+   "clinical_core/lactate_slice.py": true,
+   "clinical_core/provenance.py": true
+  }
+ },
+ "readiness": {
+  "blocker": null,
+  "criteria": [
+   {
+    "criterion": "1. the T single-owner invariant is unconditional: every clinical writer of T is refused on every profile, before the channel is rebuilt, whether or not the core has a response to compute",
+    "failed": [],
+    "holds": true,
+    "reads": [
+     "guards",
+     "A1",
+     "A2",
+     "A3"
+    ]
+   },
+   {
+    "criterion": "2. the supported tone domain is the open interval: both endpoints fail closed, at the parameter level and at the minute, with no epsilon, margin or tolerance",
+    "failed": [],
+    "holds": true,
+    "reads": [
+     "guards",
+     "A4",
+     "A5",
+     "A6",
+     "A7"
+    ]
+   },
+   {
+    "criterion": "3. no accepted tone minute carries a clamp on T, the floating reconstruction included",
+    "failed": [],
+    "holds": true,
+    "reads": [
+     "A8",
+     "A9"
+    ]
+   },
+   {
+    "criterion": "4. the contraction guard carries the distributive factor and holds against the live slope with B != 1, and a combination that is not a contraction is refused",
+    "failed": [],
+    "holds": true,
+    "reads": [
+     "A13",
+     "A14",
+     "A15"
+    ]
+   },
+   {
+    "criterion": "5. the pressure-driven vasodilation contract is enforced by a scan that rejects each bypass the P2X-1 review found",
+    "failed": [],
+    "holds": true,
+    "reads": [
+     "writer_contract",
+     "A16"
+    ]
+   },
+   {
+    "criterion": "6. the predecessor and reversion integrity holds, and the readiness rule reads it",
+    "failed": [],
+    "holds": true,
+    "reads": [
+     "upstream",
+     "A19"
+    ]
+   },
+   {
+    "criterion": "7. the contradictions check is executable: each row is decided by its probes and can become false",
+    "failed": [],
+    "holds": true,
+    "reads": [
+     "contradictions"
+    ]
+   },
+   {
+    "criterion": "8. the debt classification is executable: disjoint classes, every entry traced to the register, no demonstrated blocker classified as acceptable, and a mutation makes it fail",
+    "failed": [],
+    "holds": true,
+    "reads": [
+     "debt",
+     "A20"
+    ]
+   },
+   {
+    "criterion": "9. the supersession check verifies the repository's own artifacts and immutable references",
+    "failed": [],
+    "holds": true,
+    "reads": [
+     "supersession",
+     "A17",
+     "A18"
+    ]
+   },
+   {
+    "criterion": "10. every prior migrated family keeps its default trajectory exactly",
+    "failed": [],
+    "holds": true,
+    "reads": [
+     "non_regression",
+     "A21"
+    ]
+   },
+   {
+    "criterion": "11. no new clinical magnitude is selected",
+    "failed": [],
+    "holds": true,
+    "reads": [
+     "A22"
+    ]
+   }
+  ],
+  "evidence": {
+   "A1": true,
+   "A10": true,
+   "A11": true,
+   "A12": true,
+   "A13": true,
+   "A14": true,
+   "A15": true,
+   "A16": true,
+   "A17": true,
+   "A18": true,
+   "A19": true,
+   "A2": true,
+   "A20": true,
+   "A21": true,
+   "A22": true,
+   "A3": true,
+   "A4": true,
+   "A5": true,
+   "A6": true,
+   "A7": true,
+   "A8": true,
+   "A9": true,
+   "contradictions": true,
+   "debt": true,
+   "guards": true,
+   "non_regression": true,
+   "supersession": true,
+   "upstream": true,
+   "writer_contract": true
+  },
+  "verdict": "PHASE2_DECLARED_PROPERTIES_CLOSED"
+ },
+ "revision": "P2X-1A",
+ "supersession": {
+  "live": {
+   "p2w1_record_sha": "1ad221db80ed989b9a5f35a199fdb88962533db05c70a3666705f3ab8437e645",
+   "p2w1_record_sha_expected": "1ad221db80ed989b9a5f35a199fdb88962533db05c70a3666705f3ab8437e645",
+   "p2w1_record_untouched": true,
+   "p2x1_digest_holds": true,
+   "p2x1_freeze_digest_expected": "3afa71b2dfa0f47eb1a00e8987c79cd18b246788e366ac07fe58eacc21815a0e",
+   "p2x1_freeze_digest_recomputed": "3afa71b2dfa0f47eb1a00e8987c79cd18b246788e366ac07fe58eacc21815a0e"
+  },
+  "pass": true,
+  "problems": [],
+  "rows": {
+   "P2J2_UPPER_ENDPOINT_PROBE_SUPERSEDED_BY_P2X1A": {
+    "historical": {
+     "document": "docs/revision/P2J2_TONO_VASCULAR_DINAMICO.md",
+     "document_exists": true,
+     "freeze_digest_matches": true,
+     "record": "docs/revision/P2J2_vascular_tone.json",
+     "record_exists": true,
+     "record_sha_matches": true
+    },
+    "history_preserved": "the P2J-2 record and digest are not recut; the superseded reading is declared here and its suite reads the grid without the endpoint gain",
+    "status": "P2J2_ENDPOINT_PROBE_READING_SUPERSEDED",
+    "superseding": {
+     "document": "docs/revision/P2X1A_REPARACION_GUARDAS_CIERRE.md",
+     "document_exists": "written by the evaluation run",
+     "freeze_digest_matches": null,
+     "record": "docs/revision/P2X1A_closure_guard.json",
+     "record_exists": "written by the evaluation run",
+     "record_sha_matches": null
+    },
+    "what_happened": "P2J-2's probe grid includes the gain 2.0, whose largest reachable target is exactly T's upper guard on anchors with no arrival deficit. P2J-2 accepted that reading (its check is 1 + g > upper); FACULTY DECISION 2 makes the endpoint an unresolved boundary, so the combination is refused and that probe row is superseded. Every gain below it is unchanged"
+   },
+   "P2X1_FROZEN_VERDICT_SUPERSEDED_BY_P2X1A": {
+    "historical": {
+     "document": "docs/revision/P2X1_CIERRE_PROPIEDADES_DECLARADAS.md",
+     "document_exists": true,
+     "freeze_digest_matches": true,
+     "record": "docs/revision/P2X1_tone_domain.json",
+     "record_exists": true,
+     "record_sha_matches": true
+    },
+    "history_preserved": "no P2X-1 source, record or digest is recut or rewritten; its two P2W-1 supersession rows stand as it published them",
+    "status": "P2X1_FROZEN_VERDICT_SUPERSEDED_BY_P2X1A",
+    "superseding": {
+     "document": "docs/revision/P2X1A_REPARACION_GUARDAS_CIERRE.md",
+     "document_exists": "written by the evaluation run",
+     "freeze_digest_matches": null,
+     "record": "docs/revision/P2X1A_closure_guard.json",
+     "record_exists": "written by the evaluation run",
+     "record_sha_matches": null
+    },
+    "what_happened": "P2X-1's frozen rule returned PHASE2_DECLARED_PROPERTIES_CLOSED; its adversarial review demonstrated two real closure blockers - the ownership guard did not run with the tone response off, and the inclusive boundary left a 2.8e-17 clamp inside an accepted minute - so the operative verdict became NOT_CLOSED; P2X-1A repairs those exact blockers"
+   },
+   "TD120_HISTORICAL_SUPERSESSION_ACCEPTED": {
+    "historical": {
+     "document": "docs/revision/P2S3_ASMA_SOMBRA.md",
+     "document_exists": true,
+     "freeze_digest_matches": true,
+     "record": "docs/revision/P2S3_asthma_migration.json",
+     "record_exists": true,
+     "record_sha_matches": true
+    },
+    "history_preserved": "no P2S-3 source, record or digest is recut or rewritten",
+    "status": "P2S3_FROZEN_VERDICT_SUPERSEDED_BY_P2T3",
+    "superseding": {
+     "document": "docs/revision/P2T3_ASMA_DISTRES_SOMBRA.md",
+     "document_exists": true,
+     "freeze_digest_matches": true,
+     "record": "docs/revision/P2T3_asthma_distress_migration.json",
+     "record_exists": true,
+     "record_sha_matches": true
+    },
+    "what_happened": "P2S-3's frozen rule returned ASTHMA_SHADOW_MIGRATION_READY; its adversarial review demonstrated a COMMON_DRIVE_GAP and the corrected operative classification was NOT_READY; P2T-1, P2T-2 and P2T-3 closed that blocker and P2T-3 is the authoritative asthma result"
+   }
+  }
+ },
+ "upstream_unchanged": {
+  "common_untouched": {
+   "clinical_core/__init__.py": true,
+   "clinical_core/a9.py": true,
+   "clinical_core/acid_base.py": true,
+   "clinical_core/acid_base_report.py": true,
+   "clinical_core/acs_migration.py": true,
+   "clinical_core/acs_migration_report.py": true,
+   "clinical_core/acs_reference.py": true,
+   "clinical_core/arrival_severity.py": true,
+   "clinical_core/arrival_severity_report.py": true,
+   "clinical_core/asthma_distress_migration.py": true,
+   "clinical_core/asthma_distress_migration_report.py": true,
+   "clinical_core/asthma_migration.py": true,
+   "clinical_core/asthma_migration_report.py": true,
+   "clinical_core/asthma_reference.py": true,
+   "clinical_core/bands.py": true,
+   "clinical_core/baroreflex.py": true,
+   "clinical_core/baroreflex_report.py": true,
+   "clinical_core/blood_anchors.py": true,
+   "clinical_core/blood_constraints.py": true,
+   "clinical_core/blood_extension.py": true,
+   "clinical_core/blood_extension_report.py": true,
+   "clinical_core/blood_filter_report.py": true,
+   "clinical_core/blood_fluid_calibration.py": true,
+   "clinical_core/blood_fluid_readiness.py": true,
+   "clinical_core/blood_fluid_readiness_report.py": true,
+   "clinical_core/blood_fluid_report.py": true,
+   "clinical_core/blood_fluid_tau_closure.py": true,
+   "clinical_core/blood_fluid_tau_closure_report.py": true,
+   "clinical_core/blood_probes.py": true,
+   "clinical_core/blood_rate_boundary.py": true,
+   "clinical_core/blood_rate_report.py": true,
+   "clinical_core/calibration.py": true,
+   "clinical_core/collapse.py": true,
+   "clinical_core/collapse_architecture.py": true,
+   "clinical_core/collapse_architecture_report.py": true,
+   "clinical_core/collapse_audit.py": true,
+   "clinical_core/collapse_audit_report.py": true,
+   "clinical_core/comparison.py": true,
+   "clinical_core/consciousness_audit.py": true,
+   "clinical_core/consciousness_audit_report.py": true,
+   "clinical_core/contracts_input.py": true,
+   "clinical_core/contracts_legacy.py": true,
+   "clinical_core/contracts_output.py": true,
+   "clinical_core/contracts_shadow.py": true,
+   "clinical_core/decision_pack_markdown.py": true,
+   "clinical_core/derived.py": true,
+   "clinical_core/distress_closure.py": true,
+   "clinical_core/distress_closure_report.py": true,
+   "clinical_core/distributive_tone.py": true,
+   "clinical_core/distributive_tone_report.py": true,
+   "clinical_core/edema_migration.py": true,
+   "clinical_core/edema_migration_report.py": true,
+   "clinical_core/edema_reference.py": true,
+   "clinical_core/embolism_migration.py": true,
+   "clinical_core/embolism_migration_report.py": true,
+   "clinical_core/embolism_reference.py": true,
+   "clinical_core/encephalopathy.py": true,
+   "clinical_core/encephalopathy_architecture.py": true,
+   "clinical_core/encephalopathy_architecture_report.py": true,
+   "clinical_core/faculty_constraints.py": true,
+   "clinical_core/gas_exchange_architecture.py": true,
+   "clinical_core/gas_exchange_architecture_report.py": true,
+   "clinical_core/gi_reference.py": true,
+   "clinical_core/haemorrhage_probes.py": true,
+   "clinical_core/hemodynamic_probes.py": true,
+   "clinical_core/hr_envelope_filter.py": true,
+   "clinical_core/hr_envelope_filter_report.py": true,
+   "clinical_core/hr_observables.py": true,
+   "clinical_core/hr_observables_report.py": true,
+   "clinical_core/hr_primary.py": true,
+   "clinical_core/hr_primary_report.py": true,
+   "clinical_core/hr_shock.py": true,
+   "clinical_core/hr_shock_report.py": true,
+   "clinical_core/hr_structure.py": true,
+   "clinical_core/hr_structure_report.py": true,
+   "clinical_core/interventions/__init__.py": true,
+   "clinical_core/interventions/fluids.py": true,
+   "clinical_core/interventions/modifiers.py": true,
+   "clinical_core/interventions/oxygen.py": true,
+   "clinical_core/interventions/timing.py": true,
+   "clinical_core/lactate_adequacy.py": true,
+   "clinical_core/lactate_adequacy_report.py": true,
+   "clinical_core/lactate_closure.py": true,
+   "clinical_core/lactate_closure_report.py": true,
+   "clinical_core/lactate_constraints.py": true,
+   "clinical_core/lactate_rebuild.py": true,
+   "clinical_core/lactate_rebuild_report.py": true,
+   "clinical_core/legacy_adapter.py": true,
+   "clinical_core/logistics.py": true,
+   "clinical_core/lung_water_reference.py": true,
+   "clinical_core/lung_water_reference_report.py": true,
+   "clinical_core/migration.py": true,
+   "clinical_core/migration_authority.py": true,
+   "clinical_core/modules/__init__.py": true,
+   "clinical_core/modules/acs_ischaemia.py": true,
+   "clinical_core/modules/asthma.py": true,
+   "clinical_core/modules/gi_haemorrhage.py": true,
+   "clinical_core/modules/opioid.py": true,
+   "clinical_core/modules/pulmonary_edema.py": true,
+   "clinical_core/modules/pulmonary_embolism.py": true,
+   "clinical_core/modules/rhythm_events.py": true,
+   "clinical_core/opioid_migration.py": true,
+   "clinical_core/opioid_migration_report.py": true,
+   "clinical_core/opioid_reference.py": true,
+   "clinical_core/oxygen_probes.py": true,
+   "clinical_core/oxygenation_link.py": true,
+   "clinical_core/oxygenation_link_report.py": true,
+   "clinical_core/pressure_tone.py": true,
+   "clinical_core/pressure_tone_filter.py": true,
+   "clinical_core/pressure_tone_filter_report.py": true,
+   "clinical_core/pressure_tone_report.py": true,
+   "clinical_core/respiratory_distress.py": true,
+   "clinical_core/respiratory_distress_report.py": true,
+   "clinical_core/respiratory_drive.py": true,
+   "clinical_core/respiratory_drive_report.py": true,
+   "clinical_core/respiratory_mechanics.py": true,
+   "clinical_core/respiratory_mechanics_report.py": true,
+   "clinical_core/respiratory_monotonicity.py": true,
+   "clinical_core/respiratory_monotonicity_report.py": true,
+   "clinical_core/rr_audit.py": true,
+   "clinical_core/rr_audit_report.py": true,
+   "clinical_core/shadow.py": true,
+   "clinical_core/signals.py": true,
+   "clinical_core/state.py": true,
+   "clinical_core/systemic_stress.py": true,
+   "clinical_core/systemic_stress_report.py": true,
+   "clinical_core/tone_domain.py": true,
+   "clinical_core/tone_domain_report.py": true,
+   "clinical_core/vascular_tone.py": true,
+   "clinical_core/vascular_tone_report.py": true,
+   "clinical_core/ventilation.py": true,
+   "clinical_core/ventilation_filter.py": true,
+   "clinical_core/ventilation_filter_report.py": true,
+   "clinical_core/ventilation_surface.py": true,
+   "clinical_core/ventilation_surface_report.py": true
+  },
+  "p2x1_freeze_digest": true,
+  "pass": true,
+  "proofs": {
+   "clinical_core/decision_pack.py": true,
+   "clinical_core/integration.py": true,
+   "clinical_core/lactate_slice.py": true,
+   "clinical_core/provenance.py": true
+  }
+ },
+ "writer_contract": {
+  "allowed_inputs": "the writer's own disease-process state, time, a treatment, and authored family mechanisms that do not close the haemodynamic loop",
+  "allowed_pattern_accepted": true,
+  "bypasses_rejected": {
+   "alias": true,
+   "helper_function": true,
+   "positional_access": true,
+   "qualified_constructor": true,
+   "same_loop_observable": true,
+   "subscript_access": true,
+   "tone_feedback": true
+  },
+  "contract_declared": true,
+  "files_scanned": 9,
+  "forbidden_reads": [
+   "crt_s",
+   "dbp",
+   "delivery_rel",
+   "map",
+   "mean_arterial_pressure",
+   "output_rel",
+   "pressure_rel",
+   "sbp",
+   "sympathetic_drive",
+   "T"
+  ],
+  "offenders": [],
+  "p2x1a_strengthening_declared": true,
+  "pass": true,
+  "writers": [
+   "clinical_core/distributive_tone.py:SyntheticVasodilation.contribute",
+   "clinical_core/distributive_tone.py:representation",
+   "test_clinical_core_distributive_tone.py:test_the_writer_record_has_the_distress_records_shape_and_its_guards"
+  ]
+ }
+}

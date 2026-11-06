@@ -64,7 +64,8 @@ def render_guardas(data: dict) -> str:
     ]
     for name, items in g["refusals"].items():
         lines.append(f"- `{name}`:")
-        lines += [f"  {index + 1}. {text}" for index, text in enumerate(items)]
+        # The record keeps each refusal cut at a fixed width, and a cut can land on a space: the document does not.
+        lines += [f"  {index + 1}. {text}".rstrip() for index, text in enumerate(items)]
     return "\n".join(lines)
 
 
