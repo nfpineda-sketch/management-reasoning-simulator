@@ -70,7 +70,7 @@ def render_guardas(data: dict) -> str:
              f"- Frontera por minuto: {g['per_minute_boundary']}.",
              f"- Sólo se añadieron rechazos: {_yes(g['only_refusals_added'])}; el delta devuelto sigue siendo "
              f"`{g['delta_expression']}`.", "", "Rechazos del acoplamiento, en orden:", ""]
-    lines += [f"{i + 1}. {text}" for i, text in enumerate(g["refusals"])]
+    lines += [f"{i + 1}. {text}".rstrip() for i, text in enumerate(g["refusals"])]
     return "\n".join(lines)
 
 

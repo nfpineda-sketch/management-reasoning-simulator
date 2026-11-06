@@ -107,7 +107,7 @@ existe el factor distributivo, de modo que la región admisible de todo perfil s
 Rechazos del acoplamiento, en orden:
 
 1. f"the tone response's largest target 1 + {profile.deficit_to_tone_gain
-2. f'minute {minute}: {writers} write T while the vascular-tone response 
+2. f'minute {minute}: {writers} write T while the vascular-tone response
 3. f"minute {minute}: the tone target {target!r} leaves T's supported ran
 4. f"the tone target's largest reachable value {domain['largest_target']!
 5. f"the tone loop's derived bound with the distributive factor, {domain[
