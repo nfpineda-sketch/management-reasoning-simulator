@@ -314,6 +314,16 @@ def tone_domain(anchors: Anchors, profile: CoreProfile) -> dict:
 #: clinical writer of T, whatever SourceKind it declares: the kind is a free class attribute, so a family could
 #: otherwise take the exemption by declaring it (P2X-1A, after its review).
 PROBE_CONTRIBUTOR_MODULES = ("clinical_core.bands", "clinical_core.hemodynamic_probes", "clinical_core.pressure_tone")
+#: The same rule's other non-clinical class, "a test": a contributor a suite defines for itself, by this
+#: repository's own file convention. A family, a case or a drug cannot be defined in one.
+TEST_MODULE_PREFIX = "test_"
+
+
+def _is_a_probe(contributor) -> bool:
+    """Whether this contributor is one of the writers P2J-1 publishes as NOT clinical: a declared synthetic probe or
+    a test's own. Read from the module that defines it, never from the kind it declares."""
+    module = type(contributor).__module__
+    return module in PROBE_CONTRIBUTOR_MODULES or module.rsplit(".", 1)[-1].startswith(TEST_MODULE_PREFIX)
 
 
 def _tone_ownership(deltas: Sequence[ChannelDelta], minute: int, probes: frozenset = frozenset()) -> None:
@@ -331,9 +341,10 @@ def _tone_ownership(deltas: Sequence[ChannelDelta], minute: int, probes: frozens
     ``hemodynamic_probes.py`` and ``pressure_tone.py`` as the non-clinical writers (``PROBE_MODULES``). The exemption
     therefore follows the module that DEFINES the contributor (``PROBE_CONTRIBUTOR_MODULES``), not the SourceKind it
     declares: the kind is a free class attribute, so a family could take the exemption by declaring SCRIPTED_EVENT -
-    which its own review demonstrated. Every clinical source - a disease module, a treatment, an intervention, a
-    case - is refused here on every profile, which is the hole the P2X-1 review demonstrated, while the declared
-    synthetic probes keep driving T as they did, in no case and no family trajectory. A probe that drives T onto its
+    which its own review demonstrated. The rule's three non-clinical classes are kept whole: a declared synthetic
+    probe, a test's own contributor, and a bound. Every clinical source - a disease module, a treatment, an
+    intervention, a case - is refused here on every profile, which is the hole the P2X-1 review demonstrated, while
+    those writers keep driving T as they did, in no case and no family trajectory. One of them that drives T onto its
     guard is still refused, by the channel's own boundary in ``step``.
     """
     clinical = sorted({delta.source.key for delta in deltas if delta.channel is Channel.T
@@ -595,8 +606,8 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
         events.append(CoreEvent("terminal_collapse", COLLAPSE, minute, "critical", "physiological_collapse",
                                 "not assessed", f"terminal collapse from sustained critically low output: "
                                                 f"{target.code.value}"))
-    _tone_ownership(deltas, minute, frozenset(contributor.source.key for contributor in ordered
-                                               if type(contributor).__module__ in PROBE_CONTRIBUTOR_MODULES))
+    _tone_ownership(deltas, minute,
+                    frozenset(contributor.source.key for contributor in ordered if _is_a_probe(contributor)))
     if profile.deficit_to_tone_gain > 0.0 or profile.vasodilatory_burden_to_tone_gain is not None:
         # P2W-1: the tone response also runs for a declared vasodilatory reader, so a family's burden always reaches T
         # where its reader exists, even with the compensatory gain at 0 (with the reader UNSET this is P2J-2's

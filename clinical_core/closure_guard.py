@@ -842,9 +842,10 @@ HISTORY = {
         "superseding": {"document": DOCUMENT.relative_to(ROOT).as_posix(),
                         "record": RECORD.relative_to(ROOT).as_posix(),
                         "freeze_digest": None, "record_sha": None},
-        "what_happened": "its own analysis reads the grid without that gain under the chained tree (chain patches "
-                         "vascular_tone.GAINS), so the predecessor stays runnable. P2J-2's probe grid includes the "
-                         "gain 2.0, whose largest reachable target is exactly T's "
+        "what_happened": "its probe entry point must be run with that gain removed from the grid, which its suite "
+                         "does and this row declares: the grid is part of P2J-2's own frozen digest, so a view that "
+                         "patched it would move that digest, and the digest is what history preservation means here. "
+                         "P2J-2's probe grid includes the gain 2.0, whose largest reachable target is exactly T's "
                          "upper guard on anchors with no arrival deficit. P2J-2 accepted that reading (its check is "
                          "1 + g > upper); FACULTY DECISION 2 makes the endpoint an unresolved boundary, so the "
                          "combination is refused and that probe row is superseded. Every gain below it is unchanged",
@@ -1258,6 +1259,21 @@ REVERSAL = {'clinical_core/decision_pack.py': (('                        "clinic
                                    '#: otherwise take the exemption by declaring it (P2X-1A, after its review).\n'
                                    'PROBE_CONTRIBUTOR_MODULES = ("clinical_core.bands", '
                                    '"clinical_core.hemodynamic_probes", "clinical_core.pressure_tone")\n'
+                                   '#: The same rule\'s other non-clinical class, "a test": a contributor a suite '
+                                   'defines for itself, by this\n'
+                                   "#: repository's own file convention. A family, a case or a drug cannot be "
+                                   'defined in one.\n'
+                                   'TEST_MODULE_PREFIX = "test_"\n'
+                                   '\n'
+                                   '\n'
+                                   'def _is_a_probe(contributor) -> bool:\n'
+                                   '    """Whether this contributor is one of the writers P2J-1 publishes as NOT '
+                                   'clinical: a declared synthetic probe or\n'
+                                   "    a test's own. Read from the module that defines it, never from the kind it "
+                                   'declares."""\n'
+                                   '    module = type(contributor).__module__\n'
+                                   '    return module in PROBE_CONTRIBUTOR_MODULES or module.rsplit(".", '
+                                   '1)[-1].startswith(TEST_MODULE_PREFIX)\n'
                                    '\n'
                                    '\n'
                                    'def _tone_ownership(deltas: Sequence[ChannelDelta], minute: int, probes: '
@@ -1286,12 +1302,14 @@ REVERSAL = {'clinical_core/decision_pack.py': (('                        "clinic
                                    '(``PROBE_CONTRIBUTOR_MODULES``), not the SourceKind it\n'
                                    '    declares: the kind is a free class attribute, so a family could take the '
                                    'exemption by declaring SCRIPTED_EVENT -\n'
-                                   '    which its own review demonstrated. Every clinical source - a disease module, '
-                                   'a treatment, an intervention, a\n'
-                                   '    case - is refused here on every profile, which is the hole the P2X-1 review '
-                                   'demonstrated, while the declared\n'
-                                   '    synthetic probes keep driving T as they did, in no case and no family '
-                                   'trajectory. A probe that drives T onto its\n'
+                                   "    which its own review demonstrated. The rule's three non-clinical classes are "
+                                   'kept whole: a declared synthetic\n'
+                                   "    probe, a test's own contributor, and a bound. Every clinical source - a "
+                                   'disease module, a treatment, an\n'
+                                   '    intervention, a case - is refused here on every profile, which is the hole '
+                                   'the P2X-1 review demonstrated, while\n'
+                                   '    those writers keep driving T as they did, in no case and no family '
+                                   'trajectory. One of them that drives T onto its\n'
                                    "    guard is still refused, by the channel's own boundary in ``step``.\n"
                                    '    """\n'
                                    '    clinical = sorted({delta.source.key for delta in deltas if delta.channel is '
@@ -1468,10 +1486,9 @@ REVERSAL = {'clinical_core/decision_pack.py': (('                        "clinic
                                    '                                "not assessed", f"terminal collapse from '
                                    'sustained critically low output: "\n'
                                    '                                                f"{target.code.value}"))\n'
-                                   '    _tone_ownership(deltas, minute, frozenset(contributor.source.key for '
-                                   'contributor in ordered\n'
-                                   '                                               if type(contributor).__module__ '
-                                   'in PROBE_CONTRIBUTOR_MODULES))\n'
+                                   '    _tone_ownership(deltas, minute,\n'
+                                   '                    frozenset(contributor.source.key for contributor in ordered '
+                                   'if _is_a_probe(contributor)))\n'
                                    '    if profile.deficit_to_tone_gain > 0.0 or '
                                    'profile.vasodilatory_burden_to_tone_gain is not None:\n'
                                    '        # P2W-1: the tone response also runs for a declared vasodilatory reader, '
@@ -1886,11 +1903,6 @@ def chain(patch) -> None:
     """For the closed packages' test fixtures: P2X-1's view reads the P2X-1 files (proven), by path and by source, and
     every closed listing of clinical_core leaves P2X-1A's new files out. P2X-1A adds no state and no accepted
     reading: only refusals."""
-    # P2J-2's probe grid still carries the gain whose largest reachable target is exactly T's upper guard, which
-    # FACULTY DECISION 2 now refuses: under the chained tree its own analysis reads the grid without that endpoint,
-    # so `python -m clinical_core.vascular_tone --run` and its probes keep running (its review's H6). The frozen
-    # P2J-2 record and digest are untouched; the superseded reading is declared in HISTORY.
-    patch.setattr(vt, "GAINS", P2J2_GAINS_INSIDE)
     patch.setattr(x1, "_live", p2x1_text)
     patch.setattr(x1, "_FREEZE_SOURCES", lambda: p2x1_sources(_FREEZE_SOURCES()))
     patch.setattr(x1, "inspect", _InspectView())

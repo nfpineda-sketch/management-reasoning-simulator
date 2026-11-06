@@ -319,8 +319,11 @@ def test_the_core_writes_tone_only_in_its_own_coupling():
                     found.add((path.relative_to(ROOT).as_posix(), getattr(top, "name", "<module>")))
     # P2W-1's analysis module builds one, inside the probe whose purpose is to be refused by the guard below: the
     # distributive signal it adds is the common vasodilatory burden, never a delta on the T channel.
+    # P2X-1A's analysis builds one too, in the contributor whose whole purpose is to be refused: a family that
+    # declares the synthetic probe's kind, which its ownership guard rejects by the module that defines it.
     assert found == {("clinical_core/integration.py", "_vascular_tone"),
-                     ("clinical_core/distributive_tone.py", "_FamilyTone")}
+                     ("clinical_core/distributive_tone.py", "_FamilyTone"),
+                     ("clinical_core/closure_guard.py", "_FamilyAsAProbe")}
     from clinical_core import distributive_tone as dt
     assert dt.representation()["refused"]["family_delta_on_T"]
 

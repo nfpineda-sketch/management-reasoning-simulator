@@ -31,7 +31,7 @@ from clinical_core.state import Channel, CoreInvariantError, UnresolvedBoundary
 ROOT = cg.ROOT
 #: The P2X-1A freeze: the guards, the contract scan, A1-A22, the executable checks, the readiness rule, the proof and
 #: every clinical_core source but the downstream reports.
-FROZEN_DIGEST = "eca58477447ba831c64aa281d2b5860d19dd2cc9dfb3a089fb654be721113c73"
+FROZEN_DIGEST = "eca47d357674ec56fe489c30f1757cf940c55a4e5d5edb2a9ffb9fac0213e853"
 T_LOWER, T_UPPER = CHANNEL_BOUNDS[Channel.T][0], CHANNEL_BOUNDS[Channel.T][1]
 
 
@@ -475,15 +475,17 @@ def test_the_decision_file_criterion_reads_the_file_and_can_fail(monkeypatch):
     assert cg.readiness(base)["verdict"].startswith(cg.NOT_READY)
 
 
-def test_the_predecessors_own_analysis_runs_under_the_chained_tree(monkeypatch):
-    """P2J-2's probe grid carries the gain whose largest target is exactly T's upper guard, which is now refused: its
-    own analysis would no longer run at all. Under the chained tree it reads the grid without that endpoint (the
-    review's H6), and the frozen record and digest stay untouched."""
+def test_the_predecessors_probe_entry_point_needs_the_declared_grid(monkeypatch):
+    """P2J-2's probe grid carries the gain whose largest target is exactly T's upper guard, which is now refused, so
+    its probe entry point only runs with that gain removed - which its own suite does and the supersession row
+    declares. The view does NOT patch the grid: P2J-2's frozen digest reads it, so patching it would move the very
+    digest history preservation is about (its review's H6, answered with the limitation declared instead)."""
     with pytest.raises(CoreInvariantError, match="reaches or passes"):
         vt.probes()
-    cg.chain(monkeypatch)
-    assert vt.GAINS == cg.P2J2_GAINS_INSIDE
+    monkeypatch.setattr(vt, "GAINS", cg.P2J2_GAINS_INSIDE)
     found = vt.probes()
     assert found["checks"] == {str(n): True for n in range(1, 9)}
+    row = cg.HISTORY["P2J2_UPPER_ENDPOINT_PROBE_SUPERSEDED_BY_P2X1A"]
+    assert "run with that gain removed from the grid" in row["what_happened"]
     assert hashlib.sha256((ROOT / "docs" / "revision" / "P2J2_vascular_tone.json").read_bytes()).hexdigest() == \
-        cg.HISTORY["P2J2_UPPER_ENDPOINT_PROBE_SUPERSEDED_BY_P2X1A"]["historical"]["record_sha"]
+        row["historical"]["record_sha"]

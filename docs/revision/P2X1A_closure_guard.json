@@ -270,7 +270,7 @@
   "report": "clinical_core/closure_guard_report.py",
   "revision": "P2X-1A"
  },
- "freeze_digest": "eca58477447ba831c64aa281d2b5860d19dd2cc9dfb3a089fb654be721113c73",
+ "freeze_digest": "eca47d357674ec56fe489c30f1757cf940c55a4e5d5edb2a9ffb9fac0213e853",
  "guards": {
   "clamp_still_the_last_layer": true,
   "delta_expression": "amount",
@@ -1301,7 +1301,7 @@
      "record_exists": "written by the evaluation run",
      "record_sha_matches": null
     },
-    "what_happened": "its own analysis reads the grid without that gain under the chained tree (chain patches vascular_tone.GAINS), so the predecessor stays runnable. P2J-2's probe grid includes the gain 2.0, whose largest reachable target is exactly T's upper guard on anchors with no arrival deficit. P2J-2 accepted that reading (its check is 1 + g > upper); FACULTY DECISION 2 makes the endpoint an unresolved boundary, so the combination is refused and that probe row is superseded. Every gain below it is unchanged"
+    "what_happened": "its probe entry point must be run with that gain removed from the grid, which its suite does and this row declares: the grid is part of P2J-2's own frozen digest, so a view that patched it would move that digest, and the digest is what history preservation means here. P2J-2's probe grid includes the gain 2.0, whose largest reachable target is exactly T's upper guard on anchors with no arrival deficit. P2J-2 accepted that reading (its check is 1 + g > upper); FACULTY DECISION 2 makes the endpoint an unresolved boundary, so the combination is refused and that probe row is superseded. Every gain below it is unchanged"
    },
    "P2X1_FROZEN_VERDICT_SUPERSEDED_BY_P2X1A": {
     "historical": {
