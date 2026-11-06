@@ -312,3 +312,173 @@ def test_the_document_is_generated_from_the_record(record):
     for name, (opening, closing) in report.MARKERS.items():
         assert opening in text and closing in text, name
         assert report.RENDERERS[name](record).strip() in text, name
+
+
+# The adversarial review's findings, pinned independently of the frozen package ------------------------------------------------
+# The module, the record and the document are NOT re-cut: these checks state what the composition really does in the
+# region the frozen guards never visit (b < b0, and a declared gain against the T guard), so no later reading of the
+# package can mistake its texts for proven properties. Every decision they raise is the faculty's (TD-126 point 9).
+
+def test_the_dilation_factor_is_at_or_below_one_only_for_a_burden_at_or_above_the_arrival_one():
+    """R-F2: `derived.tone_target`'s comment, SEMANTICS['reader'] and reader_audit's `factor_at_or_below_one` say the
+    factor is at or below 1. That is the b >= b0 branch only: the grid of reader_audit runs with b0 = 0, so the
+    resolution branch (b < b0, which SEMANTICS['represents'] admits: 'a vasopressor that opposes it') is never probed.
+    There the factor rises above 1, up to exactly 1 + k b0, reached at b = 0."""
+    k = dt.TONE_GAIN
+    prof = dt.reader(dt.acs_profile(), k)
+    assert dt.reader_audit()["factor_at_or_below_one"], "the frozen claim holds on its own grid (b0 = 0)"
+    assert all(b >= 0.0 for b in dt.BURDEN_GRID) and dt.BURDEN_STEP > 0, "the frozen grid only ever rises"
+    for b0 in (0.0, 2.0):
+        anchors = dt.probe_anchors(arrival_vasodilatory_burden=b0)
+        arrival = dv.arrival_state(anchors, prof)
+        assert dv.tone_target(arrival, anchors, prof) == 1.0, "the arrival is 1 either way"
+        rows = {b: dv.tone_target(arrival.evolve(aux=replace(arrival.aux, vasodilatory_burden=b)), anchors, prof)
+                for b in (0.0, 0.5, 1.0, 2.0, 4.0)}
+        assert all(value <= 1.0 for b, value in rows.items() if b >= b0)
+        assert all(value > 1.0 for b, value in rows.items() if b < b0)
+        assert rows[0.0] == pytest.approx(1.0 + k * b0), "the ceiling of the resolution branch is 1 + k b0"
+
+
+def test_the_still_below_arrival_claim_holds_at_the_committed_compensation_only():
+    """R-F4: V4 ('the compensation partially opposes the vasodilation without erasing it') runs at one gain, the
+    committed 0.5, over DEMANDS. Its own analytic bound already says the largest possible target is 1.1594 at
+    g = 1.0 — a gain inside the module's COMPENSATION_GAINS — so above a deficit the grid does not reach, the
+    compensation does take the tone above the arrival tone. `never_erases` cannot catch it: it is the identity
+    target == compensation x dilation_only with compensation <= bound."""
+    assert 1.0 in dt.COMPENSATION_GAINS and max(dt.DEMANDS) == 2.0
+    burden = dt.PROBE_BURDEN
+    for gain, expected_below in ((0.5, True), (1.0, False)):
+        prof = dt.reader(dt.acs_profile(deficit_to_tone_gain=gain))
+        anchors = dt.ar.anchors()
+        held = dv.arrival_state(anchors, prof)
+        held = held.evolve(aux=replace(held.aux, vasodilatory_burden=burden))
+        over_the_grid = [dv.tone_target(held.evolve(aux=replace(held.aux, oxygen_demand=d)), anchors, prof)
+                         for d in dt.DEMANDS]
+        assert all(value < 1.0 for value in over_the_grid), "on the probed grid the claim holds at both gains"
+        worst = dv.tone_target(held.evolve(V=-2000.0), anchors, prof)
+        assert (worst < 1.0) is expected_below, (gain, worst)
+        bound = (1.0 + gain) / (1.0 + gain * dv.arrival_tone_signal(anchors, prof))
+        assert worst == pytest.approx(bound / (1.0 + dt.TONE_GAIN * burden)), "the analytic bound is reached at s = 1"
+
+
+def test_the_tone_gain_guard_and_the_contraction_bound_do_not_see_the_dilation_factor():
+    """R-F3: integration._vascular_tone refuses a gain whose largest target, 1 + g, is outside T's guard, 'so the
+    guard never shapes the response', and CoreProfile.__post_init__ requires g a < 1. Neither reads the dilation
+    factor, whose own ceiling is 1 + k b0: with a declared gain and an arrival burden the largest target is
+    (1 + g) / (1 + g s0) x (1 + k b0), so the clamp does shape the response and the effective loop slope is
+    (1 + k b0) g a. Nothing in the committed profiles reaches this (every gain is UNSET)."""
+    prof = dt.reader(dt.acs_profile(), 2.0)
+    assert prof.deficit_to_tone_gain * prof.afterload_sensitivity < 1.0, "the profile invariant is satisfied"
+    anchors = dt.probe_anchors(arrival_vasodilatory_burden=10.0)
+    arrival = dv.arrival_state(anchors, prof)
+    assert dv.tone_target(arrival, anchors, prof) == 1.0
+    resolved = arrival.evolve(aux=replace(arrival.aux, vasodilatory_burden=0.0))
+    assert dv.tone_target(resolved, anchors, prof) > CHANNEL_BOUNDS[Channel.T][1], "outside T's guard"
+    states, records = dt.course((dt.SyntheticVasodilation("down", -10.0, 0, 1),), 4, anchors, prof)
+    assert states[-1].T == CHANNEL_BOUNDS[Channel.T][1], "the channel parks on the guard"
+    clamped = [sorted({d.source.key for d in record.deltas if "bounds:T" in d.source.key}) for record in records]
+    assert sum(1 for keys in clamped if keys) >= 3, clamped
+
+
+def test_the_lag_string_check_is_vacuous_but_the_lag_itself_holds():
+    """R-F8: probe_v14's `lag_preserved` is `<string> in live or True`, and the string is not in derived.py, so the
+    key is reported True whatever the code says (it conditions no `pass`). The lag is real; this pins the behaviour
+    instead of the string."""
+    import inspect
+    source = inspect.getsource(dt.probe_v14)
+    assert '"the minute after arrival keeps T = 1" in live or True' in source
+    assert "the minute after arrival keeps T = 1" not in dv.__doc__ or True
+    live = (dt.ROOT / "clinical_core" / "derived.py").read_text(encoding="utf-8")
+    assert "the minute after arrival keeps T = 1" not in live, "the string the probe looks for does not exist"
+    anchors, prof = dt.ar.anchors(), dt.reader(dt.acs_profile())
+    states, records = dt.course((dt.SyntheticVasodilation("up", 5.0, 0, 1),), 4, anchors, prof)
+    assert [state.aux.vasodilatory_burden for state in states][:3] == [0.0, 5.0, 5.0]
+    assert states[0].T == 1.0 and states[1].T == 1.0, "the minute the burden is written does not move T"
+    assert states[2].T < 1.0, "the tone answers one minute later"
+
+
+def test_nothing_anywhere_in_the_repository_writes_the_burden():
+    """R-F9: representation()['family_writers'] and carried_debts()['no_family_writer'] glob clinical_core/modules
+    only, so a writer in clinical_core/interventions (where an epinephrine or vasopressor writer would live) would
+    not be seen. The fact holds; the guard is widened here, as P2V-1 did for its own writer."""
+    allowed = {"clinical_core/distributive_tone.py", "test_clinical_core_distributive_tone.py",
+               "clinical_core/integration.py", "clinical_core/provenance.py", "clinical_core/state.py"}
+    found = set()
+    for path in sorted(dt.ROOT.rglob("*.py")):
+        relative = path.relative_to(dt.ROOT).as_posix()
+        if "__pycache__" in path.parts or relative.startswith("validation/"):
+            continue
+        if "VasodilationChange(" in path.read_text(encoding="utf-8"):
+            found.add(relative)
+    assert found <= allowed, found
+    interventions = sorted((dt.ROOT / "clinical_core" / "interventions").glob("*.py"))
+    assert interventions, "the directory the frozen scan does not look at"
+    assert not [p for p in interventions if "VasodilationChange" in p.read_text(encoding="utf-8")]
+
+
+def test_the_burden_is_exactly_invertible_from_the_tone_once_the_gain_is_fixed():
+    """R-F6: DECISIONS['residuals'] and SEMANTICS['observable'] are process statements, not guards: no code refuses a
+    burden solved from an observable. With k and b0 fixed, b is recovered from the tone (and so from the MAP and the
+    flow) to the last bit. At arrival it is not identifiable (the target is 1 for every b0); the risk starts the
+    minute after, which is exactly where P2W-2 would fix a region."""
+    k, b0 = dt.TONE_GAIN, 0.0
+    prof = dt.reader(dt.acs_profile(deficit_to_tone_gain=0.0), k)
+    anchors = dt.probe_anchors(arrival_vasodilatory_burden=b0)
+    arrival = dv.arrival_state(anchors, prof)
+    for truth in (0.25, 7.3):
+        held = arrival.evolve(aux=replace(arrival.aux, vasodilatory_burden=truth))
+        target = dv.tone_target(held, anchors, prof)
+        recovered = ((1.0 + k * b0) / target - 1.0) / k
+        assert recovered == pytest.approx(truth, rel=1e-12)
+    assert "map" not in dt.mc._names(dt.audit()["functions"]["tone_target"]) if "functions" in dt.audit() else True
+
+
+def test_the_core_has_no_maldistribution_so_the_burden_shortens_the_refill_and_lowers_the_lactate():
+    """R-F7: the distributive signature compares the core against its own burden-0 row, never against the authored
+    truth. The core's pressure falls with the flow kept, which is the authored pattern, but its refill SHORTENS
+    (the authored cases carry 3 and 4 s, prolonged) and a pure burden LOWERS the lactate (the authored cases carry
+    3.4 and 4.6), because the core has no maldistribution or extraction defect. Pinned as the gap it is."""
+    signature = dt.distributive_signature()
+    rows = signature["rows"]
+    refill = [rows[key]["crt"] for key in sorted(rows, key=float)]
+    assert refill == sorted(refill, reverse=True), refill
+    assert refill[-1] < refill[0], "the core shortens the refill as the burden rises"
+    authored = {case: signature["authored"][case]["crt_s"] for case in signature["authored"]}
+    assert all(value >= 3.0 for value in authored.values()), authored
+    anchors, prof = dt.ar.anchors(), dt.reader(dt.acs_profile())
+    states, _ = dt.course((dt.SyntheticVasodilation("up", 0.5, 0, 1),), 8, anchors, prof)
+    lactate = [dt.reading(state, anchors, prof)["lactate"] for state in states]
+    assert lactate[-1] < lactate[0], lactate
+    assert all(signature["authored"][case]["lactate"] >= 3.4 for case in signature["authored"])
+
+
+def test_two_reported_keys_cannot_fail_as_written():
+    """R-F10: `never_erases` is the identity target == compensation x dilation_only with compensation <= bound, and
+    `burden_reads_pressure` is a conjunction whose second half is structurally False. Both are reported as evidence;
+    neither can discriminate."""
+    v4 = dt.probe_v4()
+    for value in v4["rows"].values():
+        assert value <= v4["largest_possible_target"] + 1e-12
+    assert v4["largest_possible_target"] == pytest.approx(v4["dilation_only"] * v4["compensation_bound"])
+    v14 = dt.probe_v14()
+    assert v14["tone_target_reads"] == [], "no pressure name is read, so the conjunction's second half is always False"
+    assert v14["burden_reads_pressure"] is False
+
+
+def test_a_family_writer_could_close_a_pressure_loop_that_nothing_bounds():
+    """R-F1: DECISIONS['timing'] says no pressure -> tone path is introduced because the burden is a state a family
+    writes. The core introduces none, and no family writes the burden; but a contributor is handed the whole state
+    and derived.derive is public, so a family COULD write the burden against its own MAP, with no rate bound
+    anywhere (the kinetics are UNSET, TD-126 point 3). Pinned so the claim is read as what it is: a statement about
+    the core, not a guard."""
+    import inspect
+    assert dt.probe_v14()["tone_target_reads"] == [], "the core's tone target reads no pressure"
+    signature = inspect.signature(dt.SyntheticVasodilation.contribute)
+    assert {"state", "anchors", "profile"} <= set(signature.parameters), signature
+    assert callable(dv.derive), "a contributor can read every observable of the state it is handed"
+    assert "PRESSURE_TO_TONE_NOT_REQUIRED_FOR_DISTRIBUTIVE_COMPOSITION" in inspect.getsource(dt)
+    assert dt.carried_debts()["pressure_in_the_tone_path"] == [], "true of the core, not of a future family"
+    anchors, prof = dt.ar.anchors(), dt.reader(dt.acs_profile())
+    state = dv.arrival_state(anchors, prof)
+    assert dv.derive(state, anchors, prof).map > 0, "the MAP a contributor could read is one call away"
+    assert dv.PARAMETERS[dt.NEW_PROFILE_FIELD][0] == "provisional", "and no rate of its own is declared anywhere"

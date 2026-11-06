@@ -4390,3 +4390,71 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Veredicto:** `COMMON_SYSTEMIC_STRESS_ARCHITECTURE_READY`.
 - **Recomendación:** auditoría de sólo lectura de la composición del tono distributivo y de los escritores de T
   (P2W-0) antes de migrar la anafilaxia. Queda abierto en TD-125.
+## 71. P2W-1 · Composición mínima del tono distributivo común (2026-11-06)
+
+- **Encargo:** añadir la entrada común mínima que falta para el tono distributivo, tras la auditoría P2W-0
+  (clasificación B, `MINIMUM_COMMON_VASODILATORY_AUXILIARY_REQUIRED`, compuerta PASS): la pérdida primaria de tono
+  vascular que causa una enfermedad, sin migrar la anafilaxia, sin epinefrina, sin calibrar magnitudes y sin abrir
+  presión → tono.
+- **Núcleo** (`state.py`, `provenance.py`, `derived.py`, `integration.py`, probado contra `cff2fb2`):
+  - `AuxiliaryState.vasodilatory_burden` (finita, 0 o más, 0 por defecto, sin cota superior) y
+    `Anchors.arrival_vasodilatory_burden`;
+  - `provenance.VasodilationChange`: aditivo, con la forma de `DistressChange`; sin escritor de familia;
+  - `CoreProfile.vasodilatory_burden_to_tone_gain`: único lector, UNSET por defecto. Multiplica el objetivo de tono
+    común por `(1 + k·b₀)/(1 + k·b)`, normalizado en la llegada.
+- **Composición, no un segundo escritor de T:** la pregunta que P2J-2 dejó abierta se responde sin relajar su guardia.
+  El núcleo (`integration._vascular_tone`) sigue siendo el único que escribe T; la compensación por déficit y la
+  vasodilatación de la enfermedad entran en el mismo objetivo, de forma multiplicativa, cada una con su ganancia. Un
+  delta de familia sobre T sigue rechazado.
+- **Análisis:** `clinical_core/distributive_tone.py`, congelado antes de la evaluación. Registro:
+  `docs/revision/P2W1_distributive_tone.json`. Informe: `docs/revision/P2W1_TONO_DISTRIBUTIVO_COMUN.md`.
+- **Resultados:**
+  - V1–V14 pasan. Con la ganancia UNSET toda lectura previa es exacta (GI, SCA, TEP, edema pulmonar), y un cambio de
+    vasodilatación se rechaza sin lector declarado;
+  - más carga baja el tono por su propia ganancia (0 → 0,25 → 0,5 → 1 da objetivo 1 → 0,80 → 0,667 → 0,50 y PAM 78,67
+    → 66,95 → 58,27 → 46,27); más compensación lo sube sólo por encima del déficit de llegada, y en el déficit de
+    llegada el objetivo es el factor de dilatación solo, igual para cualquier ganancia;
+  - las dos causas coexisten sin doble conteo: con carga 0,5 la dilatación sola da 0,667, la cota de la compensación
+    es 1,3953 y el objetivo máximo posible 0,9302: opone sin borrar y sigue por debajo de la llegada;
+  - con carga 50 el objetivo es 0,0196 y T queda en su guarda 0,10 con el recorte registrado (PAM 10,78, gasto
+    1,3699: flujo conservado): ninguna cota clínica se elige;
+  - la señal distributiva no mueve ningún otro canal ni estado auxiliar; el estrés sistémico de P2V-1 sólo mueve la
+    FC y el bloqueo beta no toca el tono;
+  - la exactitud de llegada se conserva con cualquier carga autorada y no hay recursión en el mismo minuto;
+  - firma distributiva: la presión baja, el flujo se conserva o sube y el relleno no se alarga, por los caminos que
+    P2J-1 y P2J-2 ya certificaron;
+  - el motor heredado de la anafilaxia queda clasificado `DISEASE_SPECIFIC_BP_AND_HR_EQUATION` (PA y FC movidas desde
+    su propia severidad), sin ajustarlo ni reproducirlo;
+  - toda magnitud queda UNSET y ninguna carga de llegada se declara: los dos casos de anafilaxia quedan como
+    `FAMILY_CANDIDATE / REGION UNSET` con su evidencia independiente;
+  - el registro de P2V-1 se reproduce sobre su árbol.
+- **Revisión adversarial:** hecha, con sondas propias. Lo que no pudo romper: la ecuación de T sigue agnóstica de
+  familia (ningún término de enfermedad entró; sólo lee la carga común, su ancla y la ganancia de perfil), hay un único
+  lector en todo el árbol, el déficit no está doblemente contado hacia el tono, el estrés sistémico de P2V-1 no se
+  filtra al tono (trazas bit a bit idénticas con estrés 0 y 2), el bloqueo beta no lo cambia (β = 0 / 0,5 / 1 dan la
+  misma traza), el retardo de un minuto se mantiene y ninguna familia certificada cambia por defecto (la reversión fija
+  129 archivos comunes y falla en rojo al alterar la composición a mano). Mérito del paquete: la regla del veredicto sí
+  consulta todas las secciones ejecutables, lo que corrige la R-F1 de P2V-1. Hallazgos confirmados con sondas propias,
+  todos en la región que las guardas congeladas no visitan y que hoy no corre (toda ganancia UNSET): R-F2 el factor
+  «nunca por encima de 1» es la rama `b ≥ b₀`; en `b < b₀` sube hasta `1 + k·b₀` (comprobado: con k = 1 y b₀ = 2, el
+  objetivo en b = 0 es 3,0); R-F3 la guarda de ganancia de `_vascular_tone` y la cota `g·a < 1` no ven el factor de
+  dilatación, así que con k = 2 y b₀ = 10 el objetivo de resolución es 21 y T se aparca en su guarda 3,0 con el recorte
+  registrado tres minutos seguidos: el tope «sólo guarda» sí modela; R-F4 `still_below_arrival` se prueba en una sola
+  ganancia (0,5): con g = 1 y carga 0,5, por encima de demanda ≈ 3 el objetivo pasa de 1 (hasta 1,1594 en déficit
+  completo), de modo que el criterio 3 vale en la rejilla probada, no en todo el espacio declarado; R-F1 nada impide
+  que un escritor de familia lea su propia PAM y cierre un lazo presión → tono sin cota (el núcleo no lo introduce y no
+  existe tal escritor); R-F6 fijadas k y b₀ la carga se invierte exactamente del tono; R-F7 el relleno del núcleo se
+  acorta y el lactato baja con una carga pura, contra los 3 y 4 s y los lactatos 3,4 y 4,6 autorales (no hay
+  maldistribución ni defecto de extracción); R-F5/R-F8/R-F9/R-F10 guardas más estrechas que su texto (el ancla de
+  llegada es observacionalmente inerte sin escritor, `lag_preserved` es un `or True` vacuo, el escaneo de escritores
+  sólo mira `clinical_core/modules`, y dos claves informadas no pueden fallar). El módulo congelado, el registro y el
+  veredicto no se re-cortaron: se añadieron 9 chequeos independientes en las pruebas (la rama `b < b₀` con su techo
+  `1 + k·b₀`, el alcance real de `still_below_arrival`, la guarda y la cota sin el factor, el retardo probado por
+  comportamiento, el grep de todo el repositorio incluido `clinical_core/interventions`, la invertibilidad, la brecha
+  de relleno y lactato, las dos claves vacuas y el lazo que un escritor de familia podría cerrar), el informe lleva los
+  avisos de alcance y los hallazgos quedan en TD-126 (punto 9). Cuatro decisiones quedan abiertas y son docentes: la
+  rama `b < b₀` y la dirección vasopresora, si la guarda y la cota deben incluir el factor, si un escritor de familia
+  puede leer la presión, y la deuda de maldistribución.
+- **Veredicto:** `COMMON_DISTRIBUTIVE_TONE_COMPOSITION_READY`.
+- **Recomendación:** auditoría de sólo lectura de la generalización de la anafilaxia (P2W-2) antes de cualquier
+  migración, y después la auditoría de salida de la Fase 2 (P2X-0). Queda abierto en TD-126.
