@@ -333,3 +333,175 @@ def test_the_document_is_generated_from_the_record(record):
     for name, (opening, closing) in report.MARKERS.items():
         assert opening in text and closing in text, name
         assert report.RENDERERS[name](record).strip() in text, name
+
+
+# The adversarial review's findings, pinned independently of the frozen package -------------------------------------------------
+# The frozen rule returned PHASE2_DECLARED_PROPERTIES_CLOSED; the review showed that criterion 3 does not hold over the
+# whole declared domain and that three of the nine criteria cannot fail. The module, the record and the document are
+# NOT re-cut (history is preserved, as for P2S-3): the operative classification is NOT_CLOSED, recorded in
+# PHASE2_SHADOW_CORE section 72 and TD-127, and every finding is pinned here so the next package starts from them.
+
+def test_the_blocker_the_tone_writer_guard_and_the_boundary_do_not_run_with_the_response_off():
+    """R-F1 (the blocker, criterion 3): step calls _vascular_tone only when the compensation gain is above 0 or the
+    distributive reader is declared, and BOTH P2J-2's second-writer refusal and P2X-1's per-minute boundary live
+    inside it. The committed GI profile has g = 0 and the reader UNSET, so a writer of T drives the channel onto its
+    guard and the clamp shapes the value. No contributor writes T today (pinned in
+    test_clinical_core_pressure_tone.py), so it is reachable only with a new writer - but `contradictions()` publishes
+    'a family delta on T is refused' as a fact, and criterion 3 claims the clamp never shapes physiology."""
+    from clinical_core.provenance import SourceKind
+    pairs = dt.committed_pairs()
+    anchors, gi = pairs["gi"]
+    assert gi.deficit_to_tone_gain == 0.0 and gi.vasodilatory_burden_to_tone_gain is None
+    source = inspect.getsource(step)
+    assert "profile.deficit_to_tone_gain > 0.0 or profile.vasodilatory_burden_to_tone_gain is not None" in source
+    writer = dt._FamilyTone("fam")
+    state, clamped = dv.arrival_state(anchors, gi), []
+    for _ in range(6):
+        state, record = step(state, (writer,), anchors, gi)
+        clamped += [delta for delta in record.deltas if delta.source.kind is SourceKind.CLAMP]
+    assert state.T == T_LOWER, "the channel's guard, not the response, decided the value"
+    assert clamped, "and the clamp is recorded, which is what DECISION 4 rejects"
+    # With the response on, the same writer is refused: the P2J-2 guard itself was not relaxed.
+    anchors_on, acs = pairs["acs"]
+    with pytest.raises(CoreInvariantError, match="write T while the vascular-tone response is on"):
+        step(dv.arrival_state(anchors_on, acs), (writer,), anchors_on, acs)
+    assert x1.contradictions()["searched"]["incompatible_writer_ownership"].startswith("no:")
+
+
+def test_the_boundary_is_inclusive_so_a_roundoff_clamp_is_recorded_inside_an_accepted_domain():
+    """R-F4 (criterion 3, X8): the boundary accepts a target exactly on T's lower guard, but the channel rebuilds the
+    value as T + (target - T) with fsum, and that round trip can land one ulp below it. The magnitude is 2.8e-17 and
+    the clamp pushes towards the target, but a clamp IS recorded in an accepted minute, so 'valid interior
+    combinations run with no clamp at all' is not true at the exact boundary."""
+    from clinical_core.provenance import SourceKind
+    profile, anchors = x1.reader(x1.acs_profile(), 1.0), x1.anchors_with(0.0)
+    domain = tone_domain(anchors, profile)
+    assert domain["largest_target"] <= T_UPPER and domain["loop_slope_bound"] < 1.0, "the domain is accepted"
+    state = x1.state_with(anchors, profile, 9.0)
+    assert dv.tone_target(state, anchors, profile) == T_LOWER, "exactly on the guard, so the boundary accepts it"
+    after, record = step(state, (), anchors, profile)
+    clamps = [delta.amount for delta in record.deltas if delta.source.kind is SourceKind.CLAMP]
+    assert clamps and 0 < max(clamps) < 1e-15, clamps
+    assert after.T == T_LOWER
+    assert "not lower <= target <= upper" in inspect.getsource(x1.guards)
+
+
+def test_three_of_the_nine_criteria_cannot_fail_as_written():
+    """R-F2 (criteria 7, 8, 9): contradictions() and debt_classification() derive `pass` from a list they build empty,
+    and supersession()'s `pass` is all() over two non-empty prose strings. CONTRADICTIONS and DEBT are never compared
+    with the code, so the document publishes 'no blockers / no contradictions' from a search that does not run. Of
+    criterion 7 only p2w1_digest_unchanged is executable."""
+    assert x1.contradictions()["inside_certified_scope"] == []
+    assert "out[\"pass\"] = not out[\"inside_certified_scope\"]" in inspect.getsource(x1.contradictions)
+    assert x1.debt_classification()["blockers"] == []
+    assert "out[\"pass\"] = not out[\"blockers\"]" in inspect.getsource(x1.debt_classification)
+    rows = x1.supersession()["records"]
+    assert all(isinstance(row["history_preserved"], str) and row["history_preserved"] for row in rows.values())
+    assert "all(row[\"history_preserved\"] for row in rows.values())" in inspect.getsource(x1.supersession)
+
+
+def test_the_writer_contract_scan_misses_four_evasions():
+    """R-F3 / R-F12 (criterion 5): the scan resolves the constructor only as an ast.Name, inspects only the function
+    that builds the record, reads only attribute names, and its forbidden list omits same-loop observables. Each of
+    the four shapes below reads the pressure loop and would pass. The contract text is wider than its enforcement."""
+    shapes = {
+        "qualified_constructor": "pv.VasodilationChange(1.0 / derive(state, anchors, profile).map, s, m, 'd')",
+        "helper_function": "amount = _from_pressure(state, anchors, profile)\n    return VasodilationChange(amount, s, m, 'd')",
+        "positional_access": "VasodilationChange(_perfusion(state, anchors, profile)[1], s, m, 'd')",
+        "same_loop_observable": "VasodilationChange(derive(state, anchors, profile).output_rel, s, m, 'd')",
+    }
+    forbidden = set(x1.writer_contract()["forbidden_inputs"])
+    for name, body in shapes.items():
+        tree = ast.parse(f"def contribute(self, state, minute, signals, anchors, profile):\n    {body}\n")
+        node = next(n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef))
+        builds = any(isinstance(inner, ast.Call) and getattr(inner.func, "id", None) == "VasodilationChange"
+                     for inner in ast.walk(node))
+        reads = {inner.attr for inner in ast.walk(node) if isinstance(inner, ast.Attribute)}
+        caught = builds and bool(reads & forbidden)
+        assert not caught, f"{name} is not caught by the scan as written"
+    assert "observable of the same" in (ROOT / "clinical_core" / "provenance.py").read_text(encoding="utf-8")
+    assert not {"output_rel", "delivery_rel", "crt_s", "sympathetic_drive"} & forbidden
+    assert x1.probe_x15()["family_writers"] == [], "X15 passes by absence: no family writer exists to test"
+
+
+def test_the_contraction_witness_runs_with_the_distributive_factor_at_one():
+    """R-F5 / R-F6 (criterion 4): OUTSIDE_CONTRACTION has b0 = 0, so its recovery factor is 1 and the refusal comes
+    entirely from the afterload term the derivation inherits from P2J-2 - not from the distributive factor the
+    criterion says the guard now covers. And the same profile with the reader UNSET has the same bound and is
+    accepted, because the check sits behind `distributive_reader`."""
+    gain, burden, sensitivity = x1.OUTSIDE_CONTRACTION
+    assert burden == 0.0
+    profile = x1.reader(x1.acs_profile(afterload_sensitivity=sensitivity), gain)
+    anchors = x1.anchors_with(burden)
+    declared = tone_domain(anchors, profile)
+    assert declared["recovery_max"] == 1.0 and declared["loop_slope_bound"] >= 1.0
+    unset = tone_domain(anchors, x1.acs_profile(afterload_sensitivity=sensitivity))
+    assert unset["loop_slope_bound"] == declared["loop_slope_bound"] and unset["distributive_reader"] is False
+    step(dv.arrival_state(anchors, x1.acs_profile(afterload_sensitivity=sensitivity)), (), anchors,
+         x1.acs_profile(afterload_sensitivity=sensitivity))   # accepted: the check is skipped without the reader
+    assert "if domain[\"distributive_reader\"]:" in inspect.getsource(step.__globals__["_vascular_tone"])
+
+
+def test_the_slope_is_never_verified_with_the_distributive_factor_above_one():
+    """R-F7 (criterion 4): derivation() and X9 sample the slope on arrival-like states, where the burden is b0 and so
+    B(b) = 1 exactly. The live slope at b = 0 is B_max times larger - the one factor P2X-1 adds is absent from every
+    numeric check of the slope. Pinned here with the factor measured."""
+    profile, anchors = x1.reader(x1.acs_profile(), x1.TONE_GAIN), x1.anchors_with(x1.ARRIVAL_BURDEN)
+    arrival = dv.arrival_state(anchors, profile)
+    assert arrival.aux.vasodilatory_burden == x1.ARRIVAL_BURDEN
+    recovery = tone_domain(anchors, profile)["recovery_max"]
+    h = 1e-6
+    for tone in (1.0, 1.5, 2.0):
+        at_arrival_burden = (dv.tone_target(arrival.evolve(T=tone + h), anchors, profile)
+                             - dv.tone_target(arrival.evolve(T=tone - h), anchors, profile)) / (2 * h)
+        resolved = arrival.evolve(aux=replace(arrival.aux, vasodilatory_burden=0.0))
+        at_zero = (dv.tone_target(resolved.evolve(T=tone + h), anchors, profile)
+                   - dv.tone_target(resolved.evolve(T=tone - h), anchors, profile)) / (2 * h)
+        assert math.isclose(at_zero / at_arrival_burden, recovery, rel_tol=1e-6), tone
+    assert all(row["active_branch"] for row in x1.derivation()["slope"].values())
+
+
+def test_x12_computes_course_digests_it_never_compares():
+    """R-F8 (criterion 6): X12's name and docstring say the committed readings are the frozen ones, but its `pass`
+    reads only `committed_profiles_unset` and a single accepted minute per profile. The real bit-exactness evidence
+    is X11's reproduction of the P2V-1 record on its tree."""
+    x12 = x1.probe_x12()
+    assert x12["course_digests"] and "course_digests" not in inspect.getsource(x1.probe_x12).split('out["pass"]')[1]
+    assert x1.probe_x11()["courses_identical"], "this is where the bit-exactness is really established"
+
+
+def test_the_verdict_rule_does_not_read_the_reversal_proof():
+    """R-F10: found['proof'] (the four reversals, the 133 common hashes and P2W-1's freeze digest on its own tree) is
+    published in the record and in the document, and conditions none of the nine criteria. The fact is verified by
+    pytest above; what is missing is that the verdict depend on it."""
+    source = inspect.getsource(x1.readiness)
+    assert '"proof"' not in source and "upstream_unchanged" not in source
+    assert all(x1.proofs().values()) and all(x1.common_untouched().values())
+
+
+def test_the_td120_supersession_cites_documents_that_do_not_exist_and_pins_no_p2s3_digest():
+    """R-F11 (criterion 7): supersession() looks for P2S3_ASMA_EN_SOMBRA.md and P2T3_ASMA_CON_DISTRES.md, which are
+    not the real filenames, so both rows fall back silently. No P2S-3 digest is pinned anywhere, and the test that
+    claims to check it only asserts the string is non-empty. The FACT holds - no P2S-3 file is touched by this
+    package - and that is what is asserted here instead."""
+    from clinical_core import asthma_migration as sm
+    documents = x1.supersession()["records"]["TD120_HISTORICAL_SUPERSESSION_ACCEPTED"]["documents"]
+    assert documents["historical"].endswith("(P2S-3 section)") and documents["superseding"].endswith("(P2T-3 section)")
+    assert not (ROOT / "docs" / "revision" / "P2S3_ASMA_EN_SOMBRA.md").exists()
+    assert (ROOT / "docs" / "revision" / "P2S3_ASMA_SOMBRA.md").exists()
+    assert "P2S3_ASMA_SOMBRA" not in inspect.getsource(x1.supersession)
+    # the fact: P2S-3's record is byte-identical to the predecessor head's
+    import subprocess
+    at_head = subprocess.run(["git", "show", f"{x1.P2W1_HEAD}:{sm.RECORD.relative_to(ROOT).as_posix()}"],
+                             cwd=ROOT, capture_output=True, check=True).stdout
+    assert hashlib.sha256(at_head).hexdigest() == hashlib.sha256(sm.RECORD.read_bytes()).hexdigest()
+
+
+def test_the_refusal_helper_is_blind_to_the_reason():
+    """R-F13: x1._refused swallows any CoreInvariantError or ProvenanceError, and X5's three sub-refusals are not
+    message-checked anywhere. Pinned with the messages they must carry."""
+    assert "except error:" in inspect.getsource(x1._refused)
+    with pytest.raises(CoreInvariantError, match="never negative"):
+        replace(dv.arrival_state(x1.anchors_with(1.0), x1.reader(x1.acs_profile())).aux, vasodilatory_burden=-1.0)
+    with pytest.raises(CoreInvariantError, match="vasodilatory burden"):
+        x1.anchors_with(-1.0)

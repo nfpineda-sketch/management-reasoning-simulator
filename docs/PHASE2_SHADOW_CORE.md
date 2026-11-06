@@ -4458,3 +4458,118 @@ Ninguno. `clinical_core` sigue sólo en sombra.
 - **Veredicto:** `COMMON_DISTRIBUTIVE_TONE_COMPOSITION_READY`.
 - **Recomendación:** auditoría de sólo lectura de la generalización de la anafilaxia (P2W-2) antes de cualquier
   migración, y después la auditoría de salida de la Fase 2 (P2X-0). Queda abierto en TD-126.
+## 72. P2X-1 · Cierre de las propiedades declaradas de la Fase 2 (2026-11-06)
+
+- **Encargo:** el paquete mínimo de cierre que P2X-0 identificó (B, `PHASE2_READY_AFTER_ONE_MINIMUM_PACKAGE`): hacer
+  verdaderas sobre todo su dominio declarado las propiedades que P2W-1 publicó, y zanjar el veredicto histórico de
+  P2S-3. Sin fisiología clínica nueva y sin magnitudes.
+- **Decisiones docentes que rigen** (ocho): `BELOW_ARRIVAL_BURDEN = ALLOWED_RECOVERY`; carga nunca negativa y una
+  carga negativa no es vasoconstricción; las guardas deben contemplar `Bmax = 1 + k·b₀`;
+  `TONE_CLAMP_AS_PHYSIOLOGY = REJECTED` (fallar cerrado); `PRESSURE_DRIVEN_FAMILY_VASODILATION = DEFERRED /
+  NOT_AUTHORIZED`; la maldistribución es `FUTURE_RESEARCH_DEBT`, no bloqueo; las brechas de la anafilaxia son
+  posteriores; `TD120_HISTORICAL_SUPERSESSION_ACCEPTED`.
+- **Derivación (P2X-1-1), analítica y verificada:** el objetivo es `C(s)·B(b)` con
+  `C(s) = (1+g·s)/(1+g·s₀)` sobre `[1/(1+g·s₀), (1+g)/(1+g·s₀)]` y `B(b) = (1+k·b₀)/(1+k·b)` sobre `(0, 1+k·b₀]`,
+  independientes, así que el máximo es el producto de los máximos y el ínfimo es 0. La pendiente del lazo retardado es
+  `B(b)·[g/(1+g·s₀)]·a·A(T)·(1−s)` en la rama activa del déficit y 0 fuera, de donde la cota uniforme
+  `(1+k·b₀)·g·a·A(T_lo)/(1+g·s₀)`. La `g·a < 1` publicada por P2J-2 es esa cota con `B = 1`; el factor distributivo la
+  escala. Comprobado contra las ecuaciones vivas: los cinco extremos coinciden exactamente (incluido el máximo
+  conjunto 2,25 y la recuperación máxima 1,5 con k = 1 y b₀ = 0,5), la forma cerrada de la pendiente coincide en los
+  cuatro puntos interiores y el codo de la señal queda localizado en T = 0,5 (plano por debajo, bajo la cota por
+  encima). Clasificación: **`FULL_TONE_CONTRACTION_GUARD_DERIVED`**.
+- **Núcleo** (`integration.py`, `provenance.py`, probado contra `d4e6fe9`):
+  - `integration.tone_domain`: las formas cerradas del dominio alcanzable y de la cota del lazo;
+  - `_vascular_tone`, donde el lector distributivo está declarado: rechaza antes de ejecutar un dominio cuyo objetivo
+    mayor sale del rango soportado de T o cuya cota derivada no es contracción; y cada minuto, un objetivo que saldría
+    de ese rango **falla cerrado**. La guarda del canal queda como última capa de seguridad, no como la respuesta
+    esperada;
+  - `provenance.VasodilationChange`: el contrato del escritor (carga no negativa; sin leer PAM, `pressure_rel` ni T),
+    estructural y verificado por un escaneo de todo el repositorio.
+  - Los chequeos publicados de P2J-2 (su `1 + g` contra la guarda y el invariante `g·a < 1` del perfil) quedan
+    intactos, y la cota derivada se aplica sólo donde el lector está declarado: ningún perfil comprometido cambia de
+    región admisible, y el golden de la sombra no se movió.
+- **Análisis:** `clinical_core/tone_domain.py`, congelado antes de la evaluación. Registro:
+  `docs/revision/P2X1_tone_domain.json`. Informe: `docs/revision/P2X1_CIERRE_PROPIEDADES_DECLARADAS.md`.
+- **Resultados:** X1–X15 pasan. `b = b₀` da factor 1 exacto en toda combinación; `b > b₀` baja el tono; `0 ≤ b < b₀` lo
+  sube al resolverse, hasta exactamente `1 + k·b₀`; `b < 0` se rechaza en el estado, en el ancla y en el minuto de un
+  escritor; un dominio superior inadmisible (k = 2, b₀ = 10: objetivo mayor 29,3) y una combinación no contractiva
+  (k = 1, a = 0,95: cota 3,05 con el objetivo mayor dentro del rango) se rechazan antes de ejecutar, en ambos casos
+  con los chequeos de P2J-2 satisfechos; las combinaciones interiores válidas corren **sin un solo recorte**; el
+  estrés sistémico y el bloqueo beta siguen sin tocar el tono; y los trece probes de P2W-1 distintos de V5 se
+  reproducen exactamente, con sus cursos de referencia idénticos.
+- **Supersesiones, con la historia intacta:** `P2S3_FROZEN_VERDICT_SUPERSEDED_BY_P2T3` (autoritativo: P2T-3,
+  `ASTHMA_SHADOW_MIGRATION_READY`) y `P2W1_V5_CLAMP_BEHAVIOUR_SUPERSEDED_BY_P2X1` (su lectura del recorte como
+  respuesta la reemplaza el rechazo; el registro congelado de P2W-1 conserva su fila y su digest).
+- **Deuda consolidada:** 11 `ACCEPTABLE_PHASE2_DEBT`, 3 `NEXT_PHASE_INTEGRATION_DEBT`, 5 `FUTURE_RESEARCH_DEBT`;
+  ninguna entrada es bloqueo por estar UNSET.
+- **Revisión adversarial:** hecha, con sondas propias; confirmé por mi cuenta los dos hallazgos que condicionan el
+  veredicto. Lo que NO pudo romper, con evidencia: `Bmax = 1 + k·b₀` es el supremo real (60 000 cargas admisibles, la
+  mayor B hallada 1,5 = la declarada; `-0.0` es lo único negativo que pasa y da el mismo factor); la cota uniforme es
+  una cota superior real de la pendiente viva (1144 juegos de parámetros, **545 aceptados**, **0 violaciones**, peor
+  pendiente 0,9457 bajo su cota 0,9783); la forma cerrada coincide con las ecuaciones vivas en 8 cargas × 74 valores
+  de T, con los únicos desacuerdos en el codo exacto; una carga severa falla cerrado y no se aparca en la guarda;
+  ninguna familia anterior cambia (extrajo el árbol de `d4e6fe9` y comparó en dos intérpretes: las 9 trayectorias y
+  las 13 sondas de P2W-1 distintas de V5, idénticas en digest; V5 levanta la excepción: exactamente la única
+  supersesión declarada); la historia de P2W-1 es byte-idéntica (`1ad221db…` en ambos lados) y `derived.py`,
+  `state.py`, `distributive_tone.py` y `vascular_tone.py` también; no entró fisiología clínica, magnitud ni
+  maldistribución; la presión no entra en el camino del tono; con la respuesta encendida un delta de familia sobre T
+  sigue rechazado; y los chequeos publicados de P2J-2 están intactos.
+- **Hallazgos (14), dos de ellos condicionan el veredicto:**
+  - **R-F1 (bloqueo).** `step` llama a `_vascular_tone` sólo si `g > 0` o el lector está declarado, y **tanto** la
+    guardia de segundo escritor de P2J-2 **como** la frontera por minuto de P2X-1 viven dentro de esa función. El
+    perfil comprometido **GI tiene g = 0 y lector UNSET**, así que con un escritor de T (hoy inexistente) el canal cae
+    1,0 → 0,1 y el **recorte** fija el valor, con sus deltas registrados en los minutos 5 y 6. Verificado por mí: con
+    SCA (g = 0,5) el mismo escritor se rechaza en el minuto 1. La fila `incompatible_writer_ownership` de
+    `contradictions()` publica «a family delta on T is refused» como hecho, y el criterio 3 afirma que el recorte
+    nunca modela: ninguna de las dos cosas vale en esa configuración.
+  - **R-F4 (bloqueo).** La frontera es inclusiva y el canal reconstruye el valor con `fsum`, así que un objetivo
+    exactamente en 0,1 se acepta y el viaje de ida y vuelta deja un recorte de 2,8e-17. Verificado por mí (k = 1,
+    b₀ = 0, carga 9 → objetivo 0,1 exacto): dominio aceptado y **recorte registrado en un minuto aceptado**, contra
+    «las combinaciones interiores válidas corren sin un solo recorte» (X8 y criterio 3).
+  - R-F2: `contradictions()`, `debt_classification()` y `supersession()` devuelven `pass` constante, así que **tres de
+    los nueve criterios no pueden fallar** (del 7 sólo es ejecutable `p2w1_digest_unchanged`); `CONTRADICTIONS` y
+    `DEBT` son prosa que nunca se compara con el código. Es la R-F1 de P2V-1 reaparecida.
+  - R-F3 y R-F12: el escaneo del contrato del escritor es evadible por cuatro vías (constructor cualificado, lectura
+    en una función auxiliar, acceso posicional o `getattr`, y observables del mismo lazo ausentes de la lista:
+    `output_rel`, `delivery_rel`, `crt_s`, `sympathetic_drive`); recorre `clinical_core`, no todo el repositorio; X15
+    pasa por vacío (exige que no exista ningún escritor); y la prueba que decía demostrarlo reimplementaba el
+    predicado en vez de llamar al escaneo.
+  - R-F5 y R-F6: el único testigo de la cota nueva (`OUTSIDE_CONTRACTION`) corre con **b₀ = 0**, es decir con el
+    factor distributivo en 1, así que el rechazo lo produce el término de poscarga heredado, no lo que P2X-1 añade; y
+    con el lector UNSET el chequeo se omite aunque la cota derivada dé ≥ 1 (cualificación honesta del revisor: sobre
+    el intervalo de T **alcanzable** con el lector UNSET el lazo sí es contracción en las 392 combinaciones probadas,
+    así que es asimetría de guardia, no inestabilidad demostrada).
+  - R-F7: la forma cerrada de la pendiente nunca se verifica con `B(b) ≠ 1` (la pendiente viva en b = 0 es exactamente
+    `Bmax` veces mayor).
+  - R-F8: X12 calcula digests de trayectoria que nunca compara; la exactitud bit a bit la establece X11.
+  - R-F9: `only_refusals_added` es vacua (sólo detecta bucles en el nivel superior).
+  - R-F10: la regla del veredicto **no lee** `found["proof"]` (las cuatro reversiones, los 133 hashes comunes, el
+    digest de P2W-1), aunque el documento lo publica como soporte.
+  - R-F11: la supersesión de TD-120 cita dos nombres de documento que no existen (los reales son
+    `P2S3_ASMA_SOMBRA.md` y `P2T3_ASMA_DISTRES_SOMBRA.md`) y no fija ningún digest de P2S-3; el hecho sí se sostiene
+    (ningún archivo `P2S3_*` ni `P2T3_*` se tocó, y su registro es byte-idéntico al del head anterior).
+  - R-F13: `_refused` es ciego al mensaje en los tres sub-rechazos de X5.
+  - R-F14: en el momento de la revisión el registro y el informe aún no estaban versionados, y las ocho decisiones
+    docentes no son trazables desde el Decision File.
+- **Respuesta, sin re-cortar el módulo congelado ni su registro:** se añadieron **10 chequeos independientes** en
+  `test_clinical_core_tone_domain.py` que fijan cada hallazgo (incluido el bloqueo, con su curso de 6 minutos y el
+  recorte de redondeo medido), el informe lleva los avisos de alcance y los hallazgos quedan en TD-127.
+- **Veredicto de la regla congelada:** `PHASE2_DECLARED_PROPERTIES_CLOSED` (9 de 9 criterios).
+- **Veredicto operativo, corregido por la revisión:
+  `PHASE2_DECLARED_PROPERTIES_NOT_CLOSED — el criterio 3 no vale sobre todo el dominio declarado: con la respuesta de
+  tono apagada (perfil GI, g = 0 y lector UNSET) ni la guardia de segundo escritor de T ni la frontera que falla
+  cerrado se ejecutan, y la frontera inclusiva deja un recorte de redondeo en un minuto aceptado`.**
+  Es el mismo patrón que P2S-3: la regla congelada devolvió READY y la revisión mostró lo contrario, así que la
+  clasificación operativa es la revisada (`P2X1_FROZEN_VERDICT_SUPERSEDED_BY_ITS_REVIEW`). El paquete congelado, su
+  registro y su digest no se reescriben.
+- **Consecuencia:** **no** se ejecuta P2X-2 (auditoría final de salida) y **no** se hace el congelado final de la
+  Fase 2. La condición del encargo —«if ANY closure criterion fails: STOP before final freeze and report the exact
+  blocker»— se cumplió y me detuve ahí.
+- **Recomendación:** un paquete mínimo **P2X-1A** (pequeño, sólo rechazos y guardas de evidencia) que: (a) mueva el
+  rechazo de escritores de T y la frontera del canal fuera de `_vascular_tone`, a `step`, de modo que corran con la
+  respuesta apagada; (b) haga estricta la frontera en los extremos exactos (o asigne el objetivo en vez de sumar un
+  delta); (c) haga ejecutables `contradictions()` y `debt_classification()` y añada un criterio que lea la prueba de
+  reversión; (d) refuerce el escaneo del contrato (constructor cualificado, grafo de llamadas del módulo, acceso
+  posicional, lista de observables completa, todo el repositorio) y añada un testigo de contracción con b₀ > 0; (e)
+  corrija los dos nombres de documento de la supersesión y fije el digest de P2S-3. Después, P2X-2 y, si queda limpia,
+  el congelado final.
