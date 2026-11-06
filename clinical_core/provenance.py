@@ -349,6 +349,13 @@ class VasodilationChange:
       allowed inputs are its own disease-process state, time, a treatment, and authored family mechanisms that do not
       close that loop. The contract is structural, not enforced at runtime: the repository checks it by scanning every
       module that builds a VasodilationChange, as it checks the other writer ownerships.
+
+    P2X-1A makes that scan materially enforceable (its P2X-1 version was evadable). It now follows the construction
+    through an alias or a qualified name (``provenance.VasodilationChange``), through the module's own helper
+    functions that feed the amount, and through positional arguments; it covers every observable of the same loop the
+    core derives, not only the pressures - the MAP, pressure_rel, SBP, DBP, T, the relative output and delivery, the
+    capillary refill and the sympathetic drive; and it reads the repository's own code, not only this package's
+    modules. What it does not do is decide the question in general: it names the patterns a writer must not use.
     """
 
     amount: float

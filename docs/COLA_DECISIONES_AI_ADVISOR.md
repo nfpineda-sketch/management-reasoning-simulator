@@ -5,7 +5,7 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-10-08, con TD-77 aprobada para integrar (detenida: falta el diff de referencia), las tres
+- **Actualizado:** 2026-11-06, con las ocho decisiones docentes de la Fase 2 que rigen P2X-1 y P2X-1A (sección «Fase 2 · decisiones docentes del tono distributivo y del cierre», trigésima séptima actualización); antes, 2026-10-08, con TD-77 aprobada para integrar (detenida: falta el diff de referencia), las tres
   correcciones de H-62, TD-87 y la defensa en profundidad de B-1 (trigésima sexta actualización); antes, el mismo
   día, con la decisión docente de ES-P8g, el candidato local congelado `37c9afb`, el paquete
   de firma de H-62 e I-63 y el intento autorizado de B-1 (trigésima quinta actualización de la sección «Preparación
@@ -23,6 +23,37 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
   D-1 a D-11 decididas y aplicadas), la revisión clínica prepiloto, la segunda y la primera respuesta al paquete
   del ciclo 10, el ciclo 10, el estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos anteriores
   siguen más abajo, como estaban.
+
+## Fase 2 · decisiones docentes del tono distributivo y del cierre (2026-11-06)
+
+Encargos «P2X-1 — PHASE-2 DECLARED-PROPERTY CLOSURE» y «P2X-1A — FINAL PHASE-2 CLOSURE GUARD REPAIR», sobre la rama
+`phase-2-clinical-core-shadow`. Quedan aquí para que sean trazables desde este archivo, que es el Decision File de la
+§3: hasta ahora vivían sólo en los encargos y en los paquetes congelados (hallazgo R-F14 de la revisión de P2X-1).
+Informes: `docs/revision/P2X1_CIERRE_PROPIEDADES_DECLARADAS.md` y
+`docs/revision/P2X1A_REPARACION_GUARDAS_CIERRE.md`. Nada de esto cambia lo que ve el residente: el núcleo común
+corre sólo en sombra.
+
+| # | Decisión | Estado | Dónde está implementada |
+|---|---|---|---|
+| FD-P2X-1 | `BELOW_ARRIVAL_BURDEN = ALLOWED_RECOVERY`: una carga vasodilatadora por debajo de la de llegada es **resolución** permitida, no una señal vasopresora; el máximo de recuperación es `Bmax = 1 + k·b₀`, en `b = 0`. Que T suba sobre el 1 relativo a la llegada no es motivo de rechazo | DECIDED + IMPLEMENTED | `integration.tone_domain`; sondas X1–X4 de P2X-1, A11 y A12 de P2X-1A |
+| FD-P2X-2 | La carga nunca es negativa, y una carga negativa **no** es vasoconstricción: un vasopresor actúa por su propio mecanismo | DECIDED + IMPLEMENTED | `state.AuxiliaryState`, `Anchors`, `provenance.VasodilationChange`; X5 y A10 |
+| FD-P2X-3 | El factor distributivo completo entra en las guardas: admisibilidad del objetivo mayor y análisis de contracción del lazo retardado de T, con `Bmax` | DECIDED + IMPLEMENTED | `integration._vascular_tone`; X6, X9, X10, A7, A13–A15 |
+| FD-P2X-4 | `TONE_CLAMP_AS_PHYSIOLOGY = REJECTED`: el recorte del canal no define la fisiología aceptada. Una combinación que saldría del dominio soportado **falla cerrado** antes de ejecutar; el recorte queda como última capa de seguridad. P2X-1A lo endurece: el dominio soportado es el intervalo **abierto** (`TONE_DOMAIN_ENDPOINTS = UNRESOLVED_BOUNDARY`) y ningún minuto aceptado lleva recorte en T (`ACCEPTED_TONE_MINUTE_HAS_ZERO_CLAMP`), sin épsilon, margen, tolerancia ni suelo alternativo | DECIDED + IMPLEMENTED | `integration._vascular_tone`; X7, X8, A4–A9 |
+| FD-P2X-5 | `PRESSURE_DRIVEN_FAMILY_VASODILATION_NOT_AUTHORIZED`: un escritor de familia de la carga no puede leer la PAM, `pressure_rel`, PAS, PAD, T ni otro observable del mismo lazo. Presión → tono sigue siendo un mecanismo común futuro, no implementado | DECIDED + IMPLEMENTED | contrato en `provenance.VasodilationChange` y escaneo del repositorio; X15, A16 |
+| FD-P2X-6 | Maldistribución, heterogeneidad de extracción, relleno capilar y lactato distributivos, fuga de plasma, vía aérea alta y blancos de epinefrina siguen `FUTURE_RESEARCH_DEBT`, fuera del alcance del cierre de la Fase 2 | DECIDED + DEFERRED | clasificación de deuda de P2X-1 y de P2X-1A |
+| FD-P2X-7 | Los veredictos congelados se **superan, no se reescriben**: `P2S3_FROZEN_VERDICT_SUPERSEDED_BY_P2T3`, `P2W1_V5_CLAMP_READING_SUPERSEDED`, `P2X1_FROZEN_VERDICT_SUPERSEDED_BY_P2X1A` y `P2J2_ENDPOINT_PROBE_READING_SUPERSEDED`. Ningún registro, documento ni digest histórico se re-corta | DECIDED + IMPLEMENTED | `closure_guard.HISTORY`, verificado contra los artefactos del repositorio; A17, A18 |
+| FD-P2X-8 | Las magnitudes clínicas de la Fase 2 siguen **UNSET** salvo aprobación docente expresa: `vasodilatory_burden_to_tone_gain` entre ellas, así que nada de lo que P2X-1 y P2X-1A añaden corre hoy | DECIDED + IMPLEMENTED | perfiles comprometidos y registro de calibración; A22 |
+
+**Decisión de interpretación que queda abierta a confirmación docente.** La decisión 1 del encargo de P2X-1A dice que
+«una familia o cualquier otra contribución» no puede escribir el canal T. P2X-1A la implementa sobre la clasificación
+que el repositorio ya publica: rechaza **toda fuente clínica** (módulo de enfermedad, tratamiento, intervención, caso)
+en todo perfil y en todo minuto, y deja escribiendo T a las sondas sintéticas declaradas (`SourceKind.SCRIPTED_EVENT`),
+igual que `_check_owned` las deja escribir V y Hb desde P2I-2T y que `pressure_tone.TONE_RULE` ya dice que «un escritor
+fuera de una sonda sintética, una prueba o una cota es un escritor clínico». El agujero que la revisión demostró —un
+módulo de enfermedad aceptado en el perfil GI— queda cerrado. Si la docencia quiere la lectura amplia (rechazar
+también las sondas), hay que retirar tres sondas de banda (`vasodilation`, `vasodilation_with_demand` y la histórica
+`vasodilation_with_preload_loss`) y las lecturas cerradas que las citan: eso es trabajo de fisiología y necesita otra
+autorización.
 
 ## Preparación para el despliegue (2026-10-06)
 

@@ -31,6 +31,7 @@ from clinical_core import oxygenation_link as om
 from clinical_core import opioid_migration as un
 from clinical_core import systemic_stress as ss
 from clinical_core import distributive_tone as dt
+from clinical_core import closure_guard as cg
 from clinical_core import tone_domain as x1
 from clinical_core import derived as dv
 from clinical_core import hr_primary as hp
@@ -119,7 +120,11 @@ C57, C72 = vt.C57, vt.C72
 #: anchor and one provenance record, all at their reference 1 by default) and two tuple files, proven against the
 #: P2T-5 files (opioid_migration.proved): this package's guards read the tree as P2T-5 left it (un.chain,
 #: un.p2t5_sources).
-_LIVE_SOURCES_P2X1 = bf.freeze_sources
+_LIVE_SOURCES_P2X1A = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2X1() -> dict:
+    return cg.p2x1_sources(_LIVE_SOURCES_P2X1A())
 
 
 def _LIVE_SOURCES_P2W1() -> dict:
@@ -195,6 +200,7 @@ def _p2n2_core():
         ss.chain(patch)
         dt.chain(patch)
         x1.chain(patch)
+        cg.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         yield
@@ -321,7 +327,25 @@ def test_the_core_writes_tone_only_in_its_own_coupling():
 
 # Probes, prefilter, timing ---------------------------------------------------------------------------------------------
 
-def test_the_structural_probes_hold():
+#: P2X-1A: the probe grid's extreme gain 2.0 has its largest reachable target exactly on T's upper guard on anchors
+#: with no arrival deficit, and FACULTY DECISION 2 makes that endpoint an unresolved boundary, so the combination is
+#: refused before execution. The reading P2J-2 recorded for it is superseded (closure_guard.HISTORY,
+#: P2J2_UPPER_ENDPOINT_PROBE_SUPERSEDED_BY_P2X1A); every gain below it is unchanged, and the frozen surface, the
+#: screen and the record are not recut.
+ENDPOINT_GAIN_KEYS = ("g2 ", "g2")
+
+
+def _without_the_endpoint_gain(value):
+    if isinstance(value, dict):
+        return {key: _without_the_endpoint_gain(item) for key, item in value.items()
+                if not (isinstance(key, str) and (key.startswith("g2 ") or key == "g2"))}
+    if isinstance(value, list):
+        return [_without_the_endpoint_gain(item) for item in value]
+    return value
+
+
+def test_the_structural_probes_hold(monkeypatch):
+    monkeypatch.setattr(vt, "GAINS", cg.P2J2_GAINS_INSIDE)
     probes = vt.probes()
     assert probes["checks"] == {str(n): True for n in range(1, 9)}
     for base in probes["bases"].values():
@@ -351,7 +375,8 @@ def test_the_timing_is_explicit_one_minute_behind_with_no_solver():
     # channel sees it (FACULTY DECISION 4): what this guard protects is unchanged and is checked in both halves - the
     # target is read on the state the minute starts with, and the delta is still that target minus the current tone.
     assert "target = tone_target(state, anchors, profile)" in source
-    assert "ChannelDelta(Channel.T, target - state.T" in source
+    # P2X-1A: the amount is computed once, checked against the channel's reconstruction, and then returned.
+    assert "amount = target - state.T" in source and "ChannelDelta(Channel.T, amount" in source
     for function in (integration._vascular_tone, dv.tone_target, dv.arrival_tone_signal, dv.acute_deficit_signal):
         tree = ast.parse(inspect.getsource(function))
         assert not any(isinstance(n, (ast.While, ast.For)) for n in ast.walk(tree)), function
@@ -515,7 +540,14 @@ def record():
 def test_the_record_comes_from_the_frozen_package_and_its_analytic_part_is_reproduced_live(record):
     assert record["freeze_digest"] == FROZEN_DIGEST and record["record"] == vt.P2J1_DIGEST
     # The trajectories are not re-run here; the screen, the probes and the arrival signals are.
-    assert record["screen"] == _json(vt.analytic_screen()) and record["probes"] == _json(vt.probes())
+    assert record["screen"] == _json(vt.analytic_screen())
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(vt, "GAINS", cg.P2J2_GAINS_INSIDE)
+        live = _json(vt.probes())
+    # Every row but the superseded endpoint gain reproduces exactly; the frozen record keeps its own rows.
+    assert _without_the_endpoint_gain(_json(record["probes"])) == _without_the_endpoint_gain(live)
+    assert any(key.startswith("g2") for base in record["probes"]["bases"].values()
+               for key in base["steady"])
     signals = {f"{case} {level} x{f:g}": arrival_tone_signal(vt.tone_anchors(case, level, f), vt.tone_profile(0.0, 0.3))
                for case in vt.CASES for level in vt.LEVELS for f in vt.DEMANDS}
     assert record["arrival_signals"] == _json(signals)

@@ -4573,3 +4573,41 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   posicional, lista de observables completa, todo el repositorio) y añada un testigo de contracción con b₀ > 0; (e)
   corrija los dos nombres de documento de la supersesión y fije el digest de P2S-3. Después, P2X-2 y, si queda limpia,
   el congelado final.
+
+## 73. P2X-1A · Reparación de las guardas del cierre de la Fase 2 (2026-11-06)
+
+- **Encargo:** el paquete mínimo de reparación que la revisión adversarial de P2X-1 dejó señalado. Guardas,
+  falsabilidad y trazabilidad: **no** es un paquete de fisiología. Sin magnitudes clínicas, sin integración en
+  tiempo de ejecución, sin Fase 3.
+- **Decisiones docentes que rigen** (ocho, ahora también en el Decision File, `docs/COLA_DECISIONES_AI_ADVISOR.md`):
+  `T_CHANNEL_SINGLE_OWNER_INVARIANT_UNCONDITIONAL`; `TONE_DOMAIN_ENDPOINTS = UNRESOLVED_BOUNDARY`;
+  `ACCEPTED_TONE_MINUTE_HAS_ZERO_CLAMP`; conservar la derivación analítica de P2X-1; presión → vasodilatación sigue
+  prohibida; la maldistribución sigue deuda de investigación; `P2X1_FROZEN_VERDICT_SUPERSEDED_BY_P2X1A` sin
+  reescribir historia; las ocho decisiones quedan registradas en el Decision File.
+- **Los dos bloqueos que cierra**, los mismos que la revisión demostró y que reproduje:
+  - **R-F1:** `step` llamaba a `_vascular_tone` sólo con la ganancia sobre 0 o el lector declarado, y el rechazo de
+    un segundo escritor de T vivía dentro. Con GI (g = 0, lector UNSET) un escritor clínico de T llegaba al canal y
+    el recorte fijaba el valor. Ahora `integration._tone_ownership` corre desde `step`, sin condición, antes de
+    reconstruir el canal, y rechaza toda fuente clínica en todo perfil (A1–A3).
+  - **R-F4:** la frontera por minuto era inclusiva y la reconstrucción del canal (`T + (objetivo − T)`) dejaba un
+    recorte de 2,8e-17 dentro de un minuto aceptado. Ahora el dominio soportado es el intervalo abierto y la
+    admisibilidad comprueba también el valor reconstruido, sin épsilon ni tolerancia (A4–A9).
+- **Lo demás que repara:** la admisibilidad del objetivo mayor es estricta y ya no depende del lector declarado;
+  `contradictions`, `debt_classification` y `supersession` son ejecutables y falsables; la regla de disposición lee
+  la prueba de reversión (A19) y la clasificación de deuda (A20); el escaneo del contrato del escritor cubre alias,
+  constructor cualificado, auxiliares del módulo, acceso posicional y los observables del mismo lazo, y lee el
+  repositorio (A16); los nombres de documento que P2X-1 citó mal quedan corregidos y verificados contra el disco
+  (A17, A18).
+- **Interpretación declarada, abierta a confirmación docente:** la decisión dice «cualquier otra contribución»; la
+  implementación rechaza toda fuente **clínica** y deja escribiendo T a las sondas sintéticas declaradas, que es la
+  clasificación que el repositorio ya publica (`_check_owned` de P2I-2T; `pressure_tone.TONE_RULE` y `PROBE_MODULES`
+  de P2J-1). La lectura amplia retiraría tres sondas de banda y las lecturas cerradas que las citan.
+- **Supersesión declarada, sin re-cortar nada:** `P2X1_FROZEN_VERDICT_SUPERSEDED_BY_P2X1A`,
+  `P2J2_ENDPOINT_PROBE_READING_SUPERSEDED` (con la ganancia 2.0, cuyo objetivo mayor cae exactamente sobre la guarda
+  superior, la combinación ahora se rechaza) y la de TD-120, con los digests de P2S-3, P2T-3, P2J-2, P2W-1 y P2X-1
+  verificados en el registro.
+- **No regresión:** el registro de P2X-1 se reproduce **byte a byte** sobre su propio árbol (`closure_guard.chain`,
+  que además devuelve a `inspect.getsource` el texto de `integration.py` que P2X-1 leía), su digest de congelado
+  `3afa71b2…` recomputa, y las nueve trayectorias de familia comprometidas son idénticas por digest a las de P2X-1.
+- **Lo que sigue UNSET:** `vasodilatory_burden_to_tone_gain` y todas las regiones de llegada, así que nada de lo que
+  P2X-1 y P2X-1A añaden corre hoy. El núcleo sigue en sombra: `family_engine.py` es la fuente de verdad.

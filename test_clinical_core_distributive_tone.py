@@ -37,8 +37,10 @@ PROBE_SOURCE = Source(SourceKind.DISEASE_MODULE, "p2w1-test")
 
 @pytest.fixture(autouse=True, scope="module")
 def _p2w1_tree():
+    from clinical_core import closure_guard as cg
     from clinical_core import tone_domain as x1
     with pytest.MonkeyPatch.context() as patch:
+        cg.tree(patch)
         x1.tree(patch)
         yield
 
@@ -449,8 +451,10 @@ def test_nothing_anywhere_in_the_repository_writes_the_burden():
     not be seen. The fact holds; the guard is widened here, as P2V-1 did for its own writer."""
     allowed = {"clinical_core/distributive_tone.py", "test_clinical_core_distributive_tone.py",
                "clinical_core/integration.py", "clinical_core/provenance.py", "clinical_core/state.py",
-               # P2X-1's closure package names the record in the scan that enforces its writer contract.
-               "clinical_core/tone_domain.py", "test_clinical_core_tone_domain.py"}
+               # P2X-1's closure package names the record in the scan that enforces its writer contract, and
+               # P2X-1A's carries the bypass patterns the scan must reject, as source strings.
+               "clinical_core/tone_domain.py", "test_clinical_core_tone_domain.py",
+               "clinical_core/closure_guard.py", "test_clinical_core_closure_guard.py"}
     found = set()
     for path in sorted(dt.ROOT.rglob("*.py")):
         relative = path.relative_to(dt.ROOT).as_posix()

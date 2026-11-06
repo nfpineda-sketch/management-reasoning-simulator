@@ -22,6 +22,7 @@ from clinical_core import oxygenation_link as om
 from clinical_core import opioid_migration as un
 from clinical_core import systemic_stress as ss
 from clinical_core import distributive_tone as dt
+from clinical_core import closure_guard as cg
 from clinical_core import tone_domain as x1
 from clinical_core import respiratory_drive as rd
 from clinical_core import respiratory_mechanics as mc
@@ -41,6 +42,7 @@ FROZEN_DIGEST = "3a042f0fabeecff58f97e198fc3d65cb878eeada63d01039c89d0e0564798f2
 def _p2t5_tree():
     with pytest.MonkeyPatch.context() as patch:
         x1.chain(patch)
+        cg.chain(patch)
         dt.tree(patch)
         ss.tree(patch)
         un.tree(patch)

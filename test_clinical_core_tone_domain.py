@@ -19,6 +19,7 @@ from clinical_core import blood_fluid_calibration as bf
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import distributive_tone as dt
+from clinical_core import closure_guard as cg
 from clinical_core import tone_domain as x1
 from clinical_core.integration import CHANNEL_BOUNDS, step, tone_domain
 from clinical_core.state import Channel, CoreInvariantError
@@ -28,6 +29,16 @@ ROOT = x1.ROOT
 #: the readiness rule, the proof and every clinical_core source but the downstream reports.
 FROZEN_DIGEST = "3afa71b2dfa0f47eb1a00e8987c79cd18b246788e366ac07fe58eacc21815a0e"
 T_LOWER, T_UPPER = CHANNEL_BOUNDS[Channel.T][0], CHANNEL_BOUNDS[Channel.T][1]
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _p2x1_tree():
+    """P2X-1A changed the core again (the unconditional ownership guard, the strict interior domain) and the two tuple
+    files, proven against the P2X-1 files (closure_guard.proved): this package's own guards, probes and freeze digest
+    read the tree as P2X-1 left it (cg.chain, cg.p2x1_sources)."""
+    with pytest.MonkeyPatch.context() as patch:
+        cg.tree(patch)
+        yield
 
 
 # The frozen package and its proof ---------------------------------------------------------------------------------------------
@@ -69,6 +80,7 @@ def test_the_reversal_is_not_evadable():
 
 def test_the_p2w1_tree_reads_the_p2w1_files(monkeypatch):
     with pytest.MonkeyPatch.context() as patch:
+        cg.tree(patch)
         x1.tree(patch)
         assert dt.freeze_digest() == x1.P2W1_FREEZE_DIGEST
         assert all(dt.proofs().values())
@@ -145,10 +157,13 @@ def test_a_non_contracting_combination_is_refused_before_execution():
 
 
 def test_a_target_leaving_the_supported_range_fails_closed_each_minute():
+    """P2X-1's refusal still fires; P2X-1A made it strict and reworded it (the endpoints are unresolved boundaries),
+    so the message this asserts is the repaired one. The property P2X-1 published - a target outside the range never
+    reaches the channel - is unchanged."""
     profile, anchors = x1.reader(x1.acs_profile()), x1.anchors_with(0.0)
     severe = x1.state_with(anchors, profile, x1.SEVERE_BURDEN)
     assert dv.tone_target(severe, anchors, profile) < T_LOWER
-    with pytest.raises(CoreInvariantError, match="leaves T's supported range"):
+    with pytest.raises(CoreInvariantError, match="is not inside T's supported range"):
         step(severe, (), anchors, profile)
 
 
@@ -260,6 +275,7 @@ def test_no_historical_digest_is_rewritten():
     record = json.loads(sm.RECORD.read_text(encoding="utf-8"))
     assert record["freeze_digest"]
     with pytest.MonkeyPatch.context() as patch:
+        cg.tree(patch)
         x1.tree(patch)
         assert dt.freeze_digest() == x1.P2W1_FREEZE_DIGEST
     p2w1 = json.loads(dt.RECORD.read_text(encoding="utf-8"))
@@ -355,15 +371,14 @@ def test_the_blocker_the_tone_writer_guard_and_the_boundary_do_not_run_with_the_
     source = inspect.getsource(step)
     assert "profile.deficit_to_tone_gain > 0.0 or profile.vasodilatory_burden_to_tone_gain is not None" in source
     writer = dt._FamilyTone("fam")
-    state, clamped = dv.arrival_state(anchors, gi), []
-    for _ in range(6):
-        state, record = step(state, (writer,), anchors, gi)
-        clamped += [delta for delta in record.deltas if delta.source.kind is SourceKind.CLAMP]
-    assert state.T == T_LOWER, "the channel's guard, not the response, decided the value"
-    assert clamped, "and the clamp is recorded, which is what DECISION 4 rejects"
-    # With the response on, the same writer is refused: the P2J-2 guard itself was not relaxed.
+    # CLOSED BY P2X-1A: integration._tone_ownership runs from step on every profile, so the writer that used to park
+    # T on its guard with clamps recorded is now refused here too. What P2X-1 recorded stays in its own document and
+    # in TD-127; what runs is the repair, pinned in test_clinical_core_closure_guard.py (A1-A3).
+    with pytest.raises(CoreInvariantError, match="only clinical owner"):
+        step(dv.arrival_state(anchors, gi), (writer,), anchors, gi)
+    # With the response on, the same writer is refused by P2J-2's own composition guard, which was not relaxed.
     anchors_on, acs = pairs["acs"]
-    with pytest.raises(CoreInvariantError, match="write T while the vascular-tone response is on"):
+    with pytest.raises(CoreInvariantError):
         step(dv.arrival_state(anchors_on, acs), (writer,), anchors_on, acs)
     assert x1.contradictions()["searched"]["incompatible_writer_ownership"].startswith("no:")
 
@@ -378,12 +393,16 @@ def test_the_boundary_is_inclusive_so_a_roundoff_clamp_is_recorded_inside_an_acc
     domain = tone_domain(anchors, profile)
     assert domain["largest_target"] <= T_UPPER and domain["loop_slope_bound"] < 1.0, "the domain is accepted"
     state = x1.state_with(anchors, profile, 9.0)
-    assert dv.tone_target(state, anchors, profile) == T_LOWER, "exactly on the guard, so the boundary accepts it"
-    after, record = step(state, (), anchors, profile)
-    clamps = [delta.amount for delta in record.deltas if delta.source.kind is SourceKind.CLAMP]
-    assert clamps and 0 < max(clamps) < 1e-15, clamps
-    assert after.T == T_LOWER
-    assert "not lower <= target <= upper" in inspect.getsource(x1.guards)
+    assert dv.tone_target(state, anchors, profile) == T_LOWER, "exactly on the guard: what P2X-1 accepted"
+    # CLOSED BY P2X-1A: the domain is the open interval and the reconstruction is checked, so this minute is refused
+    # before the channel is rebuilt and no clamp can be recorded in an accepted one (A4, A8, A9).
+    with pytest.raises(CoreInvariantError, match="unresolved boundaries"):
+        step(state, (), anchors, profile)
+    assert "not lower <= target <= upper" in inspect.getsource(x1.guards), "P2X-1's own record is not rewritten"
+    hair_inside = x1.state_with(anchors, profile, 8.9)
+    after, record = step(hair_inside, (), anchors, profile)
+    assert T_LOWER < after.T and not [delta for delta in record.deltas
+                                      if delta.source.kind is SourceKind.CLAMP]
 
 
 def test_three_of_the_nine_criteria_cannot_fail_as_written():

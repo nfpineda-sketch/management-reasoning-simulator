@@ -30,6 +30,7 @@ from clinical_core import oxygenation_link as om
 from clinical_core import opioid_migration as un
 from clinical_core import systemic_stress as ss
 from clinical_core import distributive_tone as dt
+from clinical_core import closure_guard as cg
 from clinical_core import tone_domain as x1
 from clinical_core import vascular_tone as vt
 from clinical_core import calibration, decision_pack, gi_reference, lactate_slice
@@ -92,7 +93,12 @@ P2J2_TONE_ROWS = (("clinical_core/vascular_tone.py", None), ("clinical_core/vasc
                   # derive the reachable target and the loop bound. Neither writes tone.
                   ("clinical_core/integration.py", "tone_domain"),
                   ("clinical_core/tone_domain.py", None),
-                  ("clinical_core/tone_domain_report.py", None))
+                  ("clinical_core/tone_domain_report.py", None),
+                  # P2X-1A: the unconditional ownership guard names the channel it owns, and its analysis
+                  # module names it to state the supported range and to drive the probes; neither writes it.
+                  ("clinical_core/integration.py", "_tone_ownership"),
+                  ("clinical_core/closure_guard.py", None),
+                  ("clinical_core/closure_guard_report.py", None))
 C57, C72 = pt.C57, pt.C72
 NEUTRAL = Anchors(**ARRIVAL)
 
@@ -141,7 +147,11 @@ NEUTRAL = Anchors(**ARRIVAL)
 #: anchor and one provenance record, all at their reference 1 by default) and two tuple files, proven against the
 #: P2T-5 files (opioid_migration.proved): this package's guards read the tree as P2T-5 left it (un.chain,
 #: un.p2t5_sources).
-_LIVE_SOURCES_P2X1 = bf.freeze_sources
+_LIVE_SOURCES_P2X1A = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2X1() -> dict:
+    return cg.p2x1_sources(_LIVE_SOURCES_P2X1A())
 
 
 def _LIVE_SOURCES_P2W1() -> dict:
@@ -217,6 +227,7 @@ def _p2n2_core():
         ss.chain(patch)
         dt.chain(patch)
         x1.chain(patch)
+        cg.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         patch.setattr(pt, "_function", _p2n2_function)
@@ -372,7 +383,8 @@ def test_no_contributor_names_the_tone_channel():
                "clinical_core/distributive_tone.py",
                # P2X-1's analysis names the channel to state its supported range and to read its guard; it writes no
                # tone and declares no contributor.
-               "clinical_core/tone_domain.py"}
+               # P2X-1A names it in the ownership guard it audits and in its probes, and writes none.
+               "clinical_core/tone_domain.py", "clinical_core/closure_guard.py"}
     named = set()
     for path in sorted((ROOT / "clinical_core").rglob("*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"))

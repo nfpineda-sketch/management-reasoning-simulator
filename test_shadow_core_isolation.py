@@ -92,7 +92,9 @@ ANALYSIS_ONLY = {
     "distributive_tone.py": {"sys", "types"},
     # P2X-1: the same, for the declared-property closure (its own view of the P2W-1 tree, installed locally so the
     # record can be produced outside a test, reads module objects and the interpreter's path readers).
-    "tone_domain.py": {"sys", "types"}}
+    "tone_domain.py": {"sys", "types"},
+    # P2X-1A's closure guard installs the same local view for the predecessor's own analysis.
+    "closure_guard.py": {"sys", "types"}}
 
 
 def _imports(path):

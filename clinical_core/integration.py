@@ -309,6 +309,32 @@ def tone_domain(anchors: Anchors, profile: CoreProfile) -> dict:
             "p2j2_slope_bound": gain * sensitivity}
 
 
+def _tone_ownership(deltas: Sequence[ChannelDelta], minute: int) -> None:
+    """P2X-1A: T has exactly one owner in the certified Phase-2 architecture, the core's vascular-tone response.
+
+    This refusal lived inside ``_vascular_tone``, which ``step`` calls only when the core has a tone response to
+    compute (a compensatory gain above 0, or a declared vasodilatory reader). With both off - the committed GI
+    profile - a foreign writer of T reached the channel and its guard, a safety bound, shaped the value instead.
+    Ownership is a statement about who may write the channel, not about whether the response runs, so it is checked
+    here on every minute of every profile, before the channel is reconstructed
+    (T_CHANNEL_SINGLE_OWNER_INVARIANT_UNCONDITIONAL, FACULTY DECISION 1).
+
+    Who counts as a writer is the repository's own classification, not a new one: a scripted synthetic probe is
+    outside the owner for T exactly as it is for V and Hb (``_check_owned``, P2I-2T), and P2J-1's published TONE_RULE
+    already reads "a writer outside a synthetic probe, a test or a bound is a clinical writer", naming
+    ``bands.py``, ``hemodynamic_probes.py`` and ``pressure_tone.py`` as the non-clinical ones. So every clinical
+    source - a disease module, a treatment, an intervention, a case - is refused here on every profile, which is the
+    hole the P2X-1 review demonstrated, while the declared synthetic probes keep driving T as they did, in no case
+    and no family trajectory.
+    """
+    clinical = sorted({delta.source.key for delta in deltas if delta.channel is Channel.T
+                       and delta.source.kind is not SourceKind.SCRIPTED_EVENT})
+    if clinical:
+        raise CoreInvariantError(f"minute {minute}: {clinical} write T, whose only clinical owner is the core's "
+                                 "vascular-tone response; how a family, a disease module or a drug would compose "
+                                 "with it is not decided, on any profile (P2J-2, unconditional since P2X-1A)")
+
+
 def _vascular_tone(state: CoreState, deltas: Sequence[ChannelDelta], anchors: Anchors, profile: CoreProfile,
                    minute: int) -> ChannelDelta:
     """P2J-2: T moves to the tone the state at the start of the minute calls for (``tone_target``).
@@ -317,27 +343,38 @@ def _vascular_tone(state: CoreState, deltas: Sequence[ChannelDelta], anchors: An
     algebraic loop, and no solver is used. The minute after arrival keeps T at 1 (arrival is the target's fixed point).
     Fails closed where nothing is decided: another source writing T in the same minute (how a drug or a disease module
     would compose with the response is not decided), or a gain whose largest target, 1 + g at no delivery, is outside
-    T's guard (so the guard never shapes the response).
+    T's guard (so the guard never shapes the response). That refusal covers every source while the response runs;
+    ``_tone_ownership``, which ``step`` runs whether or not this response does, covers every clinical source always.
 
     P2X-1 closes that last claim over the whole declared domain (``tone_domain``). The P2J-2 check reads the
     compensation alone, so with a distributive reader declared it saw neither the recovery factor 1 + k b0 above nor a
     severe burden below, and the channel's guard - a safety bound, never physiology - decided the response instead.
-    Now, where that reader is declared, a parameter domain whose largest reachable target leaves T's supported range,
-    or whose derived loop bound is not a contraction, is refused before execution; and any minute whose target would
-    leave that range fails closed here rather than being clamped into shape. The guard stays as the last safety layer
-    for every other source (TONE_CLAMP_AS_PHYSIOLOGY = REJECTED, FACULTY DECISIONS 3 and 4).
+    Now, where that reader is declared, a parameter domain whose largest reachable target reaches or leaves T's
+    supported range, or whose derived loop bound is not a contraction, is refused before execution.
+
+    P2X-1A makes the per-minute admissibility STRICT and checks the value the channel will actually hold. The supported
+    domain is the open interval: the endpoints are unresolved boundaries, not accepted interior physiology, so a target
+    at or outside either end fails closed - and so does one whose reconstruction does, which is what left a 2.8e-17
+    clamp inside an accepted minute. No epsilon, margin, tolerance or alternative floor is introduced
+    (TONE_DOMAIN_ENDPOINTS = UNRESOLVED_BOUNDARY and ACCEPTED_TONE_MINUTE_HAS_ZERO_CLAMP, FACULTY DECISIONS 2 and 3).
+    The guard stays as the last safety layer for every other channel (TONE_CLAMP_AS_PHYSIOLOGY = REJECTED).
     """
     lower, upper = CHANNEL_BOUNDS[Channel.T][0], CHANNEL_BOUNDS[Channel.T][1]
     if 1.0 + profile.deficit_to_tone_gain > upper:
         raise CoreInvariantError(f"the tone response's largest target 1 + {profile.deficit_to_tone_gain!r} is above "
                                  f"T's guard {upper!r}")
     domain = tone_domain(anchors, profile)
+    if domain["largest_target"] >= upper:
+        # P2X-1A: the derived largest reachable target, strictly inside, for every profile. P2X-1 asked this only
+        # where the distributive reader is declared; the supported domain is interior whatever the reader
+        # (FACULTY DECISION 2), and the derived value already carries the arrival normalization and the recovery
+        # factor, so this is both broader than P2X-1's check and exact where P2J-2's 1 + g is conservative.
+        raise CoreInvariantError(
+            f"the tone target's largest reachable value {domain['largest_target']!r} (the compensation's "
+            f"{domain['compensation_max']!r} times the distributive recovery {domain['recovery_max']!r}) reaches "
+            f"or passes T's guard {upper!r}: the guard would shape the response (P2X-1, strict and unconditional "
+            "since P2X-1A)")
     if domain["distributive_reader"]:
-        if domain["largest_target"] > upper:
-            raise CoreInvariantError(
-                f"the tone target's largest reachable value {domain['largest_target']!r} (the compensation's "
-                f"{domain['compensation_max']!r} times the distributive recovery {domain['recovery_max']!r}) is above "
-                f"T's guard {upper!r}: the guard would shape the response (P2X-1)")
         if domain["loop_slope_bound"] >= 1.0:
             raise CoreInvariantError(
                 f"the tone loop's derived bound with the distributive factor, {domain['loop_slope_bound']!r}, is not "
@@ -347,11 +384,16 @@ def _vascular_tone(state: CoreState, deltas: Sequence[ChannelDelta], anchors: An
         raise CoreInvariantError(f"minute {minute}: {writers} write T while the vascular-tone response is on; how they "
                                  "compose is not decided (P2J-2)")
     target = tone_target(state, anchors, profile)
-    if not lower <= target <= upper:
-        raise CoreInvariantError(f"minute {minute}: the tone target {target!r} leaves T's supported range "
-                                 f"{(lower, upper)!r}; the channel's guard is a safety bound, not the physiology "
-                                 "(P2X-1)")
-    return ChannelDelta(Channel.T, target - state.T, VASCULAR_TONE, minute,
+    # T's single owner (``_tone_ownership``) makes this the whole channel: exactly what ``step`` rebuilds for T, with
+    # the same arithmetic (``math.fsum`` over one amount is that amount), so an accepted minute cannot reach a clamp.
+    amount = target - state.T
+    reconstructed = state.T + amount
+    if not lower < target < upper or not lower < reconstructed < upper:
+        raise UnresolvedBoundary(f"minute {minute}: the tone target {target!r} is not inside T's supported range "
+                                 f"{(lower, upper)!r} (the channel rebuilds it as {reconstructed!r}); the endpoints "
+                                 "are unresolved boundaries, not accepted interior physiology, and the channel's "
+                                 "guard is a safety bound (TONE_DOMAIN_ENDPOINTS = UNRESOLVED_BOUNDARY, P2X-1A)")
+    return ChannelDelta(Channel.T, amount, VASCULAR_TONE, minute,
                         "the tone the acute shock signal at the start of the minute calls for")
 
 
@@ -544,6 +586,7 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
         events.append(CoreEvent("terminal_collapse", COLLAPSE, minute, "critical", "physiological_collapse",
                                 "not assessed", f"terminal collapse from sustained critically low output: "
                                                 f"{target.code.value}"))
+    _tone_ownership(deltas, minute)
     if profile.deficit_to_tone_gain > 0.0 or profile.vasodilatory_burden_to_tone_gain is not None:
         # P2W-1: the tone response also runs for a declared vasodilatory reader, so a family's burden always reaches T
         # where its reader exists, even with the compensatory gain at 0 (with the reader UNSET this is P2J-2's
