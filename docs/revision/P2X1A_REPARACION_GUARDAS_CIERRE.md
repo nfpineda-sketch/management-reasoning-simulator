@@ -77,7 +77,7 @@ chequeos publicados de P2J-2 y de P2X-1 quedan intactos.
 - Qué rechaza: every clinical writer of T (a source whose kind is not SCRIPTED_EVENT).
 - Frontera por minuto: `not lower < target < upper or not lower < reconstructed < upper` — estricta: sí; reconstrucción comprobada: sí; excepción: `UnresolvedBoundary`.
 - Admisibilidad por parámetros: sí, y sin condicionar al lector: sí.
-- Sin épsilon, margen ni tolerancia: sí (literales bajo la guarda inferior: ninguno).
+- Sin épsilon, margen ni tolerancia: sí (literales float distintos de 0 y 1: ninguno).
 - Chequeos de P2J-2 intactos: invariante de perfil sí, chequeo de ganancia sí, rechazo de composición sí.
 - Resultados de P2X-1 intactos: cota de contracción sí, condicionada al lector sí, forma cerrada sí.
 - El recorte sigue siendo la última capa de seguridad: sí; el delta devuelto es `amount`.
@@ -106,7 +106,15 @@ Rechazos, por función:
 | Evasión que la revisión de P2X-1 encontró | Rechazada |
 |---|---|
 | alias | sí |
+| attrgetter | sí |
+| decorator_injects_the_pressure | sí |
+| dict_get | sí |
+| getattr_through_a_variable | sí |
 | helper_function | sí |
+| inheritance | sí |
+| method_of_another_class | sí |
+| module_level_alias | sí |
+| module_level_lambda | sí |
 | positional_access | sí |
 | qualified_constructor | sí |
 | same_loop_observable | sí |
@@ -160,6 +168,7 @@ Rechazos, por función:
 <!-- generado:contradicciones -->
 | Afirmación | Sondas que la deciden | Se sostiene |
 |---|---|---|
+| below_arrival_recovery_lost | A11:sí, A12:sí | sí |
 | clamp_defines_physiology | A8:sí, A9:sí | sí |
 | endpoint_accepted_as_interior | A4:sí, A5:sí, A6:sí, A7:sí | sí |
 | hidden_point_calibration | A22:sí | sí |
@@ -224,7 +233,7 @@ bloqueo es un bloqueo demostrado clasificado como deuda aceptable, y eso lo deci
 
 <!-- generado:supersesion -->
 - **P2J2_UPPER_ENDPOINT_PROBE_SUPERSEDED_BY_P2X1A** — estado `P2J2_ENDPOINT_PROBE_READING_SUPERSEDED`.
-  - Qué pasó: P2J-2's probe grid includes the gain 2.0, whose largest reachable target is exactly T's upper guard on anchors with no arrival deficit. P2J-2 accepted that reading (its check is 1 + g > upper); FACULTY DECISION 2 makes the endpoint an unresolved boundary, so the combination is refused and that probe row is superseded. Every gain below it is unchanged.
+  - Qué pasó: its own analysis reads the grid without that gain under the chained tree (chain patches vascular_tone.GAINS), so the predecessor stays runnable. P2J-2's probe grid includes the gain 2.0, whose largest reachable target is exactly T's upper guard on anchors with no arrival deficit. P2J-2 accepted that reading (its check is 1 + g > upper); FACULTY DECISION 2 makes the endpoint an unresolved boundary, so the combination is refused and that probe row is superseded. Every gain below it is unchanged.
   - historical: `docs/revision/P2J2_TONO_VASCULAR_DINAMICO.md` (sí), `docs/revision/P2J2_vascular_tone.json` (sí); digest de congelado True, sha del registro True.
   - superseding: `docs/revision/P2X1A_REPARACION_GUARDAS_CIERRE.md` (sí), `docs/revision/P2X1A_closure_guard.json` (sí); digest de congelado None, sha del registro None.
   - Historia preservada: the P2J-2 record and digest are not recut; the superseded reading is declared here and its suite reads the grid without the endpoint gain.
@@ -232,7 +241,7 @@ bloqueo es un bloqueo demostrado clasificado como deuda aceptable, y eso lo deci
   - Qué pasó: P2X-1's frozen rule returned PHASE2_DECLARED_PROPERTIES_CLOSED; its adversarial review demonstrated two real closure blockers - the ownership guard did not run with the tone response off, and the inclusive boundary left a 2.8e-17 clamp inside an accepted minute - so the operative verdict became NOT_CLOSED; P2X-1A repairs those exact blockers.
   - historical: `docs/revision/P2X1_CIERRE_PROPIEDADES_DECLARADAS.md` (sí), `docs/revision/P2X1_tone_domain.json` (sí); digest de congelado True, sha del registro True.
   - superseding: `docs/revision/P2X1A_REPARACION_GUARDAS_CIERRE.md` (sí), `docs/revision/P2X1A_closure_guard.json` (sí); digest de congelado None, sha del registro None.
-  - Historia preservada: no P2X-1 source, record or digest is recut or rewritten; its two P2W-1 supersession rows stand as it published them.
+  - Historia preservada: no P2X-1 source, record or digest is recut or rewritten; the two rows it published - its P2W-1 V5 clamp reading and TD-120 - stand as it published them, and its V5 refusal still holds live.
 - **TD120_HISTORICAL_SUPERSESSION_ACCEPTED** — estado `P2S3_FROZEN_VERDICT_SUPERSEDED_BY_P2T3`.
   - Qué pasó: P2S-3's frozen rule returned ASTHMA_SHADOW_MIGRATION_READY; its adversarial review demonstrated a COMMON_DRIVE_GAP and the corrected operative classification was NOT_READY; P2T-1, P2T-2 and P2T-3 closed that blocker and P2T-3 is the authoritative asthma result.
   - historical: `docs/revision/P2S3_ASMA_SOMBRA.md` (sí), `docs/revision/P2S3_asthma_migration.json` (sí); digest de congelado True, sha del registro True.
@@ -261,7 +270,7 @@ bloqueo es un bloqueo demostrado clasificado como deuda aceptable, y eso lo deci
 - sí — 1. the T single-owner invariant is unconditional: every clinical writer of T is refused on every profile, before the channel is rebuilt, whether or not the core has a response to compute
 - sí — 2. the supported tone domain is the open interval: both endpoints fail closed, at the parameter level and at the minute, with no epsilon, margin or tolerance
 - sí — 3. no accepted tone minute carries a clamp on T, the floating reconstruction included
-- sí — 4. the contraction guard carries the distributive factor and holds against the live slope with B != 1, and a combination that is not a contraction is refused
+- sí — 4. where the distributive reader is declared, the contraction guard carries the distributive factor, holds against the live slope with B != 1, and refuses a combination that is not a contraction (with the reader UNSET the derived bound is not checked, as P2X-1 left it and TD-127 declares)
 - sí — 5. the pressure-driven vasodilation contract is enforced by a scan that rejects each bypass the P2X-1 review found
 - sí — 6. the predecessor and reversion integrity holds, and the readiness rule reads it
 - sí — 7. the contradictions check is executable: each row is decided by its probes and can become false
@@ -269,6 +278,7 @@ bloqueo es un bloqueo demostrado clasificado como deuda aceptable, y eso lo deci
 - sí — 9. the supersession check verifies the repository's own artifacts and immutable references
 - sí — 10. every prior migrated family keeps its default trajectory exactly
 - sí — 11. no new clinical magnitude is selected
+- sí — 12. the eight faculty decisions are recorded in the project's Decision File, by classification and by row
 
 **Veredicto: PHASE2_DECLARED_PROPERTIES_CLOSED**
 <!-- /generado:veredicto -->

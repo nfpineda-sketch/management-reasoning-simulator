@@ -357,7 +357,7 @@ def test_the_document_is_generated_from_the_record(record):
 # NOT re-cut (history is preserved, as for P2S-3): the operative classification is NOT_CLOSED, recorded in
 # PHASE2_SHADOW_CORE section 72 and TD-127, and every finding is pinned here so the next package starts from them.
 
-def test_the_blocker_the_tone_writer_guard_and_the_boundary_do_not_run_with_the_response_off():
+def test_the_blocker_of_the_conditional_ownership_guard_is_closed_by_p2x1a():
     """R-F1 (the blocker, criterion 3): step calls _vascular_tone only when the compensation gain is above 0 or the
     distributive reader is declared, and BOTH P2J-2's second-writer refusal and P2X-1's per-minute boundary live
     inside it. The committed GI profile has g = 0 and the reader UNSET, so a writer of T drives the channel onto its
@@ -376,14 +376,16 @@ def test_the_blocker_the_tone_writer_guard_and_the_boundary_do_not_run_with_the_
     # in TD-127; what runs is the repair, pinned in test_clinical_core_closure_guard.py (A1-A3).
     with pytest.raises(CoreInvariantError, match="only clinical owner"):
         step(dv.arrival_state(anchors, gi), (writer,), anchors, gi)
-    # With the response on, the same writer is refused by P2J-2's own composition guard, which was not relaxed.
+    # With the response on, P2X-1A's ownership guard reaches the same writer first (it runs before the response);
+    # P2J-2's own composition refusal is not relaxed and is still reachable for a declared synthetic probe, which
+    # test_clinical_core_closure_guard.py pins.
     anchors_on, acs = pairs["acs"]
-    with pytest.raises(CoreInvariantError):
+    with pytest.raises(CoreInvariantError, match="only clinical owner"):
         step(dv.arrival_state(anchors_on, acs), (writer,), anchors_on, acs)
     assert x1.contradictions()["searched"]["incompatible_writer_ownership"].startswith("no:")
 
 
-def test_the_boundary_is_inclusive_so_a_roundoff_clamp_is_recorded_inside_an_accepted_domain():
+def test_the_inclusive_boundary_that_recorded_a_roundoff_clamp_is_closed_by_p2x1a():
     """R-F4 (criterion 3, X8): the boundary accepts a target exactly on T's lower guard, but the channel rebuilds the
     value as T + (target - T) with fsum, and that round trip can land one ulp below it. The magnitude is 2.8e-17 and
     the clamp pushes towards the target, but a clamp IS recorded in an accepted minute, so 'valid interior

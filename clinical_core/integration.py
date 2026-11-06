@@ -309,7 +309,14 @@ def tone_domain(anchors: Anchors, profile: CoreProfile) -> dict:
             "p2j2_slope_bound": gain * sensitivity}
 
 
-def _tone_ownership(deltas: Sequence[ChannelDelta], minute: int) -> None:
+#: P2J-1's published classification of the writers that are NOT clinical, as the modules that define them
+#: (``pressure_tone.PROBE_MODULES``, pinned to this tuple by a test). A contributor defined anywhere else is a
+#: clinical writer of T, whatever SourceKind it declares: the kind is a free class attribute, so a family could
+#: otherwise take the exemption by declaring it (P2X-1A, after its review).
+PROBE_CONTRIBUTOR_MODULES = ("clinical_core.bands", "clinical_core.hemodynamic_probes", "clinical_core.pressure_tone")
+
+
+def _tone_ownership(deltas: Sequence[ChannelDelta], minute: int, probes: frozenset = frozenset()) -> None:
     """P2X-1A: T has exactly one owner in the certified Phase-2 architecture, the core's vascular-tone response.
 
     This refusal lived inside ``_vascular_tone``, which ``step`` calls only when the core has a tone response to
@@ -319,16 +326,18 @@ def _tone_ownership(deltas: Sequence[ChannelDelta], minute: int) -> None:
     here on every minute of every profile, before the channel is reconstructed
     (T_CHANNEL_SINGLE_OWNER_INVARIANT_UNCONDITIONAL, FACULTY DECISION 1).
 
-    Who counts as a writer is the repository's own classification, not a new one: a scripted synthetic probe is
-    outside the owner for T exactly as it is for V and Hb (``_check_owned``, P2I-2T), and P2J-1's published TONE_RULE
-    already reads "a writer outside a synthetic probe, a test or a bound is a clinical writer", naming
-    ``bands.py``, ``hemodynamic_probes.py`` and ``pressure_tone.py`` as the non-clinical ones. So every clinical
-    source - a disease module, a treatment, an intervention, a case - is refused here on every profile, which is the
-    hole the P2X-1 review demonstrated, while the declared synthetic probes keep driving T as they did, in no case
-    and no family trajectory.
+    Who counts as a writer is the repository's own classification, not a new one: P2J-1's published TONE_RULE reads
+    "a writer outside a synthetic probe, a test or a bound is a clinical writer", and names ``bands.py``,
+    ``hemodynamic_probes.py`` and ``pressure_tone.py`` as the non-clinical writers (``PROBE_MODULES``). The exemption
+    therefore follows the module that DEFINES the contributor (``PROBE_CONTRIBUTOR_MODULES``), not the SourceKind it
+    declares: the kind is a free class attribute, so a family could take the exemption by declaring SCRIPTED_EVENT -
+    which its own review demonstrated. Every clinical source - a disease module, a treatment, an intervention, a
+    case - is refused here on every profile, which is the hole the P2X-1 review demonstrated, while the declared
+    synthetic probes keep driving T as they did, in no case and no family trajectory. A probe that drives T onto its
+    guard is still refused, by the channel's own boundary in ``step``.
     """
     clinical = sorted({delta.source.key for delta in deltas if delta.channel is Channel.T
-                       and delta.source.kind is not SourceKind.SCRIPTED_EVENT})
+                       and delta.source.key not in probes})
     if clinical:
         raise CoreInvariantError(f"minute {minute}: {clinical} write T, whose only clinical owner is the core's "
                                  "vascular-tone response; how a family, a disease module or a drug would compose "
@@ -586,7 +595,8 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
         events.append(CoreEvent("terminal_collapse", COLLAPSE, minute, "critical", "physiological_collapse",
                                 "not assessed", f"terminal collapse from sustained critically low output: "
                                                 f"{target.code.value}"))
-    _tone_ownership(deltas, minute)
+    _tone_ownership(deltas, minute, frozenset(contributor.source.key for contributor in ordered
+                                               if type(contributor).__module__ in PROBE_CONTRIBUTOR_MODULES))
     if profile.deficit_to_tone_gain > 0.0 or profile.vasodilatory_burden_to_tone_gain is not None:
         # P2W-1: the tone response also runs for a declared vasodilatory reader, so a family's burden always reaches T
         # where its reader exists, even with the compensatory gain at 0 (with the reader UNSET this is P2J-2's
@@ -610,6 +620,14 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
         if channel is Channel.V:
             lower, upper = lower * profile.volume_preload_kappa, upper * profile.volume_preload_kappa
         bounded = min(upper, max(lower, proposed))
+        if channel is Channel.T and (bounded != proposed or proposed in (lower, upper)):
+            # P2X-1A: T's supported domain is the open interval (TONE_DOMAIN_ENDPOINTS = UNRESOLVED_BOUNDARY). The
+            # core's response refuses such a minute before this point; a synthetic probe that drives T onto its guard
+            # reaches it, and a clipped or exactly-on-the-endpoint value is not accepted physiology for anyone
+            # (ACCEPTED_TONE_MINUTE_HAS_ZERO_CLAMP, FACULTY DECISION 3). As for V, Hb and G, the run stops.
+            raise UnresolvedBoundary(f"minute {minute}: T reaches {proposed!r}, outside the supported open interval "
+                                     f"({lower:g}, {upper:g}) ({why}); the channel's guard is a safety bound, not the "
+                                     "physiology, and no rule for that boundary is decided (P2X-1A)")
         if bounded != proposed:
             if channel is Channel.G and lung_water_gas_exchange_active(profile) and anchors.reversible_lung_water < 0.0:
                 # P2O-3: a held G would part G from lung water and let another writer take the credit below arrival.

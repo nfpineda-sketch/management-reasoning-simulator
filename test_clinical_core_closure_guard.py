@@ -31,7 +31,7 @@ from clinical_core.state import Channel, CoreInvariantError, UnresolvedBoundary
 ROOT = cg.ROOT
 #: The P2X-1A freeze: the guards, the contract scan, A1-A22, the executable checks, the readiness rule, the proof and
 #: every clinical_core source but the downstream reports.
-FROZEN_DIGEST = "f54dbb441507c27182bfcc65f6636589db1f9df2a6c074d3ec9ce9bde303b289"
+FROZEN_DIGEST = "eca58477447ba831c64aa281d2b5860d19dd2cc9dfb3a089fb654be721113c73"
 T_LOWER, T_UPPER = CHANNEL_BOUNDS[Channel.T][0], CHANNEL_BOUNDS[Channel.T][1]
 
 
@@ -165,7 +165,7 @@ def test_the_per_minute_boundary_is_strict_and_reads_the_reconstruction():
     guards = cg.guards()["strict_domain"]
     assert guards["strict"] and guards["reconstruction_checked"]
     assert guards["exception"] == "UnresolvedBoundary"
-    assert guards["no_tolerance_constant"] and not guards["floats_below_the_lower_guard"]
+    assert guards["no_tolerance_constant"] and not guards["float_literals_other_than_0_and_1"]
     assert "lower < target < upper" in guards["per_minute"][0]
     assert "reconstructed" in guards["per_minute"][0]
 
@@ -231,8 +231,12 @@ def test_the_contract_scan_covers_the_repository_and_finds_no_offender():
 @pytest.mark.parametrize("name", sorted(cg.BYPASS_PATTERNS))
 def test_each_bypass_the_review_found_is_rejected(name):
     found = cg.scan_text(cg.BYPASS_PATTERNS[name])
-    assert found["writers"], name
     assert found["offenders"], f"{name} slipped through the scan"
+    if name != "module_level_lambda":
+        assert found["writers"], name
+    else:
+        # The writer is a lambda: the scan cannot attribute it to a function, and says so instead of staying silent.
+        assert not found["writers"] and found["offenders"][0]["writer"].endswith(":<module>")
 
 
 def test_the_allowed_writer_pattern_is_accepted():
@@ -347,7 +351,7 @@ def test_every_criterion_blocks_when_its_own_evidence_fails():
     found = cg.run.__wrapped__() if hasattr(cg.run, "__wrapped__") else None
     stub = {"pass": True}
     base = {"guards": stub, "writer_contract": stub, "contradictions": stub, "debt_classification": stub,
-            "supersession": stub, "non_regression": stub, "upstream_unchanged": stub,
+            "supersession": stub, "non_regression": stub, "upstream_unchanged": stub, "decision_file": stub,
             "probes": {f"A{index}": stub for index in range(1, 23)}}
     assert cg.readiness(base)["verdict"] == cg.READY
     for statement, keys in cg.READINESS_CRITERIA:
@@ -359,7 +363,8 @@ def test_every_criterion_blocks_when_its_own_evidence_fails():
             else:
                 target = {"guards": "guards", "writer_contract": "writer_contract", "contradictions":
                           "contradictions", "debt": "debt_classification", "supersession": "supersession",
-                          "non_regression": "non_regression", "upstream": "upstream_unchanged"}[key]
+                          "non_regression": "non_regression", "upstream": "upstream_unchanged",
+                          "decision_file": "decision_file"}[key]
                 broken[target] = {"pass": False}
             verdict = cg.readiness(broken)
             assert verdict["verdict"].startswith(cg.NOT_READY), f"{statement} does not read {key}"
@@ -396,3 +401,89 @@ def test_the_document_is_generated_from_the_record(record):
     for name, (opening, closing) in report.MARKERS.items():
         assert opening in text and closing in text, name
         assert report.RENDERERS[name](record).strip() in text, name
+
+
+# What P2X-1A's own adversarial review found, pinned ---------------------------------------------------------------------------
+
+def test_a_clamp_on_t_fails_closed_for_a_declared_synthetic_probe_too():
+    """H1 (the blocker): the ownership guard exempts the declared probes, so a band drift reached the channel on the
+    committed GI profile - where the tone response does not run at all - and parked T on its guard with clamps
+    recorded in accepted minutes. The channel's own boundary now refuses that minute, as it already did for V, Hb and
+    G, so no writer of any kind can leave a clamp on T behind."""
+    from clinical_core import bands
+    anchors, gi = dt.committed_pairs()["gi"]
+    assert gi.deficit_to_tone_gain == 0.0 and gi.vasodilatory_burden_to_tone_gain is None
+    drift = bands.Drift("tone", "T", 0, 200, -0.01)
+    assert drift.source.kind is SourceKind.SCRIPTED_EVENT
+    state, clamped, stopped = dv.arrival_state(anchors, gi), [], False
+    for _ in range(100):
+        try:
+            state, record = step(state, (drift,), anchors, gi)
+        except UnresolvedBoundary as problem:
+            stopped = "outside the supported open interval" in str(problem)
+            break
+        clamped += [delta for delta in record.deltas if delta.source.kind is SourceKind.CLAMP
+                    and delta.channel is Channel.T]
+    assert stopped, "the run must stop instead of clamping T"
+    assert not clamped, "no accepted minute may carry a clamp on T"
+    assert T_LOWER < state.T
+
+
+def test_a_family_cannot_take_the_probe_exemption_by_declaring_a_source_kind():
+    """The exemption follows the module that defines the contributor, not the kind it declares: ``kind`` is a free
+    class attribute, and the review wrote a family that declared SCRIPTED_EVENT and was accepted."""
+    assert cg._FamilyAsAProbe.kind is SourceKind.SCRIPTED_EVENT
+    assert type(cg._FamilyAsAProbe("fam")).__module__ not in ig.PROBE_CONTRIBUTOR_MODULES
+    for name, (anchors, profile) in sorted(dt.committed_pairs().items()):
+        with pytest.raises(CoreInvariantError, match="only clinical owner"):
+            dt.course((cg._FamilyAsAProbe("fam"),), 4, anchors, profile)
+
+
+def test_the_exempt_modules_are_p2j1s_published_list():
+    """PROBE_CONTRIBUTOR_MODULES is P2J-1's PROBE_MODULES, as import names: one classification, not two."""
+    assert sorted(ig.PROBE_CONTRIBUTOR_MODULES) == sorted(
+        path.removesuffix(".py").replace("/", ".") for path in pt.PROBE_MODULES)
+    assert "writer outside a synthetic probe, a test or a bound is a clinical writer" in pt.TONE_RULE
+
+
+def test_a_stored_value_exactly_on_an_endpoint_fails_closed():
+    """The supported domain is the open interval, so a probe that lands the channel exactly on a guard is refused
+    too - not only one that would overshoot it."""
+    from clinical_core import bands
+    anchors, gi = dt.committed_pairs()["gi"]
+    exact = bands.Drift("tone", "T", 0, 1, T_LOWER - 1.0)   # 1.0 + (0.1 - 1.0) = exactly 0.1
+    with pytest.raises(UnresolvedBoundary, match="outside the supported open interval"):
+        step(dv.arrival_state(anchors, gi), (exact,), anchors, gi)
+    inside = bands.Drift("tone", "T", 0, 1, T_LOWER - 1.0 + 0.01)
+    after, record = step(dv.arrival_state(anchors, gi), (inside,), anchors, gi)
+    assert T_LOWER < after.T and not [d for d in record.deltas if d.source.kind is SourceKind.CLAMP]
+
+
+def test_the_decision_file_criterion_reads_the_file_and_can_fail(monkeypatch):
+    """FACULTY DECISION 8 was the one decision no probe read, so it could not fail (the review's H3)."""
+    found = cg.decision_file()
+    assert found["pass"] and not found["missing"] and all(found["rows"].values())
+    assert "T_CHANNEL_SINGLE_OWNER_INVARIANT_UNCONDITIONAL" in \
+        cg.DECISION_FILE.read_text(encoding="utf-8")
+    monkeypatch.setattr(cg, "DECISION_FILE", ROOT / "docs" / "does_not_exist.md")
+    broken = cg.decision_file()
+    assert not broken["pass"] and not broken["exists"]
+    stub = {"pass": True}
+    base = {"guards": stub, "writer_contract": stub, "contradictions": stub, "debt_classification": stub,
+            "supersession": stub, "non_regression": stub, "upstream_unchanged": stub, "decision_file": broken,
+            "probes": {f"A{index}": stub for index in range(1, 23)}}
+    assert cg.readiness(base)["verdict"].startswith(cg.NOT_READY)
+
+
+def test_the_predecessors_own_analysis_runs_under_the_chained_tree(monkeypatch):
+    """P2J-2's probe grid carries the gain whose largest target is exactly T's upper guard, which is now refused: its
+    own analysis would no longer run at all. Under the chained tree it reads the grid without that endpoint (the
+    review's H6), and the frozen record and digest stay untouched."""
+    with pytest.raises(CoreInvariantError, match="reaches or passes"):
+        vt.probes()
+    cg.chain(monkeypatch)
+    assert vt.GAINS == cg.P2J2_GAINS_INSIDE
+    found = vt.probes()
+    assert found["checks"] == {str(n): True for n in range(1, 9)}
+    assert hashlib.sha256((ROOT / "docs" / "revision" / "P2J2_vascular_tone.json").read_bytes()).hexdigest() == \
+        cg.HISTORY["P2J2_UPPER_ENDPOINT_PROBE_SUPERSEDED_BY_P2X1A"]["historical"]["record_sha"]

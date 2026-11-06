@@ -42,7 +42,7 @@ import json
 import math
 import sys
 import types
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from . import blood_fluid_calibration as bf
@@ -52,8 +52,8 @@ from . import integration as ig
 from . import pressure_tone as pt
 from . import tone_domain as x1
 from . import vascular_tone as vt
-from .integration import CHANNEL_BOUNDS, step
-from .provenance import ProvenanceError, SourceKind
+from .integration import CHANNEL_BOUNDS, Contribution, Contributor, PROBE_CONTRIBUTOR_MODULES, step
+from .provenance import ChannelDelta, ProvenanceError, SourceKind
 from .state import Channel, CoreInvariantError, UnresolvedBoundary
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -157,6 +157,21 @@ def _clinical_writer(id_="fam"):
     return dt._FamilyTone(id_)
 
 
+@dataclass(frozen=True)
+class _FamilyAsAProbe(Contributor):
+    """A family that declares SourceKind.SCRIPTED_EVENT to take the synthetic probe's exemption. ``kind`` is a free
+    class attribute, so the exemption cannot be decided from it: P2X-1A's review wrote exactly this contributor and
+    it was accepted. It is defined here, outside PROBE_CONTRIBUTOR_MODULES, so the module-based rule refuses it."""
+
+    kind = SourceKind.SCRIPTED_EVENT
+    type_name = "p2x1a_family_as_a_probe"
+
+    id: str
+
+    def contribute(self, state, minute, signals, anchors, profile):
+        return Contribution(deltas=(ChannelDelta(Channel.T, -0.2, self.source, minute, "primary vasodilation"),))
+
+
 def _clamps(record) -> list:
     return sorted({delta.source.key for delta in record.deltas if delta.source.kind is SourceKind.CLAMP})
 
@@ -224,8 +239,10 @@ def guards() -> dict:
     functions = _core_functions()
     tone, ownership, stepper = functions["_vascular_tone"], functions["_tone_ownership"], functions["step"]
     tone_text = _code_only(tone)
+    # Every float literal in the function but the two the equations themselves use (0.0 and 1.0): a tolerance of 0.5
+    # would have passed the first version of this check, which only looked below T's lower guard (its review's H15).
     literals = sorted({node.value for node in ast.walk(tone) if isinstance(node, ast.Constant)
-                       and isinstance(node.value, float) and 0.0 < node.value < T_LOWER})
+                       and isinstance(node.value, float) and node.value not in (0.0, 1.0)})
     boundary = [_boundary_test(tone, "UnresolvedBoundary")]
     out = {
         "ownership": {"function": "integration._tone_ownership", **_unconditional_call(stepper, "_tone_ownership"),
@@ -242,8 +259,9 @@ def guards() -> dict:
                           any("reconstructed" in item for item in boundary),
                           "exception": "UnresolvedBoundary" if "UnresolvedBoundary" in tone_text else "",
                           "no_tolerance_constant": not literals and not any(
-                              name in tone_text for name in ("eps", "epsilon", "tol", "margin", "atol", "rtol")),
-                          "floats_below_the_lower_guard": literals},
+                              name in tone_text for name in ("eps", "epsilon", "tol", "margin", "atol", "rtol",
+                                                             "slack", "fudge", "approx", "isclose", "nextafter")),
+                          "float_literals_other_than_0_and_1": literals},
         "p2j2_untouched": {
             "profile_invariant": "self.deficit_to_tone_gain * self.afterload_sensitivity >= 1.0" in
                                  inspect.getsource(dv),
@@ -306,6 +324,47 @@ BYPASS_PATTERNS = {
     "tone_feedback": "from clinical_core.provenance import VasodilationChange\n"
                      "def write(state, minute, source):\n"
                      "    return VasodilationChange(1.0 - state.T, source, minute, 'b')\n",
+    # The evasions P2X-1A's own adversarial review found, which the first version of this scan let through.
+    "method_of_another_class": "from clinical_core.provenance import VasodilationChange\n"
+                               "class Reader:\n"
+                               "    def amount(self, view):\n"
+                               "        return view.map * 0.01\n"
+                               "class Writer:\n"
+                               "    def write(self, view, minute, source):\n"
+                               "        return VasodilationChange(Reader().amount(view), source, minute, 'b')\n",
+    "module_level_alias": "from clinical_core.provenance import VasodilationChange\n"
+                          "VC = VasodilationChange\n"
+                          "def write(view, minute, source):\n"
+                          "    return VC(view.map * 0.01, source, minute, 'b')\n",
+    "attrgetter": "import operator\n"
+                  "from clinical_core.provenance import VasodilationChange\n"
+                  "def write(view, minute, source):\n"
+                  "    return VasodilationChange(operator.attrgetter('map')(view) * 0.01, source, minute, 'b')\n",
+    "getattr_through_a_variable": "from clinical_core.provenance import VasodilationChange\n"
+                                  "NAME = 'map'\n"
+                                  "def write(view, minute, source):\n"
+                                  "    return VasodilationChange(getattr(view, NAME) * 0.01, source, minute, 'b')\n",
+    "dict_get": "from clinical_core.provenance import VasodilationChange\n"
+                "def write(row, minute, source):\n"
+                "    return VasodilationChange(row.get('map') * 0.01, source, minute, 'b')\n",
+    "module_level_lambda": "from clinical_core.provenance import VasodilationChange\n"
+                           "write = lambda view, minute, source: VasodilationChange(view.map * 0.01, source, "
+                           "minute, 'b')\n",
+    "inheritance": "from clinical_core.provenance import VasodilationChange\n"
+                   "class Base:\n"
+                   "    def amount(self, view):\n"
+                   "        return view.pressure_rel\n"
+                   "class Child(Base):\n"
+                   "    def write(self, view, minute, source):\n"
+                   "        return VasodilationChange(self.amount(view), source, minute, 'b')\n",
+    "decorator_injects_the_pressure": "from clinical_core.provenance import VasodilationChange\n"
+                                      "def inject(function):\n"
+                                      "    def wrapper(view, minute, source):\n"
+                                      "        return function(view.map, minute, source)\n"
+                                      "    return wrapper\n"
+                                      "@inject\n"
+                                      "def write(amount, minute, source):\n"
+                                      "    return VasodilationChange(amount * 0.01, source, minute, 'b')\n",
 }
 #: Source the scan must accept: the allowed inputs (disease-process state, time, treatment, authored mechanism).
 ALLOWED_PATTERN = ("from clinical_core.provenance import VasodilationChange\n"
@@ -315,13 +374,20 @@ ALLOWED_PATTERN = ("from clinical_core.provenance import VasodilationChange\n"
 
 
 def _record_names(tree: ast.AST) -> set:
-    """Every name that denotes the record in this module: the import, an alias, or a qualified attribute."""
+    """Every name that denotes the record in this module: the import, an import alias, a module-level assignment of
+    it, or a qualified attribute. P2X-1A's review showed a module-level alias made the writer invisible."""
     names = {RECORD_NAME}
-    for node in ast.walk(tree):
-        if isinstance(node, ast.ImportFrom):
-            for alias in node.names:
-                if alias.name == RECORD_NAME and alias.asname:
-                    names.add(alias.asname)
+    for _ in range(3):  # an alias of an alias, bounded
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom):
+                for alias in node.names:
+                    if alias.name == RECORD_NAME and alias.asname:
+                        names.add(alias.asname)
+            elif isinstance(node, ast.Assign) and isinstance(node.value, ast.Name) and node.value.id in names:
+                names.update(target.id for target in node.targets if isinstance(target, ast.Name))
+            elif isinstance(node, ast.Assign) and isinstance(node.value, ast.Attribute) \
+                    and node.value.attr == RECORD_NAME:
+                names.update(target.id for target in node.targets if isinstance(target, ast.Name))
     return names
 
 
@@ -334,8 +400,15 @@ def _builds_record(function: ast.FunctionDef, names: set) -> bool:
     return False
 
 
+#: An access whose target is not a literal cannot be decided here, so it counts as a read: a writer must not reach
+#: the state through one (P2X-1A's review evaded the scan with attrgetter, getattr(name) and dict.get).
+UNRESOLVED_ACCESS = "an unresolved dynamic access"
+_DYNAMIC = ("getattr", "attrgetter", "itemgetter", "get", "pop", "setdefault", "vars", "getitem")
+
+
 def _reads(function: ast.FunctionDef) -> set:
-    """Forbidden observables this function reads, through an attribute, a getattr, or a constant subscript."""
+    """Forbidden observables this function reads: an attribute, a constant subscript, a getattr or a dict access, and
+    any dynamic access whose target this scan cannot resolve."""
     found = set()
     for node in ast.walk(function):
         if isinstance(node, ast.Attribute) and node.attr in FORBIDDEN_READS:
@@ -343,9 +416,15 @@ def _reads(function: ast.FunctionDef) -> set:
         elif isinstance(node, ast.Subscript) and isinstance(node.slice, ast.Constant) \
                 and node.slice.value in FORBIDDEN_READS:
             found.add(node.slice.value)
-        elif isinstance(node, ast.Call) and getattr(node.func, "id", None) == "getattr" and len(node.args) > 1 \
-                and isinstance(node.args[1], ast.Constant) and node.args[1].value in FORBIDDEN_READS:
-            found.add(node.args[1].value)
+        elif isinstance(node, ast.Call):
+            name = getattr(node.func, "id", None) or getattr(node.func, "attr", None)
+            if name not in _DYNAMIC:
+                continue
+            arguments = [argument for argument in node.args if isinstance(argument, ast.Constant)]
+            if any(argument.value in FORBIDDEN_READS for argument in arguments):
+                found.add(next(a.value for a in arguments if a.value in FORBIDDEN_READS))
+            elif len(arguments) < len(node.args) or not node.args:
+                found.add(UNRESOLVED_ACCESS)
     return found
 
 
@@ -369,20 +448,27 @@ def _functions(tree: ast.AST) -> dict:
 
 
 def _called(function: ast.FunctionDef, qualified: str, known: dict) -> set:
-    """The module's own functions this one calls: a plain name, or a method of the same class through self / cls."""
+    """The module's own functions this one calls: a plain name, a method of the same class through self / cls, or -
+    since the scan cannot resolve the receiver - any method of any class in the module with that simple name. A
+    decorator applied to the function counts as a caller of it too."""
     owner = qualified.rsplit(".", 1)[0] if "." in qualified else ""
     out = set()
+    for decorator in getattr(function, "decorator_list", []):
+        name = getattr(decorator, "id", None) or getattr(decorator, "attr", None)
+        out.update(key for key in known if key == name or key.rsplit(".", 1)[-1] == name)
     for node in ast.walk(function):
         if not isinstance(node, ast.Call):
             continue
         if isinstance(node.func, ast.Name) and node.func.id in known:
             out.add(node.func.id)
-        elif isinstance(node.func, ast.Attribute) and getattr(node.func.value, "id", None) in ("self", "cls"):
-            candidate = f"{owner}.{node.func.attr}" if owner else node.func.attr
-            if candidate in known:
-                out.add(candidate)
-        elif isinstance(node.func, ast.Attribute) and node.func.attr in known:
-            out.add(node.func.attr)
+        elif isinstance(node.func, ast.Attribute):
+            if getattr(node.func.value, "id", None) in ("self", "cls"):
+                candidate = f"{owner}.{node.func.attr}" if owner else node.func.attr
+                if candidate in known:
+                    out.add(candidate)
+            # The receiver is unknown, so every same-named definition in the module is a candidate: inheritance and a
+            # method of another class both reach the state this way.
+            out.update(key for key in known if key.rsplit(".", 1)[-1] == node.func.attr)
     return out
 
 
@@ -393,6 +479,13 @@ def scan_text(source: str, relative: str = "<probe>") -> dict:
     names = _record_names(tree)
     functions = _functions(tree)
     writers, offenders = [], []
+    built = [node for node in ast.walk(tree) if isinstance(node, ast.Call)
+             and (getattr(node.func, "id", None) in names or getattr(node.func, "attr", None) == RECORD_NAME)]
+    if built and not any(_builds_record(function, names) for function in functions.values()):
+        # The module builds the record somewhere the scan could not attribute to a function - a module-level alias,
+        # a lambda, a comprehension - and that is itself a finding: P2X-1A's review made a writer invisible this way.
+        offenders.append({"writer": f"{relative}:<module>", "reads": [UNRESOLVED_ACCESS],
+                          "through": ["the record is built where no writer could be resolved"]})
     for name, function in sorted(functions.items()):
         if not _builds_record(function, names):
             continue
@@ -488,10 +581,20 @@ def probe_a3() -> dict:
                       "response_runs": profile.deficit_to_tone_gain > 0.0
                       or profile.vasodilatory_burden_to_tone_gain is not None}
         messages.add(found["message"].split(":", 1)[-1].strip())
+    # The exemption follows the module that defines the contributor, not the kind it declares: a family that calls
+    # itself a scripted probe is refused on every profile too (P2X-1A's review found it accepted).
+    disguised = {}
+    for name, (anchors, profile) in sorted(dt.committed_pairs().items()):
+        found = _refused(lambda a=anchors, p=profile: dt.course((_FamilyAsAProbe("fam"),), 4, a, p),
+                         "only clinical owner")
+        disguised[name] = found["refused"] and found["says_why"]
     out = {"profiles": rows, "one_message": len(messages) == 1,
-           "both_regimes_present": {row["response_runs"] for row in rows.values()} == {True, False}}
+           "both_regimes_present": {row["response_runs"] for row in rows.values()} == {True, False},
+           "declared_kind_does_not_grant_the_exemption": disguised,
+           "exempt_modules": list(PROBE_CONTRIBUTOR_MODULES),
+           "the_disguised_family_declares": str(_FamilyAsAProbe.kind)}
     out["pass"] = all(row["refused"] and row["says_why"] for row in rows.values()) and out["one_message"] \
-        and out["both_regimes_present"]
+        and out["both_regimes_present"] and all(disguised.values())
     return out
 
 
@@ -577,7 +680,27 @@ def probe_a9() -> dict:
            "tone": [state.T for state in states], "clamps": [_clamps(record) for record in records],
            "tone_clamps": _tone_clamps(records),
            "interior": all(T_LOWER < dv.tone_target(state, anchors, profile) < T_UPPER for state in states[:-1])}
-    out["pass"] = out["interior"] and not any(out["clamps"]) and not any(out["tone_clamps"])
+    # The other way a clamp on T could reach an accepted minute, which P2X-1A's review demonstrated: a declared
+    # synthetic probe driving T onto the channel's guard on a profile whose tone response does not run at all. The
+    # channel's own boundary refuses that minute now, so no writer of any kind can leave a clamp on T behind.
+    from . import bands
+    committed, gi = dt.committed_pairs()["gi"]
+    walk, clamped, stopped = dv.arrival_state(committed, gi), [], None
+    drift = bands.Drift("tone", "T", 0, 200, -0.01)
+    for _ in range(100):
+        try:
+            walk, record = step(walk, (drift,), committed, gi)
+        except UnresolvedBoundary as problem:
+            stopped = {"minute": walk.minute + 1, "tone_before": walk.T, "why": str(problem)[:150]}
+            break
+        clamped += [minute for minute in _tone_clamps([record]) if minute]
+    out["synthetic_probe_onto_the_guard"] = {
+        "profile": "gi", "response_runs": gi.deficit_to_tone_gain > 0.0
+        or gi.vasodilatory_burden_to_tone_gain is not None,
+        "stopped": stopped, "accepted_minutes_with_a_clamp_on_t": clamped,
+        "tone_reached": walk.T}
+    out["pass"] = (out["interior"] and not any(out["clamps"]) and not any(out["tone_clamps"])
+                   and stopped is not None and not clamped)
     return out
 
 
@@ -666,8 +789,10 @@ def probe_a16() -> dict:
                                                                             for read in item["reads"]})}
                         for name, found in rejected.items()},
            "allowed": {"writers": allowed["writers"], "offenders": allowed["offenders"]}}
+    # A pattern whose writer the scan cannot resolve (a module-level lambda) is rejected by the module-level finding,
+    # so a writer row is not required for every pattern - an offender row is.
     out["pass"] = all(found["offenders"] for found in rejected.values()) and not allowed["offenders"] \
-        and all(found["writers"] for found in rejected.values()) and bool(allowed["writers"])
+        and bool(allowed["writers"])
     return out
 
 
@@ -704,8 +829,9 @@ HISTORY = {
                          "demonstrated two real closure blockers - the ownership guard did not run with the tone "
                          "response off, and the inclusive boundary left a 2.8e-17 clamp inside an accepted minute - "
                          "so the operative verdict became NOT_CLOSED; P2X-1A repairs those exact blockers",
-        "history_preserved": "no P2X-1 source, record or digest is recut or rewritten; its two P2W-1 supersession "
-                             "rows stand as it published them",
+        "history_preserved": "no P2X-1 source, record or digest is recut or rewritten; the two rows it published - "
+                             "its P2W-1 V5 clamp reading and TD-120 - stand as it published them, and its V5 refusal "
+                             "still holds live",
     },
     "P2J2_UPPER_ENDPOINT_PROBE_SUPERSEDED_BY_P2X1A": {
         "status": "P2J2_ENDPOINT_PROBE_READING_SUPERSEDED",
@@ -716,7 +842,9 @@ HISTORY = {
         "superseding": {"document": DOCUMENT.relative_to(ROOT).as_posix(),
                         "record": RECORD.relative_to(ROOT).as_posix(),
                         "freeze_digest": None, "record_sha": None},
-        "what_happened": "P2J-2's probe grid includes the gain 2.0, whose largest reachable target is exactly T's "
+        "what_happened": "its own analysis reads the grid without that gain under the chained tree (chain patches "
+                         "vascular_tone.GAINS), so the predecessor stays runnable. P2J-2's probe grid includes the "
+                         "gain 2.0, whose largest reachable target is exactly T's "
                          "upper guard on anchors with no arrival deficit. P2J-2 accepted that reading (its check is "
                          "1 + g > upper); FACULTY DECISION 2 makes the endpoint an unresolved boundary, so the "
                          "combination is refused and that probe row is superseded. Every gain below it is unchanged",
@@ -832,6 +960,9 @@ CONTRADICTION_CHECKS = {
                                      "scan rejects each bypass the review found", ("a16",)),
     "prior_families_change": ("every committed family trajectory is byte-identical to the predecessor's",
                               ("a21",)),
+    "below_arrival_recovery_lost": ("a burden below the arrival one is still allowed recovery and the maximum "
+                                    "recovery factor is still exactly 1 + k b0: P2X-1's analytic results are not "
+                                    "reopened", ("a11", "a12")),
     "hidden_point_calibration": ("no clinical magnitude is selected: every value this package adds is declared "
                                  "synthetic and every committed profile keeps the reader UNSET", ("a22",)),
 }
@@ -899,13 +1030,37 @@ DEBT = {
 }
 #: The two closure blockers P2X-1's review demonstrated. Each must be resolved by an executable probe; an unresolved
 #: one is a blocker and may not be classified as acceptable debt.
-#: Every entry the closure must classify. Dropping one from DEBT is a blocker, not a smaller table.
-REQUIRED_DEBT = frozenset(item for items in DEBT.values() for item in items)
+#: Every entry the closure must classify, written out: derived from DEBT it could not fail outside a mutation, which
+#: P2X-1A's review flagged. Dropping one from DEBT, or adding one here, is a blocker.
+REQUIRED_DEBT = frozenset((
+    "STEADY_STATE_W_ARRIVAL_TENSION", "OPIOID_HR_RESIDUAL", "COLLAPSE_THRESHOLDS", "FIO2_MAGNITUDE",
+    "RESPIRATORY_DISTRESS_CALIBRATION", "SYSTEMIC_STRESS_CALIBRATION", "PRESSURE_TO_TONE",
+    "SIDED_PRELOAD_AND_INTERDEPENDENCE", "CUMULATIVE_FLOATING_POINT_CANCELLATION", "PHYSICAL_PAO2_BOUNDARY",
+    "HYPOXAEMIC_FEEDBACK_STABILITY", "DISTRIBUTIVE_TONE_MAGNITUDE", "TONE_DOMAIN_LIMITS",
+    "CONSCIOUSNESS_WIRING", "RUNTIME_INTEGRATION", "RESIDENT_VISIBLE_BEHAVIOUR",
+    "MALDISTRIBUTION_AND_EXTRACTION", "PLASMA_LEAK", "UPPER_AIRWAY", "DRUG_KINETICS",
+    "ADDITIONAL_FAMILY_MIGRATIONS",
+))
 CLOSURE_BLOCKERS = {
     "P2X1_R_F1_CONDITIONAL_T_OWNERSHIP": ("a1", "a2", "a3"),
     "P2X1_R_F4_CLAMP_IN_AN_ACCEPTED_MINUTE": ("a4", "a8", "a9"),
 }
 DEBT_REGISTER = ROOT / "docs" / "REGISTRO_DEUDA_TECNICA.md"
+#: The project's authoritative Decision File (the charter's section 3). FACULTY DECISION 8 says the eight decisions
+#: behind P2X-1 and P2X-1A are recorded there; P2X-1A's review found that no probe or criterion read it, so the one
+#: decision that could not fail was that one.
+DECISION_FILE = ROOT / "docs" / "COLA_DECISIONES_AI_ADVISOR.md"
+#: What each decision must be findable by in the Decision File: its classification, or the exact words of the rule.
+DECISION_FILE_MARKS = {
+    "1_unconditional_ownership": "T_CHANNEL_SINGLE_OWNER_INVARIANT_UNCONDITIONAL",
+    "2_strict_domain": "TONE_DOMAIN_ENDPOINTS = UNRESOLVED_BOUNDARY",
+    "3_zero_clamp": "ACCEPTED_TONE_MINUTE_HAS_ZERO_CLAMP",
+    "4_keep_p2x1_analysis": "Bmax = 1 + k·b₀",
+    "5_no_pressure_driven_writer": "PRESSURE_DRIVEN_FAMILY_VASODILATION_NOT_AUTHORIZED",
+    "6_maldistribution": "FUTURE_RESEARCH_DEBT",
+    "7_p2x1_supersession": "P2X1_FROZEN_VERDICT_SUPERSEDED_BY_P2X1A",
+    "8_decision_file": "FD-P2X-8",
+}
 
 
 def _register_ids() -> set:
@@ -1022,6 +1177,20 @@ FIELDS_AT_P2X1 = {"CoreProfile": 70, "AuxiliaryState": 10, "Anchors": 33}
 CALIBRATION_ENTRIES_AT_P2X1 = 58
 
 
+def decision_file() -> dict:
+    """P2X-1A-6 / FACULTY DECISION 8: each decision this package implements is findable in the Decision File."""
+    text = DECISION_FILE.read_text(encoding="utf-8") if DECISION_FILE.exists() else ""
+    found = {name: mark in text for name, mark in sorted(DECISION_FILE_MARKS.items())}
+    rows = {f"FD-P2X-{index}": f"| FD-P2X-{index} |" in text for index in range(1, 10)}
+    out = {"file": DECISION_FILE.relative_to(ROOT).as_posix(), "exists": DECISION_FILE.exists(),
+           "decisions_found": found, "rows": rows,
+           "every_decision_has_a_mark": sorted(DECISION_FILE_MARKS) == sorted(DECISIONS.keys() - {"scope"}),
+           "missing": sorted(name for name, ok in found.items() if not ok)}
+    out["pass"] = out["exists"] and not out["missing"] and all(rows.values()) \
+        and out["every_decision_has_a_mark"]
+    return out
+
+
 def probe_a22() -> dict:
     """No clinical magnitude: no new state, no new profile field, no new calibration entry, every value this package
     adds declared synthetic, and the distributive gain still UNSET in every committed profile."""
@@ -1080,7 +1249,19 @@ REVERSAL = {'clinical_core/decision_pack.py': (('                        "clinic
  'clinical_core/integration.py': (('            "p2j2_slope_bound": gain * sensitivity}\n'
                                    '\n'
                                    '\n'
-                                   'def _tone_ownership(deltas: Sequence[ChannelDelta], minute: int) -> None:\n'
+                                   "#: P2J-1's published classification of the writers that are NOT clinical, as the "
+                                   'modules that define them\n'
+                                   '#: (``pressure_tone.PROBE_MODULES``, pinned to this tuple by a test). A '
+                                   'contributor defined anywhere else is a\n'
+                                   '#: clinical writer of T, whatever SourceKind it declares: the kind is a free '
+                                   'class attribute, so a family could\n'
+                                   '#: otherwise take the exemption by declaring it (P2X-1A, after its review).\n'
+                                   'PROBE_CONTRIBUTOR_MODULES = ("clinical_core.bands", '
+                                   '"clinical_core.hemodynamic_probes", "clinical_core.pressure_tone")\n'
+                                   '\n'
+                                   '\n'
+                                   'def _tone_ownership(deltas: Sequence[ChannelDelta], minute: int, probes: '
+                                   'frozenset = frozenset()) -> None:\n'
                                    '    """P2X-1A: T has exactly one owner in the certified Phase-2 architecture, '
                                    "the core's vascular-tone response.\n"
                                    '\n'
@@ -1096,22 +1277,26 @@ REVERSAL = {'clinical_core/decision_pack.py': (('                        "clinic
                                    '    (T_CHANNEL_SINGLE_OWNER_INVARIANT_UNCONDITIONAL, FACULTY DECISION 1).\n'
                                    '\n'
                                    "    Who counts as a writer is the repository's own classification, not a new "
-                                   'one: a scripted synthetic probe is\n'
-                                   '    outside the owner for T exactly as it is for V and Hb (``_check_owned``, '
-                                   "P2I-2T), and P2J-1's published TONE_RULE\n"
-                                   '    already reads "a writer outside a synthetic probe, a test or a bound is a '
-                                   'clinical writer", naming\n'
-                                   '    ``bands.py``, ``hemodynamic_probes.py`` and ``pressure_tone.py`` as the '
-                                   'non-clinical ones. So every clinical\n'
-                                   '    source - a disease module, a treatment, an intervention, a case - is refused '
-                                   'here on every profile, which is the\n'
-                                   '    hole the P2X-1 review demonstrated, while the declared synthetic probes keep '
-                                   'driving T as they did, in no case\n'
-                                   '    and no family trajectory.\n'
+                                   "one: P2J-1's published TONE_RULE reads\n"
+                                   '    "a writer outside a synthetic probe, a test or a bound is a clinical '
+                                   'writer", and names ``bands.py``,\n'
+                                   '    ``hemodynamic_probes.py`` and ``pressure_tone.py`` as the non-clinical '
+                                   'writers (``PROBE_MODULES``). The exemption\n'
+                                   '    therefore follows the module that DEFINES the contributor '
+                                   '(``PROBE_CONTRIBUTOR_MODULES``), not the SourceKind it\n'
+                                   '    declares: the kind is a free class attribute, so a family could take the '
+                                   'exemption by declaring SCRIPTED_EVENT -\n'
+                                   '    which its own review demonstrated. Every clinical source - a disease module, '
+                                   'a treatment, an intervention, a\n'
+                                   '    case - is refused here on every profile, which is the hole the P2X-1 review '
+                                   'demonstrated, while the declared\n'
+                                   '    synthetic probes keep driving T as they did, in no case and no family '
+                                   'trajectory. A probe that drives T onto its\n'
+                                   "    guard is still refused, by the channel's own boundary in ``step``.\n"
                                    '    """\n'
                                    '    clinical = sorted({delta.source.key for delta in deltas if delta.channel is '
                                    'Channel.T\n'
-                                   '                       and delta.source.kind is not SourceKind.SCRIPTED_EVENT})\n'
+                                   '                       and delta.source.key not in probes})\n'
                                    '    if clinical:\n'
                                    '        raise CoreInvariantError(f"minute {minute}: {clinical} write T, whose '
                                    'only clinical owner is the core\'s "\n'
@@ -1283,7 +1468,10 @@ REVERSAL = {'clinical_core/decision_pack.py': (('                        "clinic
                                    '                                "not assessed", f"terminal collapse from '
                                    'sustained critically low output: "\n'
                                    '                                                f"{target.code.value}"))\n'
-                                   '    _tone_ownership(deltas, minute)\n'
+                                   '    _tone_ownership(deltas, minute, frozenset(contributor.source.key for '
+                                   'contributor in ordered\n'
+                                   '                                               if type(contributor).__module__ '
+                                   'in PROBE_CONTRIBUTOR_MODULES))\n'
                                    '    if profile.deficit_to_tone_gain > 0.0 or '
                                    'profile.vasodilatory_burden_to_tone_gain is not None:\n'
                                    '        # P2W-1: the tone response also runs for a declared vasodilatory reader, '
@@ -1300,7 +1488,41 @@ REVERSAL = {'clinical_core/decision_pack.py': (('                        "clinic
                                    '        # P2W-1: the tone response also runs for a declared vasodilatory reader, '
                                    "so a family's burden always reaches T\n"
                                    '        # where its reader exists, even with the compensatory gain at 0 (with '
-                                   "the reader UNSET this is P2J-2's\n")),
+                                   "the reader UNSET this is P2J-2's\n"),
+                                  ('        if channel is Channel.V:\n'
+                                   '            lower, upper = lower * profile.volume_preload_kappa, upper * '
+                                   'profile.volume_preload_kappa\n'
+                                   '        bounded = min(upper, max(lower, proposed))\n'
+                                   '        if channel is Channel.T and (bounded != proposed or proposed in (lower, '
+                                   'upper)):\n'
+                                   "            # P2X-1A: T's supported domain is the open interval "
+                                   '(TONE_DOMAIN_ENDPOINTS = UNRESOLVED_BOUNDARY). The\n'
+                                   "            # core's response refuses such a minute before this point; a "
+                                   'synthetic probe that drives T onto its guard\n'
+                                   '            # reaches it, and a clipped or exactly-on-the-endpoint value is not '
+                                   'accepted physiology for anyone\n'
+                                   '            # (ACCEPTED_TONE_MINUTE_HAS_ZERO_CLAMP, FACULTY DECISION 3). As for '
+                                   'V, Hb and G, the run stops.\n'
+                                   '            raise UnresolvedBoundary(f"minute {minute}: T reaches {proposed!r}, '
+                                   'outside the supported open interval "\n'
+                                   '                                     f"({lower:g}, {upper:g}) ({why}); the '
+                                   'channel\'s guard is a safety bound, not the "\n'
+                                   '                                     "physiology, and no rule for that boundary '
+                                   'is decided (P2X-1A)")\n'
+                                   '        if bounded != proposed:\n'
+                                   '            if channel is Channel.G and lung_water_gas_exchange_active(profile) '
+                                   'and anchors.reversible_lung_water < 0.0:\n'
+                                   '                # P2O-3: a held G would part G from lung water and let another '
+                                   'writer take the credit below arrival.\n',
+                                   '        if channel is Channel.V:\n'
+                                   '            lower, upper = lower * profile.volume_preload_kappa, upper * '
+                                   'profile.volume_preload_kappa\n'
+                                   '        bounded = min(upper, max(lower, proposed))\n'
+                                   '        if bounded != proposed:\n'
+                                   '            if channel is Channel.G and lung_water_gas_exchange_active(profile) '
+                                   'and anchors.reversible_lung_water < 0.0:\n'
+                                   '                # P2O-3: a held G would part G from lung water and let another '
+                                   'writer take the credit below arrival.\n')),
  'clinical_core/lactate_slice.py': (('                      "clinical_core/opioid_migration_report.py",\n'
                                      '                      "clinical_core/systemic_stress_report.py",\n'
                                      '                      "clinical_core/distributive_tone_report.py",\n'
@@ -1664,6 +1886,11 @@ def chain(patch) -> None:
     """For the closed packages' test fixtures: P2X-1's view reads the P2X-1 files (proven), by path and by source, and
     every closed listing of clinical_core leaves P2X-1A's new files out. P2X-1A adds no state and no accepted
     reading: only refusals."""
+    # P2J-2's probe grid still carries the gain whose largest reachable target is exactly T's upper guard, which
+    # FACULTY DECISION 2 now refuses: under the chained tree its own analysis reads the grid without that endpoint,
+    # so `python -m clinical_core.vascular_tone --run` and its probes keep running (its review's H6). The frozen
+    # P2J-2 record and digest are untouched; the superseded reading is declared in HISTORY.
+    patch.setattr(vt, "GAINS", P2J2_GAINS_INSIDE)
     patch.setattr(x1, "_live", p2x1_text)
     patch.setattr(x1, "_FREEZE_SOURCES", lambda: p2x1_sources(_FREEZE_SOURCES()))
     patch.setattr(x1, "inspect", _InspectView())
@@ -1761,8 +1988,9 @@ READINESS_CRITERIA = (
     ("2. the supported tone domain is the open interval: both endpoints fail closed, at the parameter level and at "
      "the minute, with no epsilon, margin or tolerance", ("guards", "A4", "A5", "A6", "A7")),
     ("3. no accepted tone minute carries a clamp on T, the floating reconstruction included", ("A8", "A9")),
-    ("4. the contraction guard carries the distributive factor and holds against the live slope with B != 1, and a "
-     "combination that is not a contraction is refused", ("A13", "A14", "A15")),
+    ("4. where the distributive reader is declared, the contraction guard carries the distributive factor, holds "
+     "against the live slope with B != 1, and refuses a combination that is not a contraction (with the reader UNSET "
+     "the derived bound is not checked, as P2X-1 left it and TD-127 declares)", ("A13", "A14", "A15")),
     ("5. the pressure-driven vasodilation contract is enforced by a scan that rejects each bypass the P2X-1 review "
      "found", ("writer_contract", "A16")),
     ("6. the predecessor and reversion integrity holds, and the readiness rule reads it", ("upstream", "A19")),
@@ -1773,7 +2001,9 @@ READINESS_CRITERIA = (
     ("9. the supersession check verifies the repository's own artifacts and immutable references",
      ("supersession", "A17", "A18")),
     ("10. every prior migrated family keeps its default trajectory exactly", ("non_regression", "A21")),
-    ("11. no new clinical magnitude is selected", ("A22",)),
+    ("11. no new clinical magnitude is selected", ("A22", "A11", "A12")),
+    ("12. the eight faculty decisions are recorded in the project's Decision File, by classification and by row",
+     ("decision_file",)),
 )
 
 
@@ -1786,7 +2016,8 @@ def _evidence(found: dict) -> dict:
            "debt": found.get("debt_classification", {}).get("pass"),
            "supersession": found.get("supersession", {}).get("pass"),
            "non_regression": found.get("non_regression", {}).get("pass"),
-           "upstream": found.get("upstream_unchanged", {}).get("pass")}
+           "upstream": found.get("upstream_unchanged", {}).get("pass"),
+           "decision_file": found.get("decision_file", {}).get("pass")}
     out.update({name: row.get("pass") for name, row in probes.items()})
     return out
 
@@ -1812,7 +2043,7 @@ def _verdict_from(upstream: dict, everything_else_holds: bool = True) -> dict:
     stub = {"pass": everything_else_holds}
     found = {"guards": stub, "writer_contract": stub, "contradictions": stub, "debt_classification": stub,
              "supersession": stub, "non_regression": stub, "upstream_unchanged": upstream,
-             "probes": {f"A{index}": stub for index in range(1, 23)}}
+             "decision_file": stub, "probes": {f"A{index}": stub for index in range(1, 23)}}
     return readiness(found)
 
 
@@ -1836,6 +2067,7 @@ def run() -> dict:
     probes = structural_probes()
     found = {"revision": REVISION, "freeze_digest": freeze_digest(), "design": design(), "guards": guards(),
              "writer_contract": writer_contract(), "probes": probes, "supersession": supersession(),
+             "decision_file": decision_file(),
              "debt_classification": debt_classification(probes), "contradictions": contradictions(probes),
              "non_regression": non_regression(), "upstream_unchanged": upstream_unchanged(),
              "proof": {"proofs": proofs(), "common_untouched": common_untouched(),

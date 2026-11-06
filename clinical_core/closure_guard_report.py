@@ -50,7 +50,8 @@ def render_guardas(data: dict) -> str:
         f"- Admisibilidad por parámetros: {_yes(strict['parameter_level'])}, y sin condicionar al lector: "
         f"{_yes(strict['unconditional_parameter_level'])}.",
         f"- Sin épsilon, margen ni tolerancia: {_yes(strict['no_tolerance_constant'])} "
-        f"(literales bajo la guarda inferior: {strict['floats_below_the_lower_guard'] or 'ninguno'}).",
+        f"(literales float distintos de 0 y 1: "
+        f"{strict['float_literals_other_than_0_and_1'] or 'ninguno'}).",
         f"- Chequeos de P2J-2 intactos: invariante de perfil {_yes(g['p2j2_untouched']['profile_invariant'])}, "
         f"chequeo de ganancia {_yes(g['p2j2_untouched']['gain_check'])}, rechazo de composición "
         f"{_yes(g['p2j2_untouched']['composition_refusal'])}.",

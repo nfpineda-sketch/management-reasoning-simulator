@@ -845,21 +845,6 @@
         "from_deficit_since_arrival": 0.0,
         "lactate": 4.4
        },
-       "120": {
-        "D": 131.20705974816087,
-        "D_accrued_so_far": 71.20705974816087,
-        "D_arrival_left": 60.0,
-        "D_repaid_so_far": 0.0,
-        "D_since_arrival": 71.20705974816087,
-        "arrival_excess_left": 1.4541538253204098,
-        "baseline": 2.0000000000000004,
-        "deficit": 0.7843334742569296,
-        "delivery": 0.21566652574307044,
-        "demand": 1.0,
-        "from_arrival_debt": 3.152820582265308,
-        "from_deficit_since_arrival": 1.8095080831159565,
-        "lactate": 8.416482490701677
-       },
        "15": {
         "D": 66.35043600928542,
         "D_accrued_so_far": 6.350436009285417,
@@ -919,6 +904,21 @@
         "from_arrival_debt": 2.5059916103067463,
         "from_deficit_since_arrival": 0.9871551800881192,
         "lactate": 7.141349307302841
+       },
+       "120": {
+        "D": 131.20705974816087,
+        "D_accrued_so_far": 71.20705974816087,
+        "D_arrival_left": 60.0,
+        "D_repaid_so_far": 0.0,
+        "D_since_arrival": 71.20705974816087,
+        "arrival_excess_left": 1.4541538253204098,
+        "baseline": 2.0000000000000004,
+        "deficit": 0.7843334742569296,
+        "delivery": 0.21566652574307044,
+        "demand": 1.0,
+        "from_arrival_debt": 3.152820582265308,
+        "from_deficit_since_arrival": 1.8095080831159565,
+        "lactate": 8.416482490701677
        }
       },
       "stopped_at": null
@@ -951,21 +951,6 @@
         "from_arrival_debt": 0.0,
         "from_deficit_since_arrival": 0.0,
         "lactate": 4.4
-       },
-       "120": {
-        "D": 14.569265732707,
-        "D_accrued_so_far": 6.1255277721563175,
-        "D_arrival_left": 13.219644113456896,
-        "D_repaid_so_far": 51.55626203944932,
-        "D_since_arrival": 1.3496216192501045,
-        "arrival_excess_left": 1.4541538253204098,
-        "baseline": 2.0000000000000004,
-        "deficit": 0.0,
-        "delivery": 1.360531856682611,
-        "demand": 1.0,
-        "from_arrival_debt": 1.8906253634804524,
-        "from_deficit_since_arrival": 0.17043217633241908,
-        "lactate": 5.515211365133277
        },
        "15": {
         "D": 64.57110299389278,
@@ -1026,6 +1011,21 @@
         "from_arrival_debt": 1.836082873322983,
         "from_deficit_since_arrival": 0.1618498696360768,
         "lactate": 5.646135259867034
+       },
+       "120": {
+        "D": 14.569265732707,
+        "D_accrued_so_far": 6.1255277721563175,
+        "D_arrival_left": 13.219644113456896,
+        "D_repaid_so_far": 51.55626203944932,
+        "D_since_arrival": 1.3496216192501045,
+        "arrival_excess_left": 1.4541538253204098,
+        "baseline": 2.0000000000000004,
+        "deficit": 0.0,
+        "delivery": 1.360531856682611,
+        "demand": 1.0,
+        "from_arrival_debt": 1.8906253634804524,
+        "from_deficit_since_arrival": 0.17043217633241908,
+        "lactate": 5.515211365133277
        }
       },
       "stopped_at": null
@@ -1060,21 +1060,6 @@
         "from_arrival_debt": 0.0,
         "from_deficit_since_arrival": 0.0,
         "lactate": 4.4
-       },
-       "120": {
-        "D": 38.67843291360148,
-        "D_accrued_so_far": 38.67843291360148,
-        "D_arrival_left": 0.0,
-        "D_repaid_so_far": 0.0,
-        "D_since_arrival": 38.67843291360148,
-        "arrival_excess_left": 0.24272920086359584,
-        "baseline": 0.8000000000000003,
-        "deficit": 0.640555790428216,
-        "delivery": 0.3594442095717841,
-        "demand": 1.0,
-        "from_arrival_debt": 0.0,
-        "from_deficit_since_arrival": 0.4939481503714527,
-        "lactate": 1.5366773512350498
        },
        "15": {
         "D": 0.5840600154757076,
@@ -1135,6 +1120,21 @@
         "from_arrival_debt": 0.0,
         "from_deficit_since_arrival": 0.2346181234299703,
         "lactate": 1.5109582247922044
+       },
+       "120": {
+        "D": 38.67843291360148,
+        "D_accrued_so_far": 38.67843291360148,
+        "D_arrival_left": 0.0,
+        "D_repaid_so_far": 0.0,
+        "D_since_arrival": 38.67843291360148,
+        "arrival_excess_left": 0.24272920086359584,
+        "baseline": 0.8000000000000003,
+        "deficit": 0.640555790428216,
+        "delivery": 0.3594442095717841,
+        "demand": 1.0,
+        "from_arrival_debt": 0.0,
+        "from_deficit_since_arrival": 0.4939481503714527,
+        "lactate": 1.5366773512350498
        }
       },
       "stopped_at": null
@@ -1167,21 +1167,6 @@
         "from_arrival_debt": 0.0,
         "from_deficit_since_arrival": 0.0,
         "lactate": 4.4
-       },
-       "120": {
-        "D": 0.0,
-        "D_accrued_so_far": 0.0,
-        "D_arrival_left": 0.0,
-        "D_repaid_so_far": 0.0,
-        "D_since_arrival": 0.0,
-        "arrival_excess_left": 0.24272920086359584,
-        "baseline": 0.8000000000000003,
-        "deficit": 0.0,
-        "delivery": 2.2675530944710185,
-        "demand": 1.0,
-        "from_arrival_debt": 0.0,
-        "from_deficit_since_arrival": 0.0,
-        "lactate": 1.042729200863597
        },
        "15": {
         "D": 0.0,
@@ -1242,6 +1227,21 @@
         "from_arrival_debt": 0.0,
         "from_deficit_since_arrival": 0.0,
         "lactate": 1.276340101362234
+       },
+       "120": {
+        "D": 0.0,
+        "D_accrued_so_far": 0.0,
+        "D_arrival_left": 0.0,
+        "D_repaid_so_far": 0.0,
+        "D_since_arrival": 0.0,
+        "arrival_excess_left": 0.24272920086359584,
+        "baseline": 0.8000000000000003,
+        "deficit": 0.0,
+        "delivery": 2.2675530944710185,
+        "demand": 1.0,
+        "from_arrival_debt": 0.0,
+        "from_deficit_since_arrival": 0.0,
+        "lactate": 1.042729200863597
        }
       },
       "stopped_at": null
@@ -1276,21 +1276,6 @@
         "from_arrival_debt": 0.0,
         "from_deficit_since_arrival": 0.0,
         "lactate": 4.4
-       },
-       "120": {
-        "D": 70.87666797656128,
-        "D_accrued_so_far": 50.87666797656128,
-        "D_arrival_left": 20.0,
-        "D_repaid_so_far": 0.0,
-        "D_since_arrival": 50.87666797656128,
-        "arrival_excess_left": 1.2455603028903388,
-        "baseline": 1.0000000000000004,
-        "deficit": 0.6944724218639835,
-        "delivery": 0.30552757813601644,
-        "demand": 1.0,
-        "from_arrival_debt": 0.8448783125920251,
-        "from_deficit_since_arrival": 1.0157681302459534,
-        "lactate": 4.106206745728313
        },
        "15": {
         "D": 22.746451013154356,
@@ -1351,6 +1336,21 @@
         "from_arrival_debt": 0.7054873536622205,
         "from_deficit_since_arrival": 0.5213097907872071,
         "lactate": 3.8278043926107643
+       },
+       "120": {
+        "D": 70.87666797656128,
+        "D_accrued_so_far": 50.87666797656128,
+        "D_arrival_left": 20.0,
+        "D_repaid_so_far": 0.0,
+        "D_since_arrival": 50.87666797656128,
+        "arrival_excess_left": 1.2455603028903388,
+        "baseline": 1.0000000000000004,
+        "deficit": 0.6944724218639835,
+        "delivery": 0.30552757813601644,
+        "demand": 1.0,
+        "from_arrival_debt": 0.8448783125920251,
+        "from_deficit_since_arrival": 1.0157681302459534,
+        "lactate": 4.106206745728313
        }
       },
       "stopped_at": null
@@ -1383,21 +1383,6 @@
         "from_arrival_debt": 0.0,
         "from_deficit_since_arrival": 0.0,
         "lactate": 4.4
-       },
-       "120": {
-        "D": 3.144769858940683,
-        "D_accrued_so_far": 0.6587294162357331,
-        "D_arrival_left": 3.04449494020594,
-        "D_repaid_so_far": 17.51395955729504,
-        "D_since_arrival": 0.10027491873474315,
-        "arrival_excess_left": 1.2455603028903388,
-        "baseline": 1.0000000000000004,
-        "deficit": 0.0,
-        "delivery": 1.9274201303003657,
-        "demand": 1.0,
-        "from_arrival_debt": 0.3531277299256082,
-        "from_deficit_since_arrival": 0.011182482813431007,
-        "lactate": 2.609870515629371
        },
        "15": {
         "D": 18.36576132980003,
@@ -1458,6 +1443,21 @@
         "from_arrival_debt": 0.37873936685038345,
         "from_deficit_since_arrival": 0.011898108339093974,
         "lactate": 2.991644723350813
+       },
+       "120": {
+        "D": 3.144769858940683,
+        "D_accrued_so_far": 0.6587294162357331,
+        "D_arrival_left": 3.04449494020594,
+        "D_repaid_so_far": 17.51395955729504,
+        "D_since_arrival": 0.10027491873474315,
+        "arrival_excess_left": 1.2455603028903388,
+        "baseline": 1.0000000000000004,
+        "deficit": 0.0,
+        "delivery": 1.9274201303003657,
+        "demand": 1.0,
+        "from_arrival_debt": 0.3531277299256082,
+        "from_deficit_since_arrival": 0.011182482813431007,
+        "lactate": 2.609870515629371
        }
       },
       "stopped_at": null
@@ -1775,19 +1775,6 @@
       "rising": 0.0,
       "stopped_before": 0
      },
-     "120": {
-      "changed_more_than_1": 0.5294117647058824,
-      "changed_more_than_2": 0.2476280834914611,
-      "falling": 0.573055028462998,
-      "max": 8.416482490701677,
-      "median": 3.979474998839508,
-      "min": 1.5366773512350498,
-      "n": 1054,
-      "p10": 2.2215006709609804,
-      "p90": 6.969573526036637,
-      "rising": 0.4269449715370019,
-      "stopped_before": 0
-     },
      "15": {
       "changed_more_than_1": 0.051233396584440226,
       "changed_more_than_2": 0.0,
@@ -1839,6 +1826,19 @@
       "p90": 6.13429640554642,
       "rising": 0.30740037950664134,
       "stopped_before": 0
+     },
+     "120": {
+      "changed_more_than_1": 0.5294117647058824,
+      "changed_more_than_2": 0.2476280834914611,
+      "falling": 0.573055028462998,
+      "max": 8.416482490701677,
+      "median": 3.979474998839508,
+      "min": 1.5366773512350498,
+      "n": 1054,
+      "p10": 2.2215006709609804,
+      "p90": 6.969573526036637,
+      "rising": 0.4269449715370019,
+      "stopped_before": 0
      }
     },
     "L2": {
@@ -1853,19 +1853,6 @@
       "p10": 4.4,
       "p90": 4.4,
       "rising": 0.0,
-      "stopped_before": 0
-     },
-     "120": {
-      "changed_more_than_1": 0.6574952561669829,
-      "changed_more_than_2": 0.30740037950664134,
-      "falling": 0.777988614800759,
-      "max": 7.895533130962564,
-      "median": 3.37268834584706,
-      "min": 1.1773134028093775,
-      "n": 1054,
-      "p10": 1.8172764301070876,
-      "p90": 5.780591536734331,
-      "rising": 0.222011385199241,
       "stopped_before": 0
      },
      "15": {
@@ -1919,6 +1906,19 @@
       "p90": 5.227836470976303,
       "rising": 0.1793168880455408,
       "stopped_before": 0
+     },
+     "120": {
+      "changed_more_than_1": 0.6574952561669829,
+      "changed_more_than_2": 0.30740037950664134,
+      "falling": 0.777988614800759,
+      "max": 7.895533130962564,
+      "median": 3.37268834584706,
+      "min": 1.1773134028093775,
+      "n": 1054,
+      "p10": 1.8172764301070876,
+      "p90": 5.780591536734331,
+      "rising": 0.222011385199241,
+      "stopped_before": 0
      }
     },
     "L3": {
@@ -1933,19 +1933,6 @@
       "p10": 4.4,
       "p90": 4.4,
       "rising": 0.0,
-      "stopped_before": 0
-     },
-     "120": {
-      "changed_more_than_1": 0.7267552182163188,
-      "changed_more_than_2": 0.3927893738140417,
-      "falling": 0.8975332068311196,
-      "max": 6.047671880639271,
-      "median": 2.8792190373343542,
-      "min": 1.042729200863597,
-      "n": 1054,
-      "p10": 1.2622720966256744,
-      "p90": 4.430484954227974,
-      "rising": 0.10246679316888045,
       "stopped_before": 0
      },
      "15": {
@@ -1999,6 +1986,19 @@
       "p90": 4.76439714158127,
       "rising": 0.14516129032258066,
       "stopped_before": 0
+     },
+     "120": {
+      "changed_more_than_1": 0.7267552182163188,
+      "changed_more_than_2": 0.3927893738140417,
+      "falling": 0.8975332068311196,
+      "max": 6.047671880639271,
+      "median": 2.8792190373343542,
+      "min": 1.042729200863597,
+      "n": 1054,
+      "p10": 1.2622720966256744,
+      "p90": 4.430484954227974,
+      "rising": 0.10246679316888045,
+      "stopped_before": 0
      }
     },
     "L4": {
@@ -2013,19 +2013,6 @@
       "p10": 4.4,
       "p90": 4.4,
       "rising": 0.0,
-      "stopped_before": 0
-     },
-     "120": {
-      "changed_more_than_1": 0.5379506641366224,
-      "changed_more_than_2": 0.2732447817836812,
-      "falling": 0.5986717267552182,
-      "max": 8.27175016942467,
-      "median": 3.792373908312088,
-      "min": 1.3677636274086165,
-      "n": 1054,
-      "p10": 2.0779240057085113,
-      "p90": 6.728352990574965,
-      "rising": 0.40132827324478176,
       "stopped_before": 0
      },
      "15": {
@@ -2078,6 +2065,19 @@
       "p10": 2.0508562689295875,
       "p90": 6.08961878887715,
       "rising": 0.30740037950664134,
+      "stopped_before": 0
+     },
+     "120": {
+      "changed_more_than_1": 0.5379506641366224,
+      "changed_more_than_2": 0.2732447817836812,
+      "falling": 0.5986717267552182,
+      "max": 8.27175016942467,
+      "median": 3.792373908312088,
+      "min": 1.3677636274086165,
+      "n": 1054,
+      "p10": 2.0779240057085113,
+      "p90": 6.728352990574965,
+      "rising": 0.40132827324478176,
       "stopped_before": 0
      }
     }
@@ -2968,21 +2968,6 @@
         "from_deficit_since_arrival": 0.0,
         "lactate": 3.4
        },
-       "120": {
-        "D": 123.3955822396347,
-        "D_accrued_so_far": 63.395582239634706,
-        "D_arrival_left": 60.0,
-        "D_repaid_so_far": 0.0,
-        "D_since_arrival": 63.395582239634706,
-        "arrival_excess_left": 0.8482563981035725,
-        "baseline": 2.0,
-        "deficit": 0.6558488490180967,
-        "delivery": 0.34415115098190324,
-        "demand": 1.0,
-        "from_arrival_debt": 3.152820582265308,
-        "from_deficit_since_arrival": 1.6561710100523361,
-        "lactate": 7.6572479904212125
-       },
        "15": {
         "D": 66.23086610113924,
         "D_accrued_so_far": 6.230866101139242,
@@ -3042,6 +3027,21 @@
         "from_arrival_debt": 2.5059916103067463,
         "from_deficit_since_arrival": 0.9205181492659988,
         "lactate": 6.387961227769062
+       },
+       "120": {
+        "D": 123.3955822396347,
+        "D_accrued_so_far": 63.395582239634706,
+        "D_arrival_left": 60.0,
+        "D_repaid_so_far": 0.0,
+        "D_since_arrival": 63.395582239634706,
+        "arrival_excess_left": 0.8482563981035725,
+        "baseline": 2.0,
+        "deficit": 0.6558488490180967,
+        "delivery": 0.34415115098190324,
+        "demand": 1.0,
+        "from_arrival_debt": 3.152820582265308,
+        "from_deficit_since_arrival": 1.6561710100523361,
+        "lactate": 7.6572479904212125
        }
       },
       "stopped_at": null
@@ -3074,21 +3074,6 @@
         "from_arrival_debt": 0.0,
         "from_deficit_since_arrival": 0.0,
         "lactate": 3.4
-       },
-       "120": {
-        "D": 18.069557835381065,
-        "D_accrued_so_far": 8.16907264769958,
-        "D_arrival_left": 15.904183935813693,
-        "D_repaid_so_far": 50.09951481231852,
-        "D_since_arrival": 2.1653738995673724,
-        "arrival_excess_left": 0.8482563981035725,
-        "baseline": 2.0,
-        "deficit": 0.0,
-        "delivery": 1.1712217705840042,
-        "demand": 1.0,
-        "from_arrival_debt": 2.1156048531699434,
-        "from_deficit_since_arrival": 0.24766585539755767,
-        "lactate": 5.211527106671074
        },
        "15": {
         "D": 64.9310786005071,
@@ -3149,6 +3134,21 @@
         "from_arrival_debt": 2.028774838169087,
         "from_deficit_since_arrival": 0.23045585147950512,
         "lactate": 5.220682157844914
+       },
+       "120": {
+        "D": 18.069557835381065,
+        "D_accrued_so_far": 8.16907264769958,
+        "D_arrival_left": 15.904183935813693,
+        "D_repaid_so_far": 50.09951481231852,
+        "D_since_arrival": 2.1653738995673724,
+        "arrival_excess_left": 0.8482563981035725,
+        "baseline": 2.0,
+        "deficit": 0.0,
+        "delivery": 1.1712217705840042,
+        "demand": 1.0,
+        "from_arrival_debt": 2.1156048531699434,
+        "from_deficit_since_arrival": 0.24766585539755767,
+        "lactate": 5.211527106671074
        }
       },
       "stopped_at": null
@@ -3183,21 +3183,6 @@
         "from_arrival_debt": 0.0,
         "from_deficit_since_arrival": 0.0,
         "lactate": 3.4
-       },
-       "120": {
-        "D": 25.659303732724524,
-        "D_accrued_so_far": 25.659303732724524,
-        "D_arrival_left": 0.0,
-        "D_repaid_so_far": 0.0,
-        "D_since_arrival": 25.659303732724524,
-        "arrival_excess_left": 0.17530442284593034,
-        "baseline": 0.7999999999999998,
-        "deficit": 0.4264147483634946,
-        "delivery": 0.5735852516365054,
-        "demand": 1.0,
-        "from_arrival_debt": 0.0,
-        "from_deficit_since_arrival": 0.3272779443680588,
-        "lactate": 1.30258236721399
        },
        "15": {
         "D": 0.3847768352320561,
@@ -3258,6 +3243,21 @@
         "from_arrival_debt": 0.0,
         "from_deficit_since_arrival": 0.15519832437015146,
         "lactate": 1.2992217309095424
+       },
+       "120": {
+        "D": 25.659303732724524,
+        "D_accrued_so_far": 25.659303732724524,
+        "D_arrival_left": 0.0,
+        "D_repaid_so_far": 0.0,
+        "D_since_arrival": 25.659303732724524,
+        "arrival_excess_left": 0.17530442284593034,
+        "baseline": 0.7999999999999998,
+        "deficit": 0.4264147483634946,
+        "delivery": 0.5735852516365054,
+        "demand": 1.0,
+        "from_arrival_debt": 0.0,
+        "from_deficit_since_arrival": 0.3272779443680588,
+        "lactate": 1.30258236721399
        }
       },
       "stopped_at": null
@@ -3290,21 +3290,6 @@
         "from_arrival_debt": 0.0,
         "from_deficit_since_arrival": 0.0,
         "lactate": 3.4
-       },
-       "120": {
-        "D": 0.0,
-        "D_accrued_so_far": 0.0,
-        "D_arrival_left": 0.0,
-        "D_repaid_so_far": 0.0,
-        "D_since_arrival": 0.0,
-        "arrival_excess_left": 0.17530442284593034,
-        "baseline": 0.7999999999999998,
-        "deficit": 0.0,
-        "delivery": 1.9520362843066736,
-        "demand": 1.0,
-        "from_arrival_debt": 0.0,
-        "from_deficit_since_arrival": 0.0,
-        "lactate": 0.9753044228459307
        },
        "15": {
         "D": 0.0,
@@ -3365,6 +3350,21 @@
         "from_arrival_debt": 0.0,
         "from_deficit_since_arrival": 0.0,
         "lactate": 1.1440234065393908
+       },
+       "120": {
+        "D": 0.0,
+        "D_accrued_so_far": 0.0,
+        "D_arrival_left": 0.0,
+        "D_repaid_so_far": 0.0,
+        "D_since_arrival": 0.0,
+        "arrival_excess_left": 0.17530442284593034,
+        "baseline": 0.7999999999999998,
+        "deficit": 0.0,
+        "delivery": 1.9520362843066736,
+        "demand": 1.0,
+        "from_arrival_debt": 0.0,
+        "from_deficit_since_arrival": 0.0,
+        "lactate": 0.9753044228459307
        }
       },
       "stopped_at": null
@@ -3399,21 +3399,6 @@
         "from_arrival_debt": 0.0,
         "from_deficit_since_arrival": 0.0,
         "lactate": 3.4
-       },
-       "120": {
-        "D": 59.810408172815855,
-        "D_accrued_so_far": 39.810408172815855,
-        "D_arrival_left": 20.0,
-        "D_repaid_so_far": 0.0,
-        "D_since_arrival": 39.810408172815855,
-        "arrival_excess_left": 0.8792190373343568,
-        "baseline": 1.0,
-        "deficit": 0.5124525361089705,
-        "delivery": 0.4875474638910296,
-        "demand": 1.0,
-        "from_arrival_debt": 0.8448783125920251,
-        "from_deficit_since_arrival": 0.8212288358778975,
-        "lactate": 3.5453261858042766
        },
        "15": {
         "D": 22.577060309947242,
@@ -3474,6 +3459,21 @@
         "from_arrival_debt": 0.7054873536622205,
         "from_deficit_since_arrival": 0.4345306321597648,
         "lactate": 3.270140749229988
+       },
+       "120": {
+        "D": 59.810408172815855,
+        "D_accrued_so_far": 39.810408172815855,
+        "D_arrival_left": 20.0,
+        "D_repaid_so_far": 0.0,
+        "D_since_arrival": 39.810408172815855,
+        "arrival_excess_left": 0.8792190373343568,
+        "baseline": 1.0,
+        "deficit": 0.5124525361089705,
+        "delivery": 0.4875474638910296,
+        "demand": 1.0,
+        "from_arrival_debt": 0.8448783125920251,
+        "from_deficit_since_arrival": 0.8212288358778975,
+        "lactate": 3.5453261858042766
        }
       },
       "stopped_at": null
@@ -3506,21 +3506,6 @@
         "from_arrival_debt": 0.0,
         "from_deficit_since_arrival": 0.0,
         "lactate": 3.4
-       },
-       "120": {
-        "D": 3.338910268098122,
-        "D_accrued_so_far": 0.8555559089479772,
-        "D_arrival_left": 3.20193840209799,
-        "D_repaid_so_far": 17.516645640849852,
-        "D_since_arrival": 0.136971866000132,
-        "arrival_excess_left": 0.8792190373343568,
-        "baseline": 1.0,
-        "deficit": 0.0,
-        "delivery": 1.6592308416606725,
-        "demand": 1.0,
-        "from_arrival_debt": 0.3691865762126998,
-        "from_deficit_since_arrival": 0.015050372736751895,
-        "lactate": 2.2634559862838017
        },
        "15": {
         "D": 19.499560170093037,
@@ -3581,6 +3566,21 @@
         "from_arrival_debt": 0.39549406636671275,
         "from_deficit_since_arrival": 0.015963828261853975,
         "lactate": 2.5415806580365663
+       },
+       "120": {
+        "D": 3.338910268098122,
+        "D_accrued_so_far": 0.8555559089479772,
+        "D_arrival_left": 3.20193840209799,
+        "D_repaid_so_far": 17.516645640849852,
+        "D_since_arrival": 0.136971866000132,
+        "arrival_excess_left": 0.8792190373343568,
+        "baseline": 1.0,
+        "deficit": 0.0,
+        "delivery": 1.6592308416606725,
+        "demand": 1.0,
+        "from_arrival_debt": 0.3691865762126998,
+        "from_deficit_since_arrival": 0.015050372736751895,
+        "lactate": 2.2634559862838017
        }
       },
       "stopped_at": null
@@ -3898,19 +3898,6 @@
       "rising": 0.0,
       "stopped_before": 0
      },
-     "120": {
-      "changed_more_than_1": 0.5037950664136622,
-      "changed_more_than_2": 0.19639468690702086,
-      "falling": 0.4876660341555977,
-      "max": 7.6572479904212125,
-      "median": 3.4185944389154717,
-      "min": 1.30258236721399,
-      "n": 1054,
-      "p10": 2.0124062178404296,
-      "p90": 6.108114310380427,
-      "rising": 0.5123339658444023,
-      "stopped_before": 0
-     },
      "15": {
       "changed_more_than_1": 0.0,
       "changed_more_than_2": 0.0,
@@ -3962,6 +3949,19 @@
       "p90": 5.371035336809368,
       "rising": 0.444022770398482,
       "stopped_before": 0
+     },
+     "120": {
+      "changed_more_than_1": 0.5037950664136622,
+      "changed_more_than_2": 0.19639468690702086,
+      "falling": 0.4876660341555977,
+      "max": 7.6572479904212125,
+      "median": 3.4185944389154717,
+      "min": 1.30258236721399,
+      "n": 1054,
+      "p10": 2.0124062178404296,
+      "p90": 6.108114310380427,
+      "rising": 0.5123339658444023,
+      "stopped_before": 0
      }
     },
     "L2": {
@@ -3976,19 +3976,6 @@
       "p10": 3.4,
       "p90": 3.4,
       "rising": 0.0,
-      "stopped_before": 0
-     },
-     "120": {
-      "changed_more_than_1": 0.4098671726755218,
-      "changed_more_than_2": 0.15370018975332067,
-      "falling": 0.5901328273244781,
-      "max": 7.335568666654831,
-      "median": 3.0417764680071384,
-      "min": 1.0735600641489649,
-      "n": 1054,
-      "p10": 1.7651953989194604,
-      "p90": 5.449679658894411,
-      "rising": 0.4098671726755218,
       "stopped_before": 0
      },
      "15": {
@@ -4042,6 +4029,19 @@
       "p90": 4.799946053744699,
       "rising": 0.33301707779886147,
       "stopped_before": 0
+     },
+     "120": {
+      "changed_more_than_1": 0.4098671726755218,
+      "changed_more_than_2": 0.15370018975332067,
+      "falling": 0.5901328273244781,
+      "max": 7.335568666654831,
+      "median": 3.0417764680071384,
+      "min": 1.0735600641489649,
+      "n": 1054,
+      "p10": 1.7651953989194604,
+      "p90": 5.449679658894411,
+      "rising": 0.4098671726755218,
+      "stopped_before": 0
      }
     },
     "L3": {
@@ -4056,19 +4056,6 @@
       "p10": 3.4,
       "p90": 3.4,
       "rising": 0.0,
-      "stopped_before": 0
-     },
-     "120": {
-      "changed_more_than_1": 0.538899430740038,
-      "changed_more_than_2": 0.16223908918406071,
-      "falling": 0.8206831119544592,
-      "max": 5.678907899534749,
-      "median": 2.4541538253204074,
-      "min": 0.9753044228459307,
-      "n": 1054,
-      "p10": 1.2182319460007265,
-      "p90": 4.109120390722427,
-      "rising": 0.1793168880455408,
       "stopped_before": 0
      },
      "15": {
@@ -4122,6 +4109,19 @@
       "p90": 4.214983521921376,
       "rising": 0.21347248576850095,
       "stopped_before": 0
+     },
+     "120": {
+      "changed_more_than_1": 0.538899430740038,
+      "changed_more_than_2": 0.16223908918406071,
+      "falling": 0.8206831119544592,
+      "max": 5.678907899534749,
+      "median": 2.4541538253204074,
+      "min": 0.9753044228459307,
+      "n": 1054,
+      "p10": 1.2182319460007265,
+      "p90": 4.109120390722427,
+      "rising": 0.1793168880455408,
+      "stopped_before": 0
      }
     },
     "L4": {
@@ -4136,19 +4136,6 @@
       "p10": 3.4,
       "p90": 3.4,
       "rising": 0.0,
-      "stopped_before": 0
-     },
-     "120": {
-      "changed_more_than_1": 0.5037950664136622,
-      "changed_more_than_2": 0.2049335863377609,
-      "falling": 0.5132827324478179,
-      "max": 7.56151370317873,
-      "median": 3.294828383227647,
-      "min": 1.190831353101218,
-      "n": 1054,
-      "p10": 1.9174178558445738,
-      "p90": 5.948557164976289,
-      "rising": 0.48671726755218214,
       "stopped_before": 0
      },
      "15": {
@@ -4202,6 +4189,19 @@
       "p90": 5.318670687409495,
       "rising": 0.444022770398482,
       "stopped_before": 0
+     },
+     "120": {
+      "changed_more_than_1": 0.5037950664136622,
+      "changed_more_than_2": 0.2049335863377609,
+      "falling": 0.5132827324478179,
+      "max": 7.56151370317873,
+      "median": 3.294828383227647,
+      "min": 1.190831353101218,
+      "n": 1054,
+      "p10": 1.9174178558445738,
+      "p90": 5.948557164976289,
+      "rising": 0.48671726755218214,
+      "stopped_before": 0
      }
     }
    },
@@ -4248,54 +4248,54 @@
   "gi_bleed_57m": {
    "L1": {
     "0": 4.4,
-    "120": 5.1,
     "15": 4.5,
     "30": 4.6,
     "60": 4.8,
-    "90": 4.9
+    "90": 4.9,
+    "120": 5.1
    },
    "L2": {
     "0": 4.4,
-    "120": 4.9,
     "15": 4.1,
     "30": 4.2,
     "60": 4.5,
-    "90": 4.7
+    "90": 4.7,
+    "120": 4.9
    },
    "L3": {
     "0": 4.4,
-    "120": 3.3,
     "15": 4.1,
     "30": 3.8,
     "60": 3.2,
-    "90": 3.3
+    "90": 3.3,
+    "120": 3.3
    },
    "L4": null
   },
   "gi_bleed_72f": {
    "L1": {
     "0": 3.4,
-    "120": 4.1,
     "15": 3.5,
     "30": 3.6,
     "60": 3.8,
-    "90": 3.9
+    "90": 3.9,
+    "120": 4.1
    },
    "L2": {
     "0": 3.4,
-    "120": 3.9,
     "15": 3.1,
     "30": 3.2,
     "60": 3.5,
-    "90": 3.7
+    "90": 3.7,
+    "120": 3.9
    },
    "L3": {
     "0": 3.4,
-    "120": 2.3,
     "15": 3.1,
     "30": 2.8,
     "60": 2.2,
-    "90": 2.3
+    "90": 2.3,
+    "120": 2.3
    },
    "L4": null
   }
@@ -4484,5 +4484,5 @@
    "trajectory_kind": "manual counterfactual composition: the endoscopic haemostasis is added by hand at L3's minute; the family engine defers this endoscopy and never produces it"
   }
  },
- "slice_digest": "53fa13475b9e7c7a7e0b3a9f41a46a3f85167f2ee341b416052f6ac9634c2985"
+ "slice_digest": "44f245b479671a60d17075bb5cbf486878dadc70cd0e19fd8c69bfce3010958a"
 }

@@ -97,7 +97,19 @@ P2J2_TONE_ROWS = (("clinical_core/vascular_tone.py", None), ("clinical_core/vasc
                   # P2X-1A: the unconditional ownership guard names the channel it owns, and its analysis
                   # module names it to state the supported range and to drive the probes; neither writes it.
                   ("clinical_core/integration.py", "_tone_ownership"),
-                  ("clinical_core/closure_guard.py", None),
+                  # P2X-1A: step itself names the channel once, to refuse a clipped or exactly-on-the-endpoint value
+                  # of T as the integrator already refuses one of V, Hb or G. It is the integration point, not a
+                  # contributor, and integration.py is in this guard's allowed set below.
+                  ("clinical_core/integration.py", "step"),
+                  # Named one by one, not by file: the only tone this module touches is on its own probe states
+                  # (the live-slope measurement, the zero-clamp walk) and in the contributor it writes to show the
+                  # guard refusing it.
+                  ("clinical_core/closure_guard.py", "_live_slope"),
+                  ("clinical_core/closure_guard.py", "_FamilyAsAProbe"),
+                  ("clinical_core/closure_guard.py", "_tone_clamps"),
+                  ("clinical_core/closure_guard.py", "probe_a8"),
+                  ("clinical_core/closure_guard.py", "probe_a9"),
+                  ("clinical_core/closure_guard.py", "<module>"),
                   ("clinical_core/closure_guard_report.py", None))
 C57, C72 = pt.C57, pt.C72
 NEUTRAL = Anchors(**ARRIVAL)

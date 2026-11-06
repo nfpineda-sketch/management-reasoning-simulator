@@ -4611,3 +4611,39 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   `3afa71b2…` recomputa, y las nueve trayectorias de familia comprometidas son idénticas por digest a las de P2X-1.
 - **Lo que sigue UNSET:** `vasodilatory_burden_to_tone_gain` y todas las regiones de llegada, así que nada de lo que
   P2X-1 y P2X-1A añaden corre hoy. El núcleo sigue en sombra: `family_engine.py` es la fuente de verdad.
+- **Revisión adversarial (una) y lo que cambió por ella.** 16 hallazgos; **dos de bloqueo**, los dos reproducidos por
+  mí antes de tocar nada, y los dos cerrados dentro de este paquete:
+  - **H1 (bloqueo):** la exención de las sondas sintéticas dejaba el camino abierto: con la sonda de banda registrada
+    del repositorio sobre el perfil GI —donde la respuesta de tono no corre—, T quedaba exactamente en `T_lo` y once
+    minutos **aceptados** registraban `clamp:bounds:T`. El agujero R-F4 se había movido del escritor `DISEASE_MODULE`
+    al `SCRIPTED_EVENT`. Arreglo, con la convención que el repositorio ya usa para V, Hb y G: en `step`, un valor de T
+    recortado por la guarda **o exactamente sobre un extremo** falla cerrado (`UnresolvedBoundary`) para cualquier
+    escritor. Y la exención dejó de decidirse por el `SourceKind` autodeclarado —que es un atributo de clase libre, y
+    la revisión escribió una familia que se declaraba sonda y era aceptada— para decidirse por el **módulo que define**
+    al contribuidor (`integration.PROBE_CONTRIBUTOR_MODULES`, la lista publicada de P2J-1). Verificado: las 9 sondas de
+    banda siguen corriendo, las 9 trayectorias comprometidas siguen idénticas por digest, y la familia disfrazada se
+    rechaza en los 7 perfiles.
+  - **H2 (bloqueo):** el `slice_digest` publicado no correspondía a ningún árbol (yo había instalado un valor calculado
+    antes de terminar el módulo) y los dos registros descendentes se habían re-serializado desde el JSON anterior en
+    vez de regenerarse, cambiando el orden de filas de dos tablas docentes. Arreglo: ambos registros regenerados con
+    sus propios generadores y copiados byte a byte, los dos documentos re-renderizados, y la suite del repositorio
+    verde.
+  - **H3–H16 (no bloqueo), atendidos:** la decisión 1 entró al Decision File como `FD-P2X-9` y ahora un criterio
+    ejecutable (el 12) y una sonda leen ese archivo, así que la decisión 8 ya puede fallar; el escaneo del contrato
+    rechaza las ocho evasiones nuevas de la revisión (alias de módulo, método de otra clase, `attrgetter`, `getattr`
+    por variable, `dict.get`, lambda de módulo, herencia, decorador) y marca como infractor todo módulo que construya
+    el registro donde el escaneo no pueda atribuirlo; `cg.chain` devuelve la ejecutabilidad del análisis de P2J-2; el
+    criterio 4 dice ahora «donde el lector distributivo está declarado»; A11 y A12 las lee el criterio 11 y una fila
+    nueva de `contradictions`; `REQUIRED_DEBT` está escrita a mano, no derivada de `DEBT`; el chequeo de tolerancia
+    mira todos los literales float distintos de 0 y 1; las dos pruebas cuyo nombre decía lo contrario de lo que
+    comprueban se renombraron y el comentario falso se corrigió; y la fila de `P2J2_TONE_ROWS` nombra las funciones
+    una por una en vez de restar el archivo entero.
+  - **Lo que la revisión no pudo romper**, con su evidencia: ninguna fuente clínica llega al canal T (6 `SourceKind`,
+    con y sin autoridad de agua pulmonar, en dos órdenes, en los 7 perfiles, desde el minuto 1); el barrido de punto
+    flotante de 123 720 minutos aceptados sin un solo recorte; la cota de contracción escala exactamente con `1+k·b₀`
+    en 794 de 794 combinaciones aceptadas y la pendiente viva nunca la supera; las cuatro mutaciones del predecesor
+    hacen fallar la disposición; los 12 caminos y los 8 digests de `HISTORY` existen y coinciden; los 11 criterios
+    caen al invalidar cualquiera de sus hojas; el registro de P2X-1 se reproduce byte a byte.
+  - **Queda declarado, no cerrado:** el lado «superseding» de las dos filas propias es inverificable por construcción
+    (se escribe en la evaluación, después del congelado), y la lectura amplia de la decisión 1 —retirar las tres sondas
+    de banda que escriben T— sigue siendo trabajo de fisiología no autorizado.
