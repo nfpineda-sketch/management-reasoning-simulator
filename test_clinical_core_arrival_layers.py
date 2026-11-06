@@ -43,7 +43,10 @@ def test_every_arrival_field_belongs_to_exactly_one_layer_and_no_layer_is_a_chan
     from clinical_core.opioid_migration import CANDIDATE_INPUTS as P2U1_INPUTS
     # P2V-1: the arrival systemic stress, 0 by default and read only by the sympathetic HR target.
     from clinical_core.systemic_stress import CANDIDATE_INPUTS as P2V1_INPUTS
-    CANDIDATE_INPUTS = P2K2_INPUTS + P2O3_INPUTS + P2S2_INPUTS + P2T1_INPUTS + P2U1_INPUTS + P2V1_INPUTS
+    # P2W-1: the arrival vasodilatory burden, 0 by default and read only by the common tone target.
+    from clinical_core.distributive_tone import CANDIDATE_INPUTS as P2W1_INPUTS
+    CANDIDATE_INPUTS = (P2K2_INPUTS + P2O3_INPUTS + P2S2_INPUTS + P2T1_INPUTS + P2U1_INPUTS + P2V1_INPUTS
+                        + P2W1_INPUTS)
     assert set(CASE_PARAMETERS) | set(CANDIDATE_INPUTS) == set(ARRIVAL_LAYERS["physiological_reference"]) | set(
         ARRIVAL_LAYERS["arrival_dynamic_state"]) and not set(CASE_PARAMETERS) & set(CANDIDATE_INPUTS)
 

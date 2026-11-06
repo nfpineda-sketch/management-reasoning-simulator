@@ -86,7 +86,10 @@ ANALYSIS_ONLY = {
     "respiratory_distress.py": {"sys", "types"},
     # P2V-1: the offline S10 probe runs the P2U-1 derived.py (proven by the reversal) beside the live one, as P2T-1's
     # non-regression does; nothing the application runs imports it.
-    "systemic_stress.py": {"sys", "types"}}
+    "systemic_stress.py": {"sys", "types"},
+    # P2W-1: the same, for the distributive-tone analysis (its reversal proof and its view of the closed packages'
+    # trees read module objects and the interpreter's path readers; the shadow core imports neither).
+    "distributive_tone.py": {"sys", "types"}}
 
 
 def _imports(path):
