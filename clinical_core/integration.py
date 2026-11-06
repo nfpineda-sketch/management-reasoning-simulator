@@ -49,7 +49,7 @@ from .derived import (ADOPTED, AUXILIARY_SOURCES, BLOOD_COMPOSITION, COLLAPSE, D
 from .provenance import (BLOOD_PROCESSES, AuxiliaryChange, BloodChange, BloodFlow, BloodProcess, ChannelDelta,
                          CoreEvent, DemandModifier, MinuteRecord, ProvenanceError, RhythmTransition, SettingChange,
                          Source, SourceKind, MechanicsChange, DistressChange, AvailabilityChange,
-                         SystemicStressChange)
+                         SystemicStressChange, VasodilationChange)
 from .state import (AUXILIARY_FIELDS, BLOOD_FIELDS, Anchors, AuxiliaryState, BloodState, Channel, CoreInvariantError,
                     CoreState, FrozenRecord, SCALAR_CHANNELS, UnresolvedBoundary, digest, initial_state)
 
@@ -125,6 +125,7 @@ class Contribution:
     distress: tuple[DistressChange, ...] = ()  # changes to the common respiratory distress this minute (P2T-1)
     availability: tuple[AvailabilityChange, ...] = ()  # changes to the common central availability this minute (P2U-1)
     systemic_stress: tuple[SystemicStressChange, ...] = ()  # changes to the common systemic stress this minute (P2V-1)
+    vasodilation: tuple[VasodilationChange, ...] = ()  # changes to the common vasodilatory burden this minute (P2W-1)
 
 
 NOTHING = Contribution()
@@ -359,13 +360,17 @@ def _check_owned(contributor: Contributor, contribution: Contribution, minute: i
                                                                   for item in contribution.systemic_stress):
         raise ProvenanceError(f"{contributor.source.key}: the systemic stress changes only by a tuple of "
                               "SystemicStressChange records")
+    if not isinstance(contribution.vasodilation, tuple) or any(not isinstance(item, VasodilationChange)
+                                                               for item in contribution.vasodilation):
+        raise ProvenanceError(f"{contributor.source.key}: the vasodilatory burden changes only by a tuple of "
+                              "VasodilationChange records")
     if contributor.source.kind is not SourceKind.SCRIPTED_EVENT and any(delta.channel in BLOOD_CHANNELS
                                                                          for delta in contribution.deltas):
         raise ProvenanceError(f"{contributor.source.key} wrote V or Hb directly: volume and red cells move only "
                               "through the shared blood state (a BloodFlow, P2I-2T)")
     for item in (contribution.deltas + contribution.transitions + contribution.settings + contribution.events
                  + contribution.demand + contribution.blood + contribution.mechanics + contribution.distress
-                 + contribution.availability + contribution.systemic_stress):
+                 + contribution.availability + contribution.systemic_stress + contribution.vasodilation):
         if item.source != contributor.source:
             raise ProvenanceError(f"{contributor.source.key} wrote a change attributed to {item.source.key}")
         if item.minute != minute:
@@ -428,7 +433,7 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
         deltas.append(ChannelDelta(Channel.L, -clearance, LUNG_WATER_CLEARANCE, minute,
                                    "lung water above arrival clearing slowly"))
     transitions, settings, events, modifiers, flows, mechanics, distress = [], [], [], [], [], [], []
-    availability, systemic_stress = [], []
+    availability, systemic_stress, vasodilation = [], [], []
     internal = {}
     for contributor in ordered:
         # A contributor sees only the signals it declares it responds to.
@@ -445,6 +450,7 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
         distress.extend(contribution.distress)
         availability.extend(contribution.availability)
         systemic_stress.extend(contribution.systemic_stress)
+        vasodilation.extend(contribution.vasodilation)
         if contribution.internal is not None:
             internal[contributor.source.key] = contribution.internal
     if respiratory_mechanics_active(profile) and any(delta.channel is Channel.W for delta in deltas):
@@ -473,7 +479,10 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
         events.append(CoreEvent("terminal_collapse", COLLAPSE, minute, "critical", "physiological_collapse",
                                 "not assessed", f"terminal collapse from sustained critically low output: "
                                                 f"{target.code.value}"))
-    if profile.deficit_to_tone_gain > 0.0:
+    if profile.deficit_to_tone_gain > 0.0 or profile.vasodilatory_burden_to_tone_gain is not None:
+        # P2W-1: the tone response also runs for a declared vasodilatory reader, so a family's burden always reaches T
+        # where its reader exists, even with the compensatory gain at 0 (with the reader UNSET this is P2J-2's
+        # condition exactly, so nothing before P2W-1 changes).
         deltas.append(_vascular_tone(state, deltas, anchors, profile, minute))
     values = {}
     for channel in SCALAR_CHANNELS:
@@ -541,7 +550,8 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
                                                                                          for item in mechanics),
                          respiratory_distress=_distress_after(state, distress, profile, minute),
                          central_availability=_availability_after(state, availability, profile, minute),
-                         systemic_stress=_systemic_stress_after(state, systemic_stress, profile, minute))
+                         systemic_stress=_systemic_stress_after(state, systemic_stress, profile, minute),
+                         vasodilatory_burden=_vasodilation_after(state, vasodilation, profile, minute))
     aux = replace(aux, sympathetic_drive=sympathetic_after_minute(state, new_state.evolve(aux=aux), anchors, profile))
     new_state = new_state.evolve(aux=aux)
     changes = tuple(AuxiliaryChange(name, getattr(state.aux, name), getattr(aux, name), AUXILIARY_SOURCES[name],
@@ -551,7 +561,7 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
                           settings=tuple(settings), events=tuple(events), internal_updates=tuple(sorted(internal)),
                           auxiliary=changes, demand=tuple(modifiers), blood=blood_changes,
                           mechanics=tuple(mechanics), distress=tuple(distress), availability=tuple(availability),
-                          systemic_stress=tuple(systemic_stress))
+                          systemic_stress=tuple(systemic_stress), vasodilation=tuple(vasodilation))
     _check_conservation(state, new_state, record)
     _check_blood(state, new_state, record, anchors, profile)
     derive(new_state, anchors, profile)   # the observation invariants hold, or this minute fails
@@ -605,6 +615,21 @@ def distress_sum(before: float, amounts) -> float:
     if value < 0.0 and -value <= math.ulp(1.0) * math.fsum(abs(term) for term in terms):
         return 0.0
     return value + 0.0
+
+
+def _vasodilation_after(state: CoreState, vasodilation: list, profile: CoreProfile, minute: int) -> float:
+    """P2W-1: the vasodilatory burden after the minute: the value it starts with plus the minute's changes, summed once
+    by P2T-1A's rule (``distress_sum``: math.fsum and the binary64 roundoff bound at 0). The core adds no kinetics and
+    no coupling of its own. With its reader UNSET nothing reads it, so a change is refused; a minute that would take it
+    materially below 0 is refused, never held."""
+    if vasodilation and profile.vasodilatory_burden_to_tone_gain is None:
+        raise ProvenanceError(f"minute {minute}: {vasodilation[0].source.key} changed the vasodilatory burden while "
+                              "its reader is UNSET (P2W-1): nothing would read it")
+    value = distress_sum(state.aux.vasodilatory_burden, [item.amount for item in vasodilation])
+    if value < 0.0:
+        raise ProvenanceError(f"minute {minute}: the vasodilation changes take the burden to {value!r}, below 0 "
+                              "(P2W-1)")
+    return value
 
 
 def _systemic_stress_after(state: CoreState, stress: list, profile: CoreProfile, minute: int) -> float:
@@ -674,6 +699,10 @@ def _check_conservation(before: CoreState, after: CoreState, record: MinuteRecor
                                                  [item.amount for item in record.systemic_stress]):
         # P2V-1: the systemic stress moves by exactly the minute's recorded changes, never otherwise.
         raise ProvenanceError("the systemic stress changed by other than its recorded changes")
+    if after.aux.vasodilatory_burden != distress_sum(before.aux.vasodilatory_burden,
+                                                     [item.amount for item in record.vasodilation]):
+        # P2W-1: the vasodilatory burden moves by exactly the minute's recorded changes, never otherwise.
+        raise ProvenanceError("the vasodilatory burden changed by other than its recorded changes")
     for channel in SCALAR_CHANNELS:
         change = after.value(channel) - before.value(channel)
         total = record.total(channel)

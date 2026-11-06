@@ -18,6 +18,7 @@ from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import opioid_migration as un
 from clinical_core import systemic_stress as ss
+from clinical_core import distributive_tone as dt
 from clinical_core import opioid_reference as orf
 from clinical_core import oxygenation_link as om
 from clinical_core import respiratory_mechanics as mc
@@ -41,6 +42,7 @@ PROBE_SOURCE = Source(SourceKind.DISEASE_MODULE, "p2u1-test")
 @pytest.fixture(autouse=True, scope="module")
 def _p2u1_tree():
     with pytest.MonkeyPatch.context() as patch:
+        dt.tree(patch)
         ss.tree(patch)
         yield
 

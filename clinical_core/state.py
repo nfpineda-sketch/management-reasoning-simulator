@@ -268,7 +268,8 @@ ARRIVAL_LAYERS: Mapping[str, tuple[str, ...]] = {
     "arrival_dynamic_state": ("preload_fraction", "arrival_oxygen_debt", "arrival_lactate_excess",
                               "arrival_delivery_ratio", "arrival_bicarbonate", "arrival_paco2",
                               "arrival_mechanics_efficiency", "arrival_respiratory_distress",
-                              "arrival_central_availability", "arrival_systemic_stress"),
+                              "arrival_central_availability", "arrival_systemic_stress",
+                              "arrival_vasodilatory_burden"),
 }
 #: Where a declared case parameter comes from (P2D-8, P2E-6). One that is not declared is
 #: "default_unmapped".
@@ -381,6 +382,12 @@ class Anchors:
     # evidence (measured hypoglycaemia, diaphoresis / tremor, severe pain, fever, agitation, ischaemic descriptors),
     # never inverted from the HR residual. At or above 0 with no upper bound; 0, the default, is none.
     arrival_systemic_stress: float = 0.0
+    # P2W-1 candidate input, read only by the vasodilatory reader of the common tone target (UNSET by default) and
+    # outside the case-parameter / migration registry, as P2S-2's, P2T-1's, P2U-1's and P2V-1's: the arrival primary
+    # loss of vascular tone, a case / family latent arrival state constrained by independent authored evidence (warm
+    # or flushed peripheries with a low pressure, a filled capillary refill, preserved or raised flow), never inverted
+    # from the MAP residual. At or above 0 with no upper bound; 0, the default, is none.
+    arrival_vasodilatory_burden: float = 0.0
     declared: FrozenRecord = field(default=EMPTY)
 
     def __post_init__(self):
@@ -445,6 +452,10 @@ class Anchors:
         if isinstance(self.arrival_systemic_stress, bool) or not isinstance(self.arrival_systemic_stress, (int, float)) \
                 or not math.isfinite(self.arrival_systemic_stress) or self.arrival_systemic_stress < 0.0:
             raise CoreInvariantError("the arrival systemic stress is finite and at or above 0 (P2V-1)")
+        if isinstance(self.arrival_vasodilatory_burden, bool) \
+                or not isinstance(self.arrival_vasodilatory_burden, (int, float)) \
+                or not math.isfinite(self.arrival_vasodilatory_burden) or self.arrival_vasodilatory_burden < 0.0:
+            raise CoreInvariantError("the arrival vasodilatory burden is finite and at or above 0 (P2W-1)")
         for name in ("intrinsic_respiratory_rate", "arrival_bicarbonate", "arrival_paco2"):
             if getattr(self, name) is not None and not (math.isfinite(getattr(self, name)) and getattr(self, name) > 0.0):
                 raise CoreInvariantError(f"{name} is finite and positive when declared (P2K-2)")
@@ -516,6 +527,15 @@ AUXILIARY_FIELDS: Mapping[str, str] = {
                        "activation), not the oxygen deficit, D, the baroreflex, hypoxaemia, hypercapnia, the "
                        "respiratory drive, RR, pain, temperature or glucose themselves, and never a residual solved "
                        "from the observed HR; 0 and constant unless a family writes it",
+    "vasodilatory_burden": "the common vasodilatory burden (P2W-1): the primary loss of vascular tone a disease "
+                           "process causes (anaphylactic or septic vasodilation, a vasodilator drug), at or above 0 "
+                           "with no upper bound, 0 none; the case's latent arrival value plus every family change "
+                           "since (provenance.VasodilationChange); it lowers the common vascular tone target only, "
+                           "through its own UNSET gain, as a factor normalized at arrival, so the arrival tone stays "
+                           "1 exactly. Not the compensatory tone response (that answers the oxygen deficit), not T "
+                           "itself (the core stays T's only writer), not the volume, the pump, the deficit, D, the "
+                           "baroreflex or the systemic stress, and never a residual solved from the observed MAP; 0 "
+                           "and constant unless a family writes it",
 }
 
 
@@ -532,6 +552,7 @@ class AuxiliaryState:
     respiratory_distress: float = 0.0
     central_availability: float = 1.0
     systemic_stress: float = 0.0
+    vasodilatory_burden: float = 0.0
 
     def __post_init__(self):
         for name in AUXILIARY_FIELDS:
@@ -561,6 +582,10 @@ class AuxiliaryState:
         if self.systemic_stress < 0:
             # P2V-1: 0 is none; there is no ceiling (no clinical upper bound is chosen).
             raise CoreInvariantError("the systemic stress is never negative")
+        if self.vasodilatory_burden < 0:
+            # P2W-1: 0 is none; there is no ceiling (the tone factor stays positive at any burden, and T's own guard
+            # fails closed where a burden would take the target below it).
+            raise CoreInvariantError("the vasodilatory burden is never negative")
 
     def to_dict(self) -> dict:
         return {name: getattr(self, name) for name in AUXILIARY_FIELDS}

@@ -60,6 +60,8 @@ from clinical_core.shadow import GOLDEN
 #: structural reference 1 at every canonical arrival: again only scenario_inputs changed, and without the five fields it
 #: is the P2I-2AG digest. P2T-1 gave them one more (arrival_respiratory_distress, read only by the two UNSET distress
 #: readers), at 0 at every canonical arrival: again only scenario_inputs changed, and without the six fields it is the
+#: P2I-2AG digest. P2W-1 gave them one more (arrival_vasodilatory_burden, read only by the common tone target's UNSET
+#: reader), at 0 at every canonical arrival: again only scenario_inputs changed, and without the nine fields it is the
 #: P2I-2AG digest.
 FROZEN_COMPONENTS = {
     "rules": "af88ab18a117b24b79fb7654ac78d83404c93abc7c0c1e86ca1d6c4c156e0709",
@@ -74,9 +76,10 @@ FROZEN_COMPONENTS = {
     # P2U-1: the materialized inputs gained the arrival central drive availability, 1 (its reference) in every GI
     # scenario; the test below pops it and checks the hash of the inputs before P2K-2 is unchanged.
     # P2V-1: and the arrival systemic stress, 0 (its reference) in every GI scenario; the same.
-    "scenario_inputs": "7d5f65d128910c154dd260f56e26ec8bad518d94b860338d376ddb985ff51313",
+    # P2W-1: and the arrival vasodilatory burden, 0 (its reference) in every GI scenario; the same.
+    "scenario_inputs": "8de2bd0a29a820dbb46493064ffdbb72542fb0e98175b7d886dcfa22049cb36d",
 }
-FROZEN_DIGEST = "4a61589b2e7101cff880e24db583f657e7777da75e9cbb713fc7eced5b6b30c7"
+FROZEN_DIGEST = "c1eeb5538a4ea990cbcb4432b0c28e6cb8c351ffe08c96a6036f82d3b65a9b85"
 SCENARIO_INPUTS_BEFORE_P2K2 = "afb2051e7fa04f1765aaf920c82f51dc6675d19bcbcb425c2ee581d8fa60d347"
 P2K2_INPUTS = ("intrinsic_respiratory_rate", "arrival_bicarbonate", "arrival_paco2")
 P2O3_INPUTS = ("reversible_lung_water",)
@@ -84,6 +87,7 @@ P2S2_INPUTS = ("arrival_mechanics_efficiency",)
 P2T1_INPUTS = ("arrival_respiratory_distress",)
 P2U1_INPUTS = ("arrival_central_availability",)
 P2V1_INPUTS = ("arrival_systemic_stress",)
+P2W1_INPUTS = ("arrival_vasodilatory_burden",)
 
 
 # P2F-2 / P2F-5 -- repository truth, candidate inference, faculty decision ---------------------
@@ -231,9 +235,10 @@ def test_the_rules_are_frozen():
         assert all(inputs[case]["arrival_anchors"].pop(name) == 0.0 for name in P2T1_INPUTS)
         assert all(inputs[case]["arrival_anchors"].pop(name) == 1.0 for name in P2U1_INPUTS)
         assert all(inputs[case]["arrival_anchors"].pop(name) == 0.0 for name in P2V1_INPUTS)
+        assert all(inputs[case]["arrival_anchors"].pop(name) == 0.0 for name in P2W1_INPUTS)
     assert hashlib.sha256(json.dumps(inputs, sort_keys=True, default=repr).encode("utf-8")).hexdigest() == \
-        SCENARIO_INPUTS_BEFORE_P2K2, ("P2K-2, P2O-3, P2S-2, P2T-1, P2U-1 and P2V-1 added only eight neutral anchor "
-                                      "fields to the scenario inputs")
+        SCENARIO_INPUTS_BEFORE_P2K2, ("P2K-2, P2O-3, P2S-2, P2T-1, P2U-1, P2V-1 and P2W-1 added only nine neutral "
+                                      "anchor fields to the scenario inputs")
     covered = {part for name in calibration.CHECKS for part in name.replace("-", "/").split("/")}
     assert {"DL1", "DL2", "DL3", "DL4", "RR1", "HR1", "PL1", "PL4", "PR1", "CO1", "DM1"} <= covered | {"HR1"}
     assert set(calibration.FROZEN_RULES) >= {"DL1", "DL2", "DL3", "DL4", "RR1", "HR1", "HR2", "HR3", "HR4", "PL1",

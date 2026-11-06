@@ -27,6 +27,7 @@ from clinical_core import asthma_distress_migration as tm
 from clinical_core import oxygenation_link as om
 from clinical_core import opioid_migration as un
 from clinical_core import systemic_stress as ss
+from clinical_core import distributive_tone as dt
 from clinical_core import collapse as cx
 from clinical_core import collapse_architecture as cy
 from clinical_core import decision_pack, lactate_slice
@@ -76,6 +77,10 @@ FROZEN_DIGEST = "5f96f8603f2ecdcbf585cfac38e8abf4d4aec9ea9c64772d7d0c46da2f2544a
 #: P2T-5 changed the core (the hypoventilation -> oxygenation link, off by default: one UNSET profile field) and
 #: two tuple files, proven against the P2T-3 files (oxygenation_link.proved): this package's guards read the
 #: tree as P2T-3 left it (om.chain, om.p2t3_sources).
+#: P2W-1 changed the core (the common vasodilatory burden: one auxiliary field, one arrival anchor, one
+#: provenance record and one UNSET profile reader of the tone target, the burden 0 by default) and two tuple
+#: files, proven against the P2V-1 files (distributive_tone.proved): this package's guards read the tree as
+#: P2V-1 left it (dt.chain, dt.p2v1_sources).
 #: P2V-1 changed the core (the common systemic stress: one auxiliary field, one arrival anchor, one provenance
 #: record and one UNSET profile reader, the stress 0 by default) and two tuple files, proven against the P2U-1
 #: files (systemic_stress.proved): this package's guards read the tree as P2U-1 left it (ss.chain,
@@ -84,7 +89,11 @@ FROZEN_DIGEST = "5f96f8603f2ecdcbf585cfac38e8abf4d4aec9ea9c64772d7d0c46da2f2544a
 #: anchor and one provenance record, all at their reference 1 by default) and two tuple files, proven against the
 #: P2T-5 files (opioid_migration.proved): this package's guards read the tree as P2T-5 left it (un.chain,
 #: un.p2t5_sources).
-_LIVE_SOURCES_P2V1 = bf.freeze_sources
+_LIVE_SOURCES_P2W1 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2V1() -> dict:
+    return dt.p2v1_sources(_LIVE_SOURCES_P2W1())
 
 
 def _LIVE_SOURCES_P2U1() -> dict:
@@ -169,6 +178,7 @@ def _patch(patch) -> None:
     om.chain(patch)
     un.chain(patch)
     ss.chain(patch)
+    dt.chain(patch)
     patch.setattr(bf, "freeze_sources", _p2m2_view)
     patch.setattr(cy, "imported_by", _p2m2_imported_by)
 

@@ -20,6 +20,7 @@ from clinical_core import opioid_migration as un
 from clinical_core import respiratory_distress as dm
 from clinical_core import respiratory_mechanics as mc
 from clinical_core import systemic_stress as ss
+from clinical_core import distributive_tone as dt
 from clinical_core.integration import step
 from clinical_core.provenance import DistressChange, ProvenanceError, Source, SourceKind, SystemicStressChange
 from clinical_core.state import AUXILIARY_FIELDS, AuxiliaryState, CoreInvariantError, RhythmCode, RhythmState
@@ -28,6 +29,18 @@ from clinical_core.state import AUXILIARY_FIELDS, AuxiliaryState, CoreInvariantE
 #: clinical_core source but the downstream reports, committed before the evaluation run.
 FROZEN_DIGEST = "00ce9e64b78d961c6f5e6894f4b4c78d9bacfbadf3b93e95bc6aae26cf804f95"
 PROBE_SOURCE = Source(SourceKind.DISEASE_MODULE, "p2v1-test")
+
+#: P2W-1 changed the core (the common vasodilatory burden, 0 by default, read only by the tone target
+#: through an UNSET gain) and two tuple files, proven against the P2V-1 files (distributive_tone.proved):
+#: these tests read the tree as P2V-1 left it (dt.tree), and this package changes no behaviour with its
+#: own reader UNSET.
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _p2v1_tree():
+    with pytest.MonkeyPatch.context() as patch:
+        dt.tree(patch)
+        yield
 
 
 # The frozen package and its proof -------------------------------------------------------------------------------------------
@@ -498,16 +511,21 @@ def test_the_reported_gap_is_what_the_model_leaves_at_the_best_admissible_intrin
 
 def test_no_module_outside_the_core_and_this_package_names_the_stress_writer():
     """R-F5: the module's family-writer guard globs clinical_core/modules only; contributors live elsewhere too."""
-    allowed = {"clinical_core/provenance.py", "clinical_core/integration.py", "clinical_core/state.py",
-               "clinical_core/systemic_stress.py", "test_clinical_core_systemic_stress.py"}
-    found = set()
+    # Who actually builds the record (a call), not who names the type: the core declares and collects it, this package
+    # writes it in its own probe, and a newer package quotes the core's lines inside its reversal hunks.
+    allowed = {"clinical_core/systemic_stress.py", "test_clinical_core_systemic_stress.py"}
+    found, mentions = set(), set()
     for path in sorted(ss.ROOT.rglob("*.py")):
         relative = path.relative_to(ss.ROOT).as_posix()
         if relative.startswith("validation/") or "__pycache__" in relative:
             continue
-        if "SystemicStressChange" in path.read_text(encoding="utf-8"):
+        text = path.read_text(encoding="utf-8")
+        if "SystemicStressChange(" in text:
             found.add(relative)
+        if "SystemicStressChange" in text:
+            mentions.add(relative)
     assert found == allowed, found - allowed
+    assert not [m for m in mentions if m.startswith("clinical_core/modules/")]
 
 
 def test_the_hypoglycaemia_term_itself_is_negative_on_recovery():

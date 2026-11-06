@@ -430,6 +430,10 @@
    "provisional",
    "UNSET (P2V-1): sympathetic drive per unit of the common systemic stress (non-respiratory adrenergic activation), added to the HR target upstream of the common saturation and the beta-blockade; None by default (no reader); it never feeds the respiratory drive and is never solved from an observed HR; SYNTHETIC_ONLY in probes; not approved"
   ],
+  "vasodilatory_burden_to_tone_gain": [
+   "provisional",
+   "UNSET (P2W-1): tone loss per unit of the common vasodilatory burden (a primary distributive loss of vascular tone), as the factor (1 + k b0) / (1 + k b) on the common tone target, normalized at arrival; None by default (no reader); it reads no pressure, deficit, D, baroreflex or systemic stress and is never solved from an observed MAP; SYNTHETIC_ONLY in probes; not approved"
+  ],
   "ventilation_efficiency": [
    "provisional",
    "STRUCTURAL_REFERENCE (P2K-2): the share of the ventilation RR moves that is effective alveolar ventilation; 1 for the current GI cases (mechanics preserved), below 1 only in synthetic probes; not an approved value"

@@ -325,6 +325,40 @@ class SystemicStressChange:
 
 
 @dataclass(frozen=True)
+class VasodilationChange:
+    """P2W-1: one source's change to the common vasodilatory burden in one minute.
+
+    The amount adds to the burden the minute starts with (finite; 0 changes nothing), as a distress or systemic-stress
+    change adds to its own state: the burden has no reference above 0 to scale, so the changes are additive. It stays
+    where its writers leave it: it never moves, back to arrival or anywhere else, without a change that names its
+    source, and the core adds no kinetics of its own. The burden is a common input, never a disease term in the tone
+    equation: a family declares what its own process (anaphylactic or septic vasodilation, a vasodilator drug, and in
+    the other direction a vasopressor) does to it, and the core only sums the changes. A minute whose changes would
+    take it below 0 is refused. No amount is approved; with its reader UNSET a change is refused, because nothing would
+    read it. The channel T keeps exactly one writer, the core's tone response.
+    """
+
+    amount: float
+    source: Source
+    minute: int
+    description: str
+
+    def __post_init__(self):
+        if isinstance(self.amount, bool) or not isinstance(self.amount, (int, float)) \
+                or not math.isfinite(self.amount):
+            raise ProvenanceError(f"a vasodilation change is a finite number, not {self.amount!r}")
+        object.__setattr__(self, "amount", float(self.amount))
+        if not isinstance(self.source, Source):
+            raise ProvenanceError("every vasodilation change names its Source")
+        _minute(self.minute)
+        _description(self.description)
+
+    def to_dict(self) -> dict:
+        return {"type": "vasodilation", "amount": self.amount, "source": self.source.to_dict(),
+                "minute": self.minute, "description": self.description}
+
+
+@dataclass(frozen=True)
 class AvailabilityChange:
     """P2U-1: one source's change to the common central respiratory drive availability in one minute.
 
@@ -537,11 +571,13 @@ class MinuteRecord:
     distress: tuple[DistressChange, ...] = field(default=())
     availability: tuple[AvailabilityChange, ...] = field(default=())
     systemic_stress: tuple[SystemicStressChange, ...] = field(default=())
+    vasodilation: tuple[VasodilationChange, ...] = field(default=())
 
     def __post_init__(self):
         _minute(self.minute)
         for item in (self.deltas + self.transitions + self.settings + self.events + self.auxiliary + self.demand
-                     + self.blood + self.mechanics + self.distress + self.availability + self.systemic_stress):
+                     + self.blood + self.mechanics + self.distress + self.availability + self.systemic_stress
+                     + self.vasodilation):
             if item.minute != self.minute:
                 raise ProvenanceError("a record holds only changes applied in its own minute")
 
@@ -567,7 +603,8 @@ class MinuteRecord:
                 "mechanics": [item.to_dict() for item in self.mechanics],
                 "distress": [item.to_dict() for item in self.distress],
                 "availability": [item.to_dict() for item in self.availability],
-                "systemic_stress": [item.to_dict() for item in self.systemic_stress]}
+                "systemic_stress": [item.to_dict() for item in self.systemic_stress],
+                "vasodilation": [item.to_dict() for item in self.vasodilation]}
 
 
 def attribution(records: Iterable[MinuteRecord], channel: Channel) -> dict[str, float]:

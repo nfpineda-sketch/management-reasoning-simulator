@@ -73,6 +73,10 @@ AUXILIARY_SOURCES["central_availability"] = CENTRAL_AVAILABILITY
 #: plus every change since). It adds no kinetics and no coupling of its own. Read only when a profile declares the gain.
 SYSTEMIC_STRESS = Source(SourceKind.CORE_COUPLING, "systemic_stress")
 AUXILIARY_SOURCES["systemic_stress"] = SYSTEMIC_STRESS
+#: P2W-1: the core's sum of the families' vasodilation changes into the common vasodilatory burden (the arrival value
+#: plus every change since). It adds no kinetics and no coupling of its own. Read only when a profile declares the gain.
+VASODILATORY_BURDEN = Source(SourceKind.CORE_COUPLING, "vasodilatory_burden")
+AUXILIARY_SOURCES["vasodilatory_burden"] = VASODILATORY_BURDEN
 #: The rhythms the collapse rule may end in (P2E-3). Which one, and when, is TBD.
 TERMINAL_RHYTHMS = ("pea", "asystole")
 #: The shared blood state's two core couplings (P2I-2T): plasma refill into the circulation, and
@@ -200,6 +204,11 @@ class CoreProfile:
     # common saturation and of the beta-blockade, never a respiratory reader (the stress never feeds the respiratory
     # drive) and never solved from an observed HR. No value is chosen here.
     systemic_stress_to_sympathetic_gain: float | None = None
+    # P2W-1: the vasodilatory reader of the common tone target, UNSET (None) by default. Declared, the target is
+    # multiplied by (1 + k b0) / (1 + k b), b the state's common vasodilatory burden and b0 the arrival one: a factor
+    # at or below 1 that is 1 exactly at arrival (so the authored arrival pressure stays the scale), decreasing in the
+    # burden, and never a second deficit reader. The core stays T's only writer. No value is chosen here.
+    vasodilatory_burden_to_tone_gain: float | None = None
     pressure_levels: tuple[tuple[float, int], ...] = ((80.0, 1), (65.0, 2))
     oxygen_levels: tuple[tuple[float, int], ...] = ((87.0, 1), (80.0, 2))
     # P2E-3: the collapse rule is off (None) unless a profile declares it. No clinical threshold,
@@ -320,6 +329,13 @@ class CoreProfile:
             # P2T-1: the respiratory reader lives in the P2P-2 composition, which only the acid-base physiology has.
             raise CoreInvariantError("the respiratory distress reader of the respiratory drive needs the P2K-2 acid-base "
                                      "physiology")
+        tone = self.vasodilatory_burden_to_tone_gain
+        if tone is not None and (isinstance(tone, bool) or not isinstance(tone, (int, float))
+                                 or not math.isfinite(tone) or tone <= 0.0):
+            # P2W-1: UNSET is None (no reader); declared, the gain is finite and positive (a burden never raises the
+            # tone). The factor stays positive at any burden, so no upper bound is mathematically needed.
+            raise CoreInvariantError("vasodilatory_burden_to_tone_gain is None (UNSET: no vasodilatory reader) or a "
+                                     "finite positive tone loss per unit of burden")
         gain = self.systemic_stress_to_sympathetic_gain
         if gain is not None and (isinstance(gain, bool) or not isinstance(gain, (int, float))
                                  or not math.isfinite(gain) or gain <= 0.0):
@@ -544,6 +560,13 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
                                                   "saturation and beta-blockade; independent of the respiratory "
                                                   "reader's gain; None by default (no reader); SYNTHETIC_ONLY values in "
                                                   "probes; not approved"),
+    "vasodilatory_burden_to_tone_gain": (PROVISIONAL, "UNSET (P2W-1): tone loss per unit of the common vasodilatory "
+                                                      "burden (a primary distributive loss of vascular tone), as the "
+                                                      "factor (1 + k b0) / (1 + k b) on the common tone target, "
+                                                      "normalized at arrival; None by default (no reader); it reads "
+                                                      "no pressure, deficit, D, baroreflex or systemic stress and is "
+                                                      "never solved from an observed MAP; SYNTHETIC_ONLY in probes; "
+                                                      "not approved"),
     "systemic_stress_to_sympathetic_gain": (PROVISIONAL, "UNSET (P2V-1): sympathetic drive per unit of the common "
                                                          "systemic stress (non-respiratory adrenergic activation), "
                                                          "added to the HR target upstream of the common saturation and "
@@ -1324,6 +1347,9 @@ def arrival_state(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> C
     if anchors.arrival_systemic_stress != 0.0 and profile.systemic_stress_to_sympathetic_gain is None:
         raise CoreInvariantError("an arrival systemic stress other than 0 needs a declared systemic-stress reader "
                                  "(P2V-1); nothing else reads it")
+    if anchors.arrival_vasodilatory_burden != 0.0 and profile.vasodilatory_burden_to_tone_gain is None:
+        raise CoreInvariantError("an arrival vasodilatory burden other than 0 needs a declared vasodilatory reader "
+                                 "(P2W-1); nothing else reads it")
     if anchors.arrival_central_availability != 1.0 and profile.acid_to_drive_gain is None:
         raise CoreInvariantError("an arrival central drive availability other than 1 needs the P2K-2 acid-base physiology "
                                  "(P2U-1); nothing else reads it")
@@ -1337,7 +1363,8 @@ def arrival_state(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> C
                                             mechanics_efficiency=anchors.arrival_mechanics_efficiency,
                                             respiratory_distress=anchors.arrival_respiratory_distress,
                                             central_availability=anchors.arrival_central_availability,
-                                            systemic_stress=anchors.arrival_systemic_stress))
+                                            systemic_stress=anchors.arrival_systemic_stress,
+                                            vasodilatory_burden=anchors.arrival_vasodilatory_burden))
     return state.evolve(aux=replace(state.aux, sympathetic_drive=sympathetic_target(state, anchors, profile)))
 
 
@@ -1482,8 +1509,17 @@ def tone_target(state: CoreState, anchors: Anchors, profile: CoreProfile) -> flo
     deficit is left. It reads delivery and demand only: no pressure, D, lactate or HR. g = 0 gives 1.
     """
     gain = profile.deficit_to_tone_gain
-    return ((1.0 + gain * acute_deficit_signal(state, anchors, profile))
-            / (1.0 + gain * arrival_tone_signal(anchors, profile)))
+    target = ((1.0 + gain * acute_deficit_signal(state, anchors, profile))
+              / (1.0 + gain * arrival_tone_signal(anchors, profile)))
+    tone_loss = profile.vasodilatory_burden_to_tone_gain
+    if tone_loss is not None:
+        # P2W-1: the vasodilatory reader: the primary loss of tone a disease process causes, as a factor at or below 1
+        # normalized at arrival, so the arrival target stays 1 exactly whatever the arrival burden. It multiplies the
+        # compensatory factor instead of joining it, so more burden never raises the tone, more compensation never
+        # lowers it, and a large burden dominates a bounded compensation. UNSET (None) by default.
+        target *= ((1.0 + tone_loss * anchors.arrival_vasodilatory_burden)
+                   / (1.0 + tone_loss * state.aux.vasodilatory_burden))
+    return target
 
 
 def arterial_pressures(pressure_rel: float, anchors: Anchors, profile: CoreProfile) -> tuple[float, float]:

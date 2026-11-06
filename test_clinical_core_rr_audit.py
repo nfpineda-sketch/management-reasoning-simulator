@@ -29,6 +29,7 @@ from clinical_core import asthma_distress_migration as tm
 from clinical_core import oxygenation_link as om
 from clinical_core import opioid_migration as un
 from clinical_core import systemic_stress as ss
+from clinical_core import distributive_tone as dt
 from clinical_core import decision_pack, gi_reference, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import lactate_adequacy as la
@@ -108,6 +109,10 @@ C57, C72 = ra.C57, ra.C72
 #: P2T-5 changed the core (the hypoventilation -> oxygenation link, off by default: one UNSET profile field) and
 #: two tuple files, proven against the P2T-3 files (oxygenation_link.proved): this package's guards read the
 #: tree as P2T-3 left it (om.chain, om.p2t3_sources).
+#: P2W-1 changed the core (the common vasodilatory burden: one auxiliary field, one arrival anchor, one
+#: provenance record and one UNSET profile reader of the tone target, the burden 0 by default) and two tuple
+#: files, proven against the P2V-1 files (distributive_tone.proved): this package's guards read the tree as
+#: P2V-1 left it (dt.chain, dt.p2v1_sources).
 #: P2V-1 changed the core (the common systemic stress: one auxiliary field, one arrival anchor, one provenance
 #: record and one UNSET profile reader, the stress 0 by default) and two tuple files, proven against the P2U-1
 #: files (systemic_stress.proved): this package's guards read the tree as P2U-1 left it (ss.chain,
@@ -116,7 +121,11 @@ C57, C72 = ra.C57, ra.C72
 #: anchor and one provenance record, all at their reference 1 by default) and two tuple files, proven against the
 #: P2T-5 files (opioid_migration.proved): this package's guards read the tree as P2T-5 left it (un.chain,
 #: un.p2t5_sources).
-_LIVE_SOURCES_P2V1 = bf.freeze_sources
+_LIVE_SOURCES_P2W1 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2V1() -> dict:
+    return dt.p2v1_sources(_LIVE_SOURCES_P2W1())
 
 
 def _LIVE_SOURCES_P2U1() -> dict:
@@ -182,6 +191,7 @@ def _p2n2_core():
         om.chain(patch)
         un.chain(patch)
         ss.chain(patch)
+        dt.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         yield
@@ -294,7 +304,10 @@ P2N2_FILES = ("clinical_core/acs_reference.py", "clinical_core/modules/acs_ischa
               # P2T-3's analysis names W only to report the witnesses' ventilation and the courses' directions.
               "clinical_core/asthma_distress_migration.py",
               "clinical_core/oxygenation_link.py",
-              "clinical_core/opioid_migration.py")
+              "clinical_core/opioid_migration.py",
+              # P2W-1's analysis names W only in the reading it dumps of every channel, to check that a distributive
+              # tone course moves none of them (it writes no W and reads no W channel of its own).
+              "clinical_core/distributive_tone.py")
 
 
 def _readers_of_w():
@@ -581,7 +594,7 @@ def test_the_exclusion_tuples_hold_exactly_their_p2k1_content():
             cy.TUPLES_ADDED[name] + an.TUPLES_ADDED[name] + go.TUPLES_ADDED[name] + lw.TUPLES_ADDED[name] + \
             pe.TUPLES_ADDED[name] + rd.TUPLES_ADDED[name] + em.TUPLES_ADDED[name] + mc.TUPLES_ADDED[name] + sm.TUPLES_ADDED[name] + \
             dm.TUPLES_ADDED[name] + xm.TUPLES_ADDED[name] + tm.TUPLES_ADDED[name] + om.TUPLES_ADDED[name] + \
-            un.TUPLES_ADDED[name] + ss.TUPLES_ADDED[name]
+            un.TUPLES_ADDED[name] + ss.TUPLES_ADDED[name] + dt.TUPLES_ADDED[name]
         assert set(added) <= set(values), name
         values = [v for v in values if v not in added]
         assert (hashlib.sha256(json.dumps(sorted(values)).encode("utf-8")).hexdigest(), len(values)) == \
