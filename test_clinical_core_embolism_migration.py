@@ -26,6 +26,7 @@ from clinical_core import oxygenation_link as om
 from clinical_core import opioid_migration as un
 from clinical_core import systemic_stress as ss
 from clinical_core import distributive_tone as dt
+from clinical_core import tone_domain as x1
 from clinical_core.integration import from_spec, step
 from clinical_core.modules.pulmonary_edema import EdemaCongestion
 from clinical_core.modules.pulmonary_embolism import EmbolicGasExchange, EmbolicLungWater, ObstructiveForwardFlow
@@ -66,7 +67,11 @@ FROZEN_DIGEST = "6eabb72188b5aa9e8b6c0c17f9234fbf1ce5413cc01841a58a33ca79da797e6
 #: anchor and one provenance record, all at their reference 1 by default) and two tuple files, proven against the
 #: P2T-5 files (opioid_migration.proved): this package's guards read the tree as P2T-5 left it (un.chain,
 #: un.p2t5_sources).
-_LIVE_SOURCES_P2W1 = bf.freeze_sources
+_LIVE_SOURCES_P2X1 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2W1() -> dict:
+    return x1.p2w1_sources(_LIVE_SOURCES_P2X1())
 
 
 def _LIVE_SOURCES_P2V1() -> dict:
@@ -113,6 +118,7 @@ def _p2q2_tree():
         un.chain(patch)
         ss.chain(patch)
         dt.chain(patch)
+        x1.chain(patch)
         patch.setattr(bf, "freeze_sources", lambda: mc.p2q2_sources(_LIVE_SOURCES_P2S2()))
         yield
 

@@ -30,6 +30,7 @@ from clinical_core import oxygenation_link as om
 from clinical_core import opioid_migration as un
 from clinical_core import systemic_stress as ss
 from clinical_core import distributive_tone as dt
+from clinical_core import tone_domain as x1
 from clinical_core.state import CoreInvariantError
 
 #: The P2O-1 freeze: the semantics, the L -> G and G -> oxygenation structures, the SYNTHETIC_ONLY region, the probes,
@@ -78,7 +79,11 @@ FROZEN_DIGEST = "22bb29b95714b28044c418cd8e4b5f0058d1f5065eafffc509e656ff8c6db73
 #: anchor and one provenance record, all at their reference 1 by default) and two tuple files, proven against the
 #: P2T-5 files (opioid_migration.proved): this package's guards read the tree as P2T-5 left it (un.chain,
 #: un.p2t5_sources).
-_LIVE_SOURCES_P2W1 = bf.freeze_sources
+_LIVE_SOURCES_P2X1 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2W1() -> dict:
+    return x1.p2w1_sources(_LIVE_SOURCES_P2X1())
 
 
 def _LIVE_SOURCES_P2V1() -> dict:
@@ -145,6 +150,7 @@ def _p2o1_core():
         un.chain(patch)
         ss.chain(patch)
         dt.chain(patch)
+        x1.chain(patch)
         patch.setattr(bf, "freeze_sources", lambda: lw.p2o1_sources(_LIVE_SOURCES_P2O3()))
         yield
 

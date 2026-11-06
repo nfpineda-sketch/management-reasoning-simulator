@@ -30,6 +30,7 @@ from clinical_core import oxygenation_link as om
 from clinical_core import opioid_migration as un
 from clinical_core import systemic_stress as ss
 from clinical_core import distributive_tone as dt
+from clinical_core import tone_domain as x1
 from clinical_core import vascular_tone as vt
 from clinical_core import calibration, decision_pack, gi_reference, lactate_slice
 from clinical_core import hr_primary as hp
@@ -85,7 +86,13 @@ P2J2_TONE_ROWS = (("clinical_core/vascular_tone.py", None), ("clinical_core/vasc
                   ("clinical_core/embolism_migration.py", None),
                   # P2T-1: the respiratory distress analysis reads T only to check that a distress change never moves
                   # it (D9); it writes no tone, and the distress readers read no tone.
-                  ("clinical_core/respiratory_distress.py", None))
+                  ("clinical_core/respiratory_distress.py", None),
+                  # P2X-1: its analysis reads T on its probe states and names the channel to state T's supported
+                  # range; in the core it added integration.tone_domain, which reads T's bounds (CHANNEL_BOUNDS) to
+                  # derive the reachable target and the loop bound. Neither writes tone.
+                  ("clinical_core/integration.py", "tone_domain"),
+                  ("clinical_core/tone_domain.py", None),
+                  ("clinical_core/tone_domain_report.py", None))
 C57, C72 = pt.C57, pt.C72
 NEUTRAL = Anchors(**ARRIVAL)
 
@@ -134,7 +141,11 @@ NEUTRAL = Anchors(**ARRIVAL)
 #: anchor and one provenance record, all at their reference 1 by default) and two tuple files, proven against the
 #: P2T-5 files (opioid_migration.proved): this package's guards read the tree as P2T-5 left it (un.chain,
 #: un.p2t5_sources).
-_LIVE_SOURCES_P2W1 = bf.freeze_sources
+_LIVE_SOURCES_P2X1 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2W1() -> dict:
+    return x1.p2w1_sources(_LIVE_SOURCES_P2X1())
 
 
 def _LIVE_SOURCES_P2V1() -> dict:
@@ -205,6 +216,7 @@ def _p2n2_core():
         un.chain(patch)
         ss.chain(patch)
         dt.chain(patch)
+        x1.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         patch.setattr(pt, "_function", _p2n2_function)
@@ -357,7 +369,10 @@ def test_no_contributor_names_the_tone_channel():
                "clinical_core/vascular_tone.py",   # P2J-2's analysis module reads T's guard; it is not a contributor
                # P2W-1's analysis module names it in one probe only, whose whole purpose is to be refused by P2J-2's
                # guard (its distributive signal is the common vasodilatory burden, never a delta on T).
-               "clinical_core/distributive_tone.py"}
+               "clinical_core/distributive_tone.py",
+               # P2X-1's analysis names the channel to state its supported range and to read its guard; it writes no
+               # tone and declares no contributor.
+               "clinical_core/tone_domain.py"}
     named = set()
     for path in sorted((ROOT / "clinical_core").rglob("*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"))

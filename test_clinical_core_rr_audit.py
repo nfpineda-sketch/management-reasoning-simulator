@@ -30,6 +30,7 @@ from clinical_core import oxygenation_link as om
 from clinical_core import opioid_migration as un
 from clinical_core import systemic_stress as ss
 from clinical_core import distributive_tone as dt
+from clinical_core import tone_domain as x1
 from clinical_core import decision_pack, gi_reference, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import lactate_adequacy as la
@@ -121,7 +122,11 @@ C57, C72 = ra.C57, ra.C72
 #: anchor and one provenance record, all at their reference 1 by default) and two tuple files, proven against the
 #: P2T-5 files (opioid_migration.proved): this package's guards read the tree as P2T-5 left it (un.chain,
 #: un.p2t5_sources).
-_LIVE_SOURCES_P2W1 = bf.freeze_sources
+_LIVE_SOURCES_P2X1 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2W1() -> dict:
+    return x1.p2w1_sources(_LIVE_SOURCES_P2X1())
 
 
 def _LIVE_SOURCES_P2V1() -> dict:
@@ -192,6 +197,7 @@ def _p2n2_core():
         un.chain(patch)
         ss.chain(patch)
         dt.chain(patch)
+        x1.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         yield
@@ -594,7 +600,7 @@ def test_the_exclusion_tuples_hold_exactly_their_p2k1_content():
             cy.TUPLES_ADDED[name] + an.TUPLES_ADDED[name] + go.TUPLES_ADDED[name] + lw.TUPLES_ADDED[name] + \
             pe.TUPLES_ADDED[name] + rd.TUPLES_ADDED[name] + em.TUPLES_ADDED[name] + mc.TUPLES_ADDED[name] + sm.TUPLES_ADDED[name] + \
             dm.TUPLES_ADDED[name] + xm.TUPLES_ADDED[name] + tm.TUPLES_ADDED[name] + om.TUPLES_ADDED[name] + \
-            un.TUPLES_ADDED[name] + ss.TUPLES_ADDED[name] + dt.TUPLES_ADDED[name]
+            un.TUPLES_ADDED[name] + ss.TUPLES_ADDED[name] + dt.TUPLES_ADDED[name] + x1.TUPLES_ADDED[name]
         assert set(added) <= set(values), name
         values = [v for v in values if v not in added]
         assert (hashlib.sha256(json.dumps(sorted(values)).encode("utf-8")).hexdigest(), len(values)) == \

@@ -336,6 +336,19 @@ class VasodilationChange:
     the other direction a vasopressor) does to it, and the core only sums the changes. A minute whose changes would
     take it below 0 is refused. No amount is approved; with its reader UNSET a change is refused, because nothing would
     read it. The channel T keeps exactly one writer, the core's tone response.
+
+    WRITER CONTRACT (P2X-1, FACULTY DECISIONS 2 and 5), binding on every future family writer:
+
+    - the burden stays at or above 0. A writer never resolves it below physiologic zero, and a negative burden is not
+      vasoconstriction: a vasopressor treatment acts through a mechanism of its own, not through negative disease
+      burden. Resolution towards and below the arrival burden is allowed and is what B(b) > 1 means (FACULTY
+      DECISION 1), bounded by the recovery factor 1 + k b0.
+    - the amount may NOT be computed from the current MAP, pressure_rel, T or any other observable of the same
+      haemodynamic loop. Reading one would close an unaudited MAP -> burden -> T -> MAP feedback path, which is
+      deferred and not authorized (PRESSURE_DRIVEN_FAMILY_VASODILATION = DEFERRED / NOT_AUTHORIZED). A writer's
+      allowed inputs are its own disease-process state, time, a treatment, and authored family mechanisms that do not
+      close that loop. The contract is structural, not enforced at runtime: the repository checks it by scanning every
+      module that builds a VasodilationChange, as it checks the other writer ownerships.
     """
 
     amount: float

@@ -89,7 +89,10 @@ ANALYSIS_ONLY = {
     "systemic_stress.py": {"sys", "types"},
     # P2W-1: the same, for the distributive-tone analysis (its reversal proof and its view of the closed packages'
     # trees read module objects and the interpreter's path readers; the shadow core imports neither).
-    "distributive_tone.py": {"sys", "types"}}
+    "distributive_tone.py": {"sys", "types"},
+    # P2X-1: the same, for the declared-property closure (its own view of the P2W-1 tree, installed locally so the
+    # record can be produced outside a test, reads module objects and the interpreter's path readers).
+    "tone_domain.py": {"sys", "types"}}
 
 
 def _imports(path):

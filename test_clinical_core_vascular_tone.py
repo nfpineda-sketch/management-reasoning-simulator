@@ -31,6 +31,7 @@ from clinical_core import oxygenation_link as om
 from clinical_core import opioid_migration as un
 from clinical_core import systemic_stress as ss
 from clinical_core import distributive_tone as dt
+from clinical_core import tone_domain as x1
 from clinical_core import derived as dv
 from clinical_core import hr_primary as hp
 from clinical_core import lactate_adequacy as la
@@ -118,7 +119,11 @@ C57, C72 = vt.C57, vt.C72
 #: anchor and one provenance record, all at their reference 1 by default) and two tuple files, proven against the
 #: P2T-5 files (opioid_migration.proved): this package's guards read the tree as P2T-5 left it (un.chain,
 #: un.p2t5_sources).
-_LIVE_SOURCES_P2W1 = bf.freeze_sources
+_LIVE_SOURCES_P2X1 = bf.freeze_sources
+
+
+def _LIVE_SOURCES_P2W1() -> dict:
+    return x1.p2w1_sources(_LIVE_SOURCES_P2X1())
 
 
 def _LIVE_SOURCES_P2V1() -> dict:
@@ -189,6 +194,7 @@ def _p2n2_core():
         un.chain(patch)
         ss.chain(patch)
         dt.chain(patch)
+        x1.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         yield
@@ -341,7 +347,11 @@ def test_the_surface_is_frozen_and_screened_before_any_simulation():
 def test_the_timing_is_explicit_one_minute_behind_with_no_solver():
     from clinical_core import integration
     source = inspect.getsource(integration._vascular_tone)
-    assert "tone_target(state, anchors, profile) - state.T" in source
+    # P2X-1 names the value before returning it, because its semantic boundary has to inspect the target before the
+    # channel sees it (FACULTY DECISION 4): what this guard protects is unchanged and is checked in both halves - the
+    # target is read on the state the minute starts with, and the delta is still that target minus the current tone.
+    assert "target = tone_target(state, anchors, profile)" in source
+    assert "ChannelDelta(Channel.T, target - state.T" in source
     for function in (integration._vascular_tone, dv.tone_target, dv.arrival_tone_signal, dv.acute_deficit_signal):
         tree = ast.parse(inspect.getsource(function))
         assert not any(isinstance(n, (ast.While, ast.For)) for n in ast.walk(tree)), function

@@ -45,7 +45,7 @@ from .derived import (ADOPTED, AUXILIARY_SOURCES, BLOOD_COMPOSITION, COLLAPSE, D
                       LUNG_WATER_GAS_EXCHANGE, lung_water_gas_exchange, lung_water_gas_exchange_active,
                       oxygen_demand, plasma_refill, red_cell_content, sympathetic_after_minute, terminal_rhythm,
                       tone_target, respiratory_mechanics_active, respiratory_distress_read,
-                      check_distress_respiratory_effect)
+                      check_distress_respiratory_effect, arrival_tone_signal)
 from .provenance import (BLOOD_PROCESSES, AuxiliaryChange, BloodChange, BloodFlow, BloodProcess, ChannelDelta,
                          CoreEvent, DemandModifier, MinuteRecord, ProvenanceError, RhythmTransition, SettingChange,
                          Source, SourceKind, MechanicsChange, DistressChange, AvailabilityChange,
@@ -268,6 +268,47 @@ def _no_repayment_across(debt: ChannelDelta, after: CoreState, anchors: Anchors,
                         modulated_by=debt.modulated_by)
 
 
+def tone_domain(anchors: Anchors, profile: CoreProfile) -> dict:
+    """P2X-1: the exact reachable tone target under the declared parameter domain, and the delayed loop's slope bound.
+
+    ``tone_target`` is the product of two independent factors (P2J-2 and P2W-1):
+
+    - the common compensation C(s) = (1 + g s) / (1 + g s0), s the acute shock signal in [0, 1] and s0 the arrival
+      one, so C rises with s over [1 / (1 + g s0), (1 + g) / (1 + g s0)];
+    - the distributive factor B(b) = (1 + k b0) / (1 + k b), b the state's vasodilatory burden in [0, inf) and b0 the
+      arrival one, so B falls with b over (0, 1 + k b0], is exactly 1 at b = b0, and reaches its maximum 1 + k b0 at
+      b = 0 (full resolution of the arrival vasodilation, FACULTY DECISION 1).
+
+    s reads delivery and demand, b is written by a family: neither reads the other, so the reachable set is the
+    product of the two ranges. Its largest value is C_max x B_max and its infimum is 0, approached as b grows without
+    bound (no clinical maximum burden is declared).
+
+    The loop the core closes one minute behind is T -> afterload -> output -> delivery -> s -> target -> T_next. With
+    A(T) = 1 / (1 + a (T - 1)) the afterload factor and the deficit branch active (s > 0),
+
+        d(target)/dT = B(b) x [g / (1 + g s0)] x a x A(T) x (1 - s),
+
+    which is 0 off the branch. (1 - s) <= 1, B(b) <= 1 + k b0 and A is decreasing, so over a domain whose lower end is
+    T_lo the slope is bounded by (1 + k b0) g a A(T_lo) / (1 + g s0). P2J-2's published bound, g a < 1, is this one
+    with B = 1 and the A / (1 + g s0) factor dropped; the distributive factor scales it, which is what P2X-1 adds.
+    """
+    gain, sensitivity = profile.deficit_to_tone_gain, profile.afterload_sensitivity
+    arrival_signal = arrival_tone_signal(anchors, profile)
+    normalization = 1.0 + gain * arrival_signal
+    loss = profile.vasodilatory_burden_to_tone_gain
+    recovery_max = 1.0 if loss is None else 1.0 + loss * anchors.arrival_vasodilatory_burden
+    lower, upper = CHANNEL_BOUNDS[Channel.T][0], CHANNEL_BOUNDS[Channel.T][1]
+    afterload_at_the_lower_end = 1.0 / (1.0 + sensitivity * (lower - 1.0))
+    return {"arrival_signal": arrival_signal, "compensation_min": 1.0 / normalization,
+            "compensation_max": (1.0 + gain) / normalization, "recovery_max": recovery_max,
+            "distributive_reader": loss is not None,
+            "largest_target": (1.0 + gain) / normalization * recovery_max,
+            "smallest_target": "0 (approached as the burden grows; no clinical maximum burden is declared)",
+            "supported": (lower, upper),
+            "loop_slope_bound": recovery_max * gain * sensitivity * afterload_at_the_lower_end / normalization,
+            "p2j2_slope_bound": gain * sensitivity}
+
+
 def _vascular_tone(state: CoreState, deltas: Sequence[ChannelDelta], anchors: Anchors, profile: CoreProfile,
                    minute: int) -> ChannelDelta:
     """P2J-2: T moves to the tone the state at the start of the minute calls for (``tone_target``).
@@ -277,16 +318,40 @@ def _vascular_tone(state: CoreState, deltas: Sequence[ChannelDelta], anchors: An
     Fails closed where nothing is decided: another source writing T in the same minute (how a drug or a disease module
     would compose with the response is not decided), or a gain whose largest target, 1 + g at no delivery, is outside
     T's guard (so the guard never shapes the response).
+
+    P2X-1 closes that last claim over the whole declared domain (``tone_domain``). The P2J-2 check reads the
+    compensation alone, so with a distributive reader declared it saw neither the recovery factor 1 + k b0 above nor a
+    severe burden below, and the channel's guard - a safety bound, never physiology - decided the response instead.
+    Now, where that reader is declared, a parameter domain whose largest reachable target leaves T's supported range,
+    or whose derived loop bound is not a contraction, is refused before execution; and any minute whose target would
+    leave that range fails closed here rather than being clamped into shape. The guard stays as the last safety layer
+    for every other source (TONE_CLAMP_AS_PHYSIOLOGY = REJECTED, FACULTY DECISIONS 3 and 4).
     """
-    upper = CHANNEL_BOUNDS[Channel.T][1]
+    lower, upper = CHANNEL_BOUNDS[Channel.T][0], CHANNEL_BOUNDS[Channel.T][1]
     if 1.0 + profile.deficit_to_tone_gain > upper:
         raise CoreInvariantError(f"the tone response's largest target 1 + {profile.deficit_to_tone_gain!r} is above "
                                  f"T's guard {upper!r}")
+    domain = tone_domain(anchors, profile)
+    if domain["distributive_reader"]:
+        if domain["largest_target"] > upper:
+            raise CoreInvariantError(
+                f"the tone target's largest reachable value {domain['largest_target']!r} (the compensation's "
+                f"{domain['compensation_max']!r} times the distributive recovery {domain['recovery_max']!r}) is above "
+                f"T's guard {upper!r}: the guard would shape the response (P2X-1)")
+        if domain["loop_slope_bound"] >= 1.0:
+            raise CoreInvariantError(
+                f"the tone loop's derived bound with the distributive factor, {domain['loop_slope_bound']!r}, is not "
+                f"below 1, so the delayed loop is not a contraction over T's supported range (P2X-1)")
     writers = sorted({delta.source.key for delta in deltas if delta.channel is Channel.T})
     if writers:
         raise CoreInvariantError(f"minute {minute}: {writers} write T while the vascular-tone response is on; how they "
                                  "compose is not decided (P2J-2)")
-    return ChannelDelta(Channel.T, tone_target(state, anchors, profile) - state.T, VASCULAR_TONE, minute,
+    target = tone_target(state, anchors, profile)
+    if not lower <= target <= upper:
+        raise CoreInvariantError(f"minute {minute}: the tone target {target!r} leaves T's supported range "
+                                 f"{(lower, upper)!r}; the channel's guard is a safety bound, not the physiology "
+                                 "(P2X-1)")
+    return ChannelDelta(Channel.T, target - state.T, VASCULAR_TONE, minute,
                         "the tone the acute shock signal at the start of the minute calls for")
 
 

@@ -24,10 +24,23 @@ from clinical_core.integration import CHANNEL_BOUNDS, step
 from clinical_core.provenance import DistressChange, ProvenanceError, Source, SourceKind, VasodilationChange
 from clinical_core.state import AUXILIARY_FIELDS, AuxiliaryState, Channel, CoreInvariantError
 
+#: P2X-1 changed four files of the tree P2W-1 was frozen against (the derived tone-domain guards, the writer contract
+#: and the two registry tuples) and added its own two: this package's guards read the tree as P2W-1 left it
+#: (x1.tree, x1.p2w1_sources), which is where its hashes, its source audits and its freeze digest belong. The one
+#: behaviour P2X-1 changed is V5's: a severe burden now fails closed instead of parking T on its guard
+#: (P2W1_V5_CLAMP_BEHAVIOUR_SUPERSEDED_BY_P2X1, FACULTY DECISION 4). The frozen record is NOT rewritten.
 #: The P2W-1 freeze: the core insertions, the probes, the synthetic values, the readiness rule, the proof and every
 #: clinical_core source but the downstream reports, committed before the evaluation run.
 FROZEN_DIGEST = "345deb5db60c0638b7b1e1d9a4eb1d1b5f6b82a232b24e084688e2db64174fed"
 PROBE_SOURCE = Source(SourceKind.DISEASE_MODULE, "p2w1-test")
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _p2w1_tree():
+    from clinical_core import tone_domain as x1
+    with pytest.MonkeyPatch.context() as patch:
+        x1.tree(patch)
+        yield
 
 
 # The frozen package and its proof -------------------------------------------------------------------------------------------
@@ -172,12 +185,31 @@ def test_the_gain_is_a_finite_positive_tone_loss_or_unset(gain):
 
 @pytest.fixture(scope="module")
 def probes():
-    return dt.structural_probes()
+    """P2W-1's probes as they run today. V5 is the one P2X-1 superseded: a burden whose target leaves T's supported
+    range now fails closed, so the probe that read the clamp as the response raises instead (FACULTY DECISION 4,
+    P2W1_V5_CLAMP_BEHAVIOUR_SUPERSEDED_BY_P2X1). The frozen record keeps its own V5 row; it is not rewritten."""
+    found = {"V1": dt.probe_v1(), "V2": dt.probe_v2(), "V3": dt.probe_v3(), "V4": dt.probe_v4(),
+             "V6": dt.probe_v6(), **dt.probes_v7_to_v10(), "V11": dt.probe_v11(), "V12": dt.probe_v12(),
+             "V13": dt.probe_v13(), "V14": dt.probe_v14()}
+    return {k: {"requires": dt.PROBES[k], **found[k]} for k in dt.PROBES if k in found}
 
 
-@pytest.mark.parametrize("name", dt.PROBES)
+@pytest.mark.parametrize("name", [n for n in dt.PROBES if n != "V5"])
 def test_each_structural_probe_holds(probes, name):
     assert probes[name]["pass"], probes[name]
+
+
+def test_the_severe_burden_probe_is_superseded_by_the_closure_package():
+    """V5 published the clamp as the response ('no clinical ceiling is chosen'); P2X-1 replaced that reading with a
+    refusal, and still declares no clinical maximum burden. The record's V5 row stays as history."""
+    from clinical_core import tone_domain as x1
+    with pytest.raises(CoreInvariantError):
+        dt.probe_v5()
+    row = x1.supersession()["records"]["P2W1_V5_CLAMP_BEHAVIOUR_SUPERSEDED_BY_P2X1"]
+    assert row["status"] == "P2W1_V5_CLAMP_READING_SUPERSEDED"
+    assert x1.probe_x7()["pass"] and x1.probe_x7()["refused"]
+    record = json.loads(dt.RECORD.read_text(encoding="utf-8"))
+    assert record["probes"]["V5"]["pass"] and record["probes"]["V5"]["clamped"]
 
 
 def test_the_default_is_exactly_the_p2v1_core(probes):
@@ -196,11 +228,13 @@ def test_more_burden_lowers_the_tone_and_more_compensation_raises_it(probes):
 
 
 def test_the_compensation_opposes_without_erasing(probes):
-    v4, v5 = probes["V4"], probes["V5"]
+    v4 = probes["V4"]
     assert v4["opposes"] and v4["never_erases"] and v4["still_below_arrival"]
-    assert v5["target_at_a_severe_burden"] < 0.05 and v5["output_after"] > 1.0
-    assert math.isclose(v5["t_after_the_course"][-1], CHANNEL_BOUNDS[Channel.T][0], abs_tol=1e-12)
-    assert any("bounds:T" in key for keys in v5["clamped"] for key in keys)
+    # V5's own reading is superseded (see the test above); what it established and P2X-1 keeps is that a severe
+    # burden stays dominant: the target is still far below the arrival tone, now outside the supported range.
+    record = json.loads(dt.RECORD.read_text(encoding="utf-8"))
+    assert record["probes"]["V5"]["target_at_a_severe_burden"] < 0.05
+    assert math.isclose(record["probes"]["V5"]["t_after_the_course"][-1], CHANNEL_BOUNDS[Channel.T][0], abs_tol=1e-12)
 
 
 def test_the_burden_moves_no_other_channel_and_nothing_else_moves_the_tone(probes):
@@ -269,8 +303,18 @@ def test_the_committed_courses_never_move_the_burden():
 # The verdict, the frozen record and the document -----------------------------------------------------------------------------
 
 @pytest.fixture(scope="module")
-def found():
-    return dt.run()
+def found(probes):
+    """What ``dt.run()`` produced, rebuilt here because its V5 probe no longer runs: P2X-1 refuses the combination
+    that probe exercised (FACULTY DECISION 4), so its row is taken from the frozen record, labelled as the one
+    superseded reading. Every other section is live."""
+    record = json.loads(dt.RECORD.read_text(encoding="utf-8"))
+    rows = {**probes, "V5": record["probes"]["V5"]}
+    out = {"proof": dt.upstream_unchanged(), "audit": dt.audit(), "representation": dt.representation(),
+           "reader": dt.reader_audit(), "probes": {k: rows[k] for k in dt.PROBES},
+           "signature": dt.distributive_signature(), "parameters": dt.parameters(),
+           "carried_debts": dt.carried_debts(), "non_regression": dt.non_regression()}
+    out["readiness"] = dt.readiness(out)
+    return dt.go._plain({"freeze_digest": dt.freeze_digest(), "revision": dt.REVISION, "design": dt.design(), **out})
 
 
 def test_the_readiness(found):
@@ -301,6 +345,8 @@ def record():
 
 def test_the_record_comes_from_the_frozen_package_and_is_reproduced_live(record, found):
     assert record["freeze_digest"] == FROZEN_DIGEST
+    # Every section and every probe but V5 is reproduced live on P2W-1's own tree; V5's row is the frozen one, and
+    # the test above is what now holds in its place (P2W1_V5_CLAMP_BEHAVIOUR_SUPERSEDED_BY_P2X1).
     assert record == json.loads(json.dumps(found, sort_keys=True, default=str))
 
 
@@ -361,23 +407,23 @@ def test_the_still_below_arrival_claim_holds_at_the_committed_compensation_only(
         assert worst == pytest.approx(bound / (1.0 + dt.TONE_GAIN * burden)), "the analytic bound is reached at s = 1"
 
 
-def test_the_tone_gain_guard_and_the_contraction_bound_do_not_see_the_dilation_factor():
-    """R-F3: integration._vascular_tone refuses a gain whose largest target, 1 + g, is outside T's guard, 'so the
-    guard never shapes the response', and CoreProfile.__post_init__ requires g a < 1. Neither reads the dilation
-    factor, whose own ceiling is 1 + k b0: with a declared gain and an arrival burden the largest target is
-    (1 + g) / (1 + g s0) x (1 + k b0), so the clamp does shape the response and the effective loop slope is
-    (1 + k b0) g a. Nothing in the committed profiles reaches this (every gain is UNSET)."""
+def test_the_tone_gain_guard_and_the_contraction_bound_now_see_the_dilation_factor():
+    """R-F3, closed by P2X-1: the published checks read the compensation alone (1 + g against T's guard, and
+    g a < 1), so with a declared reader and an arrival burden the largest target was (1 + g) (1 + k b0) / (1 + g s0)
+    and the clamp shaped the response. The derived guards now refuse that combination before execution; the P2J-2
+    checks themselves are untouched, and no committed profile reaches any of this (every gain is UNSET)."""
+    from clinical_core.integration import tone_domain
     prof = dt.reader(dt.acs_profile(), 2.0)
-    assert prof.deficit_to_tone_gain * prof.afterload_sensitivity < 1.0, "the profile invariant is satisfied"
+    assert prof.deficit_to_tone_gain * prof.afterload_sensitivity < 1.0, "the P2J-2 profile invariant still passes"
+    assert 1.0 + prof.deficit_to_tone_gain <= CHANNEL_BOUNDS[Channel.T][1], "and so does its gain check"
     anchors = dt.probe_anchors(arrival_vasodilatory_burden=10.0)
     arrival = dv.arrival_state(anchors, prof)
     assert dv.tone_target(arrival, anchors, prof) == 1.0
     resolved = arrival.evolve(aux=replace(arrival.aux, vasodilatory_burden=0.0))
-    assert dv.tone_target(resolved, anchors, prof) > CHANNEL_BOUNDS[Channel.T][1], "outside T's guard"
-    states, records = dt.course((dt.SyntheticVasodilation("down", -10.0, 0, 1),), 4, anchors, prof)
-    assert states[-1].T == CHANNEL_BOUNDS[Channel.T][1], "the channel parks on the guard"
-    clamped = [sorted({d.source.key for d in record.deltas if "bounds:T" in d.source.key}) for record in records]
-    assert sum(1 for keys in clamped if keys) >= 3, clamped
+    assert dv.tone_target(resolved, anchors, prof) > CHANNEL_BOUNDS[Channel.T][1], "the reachable target is outside"
+    assert tone_domain(anchors, prof)["largest_target"] > CHANNEL_BOUNDS[Channel.T][1]
+    with pytest.raises(CoreInvariantError):
+        dt.course((dt.SyntheticVasodilation("down", -10.0, 0, 1),), 4, anchors, prof)
 
 
 def test_the_lag_string_check_is_vacuous_but_the_lag_itself_holds():
@@ -402,7 +448,9 @@ def test_nothing_anywhere_in_the_repository_writes_the_burden():
     only, so a writer in clinical_core/interventions (where an epinephrine or vasopressor writer would live) would
     not be seen. The fact holds; the guard is widened here, as P2V-1 did for its own writer."""
     allowed = {"clinical_core/distributive_tone.py", "test_clinical_core_distributive_tone.py",
-               "clinical_core/integration.py", "clinical_core/provenance.py", "clinical_core/state.py"}
+               "clinical_core/integration.py", "clinical_core/provenance.py", "clinical_core/state.py",
+               # P2X-1's closure package names the record in the scan that enforces its writer contract.
+               "clinical_core/tone_domain.py", "test_clinical_core_tone_domain.py"}
     found = set()
     for path in sorted(dt.ROOT.rglob("*.py")):
         relative = path.relative_to(dt.ROOT).as_posix()

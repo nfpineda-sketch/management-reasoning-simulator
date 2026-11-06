@@ -21,6 +21,7 @@ from clinical_core import respiratory_distress as dm
 from clinical_core import respiratory_mechanics as mc
 from clinical_core import systemic_stress as ss
 from clinical_core import distributive_tone as dt
+from clinical_core import tone_domain as x1
 from clinical_core.integration import step
 from clinical_core.provenance import DistressChange, ProvenanceError, Source, SourceKind, SystemicStressChange
 from clinical_core.state import AUXILIARY_FIELDS, AuxiliaryState, CoreInvariantError, RhythmCode, RhythmState
@@ -39,6 +40,7 @@ PROBE_SOURCE = Source(SourceKind.DISEASE_MODULE, "p2v1-test")
 @pytest.fixture(autouse=True, scope="module")
 def _p2v1_tree():
     with pytest.MonkeyPatch.context() as patch:
+        x1.chain(patch)
         dt.tree(patch)
         yield
 
