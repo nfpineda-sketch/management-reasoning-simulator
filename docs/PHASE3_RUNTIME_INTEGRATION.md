@@ -374,3 +374,89 @@ eran reales y están corregidos con prueba propia; los once restantes también s
 Las dos categorías que la revisión declaró limpias y vale la pena nombrar: ninguna acción espejada antes de
 su destino ni dos veces dentro de un encuentro, y ningún artefacto serializado incompleto —los 34
 reconstruyen sus digestos pasando por JSON, incluidos los que piden endoscopia y el de tres fluidos.
+
+## P3-14 a P3-18 · La infraestructura dormida de autoridad limitada
+
+Decisión docente del 2026-11-07: se autoriza **construir** la infraestructura de una primera autoridad
+limitada, **no** activarla. Nada de lo que sigue cambia lo que ve un residente hoy, y el motor heredado sigue
+siendo la única autoridad en tiempo de ejecución.
+
+### El dominio, y lo que queda fuera
+
+Familia `gi_bleed`, casos `gi_bleed_57m` y `gi_bleed_72f`, variables `sbp` y `dbp` con propiedad común y `map`
+derivada en pantalla de las dos (`DERIVED_IN_DISPLAY`: el núcleo no la escribe). CRT queda diferida. Todo lo
+demás —`hr`, `spo2`, `respiratory_rate`, `crt_s`, hemoglobina, lactato, `V_ml_eq`, consciencia, colapso, paro,
+ritmo, pulso, la puntuación, el destino de las órdenes y la propiedad de la persistencia— es del legado, y
+cuatro magnitudes internas (`D`, `delivery_rel`, `hemostasis_relief`, `transfusion_overload_units`) son sólo
+comparación.
+
+### La puerta: nueve condiciones, y una que no se puede cumplir
+
+`authority_flag`, `approved_snapshot`, `family_and_case`, `environment`, `authority_domain`, `no_pilot`,
+`no_unsupported_action`, `phase2_digest`, `layer_version`. `APPROVED_SNAPSHOTS` está **vacío a propósito**:
+P3-14 no puede llenarlo, así que con la bandera y el entorno puestos el modo sigue siendo `legacy` y
+`unreachable_because()` dice por qué. El modo se decide una vez, en el minuto 0.
+
+### La transacción, y el fallo
+
+`capture → compute → validate → commit`. Comprometer sin instantánea aprobada lanza `AuthorityRefused`; un
+fallo de validación o de invariantes aborta, deja artefacto de retroceso con su razón y su historia y **no**
+degrada en silencio (`HARD_FAIL_VISIBLE_TO_FACULTY`). El commit es atómico: o se escriben las dos presiones
+comunes, o no se escribe ninguna; `map` se deriva de ellas al dibujar.
+
+### La elegibilidad falla cerrada
+
+Sobre los 34 escenarios de la batería GI: **28** quedan `ELIGIBLE_BUT_NO_SNAPSHOT` —elegibles en todo salvo en
+la decisión docente que falta— y **6** `INELIGIBLE_UNSUPPORTED`, porque ordenan anticoagulación, antiagregante
+o vasopresor y el mapeo común no tiene escritor. No se implementó ninguna de esas tres fisiologías para
+desbloquear autoridad: sería fisiología nueva y decisión clínica. La comparación en sombra sigue corriendo en
+los seis.
+
+### El extremo a extremo, en la aplicación real
+
+`test_runtime_authority_e2e.py` conduce `app.py` con `AppTest`: una transacción comprometida con una
+instantánea inyectada **sólo para la prueba** cambia las tres presiones en pantalla y nada más; una rechazada
+deja las del legado; seis fallos inyectados abortan; una sesión de piloto es inelegible; la traza de manejo no
+cambia de dueño; y al terminar la prueba `APPROVED_SNAPSHOTS` vuelve a estar vacío. Que esa aprobación de
+prueba no pueda existir en producción se verifica por AST (ningún escritor de `APPROVED_SNAPSHOTS` fuera de las
+pruebas), por ausencia de artefacto y por el Decision File. Con esto queda cerrado
+`UI_E2E_DEFERRED_BEFORE_AUTHORITY`.
+
+### Lo que falta, y lo que no
+
+El único paquete técnico que falta es el **sitio de llamada en producción** con el registro de procedencia del
+minuto autoritativo, y está ausente a propósito: ningún módulo del tiempo de ejecución importa
+`runtime_authority`. Lo demás son seis decisiones docentes (A–F), inventariadas con su material y su bloqueo en
+`docs/PHASE3_ACTIVATION_READINESS_AUDIT.md`; el punto de la instantánea, con sus tres candidatos y el que el
+propio núcleo rechaza, está en `docs/PHASE3_AUTHORITY_SNAPSHOT_DECISION_PACK.md`.
+
+### Lo que cambió por la revisión adversarial de P3-17
+
+Una revisión de sólo lectura sobre los nueve riesgos que el encargo nombró. Dos riesgos salieron limpios
+—la interfaz no muestra salida común sin modo válido (`app.py` no menciona el arnés) y el commit no deja
+el estado a medio escribir— y los otros siete traían hallazgos reales, con su sonda. Todos corregidos:
+
+| Riesgo | Lo que encontró | Lo que ahora pasa |
+|---|---|---|
+| ALTA · elusión de la puerta | `AuthorityTransaction` tenía `state` como campo del constructor: construirla con `state=VALIDATED` saltaba la validación entera y comprometía frecuencia cardíaca, saturación y hemoglobina de un caso no permitido | `state` ya no es campo del constructor, y **`commit` vuelve a evaluar la puerta**: sin las nueve condiciones no escribe |
+| ALTA · procedencia de la instantánea | `approved_snapshot` era una búsqueda por id: `{}` y hasta una cadena pasaban, y nada ataba el punto aprobado al punto que de verdad corrió | `snapshot_is_wellformed` exige forma, pertenencia al registro y **la misma `runtime_parameter_snapshot_id` que la capa reporta**; `validate` la usa |
+| MEDIA · fuga de la aprobación de prueba | el registro era un `dict` de módulo: cualquier import podía llenarlo, y el escaneo de producción sólo veía el nombre desnudo | el registro se expone como `MappingProxyType` (escribirlo lanza), la inyección va a un nombre privado que el escaneo vigila, y el escaneo ve también las formas cualificadas, `update`, `setdefault` y los subdirectorios |
+| MEDIA · propiedad mezclada | `commit` escribía `observable["map"]` aunque el contrato lo declara derivado: en 5 de 31 minutos de un escenario real el MAP guardado y el mostrado diferían en 1 mmHg | el commit escribe **sólo** lo que la tabla llama `common_authority`; el MAP de la pantalla es siempre función de esas dos presiones |
+| MEDIA · acción no soportada ignorada | el argumento `unsupported` tenía valor por omisión, así que «nadie me dijo» se leía como «no hubo acción no soportada»; `SUPPORTED_ACTIONS` no lo leía nadie; y un gap declarado no bloqueaba la elegibilidad | el argumento **falla cerrado** sin valor; una clase marcada `FULLY_MIRRORED` que no esté en `SUPPORTED_ACTIONS` cuenta como no soportada; un gap declarado hace inelegible el escenario |
+| MEDIA · el piloto habilitando autoridad | `MRS_PILOT` y `MRS_PILOT_RESIDENTS` no existen en ninguna otra parte del repositorio, así que un despliegue real del piloto cumplía `no_pilot` | la condición se ancla a las banderas que exige la **congelación del piloto** (`pilot_freeze.RUNTIME_FLAGS`) y falla cerrada si esa congelación no se puede leer |
+| MEDIA · precedencia del espejo | en `_coverage`, «mapeado y espejado» se evaluaba antes que «hueco declarado», y `mirrored` es el conjunto de la sesión: una orden caída leía `FULLY_MIRRORED` porque otra de su clase sí se espejó | el hueco declarado gana; una acción sin tipo deja de desaparecer y se declara no soportada |
+| BAJA · retroceso silencioso | `validate` devolvía `False` sin emitir nada, y `mode()` descartaba las razones de la puerta | `validate` **materializa** el artefacto de retroceso al refutar, y `mode_decision` devuelve el modo con su puerta y sus razones |
+| BAJA · caché del digesto | `phase2_digest_now` estaba cacheado para todo el proceso: un cambio posterior en `clinical_core/` no podía disparar la condición | la caché va por nombre, tamaño y mtime de las 141 fuentes: un árbol cambiado es otra clave |
+
+Tres hallazgos fuera de los nueve riesgos, también corregidos: el guardia «nada autoritativo lee la
+sombra» quedaba auto-declarativo al excluir por `LAYER_SOURCES`, así que la prueba **fija la declaración
+como literal**; la prueba de persistencia afirmaba más de lo que probaba, y ahora dice la verdad estrecha
+—la carga útil es una lista blanca de claves de primer nivel y dos de ellas se copian **tal cual**, así
+que no meter un registro de autoridad dentro de la traza cerrada es una obligación del sitio de llamada,
+no una garantía del store—; y un `record()` con instantánea malformada lanzaba al intentar escribir su
+propio artefacto de retroceso.
+
+Lo que la revisión midió y conviene no perder: con cero configuración ya se cumplen seis de las nueve
+condiciones, y con las tres variables de entorno puestas fallaba **sólo** la instantánea. Después de este
+endurecimiento, además de la instantánea, una activación necesita declarar las acciones del minuto, correr
+en un caso GI que el propio estado nombre, y pasar la puerta otra vez en el momento del commit.
