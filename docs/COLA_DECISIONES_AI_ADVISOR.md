@@ -5,8 +5,9 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-11-07, con el cierre formal de la Fase 2 (fila «Cierre de la Fase 2», trigésima octava
-  actualización); antes, 2026-11-06, con las ocho decisiones docentes de la Fase 2 que rigen P2X-1 y P2X-1A (sección «Fase 2 · decisiones docentes del tono distributivo y del cierre», trigésima séptima actualización); antes, 2026-10-08, con TD-77 aprobada para integrar (detenida: falta el diff de referencia), las tres
+- **Actualizado:** 2026-11-07, con la apertura de la Fase 3 en sombra (sección «Fase 3 · Integración en
+  sombra», trigésima novena actualización); el mismo día, con el cierre formal de la Fase 2 (fila «Cierre de la
+  Fase 2», trigésima octava actualización); antes, 2026-11-06, con las ocho decisiones docentes de la Fase 2 que rigen P2X-1 y P2X-1A (sección «Fase 2 · decisiones docentes del tono distributivo y del cierre», trigésima séptima actualización); antes, 2026-10-08, con TD-77 aprobada para integrar (detenida: falta el diff de referencia), las tres
   correcciones de H-62, TD-87 y la defensa en profundidad de B-1 (trigésima sexta actualización); antes, el mismo
   día, con la decisión docente de ES-P8g, el candidato local congelado `37c9afb`, el paquete
   de firma de H-62 e I-63 y el intento autorizado de B-1 (trigésima quinta actualización de la sección «Preparación
@@ -24,6 +25,29 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
   D-1 a D-11 decididas y aplicadas), la revisión clínica prepiloto, la segunda y la primera respuesta al paquete
   del ciclo 10, el ciclo 10, el estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos anteriores
   siguen más abajo, como estaban.
+
+## Fase 3 · Integración en sombra (2026-11-07)
+
+Primera etapa de la Fase 3, autorizada el 2026-11-07 tras aceptar el cierre formal de la Fase 2. La fisiología
+común corre **en sombra**, sin autoridad; el motor heredado sigue decidiendo todo lo que ve el residente.
+Rama `phase-3-runtime-integration`, desde `d2cca46`. Detalle: `docs/PHASE3_RUNTIME_INTEGRATION.md`.
+
+| Id | Decisión / estado | Estado | Evidencia |
+|---|---|---|---|
+| FD-P3-01 | **La autoridad en tiempo de ejecución sigue siendo del motor heredado.** `COMMON_CORE_RUNTIME_AUTHORITY = False`: el núcleo común lee, calcula, replayea, compara y registra, y no puede controlar una vital, un estado mental, un paro, el destino de una orden, la puntuación, una interrupción ni la persistencia. Cualquier camino de la salida en sombra a una conducta autoritativa es un bloqueo | DECIDED + IMPLEMENTED | `runtime_shadow.py`; `test_runtime_shadow_plumbing.py` R1–R17; `test_runtime_shadow_families.py` H1–H25 |
+| FD-P3-02 | **El invariante de aislamiento de la Fase 2 se reformula, no se debilita.** La doble corrida exige que el tiempo de ejecución alcance el núcleo; se declara **un** puente (`runtime_shadow`) y se prueba que, cortándolo, el aislamiento vale exactamente como antes, y que sólo `app.py` y `pilot_acceptance.py` lo usan | DECIDED + IMPLEMENTED | `test_shadow_core_isolation.py`: `test_no_runtime_module_but_the_declared_shadow_bridge_imports_the_core`, `test_cutting_the_shadow_bridge_restores_the_phase2_isolation_exactly` |
+| FD-P3-03 | **La infraestructura de la Fase 3 vive fuera de `clinical_core/`**, porque el digesto formal de cierre cubre todas las fuentes del paquete y una etapa cerrada no se mueve | DECIDED + IMPLEMENTED | `runtime_shadow.py`, `runtime_shadow_families.py`; digesto `22b90a6f7f38…` recalculado en tres suites |
+| FD-P3-04 | **La incertidumbre se representa con testigos de región, no con un punto.** Cada instantánea de parámetros cita el span comprometido de la Fase 2 del que sale (índice incluido) y declara `approved = False`; las cinco familias con bandas dan tres trayectorias distintas | PROPOSED → requiere confirmación docente | P3-2 (`SHADOW_REGION_WITNESSES_PREFERRED`); `ShadowParameterSnapshot`; `test_runtime_shadow_ensemble.py` E1–E10 |
+| FD-P3-05 | **La sombra en vivo es sólo GI.** En las otras cinco familias migradas, el tratamiento que define su manejo correcto no tiene acción mapeada, y una sombra que no responde al tratamiento produciría divergencias que parecen error del núcleo y son escritor ausente | DECIDED | matriz de familias de `docs/PHASE3_RUNTIME_INTEGRATION.md`; `TREATMENT_GAP` en cada acción no mapeada |
+| FD-P3-06 | **Consciencia y colapso quedan como diagnóstico no autoritativo.** Sin categoría de estado mental, sin umbrales, sin transición terminal; el residente sigue viendo el estado mental del motor heredado | DECIDED + IMPLEMENTED | P3-3; `shadow_diagnostics`; `test_runtime_shadow_ensemble.py` C1–C8 |
+| FD-P3-07 | **El primer piloto no se toca.** Su motor sigue congelado y ninguna de sus superficies (preflight, humo, runbook, readiness) nombra la bandera; un entorno limpio no abre sesión. Exigir las banderas ausentes **dentro** del preflight queda detenido: `pilot_freeze.py` está en el conjunto congelado de la Fase 2 (`calibration.INPUT_PATH_SOURCES`), así que esa fila movería el digesto de la congelación de calibración y dos documentos generados → `PHASE2_FROZEN_INTERFACE_INSUFFICIENT`, declarado como `PILOT_PREFLIGHT_FLAG_GATE_DEFERRED` | DECIDED + IMPLEMENTED (con una parte detenida y declarada) | R15, H23; `test_runtime_shadow_plumbing.py::test_r15_no_pilot_configuration_surface_turns_the_flag_on`; TD-130 |
+| FD-P3-08 | **La sombra consume la suerte que el libro de órdenes ya decidió**, nunca la vuelve a decidir: espeja sólo la lista asentada que recibió el motor, empareja el recibo de una entrega por posición dentro de su clase, falla cerrado si los conteos no cuadran, y toma del libro la identidad de la orden | DECIDED + IMPLEMENTED | hallazgos ALTA de la revisión adversarial de P3-1; pruebas de la bolsa doble, de la orden retenida y de la idempotencia |
+
+**Lo que queda abierto a decisión docente:** la política de parámetros de FD-P3-04; el criterio de aceptación
+de divergencias (hoy el repositorio declara «TBD» para las variables de display); y, antes de cualquier
+autoridad visible, la decisión escrita que la conceda, con la evidencia del paquete P3-11 que P3-10 recomienda
+(`ONE_MINIMUM_PACKAGE_BEFORE_AUTHORITY_DECISION`). La puerta de P3-7 **no** se cumplió: la sombra en vivo
+queda sólo en GI.
 
 ## Cierre de la Fase 2 (2026-11-07)
 
