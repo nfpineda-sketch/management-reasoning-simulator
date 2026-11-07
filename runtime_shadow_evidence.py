@@ -80,19 +80,37 @@ def _digest(payload: Any) -> str:
     return hashlib.sha256(json.dumps(payload, sort_keys=True, default=str).encode("utf-8")).hexdigest()
 
 
-@lru_cache(maxsize=1)
+def _phase2_sources() -> tuple:
+    """The frozen sources with their size and mtime: the cheap fingerprint the digest cache keys on."""
+    root = Path(__file__).resolve().parent
+    package = root / "clinical_core"
+    return tuple(sorted((path.relative_to(root).as_posix(), path.stat().st_size,
+                         path.stat().st_mtime_ns)
+                        for path in package.rglob("*.py")
+                        if "__pycache__" not in path.parts and path.is_file()
+                        and not path.name.startswith(".")))
+
+
+@lru_cache(maxsize=8)
+def _phase2_digest_for(fingerprint: tuple) -> str:
+    root = Path(__file__).resolve().parent
+    sources = {name: hashlib.sha256((root / name).read_bytes()).hexdigest()
+               for name, _size, _mtime in fingerprint}
+    return hashlib.sha256(json.dumps(sources, sort_keys=True).encode("utf-8")).hexdigest()
+
+
 def phase2_digest_now() -> str:
     """The Phase-2 closure digest as the repository stands, RECOMPUTED over the 141 frozen sources.
 
     Reading ``runtime_shadow.PHASE2_DIGEST`` here would compare a constant with itself, so the safety
     condition that watches the freeze would be true by construction and could never fire.
+
+    P3-17: the result used to be cached for the life of the process, so a change in ``clinical_core``
+    after the first call could not fire the condition either. The cache is keyed on the sources' names,
+    sizes and modification times, so it is still one hash per unchanged tree and a changed tree is a
+    different key.
     """
-    root = Path(__file__).resolve().parent
-    package = root / "clinical_core"
-    sources = {path.relative_to(root).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
-               for path in package.rglob("*.py")
-               if "__pycache__" not in path.parts and path.is_file() and not path.name.startswith(".")}
-    return hashlib.sha256(json.dumps(sources, sort_keys=True).encode("utf-8")).hexdigest()
+    return _phase2_digest_for(_phase2_sources())
 
 
 def authoritative(encounter) -> dict:
@@ -218,6 +236,11 @@ def _coverage(encounter, session) -> dict:
         for action in entry.get("action_summaries") or []:
             kind = str(action.get("type") or "")
             if not kind:
+                # An action the engine reports without a type cannot be mapped, mirrored or replayed, so
+                # dropping it silently was the one way an unrepresented action could pass unnoticed.
+                out["untyped_action"] = {"status": UNSUPPORTED,
+                                         "why": "the engine reported an action with no type: it cannot "
+                                                "be mapped to a core contributor"}
                 continue
             if kind == "procedure":
                 # The engine reports the endoscopy as a procedure receipt and the core receives it through
@@ -232,13 +255,17 @@ def _coverage(encounter, session) -> dict:
                              {"status": UNSUPPORTED,
                               "why": "a procedure the GI mapping does not represent: only the endoscopic "
                                      "haemostasis reaches the core, through family_state"})
+            elif kind in refused:
+                # P3-17: this used to be tested AFTER "mapped and mirrored", and ``mirrored`` is the set
+                # of classes mirrored anywhere in the session, so one order of a class that fell through
+                # read as fully mirrored because another order of the same class had not. A declared gap
+                # now wins over a sibling that happened to be mirrored.
+                out[kind] = {"status": UNSUPPORTED, "why": refused[kind]}
             elif kind in mapped and kind in mirrored:
                 out[kind] = {"status": FULLY_MIRRORED, "why": "mapped to a certified core contributor"}
             elif kind in legacy_adapter.NOT_PHYSIOLOGICAL:
                 out.setdefault(kind, {"status": STRUCTURAL_ONLY,
                                       "why": "Phase 2 declares this order class non-physiological"})
-            elif kind in refused:
-                out[kind] = {"status": UNSUPPORTED, "why": refused[kind]}
             elif kind in mapped:
                 out.setdefault(kind, {"status": STRUCTURAL_ONLY,
                                       "why": "mapped, but no event of this kind was mirrored in this run"})

@@ -144,13 +144,17 @@ def test_cutting_the_shadow_bridge_restores_the_phase2_isolation_exactly():
                    and not path.name.startswith("test_") and path.stem not in SHADOW_LAYER
                    and SHADOW_BRIDGE in _imports(path))
     assert users == ["app.py", "pilot_acceptance.py"], users
-    # The layer itself is named, not matched by prefix: a future runtime_shadow_x.py is not exempt.
-    layer = sorted(path.stem for path in ROOT.glob("runtime_shadow*.py"))
-    assert set(layer) == SHADOW_LAYER, layer
-    # The evidence harness is one-directional: it reads the layer, and nothing outside the layer reads it.
+    # The layer itself is named, not matched by prefix: a future runtime_shadow_x.py is not exempt
+    # unless the one declaration names it, and every declared source must exist on disk.
+    globbed = {path.stem for path in ROOT.glob("runtime_shadow*.py")}
+    assert not globbed - SHADOW_LAYER, sorted(globbed - SHADOW_LAYER)
+    missing = sorted(stem for stem in SHADOW_LAYER if not (ROOT / f"{stem}.py").exists())
+    assert missing == [], missing
+    # The evidence harness is one-directional: the declared layer may read it (P3-15 reads the GI battery to
+    # decide eligibility), and nothing outside that one declaration reads it, at module or at function level.
     harness_readers = sorted(path.name for path in ROOT.rglob("*.py")
                              if path.relative_to(ROOT).parts[0] not in {".venv", ".claude"}
-                             and not path.name.startswith("test_") and path.stem != HARNESS
+                             and not path.name.startswith("test_") and path.stem not in SHADOW_LAYER
                              and HARNESS in _imports(path))
     assert harness_readers == [], harness_readers
 

@@ -668,4 +668,5 @@ PHASE2_DIGEST = "22b90a6f7f38929cc5c18aa2000579155b4d9109198e35e29ad3991e81d6ce6
 MODULE_VERSION = "P3-11"
 ADAPTER_VERSION = "gi_haemorrhage/P3-11"
 #: The Phase-3 layer's own sources, whose digest identifies the code that produced an artifact.
-LAYER_SOURCES = ("runtime_shadow.py", "runtime_shadow_families.py", "runtime_shadow_evidence.py")
+LAYER_SOURCES = ("runtime_shadow.py", "runtime_shadow_families.py", "runtime_shadow_evidence.py",
+                 "runtime_authority.py")
