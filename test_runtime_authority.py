@@ -170,17 +170,19 @@ def test_a6_the_pressure_domain_cannot_be_cherry_picked():
 
 # -- P3-14-4, P3-14-6: the transaction and its atomicity ---------------------------------------------------
 
-def test_a7_the_two_common_pressures_are_committed_together_and_map_is_left_to_the_display(
-        gi_state, approved):
+def test_a7_the_pressure_domain_is_committed_together_and_map_is_the_displays_own(gi_state, approved):
     transaction = _transaction()
     transaction.capture(gi_state).compute(_candidate(), {"sbp": 88.0, "dbp": 54.0, "map": 65.0})
     assert transaction.validate(replay_digest=DIGEST, expected_digest=DIGEST, unsupported=())
     prepared = transaction.commit(gi_state)
-    assert transaction.state == ra.COMMITTED and sorted(transaction.committed) == ["dbp", "sbp"]
+    assert transaction.state == ra.COMMITTED
+    assert sorted(transaction.committed) == ["dbp", "map", "sbp"]
     assert prepared["observable"]["sbp"] == 90.0 and prepared["observable"]["dbp"] == 55.0
-    # P3-17: a committed MAP and a displayed MAP disagreed by a millimetre in 5 of 31 minutes of a real
-    # scenario, because the display derives it. The commit does not write it at all.
-    assert prepared["observable"].get("map") == gi_state["observable"].get("map")
+    # P3-17 refused the core's own mean pressure, because it disagreed with the displayed one by a
+    # millimetre; the P3-19 review then found that leaving the legacy one made the state and the trace
+    # disagree with the screen. What is written is the DISPLAY's function of the two committed pressures.
+    assert prepared["observable"]["map"] == ra.derived_map(90.0, 55.0) == 67
+    assert prepared["observable"]["map"] != _candidate()["map"] or ra.derived_map(90.0, 55.0) == 67
     # The authoritative state the caller passed in is NOT mutated: the commit returns a new mapping.
     assert gi_state["observable"]["sbp"] != 90.0 or gi_state["observable"]["dbp"] != 55.0
     untouched = {key: value for key, value in prepared["observable"].items()
@@ -311,8 +313,8 @@ def test_a15_an_abort_records_why_and_commits_nothing(gi_state, approved):
 
 # -- the harness is dormant: the runtime does not know it exists -------------------------------------------
 
-def test_a16_no_runtime_module_imports_the_authority_harness():
-    """The encounter is byte-identical with this module present: nothing on the runtime path reads it."""
+def test_a16_exactly_one_production_wiring_point_imports_the_authority_harness():
+    """P3-19 wired the call site in, so the import exists. What must not exist is a way to activate it."""
     def imports(path):
         tree = ast.parse(path.read_text(encoding="utf-8"))
         names = {alias.name for node in ast.walk(tree) if isinstance(node, ast.Import)
@@ -323,10 +325,12 @@ def test_a16_no_runtime_module_imports_the_authority_harness():
     readers = sorted(path.name for path in ROOT.glob("*.py")
                      if not path.name.startswith("test_") and path.name != "runtime_authority.py"
                      and "runtime_authority" in imports(path))
-    assert readers == [], readers
-    for name in ("app.py", "pilot_acceptance.py"):
-        assert "runtime_authority" not in (ROOT / name).read_text(encoding="utf-8"), name
+    assert readers == ["app.py"], readers
+    assert "runtime_authority" not in (ROOT / "pilot_acceptance.py").read_text(encoding="utf-8")
     assert "runtime_authority.py" in rs.LAYER_SOURCES, "the layer digest must cover it"
+    # The import is inert: the site refuses in every configuration, so the encounter runs as it did.
+    assert ra.site_for({}, {}) is None and ra.open_site({}) is None
+    assert ra.APPROVED_SNAPSHOTS == {} and ra.unreachable_because()
 
 
 def test_a17_the_harness_computes_no_physiology_of_its_own():
@@ -524,7 +528,9 @@ def battery():
 def test_b1_the_thirty_four_scenarios_are_classified_and_none_is_left_out(battery):
     result = battery["eligibility"]
     assert result["scenarios"] == 34
-    assert result["counts"] == {ra.ELIGIBLE_BUT_NO_SNAPSHOT: 28, ra.INELIGIBLE_UNSUPPORTED: 6}
+    # P3-22 re-measured this honestly: two more scenarios order something the engine itself does not
+    # model, and the eligibility reading now sees the settled order classes as the call site does.
+    assert result["counts"] == {ra.ELIGIBLE_BUT_NO_SNAPSHOT: 26, ra.INELIGIBLE_UNSUPPORTED: 8}
     assert set(result["counts"]) <= {ra.ELIGIBLE_BUT_NO_SNAPSHOT, ra.INELIGIBLE_UNSUPPORTED,
                                      ra.INELIGIBLE_OTHER}
     assert len(result["rows"]) == sum(result["counts"].values())
@@ -537,14 +543,17 @@ def test_b2_an_unsupported_action_fails_closed_and_is_named(battery):
             if row["classification"] == ra.INELIGIBLE_UNSUPPORTED]
     assert sorted(row["scenario"] for row in rows) == [
         "D_incorrect_treatment", "D_incorrect_treatment", "F_start_stop", "F_start_stop",
+        "H_unexpected_reasonable", "H_unexpected_reasonable",
         "K_combined_interventions", "K_combined_interventions"]
     assert battery["eligibility"]["ineligible_unsupported"] == ["anticoagulation", "aspirin",
-                                                                "norepinephrine"]
+                                                                "norepinephrine", "not_modelled"]
     for row in rows:
         assert row["unsupported"], row
         assert any(ra.INELIGIBLE_UNSUPPORTED in reason for reason in row["reasons"]), row
-        # The declared gap of the shadow and the unsupported action of the eligibility agree.
-        assert set(row["unsupported"]) <= set(row["facts"]["declared_gaps"]), row
+        # Either the shadow declared the gap, or the settled ledger carried the class: both are the
+        # same rule, and an order the engine does not model only appears in the second.
+        assert set(row["unsupported"]) <= set(row["facts"]["declared_gaps"]) | \
+            set(row["facts"]["settled_classes"]), row
 
 
 def test_b3_every_eligible_scenario_mirrors_and_replays_only_supported_actions(battery):
@@ -566,7 +575,7 @@ def test_b3_every_eligible_scenario_mirrors_and_replays_only_supported_actions(b
 def test_b4_the_only_remaining_condition_is_the_faculty_snapshot(battery):
     rows = [row for row in battery["eligibility"]["rows"]
             if row["classification"] == ra.ELIGIBLE_BUT_NO_SNAPSHOT]
-    assert len(rows) == 28
+    assert len(rows) == 26
     for row in rows:
         assert any("NO_FACULTY_APPROVED_AUTHORITY_SNAPSHOT_EXISTS" in reason
                    for reason in row["reasons"]), row

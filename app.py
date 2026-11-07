@@ -608,6 +608,10 @@ def reset_session():
     # Phase 3 (P3-11): a reset ends the encounter, so its shadow session ends with it. Dropping it here is
     # what keeps a second attempt at the same case from inheriting the first attempt's shadow run.
     st.session_state.pop("phase3_shadow", None)
+    import runtime_authority as _authority_layer
+    for key in (_authority_layer.SITE_KEY, _authority_layer.SITE_REFUSED_KEY,
+                _authority_layer.ARTIFACT_KEY):
+        st.session_state.pop(key, None)
     st.session_state.state = deepcopy(INITIAL_STATE)
     st.session_state.events = []
     st.session_state.history = []
@@ -9108,6 +9112,17 @@ def _runtime_shadow_session():
     return session
 
 
+def _runtime_authority_site():
+    """This encounter's Phase-3 authority site, or None (P3-19). Today it is ALWAYS None.
+
+    All of the decision lives in ``runtime_authority``: the flag, the nine-condition gate, the approved
+    snapshot that does not exist, the one-shot mode decision and the per-encounter memory of a refusal.
+    This function orchestrates and decides nothing, and a refused encounter pays one dictionary lookup.
+    """
+    import runtime_authority
+    return runtime_authority.site_for(st.session_state.state, st.session_state)
+
+
 def execute_bundle(parsed):
     # Nested so that regressions loading execute_bundle through ast keep its helpers.
     def _record_administration_time(res, action):
@@ -11157,6 +11172,7 @@ def _process_encounter_submission(submission_text, _guard_entry=None, submission
 
     _shadow = _runtime_shadow_session()
     _shadow_before = _shadow.capture(st.session_state.state) if _shadow is not None else None
+    _authority = _runtime_authority_site()
     result = execute_bundle(parsed)
     split = result.pop("_split", None)
     run_actions = result.pop("_run_actions", None)
@@ -11166,6 +11182,16 @@ def _process_encounter_submission(submission_text, _guard_entry=None, submission
         # Phase 3 (P3-1): observation only, after the engine committed its turn, over the actions whose
         # fate the pipeline already settled. Never authority.
         _shadow.observe(_shadow_before, st.session_state.state, parsed, result, run_actions, submission_id)
+    if _authority is not None:
+        # Phase 3 (P3-19): the dormant authority call site. Unreachable in this repository, because
+        # ``site_for`` returns None without a faculty-approved snapshot. When it ever does open, one
+        # minute is one transaction: it either returns a prepared state with the two common pressures
+        # written together, or it commits nothing and halts the encounter's authority visibly.
+        _prepared = _authority.minute(_shadow_before, st.session_state.state, _shadow, run_actions,
+                                      submission_id)
+        if _prepared is not None:
+            st.session_state.state = _prepared
+        st.session_state.phase3_authority_artifact = _authority.artifact()
     _order_pipeline.settle(
         turn, result=result, run_actions=run_actions, split=split, minute_before=turn_minute,
         minute_after=int(st.session_state.state.get("sim_time", 0) or 0),

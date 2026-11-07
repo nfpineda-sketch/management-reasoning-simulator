@@ -114,11 +114,20 @@ def _imports(path):
 #: authority, its flag is off unless a process sets it, and test_runtime_shadow_plumbing.py (R1-R17) shows
 #: the authoritative record is byte-identical with it on and off.
 SHADOW_BRIDGE = "runtime_shadow"
+#: Phase 3, P3-19 (faculty authorization of 2026-11-07): the production authority call site is wired in, so
+#: ``runtime_authority`` is a SECOND declared crossing -- ``app.py`` imports it, and it reaches the core to
+#: evaluate the gate and to read the case. The invariant is reformulated, not weakened: the crossing is the
+#: DECLARED LAYER (``LAYER_SOURCES``, pinned below), cutting that layer restores the Phase-2 isolation
+#: exactly as before, and what the authority site may do is bounded by a gate no configuration can open.
+DECLARED_CROSSINGS = frozenset({"runtime_shadow", "runtime_authority"})
 #: The declared Phase-3 shadow layer, by exact name and from ONE declaration (``LAYER_SOURCES``): a new
 #: module is not exempt because of its prefix, and the layer the artifacts' digest covers is the same layer
 #: this ban exempts. ``runtime_shadow_evidence`` (P3-11) is the faculty/research harness: it reads the
 #: layer and the acceptance battery, and no runtime module may read IT.
 SHADOW_LAYER = frozenset(Path(name).stem for name in __import__("runtime_shadow").LAYER_SOURCES)
+assert SHADOW_LAYER == {"runtime_shadow", "runtime_shadow_families", "runtime_shadow_evidence",
+                        "runtime_authority"}, SHADOW_LAYER
+assert DECLARED_CROSSINGS <= SHADOW_LAYER
 HARNESS = "runtime_shadow_evidence"
 
 
@@ -135,8 +144,8 @@ def test_no_runtime_module_but_the_declared_shadow_bridge_imports_the_core():
 def test_cutting_the_shadow_bridge_restores_the_phase2_isolation_exactly():
     """The bridge is the only crossing, it carries no authority, and only two modules use it."""
     import runtime_shadow
-    assert "clinical_core" not in _reachable(RUNTIME_ROOTS, without={SHADOW_BRIDGE}), \
-        "the runtime reaches the core by another path than the declared bridge"
+    assert "clinical_core" not in _reachable(RUNTIME_ROOTS, without=set(DECLARED_CROSSINGS)), \
+        "the runtime reaches the core by a path that is not one of the declared crossings"
     assert runtime_shadow.COMMON_CORE_RUNTIME_AUTHORITY is False
     assert runtime_shadow.mode({}) == runtime_shadow.MODE_OFF
     users = sorted(path.relative_to(ROOT).as_posix() for path in ROOT.rglob("*.py")
@@ -144,6 +153,15 @@ def test_cutting_the_shadow_bridge_restores_the_phase2_isolation_exactly():
                    and not path.name.startswith("test_") and path.stem not in SHADOW_LAYER
                    and SHADOW_BRIDGE in _imports(path))
     assert users == ["app.py", "pilot_acceptance.py"], users
+    # The second declared crossing has exactly ONE importer, and it is the orchestration helper in app.py.
+    authority_users = sorted(path.relative_to(ROOT).as_posix() for path in ROOT.rglob("*.py")
+                             if path.relative_to(ROOT).parts[0] not in {".venv", ".claude"}
+                             and not path.name.startswith("test_") and path.stem not in SHADOW_LAYER
+                             and "runtime_authority" in _imports(path))
+    assert authority_users == ["app.py"], authority_users
+    import runtime_authority
+    assert runtime_authority.APPROVED_SNAPSHOTS == {}, "the second crossing carries no authority"
+    assert runtime_authority.site_for({}, {}) is None and runtime_authority.unreachable_because()
     # The layer itself is named, not matched by prefix: a future runtime_shadow_x.py is not exempt
     # unless the one declaration names it, and every declared source must exist on disk.
     globbed = {path.stem for path in ROOT.glob("runtime_shadow*.py")}
@@ -190,9 +208,12 @@ def _reachable(roots, without=()):
 def test_contracts_v2_feeds_the_core_but_the_runtime_never_reaches_the_core():
     reached = _reachable(RUNTIME_ROOTS)
     assert {"app", "family_engine", "contracts_v2"} <= reached, "the runtime observes Contracts v2 in shadow"
-    # Since P3-1 the runtime reaches the core through one declared bridge and nothing else; the test above
-    # cuts that bridge and shows this assertion held exactly as it did in Phase 2.
-    assert "clinical_core" not in _reachable(RUNTIME_ROOTS, without={SHADOW_BRIDGE})
+    # Since P3-1 the runtime reaches the core through the declared crossings and nothing else; the test
+    # above cuts them and shows this assertion holds exactly as it did in Phase 2.
+    assert "clinical_core" not in _reachable(RUNTIME_ROOTS, without=set(DECLARED_CROSSINGS))
+    # Cutting only the shadow bridge is no longer enough, and saying which module still crosses is the
+    # honest form of the claim: it is the authority site, and it is the one app.py orchestrates.
+    assert "clinical_core" in _reachable(RUNTIME_ROOTS, without={SHADOW_BRIDGE})
     assert "contracts_v2" in _imports(PACKAGE / "contracts_input.py")
     for path in (ROOT / "contracts_v2").rglob("*.py"):
         assert "clinical_core" not in _imports(path), path.name

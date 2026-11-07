@@ -26,6 +26,8 @@ and no mid-encounter switch between engines.
 """
 from __future__ import annotations
 
+import hashlib
+import json
 import os
 from copy import deepcopy
 from dataclasses import dataclass, field
@@ -156,7 +158,7 @@ def snapshot_is_wellformed(snapshot: Any) -> tuple:
     if ran != rs.PARAMETER_SNAPSHOT_ID:
         reasons.append(f"the approved point {ran!r} is not the point the shadow runner ran "
                        f"({rs.PARAMETER_SNAPSHOT_ID!r})")
-    registered = APPROVED_SNAPSHOTS.get(str(snapshot.get("id") or ""))
+    registered = _APPROVED_SNAPSHOT_POINTS.get(str(snapshot.get("id") or ""))
     if registered is None:
         reasons.append("the snapshot is not in the faculty-approved registry")
     elif registered is not snapshot and dict(registered) != dict(snapshot):
@@ -171,7 +173,9 @@ def approved_snapshot(snapshot_id: str | None) -> Mapping[str, Any] | None:
     """
     if not snapshot_id:
         return None
-    found = APPROVED_SNAPSHOTS.get(str(snapshot_id))
+    # The PRIVATE mapping is the registry: reading the public proxy would let
+    # ``ra.APPROVED_SNAPSHOTS = {...}`` -- a rebinding no proxy can stop -- create an approval.
+    found = _APPROVED_SNAPSHOT_POINTS.get(str(snapshot_id))
     if found is None or not snapshot_is_wellformed(found)[0]:
         return None
     return found
@@ -298,8 +302,9 @@ def gate(state: Mapping | None = None, *, environ: Mapping[str, str] | None = No
     if not conditions["approved_snapshot"]:
         reasons.append("NO_FACULTY_APPROVED_AUTHORITY_SNAPSHOT_EXISTS: P3-14 may not create one, so the "
                        "authority mode is unreachable until a faculty decision approves a named point")
-        if snapshot_id and APPROVED_SNAPSHOTS.get(str(snapshot_id)) is not None:
-            reasons.extend(snapshot_is_wellformed(APPROVED_SNAPSHOTS[str(snapshot_id)])[1])
+        if snapshot_id and _APPROVED_SNAPSHOT_POINTS.get(str(snapshot_id)) is not None:
+            reasons.extend(snapshot_is_wellformed(
+                _APPROVED_SNAPSHOT_POINTS[str(snapshot_id)])[1])
     if not conditions["authority_flag"]:
         reasons.append(f"the authority process flag {AUTHORITY_FLAG} is not set to the authority mode")
     if not conditions["family_and_case"]:
@@ -347,7 +352,7 @@ def mode(state: Mapping | None = None, *, environ: Mapping[str, str] | None = No
 def unreachable_because() -> tuple:
     """Why no repository configuration can activate authority today. Used by the proof test (P3-14-8)."""
     reasons = []
-    if not APPROVED_SNAPSHOTS:
+    if not _APPROVED_SNAPSHOT_POINTS:
         reasons.append("APPROVED_SNAPSHOTS is empty: no faculty-approved authority snapshot exists")
     return tuple(reasons)
 
@@ -512,6 +517,12 @@ class AuthorityTransaction:
             values = {name: (self.candidate or {}).get(name) for name in writable}
             bad = sorted(name for name, value in values.items()
                          if isinstance(value, bool) or not isinstance(value, (int, float)))
+            # The display's own mean pressure, written with the two it derives from, so the state, the
+            # screen and the management trace carry the same number (P3-19 review). It is NOT the core's
+            # mean, which P3-17 refused: it is the function the renderer already applies.
+            mean = derived_map(values.get("sbp"), values.get("dbp"))
+            if "map" in self.domain and owners.get("map") == DERIVED_IN_DISPLAY and mean is not None:
+                values["map"] = mean
             if not writable or bad:
                 raise AuthorityRefused(f"the candidate has no usable value for {bad or list(writable)}")
             prepared = dict(deepcopy(dict(target)))
@@ -526,7 +537,7 @@ class AuthorityTransaction:
             if isinstance(error, AuthorityRefused):
                 raise
             raise AuthorityRefused(f"commit failed and nothing was written: {error!r}") from error
-        self.committed = writable
+        self.committed = tuple(sorted(values))
         self.state = COMMITTED
         return prepared
 
@@ -644,9 +655,14 @@ def eligibility(scenario: Mapping, *, environ: Mapping[str, str] | None = None) 
     contradictory = tuple(sorted(kind for kind, how in coverage.items()
                                  if str(how.get("status")) == "FULLY_MIRRORED"
                                  and str(kind).strip().lower() not in SUPPORTED_ACTIONS))
+    # P3-22: the settled order classes of the whole scenario go through the same filter as the call
+    # site's. The coverage is built from the engine's action summaries, and an order the engine does not
+    # model (``not_modelled``) produces none, so it used to pass unseen: eligibility and the transaction
+    # gave two different answers for the same scenario. They now give one.
+    settled = tuple(str(pair[0]) for pair in (scenario.get("fates") or ()) if pair and pair[0])
     unsupported = tuple(sorted(set(
         [kind for kind, how in coverage.items() if str(how.get("status")) == "UNSUPPORTED"]
-        + list(contradictory))))
+        + list(contradictory) + list(unsupported_among(settled)))))
     declared = tuple(sorted({str(gap.get("kind")) for gap in (scenario.get("gaps") or [])
                              if gap.get("kind")}))
     case_id = str(scenario.get("case") or scenario.get("shadow_case_id") or "")
@@ -663,9 +679,10 @@ def eligibility(scenario: Mapping, *, environ: Mapping[str, str] | None = None) 
         # not stand in the way of "eligible". A declared mirror gap now blocks.
         "no_mirror_gap": not declared,
         "unsupported_actions": list(unsupported),
+        "settled_classes": sorted(set(settled)),
         "declared_gaps": list(declared),
         "contradictory_coverage": list(contradictory),
-        "approved_snapshot": bool(APPROVED_SNAPSHOTS),
+        "approved_snapshot": bool(_APPROVED_SNAPSHOT_POINTS),
     }
     reasons = []
     if unsupported:
@@ -676,8 +693,8 @@ def eligibility(scenario: Mapping, *, environ: Mapping[str, str] | None = None) 
         return AuthorityEligibility(INELIGIBLE_UNSUPPORTED, case_id, scenario.get("scenario"),
                                     tuple(reasons), unsupported, facts)
     for name, ok in facts.items():
-        if name in ("unsupported_actions", "declared_gaps", "contradictory_coverage", "family",
-                    "approved_snapshot"):
+        if name in ("unsupported_actions", "settled_classes", "declared_gaps",
+                    "contradictory_coverage", "family", "approved_snapshot"):
             continue
         if not ok:
             reasons.append(f"{name} is false")
@@ -709,7 +726,7 @@ def eligibility_battery(evidence: Mapping | None = None, *,
         "eligible_but_for_the_snapshot": sorted(row["scenario"] for row in rows
                                                 if row["classification"] == ELIGIBLE_BUT_NO_SNAPSHOT),
         "ineligible_unsupported": sorted({kind for row in rows for kind in row["unsupported"]}),
-        "approved_snapshot_exists": bool(APPROVED_SNAPSHOTS),
+        "approved_snapshot_exists": bool(_APPROVED_SNAPSHOT_POINTS),
         "reading": "every structurally eligible scenario still needs one thing nothing here can supply: "
                    "a faculty-approved named parameter snapshot",
     }
@@ -764,3 +781,918 @@ def rollback_artifact(transaction: "AuthorityTransaction", *, reason: str,
         "rescue": "replay the encounter from its immutable artifact with the legacy counterfactual as the "
                   "authority; never continue the same encounter with the other engine",
     }
+
+
+# -- P3-19: the production call site, dormant -----------------------------------------------------------
+
+SITE_VERSION = "P3-19"
+#: The keys the site keeps in the caller's own store (Streamlit's session state in production). The
+#: caller orchestrates; every decision lives here.
+SITE_KEY = "phase3_authority_site"
+SITE_REFUSED_KEY = "phase3_authority_refused_for"
+
+#: Why a site did not open, or why a minute did not commit. Structural reasons, never a clinical reading.
+NO_AUTHORITY_FLAG = "NO_AUTHORITY_FLAG"
+GATE_REFUSED = "AUTHORITY_GATE_REFUSED"
+NO_COMMON_CANDIDATE = "NO_COMMON_CANDIDATE_FOR_THIS_MINUTE"
+MINUTE_NOT_COMPARED = "MINUTE_NOT_COMPARED_AGAINST_LEGACY"
+UNSUPPORTED_AUTHORITY_ACTION = "UNSUPPORTED_AUTHORITY_ACTION"
+OUT_OF_DOMAIN_WRITE = "OUT_OF_DOMAIN_WRITE_REFUSED"
+VALIDATION_REFUSED = "VALIDATION_REFUSED"
+SITE_HALTED = "AUTHORITY_HALTED_AFTER_A_HARD_FAILURE"
+MINUTE_ALREADY_COMMITTED = "MINUTE_ALREADY_COMMITTED"
+#: The key the caller keeps the experiment artifact under, dropped with the encounter like the site.
+ARTIFACT_KEY = "phase3_authority_artifact"
+
+
+def _normalized(payload: Any) -> Any:
+    """The payload in a form that serializes identically in any process (P3-19 review).
+
+    Four things the review found and this closes: a mapping with keys of mixed types made ``sort_keys``
+    raise, so every key becomes a string; a ``set`` serialized by ``repr`` and changed order between
+    processes, so it becomes a sorted list; a non-finite float produced JSON no other reader accepts, so
+    it becomes its own name; and anything else becomes its ``str``, as before.
+    """
+    if isinstance(payload, Mapping):
+        return {str(key): _normalized(value) for key, value in payload.items()}
+    if isinstance(payload, (set, frozenset)):
+        return sorted(str(item) for item in payload)
+    if isinstance(payload, (list, tuple)):
+        return [_normalized(item) for item in payload]
+    if isinstance(payload, bool) or payload is None or isinstance(payload, (int, str)):
+        return payload
+    if isinstance(payload, float):
+        finite = payload == payload and payload not in (float("inf"), float("-inf"))
+        return payload if finite else repr(payload)
+    return str(payload)
+
+
+def canonical(payload: Any) -> str:
+    """The ONE serialization every digest in this module is taken over: sorted keys, no spaces."""
+    return json.dumps(_normalized(payload), sort_keys=True, separators=(",", ":"), default=str)
+
+
+def digest_of(payload: Any) -> str:
+    """P3-19D: the site computes its own digests. A digest-shaped string from a caller is never trusted."""
+    return hashlib.sha256(canonical(payload).encode("utf-8")).hexdigest()
+
+
+def pressure_point(mapping: Mapping | None) -> dict:
+    """The pressure domain of a mapping as plain floats: the shape a candidate digest is taken over."""
+    source = dict(mapping or {})
+    point = {}
+    for name in AUTHORITY_DOMAIN:
+        value = source.get(name)
+        point[name] = (None if isinstance(value, bool) or not isinstance(value, (int, float))
+                       else round(float(value), 9))
+    return point
+
+
+#: The keys the runtime uses for an order's class: ``type`` in the engine's action summaries, ``class`` in
+#: the order ledger's settled snapshot. Both are read, because the call site receives whichever the caller
+#: has, and guessing wrong would silently read every order as untyped -- which fails closed, but for the
+#: wrong reason.
+ACTION_CLASS_KEYS = ("type", "kind", "class")
+
+
+def action_kinds(ran: Sequence | None) -> tuple:
+    """The order classes of a settled turn, read from the engine's own summaries or from the ledger."""
+    kinds = []
+    for action in list(ran or []):
+        kind = ""
+        for key in ACTION_CLASS_KEYS:
+            value = (action.get(key) if isinstance(action, Mapping) else getattr(action, key, None))
+            kind = str(value or "").strip().lower()
+            if kind:
+                break
+        kinds.append(kind or "untyped_action")
+    return tuple(kinds)
+
+
+def derived_map(sbp: Any, dbp: Any) -> int | None:
+    """The mean pressure the DISPLAY computes from the two pressures beside it.
+
+    The application derives it (``app.learner_vitals_snapshot``) and a test pins this function against
+    that one over a range of values. It lives here because a commit has to write the same number the
+    screen shows: the P3-19 review found that leaving the legacy ``map`` in the state made the state, the
+    screen and the management trace disagree by a millimetre.
+    """
+    if any(isinstance(value, bool) or not isinstance(value, (int, float)) for value in (sbp, dbp)):
+        return None
+    return int(round((float(sbp) + 2.0 * float(dbp)) / 3.0))
+
+
+def shape_of(legacy_observable: Mapping | None) -> dict:
+    """Which domain fields the legacy engine writes as whole millimetres. Recorded in the artifact, so a
+    replay reproduces the written values from the artifact alone instead of guessing the shape."""
+    source = dict(legacy_observable or {})
+    shape = {}
+    for name in AUTHORITY_DOMAIN:
+        value = source.get(name)
+        shape[name] = ("int" if isinstance(value, int) and not isinstance(value, bool)
+                       else "float" if isinstance(value, float) else "none")
+    return shape
+
+
+def apply_shape(candidate: Mapping, shape: Mapping | None) -> dict:
+    """The common pressures in the recorded shape. A presentation shape, never a tolerance."""
+    marks = dict(shape or {})
+    out = {}
+    for name, value in dict(candidate).items():
+        numeric = isinstance(value, (int, float)) and not isinstance(value, bool)
+        out[name] = int(round(float(value))) if numeric and marks.get(name) == "int" else value
+    return out
+
+
+def shaped_like_legacy(candidate: Mapping, legacy_observable: Mapping | None) -> dict:
+    """The common pressures in the SHAPE the legacy engine writes them, so the display does not change.
+
+    The legacy engine writes integer millimetres and the display prints them as they are, so committing
+    ``117.428...`` would change what a resident reads without any physiology changing. This is a
+    presentation shape and not a tolerance: the digests are taken over the raw candidate the core
+    produced, and both the raw and the written values go into the provenance record.
+    """
+    return apply_shape(candidate, shape_of(legacy_observable))
+
+
+def action_fates(ran: Sequence | None) -> tuple:
+    """The identity and the fate the order pipeline already settled, as the authority minute saw them.
+
+    The site never decides a fate: it records the one the ledger settled, which is what makes an authority
+    minute auditable against the order book.
+    """
+    out = []
+    for action, kind in zip(list(ran or []), action_kinds(ran)):
+        item = dict(action) if isinstance(action, Mapping) else {}
+        out.append({"order_id": str(item.get("order_id") or item.get("id") or ""),
+                    "type": kind,
+                    "fate": str(item.get("fate") or item.get("status") or "")})
+    return tuple(out)
+
+
+def unsupported_among(kinds: Sequence[str]) -> tuple:
+    """The classes a pressure authority cannot mirror exactly. An unknown class is unsupported."""
+    allowed = set(SUPPORTED_ACTIONS) | set(STRUCTURAL_ACTIONS)
+    return tuple(sorted({str(kind).strip().lower() or "untyped_action" for kind in kinds
+                         if str(kind).strip().lower() not in allowed}))
+
+
+@dataclass
+class AuthoritySite:
+    """One encounter's future authority orchestration: the mode decided once, then minute by minute.
+
+    It exists only when the gate granted, which no repository configuration can do today. Its contract:
+
+    * it computes no physiology -- the candidate comes from the shadow runner, the one place that advances
+      the common core;
+    * it computes its own digests over a canonical serialization, and never trusts one it was handed;
+    * it writes nothing anywhere: ``minute`` RETURNS a prepared mapping and the caller decides;
+    * a hard failure HALTS the encounter's authority for good, visibly, and never falls back minute by
+      minute to the legacy engine, because authority that alternates is not authority.
+    """
+
+    case_id: str
+    family: str
+    snapshot: Mapping[str, Any]
+    snapshot_id: str
+    encounter_id: str
+    environment: str
+    environ: Mapping[str, str] | None = None
+    domain: tuple = AUTHORITY_DOMAIN
+    experiment_id: str = ""
+    records: list = field(default_factory=list, init=False)
+    halted: bool = field(default=False, init=False)
+    halt_reason: str = field(default="", init=False)
+    replay_input: Mapping[str, Any] | None = field(default=None, init=False)
+    #: P3-23A: the eligibility reading of this encounter, when the caller computed one. It is data the
+    #: artifact must carry to be auditable, and the site never computes it for itself.
+    eligibility: Mapping[str, Any] | None = field(default=None, init=False)
+
+    # -- the encounter's identity ----------------------------------------------------------------------
+    def is_for(self, state: Mapping) -> bool:
+        """A site belongs to ONE encounter, by the same rule the shadow session uses.
+
+        The rule is the case plus the clock, not ``encounter_id``: that id is the digest of the arrival
+        this site opened on, so it travels in the artifact and tells two attempts apart afterwards, but it
+        cannot be recomputed from a state that has already advanced.
+        """
+        try:
+            from clinical_core import legacy_adapter
+            if str(legacy_adapter.engine_case_id(dict(state))) != self.case_id:
+                return False
+            minute = _as_int(dict(state).get("sim_time"))
+            seen = self.minutes_seen
+            if minute < seen:
+                return False
+            if minute == 0:
+                # A second attempt at the same case arrives at minute 0 with a different patient, and the
+                # P3-19 review found a fresh site was reused for it because it had no records yet. The
+                # arrival's own digest settles it: same arrival, same encounter.
+                return (not self.records
+                        and rs._encounter_id(dict(state)) == self.encounter_id)
+            return True
+        except Exception:
+            return False
+
+    @property
+    def minutes_committed(self) -> tuple:
+        return tuple(record["minute"] for record in self.records if record["committed"])
+
+    @property
+    def minutes_seen(self) -> int:
+        return max([_as_int(record.get("minute")) for record in self.records] or [0])
+
+    # -- one minute ------------------------------------------------------------------------------------
+    def minute(self, before: Mapping | None, after: Mapping, session: Any,
+               ran: Sequence | None, submission_id: str | None = None) -> Mapping | None:
+        """One future authority minute: capture, compute, validate, commit atomically, or abort.
+
+        Returns a NEW prepared mapping to install, or None. Never raises into the caller: an unexpected
+        error halts the site and is recorded, because a dormant experiment may not break an encounter.
+        """
+        minute = _as_int(dict(after).get("sim_time"))
+        if self.halted:
+            self.records.append(self._refusal(minute, SITE_HALTED, ran))
+            return None
+        try:
+            return self._minute(before, dict(after), session, ran, submission_id)
+        except Exception as error:
+            self.halted = True
+            self.halt_reason = f"{type(error).__name__}: {error}"
+            self.records.append(self._refusal(minute, f"SITE_ERROR {self.halt_reason}", ran))
+            return None
+
+    def _minute(self, before, after: Mapping, session, ran, submission_id) -> Mapping | None:
+        minute = _as_int(after.get("sim_time"))
+        if ran is None:
+            # The P3-19 review: the site always passed a tuple on, so "the caller declared nothing" had
+            # become "nothing ran". An undeclared turn fails closed here, as it does in the gate.
+            return self._hard_fail(minute, f"{UNSUPPORTED_AUTHORITY_ACTION}: the caller did not declare "
+                                           f"which actions ran this turn", ran)
+        if minute in self.minutes_committed:
+            # One minute is one transaction: a turn that did not advance the clock -- a plan, a held
+            # order, a clarification -- may not commit the same minute a second time.
+            return self._hard_fail(minute, f"{MINUTE_ALREADY_COMMITTED}: {minute}", ran)
+        shadow_minute = self._shadow_minute(session, minute)
+        if shadow_minute is None:
+            return self._hard_fail(minute, NO_COMMON_CANDIDATE, ran)
+        if not shadow_minute.compared_against_legacy:
+            return self._hard_fail(minute, MINUTE_NOT_COMPARED, ran)
+        candidate = pressure_point(shadow_minute.derived)
+        if any(value is None for value in candidate.values()):
+            return self._hard_fail(minute, NO_COMMON_CANDIDATE, ran)
+
+        kinds = action_kinds(ran)
+        # The declared gaps of the shadow go through the SAME filter as the turn's own classes: a gap on a
+        # structural class is not a management-relevant unsupported action, and the three GI treatments
+        # with no common writer are, whichever side names them.
+        gap_kinds = tuple(str(gap.get("kind")) for gap in getattr(session, "gaps", []) if gap.get("kind"))
+        unsupported = tuple(sorted(set(unsupported_among(kinds)) | set(unsupported_among(gap_kinds))))
+        # P3-19D: every digest below is computed HERE, from the immutable artifact and the candidate.
+        self.replay_input = self._artifact_input(session)
+        input_digest = digest_of(self.replay_input)
+        minute_input = json.loads(canonical(self.replay_input)) if self.replay_input else None
+        candidate_digest = digest_of(candidate)
+        replayed = self._replayed_point(self.replay_input, minute)
+        replay_digest = digest_of(replayed) if replayed is not None else ""
+        transaction_digest = digest_of({"input": input_digest, "candidate": candidate_digest,
+                                        "snapshot": self.snapshot_id, "minute": minute,
+                                        "domain": list(self.domain), "site": SITE_VERSION})
+
+        legacy_point = pressure_point(after.get("observable"))
+        written = shaped_like_legacy(candidate, dict(after.get("observable") or {}))
+        transaction = AuthorityTransaction(minute=minute, case_id=self.case_id, family=self.family,
+                                           domain=self.domain, snapshot=self.snapshot)
+        transaction.capture(after).compute(written, legacy_point)
+        failures = [item for item in getattr(session, "failures", []) if _as_int(item.minute) == minute]
+        legacy_arrest = bool(dict(after.get("observable") or {}).get("pulse_present") is False)
+        valid = transaction.validate(invariants_hold=not failures, replay_digest=replay_digest,
+                                     expected_digest=candidate_digest, unsupported=unsupported,
+                                     legacy_arrest=legacy_arrest, failures=failures)
+        provenance = self._provenance(minute, transaction, candidate, after, shadow_minute, kinds,
+                                      action_fates(ran), unsupported, submission_id,
+                                      {"input": input_digest, "candidate": candidate_digest,
+                                       "replay": replay_digest, "transaction": transaction_digest})
+        # The P3-19 review: the artifact kept only the LAST immutable input, while every minute's
+        # transaction digest was taken with the input of ITS minute, so no encounter of more than one
+        # minute could be reproduced. Each minute now carries the input it was computed from.
+        provenance["replay_input"] = minute_input
+        provenance["precommit_observable_digest"] = digest_of(dict(after.get("observable") or {}))
+        if not valid:
+            reason = (UNSUPPORTED_AUTHORITY_ACTION if "supported_management" in transaction.failures
+                      else VALIDATION_REFUSED)
+            return self._hard_fail(minute, f"{reason}: {transaction.failures}", ran,
+                                   provenance=provenance, transaction=transaction)
+        try:
+            prepared = transaction.commit(after, environ=self.environ)
+        except AuthorityRefused as refused:
+            return self._hard_fail(minute, f"{GATE_REFUSED}: {refused}", ran, provenance=provenance,
+                                   transaction=transaction)
+        moved = self._moved(after, prepared)
+        if not moved <= {"sbp", "dbp", "map"}:
+            # P3-19C, defence in depth: what reached the state is compared with what may be owned. The
+            # test is containment, not equality: a common pressure that happens to equal the legacy one
+            # moves nothing, and that is not an out-of-domain write.
+            return self._hard_fail(minute, f"{OUT_OF_DOMAIN_WRITE}: {sorted(moved)}", ran,
+                                   provenance=provenance, transaction=transaction)
+        provenance.update({"committed": sorted(transaction.committed), "outcome": COMMITTED,
+                           "common_pressures": pressure_point(prepared.get("observable")),
+                           "moved_fields": sorted(moved)})
+        self.records.append(provenance)
+        return prepared
+
+    # -- the pieces ------------------------------------------------------------------------------------
+    @staticmethod
+    def _shadow_minute(session, minute: int):
+        for item in reversed(list(getattr(session, "minutes", []) or [])):
+            if _as_int(item.minute) == minute:
+                return item
+        return None
+
+    @staticmethod
+    def _artifact_input(session) -> dict | None:
+        runner = getattr(session, "runner", None)
+        captured = None if runner is None else runner.replay_input()
+        return None if captured is None else captured.to_dict()
+
+    @staticmethod
+    def _replayed_point(artifact: Mapping | None, minute: int) -> dict | None:
+        """The same minute's pressures, recomputed from the serialized artifact alone (P3-19J)."""
+        if not artifact:
+            return None
+        import runtime_shadow_families as fam
+        replayed = fam.replay_shadow_encounter(json.loads(canonical(artifact)))
+        for item in replayed["results"]:
+            if _as_int(item["minute"]) == minute:
+                return pressure_point(item["derived"])
+        return None
+
+    @staticmethod
+    def _moved(before: Mapping, after: Mapping) -> set:
+        """Which observable fields a commit actually changed, and whether it touched anything else."""
+        left, right = dict(before), dict(after)
+        # Canonical forms, not ``!=``: the review showed that a value comparing by identity, or a NaN,
+        # reported itself as moved against its own deep copy, and produced a refusal that was not true.
+        def same(one, two):
+            return canonical(one) == canonical(two)
+
+        outside = {key for key in set(left) | set(right)
+                   if key != "observable" and not same(left.get(key), right.get(key))}
+        if outside:
+            return outside
+        one, two = dict(left.get("observable") or {}), dict(right.get("observable") or {})
+        return {key for key in set(one) | set(two) if not same(one.get(key), two.get(key))}
+
+    def _provenance(self, minute, transaction, candidate, after, shadow_minute, kinds, fates,
+                    unsupported, submission_id, digests) -> dict:
+        """P3-19E: everything a future authority minute must be readable from, outside Phase-2 schemas."""
+        divergence = sorted({str(item.status) for item in getattr(shadow_minute, "divergences", ())
+                             if str(item.variable) in self.domain})
+        return {
+            "site": SITE_VERSION,
+            "experiment_id": self.experiment_id,
+            "encounter_id": self.encounter_id,
+            "case_id": self.case_id,
+            "family": self.family,
+            "minute": minute,
+            "mode": MODE_LIMITED_COMMON_AUTHORITY,
+            "environment": self.environment,
+            "snapshot_id": self.snapshot_id,
+            "snapshot": dict(self.snapshot) if isinstance(self.snapshot, Mapping) else self.snapshot,
+            "phase2_closure_head": rs.PHASE2_CLOSURE_HEAD,
+            "phase2_digest": rs.PHASE2_DIGEST,
+            "phase3_versions": rs.family_versions(self.family),
+            "authority_module": MODULE_VERSION,
+            "submission_id": submission_id,
+            "action_kinds": list(kinds),
+            "action_fates": list(fates),
+            "unsupported_actions": list(unsupported),
+            "input_digest": digests["input"],
+            "candidate_digest": digests["candidate"],
+            "replay_digest": digests["replay"],
+            "transaction_digest": digests["transaction"],
+            "common_candidate": dict(candidate),
+            "written_candidate": shaped_like_legacy(candidate, dict(after.get("observable") or {})),
+            "written_digest": digest_of(shaped_like_legacy(candidate,
+                                                           dict(after.get("observable") or {}))),
+            "legacy_shape": shape_of(after.get("observable")),
+            "legacy_counterfactual": pressure_point(after.get("observable")),
+            "state_digest": getattr(shadow_minute, "state_digest", ""),
+            "divergence_classes": divergence,
+            "validation_failures": list(transaction.failures),
+            "validation_passed": not transaction.failures,
+            "committed": [],
+            "outcome": transaction.state,
+            "failure_reason": transaction.reason,
+            "failure_policy": FAILURE_POLICY,
+        }
+
+    def _refusal(self, minute: int, reason: str, ran: Sequence | None) -> dict:
+        return {"site": SITE_VERSION, "experiment_id": self.experiment_id,
+                "encounter_id": self.encounter_id, "case_id": self.case_id, "family": self.family,
+                "minute": minute, "mode": MODE_LIMITED_COMMON_AUTHORITY,
+                "snapshot_id": self.snapshot_id, "outcome": ABORTED, "committed": [],
+                "failure_reason": reason, "failure_policy": FAILURE_POLICY,
+                "action_kinds": list(action_kinds(ran)), "validation_failures": [],
+                "validation_passed": False, "phase2_digest": rs.PHASE2_DIGEST}
+
+    def _hard_fail(self, minute: int, reason: str, ran: Sequence | None, *, provenance: dict | None = None,
+                   transaction: "AuthorityTransaction | None" = None) -> None:
+        """The failure policy, in one place: stop visibly, commit nothing, never switch engines."""
+        self.halted = True
+        self.halt_reason = reason
+        record = provenance or self._refusal(minute, reason, ran)
+        record.update({"outcome": ABORTED, "committed": [], "failure_reason": reason,
+                       "halted": True})
+        if transaction is not None:
+            record["rollback"] = (transaction.rollback
+                                  or rollback_artifact(transaction, reason=reason,
+                                                       replay_digest=record.get("replay_digest")))
+        self.records.append(record)
+        return None
+
+    # -- the artifact ----------------------------------------------------------------------------------
+    def artifact(self) -> dict:
+        """The immutable record of this (future) experiment, digested over its canonical form.
+
+        It never raises: the P3-19 review found that a malformed approval made the serialization fail and
+        the exception would have reached the encounter from the call site, which calls this every turn.
+        """
+        try:
+            return self._artifact()
+        except Exception as error:
+            return {"artifact": "phase3_authority_experiment", "site": SITE_VERSION,
+                    "experiment_id": self.experiment_id, "encounter_id": self.encounter_id,
+                    "halted": True, "halt_reason": f"ARTIFACT_ERROR {type(error).__name__}: {error}",
+                    "minutes": [], "artifact_digest": ""}
+
+    def _artifact(self) -> dict:
+        body = {
+            "artifact": "phase3_authority_experiment",
+            "site": SITE_VERSION,
+            "experiment_id": self.experiment_id,
+            "encounter_id": self.encounter_id,
+            "case_id": self.case_id,
+            "family": self.family,
+            "domain": list(self.domain),
+            "ownership": ownership(self.domain),
+            "environment": self.environment,
+            "snapshot_id": self.snapshot_id,
+            "snapshot": dict(self.snapshot) if isinstance(self.snapshot, Mapping) else self.snapshot,
+            "phase2_closure_head": rs.PHASE2_CLOSURE_HEAD,
+            "phase2_digest": rs.PHASE2_DIGEST,
+            "phase3_versions": rs.family_versions(self.family),
+            "authority_module": MODULE_VERSION,
+            "failure_policy": FAILURE_POLICY,
+            "mode_decided_at": MODE_DECIDED_AT,
+            "halted": self.halted,
+            "halt_reason": self.halt_reason,
+            # A halt AFTER a commit leaves the encounter's pressure trajectory mixed: legacy before the
+            # authority minutes, common during them, legacy after. The P3-19 review is right that this
+            # contradicts "no engine switching mid-encounter", and it cannot be undone retroactively --
+            # so it is DECLARED here, and the rescue is to read the encounter from this artifact.
+            "mixed_trajectory": bool(self.halted and self.minutes_committed),
+            "authority_minutes": list(self.minutes_committed),
+            "eligibility": (None if self.eligibility is None else dict(self.eligibility)),
+            "action_history": [dict(item) for record in self.records
+                               for item in (record.get("action_fates") or [])],
+            "minutes": [dict(record) for record in self.records],
+            "replay_input": (None if self.replay_input is None
+                             else json.loads(canonical(self.replay_input))),
+        }
+        return {**body, "artifact_digest": digest_of(body)}
+
+
+def _as_int(value: Any) -> int:
+    try:
+        return int(value or 0)
+    except Exception:
+        return 0
+
+
+def open_site(state: Mapping, *, environ: Mapping[str, str] | None = None,
+              experiment_id: str | None = None) -> AuthoritySite | None:
+    """The ONE way a runtime obtains an authority site, and today it always returns None.
+
+    The flag is read first on purpose: a production encounter pays one dictionary lookup and never the
+    cost of recomputing the Phase-2 digest. Reading it first is not a weakening -- it is one of the nine
+    conditions, and the whole gate runs whenever it is set.
+
+    The mode is decided HERE, once, at the encounter's arrival: a site opened mid-encounter is refused.
+    """
+    live = os.environ if environ is None else environ
+    if str(live.get(AUTHORITY_FLAG, "") or "").strip().lower() != MODE_LIMITED_COMMON_AUTHORITY:
+        return None
+    if rs.mode(live) != rs.MODE_SHADOW_COMPARE:
+        # Authority has no candidate of its own: the common core must be running beside the engine. The
+        # P3-19 review found a site opened without it and failed only at the first minute.
+        return None
+    if encounter_mode(state, environ=live, unsupported=()) != MODE_LIMITED_COMMON_AUTHORITY:
+        return None
+    decision = gate(state, environ=live, unsupported=())
+    snapshot = approved_snapshot(decision.snapshot_id)
+    if not decision.granted or snapshot is None:
+        return None
+    from clinical_core import legacy_adapter
+    case_id = str(legacy_adapter.engine_case_id(dict(state)))
+    encounter = rs._encounter_id(dict(state))
+    return AuthoritySite(case_id=case_id, family=str(dict(state).get("engine_family") or ""),
+                         snapshot=snapshot, snapshot_id=str(decision.snapshot_id or ""),
+                         encounter_id=encounter, environment=str(live.get(ENVIRONMENT_FLAG, "")),
+                         environ=None if environ is None else dict(environ),
+                         experiment_id=str(experiment_id or digest_of({"encounter": encounter,
+                                                                       "snapshot": decision.snapshot_id,
+                                                                       "site": SITE_VERSION})[:16]))
+
+
+def site_for(state: Mapping, store: Any,
+             *, environ: Mapping[str, str] | None = None) -> AuthoritySite | None:
+    """This encounter's site, kept in the caller's store. The caller orchestrates and decides nothing.
+
+    Three properties, in this order:
+
+    * the flag is read FIRST, so a production turn costs one dictionary lookup -- no import, no store
+      write and above all no Phase-2 digest;
+    * a site appears only at the arrival, so no configuration can introduce authority mid-encounter;
+    * a refusal is remembered for that case and minute, so repeated reruns of the same turn do not
+      re-evaluate the gate.
+    """
+    live = os.environ if environ is None else environ
+    if str(live.get(AUTHORITY_FLAG, "") or "").strip().lower() != MODE_LIMITED_COMMON_AUTHORITY:
+        return None
+    try:
+        site = store.get(SITE_KEY)
+        if site is not None and not site.is_for(state):
+            site = None
+            for key in (SITE_KEY, SITE_REFUSED_KEY, ARTIFACT_KEY):
+                store[key] = None
+        if site is not None:
+            return site
+        minute = _as_int(dict(state).get("sim_time"))
+        if minute != 0:
+            return None
+        from clinical_core import legacy_adapter
+        key = f"{legacy_adapter.engine_case_id(dict(state))}@{minute}"
+        if store.get(SITE_REFUSED_KEY) == key:
+            return None
+        site = open_site(state, environ=environ)
+        store[SITE_KEY] = site
+        if site is None:
+            store[SITE_REFUSED_KEY] = key
+        return site
+    except Exception:
+        # The authority site may never break an encounter: a failure here is a refusal.
+        return None
+
+
+def replay_site_artifact(artifact: Mapping) -> dict:
+    """P3-19J: recompute every minute of a (future) experiment from its serialized artifact alone.
+
+    Nothing is read from a live session: the replay input inside the artifact is the only source, so a
+    reproduction that disagrees with the recorded digests is a failure of the experiment, not of the read.
+    """
+    body = dict(artifact)
+    recorded = [dict(item) for item in (body.get("minutes") or [])]
+    rows = []
+    for item in recorded:
+        minute = _as_int(item.get("minute"))
+        # Each minute's OWN immutable input, as the artifact carries it; the whole-encounter input is
+        # the fallback for an artifact written before P3-19's review.
+        replay_input = item.get("replay_input") or body.get("replay_input")
+        point = AuthoritySite._replayed_point(replay_input, minute)
+        candidate_digest = "" if point is None else digest_of(point)
+        transaction_digest = digest_of({"input": digest_of(replay_input) if replay_input else "",
+                                        "candidate": candidate_digest,
+                                        "snapshot": body.get("snapshot_id"), "minute": minute,
+                                        "domain": list(body.get("domain") or AUTHORITY_DOMAIN),
+                                        "site": str(body.get("site") or SITE_VERSION)})
+        # P3-23B: the commit decision is reconstructed too, not read: the written pressures must be the
+        # shape of the legacy ones the artifact recorded, and the outcome must match what was committed.
+        written = None if point is None else apply_shape(point, item.get("legacy_shape"))
+        rows.append({
+            "minute": minute,
+            "common_pressures": point,
+            "candidate_digest": candidate_digest,
+            "transaction_digest": transaction_digest,
+            "recorded_candidate_digest": item.get("candidate_digest"),
+            "recorded_transaction_digest": item.get("transaction_digest"),
+            "candidate_matches": bool(point is not None
+                                      and candidate_digest == item.get("candidate_digest")),
+            "transaction_matches": transaction_digest == item.get("transaction_digest"),
+            "pressures_match": (point is not None and item.get("common_candidate") is not None
+                                and pressure_point(item.get("common_candidate")) == point),
+            "written_matches": (written is not None and item.get("written_candidate") is not None
+                                and dict(item["written_candidate"]) == written),
+            "outcome": item.get("outcome"),
+            "committed": list(item.get("committed") or []),
+            "outcome_consistent": bool(item.get("committed")) == (item.get("outcome") == COMMITTED),
+            "eligibility": (dict(body.get("eligibility")).get("classification")
+                            if body.get("eligibility") else None),
+        })
+    compared = [row for row in rows if row["recorded_candidate_digest"]]
+    digest_matches = body.get("artifact_digest") == digest_of(
+        {key: value for key, value in body.items() if key != "artifact_digest"})
+    return {"minutes": rows, "compared": len(compared),
+            # P3-19 review: a verdict that ignored the artifact's own digest called a forged artifact
+            # reproducible. The digest is part of the verdict now.
+            "reproduces": bool(compared) and digest_matches
+                          and all(row["candidate_matches"] and row["transaction_matches"]
+                                  and row["pressures_match"] and row["written_matches"]
+                                  and row["outcome_consistent"] for row in compared),
+            "artifact_digest": body.get("artifact_digest"),
+            "artifact_digest_recomputes": digest_matches,
+            "self_certifying": "the digest detects a change, not a determined forger: it has no "
+                               "signature, so anyone holding the artifact can recompute it after "
+                               "editing. A signed artifact needs a key, which is a faculty decision."}
+
+
+# -- P3-22: the GI authority battery, over the dormant logic --------------------------------------------
+
+#: How one acceptance scenario reads when it is driven through the transaction (P3-22C).
+TECHNICALLY_VALID = "TECHNICALLY_VALID"
+BOUNDARY_FAILURE = "BOUNDARY_FAILURE"
+REPLAY_FAILURE = "REPLAY_FAILURE"
+STRUCTURAL_DIVERGENCE = "STRUCTURAL_DIVERGENCE"
+NOT_ELIGIBLE = "NOT_ELIGIBLE"
+OTHER_FAILURE = "OTHER"
+
+
+def _battery_state(variant: str, minute: int, observable: Mapping) -> dict:
+    """The smallest state the gate and the transaction need: the case, the clock and the observable.
+
+    It is a reconstruction for a battery, not a live encounter: the live wiring is exercised by the app
+    tests. What it must get right is the identity the gate derives from a state, and it does.
+    """
+    return {"sim_time": int(minute), "engine_family": AUTHORITY_FAMILY,
+            "encounter_spec": {"variant_id": variant}, "observable": dict(observable or {})}
+
+
+def _last_turn(encounter: Any, minute: int) -> dict:
+    entries = [dict(entry) for entry in getattr(encounter, "entries", []) or []]
+    for entry in reversed(entries):
+        if _as_int(entry.get("response_time_min")) == int(minute):
+            return entry
+    return entries[-1] if entries else {}
+
+
+def scenario_authority(variant: str, label: str, encounter: Any, snapshot: Mapping, *,
+                       environ: Mapping[str, str] | None = None,
+                       eligibility_row: Mapping | None = None) -> dict:
+    """One acceptance scenario through the dormant transaction logic, at its last compared minute."""
+    session = getattr(encounter, "shadow", None)
+    runner = getattr(session, "runner", None)
+    compared = sorted(runner.compared) if runner is not None else []
+    row = {"case": variant, "scenario": label, "snapshot_id": str(dict(snapshot).get("id") or ""),
+           "compared_minutes": list(compared),
+           "eligibility": (dict(eligibility_row).get("classification") if eligibility_row else None),
+           "unsupported": list(dict(eligibility_row).get("unsupported") or []) if eligibility_row else [],
+           "actions": [], "transaction_valid": False, "atomic_commit": False, "replay_exact": False,
+           "legacy_counterfactual": None, "failure_artifact_complete": None,
+           "classification": OTHER_FAILURE, "why": ""}
+    if eligibility_row is not None and str(dict(eligibility_row).get("classification")) \
+            != ELIGIBLE_BUT_NO_SNAPSHOT:
+        row.update({"classification": NOT_ELIGIBLE,
+                    "why": "; ".join(str(reason) for reason in
+                                     dict(eligibility_row).get("reasons") or [])})
+        return row
+    if not compared:
+        row.update({"classification": OTHER_FAILURE, "why": "no compared minute"})
+        return row
+    minute = compared[-1]
+    turn = _last_turn(encounter, minute)
+    observable = dict((turn.get("observation_snapshot") or {}).get("observable")
+                      or getattr(encounter, "state", {}).get("observable") or {})
+    ran = [dict(order) for order in (turn.get("orders") or [])]
+    row["actions"] = sorted({kind for kind in action_kinds(ran)})
+    site = AuthoritySite(case_id=variant, family=AUTHORITY_FAMILY, snapshot=snapshot,
+                         snapshot_id=str(dict(snapshot).get("id") or ""),
+                         encounter_id=f"battery:{variant}:{label}", environment="development",
+                         environ=None if environ is None else dict(environ),
+                         experiment_id=f"battery-{label}")
+    state = _battery_state(variant, minute, observable)
+    prepared = site.minute(None, state, session, ran, f"battery:{label}")
+    record = dict(site.records[-1]) if site.records else {}
+    row["legacy_counterfactual"] = record.get("legacy_counterfactual")
+    row["transaction_valid"] = bool(record.get("validation_passed"))
+    if prepared is not None:
+        moved = set(record.get("moved_fields") or [])
+        row.update({"atomic_commit": moved <= {"sbp", "dbp", "map"} and bool(record.get("committed")),
+                    "replay_exact": record.get("replay_digest") == record.get("candidate_digest"),
+                    "classification": TECHNICALLY_VALID,
+                    "failure_artifact_complete": None})
+        if record.get("divergence_classes"):
+            row["why"] = f"divergence classes at this minute: {record['divergence_classes']}"
+        return row
+    reason = str(site.halt_reason or record.get("failure_reason") or "")
+    rollback = dict(record.get("rollback") or {})
+    row["failure_artifact_complete"] = bool(rollback) and all(
+        key in rollback for key in ("failure_policy", "reason", "minute", "common_candidate",
+                                    "legacy_counterfactual", "validation_failures", "parameter_snapshot",
+                                    "phase2_digest", "phase3_layer_digest", "committed", "rescue"))
+    if UNSUPPORTED_AUTHORITY_ACTION in reason:
+        row.update({"classification": NOT_ELIGIBLE, "why": reason})
+    elif NO_COMMON_CANDIDATE in reason or MINUTE_NOT_COMPARED in reason:
+        row.update({"classification": BOUNDARY_FAILURE, "why": reason})
+    elif "minute_reproducible" in reason:
+        row.update({"classification": REPLAY_FAILURE, "why": reason})
+    elif "invariants_hold" in reason or "no_core_failure" in reason or "no_unresolved_boundary" in reason:
+        row.update({"classification": STRUCTURAL_DIVERGENCE, "why": reason})
+    else:
+        row.update({"classification": OTHER_FAILURE, "why": reason})
+    return row
+
+
+def authority_scenario_battery(snapshot: Mapping, *, environ: Mapping[str, str] | None = None,
+                               evidence: Mapping | None = None) -> dict:
+    """P3-22A/B: all 34 GI acceptance scenarios through eligibility AND the transaction logic.
+
+    The battery is played by the repository's own acceptance harness, with the shadow on, and each
+    scenario's LAST compared minute is driven through the dormant transaction with a TEST-ONLY snapshot
+    the caller supplies. Nothing is excluded to improve a count.
+    """
+    import runtime_shadow_evidence as ev
+    data = evidence if evidence is not None else ev.gi_evidence()
+    rows_by_key = {(str(row["case_id"]), str(row["scenario"])): row
+                   for row in eligibility_battery(data, environ=environ)["rows"]}
+    rows = []
+    for variant in ev.gi_variants():
+        _categories, collected, _elapsed = ev._play_battery(variant, rs.MODE_SHADOW_COMPARE)
+        for label, encounter, _turns in collected:
+            rows.append(scenario_authority(variant, label, encounter, snapshot, environ=environ,
+                                           eligibility_row=rows_by_key.get((variant, label))))
+    counts: dict = {}
+    for row in rows:
+        counts[row["classification"]] = counts.get(row["classification"], 0) + 1
+    valid = [row for row in rows if row["classification"] == TECHNICALLY_VALID]
+    return {
+        "rows": rows, "scenarios": len(rows), "counts": counts,
+        "snapshot_id": str(dict(snapshot).get("id") or ""),
+        "atomic_commits": sum(1 for row in valid if row["atomic_commit"]),
+        "replay_exact": sum(1 for row in valid if row["replay_exact"]),
+        "counterfactual_captured": sum(1 for row in valid
+                                       if (row["legacy_counterfactual"] or {}).get("sbp") is not None),
+        "failure_artifacts_complete": sorted({bool(row["failure_artifact_complete"]) for row in rows
+                                              if row["failure_artifact_complete"] is not None}),
+        "reading": "a scenario that is not eligible is reported as such, by name; nothing here commits "
+                   "anything in production and no snapshot is approved",
+    }
+
+
+def candidate_matrix(candidates: Mapping[str, Mapping[str, float]], *,
+                     evidence: Mapping | None = None, minutes: str = "last") -> dict:
+    """P3-22C: each surviving candidate profile against every scenario's immutable artifact.
+
+    Read-only and candidate-independent of the transaction: the profile changes the physics, so this runs
+    the SAME immutable input under each candidate and classifies what the core does with it.
+    """
+    import runtime_shadow_evidence as ev
+    import runtime_shadow_families as fam
+    data = evidence if evidence is not None else ev.gi_evidence()
+    out: dict = {}
+    for name, values in candidates.items():
+        rows = []
+        for case in data["cases"]:
+            for scenario in case["scenarios"]:
+                artifact = scenario.get("replay_input")
+                row = {"case": scenario.get("case"), "scenario": scenario.get("scenario"),
+                       "classification": OTHER_FAILURE, "pressures": None, "why": ""}
+                if not artifact:
+                    row["why"] = "no immutable artifact for this scenario"
+                    rows.append(row)
+                    continue
+                payload = json.loads(canonical(artifact))
+                payload["scenario"] = dict(payload["scenario"])
+                payload["scenario"]["profile"] = {**dict(payload["scenario"]["profile"]), **dict(values)}
+                try:
+                    replayed = fam.replay_shadow_encounter(payload)
+                except Exception as error:
+                    row.update({"classification": BOUNDARY_FAILURE,
+                                "why": f"{type(error).__name__}: {error}"})
+                    rows.append(row)
+                    continue
+                results = [item for item in replayed["results"] if _as_int(item["minute"]) >= 1]
+                if not results:
+                    row.update({"classification": OTHER_FAILURE, "why": "no replayed minute"})
+                    rows.append(row)
+                    continue
+                point = pressure_point(results[-1]["derived"])
+                twice = fam.replay_shadow_encounter(json.loads(canonical(payload)))
+                same = [item for item in twice["results"] if _as_int(item["minute"]) >= 1]
+                if digest_of(pressure_point(same[-1]["derived"])) != digest_of(point):
+                    row.update({"classification": REPLAY_FAILURE, "why": "the same input replayed twice "
+                                                                         "gave different pressures"})
+                elif any(value is None for value in point.values()):
+                    row.update({"classification": STRUCTURAL_DIVERGENCE,
+                                "why": "the core produced no pressure for the last replayed minute"})
+                else:
+                    row.update({"classification": TECHNICALLY_VALID, "pressures": point})
+                rows.append(row)
+        counts: dict = {}
+        for row in rows:
+            counts[row["classification"]] = counts.get(row["classification"], 0) + 1
+        out[name] = {"values": dict(values), "rows": rows, "counts": counts,
+                     "scenarios": len(rows)}
+    return out
+
+
+# -- P3-23: the experiment artifact, its retention and its immutability ---------------------------------
+
+#: What an authority experiment artifact must carry to be auditable and replayable (P3-23A).
+ARTIFACT_FIELDS = ("artifact", "site", "experiment_id", "encounter_id", "case_id", "family", "domain",
+                   "ownership", "environment", "snapshot_id", "snapshot", "phase2_closure_head",
+                   "phase2_digest", "phase3_versions", "authority_module", "failure_policy",
+                   "mode_decided_at", "halted", "halt_reason", "mixed_trajectory", "authority_minutes",
+                   "eligibility", "action_history", "minutes", "replay_input", "artifact_digest")
+#: What each minute of it must carry.
+ARTIFACT_MINUTE_FIELDS = ("minute", "outcome", "committed", "replay_input",
+                          "precommit_observable_digest", "input_digest", "candidate_digest",
+                          "replay_digest", "transaction_digest", "written_candidate", "written_digest",
+                          "legacy_shape", "common_candidate", "legacy_counterfactual", "action_kinds",
+                          "action_fates", "unsupported_actions", "divergence_classes",
+                          "validation_failures", "failure_reason")
+
+
+def verify_artifact(artifact: Mapping) -> dict:
+    """P3-23E: whether an artifact is the one that was created, and whether it is complete.
+
+    The digest covers every field except itself, so changing any byte of any field -- a pressure, a
+    snapshot id, one minute's outcome -- makes it stop matching. There is nothing to trust here: the
+    check recomputes.
+    """
+    body = {key: value for key, value in dict(artifact).items() if key != "artifact_digest"}
+    recomputed = digest_of(body)
+    missing = [name for name in ARTIFACT_FIELDS if name not in dict(artifact)]
+    minute_gaps = {}
+    for record in dict(artifact).get("minutes") or []:
+        absent = [name for name in ARTIFACT_MINUTE_FIELDS if name not in dict(record)]
+        if absent:
+            minute_gaps[str(dict(record).get("minute"))] = absent
+    consistent = all(bool(dict(record).get("committed")) == (dict(record).get("outcome") == COMMITTED)
+                     for record in dict(artifact).get("minutes") or [])
+    return {"digest_matches": recomputed == dict(artifact).get("artifact_digest"),
+            "recomputed": recomputed, "missing_fields": missing, "incomplete_minutes": minute_gaps,
+            "outcomes_consistent": consistent,
+            "complete": not missing and not minute_gaps and consistent}
+
+
+def minimal_artifact(artifact: Mapping) -> dict:
+    """P3-23D: the smallest form that still replays, with its own digest over what it keeps.
+
+    What it drops is what repeats: the per-minute snapshot object, the per-minute version block and the
+    per-minute state digest of the shadow. What it keeps is every digest a replay compares, the pressures,
+    the counterfactual and the immutable replay input -- so ``replay_site_artifact`` still reproduces it.
+    """
+    body = {key: value for key, value in dict(artifact).items()
+            if key not in ("artifact_digest", "minutes")}
+    dropped = ("snapshot", "phase3_versions", "state_digest", "phase2_closure_head", "phase2_digest",
+               "environment", "failure_policy", "mode_decided_at", "site", "experiment_id",
+               "encounter_id", "case_id", "family", "authority_module", "submission_id")
+    body["minutes"] = [{key: value for key, value in dict(record).items() if key not in dropped}
+                       for record in dict(artifact).get("minutes") or []]
+    body["retention"] = "minimal"
+    return {**body, "artifact_digest": digest_of(body)}
+
+
+def artifact_retention(artifact: Mapping) -> dict:
+    """P3-23D: what each retention costs in bytes, and what the smaller one gives up."""
+    full = canonical(dict(artifact))
+    minimal = canonical(minimal_artifact(artifact))
+    without_input = canonical({key: value for key, value in dict(artifact).items()
+                               if key != "replay_input"})
+    return {
+        "minutes": len(dict(artifact).get("minutes") or []),
+        "full_bytes": len(full.encode("utf-8")),
+        "minimal_bytes": len(minimal.encode("utf-8")),
+        "without_replay_input_bytes": len(without_input.encode("utf-8")),
+        "replay_input_bytes": len(canonical(dict(artifact).get("replay_input") or {}).encode("utf-8")),
+        "replays_without_input": False,
+        "recommendation": "keep the replay input: without it the artifact describes an experiment nobody "
+                          "can reproduce. The minimal form drops only what repeats minute after minute, "
+                          "and it still replays.",
+    }
+
+
+def authority_status(store: Any) -> dict:
+    """What a faculty surface must be able to read in one call: the mode, the halt and the artifact.
+
+    The P3-19 review is right that a halt recorded in a session nobody reads is not visible. This is the
+    one read a faculty page (or a future persistence step) needs; where the artifact is kept, and for how
+    long, is the faculty decision P3-24 asks for, and this module does not write it anywhere.
+    """
+    try:
+        site = store.get(SITE_KEY)
+        artifact = store.get(ARTIFACT_KEY) or {}
+    except Exception:
+        return {"mode": MODE_LEGACY, "authority": False, "halted": False, "why": "no readable store"}
+    if site is None:
+        return {"mode": MODE_LEGACY, "authority": False, "halted": bool(dict(artifact).get("halted")),
+                "halt_reason": str(dict(artifact).get("halt_reason") or ""),
+                "artifact_digest": str(dict(artifact).get("artifact_digest") or ""),
+                "why": "no authority site for this encounter"}
+    return {"mode": MODE_LIMITED_COMMON_AUTHORITY, "authority": True, "halted": bool(site.halted),
+            "halt_reason": site.halt_reason, "failure_policy": FAILURE_POLICY,
+            "case_id": site.case_id, "snapshot_id": site.snapshot_id,
+            "authority_minutes": list(site.minutes_committed),
+            "mixed_trajectory": bool(site.halted and site.minutes_committed),
+            "artifact_digest": str(dict(artifact).get("artifact_digest") or ""),
+            "why": "a halted experiment must be read from its artifact, never continued"}

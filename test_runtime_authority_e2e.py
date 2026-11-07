@@ -233,8 +233,10 @@ def test_e5_a_valid_candidate_shows_three_common_pressures_and_nothing_else_move
         if "BP" in key:
             continue
         assert before[key] == after[key], key
-    # P3-17: ``map`` is derived by the display, so the commit writes the two pressures only.
-    assert sorted(transaction.committed) == ["dbp", "sbp"]
+    # ``map`` is written as the DISPLAY derives it from the two committed pressures (P3-19 review).
+    assert sorted(transaction.committed) == ["dbp", "map", "sbp"]
+    assert prepared["observable"]["map"] == ra.derived_map(prepared["observable"]["sbp"],
+                                                           prepared["observable"]["dbp"])
 
 
 def test_e6_a_refused_candidate_shows_the_legacy_pressures(injected, candidate):
@@ -344,7 +346,9 @@ def test_e10_the_authority_record_is_separate_from_the_production_persistence(in
         "the closed trace is copied verbatim: this is a constraint on the call site, not a guarantee"
     # What the harness does guarantee today: it writes nothing anywhere.
     source = (ROOT / "runtime_authority.py").read_text(encoding="utf-8")
-    for forbidden in ("open(", "write_text", "json.dump", "management_trace_store", "st.session_state"):
+    # ``json.dumps`` serializes a payload for a digest; the writers are what must be absent.
+    for forbidden in ("open(", "write_text", "write_bytes", "json.dump(", "management_trace_store",
+                      "st.session_state", "mkdir", "shutil"):
         assert forbidden not in source, forbidden
 
 
@@ -413,15 +417,15 @@ def test_e13_a_committed_authority_mapping_changes_the_pressures_on_the_screen(i
     assert common_needle == "101/61" and common_showing, common_needle
     screen = "\n".join(str(item.value) for item in at.markdown)
     assert legacy_needle not in screen, "the legacy pressure is still on the screen beside the common one"
-    # The common candidate HAS a mean pressure (74) and the commit deliberately does not write it: the
-    # one on the screen is the app's function of the two committed pressures, which is what keeps the
-    # recorded and the shown MAP from disagreeing by a millimetre.
+    # The mean pressure is written as the DISPLAY derives it from the two committed pressures, so the
+    # state, the screen and the management trace carry the same number (P3-19 review).
     import app
     assert app.learner_vitals_snapshot(prepared)["map"] == int(round((101.0 + 2.0 * 61.0) / 3.0))
-    assert prepared["observable"].get("map") == state["observable"].get("map")
+    assert prepared["observable"]["map"] == app.learner_vitals_snapshot(prepared)["map"]
+    assert prepared["observable"]["map"] != state["observable"].get("map")
     # Nothing else the resident reads moved: the commit wrote the two common pressures and nothing more.
     for key, value in state["observable"].items():
-        if key in ("sbp", "dbp"):
+        if key in ("sbp", "dbp", "map"):
             continue
         assert prepared["observable"][key] == value, key
 
