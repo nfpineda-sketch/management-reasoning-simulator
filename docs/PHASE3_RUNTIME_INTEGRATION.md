@@ -104,7 +104,7 @@ La sombra **no** vuelve a decidir si una orden ocurrió. Espeja sólo la lista a
 
 | Familia | Casos | Replay offline | Sombra en vivo | Tratamientos mapeados | Vacíos declarados |
 |---|---|---|---|---|---|
-| `gi_bleed` | `gi_bleed_57m`, `gi_bleed_72f` | sí | **sí** | fluido, sangre, oxígeno, IBP, endoscopia | — |
+| `gi_bleed` | `gi_bleed_57m`, `gi_bleed_72f` | sí | **sí** | fluido, sangre, oxígeno, IBP, endoscopia | anticoagulación, antiagregante, vasopresor (P3-11) |
 | `acs` | `acs_70f_left_main` | sí | no | oxígeno | reperfusión, fluido, fármacos |
 | `pulmonary_edema` | `pulmonary_edema_58m` | sí | no | oxígeno | nitrato, diurético, VNI |
 | `pulmonary_embolism` | `pulmonary_embolism_61m`, `_33f` | sí | no | oxígeno | anticoagulación, trombólisis |
@@ -138,6 +138,8 @@ silencio y sin alarma falsa.
 | entrada de replay (75 minutos) | 5 740 bytes | `artifact_sizes` |
 | traza mínima (75 minutos) | 11 594 bytes | `artifact_sizes` |
 | traza verbosa (75 minutos) | 42 694 bytes | `artifact_sizes` |
+| batería completa, legado contra legado+sombra | ×1,07 y ×1,27 (dos casos, una corrida cada uno) | `battery_evidence`, 19 categorías por caso |
+| artefactos de la batería completa (34 escenarios) | replay 201 664 B · traza mínima 399 657 B · verbosa 1 116 664 B | `artifact_totals` |
 
 El valor por omisión recomendado es la traza mínima: la verbosa guarda cada valor derivado de cada minuto, y
 la mínima guarda el digesto, las divergencias y la entrada de replay, que reproduce todo lo demás exacto.
@@ -156,6 +158,7 @@ la mínima guarda el digesto, las divergencias y la entrada de replay, que repro
 | P3-8 · diagnóstico neuro y de colapso | `SHADOW_NEURO_COLLAPSE_DIAGNOSTICS_READY` |
 | P3-9 · traza de investigación | `SHADOW_RESEARCH_TRACE_READY` |
 | P3-10 · certificación de preautoridad | **B** · `ONE_MINIMUM_PACKAGE_BEFORE_AUTHORITY_DECISION` |
+| P3-11 · un camino de ejecución y la batería completa | `LIVE_REPLAY_SINGLE_EXECUTION_PATH` y **`GI_FULL_LIVE_SHADOW_EVIDENCE_NOT_READY`** por tres vacíos de tratamiento |
 
 El paquete mínimo que P3-10 recomienda antes de cualquier decisión de autoridad es «P3-11 · evidencia de la
 sombra en vivo de GI sobre la batería de aceptación»: la misma plomería, sobre los encuentros completos del
@@ -173,14 +176,201 @@ promesa de la arquitectura.
 
 ## Deuda declarada de esta rama
 
-1. `LIVE_SHADOW_UNIFICATION_DEFERRED`: la sesión en vivo (P3-1) y el runner genérico (P3-4) son dos
-   implementaciones; unificarlas vuelve «vivo = replay» una propiedad estructural. Hoy comparten el único
-   mapeo de intervenciones de GI (`runtime_shadow_families.gi_interventions`), que es lo que impide que
-   divergan en silencio.
-2. `LIVE_SHADOW_IN_STREAMLIT_LAYER`: el enganche de `app.py` existe y es de una línea, pero ninguna prueba
-   automática conduce Streamlit; lo que se prueba es el mismo camino de órdenes sin Streamlit.
-3. Vacíos de tratamiento en las cinco familias no GI.
+1. ~~`LIVE_SHADOW_UNIFICATION_DEFERRED`~~ **cerrada en P3-11**: hay una sola primitiva de ejecución
+   (`ShadowPhysiologyRunner.advance`) y una prueba estructural impide que otro módulo de la capa llame a
+   `integration.run`.
+2. ~~`LIVE_SHADOW_IN_STREAMLIT_LAYER`~~ **cerrada en P3-11** en lo que podía cerrarse sin navegador: una
+   prueba conduce el enganche exacto de `app.py` (`_runtime_shadow_session`) y otra fija el orden del sitio
+   de llamada por AST. Queda `UI_E2E_DEFERRED_BEFORE_AUTHORITY`, que **no** hace falta antes de la primera
+   autoridad limitada: la sombra no dibuja nada. Si una autoridad llegara a tocar la pantalla del
+   residente, la prueba de extremo a extremo pasa a ser obligatoria (puerta de P3-13).
+3. **`GI_TREATMENT_GAPS`** (P3-11): la batería de GI ordena anticoagulación, antiagregante y vasopresor, y
+   el mapeo común no tiene escritor para ninguno. Están declarados como `TREATMENT_GAP` escenario por
+   escenario, y son el bloqueo de una autoridad hemodinámica en GI, no de la sombra.
+4. Vacíos de tratamiento en las cinco familias no GI.
 4. El mapeo de impairment a categoría mental y los umbrales del colapso siguen siendo decisión docente.
 5. `PILOT_PREFLIGHT_FLAG_GATE_DEFERRED`: el preflight del piloto no puede exigir las banderas ausentes sin
    mover un digesto congelado de la Fase 2. Hoy el piloto queda protegido por que ninguna de sus superficies
    nombra la bandera y por que un entorno limpio no abre sesión.
+
+El paquete de decisión docente que P3-12 y P3-13 producen, sólo lectura y sólo diseño, vive en
+`docs/PHASE3_PREAUTHORITY_DECISION_PACK.md`.
+
+## P3-11 · Un solo camino de ejecución, y la batería completa como evidencia
+
+Desde P3-11 hay **una** primitiva de ejecución. La sesión en vivo captura las entradas autoritativas, arma
+los eventos espejados inmutables y llama a `ShadowPhysiologyRunner.advance`; el replay offline carga esos
+mismos eventos y llama al mismo runner. No hay segundo avance de minuto, ni segundo clasificador, ni segundo
+artefacto de replay: `LIVE_REPLAY_SINGLE_EXECUTION_PATH`. Una prueba estructural lo fija —ningún módulo de
+la capa salvo el runner puede llamar a `integration.run`—, así que «vivo = replay» dejó de depender de que
+dos implementaciones coincidan: es la misma función del mismo dato inmutable, y las pruebas sólo lo
+confirman.
+
+Lo que la unificación **no** movió: los digestos de la sombra GI, las acciones espejadas, los minutos, las
+divergencias ni el registro autoritativo. Los digestos finales de los dos casos GI quedaron fijados como
+`BASELINE` en `test_runtime_shadow_evidence.py`, capturados **antes** del cambio.
+
+### Lo que la batería completa encontró y dos turnos no podían encontrar
+
+El artefacto de replay se construía llamando a `contributors()` **sin** el estado de mapeo, así que la
+hemostasia endoscópica —que el núcleo recibe por `family_state.endoscopy_at`— faltaba en el artefacto: el
+replay divergía del vivo en los cuatro escenarios que piden endoscopia. Con un caso y dos turnos, sin
+endoscopia, P3-1 no podía verlo. El runner ahora recuerda el estado de mapeo con el que avanzó y construye
+el artefacto con el mismo; la igualdad se comprueba digesto por digesto en los 34 escenarios.
+
+### La evidencia
+
+La batería es la del repositorio (`pilot_acceptance.battery`, 19 categorías por caso, A–K más las de curso y
+de propiedades), jugada dos veces por caso: con la bandera apagada y en `shadow_compare`. Ningún escenario
+es inventado aquí; lo único que se añadió a `pilot_acceptance.py` es una etiqueta por partida y un colector
+apagado por omisión que ninguna categoría lee.
+
+| | |
+|---|---|
+| escenarios con evidencia | **34** (17 por caso, dos casos GI) |
+| las 19 categorías deciden lo mismo con la sombra encendida | **sí**, en los dos casos |
+| vivo = replay, digesto por digesto | **34 de 34** |
+| condiciones críticas de P3-11-8 disparadas | **ninguna** |
+| divergencias `UNEXPECTED` o `SAFETY_CRITICAL` | **ninguna** |
+| clases observadas | `EXPECTED_ARCHITECTURAL_DIVERGENCE` y `PARTIALLY_EXPLAINED_DIVERGENCE` |
+| minutos comparados | **82** (de 1 604 minutos de sombra) |
+| acciones totalmente espejadas | fluido, sangre, IBP, endoscopia (por `family_state`) |
+| acciones sólo estructurales | consulta (la Fase 2 la declara no fisiológica) |
+| acciones sin escritor común | **anticoagulación, antiagregante, vasopresor** |
+
+El oxígeno no aparece: los guiones GI de la batería no piden oxígeno. Su brazo del mapeo se ejercita con una
+prueba propia, por el mismo camino de órdenes.
+
+### Los testigos de región, y lo que cambian
+
+GI corría con un punto —el perfil comprometido— y la decisión docente prohíbe colapsar la incertidumbre de
+la Fase 2 en un punto clínico. P3-11 añade dos testigos nombrados leídos del registro de calibración
+congelado: `gi_region_lower` y `gi_region_upper`, las esquinas inferior y superior de la región declarada de
+**29** magnitudes de perfil, más `gi_committed_default`. Tres reglas, todas negativas: una magnitud que el
+registro sostiene (`lower == upper`) no es región y no se mueve; una magnitud que el perfil comprometido deja
+sin valor es un mecanismo que la Fase 2 dejó **apagado** y un testigo nunca lo enciende; y ninguna magnitud
+queda aprobada (0 de 58). Es una **esquina** de la región, no una distribución ni una afirmación de
+correlación.
+
+Por qué importa: el punto comprometido **es** un borde de su propia región en `lactate_per_output_deficit`
+(inferior), `hypoxaemia_threshold_spo2` y `pump_preload_coupling` (superior), y está fuera del midpoint en
+`lactate_clearance_tau_min`.
+
+Dónde cae el motor heredado respecto de la región común, en **los 82 minutos comparados** de los 34
+escenarios (no sólo en el último minuto de cada uno):
+
+| Variable | Dentro | de los cuales por coincidencia exacta | Fuera | Región nula |
+|---|---|---|---|---|
+| `sbp` | 78 | 2 | 4 | — |
+| `dbp` | 78 | 5 | 4 | — |
+| `map` | 79 | 5 | 3 | — |
+| `crt` | 72 | 32 | 10 | — |
+| `hr` | 40 | 16 | 6 | 36 |
+| `respiratory_rate` | 6 | 8 | 44 | 32 |
+| `spo2` | — | 82 | — | 82 |
+
+Y una advertencia que va en la lectura, no en una nota al pie: `LEGACY_WITHIN_COMMON_REGION` es
+conservador y sólido —los testigos son esquinas de una región declarada, así que la región verdadera es al
+menos igual de ancha—, pero `LEGACY_OUTSIDE_COMMON_REGION` **no** es la afirmación simétrica: el tramo es el
+mínimo y el máximo de **tres** corridas nombradas sobre una caja de 29 magnitudes, así que un valor fuera de
+ese tramo puede seguir estando dentro de la región declarada. Cada lectura lleva por eso el número de
+testigos que abarca.
+
+«Por coincidencia exacta» es la mitad honesta de la cuenta: cuando una variable **coincide** con el legado no
+hay registro de divergencia del que leer el valor del legado, así que se usa el testigo estructural, y un
+valor que ya es el testigo no puede caer fuera de su propia banda. Esas filas se cuentan aparte para que un
+«dentro» que en realidad es «idéntico» no infle la lectura.
+
+La lectura, que una comparación contra un punto no podía dar: el golden declara `sbp`, `dbp` y `map`
+diferencias arquitectónicas en **todos** sus escenarios GI, y lo son contra el punto comprometido; contra la
+región declarada caen **dentro** en 78, 78 y 79 de los 82 minutos, y sólo 2, 5 y 5 de esos son coincidencias.
+Parte de lo que se lee como arquitectura es incertidumbre de parámetros. La frecuencia respiratoria es la
+lectura contraria: 44 minutos fuera y la región no la rescata, porque la RR del legado es autorada donde la
+común es impulsada (P2K-1, P2K-2); eso es arquitectura, no incertidumbre. Estar fuera de la región no dice
+que el núcleo tenga razón: el motor heredado no es verdad clínica de referencia y ninguna magnitud de la
+región está aprobada.
+
+### El vacío de tratamiento, dicho sin adorno
+
+En `D_incorrect_treatment` el residente da heparina y aspirina; en `F_start_stop` y
+`K_combined_interventions` inicia y detiene noradrenalina. El motor heredado les da curso; el mapeo común no
+tiene escritor para ninguno. En esos seis escenarios **no** aparece ninguna divergencia inesperada —el golden
+ya declara arquitectónicas las presiones y la frecuencia—, así que «sin divergencias inesperadas» **no**
+significa que la sombra sea fiel ahí. Por eso la cobertura se informa al lado de las clases, y por eso el
+veredicto es:
+
+**`GI_FULL_LIVE_SHADOW_EVIDENCE_NOT_READY`**, por dos bloqueos: el `TREATMENT_GAP` de anticoagulación,
+antiagregante y vasopresor, y la lectura pendiente de las diferencias que el golden declara sólo en algunos
+de sus escenarios (abajo). Todo lo demás que P3-11 pedía está cumplido: un camino de ejecución, la batería
+completa, vivo = replay por construcción y por prueba, ningún escape de autoridad, los artefactos reproducen
+y el digesto de la Fase 2 intacto. No inventé semántica para cerrar el vacío: un escritor de anticoagulación
+o de vasopresor es fisiología nueva y decisión clínica, no una comodidad de este paquete.
+
+### Lo que el golden declara en algunos escenarios y no en otros
+
+Una declaración por escenario no es una probabilidad: el golden anota, escenario por escenario, qué variables
+difirieron, y difieren **porque** ese escenario hizo algo. Así que «10 de 20» no explica nada por sí solo. La
+clase `PARTIALLY_EXPLAINED_DIVERGENCE` deja de ser silencio: va con su conteo, los escenarios del golden que
+la declaran y los que no, y **bloquea** la preparación hasta que una lectura docente la mire.
+
+| Variable | Minutos | El golden la declara en | Escenarios de la batería |
+|---|---|---|---|
+| `hr` | 66 | 19 de 20 | 14 |
+| `crt_s` | 50 | 18 de 20 | 11 |
+| `V_ml_eq` | 46 | 10 de 20 | 9 |
+| `consciousness_level` | 10 | **1 de 20** | 2 |
+
+`consciousness_level` es el caso que forzó la regla y el que la revisión adversarial encontró silenciado: el
+golden dice que **coincide** en 19 de sus 20 escenarios, así que llamar «parcialmente explicada» a una
+diferencia suya era callar justamente la lectura que debe sonar fuerte. Su causa declarada es conocida —la
+consciencia del núcleo es su escalera heredada, `LEGACY_REFERENCE_ONLY`, y P2L-2 no está cableado—, pero una
+causa declarada no es una explicación de **este** escenario: eso lo decide la docencia.
+
+### Comparabilidad por dominio, medida y no supuesta
+
+Un dominio se leía `COMPARABLE` con que ninguna de sus variables fuera `NOT_COMPARABLE`, lo que también
+cumple un escenario que nunca movió el dominio: el campo no decía nada. Ahora una variable cuenta sólo si
+**alguno de los dos lados la movió**, y un dominio que nadie ejercitó lo dice:
+
+| Dominio | Comparable | No ejercitado | No comparable |
+|---|---|---|---|
+| `HEMODYNAMICS` | 34 | — | — |
+| `RESPIRATION` | 24 | 10 | — |
+| `INTERVENTIONS` | 22 | 12 | — |
+| `METABOLIC` | 18 | 16 | — |
+| `HR_RHYTHM` | 16 | 18 | — |
+| `CONSCIOUSNESS` | 4 | 30 | — |
+| `OXYGENATION` | — | 34 | — |
+| `COLLAPSE` | — | 34 | — |
+| `ACID_BASE` | — | — | 34 |
+
+`OXYGENATION` nunca se ejercita porque la batería GI no pide oxígeno; `COLLAPSE` tampoco, porque ningún
+escenario GI llega al colapso; `ACID_BASE` no es comparable porque la tabla certificada de comparación no
+tiene ninguna variable de ese dominio.
+
+### Lo que cambió por la revisión adversarial de P3-11
+
+Una revisión independiente de sólo lectura, con cuatro hallazgos ALTA y once MEDIA/BAJA. Los cuatro ALTA
+eran reales y están corregidos con prueba propia; los once restantes también se atendieron.
+
+| Hallazgo | Qué estaba mal | Qué rige ahora |
+|---|---|---|
+| ALTA · clasificación | `consciousness_level` se leía «parcialmente explicada» apoyándose en 1 de 20 escenarios del golden, es decir: el golden dice que coincide en 19 | la clase lleva su conteo y sus escenarios, y **bloquea** la preparación hasta que una lectura docente la mire |
+| ALTA · identidad del encuentro | un segundo intento del **mismo** caso heredaba la sesión del primero: el generador es determinista, así que el id del caso no distingue dos intentos | la sesión se queda sólo mientras el reloj no retroceda ni vuelva a cero después de haber avanzado, y `reset_session` la suelta; la identidad del encuentro (digesto de la llegada) viaja en el artefacto |
+| ALTA · apertura a mitad | una sesión abierta en el minuto N leía la llegada de un paciente ya tratado y rotulaba sus minutos como contados desde la llegada | una sesión sólo abre en el minuto 0; encender la bandera a mitad, recargar o reanudar corre sólo con el legado |
+| ALTA · bandera por Secret | Streamlit copia cada secreto a `os.environ`, así que un `secrets.toml` podía encender la sombra sin que el preflight del piloto —que no puede llevar la fila— lo viera | una bandera que viene del archivo de secretos **no** se honra; es la puerta que reemplaza la fila que TD-130 no pudo añadir |
+| MEDIA · digesto de la Fase 2 | la condición de seguridad comparaba la constante consigo misma: era verdadera por construcción | el digesto se **recalcula** sobre las 141 fuentes congeladas, y una prueba lo hace fallar a propósito |
+| MEDIA · digesto del golden | toda la clasificación lee el golden y ningún digesto del artefacto lo cubría | el artefacto lleva el sha256 del golden de su familia |
+| MEDIA · fallo de la sombra | ningún chequeo reportaba un fallo de sombra que **no** hubiera alcanzado el encuentro | la matriz publica los fallos y sus clasificaciones por escenario |
+| MEDIA · `capture` fallido | si no se podía copiar el estado previo, las acciones del turno quedaban fechadas en el minuto 0 | no se espeja nada y el hueco dice por qué |
+| MEDIA · comparabilidad | `COMPARABLE` lo cumplía también un escenario que nunca movió el dominio | cuenta sólo lo que alguno de los dos lados movió; lo demás es `NOT_EXERCISED` |
+| MEDIA · nombre de la región | `OUTSIDE` nombraba la región completa | cada lectura dice cuántos testigos abarca, y el documento dice qué significa cada estado |
+| MEDIA · procedimiento | cualquier recibo `procedure` se leía espejado en cuanto hubo una endoscopia | la lectura va atada al recibo de la endoscopia; otro procedimiento es un hueco |
+| BAJA · minuto 0 del replay | el replay empezaba en el minuto 0 y cada lector le quitaba el primero a mano | `replay()` entrega los mismos minutos que el registro vivo y la llegada aparte |
+| BAJA · tercer sitio de ejecución | el diagnóstico corría el núcleo por su cuenta | hay **un** sitio que deserializa un artefacto y lo corre, y los dos lectores pasan por él |
+| BAJA · campo booleano | una condición devolvía una lista en vez de `False` | devuelve un booleano |
+| BAJA · comentario obsoleto | «GI no lee banda» quedó falso al darle región a GI | describe la banda degenerada por variable que de verdad protege |
+
+Las dos categorías que la revisión declaró limpias y vale la pena nombrar: ninguna acción espejada antes de
+su destino ni dos veces dentro de un encuentro, y ningún artefacto serializado incompleto —los 34
+reconstruyen sus digestos pasando por JSON, incluidos los que piden endoscopia y el de tres fluidos.
