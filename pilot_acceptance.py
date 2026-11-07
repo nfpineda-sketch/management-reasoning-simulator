@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import json
 from copy import deepcopy
+from contextlib import contextmanager
 from functools import lru_cache
 
 #: The challenge each family is launched with (any one that offers it).
@@ -348,7 +349,30 @@ class Encounter:
         return self
 
 
-def _play(variant, turns, until=None):
+#: Phase 3 (P3-11): an evidence harness may install a collector to see the encounters this module plays.
+#: None by default; no acceptance category reads it and installing one cannot change what a category
+#: decides -- it only receives each finished encounter, after the battery has played it.
+_COLLECTOR = None
+
+
+@contextmanager
+def collecting(collector):
+    """Hand every encounter ``_play`` finishes to ``collector(label, encounter, turns)``, then stop.
+
+    ``battery`` is cached, so a harness that wants the encounters clears that cache first; this context
+    manager does it on the way in and on the way out, so a cached result can never be mistaken for a run.
+    """
+    global _COLLECTOR
+    kept, _COLLECTOR = _COLLECTOR, collector
+    battery.cache_clear()
+    try:
+        yield collector
+    finally:
+        _COLLECTOR = kept
+        battery.cache_clear()
+
+
+def _play(variant, turns, until=None, label=None):
     encounter = Encounter(variant)
     for text in turns:
         if encounter.arrested:
@@ -356,6 +380,8 @@ def _play(variant, turns, until=None):
         encounter.order(text)
     if until is not None:
         encounter.wait_until(until)
+    if _COLLECTOR is not None:
+        _COLLECTOR(label, encounter, tuple(turns))
     return encounter
 
 
@@ -386,8 +412,9 @@ def battery(variant):
     compare_at = COMPARE_AT.get(family, DEFAULT_COMPARE_AT)
     out, runs = {}, {}
 
-    correct = runs["A"] = _play(variant, [s["correct"] + " Reassess in 15 minutes."], until=compare_at)
-    omission = runs["C"] = _play(variant, [], until=compare_at)
+    correct = runs["A"] = _play(variant, [s["correct"] + " Reassess in 15 minutes."], until=compare_at,
+                                label="A_correct_management")
+    omission = runs["C"] = _play(variant, [], until=compare_at, label="C_omission")
     a, c = severity(correct.state), severity(omission.state)
     executed = [fate for klass, fate in _fates(correct) if klass not in ("reassessment",)]
     out["A_correct_management"] = _result(
@@ -395,7 +422,7 @@ def battery(variant):
         f"every order executed: {executed}; severity at {compare_at} min {a} with the bundle vs {c} without")
 
     delayed = runs["B"] = _play(variant, ["Reassess in 30 minutes.", s["correct"] + " Reassess in 15 minutes."],
-                                until=compare_at)
+                                until=compare_at, label="B_delayed_management")
     # The worst the patient was on the way, not the state at one minute: a single dose given
     # later is fresher at any later minute, which says nothing about the delay.
     b_peak, a_peak = _peak(delayed), _peak(correct)
@@ -408,12 +435,14 @@ def battery(variant):
         worse_or_equal and not any(e["inconsistencies"] for e in omission.entries),
         f"untreated severity {c} at {omission.minute} min; arrival {severity(Encounter(variant).state)}")
 
-    harmful = runs["D"] = _play(variant, [s["harmful"] + " Reassess in 15 minutes."], until=compare_at)
+    harmful = runs["D"] = _play(variant, [s["harmful"] + " Reassess in 15 minutes."], until=compare_at,
+                                label="D_incorrect_treatment")
     d = severity(harmful.state)
     out["D_incorrect_treatment"] = _result(d >= c - TOLERANCE,
                                            f"severity {d} after the harmful order vs {c} without it")
 
-    excess = runs["E"] = _play(variant, [text + " Reassess in 10 minutes." for text in s["excess"]], until=None)
+    excess = runs["E"] = _play(variant, [text + " Reassess in 10 minutes." for text in s["excess"]], until=None,
+                              label="E_excessive_treatment")
     fates = _fates(excess)
     harm = EXCESS_HARM.get(variant) or EXCESS_HARM.get(family)
     shown = [e["kind"] for entry in excess.entries for e in entry["events"]]
@@ -424,7 +453,7 @@ def battery(variant):
         f"fates {fates}; modelled harm {harm or 'none declared'} -> events {shown}")
 
     start, stop, key = s["start_stop"]
-    switched = runs["F"] = _play(variant, [start + " Reassess in 10 minutes."])
+    switched = runs["F"] = _play(variant, [start + " Reassess in 10 minutes."], label="F_start_stop")
     running = switched.state.get("family_state", {}).get(key) if key else None
     switched.order(stop + " Reassess in 10 minutes.")
     stopped = switched.state.get("family_state", {}).get(key) if key else None
@@ -434,7 +463,8 @@ def battery(variant):
                                   and not any(e["inconsistencies"] for e in switched.entries),
                                   f"{key or 'treatment'} {running} while running, {stopped} after the stop; {f_fates}")
 
-    twice = runs["G"] = _play(variant, [s["duplicate"] + " Reassess in 5 minutes."] * 2)
+    twice = runs["G"] = _play(variant, [s["duplicate"] + " Reassess in 5 minutes."] * 2,
+                             label="G_duplicate_treatment")
     ids = [order["order_id"] for entry in twice.entries for order in entry["orders"]]
     g_fates = _fates(twice)
     out["G_duplicate_treatment"] = _result(
@@ -442,8 +472,10 @@ def battery(variant):
         and not any(e["inconsistencies"] for e in twice.entries),
         f"two submissions, {len(ids)} orders, each its own id and fate: {g_fates}")
 
-    with_it = runs["H"] = _play(variant, [UNMODELLED_ORDER + " " + s["correct"] + " Reassess in 15 minutes."])
-    without = _play(variant, [s["correct"] + " Reassess in 15 minutes."])
+    with_it = runs["H"] = _play(variant, [UNMODELLED_ORDER + " " + s["correct"] + " Reassess in 15 minutes."],
+                               label="H_unexpected_reasonable")
+    without = _play(variant, [s["correct"] + " Reassess in 15 minutes."],
+                      label="H_unexpected_reasonable_control")
     unmodelled = [o for e in with_it.entries for o in e["orders"]
                   if "ondansetron" in str(o.get("span") or "").lower()]
     same = with_it.state["observable"] == without.state["observable"]
@@ -452,7 +484,7 @@ def battery(variant):
         f"ondansetron {[o['fate'] for o in unmodelled]}; the rest of the bundle ran; physiology identical "
         f"to the same bundle without it: {same}")
 
-    waiting = _play(variant, ["Wait 20 minutes."])
+    waiting = _play(variant, ["Wait 20 minutes."], label="I_waiting")
     entry = waiting.entries[-1]
     stop_at = (entry.get("interrupted") or {}).get("minute")
     out["I_waiting"] = _result(
@@ -462,22 +494,23 @@ def battery(variant):
         f"clock {waiting.minute} after 'Wait 20 minutes'"
         + (f" (stopped at {stop_at} by {entry['interrupted']['kind']})" if stop_at is not None else ""))
 
-    look = _play(variant, ["Reassess."])
-    explicit = _play(variant, ["Reassess in 15 minutes."])
+    look = _play(variant, ["Reassess."], label="J_reassessment_look")
+    explicit = _play(variant, ["Reassess in 15 minutes."], label="J_reassessment")
     stopped_at = (explicit.entries[-1].get("interrupted") or {}).get("minute")
     out["J_reassessment"] = _result(
         look.minute == time_semantics.BEDSIDE_LOOK_MIN
         and (explicit.minute == 15 or (stopped_at is not None and stopped_at == explicit.minute)),
         f"'Reassess.' -> {look.minute} min (bedside look); 'Reassess in 15 minutes.' -> {explicit.minute} min")
 
-    combined = runs["K"] = _play(variant, [s["correct"] + " " + s["extra"] + " Reassess in 15 minutes."])
+    combined = runs["K"] = _play(variant, [s["correct"] + " " + s["extra"] + " Reassess in 15 minutes."],
+                               label="K_combined_interventions")
     k_fates = [f for klass, f in _fates(combined) if klass != "reassessment"]
     out["K_combined_interventions"] = _result(
         all(f == "EXECUTED" for f in k_fates) and not any(e["inconsistencies"] for e in combined.entries),
         f"{k_fates}")
 
     if family in TERMINAL or variant in TERMINAL_VARIANTS:
-        course = _play(variant, [], until=240)
+        course = _play(variant, [], until=240, label="terminal_deterioration")
         after = course.order("Give 1 liter of normal saline IV. Reassess in 10 minutes.") if course.arrested else None
         o = course.state["observable"]
         out["terminal_deterioration"] = _result(
@@ -488,34 +521,36 @@ def battery(variant):
             f"arrest at {course.minute} min untreated; orders after it "
             f"{[order['fate'] for order in after['orders']] if after else None}")
     else:
-        course = _play(variant, [], until=240)
+        course = _play(variant, [], until=240, label="terminal_deterioration")
         out["terminal_deterioration"] = _result(
             not course.arrested and not any(e["inconsistencies"] for e in course.entries),
             f"no arrest is modelled untreated; at {course.minute} min severity {severity(course.state)}")
 
     if family == "acs" and variant not in TERMINAL_VARIANTS:
         # A non-ST-elevation infarct is not built to deteriorate in the first hours: it must not.
-        steady = _play(variant, [s["correct"] + " Reassess in 15 minutes."], until=RECOVERS_BY[family])
+        steady = _play(variant, [s["correct"] + " Reassess in 15 minutes."], until=RECOVERS_BY[family],
+                                label="recovery")
         out["recovery"] = _result(not steady.arrested and severity(steady.state) <= severity(
             Encounter(variant).state) + TOLERANCE, f"severity {severity(steady.state)} at {steady.minute} min vs "
                                                    f"{severity(Encounter(variant).state)} on arrival (flat course)")
     elif family == "acs":
         # An infarct recovers by its artery: open, and no arrest after it (the wall it lost stays lost).
-        recovering = _play(variant, [s["correct"] + " Reassess in 15 minutes."], until=RECOVERS_BY[family])
+        recovering = _play(variant, [s["correct"] + " Reassess in 15 minutes."], until=RECOVERS_BY[family],
+                                    label="recovery")
         opened = [e["minute"] for entry in recovering.entries for e in entry["events"] if e["kind"] == "reperfusion"]
         out["recovery"] = _result(bool(opened) and not recovering.arrested,
                                   f"artery open at {opened or None}; alive at {recovering.minute} min, severity "
                                   f"{severity(recovering.state)}")
     elif family in RECOVERS_BY:
         by = RECOVERS_BY[family]
-        recovering = _play(variant, [s["correct"] + " Reassess in 15 minutes."], until=by)
+        recovering = _play(variant, [s["correct"] + " Reassess in 15 minutes."], until=by, label="recovery")
         out["recovery"] = _result(not recovering.arrested and severity(recovering.state) <= severity(
             Encounter(variant).state), f"severity {severity(recovering.state)} at {recovering.minute} min vs "
                                        f"{severity(Encounter(variant).state)} on arrival")
     else:
         out["recovery"] = _result(True, "this case is not built to deteriorate or recover (flat course)")
 
-    first = _play(variant, [s["correct"] + " Reassess in 15 minutes."])
+    first = _play(variant, [s["correct"] + " Reassess in 15 minutes."], label="reload_resume")
     resumed = Encounter(variant)
     resumed.state = json.loads(json.dumps(first.state))
     resumed.ledger = json.loads(json.dumps(first.ledger))
@@ -526,7 +561,8 @@ def battery(variant):
         first.state["observable"] == resumed.state["observable"] and first.minute == resumed.minute,
         f"a state written to JSON at minute 15 and read back runs on to the same patient at {first.minute} min")
 
-    again = _play(variant, [s["correct"] + " Reassess in 15 minutes."], until=compare_at)
+    again = _play(variant, [s["correct"] + " Reassess in 15 minutes."], until=compare_at,
+                    label="deterministic_replay")
     out["deterministic_replay"] = _result(
         again.state["observable"] == correct.state["observable"]
         and [e["events"] for e in again.entries] == [e["events"] for e in correct.entries]

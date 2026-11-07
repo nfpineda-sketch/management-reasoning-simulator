@@ -412,8 +412,12 @@ def test_the_side_effect_firewall_holds():
 def test_r12_the_captured_input_replays_to_the_same_digests(paired):
     session = paired["on"].shadow
     live = list(session.digests())
-    replayed = [item["state_digest"] for item in session.replay()["minutes"]][1:]
-    assert live and replayed[:len(live)] == live
+    # Since P3-11 ``replay()`` returns the same minutes the live record has (the arrival is reported
+    # apart), so the two lists are compared index by index with nothing dropped by hand.
+    replayed = [item["state_digest"] for item in session.replay()["minutes"]]
+    assert live and replayed == live
+    assert [item["minute"] for item in session.replay()["minutes"]][0] == 1
+    assert session.replay()["arrival_digest"]
 
 
 def test_r12_the_same_encounter_played_again_gives_the_same_shadow(paired):
@@ -458,8 +462,13 @@ def test_the_divergence_classes_come_from_the_committed_golden(paired):
                 assert divergence.variable not in (
                     "fluid_delivered_ml", "blood_delivered_units", "fio2", "glucose_mg_dl", "k_mmol_l",
                     "hemostasis_relief", "transfusion_overload_units"), divergence.variable
-    names = {d.variable for item in compared for d in item.divergences if d.status == runtime_shadow.MATCH}
-    assert {"fluid_delivered_ml", "blood_delivered_units", "fio2", "pulse_present", "rhythm"} <= names
+    # Since P3-11 a record exists only for a variable that did NOT match, so the plumbing-sensitive ones
+    # agreeing means they are absent from every compared minute. Same claim, read from the one record.
+    names = {d.variable for item in compared for d in item.divergences}
+    assert not ({"fluid_delivered_ml", "blood_delivered_units", "fio2", "pulse_present", "rhythm"} & names), \
+        sorted(names)
+    assert {d.domain for item in compared for d in item.divergences} <= set(
+        __import__("runtime_shadow_families").DOMAINS), "every record names a declared domain"
 
 
 def test_an_unexplained_difference_is_loud():

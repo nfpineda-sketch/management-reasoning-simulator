@@ -605,6 +605,9 @@ def reset_session():
             del st.session_state[key]
     st.session_state.started = False
     st.session_state.selected_case = _default_challenge()
+    # Phase 3 (P3-11): a reset ends the encounter, so its shadow session ends with it. Dropping it here is
+    # what keeps a second attempt at the same case from inheriting the first attempt's shadow run.
+    st.session_state.pop("phase3_shadow", None)
     st.session_state.state = deepcopy(INITIAL_STATE)
     st.session_state.events = []
     st.session_state.history = []
@@ -9088,8 +9091,10 @@ def merge_pending_bundle(parsed):
 def _runtime_shadow_session():
     """This encounter's Phase-3 shadow session, or None when the flag is off (P3-1, observation only).
 
-    A session belongs to one encounter: when the case changes -- a new encounter, a reset, a second attempt
-    -- the old one is dropped instead of mixing two patients in one provenance artifact.
+    A session belongs to ONE encounter and says so itself (``is_for``): a new encounter, a reset or a
+    second attempt at the same case drops it instead of mixing two patients in one provenance artifact.
+    It also opens only at the arrival, so turning the flag on mid-encounter, or resuming a saved case,
+    runs legacy-only rather than comparing a shadow that never saw the treatment already given.
     """
     import runtime_shadow
     if runtime_shadow.mode() == runtime_shadow.MODE_OFF:

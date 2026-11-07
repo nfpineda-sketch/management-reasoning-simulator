@@ -20,6 +20,12 @@ ledger, a score or a trace. This module adds what P3-1 left family-specific, wit
 
 Live shadow stays gated per family by ``runtime_shadow`` (P3-1 enables GI only); offline replay is available
 for every family whose adapter maps its arrival deterministically.
+
+P3-11 made ``ShadowPhysiologyRunner.advance`` the ONE execution primitive: the live session of
+``runtime_shadow`` captures the authoritative inputs, builds the immutable mirrored events and calls this
+runner, and the offline replay loads those same events and calls the same runner. There is no second
+minute-advance, no second classifier and no second replay artifact, so live and replay are equal BY
+CONSTRUCTION and the tests only have to confirm it (``LIVE_REPLAY_SINGLE_EXECUTION_PATH``).
 """
 from __future__ import annotations
 
@@ -50,7 +56,7 @@ DOMAIN_OF = {
     "consciousness_level": "CONSCIOUSNESS",
 }
 #: Statuses a divergence record carries (P3-4O). No numeric safety threshold anywhere.
-EXPECTED_ARCHITECTURAL = "EXPECTED_ARCHITECTURAL_DIVERGENCE"
+EXPECTED_ARCHITECTURAL = rs.EXPECTED
 PARAMETER_DISABLED = rs.PARAMETER_DISABLED
 REGION_DIVERGENCE = "REGION_DIVERGENCE"
 MAPPING_GAP = rs.MAPPING_GAP
@@ -119,12 +125,14 @@ class ShadowReplayInput:
     #: ``integration.scenario_to_dict``: anchors, contributors and profile, all serializable.
     scenario: Mapping[str, Any]
     versions: Mapping[str, Any] = field(default_factory=dict)
+    #: The acceptance scenario this run belongs to, when a harness named one (P3-11-11).
+    scenario_id: str | None = None
 
     def to_dict(self) -> dict:
         return {"case_id": self.case_id, "family": self.family, "adapter_version": self.adapter_version,
                 "snapshot": dict(self.snapshot), "minutes": self.minutes,
                 "actions": [dict(action) for action in self.actions], "scenario": dict(self.scenario),
-                "versions": dict(self.versions)}
+                "versions": dict(self.versions), "scenario_id": self.scenario_id}
 
     def digest(self) -> str:
         return hashlib.sha256(json.dumps(self.to_dict(), sort_keys=True, default=str)
@@ -168,6 +176,65 @@ class RuntimeFamilyAdapter:
 
 # -- the six certified families ------------------------------------------------------------------------------
 
+def registry_region() -> dict:
+    """The profile magnitudes whose Phase-2 region is a region, from the frozen calibration registry.
+
+    Three rules, all of them refusals:
+
+    - a magnitude the registry holds (``lower == upper``) is not a region and is never moved;
+    - a magnitude the committed profile leaves unset is a mechanism Phase 2 left OFF: a witness never
+      turns one on, so it is excluded even when the registry carries a span for it;
+    - nothing here is approved. ``REGISTRY`` says 0 magnitudes are faculty-approved and a witness is a
+      reading of the declared region, never a selection.
+    """
+    from clinical_core import calibration
+    from clinical_core.derived import DEFAULT_PROFILE
+    import dataclasses
+    fields = {field.name for field in dataclasses.fields(DEFAULT_PROFILE)}
+    out = {}
+    for name, entry in calibration.REGISTRY.items():
+        if entry.target != "profile" or name not in fields:
+            continue
+        if entry.lower is None or entry.upper is None or float(entry.upper) <= float(entry.lower):
+            continue
+        if getattr(DEFAULT_PROFILE, name) is None:
+            # The committed profile leaves this mechanism OFF; a witness never turns one on.
+            continue
+        out[name] = entry
+    return out
+
+
+def _bundle_profile(point: str):
+    """The committed profile, or the lower/upper corner of the declared region as a named bundle.
+
+    It is a CORNER of the region, not a distribution and not a correlation claim: every magnitude is read
+    at the same named edge of its own certified span. ``POINTS``' midpoint is the committed profile, which
+    is not the registry midpoint for every magnitude -- ``region_notes`` says exactly where they differ.
+    """
+    import dataclasses
+    from clinical_core.derived import DEFAULT_PROFILE
+    if point in (COMMITTED, "midpoint"):
+        return DEFAULT_PROFILE
+    edge = "lower" if point == "lower" else "upper"
+    return dataclasses.replace(DEFAULT_PROFILE,
+                               **{name: float(getattr(entry, edge))
+                                  for name, entry in registry_region().items()})
+
+
+def region_notes() -> dict:
+    """Where the committed profile sits inside each declared region: the honest reading of the bundle."""
+    from clinical_core.derived import DEFAULT_PROFILE
+    notes = {}
+    for name, entry in registry_region().items():
+        committed = float(getattr(DEFAULT_PROFILE, name))
+        where = "midpoint" if committed == float(entry.midpoint) else (
+            "lower edge" if committed == float(entry.lower) else
+            "upper edge" if committed == float(entry.upper) else "inside, off the midpoint")
+        notes[name] = {"committed": committed, "lower": float(entry.lower),
+                       "midpoint": float(entry.midpoint), "upper": float(entry.upper), "where": where}
+    return notes
+
+
 def _point_index(point: str, span: Sequence) -> int:
     """low / midpoint / high as the first, middle and last point of a committed Phase-2 span."""
     if point in (COMMITTED, "midpoint"):
@@ -185,10 +252,23 @@ class GiHaemorrhageAdapter(RuntimeFamilyAdapter):
     maps = ("fluid", "blood", "oxygen", "ppi")
 
     def snapshot(self, point: str = COMMITTED) -> ShadowParameterSnapshot:
+        from clinical_core import calibration
+        arrival = ("clinical_core.legacy_adapter: the arrival and the haemorrhage module are read from "
+                   "the case",)
+        if point in (COMMITTED, "midpoint"):
+            return ShadowParameterSnapshot(
+                "gi_committed_default", self.family, point,
+                arrival + ("clinical_core.derived.DEFAULT_PROFILE: the committed default profile, read "
+                           "as a point (no band, no witness)",))
+        edge = "lower" if point == "lower" else "upper"
+        region = registry_region()
         return ShadowParameterSnapshot(
-            f"gi_{point}", self.family, COMMITTED,
-            ("clinical_core.legacy_adapter: the arrival and the haemorrhage module are read from the case, "
-             "with the committed default profile (no band, no witness)",))
+            f"gi_region_{edge}", self.family, point,
+            arrival + (f"clinical_core.calibration.REGISTRY: the {edge} edge of the declared region of "
+                       f"{len(region)} profile magnitudes, a named corner and not a distribution",
+                       f"clinical_core.calibration.frozen_digest() = {calibration.frozen_digest()}",
+                       "clinical_core.calibration.REGISTRY: 0 magnitudes are faculty-approved, so a "
+                       "witness reads the region and does not select a value"))
 
     def anchors(self, case_id: str, point: str, state: Mapping | None = None):
         from clinical_core import legacy_adapter
@@ -197,8 +277,7 @@ class GiHaemorrhageAdapter(RuntimeFamilyAdapter):
         return legacy_adapter.anchors_from_legacy(state)
 
     def profile(self, point: str):
-        from clinical_core.derived import DEFAULT_PROFILE
-        return DEFAULT_PROFILE
+        return _bundle_profile(point)
 
     def writers(self, case_id: str, point: str, state: Mapping | None = None) -> tuple:
         from clinical_core import legacy_adapter
@@ -450,6 +529,7 @@ class ShadowPhysiologyRunner:
     adapter: RuntimeFamilyAdapter
     case_id: str
     point: str = COMMITTED
+    scenario_id: str | None = None
     anchors: Any = None
     profile: Any = None
     family_writers: tuple = ()
@@ -458,18 +538,26 @@ class ShadowPhysiologyRunner:
     seen: set = field(default_factory=set)
     results: list = field(default_factory=list)
     divergences: list = field(default_factory=list)
+    #: The minutes a legacy truth was supplied for, so a reader can tell "equal" from "not compared".
+    compared: list = field(default_factory=list)
     failures: list = field(default_factory=list)
     gaps: list = field(default_factory=list)
     endoscopy_at: int | None = None
     minutes_done: int = 0
+    #: The last runtime mapping state this run was advanced with. The replay artifact must be built from
+    #: the SAME state, or a contributor the live run had (GI haemostasis, read from ``family_state``) would
+    #: be missing from the artifact and the replay would diverge from the live run. The full acceptance
+    #: battery found exactly that: two turns never ordered endoscopy, so P3-1's evidence could not see it.
+    mapping_state: Mapping | None = None
 
     @classmethod
-    def open(cls, family: str, case_id: str, *, point: str = COMMITTED, state: Mapping | None = None):
+    def open(cls, family: str, case_id: str, *, point: str = COMMITTED, state: Mapping | None = None,
+             scenario_id: str | None = None):
         """Build a runner, or None when no adapter certifies this family and case."""
         adapter = adapter_for(family)
         if adapter is None or adapter.supports(case_id) is not None:
             return None
-        runner = cls(adapter, case_id, point)
+        runner = cls(adapter, case_id, point, scenario_id)
         try:
             runner.snapshot_ = adapter.snapshot(point)
             runner.anchors = adapter.anchors(case_id, point, deepcopy(dict(state)) if state else None)
@@ -490,7 +578,9 @@ class ShadowPhysiologyRunner:
             self.mirrored.append(event)
 
     def contributors(self, state: Mapping | None = None) -> tuple:
-        built, gaps = self.adapter.interventions(self.mirrored, state)
+        if state is not None:
+            self.mapping_state = deepcopy(dict(state))
+        built, gaps = self.adapter.interventions(self.mirrored, self.mapping_state)
         for gap in gaps:
             if gap not in self.gaps:
                 self.gaps.append(gap)
@@ -514,8 +604,13 @@ class ShadowPhysiologyRunner:
             self.results.append(ShadowMinuteResult(index, rs._digest_of(trajectory.states[index]),
                                                    derived[index].to_dict()))
         if legacy is not None and minute > 0:
+            # A turn that advanced no minute still has a legacy truth for it: the comparison of that minute
+            # is REPLACED, so the record keeps one comparison per minute -- the latest -- and never two.
+            self.divergences = [item for item in self.divergences if item.minute != minute]
             self.divergences.extend(divergence_records(minute, legacy, trajectory.states[minute],
                                                        derived[minute], self.adapter.family))
+            if minute not in self.compared:
+                self.compared.append(minute)
         self.minutes_done = minute
         return True
 
@@ -524,13 +619,16 @@ class ShadowPhysiologyRunner:
         if self.anchors is None:
             return None
         from clinical_core import integration
+        # ``contributors()`` with no argument replays the remembered mapping state, so the artifact holds
+        # every contributor the live run had -- nothing is read from the runtime a second time.
         scenario = integration.scenario_to_dict(self.anchors, self.contributors(), self.minutes_done,
                                                 self.profile)
         return ShadowReplayInput(
             self.case_id, self.adapter.family, self.adapter.version,
             self.snapshot_.to_dict() if self.snapshot_ else {}, self.minutes_done,
-            tuple({"order_id": e.order_id, "minute": e.minute, "kind": e.kind} for e in self.mirrored),
-            scenario, {**rs.versions(), "families_module": MODULE_VERSION})
+            tuple(_event_identity(event) for event in self.mirrored),
+            scenario, {**rs.family_versions(self.adapter.family), "families_module": MODULE_VERSION},
+            self.scenario_id)
 
     def digests(self) -> tuple:
         return tuple(item.state_digest for item in self.results)
@@ -555,7 +653,6 @@ def divergence_records(minute: int, legacy: Mapping, state, values, family: str)
     """The certified variable table, classified by domain. No numeric threshold is introduced."""
     from clinical_core import comparison
     projected = comparison._display(values)
-    explained = rs.golden_explained(family)
     out = []
     for variable in comparison.VARIABLES:
         if variable.kind in ("core_only", "legacy_only"):
@@ -568,32 +665,46 @@ def divergence_records(minute: int, legacy: Mapping, state, values, family: str)
         domain = DOMAIN_OF.get(variable.name, "NOT_COMPARABLE")
         if match is None:
             status, reasons = NOT_COMPARABLE, ()
-        elif right is None:
-            status, reasons = BOUNDARY, ()
-        elif variable.name in rs._SAFETY_VARIABLES:
-            # Safety before everything, in the same order as runtime_shadow._classify: no golden row and
-            # no disabled parameter can quiet a pulse or a rhythm.
-            status, reasons = rs.SAFETY_CRITICAL, ()
-        elif variable.name in explained:
-            status, reasons = EXPECTED_ARCHITECTURAL, explained[variable.name]
-        elif rs.golden_partial(family).get(variable.name, (0, 0))[0]:
-            seen, total = rs.golden_partial(family)[variable.name]
-            status = rs.PARTIALLY_EXPLAINED
-            reasons = (f"the golden declares this difference in {seen} of its {total} scenarios",)
-        elif rs._disabled(variable.name):
-            status, reasons = PARAMETER_DISABLED, ()
         else:
-            status, reasons = UNEXPECTED, ()
+            # ONE classifier for both paths (P3-11): safety first, then the golden's own declaration, then
+            # a disabled parameter, then loud. No numeric threshold is introduced here or there.
+            status, reasons = rs.classify(variable, right, family)
         out.append(ShadowDivergenceRecord(minute, domain, variable.name, left, right, status, tuple(reasons)))
     return out
 
 
-def replay_shadow_encounter(data: Mapping | ShadowReplayInput) -> dict:
-    """Deterministically replay a captured immutable input. Same input, same digests, always."""
+def _event_identity(event) -> dict:
+    """What a replay artifact says about one mirrored action: its identity, never the resident's text."""
+    receipt = dict(event.receipt or {})
+    return {"order_id": event.order_id, "minute": event.minute, "kind": event.kind,
+            "ledger_order_id": event.ledger_order_id, "submission_id": event.submission_id,
+            "delivery_starts_at_min": receipt.get("delivery_starts_at_min"),
+            "receipt_digest": (hashlib.sha256(json.dumps(receipt, sort_keys=True, default=str)
+                                              .encode("utf-8")).hexdigest() if receipt else None)}
+
+
+def _replay_trajectory(scenario: Mapping, minutes: int | None = None):
+    """Deserialize an artifact's scenario and run it. The ONE place a captured input is replayed.
+
+    ``ShadowPhysiologyRunner.advance`` is the live/incremental primitive; this is the from-artifact one,
+    and nothing else in the layer calls ``integration.run``. Both readers of an artifact -- the replay and
+    the non-authoritative diagnostics -- come through here, so there is no third way to advance a minute.
+    """
     from clinical_core import integration
+    anchors, contributors, captured_minutes, profile = integration.scenario_from_dict(scenario)
+    return integration.run(anchors, contributors,
+                           captured_minutes if minutes is None else minutes, profile), anchors, profile
+
+
+def replay_shadow_encounter(data: Mapping | ShadowReplayInput) -> dict:
+    """Deterministically replay a captured immutable input. Same input, same digests, always.
+
+    ``results`` starts at minute 0, the arrival: a reader comparing it with a live record, which starts at
+    minute 1, drops that first entry (``ShadowSession.replay`` does it for the live path).
+    """
     payload = data.to_dict() if isinstance(data, ShadowReplayInput) else dict(data)
-    anchors, contributors, minutes, profile = integration.scenario_from_dict(payload["scenario"])
-    trajectory = integration.run(anchors, contributors, minutes, profile)
+    trajectory, _anchors, _profile = _replay_trajectory(payload["scenario"])
+    minutes = payload.get("minutes")
     derived = trajectory.derived()
     return {
         "case_id": payload.get("case_id"), "family": payload.get("family"),
@@ -713,10 +824,18 @@ def _structural(runs: Mapping[str, Any], name: str, minute: int):
 
 
 def legacy_against_region(legacy: Mapping, result: ShadowEnsembleResult, minute: int) -> dict:
-    """Where the legacy value sits with respect to the common feasible region.
+    """Where the legacy value sits with respect to the span of the NAMED witnesses of this run.
 
-    Outside the region does not mean the common core is right: the legacy engine is not clinical ground
-    truth and no parameter in the region is approved.
+    Two cautions, and both are in the reading, not in a footnote:
+
+    - ``LEGACY_WITHIN_COMMON_REGION`` is conservative and safe: the witnesses are corners of a declared
+      region, so the true region is at least as wide and a value inside the witnesses' span is inside it.
+    - ``LEGACY_OUTSIDE_COMMON_REGION`` is NOT the same statement. The span is the min/max of at most four
+      named runs over a box of many magnitudes, so a value outside that span may still lie inside the
+      declared region. Each reading therefore carries ``witnesses``, the number of runs it spans.
+
+    And neither says the common core is right: the legacy engine is not clinical ground truth and no
+    parameter in the region is approved.
     """
     pairs = {"sbp": "sbp", "dbp": "dbp", "map": "map", "hr": "pulse_rate_bpm", "spo2": "spo2",
              "respiratory_rate": "respiratory_rate", "crt": "crt_s"}
@@ -728,9 +847,9 @@ def legacy_against_region(legacy: Mapping, result: ShadowEnsembleResult, minute:
             out[legacy_name] = {"status": NOT_COMPARABLE}
             continue
         low, high, structural = band
-        # A region of width zero is not a region, whatever the family: GI reads no band, so its three
-        # points coincide and saying "the legacy value is outside the common region" would be a point
-        # dressed as a region.
+        # A band of width zero is not a region, whatever the family or the variable: where the witnesses
+        # coincide -- a held magnitude, or an observable none of them moves -- saying "the legacy value is
+        # outside the common region" would dress a point as a region.
         if low == high and len(result.points) > 1:
             status = REGION_DISABLED
         elif low <= float(value) <= high:
@@ -738,7 +857,7 @@ def legacy_against_region(legacy: Mapping, result: ShadowEnsembleResult, minute:
         else:
             status = OUTSIDE
         out[legacy_name] = {"status": status, "legacy": value, "region": [low, high],
-                            "structural": structural}
+                            "structural": structural, "witnesses": len(result.points)}
     return out
 
 
@@ -754,13 +873,12 @@ def shadow_diagnostics(runner: ShadowPhysiologyRunner, minute: int) -> dict:
     no collapse threshold is applied (the MAP mapping and the two limits are UNSET), nothing can arrest a
     patient and the resident keeps seeing the legacy engine's mental status.
     """
-    from clinical_core import collapse as co, encephalopathy as en, integration
+    from clinical_core import collapse as co, encephalopathy as en
     captured = runner.replay_input()
     if captured is None or minute < 1 or minute > runner.minutes_done:
         return {"authority": "none", "label": NONAUTHORITATIVE, "available": False,
                 "why": "no mapped arrival, or the minute is outside the run"}
-    anchors, contributors, _minutes, profile = integration.scenario_from_dict(captured.scenario)
-    trajectory = integration.run(anchors, contributors, minute, profile)
+    trajectory, anchors, profile = _replay_trajectory(captured.scenario, minute)
     state = trajectory.states[minute]
     reading = en.readings(state, anchors, profile)
     signals = en.acute_signals(reading, en.DEFAULT_ENCEPHALOPATHY)

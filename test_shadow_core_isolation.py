@@ -114,8 +114,12 @@ def _imports(path):
 #: authority, its flag is off unless a process sets it, and test_runtime_shadow_plumbing.py (R1-R17) shows
 #: the authoritative record is byte-identical with it on and off.
 SHADOW_BRIDGE = "runtime_shadow"
-#: The declared Phase-3 shadow layer, by exact name: a new module is not exempt because of its prefix.
-SHADOW_LAYER = frozenset({"runtime_shadow", "runtime_shadow_families"})
+#: The declared Phase-3 shadow layer, by exact name and from ONE declaration (``LAYER_SOURCES``): a new
+#: module is not exempt because of its prefix, and the layer the artifacts' digest covers is the same layer
+#: this ban exempts. ``runtime_shadow_evidence`` (P3-11) is the faculty/research harness: it reads the
+#: layer and the acceptance battery, and no runtime module may read IT.
+SHADOW_LAYER = frozenset(Path(name).stem for name in __import__("runtime_shadow").LAYER_SOURCES)
+HARNESS = "runtime_shadow_evidence"
 
 
 def test_no_runtime_module_but_the_declared_shadow_bridge_imports_the_core():
@@ -143,6 +147,12 @@ def test_cutting_the_shadow_bridge_restores_the_phase2_isolation_exactly():
     # The layer itself is named, not matched by prefix: a future runtime_shadow_x.py is not exempt.
     layer = sorted(path.stem for path in ROOT.glob("runtime_shadow*.py"))
     assert set(layer) == SHADOW_LAYER, layer
+    # The evidence harness is one-directional: it reads the layer, and nothing outside the layer reads it.
+    harness_readers = sorted(path.name for path in ROOT.rglob("*.py")
+                             if path.relative_to(ROOT).parts[0] not in {".venv", ".claude"}
+                             and not path.name.startswith("test_") and path.stem != HARNESS
+                             and HARNESS in _imports(path))
+    assert harness_readers == [], harness_readers
 
 
 def test_the_core_imports_only_what_a_shadow_needs():

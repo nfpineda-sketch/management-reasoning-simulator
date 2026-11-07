@@ -74,9 +74,9 @@ def test_h3_the_gi_live_shadow_is_deterministic(paired):
 
 def test_h4_gi_live_equals_its_offline_replay(paired):
     session = paired["on"].shadow
-    replayed = [item["state_digest"] for item in session.replay()["minutes"]][1:]
+    replayed = [item["state_digest"] for item in session.replay()["minutes"]]
     live = list(session.digests())
-    assert replayed[:len(live)] == live, "the live shadow and its replay diverged"
+    assert replayed == live, "the live shadow and its replay diverged"
 
 
 @pytest.mark.parametrize("family,case", [(family, case) for family, cases in CERTIFIED.items()
@@ -169,14 +169,18 @@ def test_every_witness_cites_a_committed_phase2_span():
 
 
 def test_the_witnesses_of_a_region_are_different_trajectories():
-    """A region is only honest if its witnesses actually differ; GI reads no band and must not differ."""
+    """A region is only honest if its witnesses actually differ.
+
+    Until P3-11 GI read no band and its three points coincided. It now reads the declared region of the
+    frozen calibration registry (29 profile magnitudes), so every certified family has three trajectories.
+    """
     for family, cases in CERTIFIED.items():
         case = cases[0]
         digests = {point: _runner(family, case, point=point, minutes=60).digests()[-1] for point in fam.POINTS}
-        if family == "gi_bleed":
-            assert len(set(digests.values())) == 1, "GI reads no band: its points cannot differ"
-        else:
-            assert len(set(digests.values())) == 3, (family, digests)
+        assert len(set(digests.values())) == 3, (family, digests)
+    committed = _runner("gi_bleed", CERTIFIED["gi_bleed"][0], point=fam.COMMITTED, minutes=60).digests()[-1]
+    midpoint = _runner("gi_bleed", CERTIFIED["gi_bleed"][0], point="midpoint", minutes=60).digests()[-1]
+    assert committed == midpoint, "GI's structural witness IS the committed profile, named once"
 
 
 def test_h24_the_version_metadata_is_complete():
@@ -202,8 +206,7 @@ def test_h19_the_layer_introduces_no_randomness():
 
 def test_h20_h23_no_authoritative_surface_reads_the_shadow_and_the_pilot_keeps_it_off():
     readers = [path.name for path in sorted(ROOT.glob("*.py"))
-               if not path.name.startswith("test_") and path.name not in
-               ("runtime_shadow.py", "runtime_shadow_families.py")
+               if not path.name.startswith("test_") and path.name not in rs.LAYER_SOURCES
                and ("runtime_shadow" in path.read_text(encoding="utf-8")
                     or "phase3_shadow" in path.read_text(encoding="utf-8"))]
     assert readers == ["app.py", "pilot_acceptance.py"], readers

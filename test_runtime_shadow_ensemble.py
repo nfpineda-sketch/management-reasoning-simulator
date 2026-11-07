@@ -218,15 +218,31 @@ def test_the_summary_counts_only_what_it_compared():
 
 # -- what the adversarial review of 2026-11-07 found ---------------------------------------------------------
 
-def test_a_region_of_width_zero_is_declared_disabled_for_every_family():
-    """GI reads no band: saying "the legacy value is outside the common region" would dress a point as one."""
+def test_a_region_of_width_zero_is_declared_disabled_variable_by_variable():
+    """A band of width zero is never dressed as a region, whatever the family or the variable.
+
+    Since P3-11 GI reads the declared calibration region, so some of its variables DO span a band and get a
+    position. The claim this test defends is the other half: where the band has no width, the reading is
+    COMMON_REGION_DISABLED and not "the legacy value is outside the region".
+    """
     from clinical_core import legacy_adapter
     import pilot_acceptance
     result = fam.ensemble(*GI, 20)
     legacy = legacy_adapter.snapshot(pilot_acceptance.Encounter(GI[1]).state)
     reading = fam.legacy_against_region(legacy, result, 20)
-    assert {row["status"] for row in reading.values()} <= {fam.REGION_DISABLED, fam.NOT_COMPARABLE}
-    assert any(row["status"] == fam.REGION_DISABLED for row in reading.values())
+    assert reading, "the reading must cover the display variables"
+    pairs = {"sbp": "sbp", "dbp": "dbp", "map": "map", "hr": "pulse_rate_bpm", "spo2": "spo2",
+             "respiratory_rate": "respiratory_rate", "crt": "crt_s"}
+    for name, row in reading.items():
+        band = (result.envelope.get(pairs[name]) or {}).get(20)
+        if row["status"] == fam.NOT_COMPARABLE:
+            continue
+        low, high, _structural = band
+        if low == high:
+            assert row["status"] == fam.REGION_DISABLED, (name, row, band)
+        else:
+            assert row["status"] in (fam.WITHIN, fam.OUTSIDE), (name, row, band)
+    assert any(row["status"] == fam.REGION_DISABLED for row in reading.values()), reading
 
 
 def test_the_asthma_witness_is_not_the_no_worsening_sentinel():
