@@ -460,3 +460,53 @@ Lo que la revisión midió y conviene no perder: con cero configuración ya se c
 condiciones, y con las tres variables de entorno puestas fallaba **sólo** la instantánea. Después de este
 endurecimiento, además de la instantánea, una activación necesita declarar las acciones del minuto, correr
 en un caso GI que el propio estado nombre, y pasar la puerta otra vez en el momento del commit.
+
+## P3-19 a P3-25 · El sitio de llamada de producción, dormido
+
+Decisión docente del 2026-11-07: se autoriza **construir** el punto de orquestación que faltaba, sin
+activar nada. El motor heredado sigue siendo la única autoridad y ninguna configuración de este
+repositorio puede abrir un sitio de autoridad.
+
+### Lo que `app.py` hace, y lo que no
+
+Una función de tres líneas (`_runtime_authority_site`) y un bloque de tres sentencias junto a la
+observación en sombra. No decide nada: la bandera, la puerta de nueve condiciones, la instantánea que no
+existe, la decisión de modo única y la memoria de la refutación viven todas en la capa. Una prueba fija el
+bloque por AST, así que no puede crecer sin que se note.
+
+Medido en la revisión adversarial: con la bandera apagada, **0,13 µs por turno y cero digestos de la Fase
+2**. Con la bandera puesta y la puerta refutando, **un** digesto por llegada. El modo no puede aparecer a
+mitad de encuentro, y un segundo intento del mismo caso no hereda el sitio del primero.
+
+### Lo que un minuto de autoridad haría
+
+`capture → compute → validate → commit`, con todos los digestos calculados **por el sitio**: el de la
+entrada inmutable, el del candidato común, el del replay —que vuelve a correr el núcleo sobre el artefacto
+serializado, de verdad— y el de la transacción. Se escriben `sbp` y `dbp` del núcleo común y la presión
+media **como la deriva la pantalla**, para que el estado, la pantalla y la traza digan el mismo número.
+Nada más se mueve, y el sitio lo comprueba comparando lo que llegó al estado con lo que el contrato
+permite poseer.
+
+### La batería completa, con la cuenta que salió
+
+34 escenarios de la batería de aceptación de GI, conducidos por la lógica dormida con una instantánea sólo
+de prueba: **26 técnicamente válidos** —26 de 26 comprometen atómicamente, reproducen su minuto y guardan
+el contrafactual heredado— y **8 inelegibles**: seis por anticoagulación, antiagregante o vasopresor, y
+**dos nuevos** por una orden que el propio motor declara que no modela. La cuenta anterior era 28 y 6; no
+se forzó. Los tres candidatos de instantánea corridos sobre los mismos 34 artefactos: el comprometido y el
+borde superior, 34 válidos cada uno; el borde inferior, 32 y dos fronteras no resueltas.
+
+### El artefacto, y su límite
+
+Cada minuto lleva su propia entrada inmutable, así que un experimento de tres minutos reproduce sus tres
+minutos desde el artefacto solo. El digesto cubre todo el contenido y un artefacto editado deja de
+reproducir; sin firma, detecta un cambio y no a un falsificador, y eso queda escrito. Un fallo duro
+detiene la autoridad del encuentro para siempre y, si llega después de un commit, el artefacto declara la
+trayectoria mezclada en vez de taparla.
+
+### Lo que falta
+
+Un paquete: **la superficie docente del experimento** —dónde se muestra un fallo duro y dónde se guarda el
+artefacto— y la decisión docente de dónde vive. Las otras siete decisiones, con su material medido y su
+registro de riesgos, están en `docs/PHASE3_FACULTY_AUTHORITY_DECISION_PACK.md`; la certificación final, en
+`docs/PHASE3_PREAUTHORITY_FINAL_CERTIFICATION.md`.
