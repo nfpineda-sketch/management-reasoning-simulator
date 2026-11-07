@@ -9085,6 +9085,24 @@ def merge_pending_bundle(parsed):
     return merged
 
 
+def _runtime_shadow_session():
+    """This encounter's Phase-3 shadow session, or None when the flag is off (P3-1, observation only).
+
+    A session belongs to one encounter: when the case changes -- a new encounter, a reset, a second attempt
+    -- the old one is dropped instead of mixing two patients in one provenance artifact.
+    """
+    import runtime_shadow
+    if runtime_shadow.mode() == runtime_shadow.MODE_OFF:
+        return None
+    session = st.session_state.get("phase3_shadow")
+    if session is not None and not session.is_for(st.session_state.state):
+        session = None
+    if session is None:
+        session = runtime_shadow.ShadowSession.start(st.session_state.state)
+        st.session_state.phase3_shadow = session
+    return session
+
+
 def execute_bundle(parsed):
     # Nested so that regressions loading execute_bundle through ast keep its helpers.
     def _record_administration_time(res, action):
@@ -11132,11 +11150,17 @@ def _process_encounter_submission(submission_text, _guard_entry=None, submission
     st.session_state.history.append(_ledger.untagged(parsed))
     trace_input = parsed.get("raw_text") or learner_input
 
+    _shadow = _runtime_shadow_session()
+    _shadow_before = _shadow.capture(st.session_state.state) if _shadow is not None else None
     result = execute_bundle(parsed)
     split = result.pop("_split", None)
     run_actions = result.pop("_run_actions", None)
     if run_actions is None:
         run_actions = list(parsed.get("actions") or [])
+    if _shadow is not None:
+        # Phase 3 (P3-1): observation only, after the engine committed its turn, over the actions whose
+        # fate the pipeline already settled. Never authority.
+        _shadow.observe(_shadow_before, st.session_state.state, parsed, result, run_actions, submission_id)
     _order_pipeline.settle(
         turn, result=result, run_actions=run_actions, split=split, minute_before=turn_minute,
         minute_after=int(st.session_state.state.get("sim_time", 0) or 0),

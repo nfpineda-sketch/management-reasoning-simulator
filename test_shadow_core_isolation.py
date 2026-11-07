@@ -107,12 +107,42 @@ def _imports(path):
     return names
 
 
-def test_no_runtime_module_imports_the_core():
+#: Phase 3, P3-1 (faculty authorization of 2026-11-07): the live encounter may run the closed common core
+#: beside the legacy engine. ``runtime_shadow`` is the one declared bridge that crosses from the runtime to
+#: the core. The ban below still holds for every other runtime module, and what the ban used to guarantee --
+#: that the core cannot touch the encounter -- is now guaranteed by what the bridge cannot do: it holds no
+#: authority, its flag is off unless a process sets it, and test_runtime_shadow_plumbing.py (R1-R17) shows
+#: the authoritative record is byte-identical with it on and off.
+SHADOW_BRIDGE = "runtime_shadow"
+#: The declared Phase-3 shadow layer, by exact name: a new module is not exempt because of its prefix.
+SHADOW_LAYER = frozenset({"runtime_shadow", "runtime_shadow_families"})
+
+
+def test_no_runtime_module_but_the_declared_shadow_bridge_imports_the_core():
     for path in ROOT.rglob("*.py"):
         relative = path.relative_to(ROOT)
         if relative.parts[0] in {"clinical_core", ".venv", ".claude"} or path.name.startswith("test_"):
             continue
+        if path.stem in SHADOW_LAYER:
+            continue
         assert "clinical_core" not in _imports(path), relative
+
+
+def test_cutting_the_shadow_bridge_restores_the_phase2_isolation_exactly():
+    """The bridge is the only crossing, it carries no authority, and only two modules use it."""
+    import runtime_shadow
+    assert "clinical_core" not in _reachable(RUNTIME_ROOTS, without={SHADOW_BRIDGE}), \
+        "the runtime reaches the core by another path than the declared bridge"
+    assert runtime_shadow.COMMON_CORE_RUNTIME_AUTHORITY is False
+    assert runtime_shadow.mode({}) == runtime_shadow.MODE_OFF
+    users = sorted(path.relative_to(ROOT).as_posix() for path in ROOT.rglob("*.py")
+                   if path.relative_to(ROOT).parts[0] not in {".venv", ".claude"}
+                   and not path.name.startswith("test_") and path.stem not in SHADOW_LAYER
+                   and SHADOW_BRIDGE in _imports(path))
+    assert users == ["app.py", "pilot_acceptance.py"], users
+    # The layer itself is named, not matched by prefix: a future runtime_shadow_x.py is not exempt.
+    layer = sorted(path.stem for path in ROOT.glob("runtime_shadow*.py"))
+    assert set(layer) == SHADOW_LAYER, layer
 
 
 def test_the_core_imports_only_what_a_shadow_needs():
@@ -123,15 +153,19 @@ def test_the_core_imports_only_what_a_shadow_needs():
     assert SHADOW_ONLY is True and AUTHORITATIVE_ENGINE == "family_engine"
 
 
-def _reachable(roots):
-    """Every repository module the roots import, directly or not, at any depth or place."""
+def _reachable(roots, without=()):
+    """Every repository module the roots import, directly or not, at any depth or place.
+
+    ``without`` cuts named modules out of the graph: it is how the one declared Phase-3 bridge is removed
+    to show that the Phase-2 isolation holds exactly as it did without it.
+    """
     modules = {path.stem: [path] for path in ROOT.glob("*.py")}
     modules.update({path.name: list(path.rglob("*.py")) for path in ROOT.iterdir()
                     if path.is_dir() and (path / "__init__.py").exists()})
     seen, pending = set(), list(roots)
     while pending:
         name = pending.pop()
-        if name in seen or name not in modules:
+        if name in seen or name not in modules or name in set(without):
             continue
         seen.add(name)
         for path in modules[name]:
@@ -142,7 +176,9 @@ def _reachable(roots):
 def test_contracts_v2_feeds_the_core_but_the_runtime_never_reaches_the_core():
     reached = _reachable(RUNTIME_ROOTS)
     assert {"app", "family_engine", "contracts_v2"} <= reached, "the runtime observes Contracts v2 in shadow"
-    assert "clinical_core" not in reached
+    # Since P3-1 the runtime reaches the core through one declared bridge and nothing else; the test above
+    # cuts that bridge and shows this assertion held exactly as it did in Phase 2.
+    assert "clinical_core" not in _reachable(RUNTIME_ROOTS, without={SHADOW_BRIDGE})
     assert "contracts_v2" in _imports(PACKAGE / "contracts_input.py")
     for path in (ROOT / "contracts_v2").rglob("*.py"):
         assert "clinical_core" not in _imports(path), path.name

@@ -229,6 +229,10 @@ class Encounter:
             variant_id=variant)["state"]
         self.arrival = deepcopy(self.state["observable"])
         self.ledger, self.entries, self._turns = [], [], 0
+        # Phase 3 (P3-1): None unless the shadow flag is on and this family is enabled. The legacy engine
+        # stays the only authority; the session only reads copies and keeps its own result.
+        import runtime_shadow
+        self.shadow = runtime_shadow.ShadowSession.start(self.state)
 
     def order(self, text):
         import event_provenance
@@ -246,7 +250,15 @@ class Encounter:
         parsed.setdefault("raw_text", text)
         turn = order_pipeline.open_turn(text, parsed, submission_id=submission, entry_point="free_text",
                                         minute=minute, ledger=self.ledger)
+        # ``getattr``: a subclass with its own ``__init__`` (clinical_core.contracts_legacy's contract
+        # encounter) never opens a session, and must not have to know this hook exists.
+        shadow = getattr(self, "shadow", None)
+        before = shadow.capture(state) if shadow is not None else None
         result, split, run = self._execute(parsed, text)
+        if shadow is not None:
+            # ``run`` is what the engine actually received after the pipeline settled each order's fate:
+            # the shadow consumes that, and never decides for itself whether an order happened.
+            shadow.observe(before, state, parsed, result, run, submission)
         order_pipeline.settle(turn, result=result, run_actions=run, split=split, minute_before=minute,
                               minute_after=int(state.get("sim_time", 0) or 0),
                               terminal=bool(result.get("terminal_locked")))
