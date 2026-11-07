@@ -16,6 +16,14 @@ camino desde la salida en sombra hacia una conducta autoritativa es un bloqueo, 
 La Fase 2 es inmutable: ningún archivo de `clinical_core/` cambia en esta rama, y tres suites recalculan el
 digesto de cierre en cada corrida.
 
+Un solo artefacto de la Fase 2 sí cambia, y no es fisiología: `test_phase2_closure.py`. Dos de las
+reclamaciones del registro de cierre son del repositorio entero —qué tocó P2X-3 y qué módulos de aplicación
+importan el paquete en sombra— y la prueba las leía del árbol de trabajo. El registro describe el commit de
+cierre, así que ahora se leen de **ese** árbol (`git log --diff-filter=A` sobre el propio registro lo
+localiza). Sin eso, el registro de una etapa terminada falla por la existencia de la etapa siguiente, que la
+misma autorización docente abrió. El registro JSON no se toca: ni un byte. Las reclamaciones no se debilitan;
+se recalculan sobre el árbol que describen, y la sonda de 21 mutaciones sigue detectándolas.
+
 ## Por qué la capa vive fuera de `clinical_core/`
 
 El digesto formal de cierre cubre **todas** las fuentes del paquete. Un módulo de Fase 3 colocado ahí movería

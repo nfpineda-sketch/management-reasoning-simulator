@@ -46,25 +46,54 @@ def _git(*arguments: str) -> list[str]:
     return [line for line in result.stdout.splitlines() if line.strip()]
 
 
+def _closure_commit() -> str | None:
+    """The commit that added the closure record, or None while P2X-3 is still uncommitted.
+
+    The record describes the repository AT THAT COMMIT. Two of its claims are repository-wide -- what
+    P2X-3 touched, and which application modules import the shadow package -- so they are read from that
+    tree and not from whatever a later stage has in the working tree. Phase 3 (P3-1), authorized after
+    this closure, puts one declared bridge module on the runtime side on purpose; reading these claims
+    from the working tree would make the closure record of a finished stage fail because a later,
+    separately authorized stage exists. The claims themselves are unchanged and still recomputed.
+    """
+    found = _git("log", "--diff-filter=A", "--format=%H", "--",
+                 "docs/revision/P2X3_phase2_closure.json")
+    return found[0] if found else None
+
+
 def _touched() -> set[str]:
-    """Every path P2X-3 adds or changes: committed since the certified head, plus the working tree."""
+    """Every path P2X-3 adds or changes, in its own commit or, before it exists, in the working tree."""
     head = _record()["final_executable_head"]
-    committed = _git("diff", "--name-only", f"{head}..HEAD")
-    working = [line[3:].strip().strip('"') for line in _git("status", "--porcelain")]
-    return {path for path in (*committed, *working) if path}
+    closure = _closure_commit()
+    if closure is None:
+        committed = _git("diff", "--name-only", f"{head}..HEAD")
+        working = [line[3:].strip().strip('"') for line in _git("status", "--porcelain")]
+        return {path for path in (*committed, *working) if path}
+    return {path for path in _git("diff", "--name-only", f"{head}..{closure}") if path}
+
+
+def _root_modules() -> list[tuple[str, str]]:
+    """``(name, source)`` for every non-test root module, as of the closure commit when it exists."""
+    closure = _closure_commit()
+    if closure is None:
+        return [(path.name, path.read_text(encoding="utf-8")) for path in sorted(ROOT.glob("*.py"))
+                if not path.name.startswith("test_")]
+    names = sorted(name for name in _git("ls-tree", "--name-only", closure)
+                   if name.endswith(".py") and not name.startswith("test_"))
+    import subprocess
+    return [(name, subprocess.run(("git", "show", f"{closure}:{name}"), cwd=ROOT, capture_output=True,
+                                  text=True, check=True).stdout) for name in names]
 
 
 def _imports_the_shadow_package() -> list[str]:
     """Application modules that import the shadow package. ``clinical_core_defaults`` is not it."""
     offenders = []
-    for path in sorted(ROOT.glob("*.py")):
-        if path.name.startswith("test_"):
-            continue
-        for line in path.read_text(encoding="utf-8").splitlines():
+    for name, source in _root_modules():
+        for line in source.splitlines():
             stripped = line.strip()
             if stripped.startswith(("import clinical_core ", "import clinical_core.", "from clinical_core ",
                                     "from clinical_core.")) or stripped in ("import clinical_core",):
-                offenders.append(path.name)
+                offenders.append(name)
                 break
     return offenders
 
