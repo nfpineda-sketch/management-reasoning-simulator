@@ -5,7 +5,8 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-11-06, con las ocho decisiones docentes de la Fase 2 que rigen P2X-1 y P2X-1A (sección «Fase 2 · decisiones docentes del tono distributivo y del cierre», trigésima séptima actualización); antes, 2026-10-08, con TD-77 aprobada para integrar (detenida: falta el diff de referencia), las tres
+- **Actualizado:** 2026-11-07, con el cierre formal de la Fase 2 (fila «Cierre de la Fase 2», trigésima octava
+  actualización); antes, 2026-11-06, con las ocho decisiones docentes de la Fase 2 que rigen P2X-1 y P2X-1A (sección «Fase 2 · decisiones docentes del tono distributivo y del cierre», trigésima séptima actualización); antes, 2026-10-08, con TD-77 aprobada para integrar (detenida: falta el diff de referencia), las tres
   correcciones de H-62, TD-87 y la defensa en profundidad de B-1 (trigésima sexta actualización); antes, el mismo
   día, con la decisión docente de ES-P8g, el candidato local congelado `37c9afb`, el paquete
   de firma de H-62 e I-63 y el intento autorizado de B-1 (trigésima quinta actualización de la sección «Preparación
@@ -23,6 +24,20 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
   D-1 a D-11 decididas y aplicadas), la revisión clínica prepiloto, la segunda y la primera respuesta al paquete
   del ciclo 10, el ciclo 10, el estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos anteriores
   siguen más abajo, como estaban.
+
+## Cierre de la Fase 2 (2026-11-07)
+
+Estado de la etapa, registrado por el paquete de cierre autorizado P2X-3. La IA propone; la aceptación es docente.
+
+| Id | Decisión / estado | Estado | Evidencia |
+|---|---|---|---|
+| FD-P2X-10 | **Cierre formal de la Fase 2.** La fisiología común en sombra queda cerrada: `PHASE 2 CLOSED`, `SHADOW PHYSIOLOGY ONLY`, `NO RESIDENT-VISIBLE RUNTIME CHANGE`, `PHASE 3 NOT STARTED`. Seis familias migradas, doce canales comunes, 58 parámetros con **0 aprobados**, 21 deudas en exactamente una clase, tres filas de supersesión. Cabeza ejecutable certificada `4e8d184`; digesto de la Fase 2 `22b90a6f7f38…` | PROPOSED → requiere aceptación docente | `docs/PHASE2_CLOSURE.md`, `docs/revision/P2X3_phase2_closure.json`, `test_phase2_closure.py`, PHASE2 §74 |
+| FD-P2X-11 | **La integración en tiempo de ejecución no se abre con este cierre.** `family_engine.py` sigue siendo la fuente de verdad; `clinical_core` sigue en sombra; `RUNTIME_INTEGRATION`, `RESIDENT_VISIBLE_BEHAVIOUR` y `CONSCIOUSNESS_WIRING` quedan como deuda de la etapa siguiente. Abrir la Fase 3 necesita un encargo explícito | DECIDED | TD-107, TD-127; `test_shadow_core_isolation.py`; ningún módulo de la aplicación importa `clinical_core` |
+
+**Lo que este cierre deja abierto a decisión docente:** aceptarlo o no; la lectura amplia de FD-P2X-9 (si las sondas
+sintéticas declaradas y las pruebas deberían perder también la exención de propiedad de `T`, lo que exige retirar tres
+sondas de banda y es trabajo de fisiología no autorizado); y, si la Fase 3 abre, qué parte de la integración se
+autoriza y en qué orden.
 
 ## Fase 2 · decisiones docentes del tono distributivo y del cierre (2026-11-06)
 

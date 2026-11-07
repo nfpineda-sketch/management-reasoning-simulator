@@ -4647,3 +4647,28 @@ Ninguno. `clinical_core` sigue sólo en sombra.
   - **Queda declarado, no cerrado:** el lado «superseding» de las dos filas propias es inverificable por construcción
     (se escribe en la evaluación, después del congelado), y la lectura amplia de la decisión 1 —retirar las tres sondas
     de banda que escriben T— sigue siendo trabajo de fisiología no autorizado.
+
+## 74. P2X-3 · Cierre formal de la Fase 2 (2026-11-07)
+
+- **Encargo:** el paquete de cierre, autorizado tras P2X-1A (`PHASE2_DECLARED_PROPERTIES_CLOSED`) y la auditoría
+  de salida P2X-2 (`PHASE2_READY_FOR_FINAL_FREEZE`). Sólo documentación, registros de cierre y congelamiento: **no
+  cambia fisiología ejecutable**, no elige magnitudes, no integra nada en tiempo de ejecución y no abre la Fase 3.
+- **Artefacto autoritativo:** `docs/PHASE2_CLOSURE.md`, leído del registro `docs/revision/P2X3_phase2_closure.json`
+  y comprobado por `test_phase2_closure.py`. El documento declara las cuatro líneas —`PHASE 2 CLOSED`,
+  `SHADOW PHYSIOLOGY ONLY`, `NO RESIDENT-VISIBLE RUNTIME CHANGE`, `PHASE 3 NOT STARTED`— porque cada criterio se
+  cumple y porque cada afirmación del registro se recalcula del repositorio.
+- **Cabeza ejecutable certificada:** `4e8d1844ab5b3a80ecf589c5fc5d2e90c6985820`. La cabeza autoritativa de la Fase 2
+  es el commit de cierre sobre ella, con contenido ejecutable idéntico: ningún archivo de `clinical_core/` cambia.
+- **Digesto de la Fase 2:** `22b90a6f7f38929cc5c18aa2000579155b4d9109198e35e29ad3991e81d6ce6a`, sha256 del JSON
+  canónico de los 141 archivos `clinical_core/**/*.py`, sin exclusiones.
+- **Inventarios que fija:** seis familias migradas (hemorragia GI, SCA, edema pulmonar, embolia pulmonar, asma,
+  opioide) con módulo, migración y pruebas; doce canales comunes y las once capas de la fisiología común, con el
+  núcleo que de verdad se ejecuta reducido a cinco archivos; 58 parámetros con **0 aprobados**; 21 deudas en
+  exactamente una clase (13 aceptadas, 3 de integración, 5 de investigación); tres filas de supersesión.
+- **Cómo es falsable sin añadir módulo:** P2X-3 no podía crear un módulo en `clinical_core/` sin mover los digestos
+  de fuentes de la rodaja de lactato y del paquete de decisiones, así que el registro no tiene generador en el
+  paquete: lo recalcula la prueba, campo por campo, y una sonda de 21 mutaciones demuestra que cada clase de
+  afirmación puede fallar.
+- **Queda declarado, no cerrado:** la aceptación docente del cierre; la lectura amplia de la decisión 1 de P2X-1A
+  (si las sondas sintéticas declaradas y las pruebas deberían perder también la exención de propiedad de `T`); y el
+  alcance de la integración si la Fase 3 se abre.

@@ -1,0 +1,473 @@
+{
+ "branch": "phase-2-clinical-core-shadow",
+ "certification": {
+  "candidate": "b7e6267bc1e43e99505f6416e3393e60bf36b2b5",
+  "contracts_v2_golden": "identical to the committed golden",
+  "direct_golden": "identical to the committed golden (written, then git diff --exit-code)",
+  "fingerprint": "ccec42b95909041ddaea44f61d1cd3fb12aa19fe46a406b688dfa6f5b9a52263",
+  "freeze_isolation_reader_contracts": {
+   "failures": 0,
+   "tests": 47
+  },
+  "regressions": {
+   "active_passed": 56,
+   "active_total": 56,
+   "retired_kept_unrun": 10
+  },
+  "suite": {
+   "errors": 0,
+   "failures": 2,
+   "failures_were": [
+    "test_clinical_core_decision_pack::test_the_faculty_document_is_generated_from_the_current_code_and_freeze",
+    "test_clinical_core_lactate_slice::test_the_faculty_document_is_generated_from_the_current_code"
+   ],
+   "how_they_were_closed": "both were stale source digests, not physiology: the two records were regenerated with their own generators and their bodies came back byte-identical. 118 focused tests over the four suites that read them pass.",
+   "partitions": 4,
+   "skipped": 93,
+   "tests": 10493,
+   "timeout_per_partition_s": 7200,
+   "xfail": 1
+  },
+  "whitespace": "git diff --check clean",
+  "worktree": "clean"
+ },
+ "clinical_core_modules": 141,
+ "closure_blockers_now_covered": {
+  "P2X1_R_F1_CONDITIONAL_T_OWNERSHIP": [
+   "a1",
+   "a2",
+   "a3"
+  ],
+  "P2X1_R_F4_CLAMP_IN_AN_ACCEPTED_MINUTE": [
+   "a4",
+   "a8",
+   "a9"
+  ]
+ },
+ "common_physiology": {
+  "channels": [
+   "V",
+   "T",
+   "P",
+   "R",
+   "L",
+   "G",
+   "W",
+   "D",
+   "N",
+   "HB",
+   "GLUCOSE",
+   "K"
+  ],
+  "executable_core": [
+   "clinical_core/__init__.py",
+   "clinical_core/state.py",
+   "clinical_core/derived.py",
+   "clinical_core/provenance.py",
+   "clinical_core/integration.py"
+  ],
+  "layers": {
+   "acid_base": "acid burden, pH and compensation (P2K-2)",
+   "blood": "shared blood state: volume, haemoglobin, dilution and the common bleed rate (P2I-2T, P2I-2U)",
+   "collapse": "arrest, zero flow and ROSC (P2M-1, P2M-2)",
+   "consciousness": "the N channel and encephalopathy (P2L-1, P2L-2)",
+   "delivery_and_debt": "oxygen delivery, the oxygen debt D and the lactate it drives (P2I-2AC, P2I-2AD)",
+   "distress": "distress and arousal, shared across the respiratory families (P2T-1, P2T-1A, P2T-3)",
+   "gas_exchange": "lung water to shunt to saturation, PaO2 and PaCO2 (P2O-1, P2O-2, P2O-3)",
+   "heart_rate": "intrinsic rate, sympathetic drive from the debt, baroreflex and envelopes (P2I-2AE, P2I-2AF, P2J-4, P2V-1)",
+   "interventions": "fluids, oxygen, modifiers and their timing (clinical_core/interventions)",
+   "pressure_and_tone": "pump, tone T, MAP/SBP/DBP, the delayed tone loop and its distributive factor (P2J-1, P2J-2, P2W-1, P2X-1, P2X-1A)",
+   "respiration": "drive, rate, work of breathing, mechanics and recruitment (P2K-1 \u2026 P2K-5, P2P-2, P2S-2)"
+  }
+ },
+ "debt": {
+  "ACCEPTABLE_PHASE2_DEBT": {
+   "COLLAPSE_THRESHOLDS": "TD-109",
+   "CUMULATIVE_FLOATING_POINT_CANCELLATION": "TD-121",
+   "DISTRIBUTIVE_TONE_MAGNITUDE": "TD-126",
+   "FIO2_MAGNITUDE": "TD-123",
+   "HYPOXAEMIC_FEEDBACK_STABILITY": "TD-117",
+   "OPIOID_HR_RESIDUAL": "TD-124",
+   "PHYSICAL_PAO2_BOUNDARY": "TD-123",
+   "PRESSURE_TO_TONE": "TD-118",
+   "RESPIRATORY_DISTRESS_CALIBRATION": "TD-121",
+   "SIDED_PRELOAD_AND_INTERDEPENDENCE": "TD-118",
+   "STEADY_STATE_W_ARRIVAL_TENSION": "TD-124",
+   "SYSTEMIC_STRESS_CALIBRATION": "TD-125",
+   "TONE_DOMAIN_LIMITS": "TD-127"
+  },
+  "FUTURE_RESEARCH_DEBT": {
+   "ADDITIONAL_FAMILY_MIGRATIONS": "TD-126",
+   "DRUG_KINETICS": "TD-126",
+   "MALDISTRIBUTION_AND_EXTRACTION": "TD-126",
+   "PLASMA_LEAK": "TD-126",
+   "UPPER_AIRWAY": "TD-126"
+  },
+  "NEXT_PHASE_INTEGRATION_DEBT": {
+   "CONSCIOUSNESS_WIRING": "TD-107",
+   "RESIDENT_VISIBLE_BEHAVIOUR": "TD-127",
+   "RUNTIME_INTEGRATION": "TD-127"
+  }
+ },
+ "debt_required": [
+  "ADDITIONAL_FAMILY_MIGRATIONS",
+  "COLLAPSE_THRESHOLDS",
+  "CONSCIOUSNESS_WIRING",
+  "CUMULATIVE_FLOATING_POINT_CANCELLATION",
+  "DISTRIBUTIVE_TONE_MAGNITUDE",
+  "DRUG_KINETICS",
+  "FIO2_MAGNITUDE",
+  "HYPOXAEMIC_FEEDBACK_STABILITY",
+  "MALDISTRIBUTION_AND_EXTRACTION",
+  "OPIOID_HR_RESIDUAL",
+  "PHYSICAL_PAO2_BOUNDARY",
+  "PLASMA_LEAK",
+  "PRESSURE_TO_TONE",
+  "RESIDENT_VISIBLE_BEHAVIOUR",
+  "RESPIRATORY_DISTRESS_CALIBRATION",
+  "RUNTIME_INTEGRATION",
+  "SIDED_PRELOAD_AND_INTERDEPENDENCE",
+  "STEADY_STATE_W_ARRIVAL_TENSION",
+  "SYSTEMIC_STRESS_CALIBRATION",
+  "TONE_DOMAIN_LIMITS",
+  "UPPER_AIRWAY"
+ ],
+ "declarations": {
+  "NO RESIDENT-VISIBLE RUNTIME CHANGE": true,
+  "PHASE 2 CLOSED": true,
+  "PHASE 3 NOT STARTED": true,
+  "SHADOW PHYSIOLOGY ONLY": true
+ },
+ "executable_equivalence": "no file under clinical_core/ differs from the certified head; this package changes documentation, closure records and their test only",
+ "families": {
+  "acs_ischaemia": {
+   "mechanism": "cardiogenic: loss of pump function with congestion",
+   "migration": "clinical_core/acs_migration.py",
+   "module": "clinical_core/modules/acs_ischaemia.py",
+   "packages": [
+    "P2N-2",
+    "P2O-3"
+   ],
+   "tests": [
+    "test_clinical_core_acs_migration.py"
+   ]
+  },
+  "asthma": {
+   "mechanism": "obstructive airway: work of breathing and mechanics, with distress",
+   "migration": "clinical_core/asthma_migration.py",
+   "module": "clinical_core/modules/asthma.py",
+   "packages": [
+    "P2S-2",
+    "P2S-3",
+    "P2T-3"
+   ],
+   "tests": [
+    "test_clinical_core_asthma_migration.py",
+    "test_clinical_core_asthma_distress_migration.py"
+   ]
+  },
+  "gi_haemorrhage": {
+   "mechanism": "hypovolaemia by haemorrhage: shared blood state, volume and oxygen delivery",
+   "migration": "clinical_core/legacy_adapter.py",
+   "module": "clinical_core/modules/gi_haemorrhage.py",
+   "packages": [
+    "P2A",
+    "P2I-2T",
+    "P2I-2U"
+   ],
+   "tests": [
+    "test_clinical_core_gi_haemorrhage.py",
+    "test_clinical_core_shared_haemorrhage.py"
+   ]
+  },
+  "opioid": {
+   "mechanism": "central respiratory depression: drive, with a reversal agent",
+   "migration": "clinical_core/opioid_migration.py",
+   "module": "clinical_core/modules/opioid.py",
+   "packages": [
+    "P2U-1"
+   ],
+   "tests": [
+    "test_clinical_core_opioid_migration.py"
+   ]
+  },
+  "pulmonary_edema": {
+   "mechanism": "congestive: lung water against gas exchange",
+   "migration": "clinical_core/edema_migration.py",
+   "module": "clinical_core/modules/pulmonary_edema.py",
+   "packages": [
+    "P2P-1"
+   ],
+   "tests": [
+    "test_clinical_core_edema_migration.py"
+   ]
+  },
+  "pulmonary_embolism": {
+   "mechanism": "obstructive vascular: dead space and afterload without lung water",
+   "migration": "clinical_core/embolism_migration.py",
+   "module": "clinical_core/modules/pulmonary_embolism.py",
+   "packages": [
+    "P2Q-2"
+   ],
+   "tests": [
+    "test_clinical_core_embolism_migration.py"
+   ]
+  }
+ },
+ "final_executable_head": "4e8d1844ab5b3a80ecf589c5fc5d2e90c6985820",
+ "freeze_digests": {
+  "calibration": "c1eeb5538a4ea990cbcb4432b0c28e6cb8c351ffe08c96a6036f82d3b65a9b85",
+  "closure_guard_P2X1A": "eca47d357674ec56fe489c30f1757cf940c55a4e5d5edb2a9ffb9fac0213e853",
+  "decision_pack": "e0fdfbe33abe643ab43793354525d2dc8604be5d2c1f0be2cfc7dd339ed13a15",
+  "lactate_slice": "3c4648e7bdc51baae1c3b6454314b05baf5430bef6032d72a75169a8ff64be10",
+  "tone_domain_on_the_live_tree": "a9634ffd1c9d609904702f2bc95f2d3cb15d3f064b1e671529478925ef7ae16a"
+ },
+ "isolation": {
+  "app_modules_importing_the_shadow_package": [],
+  "reading": "no application module imports clinical_core; the only matches in the repository root are clinical_core_defaults, a pre-existing application module with an unrelated name",
+  "test": "test_shadow_core_isolation.py"
+ },
+ "package": "P2X-3",
+ "parameters": {
+  "by_status": {
+   "CANDIDATE": 52,
+   "DEFAULT_UNMAPPED": 4,
+   "SYNTHETIC_ONLY": 2
+  },
+  "faculty_approved": 0,
+  "reading": "no clinical magnitude is approved: the registry holds candidate support, synthetic-only values and unmapped defaults. Closing Phase 2 needs none.",
+  "registered": 58
+ },
+ "phase2_digest": "22b90a6f7f38929cc5c18aa2000579155b4d9109198e35e29ad3991e81d6ce6a",
+ "phase2_digest_definition": "sha256 of the canonical JSON of {path: sha256(bytes)} for every clinical_core/**/*.py, with no exclusion",
+ "readiness": {
+  "P2X-1A": "PHASE2_DECLARED_PROPERTIES_CLOSED",
+  "P2X-2": "PHASE2_READY_FOR_FINAL_FREEZE",
+  "criteria": 12,
+  "probes": 22
+ },
+ "reproducibility": {
+  "committed_family_courses": 9,
+  "courses_identical_to_the_predecessor": true,
+  "p2x1_freeze_digest": "3afa71b2dfa0f47eb1a00e8987c79cd18b246788e366ac07fe58eacc21815a0e",
+  "p2x1_record_reproduces_on_its_own_tree": true
+ },
+ "runtime_status": {
+  "integrated_at_runtime": false,
+  "phase_3_started": false,
+  "resident_visible_change": false,
+  "shadow_package": "clinical_core",
+  "source_of_truth": "family_engine.py"
+ },
+ "sources": {
+  "clinical_core/__init__.py": "acb1d8137d2dab84a0c3f5b4d68b3e904d8e85564a657233bb0e622e539338c2",
+  "clinical_core/a9.py": "64006b57e37ab69dd9dfd61d5c87b01112779f19e7007b96440cfad345ad5b92",
+  "clinical_core/acid_base.py": "9298b1f0a6defbe1a11627a0d76208c36792b01a390d80558e3cc1fda1827954",
+  "clinical_core/acid_base_report.py": "9f0b9f5b03369066e4ac7916b372453c41ef7793b36c20553b88d726b83afa78",
+  "clinical_core/acs_migration.py": "4fae25400e94b7c1f3b6b77f277dd5e04b72d150c52da738faddf95b37edd971",
+  "clinical_core/acs_migration_report.py": "dbe33c01e165f9471dcb720919c3fac257f3d0903972117a420e91632b4c2d6b",
+  "clinical_core/acs_reference.py": "b7b69c7892314375de236aec35016178218dfa4b114874b165c7191a0de2cfa1",
+  "clinical_core/arrival_severity.py": "c5c0e4c125303b463ec1d2a5373464c09576f7d83ca975834e6b059c67b2b229",
+  "clinical_core/arrival_severity_report.py": "a1806dc772a4f0a540a621271e8dd24b4c77b36da2b55af5e1da623cf30ac2eb",
+  "clinical_core/asthma_distress_migration.py": "feacb1fc6bc5cc29fd76fa4584b22fa16476aec6e685880dab4fd15264b2e168",
+  "clinical_core/asthma_distress_migration_report.py": "81925051cca752dc9a37c1cc79b82ffc14ca1c3484c90b40c238ead1a545f315",
+  "clinical_core/asthma_migration.py": "ddbbfb562a93595985fe189c2d88e7a05a845ca7cee02282cca90f56dd044ca8",
+  "clinical_core/asthma_migration_report.py": "f9580ac9d821e4ba33e202f664b0de076df0fe5fb3c0d3792eae8decd26d1880",
+  "clinical_core/asthma_reference.py": "b6ed2ee6a495d8868a2cbb3039ecb3d7a8876928ad02e0eaeb4d90d699c1dcbe",
+  "clinical_core/bands.py": "9facbd34dc643d45f7ad3d668619f344717824c921924247f65396fae6aa81bc",
+  "clinical_core/baroreflex.py": "cd9072b8c97bfc3a15e8d314c88aae7ec6a622a8c4b7e1fad9fa73c38e5aca6e",
+  "clinical_core/baroreflex_report.py": "0044b585240c36e9fd5e049c394f053f443d1408c23c77299d9cc5a65efef405",
+  "clinical_core/blood_anchors.py": "bd870314a723dc420ef6d27189275cb3a2b4bba0fd3515fac166c017fb69b89e",
+  "clinical_core/blood_constraints.py": "2d139733ed529a03f9c58cd4aa5eb70c8812bb25ba0737f90172546b4e2a65a8",
+  "clinical_core/blood_extension.py": "87429c2ed0b453bb33b2107fdfa453ffe6d78e5ffbb26364eab7e8228556ce47",
+  "clinical_core/blood_extension_report.py": "028efe15446ddc8d9b424465cbcdb74732f00361efea09de3225cea9f3bbde54",
+  "clinical_core/blood_filter_report.py": "4667b87efb27cfef4a1f705c9767bb6dd311d6c67625b9505dead9ef3293c394",
+  "clinical_core/blood_fluid_calibration.py": "46e73e3314190dd6fc18695346a16e9c6c55059606ac80a16081695f1d9fdd19",
+  "clinical_core/blood_fluid_readiness.py": "40b93a69c8b70190e7d92a056f0987b81a30ee32331629d18132f0aa534a15cf",
+  "clinical_core/blood_fluid_readiness_report.py": "8bcf365b433ba584760775d23a23bbf4b750e6f2253b67fcf818df2a679dc650",
+  "clinical_core/blood_fluid_report.py": "6ba467991a3e7ac9c8193f1ecff225541c069c89073872e8dc4ffca4487edc0a",
+  "clinical_core/blood_fluid_tau_closure.py": "c16a56a77c3957ae1186f4e2b016ddbadd8fee7bae0d405414fb031af735621b",
+  "clinical_core/blood_fluid_tau_closure_report.py": "16d703dfa0ecf52a29763d7a94a4dc0534ae1ff886021444e4884d3a0477af46",
+  "clinical_core/blood_probes.py": "846de76dbfe99f3dd7fc6ace431dc1d1325441e13bc0c1148c009f33016bf3d5",
+  "clinical_core/blood_rate_boundary.py": "435db3cf1d1fdba4e9ff059b889a2e8180ca80db1d2fdbeff433663692ee9f83",
+  "clinical_core/blood_rate_report.py": "3bcf35d15d3611f2564e23bf0392703bd31236c21ff128836c6201b45e6e380f",
+  "clinical_core/calibration.py": "f3fa65375ddaa48bac9ecf850838c78606bb46c3a15f12f968b146b84592ace5",
+  "clinical_core/closure_guard.py": "1a088d257c6c37230e38d75e34c289d0e8c06cb158927e0ae51c38a266f4020e",
+  "clinical_core/closure_guard_report.py": "f1f304c6606247df9f263fb15085c7411d223528acddb32fc490d627e863cd5f",
+  "clinical_core/collapse.py": "6076dd315f8bd335af8a425ac4d78e3bcbbd5f1198b45e511b4f122532d65fc9",
+  "clinical_core/collapse_architecture.py": "0d6ed0d28695c016c1834bd931e4bfbcac561b8d94c70f8d316c999d3e2d6699",
+  "clinical_core/collapse_architecture_report.py": "3b116d0a28933ccbbc2c5f45c97d1cdfb822bee5f79a4877320bd67464c6ebbf",
+  "clinical_core/collapse_audit.py": "7c1fb59a26bfda77ba84e0a38640e3aabcccdf69d41b222e93ad48cf414e1521",
+  "clinical_core/collapse_audit_report.py": "08b63fa519e985eea0619becdd5d9b21bb92b0e8def1f72a4d89d34847af5061",
+  "clinical_core/comparison.py": "fd1dbb232399f6eae33cfe758670b80a551161fea183e5dd4820575636a2b0d4",
+  "clinical_core/consciousness_audit.py": "534bc27d96f7ffd31da70e9ff90ffdf92e82c62fe8e015fb3fd6df040885fe8c",
+  "clinical_core/consciousness_audit_report.py": "8f769dbafb2b76a6013b518038f842aa3d23be482a6ff7d355472ca75eaa0e53",
+  "clinical_core/contracts_input.py": "2185469e423f2104ec81705849e57d6fffe01a316f1a7b35eba6883467f89117",
+  "clinical_core/contracts_legacy.py": "1afe36c5ccbf07df3f3e632916fd083d0fcfc8258ede6bf56eef70fb98f7d80a",
+  "clinical_core/contracts_output.py": "bc7371c7ccb57ea2f138a6bbc58c266851f6dbf0fbdb5eb2d625b1ea70ab3751",
+  "clinical_core/contracts_shadow.py": "bd2fc07a7b91f05c89c96294f440b0510c2896a7666cb77fd97a5bdab001cf65",
+  "clinical_core/decision_pack.py": "4f35b6989b9778d3df8cdfa9c1ba239e6df46de127416921797b5e2114a03c62",
+  "clinical_core/decision_pack_markdown.py": "e0f9471a8e21284a1cf8976b3d7f89002d0d4fb023d02c087240d45ef6836328",
+  "clinical_core/derived.py": "61f02bef25e7c330e1c8d1b725a22b8dc479b6c96ac0c2d0360bc11351336936",
+  "clinical_core/distress_closure.py": "17831ecad1a43acf6364d618938ceca3835347b37b7d8c2593e76909f794740b",
+  "clinical_core/distress_closure_report.py": "c91cdc709da5c3b3babb3bff7e05331c6d505b4314c133d3f5c75f71a94a359f",
+  "clinical_core/distributive_tone.py": "b699ca1d56ee67d8ee412aef2e52b4627a1cf9e11dec301022ea40b2ab3ee82b",
+  "clinical_core/distributive_tone_report.py": "46188798c1c3b06f4e2ee1c28fc3b10f60944af87f7d8ed206d8ca5cefc59c67",
+  "clinical_core/edema_migration.py": "7d2bd34a883c0253aed4d254f025b400bf178346e348fd3982986c228ef2b464",
+  "clinical_core/edema_migration_report.py": "02c20561397d1d4ab7b9a83e1e1be1ce8abe5b027a7f8679cd5ba9af0b418467",
+  "clinical_core/edema_reference.py": "fd8702e4d5ed03cf6dbe72cf0053ad9af6966e40e2b197cf42261bf61a66eb76",
+  "clinical_core/embolism_migration.py": "1f67472c5fa7079989973f11cb2df356ef048efa3d64acad97ca02b38650c22f",
+  "clinical_core/embolism_migration_report.py": "ad307663a3f2f73fbde5d771cbfc57896cddf5d43f5a3e291e52ade3ce448b0c",
+  "clinical_core/embolism_reference.py": "55ecc2418844c05185d8e933d3c62456da31fd73c7704a6877c396f221469d74",
+  "clinical_core/encephalopathy.py": "04aea64d6f2a23cf5a77a530114b3174eab9c9adc527708a97ac25f9c5ce3539",
+  "clinical_core/encephalopathy_architecture.py": "55d47c033d381fb2b1cb69fab67adb27a05d7393807575561bc8d7a4d5e58a2c",
+  "clinical_core/encephalopathy_architecture_report.py": "e35278b85196763ef1b87f30acb19c20d8dc5a007cdc55dad266bcf07b0c990a",
+  "clinical_core/faculty_constraints.py": "092c32cf5a20cbf62e3e9df32a47896ccdef701f97170634740a8f8399d7982a",
+  "clinical_core/gas_exchange_architecture.py": "b9dcfe241f91e0ef973ca77b32e149b0ddbc76ac09f19092f7cfca5a16601835",
+  "clinical_core/gas_exchange_architecture_report.py": "2a4a589ae2c40f7ffa856a7daf4405c066ed26998d5f25a849cc59646742dd48",
+  "clinical_core/gi_reference.py": "ee3114ce9eeeb426a7b843943819aa88095b6cb09674e4c895c93a6ad1de0867",
+  "clinical_core/haemorrhage_probes.py": "df55cdcd16e5ea091a0b27042c22723029c9f19722a332c98c64bf606ef2df00",
+  "clinical_core/hemodynamic_probes.py": "1e6e96a0397f379aa4a8112aef8198963b9120fd239d2444c22ad2db22ea2ebb",
+  "clinical_core/hr_envelope_filter.py": "6bfe0ef46ed1f2b1a4555b7322ca7d3747c237f2cc185caf3dcd479e8a50d885",
+  "clinical_core/hr_envelope_filter_report.py": "e85579aed3751aafb11cc9a5abd5b38176c2bc126692384db80192cf787232bf",
+  "clinical_core/hr_observables.py": "47c21f35d7a38ccee60df3df2053edcc776e86d8fdeb5ff8881bf4e105764f05",
+  "clinical_core/hr_observables_report.py": "705578a792a9aeb28aaf75cd1f47b61254f55f381df325b010f33fa03d3d4a9f",
+  "clinical_core/hr_primary.py": "f9c5807fb6ddb6f2ced9ee8b209a047eed60b229ba450ccde56454cb0d8812f9",
+  "clinical_core/hr_primary_report.py": "9551cab1a2e068a2c6cfb977160bae38d50bb96b17335504a47176d25144cf92",
+  "clinical_core/hr_shock.py": "2fbf78d2ed5a0fd0592ef48b90fd4dc385a5c27c6fd523b1dbc195ae2ca2b419",
+  "clinical_core/hr_shock_report.py": "64043971e9d2404924dc3251e53c52b5ddc356cdff9a367ce9d0ba48a483e9c5",
+  "clinical_core/hr_structure.py": "1109ca9dded7b8e67c588932326f510e10e0ad51f6091f0a17fe9ef09f218f16",
+  "clinical_core/hr_structure_report.py": "bdf83176d06b212a877a423724425dcbbe18287d823fec84a13a6c0d87a0d384",
+  "clinical_core/integration.py": "e59949b9f708db5834cb0a80ab5205098f307adf1d80f637df0899554baaaf23",
+  "clinical_core/interventions/__init__.py": "d0dedb08f0d35bff6ba458af009b3a35f85018e9ea2a76373158d9c373551b79",
+  "clinical_core/interventions/fluids.py": "7dc615d2eea80e3afdab0774bb1f234f7ea887be1654ae02e6ca312513fb9aef",
+  "clinical_core/interventions/modifiers.py": "46c8970630a77960d7ba2e81023d31b96b2b08f611a87eae9f94cb85f1b1aa6a",
+  "clinical_core/interventions/oxygen.py": "d7bcc0393ed562d02d6070f09ab8d501c506e6931f5efd33b3492d7e34664095",
+  "clinical_core/interventions/timing.py": "498493e6143d691d582b68f568491b9275eef49bb13bcf94e251f17aea49c6a1",
+  "clinical_core/lactate_adequacy.py": "ec49d1da4ca2494d804605669fe59617f7a1d7841572ae4be9f2e6e2b6ef7638",
+  "clinical_core/lactate_adequacy_report.py": "4f50500d46ea3a4eb1aebc545f718a8e7f78ea77f532041736fbd4cd54881044",
+  "clinical_core/lactate_closure.py": "2ae56c334031da561a9d402795c1a81ec70646ea15ed0e71cc8b6991bc04dbc3",
+  "clinical_core/lactate_closure_report.py": "e8a62c16b97d9800a357150e69f9ecb97ad0a8796f1db2c31a7c2995ee267b3f",
+  "clinical_core/lactate_constraints.py": "cf9522168fd7012e52ca797752ce8d5ab9456db7ff54422f917ccf0628d021be",
+  "clinical_core/lactate_rebuild.py": "d969a8c89b678204b4b258c35731f64b0e87ef3cf97b80ef5b92b073ccc9733f",
+  "clinical_core/lactate_rebuild_report.py": "22948e39f94661d3ef66e7a129be1be8cbded1dc124ff581fbf9b9144c56b162",
+  "clinical_core/lactate_slice.py": "8c635549b55fa99377267b2451e32a0a5ff25eaafd910e76ebf729b40acef721",
+  "clinical_core/legacy_adapter.py": "f8fafd17bcda03a4293e5717145c6f4672760a07d553c965fa7c2505b69ad115",
+  "clinical_core/logistics.py": "8b7b28c7cee688d38bbaa124e9bc83f760e3b952d7f34b0df0cf6ba6159855b9",
+  "clinical_core/lung_water_reference.py": "23a6f40d17dcf51bd1fa42ec4dc5151297c4f3a47fed241b2edaec64f069ddff",
+  "clinical_core/lung_water_reference_report.py": "1c7da3d2797237e24dbd085edcf2780a4b26f1fbc9658bf383982a910e1c289f",
+  "clinical_core/migration.py": "aa5d5c8001514994dda67a8dbfbf60e18f9048e1b18edc599ddf0399f80b349e",
+  "clinical_core/migration_authority.py": "baf342106c2a611ddc5b8f43e75a9726c11ce1a53465c5bd3d2761a0e9a8f907",
+  "clinical_core/modules/__init__.py": "1cf73c2ddf4fe370c8d34fff2ea8132149c02239ee81f3329bd87cfec729f23d",
+  "clinical_core/modules/acs_ischaemia.py": "3199b9173594aea07c905e55b46e8705621b5c9ed7e936987024aa2d2079993d",
+  "clinical_core/modules/asthma.py": "44cbb45b5781d85c927c66892377518d9c15244deafc58ed66ef6e391f26af6d",
+  "clinical_core/modules/gi_haemorrhage.py": "edb61d903bc9f4607c1d3b819f28ac065ba86656b75ba29c89d3a7c124777673",
+  "clinical_core/modules/opioid.py": "479b0ceb756b52db2abf6576d9feea0d650fd75943e8504a17a8304574e565c4",
+  "clinical_core/modules/pulmonary_edema.py": "01e68556c919efa24ff6186eacf22c98e2ec882bf5cd52109bbafaffd8351679",
+  "clinical_core/modules/pulmonary_embolism.py": "147881394c9208b35e2e2fdb7bb0ab42d589785000784379a8b1c1460df204c7",
+  "clinical_core/modules/rhythm_events.py": "1036a2443e44fe5e2fde80736984b6828542b69454cc49a36e660ee8d436c86b",
+  "clinical_core/opioid_migration.py": "272e6aa0327e06d84fe082bb677972db4a8017a001660d0e1d62c441add482b6",
+  "clinical_core/opioid_migration_report.py": "529f273d2354889fc09547371e990b23f27f7f40f30a9779c66e59b36a73e246",
+  "clinical_core/opioid_reference.py": "db32552a049ecb8d19ebf5ee4cadb5d9613432666ec48420315cd8e62482f4d7",
+  "clinical_core/oxygen_probes.py": "450cec663ae0c47ba32b6df8b4fadc136cad6c9a2e14f8f08d649d166651febd",
+  "clinical_core/oxygenation_link.py": "e6cf3ce8ed5bdce43573ea35dab45df141eb251e744c07f765d43e0e230bc824",
+  "clinical_core/oxygenation_link_report.py": "c621080d5bfae14df8e920f6095b82abce84b007c591579ac6c33f09b82b9e59",
+  "clinical_core/pressure_tone.py": "2e350c8a42bcacfa31e8e5349d284c7d276808e396d36421e1dc369dbcb9ec26",
+  "clinical_core/pressure_tone_filter.py": "54bff406686b2b8e47757f10c5ec42cb6e0a0d170f2627cb926f99eea1c7e650",
+  "clinical_core/pressure_tone_filter_report.py": "6eebe11b816eeb901f10d9f1431182b71ab26db84652771af741076f33734f92",
+  "clinical_core/pressure_tone_report.py": "bc0fe73c681a35432baec5acf8062027b63f0e5821146133fb9211ae9240d7ac",
+  "clinical_core/provenance.py": "40ed2f08456ecefea5aafc1f895a3df962a00d0bba7edc54243fb574a2ef5af8",
+  "clinical_core/respiratory_distress.py": "111b07fc869b4eed143f601db29da76287b95004e066a5a9bc721a798b2a5f2a",
+  "clinical_core/respiratory_distress_report.py": "a07dd0bf18e890633410e4c36da85e532082698c874788e2f48bccee63b017d8",
+  "clinical_core/respiratory_drive.py": "246f4ad5070fb50a64eec686ee4441e896d79c6d717303e1a43c11f7bf5af21b",
+  "clinical_core/respiratory_drive_report.py": "7bb2ee04e3204b4de2bf542cac2f8166d72de7af4892cc7f098699f5adc94f2a",
+  "clinical_core/respiratory_mechanics.py": "71c991ffc0217e478e2510bdb31849ac3ae82be8dfbb9b53b9d3d27df12b65e7",
+  "clinical_core/respiratory_mechanics_report.py": "cfd4fa9369da7e65c33090db48193b761135c69355c206fd76534a5070a49f9c",
+  "clinical_core/respiratory_monotonicity.py": "ba6bac3ea1f4f1f9b0bff5503b4ff846f1ae5a097ee88d8480dd3ee52fbba672",
+  "clinical_core/respiratory_monotonicity_report.py": "373cdac40c02f1e0bd4683f9ab6329ce08805b4a41e38939e89ff28a8fc83fcb",
+  "clinical_core/rr_audit.py": "4b663ffad81ff88f728707e7c96a255d882cbf62247107980652331fff885bf1",
+  "clinical_core/rr_audit_report.py": "f3951b39f4b0b9d6b82a6fffa687457f68257743e6e86fb4d5c10c0dc81797e5",
+  "clinical_core/shadow.py": "66ef25c952509f0765731cfc0c0b97274bc5a4d263dcb486b595a8585a99ef35",
+  "clinical_core/signals.py": "f02f5494a8aac0361ace94a40e15a4df81970f456de7af0f6762a1196a27ee7f",
+  "clinical_core/state.py": "74bc9337c523590fe89d9fae0e23bf77d8bad25454c5eec586aa1ef919fae093",
+  "clinical_core/systemic_stress.py": "572c72d8f225ee86fc4f8e40842de15809b29ef53f77edfe201c49c45dde851e",
+  "clinical_core/systemic_stress_report.py": "e8ef9be3eeab26b10d4a8339c46d5dac99dfc6228e39101766af88ef9e161ea9",
+  "clinical_core/tone_domain.py": "833d355f3d30ac494045c819693d00a3dc9de858f87a24f568dfe3afeee5463b",
+  "clinical_core/tone_domain_report.py": "733de089369a3395c63a17048d42c88125c85e508a8609363ed0c16b12309ac5",
+  "clinical_core/vascular_tone.py": "8314c34accd082511b8e5cbe73da90c054fdbd2a0b8a6f3a56ab0aa0c12f7cf5",
+  "clinical_core/vascular_tone_report.py": "19db9e1005755fbb229f1e739c3c1607f97e376df784c929f63c0cb97440ba4a",
+  "clinical_core/ventilation.py": "260393add18e2275ee21411512d18531a74387f853bb76a2f33f89d5cb1bafe9",
+  "clinical_core/ventilation_filter.py": "9edf6c7544924f90875bdc2abd56cf6d86346411901009e641267d14d47685b9",
+  "clinical_core/ventilation_filter_report.py": "6d5789040d650c2b7241d18399c6fe2038fd91eb1ca58e5f7c93e29f63a39c49",
+  "clinical_core/ventilation_surface.py": "d361b500ccaf059784ea7e7662b6be5dd7d02019174c2f66cc0ca0ff24245825",
+  "clinical_core/ventilation_surface_report.py": "64de449f56f34cc77ec3a6ca663ee2389ea32f3c3373a289237e69f212d16a3c"
+ },
+ "supersession": [
+  "P2J2_UPPER_ENDPOINT_PROBE_SUPERSEDED_BY_P2X1A",
+  "P2X1_FROZEN_VERDICT_SUPERSEDED_BY_P2X1A",
+  "TD120_HISTORICAL_SUPERSESSION_ACCEPTED"
+ ],
+ "uncertainty": {
+  "principle": "a non-identifiable quantity is kept as a region or an explicit boundary status, never collapsed to a point",
+  "records": [
+   "P2G_decision_pack.json",
+   "P2I2AA_blood_fluid_tau_closure.json",
+   "P2I2AB_lactate_rebuild.json",
+   "P2I2AC_lactate_adequacy.json",
+   "P2I2AD_lactate_closure.json",
+   "P2I2AE_hr_structure.json",
+   "P2I2AF_hr_shock.json",
+   "P2I2AG_hr_primary.json",
+   "P2I2AI_arrival_severity.json",
+   "P2I2AJ_hr_observables.json",
+   "P2I2AK_hr_envelope_filter.json",
+   "P2I2P_oxygen_probes.json",
+   "P2I2Q_hemodynamic_probes.json",
+   "P2I2S_haemorrhage_probes.json",
+   "P2I2T_blood_probes.json",
+   "P2I2U_blood_anchors.json",
+   "P2I2VR_blood_filter.json",
+   "P2I2VR_blood_sensitivity.json",
+   "P2I2V_blood_diagnostic.json",
+   "P2I2V_blood_filter.json",
+   "P2I2V_blood_sensitivity.json",
+   "P2I2W_blood_extension.json",
+   "P2I2X_blood_rate_boundary.json",
+   "P2I2Y_blood_fluid_calibration.json",
+   "P2I2Z_blood_fluid_readiness.json",
+   "P2I2_lactate_constraints.json",
+   "P2I_lactate_slice.json",
+   "P2J1_pressure_tone.json",
+   "P2J2_vascular_tone.json",
+   "P2J3_pressure_tone_filter.json",
+   "P2J4_baroreflex.json",
+   "P2K1_rr_audit.json",
+   "P2K2_acid_base.json",
+   "P2K3_ventilation_surface.json",
+   "P2K4_ventilation_filter.json",
+   "P2K5_respiratory_monotonicity.json",
+   "P2L1_consciousness_audit.json",
+   "P2L2_encephalopathy_architecture.json",
+   "P2M1_collapse_audit.json",
+   "P2M2_collapse_architecture.json",
+   "P2N2_acs_migration.json",
+   "P2O1_gas_exchange.json",
+   "P2O3_lung_water_reference.json",
+   "P2P1_pulmonary_edema.json",
+   "P2P2_respiratory_drive.json",
+   "P2Q2_pulmonary_embolism.json",
+   "P2S2_respiratory_mechanics.json",
+   "P2S3_asthma_migration.json",
+   "P2T1A_distress_closure.json",
+   "P2T1_respiratory_distress.json",
+   "P2T3_asthma_distress_migration.json",
+   "P2T5_oxygenation_link.json",
+   "P2U1_opioid_migration.json",
+   "P2V1_systemic_stress.json",
+   "P2W1_distributive_tone.json",
+   "P2X1A_closure_guard.json",
+   "P2X1_tone_domain.json",
+   "P2X3_phase2_closure.json"
+  ]
+ }
+}
