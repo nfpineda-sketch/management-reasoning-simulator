@@ -16,12 +16,14 @@ commits nothing: there is no minute-by-minute fallback to the legacy engine.
 """
 import ast
 import json
+import tempfile
 from copy import deepcopy
 from pathlib import Path
 
 import pytest
 
 import runtime_authority as ra
+import runtime_authority_store as store
 import runtime_shadow as rs
 
 ROOT = Path(__file__).resolve().parent
@@ -34,10 +36,24 @@ TEST_ONLY_SNAPSHOT = {"id": "test_only_site_point",
                       "parameters": {"test_only_placeholder": 1.0}}
 #: Every flag a faculty experiment would set. The shadow flag is one of them since the P3-19 review:
 #: authority has no candidate of its own, so the common core must be running beside the engine.
+#: This file's own artifact store, outside the repository. Since P3-26 an experiment does not start
+#: without one: a hard failure that nothing can record is not a visible hard failure.
+STORE_DIR = tempfile.mkdtemp(prefix="phase3-authority-site-")
 BEST = {ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY,
         ra.SNAPSHOT_FLAG: TEST_ONLY_SNAPSHOT["id"],
         ra.ENVIRONMENT_FLAG: "development",
-        rs.FLAG: rs.MODE_SHADOW_COMPARE}
+        rs.FLAG: rs.MODE_SHADOW_COMPARE,
+        store.STORE_FLAG: STORE_DIR}
+
+@pytest.fixture(autouse=True)
+def _pinned_store(monkeypatch):
+    """No authority test may write into an ambient faculty store (P3-28 review).
+
+    The store flag is pinned to this file's own temporary directory for every test here, so a machine
+    that exports ``MRS_PHASE3_AUTHORITY_STORE`` cannot receive a record from the repository's own suite.
+    """
+    monkeypatch.setenv(store.STORE_FLAG, STORE_DIR)
+
 
 
 @pytest.fixture
@@ -424,11 +440,14 @@ def test_d15_the_harness_is_imported_by_exactly_one_production_wiring_point():
         return names | {node.module for node in ast.walk(tree)
                         if isinstance(node, ast.ImportFrom) and node.module}
 
+    # The declared layer may read itself -- the artifact store is part of it (P3-26) -- and the claim is
+    # about everything else: exactly one production wiring point, and it is the app's helper.
     readers = sorted(path.name for path in ROOT.glob("*.py")
-                     if not path.name.startswith("test_") and path.name != "runtime_authority.py"
+                     if not path.name.startswith("test_") and path.name not in rs.LAYER_SOURCES
                      and "runtime_authority" in imports(path))
     assert readers == ["app.py"], readers
     assert "runtime_authority.py" in rs.LAYER_SOURCES
+    assert "runtime_authority_store.py" in rs.LAYER_SOURCES
     assert rs.COMMON_CORE_RUNTIME_AUTHORITY is False
 
 

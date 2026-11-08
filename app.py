@@ -610,7 +610,7 @@ def reset_session():
     st.session_state.pop("phase3_shadow", None)
     import runtime_authority as _authority_layer
     for key in (_authority_layer.SITE_KEY, _authority_layer.SITE_REFUSED_KEY,
-                _authority_layer.ARTIFACT_KEY):
+                _authority_layer.ARTIFACT_KEY, _authority_layer.HALTED_KEY):
         st.session_state.pop(key, None)
     st.session_state.state = deepcopy(INITIAL_STATE)
     st.session_state.events = []
@@ -10912,8 +10912,63 @@ def _render_developer_record():
         st.json(st.session_state.management_trace)
 
 
+def _render_authority_experiment():
+    """Phase 3 (P3-26): the authority experiment's own status, for faculty and development only.
+
+    It renders from ``runtime_authority.authority_status`` and derives nothing of its own: the mode, the
+    experiment state, the failure reason and the artifact identity are read, not recomputed. It draws
+    NOTHING unless an authority experiment exists in this encounter, which no production configuration can
+    produce -- and it is called from the staff tools, so the faculty gate above it is the same one that
+    guards the other development controls.
+
+    It is never a resident-facing clinical event: no vital, no clinical wording, no score, and nothing a
+    resident can reach.
+    """
+    import runtime_authority as _authority_layer
+    import runtime_authority_store as _authority_store
+    status = _authority_layer.authority_status(st.session_state)
+    if (status["experiment_state"] == _authority_layer.EXPERIMENT_NOT_STARTED
+            or (not status.get("authority") and not status.get("artifact_digest")
+                and not status.get("authority_minutes"))):
+        # No experiment in this session. A resumed encounter loses the session keys, so the durable
+        # record is what remains: if the store holds experiments for this case, say so (P3-28 review).
+        stored = _authority_store.records(case_id=status.get("case_id"))
+        if not stored:
+            return
+        with st.expander("Developer: Phase-3 authority experiments on record", expanded=False):
+            st.json(stored)
+        return
+    halted = bool(status.get("halted"))
+    heading = f'Developer: Phase-3 authority experiment · {status["experiment_state"]}'
+    with st.expander(heading, expanded=halted):
+        if halted:
+            st.error(f'{_authority_layer.INVALID_FOR_CONTINUATION} · '
+                     f'{status.get("failure_reason") or status.get("halt_reason") or ""}')
+            st.caption(_authority_layer.FAILURE_POLICY + " · " + str(status.get("why") or ""))
+        st.json({
+            "mode": status["mode"],
+            "experiment_state": status["experiment_state"],
+            "snapshot_id": status.get("snapshot_id"),
+            "authority_domain": status.get("domain"),
+            "minute": status.get("minute"),
+            "outcome": status.get("outcome"),
+            "failure_reason": status.get("failure_reason") or status.get("halt_reason") or "",
+            "unsupported_actions": status.get("unsupported_actions"),
+            "authority_minutes": status.get("authority_minutes"),
+            "mixed_trajectory": status.get("mixed_trajectory"),
+            "legacy_counterfactual_available": status.get("legacy_counterfactual_available"),
+            "artifact_id": status.get("artifact_id"),
+            "artifact_digest": status.get("artifact_digest"),
+            "stored": status.get("stored"),
+            "case_id": status.get("case_id"),
+            "attempt": status.get("attempt"),
+            "environment": status.get("environment"),
+        })
+
+
 def _render_staff_tools():
     """Development controls, drawn for faculty and administrators only (2026-10-02, section 10)."""
+    _render_authority_experiment()
     _room.image_tools(st.session_state.state)
     if not st.session_state.state.get("engine_family"):
         h = st.session_state.state["hidden"]

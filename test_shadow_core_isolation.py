@@ -126,7 +126,7 @@ DECLARED_CROSSINGS = frozenset({"runtime_shadow", "runtime_authority"})
 #: layer and the acceptance battery, and no runtime module may read IT.
 SHADOW_LAYER = frozenset(Path(name).stem for name in __import__("runtime_shadow").LAYER_SOURCES)
 assert SHADOW_LAYER == {"runtime_shadow", "runtime_shadow_families", "runtime_shadow_evidence",
-                        "runtime_authority"}, SHADOW_LAYER
+                        "runtime_authority", "runtime_authority_store"}, SHADOW_LAYER
 assert DECLARED_CROSSINGS <= SHADOW_LAYER
 HARNESS = "runtime_shadow_evidence"
 

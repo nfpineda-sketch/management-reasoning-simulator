@@ -9,12 +9,14 @@ No production authority is enabled anywhere here: the registry is empty before a
 injection goes through the private mapping the production scan watches.
 """
 import json
+import tempfile
 from copy import deepcopy
 from pathlib import Path
 
 import pytest
 
 import runtime_authority as ra
+import runtime_authority_store as store
 import runtime_shadow as rs
 
 ROOT = Path(__file__).resolve().parent
@@ -23,10 +25,22 @@ TEST_ONLY_SNAPSHOT = {"id": "test_only_battery_point",
                       "decision": "TEST ONLY: exists inside one test session, approves nothing",
                       "runtime_parameter_snapshot_id": rs.PARAMETER_SNAPSHOT_ID,
                       "parameters": {"test_only_placeholder": 1.0}}
+STORE_DIR = tempfile.mkdtemp(prefix="phase3-authority-battery-")
 BEST = {ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY,
         ra.SNAPSHOT_FLAG: TEST_ONLY_SNAPSHOT["id"],
         ra.ENVIRONMENT_FLAG: "development",
-        rs.FLAG: rs.MODE_SHADOW_COMPARE}
+        rs.FLAG: rs.MODE_SHADOW_COMPARE,
+        store.STORE_FLAG: STORE_DIR}
+
+@pytest.fixture(autouse=True)
+def _pinned_store(monkeypatch):
+    """No authority test may write into an ambient faculty store (P3-28 review).
+
+    The store flag is pinned to this file's own temporary directory for every test here, so a machine
+    that exports ``MRS_PHASE3_AUTHORITY_STORE`` cannot receive a record from the repository's own suite.
+    """
+    monkeypatch.setenv(store.STORE_FLAG, STORE_DIR)
+
 #: The two candidates P3-21 left standing, plus the one it retired, so the retirement is re-measured.
 CANDIDATES = {"gi_pressure_committed": {},
               "gi_pressure_preload_high": {"preload_curve_scale_ml": 1500.0,

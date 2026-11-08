@@ -12,12 +12,14 @@ import this module at all, which is also a test.
 """
 import ast
 import os
+import tempfile
 from copy import deepcopy
 from pathlib import Path
 
 import pytest
 
 import runtime_authority as ra
+import runtime_authority_store as store
 import runtime_shadow as rs
 
 ROOT = Path(__file__).resolve().parent
@@ -39,6 +41,14 @@ TEST_ONLY_SNAPSHOT = {"id": TEST_ONLY_ID,
                       "decision": "TEST ONLY: exists inside one test session, approves nothing",
                       "runtime_parameter_snapshot_id": rs.PARAMETER_SNAPSHOT_ID,
                       "parameters": {"test_only_placeholder": 1.0}}
+#: This file's own artifact store, outside the repository: no test here may write into an ambient one.
+STORE_DIR = tempfile.mkdtemp(prefix="phase3-authority-gate-")
+
+
+@pytest.fixture(autouse=True)
+def _pinned_store(monkeypatch):
+    """No authority test may write into an ambient faculty store (P3-28 review)."""
+    monkeypatch.setenv(store.STORE_FLAG, STORE_DIR)
 
 
 @pytest.fixture(scope="module")
@@ -322,8 +332,10 @@ def test_a16_exactly_one_production_wiring_point_imports_the_authority_harness()
         return names | {node.module for node in ast.walk(tree)
                         if isinstance(node, ast.ImportFrom) and node.module}
 
+    # The declared layer may read itself: the P3-26 artifact store is part of it. The claim is about
+    # everything else -- exactly one production wiring point, and it is the app's helper.
     readers = sorted(path.name for path in ROOT.glob("*.py")
-                     if not path.name.startswith("test_") and path.name != "runtime_authority.py"
+                     if not path.name.startswith("test_") and path.name not in rs.LAYER_SOURCES
                      and "runtime_authority" in imports(path))
     assert readers == ["app.py"], readers
     assert "runtime_authority" not in (ROOT / "pilot_acceptance.py").read_text(encoding="utf-8")

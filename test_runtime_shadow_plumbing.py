@@ -366,7 +366,8 @@ def test_r13_nothing_authoritative_reads_the_shadow_result():
     # The exemption below is the declared layer, and the declaration is pinned HERE as a literal: adding
     # a name to ``LAYER_SOURCES`` cannot quietly exempt a new module from this guard (P3-17).
     assert runtime_shadow.LAYER_SOURCES == ("runtime_shadow.py", "runtime_shadow_families.py",
-                                            "runtime_shadow_evidence.py", "runtime_authority.py")
+                                            "runtime_shadow_evidence.py", "runtime_authority.py",
+                                            "runtime_authority_store.py")
     readers = []
     for path in sorted(ROOT.glob("*.py")):
         if path.name in runtime_shadow.LAYER_SOURCES or path.name.startswith("test_"):

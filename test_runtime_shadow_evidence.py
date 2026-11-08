@@ -264,6 +264,7 @@ def test_u15_the_layer_digest_is_the_identity_of_the_code_that_ran():
     first = rs.layer_digest()
     assert first == rs.layer_digest() and len(first) == 64
     assert set(rs.LAYER_SOURCES) == {"runtime_shadow.py", "runtime_shadow_families.py",
+                                     "runtime_authority_store.py",
                                      "runtime_shadow_evidence.py", "runtime_authority.py"}
     for name in rs.LAYER_SOURCES:
         assert (ROOT / name).exists(), name

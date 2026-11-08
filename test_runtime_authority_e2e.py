@@ -18,12 +18,14 @@ the committed SBP and DBP rather than taken from the common core.
 """
 import ast
 import json
+import tempfile
 from copy import deepcopy
 from pathlib import Path
 
 import pytest
 
 import runtime_authority as ra
+import runtime_authority_store as store
 import runtime_shadow as rs
 
 ROOT = Path(__file__).resolve().parent
@@ -39,9 +41,20 @@ TEST_ONLY_SNAPSHOT = {"id": "test_only_pressure_point",
                       "decision": "NOBODY: test-only injection, approves nothing",
                       "runtime_parameter_snapshot_id": rs.PARAMETER_SNAPSHOT_ID,
                       "parameters": {"test_only_placeholder": 1.0}}
+STORE_DIR = tempfile.mkdtemp(prefix="phase3-authority-e2e-")
 BEST = {ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY,
         ra.SNAPSHOT_FLAG: TEST_ONLY_SNAPSHOT["id"],
         ra.ENVIRONMENT_FLAG: "development"}
+
+@pytest.fixture(autouse=True)
+def _pinned_store(monkeypatch):
+    """No authority test may write into an ambient faculty store (P3-28 review).
+
+    The store flag is pinned to this file's own temporary directory for every test here, so a machine
+    that exports ``MRS_PHASE3_AUTHORITY_STORE`` cannot receive a record from the repository's own suite.
+    """
+    monkeypatch.setenv(store.STORE_FLAG, STORE_DIR)
+
 
 
 @pytest.fixture

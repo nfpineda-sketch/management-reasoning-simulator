@@ -786,6 +786,10 @@ def rollback_artifact(transaction: "AuthorityTransaction", *, reason: str,
 # -- P3-19: the production call site, dormant -----------------------------------------------------------
 
 SITE_VERSION = "P3-19"
+#: What the artifact says about where it may be kept (faculty decision of 2026-11-07). The store itself is
+#: ``runtime_authority_store``, and it is off unless a faculty environment names a directory.
+STORE_CONTRACT = ("phase3_faculty_research_surface_only: never the Phase-2 trace schema, the resident "
+                  "trace, the resident-visible output, the scoring data or the critical-event data")
 #: The keys the site keeps in the caller's own store (Streamlit's session state in production). The
 #: caller orchestrates; every decision lives here.
 SITE_KEY = "phase3_authority_site"
@@ -794,15 +798,34 @@ SITE_REFUSED_KEY = "phase3_authority_refused_for"
 #: Why a site did not open, or why a minute did not commit. Structural reasons, never a clinical reading.
 NO_AUTHORITY_FLAG = "NO_AUTHORITY_FLAG"
 GATE_REFUSED = "AUTHORITY_GATE_REFUSED"
+COMMIT_REFUSED = "AUTHORITY_COMMIT_REFUSED"
 NO_COMMON_CANDIDATE = "NO_COMMON_CANDIDATE_FOR_THIS_MINUTE"
 MINUTE_NOT_COMPARED = "MINUTE_NOT_COMPARED_AGAINST_LEGACY"
 UNSUPPORTED_AUTHORITY_ACTION = "UNSUPPORTED_AUTHORITY_ACTION"
 OUT_OF_DOMAIN_WRITE = "OUT_OF_DOMAIN_WRITE_REFUSED"
 VALIDATION_REFUSED = "VALIDATION_REFUSED"
 SITE_HALTED = "AUTHORITY_HALTED_AFTER_A_HARD_FAILURE"
+#: The authority configuration of a running experiment changed, which it may not (faculty decision F).
+CONFIGURATION_CHANGED = "AUTHORITY_CONFIGURATION_CHANGED_INSIDE_THE_ENCOUNTER"
 MINUTE_ALREADY_COMMITTED = "MINUTE_ALREADY_COMMITTED"
 #: The key the caller keeps the experiment artifact under, dropped with the encounter like the site.
 ARTIFACT_KEY = "phase3_authority_artifact"
+#: The encounter whose experiment halted. The P3-28 review found that a site halted at minute 0 -- a plan,
+#: a held order, a clarification: turns that do not move the clock -- failed ``is_for`` and was REBUILT as a
+#: fresh ACTIVE site for the same encounter. This marker is what makes "no second authority attempt in the
+#: same encounter" true instead of intended.
+HALTED_KEY = "phase3_authority_halted_for"
+
+#: P3-27: the experiment state of one encounter. There is no transition out of HALTED, by construction:
+#: no code assigns ACTIVE anywhere except when a site is built, and a halted site is never rebuilt for the
+#: same encounter. A halted experiment is for replay and analysis, never for continuation.
+EXPERIMENT_NOT_STARTED = "NOT_STARTED"
+EXPERIMENT_ACTIVE = "ACTIVE"
+EXPERIMENT_HALTED = "HALTED"
+#: What a halted experiment is, said in the artifact and on the faculty surface (faculty decision F).
+INVALID_FOR_CONTINUATION = "HALTED/INVALID_FOR_CONTINUATION"
+#: The surface's reading when the gate refused and no experiment exists at all.
+EXPERIMENT_REFUSED = "REFUSED"
 
 
 def _normalized(payload: Any) -> Any:
@@ -960,6 +983,8 @@ class AuthoritySite:
     environ: Mapping[str, str] | None = None
     domain: tuple = AUTHORITY_DOMAIN
     experiment_id: str = ""
+    #: The attempt this encounter is, when the state carries one: part of the artifact's identity.
+    attempt: Any = None
     records: list = field(default_factory=list, init=False)
     halted: bool = field(default=False, init=False)
     halt_reason: str = field(default="", init=False)
@@ -967,6 +992,10 @@ class AuthoritySite:
     #: P3-23A: the eligibility reading of this encounter, when the caller computed one. It is data the
     #: artifact must carry to be auditable, and the site never computes it for itself.
     eligibility: Mapping[str, Any] | None = field(default=None, init=False)
+    #: P3-27: ACTIVE while the experiment runs, HALTED for good after any hard failure.
+    experiment_state: str = field(default=EXPERIMENT_ACTIVE, init=False)
+    #: What the store said the last time this artifact was written.
+    stored: Mapping[str, Any] | None = field(default=None, init=False)
 
     # -- the encounter's identity ----------------------------------------------------------------------
     def is_for(self, state: Mapping) -> bool:
@@ -1013,14 +1042,32 @@ class AuthoritySite:
         minute = _as_int(dict(after).get("sim_time"))
         if self.halted:
             self.records.append(self._refusal(minute, SITE_HALTED, ran))
+            self._persist()
             return None
         try:
-            return self._minute(before, dict(after), session, ran, submission_id)
+            prepared = self._minute(before, dict(after), session, ran, submission_id)
         except Exception as error:
-            self.halted = True
+            # Through ``_hard_fail``, so an internal error preserves what every other failure preserves:
+            # the legacy counterfactual of that minute and a rollback artifact (P3-28 review).
             self.halt_reason = f"{type(error).__name__}: {error}"
-            self.records.append(self._refusal(minute, f"SITE_ERROR {self.halt_reason}", ran))
+            self._hard_fail(minute, f"SITE_ERROR {self.halt_reason}", ran,
+                            legacy=dict(dict(after).get("observable") or {}))
+            self._persist()
             return None
+        # P3-26-4: every outcome of a minute is persisted -- a commit, a refusal, a failure and a halt --
+        # so no failure path can be the one that forgot to leave a record. In production the store is not
+        # configured, so this writes nothing and says why.
+        self._persist()
+        return prepared
+
+    def _persist(self) -> dict:
+        """Hand the artifact to the faculty store. Never raises, and never touches anything else."""
+        try:
+            import runtime_authority_store as store
+            self.stored = store.persist(self.artifact(), environ=self.environ)
+        except Exception as error:
+            self.stored = {"stored": False, "why": f"STORE_ERROR {type(error).__name__}: {error}"}
+        return dict(self.stored)
 
     def _minute(self, before, after: Mapping, session, ran, submission_id) -> Mapping | None:
         minute = _as_int(after.get("sim_time"))
@@ -1029,25 +1076,33 @@ class AuthoritySite:
             # become "nothing ran". An undeclared turn fails closed here, as it does in the gate.
             return self._hard_fail(minute, f"{UNSUPPORTED_AUTHORITY_ACTION}: the caller did not declare "
                                            f"which actions ran this turn", ran)
-        if minute in self.minutes_committed:
-            # One minute is one transaction: a turn that did not advance the clock -- a plan, a held
-            # order, a clarification -- may not commit the same minute a second time.
-            return self._hard_fail(minute, f"{MINUTE_ALREADY_COMMITTED}: {minute}", ran)
-        shadow_minute = self._shadow_minute(session, minute)
-        if shadow_minute is None:
-            return self._hard_fail(minute, NO_COMMON_CANDIDATE, ran)
-        if not shadow_minute.compared_against_legacy:
-            return self._hard_fail(minute, MINUTE_NOT_COMPARED, ran)
-        candidate = pressure_point(shadow_minute.derived)
-        if any(value is None for value in candidate.values()):
-            return self._hard_fail(minute, NO_COMMON_CANDIDATE, ran)
-
+        # The turn's own classes come FIRST: an unsupported management action is the declared policy and
+        # it is about the turn, so a faculty reader must see it named even when the minute would also
+        # have failed for another reason (P3-26-3).
         kinds = action_kinds(ran)
+        legacy_observable = dict(after.get("observable") or {})
         # The declared gaps of the shadow go through the SAME filter as the turn's own classes: a gap on a
         # structural class is not a management-relevant unsupported action, and the three GI treatments
         # with no common writer are, whichever side names them.
         gap_kinds = tuple(str(gap.get("kind")) for gap in getattr(session, "gaps", []) if gap.get("kind"))
         unsupported = tuple(sorted(set(unsupported_among(kinds)) | set(unsupported_among(gap_kinds))))
+        if unsupported:
+            return self._hard_fail(minute, f"{UNSUPPORTED_AUTHORITY_ACTION}: {list(unsupported)}",
+                                   ran, legacy=legacy_observable, unsupported=unsupported)
+        if minute in self.minutes_committed:
+            # One minute is one transaction: a turn that did not advance the clock -- a plan, a held
+            # order, a clarification -- may not commit the same minute a second time. It is checked AFTER
+            # the classes, so a turn carrying an unsupported treatment names it (P3-28 review).
+            return self._hard_fail(minute, f"{MINUTE_ALREADY_COMMITTED}: {minute}", ran,
+                                   legacy=legacy_observable)
+        shadow_minute = self._shadow_minute(session, minute)
+        if shadow_minute is None:
+            return self._hard_fail(minute, NO_COMMON_CANDIDATE, ran, legacy=legacy_observable)
+        if not shadow_minute.compared_against_legacy:
+            return self._hard_fail(minute, MINUTE_NOT_COMPARED, ran, legacy=legacy_observable)
+        candidate = pressure_point(shadow_minute.derived)
+        if any(value is None for value in candidate.values()):
+            return self._hard_fail(minute, NO_COMMON_CANDIDATE, ran, legacy=legacy_observable)
         # P3-19D: every digest below is computed HERE, from the immutable artifact and the candidate.
         self.replay_input = self._artifact_input(session)
         input_digest = digest_of(self.replay_input)
@@ -1059,8 +1114,8 @@ class AuthoritySite:
                                         "snapshot": self.snapshot_id, "minute": minute,
                                         "domain": list(self.domain), "site": SITE_VERSION})
 
-        legacy_point = pressure_point(after.get("observable"))
-        written = shaped_like_legacy(candidate, dict(after.get("observable") or {}))
+        legacy_point = pressure_point(legacy_observable)
+        written = shaped_like_legacy(candidate, legacy_observable)
         transaction = AuthorityTransaction(minute=minute, case_id=self.case_id, family=self.family,
                                            domain=self.domain, snapshot=self.snapshot)
         transaction.capture(after).compute(written, legacy_point)
@@ -1079,14 +1134,22 @@ class AuthoritySite:
         provenance["replay_input"] = minute_input
         provenance["precommit_observable_digest"] = digest_of(dict(after.get("observable") or {}))
         if not valid:
-            reason = (UNSUPPORTED_AUTHORITY_ACTION if "supported_management" in transaction.failures
-                      else VALIDATION_REFUSED)
-            return self._hard_fail(minute, f"{reason}: {transaction.failures}", ran,
-                                   provenance=provenance, transaction=transaction)
+            # P3-26-3: the reason a faculty reader sees names the classes that blocked the minute, not
+            # only the validation key that caught them.
+            reason = (f"{UNSUPPORTED_AUTHORITY_ACTION}: {list(unsupported)}"
+                      if "supported_management" in transaction.failures
+                      else f"{VALIDATION_REFUSED}: {transaction.failures}")
+            if transaction.reason and "snapshot" in transaction.reason:
+                reason = f"{reason} | {transaction.reason}"
+            return self._hard_fail(minute, reason, ran, provenance=provenance,
+                                   transaction=transaction)
         try:
             prepared = transaction.commit(after, environ=self.environ)
         except AuthorityRefused as refused:
-            return self._hard_fail(minute, f"{GATE_REFUSED}: {refused}", ran, provenance=provenance,
+            # The gate is named only when the gate refused: ``commit`` turns every failure into this
+            # exception, and calling a write failure "the gate refused" misleads a reader.
+            label = GATE_REFUSED if "gate refuses" in str(refused) else COMMIT_REFUSED
+            return self._hard_fail(minute, f"{label}: {refused}", ran, provenance=provenance,
                                    transaction=transaction)
         moved = self._moved(after, prepared)
         if not moved <= {"sbp", "dbp", "map"}:
@@ -1187,27 +1250,64 @@ class AuthoritySite:
             "failure_policy": FAILURE_POLICY,
         }
 
-    def _refusal(self, minute: int, reason: str, ran: Sequence | None) -> dict:
-        return {"site": SITE_VERSION, "experiment_id": self.experiment_id,
+    def _refusal(self, minute: int, reason: str, ran: Sequence | None,
+                 legacy: Mapping | None = None, unsupported: Sequence[str] = ()) -> dict:
+        """A refused minute, in the SAME shape a committed one has: every field, empty where it has none.
+
+        The P3-26 store verifies completeness over every minute, and a record that carried half the keys
+        made a refusal less auditable than a commit for no reason at all.
+        """
+        empty = {name: None for name in ARTIFACT_MINUTE_FIELDS}
+        return {**empty,
+                "site": SITE_VERSION, "experiment_id": self.experiment_id,
                 "encounter_id": self.encounter_id, "case_id": self.case_id, "family": self.family,
                 "minute": minute, "mode": MODE_LIMITED_COMMON_AUTHORITY,
                 "snapshot_id": self.snapshot_id, "outcome": ABORTED, "committed": [],
                 "failure_reason": reason, "failure_policy": FAILURE_POLICY,
-                "action_kinds": list(action_kinds(ran)), "validation_failures": [],
-                "validation_passed": False, "phase2_digest": rs.PHASE2_DIGEST}
+                "action_kinds": list(action_kinds(ran)), "action_fates": list(action_fates(ran)),
+                "unsupported_actions": list(unsupported), "divergence_classes": [],
+                "validation_failures": [], "validation_passed": False,
+                # Faculty decision F: the legacy counterfactual of the failed minute is preserved even
+                # when the refusal came before any transaction was opened.
+                "legacy_counterfactual": (None if legacy is None else pressure_point(legacy)),
+                "legacy_shape": (None if legacy is None else shape_of(legacy)),
+                "precommit_observable_digest": (None if legacy is None
+                                                else digest_of(dict(legacy))),
+                "phase2_digest": rs.PHASE2_DIGEST}
 
     def _hard_fail(self, minute: int, reason: str, ran: Sequence | None, *, provenance: dict | None = None,
-                   transaction: "AuthorityTransaction | None" = None) -> None:
+                   transaction: "AuthorityTransaction | None" = None,
+                   legacy: Mapping | None = None, unsupported: Sequence[str] = ()) -> None:
         """The failure policy, in one place: stop visibly, commit nothing, never switch engines."""
         self.halted = True
+        self.experiment_state = EXPERIMENT_HALTED
         self.halt_reason = reason
-        record = provenance or self._refusal(minute, reason, ran)
+        record = provenance or self._refusal(minute, reason, ran, legacy, unsupported)
         record.update({"outcome": ABORTED, "committed": [], "failure_reason": reason,
                        "halted": True})
         if transaction is not None:
             record["rollback"] = (transaction.rollback
                                   or rollback_artifact(transaction, reason=reason,
                                                        replay_digest=record.get("replay_digest")))
+        else:
+            # A refusal before any transaction opened still leaves a rollback record: the P3-28 review
+            # found the internal-error path without one, and decision F asks for the failed minute to be
+            # reproducible whatever refused it.
+            record["rollback"] = {
+                "failure_policy": FAILURE_POLICY, "mode_decided_at": MODE_DECIDED_AT,
+                "reason": reason, "minute": minute,
+                "precommit_authoritative_state": (None if legacy is None
+                                                  else {"observable": dict(legacy)}),
+                "common_candidate": None, "legacy_counterfactual": record.get("legacy_counterfactual"),
+                "validation_failures": [], "action_history": list(action_fates(ran)),
+                "parameter_snapshot": (dict(self.snapshot) if isinstance(self.snapshot, Mapping)
+                                       else self.snapshot),
+                "phase2_digest": rs.PHASE2_DIGEST, "phase3_layer": rs.MODULE_VERSION,
+                "phase3_layer_digest": rs.layer_digest(), "replay_digest": None, "committed": [],
+                "rescue": "replay the encounter from its immutable artifact with the legacy "
+                          "counterfactual as the authority; never continue the same encounter with the "
+                          "other engine",
+            }
         self.records.append(record)
         return None
 
@@ -1245,6 +1345,10 @@ class AuthoritySite:
             "authority_module": MODULE_VERSION,
             "failure_policy": FAILURE_POLICY,
             "mode_decided_at": MODE_DECIDED_AT,
+            "attempt": self.attempt,
+            "experiment_state": self.experiment_state,
+            "invalid_for_continuation": (INVALID_FOR_CONTINUATION if self.halted else ""),
+            "store": STORE_CONTRACT,
             "halted": self.halted,
             "halt_reason": self.halt_reason,
             # A halt AFTER a commit leaves the encounter's pressure trajectory mixed: legacy before the
@@ -1287,6 +1391,12 @@ def open_site(state: Mapping, *, environ: Mapping[str, str] | None = None,
         # Authority has no candidate of its own: the common core must be running beside the engine. The
         # P3-19 review found a site opened without it and failed only at the first minute.
         return None
+    import runtime_authority_store as artifact_store
+    if not artifact_store.configured(live):
+        # Faculty decision F: a hard failure must be preserved. The P3-28 review found that a whole
+        # experiment could run with the store off and leave nothing durable, so an experiment with
+        # nowhere to record itself does not start.
+        return None
     if encounter_mode(state, environ=live, unsupported=()) != MODE_LIMITED_COMMON_AUTHORITY:
         return None
     decision = gate(state, environ=live, unsupported=())
@@ -1296,10 +1406,12 @@ def open_site(state: Mapping, *, environ: Mapping[str, str] | None = None,
     from clinical_core import legacy_adapter
     case_id = str(legacy_adapter.engine_case_id(dict(state)))
     encounter = rs._encounter_id(dict(state))
+    spec = dict(dict(state).get("encounter_spec") or {})
+    attempt = spec.get("attempt_number", spec.get("attempt", dict(state).get("attempt_number")))
     return AuthoritySite(case_id=case_id, family=str(dict(state).get("engine_family") or ""),
                          snapshot=snapshot, snapshot_id=str(decision.snapshot_id or ""),
                          encounter_id=encounter, environment=str(live.get(ENVIRONMENT_FLAG, "")),
-                         environ=None if environ is None else dict(environ),
+                         environ=None if environ is None else dict(environ), attempt=attempt,
                          experiment_id=str(experiment_id or digest_of({"encounter": encounter,
                                                                        "snapshot": decision.snapshot_id,
                                                                        "site": SITE_VERSION})[:16]))
@@ -1318,18 +1430,45 @@ def site_for(state: Mapping, store: Any,
       re-evaluate the gate.
     """
     live = os.environ if environ is None else environ
-    if str(live.get(AUTHORITY_FLAG, "") or "").strip().lower() != MODE_LIMITED_COMMON_AUTHORITY:
+    asked = str(live.get(AUTHORITY_FLAG, "") or "").strip().lower() == MODE_LIMITED_COMMON_AUTHORITY
+    try:
+        existing = store.get(SITE_KEY)
+    except Exception:
+        # The authority site may never break an encounter: a failure here is a refusal.
+        return None
+    if existing is None and not asked:
+        # The production path: two dictionary lookups, no import, no store write and no digest.
         return None
     try:
-        site = store.get(SITE_KEY)
+        site = existing
         if site is not None and not site.is_for(state):
+            if site.halted and _same_encounter(site, state):
+                # The halt outlives the site: the artifact stays for the faculty surface, the encounter
+                # is remembered as halted, and no new site opens for it (P3-28 review).
+                store[HALTED_KEY] = site.encounter_id
+                store[SITE_KEY] = None
+                return None
             site = None
-            for key in (SITE_KEY, SITE_REFUSED_KEY, ARTIFACT_KEY):
+            for key in (SITE_KEY, SITE_REFUSED_KEY, ARTIFACT_KEY, HALTED_KEY):
                 store[key] = None
         if site is not None:
+            if not asked or _configuration_changed(site, live):
+                # The mode is decided at the arrival and may not change inside an encounter. A flag that
+                # disappears or changes mid-encounter is a configuration change, and a configuration
+                # change is a hard failure the faculty sees -- never a silent return to the legacy engine.
+                if not site.halted:
+                    site.halted = True
+                    site.experiment_state = EXPERIMENT_HALTED
+                    site.halt_reason = CONFIGURATION_CHANGED
+                    site.records.append(site._refusal(_as_int(dict(state).get("sim_time")),
+                                                      CONFIGURATION_CHANGED, (),
+                                                      dict(dict(state).get("observable") or {})))
+                    site._persist()
             return site
         minute = _as_int(dict(state).get("sim_time"))
-        if minute != 0:
+        if minute != 0 or not asked:
+            return None
+        if store.get(HALTED_KEY) and store.get(HALTED_KEY) == rs._encounter_id(dict(state)):
             return None
         from clinical_core import legacy_adapter
         key = f"{legacy_adapter.engine_case_id(dict(state))}@{minute}"
@@ -1341,8 +1480,26 @@ def site_for(state: Mapping, store: Any,
             store[SITE_REFUSED_KEY] = key
         return site
     except Exception:
-        # The authority site may never break an encounter: a failure here is a refusal.
         return None
+
+
+def _same_encounter(site: "AuthoritySite", state: Mapping) -> bool:
+    """Whether a state is the arrival this site opened on, by the arrival's own digest."""
+    try:
+        return rs._encounter_id(dict(state)) == site.encounter_id
+    except Exception:
+        return False
+
+
+def _configuration_changed(site: "AuthoritySite", live: Mapping[str, str]) -> bool:
+    """Whether the authority configuration of a running experiment is no longer the one it opened on."""
+    try:
+        if site.environ is not None:
+            return False  # an explicit environment was handed in: it is the experiment's own
+        return (str(live.get(SNAPSHOT_FLAG, "") or "").strip() != site.snapshot_id
+                or str(live.get(ENVIRONMENT_FLAG, "") or "").strip() != site.environment)
+    except Exception:
+        return True
 
 
 def replay_site_artifact(artifact: Mapping) -> dict:
@@ -1390,15 +1547,27 @@ def replay_site_artifact(artifact: Mapping) -> dict:
                             if body.get("eligibility") else None),
         })
     compared = [row for row in rows if row["recorded_candidate_digest"]]
+    committed = [row for row in recorded if row.get("committed")]
     digest_matches = body.get("artifact_digest") == digest_of(
         {key: value for key, value in body.items() if key != "artifact_digest"})
     return {"minutes": rows, "compared": len(compared),
+            # P3-28 review: "reproduces: True" over 1 of 4 minutes reads as "the experiment reproduces".
+            # The counts are part of the verdict now, and the verdict says what it covers.
+            "minutes_recorded": len(recorded),
+            "minutes_committed": len(committed),
+            "minutes_reconstructable": sum(1 for row in rows if row["common_pressures"] is not None),
+            "covers_every_committed_minute": bool(committed) and len(compared) == len(committed),
+            "verdict": ("every committed minute reproduces"
+                        if committed and len(compared) == len(committed)
+                        else "no committed minute to reproduce" if not committed
+                        else "some committed minute does not reproduce"),
             # P3-19 review: a verdict that ignored the artifact's own digest called a forged artifact
             # reproducible. The digest is part of the verdict now.
-            "reproduces": bool(compared) and digest_matches
+            "reproduces": bool(compared) and len(compared) == len(committed) and digest_matches
                           and all(row["candidate_matches"] and row["transaction_matches"]
                                   and row["pressures_match"] and row["written_matches"]
-                                  and row["outcome_consistent"] for row in compared),
+                                  and row["outcome_consistent"] for row in compared)
+                          and all(row["outcome_consistent"] for row in rows),
             "artifact_digest": body.get("artifact_digest"),
             "artifact_digest_recomputes": digest_matches,
             "self_certifying": "the digest detects a change, not a determined forger: it has no "
@@ -1601,7 +1770,8 @@ def candidate_matrix(candidates: Mapping[str, Mapping[str, float]], *,
 ARTIFACT_FIELDS = ("artifact", "site", "experiment_id", "encounter_id", "case_id", "family", "domain",
                    "ownership", "environment", "snapshot_id", "snapshot", "phase2_closure_head",
                    "phase2_digest", "phase3_versions", "authority_module", "failure_policy",
-                   "mode_decided_at", "halted", "halt_reason", "mixed_trajectory", "authority_minutes",
+                   "mode_decided_at", "attempt", "experiment_state", "invalid_for_continuation",
+                   "store", "halted", "halt_reason", "mixed_trajectory", "authority_minutes",
                    "eligibility", "action_history", "minutes", "replay_input", "artifact_digest")
 #: What each minute of it must carry.
 ARTIFACT_MINUTE_FIELDS = ("minute", "outcome", "committed", "replay_input",
@@ -1683,16 +1853,58 @@ def authority_status(store: Any) -> dict:
         site = store.get(SITE_KEY)
         artifact = store.get(ARTIFACT_KEY) or {}
     except Exception:
-        return {"mode": MODE_LEGACY, "authority": False, "halted": False, "why": "no readable store"}
+        # The P3-28 review: this branch had no ``experiment_state``, and its only consumer indexes it, so
+        # an unreadable store broke the whole faculty panel instead of reporting itself.
+        return {"mode": MODE_LEGACY, "authority": False, "halted": False,
+                "experiment_state": EXPERIMENT_NOT_STARTED, "why": "no readable store"}
+    body = dict(artifact)
     if site is None:
-        return {"mode": MODE_LEGACY, "authority": False, "halted": bool(dict(artifact).get("halted")),
-                "halt_reason": str(dict(artifact).get("halt_reason") or ""),
-                "artifact_digest": str(dict(artifact).get("artifact_digest") or ""),
-                "why": "no authority site for this encounter"}
-    return {"mode": MODE_LIMITED_COMMON_AUTHORITY, "authority": True, "halted": bool(site.halted),
+        # No site: either nothing was ever asked for, or the gate refused. Both are legacy, and the
+        # difference matters to a faculty reader, so it is named.
+        asked = str((os.environ.get(AUTHORITY_FLAG) or "")).strip().lower() \
+            == MODE_LIMITED_COMMON_AUTHORITY
+        return {"mode": MODE_LEGACY, "authority": False,
+                "experiment_state": (EXPERIMENT_HALTED if body.get("halted")
+                                     else EXPERIMENT_REFUSED if asked else EXPERIMENT_NOT_STARTED),
+                "halted": bool(body.get("halted")),
+                "halt_reason": str(body.get("halt_reason") or ""),
+                "invalid_for_continuation": str(body.get("invalid_for_continuation") or ""),
+                "case_id": body.get("case_id"), "snapshot_id": body.get("snapshot_id"),
+                "domain": list(body.get("domain") or ()),
+                "minute": (dict((body.get("minutes") or [{}])[-1]).get("minute")
+                           if body.get("minutes") else None),
+                "authority_minutes": list(body.get("authority_minutes") or ()),
+                # P3-28 review: an encounter whose site is gone -- resumed, or its flag removed -- while
+                # the state carries committed common pressures IS a mixed trajectory, whatever the
+                # artifact said while the experiment was still running.
+                "mixed_trajectory": bool(body.get("mixed_trajectory")
+                                         or body.get("authority_minutes")),
+                "legacy_counterfactual_available": bool(
+                    body.get("minutes") and dict(body["minutes"][-1]).get("legacy_counterfactual")),
+                "artifact_digest": str(body.get("artifact_digest") or ""),
+                "artifact_id": str(body.get("artifact_id") or ""),
+                "stored": dict(body.get("stored") or {}),
+                "failure_policy": FAILURE_POLICY,
+                "why": "no authority experiment in this encounter" if not body.get("halted")
+                       else "a halted experiment must be read from its artifact, never continued"}
+    last = dict((site.records or [{}])[-1])
+    return {"mode": MODE_LIMITED_COMMON_AUTHORITY, "authority": True,
+            "experiment_state": site.experiment_state, "halted": bool(site.halted),
             "halt_reason": site.halt_reason, "failure_policy": FAILURE_POLICY,
-            "case_id": site.case_id, "snapshot_id": site.snapshot_id,
+            "invalid_for_continuation": INVALID_FOR_CONTINUATION if site.halted else "",
+            "case_id": site.case_id, "family": site.family, "attempt": site.attempt,
+            "snapshot_id": site.snapshot_id, "domain": list(site.domain),
+            "environment": site.environment,
+            "minute": last.get("minute"), "outcome": last.get("outcome"),
+            "failure_reason": str(last.get("failure_reason") or site.halt_reason or ""),
+            "unsupported_actions": list(last.get("unsupported_actions") or ()),
             "authority_minutes": list(site.minutes_committed),
             "mixed_trajectory": bool(site.halted and site.minutes_committed),
-            "artifact_digest": str(dict(artifact).get("artifact_digest") or ""),
-            "why": "a halted experiment must be read from its artifact, never continued"}
+            "legacy_counterfactual_available": bool(last.get("legacy_counterfactual")),
+            "legacy_counterfactual": dict(last.get("legacy_counterfactual") or {}),
+            "artifact_digest": str(body.get("artifact_digest") or ""),
+            "artifact_id": str(body.get("artifact_id")
+                               or (dict(site.stored or {}).get("artifact_id") or "")),
+            "stored": dict(site.stored or {}),
+            "why": "a halted experiment must be read from its artifact, never continued"
+                   if site.halted else "an authority experiment is running in this encounter"}
