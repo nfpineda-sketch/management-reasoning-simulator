@@ -91,12 +91,23 @@ def _one_minute(site, gi_turn, ran=None):
 
 # -- P3-19A, P3-19B: inertness -------------------------------------------------------------------------
 
-def test_d1_the_site_refuses_in_every_configuration_this_repository_can_produce(gi_turn):
-    assert ra.APPROVED_SNAPSHOTS == {}
+def test_d1_the_site_refuses_in_every_configuration_but_the_authorized_development_one(gi_turn):
+    """P3-40 registered one development-only approval, so "every configuration" is now too strong.
+
+    What the site still refuses is everything these tests can produce WITHOUT naming that approval, and
+    everything that names it outside its declared scope. The authorized development configuration is
+    exercised by the P3-41 experiment and by ``test_d26``.
+    """
+    assert sorted(ra.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"]
     for environ in ({}, {ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY}, BEST,
                     {**BEST, ra.ENVIRONMENT_FLAG: "production"},
                     {**BEST, ra.PILOT_FLAGS[0]: "1"},
-                    {**BEST, ra.SNAPSHOT_FLAG: "a name nobody approved"}):
+                    {**BEST, ra.SNAPSHOT_FLAG: "a name nobody approved"},
+                    {**BEST, ra.SNAPSHOT_FLAG: "gi_pressure_committed",
+                     ra.ENVIRONMENT_FLAG: "production"},
+                    {**BEST, ra.SNAPSHOT_FLAG: "gi_pressure_committed", ra.PILOT_FLAGS[0]: "1"},
+                    {**BEST, ra.SNAPSHOT_FLAG: "gi_pressure_committed",
+                     store.STORE_FLAG: ""}):
         assert ra.open_site(gi_turn["arrival"], environ=environ) is None, environ
         assert ra.site_for(gi_turn["arrival"], {}, environ=environ) is None, environ
     assert ra.unreachable_because()
@@ -356,8 +367,9 @@ def test_d16_the_application_runs_legacy_and_shadow_and_cannot_run_authority(gi_
     # LIMITED_COMMON_AUTHORITY: with every flag a deployment could set, and no approved snapshot.
     for name, value in BEST.items():
         monkeypatch.setenv(name, value)
-    assert ra.APPROVED_SNAPSHOTS == {}
-    assert ra.site_for(gi_turn["arrival"], {}) is None
+    assert sorted(ra.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"]
+    assert ra.site_for(gi_turn["arrival"], {}) is None, \
+        "BEST names the test-only id, which is not the registered approval"
     assert at.session_state.get("phase3_authority_artifact") is None
 
 

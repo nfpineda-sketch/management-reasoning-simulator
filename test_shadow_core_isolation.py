@@ -160,7 +160,8 @@ def test_cutting_the_shadow_bridge_restores_the_phase2_isolation_exactly():
                              and "runtime_authority" in _imports(path))
     assert authority_users == ["app.py"], authority_users
     import runtime_authority
-    assert runtime_authority.APPROVED_SNAPSHOTS == {}, "the second crossing carries no authority"
+    assert sorted(runtime_authority.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"], \
+        "the second crossing carries one development-only approval and nothing else"
     assert runtime_authority.site_for({}, {}) is None and runtime_authority.unreachable_because()
     # The layer itself is named, not matched by prefix: a future runtime_shadow_x.py is not exempt
     # unless the one declaration names it, and every declared source must exist on disk.

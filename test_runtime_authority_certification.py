@@ -249,7 +249,9 @@ def test_n4_each_surviving_candidate_runs_persists_and_replays(approved, candida
 # -- P3-28-5 and the manifest --------------------------------------------------------------------------
 
 def test_n5_no_production_configuration_reaches_authority(gi_state):
-    assert ra.APPROVED_SNAPSHOTS == {} and ra._APPROVED_SNAPSHOT_POINTS == {}
+    assert sorted(ra.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"]
+    assert sorted(ra._APPROVED_SNAPSHOT_POINTS) == ["gi_pressure_committed"]
+    assert ra.development_authority()["every_entry_is_development_only"]
     assert ra.unreachable_because()
     for environ in ({}, BEST, {**BEST, ra.ENVIRONMENT_FLAG: "faculty"},
                     {**BEST, store.STORE_FLAG: "/tmp/does-not-matter"}):

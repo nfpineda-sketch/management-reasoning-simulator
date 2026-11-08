@@ -118,22 +118,149 @@ GATE_CONDITIONS = ("authority_flag", "approved_snapshot", "family_and_case", "en
                    "authority_domain", "no_pilot", "no_unsupported_action", "phase2_digest",
                    "layer_version")
 
-#: Faculty-approved authority snapshots, by id. EMPTY ON PURPOSE: P3-14 may not approve a parameter, so
-#: the gate's second condition can never hold and the authority mode is unreachable. A later explicit
-#: faculty decision is the only thing that may add one, and ``test_runtime_authority.py`` fails if this
-#: mapping stops being empty without that decision being recorded in the Decision File.
+# -- P3-40: the one registered approval, and what it is NOT --------------------------------------------
+
+#: The only purpose a registered approval may serve. The faculty decision of 2026-11-08 grants a FIRST
+#: DEVELOPMENT-ONLY experiment and nothing else, so this is the only value the gate accepts.
+PURPOSE_DEVELOPMENT_EXPERIMENT = "DEVELOPMENT_AUTHORITY_EXPERIMENT_ONLY"
+APPROVED_PURPOSES = (PURPOSE_DEVELOPMENT_EXPERIMENT,)
+#: The only faculty status a registered approval may carry.
+STATUS_APPROVED_FOR_DEVELOPMENT = "APPROVED_FOR_DEVELOPMENT_EXPERIMENT"
+APPROVED_STATUSES = (STATUS_APPROVED_FOR_DEVELOPMENT,)
+#: Claims no faculty decision has ever granted. A registered approval carrying any of them -- anywhere in
+#: its record -- is refused, so "approved for a development experiment" can never drift into "validated".
+FORBIDDEN_CLAIMS = ("CLINICALLY_VALIDATED", "CLINICALLY_CALIBRATED", "PRODUCTION_APPROVED",
+                    "RESIDENT_APPROVED", "CLINICALLY_APPROVED")
+
+#: The seven pressure magnitudes a point must name, in the order the registry declares them.
+SNAPSHOT_PARAMETERS = ("preload_curve_scale_ml", "arrival_preload_fraction", "pump_preload_coupling",
+                       "afterload_sensitivity", "low_output_pressure_knee", "sbp_per_pressure_deficit",
+                       "dbp_per_pressure_deficit")
+#: The per-parameter evidence vocabulary P3-31 measured. Approving a POINT is not approving seven
+#: physiological magnitudes, and the record has to say so magnitude by magnitude.
+EVIDENCE_GI_IDENTIFIABLE = "GI_IDENTIFIABLE"
+EVIDENCE_EXTERNALLY_CONSTRAINED = "NOT_GI_IDENTIFIABLE_EXTERNALLY_CONSTRAINED"
+EVIDENCE_STRUCTURALLY_WEAK = "NOT_GI_IDENTIFIABLE_STRUCTURALLY_WEAK"
+EVIDENCE_NOT_READ = "NOT_GI_IDENTIFIABLE_NOT_READ_BY_THE_CORE"
+EVIDENCE_STATUSES = (EVIDENCE_GI_IDENTIFIABLE, EVIDENCE_EXTERNALLY_CONSTRAINED,
+                     EVIDENCE_STRUCTURALLY_WEAK, EVIDENCE_NOT_READ)
+
+#: The approval the faculty decision of 2026-11-08 registered: the committed Phase-2 point, for ONE
+#: development experiment. Every value is the frozen registry's canonical value, so the physiology this
+#: point runs is the physiology every certified Phase-2 artifact was produced with.
+DEVELOPMENT_EXPERIMENT_SNAPSHOT: Mapping[str, Any] = MappingProxyType({
+    "id": "gi_pressure_committed",
+    "approved_by_faculty": True,
+    "purpose": PURPOSE_DEVELOPMENT_EXPERIMENT,
+    "faculty_status": STATUS_APPROVED_FOR_DEVELOPMENT,
+    "decision": ("Faculty decisions A and G of 2026-11-08: this POINT is approved for the first "
+                 "development-only GI pressure authority experiment. It is NOT clinically validated, NOT "
+                 "clinically calibrated, NOT approved for production and NOT approved for residents. The "
+                 "rationale is structural and experimental: it is the only surviving candidate the live "
+                 "pipeline can run without adding point-selection code, it preserves deterioration in the "
+                 "certified long-horizon scenario, it reaches no unresolved boundary in the accepted "
+                 "battery, it is locally stable enough for the experiment, and no competing candidate has "
+                 "stronger clinical evidence. Approving the point is not approving the clinical truth of "
+                 "each magnitude."),
+    "decision_reference": "docs/COLA_DECISIONES_AI_ADVISOR.md FD-P3-42 (faculty decisions A and G)",
+    "runtime_parameter_snapshot_id": rs.PARAMETER_SNAPSHOT_ID,
+    "parameters": MappingProxyType({
+        "preload_curve_scale_ml": 833.3333333333334,
+        "arrival_preload_fraction": 0.5,
+        "pump_preload_coupling": 1.0,
+        "afterload_sensitivity": 0.3,
+        "low_output_pressure_knee": 0.5,
+        "sbp_per_pressure_deficit": 45.0,
+        "dbp_per_pressure_deficit": 25.0,
+    }),
+    "parameter_evidence": MappingProxyType({
+        "preload_curve_scale_ml": MappingProxyType({
+            "status": EVIDENCE_GI_IDENTIFIABLE,
+            "why": "moving it alone across its declared region changes the GI systolic trajectory by up "
+                   "to 33.673 mmHg in 34 of 34 certified scenarios (P3-31)"}),
+        "arrival_preload_fraction": MappingProxyType({
+            "status": EVIDENCE_GI_IDENTIFIABLE,
+            "why": "the same sweep changes it by up to 62.802 mmHg in 34 of 34 scenarios (P3-31)"}),
+        "afterload_sensitivity": MappingProxyType({
+            "status": EVIDENCE_EXTERNALLY_CONSTRAINED,
+            "why": "it enters only as 1/(1 + a(T - 1)) and GI holds T == 1 in all 1638 measured minutes, "
+                   "so GI cannot see it; ACS and pulmonary embolism do constrain it, with a footprint of "
+                   "at most 0.4 mmHg (P3-31, P3-35)"}),
+        "pump_preload_coupling": MappingProxyType({
+            "status": EVIDENCE_STRUCTURALLY_WEAK,
+            "why": "it enters only as scale * P**c and needs a depressed pump AND a volume change at "
+                   "once; GI holds P == 1 and every other certified family holds V == 0, so no certified "
+                   "family identifies it (P3-31)"}),
+        "low_output_pressure_knee": MappingProxyType({
+            "status": EVIDENCE_NOT_READ,
+            "why": "the knee left the pressure equation at P2J-1; it survives only as an admissibility "
+                   "guard (0 < knee < 1) in clinical_core.derived"}),
+        "sbp_per_pressure_deficit": MappingProxyType({
+            "status": EVIDENCE_NOT_READ,
+            "why": "not read by the core since P2J-1; read in one diagnostic that reconstructs the legacy "
+                   "engine's raw systolic pressure to attribute a consciousness mismatch"}),
+        "dbp_per_pressure_deficit": MappingProxyType({
+            "status": EVIDENCE_NOT_READ,
+            "why": "not read anywhere outside the calibration registry since P2J-1"}),
+    }),
+    "phase2_provenance": MappingProxyType({
+        "closure_head": rs.PHASE2_CLOSURE_HEAD if hasattr(rs, "PHASE2_CLOSURE_HEAD") else "d2cca46",
+        "digest": rs.PHASE2_DIGEST,
+        "source": "clinical_core.derived.DEFAULT_PROFILE, read as a point; clinical_core.calibration "
+                  "REGISTRY canonical values; status CANDIDATE, 0 of 58 entries FACULTY_APPROVED",
+        "runtime_point": rs.PARAMETER_SNAPSHOT_ID,
+    }),
+    "scope": MappingProxyType({
+        "family": AUTHORITY_FAMILY,
+        "cases": AUTHORITY_CASES,
+        "domain": AUTHORITY_DOMAIN,
+        "environments": ALLOWED_ENVIRONMENTS,
+        "pilot": "EXCLUDED",
+        "production": "EXCLUDED",
+        "resident_visible": "EXCLUDED",
+        "scoring": "UNCHANGED_LEGACY",
+        "nonpressure_physiology": "LEGACY_AUTHORITY",
+        "artifact_store": "REQUIRED",
+    }),
+    "not_established": ("no parameter point is clinically valid", "no numeric acceptance tolerance exists",
+                        "five of the seven magnitudes are not identifiable from GI evidence",
+                        "technical success establishes no clinical calibration"),
+})
+
+#: Faculty-approved authority snapshots, by id. It holds exactly what an explicit faculty decision put
+#: there, and today that is one DEVELOPMENT-ONLY point (P3-40). It was empty until 2026-11-08, and
+#: ``test_runtime_authority.py`` fails if an entry appears whose decision is not recorded in the Decision
+#: File, or which claims more than a development experiment.
 #:
 #: It is exposed READ-ONLY. P3-17 found the registry was a plain module dict, so any importer could fill
 #: it; ``APPROVED_SNAPSHOTS["x"] = ...`` now raises. The writable mapping below is private and a test
 #: injects into it deliberately, which is a name the production scan watches.
-_APPROVED_SNAPSHOT_POINTS: dict = {}
+_APPROVED_SNAPSHOT_POINTS: dict = {
+    DEVELOPMENT_EXPERIMENT_SNAPSHOT["id"]: DEVELOPMENT_EXPERIMENT_SNAPSHOT,
+}
 APPROVED_SNAPSHOTS: Mapping[str, Mapping[str, Any]] = MappingProxyType(_APPROVED_SNAPSHOT_POINTS)
+
+#: The digest of the VALUES each registered approval was granted for, pinned here and not inside the
+#: entry. The P3-40 adversarial review replaced the registered entry with one carrying the same id, the
+#: same shape and other numbers, and the gate granted: nothing tied the approved values to the decision.
+#: Now ``approved_snapshot`` recomputes this digest, and the import-time guard refuses a registry whose
+#: values have moved. An in-process caller can still rebind both, which no check inside one process can
+#: prevent; what this does prevent is the case that matters -- a future edit changing an approved value
+#: without the faculty decision that would have to accompany it.
+APPROVED_POINT_DIGESTS: Mapping[str, str] = MappingProxyType({
+    "gi_pressure_committed": "c4fb416f30ad7afbcdc8b0c16d9464d98e87ba64054bebfb257f27848f4c1961",
+})
 
 #: What a faculty approval must carry. An id alone is not provenance: P3-17 showed that a lookup by id
 #: accepted ``{}`` and even a string, and that nothing tied the approved point to the point the shadow
 #: runner actually ran.
 SNAPSHOT_REQUIRED_FIELDS = ("id", "parameters", "approved_by_faculty", "decision",
                             "runtime_parameter_snapshot_id")
+#: What a REGISTERED approval must carry on top of that shape (P3-40). The test-only mechanism the
+#: certified tests use carries a placeholder parameter on purpose and is not a registered approval, so
+#: these are checked by ``registered_snapshot_is_complete`` and not by the shape check.
+REGISTERED_SNAPSHOT_FIELDS = ("purpose", "faculty_status", "decision_reference", "parameter_evidence",
+                              "phase2_provenance", "scope", "not_established")
 
 
 def snapshot_is_wellformed(snapshot: Any) -> tuple:
@@ -166,10 +293,125 @@ def snapshot_is_wellformed(snapshot: Any) -> tuple:
     return (not reasons), tuple(reasons)
 
 
-def approved_snapshot(snapshot_id: str | None) -> Mapping[str, Any] | None:
-    """The faculty-approved snapshot of that id, or None. Today there are none at all.
+def registered_snapshot_is_complete(snapshot: Any) -> tuple:
+    """(ok, reasons): what a REGISTERED faculty approval must carry beyond its shape (P3-40).
 
-    A registered entry that is not well formed is NOT returned: a malformed approval cannot open the gate.
+    The point is approved for an experiment, not declared true. So the record has to name its purpose,
+    its faculty status, the decision that created it, the seven magnitudes, the evidence status of each
+    one, the Phase-2 provenance, the scope it may be used in, and what it does not establish. And it may
+    never carry a claim no faculty decision has granted -- checked over the whole record, not just the
+    status field, so the claim cannot hide in a free-text line.
+    """
+    reasons = []
+    if not isinstance(snapshot, Mapping):
+        return False, (f"a registered approval must be a mapping, not {type(snapshot).__name__}",)
+    for name in REGISTERED_SNAPSHOT_FIELDS:
+        if name not in snapshot:
+            reasons.append(f"the registered approval has no {name!r}")
+    if snapshot.get("purpose") not in APPROVED_PURPOSES:
+        reasons.append(f"purpose must be one of {list(APPROVED_PURPOSES)}, not "
+                       f"{snapshot.get('purpose')!r}")
+    if snapshot.get("faculty_status") not in APPROVED_STATUSES:
+        reasons.append(f"faculty_status must be one of {list(APPROVED_STATUSES)}, not "
+                       f"{snapshot.get('faculty_status')!r}")
+    # A record may SAY it is not clinically validated; it may not CLAIM to be. The difference is the
+    # negation in front, so the phrase is only a finding where the record does not deny it. Both the
+    # record and the claims are normalised to single-spaced words first, so "CLINICALLY_VALIDATED",
+    # "clinically validated" and "Clinically-Validated" are the same phrase to this check.
+    def _words(value: str) -> str:
+        return " " + " ".join("".join(
+            character if character.isalnum() else " " for character in str(value)).upper().split()) + " "
+
+    text = _words(json.dumps(snapshot, default=str, sort_keys=True))
+    claimed = [claim for claim in FORBIDDEN_CLAIMS
+               if _words(claim).strip() in text
+               and f"NOT {_words(claim).strip()}" not in text
+               and f"NEITHER {_words(claim).strip()}" not in text]
+    if claimed:
+        reasons.append(f"a registered approval may not claim {sorted(claimed)}: no faculty decision has "
+                       f"granted any of them")
+    parameters = snapshot.get("parameters")
+    if not isinstance(parameters, Mapping) or tuple(sorted(parameters)) != tuple(sorted(SNAPSHOT_PARAMETERS)):
+        reasons.append(f"parameters must name exactly {list(SNAPSHOT_PARAMETERS)}")
+    evidence = snapshot.get("parameter_evidence")
+    if not isinstance(evidence, Mapping) or tuple(sorted(evidence)) != tuple(sorted(SNAPSHOT_PARAMETERS)):
+        reasons.append("parameter_evidence must carry one entry per named magnitude: approving a point is "
+                       "not approving seven validated magnitudes")
+    else:
+        for name, entry in evidence.items():
+            if not isinstance(entry, Mapping) or entry.get("status") not in EVIDENCE_STATUSES:
+                reasons.append(f"the evidence status of {name!r} must be one of "
+                               f"{list(EVIDENCE_STATUSES)}")
+            elif not str(entry.get("why") or "").strip():
+                reasons.append(f"the evidence status of {name!r} carries no reason")
+    scope = snapshot.get("scope")
+    if not isinstance(scope, Mapping):
+        reasons.append("scope must be a mapping: an approval with no declared scope is a general switch")
+    else:
+        for name, expected in (("pilot", "EXCLUDED"), ("production", "EXCLUDED"),
+                               ("resident_visible", "EXCLUDED")):
+            if str(scope.get(name) or "").upper() != expected:
+                reasons.append(f"scope[{name!r}] must be {expected!r}")
+    return (not reasons), tuple(reasons)
+
+
+def approved_values_match(snapshot_id: str, snapshot: Any) -> bool:
+    """Whether the values offered under this id are the values that id was granted for.
+
+    An id with no pinned digest is not a registered approval -- the test-only mechanism is the case --
+    and this check does not apply to it. An id WITH a pinned digest must match it exactly.
+    """
+    expected = APPROVED_POINT_DIGESTS.get(str(snapshot_id))
+    if not expected:
+        return True
+    if not isinstance(snapshot, Mapping):
+        return False
+    parameters = snapshot.get("parameters")
+    if not isinstance(parameters, Mapping):
+        return False
+    return digest_of({str(name): value for name, value in parameters.items()}) == expected
+
+
+def snapshot_permits(snapshot: Any, *, environment: str, family: str, case_id: str | None,
+                     domain: Sequence[str]) -> tuple:
+    """(ok, reasons): a registered approval may be NARROWER than the gate's own constants.
+
+    The gate's constants say what this repository would ever allow; the approval says what THIS faculty
+    decision allowed. Both have to hold, so widening a constant later cannot widen an approval already
+    granted for a development experiment.
+    """
+    if not isinstance(snapshot, Mapping):
+        return False, ("no approval to read a scope from",)
+    scope = snapshot.get("scope")
+    if not isinstance(scope, Mapping):
+        # The test-only mechanism carries no scope on purpose: it is not a registered approval, and the
+        # gate's own constants are the whole restriction for it.
+        return True, ()
+    reasons = []
+    allowed_environments = tuple(str(name).strip().lower() for name in scope.get("environments") or ())
+    if allowed_environments and str(environment or "").strip().lower() not in allowed_environments:
+        reasons.append(f"the approval allows only {list(allowed_environments)}, not "
+                       f"{str(environment)!r}")
+    if scope.get("family") and str(scope["family"]) != str(family or ""):
+        reasons.append(f"the approval is for family {scope['family']!r}, not {str(family)!r}")
+    cases = tuple(str(name) for name in scope.get("cases") or ())
+    if cases and str(case_id or "") not in cases:
+        reasons.append(f"the approval allowlists {list(cases)}, and {str(case_id)!r} is not one of them")
+    scoped_domain = tuple(str(name) for name in scope.get("domain") or ())
+    if scoped_domain and tuple(str(name) for name in domain) != scoped_domain:
+        reasons.append(f"the approval is for the domain {list(scoped_domain)}, not {list(domain)}")
+    return (not reasons), tuple(reasons)
+
+
+def approved_snapshot(snapshot_id: str | None, *, environment: str | None = None,
+                      family: str | None = None, case_id: str | None = None,
+                      domain: Sequence[str] | None = None) -> Mapping[str, Any] | None:
+    """The faculty-approved snapshot of that id, or None.
+
+    Today the registry holds exactly one entry, approved by the faculty decision of 2026-11-08 for a
+    FIRST DEVELOPMENT-ONLY experiment (P3-40). A registered entry that is not well formed is NOT
+    returned, and neither is one whose own declared scope does not cover the context asked about: a
+    malformed or out-of-scope approval cannot open the gate.
     """
     if not snapshot_id:
         return None
@@ -178,6 +420,13 @@ def approved_snapshot(snapshot_id: str | None) -> Mapping[str, Any] | None:
     found = _APPROVED_SNAPSHOT_POINTS.get(str(snapshot_id))
     if found is None or not snapshot_is_wellformed(found)[0]:
         return None
+    if not approved_values_match(str(snapshot_id), found):
+        return None
+    if environment is not None or family is not None or case_id is not None or domain is not None:
+        ok, _why = snapshot_permits(found, environment=str(environment or ""), family=str(family or ""),
+                                    case_id=case_id, domain=tuple(domain or AUTHORITY_DOMAIN))
+        if not ok:
+            return None
     return found
 
 
@@ -279,7 +528,9 @@ def gate(state: Mapping | None = None, *, environ: Mapping[str, str] | None = No
     conditions = {
         "authority_flag": (str(environ.get(AUTHORITY_FLAG, "") or "").strip().lower()
                            == MODE_LIMITED_COMMON_AUTHORITY) and not in_secrets,
-        "approved_snapshot": approved_snapshot(snapshot_id) is not None,
+        "approved_snapshot": approved_snapshot(
+            snapshot_id, environment=str(environ.get(ENVIRONMENT_FLAG, "") or ""), family=family,
+            case_id=case_id, domain=tuple(domain)) is not None,
         "family_and_case": (family == AUTHORITY_FAMILY and str(case_id or "") in AUTHORITY_CASES
                             and not identity_declared_against_state),
         "environment": str(environ.get(ENVIRONMENT_FLAG, "") or "").strip().lower()
@@ -300,11 +551,15 @@ def gate(state: Mapping | None = None, *, environ: Mapping[str, str] | None = No
         reasons.append("the caller did not declare which management actions ran: the condition fails "
                        "closed, because an undeclared action is not a supported action")
     if not conditions["approved_snapshot"]:
-        reasons.append("NO_FACULTY_APPROVED_AUTHORITY_SNAPSHOT_EXISTS: P3-14 may not create one, so the "
-                       "authority mode is unreachable until a faculty decision approves a named point")
-        if snapshot_id and _APPROVED_SNAPSHOT_POINTS.get(str(snapshot_id)) is not None:
-            reasons.extend(snapshot_is_wellformed(
-                _APPROVED_SNAPSHOT_POINTS[str(snapshot_id)])[1])
+        registered = _APPROVED_SNAPSHOT_POINTS.get(str(snapshot_id)) if snapshot_id else None
+        if registered is None:
+            reasons.append(f"NO_FACULTY_APPROVED_AUTHORITY_SNAPSHOT_FOR_THIS_ID: {snapshot_id!r} is not "
+                           f"in the approved registry {sorted(_APPROVED_SNAPSHOT_POINTS)}")
+        else:
+            reasons.extend(snapshot_is_wellformed(registered)[1])
+            reasons.extend(snapshot_permits(
+                registered, environment=str(environ.get(ENVIRONMENT_FLAG, "") or ""), family=family,
+                case_id=case_id, domain=tuple(domain))[1])
     if not conditions["authority_flag"]:
         reasons.append(f"the authority process flag {AUTHORITY_FLAG} is not set to the authority mode")
     if not conditions["family_and_case"]:
@@ -350,11 +605,89 @@ def mode(state: Mapping | None = None, *, environ: Mapping[str, str] | None = No
 
 
 def unreachable_because() -> tuple:
-    """Why no repository configuration can activate authority today. Used by the proof test (P3-14-8)."""
+    """Why no PRODUCTION or resident-facing configuration can activate authority. Never empty.
+
+    Until P3-40 this answered a stronger question -- why NO configuration could -- and the answer was
+    that the registry was empty. The faculty decision of 2026-11-08 registered one point for one
+    development experiment, so that stronger claim is no longer true and this function does not pretend
+    it is. What it reports now is what still holds and still matters: a resident or a production
+    deployment cannot enter authority. ``development_authority()`` says what a development configuration
+    can do, in as many words.
+    """
     reasons = []
     if not _APPROVED_SNAPSHOT_POINTS:
         reasons.append("APPROVED_SNAPSHOTS is empty: no faculty-approved authority snapshot exists")
+    else:
+        for name in sorted(_APPROVED_SNAPSHOT_POINTS):
+            entry = _APPROVED_SNAPSHOT_POINTS[name]
+            purpose = dict(entry).get("purpose") if isinstance(entry, Mapping) else None
+            if purpose != PURPOSE_DEVELOPMENT_EXPERIMENT:
+                reasons.append(f"the registered approval {name!r} has no development-experiment purpose, "
+                               f"so nothing may use it")
+            else:
+                reasons.append(f"the registered approval {name!r} is {PURPOSE_DEVELOPMENT_EXPERIMENT}: "
+                               f"its own scope excludes production, the first pilot and any "
+                               f"resident-visible deployment")
+    reasons.append(f"{ENVIRONMENT_FLAG} must be one of {list(ALLOWED_ENVIRONMENTS)}, and a production "
+                   f"deployment is not one of them")
+    reasons.append("a deployment carrying the first pilot's own runtime flags is refused by the gate, "
+                   "and an unreadable pilot freeze fails closed")
+    reasons.append(f"an authority flag named in Streamlit secrets is not honoured")
     return tuple(reasons)
+
+
+def development_authority() -> dict:
+    """What the faculty decision of 2026-11-08 granted, and what it did not. Plain, for people.
+
+    Kept beside ``unreachable_because`` on purpose: the two together are the whole truth, and reading
+    only one of them is how "approved for one experiment" turns into "approved".
+    """
+    registered = {name: dict(_APPROVED_SNAPSHOT_POINTS[name])
+                  for name in sorted(_APPROVED_SNAPSHOT_POINTS)}
+    complete = {name: registered_snapshot_is_complete(entry)[0] for name, entry in registered.items()}
+    return {
+        "granted": PURPOSE_DEVELOPMENT_EXPERIMENT,
+        "registered": sorted(registered),
+        "every_entry_is_development_only": all(
+            entry.get("purpose") == PURPOSE_DEVELOPMENT_EXPERIMENT for entry in registered.values()),
+        "every_entry_is_complete": all(complete.values()) if complete else True,
+        "incomplete": sorted(name for name, ok in complete.items() if not ok),
+        "family": AUTHORITY_FAMILY, "cases": list(AUTHORITY_CASES), "domain": list(AUTHORITY_DOMAIN),
+        "environments": list(ALLOWED_ENVIRONMENTS),
+        "excluded": ["production", "the first resident pilot", "any resident-visible deployment",
+                     "scoring, which stays legacy and unchanged",
+                     "every non-pressure variable, which stays legacy authority"],
+        "not_established": ["clinical validity of any parameter point",
+                            "any numeric acceptance tolerance",
+                            "clinical calibration, which technical success does not establish"],
+        "still_unreachable_for_production_because": list(unreachable_because()),
+    }
+
+
+def _guard_the_registry() -> None:
+    """Refuse to import a registry that has drifted. A drifted approval is worse than none.
+
+    Every entry must be a well-formed approval AND a complete registered approval: if a future edit adds
+    an entry that claims clinical validation, omits its evidence annotations or declares no scope, this
+    module does not load and the application does not start.
+    """
+    for name in sorted(_APPROVED_SNAPSHOT_POINTS):
+        entry = _APPROVED_SNAPSHOT_POINTS[name]
+        ok, why = snapshot_is_wellformed(entry)
+        if not ok:
+            raise RuntimeError(f"the approved snapshot {name!r} is not well formed: {list(why)}")
+        ok, why = registered_snapshot_is_complete(entry)
+        if not ok:
+            raise RuntimeError(f"the registered approval {name!r} is incomplete: {list(why)}")
+        if not approved_values_match(name, entry):
+            raise RuntimeError(
+                f"the values registered under {name!r} do not match APPROVED_POINT_DIGESTS: an approved "
+                f"value may not move without the faculty decision that approves the new one")
+    for name in sorted(APPROVED_POINT_DIGESTS):
+        if name not in _APPROVED_SNAPSHOT_POINTS:
+            raise RuntimeError(f"{name!r} has a pinned value digest but is not registered: the pin and "
+                               f"the registry must say the same thing")
+
 
 
 # -- the transaction -----------------------------------------------------------------------------------
@@ -603,6 +936,12 @@ def counterfactual(candidate: Mapping, legacy: Mapping, minute: int, family: str
 
 #: How one encounter (or one scenario of the acceptance battery) reads against the future authority gate.
 ELIGIBLE_BUT_NO_SNAPSHOT = "ELIGIBLE_EXCEPT_MISSING_APPROVED_SNAPSHOT"
+#: P3-40: what a structurally eligible scenario is once an approval covering it exists. Keeping the name
+#: above for this state would have the reading say "missing approved snapshot" while one is registered.
+ELIGIBLE_FOR_DEVELOPMENT = "ELIGIBLE_FOR_DEVELOPMENT_AUTHORITY_EXPERIMENT"
+#: Both readings mean "nothing structural stands in the way". They differ only in whether the faculty
+#: decision has happened, which is exactly the distinction a reader needs.
+ELIGIBLE_CLASSES = (ELIGIBLE_BUT_NO_SNAPSHOT, ELIGIBLE_FOR_DEVELOPMENT)
 INELIGIBLE_UNSUPPORTED = "INELIGIBLE_UNSUPPORTED_ACTION"
 INELIGIBLE_OTHER = "INELIGIBLE_OTHER_REASON"
 
@@ -629,6 +968,11 @@ class AuthorityEligibility:
     def eligible_but_for_the_snapshot(self) -> bool:
         return self.classification == ELIGIBLE_BUT_NO_SNAPSHOT
 
+    @property
+    def structurally_eligible(self) -> bool:
+        """Nothing structural stands in the way, whether or not an approval exists yet."""
+        return self.classification in ELIGIBLE_CLASSES
+
     def to_dict(self) -> dict:
         return {"classification": self.classification, "case_id": self.case_id,
                 "scenario": self.scenario, "reasons": list(self.reasons),
@@ -643,9 +987,11 @@ def eligibility(scenario: Mapping, *, environ: Mapping[str, str] | None = None) 
     failure or a boundary -- so eligibility is computed from what was observed, never from an opinion
     about whether a difference is small.
 
-    Today every eligible scenario returns ``ELIGIBLE_EXCEPT_MISSING_APPROVED_SNAPSHOT``: the one condition
-    nothing in this repository can satisfy is the faculty-approved snapshot, and saying so per scenario is
-    the point of this reading.
+    Until P3-40 every eligible scenario returned ``ELIGIBLE_EXCEPT_MISSING_APPROVED_SNAPSHOT``, because
+    the one condition nothing here could satisfy was the faculty-approved snapshot. The faculty decision
+    of 2026-11-08 registered one development-only approval, so a scenario this approval covers now reads
+    ``ELIGIBLE_FOR_DEVELOPMENT_AUTHORITY_EXPERIMENT`` instead: the reading may not say a snapshot is
+    missing while one is registered. Neither class promises anything clinical.
     """
     environ = os.environ if environ is None else environ
     coverage = dict(scenario.get("coverage") or {})
@@ -701,9 +1047,30 @@ def eligibility(scenario: Mapping, *, environ: Mapping[str, str] | None = None) 
     if reasons:
         return AuthorityEligibility(INELIGIBLE_OTHER, case_id, scenario.get("scenario"),
                                     tuple(reasons), unsupported, facts)
-    reasons.append("NO_FACULTY_APPROVED_AUTHORITY_SNAPSHOT_EXISTS: everything structural holds, and the "
-                   "one remaining condition is a faculty decision")
-    return AuthorityEligibility(ELIGIBLE_BUT_NO_SNAPSHOT, case_id, scenario.get("scenario"),
+    covering = approved_snapshot(
+        str(environ.get(SNAPSHOT_FLAG, "") or "").strip() or None,
+        environment=str(environ.get(ENVIRONMENT_FLAG, "") or ""), family=AUTHORITY_FAMILY,
+        case_id=case_id, domain=AUTHORITY_DOMAIN)
+    if covering is None:
+        # No approval was NAMED for this reading, so report the registry's own state: an approval that
+        # exists but was not asked for does not make a scenario eligible for it.
+        named = [name for name in sorted(_APPROVED_SNAPSHOT_POINTS)
+                 if approved_snapshot(name, environment=str(environ.get(ENVIRONMENT_FLAG, "")
+                                                            or "development"),
+                                      family=AUTHORITY_FAMILY, case_id=case_id,
+                                      domain=AUTHORITY_DOMAIN) is not None]
+        covering = _APPROVED_SNAPSHOT_POINTS.get(named[0]) if named else None
+    if covering is None:
+        reasons.append("NO_FACULTY_APPROVED_AUTHORITY_SNAPSHOT_EXISTS: everything structural holds, and "
+                       "the one remaining condition is a faculty decision")
+        return AuthorityEligibility(ELIGIBLE_BUT_NO_SNAPSHOT, case_id, scenario.get("scenario"),
+                                    tuple(reasons), unsupported, facts)
+    facts = {**facts, "approving_snapshot": str(dict(covering).get("id") or ""),
+             "approval_purpose": str(dict(covering).get("purpose") or "")}
+    reasons.append(f"{dict(covering).get('purpose')}: everything structural holds and the faculty "
+                   f"decision registered {dict(covering).get('id')!r} for a development experiment. This "
+                   f"is not a clinical validation of any magnitude")
+    return AuthorityEligibility(ELIGIBLE_FOR_DEVELOPMENT, case_id, scenario.get("scenario"),
                                 tuple(reasons), unsupported, facts)
 
 
@@ -725,10 +1092,15 @@ def eligibility_battery(evidence: Mapping | None = None, *,
         "rows": rows, "counts": counts, "scenarios": len(rows),
         "eligible_but_for_the_snapshot": sorted(row["scenario"] for row in rows
                                                 if row["classification"] == ELIGIBLE_BUT_NO_SNAPSHOT),
+        "eligible_for_development": sorted(row["scenario"] for row in rows
+                                           if row["classification"] == ELIGIBLE_FOR_DEVELOPMENT),
+        "structurally_eligible": sorted(row["scenario"] for row in rows
+                                        if row["classification"] in ELIGIBLE_CLASSES),
         "ineligible_unsupported": sorted({kind for row in rows for kind in row["unsupported"]}),
         "approved_snapshot_exists": bool(_APPROVED_SNAPSHOT_POINTS),
-        "reading": "every structurally eligible scenario still needs one thing nothing here can supply: "
-                   "a faculty-approved named parameter snapshot",
+        "reading": "a structurally eligible scenario is eligible for the DEVELOPMENT experiment the "
+                   "faculty decision of 2026-11-08 authorized, and for nothing else: not for production, "
+                   "not for the first pilot, and not as a claim about any clinical magnitude",
     }
 
 
@@ -918,12 +1290,24 @@ def shape_of(legacy_observable: Mapping | None) -> dict:
 
 
 def apply_shape(candidate: Mapping, shape: Mapping | None) -> dict:
-    """The common pressures in the recorded shape. A presentation shape, never a tolerance."""
+    """The common pressures in the recorded shape. A presentation shape, never a tolerance.
+
+    The mean is DERIVED from the shaped pair and never shaped on its own, because that is what the
+    commit writes and what the screen shows. The first development authority encounter (P3-41) found the
+    two definitions disagreeing by one millimetre at minute 30 -- the core's mean was 59.538, shaping it
+    alone gave 60, the commit wrote 59 -- and the forensic replay had its own second copy of the rule,
+    so the artifact's account of what it wrote was wrong in exactly the minutes where the rounding of
+    the pair crosses a boundary. One definition lives here, and both paths read it.
+    """
     marks = dict(shape or {})
     out = {}
     for name, value in dict(candidate).items():
         numeric = isinstance(value, (int, float)) and not isinstance(value, bool)
         out[name] = int(round(float(value))) if numeric and marks.get(name) == "int" else value
+    if "map" in out:
+        mean = derived_map(out.get("sbp"), out.get("dbp"))
+        if mean is not None:
+            out["map"] = mean
     return out
 
 
@@ -934,6 +1318,12 @@ def shaped_like_legacy(candidate: Mapping, legacy_observable: Mapping | None) ->
     ``117.428...`` would change what a resident reads without any physiology changing. This is a
     presentation shape and not a tolerance: the digests are taken over the raw candidate the core
     produced, and both the raw and the written values go into the provenance record.
+
+    The mean is DERIVED from the shaped pair, never shaped on its own. The first development authority
+    encounter (P3-41) found the difference: at minute 30 the core's mean was 59.538, shaping it alone
+    gave 60, and the commit -- which derives the mean from the two integers it writes -- wrote 59. The
+    state and the screen agreed; the artifact's own account of what it wrote did not. One definition of
+    the mean, used by the commit and by the record, is what makes the record true.
     """
     return apply_shape(candidate, shape_of(legacy_observable))
 
@@ -1619,7 +2009,7 @@ def scenario_authority(variant: str, label: str, encounter: Any, snapshot: Mappi
            "legacy_counterfactual": None, "failure_artifact_complete": None,
            "classification": OTHER_FAILURE, "why": ""}
     if eligibility_row is not None and str(dict(eligibility_row).get("classification")) \
-            != ELIGIBLE_BUT_NO_SNAPSHOT:
+            not in ELIGIBLE_CLASSES:
         row.update({"classification": NOT_ELIGIBLE,
                     "why": "; ".join(str(reason) for reason in
                                      dict(eligibility_row).get("reasons") or [])})
@@ -1908,3 +2298,8 @@ def authority_status(store: Any) -> dict:
             "stored": dict(site.stored or {}),
             "why": "a halted experiment must be read from its artifact, never continued"
                    if site.halted else "an authority experiment is running in this encounter"}
+
+
+# The registry is checked LAST, when every helper it needs exists: an import that reaches this
+# line with a drifted approval raises instead of letting the application start.
+_guard_the_registry()

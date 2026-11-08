@@ -87,10 +87,27 @@ def _transaction(**kwargs):
 
 # -- P3-14-1, P3-14-8: the mode exists and is unreachable --------------------------------------------------
 
-def test_a1_the_authority_mode_is_unreachable_from_any_configuration(gi_state):
+def test_a1_the_authority_mode_is_unreachable_from_any_production_configuration(gi_state):
+    """Until P3-40 no configuration at all could reach authority, because the registry was empty.
+
+    The faculty decision of 2026-11-08 registered ONE point for ONE development experiment, so the claim
+    this test defends is the narrower one that still holds and still matters: a production or
+    resident-facing deployment cannot reach authority, and the registry holds nothing that claims more
+    than a development experiment.
+    """
     assert ra.MODES == (ra.MODE_LEGACY, ra.MODE_SHADOW_COMPARE, ra.MODE_LIMITED_COMMON_AUTHORITY)
-    assert ra.APPROVED_SNAPSHOTS == {}, "P3-14 may not approve an authority snapshot"
-    assert ra.unreachable_because(), "the reason authority cannot run must be stated, not implied"
+    assert sorted(ra.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"], \
+        "only the development-only point the Decision File records may be registered"
+    granted = ra.development_authority()
+    assert granted["every_entry_is_development_only"] and granted["every_entry_is_complete"]
+    assert granted["granted"] == ra.PURPOSE_DEVELOPMENT_EXPERIMENT
+    assert ra.unreachable_because(), "the reason production cannot run authority must be stated"
+    for environment in ("production", "prod", "staging", ""):
+        decision = ra.gate(gi_state, environ={**BEST, ra.SNAPSHOT_FLAG: "gi_pressure_committed",
+                                              ra.ENVIRONMENT_FLAG: environment}, unsupported=())
+        assert not decision.granted, environment
+        assert not decision.conditions["environment"] and not decision.conditions["approved_snapshot"], \
+            "a production environment is refused twice: by the gate and by the approval's own scope"
     decision = ra.gate(gi_state, environ=BEST, unsupported=())
     assert not decision.granted
     assert [name for name, ok in decision.conditions.items() if not ok] == ["approved_snapshot"], \
@@ -112,10 +129,18 @@ def test_a2_no_single_input_can_open_the_gate(gi_state, monkeypatch):
                 "faculty_approved_snapshot": "yes", "phase3_authority": True}
     assert not ra.gate(poisoned, environ=BEST).granted
     assert ra.mode(poisoned, environ=BEST) != ra.MODE_LIMITED_COMMON_AUTHORITY
-    # And a snapshot id a deployment invents is not an approved snapshot.
+    # And a snapshot id a deployment invents is not an approved snapshot. ``gi_pressure_committed``
+    # left this list at P3-40: the faculty decision registered it, so the honest check is that it is
+    # returned ONLY inside the scope that decision granted.
     for invented in ("gi_region_lower", "gi_committed_default", "gi_pressure_preload_low",
-                     "gi_pressure_committed", "gi_pressure_preload_high", TEST_ONLY_ID, None):
+                     "gi_pressure_preload_high", TEST_ONLY_ID, None):
         assert ra.approved_snapshot(invented) is None, invented
+    assert ra.approved_snapshot("gi_pressure_committed") is not None
+    for outside in ({"environment": "production"}, {"family": "acs"},
+                    {"case_id": "gi_bleed_99x"}, {"domain": ("hr", "spo2")}):
+        context = {"environment": "development", "family": "gi_bleed", "case_id": "gi_bleed_57m",
+                   "domain": ra.AUTHORITY_DOMAIN, **outside}
+        assert ra.approved_snapshot("gi_pressure_committed", **context) is None, outside
 
 
 def test_a3_every_one_of_the_nine_conditions_is_evaluated_and_can_be_the_only_failure(gi_state):
@@ -342,7 +367,7 @@ def test_a16_exactly_one_production_wiring_point_imports_the_authority_harness()
     assert "runtime_authority.py" in rs.LAYER_SOURCES, "the layer digest must cover it"
     # The import is inert: the site refuses in every configuration, so the encounter runs as it did.
     assert ra.site_for({}, {}) is None and ra.open_site({}) is None
-    assert ra.APPROVED_SNAPSHOTS == {} and ra.unreachable_because()
+    assert sorted(ra.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"] and ra.unreachable_because()
 
 
 def test_a17_the_harness_computes_no_physiology_of_its_own():
@@ -360,14 +385,20 @@ def test_a17_the_harness_computes_no_physiology_of_its_own():
 
 def test_c1_the_approved_registry_cannot_be_written_from_outside():
     """It was a plain module dict: any importer could approve a parameter point."""
-    assert ra.APPROVED_SNAPSHOTS == {} and ra._APPROVED_SNAPSHOT_POINTS == {}
+    before = sorted(ra.APPROVED_SNAPSHOTS)
+    assert before == ["gi_pressure_committed"], "the one development-only approval, and nothing else"
     for attempt in (lambda: ra.APPROVED_SNAPSHOTS.__setitem__("forged", {}),
                     lambda: ra.APPROVED_SNAPSHOTS.update({"forged": {}}),
                     lambda: ra.APPROVED_SNAPSHOTS.setdefault("forged", {}),
-                    lambda: ra.APPROVED_SNAPSHOTS.pop("forged", None)):
+                    lambda: ra.APPROVED_SNAPSHOTS.pop("gi_pressure_committed", None),
+                    lambda: ra.APPROVED_SNAPSHOTS["gi_pressure_committed"].__setitem__("x", 1),
+                    lambda: ra.APPROVED_SNAPSHOTS["gi_pressure_committed"]["parameters"].__setitem__(
+                        "preload_curve_scale_ml", 1.0)):
         with pytest.raises((TypeError, AttributeError)):
             attempt()
-    assert ra.APPROVED_SNAPSHOTS == {}
+    assert sorted(ra.APPROVED_SNAPSHOTS) == before
+    assert ra.APPROVED_SNAPSHOTS["gi_pressure_committed"]["parameters"][
+        "preload_curve_scale_ml"] == 833.3333333333334
 
 
 def test_c2_a_malformed_or_forged_approval_opens_nothing(gi_state, monkeypatch):
@@ -507,7 +538,11 @@ def test_c11_the_mode_can_be_asked_why(gi_state):
     """``mode()`` returns a string, so a refusal and a default were indistinguishable."""
     chosen, decision = ra.mode_decision(gi_state, environ=BEST, unsupported=())
     assert chosen == ra.MODE_LEGACY and not decision.granted
-    assert any("NO_FACULTY_APPROVED_AUTHORITY_SNAPSHOT_EXISTS" in reason for reason in decision.reasons)
+    # BEST names the test-only id, which the registry does not hold: the refusal says which id, and
+    # which ids it does hold, instead of claiming that no approval exists anywhere (P3-40).
+    assert any("NO_FACULTY_APPROVED_AUTHORITY_SNAPSHOT_FOR_THIS_ID" in reason
+               for reason in decision.reasons), decision.reasons
+    assert any("gi_pressure_committed" in reason for reason in decision.reasons), decision.reasons
     assert set(decision.conditions) == set(ra.GATE_CONDITIONS)
     assert ra.mode(gi_state, environ=BEST, unsupported=()) == chosen
 
@@ -517,7 +552,7 @@ def test_c12_a_declared_mirror_gap_or_a_contradictory_coverage_is_not_eligible()
     base = {"case": CASE, "scenario": "synthetic", "live_equals_replay": True,
             "coverage": {"fluid": {"status": "FULLY_MIRRORED"}}, "gaps": [], "failures": [],
             "boundaries": [], "unexpected": []}
-    assert ra.eligibility(base, environ={}).classification == ra.ELIGIBLE_BUT_NO_SNAPSHOT
+    assert ra.eligibility(base, environ={}).classification == ra.ELIGIBLE_FOR_DEVELOPMENT
     gapped = {**base, "gaps": [{"kind": "fluid", "why": "held until a result arrives"}]}
     verdict = ra.eligibility(gapped, environ={})
     assert verdict.classification == ra.INELIGIBLE_OTHER
@@ -542,11 +577,14 @@ def test_b1_the_thirty_four_scenarios_are_classified_and_none_is_left_out(batter
     assert result["scenarios"] == 34
     # P3-22 re-measured this honestly: two more scenarios order something the engine itself does not
     # model, and the eligibility reading now sees the settled order classes as the call site does.
-    assert result["counts"] == {ra.ELIGIBLE_BUT_NO_SNAPSHOT: 26, ra.INELIGIBLE_UNSUPPORTED: 8}
-    assert set(result["counts"]) <= {ra.ELIGIBLE_BUT_NO_SNAPSHOT, ra.INELIGIBLE_UNSUPPORTED,
-                                     ra.INELIGIBLE_OTHER}
+    # P3-40: the faculty decision registered one development-only approval, so the 26 read as eligible
+    # FOR THAT EXPERIMENT instead of "missing a snapshot". The split itself did not move: what blocks the
+    # other 8 is an unsupported action, which no approval can change.
+    assert result["counts"] == {ra.ELIGIBLE_FOR_DEVELOPMENT: 26, ra.INELIGIBLE_UNSUPPORTED: 8}
+    assert set(result["counts"]) <= {ra.ELIGIBLE_FOR_DEVELOPMENT, ra.ELIGIBLE_BUT_NO_SNAPSHOT,
+                                     ra.INELIGIBLE_UNSUPPORTED, ra.INELIGIBLE_OTHER}
     assert len(result["rows"]) == sum(result["counts"].values())
-    assert not result["approved_snapshot_exists"]
+    assert result["approved_snapshot_exists"] and len(result["eligible_for_development"]) == 26
 
 
 def test_b2_an_unsupported_action_fails_closed_and_is_named(battery):
@@ -570,7 +608,7 @@ def test_b2_an_unsupported_action_fails_closed_and_is_named(battery):
 
 def test_b3_every_eligible_scenario_mirrors_and_replays_only_supported_actions(battery):
     for row in battery["eligibility"]["rows"]:
-        if row["classification"] != ra.ELIGIBLE_BUT_NO_SNAPSHOT:
+        if row["classification"] not in ra.ELIGIBLE_CLASSES:
             continue
         assert row["facts"]["live_equals_replay"], row["scenario"]
         assert row["facts"]["no_shadow_failure"] and row["facts"]["no_boundary"], row["scenario"]
@@ -584,14 +622,23 @@ def test_b3_every_eligible_scenario_mirrors_and_replays_only_supported_actions(b
                     assert kind in ra.SUPPORTED_ACTIONS, (scenario["scenario"], kind)
 
 
-def test_b4_the_only_remaining_condition_is_the_faculty_snapshot(battery):
+def test_b4_the_remaining_condition_was_the_faculty_snapshot_and_it_is_now_named(battery):
+    """Before P3-40 the 26 said "no approved snapshot exists". Now they name the one that does.
+
+    What they may NOT say is that it validates anything: the reason carries the purpose, and the purpose
+    is a development experiment.
+    """
     rows = [row for row in battery["eligibility"]["rows"]
-            if row["classification"] == ra.ELIGIBLE_BUT_NO_SNAPSHOT]
+            if row["classification"] == ra.ELIGIBLE_FOR_DEVELOPMENT]
     assert len(rows) == 26
     for row in rows:
-        assert any("NO_FACULTY_APPROVED_AUTHORITY_SNAPSHOT_EXISTS" in reason
-                   for reason in row["reasons"]), row
-        assert row["facts"]["approved_snapshot"] is False
+        assert any(ra.PURPOSE_DEVELOPMENT_EXPERIMENT in reason for reason in row["reasons"]), row
+        assert not any("NO_FACULTY_APPROVED_AUTHORITY_SNAPSHOT_EXISTS" in reason
+                       for reason in row["reasons"]), "it may not say one is missing while one exists"
+        assert row["facts"]["approved_snapshot"] is True
+        assert row["facts"]["approving_snapshot"] == "gi_pressure_committed"
+        assert row["facts"]["approval_purpose"] == ra.PURPOSE_DEVELOPMENT_EXPERIMENT
+        assert any("not a clinical validation" in reason for reason in row["reasons"]), row
 
 
 def test_b5_a_pilot_configuration_makes_every_scenario_ineligible(battery):
@@ -653,3 +700,202 @@ def test_b9_no_code_path_changes_the_mode_inside_an_encounter():
                    for target in node.targets
                    if isinstance(target, ast.Attribute) and target.attr in ("mode", "authority")]
     assert assignments == [], [ast.dump(node) for node in assignments]
+
+
+# -- P3-40: the registered development-only approval and the grant it carries -------------------------
+
+DEV_ID = "gi_pressure_committed"
+DEV_ENV = {ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY, ra.SNAPSHOT_FLAG: DEV_ID,
+           ra.ENVIRONMENT_FLAG: "development", rs.FLAG: rs.MODE_SHADOW_COMPARE,
+           store.STORE_FLAG: STORE_DIR}
+
+
+def test_r1_the_registry_holds_exactly_the_development_only_approval():
+    """Faculty decisions A and G of 2026-11-08 approved a POINT for ONE experiment, not a physiology."""
+    assert sorted(ra.APPROVED_SNAPSHOTS) == [DEV_ID]
+    entry = ra.APPROVED_SNAPSHOTS[DEV_ID]
+    assert ra.snapshot_is_wellformed(entry) == (True, ())
+    assert ra.registered_snapshot_is_complete(entry) == (True, ())
+    assert entry["purpose"] == ra.PURPOSE_DEVELOPMENT_EXPERIMENT
+    assert entry["faculty_status"] == ra.STATUS_APPROVED_FOR_DEVELOPMENT
+    assert dict(entry["parameters"]) == {
+        "preload_curve_scale_ml": 833.3333333333334, "arrival_preload_fraction": 0.5,
+        "pump_preload_coupling": 1.0, "afterload_sensitivity": 0.3,
+        "low_output_pressure_knee": 0.5, "sbp_per_pressure_deficit": 45.0,
+        "dbp_per_pressure_deficit": 25.0}
+    # The point it approves is the point the shadow layer actually runs.
+    assert entry["runtime_parameter_snapshot_id"] == rs.PARAMETER_SNAPSHOT_ID
+    assert dict(entry["phase2_provenance"])["digest"] == rs.PHASE2_DIGEST
+    # And the record says what it is not, in its own words.
+    assert entry["not_established"] and all(str(line).strip() for line in entry["not_established"])
+    assert "DECISION FILE" in str(entry["decision_reference"]).upper() or \
+        "COLA_DECISIONES" in str(entry["decision_reference"]).upper()
+
+
+def test_r2_every_magnitude_carries_its_own_evidence_status():
+    """Approving the point is not approving seven validated magnitudes: P3-31 measured which is which."""
+    evidence = ra.APPROVED_SNAPSHOTS[DEV_ID]["parameter_evidence"]
+    assert sorted(evidence) == sorted(ra.SNAPSHOT_PARAMETERS)
+    identifiable = sorted(name for name, entry in evidence.items()
+                          if entry["status"] == ra.EVIDENCE_GI_IDENTIFIABLE)
+    assert identifiable == ["arrival_preload_fraction", "preload_curve_scale_ml"]
+    assert len(evidence) - len(identifiable) == 5, "five magnitudes are not identifiable from GI"
+    assert {entry["status"] for entry in evidence.values()} <= set(ra.EVIDENCE_STATUSES)
+    assert all(str(entry["why"]).strip() for entry in evidence.values())
+
+
+@pytest.mark.parametrize("drift,why", [
+    ({"faculty_status": "CLINICALLY_VALIDATED"}, "faculty_status"),
+    ({"purpose": "PRODUCTION_AUTHORITY"}, "purpose"),
+    ({"scope": {"production": "ALLOWED", "pilot": "EXCLUDED", "resident_visible": "EXCLUDED"}},
+     "production"),
+    ({"scope": {"production": "EXCLUDED", "pilot": "ALLOWED", "resident_visible": "EXCLUDED"}},
+     "pilot"),
+    ({"parameters": {"only_one": 1.0}}, "parameters"),
+    ({"parameter_evidence": {}}, "parameter_evidence"),
+])
+def test_r3_a_drifted_registration_is_refused_and_the_module_refuses_to_load_it(drift, why):
+    """A drifted approval is worse than none: the import-time guard raises instead of granting."""
+    drifted = {**dict(ra.APPROVED_SNAPSHOTS[DEV_ID]), **drift}
+    ok, reasons = ra.registered_snapshot_is_complete(drifted)
+    assert not ok and any(why in reason for reason in reasons), reasons
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setitem(ra._APPROVED_SNAPSHOT_POINTS, "drifted", drifted)
+        with pytest.raises(RuntimeError):
+            ra._guard_the_registry()
+
+
+def test_r4_a_production_or_staging_environment_is_refused_twice(gi_state):
+    """The gate's own constants AND the approval's declared scope. Widening one does not widen both."""
+    for environment in ("production", "prod", "staging", "", "resident"):
+        decision = ra.gate(gi_state, environ={**DEV_ENV, ra.ENVIRONMENT_FLAG: environment},
+                           unsupported=())
+        assert not decision.granted
+        assert not decision.conditions["environment"], environment
+        assert not decision.conditions["approved_snapshot"], environment
+        assert any("allows only" in reason for reason in decision.reasons), decision.reasons
+    assert ra.open_site(gi_state, environ={**DEV_ENV, ra.ENVIRONMENT_FLAG: "production"}) is None
+
+
+def test_r5_the_first_pilot_is_refused_with_the_real_approval(gi_state):
+    for extra in ({ra.PILOT_FLAGS[0]: "1"}, {ra.PILOT_FLAGS[1]: "1"},
+                  {name: "1" for name in ra.PILOT_REQUIRED_ON}):
+        decision = ra.gate(gi_state, environ={**DEV_ENV, **extra}, unsupported=())
+        assert not decision.granted and not decision.conditions["no_pilot"], extra
+        assert ra.open_site(gi_state, environ={**DEV_ENV, **extra}) is None
+
+
+def test_r6_the_approval_does_not_travel_outside_its_family_case_or_domain(gi_state):
+    other_family = {**dict(gi_state), "engine_family": "acs"}
+    assert not ra.gate(other_family, environ=DEV_ENV, unsupported=()).granted
+    for domain in (("sbp",), ("sbp", "dbp"), ("sbp", "dbp", "map", "crt_s"), ("hr", "spo2")):
+        decision = ra.gate(gi_state, environ=DEV_ENV, unsupported=(), domain=domain)
+        assert not decision.granted, domain
+    ok, reasons = ra.snapshot_permits(ra.APPROVED_SNAPSHOTS[DEV_ID], environment="development",
+                                      family="gi_bleed", case_id="gi_bleed_99x",
+                                      domain=ra.AUTHORITY_DOMAIN)
+    assert not ok and any("allowlists" in reason for reason in reasons), reasons
+
+
+def test_r7_a_forged_point_cannot_borrow_the_approved_identity(gi_state):
+    """Substitution: same id, other values, or an approval that claims a point it did not run."""
+    forged = {**dict(ra.APPROVED_SNAPSHOTS[DEV_ID]),
+              "parameters": {name: 1.0 for name in ra.SNAPSHOT_PARAMETERS},
+              "runtime_parameter_snapshot_id": "a point nobody ran"}
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setitem(ra._APPROVED_SNAPSHOT_POINTS, DEV_ID, forged)
+        assert ra.approved_snapshot(DEV_ID) is None
+        assert not ra.gate(gi_state, environ=DEV_ENV, unsupported=()).granted
+    # And the real registration is back, untouched.
+    assert ra.approved_snapshot(DEV_ID) is not None
+    assert ra.APPROVED_SNAPSHOTS[DEV_ID]["parameters"]["arrival_preload_fraction"] == 0.5
+
+
+def test_r8_secrets_cannot_activate_the_real_approval(gi_state, monkeypatch):
+    """A deployment that names an authority flag in Streamlit secrets is refused, not believed."""
+    monkeypatch.setattr(rs, "_named_in_secrets", lambda name: name == ra.AUTHORITY_FLAG)
+    decision = ra.gate(gi_state, environ=DEV_ENV, unsupported=())
+    assert not decision.granted and not decision.conditions["authority_flag"]
+    assert any("secrets" in reason for reason in decision.reasons), decision.reasons
+
+
+def test_r9_without_a_configured_artifact_store_no_site_opens(gi_state):
+    for value in ("", "relative/dir", str(store.repository_root()), str(store.repository_root() / "docs")):
+        assert ra.open_site(gi_state, environ={**DEV_ENV, store.STORE_FLAG: value}) is None, value
+    # The gate itself does not know about the store: the site is where that condition lives.
+    assert ra.gate(gi_state, environ={**DEV_ENV, store.STORE_FLAG: ""}, unsupported=()).granted
+
+
+def test_r10_the_authorized_development_configuration_does_open_a_site(gi_state):
+    """The positive control. Without it, the nine refusals above would prove only that nothing works."""
+    decision = ra.gate(gi_state, environ=DEV_ENV, unsupported=())
+    assert decision.granted, decision.to_dict()
+    assert decision.snapshot_id == DEV_ID
+    site = ra.open_site(gi_state, environ=DEV_ENV)
+    assert site is not None
+    assert site.snapshot["id"] == DEV_ID
+    assert site.environment == "development"
+    assert tuple(site.domain) == ra.AUTHORITY_DOMAIN
+    assert site.experiment_state == ra.EXPERIMENT_ACTIVE
+
+
+def test_r11_the_approved_values_are_pinned_outside_the_entry():
+    """The P3-40 review swapped the entry for one with the same id and other numbers, and the gate
+    granted. The pin is what makes an approved value unable to move without a new decision."""
+    assert ra.APPROVED_POINT_DIGESTS[DEV_ID] == ra.digest_of(
+        dict(ra.APPROVED_SNAPSHOTS[DEV_ID]["parameters"]))
+    assert sorted(ra.APPROVED_POINT_DIGESTS) == sorted(ra.APPROVED_SNAPSHOTS), \
+        "the pin and the registry must say the same thing"
+    swapped = {**dict(ra.APPROVED_SNAPSHOTS[DEV_ID]),
+               "parameters": {name: 99.0 for name in ra.SNAPSHOT_PARAMETERS}}
+    assert not ra.approved_values_match(DEV_ID, swapped)
+    # Offered WITHOUT touching the registry, the shape check already rejects it, because it compares the
+    # offer against the registered entry by value. The finding was the other way round: REPLACE the
+    # registry entry, and that comparison becomes trivially true. The pin is what survives that.
+    assert not ra.snapshot_is_wellformed(swapped)[0]
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setitem(ra._APPROVED_SNAPSHOT_POINTS, DEV_ID, swapped)
+        assert ra.snapshot_is_wellformed(swapped)[0], "the shape passes once the entry IS the forgery"
+        assert ra.approved_snapshot(DEV_ID) is None, "and the pin is what refuses it"
+        with pytest.raises(RuntimeError):
+            ra._guard_the_registry()
+    # An id with no pin is not a registered approval, and the pin does not apply to it.
+    assert ra.approved_values_match("test_only_point", {"parameters": {"anything": 1.0}})
+
+
+def test_r12_the_written_mean_is_the_one_the_commit_writes():
+    """P3-41 found the artifact reporting a mean the commit did not write, by one millimetre.
+
+    The commit derives the mean from the two integers it writes. The record used to shape the core's own
+    mean instead, so at minute 30 of the first experiment it said 60 while the state carried 59.
+    """
+    legacy = {"sbp": 84, "dbp": 52, "map": 63}
+    # The exact candidate the first experiment produced at minute 30: the rounding of the pair moves the
+    # mean across a boundary, which is where the two definitions disagreed.
+    candidate = {"sbp": 80.194623709, "dbp": 49.210337276, "map": 59.538432753}
+    written = ra.shaped_like_legacy(candidate, legacy)
+    assert written["sbp"] == 80 and written["dbp"] == 49
+    assert written["map"] == ra.derived_map(written["sbp"], written["dbp"]) == 59
+    assert written["map"] != int(round(candidate["map"])), "shaping the core's mean alone gave 60"
+    # And wherever the two agree, nothing changes.
+    for pair in ((100.860199733, 61.8914862, 74.881057378), (111.523522881, 68.43488904, 82.797766987)):
+        shaped = ra.shaped_like_legacy({"sbp": pair[0], "dbp": pair[1], "map": pair[2]}, legacy)
+        assert shaped["map"] == ra.derived_map(shaped["sbp"], shaped["dbp"])
+    # A float-shaped legacy observable leaves the pair unrounded, and the mean still follows the pair.
+    unrounded = ra.shaped_like_legacy(candidate, {"sbp": 84.0, "dbp": 52.0, "map": 63.0})
+    assert unrounded["sbp"] == candidate["sbp"]
+    assert unrounded["map"] == ra.derived_map(candidate["sbp"], candidate["dbp"]) == 60
+
+
+def test_r13_the_forensic_replay_uses_the_same_mean_as_the_commit():
+    """P3-41 found two copies of one rule: the record's and the replay's. The replay had the old one."""
+    point = {"sbp": 80.194623709, "dbp": 49.210337276, "map": 59.538432753}
+    shape = {"sbp": "int", "dbp": "int", "map": "int"}
+    assert ra.apply_shape(point, shape)["map"] == 59, "the mean follows the shaped pair"
+    assert ra.apply_shape(point, shape) == ra.shaped_like_legacy(point, {"sbp": 84, "dbp": 52, "map": 63})
+    # The replay's reconstruction is the same function, so a stored artifact's written candidate and the
+    # replay's recomputation agree at every minute, including the boundary-crossing one.
+    source = (Path(__file__).resolve().parent / "runtime_authority.py").read_text(encoding="utf-8")
+    assert source.count("int(round(float(value)))") == 1, \
+        "only one place may shape a pressure into the display's integer"
+    assert source.count("derived_map(out.get(\"sbp\"), out.get(\"dbp\"))") == 1

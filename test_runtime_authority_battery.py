@@ -89,11 +89,11 @@ def test_g1_all_thirty_four_scenarios_are_driven_and_classified(battery):
 def test_g2_the_eligibility_reading_and_the_transaction_agree(battery):
     """Two readings of the same question used to disagree on two scenarios. They now agree."""
     eligible = {(row["case_id"], row["scenario"]) for row in battery["eligibility"]["rows"]
-                if row["classification"] == ra.ELIGIBLE_BUT_NO_SNAPSHOT}
+                if row["classification"] in ra.ELIGIBLE_CLASSES}
     valid = {(row["case"], row["scenario"]) for row in battery["authority"]["rows"]
              if row["classification"] == ra.TECHNICALLY_VALID}
     assert eligible == valid, sorted(eligible ^ valid)
-    assert battery["eligibility"]["counts"] == {ra.ELIGIBLE_BUT_NO_SNAPSHOT: 26,
+    assert battery["eligibility"]["counts"] == {ra.ELIGIBLE_FOR_DEVELOPMENT: 26,
                                                 ra.INELIGIBLE_UNSUPPORTED: 8}
 
 
@@ -294,12 +294,12 @@ def test_g16_an_unsupported_action_in_the_turn_commits_nothing(live):
 def test_g17_the_artifact_carries_every_field_an_auditor_needs(live):
     site, prepared = _run(live)
     assert prepared is not None
-    site.eligibility = {"classification": ra.ELIGIBLE_BUT_NO_SNAPSHOT, "scenario": "stress"}
+    site.eligibility = {"classification": ra.ELIGIBLE_FOR_DEVELOPMENT, "scenario": "stress"}
     artifact = site.artifact()
     verdict = ra.verify_artifact(artifact)
     assert verdict["complete"], verdict
     assert verdict["digest_matches"] and verdict["outcomes_consistent"]
-    assert artifact["eligibility"]["classification"] == ra.ELIGIBLE_BUT_NO_SNAPSHOT
+    assert artifact["eligibility"]["classification"] == ra.ELIGIBLE_FOR_DEVELOPMENT
     assert artifact["action_history"] and all("order_id" in item for item in artifact["action_history"])
     assert artifact["ownership"]["sbp"] == ra.COMMON and artifact["ownership"]["hr"] == ra.LEGACY
     assert artifact["phase2_digest"] == rs.PHASE2_DIGEST
@@ -345,7 +345,8 @@ def test_g19_the_rollback_artifact_reproduces_the_failed_minute(live, monkeypatc
 def test_g20_the_registry_is_empty_when_this_module_is_done(battery):
     """The battery ran with a test-only approval; nothing of it survives."""
     assert battery["authority"]["snapshot_id"] == TEST_ONLY_SNAPSHOT["id"]
-    assert not any(key != TEST_ONLY_SNAPSHOT["id"] for key in ra._APPROVED_SNAPSHOT_POINTS)
+    assert not any(key not in (TEST_ONLY_SNAPSHOT["id"], "gi_pressure_committed")
+                   for key in ra._APPROVED_SNAPSHOT_POINTS)
     assert ra.unreachable_because() or TEST_ONLY_SNAPSHOT["id"] in ra._APPROVED_SNAPSHOT_POINTS
     decision_file = (ROOT / "docs" / "COLA_DECISIONES_AI_ADVISOR.md").read_text(encoding="utf-8")
     assert TEST_ONLY_SNAPSHOT["id"] not in decision_file
