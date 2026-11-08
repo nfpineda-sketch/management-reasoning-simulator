@@ -510,3 +510,62 @@ Un paquete: **la superficie docente del experimento** —dónde se muestra un fa
 artefacto— y la decisión docente de dónde vive. Las otras siete decisiones, con su material medido y su
 registro de riesgos, están en `docs/PHASE3_FACULTY_AUTHORITY_DECISION_PACK.md`; la certificación final, en
 `docs/PHASE3_PREAUTHORITY_FINAL_CERTIFICATION.md`.
+
+
+## P3-26 a P3-30 · La superficie docente, el almacén del artefacto y el veredicto A
+
+Cierra el último paquete técnico que quedaba abierto en P3-25, con la semántica que fijó la decisión docente
+F. **Nada de esto concede autoridad**: el registro de instantáneas aprobadas sigue vacío.
+
+### La superficie docente
+
+`authority_status()` es la **única** lectura: devuelve modo, estado del experimento
+(`NOT_STARTED` / `ACTIVE` / `HALTED` / `REFUSED`), id de la instantánea, dominio, intento, minuto, resultado,
+razón del fallo, acciones no soportadas del minuto, minutos comprometidos, trayectoria mezclada,
+disponibilidad del contrafactual del legado, identidad y digesto del artefacto, y política de fallo. La
+superficie (`app.py::_render_authority_experiment`) **dibuja esa estructura y no deriva nada**: una prueba por
+AST comprueba que no aparece ningún nombre de campo clínico en ella. Vive dentro de las herramientas de
+personal, detrás de `faculty_access()`; el residente no la ve ni con el experimento detenido.
+
+Si la sesión se perdió —un recargado, una sesión nueva— la superficie cae al almacén y lee los registros
+durables en vez de mostrar «no hay experimento».
+
+### El almacén del artefacto
+
+`runtime_authority_store.py` es una superficie **separada** de investigación y depuración de la Fase 3:
+
+- **Apagado por omisión.** Sólo existe si `MRS_PHASE3_AUTHORITY_STORE` nombra una **ruta absoluta fuera del
+  repositorio**. Una ruta relativa, o cualquier ruta dentro del árbol, se rechaza con su motivo.
+- **Crear-sólo.** Un registro nunca se sobreescribe. Volver a guardar contenido idéntico es idempotente;
+  el mismo identificador con otro contenido es `COLLISION` y el primer registro queda como está.
+- **Identidad determinista** sobre encuentro, experimento, intento, caso, último minuto, último resultado,
+  número de minutos y sitio. **No** incluye el digesto del contenido, justamente para que un cambio de
+  contenido bajo la misma identidad sea una colisión real y no un registro nuevo.
+- **Versionado** (`STORE_VERSION`) y **reproducible**: cada minuto lleva su entrada inmutable, así que
+  `store.replay(id)` reproduce el experimento completo desde el archivo.
+- **Sin ampliar datos personales**: guarda lo que el artefacto del encuentro ya tenía.
+- **Fuera del alcance del residente**: `RESIDENT_READERS_FORBIDDEN` nombra los módulos que no pueden leerlo
+  y una prueba comprueba que el **único** lector es la superficie docente.
+- `open_site()` **no abre un sitio** si no hay almacén configurado: un experimento sin dónde registrarse no
+  empieza.
+
+Nada de esto toca el esquema congelado de la traza de la Fase 2, la traza del residente, la salida del
+encuentro, la puntuación ni los eventos críticos, y no hay ninguna migración de base de datos.
+
+### La detención
+
+Una falla dura deja el experimento en `HALTED/INVALID_FOR_CONTINUATION`. A partir de ahí: ningún minuto más
+se compromete; el sitio **no se reconstruye** ni cambiando las banderas; un cambio de configuración dentro
+del encuentro cuenta como falla y detiene visiblemente; los minutos ya comprometidos se preservan
+exactamente como ocurrieron, sin mutación retrospectiva; si hubo commits antes de la falla, el artefacto
+declara la trayectoria mezclada. Un encuentro nuevo, o un segundo intento del mismo caso, arranca un
+experimento independiente. El encuentro detenido sirve para **reejecutar y analizar**, no para continuar.
+
+### Lo que falta
+
+Nada técnico. El veredicto de P3-29 es **A** (`TECHNICALLY_READY_FOR_EXPLICIT_FACULTY_AUTHORITY_GRANT`): los
+18 puntos del inventario están `READY` y el detalle está en `docs/PHASE3_FINAL_TECHNICAL_READINESS.md`. Las
+**seis** decisiones docentes que quedan (A instantánea, B criterio de aceptación, C exclusión por acción no
+soportada, D alcance sólo presión, E entorno, G concesión expresa), la tabla de candidatos sobrevivientes y
+la plantilla de autorización futura —no ejecutada— están en
+`docs/PHASE3_FINAL_FACULTY_DECISION_PACK.md`.
