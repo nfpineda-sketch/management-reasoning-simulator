@@ -667,15 +667,6 @@ def family_versions(family: str) -> dict:
 #: The formally closed Phase-2 base this plumbing observes, as the closure record states it.
 PHASE2_CLOSURE_HEAD = "d2cca46626ed5d45a792ec9456d46fb75fe87731"
 PHASE2_DIGEST = "22b90a6f7f38929cc5c18aa2000579155b4d9109198e35e29ad3991e81d6ce6a"
-#: PHASE2_AMENDMENT_1 (authorized 2026-11-09): the formally closed common physiology gained ONE explicit
-#: control, ``derived.CoreProfile.hypoventilation_oxygenation_transmission_fraction``, so the P2T-5
-#: relative alveolar-gas link can express PARTIAL transmission instead of only all or nothing. The
-#: historical closure above is NOT rewritten: ``PHASE2_DIGEST`` still names the tree at d2cca46 and still
-#: recomputes against it. This is the digest of the amended tree, over the same 141 sources, exactly one
-#: of which changed. Record: docs/revision/PHASE2_AMENDMENT_1.json.
-PHASE2_AMENDMENT_1_DIGEST = "faf811de7b8e034e33eab0a7d5f09277fcac58c56dff2d2093882e225c3d2ae2"
-#: What the Phase-3 runtime references: the closure, plus the one amendment, named and not implied.
-PHASE2_STATUS = "PHASE2_CLOSED_PLUS_AMENDMENT_1"
 MODULE_VERSION = "P3-11"
 ADAPTER_VERSION = "gi_haemorrhage/P3-11"
 #: The Phase-3 layer's own sources, whose digest identifies the code that produced an artifact.
