@@ -241,7 +241,7 @@ liquidado, 2 por la colisión de linaje.
 | 12 | Aislamiento del residente | la pantalla no nombra el experimento, probado por la app real |
 | 13 | Aislamiento del piloto | rechazado por bandera y por sus propias marcas |
 | 14 | Inmutabilidad de la Fase 2 | digesto `22b90a6f…` sin mover; `COMMON_CORE_RUNTIME_AUTHORITY = False` |
-| 15 | Certificación final limpia | ver el informe del ciclo |
+| 15 | Certificación final limpia | **sí**: suite completa particionada **10 890 pruebas, 0 fallas, 0 errores**, 93 omitidas, 1 xfail sobre el candidato `7b3ee3e`; regresiones 56/56 activas; la falla previa de la guarda del modo sin red **pasa**, así que la clasificación de P3-51 queda confirmada |
 
 ### Veredicto
 
