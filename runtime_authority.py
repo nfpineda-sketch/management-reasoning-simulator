@@ -1337,10 +1337,29 @@ def action_fates(ran: Sequence | None) -> tuple:
     out = []
     for action, kind in zip(list(ran or []), action_kinds(ran)):
         item = dict(action) if isinstance(action, Mapping) else {}
-        out.append({"order_id": str(item.get("order_id") or item.get("id") or ""),
+        out.append({"order_id": canonical_order_id(item),
                     "type": kind,
+                    "source_submission": str(item.get("_submission_id") or ""),
+                    "action_written_at_min": item.get("_written_at_min"),
                     "fate": str(item.get("fate") or item.get("status") or "")})
     return tuple(out)
+
+
+#: The reader's own key for an order's identity, stamped by ``order_ledger.tag`` and the ONE key
+#: ``order_pipeline._order_by_action`` resolves an order by. P3-52 measured it on the two GI batteries:
+#: 170 of 170 consumed actions carry it, so the direct link is total and the site never guesses.
+#: ``order_id``/``id`` stay as fallbacks for a shape that is not a reader action.
+CANONICAL_ID_KEYS = ("_order_id", "order_id", "id")
+
+
+def canonical_order_id(action: Any) -> str:
+    """The canonical identity of the order this action belongs to, as the repository stamps it."""
+    item = dict(action) if isinstance(action, Mapping) else {}
+    for key in CANONICAL_ID_KEYS:
+        value = str(item.get(key) or "").strip()
+        if value:
+            return value
+    return ""
 
 
 #: The canonical fields of a SETTLED order, exactly as ``order_ledger.snapshot`` keeps them. The site
@@ -1361,6 +1380,100 @@ def fates_that_did_not_act() -> frozenset:
         return frozenset(str(name) for name in order_ledger.NOT_ACTED)
     except Exception:
         return frozenset()
+
+
+#: The canonical lineage of one physiologically consumed action, in the repository's own terms.
+LINEAGE_FIELDS = ("order_id", "class", "fate", "source_submission", "activation_submission",
+                  "order_written_at_min", "action_written_at_min", "activated_at_min", "origin", "link")
+#: Where the source order was opened. P3-52 measured 0 of 170 consumed actions reaching back to an
+#: earlier submission in the two GI batteries, so ``ACTIVE_PREVIOUS_ORDER`` is a shape the repository
+#: allows (``open_turn`` reuses a held order by its id) that this evidence never exercises.
+ORIGIN_THIS_TURN = "SOURCE_ORDER_OPENED_THIS_SUBMISSION"
+ORIGIN_EARLIER = "ACTIVE_PREVIOUS_ORDER"
+LINK_VALID = "VALID_LINKED_LINEAGE"
+#: Named and falsifiable, each one a thing the record can be WRONG about -- not a note.
+NO_CANONICAL_SOURCE_ORDER = "NO_CANONICAL_SOURCE_ORDER"
+LINEAGE_ABSENT = "LINEAGE_SOURCE_ORDER_ABSENT_FROM_THE_SETTLED_LEDGER"
+LINEAGE_CLASS_DISAGREES = "LINEAGE_CLASS_DISAGREES_WITH_THE_SOURCE_ORDER"
+LINEAGE_WRITTEN_AFTER_ACTIVATION = "LINEAGE_SOURCE_ORDER_WRITTEN_AFTER_ITS_ACTIVATION"
+LINEAGE_NOT_THE_ORDER_THIS_ACTION_OPENED = "LINEAGE_SOURCE_ORDER_IS_NOT_THE_ONE_THIS_ACTION_OPENED"
+LINEAGE_FATE_DID_NOT_ACT = "LINEAGE_SOURCE_FATE_SAYS_THE_ORDER_DID_NOT_ACT"
+LINEAGE_VIOLATIONS = (NO_CANONICAL_SOURCE_ORDER, LINEAGE_ABSENT, LINEAGE_CLASS_DISAGREES,
+                      LINEAGE_WRITTEN_AFTER_ACTIVATION, LINEAGE_NOT_THE_ORDER_THIS_ACTION_OPENED,
+                      LINEAGE_FATE_DID_NOT_ACT)
+
+
+def action_lineage(fates: Sequence | None, settled: Sequence | None, submission_id: Any = None) -> tuple:
+    """Link each consumed action to its authoritative source order, by the repository's own identity.
+
+    No class matching and no submission filter: the link is the id ``order_ledger.tag`` stamped on the
+    action and ``order_pipeline.settle`` resolves orders by. Every row says which order authorized the
+    action, where that order was opened, when it was activated, and whether the link holds. A row whose
+    ``link`` is one of ``LINEAGE_VIOLATIONS`` is a thing the record got wrong, not a gap to shrug at.
+    """
+    by_id = {}
+    for order in list(settled or []):
+        item = dict(order) if isinstance(order, Mapping) else {}
+        key = str(item.get("order_id") or "").strip()
+        if key:
+            by_id.setdefault(key, item)
+    turn = "" if submission_id is None else str(submission_id)
+    did_not_act = fates_that_did_not_act()
+    rows = []
+    for entry in list(fates or []):
+        item = dict(entry) if isinstance(entry, Mapping) else {}
+        order_id = str(item.get("order_id") or "").strip()
+        order = by_id.get(order_id) or {}
+        source = str(order.get("submission_id") or "")
+        activated = order.get("executed_at_min")
+        written = order.get("written_at_min")
+        row = {
+            "order_id": order_id,
+            "class": str(order.get("class") or ""),
+            "fate": str(order.get("fate") or ""),
+            "source_submission": source,
+            "activation_submission": turn,
+            "order_written_at_min": written,
+            "action_written_at_min": item.get("action_written_at_min"),
+            "activated_at_min": activated,
+            "origin": ORIGIN_THIS_TURN if (source and source == turn) else (
+                ORIGIN_EARLIER if order_id else ""),
+            "link": LINK_VALID,
+        }
+        if not order_id:
+            # P3-52 found the runtime always stamps an identity (170 of 170), so an action without one
+            # is not a legitimate shape here: it is recorded as a violation, not excused as a gap.
+            row["link"] = NO_CANONICAL_SOURCE_ORDER
+        elif not order:
+            row["link"] = LINEAGE_ABSENT
+        elif str(item.get("type") or "") != str(order.get("class") or ""):
+            # The collision P3-52 reproduced: a resumed encounter whose turn counter restarts over an
+            # inherited ledger makes ``t0:0`` resolve to the ORIGINAL encounter's order. ``order_id`` is
+            # unique within one encounter's ledger, not across encounters, so the link is checked and
+            # never trusted blind.
+            row["link"] = LINEAGE_CLASS_DISAGREES
+        elif (_as_int(written) is not None and _as_int(activated) is not None
+              and _as_int(written) > _as_int(activated)):
+            row["link"] = LINEAGE_WRITTEN_AFTER_ACTIVATION
+        elif (row["origin"] == ORIGIN_THIS_TURN and item.get("action_written_at_min") is not None
+              and written is not None
+              and _as_int(item.get("action_written_at_min")) != _as_int(written)):
+            row["link"] = LINEAGE_NOT_THE_ORDER_THIS_ACTION_OPENED
+        elif did_not_act and str(order.get("fate") or "") in did_not_act:
+            row["link"] = LINEAGE_FATE_DID_NOT_ACT
+        rows.append({name: row.get(name) for name in LINEAGE_FIELDS})
+    return tuple(rows)
+
+
+def lineage_violations(rows: Sequence | None) -> tuple:
+    """The rows whose canonical link does not hold, each with the reason it does not."""
+    out = []
+    for row in list(rows or []):
+        item = dict(row) if isinstance(row, Mapping) else {}
+        if str(item.get("link") or "") != LINK_VALID:
+            out.append({"order_id": item.get("order_id"), "class": item.get("class"),
+                        "fate": item.get("fate"), "link": item.get("link")})
+    return tuple(out)
 
 
 def settled_provenance(orders: Sequence | None, submission_id: Any = None) -> tuple:
@@ -1521,34 +1634,27 @@ class AuthoritySite:
             if record is None:
                 report["why"] = "no authority minute carries this submission"
                 return report
+            # P3-53: the link is the repository's own identity, resolved against EVERY settled order of
+            # the turn -- no class matching and no submission filter, because ``open_turn`` reuses a held
+            # order by its id and that order carries the submission that opened it (P3-52-2).
+            identities = [dict(row) for row in (record.get("action_fates") or [])]
+            everything = settled_provenance(orders, None)
             settled = settled_provenance(orders, submission_id)
-            record["action_fates"] = [dict(item) for item in settled]
+            lineage = action_lineage(identities, everything, submission_id)
+            record["action_lineage"] = [dict(row) for row in lineage]
+            record["action_fates"] = [dict(row) for row in lineage]
             record["provenance_settled"] = True
             report["settled"] = len(settled)
+            report["lineage"] = [dict(row) for row in lineage]
             if not settled:
                 report["why"] = "the submission settled no order"
-            did_not_act = fates_that_did_not_act()
-            by_class: dict = {}
-            for item in settled:
-                by_class.setdefault(str(item.get("class") or ""), []).append(item)
-            notes = []
-            for kind in list(record.get("action_kinds") or []):
-                rows = by_class.get(str(kind)) or []
-                if not rows:
-                    # NOT a contradiction. P3-48 found turns whose executed classes and whose opened
-                    # orders legitimately differ -- a bundle the pipeline split, an order opened in an
-                    # earlier turn -- so a class with no order of the same submission does not show that
-                    # the action did not act. It is recorded as a gap and nothing is concluded from it.
-                    notes.append({"class": str(kind),
-                                  "why": "the minute recorded this class and this submission's settled "
-                                         "orders carry none of it; the order may belong to another "
-                                         "submission, so nothing is concluded"})
-                elif did_not_act and all(str(row.get("fate") or "") in did_not_act for row in rows):
-                    report["contradictions"].append(
-                        {"class": str(kind), "fates": sorted({str(row.get("fate") or "")
-                                                              for row in rows}),
-                         "why": "every settled fate of this class is one under which the order did not "
-                                "act on the patient"})
+            for row in lineage_violations(lineage):
+                # A named, falsifiable violation -- not a note. P3-52 proved the direct link holds for
+                # 170 of 170 consumed actions, so a broken link is a thing the record got wrong.
+                report["contradictions"].append(
+                    {"order_id": dict(row).get("order_id"), "class": dict(row).get("class"),
+                     "fate": dict(row).get("fate"), "link": dict(row).get("link"),
+                     "why": "the canonical lineage of a consumed action does not hold"})
             # P3-48 found the gap this closes. An order the engine does not MODEL produces no action for
             # the turn, so ``run_actions`` never carries it and the live site never saw it: the
             # repository's own eligibility reading called those scenarios INELIGIBLE_UNSUPPORTED while
@@ -1565,8 +1671,6 @@ class AuthoritySite:
                      "why": f"{UNSUPPORTED_AUTHORITY_ACTION}: the settled ledger of this turn carries a "
                             f"management class the common mapping cannot represent, and faculty decision "
                             f"C makes the encounter ineligible for common authority"})
-            record["provenance_notes"] = [dict(item) for item in notes]
-            report["notes"] = [dict(item) for item in notes]
             record["provenance_contradictions"] = [dict(item) for item in report["contradictions"]]
             if report["contradictions"] and not self.halted:
                 reason = (f"{PROVENANCE_CONTRADICTION}: {report['contradictions']}")
@@ -2064,23 +2168,22 @@ def _provenance_is_consistent(minute: Mapping) -> bool:
         return False
     if item.get("provenance_contradictions"):
         return False
-    did_not_act = fates_that_did_not_act()
-    by_class: dict = {}
-    for row in item.get("action_fates") or []:
-        by_class.setdefault(str(dict(row).get("class") or ""), []).append(dict(row))
-    if not item.get("action_fates"):
+    rows = [dict(row) for row in (item.get("action_lineage") or item.get("action_fates") or [])]
+    if not rows:
         return False
-    for row in item.get("action_fates") or []:
-        entry = dict(row)
-        if not str(entry.get("order_id") or "").strip():
+    # After settlement the two copies ARE the same rows, so a difference between them means the
+    # artifact was edited: forging either one is detectable, not only the one the check reads.
+    if item.get("action_lineage") is not None and item.get("action_fates") is not None:
+        if [dict(row) for row in item["action_lineage"]] != [dict(row) for row in item["action_fates"]]:
             return False
-        if not str(entry.get("fate") or "").strip():
+    # P3-53-4: one falsifiable invariant per consumed action, on the canonical lineage. No class
+    # matching, so a class whose order belongs to another submission is linked, not shrugged at.
+    for row in rows:
+        if not str(row.get("order_id") or "").strip():
             return False
-    for kind in item.get("action_kinds") or []:
-        rows = by_class.get(str(kind)) or []
-        # A class with no order of this submission is a recorded gap, not an inconsistency: see
-        # ``settle_provenance``. What would be inconsistent is an order of it that did not act.
-        if rows and did_not_act and all(str(row.get("fate") or "") in did_not_act for row in rows):
+        if not str(row.get("fate") or "").strip():
+            return False
+        if str(row.get("link") or "") != LINK_VALID:
             return False
     return True
 
@@ -2161,6 +2264,15 @@ def replay_site_artifact(artifact: Mapping) -> dict:
             # they belong to. The replay reads them; it does not settle anything itself.
             "provenance_settled": bool(item.get("provenance_settled")),
             "provenance_consistent": _provenance_is_consistent(item),
+            # P3-53-5: the lineage is verified from the artifact alone, with no live session.
+            "action_lineage": [dict(row) for row in (item.get("action_lineage") or [])],
+            "lineage_links": sorted({str(dict(row).get("link") or "")
+                                     for row in (item.get("action_lineage") or [])}),
+            "lineage_valid": all(str(dict(row).get("link") or "") == LINK_VALID
+                                 for row in (item.get("action_lineage") or []))
+                             and bool(item.get("action_lineage")),
+            "lineage_violations": [dict(row) for row in
+                                   lineage_violations(item.get("action_lineage") or [])],
             "provenance_contradictions": [dict(row) for row in
                                           (item.get("provenance_contradictions") or [])],
             "eligibility": (dict(body.get("eligibility")).get("classification")
@@ -2179,6 +2291,8 @@ def replay_site_artifact(artifact: Mapping) -> dict:
             "eligibility_reasons": list(eligibility_why),
             "provenance_settled_minutes": sum(1 for row in rows if row["provenance_settled"]),
             "provenance_consistent_minutes": sum(1 for row in rows if row["provenance_consistent"]),
+            "lineage_valid_minutes": sum(1 for row in rows if row["lineage_valid"]),
+            "lineage_links": sorted({link for row in rows for link in row["lineage_links"]}),
             # P3-28 review: "reproduces: True" over 1 of 4 minutes reads as "the experiment reproduces".
             # The counts are part of the verdict now, and the verdict says what it covers.
             "minutes_recorded": len(recorded),
