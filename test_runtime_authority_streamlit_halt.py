@@ -39,6 +39,16 @@ ANSWERS = ("Ongoing haemorrhagic shock despite crystalloid and blood.",
            "Blood pressure, heart rate and capillary refill in 15 minutes.")
 
 
+@pytest.fixture(autouse=True)
+def _pinned_store(monkeypatch):
+    """No authority test may write into an ambient faculty store (P3-28 review, guarded by S23).
+
+    Pinned for EVERY test in this file, not only the ones that open an encounter, so a machine that
+    exports ``MRS_PHASE3_AUTHORITY_STORE`` cannot receive a record from the repository's own suite.
+    """
+    monkeypatch.setenv(store.STORE_FLAG, STORE_DIR)
+
+
 @pytest.fixture
 def app_on_the_authorized_case(monkeypatch):
     """The app, on the allowlisted GI case, with the authorized development authority configuration."""
