@@ -1343,6 +1343,45 @@ def action_fates(ran: Sequence | None) -> tuple:
     return tuple(out)
 
 
+#: The canonical fields of a SETTLED order, exactly as ``order_ledger.snapshot`` keeps them. The site
+#: copies them: it never invents an identity and never decides a fate (P3-46-3, P3-46-4).
+SETTLED_ORDER_FIELDS = ("order_id", "submission_id", "class", "fate", "reason", "executed_at_min")
+#: Why a settled fate can contradict an authority minute that already happened.
+PROVENANCE_CONTRADICTION = "PROVENANCE_CONTRADICTS_THE_AUTHORITY_MINUTE"
+
+
+def fates_that_did_not_act() -> frozenset:
+    """``order_ledger.NOT_ACTED``, read and never copied: the repository owns that vocabulary.
+
+    Read lazily and defensively. A site that cannot reach the ledger reports no contradiction rather
+    than inventing one, and the artifact says the provenance was not settled.
+    """
+    try:
+        import order_ledger
+        return frozenset(str(name) for name in order_ledger.NOT_ACTED)
+    except Exception:
+        return frozenset()
+
+
+def settled_provenance(orders: Sequence | None, submission_id: Any = None) -> tuple:
+    """The canonical identity and fate of each settled order of this submission.
+
+    ``order_id`` carries the submission as its prefix (``t3:0``), so a ledger snapshot that dropped the
+    ``submission_id`` field is still attributable to its turn.
+    """
+    wanted = None if submission_id is None else str(submission_id)
+    out = []
+    for order in list(orders or []):
+        item = dict(order) if isinstance(order, Mapping) else {}
+        if wanted is not None:
+            owned = (str(item.get("submission_id") or "") == wanted
+                     or str(item.get("order_id") or "").startswith(f"{wanted}:"))
+            if not owned:
+                continue
+        out.append({name: item.get(name) for name in SETTLED_ORDER_FIELDS if name in item})
+    return tuple(out)
+
+
 def unsupported_among(kinds: Sequence[str]) -> tuple:
     """The classes a pressure authority cannot mirror exactly. An unknown class is unsupported."""
     allowed = set(SUPPORTED_ACTIONS) | set(STRUCTURAL_ACTIONS)
@@ -1458,6 +1497,86 @@ class AuthoritySite:
         except Exception as error:
             self.stored = {"stored": False, "why": f"STORE_ERROR {type(error).__name__}: {error}"}
         return dict(self.stored)
+
+    def settle_provenance(self, submission_id: Any, orders: Sequence | None) -> dict:
+        """Attach the canonical order identity and fate to the minute already recorded. Never raises.
+
+        The commit does NOT move. The pressure is still written exactly where it was, before the order
+        pipeline settles each order's fate, so no action activates a minute earlier or later than before
+        and the trajectory, the counterfactual and what a resident would see are unchanged (P3-46-2).
+        What moves is the PROVENANCE: it is finalized here, once the authoritative fates exist, which is
+        what P3-44 found missing. The site reads those fates and compares them; it decides none, and it
+        infers none (P3-46-1, P3-46-4).
+
+        A settled fate that says the order did not act on the patient, under a minute that committed a
+        pressure from it, is a contradiction between the record and the run. It is not corrected and the
+        committed minute is NOT rewritten -- faculty decision F forbids retrospective mutation. The
+        experiment halts, visibly, with the contradiction recorded as its own failure minute.
+        """
+        report = {"submission_id": str(submission_id or ""), "settled": 0, "contradictions": [],
+                  "halted": False, "why": ""}
+        try:
+            record = next((item for item in reversed(self.records)
+                           if str(item.get("submission_id") or "") == str(submission_id or "")), None)
+            if record is None:
+                report["why"] = "no authority minute carries this submission"
+                return report
+            settled = settled_provenance(orders, submission_id)
+            record["action_fates"] = [dict(item) for item in settled]
+            record["provenance_settled"] = True
+            report["settled"] = len(settled)
+            if not settled:
+                report["why"] = "the submission settled no order"
+            did_not_act = fates_that_did_not_act()
+            by_class: dict = {}
+            for item in settled:
+                by_class.setdefault(str(item.get("class") or ""), []).append(item)
+            notes = []
+            for kind in list(record.get("action_kinds") or []):
+                rows = by_class.get(str(kind)) or []
+                if not rows:
+                    # NOT a contradiction. P3-48 found turns whose executed classes and whose opened
+                    # orders legitimately differ -- a bundle the pipeline split, an order opened in an
+                    # earlier turn -- so a class with no order of the same submission does not show that
+                    # the action did not act. It is recorded as a gap and nothing is concluded from it.
+                    notes.append({"class": str(kind),
+                                  "why": "the minute recorded this class and this submission's settled "
+                                         "orders carry none of it; the order may belong to another "
+                                         "submission, so nothing is concluded"})
+                elif did_not_act and all(str(row.get("fate") or "") in did_not_act for row in rows):
+                    report["contradictions"].append(
+                        {"class": str(kind), "fates": sorted({str(row.get("fate") or "")
+                                                              for row in rows}),
+                         "why": "every settled fate of this class is one under which the order did not "
+                                "act on the patient"})
+            # P3-48 found the gap this closes. An order the engine does not MODEL produces no action for
+            # the turn, so ``run_actions`` never carries it and the live site never saw it: the
+            # repository's own eligibility reading called those scenarios INELIGIBLE_UNSUPPORTED while
+            # the live path committed. The settled ledger is the only place the class appears, and it
+            # appears here. The site still decides nothing: it reads the settled classes and applies the
+            # same ``unsupported_among`` the eligibility reading applies.
+            settled_classes = tuple(str(item.get("class") or "") for item in settled)
+            unsupported = unsupported_among(settled_classes)
+            record["settled_action_classes"] = sorted(set(settled_classes) - {""})
+            if unsupported:
+                report["unsupported"] = list(unsupported)
+                report["contradictions"].append(
+                    {"class": list(unsupported),
+                     "why": f"{UNSUPPORTED_AUTHORITY_ACTION}: the settled ledger of this turn carries a "
+                            f"management class the common mapping cannot represent, and faculty decision "
+                            f"C makes the encounter ineligible for common authority"})
+            record["provenance_notes"] = [dict(item) for item in notes]
+            report["notes"] = [dict(item) for item in notes]
+            record["provenance_contradictions"] = [dict(item) for item in report["contradictions"]]
+            if report["contradictions"] and not self.halted:
+                reason = (f"{PROVENANCE_CONTRADICTION}: {report['contradictions']}")
+                # A FRESH failure record: a committed minute stays exactly as it happened.
+                self._hard_fail(_as_int(record.get("minute")), reason, list(settled))
+                report["halted"] = True
+            self._persist()
+        except Exception as error:  # a provenance repair may never break an encounter
+            report["why"] = f"{type(error).__name__}: {error}"
+        return report
 
     def _minute(self, before, after: Mapping, session, ran, submission_id) -> Mapping | None:
         minute = _as_int(after.get("sim_time"))
@@ -1764,6 +1883,47 @@ def _as_int(value: Any) -> int:
         return 0
 
 
+#: What the immutable eligibility record of a real encounter carries (P3-46-5). It is built from the
+#: SAME ``AuthorityGate`` that opened the site, so it cannot disagree with the gate that was used.
+ELIGIBILITY_RECORD_FIELDS = ("classification", "family", "case_id", "domain", "snapshot_id", "snapshot",
+                             "environment", "pilot", "unsupported_actions", "phase2_digest",
+                             "layer_version", "artifact_store_configured", "allowlisted", "granted",
+                             "conditions", "reasons", "decided_at")
+
+
+def eligibility_record(decision: "AuthorityGate", *, family: str, case_id: str, environment: str,
+                       snapshot: Mapping | None, domain: Sequence[str] = AUTHORITY_DOMAIN,
+                       store_configured: bool = False, environ: Mapping[str, str] | None = None) -> dict:
+    """The eligibility decision that allowed authority, as data, at the moment it allowed it.
+
+    P3-44 found a real encounter's artifact carrying no eligibility row at all, so nothing in the record
+    said why authority had been allowed. This is not a second reading and not prose: every condition is
+    the gate's own, copied from the decision object the site was opened with (P3-46-6).
+    """
+    live = os.environ if environ is None else environ
+    conditions = dict(decision.conditions)
+    is_pilot, why_pilot = looks_like_the_pilot(live)
+    return {
+        "classification": (ELIGIBLE_FOR_DEVELOPMENT if decision.granted else INELIGIBLE_OTHER),
+        "family": str(family), "case_id": str(case_id), "domain": list(domain),
+        "snapshot_id": str(decision.snapshot_id or ""),
+        "snapshot": (dict(snapshot) if isinstance(snapshot, Mapping) else snapshot),
+        "environment": str(environment),
+        "pilot": {"looks_like_the_pilot": bool(is_pilot), "why": str(why_pilot or ""),
+                  "markers": list(pilot_deployment_markers())},
+        # The gate refuses an undeclared action, so a granted decision is a decision in which none ran.
+        "unsupported_actions": [],
+        "phase2_digest": rs.PHASE2_DIGEST,
+        "layer_version": rs.MODULE_VERSION,
+        "artifact_store_configured": bool(store_configured),
+        "allowlisted": bool(str(case_id) in AUTHORITY_CASES and str(family) == AUTHORITY_FAMILY),
+        "granted": bool(decision.granted),
+        "conditions": conditions,
+        "reasons": list(decision.reasons),
+        "decided_at": MODE_DECIDED_AT,
+    }
+
+
 def open_site(state: Mapping, *, environ: Mapping[str, str] | None = None,
               experiment_id: str | None = None) -> AuthoritySite | None:
     """The ONE way a runtime obtains an authority site, and today it always returns None.
@@ -1798,13 +1958,18 @@ def open_site(state: Mapping, *, environ: Mapping[str, str] | None = None,
     encounter = rs._encounter_id(dict(state))
     spec = dict(dict(state).get("encounter_spec") or {})
     attempt = spec.get("attempt_number", spec.get("attempt", dict(state).get("attempt_number")))
-    return AuthoritySite(case_id=case_id, family=str(dict(state).get("engine_family") or ""),
+    site = AuthoritySite(case_id=case_id, family=str(dict(state).get("engine_family") or ""),
                          snapshot=snapshot, snapshot_id=str(decision.snapshot_id or ""),
                          encounter_id=encounter, environment=str(live.get(ENVIRONMENT_FLAG, "")),
                          environ=None if environ is None else dict(environ), attempt=attempt,
                          experiment_id=str(experiment_id or digest_of({"encounter": encounter,
                                                                        "snapshot": decision.snapshot_id,
                                                                        "site": SITE_VERSION})[:16]))
+    # P3-46-5: the decision that allowed authority travels with the site, so the artifact says why.
+    site.eligibility = eligibility_record(
+        decision, family=site.family, case_id=case_id, environment=site.environment,
+        snapshot=snapshot, domain=site.domain, store_configured=True, environ=live)
+    return site
 
 
 def site_for(state: Mapping, store: Any,
@@ -1892,6 +2057,65 @@ def _configuration_changed(site: "AuthoritySite", live: Mapping[str, str]) -> bo
         return True
 
 
+def _provenance_is_consistent(minute: Mapping) -> bool:
+    """Every class the minute recorded has a canonical order id and a fate under which it acted."""
+    item = dict(minute)
+    if not item.get("provenance_settled"):
+        return False
+    if item.get("provenance_contradictions"):
+        return False
+    did_not_act = fates_that_did_not_act()
+    by_class: dict = {}
+    for row in item.get("action_fates") or []:
+        by_class.setdefault(str(dict(row).get("class") or ""), []).append(dict(row))
+    if not item.get("action_fates"):
+        return False
+    for row in item.get("action_fates") or []:
+        entry = dict(row)
+        if not str(entry.get("order_id") or "").strip():
+            return False
+        if not str(entry.get("fate") or "").strip():
+            return False
+    for kind in item.get("action_kinds") or []:
+        rows = by_class.get(str(kind)) or []
+        # A class with no order of this submission is a recorded gap, not an inconsistency: see
+        # ``settle_provenance``. What would be inconsistent is an order of it that did not act.
+        if rows and did_not_act and all(str(row.get("fate") or "") in did_not_act for row in rows):
+            return False
+    return True
+
+
+def eligibility_is_consistent(artifact: Mapping) -> tuple:
+    """(ok, reasons): the stored eligibility row against the artifact it was stored in (P3-46-6)."""
+    body = dict(artifact)
+    row = body.get("eligibility")
+    if not isinstance(row, Mapping):
+        return False, ("the artifact carries no eligibility record",)
+    row = dict(row)
+    reasons = []
+    for name in ELIGIBILITY_RECORD_FIELDS:
+        if name not in row:
+            reasons.append(f"the eligibility record has no {name!r}")
+    for name, expected in (("family", body.get("family")), ("case_id", body.get("case_id")),
+                           ("snapshot_id", body.get("snapshot_id")),
+                           ("environment", body.get("environment")),
+                           ("phase2_digest", body.get("phase2_digest"))):
+        if name in row and expected is not None and str(row.get(name)) != str(expected):
+            reasons.append(f"eligibility {name}={row.get(name)!r} but the artifact says {expected!r}")
+    if "domain" in row and body.get("domain") is not None \
+            and list(row.get("domain") or []) != list(body.get("domain") or []):
+        reasons.append("the eligibility domain is not the artifact's domain")
+    if "granted" in row and not row.get("granted"):
+        reasons.append("the eligibility record says the gate did not grant, yet a site was opened")
+    conditions = dict(row.get("conditions") or {})
+    if conditions and sorted(conditions) != sorted(GATE_CONDITIONS):
+        reasons.append("the eligibility record does not carry the nine gate conditions")
+    failing = sorted(name for name, ok in conditions.items() if not ok)
+    if failing:
+        reasons.append(f"the eligibility record carries failing conditions: {failing}")
+    return (not reasons), tuple(reasons)
+
+
 def replay_site_artifact(artifact: Mapping) -> dict:
     """P3-19J: recompute every minute of a (future) experiment from its serialized artifact alone.
 
@@ -1933,6 +2157,12 @@ def replay_site_artifact(artifact: Mapping) -> dict:
             "outcome": item.get("outcome"),
             "committed": list(item.get("committed") or []),
             "outcome_consistent": bool(item.get("committed")) == (item.get("outcome") == COMMITTED),
+            # P3-46-7: the stored identities and fates have to be internally consistent with the minute
+            # they belong to. The replay reads them; it does not settle anything itself.
+            "provenance_settled": bool(item.get("provenance_settled")),
+            "provenance_consistent": _provenance_is_consistent(item),
+            "provenance_contradictions": [dict(row) for row in
+                                          (item.get("provenance_contradictions") or [])],
             "eligibility": (dict(body.get("eligibility")).get("classification")
                             if body.get("eligibility") else None),
         })
@@ -1940,7 +2170,15 @@ def replay_site_artifact(artifact: Mapping) -> dict:
     committed = [row for row in recorded if row.get("committed")]
     digest_matches = body.get("artifact_digest") == digest_of(
         {key: value for key, value in body.items() if key != "artifact_digest"})
+    eligibility_ok, eligibility_why = eligibility_is_consistent(body)
     return {"minutes": rows, "compared": len(compared),
+            # P3-46-7: the artifact has to carry the decision that allowed authority, and it has to
+            # agree with the artifact it travels in.
+            "eligibility_present": isinstance(body.get("eligibility"), Mapping),
+            "eligibility_consistent": eligibility_ok,
+            "eligibility_reasons": list(eligibility_why),
+            "provenance_settled_minutes": sum(1 for row in rows if row["provenance_settled"]),
+            "provenance_consistent_minutes": sum(1 for row in rows if row["provenance_consistent"]),
             # P3-28 review: "reproduces: True" over 1 of 4 minutes reads as "the experiment reproduces".
             # The counts are part of the verdict now, and the verdict says what it covers.
             "minutes_recorded": len(recorded),

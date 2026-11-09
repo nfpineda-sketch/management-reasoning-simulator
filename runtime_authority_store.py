@@ -105,6 +105,13 @@ def artifact_id(artifact: Mapping) -> str:
         "last_minute": (minutes[-1].get("minute") if minutes else None),
         "last_outcome": (minutes[-1].get("outcome") if minutes else None),
         "minutes": len(minutes),
+        # P3-49 found the store keeping the record written at the commit and REFUSING the one written
+        # after the order pipeline settled each fate: same identity, different content, so the
+        # create-only rule called it a collision and the durable record never carried the provenance.
+        # The two are different immutable facts about the same minute -- what was known when the
+        # pressure was written, and what was known once the fates existed -- so the stage is part of the
+        # identity and both are kept.
+        "provenance_settled": bool(minutes[-1].get("provenance_settled")) if minutes else None,
         "site": body.get("site"),
         "store": STORE_VERSION,
     })[:32]
@@ -178,8 +185,13 @@ def records(*, encounter_id: str | None = None, case_id: str | None = None,
                     "minutes": len(body.get("minutes") or []),
                     "halted": bool(body.get("halted")),
                     "mixed_trajectory": bool(body.get("mixed_trajectory")),
+                    # P3-49: with the settlement stage in the identity there are two records per minute,
+                    # and a reader has to be able to ask for the settled one without loading both.
+                    "provenance_settled": bool((list(body.get("minutes") or []) or [{}])[-1]
+                                               .get("provenance_settled")),
                     "artifact_digest": body.get("artifact_digest")})
-    return sorted(out, key=lambda item: (str(item["encounter_id"]), item["minutes"]))
+    return sorted(out, key=lambda item: (str(item["encounter_id"]), item["minutes"],
+                                         bool(item["provenance_settled"])))
 
 
 def load(identifier: str, *, environ: Mapping[str, str] | None = None) -> dict | None:

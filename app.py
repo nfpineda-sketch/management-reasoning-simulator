@@ -11251,6 +11251,13 @@ def _process_encounter_submission(submission_text, _guard_entry=None, submission
         turn, result=result, run_actions=run_actions, split=split, minute_before=turn_minute,
         minute_after=int(st.session_state.state.get("sim_time", 0) or 0),
         terminal=bool(result.get("terminal_locked")))
+    if _authority is not None:
+        # Phase 3 (P3-46): the commit above does NOT move -- the pressure is written before the pipeline
+        # settles each order's fate, exactly as it always was, so no action activates a minute earlier or
+        # later. Only the PROVENANCE is finalized here, now that the authoritative fates exist: P3-44
+        # found the artifact recording action classes with no order identity and no fate.
+        _authority.settle_provenance(submission_id, _ledger.snapshot(turn.get("orders") or []))
+        st.session_state.phase3_authority_artifact = _authority.artifact()
     if entry_point == "clarification_answer" or entry_point == "reasoning_followup":
         _order_pipeline.ledger_resolve_held(st.session_state, run_actions, bool(result.get("executed")),
                                             turn_minute, add_event)

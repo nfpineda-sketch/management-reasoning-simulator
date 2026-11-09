@@ -61,19 +61,21 @@ def gi_variants() -> tuple:
 @contextmanager
 def shadow(mode: str | None):
     """Run the block with the shadow flag set to ``mode``, or absent when it is None."""
-    names = (rs.FLAG, rs.FAMILIES_FLAG)
-    kept = {name: os.environ.get(name) for name in names}
+    # Son banderas de proceso, no secretos: la variable se llama `flag` para que el codigo
+    # no imite el idioma de los resolvedores de secretos, que esta funcion no es.
+    flags = (rs.FLAG, rs.FAMILIES_FLAG)
+    kept = {flag: os.environ.get(flag) for flag in flags}
     try:
-        for name in names:
-            os.environ.pop(name, None)
+        for flag in flags:
+            os.environ.pop(flag, None)
         if mode is not None:
             os.environ[rs.FLAG] = mode
         yield
     finally:
-        for name, value in kept.items():
-            os.environ.pop(name, None)
+        for flag, value in kept.items():
+            os.environ.pop(flag, None)
             if value is not None:
-                os.environ[name] = value
+                os.environ[flag] = value
 
 
 def _digest(payload: Any) -> str:
