@@ -313,6 +313,30 @@ lecturas**. Y lo hace necesariamente: 0,8307 · 0,125 = 0,1038 < 0,15.
 | Usar dos veces la misma restricción docente por variables derivadas | **`WEAK`** | FD-BLD-04 está parcialmente implicada por FD-BLD-05@30 (ambas leen la misma curva), así que «tres restricciones» son más bien **dos independientes más una** (06, en otra magnitud). Lo digo en la tabla de contribución en vez de contar tres |
 | Concluir «contradicción del modelo» desde una restricción obsoleta | **`ROBUST` — y es exactamente el error que este ciclo corrige** | Ninguna restricción está obsoleta; el **valor de referencia** sí es provisional y anterior a ellas. Concluir contradicción habría sido el error, y es el que P3-68 cometió en su redacción (§10) |
 
+### Un ataque trece, que no estaba en la lista y es mío
+
+**Anclaje en mi propia hipótesis previa.** Antes de medir nada, al estimar el ciclo, escribí la bifurcación:
+«si existe un punto de la rejilla de candidatos que satisfaga FD-BLD-04/05/06 a la vez, el "fallo" es de
+**región de parámetros** —el punto de referencia nunca fue un superviviente—». Es exactamente la conclusión a la
+que llegué. Quien lea esto debe saber que **la hipótesis precedió a los datos**, porque eso es precisamente la
+condición en la que un análisis confirma lo que ya creía.
+
+Lo que sostiene la conclusión **a pesar** de ese orden, y no por él:
+
+- las etiquetas no las puse yo: las leí literalmente de `DECISIONS` e `IMPLEMENTATION`;
+- el veredicto de cada punto lo emite el **evaluador congelado**, en las **diez** lecturas declaradas, no un
+  criterio mío;
+- mi propio tamiz analítico previo **se equivocó** en la dirección contraria a mi hipótesis (admitía `e = 0,15`;
+  el evaluador lo rechazó por el perfil de infusión de 20 min), y lo reporto en la tabla de arriba;
+- la invariancia que sostiene la separabilidad es **idéntica en todos los dígitos**, no una tolerancia elegida;
+- y el resultado incluye algo que **contradice** la expectativa con que se abrió el ciclo: resolver el volumen
+  **no** desbloquea la presión (§6).
+
+Clasificación de este ataque: **`WEAK`** — real como sesgo de procedimiento, no sostenido por la evidencia
+disponible. Si docencia quiere una verificación independiente de esta conclusión, la prueba más corta es volver
+a correr la rejilla de 200 puntos y comprobar los 62 supervivientes contra el evaluador congelado:
+`test_blood_volume_semantics.py` fija el testigo y el punto de referencia, y la rejilla completa está en §7.
+
 **Conclusiones que quedan en pie:** el balance de masa; la separabilidad; la no vacuidad de la región; la
 etiqueta `CURRENT_AND_APPLICABLE` de las tres restricciones; que el punto actual está fuera.
 **Debilitadas y así reportadas:** la independencia entre FD-BLD-04 y FD-BLD-05; que las 200 evaluaciones no son
