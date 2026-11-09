@@ -176,9 +176,9 @@ def test_d6_the_module_never_touches_authority_or_the_frozen_core():
     for forbidden in ("runtime_authority", "runtime_authority_store", "app", "family_engine"):
         assert not any(name == forbidden or name.startswith(f"{forbidden}.") for name in imported), \
             (forbidden, sorted(imported))
-    # The only clinical_core use is READING the frozen faculty filter and its reference values.
-    core = {name for name in imported if "clinical_core" in name}
-    assert core <= {"clinical_core", "clinical_core.blood_anchors", "clinical_core.blood_constraints"}, core
+    # And NOT the frozen core either: the repository's isolation guard allows only the declared shadow
+    # bridge to reach it, and an analysis module is not that bridge, so the faculty verdict is injected.
+    assert not any("clinical_core" in name for name in imported), sorted(imported)
     # Nothing writes: no open(), no Path.write_text, no json.dump.
     calls = {ast.unparse(node.func) for node in ast.walk(tree) if isinstance(node, ast.Call)}
     for forbidden in ("open", "json.dump", "Path.write_text", "os.environ.__setitem__"):
@@ -196,17 +196,43 @@ def test_d6b_a_fresh_process_importing_the_module_loads_no_authority():
     assert out.stdout.strip().endswith("[]"), out.stdout
 
 
-def test_d6c_the_frozen_faculty_oracle_is_asked_not_reimplemented():
-    """The U-OUT verdict comes from the frozen filter; this module computes no envelope of its own."""
+def _frozen_faculty_oracle(values):
+    """The natural oracle: the frozen, read-only faculty filter. It lives in the TEST, not the module.
+
+    This is the whole wrapper -- two calls into ``blood_constraints``, which is the repository's own
+    operationalization of the faculty's approved envelopes. Nothing of it is reimplemented anywhere.
+    """
+    from clinical_core import blood_anchors, blood_constraints
+    full = {**blood_anchors.REFERENCE, **values}
+    return {case: blood_constraints.passes("U-OUT", case, blood_constraints.untreated(case, full),
+                                           None, None)
+            for case in blood_constraints.CASES}
+
+
+def test_d6c_the_frozen_faculty_oracle_is_injected_not_reimplemented():
+    """The module computes no envelope of its own, and cannot reach the filter by itself."""
     source = MODULE.read_text(encoding="utf-8")
-    assert "blood_constraints.passes" in source
-    assert "blood_constraints.untreated" in source
-    verdict = preview.untreated_output_verdict(833.3333333333334, 0.5, bleed_ml_per_min=2.5)
+    for forbidden in ("blood_constraints.passes", "blood_constraints.untreated", "import clinical_core",
+                      "from clinical_core", "importlib"):
+        assert forbidden not in source, forbidden
+    with pytest.raises(TypeError):
+        preview.untreated_output_verdict(833.3333333333334, 0.5)  # no oracle, no verdict
+    verdict = preview.untreated_output_verdict(833.3333333333334, 0.5, oracle=_frozen_faculty_oracle,
+                                               bleed_ml_per_min=2.5)
     assert set(verdict) == {"gi_bleed_57m", "gi_bleed_72f", "both"}
     assert all(isinstance(verdict[key], bool) for key in verdict)
     # Measured in P3-68B: at the reference bleed rate the committed point satisfies 72f and not 57m.
     assert verdict["gi_bleed_72f"] is True and verdict["gi_bleed_57m"] is False, verdict
     assert verdict["both"] is False
+
+
+def test_d6d_the_committed_point_meets_the_envelope_at_exactly_one_tested_bleed_rate():
+    """P3-68B's measurement, pinned: it is a fact about the development point, not a defect to fix."""
+    rates = [1.0, 1.5, 2.0, 2.5, 2.75, 3.0, 3.5, 4.0]
+    both = [rate for rate in rates
+            if preview.untreated_output_verdict(833.3333333333334, 0.5, oracle=_frozen_faculty_oracle,
+                                                bleed_ml_per_min=rate)["both"]]
+    assert both == [2.75], both
 
 
 # -- D7: nothing else moved -----------------------------------------------------------------------------

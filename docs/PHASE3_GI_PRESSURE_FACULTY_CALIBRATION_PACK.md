@@ -218,11 +218,22 @@ cada esquina y la banda de SBP sobre el rango de volumen certificado — **y la 
 la llegada**, que es el hecho 1 del §1 hecho visible.
 
 **La herramienta:** `gi_pressure_calibration_preview.py`, fuera de `clinical_core` y del registro de
-autoridad. No minimiza, no promedia, no ordena, no elige punto y no escribe nada; pregunta el veredicto
-docente al filtro congelado en vez de reimplementarlo. 53 pruebas lo fijan, incluidas: que no importa
-ningún módulo de autoridad (por AST y en proceso nuevo), que una intersección vacía se dice y no se
-empuja, que una región no colapsa a un punto, que el punto de desarrollo nunca es una respuesta por
-omisión, y que el digesto de la Fase 2 y los siete valores de la instantánea no se mueven.
+autoridad. No minimiza, no promedia, no ordena, no elige punto y no escribe nada.
+
+Y **no importa el núcleo congelado en absoluto**: la guarda de aislamiento del repositorio
+(`test_shadow_core_isolation`) permite que sólo el puente de sombra declarado alcance `clinical_core`, y
+un módulo de análisis no es ese puente. La certificación de este ciclo lo detectó —la guarda rechazó la
+primera versión del módulo— y se cumplió el invariante en vez de debilitarlo: **el veredicto docente se
+inyecta**. `untreated_output_verdict` recibe un `oracle` que la persona que llama suministra; el natural
+es un envoltorio de dos líneas sobre el filtro congelado, y es el que usan las pruebas. Nada del filtro
+se reimplementa, y el módulo queda siendo álgebra pura.
+
+**55 pruebas** lo fijan, incluidas: que no importa ningún módulo de autoridad **ni el núcleo congelado**
+(por AST y en proceso nuevo); que sin oráculo no hay veredicto; que una intersección vacía se dice y no
+se empuja; que una región no colapsa a un punto; que el punto de desarrollo nunca es una respuesta por
+omisión; que el punto comprometido cumple la envolvente a **exactamente una** de ocho tasas probadas
+(2,75 mL/min), fijado como hecho y no como defecto a corregir; y que el digesto de la Fase 2 y los siete
+valores de la instantánea no se mueven.
 
 ## 10 · Qué sigue sin saberse
 

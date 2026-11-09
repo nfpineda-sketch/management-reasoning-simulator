@@ -2,14 +2,16 @@
 
     python -m gi_pressure_calibration_preview --committed
     python -m gi_pressure_calibration_preview --slope 8 14 --plateau 1.6 2.2
-    python -m gi_pressure_calibration_preview --oracle --rate 2.5
 
 What this module is for: faculty are asked about clinically interpretable BEHAVIOUR, never about a
 parameter. This turns their answers into the admissible parameter region, exactly, and shows where the
 current development point falls. It computes a REGION; it never picks a point.
 
 Why it is safe to add here: it lives OUTSIDE ``clinical_core`` and outside the authority registry, it
-imports no authority module, it writes nothing, and it approves nothing. A test enforces each of those.
+imports NEITHER the frozen core NOR any authority module, it writes nothing, and it approves nothing. A
+test enforces each of those, and the repository's own isolation guard enforces the first: only the
+declared shadow bridge may reach ``clinical_core``, and an analysis module is not that bridge, so the
+faculty verdict is injected by the caller (``untreated_output_verdict``).
 
 The closed form it inverts (P3-58, verified against ``clinical_core.derived`` to 2.2e-16 on the GI
 courses, where the engine fixes P = 1, T = 1 and the rhythm factor 1, and neither GI case declares its
@@ -208,25 +210,28 @@ def trajectory_envelope(out: dict, deltas: tuple = (-400.0, -200.0, 0.0, 200.0, 
 
 # -- the frozen faculty oracle, used and never duplicated --------------------------------------------
 
-def untreated_output_verdict(scale_over_kappa_ml: float, fraction: float, *,
+def untreated_output_verdict(scale_over_kappa_ml: float, fraction: float, *, oracle,
                              bleed_ml_per_min: float | None = None) -> dict:
     """Whether a point satisfies the faculty's approved untreated-output envelope, per GI case.
 
-    The verdict is NOT computed here: it is asked of ``clinical_core.blood_constraints``, the frozen,
-    read-only operationalization of the faculty's own decisions, which reads output and Hb and never
-    reads SBP or a legacy trajectory. In GI pressure_rel = output_rel, so this is a verdict on the
-    pressure trajectory obtained without ever fitting pressure.
+    This module imports NOTHING from the frozen core, by design and by the repository's own isolation
+    guard: ``test_shadow_core_isolation`` allows only the declared shadow bridge to reach
+    ``clinical_core``, and an analysis module is not that bridge. So the verdict is INJECTED. ``oracle``
+    is a callable the caller supplies, taking the candidate values and returning
+    ``{case: bool}``; the natural one is a two-line wrapper over the frozen, read-only
+    ``blood_constraints`` filter, and the tests supply exactly that.
+
+    Why the verdict matters here at all: that filter is the repository's own operationalization of the
+    faculty's approved envelopes, it reads output and Hb and never SBP or a legacy trajectory, and in GI
+    pressure_rel = output_rel -- so it is a verdict on the pressure trajectory obtained without ever
+    fitting pressure. Nothing of it is reimplemented in this module.
     """
-    from clinical_core import blood_anchors, blood_constraints
-    values = {**blood_anchors.REFERENCE, "preload_scale_over_kappa_ml": float(scale_over_kappa_ml),
+    values = {"preload_scale_over_kappa_ml": float(scale_over_kappa_ml),
               "preload_fraction": float(fraction)}
     if bleed_ml_per_min is not None:
         values["bleed_ml_per_min"] = float(bleed_ml_per_min)
-    out = {}
-    for case in blood_constraints.CASES:
-        reading = blood_constraints.untreated(case, values)
-        out[case] = bool(blood_constraints.passes("U-OUT", case, reading, None, None))
-    out["both"] = all(out[case] for case in blood_constraints.CASES)
+    out = {str(case): bool(verdict) for case, verdict in dict(oracle(values)).items()}
+    out["both"] = all(out.values()) if out else False
     return out
 
 
@@ -238,18 +243,11 @@ def _main(argv=None) -> int:
                         help="faculty interval for SBP_max / SBP_arrival")
     parser.add_argument("--case", default=None, help="one GI case (default: both)")
     parser.add_argument("--committed", action="store_true", help="the development point as behaviour")
-    parser.add_argument("--oracle", action="store_true",
-                        help="ask the frozen faculty filter about a point or the declared region")
-    parser.add_argument("--rate", type=float, default=None, help="bleed rate for --oracle")
     args = parser.parse_args(argv)
     cases = [args.case] if args.case else sorted(ARRIVAL)
-    if args.committed or not (args.slope or args.oracle):
+    if args.committed or not args.slope:
         print(json.dumps({case: committed_in_behavioural_coordinates(case) for case in cases},
                          indent=2, sort_keys=True))
-    if args.oracle:
-        print(json.dumps({"committed": untreated_output_verdict(
-            COMMITTED["preload_curve_scale_ml"], COMMITTED["arrival_preload_fraction"],
-            bleed_ml_per_min=args.rate)}, indent=2, sort_keys=True))
     if args.slope and args.plateau:
         for case in cases:
             out = region(slope_low=args.slope[0], slope_high=args.slope[1],
