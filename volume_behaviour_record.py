@@ -66,6 +66,20 @@ HISTORICAL_REFERENCE = {
 #: la caja de tres coordenadas NO la implica (10 976 de 709 038 puntos probados la violan, P3-82).
 R60_RANGE_FROM_FROZEN_FD_BLD_05 = (0.10, 0.20)
 
+#: La decisión docente del 2026-11-09 que confirma la lectura: las tres coordenadas nombradas son las
+#: primarias clínicamente interpretables, y V-2 aceptó además las restricciones FD-BLD **ya vigentes**, así que
+#: la de 60 minutos sigue formando parte de la región admisible. No es una restricción clínica nueva: es
+#: conservación de una ya vigente. Cierra TD-130 (30).
+R60_INTERPRETATION = {
+    "status": "CONFIRMED_BY_FACULTY",
+    "decided_on": "2026-11-09",
+    "meaning": "la región de comportamiento docente es los rangos registrados de R30 / R120 / Rpico "
+               "INTERSECADOS con todas las restricciones FD-BLD aún vigentes, incluida la retención a los "
+               "60 minutos",
+    "is_a_new_clinical_constraint": False,
+    "rewrites_frozen_history": False,
+}
+
 #: La región EFECTIVA sobre la que se trabaja: la caja docente más esa cuarta lectura congelada.
 EFFECTIVE_REGION = {
     "peak": RECORD["Rpeak_range"],

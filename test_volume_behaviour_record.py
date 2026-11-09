@@ -186,3 +186,13 @@ def test_w15_the_provisional_reference_is_formally_classified_without_rewriting_
     # el valor sigue intacto en el módulo congelado: esto rotula, no reescribe
     assert ba.REFERENCE[h["parameter"]] == h["value"] == 0.125
     assert h["value"] < rec.RECORD["Rpeak_range"][0]
+
+
+def test_w16_the_sixty_minute_interpretation_is_recorded_as_confirmed_not_as_a_new_constraint():
+    """Decisión docente del 2026-11-09: conserva una restricción ya vigente, no añade ninguna."""
+    r = rec.R60_INTERPRETATION
+    assert r["status"] == "CONFIRMED_BY_FACULTY"
+    assert r["is_a_new_clinical_constraint"] is False
+    assert r["rewrites_frozen_history"] is False
+    # y lo que confirma es exactamente lo que la región efectiva lleva
+    assert rec.EFFECTIVE_REGION[60] == bc.DECISIONS["FD-BLD-05"]["envelopes"][60]
