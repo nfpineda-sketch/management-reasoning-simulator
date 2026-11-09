@@ -31,10 +31,27 @@ def _record() -> dict:
 
 
 def _sources() -> dict[str, str]:
-    package = ROOT / "clinical_core"
-    paths = sorted(path.relative_to(ROOT).as_posix() for path in package.rglob("*.py")
-                   if "__pycache__" not in path.parts and path.is_file() and not path.name.startswith("."))
-    return {path: hashlib.sha256((ROOT / path).read_bytes()).hexdigest() for path in paths}
+    """The Phase-2 source map, as of the closure commit when it exists, else the working tree.
+
+    PHASE2_AMENDMENT_1 made this necessary, for the same reason ``_touched`` and ``_root_modules`` below
+    already read from that commit: the record describes the repository AT THAT COMMIT, and a later,
+    separately authorized stage changed one of these sources on purpose. Reading the map from the working
+    tree would make a finished stage's record fail because the amendment exists. The claim is unchanged
+    and still recomputed -- against the tree it was made about, which git still holds -- so the historical
+    digest stays VERIFIABLE and is not merely transcribed. What the working tree now hashes to is the
+    amendment's own claim, in docs/revision/PHASE2_AMENDMENT_1.json, checked by test_phase2_amendment.py.
+    """
+    closure = _closure_commit()
+    if closure is None:
+        package = ROOT / "clinical_core"
+        paths = sorted(path.relative_to(ROOT).as_posix() for path in package.rglob("*.py")
+                       if "__pycache__" not in path.parts and path.is_file() and not path.name.startswith("."))
+        return {path: hashlib.sha256((ROOT / path).read_bytes()).hexdigest() for path in paths}
+    names = sorted(name for name in _git("ls-tree", "-r", "--name-only", closure, "--", "clinical_core")
+                   if name.endswith(".py"))
+    return {name: hashlib.sha256(subprocess.run(("git", "show", f"{closure}:{name}"), cwd=ROOT,
+                                                capture_output=True, check=True).stdout).hexdigest()
+            for name in names}
 
 
 def _digest(sources: dict[str, str]) -> str:
@@ -166,7 +183,18 @@ def problems(record: dict) -> list[str]:
                "tone_domain_on_the_live_tree": tone_domain.freeze_digest(),
                "lactate_slice": lactate_slice.slice_digest(), "decision_pack": decision_pack.pack_digest()}
     if record.get("freeze_digests") != digests:
-        found.append("a freeze digest does not recompute")
+        # PHASE2_AMENDMENT_1: four of these five guards hash the common sources, so the authorized
+        # amendment moved them -- which is them doing their job. The closure keeps its own values here,
+        # unrewritten; the claim then holds against the amendment record, which must NAME every digest it
+        # moved and its new value. A change nobody authorized matches neither record and still fails.
+        amendment = ROOT / "docs" / "revision" / "PHASE2_AMENDMENT_1.json"
+        amended = (json.loads(amendment.read_text(encoding="utf-8")).get("amended", {})
+                   if amendment.exists() else {})
+        if digests != amended.get("freeze_digests"):
+            found.append("a freeze digest does not recompute")
+        elif sorted(k for k, v in digests.items() if record.get("freeze_digests", {}).get(k) != v) \
+                != amended.get("freeze_digests_moved"):
+            found.append("the amendment does not name every freeze digest it moved")
 
     guard = json.loads((ROOT / "docs" / "revision" / "P2X1A_closure_guard.json").read_text(encoding="utf-8"))
     readiness = record.get("readiness", {})

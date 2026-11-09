@@ -199,6 +199,17 @@ class CoreProfile:
     # dissociation relation; it needs the common mechanics candidate (PaCO2 is W's) and refuses the hypoxaemic drive
     # (HYPOXEMIC_FEEDBACK_LOOP_DEFERRED). No value is chosen here.
     respiratory_quotient: float | None = None
+    # PHASE2_AMENDMENT_1: how much of the P2T-5 relative alveolar-gas link is EXPRESSED. The link itself is
+    # declared by respiratory_quotient; this scales what it transmits:
+    #     delta_PaO2 = fraction x (-delta_PaCO2 / respiratory_quotient)
+    # 0 transmits nothing (SpO2 is P2O-3's exactly), 1 is the certified full transmission, between is a
+    # partial structural transmission. None means UNSCALED, so a profile that does not opt in reproduces
+    # the certified P2T-5 behaviour bit for bit -- it is NOT a second off switch for the link. It is not a
+    # respiratory quotient, not a shunt fraction, not an FiO2 gain, not G retention, not a mechanics
+    # efficiency and not a central availability: it never multiplies retained(G) and never touches RR, W,
+    # PaCO2, the drive, L or the tone. Declared only together with the link it scales. No value is chosen
+    # here.
+    hypoventilation_oxygenation_transmission_fraction: float | None = None
     # P2V-1: the systemic-stress reader of the sympathetic HR target, UNSET (None) by default. Declared, it is the drive
     # per unit of the state's common systemic stress, added to the target like the distress reader: upstream of the
     # common saturation and of the beta-blockade, never a respiratory reader (the stress never feeds the respiratory
@@ -357,6 +368,18 @@ class CoreProfile:
                 # P2T-5: SpO2 -> hypoxaemic drive -> RR -> PaCO2 -> SpO2 would be a loop no audit has examined.
                 raise CoreInvariantError("the hypoventilation -> oxygenation link refuses the hypoxaemic drive "
                                          "(HYPOXEMIC_FEEDBACK_LOOP_DEFERRED)")
+        share = self.hypoventilation_oxygenation_transmission_fraction
+        if share is not None:
+            if isinstance(share, bool) or not isinstance(share, (int, float)) or not math.isfinite(share) \
+                    or not 0.0 <= share <= 1.0:
+                # PHASE2_AMENDMENT_1: UNSCALED is None (the certified full transmission); declared, it is a
+                # share of that transmission, so it lives in [0, 1] and nowhere else.
+                raise CoreInvariantError("hypoventilation_oxygenation_transmission_fraction is None "
+                                         "(UNSCALED: the certified full transmission) or a share in [0, 1]")
+            if rq is None:
+                # A share of a link that is not declared is half-defined, like the hypoxaemic pair below.
+                raise CoreInvariantError("hypoventilation_oxygenation_transmission_fraction scales the "
+                                         "hypoventilation -> oxygenation link, so it is declared only with it")
         if (self.hypoxaemic_drive_mapping is None) != (self.hypoxaemic_to_drive_gain is None):
             # P2P-2: the hypoxaemic drive is one structure; a mapping without its gain, or the reverse, is half-defined.
             raise CoreInvariantError("the hypoxaemic drive declares its oxygenation mapping and its gain together, or "
@@ -573,6 +596,15 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
                                                          "the beta-blockade; None by default (no reader); it never "
                                                          "feeds the respiratory drive and is never solved from an "
                                                          "observed HR; SYNTHETIC_ONLY in probes; not approved"),
+    "hypoventilation_oxygenation_transmission_fraction": (
+        PROVISIONAL, "UNSCALED (PHASE2_AMENDMENT_1): the share of the common relative alveolar link that is "
+                     "EXPRESSED, delta_PaO2 = fraction x (-delta_PaCO2 / R); None by default, which "
+                     "reproduces the certified P2T-5 full transmission bit for bit, 0 transmits nothing and "
+                     "1 is that full transmission. It controls how much the RELATIVE alveolar-gas link is "
+                     "expressed and is NOT a respiratory quotient, a shunt fraction, an FiO2 gain, a G "
+                     "retention, a mechanics efficiency or a central availability; it never multiplies "
+                     "retained(G) and has no direct effect on RR, W, PaCO2, the drive, L or the tone. "
+                     "Declared only with the link it scales; no value is approved"),
     "respiratory_quotient": (PROVISIONAL, "UNSET (P2T-5): the respiratory quotient of the common relative alveolar link "
                                           "(dPAO2 = -dPaCO2 / R, from the model's own arrival PaCO2, full transmission "
                                           "to a latent PaO2 and the standard dissociation relation); None by default "
@@ -1758,7 +1790,17 @@ def ventilated_oxygenation(spo2_base: float, state: CoreState, anchors: Anchors,
     delta = paco2 - arrival_paco2_reference(anchors, profile)
     if delta == 0.0:
         return spo2_base
-    return oxygen_saturation_from_pao2(pao2_from_oxygen_saturation(spo2_base) - delta / profile.respiratory_quotient)
+    # PHASE2_AMENDMENT_1: the share of that transmission the profile expresses. None is UNSCALED, so the
+    # certified behaviour is reproduced exactly (1.0 x d == d in IEEE 754); 0 returns SpO2_base itself,
+    # without a round trip through the dissociation relation, so "no transmission" is exact and not
+    # approximate. Nothing else in the chain changes: G, FiO2, the latent PaO2 and the ODC are P2T-5's.
+    share = profile.hypoventilation_oxygenation_transmission_fraction
+    if share == 0.0:
+        return spo2_base
+    if share is None:
+        share = 1.0
+    return oxygen_saturation_from_pao2(pao2_from_oxygen_saturation(spo2_base)
+                                       - share * delta / profile.respiratory_quotient)
 
 
 def sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:
