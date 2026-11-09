@@ -261,7 +261,13 @@ def test_the_family_matrix_covers_every_certified_family_and_case():
 
 def test_a_family_declares_the_treatments_it_cannot_represent():
     assert fam.ADAPTERS["asthma"].gaps_declared, "the bronchodilator gap must be declared, not silent"
-    assert "medicine" in fam.ADAPTERS["pulmonary_embolism"].gaps_declared
+    # P3-105 re-claveo los huecos a las clases de accion REALES del motor: "medicine" no era una de ellas
+    # (la clase ES el farmaco), asi que ese hueco no podia dispararse nunca y su razon declarada no llegaba
+    # al registro. Lo que esta prueba protege -- que PE declare lo que no puede representar -- sigue
+    # protegido, y ahora la declaracion si alcanza al registro.
+    pe_gaps = fam.ADAPTERS["pulmonary_embolism"].gaps_declared
+    assert {"anticoagulation", "thrombolysis"} <= set(pe_gaps)
+    assert "medicine" not in pe_gaps
     assert fam.ADAPTERS["gi_bleed"].maps == ("fluid", "blood", "oxygen", "ppi")
     for family, adapter in fam.ADAPTERS.items():
         if family != "gi_bleed":

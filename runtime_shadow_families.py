@@ -61,6 +61,8 @@ PARAMETER_DISABLED = rs.PARAMETER_DISABLED
 REGION_DIVERGENCE = "REGION_DIVERGENCE"
 MAPPING_GAP = rs.MAPPING_GAP
 TREATMENT_GAP = "TREATMENT_GAP"
+#: Un solo texto para el hueco de soporte ventilatorio, que tres familias declaran igual.
+NIV_GAP = "NIV, bag-mask and intubation have no core target (P2K-3 recruitment is off)"
 BOUNDARY = rs.BOUNDARY
 UNEXPECTED = rs.UNEXPECTED
 NOT_COMPARABLE = rs.NOT_COMPARABLE
@@ -298,9 +300,13 @@ class AcsIschaemiaAdapter(RuntimeFamilyAdapter):
     cases = ("acs_70f_left_main",)
     live = False
     maps = ("oxygen",)
-    gaps_declared = {"reperfusion": "the core has a reperfusion writer but the runtime action is not mapped yet",
-                     "fluid": "no certified ACS fluid mapping in the shadow adapter",
-                     "medicine": "antiplatelet, anticoagulant, nitrate and opiate have no ACS core target"}
+    gaps_declared = {"fluid": "no certified ACS fluid mapping in the shadow adapter",
+                     "aspirin": "antiplatelet has no ACS core target",
+                     "p2y12": "antiplatelet has no ACS core target",
+                     "anticoagulation": "anticoagulation has no ACS core target",
+                     "nitroglycerin": "nitrate has no ACS core target",
+                     "nitroglycerin_bolus": "nitrate has no ACS core target",
+                     "opioid_analgesia": "opiate analgesia has no ACS core target"}
 
     def snapshot(self, point: str = COMMITTED) -> ShadowParameterSnapshot:
         from clinical_core import acs_migration as am
@@ -327,6 +333,32 @@ class AcsIschaemiaAdapter(RuntimeFamilyAdapter):
                           share=am.CONGESTION_SHARES[_point_index(point, am.CONGESTION_SHARES)],
                           recovery=am.RECOVERY_SHARES[_point_index(point, am.RECOVERY_SHARES)])
 
+    def interventions(self, mirrored: Sequence, state: Mapping | None = None) -> tuple:
+        """Oxygen, plus the reperfusion the engine already timed. Everything else stays a declared gap.
+
+        The minute the artery opens is NOT read from the order: `consult` and `reperfusion_referral` are
+        NOT_PHYSIOLOGICAL, and the engine owns the door-to-balloon clock in `family_state`
+        (`acs_reperfusion.py`). So this mirrors the engine's own bookkeeping, exactly as the GI adapter
+        mirrors `endoscopy_at`, and the latency is the engine's, never one invented here.
+        """
+        from clinical_core.interventions.oxygen import Oxygen
+        from clinical_core.modules.acs_ischaemia import CoronaryReperfusion
+        from clinical_core import legacy_adapter
+        built, gaps = [], []
+        for event in mirrored:
+            if event.kind == "oxygen":
+                built.append(Oxygen(event.order_id, event.minute, event.fio2_after))
+            elif event.kind in legacy_adapter.NOT_PHYSIOLOGICAL:
+                continue
+            else:
+                gaps.append({"order_id": event.order_id, "kind": event.kind,
+                             "why": self.gaps_declared.get(event.kind,
+                                                           "no core intervention for this order type")})
+        opens_at = (state or {}).get("family_state", {}).get("reperfusion_at") if state else None
+        if opens_at is not None:
+            built.append(CoronaryReperfusion("acs-pci", int(opens_at)))
+        return tuple(built), gaps
+
 
 class PulmonaryEdemaAdapter(RuntimeFamilyAdapter):
     """Pulmonary oedema: the lung-water owner of P2P-1. Nitrate, diuresis and NIV stay treatment gaps."""
@@ -336,8 +368,15 @@ class PulmonaryEdemaAdapter(RuntimeFamilyAdapter):
     cases = ("pulmonary_edema_58m",)
     live = False
     maps = ("oxygen",)
-    gaps_declared = {"medicine": "nitrate and diuretic have a decongestive writer, not a mapped runtime action",
-                     "ventilation": "NIV and intubation have no core target (P2K-3 recruitment is off)"}
+    #: Re-keyed in P3-108 to the engine's own action kinds: a gap declared under a key no event carries
+    #: can never fire, so its declared reason never reached the record (the generic default did).
+    gaps_declared = {"diuretic": "the decongestive writer is a construction parameter of EdemaCongestion, "
+                                 "not a mapped runtime action",
+                     "nitroglycerin": "the decongestive writer is a construction parameter of "
+                                      "EdemaCongestion, not a mapped runtime action",
+                     "nitroglycerin_bolus": "the decongestive writer is a construction parameter of "
+                                            "EdemaCongestion, not a mapped runtime action",
+                     "niv": NIV_GAP, "bag_mask": NIV_GAP, "intubation": NIV_GAP}
 
     def snapshot(self, point: str = COMMITTED) -> ShadowParameterSnapshot:
         from clinical_core import edema_migration as em
@@ -368,7 +407,10 @@ class PulmonaryEmbolismAdapter(RuntimeFamilyAdapter):
     cases = ("pulmonary_embolism_61m", "pulmonary_embolism_33f")
     live = False
     maps = ("oxygen",)
-    gaps_declared = {"medicine": "anticoagulation and thrombolysis are not modelled (P2Q-2 declares it)",
+    gaps_declared = {"anticoagulation": "anticoagulation is not modelled (P2Q-2 declares it): the PE "
+                                        "writer takes no treatment parameter",
+                     "thrombolysis": "thrombolysis is not modelled (P2Q-2 declares it): the PE writer "
+                                     "takes no treatment parameter",
                      "fluid": "no certified PE fluid mapping in the shadow adapter"}
 
     def snapshot(self, point: str = COMMITTED) -> ShadowParameterSnapshot:
@@ -402,9 +444,13 @@ class AsthmaAdapter(RuntimeFamilyAdapter):
     cases = ("asthma_49m", "asthma_24f")
     live = False
     maps = ("oxygen",)
-    gaps_declared = {"medicine": "BRONCHODILATOR_WRITER_DEFERRED and STEROID_ACUTE_PHYSIOLOGY_DEFERRED "
-                                 "(clinical_core.modules.asthma declares both)",
-                     "ventilation": "NIV and intubation have no core target"}
+    gaps_declared = {"bronchodilator": "BRONCHODILATOR_WRITER_DEFERRED "
+                                       "(clinical_core.modules.asthma declares it)",
+                     "continuous_bronchodilator": "BRONCHODILATOR_WRITER_DEFERRED "
+                                                  "(clinical_core.modules.asthma declares it)",
+                     "steroid": "STEROID_ACUTE_PHYSIOLOGY_DEFERRED "
+                                "(clinical_core.modules.asthma declares it)",
+                     "niv": NIV_GAP, "bag_mask": NIV_GAP, "intubation": NIV_GAP}
 
     @staticmethod
     def _span():
@@ -442,9 +488,11 @@ class OpioidAdapter(RuntimeFamilyAdapter):
     version = "opioid/P3-4"
     cases = ("opioid_35m", "opioid_67f")
     live = False
-    maps = ("oxygen",)
-    gaps_declared = {"medicine": "naloxone has a core writer; the runtime action is not mapped yet",
-                     "ventilation": "bag-mask and intubation have no core target"}
+    maps = ("oxygen", "naloxone")
+    gaps_declared = {"bag_mask": "bag-mask has no core target (P2K-3 recruitment is off)",
+                     "niv": "NIV has no core target (P2K-3 recruitment is off)",
+                     "intubation": "intubation has no core target (P2K-3 recruitment is off)",
+                     "opioid_analgesia": "more opioid has no runtime-mapped deepening writer"}
 
     def snapshot(self, point: str = COMMITTED) -> ShadowParameterSnapshot:
         from clinical_core import opioid_migration as om
@@ -465,6 +513,32 @@ class OpioidAdapter(RuntimeFamilyAdapter):
     def writers(self, case_id: str, point: str, state: Mapping | None = None) -> tuple:
         from clinical_core import opioid_migration as om
         return (om.depression(),)
+
+    def interventions(self, mirrored: Sequence, state: Mapping | None = None) -> tuple:
+        """Oxygen and naloxone. Naloxone is already a certified core contributor (P2U-1).
+
+        Naloxone restores the CENTRAL AVAILABILITY and nothing else: it never writes RR, PaCO2, SpO2 or
+        mental status, which reach the reading only as downstream consequences. Its rate is the committed
+        one of `opioid_migration.NALOXONE`, declared SYNTHETIC_ONLY there; this mapping does not choose it.
+        Oxygen acts only through the oxygenation path, so it CANNOT correct central hypoventilation -- the
+        educational distinction this family exists to teach.
+        """
+        from clinical_core.interventions.oxygen import Oxygen
+        from clinical_core import opioid_migration as om
+        from clinical_core import legacy_adapter
+        built, gaps = [], []
+        for event in mirrored:
+            if event.kind == "oxygen":
+                built.append(Oxygen(event.order_id, event.minute, event.fio2_after))
+            elif event.kind == "naloxone":
+                built.append(om.naloxone(start=int(event.minute)))
+            elif event.kind in legacy_adapter.NOT_PHYSIOLOGICAL:
+                continue
+            else:
+                gaps.append({"order_id": event.order_id, "kind": event.kind,
+                             "why": self.gaps_declared.get(event.kind,
+                                                           "no core intervention for this order type")})
+        return tuple(built), gaps
 
 
 #: Every adapter, by engine family. Live enablement is the adapter's own flag plus runtime_shadow's.
