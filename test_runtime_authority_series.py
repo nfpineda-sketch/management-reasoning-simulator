@@ -201,3 +201,29 @@ def test_s6_no_scoring_or_pilot_state_is_touched_by_the_series(series):
         assert artifact["environment"] == "development", row["scenario"]
         assert artifact["snapshot_id"] == SNAP, row["scenario"]
     assert rs.COMMON_CORE_RUNTIME_AUTHORITY is False
+
+
+def test_s7_every_committed_minute_of_the_series_carries_a_valid_canonical_lineage(series):
+    """P3-55: the one blocker P3-51 left. No unexplained provenance mismatch anywhere in the series.
+
+    P3-52 measured the two batteries inside ``order_pipeline.settle``: 170 of 170 consumed actions carry
+    ``_order_id``, 0 reach back to an earlier submission, and the only mismatch is the ``reload_resume``
+    collision, which is now a NAMED violation that halts rather than a note nobody could explain.
+    """
+    rows = 0
+    for row in series:
+        committed = [item for item in row["artifact"]["minutes"] if item.get("outcome") == ra.COMMITTED]
+        for item in committed:
+            lineage = [dict(entry) for entry in (item.get("action_lineage") or [])]
+            assert lineage, (row["scenario"], item["minute"], "a committed minute carries its lineage")
+            for entry in lineage:
+                assert entry["link"] == ra.LINK_VALID, (row["scenario"], item["minute"], entry)
+                assert str(entry["order_id"]).strip(), (row["scenario"], entry)
+                assert str(entry["fate"]).strip(), (row["scenario"], entry)
+                assert entry["origin"] in (ra.ORIGIN_THIS_TURN, ra.ORIGIN_EARLIER), entry
+                rows += 1
+        replay = ra.replay_site_artifact(row["artifact"])
+        assert replay["lineage_valid_minutes"] >= len(committed), row["scenario"]
+        assert not any(item["lineage_violations"] for item in replay["minutes"]
+                       if item["outcome"] == ra.COMMITTED), row["scenario"]
+    assert rows >= 60, f"the series linked {rows} consumed actions"
