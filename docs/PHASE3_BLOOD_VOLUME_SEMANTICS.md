@@ -228,8 +228,16 @@ mL/min (§4.4). La tasa **sí** acopla con la presión, por `U-OUT`: ahí es una
 conocido, y eso quedó medido en P3-68 (el punto comprometido satisface `U-OUT` a una sola tasa, 2,75 mL/min).
 
 **Veredicto P3-72: `SEPARABLE_CALIBRATION`.** El bloque de volumen se calibra **sin** las coordenadas de presión:
-sus lecturas son invariantes a `preload_scale_over_kappa_ml`, a la posición de precarga, al volumen de llegada, al
-relleno y a la tasa de sangrado. La estructura es **triangular**: volumen → presión, nunca al revés.
+sus lecturas son invariantes a `preload_scale_over_kappa_ml` y a la posición de precarga.
+
+> **CORRECCIÓN (P3-76, 2026-11-09).** La frase original seguía: «…, al volumen de llegada, al relleno y a la
+> tasa de sangrado». Eso es **exacto para FD-BLD-04 y FD-BLD-05** —lo que de hecho medí, la fila `retained`—
+> y **falso para FD-BLD-06**, que no medí por separado: su dilución depende con fuerza del **volumen de
+> llegada** (factor 1,63 entre 3000 y 5000 mL) y débilmente del sangrado y del relleno. El veredicto
+> `SEPARABLE_CALIBRATION` **se mantiene**, porque lo que lo sostiene es la invariancia a las coordenadas de
+> **presión**, y eso sí vale para las tres. La consecuencia práctica: el techo de `Rpico` que impone
+> FD-BLD-06 es **por caso** (0,27072 en `gi_bleed_57m`, 0,28518 en `gi_bleed_72f`), no universal. Detalle en
+> `docs/PHASE3_BLOOD_VOLUME_REGION.md` §1 y §10. La estructura es **triangular**: volumen → presión, nunca al revés.
 
 **Consecuencia que conviene decir aunque incomode:** resolver la semántica de volumen **es** necesario para la
 coherencia del modelo, pero **no aporta información sobre (ν, f)**. La presión GI sigue exactamente donde la dejó
