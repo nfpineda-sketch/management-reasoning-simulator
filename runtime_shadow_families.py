@@ -63,6 +63,17 @@ MAPPING_GAP = rs.MAPPING_GAP
 TREATMENT_GAP = "TREATMENT_GAP"
 #: Un solo texto para el hueco de soporte ventilatorio, que tres familias declaran igual.
 NIV_GAP = "NIV, bag-mask and intubation have no core target (P2K-3 recruitment is off)"
+
+#: P3-122: why ACS is not in the live-family list yet. Not a treatment gap: an ARRIVAL MAPPING gap.
+ACS_LIVE_GAP = (
+    "ACS_LIVE_MANAGEMENT_SHADOW_BLOCKED_BY_ARRIVAL_MAPPING: the ACS adapter's treatment semantics are "
+    "ready for a live encounter -- oxygen is mapped, and reperfusion is built from the engine's own "
+    "reperfusion_at, never from the referral's minute -- but its anchors() ignores the encounter state "
+    "and returns a fixed Phase-2 reference arrival, where the GI adapter maps the arrival it is given. "
+    "Live, this family would compute a reference patient's trajectory and label it this patient's, and "
+    "the engine authors more ACS variants than the single case this adapter declares. Closing this needs "
+    "a certified ACS arrival mapping, which is a methodological decision and not a wiring change."
+)
 BOUNDARY = rs.BOUNDARY
 UNEXPECTED = rs.UNEXPECTED
 NOT_COMPARABLE = rs.NOT_COMPARABLE
@@ -296,10 +307,17 @@ class AcsIschaemiaAdapter(RuntimeFamilyAdapter):
     """ACS: the pump and congestion writers of P2N-2, with its own committed spans."""
 
     family = "acs"
-    version = "acs_ischaemia/P3-4"
+    version = "acs_ischaemia/P3-122"
     cases = ("acs_70f_left_main",)
+    #: P3-122 AUDITED AND REFUSED. The action semantics suffice (oxygen is mapped; reperfusion is mapped
+    #: off the engine's own door-to-balloon clock), but the ARRIVAL does not: ``anchors`` below ignores
+    #: ``state`` and returns a fixed Phase-2 reference, while the GI adapter maps the encounter's own
+    #: arrival. Live, this family would model a reference patient and not the one being treated, and the
+    #: engine authors more ACS variants than the one case declared here. See ACS_LIVE_GAP.
     live = False
     maps = ("oxygen",)
+    #: The order that asks for reperfusion: represented, but on the engine's clock, not the order's minute.
+    REPERFUSION_ORDER = "reperfusion_referral"
     gaps_declared = {"fluid": "no certified ACS fluid mapping in the shadow adapter",
                      "aspirin": "antiplatelet has no ACS core target",
                      "p2y12": "antiplatelet has no ACS core target",
@@ -336,25 +354,34 @@ class AcsIschaemiaAdapter(RuntimeFamilyAdapter):
     def interventions(self, mirrored: Sequence, state: Mapping | None = None) -> tuple:
         """Oxygen, plus the reperfusion the engine already timed. Everything else stays a declared gap.
 
-        The minute the artery opens is NOT read from the order: `consult` and `reperfusion_referral` are
-        NOT_PHYSIOLOGICAL, and the engine owns the door-to-balloon clock in `family_state`
-        (`acs_reperfusion.py`). So this mirrors the engine's own bookkeeping, exactly as the GI adapter
-        mirrors `endoscopy_at`, and the latency is the engine's, never one invented here.
+        The minute the artery opens is NOT read from the order. The engine owns the door-to-balloon clock
+        in `family_state` (`acs_reperfusion.py`), so this mirrors the engine's own bookkeeping, exactly as
+        the GI adapter mirrors `endoscopy_at`, and the latency is the engine's, never one invented here.
+
+        P3-122 corrected a false gap here. `reperfusion_referral` is NOT in `NOT_PHYSIOLOGICAL` (that set
+        is reassessment, consult and diagnostic): the order HAS a physiological consequence, it simply
+        arrives on the engine's clock rather than at the order's minute. Recording it as a gap would claim
+        the cath lab reached nothing. So it is a gap only when the engine timed no reperfusion for it.
         """
         from clinical_core.interventions.oxygen import Oxygen
         from clinical_core.modules.acs_ischaemia import CoronaryReperfusion
         from clinical_core import legacy_adapter
         built, gaps = [], []
+        opens_at = (state or {}).get("family_state", {}).get("reperfusion_at") if state else None
         for event in mirrored:
             if event.kind == "oxygen":
                 built.append(Oxygen(event.order_id, event.minute, event.fio2_after))
             elif event.kind in legacy_adapter.NOT_PHYSIOLOGICAL:
                 continue
+            elif event.kind == self.REPERFUSION_ORDER:
+                if opens_at is None:
+                    gaps.append({"order_id": event.order_id, "kind": event.kind,
+                                 "why": "the engine timed no reperfusion for this referral, so the core "
+                                        "has no minute at which the artery opens"})
             else:
                 gaps.append({"order_id": event.order_id, "kind": event.kind,
                              "why": self.gaps_declared.get(event.kind,
                                                            "no core intervention for this order type")})
-        opens_at = (state or {}).get("family_state", {}).get("reperfusion_at") if state else None
         if opens_at is not None:
             built.append(CoronaryReperfusion("acs-pci", int(opens_at)))
         return tuple(built), gaps

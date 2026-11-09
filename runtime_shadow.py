@@ -52,7 +52,9 @@ MODES = (MODE_OFF, MODE_SHADOW_COMPARE)
 FLAG = "MRS_PHASE3_SHADOW"
 #: Optional comma-separated allowlist of engine families; the default is the one family P3-1 enables.
 FAMILIES_FLAG = "MRS_PHASE3_SHADOW_FAMILIES"
-#: Live shadow is GI only in P3-1 (the only family with a certified runtime mapping and a committed golden).
+#: Live shadow is GI only in P3-1 (the only family with a certified runtime mapping and a committed
+#: golden). P3-122 audited ACS for this list and REFUSED it: its treatment semantics are ready, its
+#: arrival mapping is not (see ``runtime_shadow_families.ACS_LIVE_GAP``).
 LIVE_FAMILIES = ("gi_bleed",)
 #: The parameter snapshot P3-1 uses: the committed Phase-2 default profile, with nothing turned on.
 PARAMETER_SNAPSHOT_ID = "phase2_committed_default_profile"

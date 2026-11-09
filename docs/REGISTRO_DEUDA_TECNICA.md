@@ -308,3 +308,33 @@ un defecto que el piloto puede medir.
   («colocó», «pasó»). Una pregunta no pierde la orden.
 - **Reenviar una orden es un turno nuevo.** Si el motor la repite depende del
   fármaco: una dosis única ya dada no se repite.
+
+## TD-130 · Fase 3, ciclo de transmisión respiratoria (P3-117 a P3-126)
+
+- **(39)** La temporalidad de las intervenciones comunes es **asimétrica en un minuto**.
+  `Oxygen._running` usa `start_minute < minute` y fija el FiO2 en `start_minute + 1`,
+  así que el oxígeno pedido en el minuto 10 cambia la lectura en el 11; la naloxona
+  actúa **en** su propio minuto. Nada lo declara. Puede ser deliberado, pero la vía
+  intravenosa también tiene inicio y la diferencia no está documentada. Vive en el
+  núcleo congelado: **no se corrige**, queda fijada en la prueba R11 para que no se
+  pierda. FD-P3-115.
+- **(40)** Encender el enlace de P2T-5 cierra un **lazo indirecto** que su propio
+  invariante no vigila: rechaza el impulso hipoxémico por ser un lazo sin auditar y
+  exige el impulso ácido, por el que el lazo vuelve igual (SpO2 → déficit / carga
+  ácida → impulso → FR → W → PaCO2 → SpO2). Medido, continuo, no un umbral. Si algún
+  día se autoriza el enlace, este lazo necesita su propia auditoría. FD-P3-110.
+- **(41)** `AcsIschaemiaAdapter.anchors()` **ignora el estado del encuentro** y devuelve
+  una llegada de referencia fija de la Fase 2, donde el adaptador de GI mapea la que
+  recibe. Es lo que impide correr ACS en vivo (FD-P3-112). Además el adaptador declara
+  un solo caso mientras el motor redacta al menos seis variantes de ACS.
+- **(42)** Defecto propio de `0aee3b3`, **ya corregido**: el adaptador de ACS registraba
+  un hueco falso en `reperfusion_referral` por afirmar que era `NOT_PHYSIOLOGICAL`.
+  Queda anotado porque el patrón —dar por `NOT_PHYSIOLOGICAL` una clase que no está en
+  ese conjunto— puede repetirse en otra familia. FD-P3-113.
+- **(43)** FD-P3-100 afirmó que mapear la descongestión del edema exigía una extensión
+  del contrato compartido por las seis familias. **Rectificado** en FD-P3-114: el
+  contrato alcanza; falta una magnitud autorizada. La fila original queda, con su
+  corrección al lado.
+- **(44)** La SpO2 del opioide es **plana**: `SpO2(1) == SpO2(60)` exactamente, en los dos
+  casos. El nivel redactado cae dentro de la región docente, pero ninguna trayectoria de
+  oxigenación lo produce. Es la deuda clínica que FD-P3-107 deja abierta. FD-P3-108.
