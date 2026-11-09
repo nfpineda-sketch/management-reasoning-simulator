@@ -104,8 +104,26 @@ Con los valores de referencia, **1000 mL de cristaloide infundidos** son ≈ **1
 sobre el punto de referencia, **rechaza** FD-BLD-04, FD-BLD-05 y FD-BLD-06 en los dos casos y en las
 nueve variantes declaradas — las tres restricciones que gobiernan precisamente esa conversión. Esos
 veredictos no dependen de (ν, f): son lecturas del estado sanguíneo, y salen `False` en **63 de 63**
-puntos del barrido. Dicho de otro modo: **el mapa de volumen infundido a volumen efectivo, hoy, está
-fuera de las envolventes que la propia docencia aprobó para él.**
+puntos del barrido.
+
+> **CORRECCIÓN (P3-69 … P3-75, 2026-11-09).** Este apartado afirmaba dos cosas —«salen `False` en **63 de
+> 63** puntos del barrido» y «**el mapa de volumen infundido a volumen efectivo, hoy, está fuera de las
+> envolventes que la propia docencia aprobó para él**»—. Las dos son inexactas, y la segunda es
+> materialmente engañosa. La segunda frase se retira del cuerpo del documento y queda citada aquí.
+>
+> 1. Los 63 puntos de ese barrido variaban la tasa de sangrado y las coordenadas de presión, y **mantenían
+>    los tres parámetros del cristaloide en `REFERENCE`**. Son **un** punto del bloque de volumen repetido
+>    63 veces, no 63 refutaciones independientes: las lecturas de FD-BLD-04/05/06 son **invariantes** a todo
+>    lo que ese barrido movía, y eso se midió después (idénticas en todos los dígitos).
+> 2. «El mapa está fuera de las envolventes» se lee como una propiedad **del modelo**, y es falsa: **62 de
+>    200** puntos del bloque del cristaloide las satisfacen en los dos casos, y **8** satisfacen las doce
+>    restricciones en los dos casos y en las diez lecturas. Lo que está fuera es el **valor de referencia
+>    provisional** (`crystalloid_effective_ml_per_ml = 0,125`, de P2I-2T, anterior a las envolventes de
+>    P2I-2U, nunca candidato y nunca aprobado, ya registrado como no superviviente en TD-88).
+>
+> La redacción correcta es: **el punto de referencia del repositorio está fuera de las envolventes; el
+> modelo no.** Detalle y medidas en `docs/PHASE3_BLOOD_VOLUME_SEMANTICS.md`; registro en FD-P3-69 a
+> FD-P3-75 y en TD-130 (26), corregido.
 
 > **Veredicto de P3-68C: `C · VOLUME_COORDINATE_REQUIRES_FURTHER_FACULTY_DECISION`.**
 >
