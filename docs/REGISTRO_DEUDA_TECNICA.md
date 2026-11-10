@@ -183,6 +183,7 @@ un defecto que el piloto puede medir.
 | TD-131 | Núcleo común · enmienda formal PHASE2_AMENDMENT_1 | **Declarada (2026-11-10, P2-AMEND-1F; rama `phase-2-amendment-1-respiratory-transmission`; el cierre histórico no se reescribe).** Deuda y límites de la etapa sucesora y del linaje certificado: ver la sección «TD-131» de este registro y `docs/revision/PHASE2_AMENDMENT_1.md` §9 y §11. | P2-AMEND-1F (A1–A17) | No | (1), (2), (3), (6) y (7) declaradas; (4) y (5) etapa posterior si se necesita; (8) decisión del usuario, pendiente tras la integración |
 | TD-132 | Fase 3 · generalización de la causalidad de manejo | **Declarada (2026-11-10, P3-137 a P3-144; rama `phase-3-runtime-integration` con la enmienda certificada integrada).** Deuda y límites del ciclo: ver la sección «TD-132» de este registro y `docs/PHASE3_MANAGEMENT_GENERALIZATION.md`. | P3-137…P3-144 | No | (1), (2) y (8) decisión docente; (3), (4) y (5) paquete de Fase 3 si se necesita; (6) decisión del usuario; (7) declarada; (9) auditoría propia antes de cualquier adopción |
 | TD-133 | Fase 3 · segunda familia en sombra en vivo (opioide) | **Declarada (2026-11-10, ciclo de la segunda familia en vivo, paquetes P3-137 a P3-146 del encargo; sin autoridad).** Deuda y límites: ver la sección «TD-133» de este registro y `docs/PHASE3_SECOND_LIVE_FAMILY.md`. | P3-137…P3-146 (ciclo del 2026-11-10) | No | (1) antes de cualquier uso en vivo o incremental del edema; (2), (3), (4), (9) y (12) decisión docente; (5), (6), (10), (13), (14) y (15) declaradas; (7) paquete siguiente; (8) corregida |
+| TD-134 | Fase 3 · sombra en vivo observable, persistente y con fallos visibles | **Declarada (2026-11-10, ciclo de observabilidad, paquetes P3-147 a P3-155 del encargo; sin autoridad y sin cambio de fisiología común).** Deuda y límites: ver la sección «TD-134» de este registro y `docs/PHASE3_SHADOW_OBSERVABILITY.md`. | P3-147…P3-155 (ciclo del 2026-11-10) | No | (1) y (2) decisión docente; (3) a (9) declaradas; (10) sólo si la docencia lo pide |
 
 ## Corregido el 2026-10-08 (aislamiento de la suite)
 
@@ -447,3 +448,46 @@ corre como conjunto. TD-132 (8): resuelta por FD-P3-130. TD-132 (9): sustituida 
   un turno de oxígeno de cero minutos. FD-P3-138 (R9).
 - **(15)** Coste: con la bandera puesta, cada turno de opioide recalcula cuatro trayectorias desde la llegada
   (unos 100 ms en el minuto 99, frente a 2 ms con la bandera apagada). Crece con la duración del encuentro.
+
+## TD-134 · Fase 3, sombra en vivo observable, persistente y con fallos visibles (ciclo del 2026-11-10)
+
+**Cierra o actualiza deuda anterior.** TD-133 (1): **cerrada** — el adaptador de desarrollo del edema empieza el
+tratamiento en minuto + 1 (FD-P3-148); las cifras de retorno pasaron de 79, 55 y 43 a 81, 57 y 44. TD-133 (7):
+**cerrada** — la traza de sombra en vivo se persiste en su propio almacén y un observador docente la muestra
+(FD-P3-145 y FD-P3-146); queda lo que se declara abajo en (5) y (6). TD-133 (9): **resuelta** por decisión
+docente — la identidad de llegada es una guarda de elegibilidad (FD-P3-139). TD-133 (12): **cerrada** — una
+regla compartida de llegada y un ciclo de vida que no suelta la sesión por un turno de cero minutos (FD-P3-144).
+TD-133 (3) y (4): **auditadas** (FD-P3-147), sin promoción al conjunto; lo que queda es (1) de esta lista.
+
+- **(1)** **Decisión pendiente: la región de transmisión es condicional a la tasa de profundización.** La cota
+  0,060621 es la del punto comprometido (0,005/min). El repositorio no declara intervalo para esa tasa, y en sus
+  dos sondas (0,02 y 0,03) los tres testigos quedan fuera de la cota. No se promovió al conjunto. La docencia
+  decide: declarar un intervalo (y rederivar la región en conjunto) o aceptar la región sólo en ese punto.
+- **(2)** La tasa de recuperación sigue siendo un punto `SYNTHETIC_ONLY` sin intervalo declarado. En los valores
+  que el repositorio tiene no cambia ningún veredicto; no se afirma nada fuera de ellos.
+- **(3)** **Órdenes retenidas hasta un resultado (anterior a este ciclo, hallazgo R3 de la revisión).** El motor
+  puede ejecutar más tarde una orden que retuvo; la sesión nunca la refleja y la corrida de sombra no lleva su
+  efecto. Es visible —hueco declarado, fila `NOT_MIRRORED`, estado nunca `COMPLETE`— pero no está resuelto:
+  reflejar la ejecución tardía requiere que el motor la anuncie en el turno en que ocurre.
+- **(4)** **Residuo del ciclo de vida.** Un turno sin tiempo y sin huella en el paciente (una orden diagnóstica
+  sin resultado todavía) no marca la salida de la llegada; un segundo intento inmediato del mismo caso sin el
+  reinicio explícito de la página se lee como la misma sesión. La fisiología es la misma llegada; puede
+  mezclarse una fila no fisiológica del espejo y, sólo en un arnés que reutilice identificadores de orden entre
+  intentos, omitirse una acción del segundo (R15).
+- **(5)** **El almacén de trazas es un directorio de desarrollo.** Lo nombra una variable de entorno; no hay
+  política de retención, ni almacenamiento duradero para un despliegue, ni control de acceso propio. Guarda un
+  registro por turno, cada uno con toda la historia: de 74 a 201 ms por turno de opioide y de 34 a 131 ms por
+  turno de GI con el almacén encendido, y unos 4 a 6 MB por encuentro (R18). Apagado no cuesta.
+- **(6)** **El observador es una herramienta fuera de la app.** No hay pantalla docente dentro de la app ni
+  captura de decisiones docentes desde él. La visibilidad de fallos es de consulta: nada avisa; un almacén que
+  no se puede escribir en absoluto queda sólo en el registro de la sesión y en la salida de la herramienta.
+- **(7)** **La elegibilidad de llegada no tiene referencia redactada para el estado `hidden` ni para claves de
+  nivel superior desconocidas** (R14): un estado sintético alterado sólo ahí se lee como llegada. Ningún turno
+  real lo produce.
+- **(8)** **Integridad sin firma.** El digesto y la coherencia interna detectan un cambio accidental y una
+  edición resellada incoherente; una falsificación coherente en todas sus partes, no. El número de turnos no
+  se contrasta.
+- **(9)** La serie se jugó con `pilot_acceptance.Encounter` y con una emulación de las tres sentencias del
+  ayudante de sesión de la página, fijadas por prueba. La página en un navegador no se ejercitó en este ciclo.
+- **(10)** Una pantalla docente dentro de la app y un almacén desplegado no se construyeron: una guarda vigente
+  prohíbe que la página pinte la sombra, y ningún módulo de cara al residente puede leer el almacén.

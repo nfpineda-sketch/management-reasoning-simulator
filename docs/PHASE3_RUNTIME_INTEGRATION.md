@@ -31,6 +31,16 @@ digesto de cierre en cada corrida.
 > parámetro de transmisión como conjunto de tres testigos. La autoridad sigue teniendo su propia compuerta,
 > que nombra sólo a GI y sigue cerrada. Detalle: `docs/PHASE3_SECOND_LIVE_FAMILY.md`.
 
+> **Nota del 2026-11-10 (ciclo de observabilidad, FD-P3-139 a FD-P3-150).** Tres cosas de este documento se
+> leen desde esa fecha así. **(1)** Una sesión de sombra se abre sólo sobre una llegada intacta, por una regla
+> compartida de cinco condiciones; pedida sobre cualquier otro estado, se abre sin corrida y con el motivo
+> registrado, y un turno de cero minutos ya no hace que la página la suelte. **(2)** La capa declarada
+> (`LAYER_SOURCES`) tiene siete fuentes: se sumaron `runtime_shadow_store.py` (almacén de trazas de
+> investigación de la sombra, apagado por omisión, distinto del de autoridad) y `runtime_shadow_observer.py`
+> (informe docente de sólo lectura). Ninguno es un cruce nuevo: `app.py` y `pilot_acceptance.py` siguen siendo
+> los únicos lectores de la capa, y ninguno de los dos importa esos módulos. **(3)** Nada de esto da autoridad
+> ni llega al residente. Detalle: `docs/PHASE3_SHADOW_OBSERVABILITY.md`.
+
 Un solo artefacto de la Fase 2 sí cambia, y no es fisiología: `test_phase2_closure.py`. Dos de las
 reclamaciones del registro de cierre son del repositorio entero —qué tocó P2X-3 y qué módulos de aplicación
 importan el paquete en sombra— y la prueba las leía del árbol de trabajo. El registro describe el commit de

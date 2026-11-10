@@ -268,3 +268,17 @@ sombra en vivo, con dos tasas sintéticas, una región y sin dosis.
 **Paquete siguiente más corto:** persistir la traza de sombra en vivo en el almacén docente y de investigación
 y mostrarla en una pantalla sólo docente. Cierra captura de traza y visibilidad de fallos, no necesita
 fisiología ni autoridad, y es lo que leería una revisión docente de las regiones.
+
+## 10 · Lo que el ciclo siguiente cambió de este informe (2026-11-10, ciclo de observabilidad)
+
+Posterior a este informe (`docs/PHASE3_SHADOW_OBSERVABILITY.md`; FD-P3-139 a FD-P3-150). El texto de arriba se
+deja como se escribió.
+
+- **§4, identidad de llegada.** Clasificada por la docencia como guarda de elegibilidad de la sombra en vivo, no
+  como semántica clínica nueva (FD-P3-139). Su parte común es ahora una regla compartida por toda familia en
+  vivo.
+- **§8, R8 (ciclo de vida tras un turno de cero minutos).** Corregido en la capa compartida (FD-P3-144).
+- **§9, compuertas.** Captura de traza y visibilidad de fallos pasan de `PARTIAL` a `GREEN`, con su alcance
+  declarado; el paquete siguiente más corto que ahí se anunciaba es el que se hizo. La exposición al residente
+  sigue bloqueada: un observador docente no la pone en verde. El veredicto de piloto no cambia.
+- **Edema.** La cifra de TD-133 (1) quedó corregida (FD-P3-148).

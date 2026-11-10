@@ -183,3 +183,12 @@ del minuto en que se da» sigue siendo cierta.
 
 **Numeración.** Este informe llama P3-137 a P3-144 a sus paquetes; el ciclo siguiente recibió del encargo los
 números P3-137 a P3-146 para otros. Ver FD-P3-131.
+
+## 10 · Rectificación del minuto del edema (2026-11-10, ciclo de observabilidad)
+
+Posterior a este informe (FD-P3-148; `docs/PHASE3_SHADOW_OBSERVABILITY.md` §7). El adaptador de desarrollo del
+edema fechaba el tratamiento decongestivo en el propio minuto de la orden; ahora empieza el minuto siguiente,
+como el oxígeno y la reversión del opioide. Donde §6 dice que la SpO2 vuelve a la de llegada «al minuto 79, 55
+y 43 según el testigo», léase **81, 57 y 44**; el primer efecto de una orden del minuto 30 está en el estado
+del 31. El bloque `MEASURED` del registro ya lleva las cifras nuevas. La magnitud de la región y los ocho
+veredictos del contrato no cambiaron. El texto de §6 se deja como se escribió.
