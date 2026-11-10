@@ -4,7 +4,7 @@ Rama `phase-2-amendment-1-respiratory-transmission`. Autorización: paquete **P2
 El registro legible por máquina es `docs/revision/PHASE2_AMENDMENT_1.json`; este documento lo explica y no lo
 sustituye. El forense de la certificación fallida anterior está en `PHASE2_AMENDMENT_1_FORENSICS.md`.
 
-**Estado:** <!-- estado -->**CANDIDATO congelado, SIN certificar.** La entrada del linaje dice `CANDIDATE` y la compuerta real la rechaza. La certificación final (§10) es lo único que la promueve.<!-- /estado -->
+**Estado:** <!-- estado -->**`PHASE2_AMENDMENT_1_CERTIFIED`.** La certificación final salió completamente en verde sobre el candidato congelado y la entrada del linaje se promovió a `CERTIFIED` (sólo metadatos; §10).<!-- /estado -->
 
 No se afirma validación clínica, ni un valor docente aprobado para la fracción, ni autoridad de ejecución para
 el núcleo común, ni cambio alguno en lo que ve el residente, en la puntuación o en el primer piloto.
@@ -36,7 +36,7 @@ registro de cierre y su digesto.
 | Fuentes del núcleo que cambian | `clinical_core/derived.py` (5 inserciones declaradas: el campo, su guarda, su entrada de registro y la expresión) y `clinical_core/decision_pack.py` (1: el registro de la etapa en `PACK_DIGEST_EXCLUDED`, como hicieron las 15 etapas anteriores) |
 | Fuente añadida | `clinical_core/amendment_1.py` (la etapa sucesora; no contiene fisiología) |
 | Digesto enmendado | el de `amended.core_digest` del registro JSON, sobre 142 fuentes (lo fija también `runtime_shadow.CORE_LINEAGE`) |
-| HEAD del candidato | <!-- heads -->se anota al promover (`certification.candidate_head` del registro JSON)<!-- /heads --> |
+| HEAD del candidato | <!-- heads -->`0b3c44396ddac13a0e0f1c000113d14825d61f67` (árbol `f7bcdac45391…`); la promoción es el commit siguiente, que sólo cambia este registro y documentación<!-- /heads --> |
 
 No se añade ninguna otra fisiología. La fracción no es un cociente respiratorio, ni un shunt, ni una ganancia de
 FiO2, ni una retención de G, ni una eficiencia mecánica, ni una disponibilidad central; no multiplica
@@ -273,7 +273,37 @@ lanza); vista previa inerte fuera de pytest.
 
 ## 10 · Certificación final (A14) y promoción (A15)
 
-<!-- certificacion -->Pendiente. Se completa al promover, y sólo si la certificación sale completamente en verde.<!-- /certificacion -->
+<!-- certificacion -->**Candidato certificado:** `0b3c44396ddac13a0e0f1c000113d14825d61f67`, congelado una sola vez; huella de la corrida
+`c043c38e607f0544…`, idéntica al inicio y al final (corrida **válida**). Python 3.11.17.
+
+| Verificación | Resultado |
+|---|---|
+| Suite completa particionada (4 particiones, tope de 2 h por partición) | **11 195 pruebas · 0 fallas · 0 errores · 93 omitidas · 1 xfail** |
+| Particiones | partición 0: 3029 pruebas, salida 0; partición 1: 2733 pruebas, salida 0; partición 2: 2336 pruebas, salida 0; partición 3: 3097 pruebas, salida 0 |
+| Regresiones (`run_regressions.py`) | 56/56 activas aprobadas; 10 retiradas, no se corren |
+| Contratos raíz (60 archivos, antes del congelamiento) | 2 038 pruebas, 0 fallos, 0 errores |
+| `git diff --check` y `git status` | limpios |
+
+La suite completa incluye, entre otras, las pruebas propias de la enmienda, las 16 de etapa de la cadena, las de
+perfil y esquema, mecánica respiratoria, migraciones de opioide y de asma, oxigenación, DO2/deuda/colapso,
+aislamiento, congelamiento del lector, los goldens históricos, la expectativa de golden de la enmienda y el golden
+de Contracts v2.
+
+La suite corrió con el plugin de vista previa cargado y la versión nombrada, porque el linaje real estaba —y debía
+estar— en `CANDIDATE`; las pruebas marcadas `real_core_lineage` leyeron el estado real durante toda la corrida.
+
+**Corrida anterior, invalidada por un fallo real.** La primera certificación, sobre el candidato
+`ad5d941`, dio 11195 pruebas con **1 falla** y
+0 errores: `test_shadow_core_isolation.py::test_the_core_imports_only_what_a_shadow_needs`. La guarda de aislamiento del núcleo exige que cada
+módulo declare los módulos estándar que usa fuera de la lista común, y a la etapa nueva le faltaba la declaración
+de `sys` y `types` que las siete etapas anteriores con vista propia sí tienen. Se añadió esa entrada —la guarda no
+se relajó—, el candidato cambió y, como manda la regla, se corrió **una** certificación nueva, que es la de arriba.
+
+**Promoción (A15).** Sólo cambian `certification` en el registro JSON y documentación; `git diff` entre el
+candidato y la promoción no toca ningún archivo ejecutable ni de prueba. El bloque `certification` lleva la
+evidencia que la compuerta exige para dar por válido `CERTIFIED`.
+
+**Comprobación con el linaje real, ya sin vista previa.** Tras promover, y **sin** el plugin: 28 archivos —los 14 de la capa de la Fase 3, los de la enmienda y el cierre, la cabeza de la cadena, los dos goldens, aislamiento, congelamiento del lector y las pruebas que leen el Decision File y el registro de deuda—, **733 pruebas, 0 fallos, 0 errores**. Las 391 pruebas de la capa de la Fase 3 pasan por la compuerta real; antes de la promoción, 127 de ellas fallaban cerradas. No se repitió la suite completa después de promover: la promoción no toca ningún archivo ejecutable ni de prueba.<!-- /certificacion -->
 
 ## 11 · Deuda y límites declarados
 

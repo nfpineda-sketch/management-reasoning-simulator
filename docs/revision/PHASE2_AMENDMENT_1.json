@@ -259,7 +259,57 @@
     "30 of the first 39 amendment tests still passed with the share made inert: every property is now a check with an in-suite negative control (6 mutants, 20 kill pairs)"
   ],
   "certification": {
-    "status": "CANDIDATE"
+    "status": "CERTIFIED",
+    "certified_core_digest": "10b45ce2967ea55afccb35291afb5bb1f7f1b01eb4a253e6a0736c02a5878635",
+    "candidate_head": "0b3c44396ddac13a0e0f1c000113d14825d61f67",
+    "candidate_tree": "f7bcdac45391da1a6bf732079e6847b2152dadf2",
+    "candidate_fingerprint": "c043c38e607f054489a41a3d52790208a8bc7c00ee7818011883a79088e52dd6",
+    "certified_on": "2026-11-10",
+    "python": "3.11.17",
+    "full_suite": {
+      "tests": 11195,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 93,
+      "xfailed": 1,
+      "partitions": 4,
+      "timeout_per_partition_s": 7200,
+      "valid": true,
+      "ran_with": "-p test_core_certification_preview and MRS_CORE_CERTIFICATION_PREVIEW=PHASE2_AMENDMENT_1 (the lineage entry was CANDIDATE throughout; tests marked real_core_lineage read the real status)"
+    },
+    "regressions": {
+      "passed": 56,
+      "active": 56,
+      "failed": 0,
+      "retired": 10
+    },
+    "root_contracts": {
+      "files": 60,
+      "tests": 2038,
+      "failures": 0,
+      "errors": 0,
+      "before": "612 failures and errors in 53 of these files at d087cc3"
+    },
+    "adversarial_review": {
+      "reviewed_head": "c14c968",
+      "attacks": 17,
+      "high": 0,
+      "medium_confirmed_and_fixed": 1,
+      "low_fixed_or_declared": "see PHASE2_AMENDMENT_1.md, section 9"
+    },
+    "earlier_run": {
+      "candidate_head": "ad5d941cf0fdece1fdad7fb4d56765e16d7b2472",
+      "tests": 11195,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 93,
+      "xfailed": 1,
+      "valid": true,
+      "failed_test": "test_shadow_core_isolation.py::test_the_core_imports_only_what_a_shadow_needs",
+      "cause": "the stage module lacked the sys/types declaration in the isolation guard's per-file list, which the seven earlier stages with a view of their own have",
+      "outcome": "declaration added (the guard is not relaxed); candidate changed; ONE new final certification run"
+    },
+    "promotion": "metadata and documentation only: no executable file changed after the candidate"
   },
   "not_claimed": [
     "clinical validation",
