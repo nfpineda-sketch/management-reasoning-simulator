@@ -124,6 +124,35 @@ def check_an_intermediate_share_obeys_the_exact_equation():
             assert low < got < high, (case, share)
 
 
+GRID_SHARES = (1e-6, 1e-3, 0.009, 0.01, 0.02, 0.0758, 0.3, 0.5, 0.9, 0.95, 0.999)
+GRID_MINUTES = (1, 2, 5, 15, 30, 45, 60)
+GRID_RUNS = (("opioid_35m", False), ("opioid_67f", False), ("asthma_49m", False), ("asthma_24f", False),
+             ("opioid_35m", True))
+
+
+def check_the_exact_equation_holds_at_every_share_and_every_minute():
+    """La ecuacion, llamada directamente y exigida BIT A BIT, en una rejilla de fracciones y de estados: deltas
+    minimos (los primeros minutos), grandes y negativos (tras la reversion). Tres fracciones en el minuto 60 no
+    distinguen una banda muerta, una saturacion ni un umbral sobre el delta; esta rejilla si."""
+    deltas = []
+    for case, reversed_ in GRID_RUNS:
+        trajectory, anchors, profile = _run(case, events=_naloxone()) if reversed_ else _run(case)
+        for minute in GRID_MINUTES:
+            state = trajectory.states[minute]
+            base = trajectory.derived()[minute].to_dict()["spo2"]
+            for share in GRID_SHARES:
+                linked = dataclasses.replace(profile, respiratory_quotient=R, **{FIELD: share})
+                delta = dv.respiration(state, anchors, linked).paco2 - dv.arrival_paco2_reference(anchors, linked)
+                assert delta != 0.0
+                deltas.append(delta)
+                got = dv.ventilated_oxygenation(base, state, anchors, linked)
+                assert got == ODC(IODC(base) - share * delta / R), (case, minute, share, delta)
+                assert (got < base) == (delta > 0.0), (case, minute, share, delta)      # y de verdad se mueve
+    # la rejilla cubre lo que dice cubrir
+    assert min(abs(d) for d in deltas) < 0.5 and max(deltas) > 20.0 and min(deltas) < -35.0
+    assert sum(1 for d in deltas if 0.0 < abs(d) < 5.0) >= 100
+
+
 def check_more_share_is_strictly_worse_under_hypercapnia():
     curve = [_spo2(_linked("opioid_35m", share)) for share in (0.0, 0.1, 0.3, 0.6, 1.0)]
     assert all(b < a for a, b in zip(curve, curve[1:])), curve
@@ -216,6 +245,7 @@ CHECKS = {
     "zero": check_share_zero_is_the_link_not_declared,
     "one": check_share_one_is_the_certified_full_transmission,
     "intermediate": check_an_intermediate_share_obeys_the_exact_equation,
+    "grid": check_the_exact_equation_holds_at_every_share_and_every_minute,
     "hypercapnia": check_more_share_is_strictly_worse_under_hypercapnia,
     "hypocapnia": check_more_share_is_strictly_better_under_hypocapnia,
     "default": check_the_default_changes_nothing_and_is_the_unscaled_path,
@@ -287,6 +317,23 @@ def _respiration_reads_the_share(state, anchors, profile):
     return out
 
 
+def _with_share(transform):
+    """Un mutante que solo altera la fraccion que la ecuacion real llega a ver."""
+    def mutant(spo2_base, state, anchors, profile):
+        share = getattr(profile, FIELD)
+        if share is None:
+            return _REAL_LINK(spo2_base, state, anchors, profile)
+        seen = transform(share, state, anchors, profile)
+        return _REAL_LINK(spo2_base, state, anchors, dataclasses.replace(profile, **{FIELD: seen}))
+    return mutant
+
+
+_saturates = _with_share(lambda share, *_: 1.0 if share > 0.9 else share)                 # satura por arriba
+_dead_band = _with_share(lambda share, *_: 0.0 if share < 0.009 else share)                 # banda muerta por abajo
+_small_delta_is_full = _with_share(                                                         # umbral sobre el delta
+    lambda share, state, anchors, profile: 1.0 if abs(_delta_of(state, anchors, profile)) < 5.0 else share)
+
+
 MUTANTS = {
     "INERT": ("ventilated_oxygenation", _inert),
     "IGNORED_ALWAYS_FULL": ("ventilated_oxygenation", _ignored),
@@ -294,6 +341,9 @@ MUTANTS = {
     "SCALES_THE_BASE": ("ventilated_oxygenation", _on_the_base),
     "ZERO_DECIDED_AFTER_THE_PACO2": ("ventilated_oxygenation", _zero_decided_late),
     "WRITES_THE_PACO2": ("respiration", _respiration_reads_the_share),
+    "SATURATES_ABOVE_0_9": ("ventilated_oxygenation", _saturates),
+    "DEAD_BAND_BELOW_0_009": ("ventilated_oxygenation", _dead_band),
+    "FULL_WHEN_THE_DELTA_IS_SMALL": ("ventilated_oxygenation", _small_delta_is_full),
 }
 
 #: Que propiedad mata a que mutante. Cada propiedad aparece al menos una vez: ninguna queda sin control.
@@ -307,6 +357,9 @@ KILLS = [
     ("SCALES_THE_BASE", "intermediate"), ("SCALES_THE_BASE", "zero"),
     ("ZERO_DECIDED_AFTER_THE_PACO2", "zero"),
     ("WRITES_THE_PACO2", "ventilation_chain"), ("WRITES_THE_PACO2", "state"),
+    # los tres que la revision adversarial previa al congelamiento encontro vivos
+    ("SATURATES_ABOVE_0_9", "grid"), ("DEAD_BAND_BELOW_0_009", "grid"), ("FULL_WHEN_THE_DELTA_IS_SMALL", "grid"),
+    ("INERT", "grid"), ("IGNORED_ALWAYS_FULL", "grid"), ("APPLIED_TWICE", "grid"), ("SCALES_THE_BASE", "grid"),
 ]
 
 
@@ -336,6 +389,20 @@ def test_an_invalid_share_is_refused_by_the_core_invariant(bad):
     """Por el invariante del nucleo, no por un TypeError de campo inexistente."""
     with pytest.raises(CoreInvariantError):
         dataclasses.replace(om.profile(), respiratory_quotient=R, **{FIELD: bad})
+
+
+def test_a_zero_share_still_declares_the_link_and_keeps_the_links_own_preconditions():
+    """El alcance exacto de "fraccion 0 == enlace no declarado": toda lectura y todo estado del dominio soportado
+    (la propiedad ``zero``). Lo que NO se relaja son las precondiciones de DECLARAR el enlace, que son de P2T-5 y
+    no dependen de la fraccion: el enlace exige la mecanica respiratoria comun, con fraccion 0 igual que con 1."""
+    assert dv.DEFAULT_PROFILE.respiratory_mechanics is False
+    for share in (0.0, 0.5, 1.0, None):
+        fields = {"respiratory_quotient": R} if share is None else {"respiratory_quotient": R, FIELD: share}
+        with pytest.raises(CoreInvariantError):
+            dataclasses.replace(dv.DEFAULT_PROFILE, **fields)                 # sin mecanica: rechazado SIEMPRE
+        declared = dataclasses.replace(om.profile(), **fields)                 # con mecanica: aceptado siempre
+        assert dv.hypoventilation_link_active(declared) is True
+    assert dv.hypoventilation_link_active(om.profile()) is False
 
 
 def test_a_non_numeric_share_is_refused_by_the_core_invariant():

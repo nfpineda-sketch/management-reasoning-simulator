@@ -210,7 +210,14 @@ def historical_closure_digest_now() -> str:
 
 
 def historical_closure_verifies() -> dict:
-    """The four things that together mean the historical closure still stands under this stage."""
+    """The four things that together mean the historical closure still stands under this stage. It answers, and
+    never raises: a closure record that no longer states the closure is the fourth of them being false, and with
+    it nothing that is read from that record can be shown either."""
+    try:
+        closure_sources()
+    except (AssertionError, OSError, ValueError, KeyError, TypeError, AttributeError):
+        return {"reversal_proven": all(proofs().values()), "common_untouched": False, "touched": [],
+                "closure_digest_recomputes": False, "closure_record_states_it": False}
     untouched = common_untouched()
     return {"reversal_proven": all(proofs().values()),
             "common_untouched": all(untouched.values()),
@@ -427,7 +434,11 @@ class closure_view:
 
     def __enter__(self):
         self.patch = x1._Patcher()
-        tree(self.patch)
+        try:
+            tree(self.patch)
+        except BaseException:       # a view that could not be installed whole is not left installed in part
+            self.patch.restore()
+            raise
         return self
 
     def __exit__(self, *exc):

@@ -573,7 +573,7 @@ def gate(state: Mapping | None = None, *, environ: Mapping[str, str] | None = No
     if unsupported is not None and not conditions["no_unsupported_action"]:
         reasons.append(f"UNSUPPORTED_AUTHORITY_ACTION: {sorted(set(unsupported))}")
     if not conditions["phase2_digest"]:
-        reasons.append("the Phase-2 closure digest does not recompute")
+        reasons.append(ev.core_lineage_reason() or "the common core lineage could not be evaluated")
     if not conditions["layer_version"]:
         reasons.append(f"the Phase-3 layer is {rs.MODULE_VERSION}, not {EXPECTED_LAYER}")
     return AuthorityGate(conditions, tuple(reasons), snapshot_id)

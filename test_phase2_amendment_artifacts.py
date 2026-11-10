@@ -65,11 +65,23 @@ def test_a_generated_document_keeps_its_historical_value_and_gains_a_versioned_s
     assert stated["historical_document_rewritten"] is False
 
 
+INPUTS = {"decision_pack": decision_pack.pack_sources, "lactate_slice": lactate_slice.slice_sources,
+          "blood_anchors": lactate_slice.slice_sources, "blood_probes": lactate_slice.slice_sources}
+
+
 @pytest.mark.parametrize("name", sorted(GENERATORS))
 def test_a_generated_digest_moves_only_because_declared_sources_moved(name):
-    """La causa del digesto nuevo es exacta: las fuentes que esta etapa declara, y ninguna otra."""
-    moved = set(ARTIFACTS["generated_documents"][name]["inputs"]["sources_that_moved"])
-    assert moved and moved <= set(a1.REVERSAL) | set(a1.OWN)
+    """La causa del digesto nuevo, RECALCULADA: las entradas del generador sobre el arbol enmendado frente a las
+    mismas bajo la vista del cierre. Se mueven las fuentes que esta etapa declara, y ninguna otra."""
+    live = INPUTS[name]()
+    with a1.closure_view():
+        closure = INPUTS[name]()
+    moved = sorted(source for source in set(live) | set(closure) if live.get(source) != closure.get(source))
+    stated = ARTIFACTS["generated_documents"][name]["inputs"]
+    assert moved == stated["sources_that_moved"] and stated["digested_sources"] == len(live)
+    assert moved and set(moved) <= set(a1.REVERSAL) | set(a1.OWN)
+    assert set(a1.REVERSAL) <= set(moved)                    # las dos fuentes cambiadas entran en los cuatro
+    assert sorted(set(live) - set(closure)) == [s for s in a1.OWN if s in live]     # y solo se anade la etapa
 
 
 def test_the_calibration_freeze_digest_did_not_move():
@@ -106,14 +118,29 @@ def test_every_behavioural_block_of_the_golden_is_identical_on_the_amended_core(
     assert stated["behavioural_blocks_identical"] is True
 
 
+def _golden_difference(live: dict, historical: dict) -> dict:
+    """Lo que separa un golden del historico, bloque a bloque y entrada a entrada."""
+    lp, hp = live.get("parameters", {}), historical.get("parameters", {})
+    return {"blocks_that_differ": sorted(b for b in set(live) | set(historical) if live.get(b) != historical.get(b)),
+            "added": {name: lp[name] for name in sorted(lp) if name not in hp},
+            "removed": sorted(name for name in hp if name not in lp),
+            "changed": sorted(name for name in hp if name in lp and lp[name] != hp[name])}
+
+
+def _is_the_declared_difference(difference: dict) -> bool:
+    stated = ARTIFACTS["golden"]["parameters"]
+    return (difference["blocks_that_differ"] == ARTIFACTS["golden"]["blocks_that_differ"] == ["parameters"]
+            and difference["added"] == stated["added"] and list(difference["added"]) == [NEW]
+            and difference["removed"] == stated["removed"] == []
+            and difference["changed"] == stated["changed"] == [])
+
+
 def test_the_only_golden_difference_is_one_registry_entry_for_the_new_control(goldens):
     live, historical = goldens
     stated = ARTIFACTS["golden"]["parameters"]
-    added = {name: live["parameters"][name] for name in live["parameters"] if name not in historical["parameters"]}
-    assert added == stated["added"] == {NEW: list(dv.PARAMETERS[NEW])}
-    assert [name for name in historical["parameters"] if name not in live["parameters"]] == stated["removed"] == []
-    assert [name for name in historical["parameters"]
-            if live["parameters"].get(name) != historical["parameters"][name]] == stated["changed"] == []
+    difference = _golden_difference(live, historical)
+    assert _is_the_declared_difference(difference), difference
+    assert difference["added"] == {NEW: list(dv.PARAMETERS[NEW])}
     assert (len(historical["parameters"]), len(live["parameters"])) == (
         stated["PHASE2_CLOSURE_entries"], stated["PHASE2_AMENDMENT_1_entries"]) == (70, 71)
     assert live["parameters"][NEW][0] == "provisional"
@@ -134,13 +161,28 @@ def test_the_current_golden_expectation_is_versioned_and_recomputes(goldens):
     assert without == historical
 
 
-def test_negative_control_an_undeclared_registry_entry_breaks_the_golden_expectation(monkeypatch):
-    """El control: la expectativa no acepta "lo que el archivo contenga". Una entrada mas y ya no es la declarada."""
-    monkeypatch.setitem(dv.PARAMETERS, "undeclared_control", ("provisional", "no declarado"))
-    live = json.loads(json.dumps(golden_report(), allow_nan=False))
-    historical = json.loads(GOLDEN.read_text(encoding="utf-8"))
-    added = {name for name in live["parameters"] if name not in historical["parameters"]}
-    assert added == {NEW, "undeclared_control"} and added != set(ARTIFACTS["golden"]["parameters"]["added"])
+CORRUPTIONS = {
+    "an_undeclared_registry_entry": lambda g: g["parameters"].update(undeclared_control=["provisional", "x"]),
+    "a_changed_registry_entry": lambda g: g["parameters"].update(
+        respiratory_quotient=["provisional", "restated by nobody"]),
+    "a_removed_registry_entry": lambda g: g["parameters"].pop("respiratory_quotient"),
+    "the_new_entry_restated": lambda g: g["parameters"].update({NEW: ["faculty-approved", "not what the core says"]}),
+    "a_behavioural_block_moved": lambda g: g["scenarios"].update(undeclared_scenario={}),
+    "a_block_added": lambda g: g.update(undeclared_block={}),
+    "no_difference_at_all": lambda g: g["parameters"].pop(NEW),
+}
+
+
+@pytest.mark.parametrize("corruption", sorted(CORRUPTIONS))
+def test_negative_control_the_golden_expectation_refuses_anything_but_the_declared_difference(goldens, corruption):
+    """El control: la expectativa no es "lo que el golden contenga". Cada corrupcion de una COPIA del golden vivo
+    deja de ser la diferencia declarada, por la misma funcion que acepta el golden real."""
+    live, historical = goldens
+    assert "respiratory_quotient" in live["parameters"]
+    corrupted = json.loads(json.dumps(live))
+    CORRUPTIONS[corruption](corrupted)
+    assert _is_the_declared_difference(_golden_difference(live, historical)) is True
+    assert _is_the_declared_difference(_golden_difference(corrupted, historical)) is False
 
 
 def test_no_committed_profile_declares_the_new_control():

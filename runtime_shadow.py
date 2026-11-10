@@ -709,7 +709,7 @@ CORE_LINEAGE = (
     CoreVersion("PHASE2_CLOSURE", None, PHASE2_DIGEST, "docs/revision/P2X3_phase2_closure.json",
                 head=PHASE2_CLOSURE_HEAD),
     CoreVersion("PHASE2_AMENDMENT_1", "PHASE2_CLOSURE",
-                "2abe51728dd61c2f53f9d54b3ec29892d216533154ba2e40b75df42d4e5c0592",
+                "10b45ce2967ea55afccb35291afb5bb1f7f1b01eb4a253e6a0736c02a5878635",
                 "docs/revision/PHASE2_AMENDMENT_1.json", reversal="clinical_core.amendment_1"),
 )
 MODULE_VERSION = "P3-11"

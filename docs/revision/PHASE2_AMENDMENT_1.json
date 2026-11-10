@@ -15,7 +15,7 @@
     "predecessor_freeze_digest": "eca47d357674ec56fe489c30f1757cf940c55a4e5d5edb2a9ffb9fac0213e853"
   },
   "amended": {
-    "core_digest": "2abe51728dd61c2f53f9d54b3ec29892d216533154ba2e40b75df42d4e5c0592",
+    "core_digest": "10b45ce2967ea55afccb35291afb5bb1f7f1b01eb4a253e6a0736c02a5878635",
     "clinical_core_modules": 142,
     "changed_sources": [
       "clinical_core/decision_pack.py",
@@ -51,6 +51,7 @@
     "default_meaning": "UNSCALED: reproduces the certified P2T-5 full transmission bit for bit. It is NOT a second off switch for the link, which respiratory_quotient still owns.",
     "zero_meaning": "expresses nothing in EVERY state, the unventilated boundary included: decided before the PaCO2 is read, so it is the same as the link not being declared",
     "declared_only_with": "respiratory_quotient",
+    "zero_scope": "the equivalence with the undeclared link is over every state and reading of the supported domain. Declaring the link, with any share, 0 included, still requires what a declared link requires (the common respiratory mechanics candidate, and no hypoxaemic drive): those profile preconditions are P2T-5's and are not relaxed for a zero share.",
     "status": "provisional",
     "is_not": [
       "a respiratory quotient",
@@ -90,6 +91,36 @@
     "forward_note": "an artifact written by the amended core carries the share's key, and the closure core refuses it (CoreProfile(**data) raises on an unknown field). No forward-compatibility guarantee existed before this amendment and none is invented by it."
   },
   "successor_artifacts": {
+    "closure_freeze_digests": {
+      "note": "The five freeze digests the closure record states, recomputed by the same functions on the amended tree. runtime_shadow.versions() carries the live closure_guard value, so it is recorded.",
+      "digests": {
+        "calibration": {
+          "PHASE2_CLOSURE": "c1eeb5538a4ea990cbcb4432b0c28e6cb8c351ffe08c96a6036f82d3b65a9b85",
+          "PHASE2_AMENDMENT_1": "c1eeb5538a4ea990cbcb4432b0c28e6cb8c351ffe08c96a6036f82d3b65a9b85",
+          "unchanged": true
+        },
+        "closure_guard_P2X1A": {
+          "PHASE2_CLOSURE": "eca47d357674ec56fe489c30f1757cf940c55a4e5d5edb2a9ffb9fac0213e853",
+          "PHASE2_AMENDMENT_1": "c75c9dcb6f1a313a116c30757958c3b38f989df57bb16fa44e938c171aa7e14f",
+          "unchanged": false
+        },
+        "decision_pack": {
+          "PHASE2_CLOSURE": "e0fdfbe33abe643ab43793354525d2dc8604be5d2c1f0be2cfc7dd339ed13a15",
+          "PHASE2_AMENDMENT_1": "83d648a7c56c49417dd4bf32aa6818a1be91e30cdf6a5cf7a3766da9a1c6b783",
+          "unchanged": false
+        },
+        "lactate_slice": {
+          "PHASE2_CLOSURE": "3c4648e7bdc51baae1c3b6454314b05baf5430bef6032d72a75169a8ff64be10",
+          "PHASE2_AMENDMENT_1": "70c79930ccd8799af8096c144e968f54b4c95bf26741a400e63e315ffeb3034e",
+          "unchanged": false
+        },
+        "tone_domain_on_the_live_tree": {
+          "PHASE2_CLOSURE": "a9634ffd1c9d609904702f2bc95f2d3cb15d3f064b1e671529478925ef7ae16a",
+          "PHASE2_AMENDMENT_1": "66161e08f152e69447c7d1747fed6e0ec92778d9a0880364a4ebd0825e7edaaa",
+          "unchanged": false
+        }
+      }
+    },
     "verified_against": "git show <closure head>:<path>, byte for byte, when this record was written",
     "note": "Nothing historical is regenerated or overwritten. Each historical document and the historical golden still reproduce, from the live files, under this stage's closure view (their own tests). The values below are what the SAME generators give on the amended tree: explicitly versioned successors.",
     "generated_documents": {
@@ -121,7 +152,7 @@
         "historical_document_sha256": "955f35c6487a4b8aeba2cfd55fd0bb48d2fff026761daa023e28abc2c8a33a9c",
         "historical_data_sha256": "655bbb70fdbf23d53c559628da49b050057d70d5081e580629f35eedbc1af9c9",
         "PHASE2_CLOSURE": "3c4648e7bdc51baae1c3b6454314b05baf5430bef6032d72a75169a8ff64be10",
-        "PHASE2_AMENDMENT_1": "c009b68efdd7d37ebfb185d357eafd036cbaccacf28bfc4ac51a8e9617aa6dce",
+        "PHASE2_AMENDMENT_1": "70c79930ccd8799af8096c144e968f54b4c95bf26741a400e63e315ffeb3034e",
         "inputs": {
           "digested_sources": 97,
           "sources_that_moved": [
@@ -141,7 +172,7 @@
         "historical_document_sha256": "d55ccdc9305a6f61a9f06edd0ac9db09c28199aeb1702f071999b96819b08d22",
         "historical_data_sha256": "b1872af6108abf474e65d583fb2b4a5553ec425a0f3578aed1a3d9b6218ed73e",
         "PHASE2_CLOSURE": "6ab8199f4c4db14b22ffe7b8bcffd0684a1686814770326c030ccafec3dfcd9b",
-        "PHASE2_AMENDMENT_1": "c982aa7a16d05e4ee3d613193fffe093c0cf2ab8620153cb89c3e10a96d5c900",
+        "PHASE2_AMENDMENT_1": "2880f38500a409bba2415c000dbc6bcc273ecdb1b67633cf9ff505bf3c4bc228",
         "inputs": {
           "digested_sources": 97,
           "sources_that_moved": [
@@ -161,7 +192,7 @@
         "historical_document_sha256": "1636da99a77f95bc408ea4a98ddbe58de0d385e9a79acc2541b908e15555dd40",
         "historical_data_sha256": "2118dfb899ad86c00e8f07768f7264e23b80f40376340e403aeb3ab7650dfa45",
         "PHASE2_CLOSURE": "804fecd40896d5800e23addcf87401c3c569b12cfa92afa8a4432abbd08cd1fe",
-        "PHASE2_AMENDMENT_1": "6d892a00cfa333f73a0b95cd27e098b5f07ce239f3e8d74eb502a0c731e16773",
+        "PHASE2_AMENDMENT_1": "b5475f5a4a368980953ff27b040ffa1821436807c7f327ed45990546d337b5dd",
         "inputs": {
           "digested_sources": 97,
           "sources_that_moved": [

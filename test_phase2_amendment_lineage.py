@@ -38,6 +38,24 @@ def _record():
     return json.loads(RECORD.read_text(encoding="utf-8"))
 
 
+def _evidence(**changes) -> dict:
+    """Un bloque de certificacion COMPLETO para la entrada de la enmienda: lo minimo que hace valer un CERTIFIED."""
+    block = {"status": rs.CERTIFIED, "certified_core_digest": AMENDMENT.digest, "candidate_head": "a" * 40,
+             "full_suite": {"tests": 11000, "failures": 0, "errors": 0, "skipped": 93},
+             "regressions": {"passed": 12, "failed": 0}}
+    block.update(changes)
+    return block
+
+
+def _record_at(tmp_path, name, **top) -> "rs.CoreVersion":
+    """La entrada de la enmienda apuntando a una copia del registro con los campos de ``top`` reemplazados."""
+    record = _record()
+    record.update(top)
+    path = tmp_path / name
+    path.write_text(json.dumps(record), encoding="utf-8")
+    return dataclasses.replace(AMENDMENT, record=str(path))
+
+
 def _certified(monkeypatch):
     """El estado que tendra tras la promocion, para aislar las OTRAS tres condiciones."""
     monkeypatch.setattr(ev, "successor_status", lambda entry: rs.CERTIFIED)
@@ -106,9 +124,11 @@ def test_every_closure_freeze_digest_recomputes_under_the_closure_view():
 
 
 def test_no_historical_file_or_digest_constant_was_rewritten():
-    """Los 140 fuentes restantes del cierre son los del cierre, byte a byte: con ellos, las 67 constantes de
+    """Las 139 fuentes restantes del cierre son las del cierre, byte a byte: con ellas, las 67 constantes de
     digesto de etapa y las tablas de reversion de las 15 etapas, que viven dentro de esos archivos."""
-    assert all(a1.common_untouched().values())
+    untouched = a1.common_untouched()
+    assert len(untouched) == 139 == 141 - len(a1.REVERSAL) and all(untouched.values())
+    assert set(untouched) == set(a1.closure_sources()) - set(a1.REVERSAL)
     constants = 0
     for path in sorted((ROOT / "clinical_core").glob("*.py")):
         if path.name == "amendment_1.py":
@@ -225,7 +245,8 @@ def test_the_preview_upgrades_one_named_candidate_and_nothing_else(monkeypatch):
         previewed = ev.successor_status
         assert previewed.real is real
         monkeypatch.setattr(previewed, "real", previewed.real)         # deja el atributo como estaba al salir
-        for status in ("NO_RECORD", "RECORD_NOT_BOUND_TO_THE_LINEAGE", "NO_STATUS", "REVOKED", rs.CERTIFIED):
+        for status in ("NO_RECORD", "RECORD_NOT_BOUND_TO_THE_LINEAGE", "NO_STATUS", "REVOKED",
+                       "CERTIFIED_WITHOUT_EVIDENCE", rs.CERTIFIED):
             assert _previewed_with(preview, status, AMENDMENT) == status
         assert _previewed_with(preview, rs.CANDIDATE, AMENDMENT) == rs.CERTIFIED
         other = dataclasses.replace(AMENDMENT, version_id="PHASE2_AMENDMENT_2")
@@ -287,7 +308,7 @@ def test_nc2_an_uncertified_successor_is_refused_and_only_its_status_decides(mon
 
 def test_nc2b_a_record_certifies_only_the_digest_it_states(tmp_path, monkeypatch):
     record = _record()
-    record["certification"] = {"status": rs.CERTIFIED}
+    record["certification"] = _evidence()
     honest = tmp_path / "honest.json"
     honest.write_text(json.dumps(record), encoding="utf-8")
     assert ev.successor_status(dataclasses.replace(AMENDMENT, record=str(honest))) == rs.CERTIFIED
@@ -352,3 +373,236 @@ def test_nc4b_a_lineage_entry_that_does_not_match_the_files_is_not_the_active_co
     monkeypatch.setattr(rs, "CORE_LINEAGE", (CLOSURE, stale))
     verdict = ev.core_lineage_verdict()
     assert verdict["ok"] is False and verdict["active_core"] is None
+
+
+def test_nc2c_one_word_is_not_a_promotion(tmp_path):
+    """CERTIFIED vale solo con la evidencia de la certificacion: el digesto certificado, el commit candidato, una
+    suite completa sin fallos ni errores y regresiones sin fallos. (Observacion de la revision adversarial.)"""
+    assert ev.successor_status(_record_at(tmp_path, "full.json", certification=_evidence())) == rs.CERTIFIED
+    lacking = [{"status": rs.CERTIFIED},
+               _evidence(certified_core_digest="0" * 64), _evidence(certified_core_digest=None),
+               _evidence(candidate_head="abc"), _evidence(candidate_head=None), _evidence(candidate_head="g" * 40),
+               _evidence(full_suite={"tests": 11000, "failures": 1, "errors": 0}),
+               _evidence(full_suite={"tests": 11000, "failures": 0, "errors": 3}),
+               _evidence(full_suite={"tests": 0, "failures": 0, "errors": 0}),
+               _evidence(full_suite={"tests": 11000, "errors": 0}),
+               _evidence(full_suite={"tests": True, "failures": False, "errors": False}),
+               _evidence(full_suite="11000 passed"), _evidence(full_suite=None),
+               _evidence(regressions={"passed": 12, "failed": 1}), _evidence(regressions={"passed": 0, "failed": 0}),
+               _evidence(regressions=None)]
+    for number, block in enumerate(lacking):
+        entry = _record_at(tmp_path, f"lacking{number}.json", certification=block)
+        assert ev.successor_status(entry) == "CERTIFIED_WITHOUT_EVIDENCE", block
+    # y solo CERTIFIED exige evidencia: los demas estados se leen tal cual, y ninguno abre la compuerta
+    for status in (rs.CANDIDATE, "REVOKED", " CERTIFIED", "certified"):
+        assert ev.successor_status(_record_at(tmp_path, "other.json", certification={"status": status})) == status
+
+
+@pytest.mark.parametrize("shape", [[], "CERTIFIED", 7, None, {"amended": "x"}, {"certification": "CERTIFIED"},
+                                   {"certification": ["CERTIFIED"]}, {"historical_closure": []},
+                                   {"certification": {"status": ["CERTIFIED"]}},
+                                   {"certification": {"status": True}}])
+def test_nc2d_a_record_of_the_wrong_shape_is_a_refusal_and_never_a_raise(tmp_path, monkeypatch, shape):
+    """JSON valido de otra forma: antes lanzaba dentro de la compuerta (revision adversarial). Ahora rechaza."""
+    if isinstance(shape, dict):
+        record = _record()
+        record.update(shape)
+    else:
+        record = shape
+    path = tmp_path / "shape.json"
+    path.write_text(json.dumps(record), encoding="utf-8")
+    entry = dataclasses.replace(AMENDMENT, record=str(path))
+    assert ev.successor_status(entry) in ("NO_RECORD", "RECORD_NOT_BOUND_TO_THE_LINEAGE", "NO_STATUS")
+    monkeypatch.setattr(rs, "CORE_LINEAGE", (CLOSURE, entry))
+    verdict = ev.core_lineage_verdict()
+    assert verdict["ok"] is False and verdict["failed"] == ["active_core_certified"]
+    assert ev.core_lineage_ok() is False
+
+
+def test_nc2e_the_gate_answers_no_when_the_verdict_cannot_be_computed(monkeypatch):
+    def broken():
+        raise RuntimeError("no verdict")
+    monkeypatch.setattr(ev, "core_lineage_verdict", broken)
+    assert ev.core_lineage_ok() is False
+    assert ev.core_lineage_reason() == "the common core lineage could not be evaluated"
+
+
+def test_the_refusal_says_what_failed_and_not_that_the_closure_moved(monkeypatch):
+    """Con el sucesor sin certificar el cierre SI recalcula: el motivo no puede decir lo contrario."""
+    monkeypatch.setattr(ev, "successor_status", lambda entry: rs.CANDIDATE)
+    reason = ev.core_lineage_reason()
+    assert "PHASE2_AMENDMENT_1" in reason and "CANDIDATE" in reason and "active_core_certified" in reason
+    assert "does not recompute" not in reason
+    monkeypatch.setattr(ev, "successor_status", lambda entry: rs.CERTIFIED)
+    assert ev.core_lineage_reason() == ""
+    monkeypatch.setitem(a1.CORE_AT_P2X1A, "clinical_core/derived.py", "0" * 64)
+    ev.core_lineage_cache_clear()
+    assert ev.core_lineage_reason() == "the Phase-2 closure digest does not recompute"
+    monkeypatch.setattr(ev, "phase2_digest_now", lambda: "ab" * 32)
+    assert "not a member of the certified core lineage" in ev.core_lineage_reason()
+    source = (ROOT / "runtime_authority.py").read_text(encoding="utf-8")
+    assert "ev.core_lineage_reason()" in source and '"the Phase-2 closure digest does not recompute"' not in source
+
+
+def test_nc5_an_entry_is_not_the_root_because_it_names_no_parent(monkeypatch):
+    """Hallazgo MEDIO de la revision adversarial: "certificado por construccion" se decidia por ``parent is None``.
+    Una entrada sin padre con el digesto vivo quedaba certificada sin registro. La unica raiz es el cierre."""
+    rogue = rs.CoreVersion("ROGUE_ROOT", None, AMENDMENT.digest, "docs/revision/NO_SUCH_RECORD.json",
+                           reversal="clinical_core.amendment_1")
+    for certified_by_record in (False, True):
+        if certified_by_record:
+            _certified(monkeypatch)                      # ni siquiera con un registro que dijera CERTIFIED
+        for lineage in ((CLOSURE, rogue), (rogue, CLOSURE, AMENDMENT), (CLOSURE, rogue, AMENDMENT),
+                        (CLOSURE, AMENDMENT, dataclasses.replace(rogue, digest="ab" * 32))):
+            monkeypatch.setattr(rs, "CORE_LINEAGE", lineage)
+            ev.core_lineage_cache_clear()
+            verdict = ev.core_lineage_verdict()
+            assert verdict["ok"] is False and verdict["status"] == "LINEAGE_MALFORMED", lineage
+            assert verdict["active_core"] is None and "active_core_in_lineage" in verdict["failed"]
+            assert ev.core_lineage_ok() is False
+
+
+MALFORMED = {
+    "duplicate_digest": lambda: (CLOSURE, AMENDMENT, dataclasses.replace(AMENDMENT, version_id="PHASE2_AMENDMENT_2",
+                                                                         parent="PHASE2_AMENDMENT_1")),
+    "duplicate_version": lambda: (CLOSURE, AMENDMENT, dataclasses.replace(AMENDMENT, digest="ab" * 32)),
+    "orphan_parent": lambda: (CLOSURE, dataclasses.replace(AMENDMENT, parent="PHASE2_AMENDMENT_0")),
+    "parent_listed_later": lambda: (CLOSURE, dataclasses.replace(AMENDMENT, parent="LATER"),
+                                    rs.CoreVersion("LATER", "PHASE2_CLOSURE", "cd" * 32, AMENDMENT.record,
+                                                   reversal=AMENDMENT.reversal)),
+    "successor_without_reversal": lambda: (CLOSURE, dataclasses.replace(AMENDMENT, reversal=None)),
+    "root_restated_with_the_live_digest": lambda: (dataclasses.replace(CLOSURE, digest=AMENDMENT.digest),),
+    "root_restated_with_another_head": lambda: (dataclasses.replace(CLOSURE, head="0" * 40), AMENDMENT),
+    "root_with_a_reversal": lambda: (dataclasses.replace(CLOSURE, reversal="clinical_core.amendment_1"), AMENDMENT),
+    "root_renamed": lambda: (dataclasses.replace(CLOSURE, version_id="PHASE2_AMENDMENT_1"),),
+    "no_root": lambda: (AMENDMENT,),
+    "empty": lambda: (),
+    "a_mutable_list": lambda: [CLOSURE, AMENDMENT],
+}
+
+
+@pytest.mark.parametrize("label", sorted(MALFORMED))
+def test_nc5b_a_malformed_lineage_is_refused_whole(monkeypatch, label):
+    _certified(monkeypatch)
+    assert ev.core_lineage_ok() is True                  # el linaje real, con el mismo estado forzado, si vale
+    monkeypatch.setattr(rs, "CORE_LINEAGE", MALFORMED[label]())
+    ev.core_lineage_cache_clear()
+    verdict = ev.core_lineage_verdict()
+    assert verdict["ok"] is False and verdict["status"] == "LINEAGE_MALFORMED" and verdict["active_core"] is None
+    assert ev.core_lineage_ok() is False
+
+
+def test_the_real_lineage_is_well_formed_and_only_the_closure_is_its_root():
+    assert ev._lineage_well_formed() is True
+    assert ev._is_the_historical_root(CLOSURE) is True and ev._is_the_historical_root(AMENDMENT) is False
+    assert ev._is_the_historical_root(dataclasses.replace(CLOSURE)) is False      # una copia no es la entrada
+
+
+def test_nc3d_a_duplicated_declared_insertion_does_not_reverse():
+    """Cada insercion declarada debe aparecer exactamente una vez: dos veces no es el archivo declarado."""
+    relative = "clinical_core/derived.py"
+    live = a1._live_text(relative)
+    for hunk, _before in a1.REVERSAL[relative]:
+        assert live.count(hunk) == 1
+        assert a1.proved(relative, live + "\n" + hunk) is False
+        assert a1.proved(relative, live.replace(hunk, "")) is False
+
+
+def test_nc3e_a_moved_declared_insertion_is_not_the_certified_successor(monkeypatch):
+    """Limite declarado (revision adversarial): la reversion prueba que QUITANDO lo declarado queda el cierre, no
+    DONDE esta lo declarado. La posicion la fija el digesto enmendado: un archivo con una insercion movida sigue
+    reconstruyendo el cierre, pero no es el nucleo del linaje y la compuerta lo rechaza."""
+    _certified(monkeypatch)
+    relative = "clinical_core/derived.py"
+    live = a1._live_text(relative)
+    pure = [hunk for hunk, before in a1.REVERSAL[relative] if before == ""]
+    assert pure, "the stage declares at least one pure insertion: the case this limit is about"
+    hunk = pure[0]
+    moved = live.replace(hunk, "") + hunk
+    assert moved != live and a1.proved(relative, moved) is True          # el cierre se reconstruye igual
+    sources = a1.live_core_sources()
+    sources[relative] = __import__("hashlib").sha256(moved.encode("utf-8")).hexdigest()
+    tampered_digest = a1.core_digest(sources)
+    assert tampered_digest != AMENDMENT.digest
+    monkeypatch.setattr(ev, "phase2_digest_now", lambda: tampered_digest)
+    verdict = ev.core_lineage_verdict()
+    assert verdict["ok"] is False and verdict["status"] == "NOT_IN_THE_LINEAGE"
+
+
+def test_a_closure_view_that_cannot_be_installed_whole_is_not_left_installed_in_part(monkeypatch):
+    from clinical_core import closure_guard as cg, derived as dv
+    before = (cg._live, dv.PARAMETERS, dv.CoreProfile.__dataclass_fields__, dv.CoreProfile.__repr__)
+    real_tree = a1.tree
+
+    def half(patch):
+        real_tree(patch)                                 # toda la vista instalada...
+        raise RuntimeError("the view failed while it was being installed")
+
+    monkeypatch.setattr(a1, "tree", half)
+    with pytest.raises(RuntimeError):
+        with a1.closure_view():
+            raise AssertionError("the body must not run")
+    assert (cg._live, dv.PARAMETERS, dv.CoreProfile.__dataclass_fields__, dv.CoreProfile.__repr__) == before
+    assert a1.NEW_PROFILE_FIELD in dv.PARAMETERS
+
+
+def test_no_runtime_module_enters_the_closure_view():
+    """La vista es de lectura y para paquetes cerrados: dentro de ella un perfil con fraccion declarada perderia
+    la fraccion al copiarse (limite declarado). Por eso nada fuera de las pruebas la abre: la compuerta usa
+    ``historical_closure_verifies``, que no instala ninguna vista."""
+    for path in sorted(ROOT.glob("*.py")) + sorted((ROOT / "clinical_core").rglob("*.py")):
+        if path.name.startswith("test_") or path.name in ("amendment_1.py", "conftest.py"):
+            continue
+        text = path.read_text(encoding="utf-8")
+        assert "closure_view" not in text and "amendment_1 as" not in text and "import amendment_1" not in text, path.name
+    from clinical_core import closure_guard as cg, derived as dv
+    before = (cg._live, dv.PARAMETERS, dv.CoreProfile.__dataclass_fields__, dv.CoreProfile.__repr__)
+    ev.core_lineage_cache_clear()
+    a1.historical_closure_verifies(), ev.core_lineage_verdict(), rs.active_core()
+    assert (cg._live, dv.PARAMETERS, dv.CoreProfile.__dataclass_fields__, dv.CoreProfile.__repr__) == before
+
+
+def test_the_record_states_what_the_tree_recomputes():
+    """El registro no es prosa libre: lo que afirma de forma verificable se recalcula aqui. (La revision adversarial
+    escribio valores falsos en una copia del registro y ninguna prueba lo noto.)"""
+    record, closure, live = _record(), a1.closure_sources(), a1.live_core_sources()
+    amended = record["amended"]
+    assert amended["core_digest"] == a1.amended_core_digest_now() == AMENDMENT.digest
+    assert amended["clinical_core_modules"] == len(live) == 142
+    assert amended["changed_sources"] == sorted(k for k in closure if closure[k] != live.get(k)) == sorted(a1.REVERSAL)
+    assert amended["added_sources"] == sorted(set(live) - set(closure)) == list(a1.OWN)
+    assert amended["removed_sources"] == sorted(set(closure) - set(live)) == []
+    assert amended["stage_module"] == a1.OWN[0]
+    assert amended["declared_insertions"] == {k: len(v) for k, v in a1.REVERSAL.items()} == {
+        "clinical_core/decision_pack.py": 1, "clinical_core/derived.py": 5}
+    historical = record["historical_closure"]
+    assert historical["clinical_core_modules"] == len(closure) == 141
+    assert historical["predecessor_stage"] == a1.PREDECESSOR == "P2X-1A"
+    assert historical["predecessor_freeze_digest"] == a1.P2X1A_FREEZE_DIGEST == a1.p2x1a_digest()
+    assert historical["record"] == a1.CLOSURE_RECORD.relative_to(ROOT).as_posix()
+    assert (record["amendment"], record["parent"]) == (AMENDMENT.version_id, AMENDMENT.parent)
+    parameter = record["parameter"]
+    assert parameter["name"] == a1.NEW_PROFILE_FIELD and parameter["default"] is None
+    from clinical_core import derived as dv
+    assert getattr(dv.DEFAULT_PROFILE, parameter["name"]) is parameter["default"]
+    assert parameter["declared_only_with"] == "respiratory_quotient" and parameter["status"] == dv.PARAMETERS[
+        parameter["name"]][0]
+    assert parameter["name"] in record["equation"]["after"] and parameter["name"] not in record["equation"]["before"]
+    for pinned in ("25.249191654270817", "37.21648925248409"):
+        assert any(pinned in line for line in record["backward_compatibility"]["evidence"])
+
+
+def test_the_closure_freeze_digests_have_recorded_successor_values():
+    """``versions()`` lleva el digesto vivo de la guarda de cierre: su valor sobre el arbol enmendado queda registrado."""
+    from clinical_core import calibration, closure_guard as cg, decision_pack, lactate_slice, tone_domain
+    stated = _record()["successor_artifacts"]["closure_freeze_digests"]["digests"]
+    recorded = json.loads(a1.CLOSURE_RECORD.read_text(encoding="utf-8"))["freeze_digests"]
+    now = {"calibration": calibration.frozen_digest(), "closure_guard_P2X1A": cg.freeze_digest(),
+           "tone_domain_on_the_live_tree": tone_domain.freeze_digest(),
+           "lactate_slice": lactate_slice.slice_digest(), "decision_pack": decision_pack.pack_digest()}
+    assert sorted(stated) == sorted(recorded) == sorted(now)
+    for name, row in stated.items():
+        assert row["PHASE2_CLOSURE"] == recorded[name] and row["PHASE2_AMENDMENT_1"] == now[name]
+        assert row["unchanged"] is (recorded[name] == now[name])
+    assert [name for name, row in stated.items() if row["unchanged"]] == ["calibration"]
+    assert rs.versions()["closure_guard_digest"] == stated["closure_guard_P2X1A"]["PHASE2_AMENDMENT_1"]

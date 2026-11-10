@@ -29,6 +29,25 @@ import pytest
 CORE_CERTIFICATION_PREVIEW_FLAG = "MRS_CORE_CERTIFICATION_PREVIEW"
 
 
+def _banner() -> str:
+    wanted = os.environ.get(CORE_CERTIFICATION_PREVIEW_FLAG, "").strip()
+    if not wanted:
+        return f"core certification preview: plugin loaded, INACTIVE ({CORE_CERTIFICATION_PREVIEW_FLAG} is not set)"
+    return (f"core certification preview: ACTIVE for {wanted} -- a CANDIDATE status of that version reads as "
+            "CERTIFIED in unmarked tests; this run is NOT evidence that the real lineage accepts it")
+
+
+def pytest_report_header(config):
+    """Una corrida previsualizada lo dice: el plugin tambien puede cargarse por PYTEST_ADDOPTS o PYTEST_PLUGINS,
+    asi que no basta con mirar la linea de comandos para saber si estuvo activo."""
+    return _banner()
+
+
+def pytest_terminal_summary(terminalreporter):
+    """Y lo repite al final, que es lo unico que queda en el log de una corrida con ``-q``."""
+    terminalreporter.write_line(_banner())
+
+
 @pytest.fixture(autouse=True, scope="session")
 def _core_certification_preview():
     wanted = os.environ.get(CORE_CERTIFICATION_PREVIEW_FLAG, "").strip()
