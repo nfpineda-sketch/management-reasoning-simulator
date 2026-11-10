@@ -316,3 +316,11 @@ evidencia que la compuerta exige para dar por válido `CERTIFIED`.
 - La fracción no tiene valor docente aprobado. La región medida en P3-128 (`f ≤ 0,060621` con R = 0,8 declarado;
   sólo se identifica el cociente f/R) es una medición de la Fase 3, no una calibración.
 - La integración en `phase-3-runtime-integration` no está hecha: su diseño es `P3_INTEGRATE_AMEND1_DISENO.md`.
+
+## 12 · Integración en la Fase 3 (2026-11-10, posterior a este registro)
+
+El último punto de §11 describe el estado al certificar. Después, con autorización expresa, la enmienda se integró
+en `phase-3-runtime-integration`: promoción `0c230f88bbe4eac76b9b69524c2fc46b53a777be`, revert del revert
+`601452c`, merge `534aa506f6982ef4d27f2ff7f260df7329f53af0`, con el **mismo árbol** que la promoción. Este
+registro, su JSON y la certificación no cambian por ello. Lo que se midió sobre el runtime integrado está en
+`docs/PHASE3_MANAGEMENT_GENERALIZATION.md` (FD-P3-118 a FD-P3-128).

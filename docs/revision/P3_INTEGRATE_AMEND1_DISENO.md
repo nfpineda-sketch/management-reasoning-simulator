@@ -3,6 +3,11 @@
 **Sólo diseño. No se ejecuta sin autorización expresa.** Este documento vive en la rama
 `phase-2-amendment-1-respiratory-transmission`; `phase-3-runtime-integration` no se toca en este paquete.
 
+> **EJECUTADO el 2026-11-10, con autorización expresa (FD-P3-118, FD-P3-119).** Caso A: revert del revert
+> `601452c` y merge sin *fast-forward* `534aa50` de la promoción `0c230f8`; el árbol integrado es el mismo objeto
+> que el de `0c230f8`. Sin *force push* y sin PR. El texto de abajo queda como se escribió, en futuro, porque es
+> el diseño que se autorizó.
+
 ## 1 · De dónde se parte
 
 | Rama | Cabeza | Qué contiene |

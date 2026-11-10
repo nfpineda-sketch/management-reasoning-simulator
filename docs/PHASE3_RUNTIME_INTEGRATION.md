@@ -16,6 +16,15 @@ camino desde la salida en sombra hacia una conducta autoritativa es un bloqueo, 
 La Fase 2 es inmutable: ningún archivo de `clinical_core/` cambia en esta rama, y tres suites recalculan el
 digesto de cierre en cada corrida.
 
+> **Nota del 2026-11-10 (P3-INTEGRATE-AMEND1, FD-P3-119).** La frase anterior describe la rama hasta la
+> integración de la enmienda formal. Desde el merge `534aa50`, `clinical_core/` es aquí el sucesor
+> **certificado** `PHASE2_AMENDMENT_1` (142 fuentes, digesto `10b45ce2…`), no el núcleo del cierre. El cierre
+> histórico (`d2cca46`, `22b90a6f…`, 141 fuentes) no se reescribe: se **reconstruye** desde el núcleo vivo y la
+> compuerta exige que el núcleo activo sea un miembro certificado del linaje. Donde este documento dice más abajo
+> «el digesto de la Fase 2» o «las 141 fuentes congeladas», léase a partir de esa fecha «un miembro certificado
+> del linaje». La regla que sigue en pie: ningún paquete de la Fase 3 edita `clinical_core/`. Detalle:
+> `docs/revision/PHASE2_AMENDMENT_1.md` y `docs/PHASE3_MANAGEMENT_GENERALIZATION.md` §1.
+
 Un solo artefacto de la Fase 2 sí cambia, y no es fisiología: `test_phase2_closure.py`. Dos de las
 reclamaciones del registro de cierre son del repositorio entero —qué tocó P2X-3 y qué módulos de aplicación
 importan el paquete en sombra— y la prueba las leía del árbol de trabajo. El registro describe el commit de
