@@ -181,10 +181,28 @@ class RuntimeFamilyAdapter:
         raise NotImplementedError
 
     def interventions(self, mirrored: Sequence, state: Mapping | None = None) -> tuple:
-        """(contributors, gaps): only actions the engine already executed, each mapped once or declared."""
-        return (), [{"kind": event.kind, "order_id": event.order_id,
-                     "why": self.gaps_declared.get(event.kind, "no core intervention for this order type")}
-                    for event in mirrored if event.kind not in self.maps]
+        """(contributors, gaps): only actions the engine already executed, each mapped once or declared.
+
+        P3-141 corrected a silent drop here. An adapter that lists ``oxygen`` in ``maps`` and inherits this
+        method used to get NO contributor for it: the order was neither applied nor declared as a gap, so
+        three families (oedema, embolism, asthma) said oxygen was mapped while their shadow ignored it.
+        Oxygen is the one intervention every family maps the same way, through the common oxygenation path,
+        so it is built here; a kind in ``maps`` this method cannot build is declared, never dropped.
+        """
+        from clinical_core.interventions.oxygen import Oxygen
+        built, gaps = [], []
+        for event in mirrored:
+            if event.kind == "oxygen" and "oxygen" in self.maps:
+                built.append(Oxygen(event.order_id, event.minute, event.fio2_after))
+            elif event.kind in self.maps:
+                gaps.append({"kind": event.kind, "order_id": event.order_id,
+                             "why": f"{event.kind} is listed as mapped but this adapter builds no contributor "
+                                    "for it"})
+            else:
+                gaps.append({"kind": event.kind, "order_id": event.order_id,
+                             "why": self.gaps_declared.get(event.kind,
+                                                           "no core intervention for this order type")})
+        return tuple(built), gaps
 
 
 # -- the six certified families ------------------------------------------------------------------------------
@@ -387,14 +405,50 @@ class AcsIschaemiaAdapter(RuntimeFamilyAdapter):
         return tuple(built), gaps
 
 
+#: P3-141, DEVELOPMENT TEST REGION for the oedema family's decongestion rate (lung water removed per simulated
+#: minute once a decongestive treatment has begun). It is the family's OWN declared lung-water rate span
+#: (``edema_migration.PROGRESSION``), whose midpoint is the only decongestion rate the repository states
+#: (``edema_migration.DECONGESTION``, SYNTHETIC_ONLY). It is a software test region: not a dose, not a drug
+#: effect size, not approved, and not clinical truth. The three witnesses exist only to test with, and
+#: CENTER_REFERENCE is not a preferred value. See management_generalization_record.DECONGESTION_DECISION.
+EDEMA_DECONGESTION_WITNESSES = {"LOW": 0.0025, "CENTER_REFERENCE": 0.005, "HIGH": 0.01}
+EDEMA_DECONGESTION_REGION = (EDEMA_DECONGESTION_WITNESSES["LOW"], EDEMA_DECONGESTION_WITNESSES["HIGH"])
+
+
 class PulmonaryEdemaAdapter(RuntimeFamilyAdapter):
-    """Pulmonary oedema: the lung-water owner of P2P-1. Nitrate, diuresis and NIV stay treatment gaps."""
+    """Pulmonary oedema: the lung-water owner of P2P-1.
+
+    The REGISTERED adapter (``ADAPTERS``) is built with no decongestion rate: nitrate and diuresis stay
+    declared treatment gaps, exactly as before, because no rate is authored and the committed point invents
+    none. ``development(witness)`` returns a separate, offline adapter built with one witness of the
+    declared DEVELOPMENT TEST REGION; only that one maps the decongestive orders to the certified
+    ``DecongestiveTreatment``. NIV stays a gap in both.
+    """
 
     family = "pulmonary_edema"
-    version = "pulmonary_edema/P3-4"
+    version = "pulmonary_edema/P3-141"
     cases = ("pulmonary_edema_58m",)
     live = False
     maps = ("oxygen",)
+    #: The engine's action kinds that are a decongestive therapy.
+    DECONGESTIVE_ORDERS = ("diuretic", "nitroglycerin", "nitroglycerin_bolus")
+    #: The witness this adapter was built with (None: the registered adapter, no decongestion rate).
+    decongestion_witness: str | None = None
+
+    @classmethod
+    def development(cls, witness: str) -> "PulmonaryEdemaAdapter":
+        """An offline adapter carrying one witness of the decongestion DEVELOPMENT TEST REGION."""
+        if witness not in EDEMA_DECONGESTION_WITNESSES:
+            raise ValueError(f"unknown decongestion witness {witness!r}: {sorted(EDEMA_DECONGESTION_WITNESSES)}")
+        adapter = cls()
+        adapter.decongestion_witness = witness
+        adapter.maps = ("oxygen",) + cls.DECONGESTIVE_ORDERS
+        adapter.live = False
+        return adapter
+
+    @property
+    def decongestion_per_min(self) -> float:
+        return 0.0 if self.decongestion_witness is None else EDEMA_DECONGESTION_WITNESSES[self.decongestion_witness]
     #: Re-keyed in P3-108 to the engine's own action kinds: a gap declared under a key no event carries
     #: can never fire, so its declared reason never reached the record (the generic default did).
     gaps_declared = {"diuretic": "the decongestive writer is a construction parameter of EdemaCongestion, "
@@ -408,10 +462,17 @@ class PulmonaryEdemaAdapter(RuntimeFamilyAdapter):
     def snapshot(self, point: str = COMMITTED) -> ShadowParameterSnapshot:
         from clinical_core import edema_migration as em
         index = _point_index(point, em.PROGRESSION)
+        provenance = (f"clinical_core.edema_migration.PROGRESSION[{index}] = {em.PROGRESSION[index]}",
+                      f"clinical_core.edema_reference.anchors(point={point if point in POINTS else 'midpoint'!r})")
+        if self.decongestion_witness is None:
+            return ShadowParameterSnapshot(f"edema_{point}", self.family,
+                                           point if point in POINTS else COMMITTED, provenance)
         return ShadowParameterSnapshot(
-            f"edema_{point}", self.family, point if point in POINTS else COMMITTED,
-            (f"clinical_core.edema_migration.PROGRESSION[{index}] = {em.PROGRESSION[index]}",
-             f"clinical_core.edema_reference.anchors(point={point if point in POINTS else 'midpoint'!r})"))
+            f"edema_{point}_decongestion_{self.decongestion_witness.lower()}", self.family,
+            point if point in POINTS else COMMITTED,
+            provenance + (f"runtime_shadow_families.EDEMA_DECONGESTION_WITNESSES[{self.decongestion_witness!r}] = "
+                          f"{self.decongestion_per_min} per minute: DEVELOPMENT_TEST_REGION "
+                          f"{EDEMA_DECONGESTION_REGION}, a test witness, not a selection and not approved",))
 
     def anchors(self, case_id: str, point: str, state: Mapping | None = None):
         from clinical_core import edema_reference
@@ -423,14 +484,45 @@ class PulmonaryEdemaAdapter(RuntimeFamilyAdapter):
 
     def writers(self, case_id: str, point: str, state: Mapping | None = None) -> tuple:
         from clinical_core import edema_migration as em
-        return (em.writer(em.PROGRESSION[_point_index(point, em.PROGRESSION)]),)
+        return (em.writer(em.PROGRESSION[_point_index(point, em.PROGRESSION)], self.decongestion_per_min),)
+
+    def interventions(self, mirrored: Sequence, state: Mapping | None = None) -> tuple:
+        """Oxygen always; the decongestive treatment only on a development adapter.
+
+        ``DecongestiveTreatment`` is P2P-1's certified contributor: it publishes the moment the therapy begins
+        and writes NOTHING. The family writer hears it, stops progressing and removes lung water at its rate,
+        never below the arrival congestion; gas exchange, SpO2 and the rest follow in the common core. So
+        there is no write to SpO2 here, and oxygen never touches L. One therapy begins once: a second
+        decongestive order is the same treatment already running, recorded as such and not built twice.
+        """
+        from clinical_core.interventions.oxygen import Oxygen
+        from clinical_core.modules.pulmonary_edema import DecongestiveTreatment
+        built, gaps, begun = [], [], None
+        for event in sorted(mirrored, key=lambda item: (item.minute, item.order_id)):
+            if event.kind == "oxygen":
+                built.append(Oxygen(event.order_id, event.minute, event.fio2_after))
+            elif event.kind in self.DECONGESTIVE_ORDERS and self.decongestion_witness is not None:
+                if begun is None:
+                    begun = event
+                    # the engine's clock starts at 0 and a treatment begins at a minute >= 1
+                    built.append(DecongestiveTreatment(event.order_id, max(1, int(event.minute))))
+                else:
+                    gaps.append({"kind": event.kind, "order_id": event.order_id,
+                                 "why": f"decongestion already begun by {begun.order_id} at minute "
+                                        f"{begun.minute}: the family writer has one rate, so a second "
+                                        "decongestive order adds nothing in this model"})
+            else:
+                gaps.append({"kind": event.kind, "order_id": event.order_id,
+                             "why": self.gaps_declared.get(event.kind,
+                                                           "no core intervention for this order type")})
+        return tuple(built), gaps
 
 
 class PulmonaryEmbolismAdapter(RuntimeFamilyAdapter):
     """PE: obstruction on P, direct G and the zero-lung-water owner of P2Q-2. No treatment is modelled."""
 
     family = "pulmonary_embolism"
-    version = "pulmonary_embolism/P3-4"
+    version = "pulmonary_embolism/P3-141"
     cases = ("pulmonary_embolism_61m", "pulmonary_embolism_33f")
     live = False
     maps = ("oxygen",)
@@ -467,7 +559,7 @@ class AsthmaAdapter(RuntimeFamilyAdapter):
     """Asthma: the airway-obstruction writer of P2S-3. The bronchodilator is declared deferred upstream."""
 
     family = "asthma"
-    version = "asthma/P3-4"
+    version = "asthma/P3-141"
     cases = ("asthma_49m", "asthma_24f")
     live = False
     maps = ("oxygen",)
