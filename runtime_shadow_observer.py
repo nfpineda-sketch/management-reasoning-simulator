@@ -712,6 +712,7 @@ def review_entry(trace: Mapping) -> dict:
         effects[name] = first_effects(trace, name)
     return {
         "identity": shown["identity"], "generation": trace.get("generation"), "status": shown["status"],
+        "terminal_boundary": trace.get("terminal_boundary"),
         "integrity": shown["integrity"], "initial_state": _arrival_values(trace),
         "arrival_eligible": shown["arrival"]["eligible"],
         "actions": shown["actions"], "held_orders": list(trace.get("held_orders") or []),
@@ -794,6 +795,14 @@ def review_markdown(entries: Sequence) -> str:
                       for w in entry["witnesses"]]
         else:
             lines.append("This family runs no development region.")
+        boundary = entry.get("terminal_boundary") or {}
+        lines += ["", "### Terminal boundary", "",
+                  f"**{_md(boundary.get('state'))}** — {_md(boundary.get('why'))}",
+                  f"- legacy engine: terminal {_md((boundary.get('legacy') or {}).get('terminal'))}"
+                  f", minute {_md((boundary.get('legacy') or {}).get('minute'))}",
+                  f"- common-core run: pulse present {_md((boundary.get('core') or {}).get('pulse_present'))}; "
+                  + "; ".join(f"{_md(name)} {_md(value)}" for name, value in
+                              ((boundary.get('core') or {}).get('predicates') or {}).items())]
         lines += ["", "### Failures", ""] + ([f"- {_md(f.get('classification'))} at minute {_md(f.get('minute'))}: "
                                              f"{_md(f.get('message'))[:160]}" for f in entry["failures"]] or ["none"])
         lines += ["", "### Unresolved synthetic parameters", ""] + [

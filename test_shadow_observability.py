@@ -585,8 +585,9 @@ def test_p3o_148h_nothing_resident_facing_reads_the_store_or_the_observer():
     assert source.count("os.replace(pending, path)") == 1 and source.count("os.replace(") == 1
     assert source.count("if path.resolve().parent != directory.resolve():") == 1
     session = (ROOT / "runtime_shadow.py").read_text(encoding="utf-8")
-    assert session.count("runtime_shadow_store") == 3 and session.count("self._persist()") == 1
-    assert session.count("session._persist()") == 1                              # un turno, o un rechazo al abrir
+    # un turno de ordenes, una actividad de informacion (P3-167), o un rechazo al abrir: nadie mas persiste
+    assert session.count("runtime_shadow_store") == 3 and session.count("self._persist()") == 2
+    assert session.count("session._persist()") == 1
 
 
 # -- P3-149: el observador docente --------------------------------------------------------------------------------

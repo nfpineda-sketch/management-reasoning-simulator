@@ -874,7 +874,13 @@ def spend_clinical_time(minutes, *, activity, request, response=""):
 
     before = management_state_snapshot(state)
     started = int(state.get("sim_time", 0))
+    _shadow = _runtime_shadow_session()
+    _shadow_before = _shadow.capture(state) if _shadow is not None else None
     result = advance_clinical_time(state, minutes, label=activity)
+    if _shadow is not None:
+        # Phase 3 (P3-167): observation only, after the engine let the time pass. It reads the engine's own
+        # receipts of the interval (a held order it ran) and never the question or the examination.
+        _shadow.observe_time(_shadow_before, st.session_state.state, result)
     after = management_state_snapshot(st.session_state.state)
     for summary in result.get("action_summaries", []) or []:
         label = str(summary.get("label") or "")

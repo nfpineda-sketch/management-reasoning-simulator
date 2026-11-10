@@ -1568,6 +1568,83 @@ def action_dispositions(adapter: RuntimeFamilyAdapter, mirrored: Sequence, state
     return rows
 
 
+# -- A2-006: the terminal boundary between the two engines --------------------------------------------------------
+
+TERMINAL_AGREEMENT = "TERMINAL_AGREEMENT"
+LEGACY_TERMINAL_CORE_ACTIVE = "LEGACY_TERMINAL_CORE_ACTIVE"
+CORE_TERMINAL_LEGACY_ACTIVE = "CORE_TERMINAL_LEGACY_ACTIVE"
+BOTH_ACTIVE = "BOTH_ACTIVE"
+TERMINAL_NOT_COMPARABLE = "TERMINAL_NOT_COMPARABLE"
+TERMINAL_BOUNDARY_STATES = (TERMINAL_AGREEMENT, LEGACY_TERMINAL_CORE_ACTIVE, CORE_TERMINAL_LEGACY_ACTIVE,
+                            BOTH_ACTIVE, TERMINAL_NOT_COMPARABLE)
+#: A physiological predicate the core's own reading settles, or the fact that nothing declared settles it.
+PREDICATE_TRUE, PREDICATE_NOT_DETERMINED = "TRUE", "NOT_DETERMINED"
+TERMINAL_WHY = {
+    TERMINAL_AGREEMENT: "both engines hold a terminal patient",
+    LEGACY_TERMINAL_CORE_ACTIVE: "the legacy engine ended the patient by its own family rule; the common-core "
+                                 "run has met no terminal rule of its own (whether a collapse rule is declared "
+                                 "is stated beside this; the core has no respiratory-failure state), so it is "
+                                 "still active. A declared boundary, not an agreement",
+    CORE_TERMINAL_LEGACY_ACTIVE: "the common-core run lost its pulse while the legacy patient is active",
+    BOTH_ACTIVE: "neither engine holds a terminal patient",
+    TERMINAL_NOT_COMPARABLE: "there is no common-core minute, or no legacy reading, to compare",
+}
+
+
+def terminal_boundary(legacy: Mapping | None, channels: Mapping | None, collapse_rule_declared) -> dict:
+    """Where the two engines stand on terminality at the last observed minute, and why. Decides nothing.
+
+    The legacy side is the engine's own record of an arrest or a fibrillation. The core side is the run's
+    own reading: a pulse or none. The three physiological predicates say only what that reading settles
+    WITHOUT a threshold -- no pulse is a circulatory arrest, a respiratory rate of exactly zero with a pulse
+    is absent ventilation, the top consciousness level is severe impairment -- and ``NOT_DETERMINED`` everywhere a magnitude nobody has approved would be needed. It is
+    what makes "terminal in one engine, active in the other" an explicit state of the trace instead of
+    something a reader has to notice.
+    """
+    known = isinstance(legacy, Mapping)
+    legacy_minutes = []
+    for name in ("arrest_at", "vf_at"):
+        value = legacy.get(name) if known else None
+        if value is None:
+            continue
+        if isinstance(value, bool) or not isinstance(value, int):
+            known, legacy_minutes = False, []           # a legacy record that is not minutes is not a reading
+            break
+        legacy_minutes.append(value)
+    pulse = None if not isinstance(channels, Mapping) else channels.get("pulse_present")
+    pulse = pulse if isinstance(pulse, bool) else None
+    if not known or pulse is None:
+        state = TERMINAL_NOT_COMPARABLE
+    elif legacy_minutes and pulse is False:
+        state = TERMINAL_AGREEMENT
+    elif legacy_minutes:
+        state = LEGACY_TERMINAL_CORE_ACTIVE
+    elif pulse is False:
+        state = CORE_TERMINAL_LEGACY_ACTIVE
+    else:
+        state = BOTH_ACTIVE
+    rate = None if not isinstance(channels, Mapping) else channels.get("respiratory_rate")
+    level = None if not isinstance(channels, Mapping) else channels.get("consciousness_level")
+    no_breath = pulse is True and isinstance(rate, (int, float)) and not isinstance(rate, bool) and rate == 0
+    top_level = pulse is not None and isinstance(level, int) and not isinstance(level, bool) and level == 3
+    return {
+        "state": state, "why": TERMINAL_WHY[state],
+        "legacy": {"terminal": bool(legacy_minutes) if known else None,
+                   "minute": min(legacy_minutes) if legacy_minutes else None,
+                   "arrest_at": (legacy or {}).get("arrest_at") if known else None,
+                   "vf_at": (legacy or {}).get("vf_at") if known else None},
+        "core": {"pulse_present": pulse,
+                 "collapse_rule_declared": None if collapse_rule_declared is None else bool(collapse_rule_declared),
+                 "predicates": {
+                     "circulatory_arrest": PREDICATE_TRUE if pulse is False else PREDICATE_NOT_DETERMINED,
+                     "respiratory_failure": PREDICATE_TRUE if no_breath else PREDICATE_NOT_DETERMINED,
+                     "severe_consciousness_impairment": (PREDICATE_TRUE if top_level
+                                                         else PREDICATE_NOT_DETERMINED)},
+                 "consciousness_source": "ADOPTED_LEGACY_LADDER_NOT_A_MECHANISM"},
+        "decides_the_encounter": "legacy",
+    }
+
+
 def held_rows(held: Sequence, rows: Sequence) -> list:
     """The held orders in the timeline. A held order the engine ran is already a mirrored row, dated at the
     minute it REALLY ran: that row is told when the order was placed and what it waited for. One the engine

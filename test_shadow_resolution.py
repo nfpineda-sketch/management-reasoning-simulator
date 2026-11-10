@@ -293,10 +293,10 @@ def test_p3r_158e_an_order_the_engine_runs_during_an_information_activity_is_dec
     assert not [item for item in session.mirrored if item.kind == "naloxone"]
     row = _rows(trace, "naloxone")
     assert [(r["disposition"], r["effective_minute"]) for r in row] == [(fam.NOT_MIRRORED, None)]
-    assert "information activity" in row[0]["why"]
+    assert "did not observe" in row[0]["why"]
     # nunca COMPLETE: a la corrida de sombra le falta un tratamiento que el paciente si recibio
     assert trace["status"]["state"] == fam.COMPLETE_WITH_UNSUPPORTED_ACTIONS
-    assert any("information activity" in item["detail"] for item in trace["status"]["items"])
+    assert any("did not observe" in item["detail"] for item in trace["status"]["items"])
     assert store.verify(trace)["verified"]
     assert "no cancellation" in rec.HELD_ORDERS["engine_facts"][0] and "NOT_MIRRORED" in rec.HELD_ORDERS[
         "unobserved_release"]

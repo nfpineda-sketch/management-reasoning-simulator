@@ -157,8 +157,8 @@ HELD_ORDER_EVENTS = (ORDER_PLACED, ORDER_HELD, ORDER_RELEASED, ORDER_EXECUTED, O
 ANY_PENDING = "any_pending"
 #: A held order that left the engine's list with no receipt in an observed turn. The engine cancels nothing,
 #: so it ran -- during an information activity, whose clinical time no shadow turn observes.
-UNOBSERVED_RELEASE = ("the engine ran this held order outside an observed order turn (while clinical time "
-                      "passed in an information activity): no receipt reached the shadow, so it is not mirrored")
+UNOBSERVED_RELEASE = ("the engine ran this held order in an interval the shadow did not observe: no receipt "
+                      "reached the shadow, so it is not mirrored")
 #: P3-148: the name a trace the store refused or could not write is recorded under.
 PERSISTENCE_FAILED = "TraceNotPersisted"
 
@@ -344,6 +344,9 @@ class ShadowSession:
     endoscopy_at: int | None = None
     #: P3-158: every order the engine was asked to hold, with what became of it (see ``HELD_ORDER_EVENTS``).
     held: list = field(default_factory=list)
+    #: A2-006: what the legacy engine's own state said of a terminal event the last time it was observed --
+    #: the minute of its arrest and of its fibrillation, or None. Read, never decided here.
+    legacy_terminal: Mapping[str, Any] | None = None
     _released_seen: set = field(default_factory=set)
     turns: int = 0
     _runner_failures: int = 0
@@ -497,6 +500,46 @@ class ShadowSession:
         if not self.left_arrival:
             # Read once per turn, and only until it turns true: after that an arrival is another encounter.
             self.left_arrival = not arrival_untouched(after)
+        self.legacy_terminal = legacy_terminal_of(after)
+        self._persist()
+
+    def observe_time(self, before: Mapping | None, after: Mapping, result: Mapping | None = None) -> None:
+        """P3-167: clinical time the engine let pass OUTSIDE an order turn (a question, an examination).
+
+        Nothing was ordered, so nothing is mirrored from the activity itself: its content is never read.
+        The one thing that can happen to the mirror here is that the engine RAN an order it was holding,
+        because the result it waited for came back during the activity. The engine says so in its own
+        receipts of that interval, and that is all this reads: each released order is mirrored once, at the
+        minute the engine ran it, by the same rule as a release inside an order turn. Then the shadow
+        advances to the engine's minute. Never raises; a failure is recorded here.
+        """
+        self.turns += 1
+        try:
+            if self.runner is not None and self.runner.anchors is not None:
+                seen_after = deepcopy(dict(after))
+                receipts = [dict(item) for item in ((result or {}).get("action_summaries") or [])
+                            if isinstance(item, Mapping) and item.get("released_after") is not None]
+                if receipts and before is None:
+                    self._gap({"why": "the state before the activity could not be copied, so the held orders "
+                                      "the engine ran in it were not mirrored", "kind": None, "order_id": None})
+                elif receipts:
+                    fio2 = float((seen_after.get("family_state") or {}).get("oxygen_fio2", 0.21))
+                    self._release(receipts, before, seen_after, fio2)
+                self._settle_held(seen_after)
+                endoscopy = (seen_after.get("family_state") or {}).get("endoscopy_at")
+                if endoscopy is not None:
+                    self.endoscopy_at = int(endoscopy)
+                self._advance(int(seen_after.get("sim_time", 0) or 0), seen_after)
+        except Exception as error:
+            minute = 0
+            try:
+                minute = int(after.get("sim_time", 0) or 0)
+            except Exception:
+                pass
+            self.failures.append(_failure(minute, "observe_time", error, UNEXPECTED))
+        if not self.left_arrival:
+            self.left_arrival = not arrival_untouched(after)
+        self.legacy_terminal = legacy_terminal_of(after)
         self._persist()
 
     def _persist(self) -> None:
@@ -630,8 +673,9 @@ class ShadowSession:
         for index, receipt in enumerate(released):
             kind, study = str(receipt.get("type") or ""), str(receipt.get("released_after"))
             # the same receipt of the same turn, looked at again: it was already settled, and adds nothing
-            told = (int(before.get("sim_time", 0) or 0), int(after.get("sim_time", 0) or 0), index, kind, study,
-                    receipt.get("held_from_min"))
+            # ...told apart from ANOTHER turn of the same minute by what the engine state was around it: two
+            # zero-minute turns that each release an identical order are two releases, not one seen twice
+            told = (_state_mark(before), _state_mark(after), index, kind, study, receipt.get("held_from_min"))
             if told in self._released_seen:
                 continue
             self._released_seen.add(told)
@@ -1038,6 +1082,30 @@ def _encounter_id(state: Mapping) -> str:
     except Exception:
         return ""
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()
+
+
+def _state_mark(state) -> str:
+    """A digest of an engine state as the session saw it: what tells one observed turn from another."""
+    import hashlib
+    try:
+        blob = json.dumps(state, sort_keys=True, default=str)
+    except Exception:
+        blob = repr(state)
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()
+
+
+def legacy_terminal_of(state) -> dict | None:
+    """What the legacy engine's state records of a terminal event: the minute of its arrest and of its
+    fibrillation, each None while it has not happened. None when the state cannot be read. Never raises."""
+    try:
+        family_state = dict(state).get("family_state") or {}
+        found = {}
+        for name in ("arrest_at", "vf_at"):
+            value = family_state.get(name)
+            found[name] = None if value is None else int(value)
+        return found
+    except Exception:
+        return None
 
 
 def generation_key(value) -> str | None:

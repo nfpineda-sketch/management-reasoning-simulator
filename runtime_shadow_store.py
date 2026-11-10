@@ -176,6 +176,22 @@ def _unreadable_run(role: str, witness: str | None, error: Exception) -> dict:
             "artifact_error": f"{type(error).__name__}"}
 
 
+def _last_channels(runs: Mapping) -> dict | None:
+    minutes = ((runs.get(SESSION_RUN_NAME) or {}).get("minutes") or []) if isinstance(runs, Mapping) else []
+    last = minutes[-1] if minutes and isinstance(minutes[-1], Mapping) else None
+    return None if last is None or not isinstance(last.get("channels"), Mapping) else dict(last["channels"])
+
+
+def _terminal_boundary(session, runs: Mapping) -> dict:
+    declared = None
+    try:
+        profile = None if session.runner is None else session.runner.profile
+        declared = None if profile is None else profile.collapse_output_threshold is not None
+    except Exception:
+        declared = None
+    return fam.terminal_boundary(session.legacy_terminal, _last_channels(runs), declared)
+
+
 def trace_of(session, previous: str | None = None) -> dict:
     """The trace of a live shadow session, as it stands now. Pure: it reads the session and changes nothing.
 
@@ -225,6 +241,7 @@ def trace_of(session, previous: str | None = None) -> dict:
         "family": session.family, "case_id": session.case_id,
         "encounter_id": session.encounter_id, "scenario_id": session.scenario_id,
         "generation": session.generation,
+        "terminal_boundary": _terminal_boundary(session, runs),
         "previous_trace_id": previous,
         "lineage": _lineage(),
         "arrival": {"fingerprint": session.encounter_id,
@@ -510,6 +527,28 @@ def _inconsistencies(body: Mapping) -> list:
     family = str(body.get("family") or "")
     session_minutes = body.get("session_minutes")
     problems.extend(_held_inconsistencies(body))
+    boundary = body.get("terminal_boundary")
+    if boundary is not None:
+        # The boundary is a reading of the trace's own last minute and of the legacy record it carries. It is
+        # recomputed here, so its state, its reason and its predicates cannot be edited apart from its two
+        # sides; and a legacy arrest the run itself recorded as a pulse divergence cannot be erased from it.
+        # What stays beyond self-consistency, declared: a legacy record rewritten whole, or the key removed,
+        # with nothing else in the trace to contradict it (verify is not a signature), and an edit of the
+        # last minute's own channels, which only the replay sees.
+        again = None
+        if isinstance(boundary, dict) and isinstance(boundary.get("legacy"), dict) and isinstance(
+                boundary.get("core"), dict):
+            legacy = boundary["legacy"] if boundary["legacy"].get("terminal") is not None else None
+            again = fam.terminal_boundary(legacy, _last_channels(runs),
+                                          boundary["core"].get("collapse_rule_declared"))
+        if again != boundary:
+            problems.append("the terminal boundary is not what the trace's own last minute and legacy record give")
+        elif (boundary["state"] in (fam.BOTH_ACTIVE, fam.TERMINAL_NOT_COMPARABLE)
+              and boundary["core"].get("pulse_present") is True
+              and any(isinstance(item, dict) and item.get("variable") == "pulse_present"
+                      and item.get("status") == rs.SAFETY_CRITICAL for item in (body.get("divergences") or []))):
+            problems.append("the run recorded a pulse divergence with the legacy engine, and the terminal "
+                            "boundary says neither engine is terminal")
     adapter = fam.adapter_for(family)
     declared = [] if adapter is None or not runs else list(adapter.region_witnesses())
     if list(body.get("expected_witnesses") or []) != declared:
