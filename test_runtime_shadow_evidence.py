@@ -263,9 +263,12 @@ def test_u14_the_replay_artifact_carries_every_identity_it_promises(scenarios):
 def test_u15_the_layer_digest_is_the_identity_of_the_code_that_ran():
     first = rs.layer_digest()
     assert first == rs.layer_digest() and len(first) == 64
+    # P3-148/P3-149: the shadow research trace store and its faculty observer joined the layer, so the
+    # digest covers them too. The set stays pinned by name.
     assert set(rs.LAYER_SOURCES) == {"runtime_shadow.py", "runtime_shadow_families.py",
                                      "runtime_authority_store.py",
-                                     "runtime_shadow_evidence.py", "runtime_authority.py"}
+                                     "runtime_shadow_evidence.py", "runtime_authority.py",
+                                     "runtime_shadow_store.py", "runtime_shadow_observer.py"}
     for name in rs.LAYER_SOURCES:
         assert (ROOT / name).exists(), name
 
@@ -665,7 +668,14 @@ def test_v2_a_session_never_opens_in_the_middle_of_an_encounter():
         encounter = pilot_acceptance.Encounter(CASE)
         encounter.order(TURNS[0])
     assert encounter.shadow is None and int(encounter.state["sim_time"]) > 0
-    assert rs.ShadowSession.start(encounter.state, environ={rs.FLAG: rs.MODE_SHADOW_COMPARE}) is None
+    # P3-147: the refusal used to be silent (no session at all). It is now a session that RUNS NOTHING and
+    # says why, so a faculty reader can see that this encounter was legacy-only. What the test protects --
+    # no run ever opens on a patient time has already passed for -- is protected, and now visibly.
+    refused = rs.ShadowSession.start(encounter.state, environ={rs.FLAG: rs.MODE_SHADOW_COMPARE})
+    assert refused is not None and refused.runner is None and refused.ensemble is None
+    assert [failure.exception for failure in refused.failures] == [rs.ARRIVAL_REJECTED]
+    assert refused.eligibility["conditions"]["clock_at_arrival"] is False
+    assert refused.record()["minutes"] == [] and refused.record()["replay_input"] is None
     fresh = {"engine_family": "gi_bleed", "sim_time": 0}
     assert rs.ShadowSession.start(fresh, environ={rs.FLAG: rs.MODE_SHADOW_COMPARE}) is not None
 

@@ -159,14 +159,15 @@ def test_p3l_139c_a_live_arrival_that_is_not_the_authored_case_is_refused_and_sa
     differences = fam.ADAPTERS["opioid"].arrival_identity(opioid_reference.anchors(CASE), state)
     assert [name for name, _, _ in differences] == ["observable.spo2"]
     session = rs.ShadowSession.start(state, environ=ON)
-    assert session is not None and session.runner is not None and session.runner.anchors is None
-    assert session.ensemble is None
+    # P3-147: el monitor alterado lo rechaza ya la regla COMPARTIDA de llegada, antes de abrir ningun run
+    assert session is not None and session.runner is None and session.ensemble is None
+    assert session.eligibility["conditions"]["monitor_is_the_authored_arrival"] is False
     # el fallo esta en el REGISTRO de la sesion (antes de este ciclo se quedaba en el runner)
     record = session.record()
     assert record["minutes"] == [] and len(record["failures"]) == 1
     failure = record["failures"][0]
-    assert failure["exception"] == "ArrivalIdentityError" and failure["classification"] == rs.MAPPING_GAP
-    assert "observable.spo2 live 88 / certified 80" in failure["message"]
+    assert failure["exception"] == rs.ARRIVAL_REJECTED and failure["classification"] == rs.MAPPING_GAP
+    assert "observable.spo2 live 88 / arrival 80" in failure["message"]
     # observar un turno despues no levanta nada ni inventa minutos
     session.observe(state, {**state, "sim_time": 5}, {}, {"executed": True, "action_summaries": []}, [], "t0")
     assert session.record()["minutes"] == []
@@ -194,13 +195,14 @@ def test_p3l_139d_every_required_runtime_input_has_a_legitimate_source():
 def _refused(state) -> str:
     """Abre una sesion sobre ``state`` con la bandera puesta y devuelve el mensaje del rechazo ('' si corre)."""
     session = rs.ShadowSession.start(state, environ=ON)
-    assert session is not None and session.runner is not None
-    if session.runner.anchors is not None:
+    assert session is not None
+    if session.runner is not None and session.runner.anchors is not None:
         return ""
     assert session.ensemble is None
-    assert [failure.exception for failure in session.failures] == ["ArrivalIdentityError"]
+    # P3-147: lo generico lo rechaza la regla compartida; lo propio de la familia, su adaptador
+    assert [failure.exception for failure in session.failures] in ([rs.ARRIVAL_REJECTED], ["ArrivalIdentityError"])
     assert session.record()["minutes"] == []
-    return session.failures[0].message
+    return f"{session.failures[0].exception}: {session.failures[0].message}"
 
 
 def test_p3l_139e_a_patient_already_treated_in_a_zero_minute_turn_is_not_an_arrival():
@@ -210,10 +212,14 @@ def test_p3l_139e_a_patient_already_treated_in_a_zero_minute_turn_is_not_an_arri
         encounter = acceptance.Encounter(CASE)
         entry = encounter.order("Give midazolam 2 mg IV.")
     assert entry["executed"] is True and encounter.minute == 0
-    assert encounter.shadow.is_for(encounter.state) is False, "la pagina soltaria esta sesion y abriria otra"
+    # P3-147: la pagina ya NO suelta esta sesion (un turno de cero minutos no crea una llegada nueva)...
+    assert encounter.shadow.is_for(encounter.state) is True and encounter.shadow.left_arrival is True
     assert encounter.state["observable"]["sbp"] != acceptance.Encounter(CASE).state["observable"]["sbp"]
+    # ...y si alguien intentara abrir otra sobre este paciente, se rechaza
     why = _refused(encounter.state)
-    assert "observable.sbp" in why and "family_state." in why
+    assert why.startswith(rs.ARRIVAL_REJECTED) and "family_state." in why
+    names = {name for name, _, _ in rs.arrival_eligibility(encounter.state)["differences"]}
+    assert "observable.sbp" in names and "family_state.sedation_bp_drop" in names
     # y un paciente intacto, jugado igual, si corre
     assert _refused(acceptance.Encounter(CASE).state) == ""
 
@@ -242,7 +248,11 @@ def test_p3l_139f_every_way_the_live_patient_can_differ_from_the_authored_arriva
         state["family_state"]["elapsed"] = 7
     elif label == "another_case":
         state["encounter_spec"]["variant_id"] = "opioid_67f"
-    assert _refused(state) != "", label
+    why = _refused(state)
+    assert why != "", label
+    # las dos capas: la regla compartida para lo que cualquier familia comprueba, el adaptador para lo suyo
+    shared = label in ("monitor", "engine_treatment", "engine_oxygen", "clock")
+    assert why.startswith(rs.ARRIVAL_REJECTED if shared else "ArrivalIdentityError"), (label, why[:80])
 
 
 def test_p3l_139g_a_state_the_check_cannot_read_is_refused_by_name_and_never_raises():

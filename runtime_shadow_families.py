@@ -180,6 +180,13 @@ class RuntimeFamilyAdapter:
     def writers(self, case_id: str, point: str, state: Mapping | None = None) -> tuple:
         raise NotImplementedError
 
+    def arrival_identity(self, anchors, state: Mapping) -> list:
+        """The family's OWN certified arrival identity requirements, beyond the shared ARRIVAL_ELIGIBLE rule
+        (``runtime_shadow.arrival_eligibility``): [(name, live, certified)] for each difference. None by
+        default: a family whose certified mapping reads the live state (GI) needs nothing more than the
+        shared rule. A family whose mapping reads the authored case must prove the live case is that one."""
+        return []
+
     def region_witnesses(self) -> dict:
         """Name -> a development adapter for each witness of a declared DEVELOPMENT TEST REGION this family
         runs LIVE as an ensemble (P3-140). Empty for a family that declares none, which is every family but
@@ -510,8 +517,12 @@ class PulmonaryEdemaAdapter(RuntimeFamilyAdapter):
             elif event.kind in self.DECONGESTIVE_ORDERS and self.decongestion_witness is not None:
                 if begun is None:
                     begun = event
-                    # the engine's clock starts at 0 and a treatment begins at a minute >= 1
-                    built.append(DecongestiveTreatment(event.order_id, max(1, int(event.minute))))
+                    # P3-152: an order the engine executed at minute m is first present in the state of
+                    # minute m + 1 -- the layer's one timing rule, the same as oxygen above and as the live
+                    # opioid path. The treatment acts in the minute it begins, so it begins one minute after
+                    # the order. (Until P3-152 this adapter dated it at the order's own minute, one minute
+                    # earlier than every other mapped order; the magnitude region is untouched.)
+                    built.append(DecongestiveTreatment(event.order_id, int(event.minute) + 1))
                 else:
                     gaps.append({"kind": event.kind, "order_id": event.order_id,
                                  "why": f"decongestion already begun by {begun.order_id} at minute "
@@ -731,20 +742,21 @@ class OpioidAdapter(RuntimeFamilyAdapter):
 
     @staticmethod
     def arrival_identity(anchors, state: Mapping) -> list:
-        """Whether the live state IS the untouched authored arrival: [(name, live, certified)] for every
-        difference, empty when it is.
+        """Whether the live state IS the untouched authored arrival the certified mapping reads:
+        [(name, live, certified)] for every difference, empty when it is.
 
-        Three questions, and a live run needs all three answered yes (P3-141, hardened by the independent
-        review, which found a patient already treated in a zero-minute turn passing the first version):
+        Classified by the faculty (2026-11-10) as a LIVE_SHADOW_ELIGIBILITY_GUARD, not as new clinical
+        mapping semantics: it transforms and infers nothing, and only permits the existing certified P2U-1
+        mapping while the runtime state still is the authored arrival. Two layers:
 
-        - the CASE: every authored value the certified mapping reads is the same in the live state's own
-          case as in the bank case the mapping was built from;
-        - the ARRIVAL AS SHOWN: the live monitor shows exactly those authored values;
-        - NOTHING YET: the clock is at 0, nothing has been given, and the engine's own state for this
-          patient is what a fresh initialization of this same case gives, field by field.
+        - the SHARED rule, the same for every live family (``runtime_shadow.arrival_eligibility``, P3-147):
+          the clock at 0, the engine's state a fresh arrival's field by field, the monitor showing the
+          authored arrival, nothing administered, nothing on the diagnostic record;
+        - this family's OWN requirement: its mapping reads the BANK case, so every authored value it reads
+          must be the same in the live state's own case, and what it takes from the engine's state must
+          equal the anchors.
 
-        A comparison and nothing else: it derives no value, selects no parameter and never repairs a
-        difference. Everything is read on copies, through the engine's own initializer.
+        A comparison and nothing else. Everything is read on copies, through the engine's own initializer.
         """
         from clinical_core import legacy_adapter, opioid_reference
         import family_engine
@@ -762,9 +774,10 @@ class OpioidAdapter(RuntimeFamilyAdapter):
         source = legacy_adapter._initialized(state)
         case_id = str(legacy_adapter.engine_case_id(source))
         compare("case_id", case_id, str(anchors.case_id))
-        compare("sim_time", int(source.get("sim_time", 0) or 0), 0)
         if case_id != str(anchors.case_id):
             return differences
+        # the shared rule first: one implementation, the one the session itself applies to every family
+        differences.extend(rs.arrival_eligibility(state)["differences"])
         # the case: the live state's own copy of it against the bank case the certified mapping read
         live_case, certified = family_engine._case(source), opioid_reference.truth(case_id)
         for item in OpioidAdapter.AUTHORED_ITEMS:
@@ -775,22 +788,8 @@ class OpioidAdapter(RuntimeFamilyAdapter):
             except (KeyError, TypeError):
                 value = None
             compare(f"case.{item}", value, certified[item])
-        # the arrival as shown: the monitor, not only the engine's stored baseline
-        shown = source.get("observable") or {}
-        for item, key in OpioidAdapter.SHOWN_ITEMS.items():
-            compare(f"observable.{key}", shown.get(key), certified[item])
-        # nothing yet: the engine's state for this patient is a fresh arrival's, field by field
-        fresh = deepcopy(dict(state))
-        fresh.pop("family_state", None)
-        family_engine._initialize(fresh)
-        live_state, fresh_state = source.get("family_state") or {}, fresh.get("family_state") or {}
-        for key in sorted(set(live_state) | set(fresh_state)):
-            if live_state.get(key) != fresh_state.get(key):
-                differences.append((f"family_state.{key}", live_state.get(key), fresh_state.get(key)))
-        given = (source.get("treatments") or {}).get("administered_medications") or []
-        if given:
-            differences.append(("treatments.administered_medications", len(given), 0))
-        # and what the mapping takes from that engine state, against the anchors themselves
+        # and what the mapping takes from the engine's state, against the anchors themselves
+        live_state = source.get("family_state") or {}
         compare("lactate", live_state.get("lactate"), anchors.lactate)
         compare("hb", live_state.get("hemoglobin"), anchors.hb)
         compare("fio2", live_state.get("oxygen_fio2"), anchors.fio2)
@@ -1352,8 +1351,14 @@ class RegionEnsemble:
         """Every witness to the same minute, on the same mirrored actions. Never raises: a witness that
         cannot run records why and stops; the others, and the encounter, go on."""
         for runner in self.runners.values():
-            runner.mirror(mirrored)
-            runner.advance(minute, state=state)
+            try:
+                runner.mirror(mirrored)
+                runner.advance(minute, state=state)
+            except Exception as error:
+                # P3-150: ``advance`` guards the core run itself; anything else that raises is THIS witness's
+                # failure and nobody else's. Before this guard it left the loop, so the witnesses after it
+                # did not run that turn and the failure was recorded against the session, not the witness.
+                runner.failures.append(rs._failure(int(minute), "advance", error, UNEXPECTED))
 
     def new_failures(self) -> list:
         """The failures since the last call, each naming its witness. Nothing is repaired or replaced."""
@@ -1462,6 +1467,306 @@ class RegionEnsemble:
 
     def digests(self) -> dict:
         return {name: runner.digests() for name, runner in self.runners.items()}
+
+
+# -- P3-148 to P3-150: what a faculty reader is shown of a shadow session --------------------------------------
+
+#: What became of one action the engine executed, as the shadow sees it. Every mirrored action has exactly
+#: one; UNACCOUNTED is the layer's own detector of a silent drop -- a supported action that produced neither
+#: a contributor nor a declared gap -- and is reported as an internal error, never ignored.
+BUILT = "BUILT"
+SKIPPED_NO_PHYSIOLOGY = "SKIPPED_NO_PHYSIOLOGY"
+DECLARED_GAP = "DECLARED_GAP"
+APPLIED_AS_A_STOP = "APPLIED_AS_A_STOP"
+UNACCOUNTED = "UNACCOUNTED"
+#: Two rows that are not mirrored actions, kept in the same timeline so that nothing the run carries, and
+#: nothing it does not, is missing from it. FROM_ENGINE_STATE: a contributor the mapping built from the
+#: engine's own state and not from an order (GI haemostasis, read from when the engine performed it).
+#: NOT_MIRRORED: an order the session did not mirror at all -- one the engine holds until a result and may
+#: execute later, or one whose receipt could not be placed. The shadow run does NOT carry it, and says so.
+FROM_ENGINE_STATE = "FROM_ENGINE_STATE"
+NOT_MIRRORED = "NOT_MIRRORED"
+DISPOSITIONS = (BUILT, SKIPPED_NO_PHYSIOLOGY, DECLARED_GAP, APPLIED_AS_A_STOP, UNACCOUNTED, FROM_ENGINE_STATE,
+                NOT_MIRRORED)
+#: The dispositions of a MIRRORED action. Every mirrored action has exactly one of these.
+MIRRORED_DISPOSITIONS = DISPOSITIONS[:5]
+
+
+def action_dispositions(adapter: RuntimeFamilyAdapter, mirrored: Sequence, state: Mapping | None = None) -> list:
+    """One row per mirrored action: its order minute, what the mapping did with it, and when it takes effect.
+
+    ``effective_minute`` is the first shadow minute whose state can carry the action: the minute after the
+    engine executed it (or after its delivery starts, where the engine's own receipt says it starts later).
+    It is None for an action that builds nothing. Nothing here decides anything: the mapping is the
+    adapter's, called once, and this only reads what it returned.
+    """
+    from clinical_core import legacy_adapter
+    try:
+        built, gaps = adapter.interventions(list(mirrored), state)
+    except Exception as error:
+        return [{"shadow_order_id": event.order_id, "order_minute": int(event.minute), "kind": event.kind,
+                 "order_id": event.ledger_order_id, "submission_id": event.submission_id,
+                 "disposition": UNACCOUNTED, "effective_minute": None,
+                 "why": f"the mapping could not be evaluated: {type(error).__name__}"} for event in mirrored]
+    built_ids = {str(item.id) for item in built if hasattr(item, "id")}
+    gap_of = {str(gap.get("order_id")): str(gap.get("why") or "") for gap in gaps}
+    reversal = next((type(item).__name__ for item in built if type(item).__name__ == "NaloxoneReversal"), None)
+    first_reversal = next((event.order_id for event in sorted(mirrored, key=lambda item: item.minute)
+                           if event.kind == "naloxone"), None)
+    rows = []
+    for event in mirrored:
+        why, disposition, effective = "", UNACCOUNTED, None
+        receipt = dict(event.receipt or {})
+        begins = receipt.get("delivery_starts_at_min")
+        after = int(event.minute if begins is None else max(float(event.minute), float(begins))) + 1
+        if event.order_id in gap_of:
+            disposition, why = DECLARED_GAP, gap_of[event.order_id]
+        elif event.kind in legacy_adapter.NOT_PHYSIOLOGICAL:
+            disposition, why = SKIPPED_NO_PHYSIOLOGY, "this order type carries no physiology in the core"
+        elif event.kind == "fluid" and dict(event.action or {}).get("operation") == "stop":
+            disposition, effective = APPLIED_AS_A_STOP, int(event.minute) + 1
+            why = "closes the crystalloid running before it"
+        elif event.order_id in built_ids or (reversal and event.order_id == first_reversal):
+            disposition, effective = BUILT, after
+        else:
+            why = ("a supported action produced neither a contributor nor a declared gap: reported, "
+                   "never dropped in silence")
+        rows.append({"shadow_order_id": event.order_id, "order_minute": int(event.minute), "kind": event.kind,
+                     "order_id": event.ledger_order_id, "submission_id": event.submission_id,
+                     "disposition": disposition, "effective_minute": effective, "why": why})
+    mirrored_ids = {event.order_id for event in mirrored}
+    for item in built:
+        # A contributor that no mirrored order explains: built from the engine's own state. It is in the run,
+        # so it is in the timeline.
+        if hasattr(item, "id") and str(item.id) not in mirrored_ids and type(item).__name__ != reversal:
+            rows.append({"shadow_order_id": str(item.id), "order_minute": None, "kind": type(item).__name__,
+                         "order_id": None, "submission_id": None, "disposition": FROM_ENGINE_STATE,
+                         "effective_minute": None,
+                         "why": "built from the engine's own state, not from a mirrored order"})
+    return rows
+
+
+def unmirrored_rows(gaps: Sequence, rows: Sequence) -> list:
+    """One row per declared gap that no row of the timeline accounts for: an order the session never mirrored.
+
+    The session records these once per kind and reason (an order held until a result arrives; a delivery
+    whose receipt could not be placed; a turn whose settled actions were not supplied). The engine may still
+    execute such an order later, and the shadow never sees that: the run does not carry it. The row says so.
+    """
+    told = {str(row.get("shadow_order_id")) for row in rows}
+    out = []
+    for gap in gaps:
+        if gap.get("order_id") is not None and str(gap.get("order_id")) in told:
+            continue
+        if any(str(row.get("kind")) == str(gap.get("kind")) and row.get("why") == gap.get("why") for row in rows):
+            continue                                  # the adapter's own declared gap for a mirrored action
+        out.append({"shadow_order_id": None if gap.get("order_id") is None else str(gap.get("order_id")),
+                    "order_minute": None, "kind": gap.get("kind"), "order_id": None, "submission_id": None,
+                    "disposition": NOT_MIRRORED, "effective_minute": None,
+                    "why": f"{gap.get('why')}: not mirrored, so the shadow run does not carry it"})
+    return out
+
+
+#: The channels a persisted trace carries per minute, where the run has them. Readings of the certified core,
+#: named as the core names them; nothing is computed that the core does not already compute.
+TRACE_READINGS = ("sbp", "dbp", "map", "monitor_rate_bpm", "spo2", "respiratory_rate", "delivery_rel", "lactate",
+                  "crt_s", "consciousness_level", "pulse_present")
+TRACE_STATE = ("V", "P", "T", "L", "G", "D", "fio2", "hb")
+TRACE_AUXILIARY = ("central_availability", "mechanics_efficiency", "sympathetic_drive", "metabolic_acid_burden")
+TRACE_RESPIRATION = ("ventilation", "paco2", "ph")
+
+
+def artifact_rows(scenario: Mapping) -> list:
+    """One row per minute of a replay scenario, from minute 1: the two digests and every channel the trace
+    carries. The ONE way a trace row is built -- when a run is recorded and again when a trace is replayed --
+    so the replay compares a recorded row with a recomputed one, channel by channel."""
+    from clinical_core import derived as dv
+    trajectory, anchors, profile = _replay_trajectory(scenario)
+    readings = trajectory.derived()
+    rows = []
+    for minute in range(1, len(trajectory.states)):
+        state, derived = trajectory.states[minute], readings[minute].to_dict()
+        channels = {name: derived.get(name) for name in TRACE_READINGS}
+        channels.update({name: float(getattr(state, name)) for name in TRACE_STATE})
+        channels.update({name: float(getattr(state.aux, name)) for name in TRACE_AUXILIARY})
+        try:
+            breathing = dv.respiration(state, anchors, profile)
+            channels.update({"ventilation": breathing.ventilation, "paco2": breathing.paco2, "ph": breathing.ph})
+        except Exception:
+            pass                       # this profile has no acid-base physiology: the channels are absent
+        rows.append({"minute": minute, "state_digest": rs._digest_of(state),
+                     "reading_digest": reading_digest(derived), "channels": channels})
+    return rows
+
+
+def run_channels(runner: "ShadowPhysiologyRunner") -> list:
+    """The recorded minutes of one run with their channels, rebuilt FROM THE RUN'S OWN ARTIFACT.
+
+    One row per recorded minute: the two digests, then every channel of ``TRACE_READINGS``, ``TRACE_STATE``,
+    ``TRACE_AUXILIARY`` and -- where the profile has the acid-base physiology on -- ``TRACE_RESPIRATION``.
+    A run that failed keeps the minutes it recorded and nothing after them. A minute the artifact does not
+    rebuild keeps what the run recorded -- its digests and its readings -- and says its state channels are
+    unavailable: nothing is claimed that was not recomputed.
+    """
+    rows = [{"minute": item.minute, "state_digest": item.state_digest,
+             "reading_digest": reading_digest(item.derived),
+             "channels": {name: item.derived.get(name) for name in TRACE_READINGS}} for item in runner.results]
+    try:
+        captured = runner.replay_input()
+        rebuilt = {} if captured is None else {row["minute"]: row for row in artifact_rows(captured.scenario)}
+    except Exception:
+        rebuilt = {}
+    for row in rows:
+        again = rebuilt.get(row["minute"])
+        if again is None or (again["state_digest"], again["reading_digest"]) != (row["state_digest"],
+                                                                                row["reading_digest"]):
+            row["channels_unavailable"] = "the artifact does not reproduce this minute"
+            continue
+        row["channels"] = again["channels"]
+    return rows
+
+
+#: P3-150, what a faculty or development reader is told went wrong, and never less than that.
+ARRIVAL_REJECTED = "ARRIVAL_REJECTED"
+UNSUPPORTED_ACTION = "UNSUPPORTED_ACTION"
+WITNESS_FAILED = "WITNESS_FAILED"
+REPLAY_MISMATCH = "REPLAY_MISMATCH"
+LINEAGE_REJECTED = "LINEAGE_REJECTED"
+TRACE_PERSISTENCE_FAILED = "TRACE_PERSISTENCE_FAILED"
+INTERNAL_SHADOW_ERROR = "INTERNAL_SHADOW_ERROR"
+STATUS_CODES = (ARRIVAL_REJECTED, UNSUPPORTED_ACTION, WITNESS_FAILED, REPLAY_MISMATCH, LINEAGE_REJECTED,
+                TRACE_PERSISTENCE_FAILED, INTERNAL_SHADOW_ERROR)
+#: The state of a shadow encounter as a whole. There is no bare "success": COMPLETE means every run reached
+#: the encounter's minute and nothing at all was reported, and every other state says what is missing.
+COMPLETE = "COMPLETE"
+COMPLETE_WITH_UNSUPPORTED_ACTIONS = "COMPLETE_WITH_UNSUPPORTED_ACTIONS"
+PARTIAL = "PARTIAL"
+FAILED = "FAILED"
+REJECTED = "REJECTED"
+STATUS_STATES = (COMPLETE, COMPLETE_WITH_UNSUPPORTED_ACTIONS, PARTIAL, FAILED, REJECTED)
+#: Where a session failure comes from decides its code. Anything not listed is an internal error.
+_STOPS_THE_SESSION_RUN = ("core", "history", "observe", "artifact")
+
+
+def status_code(where: str, exception: str = "") -> str:
+    """The P3-150 code of one recorded failure, from where it was recorded."""
+    where = str(where or "")
+    if where == "ensemble:lineage":
+        return LINEAGE_REJECTED
+    if where.startswith("ensemble:"):
+        return WITNESS_FAILED
+    if where in ("start", "open"):
+        return ARRIVAL_REJECTED
+    if where == "persist":
+        return TRACE_PERSISTENCE_FAILED
+    if where == "replay":
+        return REPLAY_MISMATCH
+    return INTERNAL_SHADOW_ERROR
+
+
+def session_status(*, failures: Sequence, gaps: Sequence, actions: Sequence, expected_witnesses: Sequence,
+                   runs: Mapping, session_minutes: int, replay: Mapping | None = None) -> dict:
+    """The structured status of one shadow encounter: its state, its codes and every item behind them.
+
+    ``failures`` are the session's recorded failures (mappings with ``where``, ``exception``, ``minute``,
+    ``message``); ``runs`` maps a run name to its recorded minute count and whether it failed. A witness the
+    family declares and the trace does not hold is a failed witness. Nothing here is inferred from a
+    trajectory: only from what was recorded.
+    """
+    items = []
+    for failure in failures:
+        failure = dict(failure)
+        items.append({"code": status_code(failure.get("where"), failure.get("exception")),
+                      "where": failure.get("where"), "minute": failure.get("minute"),
+                      "detail": f"{failure.get('exception')}: {failure.get('message')}"})
+    seen = set()
+    for gap in gaps:
+        key = (gap.get("kind"), gap.get("why"))
+        if key in seen:
+            continue
+        seen.add(key)
+        items.append({"code": UNSUPPORTED_ACTION, "where": "mapping", "minute": None,
+                      "detail": f"{gap.get('kind')}: {gap.get('why')}"})
+    for action in actions:
+        if action.get("disposition") == UNACCOUNTED:
+            items.append({"code": INTERNAL_SHADOW_ERROR, "where": "mapping", "minute": action.get("order_minute"),
+                          "detail": f"{action.get('kind')} ({action.get('shadow_order_id')}): {action.get('why')}"})
+    refused = any(item["code"] == LINEAGE_REJECTED for item in items)
+    for name in expected_witnesses:
+        run = runs.get(name)
+        if run is None and not refused:
+            items.append({"code": WITNESS_FAILED, "where": f"ensemble:{name}", "minute": None,
+                          "detail": "a witness this family declares is missing from the session"})
+        elif run is not None and int(run.get("minutes", 0)) < int(session_minutes) and not any(
+                item["code"] == WITNESS_FAILED and str(item["where"]).startswith(f"ensemble:{name}")
+                for item in items):
+            items.append({"code": WITNESS_FAILED, "where": f"ensemble:{name}", "minute": run.get("minutes"),
+                          "detail": f"the witness stopped at minute {run.get('minutes')} of {session_minutes}"})
+    items.extend(_replay_items(replay))
+    return _status_of(items)
+
+
+def _replay_items(replay: Mapping | None) -> list:
+    """What a replay adds to a status: one item per run that does not reproduce, or the reason it was refused."""
+    if replay is None or replay.get("reproduces") is True:
+        return []                      # only an explicit "it reproduces" adds nothing: anything else fails closed
+    items = []
+    for name, row in sorted((replay.get("runs") or {}).items()):
+        if not row.get("reproduces", True):
+            items.append({"code": row.get("code") or REPLAY_MISMATCH, "where": f"replay:{name}",
+                          "minute": row.get("first_mismatch"),
+                          "detail": row.get("why") or "the replay does not reproduce the recorded minutes"})
+    if not items:
+        code = LINEAGE_REJECTED if replay.get("refused") == LINEAGE_REJECTED else REPLAY_MISMATCH
+        items.append({"code": code, "where": "replay", "minute": None,
+                      "detail": replay.get("why") or "the trace was not replayed"})
+    return items
+
+
+def _status_of(items: Sequence) -> dict:
+    """The state and the codes that a list of items adds up to. The one place the state is decided.
+
+    It reads what it is given and fails closed on what it does not understand: an item that is not an item,
+    or whose code this layer does not know, is an internal error, never nothing.
+    """
+    cleaned = []
+    for item in items:
+        item = dict(item) if isinstance(item, Mapping) else {"code": None, "detail": repr(item)[:120]}
+        for key in ("where", "minute", "detail"):
+            item.setdefault(key, None)
+        if item.get("code") not in STATUS_CODES:
+            item["detail"] = f"unknown status code {item.get('code')!r}: {item.get('detail')}"
+            item["code"] = INTERNAL_SHADOW_ERROR
+        cleaned.append(item)
+    items = cleaned
+    codes = [code for code in STATUS_CODES if any(item["code"] == code for item in items)]
+    stopped = any(item["code"] == INTERNAL_SHADOW_ERROR and str(item["where"]) in _STOPS_THE_SESSION_RUN
+                  for item in items)
+    if ARRIVAL_REJECTED in codes:
+        state = REJECTED
+    elif stopped or REPLAY_MISMATCH in codes:
+        state = FAILED
+    elif any(code in codes for code in (WITNESS_FAILED, LINEAGE_REJECTED, TRACE_PERSISTENCE_FAILED,
+                                        INTERNAL_SHADOW_ERROR)):
+        state = PARTIAL
+    elif UNSUPPORTED_ACTION in codes:
+        state = COMPLETE_WITH_UNSUPPORTED_ACTIONS
+    else:
+        state = COMPLETE
+    return {"state": state, "qualified": state != COMPLETE, "codes": codes, "items": items,
+            "counts": {code: sum(1 for item in items if item["code"] == code) for code in codes}}
+
+
+def status_with_replay(status: Mapping, replay: Mapping | None) -> dict:
+    """A recorded status with what a later replay found folded in. The recorded status is not changed.
+
+    A trace that does not replay, or that a replay refused, is never left reading as complete.
+    """
+    recorded = dict(status).get("items") if isinstance(status, Mapping) else None
+    items = [item for item in (recorded if isinstance(recorded, (list, tuple)) else [])
+             if replay is None or not (isinstance(item, Mapping)
+                                       and str(item.get("where") or "").startswith("replay"))]
+    return _status_of(items + _replay_items(replay))
 
 
 # -- P3-8: non-authoritative consciousness and collapse diagnostics ------------------------------------------

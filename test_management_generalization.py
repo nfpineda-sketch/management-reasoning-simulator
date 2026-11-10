@@ -566,6 +566,8 @@ def test_p3_140c_the_recorded_table_is_what_the_runtime_gives_now(opioid):
 # C7. Edema pulmonar: la descongestion, por el adaptador de desarrollo --------------------------------------------
 
 EDEMA_CASE, EDEMA_MINUTES = "pulmonary_edema_58m", 180
+#: P3-152: el diuretico de estas ramas se pide en el minuto 30 y esta en el estado del 31.
+EDEMA_EFFECT = 31
 
 
 def _edema_arms(witness):
@@ -619,20 +621,22 @@ def test_p3_141c_untreated_congestion_progresses_and_everything_downstream_follo
 @pytest.mark.parametrize("witness", ORDER)
 def test_p3_141d_decongestion_lowers_lung_water_first_and_oxygenation_downstream(edema, witness):
     base, treated = edema[witness]["untreated"], edema[witness]["decongestion"]
+    # P3-152: el pedido es del minuto 30 y su efecto aparece en el estado del 31, como el del oxigeno
+    # (pedido en el 10, FiO2 en el 11). Antes este adaptador lo fechaba en el propio minuto del pedido.
     for channel in ("L", "G", "spo2", "delivery_rel"):
-        assert mc.no_effect_before(treated.series[channel], base.series[channel], 30), channel
+        assert mc.no_effect_before(treated.series[channel], base.series[channel], EDEMA_EFFECT), channel
     # escribe L y nada mas: G es la consecuencia comun, la SpO2 llega por G, V P T y FiO2 no se tocan
     moved = _first_moved(treated, base, STATE_CHANNELS + AUX_CHANNELS)
-    assert moved == {"L": 30, "G": 30, CERTIFIED_READER: 30}
+    assert moved == {"L": EDEMA_EFFECT, "G": EDEMA_EFFECT, CERTIFIED_READER: EDEMA_EFFECT} and EDEMA_EFFECT == 31
     writes = {delta.channel.name for record in treated.trajectory.records for delta in record.deltas
               if "decongesting under treatment" in delta.description}
     assert writes == {"L"}
     # y el tratamiento mismo no escribe ningun canal: solo publica el momento en que empieza
     assert not [delta for record in treated.trajectory.records for delta in record.deltas
                 if delta.source.id == "d1"]
-    assert mc.monotone_after(treated.series["L"], 30, rising=False)
+    assert mc.monotone_after(treated.series["L"], EDEMA_EFFECT, rising=False)
     assert mc.direction(treated.series["spo2"], base.series["spo2"], EDEMA_MINUTES, better="higher")
-    assert mc.no_paradox(treated.series["spo2"], base.series["spo2"], 30, better="higher")
+    assert mc.no_paradox(treated.series["spo2"], base.series["spo2"], EDEMA_EFFECT, better="higher")
     assert treated.runner.gaps == [] and _replays(treated)
 
 
@@ -660,7 +664,8 @@ def test_p3_141f_oxygen_raises_saturation_and_never_touches_lung_water(edema, wi
 def test_p3_141g_delay_costs_in_the_integral_and_waiting_is_not_a_treatment(edema, witness):
     arms = edema[witness]
     early, late, base = (arms[name].series for name in ("decongestion", "delayed_decongestion", "untreated"))
-    assert mc.no_effect_before(late["L"], base["L"], 90)
+    assert mc.no_effect_before(late["L"], base["L"], 91)                     # pedido en el 90, efecto en el 91
+    assert late["L"][91] != base["L"][91]
     assert _area(early["spo2"], EDEMA_MINUTES) > _area(late["spo2"], EDEMA_MINUTES) > _area(base["spo2"], EDEMA_MINUTES)
     assert _area(early["L"], EDEMA_MINUTES) < _area(late["L"], EDEMA_MINUTES) < _area(base["L"], EDEMA_MINUTES)
     assert mc.direction(late["spo2"], base["spo2"], EDEMA_MINUTES, better="higher")
@@ -672,7 +677,7 @@ def test_p3_141h_a_faster_rate_recovers_sooner_and_one_therapy_begins_once(edema
     back = {}
     for witness in ORDER:
         series = edema[witness]["decongestion"].series
-        back[witness] = min(m for m in range(30, EDEMA_MINUTES + 1) if series["L"][m] == 0.0)
+        back[witness] = min(m for m in range(EDEMA_EFFECT, EDEMA_MINUTES + 1) if series["L"][m] == 0.0)
     assert back["HIGH"] < back["CENTER_REFERENCE"] < back["LOW"]                              # orden de dosis
     areas = [_area(edema[w]["decongestion"].series["spo2"], EDEMA_MINUTES) for w in ORDER]
     assert areas[0] < areas[1] < areas[2]
@@ -712,7 +717,8 @@ def measure_edema(edema) -> dict:
         series = arms["decongestion"].series
         out[witness] = {
             "rate_per_min": fam.EDEMA_DECONGESTION_WITNESSES[witness],
-            "back_to_arrival_at_minute": min(m for m in range(30, EDEMA_MINUTES + 1) if series["L"][m] == 0.0),
+            "back_to_arrival_at_minute": min(m for m in range(EDEMA_EFFECT, EDEMA_MINUTES + 1)
+                                             if series["L"][m] == 0.0),
             "spo2_at_180": {name: run.series["spo2"][EDEMA_MINUTES] for name, run in arms.items()},
             "lung_water_at_180": {name: run.series["L"][EDEMA_MINUTES] for name, run in arms.items()},
             "spo2_area": {name: _area(arms[name].series["spo2"], EDEMA_MINUTES)

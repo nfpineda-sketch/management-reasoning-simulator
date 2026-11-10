@@ -132,6 +132,94 @@ def enabled_for(family: str | None, environ: Mapping[str, str] | None = None) ->
     return mode(environ) == MODE_SHADOW_COMPARE and str(family or "") in live_families(environ)
 
 
+#: P3-147, ARRIVAL_ELIGIBLE: the one shared invariant that decides whether a runtime state may be MAPPED AS AN
+#: ARRIVAL, for every live-shadow family. A clock at zero is not enough: a turn that takes no time leaves
+#: the clock at zero and a treated patient behind it. Each condition is a comparison; none derives a value.
+ARRIVAL_CONDITIONS = (
+    "clock_at_arrival",                  # no positive time: the encounter's clock and the engine's own are at 0
+    "engine_state_is_a_fresh_arrival",   # field by field what a fresh initialization of this same case gives
+    "monitor_is_the_authored_arrival",   # the monitor shows the authored arrival and nothing the engine adds
+    "nothing_administered",              # no medication on record, no treatment timeline
+    "nothing_on_the_diagnostic_record",  # no study requested, none resulted
+)
+ARRIVAL_REJECTED = "ArrivalNotEligible"
+#: P3-148: the name a trace the store refused or could not write is recorded under.
+PERSISTENCE_FAILED = "TraceNotPersisted"
+
+
+def arrival_eligibility(state: Mapping) -> dict:
+    """ARRIVAL_ELIGIBLE for this runtime state: ``{"eligible", "conditions", "differences"}``. Never raises.
+
+    The state is eligible only while ALL of ``ARRIVAL_CONDITIONS`` hold: it is the authored arrival of its
+    own case, shown as authored, and nothing has been done to the patient -- no time, no executed order, no
+    treatment state. Everything is read on copies, through the engine's own initializer; a state that
+    cannot be evaluated is not eligible, with the reason. The family's own certified identity requirements
+    (``RuntimeFamilyAdapter.arrival_identity``) are checked on top of this, when the run opens.
+    """
+    conditions = {name: False for name in ARRIVAL_CONDITIONS}
+    differences: list = []
+    try:
+        from clinical_core import legacy_adapter
+        engine = legacy_adapter._engine()
+        source = legacy_adapter._initialized(state)
+        fresh = deepcopy(dict(state))
+        fresh.pop("family_state", None)
+        engine._initialize(fresh)
+        live_state, fresh_state = source.get("family_state") or {}, fresh.get("family_state") or {}
+        clock = source.get("sim_time", 0) or 0
+        elapsed = live_state.get("elapsed", 0) or 0
+        # the clock itself, not its whole minutes: any positive advancement has left the arrival
+        conditions["clock_at_arrival"] = float(clock) == 0.0 and float(elapsed) == 0.0
+        if float(clock) != 0.0:
+            differences.append(("sim_time", clock, 0))
+        moved = [key for key in sorted(set(live_state) | set(fresh_state))
+                 if live_state.get(key) != fresh_state.get(key)]
+        conditions["engine_state_is_a_fresh_arrival"] = not moved
+        differences.extend((f"family_state.{key}", live_state.get(key), fresh_state.get(key)) for key in moved)
+        authored = (engine._case(source) or {}).get("observable") or {}
+        shown = source.get("observable") or {}
+        off = [key for key in sorted(set(shown) | set(authored)) if shown.get(key) != authored.get(key)]
+        # a case with no authored arrival to compare with is not "the authored arrival": fail closed
+        conditions["monitor_is_the_authored_arrival"] = bool(authored) and not off
+        if not authored:
+            differences.append(("case.observable", None, "the authored arrival"))
+        differences.extend((f"observable.{key}", shown.get(key), authored.get(key)) for key in off)
+        treatments = source.get("treatments") or {}
+        given = treatments.get("administered_medications") or []
+        ordered = treatments.get("order_history") or []
+        disposition = treatments.get("disposition")
+        timeline = source.get("treatment_timeline") or {}
+        conditions["nothing_administered"] = not given and not timeline and not ordered and not disposition
+        if given:
+            differences.append(("treatments.administered_medications", len(given), 0))
+        if ordered:
+            differences.append(("treatments.order_history", len(ordered), 0))
+        if disposition:
+            differences.append(("treatments.disposition", disposition, None))
+        if timeline:
+            differences.append(("treatment_timeline", len(timeline), 0))
+        studies, history = source.get("diagnostics") or {}, source.get("diagnostic_history") or []
+        conditions["nothing_on_the_diagnostic_record"] = not studies and not history
+        if studies:
+            differences.append(("diagnostics", len(studies), 0))
+        if history:
+            differences.append(("diagnostic_history", len(history), 0))
+    except Exception as error:
+        differences.append(("could_not_be_evaluated", f"{type(error).__name__}: {str(error)[:160]}", None))
+        return {"eligible": False, "conditions": conditions, "differences": differences}
+    return {"eligible": all(conditions.values()), "conditions": conditions, "differences": differences}
+
+
+def arrival_untouched(state: Mapping) -> bool:
+    """Whether the state still is the untouched authored arrival. False when it cannot be told."""
+    return bool(arrival_eligibility(state)["eligible"])
+
+
+def _differences_text(differences: Sequence, limit: int = 8) -> str:
+    shown = "; ".join(f"{name} live {live!r} / arrival {expected!r}" for name, live, expected in differences[:limit])
+    return shown + (f"; and {len(differences) - limit} more" if len(differences) > limit else "")
+
+
 @dataclass(frozen=True)
 class MirroredAction:
     """One action the legacy engine already executed, copied immutably for the shadow run."""
@@ -195,6 +283,19 @@ class ShadowSession:
     #: P3-140: the witnesses of a declared development region, each its own run beside ``runner``. None for
     #: a family that declares no live region (GI), whose session is then exactly what it was.
     ensemble: Any = None
+    #: P3-147: what ``arrival_eligibility`` said of the state this session was asked to open on.
+    eligibility: Mapping[str, Any] | None = None
+    #: P3-147: whether the encounter this session follows has LEFT its arrival (time passed, or anything was
+    #: done to the patient). Sticky. Only then is an untouched arrival another encounter.
+    left_arrival: bool = False
+    #: P3-148: what the shadow research trace store said the last time this session's trace was handed to
+    #: it. None while no faculty or development environment names a store, which is the default.
+    persistence: Mapping[str, Any] | None = None
+    _environ: Any = None
+    #: The identity of the last record this session stored: what ties one attempt's records together.
+    _last_stored: str | None = None
+    #: The kinds of persistence failure already recorded, so each is recorded once and not once per turn.
+    _persist_kinds: set = field(default_factory=set)
 
     # -- construction ------------------------------------------------------------------------------------
     @classmethod
@@ -205,20 +306,23 @@ class ShadowSession:
         The arrival mapping, the family's writers and the profile all come from the family adapter, which is
         the same object the offline replay opens: one mapping, one snapshot, one execution path.
         """
-        family = str(state.get("engine_family") or "")
+        try:
+            family = str(state.get("engine_family") or "")
+        except Exception:
+            return None                     # a state that cannot be read opens nothing: legacy-only
         if not enabled_for(family, environ):
             return None
-        try:
-            minute = int(state.get("sim_time", 0) or 0)
-        except Exception:
-            minute = -1
-        if minute != 0:
-            # Opening at minute N would read the arrival from a treated patient and then label the minutes
-            # as counted from arrival, and every order given before this point would be missing from the
-            # mirror without a gap. A turn of the flag mid-encounter, a reload or a resumed case lands
-            # here: the encounter runs legacy-only, which is the honest reading.
-            return None
         session = cls(case_id="", family=family, scenario_id=scenario_id)
+        session._environ = None if environ is None else dict(environ)
+        session._open(state, scenario_id)
+        if session.failures:
+            # P3-148/P3-150: a session that could not open as asked says so where a faculty reader looks,
+            # even if no turn ever follows it.
+            session._persist()
+        return session
+
+    def _open(self, state: Mapping, scenario_id: str | None) -> None:
+        session, family = self, self.family
         try:
             import runtime_shadow_families
             from clinical_core import legacy_adapter
@@ -226,6 +330,25 @@ class ShadowSession:
             session.arrival = arrival
             session.case_id = legacy_adapter.engine_case_id(arrival)
             session.encounter_id = _encounter_id(arrival)
+            # P3-147, the shared lifecycle rule (faculty decision of 2026-11-10): a state is mapped as an
+            # arrival only while it IS one. Opening on a patient time has passed for, or anything was done
+            # to, would label a treated patient's values as the arrival and lose every order given before
+            # this point from the mirror. That used to be refused only for a clock past zero, and silently
+            # (no session at all). It is now refused for every way of having left the arrival -- a turn
+            # that takes no time included -- and the refusal is a session that says why and runs nothing:
+            # the encounter is legacy-only, which is the honest reading, and a reader can see it.
+            session.eligibility = arrival_eligibility(arrival)
+            if not session.eligibility["eligible"]:
+                session.left_arrival = True
+                try:
+                    minute = int(arrival.get("sim_time", 0) or 0)
+                except Exception:
+                    minute = 0
+                session.failures.append(ShadowFailure(
+                    minute, "start", ARRIVAL_REJECTED,
+                    "this state is not an untouched authored arrival, so it is not mapped as one: "
+                    + _differences_text(session.eligibility["differences"]), MAPPING_GAP))
+                return
             session.runner = runtime_shadow_families.ShadowPhysiologyRunner.open(
                 family, session.case_id, state=arrival, scenario_id=scenario_id)
             if session.runner is None:
@@ -246,7 +369,6 @@ class ShadowSession:
             session.failures.append(_failure(0, "start", error, MAPPING_GAP))
             session.runner = None
             session.ensemble = None
-        return session
 
     # -- the one execution path --------------------------------------------------------------------------
     @property
@@ -305,6 +427,44 @@ class ShadowSession:
             except Exception:
                 pass
             self.failures.append(_failure(minute, "observe", error, UNEXPECTED))
+        if not self.left_arrival:
+            # Read once per turn, and only until it turns true: after that an arrival is another encounter.
+            self.left_arrival = not arrival_untouched(after)
+        self._persist()
+
+    def _persist(self) -> None:
+        """P3-148: hand the trace as it stands to the shadow research trace store, if one is named.
+
+        Off by default: with no store named by a faculty or development environment this does nothing and
+        costs one lookup. It NEVER raises, whatever the store answers or fails with. A trace that could not
+        be stored is a recorded failure -- once per kind of reason, not once per turn -- so the next trace
+        that IS stored, and the session's own record, say so.
+        """
+        try:
+            import runtime_shadow_store
+            outcome = runtime_shadow_store.persist_session(self, environ=self._environ)
+            if outcome is None:
+                return
+            if not isinstance(outcome, Mapping):
+                outcome = {"stored": False, "kind": "STORE_ANSWER",
+                           "why": f"the store answered {type(outcome).__name__}, not an outcome"}
+            outcome = dict(outcome)
+            outcome["stored"] = outcome.get("stored") is True     # only an explicit True is "stored"
+            self.persistence = outcome
+            if outcome["stored"]:
+                self._last_stored = str(outcome.get("trace_id") or "") or self._last_stored
+                return
+            kind = str(outcome.get("kind") or outcome.get("why") or "NOT_STORED")
+            message = str(outcome.get("why") or "the trace was not stored")[:400]
+        except Exception as error:
+            kind = f"PERSIST_ERROR {type(error).__name__}"
+            message = f"the trace could not be handed to the store: {type(error).__name__}"
+            self.persistence = {"stored": False, "kind": kind, "why": message}
+        if kind in self._persist_kinds:
+            return
+        self._persist_kinds.add(kind)
+        minute = 0 if self.runner is None else int(self.runner.minutes_done)
+        self.failures.append(ShadowFailure(minute, "persist", PERSISTENCE_FAILED, message, NOT_COMPARABLE))
 
     def _observe(self, before, after: Mapping, parsed, result, ran, submission_id) -> None:
         if self.runner is None or self.runner.anchors is None:
@@ -382,19 +542,25 @@ class ShadowSession:
 
         A case id is not an encounter: a second attempt at the same case is the same case and a different
         patient history, and the generator is deterministic, so the arrival of a second attempt is
-        byte-identical to the first. The clock is what separates them, and it is the only thing in a
-        patient state that can: three things must hold.
+        byte-identical to the first. Three things must hold.
 
         - the case is the one this session opened on;
         - the clock has not gone backwards since the last minute this session saw;
-        - the clock has not returned to zero after this session already advanced, which is exactly what a
-          second attempt, a reset or a regenerated encounter looks like from here.
+        - the state is not an UNTOUCHED ARRIVAL once this session's encounter has left its own arrival,
+          which is exactly what a second attempt, a reset or a regenerated encounter looks like from here.
+
+        P3-147 replaced the third rule. It used to read "the clock is at zero and this session has already
+        seen a turn", and a turn that takes no time -- placing a line, a consult, a sedative -- leaves the
+        clock at zero: the page then dropped the session and opened another ON THE TREATED PATIENT, as if
+        it were the arrival, with the action and its declared gap lost. A zero-minute turn does not make a
+        new arrival; an untouched arrival after the encounter has moved on does.
 
         The session's own identity -- the digest of the arrival it opened on -- travels in the artifact, so
         a reader can tell two attempts apart afterwards even where this rule could not. What stays
         undecidable from a patient state alone (two attempts at the same case swapped between reruns
-        without a reset, both already past the same minute) is declared, not papered over: it is why
-        ``reset_session`` drops the session explicitly.
+        without a reset, both already past the same minute; or a second attempt after a first one that left
+        no trace at all on the patient) is declared, not papered over: it is why ``reset_session`` drops
+        the session explicitly.
         """
         try:
             from clinical_core import legacy_adapter
@@ -404,7 +570,7 @@ class ShadowSession:
             seen = 0 if self.runner is None else int(self.runner.minutes_done)
             if minute < seen:
                 return False
-            return not (minute == 0 and (seen > 0 or self.turns > 0))
+            return not (minute == 0 and self.left_arrival and arrival_untouched(state))
         except Exception:
             return False
 
@@ -688,7 +854,11 @@ def _class_of(error: Exception) -> str:
 
 
 def _failure(minute: int, where: str, error: Exception, classification: str) -> ShadowFailure:
-    return ShadowFailure(minute, where, type(error).__name__, str(error)[:400], classification)
+    try:
+        message = str(error)[:400]
+    except Exception:                       # an error that cannot even describe itself is still recorded
+        message = "the error could not be described"
+    return ShadowFailure(minute, where, type(error).__name__, message, classification)
 
 
 def _encounter_id(state: Mapping) -> str:
@@ -805,5 +975,8 @@ CORE_LINEAGE = (
 MODULE_VERSION = "P3-11"
 ADAPTER_VERSION = "gi_haemorrhage/P3-11"
 #: The Phase-3 layer's own sources, whose digest identifies the code that produced an artifact.
+#: P3-148 and P3-149 add the shadow research trace store and its faculty observer: they are part of the layer,
+#: so the digest covers them and the guards that exempt the layer exempt nothing else.
 LAYER_SOURCES = ("runtime_shadow.py", "runtime_shadow_families.py", "runtime_shadow_evidence.py",
-                 "runtime_authority.py", "runtime_authority_store.py")
+                 "runtime_authority.py", "runtime_authority_store.py", "runtime_shadow_store.py",
+                 "runtime_shadow_observer.py")

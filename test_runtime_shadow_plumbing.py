@@ -368,9 +368,14 @@ def test_r13_nothing_authoritative_reads_the_shadow_result():
     """Only the two wiring points touch it, and neither renders it or feeds it to the record."""
     # The exemption below is the declared layer, and the declaration is pinned HERE as a literal: adding
     # a name to ``LAYER_SOURCES`` cannot quietly exempt a new module from this guard (P3-17).
+    # P3-148/P3-149 added two names, here and in the declaration together: the shadow research trace
+    # store and its faculty observer. Neither is read by anything outside the layer (the readers list
+    # below is unchanged), and ``test_shadow_observability.py`` proves the store and the observer are
+    # read by no resident-facing module at all.
     assert runtime_shadow.LAYER_SOURCES == ("runtime_shadow.py", "runtime_shadow_families.py",
                                             "runtime_shadow_evidence.py", "runtime_authority.py",
-                                            "runtime_authority_store.py")
+                                            "runtime_authority_store.py", "runtime_shadow_store.py",
+                                            "runtime_shadow_observer.py")
     readers = []
     for path in sorted(ROOT.glob("*.py")):
         if path.name in runtime_shadow.LAYER_SOURCES or path.name.startswith("test_"):
