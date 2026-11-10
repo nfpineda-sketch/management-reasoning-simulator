@@ -653,10 +653,21 @@ def versions() -> dict:
     """What a shadow or replay artifact must carry to be reproducible."""
     from clinical_core import closure_guard
     return {"phase2_closure_head": PHASE2_CLOSURE_HEAD, "phase2_digest": PHASE2_DIGEST,
+            **active_core(),
             "phase3_module": MODULE_VERSION, "adapter": ADAPTER_VERSION,
             "parameter_snapshot": PARAMETER_SNAPSHOT_ID,
             "closure_guard_digest": closure_guard.freeze_digest(),
             "phase3_layer_digest": layer_digest()}
+
+
+def active_core() -> dict:
+    """Which member of the lineage the live core is, and the digest its files recompute to. The two closure
+    identities say what the lineage roots at; these two say which core actually produced the artifact. Naming a
+    version here authorizes nothing: only the lineage gate decides whether the runtime may stand on it."""
+    import runtime_shadow_evidence as evidence        # it imports this module: resolved at call time
+    live = evidence.phase2_digest_now()
+    entry = next((version for version in CORE_LINEAGE if version.digest == live), None)
+    return {"core_version": entry.version_id if entry is not None else "NOT_IN_THE_LINEAGE", "core_digest": live}
 
 
 def family_versions(family: str) -> dict:
@@ -667,15 +678,40 @@ def family_versions(family: str) -> dict:
 #: The formally closed Phase-2 base this plumbing observes, as the closure record states it.
 PHASE2_CLOSURE_HEAD = "d2cca46626ed5d45a792ec9456d46fb75fe87731"
 PHASE2_DIGEST = "22b90a6f7f38929cc5c18aa2000579155b4d9109198e35e29ad3991e81d6ce6a"
-#: PHASE2_AMENDMENT_1 (authorized 2026-11-09): the formally closed common physiology gained ONE explicit
-#: control, ``derived.CoreProfile.hypoventilation_oxygenation_transmission_fraction``, so the P2T-5
-#: relative alveolar-gas link can express PARTIAL transmission instead of only all or nothing. The
-#: historical closure above is NOT rewritten: ``PHASE2_DIGEST`` still names the tree at d2cca46 and still
-#: recomputes against it. This is the digest of the amended tree, over the same 141 sources, exactly one
-#: of which changed. Record: docs/revision/PHASE2_AMENDMENT_1.json.
-PHASE2_AMENDMENT_1_DIGEST = "faf811de7b8e034e33eab0a7d5f09277fcac58c56dff2d2093882e225c3d2ae2"
-#: What the Phase-3 runtime references: the closure, plus the one amendment, named and not implied.
-PHASE2_STATUS = "PHASE2_CLOSED_PLUS_AMENDMENT_1"
+
+
+@dataclass(frozen=True)
+class CoreVersion:
+    """One version of the common core that a certification stands behind, or is being asked to.
+
+    ``digest`` is the digest of the package's sources as that version left them. ``record`` is the repository
+    path of the version's own record, which states its status and its evidence. ``reversal`` names the module
+    that rebuilds the PARENT's tree from this version's by reversing declared insertions: it is what lets the
+    historical closure go on being verified from the live files after a successor exists.
+    """
+
+    version_id: str
+    parent: str | None
+    digest: str
+    record: str
+    head: str | None = None
+    reversal: str | None = None
+
+
+CERTIFIED = "CERTIFIED"
+CANDIDATE = "CANDIDATE"
+#: The ordered, immutable lineage of the common core. The first entry is the historical Phase-2 closure and is
+#: certified by construction: nothing here can restate it. Every later entry is a successor whose STATUS is not
+#: written here -- it is read from its record and bound to this entry's digest -- so naming a digest in this
+#: tuple authorizes nothing by itself: a successor counts only once its record says CERTIFIED for that same
+#: digest, and only while the historical closure still verifies underneath it.
+CORE_LINEAGE = (
+    CoreVersion("PHASE2_CLOSURE", None, PHASE2_DIGEST, "docs/revision/P2X3_phase2_closure.json",
+                head=PHASE2_CLOSURE_HEAD),
+    CoreVersion("PHASE2_AMENDMENT_1", "PHASE2_CLOSURE",
+                "10b45ce2967ea55afccb35291afb5bb1f7f1b01eb4a253e6a0736c02a5878635",
+                "docs/revision/PHASE2_AMENDMENT_1.json", reversal="clinical_core.amendment_1"),
+)
 MODULE_VERSION = "P3-11"
 ADAPTER_VERSION = "gi_haemorrhage/P3-11"
 #: The Phase-3 layer's own sources, whose digest identifies the code that produced an artifact.

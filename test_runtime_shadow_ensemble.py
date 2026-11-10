@@ -69,7 +69,11 @@ def test_e6_the_phase2_digest_is_untouched_by_an_ensemble(acs_ensemble):
     paths = sorted(path.relative_to(ROOT).as_posix() for path in (ROOT / "clinical_core").rglob("*.py")
                    if "__pycache__" not in path.parts and path.is_file() and not path.name.startswith("."))
     sources = {path: hashlib.sha256((ROOT / path).read_bytes()).hexdigest() for path in paths}
-    assert hashlib.sha256(json.dumps(sources, sort_keys=True).encode()).hexdigest() == rs.PHASE2_DIGEST
+    # PHASE2_AMENDMENT_1: the live tree is the closure's successor. What must be unchanged is the closure itself:
+    # it is rebuilt from these same live sources by reversing the successor's declared insertions.
+    from clinical_core import amendment_1 as a1
+    assert hashlib.sha256(json.dumps(a1.p2x1a_sources(sources), sort_keys=True).encode()).hexdigest() == rs.PHASE2_DIGEST
+    assert hashlib.sha256(json.dumps(sources, sort_keys=True).encode()).hexdigest() == rs.CORE_LINEAGE[-1].digest
 
 
 def test_e7_e8_an_ensemble_touches_no_authoritative_state():

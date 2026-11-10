@@ -14,10 +14,21 @@ from clinical_core import calibration, decision_pack, gi_reference, lactate_slic
 from clinical_core import migration_authority as authority
 from clinical_core.decision_pack import MIDDLE
 from clinical_core.migration import gate_dry_run
+from clinical_core import amendment_1 as a1
 
 ROOT = Path(__file__).resolve().parent
 DOCUMENT = ROOT / "docs" / "revision" / "P2I_DECISION_LACTATO_GI.md"
 DATA = ROOT / "docs" / "revision" / "P2I_lactate_slice.json"
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _closure_tree():
+    """PHASE2_AMENDMENT_1: this file tests what the Phase-2 closure froze, so it reads the tree as the closure
+    left it (amendment_1.tree). The amended tree has its own tests (test_phase2_amendment*.py); what is asserted
+    here is historical and its expected values are not rewritten."""
+    with pytest.MonkeyPatch.context() as patch:
+        a1.tree(patch)
+        yield
 
 
 @pytest.fixture(scope="module")

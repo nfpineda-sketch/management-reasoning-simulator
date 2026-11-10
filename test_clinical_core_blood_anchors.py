@@ -13,10 +13,21 @@ import pytest
 
 from clinical_core import blood_anchors as ba, blood_probes, calibration, migration_authority
 from clinical_core.derived import DEFAULT_PROFILE
+from clinical_core import amendment_1 as a1
 
 ROOT = Path(__file__).resolve().parent
 DOCUMENT = ROOT / "docs" / "revision" / "P2I2U_ANCLAS_HEMORRAGIA_COMPARTIDA.md"
 DATA = ROOT / "docs" / "revision" / "P2I2U_blood_anchors.json"
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _closure_tree():
+    """PHASE2_AMENDMENT_1: this file tests what the Phase-2 closure froze, so it reads the tree as the closure
+    left it (amendment_1.tree). The amended tree has its own tests (test_phase2_amendment*.py); what is asserted
+    here is historical and its expected values are not rewritten."""
+    with pytest.MonkeyPatch.context() as patch:
+        a1.tree(patch)
+        yield
 
 
 @pytest.fixture(scope="module")

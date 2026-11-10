@@ -22,6 +22,7 @@ from clinical_core import respiratory_mechanics as mc
 from clinical_core import systemic_stress as ss
 from clinical_core import distributive_tone as dt
 from clinical_core import closure_guard as cg
+from clinical_core import amendment_1 as a1
 from clinical_core import tone_domain as x1
 from clinical_core.integration import step
 from clinical_core.provenance import DistressChange, ProvenanceError, Source, SourceKind, SystemicStressChange
@@ -43,6 +44,7 @@ def _p2v1_tree():
     with pytest.MonkeyPatch.context() as patch:
         x1.chain(patch)
         cg.chain(patch)
+        a1.chain(patch)
         dt.tree(patch)
         yield
 

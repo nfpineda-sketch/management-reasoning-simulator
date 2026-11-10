@@ -94,7 +94,11 @@ ANALYSIS_ONLY = {
     # record can be produced outside a test, reads module objects and the interpreter's path readers).
     "tone_domain.py": {"sys", "types"},
     # P2X-1A's closure guard installs the same local view for the predecessor's own analysis.
-    "closure_guard.py": {"sys", "types"}}
+    "closure_guard.py": {"sys", "types"},
+    # PHASE2_AMENDMENT_1: the successor stage installs the same view, of the closure's tree: it walks the loaded modules
+    # that hold the parameter registry (sys.modules) and recognises a module object (types.ModuleType). The lineage gate
+    # imports this file for its reversal proof and its digests only, which use neither.
+    "amendment_1.py": {"sys", "types"}}
 
 
 def _imports(path):

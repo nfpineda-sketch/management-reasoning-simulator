@@ -1,45 +1,36 @@
 {
   "amendment": "PHASE2_AMENDMENT_1",
-  "authorized": "2026-11-09, faculty decision: a formal, minimal amendment to the closed Phase-2 common physiology",
-  "branch": "phase-3-runtime-integration",
+  "parent": "PHASE2_CLOSURE",
+  "authorized": "2026-11-09 (amendment) and 2026-11-10 (P2-AMEND-1F, the formal freeze-successor package)",
+  "branch": "phase-2-amendment-1-respiratory-transmission",
   "historical_closure": {
-    "note": "NOT rewritten. The closure stands as made, and its digest still recomputes against its own tree.",
+    "note": "IMMUTABLE. Not rewritten. It is verified from the live files by reversing this stage's declared insertions, so its digest still recomputes.",
     "stage": "P2X-3",
     "head": "d2cca46626ed5d45a792ec9456d46fb75fe87731",
     "branch": "phase-2-clinical-core-shadow",
     "phase2_digest": "22b90a6f7f38929cc5c18aa2000579155b4d9109198e35e29ad3991e81d6ce6a",
     "clinical_core_modules": 141,
-    "record": "docs/revision/P2X3_phase2_closure.json"
+    "record": "docs/revision/P2X3_phase2_closure.json",
+    "predecessor_stage": "P2X-1A",
+    "predecessor_freeze_digest": "eca47d357674ec56fe489c30f1757cf940c55a4e5d5edb2a9ffb9fac0213e853"
   },
   "amended": {
-    "phase2_amendment_1_digest": "faf811de7b8e034e33eab0a7d5f09277fcac58c56dff2d2093882e225c3d2ae2",
-    "clinical_core_modules": 141,
+    "core_digest": "10b45ce2967ea55afccb35291afb5bb1f7f1b01eb4a253e6a0736c02a5878635",
+    "clinical_core_modules": 142,
     "changed_sources": [
+      "clinical_core/decision_pack.py",
       "clinical_core/derived.py"
     ],
-    "added_sources": [],
+    "added_sources": [
+      "clinical_core/amendment_1.py"
+    ],
     "removed_sources": [],
-    "amendment_commit_is_this_records_own_commit": true,
-    "freeze_digests": {
-      "calibration": "c1eeb5538a4ea990cbcb4432b0c28e6cb8c351ffe08c96a6036f82d3b65a9b85",
-      "closure_guard_P2X1A": "15182df012c824cd7970cefa3ba048727cdfbd7c43931989a5df17c0682eba8b",
-      "tone_domain_on_the_live_tree": "8dc61a995b94e50c6a16b96fd2b484e6b775ddb229c7d0d55bda7106b650a9e3",
-      "lactate_slice": "4ad13d20c73659a54059fd64d87df9f0ef8a9ff7ad11021c3d3d2d71a01fb434",
-      "decision_pack": "4aa2f527013dd21a1818aa950597926f42fa48a6ed23854c31435bae5dfd5651"
-    },
-    "freeze_digests_moved": [
-      "closure_guard_P2X1A",
-      "decision_pack",
-      "lactate_slice",
-      "tone_domain_on_the_live_tree"
-    ],
-    "freeze_digests_unchanged": [
-      "calibration"
-    ],
-    "freeze_digests_note": "These four guards hash the common sources, so the amendment moved them. They did their job: they detected it. The closure record keeps its own historical values UNREWRITTEN; this record names every digest the amendment moved and its new value, so an unauthorized change to clinical_core still matches neither record. Only calibration is unchanged, because it does not hash derived.py."
+    "stage_module": "clinical_core/amendment_1.py",
+    "declared_insertions": {
+      "clinical_core/decision_pack.py": 1,
+      "clinical_core/derived.py": 5
+    }
   },
-  "status_phase_3_references": "PHASE2_CLOSED_PLUS_AMENDMENT_1",
-  "reason": "P3-117 showed the certified hypoventilation -> oxygenation equation is structurally useful but the frozen interface could express only all-or-nothing transmission. The only quantity that scaled it was respiratory_quotient, a respiratory quotient (~0.7-1.0 physiologically), which the measured region would have forced to >= 13.2; the alternatives forced a normal PaCO2 of ~3 mmHg or were inert. Expressing partial transmission by abusing a quantity that means something else was refused, so the amendment adds the control the physiology actually needed.",
   "equation": {
     "before": "delta_PaO2 = -delta_PaCO2 / respiratory_quotient",
     "after": "delta_PaO2 = hypoventilation_oxygenation_transmission_fraction * (-delta_PaCO2 / respiratory_quotient)",
@@ -48,7 +39,8 @@
       "the relative form: Patm, PH2O and the absolute alveolar gas equation still cancel",
       "SpO2_base, which stays the certified G / L -> G / FiO2 path of P2O-3",
       "the FiO2 and G rules: the fraction never multiplies retained(G)",
-      "the P2T-5 refusal of the hypoxaemic drive (HYPOXEMIC_FEEDBACK_LOOP_DEFERRED)"
+      "the P2T-5 refusal of the hypoxaemic drive (HYPOXEMIC_FEEDBACK_LOOP_DEFERRED)",
+      "the unventilated boundary for every non-zero share (APNOEA_BOUNDARY_UNRESOLVED)"
     ]
   },
   "parameter": {
@@ -57,7 +49,9 @@
     "domain": "None, or a share in [0, 1]",
     "default": null,
     "default_meaning": "UNSCALED: reproduces the certified P2T-5 full transmission bit for bit. It is NOT a second off switch for the link, which respiratory_quotient still owns.",
+    "zero_meaning": "expresses nothing in EVERY state, the unventilated boundary included: decided before the PaCO2 is read, so it is the same as the link not being declared",
     "declared_only_with": "respiratory_quotient",
+    "zero_scope": "the equivalence with the undeclared link is over every state and reading of the supported domain. Declaring the link, with any share, 0 included, still requires what a declared link requires (the common respiratory mechanics candidate, and no hypoxaemic drive): those profile preconditions are P2T-5's and are not relaxed for a zero share.",
     "status": "provisional",
     "is_not": [
       "a respiratory quotient",
@@ -85,27 +79,241 @@
     "result": "EXACT",
     "evidence": [
       "every committed profile keeps respiratory_quotient = None, so the link stays off and no reading moves",
-      "fraction None and fraction 1.0 give bit-identical SpO2 (25.249191654270817 on opioid_35m at R = 0.8), and that is the value measured before the amendment",
-      "fraction 0.0 returns SpO2_base itself, without a round trip through the dissociation relation",
-      "no profile is converted to a nonzero fraction automatically"
+      "share None and share 1.0 give the SpO2 measured before the amendment, bit for bit (25.249191654270817 on opioid_35m, 37.21648925248409 on opioid_67f, at R = 0.8)",
+      "share 0.0 returns SpO2_base itself in every state",
+      "no profile is converted to a non-zero share automatically"
     ]
   },
-  "pre_amendment_audit": {
-    "package": "P3-127",
-    "verdict": "A_PARTIAL_TRANSMISSION_LOOP_STRUCTURALLY_SAFE",
-    "findings": [
-      "the direct SpO2 -> respiratory drive edge is absent (hypoxaemic_drive_mapping is None) and the P2T-5 invariant refuses it",
-      "the PaCO2 -> metabolic acid burden edge does not exist: doubling the PaCO2 reference leaves the burden at exactly 0, so there is no double counting",
-      "the one closed loop runs SpO2 -> DO2 -> oxygen deficit -> D -> acid burden (accumulated, cleared with tau_acid) -> acid drive -> RR -> W -> PaCO2 -> SpO2",
-      "that loop is CONDITIONALLY_ACTIVE, gated by D > 0: on opioid_35m D is exactly 0 for fraction <= 0.818522 and positive above it, so it is dormant throughout the development region",
-      "when active its sign is NEGATIVE (compensatory): RR rises, PaCO2 falls, the hypoxaemia is opposed",
-      "in asthma it never activates, even at fraction 1.0: PaCO2 and RR stay bit-identical",
-      "16 trajectories across 4 cases and fraction in {0.06, 0.2, 0.5, 1.0}: 0 sign inversions, no oscillation, no runaway, monotone in the fraction"
-    ]
+  "serialization": {
+    "BACKWARD_READ_COMPATIBLE": true,
+    "backward_note": "an artifact written before the amendment has no key for the share and reads with the default (None): CoreProfile(**data) accepts it unchanged",
+    "FORWARD_READ_COMPATIBILITY": "NOT_PROVIDED",
+    "forward_note": "an artifact written by the amended core carries the share's key, and the closure core refuses it (CoreProfile(**data) raises on an unknown field). No forward-compatibility guarantee existed before this amendment and none is invented by it."
+  },
+  "successor_artifacts": {
+    "closure_freeze_digests": {
+      "note": "The five freeze digests the closure record states, recomputed by the same functions on the amended tree. runtime_shadow.versions() carries the live closure_guard value, so it is recorded.",
+      "digests": {
+        "calibration": {
+          "PHASE2_CLOSURE": "c1eeb5538a4ea990cbcb4432b0c28e6cb8c351ffe08c96a6036f82d3b65a9b85",
+          "PHASE2_AMENDMENT_1": "c1eeb5538a4ea990cbcb4432b0c28e6cb8c351ffe08c96a6036f82d3b65a9b85",
+          "unchanged": true
+        },
+        "closure_guard_P2X1A": {
+          "PHASE2_CLOSURE": "eca47d357674ec56fe489c30f1757cf940c55a4e5d5edb2a9ffb9fac0213e853",
+          "PHASE2_AMENDMENT_1": "c75c9dcb6f1a313a116c30757958c3b38f989df57bb16fa44e938c171aa7e14f",
+          "unchanged": false
+        },
+        "decision_pack": {
+          "PHASE2_CLOSURE": "e0fdfbe33abe643ab43793354525d2dc8604be5d2c1f0be2cfc7dd339ed13a15",
+          "PHASE2_AMENDMENT_1": "83d648a7c56c49417dd4bf32aa6818a1be91e30cdf6a5cf7a3766da9a1c6b783",
+          "unchanged": false
+        },
+        "lactate_slice": {
+          "PHASE2_CLOSURE": "3c4648e7bdc51baae1c3b6454314b05baf5430bef6032d72a75169a8ff64be10",
+          "PHASE2_AMENDMENT_1": "70c79930ccd8799af8096c144e968f54b4c95bf26741a400e63e315ffeb3034e",
+          "unchanged": false
+        },
+        "tone_domain_on_the_live_tree": {
+          "PHASE2_CLOSURE": "a9634ffd1c9d609904702f2bc95f2d3cb15d3f064b1e671529478925ef7ae16a",
+          "PHASE2_AMENDMENT_1": "66161e08f152e69447c7d1747fed6e0ec92778d9a0880364a4ebd0825e7edaaa",
+          "unchanged": false
+        }
+      }
+    },
+    "verified_against": "git show <closure head>:<path>, byte for byte, when this record was written",
+    "note": "Nothing historical is regenerated or overwritten. Each historical document and the historical golden still reproduce, from the live files, under this stage's closure view (their own tests). The values below are what the SAME generators give on the amended tree: explicitly versioned successors.",
+    "generated_documents": {
+      "decision_pack": {
+        "generator": "clinical_core.decision_pack.pack_digest",
+        "digest_key": "pack_digest",
+        "historical_document": "docs/revision/P2G_DECISIONES_DOCENTES_CALIBRACION_GI.md",
+        "historical_data": "docs/revision/P2G_decision_pack.json",
+        "historical_document_rewritten": false,
+        "historical_document_sha256": "527632416e5a16fb8cad1a7c8c096eef1b949f3344a33655669a08fb9cd18d7b",
+        "historical_data_sha256": "834d34a5a7f9971474c708a1325b0fb6ea5128d87ef44e9862e19644d7bc644a",
+        "PHASE2_CLOSURE": "e0fdfbe33abe643ab43793354525d2dc8604be5d2c1f0be2cfc7dd339ed13a15",
+        "PHASE2_AMENDMENT_1": "83d648a7c56c49417dd4bf32aa6818a1be91e30cdf6a5cf7a3766da9a1c6b783",
+        "inputs": {
+          "digested_sources": 42,
+          "sources_that_moved": [
+            "clinical_core/decision_pack.py",
+            "clinical_core/derived.py"
+          ],
+          "calibration_freeze_digest": "unchanged"
+        }
+      },
+      "lactate_slice": {
+        "generator": "clinical_core.lactate_slice.slice_digest",
+        "digest_key": "slice_digest",
+        "historical_document": "docs/revision/P2I_DECISION_LACTATO_GI.md",
+        "historical_data": "docs/revision/P2I_lactate_slice.json",
+        "historical_document_rewritten": false,
+        "historical_document_sha256": "955f35c6487a4b8aeba2cfd55fd0bb48d2fff026761daa023e28abc2c8a33a9c",
+        "historical_data_sha256": "655bbb70fdbf23d53c559628da49b050057d70d5081e580629f35eedbc1af9c9",
+        "PHASE2_CLOSURE": "3c4648e7bdc51baae1c3b6454314b05baf5430bef6032d72a75169a8ff64be10",
+        "PHASE2_AMENDMENT_1": "70c79930ccd8799af8096c144e968f54b4c95bf26741a400e63e315ffeb3034e",
+        "inputs": {
+          "digested_sources": 97,
+          "sources_that_moved": [
+            "clinical_core/amendment_1.py",
+            "clinical_core/decision_pack.py",
+            "clinical_core/derived.py"
+          ],
+          "calibration_freeze_digest": "unchanged"
+        }
+      },
+      "blood_anchors": {
+        "generator": "clinical_core.blood_anchors.anchors_digest",
+        "digest_key": "anchors_digest",
+        "historical_document": "docs/revision/P2I2U_ANCLAS_HEMORRAGIA_COMPARTIDA.md",
+        "historical_data": "docs/revision/P2I2U_blood_anchors.json",
+        "historical_document_rewritten": false,
+        "historical_document_sha256": "d55ccdc9305a6f61a9f06edd0ac9db09c28199aeb1702f071999b96819b08d22",
+        "historical_data_sha256": "b1872af6108abf474e65d583fb2b4a5553ec425a0f3578aed1a3d9b6218ed73e",
+        "PHASE2_CLOSURE": "6ab8199f4c4db14b22ffe7b8bcffd0684a1686814770326c030ccafec3dfcd9b",
+        "PHASE2_AMENDMENT_1": "2880f38500a409bba2415c000dbc6bcc273ecdb1b67633cf9ff505bf3c4bc228",
+        "inputs": {
+          "digested_sources": 97,
+          "sources_that_moved": [
+            "clinical_core/amendment_1.py",
+            "clinical_core/decision_pack.py",
+            "clinical_core/derived.py"
+          ],
+          "calibration_freeze_digest": "unchanged"
+        }
+      },
+      "blood_probes": {
+        "generator": "clinical_core.blood_probes.probes_digest",
+        "digest_key": "probes_digest",
+        "historical_document": "docs/revision/P2I2T_ESTADO_HEMORRAGICO_COMPARTIDO.md",
+        "historical_data": "docs/revision/P2I2T_blood_probes.json",
+        "historical_document_rewritten": false,
+        "historical_document_sha256": "1636da99a77f95bc408ea4a98ddbe58de0d385e9a79acc2541b908e15555dd40",
+        "historical_data_sha256": "2118dfb899ad86c00e8f07768f7264e23b80f40376340e403aeb3ab7650dfa45",
+        "PHASE2_CLOSURE": "804fecd40896d5800e23addcf87401c3c569b12cfa92afa8a4432abbd08cd1fe",
+        "PHASE2_AMENDMENT_1": "b5475f5a4a368980953ff27b040ffa1821436807c7f327ed45990546d337b5dd",
+        "inputs": {
+          "digested_sources": 97,
+          "sources_that_moved": [
+            "clinical_core/amendment_1.py",
+            "clinical_core/decision_pack.py",
+            "clinical_core/derived.py"
+          ],
+          "calibration_freeze_digest": "unchanged"
+        }
+      }
+    },
+    "calibration_freeze_digest": {
+      "PHASE2_CLOSURE": "c1eeb5538a4ea990cbcb4432b0c28e6cb8c351ffe08c96a6036f82d3b65a9b85",
+      "PHASE2_AMENDMENT_1": "c1eeb5538a4ea990cbcb4432b0c28e6cb8c351ffe08c96a6036f82d3b65a9b85",
+      "unchanged": true
+    },
+    "golden": {
+      "historical_golden": "clinical_core/golden/gi_bleed_shadow.json",
+      "historical_golden_sha256": "b37557055368ec8337f86def48e872c6e76129dcfc3be9979ae90f212690e484",
+      "historical_golden_rewritten": false,
+      "blocks": [
+        "case_parameter_rules",
+        "channel_bounds",
+        "core_version",
+        "decisions",
+        "differences",
+        "legacy",
+        "legacy_literals",
+        "parameters",
+        "scenarios"
+      ],
+      "blocks_identical_on_the_amended_core": [
+        "case_parameter_rules",
+        "channel_bounds",
+        "core_version",
+        "decisions",
+        "differences",
+        "legacy",
+        "legacy_literals",
+        "scenarios"
+      ],
+      "blocks_that_differ": [
+        "parameters"
+      ],
+      "behavioural_blocks_identical": true,
+      "parameters": {
+        "PHASE2_CLOSURE_entries": 70,
+        "PHASE2_AMENDMENT_1_entries": 71,
+        "added": {
+          "hypoventilation_oxygenation_transmission_fraction": [
+            "provisional",
+            "UNSCALED (PHASE2_AMENDMENT_1): the share of the common relative alveolar link that is EXPRESSED, delta_PaO2 = fraction x (-delta_PaCO2 / R); None by default, which reproduces the certified P2T-5 full transmission bit for bit, 0 transmits nothing and 1 is that full transmission. It controls how much the RELATIVE alveolar-gas link is expressed and is NOT a respiratory quotient, a shunt fraction, an FiO2 gain, a G retention, a mechanics efficiency or a central availability; it never multiplies retained(G) and has no direct effect on RR, W, PaCO2, the drive, L or the tone. Declared only with the link it scales; no value is approved"
+          ]
+        },
+        "removed": [],
+        "changed": []
+      },
+      "PHASE2_AMENDMENT_1_golden_sha256": "88f17662ac75afc784709bd0114a3908e561ed409e26a4e882a4cc6bdbb36167",
+      "PHASE2_CLOSURE_golden_canonical_sha256": "7a2c397802527cf5b181b71c76f863d8f044f78e2dd535d27723c63a6be679e9"
+    }
+  },
+  "defects_repaired_before_certification": [
+    "share 0 was decided after the PaCO2 read, so on the unventilated boundary it raised where the undeclared link did not (adversarial review, D5): the zero share is now decided first",
+    "30 of the first 39 amendment tests still passed with the share made inert: every property is now a check with an in-suite negative control (6 mutants, 20 kill pairs)"
+  ],
+  "certification": {
+    "status": "CERTIFIED",
+    "certified_core_digest": "10b45ce2967ea55afccb35291afb5bb1f7f1b01eb4a253e6a0736c02a5878635",
+    "candidate_head": "0b3c44396ddac13a0e0f1c000113d14825d61f67",
+    "candidate_tree": "f7bcdac45391da1a6bf732079e6847b2152dadf2",
+    "candidate_fingerprint": "c043c38e607f054489a41a3d52790208a8bc7c00ee7818011883a79088e52dd6",
+    "certified_on": "2026-11-10",
+    "python": "3.11.17",
+    "full_suite": {
+      "tests": 11195,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 93,
+      "xfailed": 1,
+      "partitions": 4,
+      "timeout_per_partition_s": 7200,
+      "valid": true,
+      "ran_with": "-p test_core_certification_preview and MRS_CORE_CERTIFICATION_PREVIEW=PHASE2_AMENDMENT_1 (the lineage entry was CANDIDATE throughout; tests marked real_core_lineage read the real status)"
+    },
+    "regressions": {
+      "passed": 56,
+      "active": 56,
+      "failed": 0,
+      "retired": 10
+    },
+    "root_contracts": {
+      "files": 60,
+      "tests": 2038,
+      "failures": 0,
+      "errors": 0,
+      "before": "612 failures and errors in 53 of these files at d087cc3"
+    },
+    "adversarial_review": {
+      "reviewed_head": "c14c968",
+      "attacks": 17,
+      "high": 0,
+      "medium_confirmed_and_fixed": 1,
+      "low_fixed_or_declared": "see PHASE2_AMENDMENT_1.md, section 9"
+    },
+    "earlier_run": {
+      "candidate_head": "ad5d941cf0fdece1fdad7fb4d56765e16d7b2472",
+      "tests": 11195,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 93,
+      "xfailed": 1,
+      "valid": true,
+      "failed_test": "test_shadow_core_isolation.py::test_the_core_imports_only_what_a_shadow_needs",
+      "cause": "the stage module lacked the sys/types declaration in the isolation guard's per-file list, which the seven earlier stages with a view of their own have",
+      "outcome": "declaration added (the guard is not relaxed); candidate changed; ONE new final certification run"
+    },
+    "promotion": "metadata and documentation only: no executable file changed after the candidate"
   },
   "not_claimed": [
     "clinical validation",
-    "a faculty-approved value for the fraction",
+    "a faculty-approved value for the share",
     "runtime authority for the common core",
     "any change to what the resident sees, to scoring, or to the first pilot"
   ]

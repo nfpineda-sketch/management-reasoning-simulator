@@ -538,7 +538,7 @@ def gate(state: Mapping | None = None, *, environ: Mapping[str, str] | None = No
         "authority_domain": coherent and tuple(domain) == AUTHORITY_DOMAIN,
         "no_pilot": not is_pilot,
         "no_unsupported_action": unsupported is not None and not tuple(unsupported),
-        "phase2_digest": ev.phase2_digest_now() == rs.PHASE2_DIGEST,
+        "phase2_digest": ev.core_lineage_ok(),
         "layer_version": rs.MODULE_VERSION == EXPECTED_LAYER,
     }
     reasons = []
@@ -573,7 +573,7 @@ def gate(state: Mapping | None = None, *, environ: Mapping[str, str] | None = No
     if unsupported is not None and not conditions["no_unsupported_action"]:
         reasons.append(f"UNSUPPORTED_AUTHORITY_ACTION: {sorted(set(unsupported))}")
     if not conditions["phase2_digest"]:
-        reasons.append("the Phase-2 closure digest does not recompute")
+        reasons.append(ev.core_lineage_reason() or "the common core lineage could not be evaluated")
     if not conditions["layer_version"]:
         reasons.append(f"the Phase-3 layer is {rs.MODULE_VERSION}, not {EXPECTED_LAYER}")
     return AuthorityGate(conditions, tuple(reasons), snapshot_id)

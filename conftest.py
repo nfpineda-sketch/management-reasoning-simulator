@@ -194,3 +194,14 @@ def onboarded(store, token):
     from resident_profile import ProfileStore
     ProfileStore(store).decline(token)
     return token
+
+
+# PHASE2_AMENDMENT_1 -----------------------------------------------------------------------------------------------
+#
+# The certification preview is NOT here: this file is loaded by every test of the repository and reads nothing of
+# the Phase-3 layer. The preview is an explicit pytest plugin (test_core_certification_preview.py) that a
+# certification run names on its own command line. Only the marker those tests use is declared here.
+
+def pytest_configure(config):
+    config.addinivalue_line("markers", "real_core_lineage: the test reads the real certified-core lineage, never "
+                                       "the certification preview")

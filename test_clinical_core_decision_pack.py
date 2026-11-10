@@ -14,8 +14,19 @@ from clinical_core.derived import DEFAULT_PROFILE, CoreProfile
 from clinical_core.migration import MigrationBlocked, check_migration_gate, gate_dry_run, migration_gate
 from clinical_core.shadow import GOLDEN
 from clinical_core.state import CASE_PARAMETERS
+from clinical_core import amendment_1 as a1
 
 MIDDLE = decision_pack.MIDDLE
+
+
+@pytest.fixture()
+def _closure_tree():
+    """PHASE2_AMENDMENT_1: the tree as the Phase-2 closure left it (amendment_1.tree), for the tests that compare
+    with what the closure froze -- the historical document, which is not regenerated. Every other test here reads
+    the live tree, this stage's registration in ``PACK_DIGEST_EXCLUDED`` included."""
+    with pytest.MonkeyPatch.context() as patch:
+        a1.tree(patch)
+        yield
 
 
 @pytest.fixture(scope="module")
@@ -286,7 +297,7 @@ def _rows(document: str, first_cell: str) -> list[list[str]]:
             for line in document.splitlines() if line.startswith("| " + first_cell)]
 
 
-def test_the_faculty_document_is_generated_from_the_current_code_and_freeze():
+def test_the_faculty_document_is_generated_from_the_current_code_and_freeze(_closure_tree):
     from clinical_core import decision_pack_markdown
     document, pack = _document()
     assert pack["pack_digest"] == decision_pack.pack_digest(), "the pack is stale: regenerate it"

@@ -1783,6 +1783,13 @@ def ventilated_oxygenation(spo2_base: float, state: CoreState, anchors: Anchors,
     SpO2_base only, so worse G and less FiO2 never raise SpO2. PaO2 is latent, never a state; Patm, PH2O and the
     absolute alveolar gas equation are not used (they cancel in the relative form); nothing is written back to PaCO2,
     W, RR, the drive or the acid burden. No ventilation (PaCO2 undefined) is an undecided boundary."""
+    # PHASE2_AMENDMENT_1: the share of that transmission the profile expresses. A share of 0 expresses nothing,
+    # so it needs no PaCO2 and is decided FIRST: SpO2_base itself comes back in every state, the unventilated
+    # boundary included, which is what makes "share 0" the same as "link not declared" and not merely close
+    # to it (no read of the respiration, no round trip through the dissociation relation).
+    share = profile.hypoventilation_oxygenation_transmission_fraction
+    if share == 0.0:
+        return spo2_base
     paco2 = respiration(state, anchors, profile).paco2
     if paco2 is None:
         raise UnresolvedBoundary(f"minute {state.minute}: no alveolar ventilation, so no PaCO2 for the hypoventilation -> "
@@ -1790,13 +1797,8 @@ def ventilated_oxygenation(spo2_base: float, state: CoreState, anchors: Anchors,
     delta = paco2 - arrival_paco2_reference(anchors, profile)
     if delta == 0.0:
         return spo2_base
-    # PHASE2_AMENDMENT_1: the share of that transmission the profile expresses. None is UNSCALED, so the
-    # certified behaviour is reproduced exactly (1.0 x d == d in IEEE 754); 0 returns SpO2_base itself,
-    # without a round trip through the dissociation relation, so "no transmission" is exact and not
-    # approximate. Nothing else in the chain changes: G, FiO2, the latent PaO2 and the ODC are P2T-5's.
-    share = profile.hypoventilation_oxygenation_transmission_fraction
-    if share == 0.0:
-        return spo2_base
+    # None is UNSCALED, so the certified behaviour is reproduced exactly (1.0 x d == d in IEEE 754). Nothing
+    # else in the chain changes: G, FiO2, the latent PaO2 and the ODC are P2T-5's.
     if share is None:
         share = 1.0
     return oxygen_saturation_from_pao2(pao2_from_oxygen_saturation(spo2_base)
