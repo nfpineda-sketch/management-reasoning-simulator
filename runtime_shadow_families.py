@@ -633,7 +633,23 @@ TRANSMISSION_DECLARED_R = 0.8
 TRANSMISSION_MATHEMATICAL_REGION = (0.0, 0.060621)
 TRANSMISSION_ACTIVE_REGION = {"above": 0.0, "up_to": 0.060621, "zero_is": "NEGATIVE_CONTROL_NOT_A_WITNESS"}
 TRANSMISSION_WITNESSES = {"LOW": 0.015, "CENTER_REFERENCE": 0.03, "HIGH": 0.06}
-TRANSMISSION_CLASSIFICATION = "DEVELOPMENT_TEST_REGION"
+#: Faculty decision FD-151 (2026-11-10): the region is CONDITIONAL. Its upper edge was measured with the opioid
+#: depression deepening at ONE committed synthetic rate and it is valid only there: a faster deepening admits
+#: a smaller fraction (``shadow_resolution_record``). It is not robust to uncertainty in that rate, no
+#: interval of the rate is declared, and the two exploratory rates of the migration probes are not evidence.
+TRANSMISSION_CLASSIFICATION = "CONDITIONAL_DEVELOPMENT_REGION"
+TRANSMISSION_CONDITION = {
+    "parameter": "deepening_per_min",
+    "source": "clinical_core.opioid_migration.DEEPENING_PER_MIN",
+    "status": "SYNTHETIC_REFERENCE",
+    "reading": "the region holds only at this committed synthetic rate; it is not robust to its uncertainty",
+}
+
+
+def transmission_condition() -> dict:
+    """The condition the transmission region holds under, with the committed rate read where it lives."""
+    from clinical_core import opioid_migration
+    return dict(TRANSMISSION_CONDITION, value=opioid_migration.DEEPENING_PER_MIN)
 
 
 class ArrivalIdentityError(ValueError):
@@ -705,7 +721,8 @@ class OpioidAdapter(RuntimeFamilyAdapter):
             provenance + (
                 f"runtime_shadow_families.TRANSMISSION_WITNESSES[{name!r}] = {TRANSMISSION_WITNESSES[name]}: "
                 f"{TRANSMISSION_CLASSIFICATION}, active region ({TRANSMISSION_ACTIVE_REGION['above']}, "
-                f"{TRANSMISSION_ACTIVE_REGION['up_to']}], a development witness, not a selection and not "
+                f"{TRANSMISSION_ACTIVE_REGION['up_to']}], valid only at the committed synthetic deepening rate "
+                f"({TRANSMISSION_CONDITION['source']}), a development witness, not a selection and not "
                 "clinical truth",
                 f"respiratory_quotient = {TRANSMISSION_DECLARED_R}, DECLARED for this development analysis "
                 "(only fraction / quotient is identified)",
@@ -1428,6 +1445,7 @@ class RegionEnsemble:
             "family": self.family, "case_id": self.case_id,
             "parameter": self.parameter,
             "classification": TRANSMISSION_CLASSIFICATION,
+            "conditional_on": transmission_condition(),
             "mathematical_region": list(TRANSMISSION_MATHEMATICAL_REGION),
             "active_causal_region": dict(TRANSMISSION_ACTIVE_REGION),
             "declared_respiratory_quotient": TRANSMISSION_DECLARED_R,
@@ -1486,8 +1504,12 @@ UNACCOUNTED = "UNACCOUNTED"
 #: execute later, or one whose receipt could not be placed. The shadow run does NOT carry it, and says so.
 FROM_ENGINE_STATE = "FROM_ENGINE_STATE"
 NOT_MIRRORED = "NOT_MIRRORED"
+#: P3-158: an order the engine is holding until a result arrives, or held and never ran (cancelled, or the
+#: patient could no longer be treated). The ENGINE has not executed it, so the shadow carries nothing for it
+#: and nothing is missing: it is in the timeline so that a reader sees it was asked for.
+HELD_NOT_EXECUTED = "HELD_NOT_EXECUTED"
 DISPOSITIONS = (BUILT, SKIPPED_NO_PHYSIOLOGY, DECLARED_GAP, APPLIED_AS_A_STOP, UNACCOUNTED, FROM_ENGINE_STATE,
-                NOT_MIRRORED)
+                NOT_MIRRORED, HELD_NOT_EXECUTED)
 #: The dispositions of a MIRRORED action. Every mirrored action has exactly one of these.
 MIRRORED_DISPOSITIONS = DISPOSITIONS[:5]
 
@@ -1546,12 +1568,43 @@ def action_dispositions(adapter: RuntimeFamilyAdapter, mirrored: Sequence, state
     return rows
 
 
+def held_rows(held: Sequence, rows: Sequence) -> list:
+    """The held orders in the timeline. A held order the engine ran is already a mirrored row, dated at the
+    minute it REALLY ran: that row is told when the order was placed and what it waited for. One the engine
+    has not run -- still waiting, cancelled, or no longer executable -- gets a row of its own that builds
+    nothing. Reads the session's own record of each held order; decides nothing."""
+    by_id = {str(row.get("shadow_order_id")): row for row in rows}
+    out = []
+    for entry in held:
+        placed, study, state = entry.get("placed_minute"), entry.get("after_result"), entry.get("state")
+        waited = "any pending result" if study == rs.ANY_PENDING else f"the {study} result"
+        row = by_id.get(str(entry.get("shadow_order_id"))) if entry.get("shadow_order_id") else None
+        if state == rs.ORDER_EXECUTED and row is not None:
+            row["placed_minute"] = placed
+            row["why"] = (f"placed at minute {placed} and held for {waited}; the engine ran it at minute "
+                          f"{entry.get('executed_minute')}, and that is the minute it is mirrored at"
+                          + (f". {row['why']}" if row.get("why") else ""))
+            continue
+        why = {rs.ORDER_HELD: f"held for {waited} since minute {placed}; the engine has not run it",
+               rs.ORDER_CANCELLED: f"held for {waited} since minute {placed} and cancelled: it never ran",
+               rs.ORDER_TERMINAL_NOT_EXECUTABLE: f"held for {waited} since minute {placed}; the patient can no "
+                                                 "longer be treated, so it will never run",
+               rs.ORDER_RELEASED: str(entry.get("why") or "the engine ran it at a minute that cannot be "
+                                                          "established")}.get(state, f"held order in state {state}")
+        out.append({"shadow_order_id": str(entry.get("order_id")), "order_minute": None, "placed_minute": placed,
+                    "kind": entry.get("kind"), "order_id": entry.get("ledger_order_id"),
+                    "submission_id": entry.get("submission_id"),
+                    "disposition": NOT_MIRRORED if state == rs.ORDER_RELEASED else HELD_NOT_EXECUTED,
+                    "effective_minute": None, "why": why})
+    return out
+
+
 def unmirrored_rows(gaps: Sequence, rows: Sequence) -> list:
     """One row per declared gap that no row of the timeline accounts for: an order the session never mirrored.
 
-    The session records these once per kind and reason (an order held until a result arrives; a delivery
-    whose receipt could not be placed; a turn whose settled actions were not supplied). The engine may still
-    execute such an order later, and the shadow never sees that: the run does not carry it. The row says so.
+    The session records these once per kind and reason (a delivery whose receipt could not be placed; a turn
+    whose settled actions were not supplied; a held order the engine ran that could not be matched or dated).
+    The run does not carry such an order, and the row says so.
     """
     told = {str(row.get("shadow_order_id")) for row in rows}
     out = []

@@ -143,6 +143,22 @@ ARRIVAL_CONDITIONS = (
     "nothing_on_the_diagnostic_record",  # no study requested, none resulted
 )
 ARRIVAL_REJECTED = "ArrivalNotEligible"
+#: P3-158: what happens to an order the resident asked to hold until a result is back. The engine holds it
+#: (``family_state.deferred_orders``) and runs it itself when the result arrives; only then does the shadow
+#: mirror it, once, dated at the minute the engine REALLY executed it and never at the minute it was placed.
+ORDER_PLACED = "ORDER_PLACED"
+ORDER_HELD = "ORDER_HELD"
+ORDER_RELEASED = "ORDER_RELEASED"
+ORDER_EXECUTED = "ORDER_EXECUTED"
+ORDER_CANCELLED = "ORDER_CANCELLED"
+ORDER_TERMINAL_NOT_EXECUTABLE = "ORDER_TERMINAL_NOT_EXECUTABLE"
+HELD_ORDER_EVENTS = (ORDER_PLACED, ORDER_HELD, ORDER_RELEASED, ORDER_EXECUTED, ORDER_CANCELLED,
+                     ORDER_TERMINAL_NOT_EXECUTABLE)
+ANY_PENDING = "any_pending"
+#: A held order that left the engine's list with no receipt in an observed turn. The engine cancels nothing,
+#: so it ran -- during an information activity, whose clinical time no shadow turn observes.
+UNOBSERVED_RELEASE = ("the engine ran this held order outside an observed order turn (while clinical time "
+                      "passed in an information activity): no receipt reached the shadow, so it is not mirrored")
 #: P3-148: the name a trace the store refused or could not write is recorded under.
 PERSISTENCE_FAILED = "TraceNotPersisted"
 
@@ -210,6 +226,51 @@ def arrival_eligibility(state: Mapping) -> dict:
     return {"eligible": all(conditions.values()), "conditions": conditions, "differences": differences}
 
 
+def held_execution_minute(entry: Mapping, before: Mapping, after: Mapping, turn: int) -> int | None:
+    """The minute the engine ran a held order during the turn from ``before`` to ``after``. None when the
+    engine's own record does not establish it.
+
+    The engine releases a held order at the first of its own checks at which the result it waits for is
+    back. It checks (a) inside the turn, at every minute a result left pending by an EARLIER turn comes
+    back, and (b) once at the end of the turn. So the minute is read from what the engine itself recorded:
+    when each pending result was due, and when the awaited result came back. An order placed in this same
+    turn (``turn`` is the session's turn number) only meets check (b). Nothing here is fitted, and ``test_shadow_resolution.py`` holds this reading
+    against the engine's own timestamp of the released order and against every way of chunking the wait.
+    """
+    try:
+        started, ended = int(before.get("sim_time", 0) or 0), int(after.get("sim_time", 0) or 0)
+        study = str(entry["after_result"])
+        pending = [(int(item.get("due_min", 0)), str((item.get("summary") or {}).get("diagnostic_type")))
+                   for item in (before.get("family_state") or {}).get("pending_diagnostics") or []]
+        had = set(before.get("diagnostics") or {})
+        came_back = {}
+        for name, found in (after.get("diagnostics") or {}).items():
+            if name not in had and isinstance(found, Mapping) and found.get("time_min") is not None:
+                came_back[str(name)] = int(found["time_min"])
+
+        # The same study can be pending more than once, and the engine keeps only the time of the LAST one
+        # that came back: the study is available from the FIRST arrival, which is the earliest pending one.
+        arrivals = [due for due, name in pending if name == study and due <= ended]
+        if study in came_back:
+            arrivals.append(came_back[study])
+
+        def ready(minute: int) -> bool:
+            if study == ANY_PENDING:
+                return not any(due > minute for due, _name in pending)
+            return study in had or any(arrival <= minute for arrival in arrivals)
+
+        if int(entry["placed_turn"]) < int(turn):          # held since an earlier turn: check (a) applies
+            for minute in sorted({due for due, _name in pending if started < due <= ended}):
+                if ready(minute):
+                    return minute
+        if study == ANY_PENDING:
+            still = (after.get("family_state") or {}).get("pending_diagnostics") or []
+            return ended if not still else None
+        return ended if study in set(after.get("diagnostics") or {}) else None
+    except Exception:
+        return None
+
+
 def arrival_untouched(state: Mapping) -> bool:
     """Whether the state still is the untouched authored arrival. False when it cannot be told."""
     return bool(arrival_eligibility(state)["eligible"])
@@ -272,12 +333,18 @@ class ShadowSession:
     #: The identity of the encounter this session opened on: the digest of its arrival. Recorded in the
     #: artifact so two attempts at the same case can be told apart after the fact.
     encounter_id: str = ""
+    #: P3-159: the encounter's own generation -- a digest of the attempt record the page started it from, when
+    #: there is one. None for an encounter that was not started from an attempt record: nothing is invented.
+    generation: str | None = None
     mirrored: list = field(default_factory=list)
     seen: set = field(default_factory=set)
     seen_ledger: set = field(default_factory=set)
     failures: list = field(default_factory=list)
     gaps: list = field(default_factory=list)
     endoscopy_at: int | None = None
+    #: P3-158: every order the engine was asked to hold, with what became of it (see ``HELD_ORDER_EVENTS``).
+    held: list = field(default_factory=list)
+    _released_seen: set = field(default_factory=set)
     turns: int = 0
     _runner_failures: int = 0
     #: P3-140: the witnesses of a declared development region, each its own run beside ``runner``. None for
@@ -300,7 +367,7 @@ class ShadowSession:
     # -- construction ------------------------------------------------------------------------------------
     @classmethod
     def start(cls, state: Mapping, *, environ: Mapping[str, str] | None = None,
-              scenario_id: str | None = None) -> "ShadowSession | None":
+              scenario_id: str | None = None, generation=None) -> "ShadowSession | None":
         """Open a session for this encounter, or None when the flag is off or the family is not enabled.
 
         The arrival mapping, the family's writers and the profile all come from the family adapter, which is
@@ -312,7 +379,7 @@ class ShadowSession:
             return None                     # a state that cannot be read opens nothing: legacy-only
         if not enabled_for(family, environ):
             return None
-        session = cls(case_id="", family=family, scenario_id=scenario_id)
+        session = cls(case_id="", family=family, scenario_id=scenario_id, generation=generation_key(generation))
         session._environ = None if environ is None else dict(environ)
         session._open(state, scenario_id)
         if session.failures:
@@ -498,7 +565,11 @@ class ShadowSession:
         minute = int((before or {}).get("sim_time", 0) or 0)
         fio2 = float((after.get("family_state") or {}).get("oxygen_fio2", 0.21))
         receipts: dict = {}
+        released = []
         for summary in list(result.get("action_summaries") or []):
+            if summary.get("released_after") is not None:
+                released.append(summary)     # a held order the engine ran this turn: mirrored below, not paired here
+                continue
             receipts.setdefault(str(summary.get("type") or ""), []).append(summary)
         taken: dict = {}
         for index, action in enumerate(list(ran)):
@@ -508,7 +579,7 @@ class ShadowSession:
             if order_id in self.seen:
                 continue
             if action.get("after_result"):
-                self._gap({"order_id": order_id, "why": "held until a result arrives", "kind": kind})
+                self._hold(order_id, minute, kind, action, submission_id)
                 continue
             # The ledger's own id is the identity of a real order: the same turn observed twice is
             # mirrored once, whatever minute or turn number the second look falls in. A synthetic action
@@ -530,6 +601,95 @@ class ShadowSession:
                 self.seen_ledger.add(str(ledger_id))
             self.mirrored.append(MirroredAction(order_id, minute, kind, dict(action), dict(receipt), fio2,
                                                 action.get("_order_id"), submission_id))
+        self._release(released, before, after, fio2)
+        self._settle_held(after)
+
+    # -- P3-158: orders held until a result ----------------------------------------------------------------
+    def _hold(self, order_id: str, minute: int, kind: str, action: Mapping, submission_id) -> None:
+        """Remember an order the engine was asked to hold. Nothing is mirrored: the engine has not run it."""
+        ledger_id = action.get("_order_id")
+        if any(item["order_id"] == order_id or (ledger_id is not None and item["ledger_order_id"] == ledger_id)
+               for item in self.held):
+            return                                    # the same turn observed twice holds it once
+        self.held.append({
+            "order_id": order_id, "ledger_order_id": ledger_id, "submission_id": submission_id, "kind": kind,
+            "action": {key: value for key, value in dict(action).items() if key != "after_result"},
+            "after_result": str(action.get("after_result")), "placed_minute": int(minute),
+            "placed_turn": int(self.turns), "state": ORDER_HELD,
+            "executed_minute": None, "shadow_order_id": None, "why": "",
+            "events": [[ORDER_PLACED, int(minute)], [ORDER_HELD, int(minute)]]})
+
+    def _release(self, released: Sequence, before: Mapping, after: Mapping, fio2: float) -> None:
+        """Mirror every held order the engine ran this turn, once, at the minute it really ran.
+
+        The engine's receipt of a released order names what it waited for and when it was placed, and that
+        is how it is matched to the order this session is holding: same kind, same result, same placement
+        minute, oldest first. A release that cannot be matched, or whose minute cannot be established from
+        the engine's own record, is NOT mirrored and says so -- its effect is never guessed.
+        """
+        for index, receipt in enumerate(released):
+            kind, study = str(receipt.get("type") or ""), str(receipt.get("released_after"))
+            # the same receipt of the same turn, looked at again: it was already settled, and adds nothing
+            told = (int(before.get("sim_time", 0) or 0), int(after.get("sim_time", 0) or 0), index, kind, study,
+                    receipt.get("held_from_min"))
+            if told in self._released_seen:
+                continue
+            self._released_seen.add(told)
+            entry = next((item for item in self.held if item["state"] == ORDER_HELD and item["kind"] == kind
+                          and item["after_result"] == study
+                          and item["placed_minute"] == receipt.get("held_from_min")), None)
+            if entry is None:
+                self._gap({"order_id": None, "kind": kind,
+                           "why": "the engine ran a held order this session was not holding"})
+                continue
+            executed = held_execution_minute(entry, before, after, self.turns)
+            if executed is None:
+                entry.update(state=ORDER_RELEASED, why="the engine ran it, but the minute it ran cannot be "
+                                                       "established from the engine's own record")
+                entry["events"].append([ORDER_RELEASED, None])
+                self._gap({"order_id": entry["order_id"], "kind": kind,
+                           "why": "a held order ran at a minute that cannot be established"})
+                continue
+            order_id = f"m{executed:03d}-t{self.turns:02d}-held{index}-{kind}"
+            ledger_id = entry["ledger_order_id"]
+            if order_id in self.seen or (ledger_id is not None and str(ledger_id) in self.seen_ledger):
+                continue                              # already mirrored: never twice
+            self.seen.add(order_id)
+            if ledger_id is not None:
+                self.seen_ledger.add(str(ledger_id))
+            entry.update(state=ORDER_EXECUTED, executed_minute=int(executed), shadow_order_id=order_id)
+            entry["events"].extend([[ORDER_RELEASED, int(executed)], [ORDER_EXECUTED, int(executed)]])
+            self.mirrored.append(MirroredAction(order_id, int(executed), kind, dict(entry["action"]),
+                                                dict(receipt), fio2, ledger_id, entry["submission_id"]))
+
+    def _settle_held(self, after: Mapping) -> None:
+        """What became of every order still held. One still held when the patient can no longer be treated
+        will never run. One that LEFT the engine's held list without a receipt reaching this session was run
+        by the engine outside an observed order turn -- the engine has no cancellation, and it also releases
+        held orders while clinical time passes in an information activity, which no shadow turn observes.
+        That order is NOT mirrored: there is no receipt to mirror it from, so it is declared, never guessed.
+        """
+        family_state = after.get("family_state") or {}
+        waiting = [item for item in (family_state.get("deferred_orders") or []) if isinstance(item, Mapping)]
+        terminal = family_state.get("arrest_at") is not None
+        minute = int(after.get("sim_time", 0) or 0)
+        for entry in self.held:
+            if entry["state"] != ORDER_HELD:
+                continue
+            match = next((item for item in waiting
+                          if isinstance(item.get("action"), Mapping)
+                          and str(item["action"].get("type")) == entry["kind"]
+                          and str(item.get("after_result")) == entry["after_result"]
+                          and item.get("requested_at_min") == entry["placed_minute"]), None)
+            if match is not None:
+                waiting.remove(match)
+                if terminal:
+                    entry.update(state=ORDER_TERMINAL_NOT_EXECUTABLE)
+                    entry["events"].append([ORDER_TERMINAL_NOT_EXECUTABLE, minute])
+                continue
+            entry.update(state=ORDER_RELEASED, why=UNOBSERVED_RELEASE)
+            entry["events"].append([ORDER_RELEASED, None])
+            self._gap({"order_id": entry["order_id"], "kind": entry["kind"], "why": UNOBSERVED_RELEASE})
 
     def _gap(self, gap: Mapping) -> None:
         """One entry per (kind, reason): a gap that survives five turns is recorded once, not five times."""
@@ -537,7 +697,7 @@ class ShadowSession:
         if key not in {(item.get("kind"), item.get("why")) for item in self.gaps}:
             self.gaps.append(dict(gap))
 
-    def is_for(self, state: Mapping) -> bool:
+    def is_for(self, state: Mapping, generation=None) -> bool:
         """Whether this session still belongs to the encounter it opened on.
 
         A case id is not an encounter: a second attempt at the same case is the same case and a different
@@ -561,8 +721,15 @@ class ShadowSession:
         without a reset, both already past the same minute; or a second attempt after a first one that left
         no trace at all on the patient) is declared, not papered over: it is why ``reset_session`` drops
         the session explicitly.
+
+        P3-159: where the page has an explicit identity for the attempt (the id of its attempt record), that
+        decides first: another attempt is another encounter whatever its patient looks like, which closes
+        the "no trace at all" case above for every encounter that has such a record. An encounter without
+        one (``generation`` None on both sides) is still read by the three rules, with the same residual.
         """
         try:
+            if generation_key(generation) != self.generation:
+                return False
             from clinical_core import legacy_adapter
             if str(legacy_adapter.engine_case_id(dict(state))) != self.case_id:
                 return False
@@ -871,6 +1038,15 @@ def _encounter_id(state: Mapping) -> str:
     except Exception:
         return ""
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()
+
+
+def generation_key(value) -> str | None:
+    """The session's reading of an attempt identity: a digest, so the identifier itself is never copied into
+    a session or a trace. None stays None -- an encounter with no attempt record has no generation."""
+    if value is None or value == "":
+        return None
+    import hashlib
+    return "g-" + hashlib.sha256(str(value).encode("utf-8")).hexdigest()[:16]
 
 
 def _digest_of(state) -> str:

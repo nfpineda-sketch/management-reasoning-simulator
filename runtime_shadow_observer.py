@@ -163,7 +163,7 @@ def view(trace: Mapping, *, replay: Mapping | None = None) -> dict:
     eligibility = trace.get("arrival") if isinstance(trace.get("arrival"), Mapping) else {}
     differences = [(list(row) + [None, None, None])[:3] for row in (eligibility.get("differences") or [])
                    if isinstance(row, (list, tuple))]
-    actions = [{key: row.get(key) for key in ("shadow_order_id", "order_minute", "kind", "order_id",
+    actions = [{key: row.get(key) for key in ("shadow_order_id", "order_minute", "placed_minute", "kind", "order_id",
                                               "submission_id", "disposition", "effective_minute", "why")}
                for row in (trace.get("actions") or []) if isinstance(row, Mapping)]
     return {
@@ -490,9 +490,10 @@ def render_html(shown: Mapping) -> str:
                             _e(row["kind"]), _e(row["disposition"]), _e(row["why"]))
                            for row in shown["actions"]], numeric=(0, 1)))
         out.append('<p class="muted">An action the engine executed at minute m is first present in the shadow '
-                   'state of the effective minute. FROM_ENGINE_STATE is a contributor the run carries that no '
-                   'order explains; NOT_MIRRORED is an order the shadow never mirrored, so the run does not '
-                   'carry it.</p>')
+                   'state of the effective minute. An order held until a result is mirrored at the minute the '
+                   'engine really ran it, never at the minute it was placed; HELD_NOT_EXECUTED is one the engine '
+                   'has not run. FROM_ENGINE_STATE is a contributor the run carries that no order explains; '
+                   'NOT_MIRRORED is an order the shadow could not mirror, so the run does not carry it.</p>')
     else:
         out.append('<p class="muted">No action was executed.</p>')
     out.append("</div>")
@@ -584,6 +585,254 @@ def render_html(shown: Mapping) -> str:
 
 # -- the tool -----------------------------------------------------------------------------------------------------
 
+# -- P3-162: the faculty trace-review package ---------------------------------------------------------------------
+
+#: The channel each mapped treatment is EXPECTED to move first: the state variable its certified contributor
+#: writes. Declared here so a reviewer can hold the observed first effect against it; a treatment with no
+#: entry has no declared expectation and says so. Nothing here is a magnitude or a clinical claim.
+EXPECTED_FIRST_CHANNEL = {
+    "crystalloid": "V", "packed_red_cells": "V", "proton_pump_inhibitor": "V", "oxygen": "fio2",
+    "naloxone_reversal": "central_availability",
+}
+NOT_ATTRIBUTABLE = "NOT_ATTRIBUTABLE"
+#: What a faculty reviewer is asked. Judgment only: nothing about the implementation.
+FACULTY_QUESTIONS = {
+    "gi_bleed": (
+        "Is the ORDER in which the channels respond to each treatment the order you would expect in this "
+        "patient (what moves first, what follows)?",
+        "Is the untreated course believable as a direction (it is not calibrated as a speed)?",
+        "Which treatments a resident would reasonably give here are marked as not represented, and does "
+        "their absence change what the trace can be used to discuss?",
+        "Is this case a suitable candidate for a future resident case, and what would have to be true first?",
+    ),
+    "opioid": (
+        "In this run every channel downstream of the reversal responds in the same simulated minute. Is a "
+        "same-minute response acceptable, or do you expect a visible order (ventilation, then carbon "
+        "dioxide, then oxygenation)?",
+        "The speed at which the untreated patient worsens is a synthetic development value with no interval. "
+        "What range of worsening, if any, would you accept for a development patient like this one?",
+        "The three witness runs differ only in how strongly under-ventilation lowers oxygenation. Does any of "
+        "the three look implausible as a direction? (None is preferred or selected.)",
+        "The legacy patient can arrest while the shadow run still shows a pulse and a fixed level of "
+        "consciousness. Is a terminal and consciousness representation required before this case could be "
+        "discussed as a candidate resident case?",
+    ),
+}
+UNRESOLVED_PARAMETERS = {
+    "gi_bleed": ("the committed profile is a development default: no magnitude is faculty-approved",),
+    "opioid": ("opioid deepening rate: one committed synthetic value, no interval (not identifiable from the "
+               "repository's evidence)",
+               "naloxone recovery rate: one committed synthetic value",
+               "transmission fraction: a CONDITIONAL development region, valid only at the committed deepening "
+               "rate; three witnesses, none selected",
+               "respiratory quotient: declared for the development analysis"),
+}
+
+
+def _contributor_of(row: Mapping, contributors: Sequence, taken: set) -> Mapping | None:
+    """The replay contributor one mirrored action built: by identity first, else the only untaken one that
+    starts at the action's effective minute. None when it cannot be told."""
+    named = [item for item in contributors if item.get("id") == row.get("shadow_order_id")]
+    if len(named) == 1:
+        return named[0]
+    minute = row.get("effective_minute")
+    if minute is None:
+        return None
+    timed = [item for item in contributors if item.get("id") not in taken and item.get("start_minute") == minute]
+    return timed[0] if len(timed) == 1 else None
+
+
+def first_effects(trace: Mapping, run_name: str | None = None) -> list:
+    """For each treatment the shadow built: the first minute and the channels in which the run differs from
+    the SAME run without that treatment, then the order in which the other channels follow. Never raises.
+
+    The comparison run is the trace's own replay artifact with that one contributor removed, through the
+    layer's one from-artifact path: no new physiology, nothing fitted. A treatment whose contributor cannot
+    be told apart in the artifact is ``NOT_ATTRIBUTABLE``, not guessed.
+    """
+    out = []
+    try:
+        runs = trace.get("runs") or {}
+        name = run_name or (store.SESSION_RUN_NAME if store.SESSION_RUN_NAME in runs else None)
+        run = runs.get(name) or {}
+        scenario = store.again_scenario(run.get("replay_input") or {})
+        contributors = list(scenario.get("contributors") or [])
+        built = [row for row in (trace.get("actions") or [])
+                 if isinstance(row, Mapping) and row.get("disposition") == fam.BUILT]
+        taken = {row.get("shadow_order_id") for row in built}
+        whole = fam.artifact_rows(scenario) if built else []
+        for row in built:
+            entry = {"shadow_order_id": row.get("shadow_order_id"), "kind": row.get("kind"),
+                     "order_minute": row.get("order_minute"), "effective_minute": row.get("effective_minute"),
+                     "run": name, "contributor_type": None, "expected_first_channel": None,
+                     "first_minute": None, "observed_first_channels": [], "downstream": [],
+                     "expected_is_among_the_first": None, "status": NOT_ATTRIBUTABLE}
+            item = _contributor_of(row, contributors, taken)
+            if item is None:
+                out.append(entry)
+                continue
+            without = dict(scenario, contributors=[other for other in contributors if other is not item])
+            base = fam.artifact_rows(without)
+            onset = {}
+            for mine, theirs in zip(whole, base):
+                for channel, value in mine["channels"].items():
+                    if channel not in onset and value != theirs["channels"].get(channel):
+                        onset[channel] = mine["minute"]
+            order = sorted(onset.items(), key=lambda pair: (pair[1], pair[0]))
+            start = order[0][1] if order else None
+            expected = EXPECTED_FIRST_CHANNEL.get(str(item.get("type")))
+            leading = [channel for channel, minute in order if minute == start]
+            entry.update(contributor_type=item.get("type"), expected_first_channel=expected, first_minute=start,
+                         observed_first_channels=leading,
+                         downstream=[[channel, minute] for channel, minute in order if minute != start],
+                         expected_is_among_the_first=None if expected is None else expected in leading,
+                         status="NO_EFFECT_IN_THIS_RUN" if start is None else "OBSERVED")
+            out.append(entry)
+    except Exception as error:
+        out.append({"status": "COULD_NOT_BE_COMPUTED", "why": f"{type(error).__name__}: {str(error)[:120]}"})
+    return out
+
+
+def _arrival_values(trace: Mapping) -> dict:
+    run = (trace.get("runs") or {}).get(store.SESSION_RUN_NAME) or {}
+    anchors = ((run.get("replay_input") or {}).get("scenario") or {}).get("anchors") or {}
+    return {key: anchors.get(key) for key in ("sbp", "dbp", "hr", "spo2", "respiratory_rate", "lactate",
+                                              "consciousness_level", "fio2") if key in anchors}
+
+
+def review_entry(trace: Mapping) -> dict:
+    """Everything the review package says about one persisted trace. Read-only; the trace is not changed."""
+    trace = deepcopy(dict(trace))
+    replay = store.replay(trace)
+    shown = view(trace, replay=replay)
+    family = shown["identity"]["family"]
+    witnesses = [name for name in (trace.get("expected_witnesses") or [])]
+    effects = {store.SESSION_RUN_NAME: first_effects(trace)}
+    for name in witnesses:
+        effects[name] = first_effects(trace, name)
+    return {
+        "identity": shown["identity"], "generation": trace.get("generation"), "status": shown["status"],
+        "integrity": shown["integrity"], "initial_state": _arrival_values(trace),
+        "arrival_eligible": shown["arrival"]["eligible"],
+        "actions": shown["actions"], "held_orders": list(trace.get("held_orders") or []),
+        "first_effects": effects,
+        "region": trace.get("region"), "witnesses": [
+            {"name": run["name"], "parameter": run["parameter"], "failed": run["failed"],
+             "last_valid_minute": run["last_valid_minute"]} for run in shown["runs"] if run["witness"]],
+        "selected_witness": None,
+        "failures": [failure for run in shown["runs"] for failure in run["failures"]],
+        "replay": {"reproduces": bool(replay.get("reproduces")), "replayed": bool(replay.get("replayed")),
+                   "refused": replay.get("refused")},
+        "unresolved_synthetic_parameters": list(UNRESOLVED_PARAMETERS.get(family, ())),
+        "faculty_questions": list(FACULTY_QUESTIONS.get(family, ())),
+        "view": shown,
+    }
+
+
+def _write(path: Path, text: str) -> None:
+    """The observer's ONE write: a page a reader asked for, at a place the caller has already checked is
+    outside the repository. It never writes to the trace store."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    target = path.resolve()
+    if path.is_symlink() or target == store.repository_root() or store.repository_root() in target.parents:
+        raise PermissionError("a page is never written through a link or inside the repository")
+    path.write_text(text, encoding="utf-8")
+
+
+def _md(value: Any) -> str:
+    text = str("" if value is None else value)
+    for mark, plain in (("|", "/"), ("\n", " "), ("\r", " "), ("<", "‹"), (">", "›"), ("`", "'"), ("[", "("),
+                        ("]", ")"), ("*", "·")):
+        text = text.replace(mark, plain)
+    return text
+
+
+def review_markdown(entries: Sequence) -> str:
+    """The index of a review package: one section per trace, plain markdown, faculty-judgment questions only."""
+    lines = ["# Shadow trace review package — DEVELOPMENT ONLY", "",
+             "Non-authoritative shadow runs recorded beside the legacy engine. Not shown to residents, not "
+             "scored, not clinically validated. No witness is selected and no parameter is approved.", ""]
+    for index, entry in enumerate(entries, start=1):
+        identity, status = entry["identity"], entry["status"]
+        lines += [f"## {index}. {_md(identity['family'])} · {_md(identity['case_id'])} · "
+                  f"{_md(identity['session_minutes'])} min · {_md(identity['turns'])} turns", "",
+                  f"- status: **{_md(status.get('state'))}** {_md(', '.join(status.get('codes') or []))}",
+                  f"- trace verified: {entry['integrity']['verified']} · replay: "
+                  f"{'exact' if entry['replay']['reproduces'] else 'NOT REPRODUCED'}"
+                  f"{'' if entry['replay']['replayed'] or entry['replay']['reproduces'] else ' (refused)'}",
+                  f"- arrival eligible: {entry['arrival_eligible']} · initial state: "
+                  + ", ".join(f"{_md(key)} {_md(value)}" for key, value in entry["initial_state"].items()), "",
+                  "### Action timeline", "", "| ordered | effective | action | disposition | note |",
+                  "|---|---|---|---|---|"]
+        for row in entry["actions"]:
+            lines.append(f"| {_md(row.get('order_minute'))} | {_md(row.get('effective_minute'))} | "
+                         f"{_md(row.get('kind'))} | {_md(row.get('disposition'))} | {_md(row.get('why'))[:160]} |")
+        lines += ["", "### First causal channel, expected and observed", "",
+                  "| run | action | expected first | observed first (minute) | then | agrees |", "|---|---|---|---|---|---|"]
+        for run, effects in entry["first_effects"].items():
+            for effect in effects:
+                if effect.get("status") in ("COULD_NOT_BE_COMPUTED",):
+                    lines.append(f"| {_md(run)} | — | — | {_md(effect.get('status'))} | — | — |")
+                    continue
+                then = ", ".join(f"{channel} ({minute})" for channel, minute in effect["downstream"][:8])
+                seen = (", ".join(effect["observed_first_channels"]) + f" ({effect['first_minute']})"
+                        if effect["first_minute"] is not None else effect["status"])
+                agrees = {True: "yes", False: "NO", None: "no expectation declared"}[
+                    effect["expected_is_among_the_first"]]
+                lines.append(f"| {_md(run)} | {_md(effect['kind'])} @ {_md(effect['order_minute'])} | "
+                             f"{_md(effect['expected_first_channel'])} | {_md(seen)} | {_md(then)} | {agrees} |")
+        if not any(entry["first_effects"].values()):
+            lines.append("| — | no treatment was built in this trace | — | — | — | — |")
+        lines += ["", "### Region witnesses", ""]
+        if entry["witnesses"]:
+            region = entry["region"] or {}
+            lines.append(f"{_md(region.get('classification'))}; conditional on "
+                         f"{_md((region.get('conditional_on') or {}).get('parameter'))} = "
+                         f"{_md((region.get('conditional_on') or {}).get('value'))}. None selected.")
+            lines += [f"- {_md(w['name'])}: {_md((w['parameter'] or {}).get('declared'))}"
+                      f"{' — FAILED, last valid minute ' + _md(w['last_valid_minute']) if w['failed'] else ''}"
+                      for w in entry["witnesses"]]
+        else:
+            lines.append("This family runs no development region.")
+        lines += ["", "### Failures", ""] + ([f"- {_md(f.get('classification'))} at minute {_md(f.get('minute'))}: "
+                                             f"{_md(f.get('message'))[:160]}" for f in entry["failures"]] or ["none"])
+        lines += ["", "### Unresolved synthetic parameters", ""] + [
+            f"- {_md(item)}" for item in entry["unresolved_synthetic_parameters"]]
+        lines += ["", "### Questions for faculty", ""] + [
+            f"{number}. {_md(item)}" for number, item in enumerate(entry["faculty_questions"], start=1)] + [""]
+    return "\n".join(lines) + "\n"
+
+
+def write_review_package(traces: Sequence, destination: str | Path) -> dict:
+    """Write the review package -- ``index.md`` and one report page per trace -- into a directory outside the
+    repository. Returns what happened; never raises."""
+    try:
+        directory = Path(destination)
+        if not directory.is_absolute():
+            return {"written": False, "why": "the package path must be absolute"}
+        resolved = directory.resolve()
+        if resolved == store.repository_root() or store.repository_root() in resolved.parents:
+            return {"written": False, "why": "a review package is run data and is never written inside the "
+                                             "repository"}
+        entries, skipped = [], 0
+        for trace in traces:
+            try:
+                entries.append(review_entry(trace))
+            except Exception:
+                skipped += 1               # one trace that cannot be read does not cost the others their page
+        files = []
+        for index, entry in enumerate(entries, start=1):
+            family = store._safe(entry["identity"]["family"], "trace")
+            name = f"trace_{index:02d}_{family}.html"
+            _write(directory / name, render_html(entry["view"]))
+            files.append(name)
+        _write(directory / "index.md", review_markdown(entries))
+        return {"written": True, "path": str(directory), "files": ["index.md"] + files, "traces": len(entries),
+                "skipped": skipped, "why": ""}
+    except Exception as error:
+        return {"written": False, "why": f"the package could not be written: {type(error).__name__}"}
+
+
 def observe(identifier: str, *, environ: Mapping[str, str] | None = None, replay: bool = True) -> dict | None:
     """The view of one stored trace, replayed unless asked not to. None when the store holds no such trace."""
     trace = store.load(identifier, environ=environ)
@@ -601,9 +850,7 @@ def write_report(shown: Mapping, destination: str | Path) -> dict:
         resolved = path.resolve()
         if resolved == store.repository_root() or store.repository_root() in resolved.parents:
             return {"written": False, "why": "a report is run data and is never written inside the repository"}
-        page = render_html(shown)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(page, encoding="utf-8")
+        _write(path, render_html(shown))
         return {"written": True, "path": str(path), "why": ""}
     except Exception as error:
         return {"written": False, "why": f"the report could not be written: {type(error).__name__}"}
@@ -619,11 +866,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--id", help="the identity of the trace to show")
     parser.add_argument("--out", help="write the report page here (absolute, outside the repository)")
     parser.add_argument("--no-replay", action="store_true", help="do not replay the trace")
+    parser.add_argument("--review", help="write a faculty review package of the furthest record of every "
+                                         "attempt into this directory (absolute, outside the repository)")
     args = parser.parse_args(argv)
     environ = {store.STORE_FLAG: args.store} if args.store else None
     if not store.configured(environ):
         print(store.refused_root(environ) or store.NOT_CONFIGURED)
         return 2
+    if args.review:
+        heads = [row for row in store.records(environ=environ)
+                 if not row["unreadable"] and row["head"] and row["verified"]]
+        traces = [trace for trace in (store.load(row["trace_id"], environ=environ) for row in heads)
+                  if trace is not None]
+        outcome = write_review_package(traces, args.review)
+        print(f'{outcome["path"]} ({outcome["traces"]} traces)' if outcome["written"] else outcome["why"])
+        return 0 if outcome["written"] else 2
     if args.list or args.heads or not args.id:
         for row in store.records(environ=environ):
             if row["unreadable"]:

@@ -9103,11 +9103,14 @@ def _runtime_shadow_session():
     import runtime_shadow
     if runtime_shadow.mode() == runtime_shadow.MODE_OFF:
         return None
+    # P3-159: the attempt record's id, when this encounter was started from one, is the encounter's explicit
+    # generation: a second attempt is another encounter even when its patient is byte-identical.
+    generation = st.session_state.get("_attempt_id")
     session = st.session_state.get("phase3_shadow")
-    if session is not None and not session.is_for(st.session_state.state):
+    if session is not None and not session.is_for(st.session_state.state, generation):
         session = None
     if session is None:
-        session = runtime_shadow.ShadowSession.start(st.session_state.state)
+        session = runtime_shadow.ShadowSession.start(st.session_state.state, generation=generation)
         st.session_state.phase3_shadow = session
     return session
 

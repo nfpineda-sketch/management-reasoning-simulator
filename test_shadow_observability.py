@@ -82,15 +82,16 @@ class Page:
     ``test_p3o_147b`` fija que esas tres sentencias siguen siendo las de ``app.py``.
     """
 
-    def __init__(self, rule=None):
-        self.session, self.opened, self.rule = None, [], rule
+    def __init__(self, rule=None, generation=None):
+        self.session, self.opened, self.rule, self.generation = None, [], rule, generation
 
     def session_for(self, state):
-        session = self.session
-        if session is not None and not (self.rule(session, state) if self.rule else session.is_for(state)):
+        session, generation = self.session, self.generation
+        if session is not None and not (self.rule(session, state) if self.rule
+                                        else session.is_for(state, generation)):
             session = None
         if session is None:
-            session = rs.ShadowSession.start(state)
+            session = rs.ShadowSession.start(state, generation=generation)
             self.session = session
             self.opened.append(session)
         return session
@@ -150,8 +151,9 @@ def test_p3o_147b_the_page_helper_is_the_three_statements_this_file_emulates():
     app = (ROOT / "app.py").read_text(encoding="utf-8")
     helper = app[app.index("def _runtime_shadow_session():"):app.index("def _runtime_authority_site():")]
     for statement in ('session = st.session_state.get("phase3_shadow")',
-                      "if session is not None and not session.is_for(st.session_state.state):",
-                      "session = runtime_shadow.ShadowSession.start(st.session_state.state)"):
+                      'generation = st.session_state.get("_attempt_id")',
+                      "if session is not None and not session.is_for(st.session_state.state, generation):",
+                      "session = runtime_shadow.ShadowSession.start(st.session_state.state, generation=generation)"):
         assert helper.count(statement) == 1, statement
     assert "arrival" not in helper.replace("at the arrival", "")       # la pagina no decide la regla: la pregunta
 
@@ -392,7 +394,7 @@ def test_p3o_148c_the_opioid_persists_its_run_and_three_witnesses_apart(traces):
     session, trace = encounter.shadow, _latest(encounter)
     assert tuple(sorted(trace["runs"])) == tuple(sorted(RUNS)) and trace["expected_witnesses"] == list(WITNESSES)
     assert trace["selected_witness"] is None and "none is selected" in trace["witness_policy"]
-    assert trace["region"]["classification"] == "DEVELOPMENT_TEST_REGION"
+    assert trace["region"]["classification"] == "CONDITIONAL_DEVELOPMENT_REGION"
     assert trace["region"]["active_causal_region"]["up_to"] == 0.060621
     values = {name: trace["runs"][name]["parameter"]["value"] for name in WITNESSES}
     assert values == dict(fam.TRANSMISSION_WITNESSES) == {"LOW": 0.015, "CENTER_REFERENCE": 0.03, "HIGH": 0.06}
@@ -754,7 +756,7 @@ def test_p3o_149f_the_tool_lists_shows_and_refuses(traces, tmp_path, capsys, mon
 def test_p3o_150a_the_seven_codes_and_the_five_states():
     assert fam.STATUS_CODES == rec.FAILURE_VISIBILITY["codes"] and len(set(fam.STATUS_CODES)) == 7
     assert fam.STATUS_STATES == rec.FAILURE_VISIBILITY["states"]
-    assert fam.DISPOSITIONS == rec.FAILURE_VISIBILITY["dispositions"] and len(fam.DISPOSITIONS) == 7
+    assert fam.DISPOSITIONS == rec.FAILURE_VISIBILITY["dispositions"] and len(fam.DISPOSITIONS) == 8
     assert fam.MIRRORED_DISPOSITIONS == fam.DISPOSITIONS[:5] == rec.FAILURE_VISIBILITY["mirrored_dispositions"]
     assert not [state for state in fam.STATUS_STATES if "SUCCESS" in state or state in ("OK", "PASS", "DONE")]
     where = {"start": fam.ARRIVAL_REJECTED, "open": fam.ARRIVAL_REJECTED, "ensemble:lineage": fam.LINEAGE_REJECTED,
@@ -1183,25 +1185,27 @@ def test_p3o_r2_no_field_of_a_trace_chooses_where_a_record_is_written(traces, tm
 HELD = "Order a lactate, wait for the result, then give naloxone 0.4 mg IV."
 
 
-def test_p3o_r3_an_order_held_until_a_result_is_in_the_timeline_as_not_mirrored(traces):
+def test_p3o_r3_an_order_held_until_a_result_is_never_lost_from_the_timeline(traces):
+    """R3 de la revision. Cuando se escribio, la orden retenida que el motor ejecutaba despues quedaba como
+    fila NOT_MIRRORED y la corrida no llevaba su efecto. El ciclo siguiente (P3-158) la refleja en el minuto
+    real de ejecucion: lo que esta prueba sigue protegiendo es que NUNCA falta de la linea de acciones, ni
+    mientras espera ni despues de correr. El detalle del reflejo esta en test_shadow_resolution.py."""
+    waiting = _latest(_play(OPIOID, (HELD,)))
+    held = [row for row in waiting["actions"] if row["kind"] == "naloxone"]
+    assert [(row["disposition"], row["order_minute"], row["effective_minute"]) for row in held] == [
+        (fam.HELD_NOT_EXECUTED, None, None)] and "has not run it" in held[0]["why"]
+    assert waiting["status"]["state"] == fam.COMPLETE          # el motor no la ejecuto: no falta nada en la sombra
     encounter = _play(OPIOID, (HELD,), until=40)
     session, trace = encounter.shadow, _latest(encounter)
-    # el motor SI la ejecuto mas tarde; la sombra nunca la vio. Eso ya era un hueco declarado; ahora ademas
-    # esta en la linea de acciones y el estado nunca es COMPLETE
-    assert encounter.state["family_state"]["naloxone"] > 0 and "naloxone" not in [m.kind for m in session.mirrored]
-    held = [row for row in trace["actions"] if row["disposition"] == fam.NOT_MIRRORED]
-    assert [(row["kind"], row["order_minute"], row["effective_minute"]) for row in held] == [("naloxone", None, None)]
-    assert "held until a result arrives" in held[0]["why"] and "does not carry it" in held[0]["why"]
-    assert trace["status"]["state"] == fam.COMPLETE_WITH_UNSUPPORTED_ACTIONS and trace["status"]["qualified"]
-    assert any("held until a result arrives" in item["detail"] for item in trace["status"]["items"])
-    page = obs.render_html(obs.view(trace, replay=store.replay(trace)))
-    assert "NOT_MIRRORED" in page and "held until a result arrives" in page
-    assert store.verify(trace)["verified"] and store.replay(trace)["reproduces"]
-    # lo que el registro afirma es lo que el codigo hace: una disposicion por accion REFLEJADA
-    assert "MIRRORED" in rec.FAILURE_VISIBILITY["no_silent_drop"]
-    assert "does NOT carry its effect" in rec.FAILURE_VISIBILITY["held_orders"]
+    assert encounter.state["family_state"]["naloxone"] > 0
+    ran = [row for row in trace["actions"] if row["kind"] == "naloxone"]
+    assert [(row["disposition"], row["order_minute"], row["effective_minute"]) for row in ran] == [(fam.BUILT, 5, 6)]
+    assert not [row for row in trace["actions"] if row["disposition"] in (fam.NOT_MIRRORED, fam.HELD_NOT_EXECUTED)]
     mirrored = [row for row in trace["actions"] if row["disposition"] in fam.MIRRORED_DISPOSITIONS]
     assert [row["shadow_order_id"] for row in mirrored] == [item.order_id for item in session.mirrored]
+    assert store.verify(trace)["verified"] and store.replay(trace)["reproduces"]
+    assert "MIRRORED" in rec.FAILURE_VISIBILITY["no_silent_drop"] and "SUPERSEDED" in rec.FAILURE_VISIBILITY[
+        "held_orders"]
 
 
 def _tampered(trace, edit) -> dict:

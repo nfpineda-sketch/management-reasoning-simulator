@@ -300,7 +300,7 @@ def test_p3l_140b_each_witness_is_kept_whole_and_nothing_is_averaged_or_selected
     session = live["naloxone"].shadow
     record = session.record()["region_ensemble"]
     assert record["selected_witness"] is None and record["complete"] is True and record["refused"] is None
-    assert record["classification"] == "DEVELOPMENT_TEST_REGION"
+    assert record["classification"] == "CONDITIONAL_DEVELOPMENT_REGION"
     assert record["mathematical_region"] == [0.0, 0.060621]
     assert record["active_causal_region"] == {"above": 0.0, "up_to": 0.060621,
                                               "zero_is": "NEGATIVE_CONTROL_NOT_A_WITNESS"}
@@ -310,7 +310,7 @@ def test_p3l_140b_each_witness_is_kept_whole_and_nothing_is_averaged_or_selected
         assert witness["value"] == WITNESSES[name]
         assert [row["minute"] for row in witness["minutes"]] == list(range(1, minutes + 1))
         assert witness["replay_digest"] and witness["failures"] == [] and witness["snapshot"]["approved"] is False
-        assert "DEVELOPMENT_TEST_REGION" in " ".join(witness["snapshot"]["provenance"])
+        assert "CONDITIONAL_DEVELOPMENT_REGION" in " ".join(witness["snapshot"]["provenance"])
     # la vista derivada: los tres valores y su minimo y maximo. Ni media, ni mediana, ni valor representativo.
     for reading, rows in record["view"].items():
         assert len(rows) == minutes, reading

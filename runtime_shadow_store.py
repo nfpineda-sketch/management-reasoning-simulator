@@ -206,7 +206,11 @@ def trace_of(session, previous: str | None = None) -> dict:
                 runs[name] = _unreadable_run(WITNESS_RUN, name, error)
     actions = [] if runner is None else fam.action_dispositions(runner.adapter, session.mirrored,
                                                                 session._mapping_state())
+    actions = actions + fam.held_rows(session.held, actions)
     actions = actions + fam.unmirrored_rows(session.gaps, actions)
+    held = [{key: entry.get(key) for key in ("order_id", "kind", "after_result", "placed_minute", "state",
+                                             "executed_minute", "shadow_order_id", "events")}
+            for entry in session.held]
     failures = [dict(vars(item)) for item in session.failures]
     status = fam.session_status(
         failures=failures, gaps=list(session.gaps), actions=actions, expected_witnesses=expected,
@@ -220,6 +224,7 @@ def trace_of(session, previous: str | None = None) -> dict:
         "common_core_runtime_authority": rs.COMMON_CORE_RUNTIME_AUTHORITY,
         "family": session.family, "case_id": session.case_id,
         "encounter_id": session.encounter_id, "scenario_id": session.scenario_id,
+        "generation": session.generation,
         "previous_trace_id": previous,
         "lineage": _lineage(),
         "arrival": {"fingerprint": session.encounter_id,
@@ -230,10 +235,12 @@ def trace_of(session, previous: str | None = None) -> dict:
                                         if runs else "no run opened")},
         "turns": int(session.turns), "session_minutes": session_minutes,
         "actions": actions,
+        "held_orders": held,
         "expected_witnesses": list(expected),
         "witness_policy": (fam.ENSEMBLE_POLICY if expected else "this family runs no development region"),
         "selected_witness": None,
         "region": ({"parameter": fam.TRANSMISSION_FIELD, "classification": fam.TRANSMISSION_CLASSIFICATION,
+                    "conditional_on": fam.transmission_condition(),
                     "mathematical_region": list(fam.TRANSMISSION_MATHEMATICAL_REGION),
                     "active_causal_region": dict(fam.TRANSMISSION_ACTIVE_REGION),
                     "declared_respiratory_quotient": fam.TRANSMISSION_DECLARED_R,
@@ -460,6 +467,38 @@ def _plain(value: Any) -> Any:
     return json.loads(canonical(value))
 
 
+def _held_inconsistencies(body: Mapping) -> list:
+    """Where the held orders and the action timeline of a trace disagree. Each held order has exactly one
+    row: a mirrored one at its execution minute if it ran, a row that builds nothing if it did not; and no
+    row speaks of a held order the trace does not carry. (A held order removed together with its row leaves
+    nothing behind to contradict: that is the consistent forgery the store declares it cannot see.)"""
+    problems: list = []
+    actions = [row for row in (body.get("actions") or []) if isinstance(row, dict)]
+    held = [item for item in (body.get("held_orders") or []) if isinstance(item, dict)]
+    claimed = set()
+    for item in held:
+        ran = item.get("state") == rs.ORDER_EXECUTED
+        identity = str(item.get("shadow_order_id") if ran else item.get("order_id"))
+        rows = [row for row in actions if str(row.get("shadow_order_id")) == identity]
+        claimed.add(identity)
+        if len(rows) != 1:
+            problems.append(f"held order {identity} has {len(rows)} rows in the action timeline")
+            continue
+        row = rows[0]
+        if ran and not (row.get("disposition") in fam.MIRRORED_DISPOSITIONS
+                        and row.get("order_minute") == item.get("executed_minute")
+                        and row.get("placed_minute") == item.get("placed_minute")):
+            problems.append(f"held order {identity} ran and its row does not say so")
+        expected = fam.NOT_MIRRORED if item.get("state") == rs.ORDER_RELEASED else fam.HELD_NOT_EXECUTED
+        if not ran and not (row.get("disposition") == expected and row.get("order_minute") is None):
+            problems.append(f"held order {identity} did not run and its row says otherwise")
+    for row in actions:
+        if (row.get("disposition") == fam.HELD_NOT_EXECUTED or row.get("placed_minute") is not None) and str(
+                row.get("shadow_order_id")) not in claimed:
+            problems.append(f"row {row.get('shadow_order_id')} speaks of a held order the trace does not carry")
+    return problems
+
+
 def _inconsistencies(body: Mapping) -> list:
     """Where a trace disagrees WITH ITSELF. A digest only says the bytes are the ones that were sealed; this
     says the sealed parts tell one story: every run is the run its name says, as long as its record says, the
@@ -470,6 +509,7 @@ def _inconsistencies(body: Mapping) -> list:
     runs = body.get("runs") if isinstance(body.get("runs"), dict) else {}
     family = str(body.get("family") or "")
     session_minutes = body.get("session_minutes")
+    problems.extend(_held_inconsistencies(body))
     adapter = fam.adapter_for(family)
     declared = [] if adapter is None or not runs else list(adapter.region_witnesses())
     if list(body.get("expected_witnesses") or []) != declared:

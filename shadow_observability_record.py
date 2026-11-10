@@ -168,13 +168,14 @@ FAILURE_VISIBILITY = {
                       "Two further rows keep the timeline whole: a contributor built from the engine's own "
                       "state, and an order the session never mirrored",
     "dispositions": ("BUILT", "SKIPPED_NO_PHYSIOLOGY", "DECLARED_GAP", "APPLIED_AS_A_STOP", "UNACCOUNTED",
-                     "FROM_ENGINE_STATE", "NOT_MIRRORED"),
+                     "FROM_ENGINE_STATE", "NOT_MIRRORED", "HELD_NOT_EXECUTED"),
     "mirrored_dispositions": ("BUILT", "SKIPPED_NO_PHYSIOLOGY", "DECLARED_GAP", "APPLIED_AS_A_STOP",
                               "UNACCOUNTED"),
-    "held_orders": "an order the engine holds until a result arrives is not mirrored, and the engine may "
-                   "execute it later: the shadow run then does NOT carry its effect. It was already a declared "
-                   "gap before this cycle; it is now also a NOT_MIRRORED row of the timeline and the status is "
-                   "never COMPLETE. Mirroring the later execution is not built",
+    "held_orders": "as this cycle left it: an order the engine holds until a result arrives was not mirrored, "
+                   "and when the engine executed it later the shadow run did NOT carry its effect; it was a "
+                   "NOT_MIRRORED row and the status was never COMPLETE. SUPERSEDED by the next cycle (P3-158, "
+                   "the resolution record): a held order is now mirrored once, at the minute the engine really "
+                   "executes it, and one the engine has not run is a HELD_NOT_EXECUTED row",
     "oxygen_regression": "the earlier defect (oxygen listed as mapped and dropped by three offline adapters) is "
                          "regression-tested through the dispositions of every adapter",
     "residual": "visibility is pull-based (a reader opens the store or the report); a store that cannot be "
