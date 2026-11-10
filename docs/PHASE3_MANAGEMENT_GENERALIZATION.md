@@ -79,8 +79,8 @@ condiciones dejan de cumplirse con cualquier transmisión no nula; son lo que el
 | Minuto | Sin tratar | Oxígeno desde 10 | Naloxona en 20 |
 |---|---|---|---|
 | 15 | 5,57 · 0,54 · 74,4 · 79,8 · 1,00 | 5,57 · 0,54 · 74,4 · **85,6** · 1,07 | igual que sin tratar |
-| 30 | 5,16 · 0,50 · 80,2 · 79,6 · 0,99 | 5,16 · 0,50 · 80,2 · **85,4** · 1,07 | **12,35 · 1,19 · 33,5** · 81,3 · 1,02 |
-| 60 | 4,44 · 0,43 · 93,2 · 79,0 · 0,99 | 4,44 · 0,43 · 93,2 · **85,1** · 1,06 | **15,14 · 1,46 · 27,4** · 81,5 · 1,02 |
+| 30 | 5,16 · 0,50 · 80,2 · 79,6 · 0,99 | 5,16 · 0,50 · 80,2 · **85,4** · 1,07 | **12,00 · 1,16 · 34,5** · 81,3 · 1,02 |
+| 60 | 4,44 · 0,43 · 93,2 · 79,0 · 0,99 | 4,44 · 0,43 · 93,2 · **85,1** · 1,06 | **15,12 · 1,46 · 27,4** · 81,5 · 1,02 |
 | 90 | 3,82 · 0,37 · 108,3 · 78,4 · 0,98 | 3,82 · 0,37 · 108,3 · **84,6** · 1,06 | **15,23 · 1,47 · 27,2** · 81,5 · 1,02 |
 
 El soporte de oxígeno mejora la saturación mientras la falla ventilatoria persiste (la FR sigue cayendo y el PaCO2
@@ -154,3 +154,32 @@ abiertas todas las compuertas: exposición en tiempo de ejecución, exposición 
 aislamiento de la puntuación, revisión docente, selección de casos, visibilidad de fallos, vuelta atrás y
 salvaguardas frente al residente. El paso siguiente más corto y seguro es una **decisión docente sobre las dos
 regiones de desarrollo**, porque todas las demás compuertas dependen de cuál es la fisiología que se expondría.
+
+## 9 · Decisiones docentes del 2026-11-10 y rectificación (posterior a este informe)
+
+Este informe es el del ciclo que terminó en `39dee52`. Después, la docencia decidió sobre él (FD-P3-129 y
+FD-P3-130; detalle en `docs/PHASE3_SECOND_LIVE_FAMILY.md` §1–§2):
+
+- **Región respiratoria (§2).** Aprobada como **región matemática de desarrollo** f ∈ [0; 0,060621], con R = 0,8
+  declarado, y distinguida de la **región causal activa** f ∈ (0; 0,060621]: f = 0 es un control negativo, no
+  un testigo de la cadena. Los testigos siguen siendo sólo de prueba; el central no es preferido; ningún perfil
+  comprometido adopta uno. Confianza 0,84.
+- **Región del edema (§6).** Aprobada como `DEVELOPMENT_TEST_REGION`, confianza 0,82: para demostrar causalidad
+  de manejo en simulación, no como calibración clínica, guía de dosis ni valor de producción.
+- **Asma (§4).** La salvedad queda resuelta: las tres condiciones de P2S-3 están **sustituidas** donde chocan
+  con el enlace certificado, con invariantes causales que conservan su intención; no se borraron.
+- **Testigos.** No entran en los adaptadores registrados de opioide ni de asma; el opioide los corre en vivo
+  como conjunto por región.
+- **ACS (§7).** El bloqueo de llegada sigue en pie; ACS queda listo fuera de línea.
+- **Hito (§8).** `MULTIFAMILY_MANAGEMENT_CAUSALITY_VALIDATED_FOR_DEVELOPMENT`: GI — V / pérdida de volumen; ACS
+  — P / reperfusión — fuera de línea; opioide — disponibilidad central / ventilación — `READY_WITH_REGION`;
+  edema pulmonar — L / descongestión — `READY_WITH_REGION`. **No implica preparación del runtime en vivo.**
+
+**Rectificación (FD-P3-134, L1).** La auditoría en vivo encontró que el adaptador del opioide mapeaba la
+naloxona al propio minuto del motor. Corregido: una orden ejecutada en el minuto m aparece en el estado m + 1,
+como el oxígeno. Las cifras de naloxona de este informe se movieron un minuto —la tabla de §5 y el bloque
+`MEASURED` del registro ya llevan las nuevas— y ningún veredicto cambió. La frase de §3 «nada se mueve antes
+del minuto en que se da» sigue siendo cierta.
+
+**Numeración.** Este informe llama P3-137 a P3-144 a sus paquetes; el ciclo siguiente recibió del encargo los
+números P3-137 a P3-146 para otros. Ver FD-P3-131.

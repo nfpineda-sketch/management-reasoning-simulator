@@ -74,13 +74,23 @@ de alcance, rige la fuente, no este resumen.
   - `pilot-residents-v1` sigue congelada;
   - la Fase 1 (Contracts v2) está cerrada en `6fad3103af531689af7995a4db3838418581f1c0`
     (`phase-1-contracts-v2`); no se modifica;
-  - la Fase 2 está **cerrada** en `d2cca46626ed5d45a792ec9456d46fb75fe87731`, con el digesto
-    `22b90a6f7f38929cc5c18aa2000579155b4d9109198e35e29ad3991e81d6ce6a` sobre las 141 fuentes de
-    `clinical_core/`. `phase-2-clinical-core-shadow` queda como la rama histórica congelada de esa
-    fisiología: no se modifica;
+  - **cierre histórico de la Fase 2** (inmutable; ni se reescribe ni se sustituye): la Fase 2 está
+    **cerrada** en `d2cca46626ed5d45a792ec9456d46fb75fe87731`, con el digesto
+    `22b90a6f7f38929cc5c18aa2000579155b4d9109198e35e29ad3991e81d6ce6a` sobre las 141 fuentes que
+    `clinical_core/` tenía en ese cierre. `phase-2-clinical-core-shadow` queda como la rama histórica
+    congelada de esa fisiología: no se modifica;
+  - **núcleo común vigente** (un sucesor certificado del cierre, no un reemplazo): `PHASE2_AMENDMENT_1`,
+    con el digesto `10b45ce2967ea55afccb35291afb5bb1f7f1b01eb4a253e6a0736c02a5878635` sobre 142 fuentes,
+    certificado sobre el candidato `0b3c44396ddac13a0e0f1c000113d14825d61f67` e integrado en
+    `phase-3-runtime-integration` el 2026-11-10. Es lo que hay hoy en `clinical_core/` de esa rama:
+    - el cierre histórico se **reconstruye** desde él en cada verificación;
+    - la compuerta de linaje exige que el núcleo activo sea un miembro **certificado**;
+    - `phase-2-amendment-1-respiratory-transmission` queda como la rama de esa enmienda: no se modifica;
+    - registro: `docs/revision/PHASE2_AMENDMENT_1.md`;
   - `phase-3-runtime-integration` es la rama autorizada para el desarrollo de la Fase 3 (decisión docente
     del 2026-11-07), desde esa cabeza de cierre. La infraestructura de la Fase 3 vive **fuera** de
-    `clinical_core/`, porque el digesto de cierre cubre todas sus fuentes;
+    `clinical_core/`: ningún paquete de la Fase 3 edita ese paquete, porque el digesto del núcleo vigente
+    cubre todas sus fuentes y de él depende la reconstrucción del cierre;
   - el motor de familias heredado (`family_engine.py`) sigue siendo la **única** autoridad en tiempo de
     ejecución: `COMMON_CORE_RUNTIME_AUTHORITY = False`;
   - `clinical_core` funciona sólo en sombra, y en la Fase 3 también en vivo **sin autoridad**, detrás de una
@@ -92,7 +102,8 @@ de alcance, rige la fuente, no este resumen.
     - integrar el motor de casos generados (`clinical_physiology`).
 
   Fuente: encargo del 2026-10-21 y `docs/PHASE2_SHADOW_CORE.md`; para la Fase 3, los encargos del
-  2026-11-07, `docs/PHASE3_RUNTIME_INTEGRATION.md` y las filas FD-P3-01 a FD-P3-16 del Decision File.
+  2026-11-07, `docs/PHASE3_RUNTIME_INTEGRATION.md` y las filas FD-P3-01 a FD-P3-16 del Decision File; para
+  la enmienda y su integración, las filas FD-AMEND1-01 a FD-AMEND1-04, FD-P3-119 y FD-P3-129.
 
 ## Privacidad y procedencia
 - No commitear datos reales, respuestas externas, secretos ni nombres de médicos.

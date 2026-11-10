@@ -25,6 +25,12 @@ digesto de cierre en cada corrida.
 > del linaje». La regla que sigue en pie: ningún paquete de la Fase 3 edita `clinical_core/`. Detalle:
 > `docs/revision/PHASE2_AMENDMENT_1.md` y `docs/PHASE3_MANAGEMENT_GENERALIZATION.md` §1.
 
+> **Nota del 2026-11-10 (segunda familia en sombra en vivo, FD-P3-131 a FD-P3-137).** Donde este documento dice
+> que la sombra en vivo es sólo de GI, léase a partir de esa fecha `LIVE_FAMILIES = ("gi_bleed", "opioid")`. El
+> opioide corre en sombra en vivo **sin autoridad**, con su llegada comprobada contra el caso redactado y su
+> parámetro de transmisión como conjunto de tres testigos. La autoridad sigue teniendo su propia compuerta,
+> que nombra sólo a GI y sigue cerrada. Detalle: `docs/PHASE3_SECOND_LIVE_FAMILY.md`.
+
 Un solo artefacto de la Fase 2 sí cambia, y no es fisiología: `test_phase2_closure.py`. Dos de las
 reclamaciones del registro de cierre son del repositorio entero —qué tocó P2X-3 y qué módulos de aplicación
 importan el paquete en sombra— y la prueba las leía del árbol de trabajo. El registro describe el commit de
