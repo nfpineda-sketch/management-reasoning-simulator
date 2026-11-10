@@ -184,6 +184,7 @@ un defecto que el piloto puede medir.
 | TD-132 | Fase 3 · generalización de la causalidad de manejo | **Declarada (2026-11-10, P3-137 a P3-144; rama `phase-3-runtime-integration` con la enmienda certificada integrada).** Deuda y límites del ciclo: ver la sección «TD-132» de este registro y `docs/PHASE3_MANAGEMENT_GENERALIZATION.md`. | P3-137…P3-144 | No | (1), (2) y (8) decisión docente; (3), (4) y (5) paquete de Fase 3 si se necesita; (6) decisión del usuario; (7) declarada; (9) auditoría propia antes de cualquier adopción |
 | TD-133 | Fase 3 · segunda familia en sombra en vivo (opioide) | **Declarada (2026-11-10, ciclo de la segunda familia en vivo, paquetes P3-137 a P3-146 del encargo; sin autoridad).** Deuda y límites: ver la sección «TD-133» de este registro y `docs/PHASE3_SECOND_LIVE_FAMILY.md`. | P3-137…P3-146 (ciclo del 2026-11-10) | No | (1) antes de cualquier uso en vivo o incremental del edema; (2), (3), (4), (9) y (12) decisión docente; (5), (6), (10), (13), (14) y (15) declaradas; (7) paquete siguiente; (8) corregida |
 | TD-134 | Fase 3 · sombra en vivo observable, persistente y con fallos visibles | **Declarada (2026-11-10, ciclo de observabilidad, paquetes P3-147 a P3-155 del encargo; sin autoridad y sin cambio de fisiología común).** Deuda y límites: ver la sección «TD-134» de este registro y `docs/PHASE3_SHADOW_OBSERVABILITY.md`. | P3-147…P3-155 (ciclo del 2026-11-10) | No | (1) y (2) decisión docente; (3) a (9) declaradas; (10) sólo si la docencia lo pide |
+| TD-135 | Fase 3 · resolución de parámetros condicionales, órdenes retenidas y revisión de casos | **Declarada (2026-11-10, paquetes P3-156 a P3-166 del encargo; sin autoridad y sin cambio de fisiología común).** Deuda y límites: ver la sección «TD-135» de este registro y `docs/PHASE3_CONDITIONAL_RESOLUTION.md`. Actualiza TD-134 (1), (3), (4), (7), (8) y (9). | P3-156…P3-166 (ciclo del 2026-11-10) | No | (1), (3) y (8) decisión docente; (2) requiere tocar el camino de actividades de información; el resto, declaradas |
 
 ## Corregido el 2026-10-08 (aislamiento de la suite)
 
@@ -491,3 +492,39 @@ TD-133 (3) y (4): **auditadas** (FD-P3-147), sin promoción al conjunto; lo que 
   ayudante de sesión de la página, fijadas por prueba. La página en un navegador no se ejercitó en este ciclo.
 - **(10)** Una pantalla docente dentro de la app y un almacén desplegado no se construyeron: una guarda vigente
   prohíbe que la página pinte la sombra, y ningún módulo de cara al residente puede leer el almacén.
+
+## TD-135 · Fase 3, resolución de parámetros condicionales, órdenes retenidas y revisión de casos (ciclo del 2026-11-10)
+
+**Cierra o actualiza deuda anterior.** TD-134 (1): **decidida** — la región es condicional
+(`CONDITIONAL_DEVELOPMENT_REGION`, FD-P3-151); queda (1) de esta lista. TD-134 (3): **cerrada** — la orden
+retenida se refleja en su minuto real (FD-P3-153); queda (2). TD-134 (4): **reducida** — con registro de intento,
+otro intento es otro encuentro (FD-P3-157); queda (4). TD-134 (7): **clasificada** — `hidden` es irrelevante
+para el mapeo certificado. TD-134 (8): **documentada** — qué protege y qué no la integridad. TD-134 (9):
+**cerrada** — la página se ejercitó en un navegador (FD-P3-154); queda (6).
+
+- **(1)** **Decisión pendiente: la tasa de profundización no tiene evidencia.** Es un punto sintético; el
+  repositorio sólo acota su signo y una combinación con la fracción. La pregunta docente exacta está en el
+  registro. Mientras no se responda, la región vale sólo en 0,005/min y HIGH queda a 0,9 % del borde.
+- **(2)** **Órdenes retenidas liberadas durante una actividad de información.** El motor también las libera
+  mientras pasa el tiempo de una pregunta o de un examen, y ese camino no tiene turno de sombra. Hoy esa orden
+  **no se refleja**: queda `NOT_MIRRORED`, con brecha declarada y estado nunca `COMPLETE` (antes de la revisión
+  se leía como cancelada). Reflejarla exige observar ese camino desde la página o que el motor anuncie la
+  ejecución; no se hizo en este ciclo.
+- **(3)** El minuto de ejecución de una orden retenida **se lee** del registro del motor, porque su recibo no lo
+  trae. Está contrastado con el sello del motor (naloxona) y por invariancia al troceo; si el motor cambia su
+  regla de liberación, esta lectura debe cambiar con él. Una orden retenida sobre un ECG pedido en un turno
+  posterior no se pudo construir ni contrastar.
+- **(4)** La generación del encuentro existe sólo con registro de intento. Sin él, siguen las tres reglas de
+  estado y su residuo. `ORDER_CANCELLED` queda reservado: el motor no tiene cancelación.
+- **(5)** Integridad sin firma (heredado de TD-134 (8)): un reemplazo coherente, o quitar una orden retenida
+  junto con su fila, no se detecta.
+- **(6)** La prueba de navegador se lanzó desde el sandbox docente con una cuenta sintética de administración,
+  compara texto renderizado y no píxeles, no llega al cierre y vive fuera de la suite. En las corridas con la
+  bandera encendida el registro de red de Chromium anotó intentos de su propio servicio de actualización.
+- **(7)** El paquete de revisión declara el primer canal esperado de cinco tipos de tratamiento; un tratamiento
+  que actúa deteniendo otro (hemostasia) no se atribuye. En opioide todos los canales responden en el mismo
+  minuto simulado: es una pregunta para la docencia, no un defecto corregido.
+- **(8)** **Transición terminal y consciencia: `COMMON_CORE_EXTENSION_REQUIRED`.** Sólo auditado. La
+  contradicción entre el motor heredado y el núcleo existe hoy y no es visible para un residente.
+- **(9)** La comparación de casos es de ingeniería y no una selección; ninguna revisión docente se ha hecho.
+- **(10)** `app.py` cambió en tres líneas del ayudante de sombra, que sólo corren con la bandera encendida.

@@ -12,6 +12,11 @@ lo ve un residente, entra en la puntuación ni toca el primer piloto. **En este 
 fisiología del núcleo común:** `clinical_core/` es byte a byte el de `1e18594`. No se afirma validación
 clínica y nada se ajusta a las curvas del motor heredado.
 
+**Nota del 2026-11-10 (ciclo siguiente, P3-156 a P3-166).** Tres cosas de este documento quedaron sustituidas por
+`docs/PHASE3_CONDITIONAL_RESOLUTION.md`: una orden retenida que el motor ejecuta después **sí** se refleja, en su
+minuto real (§5 decía que no); la región de transmisión se clasifica `CONDITIONAL_DEVELOPMENT_REGION` (§6); y la
+página **sí** se ejercitó en un navegador (§11). El resto se conserva como quedó.
+
 ## 1 · Decisiones docentes y de arquitectura que abrieron el ciclo
 
 | Decisión | Contenido | Fila |
