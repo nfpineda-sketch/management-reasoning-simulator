@@ -249,6 +249,14 @@ def _acid_burden(state: CoreState, anchors: Anchors, profile: CoreProfile, deman
     return acid_burden_after_minute(state.aux.metabolic_acid_burden, deficit, profile)
 
 
+def _systemic_burden_after(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float | None:
+    """PHASE2_AMENDMENT_2: F after the minute, or None (not tracked) where the profile does not declare the amendment."""
+    if profile.amendment_2 is None:
+        return None
+    from . import systemic_consciousness as _amendment_2
+    return _amendment_2.systemic_burden_after(state, anchors, profile)
+
+
 def _no_repayment_across(debt: ChannelDelta, after: CoreState, anchors: Anchors, profile: CoreProfile,
                          demand: float) -> ChannelDelta | None:
     """P2I-2AD: the repayment withdrawn when the minute ends in a deficit, else None.
@@ -688,7 +696,8 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
                          respiratory_distress=_distress_after(state, distress, profile, minute),
                          central_availability=_availability_after(state, availability, profile, minute),
                          systemic_stress=_systemic_stress_after(state, systemic_stress, profile, minute),
-                         vasodilatory_burden=_vasodilation_after(state, vasodilation, profile, minute))
+                         vasodilatory_burden=_vasodilation_after(state, vasodilation, profile, minute),
+                         systemic_encephalopathy_burden=_systemic_burden_after(state, anchors, profile))
     aux = replace(aux, sympathetic_drive=sympathetic_after_minute(state, new_state.evolve(aux=aux), anchors, profile))
     new_state = new_state.evolve(aux=aux)
     changes = tuple(AuxiliaryChange(name, getattr(state.aux, name), getattr(aux, name), AUXILIARY_SOURCES[name],
@@ -970,5 +979,9 @@ def scenario_from_dict(data: Mapping) -> tuple[Anchors, tuple[Contributor, ...],
     profile_data = dict(data["profile"])
     for name in ("pressure_levels", "oxygen_levels"):
         profile_data[name] = tuple(tuple(pair) for pair in profile_data[name])
+    if profile_data.get("amendment_2") is not None:
+        # PHASE2_AMENDMENT_2: the declared profile of the amendment, rebuilt from the plain data it travelled as.
+        from .systemic_consciousness import Amendment2Profile
+        profile_data["amendment_2"] = Amendment2Profile(**profile_data["amendment_2"])
     return (Anchors.from_dict(data["anchors"]), tuple(from_spec(item) for item in data["contributors"]),
             int(data["minutes"]), CoreProfile(**profile_data))

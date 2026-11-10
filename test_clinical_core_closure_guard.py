@@ -17,7 +17,7 @@ import pytest
 
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import closure_guard as cg
-from clinical_core import amendment_1 as a1
+from clinical_core import amendment_2 as a2
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import distributive_tone as dt
@@ -38,11 +38,11 @@ T_LOWER, T_UPPER = CHANNEL_BOUNDS[Channel.T][0], CHANNEL_BOUNDS[Channel.T][1]
 
 @pytest.fixture(autouse=True, scope="module")
 def _closure_tree():
-    """PHASE2_AMENDMENT_1: this file tests what the Phase-2 closure froze, so it reads the tree as the closure
-    left it (amendment_1.tree). The amended tree has its own tests (test_phase2_amendment*.py); what is asserted
+    """PHASE2_AMENDMENT_1 and PHASE2_AMENDMENT_2: this file tests what the Phase-2 closure froze, so it reads the tree as the closure
+    left it (amendment_2.tree, which composes the first amendment's view). The amended tree has its own tests (test_phase2_amendment*.py); what is asserted
     here is historical and its expected values are not rewritten."""
     with pytest.MonkeyPatch.context() as patch:
-        a1.tree(patch)
+        a2.tree(patch)
         yield
 
 

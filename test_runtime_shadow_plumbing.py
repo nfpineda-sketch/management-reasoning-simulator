@@ -443,7 +443,8 @@ def test_r17_the_phase2_closure_digest_is_unchanged():
     # PHASE2_AMENDMENT_1: the live tree is the closure's successor. What must be unchanged is the closure itself:
     # it is rebuilt from these same live sources by reversing the successor's declared insertions.
     from clinical_core import amendment_1 as a1
-    closure = a1.p2x1a_sources(sources)
+    from clinical_core import amendment_2 as a2
+    closure = a2.closure_sources_of(sources)
     digest = hashlib.sha256(json.dumps(closure, sort_keys=True).encode("utf-8")).hexdigest()
     assert digest == runtime_shadow.PHASE2_DIGEST
     live = hashlib.sha256(json.dumps(sources, sort_keys=True).encode("utf-8")).hexdigest()

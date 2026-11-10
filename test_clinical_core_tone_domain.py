@@ -20,7 +20,7 @@ from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import distributive_tone as dt
 from clinical_core import closure_guard as cg
-from clinical_core import amendment_1 as a1
+from clinical_core import amendment_2 as a2
 from clinical_core import tone_domain as x1
 from clinical_core.integration import CHANNEL_BOUNDS, step, tone_domain
 from clinical_core.state import Channel, CoreInvariantError
@@ -39,7 +39,7 @@ def _p2x1_tree():
     read the tree as P2X-1 left it (cg.chain, cg.p2x1_sources)."""
     with pytest.MonkeyPatch.context() as patch:
         cg.tree(patch)
-        a1.chain(patch)
+        a2.chain(patch)
         yield
 
 
@@ -83,7 +83,7 @@ def test_the_reversal_is_not_evadable():
 def test_the_p2w1_tree_reads_the_p2w1_files(monkeypatch):
     with pytest.MonkeyPatch.context() as patch:
         cg.tree(patch)
-        a1.chain(patch)
+        a2.chain(patch)
         x1.tree(patch)
         assert dt.freeze_digest() == x1.P2W1_FREEZE_DIGEST
         assert all(dt.proofs().values())
@@ -279,7 +279,7 @@ def test_no_historical_digest_is_rewritten():
     assert record["freeze_digest"]
     with pytest.MonkeyPatch.context() as patch:
         cg.tree(patch)
-        a1.chain(patch)
+        a2.chain(patch)
         x1.tree(patch)
         assert dt.freeze_digest() == x1.P2W1_FREEZE_DIGEST
     p2w1 = json.loads(dt.RECORD.read_text(encoding="utf-8"))

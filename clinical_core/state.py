@@ -553,10 +553,19 @@ class AuxiliaryState:
     central_availability: float = 1.0
     systemic_stress: float = 0.0
     vasodilatory_burden: float = 0.0
+    # PHASE2_AMENDMENT_2: the reversible systemic encephalopathy burden F, a share of the maximal impairment in [0, 1]. None
+    # is NOT TRACKED (every committed profile), and then the state serializes exactly as it did: this field is not one of
+    # AUXILIARY_FIELDS, so no digest of a state that does not carry it changes. It is distinct from D, from N and from
+    # the collapse burden, and only a profile that declares the amendment writes it.
+    systemic_encephalopathy_burden: float | None = None
 
     def __post_init__(self):
         for name in AUXILIARY_FIELDS:
             _finite(getattr(self, name), name)
+        if self.systemic_encephalopathy_burden is not None:
+            _finite(self.systemic_encephalopathy_burden, "systemic_encephalopathy_burden")
+            if not 0.0 <= self.systemic_encephalopathy_burden <= 1.0:
+                raise CoreInvariantError("the systemic encephalopathy burden is a share between 0 and 1")
         if self.sympathetic_drive < 0:
             # P2D-3: withdrawal of drive lets the rate fall back to the intrinsic rate, never below.
             raise CoreInvariantError("the sympathetic drive is never negative")
@@ -588,13 +597,18 @@ class AuxiliaryState:
             raise CoreInvariantError("the vasodilatory burden is never negative")
 
     def to_dict(self) -> dict:
-        return {name: getattr(self, name) for name in AUXILIARY_FIELDS}
+        data = {name: getattr(self, name) for name in AUXILIARY_FIELDS}
+        if self.systemic_encephalopathy_burden is not None:
+            data["systemic_encephalopathy_burden"] = self.systemic_encephalopathy_burden
+        return data
 
     @classmethod
     def from_dict(cls, data: Mapping) -> "AuxiliaryState":
-        if set(data) != set(AUXILIARY_FIELDS):
-            raise CoreInvariantError(f"auxiliary state names exactly {sorted(AUXILIARY_FIELDS)}, not {sorted(data)}")
-        return cls(**{name: data[name] for name in AUXILIARY_FIELDS})
+        optional = {"systemic_encephalopathy_burden"}
+        if not set(AUXILIARY_FIELDS) <= set(data) <= set(AUXILIARY_FIELDS) | optional:
+            raise CoreInvariantError(f"auxiliary state names exactly {sorted(AUXILIARY_FIELDS)} (and, only where it is "
+                                     f"tracked, {sorted(optional)}), not {sorted(data)}")
+        return cls(**{name: data[name] for name in set(data)})
 
 
 ARRIVAL_AUXILIARY = AuxiliaryState()

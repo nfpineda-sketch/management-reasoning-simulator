@@ -35,7 +35,7 @@ from clinical_core import opioid_migration as un
 from clinical_core import systemic_stress as ss
 from clinical_core import distributive_tone as dt
 from clinical_core import closure_guard as cg
-from clinical_core import amendment_1 as a1
+from clinical_core import amendment_2 as a2
 from clinical_core import tone_domain as x1
 from clinical_core.bands import ARRIVAL
 from clinical_core.integration import CHANNEL_BOUNDS
@@ -64,7 +64,7 @@ def _p2o1_core_through_the_chain():
         dt.chain(patch)
         x1.chain(patch)
         cg.chain(patch)
-        a1.chain(patch)
+        a2.chain(patch)
         yield
 
 

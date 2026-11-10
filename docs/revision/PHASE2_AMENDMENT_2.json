@@ -1,0 +1,50 @@
+{
+  "amended": {
+    "added_sources": [
+      "clinical_core/amendment_2.py",
+      "clinical_core/systemic_consciousness.py"
+    ],
+    "changed_sources": [
+      "clinical_core/decision_pack.py",
+      "clinical_core/derived.py",
+      "clinical_core/integration.py",
+      "clinical_core/state.py"
+    ],
+    "clinical_core_modules": 144,
+    "core_digest": "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2",
+    "declared_insertions": {
+      "clinical_core/decision_pack.py": 1,
+      "clinical_core/derived.py": 6,
+      "clinical_core/integration.py": 3,
+      "clinical_core/state.py": 2
+    },
+    "removed_sources": [],
+    "stage_module": "clinical_core/amendment_2.py"
+  },
+  "amendment": "PHASE2_AMENDMENT_2",
+  "authorized": "2026-11-10 (faculty decisions A2-FD-011 to A2-FD-022)",
+  "branch": "phase-2-amendment-2-terminal-consciousness",
+  "certification": {
+    "status": "CANDIDATE"
+  },
+  "historical_closure": {
+    "clinical_core_modules": 141,
+    "head": "d2cca46626ed5d45a792ec9456d46fb75fe87731",
+    "note": "IMMUTABLE. Not rewritten. Verified from the live files by reversing this stage's declared insertions, then the first amendment's.",
+    "phase2_digest": "22b90a6f7f38929cc5c18aa2000579155b4d9109198e35e29ad3991e81d6ce6a",
+    "record": "docs/revision/P2X3_phase2_closure.json"
+  },
+  "not_claimed": [
+    "No clinical calibration: every magnitude is a FACULTY_DEFINED_DEVELOPMENT_BEHAVIORAL_REGION.",
+    "No runtime authority, no resident-visible change, no scoring effect, no integration into Phase 3.",
+    "No opioid-specific mechanism, no respiratory arrest, no absolute blood-pressure terminal threshold, no direct SpO2 consciousness threshold.",
+    "No encounter termination from the common core."
+  ],
+  "parent": "PHASE2_AMENDMENT_1",
+  "predecessor_amendment": {
+    "amendment": "PHASE2_AMENDMENT_1",
+    "clinical_core_modules": 142,
+    "core_digest": "10b45ce2967ea55afccb35291afb5bb1f7f1b01eb4a253e6a0736c02a5878635",
+    "record": "docs/revision/PHASE2_AMENDMENT_1.json"
+  }
+}

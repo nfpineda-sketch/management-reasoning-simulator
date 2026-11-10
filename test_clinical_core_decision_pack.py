@@ -14,18 +14,18 @@ from clinical_core.derived import DEFAULT_PROFILE, CoreProfile
 from clinical_core.migration import MigrationBlocked, check_migration_gate, gate_dry_run, migration_gate
 from clinical_core.shadow import GOLDEN
 from clinical_core.state import CASE_PARAMETERS
-from clinical_core import amendment_1 as a1
+from clinical_core import amendment_2 as a2
 
 MIDDLE = decision_pack.MIDDLE
 
 
 @pytest.fixture()
 def _closure_tree():
-    """PHASE2_AMENDMENT_1: the tree as the Phase-2 closure left it (amendment_1.tree), for the tests that compare
+    """PHASE2_AMENDMENT_1: the tree as the Phase-2 closure left it (amendment_2.tree, which composes the first amendment's view), for the tests that compare
     with what the closure froze -- the historical document, which is not regenerated. Every other test here reads
     the live tree, this stage's registration in ``PACK_DIGEST_EXCLUDED`` included."""
     with pytest.MonkeyPatch.context() as patch:
-        a1.tree(patch)
+        a2.tree(patch)
         yield
 
 

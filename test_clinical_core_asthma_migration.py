@@ -21,7 +21,7 @@ from clinical_core import opioid_migration as un
 from clinical_core import systemic_stress as ss
 from clinical_core import distributive_tone as dt
 from clinical_core import closure_guard as cg
-from clinical_core import amendment_1 as a1
+from clinical_core import amendment_2 as a2
 from clinical_core import tone_domain as x1
 from clinical_core import asthma_reference as sr
 from clinical_core import blood_fluid_calibration as bf
@@ -107,7 +107,7 @@ def _p2s3_tree():
         dt.chain(patch)
         x1.chain(patch)
         cg.chain(patch)
-        a1.chain(patch)
+        a2.chain(patch)
         patch.setattr(bf, "freeze_sources", lambda: dm.p2s3_sources(_LIVE_SOURCES_P2T1()))
         yield
 
@@ -158,7 +158,7 @@ def test_closed_packages_read_the_p2s2_tree():
         dt.chain(patch)
         x1.chain(patch)
         cg.chain(patch)
-        a1.chain(patch)
+        a2.chain(patch)
         assert "asthma" not in mc._live("clinical_core/lactate_slice.py")
         assert "asthma" not in mc._live("clinical_core/decision_pack.py")
         assert all(mc.proofs().values())

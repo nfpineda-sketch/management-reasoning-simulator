@@ -820,7 +820,7 @@ PACK_DIGEST_EXCLUDED = ("clinical_core/decision_pack_markdown.py", "clinical_cor
                         "clinical_core/distributive_tone_report.py",
                         "clinical_core/tone_domain.py", "clinical_core/tone_domain_report.py",
                         "clinical_core/closure_guard.py", "clinical_core/closure_guard_report.py",
-                        "clinical_core/amendment_1.py")
+                        "clinical_core/amendment_1.py", "clinical_core/amendment_2.py")
 
 
 def pack_sources() -> dict[str, str]:
