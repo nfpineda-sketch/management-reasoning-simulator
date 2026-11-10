@@ -146,6 +146,50 @@ def test_the_real_gate_follows_the_recorded_status_and_nothing_else():
         assert verdict["ok"] is True and verdict["failed"] == []
 
 
+def test_an_artifact_names_the_core_that_produced_it_beside_the_closure_it_roots_at():
+    versions = rs.versions()
+    assert versions["phase2_closure_head"] == rs.PHASE2_CLOSURE_HEAD and versions["phase2_digest"] == rs.PHASE2_DIGEST
+    assert versions["core_version"] == "PHASE2_AMENDMENT_1"
+    assert versions["core_digest"] == ev.phase2_digest_now() == AMENDMENT.digest != rs.PHASE2_DIGEST
+
+
+def test_an_unlisted_core_is_named_as_such_and_naming_it_authorizes_nothing(monkeypatch):
+    monkeypatch.setattr(ev, "phase2_digest_now", lambda: "ab" * 32)
+    assert rs.active_core() == {"core_version": "NOT_IN_THE_LINEAGE", "core_digest": "ab" * 32}
+    assert ev.core_lineage_ok() is False
+
+
+def test_every_import_time_copy_of_a_live_listing_is_declared_by_the_stage():
+    """Una copia tomada al importar (antes de cualquier vista) llevaria el nombre nuevo a un paquete cerrado. La
+    etapa declara las que existen; esta prueba recorre TODOS los modulos del nucleo y no admite otra."""
+    import importlib
+    import pkgutil
+    import sys
+
+    import clinical_core
+    from clinical_core import derived as dv
+    for info in pkgutil.iter_modules(clinical_core.__path__):
+        importlib.import_module(f"clinical_core.{info.name}")
+    new, found = a1.NEW_PROFILE_FIELD, set()
+    for name, module in sorted(sys.modules.items()):
+        if not name.startswith("clinical_core") or name == "clinical_core.amendment_1":
+            continue
+        for attribute, value in list(vars(module).items()):
+            if isinstance(value, dict) and new in value:
+                if value is dv.PARAMETERS or value is dv.CoreProfile.__dataclass_fields__:
+                    continue                                # el listado vivo mismo: la vista lo filtra en su raiz
+                found.add((name.rsplit(".", 1)[-1], attribute))
+            elif isinstance(value, (tuple, list, set, frozenset)):
+                assert not any(item == new or getattr(item, "name", None) == new for item in value), (name, attribute)
+    assert found == set(a1.CLOSED_SNAPSHOTS) == {("oxygenation_link", "P2T3_PARAMETERS")}
+    with a1.closure_view():
+        for module_name, attribute in a1.CLOSED_SNAPSHOTS:
+            assert new not in getattr(sys.modules[f"clinical_core.{module_name}"], attribute)
+        assert new not in dv.PARAMETERS and new not in dv.CoreProfile.__dataclass_fields__
+        assert new not in repr(dv.DEFAULT_PROFILE)
+    assert new in dv.PARAMETERS and new in repr(dv.DEFAULT_PROFILE)
+
+
 def test_the_three_runtime_sites_ask_the_lineage_and_never_compare_one_constant():
     for name in ("runtime_shadow_evidence.py", "runtime_authority.py"):
         source = (ROOT / name).read_text(encoding="utf-8")
@@ -154,14 +198,54 @@ def test_the_three_runtime_sites_ask_the_lineage_and_never_compare_one_constant(
     assert '"phase2_digest": ev.core_lineage_ok()' in (ROOT / "runtime_authority.py").read_text(encoding="utf-8")
 
 
-def test_the_certification_preview_lives_in_the_test_harness_only():
-    flag = "MRS_CORE_CERTIFICATION_PREVIEW"
-    assert flag in (ROOT / "conftest.py").read_text(encoding="utf-8")
+def test_the_certification_preview_is_an_explicit_test_plugin_and_nothing_loads_it():
+    flag, plugin = "MRS_CORE_CERTIFICATION_PREVIEW", "test_core_certification_preview"
+    assert flag in (ROOT / f"{plugin}.py").read_text(encoding="utf-8")
     for path in sorted(ROOT.glob("*.py")) + sorted((ROOT / "clinical_core").rglob("*.py")):
-        if path.name == "conftest.py" or path.name.startswith("test_"):
-            continue
-        assert flag not in path.read_text(encoding="utf-8"), path.name
+        if path.name.startswith("test_"):
+            continue                                    # codigo de pruebas: el plugin y quienes lo prueban
+        text = path.read_text(encoding="utf-8")
+        assert flag not in text, path.name              # ningun modulo del runtime lee la bandera
+        assert plugin not in text or path.name == "conftest.py", path.name
+    harness = (ROOT / "conftest.py").read_text(encoding="utf-8")
+    # conftest.py lo nombra en un comentario y no lo carga, ni lee la capa de la Fase 3
+    assert "pytest_plugins" not in harness and "import " + plugin not in harness
+    assert "runtime_shadow" not in harness and "runtime_authority" not in harness
     assert getattr(ev.successor_status, "real", None) is None        # esta prueba lee el estado real
+
+
+def test_the_preview_upgrades_one_named_candidate_and_nothing_else(monkeypatch):
+    """La vista previa, ejercitada a mano: solo CANDIDATE -> CERTIFIED y solo para la version nombrada."""
+    import test_core_certification_preview as preview
+    monkeypatch.setenv(preview.CORE_CERTIFICATION_PREVIEW_FLAG, "PHASE2_AMENDMENT_1")
+    real = ev.successor_status
+    session = preview._core_certification_preview.__wrapped__()
+    next(session)
+    try:
+        previewed = ev.successor_status
+        assert previewed.real is real
+        monkeypatch.setattr(previewed, "real", previewed.real)         # deja el atributo como estaba al salir
+        for status in ("NO_RECORD", "RECORD_NOT_BOUND_TO_THE_LINEAGE", "NO_STATUS", "REVOKED", rs.CERTIFIED):
+            assert _previewed_with(preview, status, AMENDMENT) == status
+        assert _previewed_with(preview, rs.CANDIDATE, AMENDMENT) == rs.CERTIFIED
+        other = dataclasses.replace(AMENDMENT, version_id="PHASE2_AMENDMENT_2")
+        assert _previewed_with(preview, rs.CANDIDATE, other) == rs.CANDIDATE
+    finally:
+        next(session, None)
+    assert ev.successor_status is real
+
+
+def _previewed_with(preview, status, entry):
+    """Lo que la vista previa devuelve cuando el estado REAL del registro es ``status``."""
+    kept = ev.successor_status
+    ev.successor_status = lambda _entry: status
+    session = preview._core_certification_preview.__wrapped__()
+    next(session)
+    try:
+        return ev.successor_status(entry)
+    finally:
+        next(session, None)
+        ev.successor_status = kept
 
 
 # Los cuatro controles negativos -------------------------------------------------------------------------
@@ -257,6 +341,7 @@ def test_nc4_the_successor_must_recompute_by_its_own_definition_too(monkeypatch)
     _certified(monkeypatch)
     assert ev.core_lineage_ok() is True
     monkeypatch.setattr(a1, "amended_core_digest_now", lambda: "cd" * 32)
+    ev.core_lineage_cache_clear()        # los archivos no cambiaron: la definicion si, y la cache es por archivos
     verdict = ev.core_lineage_verdict()
     assert verdict["ok"] is False and verdict["failed"] == ["active_core_recomputes"]
 

@@ -89,6 +89,140 @@
     "FORWARD_READ_COMPATIBILITY": "NOT_PROVIDED",
     "forward_note": "an artifact written by the amended core carries the share's key, and the closure core refuses it (CoreProfile(**data) raises on an unknown field). No forward-compatibility guarantee existed before this amendment and none is invented by it."
   },
+  "successor_artifacts": {
+    "verified_against": "git show <closure head>:<path>, byte for byte, when this record was written",
+    "note": "Nothing historical is regenerated or overwritten. Each historical document and the historical golden still reproduce, from the live files, under this stage's closure view (their own tests). The values below are what the SAME generators give on the amended tree: explicitly versioned successors.",
+    "generated_documents": {
+      "decision_pack": {
+        "generator": "clinical_core.decision_pack.pack_digest",
+        "digest_key": "pack_digest",
+        "historical_document": "docs/revision/P2G_DECISIONES_DOCENTES_CALIBRACION_GI.md",
+        "historical_data": "docs/revision/P2G_decision_pack.json",
+        "historical_document_rewritten": false,
+        "historical_document_sha256": "527632416e5a16fb8cad1a7c8c096eef1b949f3344a33655669a08fb9cd18d7b",
+        "historical_data_sha256": "834d34a5a7f9971474c708a1325b0fb6ea5128d87ef44e9862e19644d7bc644a",
+        "PHASE2_CLOSURE": "e0fdfbe33abe643ab43793354525d2dc8604be5d2c1f0be2cfc7dd339ed13a15",
+        "PHASE2_AMENDMENT_1": "83d648a7c56c49417dd4bf32aa6818a1be91e30cdf6a5cf7a3766da9a1c6b783",
+        "inputs": {
+          "digested_sources": 42,
+          "sources_that_moved": [
+            "clinical_core/decision_pack.py",
+            "clinical_core/derived.py"
+          ],
+          "calibration_freeze_digest": "unchanged"
+        }
+      },
+      "lactate_slice": {
+        "generator": "clinical_core.lactate_slice.slice_digest",
+        "digest_key": "slice_digest",
+        "historical_document": "docs/revision/P2I_DECISION_LACTATO_GI.md",
+        "historical_data": "docs/revision/P2I_lactate_slice.json",
+        "historical_document_rewritten": false,
+        "historical_document_sha256": "955f35c6487a4b8aeba2cfd55fd0bb48d2fff026761daa023e28abc2c8a33a9c",
+        "historical_data_sha256": "655bbb70fdbf23d53c559628da49b050057d70d5081e580629f35eedbc1af9c9",
+        "PHASE2_CLOSURE": "3c4648e7bdc51baae1c3b6454314b05baf5430bef6032d72a75169a8ff64be10",
+        "PHASE2_AMENDMENT_1": "c009b68efdd7d37ebfb185d357eafd036cbaccacf28bfc4ac51a8e9617aa6dce",
+        "inputs": {
+          "digested_sources": 97,
+          "sources_that_moved": [
+            "clinical_core/amendment_1.py",
+            "clinical_core/decision_pack.py",
+            "clinical_core/derived.py"
+          ],
+          "calibration_freeze_digest": "unchanged"
+        }
+      },
+      "blood_anchors": {
+        "generator": "clinical_core.blood_anchors.anchors_digest",
+        "digest_key": "anchors_digest",
+        "historical_document": "docs/revision/P2I2U_ANCLAS_HEMORRAGIA_COMPARTIDA.md",
+        "historical_data": "docs/revision/P2I2U_blood_anchors.json",
+        "historical_document_rewritten": false,
+        "historical_document_sha256": "d55ccdc9305a6f61a9f06edd0ac9db09c28199aeb1702f071999b96819b08d22",
+        "historical_data_sha256": "b1872af6108abf474e65d583fb2b4a5553ec425a0f3578aed1a3d9b6218ed73e",
+        "PHASE2_CLOSURE": "6ab8199f4c4db14b22ffe7b8bcffd0684a1686814770326c030ccafec3dfcd9b",
+        "PHASE2_AMENDMENT_1": "c982aa7a16d05e4ee3d613193fffe093c0cf2ab8620153cb89c3e10a96d5c900",
+        "inputs": {
+          "digested_sources": 97,
+          "sources_that_moved": [
+            "clinical_core/amendment_1.py",
+            "clinical_core/decision_pack.py",
+            "clinical_core/derived.py"
+          ],
+          "calibration_freeze_digest": "unchanged"
+        }
+      },
+      "blood_probes": {
+        "generator": "clinical_core.blood_probes.probes_digest",
+        "digest_key": "probes_digest",
+        "historical_document": "docs/revision/P2I2T_ESTADO_HEMORRAGICO_COMPARTIDO.md",
+        "historical_data": "docs/revision/P2I2T_blood_probes.json",
+        "historical_document_rewritten": false,
+        "historical_document_sha256": "1636da99a77f95bc408ea4a98ddbe58de0d385e9a79acc2541b908e15555dd40",
+        "historical_data_sha256": "2118dfb899ad86c00e8f07768f7264e23b80f40376340e403aeb3ab7650dfa45",
+        "PHASE2_CLOSURE": "804fecd40896d5800e23addcf87401c3c569b12cfa92afa8a4432abbd08cd1fe",
+        "PHASE2_AMENDMENT_1": "6d892a00cfa333f73a0b95cd27e098b5f07ce239f3e8d74eb502a0c731e16773",
+        "inputs": {
+          "digested_sources": 97,
+          "sources_that_moved": [
+            "clinical_core/amendment_1.py",
+            "clinical_core/decision_pack.py",
+            "clinical_core/derived.py"
+          ],
+          "calibration_freeze_digest": "unchanged"
+        }
+      }
+    },
+    "calibration_freeze_digest": {
+      "PHASE2_CLOSURE": "c1eeb5538a4ea990cbcb4432b0c28e6cb8c351ffe08c96a6036f82d3b65a9b85",
+      "PHASE2_AMENDMENT_1": "c1eeb5538a4ea990cbcb4432b0c28e6cb8c351ffe08c96a6036f82d3b65a9b85",
+      "unchanged": true
+    },
+    "golden": {
+      "historical_golden": "clinical_core/golden/gi_bleed_shadow.json",
+      "historical_golden_sha256": "b37557055368ec8337f86def48e872c6e76129dcfc3be9979ae90f212690e484",
+      "historical_golden_rewritten": false,
+      "blocks": [
+        "case_parameter_rules",
+        "channel_bounds",
+        "core_version",
+        "decisions",
+        "differences",
+        "legacy",
+        "legacy_literals",
+        "parameters",
+        "scenarios"
+      ],
+      "blocks_identical_on_the_amended_core": [
+        "case_parameter_rules",
+        "channel_bounds",
+        "core_version",
+        "decisions",
+        "differences",
+        "legacy",
+        "legacy_literals",
+        "scenarios"
+      ],
+      "blocks_that_differ": [
+        "parameters"
+      ],
+      "behavioural_blocks_identical": true,
+      "parameters": {
+        "PHASE2_CLOSURE_entries": 70,
+        "PHASE2_AMENDMENT_1_entries": 71,
+        "added": {
+          "hypoventilation_oxygenation_transmission_fraction": [
+            "provisional",
+            "UNSCALED (PHASE2_AMENDMENT_1): the share of the common relative alveolar link that is EXPRESSED, delta_PaO2 = fraction x (-delta_PaCO2 / R); None by default, which reproduces the certified P2T-5 full transmission bit for bit, 0 transmits nothing and 1 is that full transmission. It controls how much the RELATIVE alveolar-gas link is expressed and is NOT a respiratory quotient, a shunt fraction, an FiO2 gain, a G retention, a mechanics efficiency or a central availability; it never multiplies retained(G) and has no direct effect on RR, W, PaCO2, the drive, L or the tone. Declared only with the link it scales; no value is approved"
+          ]
+        },
+        "removed": [],
+        "changed": []
+      },
+      "PHASE2_AMENDMENT_1_golden_sha256": "88f17662ac75afc784709bd0114a3908e561ed409e26a4e882a4cc6bdbb36167",
+      "PHASE2_CLOSURE_golden_canonical_sha256": "7a2c397802527cf5b181b71c76f863d8f044f78e2dd535d27723c63a6be679e9"
+    }
+  },
   "defects_repaired_before_certification": [
     "share 0 was decided after the PaCO2 read, so on the unventilated boundary it raised where the undeclared link did not (adversarial review, D5): the zero share is now decided first",
     "30 of the first 39 amendment tests still passed with the share made inert: every property is now a check with an in-suite negative control (6 mutants, 20 kill pairs)"

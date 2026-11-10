@@ -440,10 +440,16 @@ def test_r17_the_phase2_closure_digest_is_unchanged():
     paths = sorted(path.relative_to(ROOT).as_posix() for path in package.rglob("*.py")
                    if "__pycache__" not in path.parts and path.is_file() and not path.name.startswith("."))
     sources = {path: hashlib.sha256((ROOT / path).read_bytes()).hexdigest() for path in paths}
-    digest = hashlib.sha256(json.dumps(sources, sort_keys=True).encode("utf-8")).hexdigest()
+    # PHASE2_AMENDMENT_1: the live tree is the closure's successor. What must be unchanged is the closure itself:
+    # it is rebuilt from these same live sources by reversing the successor's declared insertions.
+    from clinical_core import amendment_1 as a1
+    closure = a1.p2x1a_sources(sources)
+    digest = hashlib.sha256(json.dumps(closure, sort_keys=True).encode("utf-8")).hexdigest()
     assert digest == runtime_shadow.PHASE2_DIGEST
+    live = hashlib.sha256(json.dumps(sources, sort_keys=True).encode("utf-8")).hexdigest()
+    assert live == runtime_shadow.CORE_LINEAGE[-1].digest != digest
     record = json.loads((ROOT / "docs" / "revision" / "P2X3_phase2_closure.json").read_text(encoding="utf-8"))
-    assert record["phase2_digest"] == digest and record["sources"] == sources
+    assert record["phase2_digest"] == digest and record["sources"] == closure
 
 
 def test_the_divergence_classes_come_from_the_committed_golden(paired):

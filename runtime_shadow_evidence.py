@@ -169,22 +169,29 @@ def _historical_closure_for(fingerprint: tuple, reversal: str | None) -> tuple:
                 and digest == rs.PHASE2_DIGEST), digest
 
 
-def _recomputes_by_its_own_definition(entry, live: str) -> bool:
-    if entry.reversal is None:
-        return live == entry.digest
+@lru_cache(maxsize=8)
+def _successor_digest_for(fingerprint: tuple, reversal: str) -> str:
+    """The live digest by the successor stage's OWN definition. Keyed on the sources, like the digests above."""
     import importlib
     try:
-        return importlib.import_module(entry.reversal).amended_core_digest_now() == entry.digest == live
-    except Exception:
-        return False
+        return importlib.import_module(reversal).amended_core_digest_now()
+    except Exception:       # a definition that cannot run recomputes nothing: fail closed
+        return ""
+
+
+def _recomputes_by_its_own_definition(entry, live: str, fingerprint: tuple) -> bool:
+    if entry.reversal is None:
+        return live == entry.digest
+    return _successor_digest_for(fingerprint, entry.reversal) == entry.digest == live
 
 
 def core_lineage_verdict() -> dict:
     """Whether the live common core is one the runtime may stand on, and exactly why not when it is not."""
     live = phase2_digest_now()
+    fingerprint = _phase2_sources()
     entry = next((version for version in rs.CORE_LINEAGE if version.digest == live), None)
     reversal = entry.reversal if entry is not None else None
-    verifies, historical = _historical_closure_for(_phase2_sources(), reversal)
+    verifies, historical = _historical_closure_for(fingerprint, reversal)
     if entry is None:
         status = "NOT_IN_THE_LINEAGE"
     elif entry.parent is None:
@@ -195,7 +202,7 @@ def core_lineage_verdict() -> dict:
         "historical_closure_verifies": verifies,
         "active_core_in_lineage": entry is not None,
         "active_core_certified": entry is not None and status == rs.CERTIFIED,
-        "active_core_recomputes": entry is not None and _recomputes_by_its_own_definition(entry, live),
+        "active_core_recomputes": entry is not None and _recomputes_by_its_own_definition(entry, live, fingerprint),
     }
     return {**conditions, "ok": all(conditions.values()),
             "active_core": entry.version_id if entry is not None else None, "status": status,
@@ -215,6 +222,7 @@ def historical_closure_digest_now() -> str:
 
 def core_lineage_cache_clear() -> None:
     _historical_closure_for.cache_clear()
+    _successor_digest_for.cache_clear()
 
 
 def authoritative(encounter) -> dict:

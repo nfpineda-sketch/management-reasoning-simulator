@@ -196,53 +196,12 @@ def onboarded(store, token):
     return token
 
 
-# PHASE2_AMENDMENT_1: the certification preview --------------------------------------------------------------------
+# PHASE2_AMENDMENT_1 -----------------------------------------------------------------------------------------------
 #
-# A successor of the Phase-2 closure is accepted by the runtime only once its own record says CERTIFIED, and that
-# record is promoted only AFTER a green certification. So the certification run itself has to exercise the runtime
-# as it will be once promoted, while the real, unpromoted lineage must go on refusing. This is how both are true:
-#
-#   * the preview exists ONLY here, in the test harness. No runtime module reads the flag below, so nothing outside
-#     a test run can be previewed into acceptance;
-#   * it does one thing: for the ONE version the flag names, a status of CANDIDATE reads as CERTIFIED. It cannot
-#     invent a lineage entry, bind a record to a digest it does not state, or repair a broken historical closure;
-#   * a test marked ``real_core_lineage`` always sees the real status, so the negative controls and the test of
-#     the real gate are never previewed.
-#
-# After promotion the record itself says CERTIFIED and the flag changes nothing.
-CORE_CERTIFICATION_PREVIEW_FLAG = "MRS_CORE_CERTIFICATION_PREVIEW"
-
+# The certification preview is NOT here: this file is loaded by every test of the repository and reads nothing of
+# the Phase-3 layer. The preview is an explicit pytest plugin (test_core_certification_preview.py) that a
+# certification run names on its own command line. Only the marker those tests use is declared here.
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "real_core_lineage: the test reads the real certified-core lineage, never "
                                        "the certification preview")
-
-
-@pytest.fixture(autouse=True, scope="session")
-def _core_certification_preview():
-    wanted = os.environ.get(CORE_CERTIFICATION_PREVIEW_FLAG, "").strip()
-    if not wanted:
-        yield
-        return
-    import runtime_shadow as rs
-    import runtime_shadow_evidence as ev
-    real = ev.successor_status
-
-    def previewed(entry):
-        status = real(entry)
-        return rs.CERTIFIED if entry.version_id == wanted and status == rs.CANDIDATE else status
-
-    previewed.real = real
-    ev.successor_status = previewed
-    yield
-    ev.successor_status = real
-
-
-@pytest.fixture(autouse=True)
-def _real_core_lineage(request, monkeypatch):
-    if request.node.get_closest_marker("real_core_lineage") is not None:
-        import runtime_shadow_evidence as ev
-        real = getattr(ev.successor_status, "real", None)
-        if real is not None:
-            monkeypatch.setattr(ev, "successor_status", real)
-    yield

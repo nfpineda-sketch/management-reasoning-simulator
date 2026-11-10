@@ -653,10 +653,21 @@ def versions() -> dict:
     """What a shadow or replay artifact must carry to be reproducible."""
     from clinical_core import closure_guard
     return {"phase2_closure_head": PHASE2_CLOSURE_HEAD, "phase2_digest": PHASE2_DIGEST,
+            **active_core(),
             "phase3_module": MODULE_VERSION, "adapter": ADAPTER_VERSION,
             "parameter_snapshot": PARAMETER_SNAPSHOT_ID,
             "closure_guard_digest": closure_guard.freeze_digest(),
             "phase3_layer_digest": layer_digest()}
+
+
+def active_core() -> dict:
+    """Which member of the lineage the live core is, and the digest its files recompute to. The two closure
+    identities say what the lineage roots at; these two say which core actually produced the artifact. Naming a
+    version here authorizes nothing: only the lineage gate decides whether the runtime may stand on it."""
+    import runtime_shadow_evidence as evidence        # it imports this module: resolved at call time
+    live = evidence.phase2_digest_now()
+    entry = next((version for version in CORE_LINEAGE if version.digest == live), None)
+    return {"core_version": entry.version_id if entry is not None else "NOT_IN_THE_LINEAGE", "core_digest": live}
 
 
 def family_versions(family: str) -> dict:

@@ -19,11 +19,11 @@ from clinical_core import amendment_1 as a1
 MIDDLE = decision_pack.MIDDLE
 
 
-@pytest.fixture(autouse=True, scope="module")
+@pytest.fixture()
 def _closure_tree():
-    """PHASE2_AMENDMENT_1: this file tests what the Phase-2 closure froze, so it reads the tree as the closure
-    left it (amendment_1.tree). The amended tree has its own tests (test_phase2_amendment*.py); what is asserted
-    here is historical and its expected values are not rewritten."""
+    """PHASE2_AMENDMENT_1: the tree as the Phase-2 closure left it (amendment_1.tree), for the tests that compare
+    with what the closure froze -- the historical document, which is not regenerated. Every other test here reads
+    the live tree, this stage's registration in ``PACK_DIGEST_EXCLUDED`` included."""
     with pytest.MonkeyPatch.context() as patch:
         a1.tree(patch)
         yield
@@ -297,7 +297,7 @@ def _rows(document: str, first_cell: str) -> list[list[str]]:
             for line in document.splitlines() if line.startswith("| " + first_cell)]
 
 
-def test_the_faculty_document_is_generated_from_the_current_code_and_freeze():
+def test_the_faculty_document_is_generated_from_the_current_code_and_freeze(_closure_tree):
     from clinical_core import decision_pack_markdown
     document, pack = _document()
     assert pack["pack_digest"] == decision_pack.pack_digest(), "the pack is stale: regenerate it"
