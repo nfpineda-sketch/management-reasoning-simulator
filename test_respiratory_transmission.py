@@ -218,13 +218,16 @@ def test_r9_the_link_closes_an_indirect_loop_back_into_ventilation():
     assert _reading(on, 60)["respiratory_rate"] > _reading(off, 60)["respiratory_rate"]
     assert _reading(on, 60)["delivery_rel"] < _reading(off, 60)["delivery_rel"]
     assert rec.INDIRECT_LOOP["exists"] is True
-    assert rec.INDIRECT_LOOP["continuous_not_a_threshold"] is True
-    # continuo, no un umbral: el desvio crece de forma monotona al crecer la transmision
-    gaps = []
-    for quotient in (4.0, 2.0, 1.0, 0.8):
+    # RECTIFICADO por P3-127: el lazo esta COMPUERTEADO por un umbral en D, no es continuo. Debajo del
+    # umbral el desvio es EXACTAMENTE cero, no pequeno. La prueba anterior leia una sucesion monotona
+    # cuyos primeros terminos valian cero y la llamaba crecimiento continuo.
+    assert rec.INDIRECT_LOOP["continuous_not_a_threshold"] is False
+    assert rec.INDIRECT_LOOP["dormant_throughout_the_development_region"] is True
+    for quotient in (4.0, 2.0, 1.0):
         run, anchors, profile, _ = _opioid("opioid_35m", rq=quotient)
-        gaps.append(_delta(off, a_off, p_off, 60) - _delta(run, anchors, profile, 60))
-    assert all(a <= b for a, b in zip(gaps, gaps[1:])), gaps
+        assert _delta(run, anchors, profile, 60) == _delta(off, a_off, p_off, 60), quotient
+        assert run.states[60].D == 0.0
+    assert on.states[60].D > 0.0
 
 
 # R10 - asma, sin ajustar aparte (P3-120) --------------------------------------------------------------

@@ -187,7 +187,22 @@ INDIRECT_LOOP = {
     "route": "SpO2 -> deficit de oxigeno / carga acida -> impulso respiratorio (acid_to_drive_gain) -> FR "
              "-> W -> PaCO2 -> SpO2",
     "refused_route_is_not_this_one": "hypoxaemic_drive_mapping, que sigue en None y rechazado",
-    "continuous_not_a_threshold": True,
+    # RECTIFICADO por P3-127 con medicion directa: NO es continuo. El lazo esta COMPUERTEADO por un
+    # umbral en D, la deuda de entrega de oxigeno. En opioid_35m, D vale exactamente 0 para una
+    # transmision <= 0.818522 y es positiva por encima, asi que por debajo de ese punto el PaCO2 y la FR
+    # de la corrida son identicos bit a bit a los de la corrida sin enlace. Lo que el ciclo anterior leyo
+    # como crecimiento continuo era una sucesion monotona cuyos tres primeros terminos valian cero.
+    "continuous_not_a_threshold": False,
+    "gated_by": "D (the oxygen delivery debt): exactly 0 below the threshold, positive above it",
+    "threshold_in_transmission_on_opioid_35m": 0.818522,
+    "dormant_throughout_the_development_region": True,
+    # Y P3-127 encontro una arista que el primer grafo omitio: la SpO2 la lee ADEMAS el lector de deficit
+    # agudo de P2I-2AF, que mueve aux.sympathetic_drive de forma instantanea y sin umbral. Es fisiologia
+    # certificada anterior a la enmienda, no una escritura nueva, y no pasa por el PaCO2. Medido: su rama
+    # de retorno es inerte aqui, porque la entrega sigue a la SpO2 exactamente en proporcion.
+    "second_edge_found_in_p3_127": "SpO2 -> acute oxygen deficit -> aux.sympathetic_drive -> heart rate",
+    "second_edge_is_pre_existing_certified_physiology": True,
+    "second_edge_return_limb_measured_inert": True,
     "measured_at_r_0_8_opioid_35m": {
         "delta_without_the_link": 24.2104,
         "delta_with_the_link": 21.5026,
@@ -265,3 +280,56 @@ def validate_entry(entry: dict) -> None:
         raise ValueError("una hipoventilacion sostenida sube el PaCO2 sobre el de llegada")
     if "preferred_value" in entry or "chosen_value" in entry:
         raise ValueError("este registro no elige un valor")
+
+
+# -- PHASE2_AMENDMENT_1 / P3-128: la region re-derivada con la ecuacion IMPLEMENTADA ---------------------
+
+#: El control existe ahora de verdad, asi que la region se vuelve a medir y no se copia. OJO: la ecuacion
+#: es dPaO2 = f * (-delta / R), asi que solo el COCIENTE f/R esta identificado por la conducta. La
+#: region de abajo es para R = 0.8, la referencia sintetica declarada de P2T-5; con otro R, la misma
+#: conducta corresponde a otra f. Eso hay que decirlo cada vez que se cite la region.
+AMENDED_REGION_DECLARED_R = 0.8
+AMENDED_REGION_IDENTIFIES_ONLY = "the ratio transmission_fraction / respiratory_quotient"
+
+#: Cota superior por caso: la f a la que la SpO2(60) sin tratar toca el piso del objetivo docente.
+AMENDED_PER_CASE = {
+    "opioid_35m": {"spo2_at_f_zero": 80.0, "f_upper": 0.060621, "binds_the_common_region": True},
+    "opioid_67f": {"spo2_at_f_zero": 84.0, "f_upper": 0.233153, "binds_the_common_region": False},
+}
+
+#: La region comun: la interseccion, atada por el caso mas grave. No es un punto.
+AMENDED_COMMON_REGION = (0.0, 0.060621)
+
+#: Y la cota inferior util, que la enmienda hace posible por primera vez: dentro de la region, la
+#: correccion ventilatoria mueve la oxigenacion de forma visible. A f = 0 no mueve nada, que era el
+#: limite de P3-117. Ganancia medida de SpO2(60) frente a no tratar, en puntos:
+VENTILATORY_CORRECTION_GAIN = {0.0: 0.0, 0.01: 0.846, 0.02: 1.682, 0.04: 3.324, 0.060621: 4.979}
+
+#: Testigos SOLO para prueba. CENTER_REFERENCE no es clinicamente preferido.
+WITNESSES = {"LOW": 0.015, "CENTER_REFERENCE": 0.03, "HIGH": 0.06}
+
+#: El desplazamiento de asma a esas f, medido sin ajustar nada aparte.
+AMENDED_ASTHMA_SHIFT = {
+    "asthma_49m": {0.02: -0.1277, 0.060621: -0.3926, 0.12: -0.7944, 0.2: -1.3636},
+    "asthma_24f": {0.02: -0.1215, 0.060621: -0.3739, 0.12: -0.7574, 0.2: -1.3022},
+}
+
+#: La decision de desarrollo que este ciclo registra. NO es verdad clinica.
+AMENDED_DEVELOPMENT_DECISION = {
+    "quantity": "hypoventilation_oxygenation_transmission_fraction, con respiratory_quotient = 0.8",
+    "region": AMENDED_COMMON_REGION,
+    "classification": "DEVELOPMENT_CLINICAL_REGION",
+    "confidence": 0.84,
+    "rationale": "hereda la confianza de la decision docente que la define: la region es la preimagen "
+                 "exacta de SpO2(60) sin tratar en [78, 88] % bajo la ecuacion implementada, no una "
+                 "eleccion nueva. Dentro de ella la correccion ventilatoria mueve la oxigenacion de forma "
+                 "visible, que es lo que la docencia necesita ensenar, y asma se desplaza menos de medio "
+                 "punto",
+    "uncertainty": "solo f/R esta identificado, y R sigue sin aprobarse (0.8 es una referencia sintetica); "
+                   "la cota la fija un solo caso; el techo de 88 % no ata; y la envolvente certificada de "
+                   "asma no se re-corrio",
+    "falsifier": "si la correccion ventilatoria no mueve la oxigenacion de forma medible dentro de la "
+                 "region, o si asma pierde una invariante certificada, la region no sirve y se informa en "
+                 "vez de usarse",
+    "is_clinical_truth": False,
+}
