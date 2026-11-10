@@ -469,9 +469,15 @@ def test_u28_the_phase2_closure_digest_is_unchanged():
     sources = {path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
                for path in package.rglob("*.py")
                if "__pycache__" not in path.parts and path.is_file() and not path.name.startswith(".")}
-    assert len(sources) == 141
-    digest = hashlib.sha256(json.dumps(sources, sort_keys=True).encode("utf-8")).hexdigest()
+    # PHASE2_AMENDMENT_1: the live tree is the closure's successor. The closure itself is what must be unchanged,
+    # and it is rebuilt from these same live sources by reversing the successor's declared insertions.
+    from clinical_core import amendment_1 as a1
+    closure = a1.p2x1a_sources(sources)
+    assert len(closure) == 141 and len(sources) == 142
+    digest = hashlib.sha256(json.dumps(closure, sort_keys=True).encode("utf-8")).hexdigest()
     assert digest == rs.PHASE2_DIGEST
+    live = hashlib.sha256(json.dumps(sources, sort_keys=True).encode("utf-8")).hexdigest()
+    assert live != rs.PHASE2_DIGEST and live == rs.CORE_LINEAGE[-1].digest
     assert not (ROOT / "clinical_core" / "runtime_shadow.py").exists()
 
 
@@ -715,7 +721,8 @@ def test_v5_the_artifact_carries_the_digest_of_the_golden_that_classified_it():
 
 def test_v6_the_phase2_digest_condition_is_computed_and_can_fail(monkeypatch):
     """Comparing the constant with itself would make the condition true by construction."""
-    assert ev.phase2_digest_now() == rs.PHASE2_DIGEST
+    assert ev.historical_closure_digest_now() == rs.PHASE2_DIGEST
+    assert ev.phase2_digest_now() in {version.digest for version in rs.CORE_LINEAGE}
     off = _play(CASE, TURNS[:1], None)
     on = _play(CASE, TURNS[:1])
     monkeypatch.setattr(ev, "phase2_digest_now", lambda: "a different digest")

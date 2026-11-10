@@ -115,6 +115,108 @@ def phase2_digest_now() -> str:
     return _phase2_digest_for(_phase2_sources())
 
 
+# The certified core lineage (PHASE2_AMENDMENT_1) -------------------------------------------------------------------
+#
+# One constant used to answer two different questions: "is this the historical Phase-2 closure?" and "is this a core
+# the runtime may stand on?". Once the closure has a successor the two come apart, and answering the second with a
+# bare digest would make ANY new digest look like permission the day someone writes it down. So the second question
+# is answered by the lineage, and only when all four of these hold:
+#   1. the historical closure still verifies (from the live files, through the successor's declared reversal);
+#   2. the live tree's digest is a member of the lineage;
+#   3. that member is CERTIFIED (the closure by construction; a successor only by its own bound record);
+#   4. the member's digest is the one the files recompute to, by the successor's own definition as well.
+# A successor never hides a broken closure, an uncertified successor is never accepted, and a digest nobody
+# certified is never accepted.
+
+def _record_of(entry) -> dict | None:
+    try:
+        return json.loads((Path(__file__).resolve().parent / entry.record).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+
+
+def successor_status(entry) -> str:
+    """What a successor's own record says of it -- and only if the record is bound to this lineage entry: the same
+    version, the same digest, the same historical closure underneath. A record that certifies something else, or
+    nothing, certifies nothing here."""
+    record = _record_of(entry)
+    if record is None:
+        return "NO_RECORD"
+    bound = (record.get("amendment") == entry.version_id
+             and (record.get("amended") or {}).get("core_digest") == entry.digest
+             and (record.get("historical_closure") or {}).get("phase2_digest") == rs.PHASE2_DIGEST
+             and (record.get("historical_closure") or {}).get("head") == rs.PHASE2_CLOSURE_HEAD)
+    if not bound:
+        return "RECORD_NOT_BOUND_TO_THE_LINEAGE"
+    return str((record.get("certification") or {}).get("status") or "NO_STATUS")
+
+
+@lru_cache(maxsize=8)
+def _historical_closure_for(fingerprint: tuple, reversal: str | None) -> tuple:
+    """(verifies, digest recomputed for the closure). Keyed on the sources, like the digest above."""
+    live = _phase2_digest_for(fingerprint)
+    if reversal is None:
+        return live == rs.PHASE2_DIGEST, live
+    import importlib
+    try:
+        module = importlib.import_module(reversal)
+        standing = module.historical_closure_verifies()
+        digest = module.historical_closure_digest_now()
+    except Exception:       # a reversal that cannot run proves nothing: fail closed
+        return False, ""
+    return bool(standing["reversal_proven"] and standing["common_untouched"]
+                and standing["closure_digest_recomputes"] and standing["closure_record_states_it"]
+                and digest == rs.PHASE2_DIGEST), digest
+
+
+def _recomputes_by_its_own_definition(entry, live: str) -> bool:
+    if entry.reversal is None:
+        return live == entry.digest
+    import importlib
+    try:
+        return importlib.import_module(entry.reversal).amended_core_digest_now() == entry.digest == live
+    except Exception:
+        return False
+
+
+def core_lineage_verdict() -> dict:
+    """Whether the live common core is one the runtime may stand on, and exactly why not when it is not."""
+    live = phase2_digest_now()
+    entry = next((version for version in rs.CORE_LINEAGE if version.digest == live), None)
+    reversal = entry.reversal if entry is not None else None
+    verifies, historical = _historical_closure_for(_phase2_sources(), reversal)
+    if entry is None:
+        status = "NOT_IN_THE_LINEAGE"
+    elif entry.parent is None:
+        status = rs.CERTIFIED
+    else:
+        status = successor_status(entry)
+    conditions = {
+        "historical_closure_verifies": verifies,
+        "active_core_in_lineage": entry is not None,
+        "active_core_certified": entry is not None and status == rs.CERTIFIED,
+        "active_core_recomputes": entry is not None and _recomputes_by_its_own_definition(entry, live),
+    }
+    return {**conditions, "ok": all(conditions.values()),
+            "active_core": entry.version_id if entry is not None else None, "status": status,
+            "live_digest": live, "historical_closure_digest": historical,
+            "failed": sorted(name for name, held in conditions.items() if not held)}
+
+
+def core_lineage_ok() -> bool:
+    return core_lineage_verdict()["ok"]
+
+
+def historical_closure_digest_now() -> str:
+    """The historical closure digest recomputed from the live files: the live digest itself while the tree is the
+    closure's, and the reversal's reconstruction once a successor stage is the live tree."""
+    return core_lineage_verdict()["historical_closure_digest"]
+
+
+def core_lineage_cache_clear() -> None:
+    _historical_closure_for.cache_clear()
+
+
 def authoritative(encounter) -> dict:
     """Everything authoritative one encounter produced: what the resident sees and what scoring reads."""
     state = encounter.state
@@ -400,7 +502,7 @@ def scenario_evidence(label: str, variant: str, turns: Sequence, off, on) -> dic
         "replay_differs_from_live": bool(live) and live != replayed,
         "shadow_failure_reached_the_encounter": _digest(off_authority) != _digest(on_authority)
                                                 and bool(session is not None and session.failures),
-        "phase2_digest_changed": phase2_digest_now() != rs.PHASE2_DIGEST,
+        "phase2_digest_changed": not core_lineage_ok(),
     }
     return {
         "scenario": label,
@@ -542,7 +644,7 @@ def gi_evidence() -> dict:
                         "and not in others, so it does not explain this one")
     if any(not case["categories_identical"] for case in cases):
         blockers.append("THE_BATTERY_DECIDED_DIFFERENTLY_WITH_THE_SHADOW_ON")
-    if phase2_digest_now() != rs.PHASE2_DIGEST:
+    if not core_lineage_ok():
         blockers.append("PHASE2_DIGEST_CHANGED")
     return {
         "cases": cases,

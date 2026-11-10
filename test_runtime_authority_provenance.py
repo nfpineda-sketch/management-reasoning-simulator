@@ -329,4 +329,7 @@ def test_a12_the_phase_two_digest_did_not_move(_done):
     assert artifact["phase2_digest"] == rs.PHASE2_DIGEST
     assert rs.PHASE2_DIGEST == "22b90a6f7f38929cc5c18aa2000579155b4d9109198e35e29ad3991e81d6ce6a"
     import runtime_shadow_evidence as ev
-    assert ev.phase2_digest_now() == rs.PHASE2_DIGEST
+    # PHASE2_AMENDMENT_1: the closure has a successor, so the LIVE digest is the successor's. What must not
+    # have moved is the historical closure, and it is still recomputed from the live files.
+    assert ev.historical_closure_digest_now() == rs.PHASE2_DIGEST
+    assert ev.phase2_digest_now() in {version.digest for version in rs.CORE_LINEAGE}

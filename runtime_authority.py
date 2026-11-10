@@ -538,7 +538,7 @@ def gate(state: Mapping | None = None, *, environ: Mapping[str, str] | None = No
         "authority_domain": coherent and tuple(domain) == AUTHORITY_DOMAIN,
         "no_pilot": not is_pilot,
         "no_unsupported_action": unsupported is not None and not tuple(unsupported),
-        "phase2_digest": ev.phase2_digest_now() == rs.PHASE2_DIGEST,
+        "phase2_digest": ev.core_lineage_ok(),
         "layer_version": rs.MODULE_VERSION == EXPECTED_LAYER,
     }
     reasons = []

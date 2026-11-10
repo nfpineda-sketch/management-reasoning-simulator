@@ -16,11 +16,22 @@ from clinical_core.derived import DEFAULT_PROFILE
 from clinical_core.integration import run
 from clinical_core.legacy_adapter import (anchors_from_legacy, bank_case, contributors_from_legacy, run_legacy)
 from clinical_core.modules import GIHaemorrhage
+from clinical_core import amendment_1 as a1
 from clinical_core.shadow import (DECISIONS, DIFFERENCES, DORMANT, EXPECTED_DIFFERENCES, GOLDEN, SCENARIOS, VARIANTS,
                                   ShadowResult, acting_mechanisms, classify, consciousness_attribution,
                                   expected_causes, golden_report, run_shadow)
 
 EXACT = [variable.name for variable in VARIABLES if variable.kind == "exact"]
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _closure_tree():
+    """PHASE2_AMENDMENT_1: this file tests what the Phase-2 closure froze, so it reads the tree as the closure
+    left it (amendment_1.tree). The amended tree has its own tests (test_phase2_amendment*.py); what is asserted
+    here is historical and its expected values are not rewritten."""
+    with pytest.MonkeyPatch.context() as patch:
+        a1.tree(patch)
+        yield
 
 
 @pytest.fixture(scope="module")

@@ -30,6 +30,7 @@ from clinical_core import opioid_migration as un
 from clinical_core import systemic_stress as ss
 from clinical_core import distributive_tone as dt
 from clinical_core import closure_guard as cg
+from clinical_core import amendment_1 as a1
 from clinical_core import tone_domain as x1
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import hr_envelope_filter as hf
@@ -188,6 +189,7 @@ def _p2n2_core():
         dt.chain(patch)
         x1.chain(patch)
         cg.chain(patch)
+        a1.chain(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         yield
