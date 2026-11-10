@@ -144,9 +144,13 @@ def test_p3_integration_the_runtime_is_the_certified_amendment_and_nothing_gaine
     assert rec.RUNTIME["core_version"] == verdict["active_core"]
     assert rec.RUNTIME["core_digest"] == verdict["live_digest"] == rs.CORE_LINEAGE[-1].digest
     assert rec.RUNTIME["historical_closure_digest"] == rs.PHASE2_DIGEST
-    # nada gano autoridad ni entro en vivo con la integracion ni con este ciclo
-    assert rs.COMMON_CORE_RUNTIME_AUTHORITY is False and rs.LIVE_FAMILIES == ("gi_bleed",)
-    assert [name for name, adapter in fam.ADAPTERS.items() if adapter.live] == ["gi_bleed"]
+    # nada gano autoridad con la integracion ni con aquel ciclo, y en aquel ciclo nada entro en vivo: el
+    # registro de entonces lo dice. El opioide entro DESPUES, por una autorizacion propia (P3-141, segunda
+    # familia en vivo), y sigue sin autoridad.
+    assert rs.COMMON_CORE_RUNTIME_AUTHORITY is False
+    assert rec.CHECKPOINT["live_shadow_families"] == ["gi_bleed"]
+    assert rs.LIVE_FAMILIES == ("gi_bleed", "opioid")
+    assert [name for name, adapter in fam.ADAPTERS.items() if adapter.live] == ["gi_bleed", "opioid"]
     assert rec.STATUS == "DEVELOPMENT_MEASUREMENT_NO_PARAMETER_ADOPTED"
     text = json.dumps(rec.all_records(), default=str)
     assert not any(label in text for label in mc.FORBIDDEN_LABELS)
@@ -279,7 +283,8 @@ def test_p3_138c_naloxone_moves_the_central_availability_first_and_the_rest_down
         assert mc.no_effect_before(treated.series[channel], base.series[channel], 20), channel
     # el UNICO canal de estado que escribe es la disponibilidad central (mas el lector certificado de la SpO2)
     moved = _first_moved(treated, base, STATE_CHANNELS + AUX_CHANNELS)
-    assert moved == {"central_availability": 20, CERTIFIED_READER: 20}
+    # P3-141: la orden ejecutada en el minuto 20 aparece en el estado del 21 (como el oxigeno en el 11)
+    assert moved == {"central_availability": 21, CERTIFIED_READER: 21}
     # y aguas abajo, cada eslabon en su direccion: FR y W arriba, PaCO2 abajo, SpO2 arriba
     onset = {channel: mc.effect_starts_at(treated.series[channel], base.series[channel], 1)
              for channel in ("central_availability", "respiratory_rate", "ventilation", "paco2", "spo2")}
@@ -299,7 +304,7 @@ def test_p3_138d_the_reversal_reaches_saturation_only_through_the_paco2():
     base, treated = arms["untreated"], arms["naloxone"]
     assert mc.untouched(treated.series["spo2"], base.series["spo2"])
     assert treated.series["paco2"][OPIOID_MINUTES] < base.series["paco2"][OPIOID_MINUTES]
-    assert _first_moved(treated, base, STATE_CHANNELS + AUX_CHANNELS) == {"central_availability": 20}
+    assert _first_moved(treated, base, STATE_CHANNELS + AUX_CHANNELS) == {"central_availability": 21}
 
 
 @pytest.mark.parametrize("witness", ORDER)
@@ -759,7 +764,7 @@ def test_p3_142_no_existing_certified_mapping_expresses_a_live_acs_arrival():
     assert sorted(name for name, how in fixed.declared.items() if how == "synthetic_probe") == sorted(
         rec.ACS["case_parameters_with_no_live_rule"])
     assert adapter.cases == ("acs_70f_left_main",) and adapter.live is False
-    assert rs.LIVE_FAMILIES == ("gi_bleed",) and "ARRIVAL_MAPPING" in fam.ACS_LIVE_GAP
+    assert "acs" not in rs.LIVE_FAMILIES and "ARRIVAL_MAPPING" in fam.ACS_LIVE_GAP
     assert rec.ACS["verdict"] == "ACS_ARRIVAL_MAPPING_REQUIRES_NEW_SEMANTICS"
     assert rec.ACS["offline_management_chain"] == mc.CAUSALLY_READY
 
@@ -922,7 +927,10 @@ def test_p3_143e_the_recorded_matrix_is_what_the_runtime_gives_now(matrix):
 def test_p3_144_the_checkpoint_states_its_limits_and_every_development_decision_is_labelled():
     checkpoint = rec.CHECKPOINT
     assert checkpoint["threshold"] == 4 and checkpoint["complete_pathway_count"] >= checkpoint["threshold"]
-    assert checkpoint["live_shadow_families"] == list(rs.LIVE_FAMILIES) == ["gi_bleed"]
+    # el punto de control de AQUEL ciclo: solo GI estaba en vivo. La lista de hoy es la de entonces mas la
+    # familia autorizada despues, y nada mas.
+    assert checkpoint["live_shadow_families"] == ["gi_bleed"]
+    assert list(rs.LIVE_FAMILIES) == checkpoint["live_shadow_families"] + ["opioid"]
     assert checkpoint["pathways_that_depend_on_a_development_region"] == ["opioid", "pulmonary_edema"]
     assert checkpoint["is_resident_deployment_readiness"] is False and checkpoint["is_clinical_validation"] is False
     for decision in rec.DEVELOPMENT_TEST_DECISIONS:

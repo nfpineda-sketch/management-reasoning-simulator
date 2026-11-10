@@ -279,17 +279,26 @@ def test_r11_each_treatment_moves_its_own_mechanism_and_nothing_else(opioid_arms
     assert mc.direction(oxygen["spo2"], base["spo2"], 90, better="higher")
     assert mc.untouched(oxygen["respiratory_rate"], base["respiratory_rate"], tolerance=1e-9)
     assert mc.no_effect_before(oxygen["spo2"], base["spo2"], 10)
-    # MEDIDO: el oxigeno pedido en el minuto 10 cambia la lectura en el 11, no en el 10. La naloxona,
-    # en cambio, actua en su propio minuto (abajo). La asimetria esta en el nucleo congelado
-    # (``Oxygen._running`` usa ``start_minute < minute`` y fija el FiO2 en ``start_minute + 1``) y aqui
-    # se deja fijada, no corregida: la Fase 2 no se reabre. TD-130.
+    # MEDIDO: el oxigeno pedido en el minuto 10 cambia la lectura en el 11, no en el 10.
     assert mc.effect_starts_at(oxygen["spo2"], base["spo2"], 10) == 11
 
     # la naloxona sube la ventilacion, empieza cuando se da y no retrocede
     assert mc.direction(naloxone["respiratory_rate"], base["respiratory_rate"], 90, better="higher")
     assert mc.no_effect_before(naloxone["respiratory_rate"], base["respiratory_rate"], 20)
-    assert mc.effect_starts_at(naloxone["respiratory_rate"], base["respiratory_rate"], 20) == 20
-    assert mc.effect_starts_at(oxygen["spo2"], base["spo2"], 10) != 10, "la asimetria de un minuto"
+    # P3-141 (segunda familia en vivo): por el ADAPTADOR, una orden ejecutada en el minuto m aparece en el
+    # estado de m + 1, sea oxigeno o naloxona (antes la naloxona caia en m y reescribia un minuto que la
+    # sombra en vivo ya habia registrado). La asimetria del NUCLEO congelado sigue ahi y sigue fijada,
+    # ahora leida donde vive: ``Oxygen`` fija el FiO2 en ``start_minute + 1`` y ``NaloxoneReversal`` actua
+    # en su propio ``start``. La Fase 2 no se reabre. TD-130 (39).
+    assert mc.effect_starts_at(naloxone["respiratory_rate"], base["respiratory_rate"], 20) == 21
+    from clinical_core import integration, opioid_migration as om, opioid_reference
+    from clinical_core.interventions.oxygen import Oxygen
+    arrival, committed = opioid_reference.anchors("opioid_35m"), om.profile()
+    plain = integration.run(arrival, (om.depression(),), 25, committed)
+    reversed_ = integration.run(arrival, (om.depression(), om.naloxone(start=20)), 25, committed)
+    oxygenated = integration.run(arrival, (om.depression(), Oxygen("o", 20, 0.40)), 25, committed)
+    first = lambda run: next(m for m in range(26) if run.states[m].to_dict() != plain.states[m].to_dict())
+    assert (first(reversed_), first(oxygenated)) == (20, 21), "la asimetria de un minuto del nucleo"
     assert mc.monotone_after(naloxone["respiratory_rate"], 20, rising=True)
     assert mc.no_paradox(naloxone["respiratory_rate"], base["respiratory_rate"], 20, better="higher")
 
@@ -337,7 +346,9 @@ def test_r13_oxygen_and_ventilation_are_distinguishable_on_every_channel(opioid_
 # R14..R15 - ACS en vivo: lo auditado y lo rechazado (P3-122) ------------------------------------------
 
 def test_r14_acs_stays_out_of_the_live_list_and_says_why():
-    assert rs.LIVE_FAMILIES == ("gi_bleed",)
+    # P3-141 autorizo al opioide como segunda familia en sombra en vivo; ACS sigue fuera, que es lo que
+    # esta prueba protege.
+    assert "acs" not in rs.LIVE_FAMILIES and rs.LIVE_FAMILIES == ("gi_bleed", "opioid")
     assert fam.ADAPTERS["acs"].live is False
     assert rs.enabled_for("acs", {rs.FLAG: rs.MODE_SHADOW_COMPARE}) is False
     assert "ARRIVAL_MAPPING" in fam.ACS_LIVE_GAP

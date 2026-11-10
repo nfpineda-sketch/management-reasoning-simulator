@@ -196,7 +196,9 @@ def test_h24_the_version_metadata_is_complete():
     assert versions["phase2_digest"] == rs.PHASE2_DIGEST
     record = runner.record()
     assert record["runtime_authority"] == "legacy" and record["common_core_runtime_authority"] is False
-    assert record["adapter"] == "opioid/P3-4" and record["point"] == fam.COMMITTED
+    # P3-141: el adaptador del opioide cambio (identidad de llegada, minuto efectivo, testigos) y su
+    # version lo dice; el punto sigue siendo el comprometido.
+    assert record["adapter"] == "opioid/P3-141L" and record["point"] == fam.COMMITTED
 
 
 # -- H19, H20, H23: no randomness, no reader, pilot off ------------------------------------------------------
@@ -260,7 +262,8 @@ def test_the_family_matrix_covers_every_certified_family_and_case():
         for case, row in matrix[family].items():
             assert row["offline_replay"] is True, (family, case, row)
             assert row["failures"] == [], (family, case, row)
-            assert row["live_shadow"] is (family == "gi_bleed")
+            # P3-141: el opioide es la segunda familia en sombra en vivo; ninguna otra entro.
+            assert row["live_shadow"] is (family in ("gi_bleed", "opioid"))
 
 
 def test_a_family_declares_the_treatments_it_cannot_represent():
@@ -273,6 +276,10 @@ def test_a_family_declares_the_treatments_it_cannot_represent():
     assert {"anticoagulation", "thrombolysis"} <= set(pe_gaps)
     assert "medicine" not in pe_gaps
     assert fam.ADAPTERS["gi_bleed"].maps == ("fluid", "blood", "oxygen", "ppi")
+    # P3-141: el opioide paso sus compuertas (lazo indirecto y llegada en vivo) y es la segunda familia en
+    # vivo. Lo que la prueba protege -- que ninguna familia este en vivo sin haberlo ganado -- sigue
+    # protegido para las otras cuatro, y la lista del runtime y la de los adaptadores tienen que coincidir.
     for family, adapter in fam.ADAPTERS.items():
-        if family != "gi_bleed":
-            assert adapter.live is False, f"{family} is not live-shadow ready in P3-4"
+        if family not in ("gi_bleed", "opioid"):
+            assert adapter.live is False, f"{family} is not live-shadow ready"
+    assert sorted(f for f, adapter in fam.ADAPTERS.items() if adapter.live) == sorted(rs.LIVE_FAMILIES)

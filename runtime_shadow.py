@@ -52,10 +52,17 @@ MODES = (MODE_OFF, MODE_SHADOW_COMPARE)
 FLAG = "MRS_PHASE3_SHADOW"
 #: Optional comma-separated allowlist of engine families; the default is the one family P3-1 enables.
 FAMILIES_FLAG = "MRS_PHASE3_SHADOW_FAMILIES"
-#: Live shadow is GI only in P3-1 (the only family with a certified runtime mapping and a committed
-#: golden). P3-122 audited ACS for this list and REFUSED it: its treatment semantics are ready, its
-#: arrival mapping is not (see ``runtime_shadow_families.ACS_LIVE_GAP``).
-LIVE_FAMILIES = ("gi_bleed",)
+#: The families whose live encounter may be SHADOWED. This tuple is read by ``enabled_for`` and by nothing
+#: else: it opens a non-authoritative shadow session and grants nothing. Authority has its own gate
+#: (``runtime_authority``), which names one family and stays shut.
+#:
+#: - ``gi_bleed`` since P3-1: the family with a certified runtime mapping and a committed golden.
+#: - ``opioid`` since P3-141 (faculty authorization of 2026-11-10, FD-P3-131): the second family, and the
+#:   first whose mechanism is not volume. Its arrival is the certified authored case, checked against the
+#:   live state before anything runs; its transmission parameter runs as a region ensemble, never a point.
+#: - P3-122 audited ACS for this list and REFUSED it, and the refusal stands: its treatment semantics are
+#:   ready, its arrival mapping is not (see ``runtime_shadow_families.ACS_LIVE_GAP``).
+LIVE_FAMILIES = ("gi_bleed", "opioid")
 #: The parameter snapshot P3-1 uses: the committed Phase-2 default profile, with nothing turned on.
 PARAMETER_SNAPSHOT_ID = "phase2_committed_default_profile"
 
@@ -185,6 +192,9 @@ class ShadowSession:
     endoscopy_at: int | None = None
     turns: int = 0
     _runner_failures: int = 0
+    #: P3-140: the witnesses of a declared development region, each its own run beside ``runner``. None for
+    #: a family that declares no live region (GI), whose session is then exactly what it was.
+    ensemble: Any = None
 
     # -- construction ------------------------------------------------------------------------------------
     @classmethod
@@ -222,9 +232,20 @@ class ShadowSession:
                 session.failures.append(ShadowFailure(
                     0, "start", "NoCertifiedAdapter",
                     f"no certified shadow adapter for {family}/{session.case_id}", MAPPING_GAP))
+            else:
+                # P3-141: an arrival the adapter refused is a failure the RECORD must show. Before this, the
+                # reason stayed on the runner and the session's record was empty without saying why.
+                session.failures.extend(session.runner.failures)
+                session._runner_failures = len(session.runner.failures)
+                if session.runner.anchors is not None:
+                    session.ensemble = runtime_shadow_families.RegionEnsemble.open(
+                        family, session.case_id, state=arrival, scenario_id=scenario_id)
+                    if session.ensemble is not None:
+                        session.failures.extend(session.ensemble.new_failures())
         except Exception as error:  # the encounter must not care why the shadow could not start
             session.failures.append(_failure(0, "start", error, MAPPING_GAP))
             session.runner = None
+            session.ensemble = None
         return session
 
     # -- the one execution path --------------------------------------------------------------------------
@@ -410,6 +431,11 @@ class ShadowSession:
         new = self.runner.failures[self._runner_failures:]
         self._runner_failures = len(self.runner.failures)
         self.failures.extend(new)
+        if self.ensemble is not None:
+            # P3-140: the same mirrored actions, the same minute, the same mapping state. A witness has no
+            # legacy comparison of its own: it is a development trajectory, never a fit to the engine.
+            self.ensemble.advance(self.mirrored, minute, self._mapping_state())
+            self.failures.extend(self.ensemble.new_failures())
 
     def _mapping_state(self) -> dict:
         """The only runtime fact the mapping needs beyond the mirrored actions: when endoscopy happened.
@@ -436,24 +462,39 @@ class ShadowSession:
     # -- result ------------------------------------------------------------------------------------------
     def record(self) -> dict:
         """The shadow result: a separate object, never a source of truth and never shown to a resident."""
-        captured = None if self.runner is None else self.runner.replay_input()
+        failures = [vars(item) for item in self.failures]
+        try:
+            captured = None if self.runner is None else self.runner.replay_input()
+        except Exception as error:
+            # A mapping that fails outright cannot rebuild its artifact. The record says so, in the list a
+            # reader already looks at, instead of raising at whoever asked for it.
+            captured = None
+            failures.append(vars(_failure(0 if self.runner is None else int(self.runner.minutes_done),
+                                          "artifact", error, MAPPING_GAP)))
+        # P3-140: the key exists only for a family that runs a region ensemble, so the record of a family
+        # without one (GI) keeps exactly the keys it had.
+        region = {} if self.ensemble is None else {"region_ensemble": self.ensemble.record()}
         return {
+            **region,
             "runtime_authority": "legacy",
             "common_core_runtime_authority": COMMON_CORE_RUNTIME_AUTHORITY,
             "mode": self.mode,
             "case_id": self.case_id,
             "family": self.family,
-            "parameter_snapshot": PARAMETER_SNAPSHOT_ID,
+            "parameter_snapshot": (PARAMETER_SNAPSHOT_ID if self.family == "gi_bleed" or self.runner is None
+                                   or self.runner.snapshot_ is None else self.runner.snapshot_.id),
             "minutes": [{"minute": item.minute, "state_digest": item.state_digest,
                          "compared": item.compared_against_legacy,
                          "divergences": [vars(d) for d in item.divergences]} for item in self.minutes],
-            "failures": [vars(item) for item in self.failures],
+            "failures": failures,
             "gaps": list(self.gaps),
             "mirrored": [{"shadow_order_id": e.order_id, "minute": e.minute, "kind": e.kind,
                           "order_id": e.ledger_order_id, "submission_id": e.submission_id}
                          for e in self.mirrored],
             "golden_scenario_counts": golden_partial(self.family),
-            "versions": versions(),
+            # P3-141: a GI record keeps exactly what it carried; any other family names its own adapter and
+            # its golden's digest, instead of being labelled with the GI adapter's version.
+            "versions": versions() if self.family == "gi_bleed" else family_versions(self.family),
             "scenario_id": self.scenario_id,
             "encounter_id": self.encounter_id,
             "compared_minutes": ([] if self.runner is None else list(self.runner.compared)),
@@ -464,14 +505,19 @@ class ShadowSession:
     def replay(self) -> dict:
         """Replay this run's own immutable artifact, through the same function the offline path uses."""
         import runtime_shadow_families
-        captured = None if self.runner is None else self.runner.replay_input()
+        try:
+            captured = None if self.runner is None else self.runner.replay_input()
+        except Exception:
+            captured = None                        # no artifact, no replay: never the recorded minutes
         if captured is None:
             return {"minutes": []}
         replayed = runtime_shadow_families.replay_shadow_encounter(captured)
         # ``replay_shadow_encounter`` returns the arrival as minute 0; the live record starts at minute 1,
         # so the arrival is dropped here and the two lists line up index by index. A reader comparing
         # ``replay()["minutes"]`` with ``minutes`` is comparing the same minutes.
-        return {"minutes": [{"minute": item["minute"], "state_digest": item["state_digest"]}
+        region = {} if self.ensemble is None else {"region_ensemble": self.ensemble.replay()}
+        return {**region,
+                "minutes": [{"minute": item["minute"], "state_digest": item["state_digest"]}
                             for item in replayed["results"] if item["minute"] >= 1],
                 "arrival_digest": next((item["state_digest"] for item in replayed["results"]
                                         if item["minute"] == 0), None),
@@ -561,6 +607,27 @@ def golden_conditions(family: str) -> dict:
     return out
 
 
+#: Why a difference is NOT_COMPARABLE for a family that has no committed golden.
+NO_GOLDEN = ("no committed golden for this family: the legacy engine is not a baseline here, and it is never a "
+             "calibration target, so this difference is recorded and classified as neither architecture nor "
+             "plumbing")
+_GOLDEN_SCENARIOS = {}
+#: The families whose classification REQUIRES their committed golden. If it cannot be read, their differences
+#: are UNEXPECTED, as they always were: a lost baseline must trip the evidence blockers, not quiet them.
+GOLDEN_REQUIRED = ("gi_bleed",)
+
+
+def golden_scenarios(family: str) -> int:
+    """How many scenarios the family's committed golden holds; 0 when there is no golden to read."""
+    if family not in _GOLDEN_SCENARIOS:
+        try:
+            data = json.loads(golden_path(family).read_text(encoding="utf-8"))
+            _GOLDEN_SCENARIOS[family] = len(data.get("scenarios") or {})
+        except Exception:
+            _GOLDEN_SCENARIOS[family] = 0
+    return _GOLDEN_SCENARIOS[family]
+
+
 def golden_partial(family: str) -> dict:
     """Variable -> (scenarios that declare it, scenarios in total). Reported, never used to silence."""
     golden_explained(family)
@@ -570,6 +637,8 @@ def golden_partial(family: str) -> dict:
 def classify(variable, core_value, family: str) -> tuple:
     """(status, reasons) for a mismatching variable. The ONE classifier of the Phase-3 layer (P3-11)."""
     status = _classify(variable, core_value, family)
+    if status == NOT_COMPARABLE:
+        return status, (NO_GOLDEN,)
     if status == EXPECTED:
         return status, golden_explained(family).get(variable.name, ())
     if status == PARTIALLY_EXPLAINED:
@@ -583,6 +652,13 @@ def _classify(variable, core_value, family: str) -> str:
         return BOUNDARY
     if variable.name in _SAFETY_VARIABLES:
         return SAFETY_CRITICAL
+    if family not in GOLDEN_REQUIRED and not golden_scenarios(family):
+        # P3-141: every class below is read off the family's committed golden. A family that has none has
+        # no baseline to say which difference is architecture and which is plumbing, so calling its
+        # differences UNEXPECTED would cry plumbing at every one of them and bury a real fault. They are
+        # NOT_COMPARABLE, with the reason; the two safety readings above stay loud. A family that is
+        # SUPPOSED to have a golden is not excused by losing it: there the old rule stands, and loudly.
+        return NOT_COMPARABLE
     if variable.name in golden_explained(family):
         return EXPECTED
     seen, total = golden_partial(family).get(variable.name, (0, 0))
@@ -671,8 +747,22 @@ def active_core() -> dict:
 
 
 def family_versions(family: str) -> dict:
-    """``versions()`` plus what depends on the family: the golden every divergence is classified against."""
-    return {**versions(), "golden_digest": golden_digest(family)}
+    """``versions()`` plus what depends on the family: the golden every divergence is classified against.
+
+    ``versions()`` names the GI adapter, the only one there was. For any other family the artifact names
+    ITS adapter (P3-141): an opioid artifact labelled with the GI adapter's version would be a false
+    provenance. A GI artifact is unchanged.
+    """
+    out = {**versions(), "golden_digest": golden_digest(family)}
+    if str(family or "") != "gi_bleed":
+        import runtime_shadow_families             # it imports this module: resolved at call time
+        adapter = runtime_shadow_families.adapter_for(family)
+        if adapter is not None:
+            out["adapter"] = adapter.version
+            # The same false label, found by the review: this family's committed run is its own
+            # migration's profile, not the Phase-2 default one.
+            out["parameter_snapshot"] = adapter.snapshot().id
+    return out
 
 
 #: The formally closed Phase-2 base this plumbing observes, as the closure record states it.

@@ -182,8 +182,11 @@ def test_c9_naloxone_reverses_the_central_availability_and_nothing_earlier(opioi
     treated, runner = _series("opioid", "opioid_35m", [_naloxone("n1", 20)], minutes=60)
     assert runner.gaps == []
     assert mc.no_effect_before(treated["respiratory_rate"], opioid_untreated["respiratory_rate"], 20)
+    # P3-141 (segunda familia en vivo): una orden que el motor ejecuto en el minuto 20 aparece por primera
+    # vez en el estado del minuto 21, como el oxigeno. Antes el adaptador la mapeaba al propio minuto 20,
+    # que ya existia cuando se ordeno. Lo que la prueba protege -- nada antes de darla -- sigue protegido.
     assert mc.effect_starts_at(treated["respiratory_rate"],
-                               opioid_untreated["respiratory_rate"], 20) == 20
+                               opioid_untreated["respiratory_rate"], 20) == 21
     assert mc.direction(treated["respiratory_rate"], opioid_untreated["respiratory_rate"], 60,
                         better="higher")
     assert mc.monotone_after(treated["respiratory_rate"], 20, rising=True)

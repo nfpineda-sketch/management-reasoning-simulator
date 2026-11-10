@@ -180,6 +180,12 @@ class RuntimeFamilyAdapter:
     def writers(self, case_id: str, point: str, state: Mapping | None = None) -> tuple:
         raise NotImplementedError
 
+    def region_witnesses(self) -> dict:
+        """Name -> a development adapter for each witness of a declared DEVELOPMENT TEST REGION this family
+        runs LIVE as an ensemble (P3-140). Empty for a family that declares none, which is every family but
+        the opioid one: the registered adapter itself never carries a witness."""
+        return {}
+
     def interventions(self, mirrored: Sequence, state: Mapping | None = None) -> tuple:
         """(contributors, gaps): only actions the engine already executed, each mapped once or declared.
 
@@ -600,34 +606,206 @@ class AsthmaAdapter(RuntimeFamilyAdapter):
         return (AirwayObstruction("p3-asthma-obstruction", span[_point_index(point, span)]),)
 
 
+#: P3-140, the hypoventilation -> oxygenation transmission of PHASE2_AMENDMENT_1, as the faculty approved it
+#: for DEVELOPMENT on 2026-11-10 (FD-P3-129). Two regions, and they are not the same statement:
+#:
+#: - the MATHEMATICAL region is closed, [0, 0.060621]: every fraction the development target admits, with the
+#:   respiratory quotient DECLARED at 0.8 for this analysis (only fraction / quotient is identified);
+#: - the ACTIVE CAUSAL region is open below, (0, 0.060621]: a fraction of 0 is the negative control. It
+#:   belongs to the representable region and it expresses nothing downstream of PaCO2, so it cannot show
+#:   the chain ventilation -> PaCO2 -> oxygenation and is never an ensemble witness.
+#:
+#: The three witnesses exist ONLY to run a development ensemble and to test with. CENTER_REFERENCE is not a
+#: preferred value, no committed profile adopts any of them, and nothing here is clinical truth.
+TRANSMISSION_FIELD = "hypoventilation_oxygenation_transmission_fraction"
+TRANSMISSION_DECLARED_R = 0.8
+TRANSMISSION_MATHEMATICAL_REGION = (0.0, 0.060621)
+TRANSMISSION_ACTIVE_REGION = {"above": 0.0, "up_to": 0.060621, "zero_is": "NEGATIVE_CONTROL_NOT_A_WITNESS"}
+TRANSMISSION_WITNESSES = {"LOW": 0.015, "CENTER_REFERENCE": 0.03, "HIGH": 0.06}
+TRANSMISSION_CLASSIFICATION = "DEVELOPMENT_TEST_REGION"
+
+
+class ArrivalIdentityError(ValueError):
+    """The live arrival is not the authored case the certified reference mapping was built for."""
+
+
 class OpioidAdapter(RuntimeFamilyAdapter):
-    """Opioid: central depression and its reversal (P2U-1), each a committed point, not a span."""
+    """Opioid: central depression and its reversal (P2U-1), each a committed point, not a span.
+
+    Since P3-141 (second live-shadow family, FD-P3-131) this adapter may run inside a live encounter, with
+    no authority. Three things make that honest, and each is checked rather than assumed:
+
+    - the ARRIVAL. The engine authors two opioid variants and this adapter certifies exactly those two. Its
+      anchors are P2U-1's certified reference mapping of the AUTHORED case, so a live run is only this
+      patient's if the live arrival IS that authored case: ``arrival_identity`` compares every authored
+      input the mapping reads with the live state, and a single difference refuses the run, visibly. No
+      value is derived from the live state by a new rule;
+    - the TIME. An order the engine executed at minute m is first present in the state of minute m + 1
+      (the state of minute m existed, and was shown, before the order). Oxygen already behaved so; the
+      reversal is now mapped the same way, which is also what keeps a late order from rewriting minutes the
+      shadow had already recorded;
+    - the PARAMETER. The registered adapter keeps the committed profile, where the transmission link is
+      not declared. The development witnesses of the transmission region run beside it as an ENSEMBLE
+      (``region_witnesses``), each kept apart, none selected.
+    """
 
     family = "opioid"
-    version = "opioid/P3-4"
+    version = "opioid/P3-141L"
     cases = ("opioid_35m", "opioid_67f")
-    live = False
+    live = True
     maps = ("oxygen", "naloxone")
     gaps_declared = {"bag_mask": "bag-mask has no core target (P2K-3 recruitment is off)",
                      "niv": "NIV has no core target (P2K-3 recruitment is off)",
                      "intubation": "intubation has no core target (P2K-3 recruitment is off)",
-                     "opioid_analgesia": "more opioid has no runtime-mapped deepening writer"}
+                     "opioid_analgesia": "more opioid has no runtime-mapped deepening writer",
+                     "naloxone_infusion": "a naloxone infusion has no core contributor: the certified reversal "
+                                          "is one signal with one committed rate"}
+    #: What a mapped action carries that the core contributor does not read. Declared, never silent.
+    NOT_READ = {"naloxone": ("dose_mg", "route")}
+    #: The witness this adapter was built with (None: the registered adapter, the committed profile).
+    transmission_witness: str | None = None
+
+    @classmethod
+    def witness(cls, name: str) -> "OpioidAdapter":
+        """A development adapter carrying ONE witness of the transmission region. Never registered."""
+        if name not in TRANSMISSION_WITNESSES:
+            raise ValueError(f"unknown transmission witness {name!r}: {sorted(TRANSMISSION_WITNESSES)}")
+        adapter = cls()
+        adapter.transmission_witness = name
+        return adapter
+
+    def region_witnesses(self) -> dict:
+        """The live ensemble of the registered adapter: every witness, in declared order. A witness adapter
+        declares none of its own, so an ensemble never nests."""
+        if self.transmission_witness is not None:
+            return {}
+        return {name: type(self).witness(name) for name in TRANSMISSION_WITNESSES}
 
     def snapshot(self, point: str = COMMITTED) -> ShadowParameterSnapshot:
         from clinical_core import opioid_migration as om
+        provenance = (f"clinical_core.opioid_migration.DEEPENING_PER_MIN = {om.DEEPENING_PER_MIN} "
+                      "(a committed point, no span is declared)",
+                      f"clinical_core.opioid_reference.anchors(point='midpoint')")
+        if self.transmission_witness is None:
+            return ShadowParameterSnapshot(f"opioid_{point}", self.family, COMMITTED, provenance)
+        name = self.transmission_witness
         return ShadowParameterSnapshot(
-            f"opioid_{point}", self.family, COMMITTED,
-            (f"clinical_core.opioid_migration.DEEPENING_PER_MIN = {om.DEEPENING_PER_MIN} "
-             "(a committed point, no span is declared)",
-             f"clinical_core.opioid_reference.anchors(point='midpoint')"))
+            f"opioid_{point}_transmission_{name.lower()}", self.family, COMMITTED,
+            provenance + (
+                f"runtime_shadow_families.TRANSMISSION_WITNESSES[{name!r}] = {TRANSMISSION_WITNESSES[name]}: "
+                f"{TRANSMISSION_CLASSIFICATION}, active region ({TRANSMISSION_ACTIVE_REGION['above']}, "
+                f"{TRANSMISSION_ACTIVE_REGION['up_to']}], a development witness, not a selection and not "
+                "clinical truth",
+                f"respiratory_quotient = {TRANSMISSION_DECLARED_R}, DECLARED for this development analysis "
+                "(only fraction / quotient is identified)",
+                f"clinical_core.opioid_migration.NALOXONE['recovery_per_min'] = "
+                f"{om.NALOXONE['recovery_per_min']} (SYNTHETIC_ONLY: the order's dose and route are not read)"))
 
     def anchors(self, case_id: str, point: str, state: Mapping | None = None):
+        """P2U-1's certified reference arrival; with a live arrival, only after its identity is checked."""
         from clinical_core import opioid_reference
-        return opioid_reference.anchors(case_id, point if point in POINTS else "midpoint")
+        anchors = opioid_reference.anchors(case_id, point if point in POINTS else "midpoint")
+        if state is not None:
+            try:
+                differences = self.arrival_identity(anchors, state)
+            except Exception as error:
+                # A state the check cannot even read is not the authored arrival either: refused, by name.
+                raise ArrivalIdentityError("the live arrival could not be compared with the authored case: "
+                                           f"{type(error).__name__}: {str(error)[:160]}") from error
+            if differences:
+                raise ArrivalIdentityError(
+                    "the live arrival is not the authored case the certified opioid mapping reads: "
+                    + "; ".join(f"{name} live {live!r} / certified {certified!r}"
+                                for name, live, certified in differences[:8])
+                    + (f"; and {len(differences) - 8} more" if len(differences) > 8 else ""))
+        return anchors
+
+    #: The authored items ``opioid_reference.anchors`` reads from the case, by their name in its truth table.
+    AUTHORED_ITEMS = ("sbp", "dbp", "hr", "rhythm", "spo2", "respiratory_rate", "crt_s", "mental_status",
+                      "glucose_mg_dl", "lactate_mmol_l", "hb_g_dl", "potassium_mmol_l", "abg_paco2", "abg_hco3",
+                      "abg_fio2_percent")
+    #: The same arrival as the monitor shows it: authored item -> key of the live ``observable``.
+    SHOWN_ITEMS = {"sbp": "sbp", "dbp": "dbp", "hr": "hr", "rhythm": "rhythm", "spo2": "spo2",
+                   "respiratory_rate": "respiratory_rate", "crt_s": "crt", "mental_status": "mental_status",
+                   "glucose_mg_dl": "glucose_mg_dl"}
+
+    @staticmethod
+    def arrival_identity(anchors, state: Mapping) -> list:
+        """Whether the live state IS the untouched authored arrival: [(name, live, certified)] for every
+        difference, empty when it is.
+
+        Three questions, and a live run needs all three answered yes (P3-141, hardened by the independent
+        review, which found a patient already treated in a zero-minute turn passing the first version):
+
+        - the CASE: every authored value the certified mapping reads is the same in the live state's own
+          case as in the bank case the mapping was built from;
+        - the ARRIVAL AS SHOWN: the live monitor shows exactly those authored values;
+        - NOTHING YET: the clock is at 0, nothing has been given, and the engine's own state for this
+          patient is what a fresh initialization of this same case gives, field by field.
+
+        A comparison and nothing else: it derives no value, selects no parameter and never repairs a
+        difference. Everything is read on copies, through the engine's own initializer.
+        """
+        from clinical_core import legacy_adapter, opioid_reference
+        import family_engine
+        differences = []
+
+        def compare(name, live, certified):
+            try:
+                same = live is not None and (live == certified if isinstance(certified, (str, bool, list, dict))
+                                             or certified is None else float(live) == float(certified))
+            except (TypeError, ValueError):
+                same = False
+            if not same and not (live is None and certified is None):
+                differences.append((name, live, certified))
+
+        source = legacy_adapter._initialized(state)
+        case_id = str(legacy_adapter.engine_case_id(source))
+        compare("case_id", case_id, str(anchors.case_id))
+        compare("sim_time", int(source.get("sim_time", 0) or 0), 0)
+        if case_id != str(anchors.case_id):
+            return differences
+        # the case: the live state's own copy of it against the bank case the certified mapping read
+        live_case, certified = family_engine._case(source), opioid_reference.truth(case_id)
+        for item in OpioidAdapter.AUTHORED_ITEMS:
+            value = live_case
+            try:
+                for key in opioid_reference.TRUTH_PATHS[item]:
+                    value = value[key]
+            except (KeyError, TypeError):
+                value = None
+            compare(f"case.{item}", value, certified[item])
+        # the arrival as shown: the monitor, not only the engine's stored baseline
+        shown = source.get("observable") or {}
+        for item, key in OpioidAdapter.SHOWN_ITEMS.items():
+            compare(f"observable.{key}", shown.get(key), certified[item])
+        # nothing yet: the engine's state for this patient is a fresh arrival's, field by field
+        fresh = deepcopy(dict(state))
+        fresh.pop("family_state", None)
+        family_engine._initialize(fresh)
+        live_state, fresh_state = source.get("family_state") or {}, fresh.get("family_state") or {}
+        for key in sorted(set(live_state) | set(fresh_state)):
+            if live_state.get(key) != fresh_state.get(key):
+                differences.append((f"family_state.{key}", live_state.get(key), fresh_state.get(key)))
+        given = (source.get("treatments") or {}).get("administered_medications") or []
+        if given:
+            differences.append(("treatments.administered_medications", len(given), 0))
+        # and what the mapping takes from that engine state, against the anchors themselves
+        compare("lactate", live_state.get("lactate"), anchors.lactate)
+        compare("hb", live_state.get("hemoglobin"), anchors.hb)
+        compare("fio2", live_state.get("oxygen_fio2"), anchors.fio2)
+        return differences
 
     def profile(self, point: str):
+        """The committed opioid profile; on a witness adapter, that profile with the link declared and ONE
+        fraction. Nothing else differs between two witnesses, and the committed profile is never changed."""
         from clinical_core import opioid_migration
-        return opioid_migration.profile()
+        committed = opioid_migration.profile()
+        if self.transmission_witness is None:
+            return committed
+        import dataclasses
+        return dataclasses.replace(committed, respiratory_quotient=TRANSMISSION_DECLARED_R,
+                                   **{TRANSMISSION_FIELD: TRANSMISSION_WITNESSES[self.transmission_witness]})
 
     def writers(self, case_id: str, point: str, state: Mapping | None = None) -> tuple:
         from clinical_core import opioid_migration as om
@@ -641,16 +819,34 @@ class OpioidAdapter(RuntimeFamilyAdapter):
         one of `opioid_migration.NALOXONE`, declared SYNTHETIC_ONLY there; this mapping does not choose it.
         Oxygen acts only through the oxygenation path, so it CANNOT correct central hypoventilation -- the
         educational distinction this family exists to teach.
+
+        P3-141, the time of the reversal. ``event.minute`` is the engine's minute when it executed the
+        order, and the state of that minute already existed. The certified contributor acts IN its start
+        minute, so it starts at ``event.minute + 1``: the first state that can carry the effect, exactly
+        where oxygen's lands. Mapped at ``event.minute`` it changed a minute the shadow had already
+        recorded, and a late order made the live run and its own replay disagree.
+
+        One reversal begins once. The certified contributor is one signal with one committed rate, so a
+        repeat dose is the same reversal already running: it is declared as such and never built twice
+        (two would share a source and the core refuses the run). The order's dose and route are not read.
         """
         from clinical_core.interventions.oxygen import Oxygen
         from clinical_core import opioid_migration as om
         from clinical_core import legacy_adapter
-        built, gaps = [], []
-        for event in mirrored:
+        built, gaps, begun = [], [], None
+        # A stable sort by minute: the first reversal is the EARLIEST one, and the order inside a turn is kept.
+        for event in sorted(mirrored, key=lambda item: item.minute):
             if event.kind == "oxygen":
                 built.append(Oxygen(event.order_id, event.minute, event.fio2_after))
             elif event.kind == "naloxone":
-                built.append(om.naloxone(start=int(event.minute)))
+                if begun is None:
+                    begun = event
+                    built.append(om.naloxone(start=int(event.minute) + 1))
+                else:
+                    gaps.append({"order_id": event.order_id, "kind": event.kind,
+                                 "why": f"the reversal already began with {begun.order_id} at minute "
+                                        f"{begun.minute}: the certified contributor has one committed rate, "
+                                        "so a repeat dose adds nothing in this model"})
             elif event.kind in legacy_adapter.NOT_PHYSIOLOGICAL:
                 continue
             else:
@@ -745,9 +941,17 @@ class ShadowPhysiologyRunner:
 
     @classmethod
     def open(cls, family: str, case_id: str, *, point: str = COMMITTED, state: Mapping | None = None,
-             scenario_id: str | None = None):
-        """Build a runner, or None when no adapter certifies this family and case."""
-        adapter = adapter_for(family)
+             scenario_id: str | None = None, adapter: RuntimeFamilyAdapter | None = None):
+        """Build a runner, or None when no adapter certifies this family and case.
+
+        ``adapter`` is given only for a region witness (P3-140): a development adapter of the SAME family,
+        which the registry never holds. Anything else is refused, so a caller cannot run one family's
+        arrival through another family's mapping.
+        """
+        if adapter is None:
+            adapter = adapter_for(family)
+        elif adapter.family != str(family or ""):
+            return None
         if adapter is None or adapter.supports(case_id) is not None:
             return None
         runner = cls(adapter, case_id, point, scenario_id)
@@ -792,19 +996,40 @@ class ShadowPhysiologyRunner:
         except Exception as error:
             self.failures.append(rs._failure(minute, "core", error, rs._class_of(error)))
             return False
+        recorded = next((item for item in reversed(self.results) if item.minute == self.minutes_done), None)
+        if recorded is not None and rs._digest_of(trajectory.states[self.minutes_done]) != recorded.state_digest:
+            # P3-141: every advance recomputes from arrival, so a contributor that acts at or before a minute
+            # this run already recorded REWRITES it: the record would keep the old minute, a replay would
+            # compute the new one, and the two would silently disagree. That is a mapping fault (an order's
+            # effect dated before the state it was ordered from). It is refused here, loudly, and the run
+            # stops where its record is still true.
+            self.failures.append(rs.ShadowFailure(
+                minute, "history", "HistoryRewritten",
+                f"the contributors mirrored by minute {minute} change minute {self.minutes_done}, which this "
+                "run had already recorded; nothing after it is recorded", UNEXPECTED))
+            return False
         derived = trajectory.derived()
-        for index in range(self.minutes_done + 1, minute + 1):
-            self.results.append(ShadowMinuteResult(index, rs._digest_of(trajectory.states[index]),
-                                                   derived[index].to_dict()))
+        fresh = [ShadowMinuteResult(index, rs._digest_of(trajectory.states[index]), derived[index].to_dict())
+                 for index in range(self.minutes_done + 1, minute + 1)]
+        # The minutes and the clock move together (the independent review of P3-141 found them apart: a
+        # comparison that raised left minutes recorded and the clock behind, so the next advance recorded
+        # them twice -- or, with the history guard, refused a run nothing had rewritten).
+        self.results.extend(fresh)
+        self.minutes_done = minute
         if legacy is not None and minute > 0:
             # A turn that advanced no minute still has a legacy truth for it: the comparison of that minute
             # is REPLACED, so the record keeps one comparison per minute -- the latest -- and never two.
+            try:
+                compared = divergence_records(minute, legacy, trajectory.states[minute], derived[minute],
+                                              self.adapter.family)
+            except Exception as error:
+                # The minute ran; only its comparison could not be built. It stays recorded as NOT compared.
+                self.failures.append(rs._failure(minute, "compare", error, MAPPING_GAP))
+                return True
             self.divergences = [item for item in self.divergences if item.minute != minute]
-            self.divergences.extend(divergence_records(minute, legacy, trajectory.states[minute],
-                                                       derived[minute], self.adapter.family))
+            self.divergences.extend(compared)
             if minute not in self.compared:
                 self.compared.append(minute)
-        self.minutes_done = minute
         return True
 
     def replay_input(self) -> ShadowReplayInput | None:
@@ -840,6 +1065,12 @@ class ShadowPhysiologyRunner:
             "replay_digest": (None if self.anchors is None else self.replay_input().digest()),
             "point": self.point,
         }
+
+
+def reading_digest(derived: Mapping) -> str:
+    """The digest of one minute's derived readings. Two runs whose STATES coincide can still read differently
+    (a profile field that only a reading uses), and then only this tells them apart."""
+    return hashlib.sha256(json.dumps(dict(derived), sort_keys=True, default=str).encode("utf-8")).hexdigest()
 
 
 def divergence_records(minute: int, legacy: Mapping, state, values, family: str) -> list:
@@ -1052,6 +1283,185 @@ def legacy_against_region(legacy: Mapping, result: ShadowEnsembleResult, minute:
         out[legacy_name] = {"status": status, "legacy": value, "region": [low, high],
                             "structural": structural, "witnesses": len(result.points)}
     return out
+
+
+# -- P3-140: the live region ensemble ------------------------------------------------------------------------
+
+#: The readings an ensemble's derived view spans. A view, computed from the witnesses; never a trajectory.
+ENSEMBLE_VIEW = ("respiratory_rate", "spo2", "delivery_rel")
+ENSEMBLE_POLICY = ("every witness is kept as its own trajectory; none is selected, preferred or averaged; "
+                   "the session's own run is the committed profile, where the link is not declared")
+
+
+@dataclass
+class RegionEnsemble:
+    """One live encounter run against EVERY witness of a declared development region, beside the session.
+
+    Each witness is its own ``ShadowPhysiologyRunner``, opened on the same arrival, fed the same mirrored
+    actions and advanced to the same minute, through the one execution primitive. Two witnesses differ in
+    the single profile field the region is about and in nothing else. The witnesses are never combined into
+    one patient: the only derived reading is ``view``, a per-minute minimum and maximum beside the
+    individual values, and it exists only where every witness has that minute.
+
+    Research and development only, like everything in this layer: it reads copies, owns no runtime state,
+    and nothing it produces is written to the patient, the ledger, the score or the resident's trace.
+    """
+
+    family: str
+    case_id: str
+    parameter: str
+    runners: dict
+    _drained: dict = field(default_factory=dict)
+    #: Why no witness runs, when none does. Reported once as a failure and kept in the record.
+    refused: str | None = None
+    _refusal_reported: bool = False
+
+    @classmethod
+    def open(cls, family: str, case_id: str, *, state: Mapping | None = None,
+             scenario_id: str | None = None) -> "RegionEnsemble | None":
+        """The ensemble of this family's registered adapter, or None when it declares no live region.
+
+        Fail closed on the core's lineage. The parameter a witness sets exists only in a certified
+        successor of the Phase-2 closure, so the ensemble runs only while the live core IS a certified
+        member of the lineage; otherwise no witness opens and the reason is recorded. A lineage that cannot
+        be evaluated is a refusal too.
+        """
+        adapter = adapter_for(family)
+        witnesses = {} if adapter is None else adapter.region_witnesses()
+        if not witnesses:
+            return None
+        try:
+            import runtime_shadow_evidence as evidence     # it imports this module: resolved at call time
+            certified = evidence.core_lineage_ok()
+            why = None if certified else (evidence.core_lineage_reason()
+                                          or "the common core lineage could not be evaluated")
+        except Exception as error:
+            why = f"the common core lineage could not be evaluated: {type(error).__name__}"
+        if why is not None:
+            return cls(str(family), str(case_id), TRANSMISSION_FIELD, {}, refused=why)
+        runners = {}
+        for name, witness in witnesses.items():
+            runner = ShadowPhysiologyRunner.open(family, case_id, state=state, adapter=witness,
+                                                 scenario_id=(None if scenario_id is None
+                                                              else f"{scenario_id}::{name}"))
+            if runner is not None:
+                runners[name] = runner
+        return cls(str(family), str(case_id), TRANSMISSION_FIELD, runners)
+
+    def advance(self, mirrored: Sequence, minute: int, state: Mapping | None = None) -> None:
+        """Every witness to the same minute, on the same mirrored actions. Never raises: a witness that
+        cannot run records why and stops; the others, and the encounter, go on."""
+        for runner in self.runners.values():
+            runner.mirror(mirrored)
+            runner.advance(minute, state=state)
+
+    def new_failures(self) -> list:
+        """The failures since the last call, each naming its witness. Nothing is repaired or replaced."""
+        out = []
+        if self.refused is not None and not self._refusal_reported:
+            self._refusal_reported = True
+            out.append(rs.ShadowFailure(0, "ensemble:lineage", "CoreLineageNotCertified", self.refused[:400],
+                                        MAPPING_GAP))
+        for name, runner in self.runners.items():
+            seen = self._drained.get(name, 0)
+            for item in runner.failures[seen:]:
+                out.append(rs.ShadowFailure(item.minute, f"ensemble:{name}:{item.where}", item.exception,
+                                            item.message, item.classification))
+            self._drained[name] = len(runner.failures)
+        return out
+
+    def view(self) -> dict:
+        """reading -> minute -> {"witnesses": {name: value}, "min": .., "max": ..}: a derived view.
+
+        Only minutes EVERY witness has. No mean, no median and no representative value: a reader who wants
+        a trajectory takes one witness, by name.
+        """
+        if not self.runners:
+            return {}
+        common = min(runner.minutes_done for runner in self.runners.values())
+        out = {}
+        for reading in ENSEMBLE_VIEW:
+            rows = {}
+            for minute in range(1, common + 1):
+                values = {}
+                for name, runner in self.runners.items():
+                    item = runner.results[minute - 1] if minute - 1 < len(runner.results) else None
+                    value = None if item is None else item.derived.get(reading)
+                    if isinstance(value, (int, float)) and not isinstance(value, bool):
+                        values[name] = float(value)
+                if len(values) == len(self.runners):
+                    rows[minute] = {"witnesses": values, "min": min(values.values()),
+                                    "max": max(values.values())}
+            out[reading] = rows
+        return out
+
+    def record(self) -> dict:
+        """The ensemble as an artifact: each witness whole, then the derived view. Never authority."""
+        witnesses = {}
+        for name, runner in self.runners.items():
+            # A witness whose mapping fails outright cannot rebuild its artifact either. That is recorded as
+            # what it is; it never takes the record of the other witnesses, or of the session, down with it.
+            try:
+                captured, artifact_error = runner.replay_input(), None
+            except Exception as error:
+                captured, artifact_error = None, f"{type(error).__name__}: {str(error)[:200]}"
+            witnesses[name] = {
+                "value": TRANSMISSION_WITNESSES.get(name),
+                "adapter": runner.adapter.version,
+                "snapshot": runner.snapshot_.to_dict() if runner.snapshot_ else {},
+                "minutes": self.minutes()[name],
+                "failures": [vars(item) for item in runner.failures],
+                "gaps": list(runner.gaps),
+                "replay_input": None if captured is None else captured.to_dict(),
+                "replay_digest": None if captured is None else captured.digest(),
+                "artifact_error": artifact_error,
+            }
+        return {
+            "runtime_authority": "legacy",
+            "common_core_runtime_authority": rs.COMMON_CORE_RUNTIME_AUTHORITY,
+            "resident_visible": False,
+            "family": self.family, "case_id": self.case_id,
+            "parameter": self.parameter,
+            "classification": TRANSMISSION_CLASSIFICATION,
+            "mathematical_region": list(TRANSMISSION_MATHEMATICAL_REGION),
+            "active_causal_region": dict(TRANSMISSION_ACTIVE_REGION),
+            "declared_respiratory_quotient": TRANSMISSION_DECLARED_R,
+            "policy": ENSEMBLE_POLICY,
+            "selected_witness": None,
+            "refused": self.refused,
+            "witnesses": witnesses,
+            "complete": all(runner.anchors is not None and not runner.failures
+                            for runner in self.runners.values()) and bool(self.runners),
+            "view": {reading: {str(minute): row for minute, row in rows.items()}
+                     for reading, rows in self.view().items()},
+        }
+
+    def minutes(self) -> dict:
+        """witness -> its recorded minutes: the state digest AND the digest of the readings. With oxygen on,
+        every witness reaches the same states and differs only in what it reads, so a check on states alone
+        could not tell a witness from another, or from the committed run."""
+        return {name: [{"minute": item.minute, "state_digest": item.state_digest,
+                        "reading_digest": reading_digest(item.derived)} for item in runner.results]
+                for name, runner in self.runners.items()}
+
+    def replay(self) -> dict:
+        """Each witness replayed from its OWN immutable artifact, through the one replay function; the same
+        rows ``minutes`` gives, so the two are compared whole."""
+        out = {}
+        for name, runner in self.runners.items():
+            try:
+                replayed = replay_from_runner(runner)
+            except Exception:
+                # No artifact, no replay: an empty list, which can never be mistaken for the recorded minutes.
+                out[name] = []
+                continue
+            out[name] = [{"minute": item["minute"], "state_digest": item["state_digest"],
+                          "reading_digest": reading_digest(item["derived"])}
+                         for item in replayed.get("results", []) if item["minute"] >= 1]
+        return out
+
+    def digests(self) -> dict:
+        return {name: runner.digests() for name, runner in self.runners.items()}
 
 
 # -- P3-8: non-authoritative consciousness and collapse diagnostics ------------------------------------------

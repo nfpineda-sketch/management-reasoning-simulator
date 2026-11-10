@@ -80,10 +80,13 @@ def test_r1_the_flag_is_off_unless_it_is_set_and_off_opens_no_session():
 
 
 def test_r14_a_family_outside_the_live_scope_stays_legacy_only():
-    for family in ("acs", "pulmonary_edema", "pulmonary_embolism", "asthma", "opioid", "pneumonia", "generated"):
+    # P3-141: el opioide salio de esta lista al ser autorizado como segunda familia en sombra en vivo. Las
+    # demas siguen fuera, y la lista en vivo es exactamente la autorizada: ni una mas.
+    for family in ("acs", "pulmonary_edema", "pulmonary_embolism", "asthma", "pneumonia", "generated"):
         assert not runtime_shadow.enabled_for(family, dict(ON)), family
         assert runtime_shadow.ShadowSession.start({"engine_family": family}, environ=dict(ON)) is None
-    assert runtime_shadow.live_families(dict(ON)) == ("gi_bleed",)
+    assert runtime_shadow.live_families(dict(ON)) == ("gi_bleed", "opioid")
+    assert not runtime_shadow.enabled_for("opioid", {}), "sin la bandera, tampoco el opioide"
     # An allowlist cannot widen the scope, only narrow it.
     asked = {**ON, runtime_shadow.FAMILIES_FLAG: "acs,asthma"}
     assert runtime_shadow.live_families(asked) == ()
