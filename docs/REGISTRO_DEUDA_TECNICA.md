@@ -185,6 +185,7 @@ un defecto que el piloto puede medir.
 | TD-133 | Fase 3 · segunda familia en sombra en vivo (opioide) | **Declarada (2026-11-10, ciclo de la segunda familia en vivo, paquetes P3-137 a P3-146 del encargo; sin autoridad).** Deuda y límites: ver la sección «TD-133» de este registro y `docs/PHASE3_SECOND_LIVE_FAMILY.md`. | P3-137…P3-146 (ciclo del 2026-11-10) | No | (1) antes de cualquier uso en vivo o incremental del edema; (2), (3), (4), (9) y (12) decisión docente; (5), (6), (10), (13), (14) y (15) declaradas; (7) paquete siguiente; (8) corregida |
 | TD-134 | Fase 3 · sombra en vivo observable, persistente y con fallos visibles | **Declarada (2026-11-10, ciclo de observabilidad, paquetes P3-147 a P3-155 del encargo; sin autoridad y sin cambio de fisiología común).** Deuda y límites: ver la sección «TD-134» de este registro y `docs/PHASE3_SHADOW_OBSERVABILITY.md`. | P3-147…P3-155 (ciclo del 2026-11-10) | No | (1) y (2) decisión docente; (3) a (9) declaradas; (10) sólo si la docencia lo pide |
 | TD-135 | Fase 3 · resolución de parámetros condicionales, órdenes retenidas y revisión de casos | **Declarada (2026-11-10, paquetes P3-156 a P3-166 del encargo; sin autoridad y sin cambio de fisiología común).** Deuda y límites: ver la sección «TD-135» de este registro y `docs/PHASE3_CONDITIONAL_RESOLUTION.md`. Actualiza TD-134 (1), (3), (4), (7), (8) y (9). | P3-156…P3-166 (ciclo del 2026-11-10) | No | (1), (3) y (8) decisión docente; (2) requiere tocar el camino de actividades de información; el resto, declaradas |
+| TD-136 | Fase 3 · cierre de la sincronización de ejecución y diseño de la Enmienda 2 | **Declarada (2026-11-10, paquetes P3-167 a P3-171 y A2-001 a A2-010; sin autoridad y sin cambio de fisiología común).** Deuda y límites: ver la sección «TD-136» de este registro, `docs/PHASE3_EXECUTION_SYNCHRONIZATION.md` y `docs/revision/PHASE2_AMENDMENT_2_DESIGN.md`. Cierra TD-135 (2). | P3-167…P3-171, A2-001…A2-010 (ciclo del 2026-11-10) | No | (1) seis preguntas docentes; el resto, declaradas |
 
 ## Corregido el 2026-10-08 (aislamiento de la suite)
 
@@ -528,3 +529,27 @@ para el mapeo certificado. TD-134 (8): **documentada** — qué protege y qué n
   contradicción entre el motor heredado y el núcleo existe hoy y no es visible para un residente.
 - **(9)** La comparación de casos es de ingeniería y no una selección; ninguna revisión docente se ha hecho.
 - **(10)** `app.py` cambió en tres líneas del ayudante de sombra, que sólo corren con la bandera encendida.
+
+## TD-136 · Fase 3, cierre de la sincronización de ejecución y diseño de la Enmienda 2 (ciclo del 2026-11-10)
+
+**Cierra o actualiza deuda anterior.** TD-135 (2): **cerrada** — una orden que el motor ejecuta durante una
+actividad de información se refleja una vez en su minuto real (FD-P3-161). TD-135 (8): **diseñada, no
+resuelta** — queda (1). TD-135 (9): **decidida** — GI es el caso preferido (FD-P3-162).
+
+- **(1)** **La Enmienda 2 está bloqueada en umbrales docentes.** Seis preguntas exactas en
+  `docs/revision/PHASE2_AMENDMENT_2_DESIGN.md` §7. Mientras no se respondan, la consciencia del núcleo sigue
+  siendo una escalera heredada adoptada, ningún paciente puede quedar sin pulso por regla y la contradicción
+  terminal del opioide persiste (ahora explícita en cada traza).
+- **(2)** La rama `phase-2-amendment-2-terminal-consciousness` existe sin commits propios: es un espacio de
+  trabajo, no un candidato.
+- **(3)** La frontera terminal de la traza vive en el runtime y no en el núcleo; sus predicados sólo afirman lo
+  que no necesita magnitud. Como precondición de autoridad está diseñada, no construida.
+- **(4)** Un intervalo avanzado sin el ayudante de la página sigue sin reflejarse (declarado `NOT_MIRRORED`). El
+  minuto de ejecución se sigue leyendo del registro del motor (heredado de TD-135 (3)).
+- **(5)** La prueba de navegador de una actividad de información se hizo con GI; en opioide el paciente no puede
+  responder y la página no ofrece preguntas, así que ese caso se cubrió por el arnés. El arnés emula las
+  sentencias del ayudante de la página, fijadas por prueba.
+- **(6)** `app.py` cambió otra vez en un ayudante (el de tiempo clínico), para capturar y entregar a la sombra;
+  sin la bandera no hace nada.
+- **(7)** `CLAUDE.md` no se actualizó: el linaje vigente no cambió. Si la rama de la Enmienda 2 llega a tener un
+  candidato, sus restricciones de ramas deberán nombrarla.

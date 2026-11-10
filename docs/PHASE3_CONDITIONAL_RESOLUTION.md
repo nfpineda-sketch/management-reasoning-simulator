@@ -12,6 +12,11 @@ Todo es **sombra de desarrollo sin autoridad**. `COMMON_CORE_RUNTIME_AUTHORITY =
 toca el primer piloto. **No cambió ninguna fisiología del núcleo común:** `clinical_core/` es byte a byte el de
 `f1f6034`. No se afirma validación clínica.
 
+**Nota del 2026-11-10 (ciclo siguiente, P3-167 a P3-171).** Dos cosas de este documento quedaron sustituidas: una orden que el
+motor ejecuta durante una actividad de información **sí** se refleja (§3 y §9 decían que no; ver
+`docs/PHASE3_EXECUTION_SYNCHRONIZATION.md`), y la compuerta «selección de casos» pasó a verde con alcance por decisión
+docente. El diseño de la enmienda terminal/consciencia está en `docs/revision/PHASE2_AMENDMENT_2_DESIGN.md`.
+
 ## 1 · Tasa de profundización del opioide: evidencia (P3-156)
 
 Auditoría de sólo lectura. Procedencia de cada valor:
