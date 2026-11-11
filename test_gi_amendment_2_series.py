@@ -87,11 +87,16 @@ def _level_of(session, witness: str) -> int | None:
     return runner.results[-1].derived.get("consciousness_level")
 
 
-def run_scenario(case: str, scenario: str, *, store_directory: str | None = None, horizon: int | None = None) -> dict:
+def run_scenario(case: str, scenario: str, *, store_directory: str | None = None, horizon: int | None = None,
+                 trigger_witness: str = "CENTER_REFERENCE") -> dict:
     """One real encounter, one scenario: the legacy truth per minute, every witness's channels, the orders and the ending.
 
-    ``horizon`` lengthens a series (the boundary audit of P3-178 runs the untreated course until something ends it)."""
+    ``horizon`` lengthens a series (the boundary audit of P3-178 runs the untreated course until something ends it).
+    ``trigger_witness`` names the witness whose reading decides WHEN an adaptive scenario treats (P3-181: each witness is
+    treated at its OWN first UNRESPONSIVE minute, so that each enters its recovery substantially impaired)."""
     plan = _plan(scenario)
+    if trigger_witness not in WITNESSES:
+        raise ValueError(f"unknown witness {trigger_witness!r}")
     if horizon is not None:
         plan = {**plan, "horizon": int(horizon)}
     orders, legacy, triggered = [], [], None
@@ -113,7 +118,7 @@ def run_scenario(case: str, scenario: str, *, store_directory: str | None = None
                         due.extend(plan["at"][minute])
                 trigger = plan.get("trigger")
                 if triggered is None and trigger is not None:
-                    level = _level_of(session, "CENTER_REFERENCE")
+                    level = _level_of(session, trigger_witness)
                     if level is not None and level >= trigger[0]:
                         triggered, due = int(encounter.minute), list(trigger[1])
                         stop_after = triggered + plan["after"] if plan.get("after") else None
@@ -145,6 +150,7 @@ def run_scenario(case: str, scenario: str, *, store_directory: str | None = None
             profile_of = {name: runner.profile.amendment_2 for name, runner in (ensemble.runners.items() if ensemble else [])}
             return {"case": case, "scenario": scenario, "orders": orders, "legacy": legacy, "session_rows": own,
                     "witness_rows": rows, "failures": failures, "profile": profile_of, "triggered_at": triggered,
+                    "trigger_witness": trigger_witness if plan.get("trigger") else None,
                     "encounter_minute": int(encounter.minute), "legacy_arrested": bool(encounter.arrested),
                     "session": session, "encounter": encounter}
     finally:
@@ -378,3 +384,137 @@ def write_faculty_bundle(destination: str, *, selections: Sequence = BUNDLE) -> 
     (target / "summaries.json").write_text(json.dumps([summary for _run, summary in runs], default=str, indent=1),
                                            encoding="utf-8")
     return {**written, "files": written["files"] + ["legacy_beside_shadow.md", "summaries.json"]}
+
+
+# -- P3-181 to P3-183: the exact recovery timeline, and what the fall law does on a COMPLETE trajectory ------------------
+
+def f_target(row: Mapping, profile) -> float | None:
+    """The signal F relaxes toward at this minute's state: the delivery-failure ramp of the witness (0 at or above its normal
+    bound of relative delivery, 1 at or below its severe bound). It is the F TARGET of the next minute."""
+    delivery = row["channels"].get("relative_delivery")
+    return None if delivery is None else sc.delivery_failure(delivery, profile)
+
+
+def impairment_of(row: Mapping) -> float | None:
+    """The observable impairment the category is cut from: max(F, an established collapse), over the arrival's own floor
+    (0 in both supported GI cases, which arrive ALERT)."""
+    burden = row["channels"].get("systemic_encephalopathy_burden")
+    if burden is None:
+        return None
+    return max(float(burden), 1.0 if (row["channels"].get("collapse_state_index") or 0) >= 2 else 0.0)
+
+
+def recovery_timeline(rows: Sequence, profile, order_minute: int, *, before: int = 3, after: int = 40) -> list:
+    """Minute by minute around a treatment: the upstream coordinates, the F target, F, the impairment and the category."""
+    out = []
+    for row in rows:
+        if not order_minute - before <= row["minute"] <= order_minute + after:
+            continue
+        channels = row["channels"]
+        out.append({"minute": row["minute"], "V": channels.get("V"), "relative_perfusion": channels.get("relative_perfusion"),
+                    "relative_delivery": channels.get("relative_delivery"), "f_target": f_target(row, profile),
+                    "F": channels.get("systemic_encephalopathy_burden"), "impairment": impairment_of(row),
+                    "category": channels.get("category_index")})
+    return out
+
+
+def recovery_events(rows: Sequence, profile, order_minute: int) -> dict:
+    """The exact ordering of the recovery events of one witness after one treatment (P3-181).
+
+    T_ORDER                  the minute the engine received the order;
+    T_EFFECT                 the first minute whose state carries the treatment (the volume channel turns upward);
+    T_SIGNAL_BEGINS_TO_FALL  the first minute the F target is below the previous minute's (delivery turned upward and the
+                             target is below 1: under the severe bound a rising delivery does not move the target yet);
+    T_TARGET_BELOW_F         the first minute the target is below F: the relaxation law starts CLEARING F here;
+    T_RECOVERY_REGION_ENTRY  the first minute relative delivery is at or above the witness's normal bound: the target is 0
+                             (the design's own "once the signal is gone");
+    T_F_PEAK                 the minute of the highest F from the order on;
+    T_F_BELOW_0_80 / 0_50    the first minute after the peak that F reads below 0.80 / 0.50;
+    T_CATEGORY_IMPROVES      the first minute the observable category is below the one held at the order.
+    """
+    by = {row["minute"]: row for row in rows}
+    after = [row for row in rows if row["minute"] >= order_minute]
+    if not after or order_minute not in by:
+        return {}
+    f = lambda row: row["channels"].get("systemic_encephalopathy_burden")
+    v = lambda row: row["channels"].get("V")
+    first = lambda items, test: next((row["minute"] for row in items if test(row)), None)
+    effect = next((b["minute"] for a, b in zip(after, after[1:]) if v(b) > v(a)), None)
+    falls = next((b["minute"] for a, b in zip(after, after[1:])
+                  if f_target(b, profile) is not None and f_target(a, profile) is not None
+                  and f_target(b, profile) < f_target(a, profile)), None)
+    clears = first(after, lambda row: f_target(row, profile) is not None and f_target(row, profile) < f(row))
+    entry = first(after, lambda row: (row["channels"].get("relative_delivery") or 0.0) >= profile.delivery_normal)
+    peak_row = max(after, key=lambda row: (f(row), -row["minute"]))
+    later = [row for row in after if row["minute"] > peak_row["minute"]]
+    below_80 = first(later, lambda row: f(row) < 0.80) if f(peak_row) >= 0.80 else None
+    below_50 = first(later, lambda row: f(row) < 0.50) if f(peak_row) >= 0.50 else None
+    category = by[order_minute]["channels"].get("category_index")
+    improves = first(after, lambda row: (row["channels"].get("category_index") or 0) < (category or 0))
+    normal = first(after, lambda row: (row["channels"].get("category_index") or 0) == 0) if category else None
+    at = lambda minute, read: None if minute is None or minute not in by else read(by[minute])
+    return {
+        "T_ORDER": order_minute, "T_EFFECT": effect, "T_SIGNAL_BEGINS_TO_FALL": falls, "T_TARGET_BELOW_F": clears,
+        "T_RECOVERY_REGION_ENTRY": entry, "T_F_PEAK": peak_row["minute"], "T_F_BELOW_0_80": below_80,
+        "T_F_BELOW_0_50": below_50, "T_CATEGORY_IMPROVES": improves, "T_CATEGORY_NORMAL": normal,
+        "F_at_order": f(by[order_minute]), "F_peak": f(peak_row), "F_at_entry": at(entry, f),
+        "target_at_order": f_target(by[order_minute], profile),
+        "relative_delivery_at_order": by[order_minute]["channels"].get("relative_delivery"),
+        "category_at_order": category, "category_at_entry": at(entry, lambda row: row["channels"].get("category_index")),
+        "minutes_entry_to_below_0_50": None if entry is None or below_50 is None else below_50 - entry,
+        "minutes_below_0_80_to_below_0_50": None if below_80 is None or below_50 is None else below_50 - below_80,
+        "minutes_order_to_entry": None if entry is None else entry - order_minute,
+        "share_of_the_0_80_to_0_50_descent_done_before_entry": (
+            None if entry is None or at(entry, f) is None or f(peak_row) < 0.80
+            else max(0.0, min(1.0, (0.80 - at(entry, f)) / 0.30))),
+    }
+
+
+def f_course(deliveries: Sequence, profile, start: float, *, clear_tau: float | None = None, law: str = "certified") -> list:
+    """F recomputed OFFLINE from a recorded series of relative delivery: what a different fall constant, or a different
+    clearing rule, WOULD read on the very same upstream trajectory. Exact, because F feeds nothing back: the physical state
+    of a run is identical with and without the amendment (the certified non-interference), so its delivery series is too.
+
+    ``law``: ``certified`` is the amendment's own relaxation (toward the graded target, the rise constant above it and the
+    clear constant below); ``gated`` is the WHAT-IF in which F is held while the target is positive and clears only inside
+    the recovery region (target 0). Nothing here is installed anywhere: it is analysis, and the certified law is the control.
+    """
+    from clinical_core import encephalopathy as en
+    tau = profile.burden_clear_tau if clear_tau is None else float(clear_tau)
+    memory = en.EncephalopathyProfile(burden_rise_tau=profile.burden_rise_tau, burden_clear_tau=tau)
+    out, burden = [float(start)], float(start)
+    for delivery in list(deliveries)[:-1]:
+        target = sc.delivery_failure(delivery, profile)
+        if law == "gated" and 0.0 < target < burden:
+            pass                                                      # held: the upstream is not in the recovery region yet
+        else:
+            burden = en.burden_after(burden, target, 1.0, memory)
+        out.append(burden)
+    return out
+
+
+def recovery_order_checks(rows: Sequence, profile, order_minute: int) -> dict:
+    """P3-184: the order a recovery must keep, read from one witness's own channels. Upstream first (the volume turns, then
+    delivery, then the F target), F downstream (F does not fall before its target is below it, and still RISES at the minute
+    the treatment takes effect), no instant normalisation (the category gives back one band at a time), and no direct
+    treatment -> consciousness edge (F at each minute is exactly the certified relaxation of the previous F toward the
+    previous minute's target: nothing else moves it)."""
+    events = recovery_events(rows, profile, order_minute)
+    after = [row for row in rows if row["minute"] >= order_minute]
+    f = lambda row: row["channels"].get("systemic_encephalopathy_burden")
+    first_fall = next((b["minute"] for a, b in zip(after, after[1:]) if f(b) < f(a)), None)
+    recomputed = f_course([row["channels"].get("relative_delivery") for row in rows], profile, f(rows[0]))
+    steps = [(b["channels"].get("category_index") or 0) - (a["channels"].get("category_index") or 0)
+             for a, b in zip(after, after[1:])]
+    return {
+        "upstream_first": (events.get("T_EFFECT") is not None and events.get("T_SIGNAL_BEGINS_TO_FALL") is not None
+                           and events["T_ORDER"] < events["T_EFFECT"] <= events["T_SIGNAL_BEGINS_TO_FALL"]),
+        "f_falls_only_after_its_target_is_below_it": (first_fall is None or (events.get("T_TARGET_BELOW_F") is not None
+                                                                              and first_fall > events["T_TARGET_BELOW_F"])),
+        "f_does_not_fall_at_the_minute_the_treatment_takes_effect": (
+            events.get("T_EFFECT") is None or first_fall is None or first_fall > events["T_EFFECT"]),
+        "category_gives_back_one_band_at_a_time": all(step >= -1 for step in steps),
+        "f_is_only_the_relaxation_toward_the_delivery_target": max(
+            abs(a - f(row)) for a, row in zip(recomputed, rows)) == 0.0,
+        "first_f_fall": first_fall,
+    }
