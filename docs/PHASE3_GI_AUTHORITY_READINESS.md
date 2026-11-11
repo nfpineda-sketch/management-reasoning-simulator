@@ -184,3 +184,5 @@ No es `B` (la frontera no bloquea una ventana acotada), no es `C` (ninguna invar
 ### 7.2 Paso siguiente (sin ejecutar; requiere un encargo nuevo)
 **Paquete de revisión docente del diseño:** presentar a la docencia §3 a §6 y pedirle B2, B6 y la dirección sobre B10; con eso, el trabajo técnico que **no** exige concesión es: **(0)** re-correr la serie de autoridad de presión en el miembro activo
 (B7), **(1)** la auditoría de los lectores de `mental_status` (B5) y **(2)** el ensayo en seco del par sobre los 14 escenarios (sin compromiso). B3 y B4 se diseñan, pero se construyen y certifican sólo si la docencia aprueba el diseño. No se activa nada.
+
+**Continuación (2026-11-11).** B2 quedó respondido (instantánea ratificada para experimentos de desarrollo), B5 (lectores) y B7 (presión en el núcleo activo) se hicieron, y el par se corrió en seco: `docs/PHASE3_GI_PREAUTHORITY_REVIEW.md`. **Corrección:** §2 decía que la nota de procedencia de P3-51 no se re-auditaba; estaba **cerrada desde P3-55** (linaje canónico). Este documento no se reescribe.

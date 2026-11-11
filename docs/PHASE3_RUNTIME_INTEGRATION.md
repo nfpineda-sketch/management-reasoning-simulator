@@ -603,4 +603,5 @@ desarrollo de la sombra GI, cada uno su trayectoria; sin autoridad, sin exposici
 piloto sin cambios y sin que ningún estado de colapso o consciencia del núcleo termine un encuentro. Detalle, serie, comparación,
 frontera y punto de control: `docs/PHASE3_AMENDMENT_2_GI_SHADOW.md` (filas FD-P3-167 a FD-P3-172). La revisión de la
 temporalidad de la recuperación GI que le sigue: `docs/PHASE3_GI_RECOVERY_CALIBRATION_REVIEW.md` (filas FD-P3-173 a FD-P3-177). La instantánea de desarrollo de GI y la preparación de una autoridad de desarrollo (sin activarla):
-`docs/PHASE3_GI_DEVELOPMENT_SNAPSHOT.md` y `docs/PHASE3_GI_AUTHORITY_READINESS.md` (filas FD-P3-178 a FD-P3-181).
+`docs/PHASE3_GI_DEVELOPMENT_SNAPSHOT.md` y `docs/PHASE3_GI_AUTHORITY_READINESS.md` (filas FD-P3-178 a FD-P3-181). La ratificación de la instantánea y la revisión
+previa a la autoridad (lectores de `mental_status`, presión en el núcleo activo, par en seco): `docs/PHASE3_GI_PREAUTHORITY_REVIEW.md` (filas FD-P3-182 a FD-P3-187).

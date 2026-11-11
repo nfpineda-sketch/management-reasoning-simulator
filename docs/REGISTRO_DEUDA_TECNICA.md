@@ -614,3 +614,26 @@ puede cumplirlo literalmente y la docencia aprobó la recuperación graduada sin
 - **(9)** **`UnresolvedBoundary` desde el minuto 349 sin tratar.** Acotada por el guion; sin mapeo terminal, ningún uso sin acotar ni visible al residente. No se inventa ninguna regla terminal.
 - **(10)** **Hemoglobina:** la tabla de comparación la llama `exact`, pero en el curso GI en vivo el heredado cae (6,69 → 4,54 g/dL a los 240 min) y el común queda ≈ 6,4: el `exact` vale sólo para las corridas de la comparación certificada.
 - **(11)** Sin validación clínica de ninguna magnitud ni de la instantánea.
+
+## TD-140 · Fase 3, ratificación de la instantánea de GI y revisión previa a la autoridad (ciclo del 2026-11-11)
+
+**Cierra o actualiza deuda anterior.** TD-139 (3): **hecha** — los lectores de `mental_status` se auditaron (31 lectores ejecutables del observable vivo; hay efectos aguas abajo). TD-139 (4): **cerrada** — la serie de
+autoridad de presión es idéntica en el núcleo activo, y la nota de procedencia de P3-51 estaba cerrada desde P3-55. TD-139 (1) y (2): **siguen abiertas**, ahora con un prototipo del lado de las pruebas (vínculo y
+transacción en seco del par). TD-138 (6): la instantánea quedó **ratificada para experimentos de desarrollo** (FD-AUTH-01).
+
+- **(1)** **El vínculo con la instantánea y la transacción del par viven del lado de las pruebas.** `test_gi_snapshot_binding.py` y `test_gi_pair_dry_run.py` no son la capa: la capa sigue construyendo testigos por
+  nombre y `AuthorityTransaction.commit` sólo acepta presión numérica. Un experimento exige construirlos **dormidos en la capa** y certificarlos.
+- **(2)** **Siete guardas de los lectores de `mental_status` no existen:** disponibilidad de la anamnesis, texto y pantalla visibles, contrato y prompt de imagen, persistencia de traza y eventos, payloads del análisis de IA
+  y docente (puntuación indirecta), preguntas de reflexión, y la captura de la palabra heredada antes del compromiso.
+- **(3)** **`vascular_access` no es una acción soportada.** «Place an IV line.» detiene un experimento de autoridad; las series anteriores de este trabajo (contrafactual, sensibilidad) usaron guiones **con** esa orden.
+  No afecta a su fisiología (el acceso no tiene efecto fisiológico: los cursos coinciden), pero esos guiones no serían elegibles tal cual.
+- **(4)** **Un turno, una transacción.** Una infusión avanza el reloj del motor dentro de un turno (4 U: 120 min): la recuperación ordenada en el 158 termina en el 278, fuera de la ventana, y sus minutos intermedios se
+  cubren con una sola comprobación de frontera. La palabra saltaría de «Unresponsive» a «Alert» sin estados intermedios visibles.
+- **(5)** **La palabra «Unresponsive» tiene dos sentidos posibles.** El heredado la escribe sólo en el paro; la instantánea la lee con pulso desde el minuto 158 sin tratar. Varios lectores (anamnesis, descripción
+  visual, imagen) la tratan como incapacidad total.
+- **(6)** **`app._perfusion_response_direction` no tiene llamador** (código muerto que lee la palabra).
+- **(7)** **`app._trajectory_expert_model`:** su alcance en GI no se verificó (está escrito para los encuentros de sepsis).
+- **(8)** **El arnés en seco parchea dos métodos de clase durante la corrida** (`ShadowSession.observe`, `Encounter.order`), como el arnés de autoridad existente; los restaura siempre, pero no es seguro entre hilos.
+- **(9)** **34 de los 461 minutos de divergencia de consciencia** (72 años sin tratar, 207–240) quedan después de la frontera de colapso: un experimento con la guarda de FD-AUTH-06 no los alcanzaría.
+- **(10)** Sin validación clínica de ninguna magnitud ni de la instantánea; las respuestas docentes a la tabla de divergencia están pendientes.
+

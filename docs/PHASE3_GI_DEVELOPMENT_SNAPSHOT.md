@@ -181,3 +181,5 @@ que cambie qué magnitudes son `HIGH_SENSITIVITY`; el digesto del núcleo movié
 * **Dos casos, siete escenarios más dos.** Otros ritmos de reposición, otros casos GI o tratamientos nuevos cambian la trayectoria física y obligarían a repetir el barrido.
 * **La selección es de desarrollo.** La asignó el encargo; la **ratificación docente** de la instantánea sigue pendiente (bloqueo B2 de `docs/PHASE3_GI_AUTHORITY_READINESS.md`).
 * **La capa no puede correr la instantánea por identificador y huella** (sólo por nombre de testigo): es un bloqueo técnico de una autoridad futura, no de este registro.
+
+**Continuación (2026-11-11).** La docencia **ratificó** la instantánea para experimentos de desarrollo (FD-AUTH-01, FD-AUTH-02): `docs/revision/GI_DEVELOPMENT_SNAPSHOT_V1_RATIFICATION.json` y `docs/PHASE3_GI_PREAUTHORITY_REVIEW.md` §1. La versión 1 no se editó; sigue sin estar aprobada para autoridad.

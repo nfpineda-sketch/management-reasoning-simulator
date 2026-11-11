@@ -90,8 +90,9 @@ de alcance, rige la fuente, no este resumen.
       esas enmiendas: no se modifican;
     - la Enmienda 2 (consciencia sistémica reversible F, nivel observable compuesto y colapso blando) está **apagada por
       omisión** (`CoreProfile.amendment_2 = None`) y se declara **sólo** en los testigos de desarrollo de la sombra GI
-      (`LOW`, `CENTER_REFERENCE`, `HIGH`, cada uno su trayectoria, ninguno elegido; la instantánea de desarrollo `GI_DEVELOPMENT_SNAPSHOT_V1`, el punto medio de las regiones, es un
-      punto de desarrollo **no** aprobado para autoridad ni validado clínicamente: `docs/PHASE3_GI_DEVELOPMENT_SNAPSHOT.md`): **no** en opioide, ACS, edema pulmonar,
+      (`LOW`, `CENTER_REFERENCE`, `HIGH`, cada uno su trayectoria, ninguno elegido; la instantánea de desarrollo `GI_DEVELOPMENT_SNAPSHOT_V1`, el punto medio de las regiones, está
+      **ratificada sólo para experimentos de desarrollo** (FD-AUTH-01) y **no** aprobada para autoridad ni validada clínicamente: `docs/PHASE3_GI_DEVELOPMENT_SNAPSHOT.md`
+      y `docs/PHASE3_GI_PREAUTHORITY_REVIEW.md`): **no** en opioide, ACS, edema pulmonar,
       embolia ni asma; el estado de colapso o consciencia del núcleo común es sólo estado fisiológico y **no termina un
       encuentro**;
     - registro: `docs/revision/PHASE2_AMENDMENT_2.md` (la Enmienda 1: `docs/revision/PHASE2_AMENDMENT_1.md`) y, para su uso
@@ -113,7 +114,7 @@ de alcance, rige la fuente, no este resumen.
   Fuente: encargo del 2026-10-21 y `docs/PHASE2_SHADOW_CORE.md`; para la Fase 3, los encargos del
   2026-11-07, `docs/PHASE3_RUNTIME_INTEGRATION.md` y las filas FD-P3-01 a FD-P3-16 del Decision File; para
   la enmienda y su integración, las filas FD-AMEND1-01 a FD-AMEND1-04, FD-P3-119 y FD-P3-129; para la Enmienda 2 y
-  su integración en la sombra GI, las filas FD-P3-167 a FD-P3-172; para la instantánea de GI, FD-P3-178 a FD-P3-181.
+  su integración en la sombra GI, las filas FD-P3-167 a FD-P3-172; para la instantánea de GI y la revisión previa a la autoridad, FD-P3-178 a FD-P3-187.
 
 ## Privacidad y procedencia
 - No commitear datos reales, respuestas externas, secretos ni nombres de médicos.
