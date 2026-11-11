@@ -1,0 +1,761 @@
+{
+ "amendment": "PHASE2_AMENDMENT_2",
+ "authority": {
+  "common_core_runtime_authority": false,
+  "registered_as_an_authority_artifact": false,
+  "stored_in": "docs/revision (documentation); no authority store, no registry, no import by the layer or the app"
+ },
+ "behaviour": {
+  "category_sequences": {
+   "gi_bleed_57m": {
+    "blood_focused": [
+     [
+      1,
+      0
+     ]
+    ],
+    "delayed_treatment": [
+     [
+      1,
+      0
+     ],
+     [
+      109,
+      1
+     ],
+     [
+      127,
+      0
+     ]
+    ],
+    "early_treatment": [
+     [
+      1,
+      0
+     ]
+    ],
+    "fluid_focused": [
+     [
+      1,
+      0
+     ]
+    ],
+    "late_rescue": [
+     [
+      1,
+      0
+     ],
+     [
+      109,
+      1
+     ],
+     [
+      131,
+      2
+     ],
+     [
+      158,
+      3
+     ],
+     [
+      227,
+      2
+     ],
+     [
+      232,
+      1
+     ],
+     [
+      238,
+      0
+     ]
+    ],
+    "recovery_after_severe": [
+     [
+      1,
+      0
+     ],
+     [
+      109,
+      1
+     ],
+     [
+      131,
+      2
+     ],
+     [
+      158,
+      3
+     ],
+     [
+      161,
+      2
+     ],
+     [
+      168,
+      1
+     ],
+     [
+      174,
+      0
+     ]
+    ],
+    "severe_deterioration": [
+     [
+      1,
+      0
+     ],
+     [
+      109,
+      1
+     ],
+     [
+      131,
+      2
+     ],
+     [
+      136,
+      1
+     ],
+     [
+      173,
+      2
+     ],
+     [
+      194,
+      3
+     ]
+    ],
+    "untreated": [
+     [
+      1,
+      0
+     ],
+     [
+      109,
+      1
+     ],
+     [
+      131,
+      2
+     ],
+     [
+      158,
+      3
+     ]
+    ],
+    "untreated_long": [
+     [
+      1,
+      0
+     ],
+     [
+      109,
+      1
+     ],
+     [
+      131,
+      2
+     ],
+     [
+      158,
+      3
+     ]
+    ]
+   },
+   "gi_bleed_72f": {
+    "blood_focused": [
+     [
+      1,
+      0
+     ]
+    ],
+    "delayed_treatment": [
+     [
+      1,
+      0
+     ],
+     [
+      109,
+      1
+     ],
+     [
+      127,
+      0
+     ]
+    ],
+    "early_treatment": [
+     [
+      1,
+      0
+     ]
+    ],
+    "fluid_focused": [
+     [
+      1,
+      0
+     ]
+    ],
+    "late_rescue": [
+     [
+      1,
+      0
+     ],
+     [
+      109,
+      1
+     ],
+     [
+      131,
+      2
+     ],
+     [
+      158,
+      3
+     ],
+     [
+      227,
+      2
+     ],
+     [
+      232,
+      1
+     ],
+     [
+      237,
+      0
+     ]
+    ],
+    "recovery_after_severe": [
+     [
+      1,
+      0
+     ],
+     [
+      109,
+      1
+     ],
+     [
+      131,
+      2
+     ],
+     [
+      158,
+      3
+     ],
+     [
+      161,
+      2
+     ],
+     [
+      168,
+      1
+     ],
+     [
+      174,
+      0
+     ]
+    ],
+    "severe_deterioration": [
+     [
+      1,
+      0
+     ],
+     [
+      109,
+      1
+     ],
+     [
+      131,
+      2
+     ],
+     [
+      136,
+      1
+     ],
+     [
+      173,
+      2
+     ],
+     [
+      194,
+      3
+     ]
+    ],
+    "untreated": [
+     [
+      1,
+      0
+     ],
+     [
+      109,
+      1
+     ],
+     [
+      131,
+      2
+     ],
+     [
+      158,
+      3
+     ]
+    ],
+    "untreated_long": [
+     [
+      1,
+      0
+     ],
+     [
+      109,
+      1
+     ],
+     [
+      131,
+      2
+     ],
+     [
+      158,
+      3
+     ]
+    ]
+   }
+  },
+  "recovery_invariant": {
+   "gi_bleed_57m": {
+    "entry_minute": 167,
+    "f_at_entry": 0.5136,
+    "f_at_order": 0.8089,
+    "isolated_decay_0_80_to_0_50_min": 4.0,
+    "minutes_0_80_to_below_0_50": 7,
+    "minutes_remaining_after_entry": 1,
+    "order_minute": 158,
+    "share_of_descent_done_before_entry": 0.9546
+   },
+   "gi_bleed_72f": {
+    "entry_minute": 167,
+    "f_at_entry": 0.5104,
+    "f_at_order": 0.8089,
+    "isolated_decay_0_80_to_0_50_min": 4.0,
+    "minutes_0_80_to_below_0_50": 7,
+    "minutes_remaining_after_entry": 1,
+    "order_minute": 158,
+    "share_of_descent_done_before_entry": 0.9653
+   }
+  },
+  "rescue": {
+   "gi_bleed_57m": {
+    "gi_bleed_57m/rescue_collapse_below_established": 5,
+    "gi_bleed_57m/rescue_collapse_none": 9,
+    "gi_bleed_57m/rescue_normal": 23
+   },
+   "gi_bleed_72f": {
+    "gi_bleed_72f/rescue_collapse_below_established": 5,
+    "gi_bleed_72f/rescue_collapse_none": 9,
+    "gi_bleed_72f/rescue_normal": 22
+   }
+  },
+  "untreated_events": {
+   "gi_bleed_57m": {
+    "established": 207,
+    "f_at_first_minute_ge_0_80": 158,
+    "first_obtunded": 131,
+    "first_somnolent": 109,
+    "first_unresponsive": 158,
+    "impending": 189
+   },
+   "gi_bleed_72f": {
+    "established": 207,
+    "f_at_first_minute_ge_0_80": 158,
+    "first_obtunded": 131,
+    "first_somnolent": 109,
+    "first_unresponsive": 158,
+    "impending": 189
+   }
+  }
+ },
+ "cases": [
+  "gi_bleed_57m",
+  "gi_bleed_72f"
+ ],
+ "common_core_lineage": {
+  "certified_candidate": "ad7bf815e57e63c892ad2be7a63c5a8302a3e688",
+  "digest": "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2",
+  "parent": "PHASE2_AMENDMENT_1",
+  "record": "docs/revision/PHASE2_AMENDMENT_2.json",
+  "version_id": "PHASE2_AMENDMENT_2"
+ },
+ "faculty_references": [
+  "A2-FD-013, A2-FD-015, A2-FD-020 (the behavioural regions; docs/revision/PHASE2_AMENDMENT_2.md)",
+  "FD-GI-01 (relative-to-arrival delivery, FD-P3-173)",
+  "FD-GI-02 / FD-P3-176 (graded recovery, FD-P3-177)",
+  "FD-GI-03 (no recalibration to the legacy timings, FD-P3-173)",
+  "FD-GI-04 (collapse architecture unchanged, FD-P3-173)"
+ ],
+ "falsifiers": [
+  "an ordering or safety invariant violated at the snapshot on any recorded or new GI course (onset order, monotone untreated course, no collapse-led UNRESPONSIVE, no fall of F before the order, no two-band give-back)",
+  "the FD-P3-176 recovery invariant failing on a physical recovery of the snapshot (0.80 to below 0.50 outside 6 to 8 min, more than 2 minutes left after the formal entry, or less than 79 % of the descent done before it)",
+  "the independent evaluator and the live Amendment-2 channels disagreeing for the snapshot (the exactness test)",
+  "a faculty change to a region bound that leaves the snapshot on, near (< 5 %) or outside a bound",
+  "a new GI case, a new supported treatment or a new core lineage member that changes the physical course enough to change which magnitudes are HIGH_SENSITIVITY",
+  "the common-core digest moving (a new amendment): the snapshot is then re-derived as a NEW version"
+ ],
+ "family": "gi_bleed",
+ "identifiability": {
+  "burden_clear_tau": "DERIVED_FROM_EXISTING_EQUATION",
+  "burden_rise_tau": "DERIVED_FROM_EXISTING_EQUATION",
+  "collapse_clear_tau": "WEAKLY_IDENTIFIED",
+  "collapse_rise_tau": "WEAKLY_IDENTIFIED",
+  "delivery_normal": "FACULTY_DEFINED_FROM_BEHAVIOR",
+  "delivery_severe": "FACULTY_DEFINED_FROM_BEHAVIOR",
+  "established_burden": "WEAKLY_IDENTIFIED",
+  "impending_burden": "WEAKLY_IDENTIFIED",
+  "perfusion_normal": "FACULTY_DEFINED_FROM_BEHAVIOR",
+  "perfusion_severe": "FACULTY_DEFINED_FROM_BEHAVIOR"
+ },
+ "immutability": {
+  "identity_digest": "1f292d014255ac968ddc3217400635ca64d22462852056c23bb91850d0d6ec40",
+  "record_digest": "9e258ab5b3790a5abb30053b30dd40fd0755918673bc4024f9da609fd4f8cdc9",
+  "rule": "This file is version 1 and is never edited. A change to ANY value, bound, lineage or reason is a NEW file (GI_DEVELOPMENT_SNAPSHOT_V2.json) that names this one in `supersedes`; this file keeps `superseded_by` unset and its digest is pinned by a test.",
+  "superseded_by": null,
+  "supersedes": null
+ },
+ "is_not": [
+  "clinical calibration",
+  "production profile",
+  "authority-approved profile"
+ ],
+ "margins_to_the_region_bounds": {
+  "burden_clear_tau": 0.5,
+  "burden_rise_tau": 0.5,
+  "collapse_clear_tau": 0.5,
+  "collapse_rise_tau": 0.5,
+  "delivery_normal": 0.5,
+  "delivery_severe": 0.5,
+  "established_burden": 0.5,
+  "impending_burden": 0.5,
+  "perfusion_normal": 0.5,
+  "perfusion_severe": 0.5
+ },
+ "min_margin": 0.5,
+ "record_type": "GI_DEVELOPMENT_SNAPSHOT",
+ "reference_witness_not_selected": {
+  "CENTER_REFERENCE": {
+   "burden_clear_tau": 8.5,
+   "burden_rise_tau": 1.65,
+   "collapse_clear_tau": 8.0,
+   "collapse_rise_tau": 2.0,
+   "delivery_normal": 0.75,
+   "delivery_severe": 0.5,
+   "established_burden": 0.65,
+   "impending_burden": 0.39,
+   "perfusion_normal": 0.55,
+   "perfusion_severe": 0.35
+  },
+  "magnitudes_on_a_region_bound": [
+   "collapse_clear_tau",
+   "impending_burden"
+  ],
+  "magnitudes_outside_the_low_high_bracket": [
+   "impending_burden"
+  ],
+  "min_margin": 0.0,
+  "why_not": "It is a test witness, not the midpoint of the region: two of its magnitudes (collapse_clear_tau, impending_burden) sit ON the upper bound of their region and one lies outside the LOW..HIGH bracket. It fails the hard criterion H1 (strictly inside every region) and is not chosen by default."
+ },
+ "region_bounds": {
+  "burden_clear_tau": [
+   6.38,
+   10.64
+  ],
+  "burden_rise_tau": [
+   1.443,
+   2.485
+  ],
+  "collapse_clear_tau": [
+   6.0,
+   8.0
+  ],
+  "collapse_rise_tau": [
+   1.5,
+   2.2
+  ],
+  "delivery_normal": [
+   0.7,
+   0.8
+  ],
+  "delivery_severe": [
+   0.45,
+   0.55
+  ],
+  "established_burden": [
+   0.55,
+   0.7
+  ],
+  "impending_burden": [
+   0.35,
+   0.39
+  ],
+  "perfusion_normal": [
+   0.5,
+   0.6
+  ],
+  "perfusion_severe": [
+   0.3,
+   0.4
+  ]
+ },
+ "selected_on": "2026-11-11",
+ "selection": {
+  "candidates_evaluated": 52,
+  "criteria": {
+   "broad_margin": 0.2,
+   "hard": [
+    [
+     "H1",
+     "lies strictly inside every approved region (no magnitude on a region bound)"
+    ],
+    [
+     "H2",
+     "keeps every faculty behavioural invariant (FD-P3-176 recovery invariant, ordering of the onset and collapse events)"
+    ],
+    [
+     "H3",
+     "keeps the causal order, the recovery behaviour and the collapse semantics on every scenario"
+    ],
+    [
+     "H4",
+     "generalises across both GI cases (event times differ by at most one minute)"
+    ],
+    [
+     "H5",
+     "is deterministic (re-evaluation equals the record exactly)"
+    ],
+    [
+     "H6",
+     "has explicit provenance (a complete, digest-pinned record)"
+    ],
+    [
+     "H7",
+     "is not selected to mimic a legacy timing (the rule reads no legacy value)"
+    ]
+   ],
+   "near_boundary_threshold": 0.05,
+   "ranked": [
+    [
+     "R1",
+     "the largest minimum normalised margin to the region bounds"
+    ],
+    [
+     "R2",
+     "the fewest magnitudes outside the LOW..HIGH witness bracket"
+    ],
+    [
+     "R3",
+     "the most interpretable provenance (a parameter-free rule over the faculty regions, not an arbitrary draw)"
+    ]
+   ]
+  },
+  "hard_criteria_evidence": {
+   "H2_H3_invariant_violations_over_profiles": {
+    "profiles": 118,
+    "violations": {
+     "category_gives_back_two_bands": 0,
+     "collapse_led_unresponsive": 0,
+     "f_falls_before_the_order": 0,
+     "untreated_not_monotone": 0,
+     "untreated_ordering": 0
+    }
+   },
+   "H4_case_difference_minutes": 1
+  },
+  "inputs_of_the_rule": [
+   "the region bounds",
+   "the LOW and HIGH witnesses' values"
+  ],
+  "legacy_distance_reported_only": {
+   "closest_candidate": "LHS_13",
+   "closest_candidate_min_margin": 0.004927,
+   "distance_of_closest": 82,
+   "distance_of_selected": 90,
+   "legacy_first_levels": {
+    "level_1": 63,
+    "level_2": 175
+   },
+   "of": 52,
+   "selected_rank_by_legacy_distance": 26
+  },
+  "legacy_input": false,
+  "rule": "Among the candidates strictly inside every region, the one with the largest minimum normalised margin to the region bounds (R1); ties by fewest magnitudes outside the LOW..HIGH bracket (R2). For a box region the maximiser is UNIQUE: each magnitude at the middle of its own faculty-approved region.",
+  "winner": "REGION_MIDPOINT"
+ },
+ "snapshot_id": "GI_DEVELOPMENT_SNAPSHOT_V1",
+ "status": "GI_DEVELOPMENT_SNAPSHOT",
+ "supporting_tests": [
+  "test_phase3_gi_development_snapshot.py",
+  "test_phase3_gi_authority_readiness.py",
+  "test_gi_snapshot_analysis.py (the harness)",
+  "test_phase3_gi_recovery_review.py (the FD-P3-176 invariant on the witnesses)"
+ ],
+ "uncertainty": {
+  "all_ten_magnitudes": "FACULTY_DEFINED_DEVELOPMENT_BEHAVIORAL_REGION: none is validated clinically, none is calibrated.",
+  "event_time_range_over_the_region_minutes": {
+   "established": [
+    189,
+    225
+   ],
+   "first_obtunded": [
+    114,
+    149
+   ],
+   "first_somnolent": [
+    92,
+    127
+   ],
+   "first_unresponsive": [
+    140,
+    175
+   ],
+   "impending": [
+    171,
+    207
+   ]
+  },
+  "sensitivity_ranking": [
+   {
+    "class": "HIGH_SENSITIVITY",
+    "dominant_metric": "gi_bleed_57m/first_unresponsive",
+    "max_classified_swing": 28.0,
+    "parameter": "delivery_severe"
+   },
+   {
+    "class": "HIGH_SENSITIVITY",
+    "dominant_metric": "gi_bleed_57m/first_somnolent",
+    "max_classified_swing": 26.0,
+    "parameter": "delivery_normal"
+   },
+   {
+    "class": "HIGH_SENSITIVITY",
+    "dominant_metric": "gi_bleed_57m/impending",
+    "max_classified_swing": 23.0,
+    "parameter": "perfusion_normal"
+   },
+   {
+    "class": "HIGH_SENSITIVITY",
+    "dominant_metric": "gi_bleed_57m/established",
+    "max_classified_swing": 22.0,
+    "parameter": "perfusion_severe"
+   },
+   {
+    "class": "HIGH_SENSITIVITY",
+    "dominant_metric": "gi_bleed_57m/established",
+    "max_classified_swing": 11.0,
+    "parameter": "established_burden"
+   },
+   {
+    "class": "MODERATE_SENSITIVITY",
+    "dominant_metric": "gi_bleed_57m/rec_normal",
+    "max_classified_swing": 5.0,
+    "parameter": "burden_clear_tau"
+   },
+   {
+    "class": "MODERATE_SENSITIVITY",
+    "dominant_metric": "gi_bleed_57m/impending",
+    "max_classified_swing": 3.0,
+    "parameter": "impending_burden"
+   },
+   {
+    "class": "LOW_SENSITIVITY",
+    "dominant_metric": "gi_bleed_57m/rescue_collapse_none",
+    "max_classified_swing": 2.0,
+    "parameter": "collapse_clear_tau"
+   },
+   {
+    "class": "LOW_SENSITIVITY",
+    "dominant_metric": "gi_bleed_57m/first_somnolent",
+    "max_classified_swing": 1.0,
+    "parameter": "burden_rise_tau"
+   },
+   {
+    "class": "LOW_SENSITIVITY",
+    "dominant_metric": "gi_bleed_57m/established",
+    "max_classified_swing": 1.0,
+    "parameter": "collapse_rise_tau"
+   }
+  ],
+  "weakly_identified": [
+   "collapse_rise_tau",
+   "collapse_clear_tau",
+   "impending_burden",
+   "established_burden"
+  ]
+ },
+ "value_status": "FACULTY_DEFINED_DEVELOPMENT_BEHAVIORAL_REGION",
+ "values": {
+  "burden_clear_tau": 8.51,
+  "burden_rise_tau": 1.964,
+  "collapse_clear_tau": 7.0,
+  "collapse_rise_tau": 1.85,
+  "delivery_normal": 0.75,
+  "delivery_severe": 0.5,
+  "established_burden": 0.625,
+  "impending_burden": 0.37,
+  "perfusion_normal": 0.55,
+  "perfusion_severe": 0.35
+ },
+ "version": 1,
+ "witness_untreated_events_for_comparison": {
+  "HIGH": {
+   "established": 195,
+   "f_at_first_minute_ge_0_80": 140,
+   "first_obtunded": 114,
+   "first_somnolent": 92,
+   "first_unresponsive": 140,
+   "impending": 172
+  },
+  "LOW": {
+   "established": 219,
+   "f_at_first_minute_ge_0_80": 175,
+   "first_obtunded": 148,
+   "first_somnolent": 126,
+   "first_unresponsive": 175,
+   "impending": 205
+  }
+ },
+ "witnesses_preserved_for_ongoing_sensitivity_checks": {
+  "HIGH": {
+   "burden_clear_tau": 10.5,
+   "burden_rise_tau": 1.85,
+   "collapse_clear_tau": 8.0,
+   "collapse_rise_tau": 2.2,
+   "delivery_normal": 0.8,
+   "delivery_severe": 0.55,
+   "established_burden": 0.7,
+   "impending_burden": 0.38,
+   "perfusion_normal": 0.6,
+   "perfusion_severe": 0.4
+  },
+  "LOW": {
+   "burden_clear_tau": 6.4,
+   "burden_rise_tau": 1.5,
+   "collapse_clear_tau": 6.0,
+   "collapse_rise_tau": 1.5,
+   "delivery_normal": 0.7,
+   "delivery_severe": 0.45,
+   "established_burden": 0.55,
+   "impending_burden": 0.35,
+   "perfusion_normal": 0.5,
+   "perfusion_severe": 0.3
+  },
+  "SELECTED_SNAPSHOT": "GI_DEVELOPMENT_SNAPSHOT_V1",
+  "event_times_not_bounded_by_the_witnesses_minutes": {
+   "established": 12,
+   "first_obtunded": 1,
+   "first_somnolent": 1,
+   "first_unresponsive": 0,
+   "impending": 3
+  },
+  "magnitudes_outside_the_low_high_bracket": [
+   "burden_rise_tau"
+  ],
+  "note": "The region is NOT replaced by the point. LOW and HIGH stay as the bounding witnesses; the sweep of the full region (the record PHASE3_GI_SNAPSHOT_SENSITIVITY) stays the check, because the two witnesses do not bound every event time."
+ }
+}
