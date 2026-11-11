@@ -25,7 +25,43 @@
   "authorized": "2026-11-10 (faculty decisions A2-FD-011 to A2-FD-022)",
   "branch": "phase-2-amendment-2-terminal-consciousness",
   "certification": {
-    "status": "CANDIDATE"
+    "adversarial_review": {
+      "high_confirmed_and_fixed": 2,
+      "low_fixed_or_declared": "see PHASE2_AMENDMENT_2.md, section 5",
+      "medium_confirmed_and_fixed": 3
+    },
+    "candidate_fingerprint": "0f3632bc75852419e7c2d2dad7c1c2727cea0a570dc2d288b602d95758419c03",
+    "candidate_head": "ad7bf815e57e63c892ad2be7a63c5a8302a3e688",
+    "candidate_tree": "e6dc7f1689e7a03ba6f78be530560d4e4d1bf299",
+    "certified_core_digest": "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2",
+    "certified_on": "2026-11-11",
+    "full_suite": {
+      "candidate_unchanged": true,
+      "errors": 0,
+      "failures": 0,
+      "how": "partitions 0, 1 and 3 ran in the first launch (3721 + 2276 + 2873 tests, 0 failures); partition 2 reached the 7200 s limit at 89% with no failure (slow freeze-reconstruction tests, not a hang) and its same 112 files were then run to completion on the SAME unchanged candidate, split into 4 parallel sub-partitions (761 + 640 + 523 + 565 = 2489 passed, 5 skipped, 0 failures). Totals as recorded here: the three finished partitions as counted by the runner plus the four sub-partitions; the runner's own 8870 omits partition 2.",
+      "partitions": 4,
+      "ran_with": "-p test_core_certification_preview and MRS_CORE_CERTIFICATION_PREVIEW=PHASE2_AMENDMENT_2 (the lineage entry was CANDIDATE throughout; tests marked real_core_lineage read the real status)",
+      "skipped": 93,
+      "tests": 11359,
+      "timeout_per_partition_s": 7200,
+      "valid": true,
+      "xfailed": 1
+    },
+    "promotion": "metadata and documentation only: no executable file changed after the candidate",
+    "python": "3.11.17",
+    "regressions": {
+      "active": 56,
+      "failed": 0,
+      "passed": 56,
+      "retired": 10
+    },
+    "root_contracts": {
+      "errors": 0,
+      "failures": 0,
+      "files": 85
+    },
+    "status": "CERTIFIED"
   },
   "historical_closure": {
     "clinical_core_modules": 141,

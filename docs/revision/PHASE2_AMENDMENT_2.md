@@ -1,6 +1,6 @@
 # Enmienda 2 · GI: consciencia sistémica reversible y colapso circulatorio · registro (2026-11-10)
 
-**Estado: `CANDIDATE (pendiente de la certificación completa)`.** Sucesor formal de `PHASE2_AMENDMENT_1`, sólo en sombra: apagado por omisión
+**Estado: `CERTIFICADA (2026-11-11)`.** Sucesor formal de `PHASE2_AMENDMENT_1`, sólo en sombra: apagado por omisión
 (`CoreProfile.amendment_2 = None`), sin autoridad en tiempo de ejecución, invisible para el residente y ausente de la
 puntuación. **No hay afirmación de validación clínica:** toda magnitud es una `FACULTY_DEFINED_DEVELOPMENT_BEHAVIORAL_REGION`
 (testigos `LOW`, `CENTER_REFERENCE`, `HIGH`), nunca una calibración.
@@ -70,6 +70,22 @@ gasto bajo solo / aporte solo / perfusión sola / episodio breve, histéresis, s
    se pliega a la contribución primaria; el colapso ESTABLECIDO aporta 1,0 y el inminente 0.
 7. Dos digestos de congelación de la Enmienda 1 (`closure_guard_P2X1A`, `tone_domain`) ya no se recalculan sobre el árbol de la
    Enmienda 1 en `test_phase2_amendment_lineage.py` (sus valores registrados no cambian; los del cierre sí se recalculan).
+
+## 5b · Certificación (2026-11-11)
+Candidato `ad7bf815e57e63c892ad2be7a63c5a8302a3e688` (huella `0f3632bc7585…`, sin cambios al inicio ni al final), Python 3.11.17,
+complemento `test_core_certification_preview` con `MRS_CORE_CERTIFICATION_PREVIEW=PHASE2_AMENDMENT_2` (la entrada de linaje fue
+CANDIDATE durante toda la corrida; las pruebas marcadas `real_core_lineage` leen el estado real).
+
+* Suite completa: particiones 0, 1 y 3 terminaron en la primera corrida (3721 + 2276 + 2873 pruebas, 0 fallas). La partición 2 llegó
+  al límite de 7200 s al 89 % sin ninguna falla (pruebas lentas de reconstrucción de congelaciones, no un bloqueo); sus mismos 112
+  archivos se corrieron hasta el final **sobre el mismo candidato sin cambios**, divididos en 4 sub-particiones paralelas
+  (761 + 640 + 523 + 565 = 2489 aprobadas, 5 omitidas, 0 fallas). Total: 11 359 pruebas, 0 fallas, 0 errores, 93 omitidas, 1 xfail.
+  El `resumen.json` del lanzador cuenta 8870 porque no incluye la partición 2 (terminó por tiempo); la cifra completa es la suma
+  descrita aquí, no una cifra única del lanzador.
+* Regresiones: 56/56 activas; 10 retiradas (conservadas, no corridas). Contratos raíz: 85 archivos, 0 fallas.
+* Revisión adversarial independiente: 2 hallazgos altos y 3 medios confirmados y corregidos antes del candidato; los bajos, corregidos o
+  declarados en la sección 5.
+* Promoción: sólo metadatos y documentación; ningún archivo ejecutable cambió después del candidato.
 
 ## 6 · No reclamado
 Sin autoridad en tiempo de ejecución; sin cambios visibles al residente; sin efecto en la puntuación; sin integración en la
