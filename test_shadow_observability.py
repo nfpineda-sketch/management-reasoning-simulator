@@ -43,6 +43,9 @@ OXYGEN = "Give oxygen 15 L/min by non-rebreather mask."
 NALOXONE = "Give naloxone 0.4 mg IV."
 WITNESSES = tuple(fam.TRANSMISSION_WITNESSES)
 RUNS = (store.SESSION_RUN_NAME,) + WITNESSES
+#: P3-174: las corridas de una traza de GI. El registro de P3-148 (``rec.TRACE_STORE``) dice lo que GI guardaba entonces
+#: (la sesion sola) y no se reescribe; hoy GI guarda ademas los tres testigos de la Enmienda 2.
+GI_RUNS = (store.SESSION_RUN_NAME,) + tuple(fam.GI_AMENDMENT_2_WITNESS_NAMES)
 
 
 # -- el arnes -----------------------------------------------------------------------------------------------------
@@ -342,7 +345,9 @@ def test_p3o_148b_gi_persists_reloads_and_replays_exactly(traces):
     assert session.persistence["stored"] is True and session.failures == []
     rows = store.records(encounter_id=session.encounter_id)
     assert [row["turns"] for row in rows] == list(range(1, session.turns + 1))     # un registro por turno
-    assert rows[-1]["session_minutes"] == 40 == encounter.minute and rows[-1]["runs"] == ["SESSION_RUN"]
+    # P3-174: GI guarda la corrida de la sesion y los tres testigos de la Enmienda 2, cada uno su propia trayectoria
+    assert rows[-1]["session_minutes"] == 40 == encounter.minute
+    assert sorted(rows[-1]["runs"]) == sorted(GI_RUNS)
     trace = store.load(rows[-1]["trace_id"])
     # cada registro nombra el que su propia sesion guardo antes: eso une los registros de un intento
     assert [row["previous_trace_id"] for row in rows] == [None] + [row["trace_id"] for row in rows[:-1]]
@@ -380,8 +385,9 @@ def test_p3o_148b_gi_persists_reloads_and_replays_exactly(traces):
     assert checked["verified"] and checked["lineage_matches"] and checked["missing_witnesses"] == []
     replayed = store.replay(trace)
     assert replayed["replayed"] and replayed["reproduces"] and replayed["refused"] is None
-    assert replayed["runs"] == {"SESSION_RUN": {"reproduces": True, "minutes": 40, "recorded": 40,
-                                                "first_mismatch": None, "why": ""}}
+    # P3-174: cada corrida (la de la sesion y los tres testigos de la Enmienda 2) se reproduce desde SU PROPIO artefacto
+    assert replayed["runs"] == {name: {"reproduces": True, "minutes": 40, "recorded": 40, "first_mismatch": None,
+                                       "why": ""} for name in GI_RUNS}
     # guardar lo mismo otra vez no escribe nada nuevo
     before = sorted(path.name for path in traces.iterdir())
     again = store.persist(trace)
@@ -995,7 +1001,7 @@ def test_p3o_153b_under_any_sequence_the_shadow_is_whole_and_the_encounter_does_
     assert all(row["disposition"] in (fam.FROM_ENGINE_STATE, fam.NOT_MIRRORED)
                for row in trace["actions"] if row not in mirrored)
     assert trace["status"]["state"] in (fam.COMPLETE, fam.COMPLETE_WITH_UNSUPPORTED_ACTIONS)
-    assert sorted(trace["runs"]) == sorted(rec.TRACE_STORE["runs"][trace["family"]])
+    assert sorted(trace["runs"]) == sorted({**rec.TRACE_STORE["runs"], "gi_bleed": GI_RUNS}[trace["family"]])
     assert all(len(run["minutes"]) == on.minute for run in trace["runs"].values())
     replayed = store.replay(trace)
     if on.minute:
@@ -1057,7 +1063,8 @@ def test_p3o_153e_wrong_family_missing_witness_and_mutated_arrival(traces):
     opioid = _latest(_play(OPIOID, (NALOXONE,), until=6))
     gi = _latest(_play(GI, ("Give 1 L of normal saline.",)))
     # una traza de GI presentada como de opioide: sus corridas son de otra familia, y le faltan los testigos
-    wrong = _resealed({**copy.deepcopy(gi), "family": "opioid", "expected_witnesses": list(WITNESSES)})
+    only_session = {**copy.deepcopy(gi), "runs": {store.SESSION_RUN_NAME: copy.deepcopy(gi["runs"][store.SESSION_RUN_NAME])}}
+    wrong = _resealed({**only_session, "family": "opioid", "expected_witnesses": list(WITNESSES)})
     checked = store.verify(wrong)
     assert checked["verified"] is False and checked["wrong_family_runs"] == ["SESSION_RUN"]
     assert checked["missing_witnesses"] == list(WITNESSES) and "another family" in checked["why"]

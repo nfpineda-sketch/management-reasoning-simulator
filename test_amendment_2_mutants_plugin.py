@@ -21,7 +21,7 @@ def _patches():
 
     original = {name: getattr(sc, name) for name in ("collapse_signal", "relative_delivery", "collapse_state", "readout",
                                                      "primary_neurologic", "collapse_burden_after", "systemic_burden_after",
-                                                     "category_index", "delivery_failure")}
+                                                     "category_index", "delivery_failure", "consciousness_level")}
 
     def collapse_is_max(perfusion, delivery):
         return max(perfusion, delivery)
@@ -64,6 +64,21 @@ def _patches():
         profile = core_profile.amendment_2
         return (original["delivery_failure"](sc._coordinates(state, anchors, core_profile)[0], profile)
                 if state.R.pulse_present else 1.0)
+
+    def f_is_inert(state, anchors, core_profile):
+        return 0.0
+
+    def a_direct_ladder_reaches_the_level(which):
+        """P3-179: the retired direct ladders put back. The level is the composite OR the old ladder, whichever is higher."""
+        def level(state, anchors, core_profile):
+            import dataclasses
+            from clinical_core import derived as dv
+            composite = original["consciousness_level"](state, anchors, core_profile)
+            legacy = dv.derive(state, anchors, dataclasses.replace(core_profile, amendment_2=None))
+            ladder = (dv._level(legacy.sbp, core_profile.pressure_levels) if which == "sbp"
+                      else dv._level(legacy.spo2, core_profile.oxygen_levels))
+            return max(composite, ladder)
+        return level
 
     def cuts_shifted(impairment):
         return sum(1 for cut in (0.30, 0.55, 0.85) if impairment >= cut)
@@ -118,6 +133,11 @@ def _patches():
         "collapse_burden_ignores_the_signal": lambda: setattr(sc, "collapse_burden_after", collapse_moves_without_a_pulse),
         "f_clears_as_fast_as_it_rises": lambda: setattr(sc, "systemic_burden_after", f_clears_as_fast_as_it_rises),
         "f_is_the_instantaneous_signal": lambda: setattr(sc, "systemic_burden_after", f_reads_the_signal_instantly),
+        "f_is_inert": lambda: setattr(sc, "systemic_burden_after", f_is_inert),
+        "direct_pressure_ladder_in_the_level": lambda: setattr(sc, "consciousness_level",
+                                                              a_direct_ladder_reaches_the_level("sbp")),
+        "direct_saturation_ladder_in_the_level": lambda: setattr(sc, "consciousness_level",
+                                                                a_direct_ladder_reaches_the_level("spo2")),
         "category_cuts_shifted": lambda: setattr(sc, "category_index", cuts_shifted),
         "no_hysteresis_band": lambda: setattr(sc, "collapse_state", no_hysteresis),
     }
@@ -126,7 +146,8 @@ def _patches():
 MUTANTS = ("collapse_by_maximum", "delivery_against_an_absolute_baseline", "no_pulse_not_immediate",
            "level_includes_the_instantaneous_signal", "no_arrival_floor", "collapse_burden_ignores_the_signal",
            "f_clears_as_fast_as_it_rises", "f_is_the_instantaneous_signal", "category_cuts_shifted", "no_hysteresis_band",
-           "f_also_reads_pressure", "impending_counts_as_collapse", "collapse_clears_as_fast_as_it_builds")
+           "f_also_reads_pressure", "impending_counts_as_collapse", "collapse_clears_as_fast_as_it_builds",
+           "f_is_inert", "direct_pressure_ladder_in_the_level", "direct_saturation_ladder_in_the_level")
 
 
 def pytest_report_header(config):

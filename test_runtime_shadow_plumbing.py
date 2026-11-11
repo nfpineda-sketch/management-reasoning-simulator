@@ -361,7 +361,12 @@ def test_r11_a_boundary_is_classified_as_a_boundary_not_as_a_fault(monkeypatch):
     encounter = pilot_acceptance.Encounter(CASE)
     monkeypatch.setattr(integration, "run", lambda *a, **k: (_ for _ in ()).throw(UnresolvedBoundary("edge")))
     encounter.order(TURNS[0])
-    assert [item["classification"] for item in encounter.shadow.record()["failures"]] == [runtime_shadow.BOUNDARY]
+    failures = encounter.shadow.record()["failures"]
+    # P3-174: la sesion y cada uno de los tres testigos de la Enmienda 2 de GI tocan la misma frontera del nucleo, y cada
+    # uno lo dice con su nombre (nadie la calla): una falla por corrida, todas clasificadas como frontera.
+    assert [item["classification"] for item in failures] == [runtime_shadow.BOUNDARY] * 4
+    assert [item["where"] for item in failures] == ["core"] + [f"ensemble:{name}:core"
+                                                              for name in ("LOW", "CENTER_REFERENCE", "HIGH")]
 
 
 def test_r13_nothing_authoritative_reads_the_shadow_result():

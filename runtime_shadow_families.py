@@ -33,7 +33,7 @@ import hashlib
 import json
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 import runtime_shadow as rs
 
@@ -104,6 +104,39 @@ class ShadowParameterSnapshot:
     def to_dict(self) -> dict:
         return {"id": self.id, "family": self.family, "point": self.point,
                 "provenance": list(self.provenance), "approved": False}
+
+
+@dataclass(frozen=True)
+class RegionDeclaration:
+    """What a family's live development region IS, said once (P3-174).
+
+    Before this, the one live region (the opioid transmission fraction, P3-140) was written into the ensemble, the trace
+    store and the replay checks as constants. A second family declares its own region here instead: the profile field its
+    witnesses set, the declared value of each witness, what the trace says about the region, the readings the derived view
+    spans, and the core versions in which that field exists. The opioid declaration reproduces the old constants exactly,
+    so every opioid record and digest is unchanged. A declaration approves nothing: a witness is a reading of a region.
+    """
+
+    parameter: str
+    classification: str
+    #: witness name -> the declared value of its parameter, plain (numbers, or the dict of a profile object).
+    witnesses: Mapping[str, Any]
+    #: What a trace and a record say about the region beyond its parameter and classification.
+    region: Mapping[str, Any]
+    #: The readings the ensemble's derived view spans (min and max per minute; never a trajectory).
+    view: tuple
+    #: Core versions in which the parameter exists; None means any certified member of the lineage.
+    requires_core: tuple | None = None
+    #: Per-run facts read from the profile the run used (the opioid run also names its declared respiratory quotient).
+    extras: Callable[[Any], Mapping[str, Any]] | None = None
+
+
+def declared_value_of(profile: Any, parameter: str) -> Any:
+    """The value of a witness parameter on the profile a run used, plain: a profile object is read as its dict."""
+    if profile is None:
+        return None
+    value = getattr(profile, parameter)
+    return value.to_dict() if hasattr(value, "to_dict") else value
 
 
 @dataclass(frozen=True)
@@ -190,8 +223,12 @@ class RuntimeFamilyAdapter:
     def region_witnesses(self) -> dict:
         """Name -> a development adapter for each witness of a declared DEVELOPMENT TEST REGION this family
         runs LIVE as an ensemble (P3-140). Empty for a family that declares none, which is every family but
-        the opioid one: the registered adapter itself never carries a witness."""
+        the opioid one and (P3-174) the GI one: the registered adapter itself never carries a witness."""
         return {}
+
+    def region_declaration(self) -> "RegionDeclaration | None":
+        """What the region those witnesses sample is (P3-174); None for a family that declares no region."""
+        return None
 
     def interventions(self, mirrored: Sequence, state: Mapping | None = None) -> tuple:
         """(contributors, gaps): only actions the engine already executed, each mapped once or declared.
@@ -286,19 +323,115 @@ def _point_index(point: str, span: Sequence) -> int:
     return 0 if point == "lower" else len(span) - 1
 
 
+#: P3-174, PHASE2_AMENDMENT_2 (reversible systemic encephalopathy F, the composite consciousness level and the soft circulatory
+#: collapse) as the faculty accepted it for GI DEVELOPMENT SHADOW on 2026-11-11. Three named witnesses of one region (every
+#: magnitude at the low, middle and high end of its development behavioural region). They exist only to run a development
+#: ensemble and to test with: no committed profile declares any of them, CENTER_REFERENCE is not a preferred value, and nothing
+#: here is clinical truth. The amendment is supported for GI ONLY (FD 2026-11-11): the adapter of no other family carries it.
+GI_AMENDMENT_2_FIELD = "amendment_2"
+GI_AMENDMENT_2_WITNESS_NAMES = ("LOW", "CENTER_REFERENCE", "HIGH")
+GI_AMENDMENT_2_CLASSIFICATION = "FACULTY_DEFINED_DEVELOPMENT_BEHAVIORAL_REGION"
+#: Which magnitude of the profile each part of the amendment is (P3-174A): the provenance a reader of a witness is shown.
+GI_AMENDMENT_2_PROVENANCE = {
+    "F rise witness": ("burden_rise_tau",),
+    "F fall witness": ("burden_clear_tau",),
+    "relative-delivery thresholds": ("delivery_normal", "delivery_severe"),
+    "perfusion thresholds": ("perfusion_normal", "perfusion_severe"),
+    "collapse persistence and recovery": ("collapse_rise_tau", "collapse_clear_tau", "impending_burden",
+                                          "established_burden"),
+}
+GI_AMENDMENT_2_RECOVERY = ("faculty interpretation 2026-11-11: from an impairment of about 0.80, the observable level crosses "
+                           "below 0.50 in about 3 to 5 simulated minutes once the upstream physiology has recovered enough; "
+                           "it does NOT require normalisation below 0.25 in that interval")
+GI_AMENDMENT_2_NOT_SUPPORTED = ("opioid", "acs", "pulmonary_edema", "pulmonary_embolism", "asthma")
+
+
+def _gi_amendment_2_extras(profile: Any) -> dict:
+    """What a witness run says about the parameter it ran with, group by group, each one a development region's point."""
+    if profile is None or getattr(profile, GI_AMENDMENT_2_FIELD) is None:
+        return {"provenance": None}
+    from clinical_core import systemic_consciousness as sc
+    values = getattr(profile, GI_AMENDMENT_2_FIELD).to_dict()
+    return {"provenance": {group: {name: {"value": values[name], "origin": sc.IDENTIFIABILITY[name],
+                                          "status": "DEVELOPMENT_BEHAVIORAL_REGION"} for name in names}
+                           for group, names in GI_AMENDMENT_2_PROVENANCE.items()}}
+
+
 class GiHaemorrhageAdapter(RuntimeFamilyAdapter):
-    """GI haemorrhage: the reference adapter. Its mapping is the one Phase 2 pinned with a golden."""
+    """GI haemorrhage: the reference adapter. Its mapping is the one Phase 2 pinned with a golden.
+
+    Since P3-174 this adapter runs, beside the session's own committed-profile run, the three development witnesses of
+    PHASE2_AMENDMENT_2 (``region_witnesses``), each its own trajectory, none selected and none averaged. The registered
+    adapter keeps the committed profile, where the amendment is OFF: the session's own run is the legacy-compatible one.
+    """
 
     family = "gi_bleed"
     version = "gi_haemorrhage/P3-4"
     cases = ("gi_bleed_57m", "gi_bleed_72f")
     live = True
     maps = ("fluid", "blood", "oxygen", "ppi")
+    #: The witness this adapter was built with (None: the registered adapter, the committed profile).
+    amendment_2_witness: str | None = None
+
+    @classmethod
+    def witness(cls, name: str) -> "GiHaemorrhageAdapter":
+        """A development adapter carrying ONE witness of the Amendment-2 region. Never registered."""
+        if name not in GI_AMENDMENT_2_WITNESS_NAMES:
+            raise ValueError(f"unknown Amendment-2 witness {name!r}: {list(GI_AMENDMENT_2_WITNESS_NAMES)}")
+        adapter = cls()
+        adapter.amendment_2_witness = name
+        adapter.version = f"{cls.version}+amendment_2/P3-174"
+        return adapter
+
+    def region_witnesses(self) -> dict:
+        """The live ensemble of the registered adapter: every witness, in declared order. A witness adapter declares
+        none of its own, so an ensemble never nests."""
+        if self.amendment_2_witness is not None:
+            return {}
+        return {name: type(self).witness(name) for name in GI_AMENDMENT_2_WITNESS_NAMES}
+
+    def region_declaration(self) -> RegionDeclaration:
+        from clinical_core import systemic_consciousness as sc
+        return RegionDeclaration(
+            GI_AMENDMENT_2_FIELD, GI_AMENDMENT_2_CLASSIFICATION,
+            {name: sc.WITNESSES[name].to_dict() for name in GI_AMENDMENT_2_WITNESS_NAMES},
+            {"status": sc.STATUS,
+             "regions": {name: {"lower": lo, "upper": hi, "reading": why, "origin": sc.IDENTIFIABILITY[name]}
+                         for name, (lo, hi, why) in sc.REGIONS.items()},
+             "provenance_groups": {group: list(names) for group, names in GI_AMENDMENT_2_PROVENANCE.items()},
+             "observable_categories": list(sc.CATEGORIES), "category_cuts": list(sc.CATEGORY_CUTS),
+             "recovery_interpretation": GI_AMENDMENT_2_RECOVERY,
+             "supported_family": self.family, "not_supported": list(GI_AMENDMENT_2_NOT_SUPPORTED),
+             "state_only": "the collapse and consciousness states are physiological state: none terminates an encounter"},
+            ("consciousness_level", "delivery_rel", "pressure_rel", "output_rel"),
+            ("PHASE2_AMENDMENT_2",), _gi_amendment_2_extras)
+
+    def profile(self, point: str):
+        base = _bundle_profile(point)
+        if self.amendment_2_witness is None:
+            return base
+        import dataclasses
+        from clinical_core import systemic_consciousness as sc
+        return dataclasses.replace(base, **{GI_AMENDMENT_2_FIELD: sc.development_profile(self.amendment_2_witness)})
 
     def snapshot(self, point: str = COMMITTED) -> ShadowParameterSnapshot:
         from clinical_core import calibration
         arrival = ("clinical_core.legacy_adapter: the arrival and the haemorrhage module are read from "
                    "the case",)
+        if self.amendment_2_witness is not None:
+            from clinical_core import systemic_consciousness as sc
+            name = self.amendment_2_witness
+            values = sc.WITNESSES[name].to_dict()
+            return ShadowParameterSnapshot(
+                f"gi_amendment_2_{name.lower()}", self.family, point if point in POINTS else COMMITTED,
+                arrival + ("clinical_core.derived.DEFAULT_PROFILE: the committed default profile, plus ONE declared "
+                           "field, amendment_2 (the committed profile leaves it OFF)",
+                           f"clinical_core.systemic_consciousness.WITNESSES[{name!r}]: {sc.STATUS}, a development "
+                           "witness, not a selection and not clinical truth") + tuple(
+                    f"{group}: " + ", ".join(f"{field} = {values[field]} ({sc.IDENTIFIABILITY[field]})"
+                                             for field in fields) + " [DEVELOPMENT_BEHAVIORAL_REGION]"
+                    for group, fields in GI_AMENDMENT_2_PROVENANCE.items()) + (
+                    GI_AMENDMENT_2_RECOVERY, "supported for GI only: no other family's adapter carries the amendment"))
         if point in (COMMITTED, "midpoint"):
             return ShadowParameterSnapshot(
                 "gi_committed_default", self.family, point,
@@ -319,9 +452,6 @@ class GiHaemorrhageAdapter(RuntimeFamilyAdapter):
         if state is None:
             state = legacy_adapter.bank_case(case_id)
         return legacy_adapter.anchors_from_legacy(state)
-
-    def profile(self, point: str):
-        return _bundle_profile(point)
 
     def writers(self, case_id: str, point: str, state: Mapping | None = None) -> tuple:
         from clinical_core import legacy_adapter
@@ -707,6 +837,17 @@ class OpioidAdapter(RuntimeFamilyAdapter):
         if self.transmission_witness is not None:
             return {}
         return {name: type(self).witness(name) for name in TRANSMISSION_WITNESSES}
+
+    def region_declaration(self) -> RegionDeclaration:
+        """The transmission region, exactly as the ensemble and the trace store always said it (P3-174 only moved it)."""
+        return RegionDeclaration(
+            TRANSMISSION_FIELD, TRANSMISSION_CLASSIFICATION, dict(TRANSMISSION_WITNESSES),
+            {"conditional_on": transmission_condition(),
+             "mathematical_region": list(TRANSMISSION_MATHEMATICAL_REGION),
+             "active_causal_region": dict(TRANSMISSION_ACTIVE_REGION),
+             "declared_respiratory_quotient": TRANSMISSION_DECLARED_R},
+            ENSEMBLE_VIEW, None,
+            lambda profile: {"declared_respiratory_quotient": None if profile is None else profile.respiratory_quotient})
 
     def snapshot(self, point: str = COMMITTED) -> ShadowParameterSnapshot:
         from clinical_core import opioid_migration as om
@@ -1327,6 +1468,8 @@ class RegionEnsemble:
     case_id: str
     parameter: str
     runners: dict
+    #: The region's declaration (P3-174): what the witnesses set, what each declares, and what the record says of it.
+    declaration: Any = None
     _drained: dict = field(default_factory=dict)
     #: Why no witness runs, when none does. Reported once as a failure and kept in the record.
     refused: str | None = None
@@ -1346,15 +1489,21 @@ class RegionEnsemble:
         witnesses = {} if adapter is None else adapter.region_witnesses()
         if not witnesses:
             return None
+        declaration = adapter.region_declaration()
         try:
             import runtime_shadow_evidence as evidence     # it imports this module: resolved at call time
             certified = evidence.core_lineage_ok()
             why = None if certified else (evidence.core_lineage_reason()
                                           or "the common core lineage could not be evaluated")
+            if why is None and declaration.requires_core:
+                active = evidence.core_lineage_verdict().get("active_core")
+                if active not in declaration.requires_core:
+                    why = (f"the parameter {declaration.parameter} exists only in {list(declaration.requires_core)}; "
+                           f"the live core is {active}")
         except Exception as error:
             why = f"the common core lineage could not be evaluated: {type(error).__name__}"
         if why is not None:
-            return cls(str(family), str(case_id), TRANSMISSION_FIELD, {}, refused=why)
+            return cls(str(family), str(case_id), declaration.parameter, {}, declaration, refused=why)
         runners = {}
         for name, witness in witnesses.items():
             runner = ShadowPhysiologyRunner.open(family, case_id, state=state, adapter=witness,
@@ -1362,7 +1511,7 @@ class RegionEnsemble:
                                                               else f"{scenario_id}::{name}"))
             if runner is not None:
                 runners[name] = runner
-        return cls(str(family), str(case_id), TRANSMISSION_FIELD, runners)
+        return cls(str(family), str(case_id), declaration.parameter, runners, declaration)
 
     def advance(self, mirrored: Sequence, minute: int, state: Mapping | None = None) -> None:
         """Every witness to the same minute, on the same mirrored actions. Never raises: a witness that
@@ -1402,7 +1551,7 @@ class RegionEnsemble:
             return {}
         common = min(runner.minutes_done for runner in self.runners.values())
         out = {}
-        for reading in ENSEMBLE_VIEW:
+        for reading in (ENSEMBLE_VIEW if self.declaration is None else self.declaration.view):
             rows = {}
             for minute in range(1, common + 1):
                 values = {}
@@ -1428,7 +1577,7 @@ class RegionEnsemble:
             except Exception as error:
                 captured, artifact_error = None, f"{type(error).__name__}: {str(error)[:200]}"
             witnesses[name] = {
-                "value": TRANSMISSION_WITNESSES.get(name),
+                "value": None if self.declaration is None else self.declaration.witnesses.get(name),
                 "adapter": runner.adapter.version,
                 "snapshot": runner.snapshot_.to_dict() if runner.snapshot_ else {},
                 "minutes": self.minutes()[name],
@@ -1444,11 +1593,8 @@ class RegionEnsemble:
             "resident_visible": False,
             "family": self.family, "case_id": self.case_id,
             "parameter": self.parameter,
-            "classification": TRANSMISSION_CLASSIFICATION,
-            "conditional_on": transmission_condition(),
-            "mathematical_region": list(TRANSMISSION_MATHEMATICAL_REGION),
-            "active_causal_region": dict(TRANSMISSION_ACTIVE_REGION),
-            "declared_respiratory_quotient": TRANSMISSION_DECLARED_R,
+            "classification": None if self.declaration is None else self.declaration.classification,
+            **({} if self.declaration is None else dict(self.declaration.region)),
             "policy": ENSEMBLE_POLICY,
             "selected_witness": None,
             "refused": self.refused,
@@ -1591,7 +1737,52 @@ TERMINAL_WHY = {
 }
 
 
-def terminal_boundary(legacy: Mapping | None, channels: Mapping | None, collapse_rule_declared) -> dict:
+#: P3-178: where each Amendment-2 witness stands on collapse beside the legacy engine's terminality. PHYSIOLOGICAL STATE ONLY:
+#: none of these decides, ends or alters an encounter, and a witness is never selected.
+COLLAPSE_ESTABLISHED_LEGACY_ACTIVE = "COLLAPSE_ESTABLISHED_LEGACY_ACTIVE"
+COLLAPSE_IMPENDING_LEGACY_ACTIVE = "COLLAPSE_IMPENDING_LEGACY_ACTIVE"
+NO_COLLAPSE_LEGACY_ACTIVE = "NO_COLLAPSE_LEGACY_ACTIVE"
+LEGACY_TERMINAL_COLLAPSE_ESTABLISHED = "LEGACY_TERMINAL_COLLAPSE_ESTABLISHED"
+LEGACY_TERMINAL_WITHOUT_ESTABLISHED_COLLAPSE = "LEGACY_TERMINAL_WITHOUT_ESTABLISHED_COLLAPSE"
+WITNESS_NOT_COMPARABLE = "WITNESS_NOT_COMPARABLE"
+WITNESS_COLLAPSE_STATES = (COLLAPSE_ESTABLISHED_LEGACY_ACTIVE, COLLAPSE_IMPENDING_LEGACY_ACTIVE, NO_COLLAPSE_LEGACY_ACTIVE,
+                           LEGACY_TERMINAL_COLLAPSE_ESTABLISHED, LEGACY_TERMINAL_WITHOUT_ESTABLISHED_COLLAPSE,
+                           WITNESS_NOT_COMPARABLE)
+AMENDMENT_2_BOUNDARY_NOTE = ("PHYSIOLOGICAL STATE ONLY (faculty 2026-11-11): an established collapse in a witness does not end, "
+                             "block or alter the encounter, which the legacy engine alone decides; no witness is selected")
+
+
+def _amendment_2_boundary(legacy_terminal: bool | None, witnesses: Mapping) -> dict | None:
+    """Per witness: its collapse and category at its last minute, and the explicit state it stands in beside the legacy engine.
+
+    None when no witness carries the Amendment-2 channels (every family but GI): the block is then absent and a trace is what
+    it always was. A witness with no reading, or a legacy record that is not a reading, is NOT_COMPARABLE and says so."""
+    shown = {}
+    for name, channels in sorted(dict(witnesses).items()):
+        if not isinstance(channels, Mapping) or "collapse_state_index" not in channels:
+            continue
+        index, category = channels.get("collapse_state_index"), channels.get("category_index")
+        pulse = channels.get("pulse_present") if isinstance(channels.get("pulse_present"), bool) else None
+        established = (isinstance(index, int) and index >= 2) or pulse is False
+        if legacy_terminal is None or not isinstance(index, int) or isinstance(index, bool):
+            state = WITNESS_NOT_COMPARABLE
+        elif legacy_terminal:
+            state = LEGACY_TERMINAL_COLLAPSE_ESTABLISHED if established else LEGACY_TERMINAL_WITHOUT_ESTABLISHED_COLLAPSE
+        elif established:
+            state = COLLAPSE_ESTABLISHED_LEGACY_ACTIVE
+        elif index == 1:
+            state = COLLAPSE_IMPENDING_LEGACY_ACTIVE
+        else:
+            state = NO_COLLAPSE_LEGACY_ACTIVE
+        shown[name] = {"state": state, "collapse_state_index": index, "category_index": category, "pulse_present": pulse,
+                       "consciousness_source": "AMENDMENT_2_MECHANISTIC_COMPOSITE_DEVELOPMENT_WITNESS"}
+    if not shown:
+        return None
+    return {"note": AMENDMENT_2_BOUNDARY_NOTE, "witnesses": shown}
+
+
+def terminal_boundary(legacy: Mapping | None, channels: Mapping | None, collapse_rule_declared,
+                      witnesses: Mapping | None = None) -> dict:
     """Where the two engines stand on terminality at the last observed minute, and why. Decides nothing.
 
     The legacy side is the engine's own record of an arrest or a fibrillation. The core side is the run's
@@ -1627,7 +1818,7 @@ def terminal_boundary(legacy: Mapping | None, channels: Mapping | None, collapse
     level = None if not isinstance(channels, Mapping) else channels.get("consciousness_level")
     no_breath = pulse is True and isinstance(rate, (int, float)) and not isinstance(rate, bool) and rate == 0
     top_level = pulse is not None and isinstance(level, int) and not isinstance(level, bool) and level == 3
-    return {
+    boundary = {
         "state": state, "why": TERMINAL_WHY[state],
         "legacy": {"terminal": bool(legacy_minutes) if known else None,
                    "minute": min(legacy_minutes) if legacy_minutes else None,
@@ -1643,6 +1834,10 @@ def terminal_boundary(legacy: Mapping | None, channels: Mapping | None, collapse
                  "consciousness_source": "ADOPTED_LEGACY_LADDER_NOT_A_MECHANISM"},
         "decides_the_encounter": "legacy",
     }
+    beside = _amendment_2_boundary((bool(legacy_minutes) if known else None), witnesses or {})
+    if beside is not None:
+        boundary["amendment_2"] = beside
+    return boundary
 
 
 def held_rows(held: Sequence, rows: Sequence) -> list:
@@ -1704,6 +1899,26 @@ TRACE_READINGS = ("sbp", "dbp", "map", "monitor_rate_bpm", "spo2", "respiratory_
 TRACE_STATE = ("V", "P", "T", "L", "G", "D", "fio2", "hb")
 TRACE_AUXILIARY = ("central_availability", "mechanics_efficiency", "sympathetic_drive", "metabolic_acid_burden")
 TRACE_RESPIRATION = ("ventilation", "paco2", "ph")
+#: P3-174: the channels of PHASE2_AMENDMENT_2, present only on a run whose profile DECLARES it (the committed ones do not).
+#: ``collapse_state_index`` is 0 none, 1 impending, 2 established; ``category_index`` is the observable category, 0 to 3.
+TRACE_AMENDMENT_2 = ("systemic_encephalopathy_burden", "collapse_burden", "relative_delivery", "relative_perfusion",
+                     "category_index", "collapse_state_index")
+
+
+def _amendment_2_channels(state, anchors, profile, reading) -> dict:
+    """The channels of the Amendment-2 composite at one minute; absent (never invented) when it cannot be read."""
+    from clinical_core import systemic_consciousness as sc
+    try:
+        found = sc.readout(state, anchors, profile, reading.pressure_rel, reading.delivery_rel)
+        instantaneous = found.get("instantaneous", {})
+        return {"systemic_encephalopathy_burden": float(sc.systemic_burden(state)),
+                "collapse_burden": float(state.aux.collapse_burden),
+                "relative_delivery": instantaneous.get("relative_delivery"),
+                "relative_perfusion": instantaneous.get("relative_perfusion"),
+                "category_index": int(found["category_index"]),
+                "collapse_state_index": (sc.NO_COLLAPSE, sc.IMPENDING, sc.ESTABLISHED).index(found["collapse"]["state"])}
+    except Exception:
+        return {}
 
 
 def artifact_rows(scenario: Mapping) -> list:
@@ -1724,6 +1939,8 @@ def artifact_rows(scenario: Mapping) -> list:
             channels.update({"ventilation": breathing.ventilation, "paco2": breathing.paco2, "ph": breathing.ph})
         except Exception:
             pass                       # this profile has no acid-base physiology: the channels are absent
+        if profile.amendment_2 is not None:
+            channels.update(_amendment_2_channels(state, anchors, profile, readings[minute]))
         rows.append({"minute": minute, "state_digest": rs._digest_of(state),
                      "reading_digest": reading_digest(derived), "channels": channels})
     return rows

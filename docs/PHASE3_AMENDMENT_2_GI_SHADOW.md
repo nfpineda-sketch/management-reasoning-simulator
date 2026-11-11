@@ -58,3 +58,158 @@ de `AUXILIARY_FIELDS` mientras es `None`). No se exige identidad de bytes entre 
 * Nueve pruebas de la Fase 3 que fijaban «el núcleo vivo es la Enmienda 1» se adaptaron (el núcleo vivo es hoy su sucesor certificado;
   los registros históricos no se reescriben, se leen contra el miembro del linaje que midieron; las de diseño A2-001…010 leen el árbol
   de la Enmienda 1 por la reversión declarada y probada).
+
+## 3 · P3-174 · Perfil GI de desarrollo por testigos de región
+
+**Arquitectura.** El adaptador registrado de GI (`GiHaemorrhageAdapter`) conserva el perfil comprometido, con la Enmienda 2 **apagada**:
+la corrida propia de la sesión es la de siempre. Además, `region_witnesses()` abre en vivo, por sesión, **tres adaptadores de desarrollo**
+(`GiHaemorrhageAdapter.witness("LOW" | "CENTER_REFERENCE" | "HIGH")`), cada uno con el perfil comprometido más **un solo campo**,
+`amendment_2`, en el testigo correspondiente de `systemic_consciousness.WITNESSES`. Cada testigo es su propia trayectoria: no se elige,
+no se promedia, no se prefiere (`CENTER_REFERENCE` no es un valor preferido) y el derivado `view` es sólo un mínimo y un máximo por
+minuto junto a los valores individuales. Un conjunto no anida (un testigo no declara los suyos).
+
+| Pieza | Qué hace |
+|---|---|
+| `runtime_shadow_families.RegionDeclaration` | Declara una vez qué es la región viva de una familia: el campo del perfil que mueven los testigos, el valor declarado de cada uno, lo que dice la traza de la región, las lecturas del derivado y las versiones del núcleo en que existe el campo. La declaración del opioide reproduce **exactamente** las constantes que ya usaban el conjunto y el almacén (ningún registro ni digesto del opioide cambia). |
+| `GiHaemorrhageAdapter.region_declaration()` | `amendment_2`, `FACULTY_DEFINED_DEVELOPMENT_BEHAVIORAL_REGION`, regiones por magnitud con su origen, grupos de procedencia, categorías observables y cortes, la lectura de la recuperación, `supported_family = gi_bleed`, `not_supported = opioid, acs, pulmonary_edema, pulmonary_embolism, asthma`, y «estado fisiológico sólo». Exige que el núcleo vivo sea `PHASE2_AMENDMENT_2` certificado (si no, el conjunto no abre y lo dice como falla `ensemble:lineage`). |
+| `runtime_shadow_families.artifact_rows` | Añade, **sólo** a una corrida cuyo perfil declara la enmienda, los canales `systemic_encephalopathy_burden` (F), `collapse_burden`, `relative_delivery`, `relative_perfusion`, `category_index` y `collapse_state_index`. Una traza de cualquier otra corrida es la de siempre. |
+| `runtime_shadow_store` | Los tres puntos que estaban cableados a la transmisión del opioide (el parámetro de cada corrida, el bloque `region` y la verificación de que el artefacto corrió el valor que el testigo declara) leen ahora la declaración de la familia. |
+| `runtime_shadow_observer` | Canales de GI con los de la enmienda; preguntas docentes y parámetros no resueltos de la enmienda; bloque de frontera por testigo (§7). |
+
+### P3-174A · Procedencia de cada testigo (todas `DEVELOPMENT_BEHAVIORAL_REGION`)
+Cada testigo nombra, y el artefacto de cada corrida lleva, el origen de cada magnitud:
+
+| Grupo | Magnitudes | Origen (`systemic_consciousness.IDENTIFIABILITY`) |
+|---|---|---|
+| Testigo de subida de F | `burden_rise_tau` | `DERIVED_FROM_EXISTING_EQUATION` |
+| Testigo de bajada de F | `burden_clear_tau` | `DERIVED_FROM_EXISTING_EQUATION` |
+| Umbrales de entrega relativa | `delivery_normal`, `delivery_severe` | `FACULTY_DEFINED_FROM_BEHAVIOR` |
+| Umbrales de perfusión | `perfusion_normal`, `perfusion_severe` | `FACULTY_DEFINED_FROM_BEHAVIOR` |
+| Persistencia y recuperación del colapso | `collapse_rise_tau`, `collapse_clear_tau`, `impending_burden`, `established_burden` | `WEAKLY_IDENTIFIED` |
+
+| Magnitud | LOW | CENTER_REFERENCE | HIGH |
+|---|---|---|---|
+| `delivery_normal` / `delivery_severe` | 0,70 / 0,45 | 0,75 / 0,50 | 0,80 / 0,55 |
+| `burden_rise_tau` / `burden_clear_tau` (min) | 1,5 / 6,4 | 1,65 / 8,5 | 1,85 / 10,5 |
+| `perfusion_normal` / `perfusion_severe` | 0,50 / 0,30 | 0,55 / 0,35 | 0,60 / 0,40 |
+| `collapse_rise_tau` / `collapse_clear_tau` (min) | 1,5 / 6,0 | 2,0 / 8,0 | 2,2 / 8,0 |
+| `impending_burden` / `established_burden` | 0,35 / 0,55 | 0,39 / 0,65 | 0,38 / 0,70 |
+
+Ninguna es una calibración ni está aprobada (`approved = False`, y el instantáneo del testigo lo dice en cada línea).
+
+## 4 · P3-175 · Serie GI en vivo (dos casos, siete escenarios, tres testigos)
+Encuentros reales con `pilot_acceptance.Encounter` y la sombra encendida (el motor heredado decide cada minuto). Mismas reglas en ambos
+casos, ningún valor por caso. Los dos casos soportados: `gi_bleed_57m` y `gi_bleed_72f`. Resultados en
+`docs/revision/PHASE3_GI_AMENDMENT_2_SERIES.json` (14 encuentros; 42 pares escenario×testigo).
+
+| Escenario | Regla (fija) |
+|---|---|
+| sin tratar | sin órdenes, hasta el minuto 240 |
+| tratamiento temprano | acceso, 1 L de cristaloide y 2 U de glóbulos rojos en el minuto 10 |
+| tratamiento tardío | el mismo paquete en el minuto 120 |
+| centrado en líquidos | 1 L en el minuto 10 y 1 L más en el 40 |
+| centrado en sangre | 2 U de glóbulos rojos en el minuto 10 |
+| deterioro grave | 1 L de cristaloide cuando el testigo `CENTER_REFERENCE` lee OBNUBILADO por primera vez |
+| recuperación tras deterioro grave | cristaloide y 4 U cuando `CENTER_REFERENCE` lee SIN RESPUESTA por primera vez |
+
+**Curso sin tratar (idéntico en ambos casos), minuto en que ocurre cada eslabón:**
+
+| Testigo | entrega < cota | F > 0 | SOMNOLIENTO | OBNUBILADO | SIN RESPUESTA | colapso inminente | colapso establecido |
+|---|---|---|---|---|---|---|---|
+| LOW | 103 | 105 | 126 | 148 | 175 | 205 | 219 |
+| CENTER_REFERENCE | 85 | 88 | 109 | 131 | 157 | 190 | 209 |
+| HIGH | 68 | 71 | 92 | 114 | 140 | 172 | 195 |
+
+El volumen ya está por debajo del de llegada desde el minuto 1 en todos los casos y testigos. La anchura de la región (de 140 a 175 para
+llegar a SIN RESPUESTA; de 195 a 219 para el colapso establecido) es la incertidumbre que la docencia declaró, no una dispersión por caso.
+
+### P3-175A · Orden causal exigido (medido)
+Hemorragia → volumen, perfusión y entrega → F → deterioro observable de la consciencia, y sólo después el colapso. En las **22** corridas
+testigo con deterioro observable de las 42: `volumen < entrega < F > 0 < SOMNOLIENTO` en ese orden (22/22); la categoría **nunca salta una banda al subir**
+(42/42). En las **10** con colapso inminente (8 con establecido): el colapso llega **después** de la consciencia alterada y el minuto
+anterior (o el propio) tenía **entrega y perfusión fallando a la vez** (10/10); ninguna lo hizo por una sola falla. Ninguna
+entrada directa de PAS, SpO2, líquidos ni glóbulos rojos alcanza la consciencia: (a) ningún identificador de esos conceptos existe en el
+módulo (prueba estática), (b) los dos casos, con PAS distinta a la llegada, leen **la misma** secuencia de categorías, (c) cada mutante
+que los reinstala o rompe la cadena es detectado (§8).
+
+### P3-175B · Recuperación (lectura de la docencia, 2026-11-11)
+Medida desde el minuto en que la fisiología aguas arriba se recuperó (entrega relativa otra vez sobre su cota normal: la señal que
+alimenta a F es cero), no desde la orden: transfundir y reponer tarda minutos en devolver la entrega, y eso es tiempo aguas arriba. F cae
+entonces por su ley de primer orden, de modo que 0,80 → por debajo de 0,50 tarda `burden_clear_tau · ln(0,8/0,5)` = **3,0 / 4,0 / 4,9 min** (LOW / CENTER / HIGH),
+dentro del 3–5 acordado, y la serie confirma que el cruce observado la sigue.
+
+| Recuperación tras deterioro grave (72f; 57m idéntica) | LOW | CENTER_REFERENCE | HIGH |
+|---|---|---|---|
+| F al tratar | 0,60 | 0,80 | 0,99 |
+| entrega recuperada (min) | 164 | 166 | 168 |
+| F en ese momento | 0,37 | 0,50 | 0,62 |
+| F < 0,50 (min) | 162 | 167 | 171 |
+| minutos desde la entrega recuperada hasta F < 0,50 (observado / por la ley) | 0 / 0,0 | 1 / 0,0 | 3 / 2,3 |
+| primer descenso de categoría (min tras el tratamiento) | 5 | 3 | 8 |
+| categoría al final | 0 | 0 | 0 |
+
+Del pico a F < 0,50, extremo a extremo (incluida la espera de la fisiología aguas arriba): 5 a 14 minutos desde la orden. **No se exigió
+normalizar por debajo de 0,25 en ese intervalo.** Tratamiento tardío (en el 120): sólo HIGH queda con F ≥ 0,50 al tratar (0,58) y baja a
+la categoría 0 en el 133; LOW y CENTER nunca superan 0,39 y vuelven al 0 sin llegar a OBNUBILADO. Tratamiento temprano, sólo líquidos y sólo sangre:
+sin deterioro observable (F máxima 0,00; 0,06 para HIGH con cristaloide solo). Deterioro grave tratado sólo con cristaloide: **mejoría transitoria** (la
+categoría baja y vuelve a subir: CENTER 2 → 1 en el 136 y de nuevo 2 en el 172, 3 en el 193; HIGH colapso establecido en el 232).
+
+## 5 · P3-176 · Escalera heredada frente a la sombra mecanicista (comparación, no calibración)
+Se compara la escalera de estado mental del motor heredado con la categoría de cada testigo, minuto a minuto, **sin** ajustar nada para
+reproducir los tiempos heredados (el minuto 45 o el 120 de otros paquetes). Sólo se informa lo que difiere y se dejan las preguntas a la docencia.
+
+| Sin tratar | heredado: primera alteración | heredado: secuencia | sombra: primera alteración (LOW / CENTER / HIGH) |
+|---|---|---|---|
+| `gi_bleed_57m` | 63 (DROWSY) | 63 → 1, 175 → 2 | 126 / 109 / 92 |
+| `gi_bleed_72f` | 138 (DROWSY) | 138 → 1 | 126 / 109 / 92 |
+
+Diferencias con valor educativo, todas medidas y ninguna ajustada:
+1. **Los dos casos GI leen igual en la sombra** (secuencias de categoría y F idénticas en los 7 escenarios), porque la enmienda lee la
+   entrega y la perfusión **relativas a la llegada de cada paciente** (decisión A2-FD-012), mientras que la escalera heredada los separa por PAS
+   absoluta: el caso de 57 años (PAS 88 a la llegada) se altera a los 63 min en el heredado, el de 72 a los 138. La sombra altera **antes** que el
+   heredado en 72f (92–126 frente a 138) y **después** en 57m (92–126 frente a 63).
+2. **La sombra llega a SIN RESPUESTA (140–175 min) sin sedar al heredado**, que a los 240 min sigue en SOMNOLIENTO (72f) u OBNUBILADO (57m, desde el 175).
+3. **Reversibilidad**: en la sombra la categoría baja en minutos tras restaurar la entrega (§4); la escalera heredada se observa de nuevo en ALERT
+   en la primera muestra tras la orden (minuto 277 en `recovery_after_severe`: la orden corre sobre el reloj síncrono del motor y no hay muestras intermedias).
+4. **Colapso**: el heredado nunca pierde el pulso en ninguna serie (0 minutos de contradicción en 14 encuentros); la sombra declara colapso
+   inminente a partir del 172–205 y establecido a partir del 195–219 sin tratar, con el paciente heredado todavía activo (§7).
+Limitación de la medida: durante la ejecución de una orden (una infusión corre 20–60 minutos en el reloj del motor) el valor heredado se
+muestrea sólo al final, de modo que la comparación cubre los minutos muestreados (`minutes_compared` por testigo, en el registro).
+
+## 6 · P3-177 · Paquete de revisión docente
+Generado con las herramientas existentes de persistencia y observador (`runtime_shadow_observer.write_review_package`), fuera del
+repositorio (sólo datos de ejecución) y sin acceso del residente: `gi_amendment_2_series.write_faculty_bundle(destino_absoluto)`.
+Cuatro trayectorias representativas: 72f sin tratar, 57m deterioro grave con cristaloide solo, 72f tratamiento tardío, 57m recuperación tras
+deterioro grave. Cada página muestra: la línea de tiempo de acciones, V / presión / entrega / perfusión / F / carga de colapso / categoría con
+**los tres testigos separados** (y la corrida comprometida al lado), el estado de réplica (las cuatro **reproducen exactamente**), la región y
+su procedencia, la frontera con el motor heredado y las preguntas. `legacy_beside_shadow.md` pone la escalera heredada **sólo como comparación**.
+Preguntas a la docencia (juicio, no implementación): ¿la alteración aparece demasiado pronto o tarde (como dirección, no como velocidad)?; ¿la
+recuperación es demasiado rápida o lenta una vez restaurada la entrega (3–5 min desde la fisiología aguas arriba) y debe contarse desde la
+orden o desde la recuperación aguas arriba?; ¿la progresión de categorías es plausible paso a paso?; ¿el colapso aparece demasiado pronto o
+tarde y es correcto que exija perfusión y entrega fallando a la vez?; ¿es aceptable que los dos casos lean igual en la sombra mientras el
+heredado los separa por PAS absoluta?; ¿está claro en la traza que un colapso establecido es estado fisiológico y no un desenlace?;
+¿alguna trayectoria confundiría a un residente?
+
+## 7 · P3-178 · Frontera y estado explícito del colapso junto al motor heredado
+**Frontera conocida (`UnresolvedBoundary`: gasto efectivo cero con pulso y sin regla terminal declarada).** Sin tratar, sesión y los tres
+testigos la tocan **en el mismo minuto (349) en ambos casos**: la enmienda **no la mueve** (la física compartida es idéntica con y sin ella) y
+tampoco la corrige: el núcleo no se tocó y la terminalización no está autorizada. En ese minuto cada corrida registra su falla
+(`core` y `ensemble:<testigo>:core`, `COMMON_BOUNDARY`) y el estado de la traza es `FAILED` con la sesión parcial, nunca un éxito silencioso.
+**Estado explícito** (`terminal_boundary.amendment_2`, recalculado en `verify` para que nadie lo edite aparte de sus dos lados): por testigo,
+`COLLAPSE_ESTABLISHED_LEGACY_ACTIVE`, `COLLAPSE_IMPENDING_LEGACY_ACTIVE`, `NO_COLLAPSE_LEGACY_ACTIVE`, `LEGACY_TERMINAL_COLLAPSE_ESTABLISHED`,
+`LEGACY_TERMINAL_WITHOUT_ESTABLISHED_COLLAPSE` (el motor termina por otra razón) y `WITNESS_NOT_COMPARABLE`. Sin tratar, del
+minuto 219 al 348 los tres testigos están en `COLLAPSE_ESTABLISHED_LEGACY_ACTIVE` (HIGH desde el 195) con el heredado activo, con pulso y sin arresto: **cada uno lo declara**.
+Nota fija: *estado fisiológico sólo; un colapso establecido no termina, bloquea ni altera el encuentro, que decide únicamente el motor heredado*.
+
+## 8 · P3-179 · Certificación integrada
+* **Pruebas focalizadas nuevas:** `test_phase3_amendment_2_integration.py` (8), `test_phase3_gi_amendment_2_shadow.py` (23),
+  `test_phase3_gi_amendment_2_mutants.py` (8); mutantes del núcleo ampliados a 16 (`f_is_inert`, `direct_pressure_ladder_in_the_level`,
+  `direct_saturation_ladder_in_the_level` nuevos).
+* **Mutantes que deben ser detectados:** F inerte, F instantánea, escalera directa de PAS, escalera directa de SpO2, colapso por máximo (OR) y F que
+  limpia tan rápido como sube (seis, por las pruebas de la capa integrada); testigo elegido, enmienda fuera de GI, autoridad encendida,
+  réplica que no reproduce, la sombra que escribe en el paciente (cinco, por la capa); linaje no certificado y núcleo de otra versión (dos,
+  por las compuertas del conjunto). Control sin mutante: verde.
+* **Suite completa del núcleo común:** `ALREADY_VALID_ON_EQUIVALENT_CODE` (véase §9). La suite de la capa Fase 3 y de autoridad se corre sobre el árbol integrado.
+
+## 9 · P3-180 · Punto de control de preparación (sólo GI)
+Se completa en el informe final y en `docs/COLA_DECISIONES_AI_ADVISOR.md` (FD-P3-167 a FD-P3-172).

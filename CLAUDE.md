@@ -79,14 +79,22 @@ de alcance, rige la fuente, no este resumen.
     `22b90a6f7f38929cc5c18aa2000579155b4d9109198e35e29ad3991e81d6ce6a` sobre las 141 fuentes que
     `clinical_core/` tenía en ese cierre. `phase-2-clinical-core-shadow` queda como la rama histórica
     congelada de esa fisiología: no se modifica;
-  - **núcleo común vigente** (un sucesor certificado del cierre, no un reemplazo): `PHASE2_AMENDMENT_1`,
-    con el digesto `10b45ce2967ea55afccb35291afb5bb1f7f1b01eb4a253e6a0736c02a5878635` sobre 142 fuentes,
-    certificado sobre el candidato `0b3c44396ddac13a0e0f1c000113d14825d61f67` e integrado en
-    `phase-3-runtime-integration` el 2026-11-10. Es lo que hay hoy en `clinical_core/` de esa rama:
-    - el cierre histórico se **reconstruye** desde él en cada verificación;
+  - **núcleo común vigente** (un sucesor certificado del cierre, no un reemplazo): `PHASE2_AMENDMENT_2`,
+    con el digesto `a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2` sobre 144 fuentes,
+    certificado sobre el candidato `ad7bf815e57e63c892ad2be7a63c5a8302a3e688` (cabeza final `5d644b9`) e
+    integrado en `phase-3-runtime-integration` el 2026-11-11. Es lo que hay hoy en `clinical_core/` de esa rama:
+    - el cierre histórico y `PHASE2_AMENDMENT_1` (digesto `10b45ce2967ea55afccb35291afb5bb1f7f1b01eb4a253e6a0736c02a5878635`,
+      142 fuentes, integrado el 2026-11-10) se **reconstruyen** desde él en cada verificación;
     - la compuerta de linaje exige que el núcleo activo sea un miembro **certificado**;
-    - `phase-2-amendment-1-respiratory-transmission` queda como la rama de esa enmienda: no se modifica;
-    - registro: `docs/revision/PHASE2_AMENDMENT_1.md`;
+    - `phase-2-amendment-1-respiratory-transmission` y `phase-2-amendment-2-terminal-consciousness` quedan como las ramas de
+      esas enmiendas: no se modifican;
+    - la Enmienda 2 (consciencia sistémica reversible F, nivel observable compuesto y colapso blando) está **apagada por
+      omisión** (`CoreProfile.amendment_2 = None`) y se declara **sólo** en los testigos de desarrollo de la sombra GI
+      (`LOW`, `CENTER_REFERENCE`, `HIGH`, cada uno su trayectoria, ninguno elegido): **no** en opioide, ACS, edema pulmonar,
+      embolia ni asma; el estado de colapso o consciencia del núcleo común es sólo estado fisiológico y **no termina un
+      encuentro**;
+    - registro: `docs/revision/PHASE2_AMENDMENT_2.md` (la Enmienda 1: `docs/revision/PHASE2_AMENDMENT_1.md`) y, para su uso
+      en la Fase 3, `docs/PHASE3_AMENDMENT_2_GI_SHADOW.md`;
   - `phase-3-runtime-integration` es la rama autorizada para el desarrollo de la Fase 3 (decisión docente
     del 2026-11-07), desde esa cabeza de cierre. La infraestructura de la Fase 3 vive **fuera** de
     `clinical_core/`: ningún paquete de la Fase 3 edita ese paquete, porque el digesto del núcleo vigente
@@ -103,7 +111,8 @@ de alcance, rige la fuente, no este resumen.
 
   Fuente: encargo del 2026-10-21 y `docs/PHASE2_SHADOW_CORE.md`; para la Fase 3, los encargos del
   2026-11-07, `docs/PHASE3_RUNTIME_INTEGRATION.md` y las filas FD-P3-01 a FD-P3-16 del Decision File; para
-  la enmienda y su integración, las filas FD-AMEND1-01 a FD-AMEND1-04, FD-P3-119 y FD-P3-129.
+  la enmienda y su integración, las filas FD-AMEND1-01 a FD-AMEND1-04, FD-P3-119 y FD-P3-129; para la Enmienda 2 y
+  su integración en la sombra GI, las filas FD-P3-167 a FD-P3-172.
 
 ## Privacidad y procedencia
 - No commitear datos reales, respuestas externas, secretos ni nombres de médicos.

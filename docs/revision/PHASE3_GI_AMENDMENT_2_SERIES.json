@@ -1,0 +1,2922 @@
+{
+ "boundary": {
+  "gi_bleed_57m": {
+   "amendment_2_witness_state": "COLLAPSE_ESTABLISHED_LEGACY_ACTIVE",
+   "boundary_minute": 349,
+   "classification": "COMMON_BOUNDARY",
+   "exception": "UnresolvedBoundary",
+   "failures": [
+    "core",
+    "ensemble:LOW:core",
+    "ensemble:CENTER_REFERENCE:core",
+    "ensemble:HIGH:core"
+   ],
+   "legacy_arrested": false,
+   "legacy_at_boundary": {
+    "arrested": false,
+    "dbp": 32,
+    "hr": 146,
+    "legacy_level": 2,
+    "mental_status": "Obtunded",
+    "pulse_present": true,
+    "sbp": 50
+   },
+   "terminal_boundary_state": "BOTH_ACTIVE",
+   "trace_status": "FAILED",
+   "untreated_horizon_requested": 420,
+   "witness_state_at_boundary": {
+    "F": 1.0,
+    "category": "UNRESPONSIVE",
+    "collapse_burden": 1.0,
+    "collapse_state": "ESTABLISHED",
+    "pulse_present": true
+   },
+   "witnesses_last_minute": 348
+  },
+  "gi_bleed_72f": {
+   "amendment_2_witness_state": "COLLAPSE_ESTABLISHED_LEGACY_ACTIVE",
+   "boundary_minute": 349,
+   "classification": "COMMON_BOUNDARY",
+   "exception": "UnresolvedBoundary",
+   "failures": [
+    "core",
+    "ensemble:LOW:core",
+    "ensemble:CENTER_REFERENCE:core",
+    "ensemble:HIGH:core"
+   ],
+   "legacy_arrested": false,
+   "legacy_at_boundary": {
+    "arrested": false,
+    "dbp": 40,
+    "hr": 134,
+    "legacy_level": 2,
+    "mental_status": "Obtunded",
+    "pulse_present": true,
+    "sbp": 58
+   },
+   "terminal_boundary_state": "BOTH_ACTIVE",
+   "trace_status": "FAILED",
+   "untreated_horizon_requested": 420,
+   "witness_state_at_boundary": {
+    "F": 1.0,
+    "category": "UNRESPONSIVE",
+    "collapse_burden": 1.0,
+    "collapse_state": "ESTABLISHED",
+    "pulse_present": true
+   },
+   "witnesses_last_minute": 348
+  }
+ },
+ "runs": {
+  "gi_bleed_57m/blood_focused": {
+   "case": "gi_bleed_57m",
+   "failures": 0,
+   "minutes_played": 120,
+   "orders": [
+    [
+     10,
+     [
+      "Place an IV line.",
+      "Transfuse 2 units of packed red blood cells."
+     ]
+    ]
+   ],
+   "scenario": "blood_focused",
+   "treatment_minute": 10,
+   "triggered_at": null,
+   "witnesses": {
+    "CENTER_REFERENCE": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ]
+     ],
+     "f_peak": 0.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": null,
+       "shadow": null
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ]
+      ],
+      "minutes_compared": 61,
+      "minutes_that_differ": 0,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 120,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": null,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": null,
+      "f_above_zero": null,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": null,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.0,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    },
+    "HIGH": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ]
+     ],
+     "f_peak": 0.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": null,
+       "shadow": null
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ]
+      ],
+      "minutes_compared": 61,
+      "minutes_that_differ": 0,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 120,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": null,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": null,
+      "f_above_zero": null,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": null,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.0,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    },
+    "LOW": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ]
+     ],
+     "f_peak": 0.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": null,
+       "shadow": null
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ]
+      ],
+      "minutes_compared": 61,
+      "minutes_that_differ": 0,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 120,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": null,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": null,
+      "f_above_zero": null,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": null,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.0,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    }
+   }
+  },
+  "gi_bleed_57m/delayed_treatment": {
+   "case": "gi_bleed_57m",
+   "failures": 0,
+   "minutes_played": 200,
+   "orders": [
+    [
+     120,
+     [
+      "Place an IV line.",
+      "Give 1 L of normal saline.",
+      "Transfuse 2 units of packed red blood cells."
+     ]
+    ]
+   ],
+   "scenario": "delayed_treatment",
+   "treatment_minute": 120,
+   "triggered_at": null,
+   "witnesses": {
+    "CENTER_REFERENCE": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       109,
+       1
+      ],
+      [
+       127,
+       0
+      ]
+     ],
+     "f_peak": 0.3922,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 63,
+       "shadow": 109
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        63,
+        1
+       ],
+       [
+        180,
+        0
+       ]
+      ],
+      "minutes_compared": 141,
+      "minutes_that_differ": 46,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 46
+     },
+     "minutes": 200,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": 85,
+      "f_above_zero": 88,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": 109,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.3807,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    },
+    "HIGH": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       92,
+       1
+      ],
+      [
+       114,
+       2
+      ],
+      [
+       126,
+       1
+      ],
+      [
+       133,
+       0
+      ]
+     ],
+     "f_peak": 0.5899,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 63,
+       "shadow": 92
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        63,
+        1
+       ],
+       [
+        180,
+        0
+       ]
+      ],
+      "minutes_compared": 141,
+      "minutes_that_differ": 36,
+      "shadow_above_legacy": 7,
+      "shadow_below_legacy": 29
+     },
+     "minutes": 200,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": 68,
+      "f_above_zero": 71,
+      "obtunded": 114,
+      "perfusion_below_normal_bound": null,
+      "somnolent": 92,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": true,
+      "below_0_50_at": 126,
+      "category_at_end": 0,
+      "category_at_treatment": 2,
+      "f_at_end": 0.0004,
+      "f_at_treatment": 0.5785,
+      "f_at_upstream_recovery": 0.4366,
+      "first_category_descent_at": 126,
+      "from_0_80_to_below_0_50_minutes_by_the_law": 4.935,
+      "minutes_treatment_to_first_descent": 6,
+      "minutes_upstream_to_below_0_50": 0,
+      "minutes_upstream_to_below_0_50_by_the_law": 0.0,
+      "upstream_recovered_at": 127
+     }
+    },
+    "LOW": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ]
+     ],
+     "f_peak": 0.1938,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 63,
+       "shadow": null
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        63,
+        1
+       ],
+       [
+        180,
+        0
+       ]
+      ],
+      "minutes_compared": 141,
+      "minutes_that_differ": 58,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 58
+     },
+     "minutes": 200,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": null,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": 103,
+      "f_above_zero": 105,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": null,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.1824,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    }
+   }
+  },
+  "gi_bleed_57m/early_treatment": {
+   "case": "gi_bleed_57m",
+   "failures": 0,
+   "minutes_played": 120,
+   "orders": [
+    [
+     10,
+     [
+      "Place an IV line.",
+      "Give 1 L of normal saline.",
+      "Transfuse 2 units of packed red blood cells."
+     ]
+    ]
+   ],
+   "scenario": "early_treatment",
+   "treatment_minute": 10,
+   "triggered_at": null,
+   "witnesses": {
+    "CENTER_REFERENCE": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ]
+     ],
+     "f_peak": 0.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": null,
+       "shadow": null
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ]
+      ],
+      "minutes_compared": 61,
+      "minutes_that_differ": 0,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 120,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": null,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": null,
+      "f_above_zero": null,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": null,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.0,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    },
+    "HIGH": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ]
+     ],
+     "f_peak": 0.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": null,
+       "shadow": null
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ]
+      ],
+      "minutes_compared": 61,
+      "minutes_that_differ": 0,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 120,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": null,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": null,
+      "f_above_zero": null,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": null,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.0,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    },
+    "LOW": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ]
+     ],
+     "f_peak": 0.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": null,
+       "shadow": null
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ]
+      ],
+      "minutes_compared": 61,
+      "minutes_that_differ": 0,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 120,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": null,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": null,
+      "f_above_zero": null,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": null,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.0,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    }
+   }
+  },
+  "gi_bleed_57m/fluid_focused": {
+   "case": "gi_bleed_57m",
+   "failures": 0,
+   "minutes_played": 120,
+   "orders": [
+    [
+     10,
+     [
+      "Place an IV line.",
+      "Give 1 L of normal saline."
+     ]
+    ],
+    [
+     40,
+     [
+      "Give 1 L of normal saline."
+     ]
+    ]
+   ],
+   "scenario": "fluid_focused",
+   "treatment_minute": 10,
+   "triggered_at": null,
+   "witnesses": {
+    "CENTER_REFERENCE": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ]
+     ],
+     "f_peak": 0.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 109,
+       "shadow": null
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        109,
+        1
+       ]
+      ],
+      "minutes_compared": 82,
+      "minutes_that_differ": 12,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 12
+     },
+     "minutes": 120,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": null,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": null,
+      "f_above_zero": null,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": null,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.0,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    },
+    "HIGH": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ]
+     ],
+     "f_peak": 0.0555,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 109,
+       "shadow": null
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        109,
+        1
+       ]
+      ],
+      "minutes_compared": 82,
+      "minutes_that_differ": 12,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 12
+     },
+     "minutes": 120,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": null,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": 113,
+      "f_above_zero": 116,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": null,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.0,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    },
+    "LOW": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ]
+     ],
+     "f_peak": 0.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 109,
+       "shadow": null
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        109,
+        1
+       ]
+      ],
+      "minutes_compared": 82,
+      "minutes_that_differ": 12,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 12
+     },
+     "minutes": 120,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": null,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": null,
+      "f_above_zero": null,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": null,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.0,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    }
+   }
+  },
+  "gi_bleed_57m/recovery_after_severe": {
+   "case": "gi_bleed_57m",
+   "failures": 0,
+   "minutes_played": 277,
+   "orders": [
+    [
+     157,
+     [
+      "Place an IV line.",
+      "Give 1 L of normal saline.",
+      "Transfuse 4 units of packed red blood cells."
+     ]
+    ]
+   ],
+   "scenario": "recovery_after_severe",
+   "treatment_minute": 157,
+   "triggered_at": 157,
+   "witnesses": {
+    "CENTER_REFERENCE": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       109,
+       1
+      ],
+      [
+       131,
+       2
+      ],
+      [
+       157,
+       3
+      ],
+      [
+       160,
+       2
+      ],
+      [
+       167,
+       1
+      ],
+      [
+       172,
+       0
+      ]
+     ],
+     "f_peak": 0.8124,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 63,
+       "shadow": 109
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        63,
+        1
+       ],
+       [
+        277,
+        0
+       ]
+      ],
+      "minutes_compared": 158,
+      "minutes_that_differ": 73,
+      "shadow_above_legacy": 27,
+      "shadow_below_legacy": 46
+     },
+     "minutes": 277,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": 85,
+      "f_above_zero": 88,
+      "obtunded": 131,
+      "perfusion_below_normal_bound": null,
+      "somnolent": 109,
+      "unresponsive": 157,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": true,
+      "below_0_50_at": 167,
+      "category_at_end": 0,
+      "category_at_treatment": 3,
+      "f_at_end": 0.0,
+      "f_at_treatment": 0.8011,
+      "f_at_upstream_recovery": 0.5038,
+      "first_category_descent_at": 160,
+      "from_0_80_to_below_0_50_minutes_by_the_law": 3.995,
+      "minutes_treatment_to_first_descent": 3,
+      "minutes_upstream_to_below_0_50": 1,
+      "minutes_upstream_to_below_0_50_by_the_law": 0.0649,
+      "upstream_recovered_at": 166
+     }
+    },
+    "HIGH": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       92,
+       1
+      ],
+      [
+       114,
+       2
+      ],
+      [
+       140,
+       3
+      ],
+      [
+       165,
+       2
+      ],
+      [
+       171,
+       1
+      ],
+      [
+       178,
+       0
+      ]
+     ],
+     "f_peak": 0.9953,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 63,
+       "shadow": 92
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        63,
+        1
+       ],
+       [
+        277,
+        0
+       ]
+      ],
+      "minutes_compared": 158,
+      "minutes_that_differ": 73,
+      "shadow_above_legacy": 44,
+      "shadow_below_legacy": 29
+     },
+     "minutes": 277,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": 68,
+      "f_above_zero": 71,
+      "obtunded": 114,
+      "perfusion_below_normal_bound": 142,
+      "somnolent": 92,
+      "unresponsive": 140,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": true,
+      "below_0_50_at": 171,
+      "category_at_end": 0,
+      "category_at_treatment": 3,
+      "f_at_end": 0.0,
+      "f_at_treatment": 0.9919,
+      "f_at_upstream_recovery": 0.6265,
+      "first_category_descent_at": 165,
+      "from_0_80_to_below_0_50_minutes_by_the_law": 4.935,
+      "minutes_treatment_to_first_descent": 8,
+      "minutes_upstream_to_below_0_50": 3,
+      "minutes_upstream_to_below_0_50_by_the_law": 2.3675,
+      "upstream_recovered_at": 168
+     }
+    },
+    "LOW": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       126,
+       1
+      ],
+      [
+       148,
+       2
+      ],
+      [
+       162,
+       1
+      ],
+      [
+       167,
+       0
+      ]
+     ],
+     "f_peak": 0.614,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 63,
+       "shadow": 126
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        63,
+        1
+       ],
+       [
+        277,
+        0
+       ]
+      ],
+      "minutes_compared": 158,
+      "minutes_that_differ": 73,
+      "shadow_above_legacy": 10,
+      "shadow_below_legacy": 63
+     },
+     "minutes": 277,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": 103,
+      "f_above_zero": 105,
+      "obtunded": 148,
+      "perfusion_below_normal_bound": null,
+      "somnolent": 126,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": true,
+      "below_0_50_at": 162,
+      "category_at_end": 0,
+      "category_at_treatment": 2,
+      "f_at_end": 0.0,
+      "f_at_treatment": 0.6027,
+      "f_at_upstream_recovery": 0.3742,
+      "first_category_descent_at": 162,
+      "from_0_80_to_below_0_50_minutes_by_the_law": 3.008,
+      "minutes_treatment_to_first_descent": 5,
+      "minutes_upstream_to_below_0_50": 0,
+      "minutes_upstream_to_below_0_50_by_the_law": 0.0,
+      "upstream_recovered_at": 164
+     }
+    }
+   }
+  },
+  "gi_bleed_57m/severe_deterioration": {
+   "case": "gi_bleed_57m",
+   "failures": 0,
+   "minutes_played": 240,
+   "orders": [
+    [
+     131,
+     [
+      "Place an IV line.",
+      "Give 1 L of normal saline."
+     ]
+    ]
+   ],
+   "scenario": "severe_deterioration",
+   "treatment_minute": 131,
+   "triggered_at": 131,
+   "witnesses": {
+    "CENTER_REFERENCE": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       109,
+       1
+      ],
+      [
+       131,
+       2
+      ],
+      [
+       136,
+       1
+      ],
+      [
+       172,
+       2
+      ],
+      [
+       193,
+       3
+      ]
+     ],
+     "f_peak": 1.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 63,
+       "shadow": 109
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        63,
+        1
+       ],
+       [
+        199,
+        2
+       ]
+      ],
+      "minutes_compared": 221,
+      "minutes_that_differ": 116,
+      "shadow_above_legacy": 70,
+      "shadow_below_legacy": 46
+     },
+     "minutes": 240,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": null,
+      "collapse_impending": 227,
+      "collapse_needs_both_failures": true,
+      "delivery_below_normal_bound": 85,
+      "f_above_zero": 88,
+      "obtunded": 131,
+      "perfusion_below_normal_bound": 199,
+      "somnolent": 109,
+      "unresponsive": 193,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": true,
+      "below_0_50_at": 136,
+      "category_at_end": 3,
+      "category_at_treatment": 2,
+      "f_at_end": 1.0,
+      "f_at_treatment": 0.5062,
+      "f_at_upstream_recovery": null,
+      "first_category_descent_at": 136,
+      "from_0_80_to_below_0_50_minutes_by_the_law": 3.995,
+      "minutes_treatment_to_first_descent": 5,
+      "upstream_recovered_at": null
+     }
+    },
+    "HIGH": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       92,
+       1
+      ],
+      [
+       114,
+       2
+      ],
+      [
+       154,
+       1
+      ],
+      [
+       160,
+       2
+      ],
+      [
+       179,
+       3
+      ]
+     ],
+     "f_peak": 1.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 63,
+       "shadow": 92
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        63,
+        1
+       ],
+       [
+        199,
+        2
+       ]
+      ],
+      "minutes_compared": 221,
+      "minutes_that_differ": 131,
+      "shadow_above_legacy": 102,
+      "shadow_below_legacy": 29
+     },
+     "minutes": 240,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": 232,
+      "collapse_impending": 210,
+      "collapse_needs_both_failures": true,
+      "delivery_below_normal_bound": 68,
+      "f_above_zero": 71,
+      "obtunded": 114,
+      "perfusion_below_normal_bound": 185,
+      "somnolent": 92,
+      "unresponsive": 179,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": true,
+      "below_0_50_at": 154,
+      "category_at_end": 3,
+      "category_at_treatment": 2,
+      "f_at_end": 1.0,
+      "f_at_treatment": 0.704,
+      "f_at_upstream_recovery": null,
+      "first_category_descent_at": 154,
+      "from_0_80_to_below_0_50_minutes_by_the_law": 4.935,
+      "minutes_treatment_to_first_descent": 23,
+      "upstream_recovered_at": null
+     }
+    },
+    "LOW": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       126,
+       1
+      ],
+      [
+       140,
+       0
+      ],
+      [
+       169,
+       1
+      ],
+      [
+       186,
+       2
+      ],
+      [
+       209,
+       3
+      ]
+     ],
+     "f_peak": 1.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 63,
+       "shadow": 126
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        63,
+        1
+       ],
+       [
+        199,
+        2
+       ]
+      ],
+      "minutes_compared": 221,
+      "minutes_that_differ": 126,
+      "shadow_above_legacy": 45,
+      "shadow_below_legacy": 81
+     },
+     "minutes": 240,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": 103,
+      "f_above_zero": 105,
+      "obtunded": 186,
+      "perfusion_below_normal_bound": 215,
+      "somnolent": 126,
+      "unresponsive": 209,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.3078,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    }
+   }
+  },
+  "gi_bleed_57m/untreated": {
+   "case": "gi_bleed_57m",
+   "failures": 0,
+   "minutes_played": 240,
+   "orders": [],
+   "scenario": "untreated",
+   "treatment_minute": null,
+   "triggered_at": null,
+   "witnesses": {
+    "CENTER_REFERENCE": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       109,
+       1
+      ],
+      [
+       131,
+       2
+      ],
+      [
+       157,
+       3
+      ]
+     ],
+     "f_peak": 1.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 63,
+       "shadow": 109
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        63,
+        1
+       ],
+       [
+        175,
+        2
+       ]
+      ],
+      "minutes_compared": 240,
+      "minutes_that_differ": 156,
+      "shadow_above_legacy": 110,
+      "shadow_below_legacy": 46
+     },
+     "minutes": 240,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": 209,
+      "collapse_impending": 190,
+      "collapse_needs_both_failures": true,
+      "delivery_below_normal_bound": 85,
+      "f_above_zero": 88,
+      "obtunded": 131,
+      "perfusion_below_normal_bound": 160,
+      "somnolent": 109,
+      "unresponsive": 157,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "why": "no treatment was given"
+     }
+    },
+    "HIGH": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       92,
+       1
+      ],
+      [
+       114,
+       2
+      ],
+      [
+       140,
+       3
+      ]
+     ],
+     "f_peak": 1.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 63,
+       "shadow": 92
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        63,
+        1
+       ],
+       [
+        175,
+        2
+       ]
+      ],
+      "minutes_compared": 240,
+      "minutes_that_differ": 156,
+      "shadow_above_legacy": 127,
+      "shadow_below_legacy": 29
+     },
+     "minutes": 240,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": 195,
+      "collapse_impending": 172,
+      "collapse_needs_both_failures": true,
+      "delivery_below_normal_bound": 68,
+      "f_above_zero": 71,
+      "obtunded": 114,
+      "perfusion_below_normal_bound": 142,
+      "somnolent": 92,
+      "unresponsive": 140,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "why": "no treatment was given"
+     }
+    },
+    "LOW": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       126,
+       1
+      ],
+      [
+       148,
+       2
+      ],
+      [
+       175,
+       3
+      ]
+     ],
+     "f_peak": 1.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 63,
+       "shadow": 126
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        63,
+        1
+       ],
+       [
+        175,
+        2
+       ]
+      ],
+      "minutes_compared": 240,
+      "minutes_that_differ": 156,
+      "shadow_above_legacy": 93,
+      "shadow_below_legacy": 63
+     },
+     "minutes": 240,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": 219,
+      "collapse_impending": 205,
+      "collapse_needs_both_failures": true,
+      "delivery_below_normal_bound": 103,
+      "f_above_zero": 105,
+      "obtunded": 148,
+      "perfusion_below_normal_bound": 178,
+      "somnolent": 126,
+      "unresponsive": 175,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "why": "no treatment was given"
+     }
+    }
+   }
+  },
+  "gi_bleed_72f/blood_focused": {
+   "case": "gi_bleed_72f",
+   "failures": 0,
+   "minutes_played": 120,
+   "orders": [
+    [
+     10,
+     [
+      "Place an IV line.",
+      "Transfuse 2 units of packed red blood cells."
+     ]
+    ]
+   ],
+   "scenario": "blood_focused",
+   "treatment_minute": 10,
+   "triggered_at": null,
+   "witnesses": {
+    "CENTER_REFERENCE": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ]
+     ],
+     "f_peak": 0.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": null,
+       "shadow": null
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ]
+      ],
+      "minutes_compared": 61,
+      "minutes_that_differ": 0,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 120,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": null,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": null,
+      "f_above_zero": null,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": null,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.0,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    },
+    "HIGH": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ]
+     ],
+     "f_peak": 0.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": null,
+       "shadow": null
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ]
+      ],
+      "minutes_compared": 61,
+      "minutes_that_differ": 0,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 120,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": null,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": null,
+      "f_above_zero": null,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": null,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.0,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    },
+    "LOW": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ]
+     ],
+     "f_peak": 0.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": null,
+       "shadow": null
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ]
+      ],
+      "minutes_compared": 61,
+      "minutes_that_differ": 0,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 120,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": null,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": null,
+      "f_above_zero": null,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": null,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.0,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    }
+   }
+  },
+  "gi_bleed_72f/delayed_treatment": {
+   "case": "gi_bleed_72f",
+   "failures": 0,
+   "minutes_played": 200,
+   "orders": [
+    [
+     120,
+     [
+      "Place an IV line.",
+      "Give 1 L of normal saline.",
+      "Transfuse 2 units of packed red blood cells."
+     ]
+    ]
+   ],
+   "scenario": "delayed_treatment",
+   "treatment_minute": 120,
+   "triggered_at": null,
+   "witnesses": {
+    "CENTER_REFERENCE": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       109,
+       1
+      ],
+      [
+       127,
+       0
+      ]
+     ],
+     "f_peak": 0.3922,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": null,
+       "shadow": 109
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ]
+      ],
+      "minutes_compared": 141,
+      "minutes_that_differ": 12,
+      "shadow_above_legacy": 12,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 200,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": 85,
+      "f_above_zero": 88,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": 109,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.3807,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    },
+    "HIGH": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       92,
+       1
+      ],
+      [
+       114,
+       2
+      ],
+      [
+       126,
+       1
+      ],
+      [
+       133,
+       0
+      ]
+     ],
+     "f_peak": 0.5899,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": null,
+       "shadow": 92
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ]
+      ],
+      "minutes_compared": 141,
+      "minutes_that_differ": 29,
+      "shadow_above_legacy": 29,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 200,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": 68,
+      "f_above_zero": 71,
+      "obtunded": 114,
+      "perfusion_below_normal_bound": null,
+      "somnolent": 92,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": true,
+      "below_0_50_at": 126,
+      "category_at_end": 0,
+      "category_at_treatment": 2,
+      "f_at_end": 0.0004,
+      "f_at_treatment": 0.5785,
+      "f_at_upstream_recovery": 0.4348,
+      "first_category_descent_at": 126,
+      "from_0_80_to_below_0_50_minutes_by_the_law": 4.935,
+      "minutes_treatment_to_first_descent": 6,
+      "minutes_upstream_to_below_0_50": 0,
+      "minutes_upstream_to_below_0_50_by_the_law": 0.0,
+      "upstream_recovered_at": 127
+     }
+    },
+    "LOW": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ]
+     ],
+     "f_peak": 0.1938,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": null,
+       "shadow": null
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ]
+      ],
+      "minutes_compared": 141,
+      "minutes_that_differ": 0,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 200,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": null,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": 103,
+      "f_above_zero": 105,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": null,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.1824,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    }
+   }
+  },
+  "gi_bleed_72f/early_treatment": {
+   "case": "gi_bleed_72f",
+   "failures": 0,
+   "minutes_played": 120,
+   "orders": [
+    [
+     10,
+     [
+      "Place an IV line.",
+      "Give 1 L of normal saline.",
+      "Transfuse 2 units of packed red blood cells."
+     ]
+    ]
+   ],
+   "scenario": "early_treatment",
+   "treatment_minute": 10,
+   "triggered_at": null,
+   "witnesses": {
+    "CENTER_REFERENCE": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ]
+     ],
+     "f_peak": 0.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": null,
+       "shadow": null
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ]
+      ],
+      "minutes_compared": 61,
+      "minutes_that_differ": 0,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 120,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": null,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": null,
+      "f_above_zero": null,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": null,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.0,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    },
+    "HIGH": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ]
+     ],
+     "f_peak": 0.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": null,
+       "shadow": null
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ]
+      ],
+      "minutes_compared": 61,
+      "minutes_that_differ": 0,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 120,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": null,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": null,
+      "f_above_zero": null,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": null,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.0,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    },
+    "LOW": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ]
+     ],
+     "f_peak": 0.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": null,
+       "shadow": null
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ]
+      ],
+      "minutes_compared": 61,
+      "minutes_that_differ": 0,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 120,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": null,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": null,
+      "f_above_zero": null,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": null,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.0,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    }
+   }
+  },
+  "gi_bleed_72f/fluid_focused": {
+   "case": "gi_bleed_72f",
+   "failures": 0,
+   "minutes_played": 120,
+   "orders": [
+    [
+     10,
+     [
+      "Place an IV line.",
+      "Give 1 L of normal saline."
+     ]
+    ],
+    [
+     40,
+     [
+      "Give 1 L of normal saline."
+     ]
+    ]
+   ],
+   "scenario": "fluid_focused",
+   "treatment_minute": 10,
+   "triggered_at": null,
+   "witnesses": {
+    "CENTER_REFERENCE": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ]
+     ],
+     "f_peak": 0.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": null,
+       "shadow": null
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ]
+      ],
+      "minutes_compared": 82,
+      "minutes_that_differ": 0,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 120,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": null,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": null,
+      "f_above_zero": null,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": null,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.0,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    },
+    "HIGH": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ]
+     ],
+     "f_peak": 0.0555,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": null,
+       "shadow": null
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ]
+      ],
+      "minutes_compared": 82,
+      "minutes_that_differ": 0,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 120,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": null,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": 113,
+      "f_above_zero": 116,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": null,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.0,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    },
+    "LOW": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ]
+     ],
+     "f_peak": 0.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": null,
+       "shadow": null
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ]
+      ],
+      "minutes_compared": 82,
+      "minutes_that_differ": 0,
+      "shadow_above_legacy": 0,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 120,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": null,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": null,
+      "f_above_zero": null,
+      "obtunded": null,
+      "perfusion_below_normal_bound": null,
+      "somnolent": null,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.0,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    }
+   }
+  },
+  "gi_bleed_72f/recovery_after_severe": {
+   "case": "gi_bleed_72f",
+   "failures": 0,
+   "minutes_played": 277,
+   "orders": [
+    [
+     157,
+     [
+      "Place an IV line.",
+      "Give 1 L of normal saline.",
+      "Transfuse 4 units of packed red blood cells."
+     ]
+    ]
+   ],
+   "scenario": "recovery_after_severe",
+   "treatment_minute": 157,
+   "triggered_at": 157,
+   "witnesses": {
+    "CENTER_REFERENCE": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       109,
+       1
+      ],
+      [
+       131,
+       2
+      ],
+      [
+       157,
+       3
+      ],
+      [
+       160,
+       2
+      ],
+      [
+       167,
+       1
+      ],
+      [
+       172,
+       0
+      ]
+     ],
+     "f_peak": 0.8124,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 138,
+       "shadow": 109
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        138,
+        1
+       ],
+       [
+        277,
+        0
+       ]
+      ],
+      "minutes_compared": 158,
+      "minutes_that_differ": 49,
+      "shadow_above_legacy": 49,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 277,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": 85,
+      "f_above_zero": 88,
+      "obtunded": 131,
+      "perfusion_below_normal_bound": null,
+      "somnolent": 109,
+      "unresponsive": 157,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": true,
+      "below_0_50_at": 167,
+      "category_at_end": 0,
+      "category_at_treatment": 3,
+      "f_at_end": 0.0,
+      "f_at_treatment": 0.8011,
+      "f_at_upstream_recovery": 0.5006,
+      "first_category_descent_at": 160,
+      "from_0_80_to_below_0_50_minutes_by_the_law": 3.995,
+      "minutes_treatment_to_first_descent": 3,
+      "minutes_upstream_to_below_0_50": 1,
+      "minutes_upstream_to_below_0_50_by_the_law": 0.0105,
+      "upstream_recovered_at": 166
+     }
+    },
+    "HIGH": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       92,
+       1
+      ],
+      [
+       114,
+       2
+      ],
+      [
+       140,
+       3
+      ],
+      [
+       165,
+       2
+      ],
+      [
+       171,
+       1
+      ],
+      [
+       178,
+       0
+      ]
+     ],
+     "f_peak": 0.9953,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 138,
+       "shadow": 92
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        138,
+        1
+       ],
+       [
+        277,
+        0
+       ]
+      ],
+      "minutes_compared": 158,
+      "minutes_that_differ": 66,
+      "shadow_above_legacy": 66,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 277,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": 68,
+      "f_above_zero": 71,
+      "obtunded": 114,
+      "perfusion_below_normal_bound": 142,
+      "somnolent": 92,
+      "unresponsive": 140,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": true,
+      "below_0_50_at": 171,
+      "category_at_end": 0,
+      "category_at_treatment": 3,
+      "f_at_end": 0.0,
+      "f_at_treatment": 0.9919,
+      "f_at_upstream_recovery": 0.6223,
+      "first_category_descent_at": 165,
+      "from_0_80_to_below_0_50_minutes_by_the_law": 4.935,
+      "minutes_treatment_to_first_descent": 8,
+      "minutes_upstream_to_below_0_50": 3,
+      "minutes_upstream_to_below_0_50_by_the_law": 2.2981,
+      "upstream_recovered_at": 168
+     }
+    },
+    "LOW": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       126,
+       1
+      ],
+      [
+       148,
+       2
+      ],
+      [
+       162,
+       1
+      ],
+      [
+       167,
+       0
+      ]
+     ],
+     "f_peak": 0.614,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 138,
+       "shadow": 126
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        138,
+        1
+       ],
+       [
+        277,
+        0
+       ]
+      ],
+      "minutes_compared": 158,
+      "minutes_that_differ": 22,
+      "shadow_above_legacy": 22,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 277,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": 103,
+      "f_above_zero": 105,
+      "obtunded": 148,
+      "perfusion_below_normal_bound": null,
+      "somnolent": 126,
+      "unresponsive": null,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": true,
+      "below_0_50_at": 162,
+      "category_at_end": 0,
+      "category_at_treatment": 2,
+      "f_at_end": 0.0,
+      "f_at_treatment": 0.6027,
+      "f_at_upstream_recovery": 0.3719,
+      "first_category_descent_at": 162,
+      "from_0_80_to_below_0_50_minutes_by_the_law": 3.008,
+      "minutes_treatment_to_first_descent": 5,
+      "minutes_upstream_to_below_0_50": 0,
+      "minutes_upstream_to_below_0_50_by_the_law": 0.0,
+      "upstream_recovered_at": 164
+     }
+    }
+   }
+  },
+  "gi_bleed_72f/severe_deterioration": {
+   "case": "gi_bleed_72f",
+   "failures": 0,
+   "minutes_played": 240,
+   "orders": [
+    [
+     131,
+     [
+      "Place an IV line.",
+      "Give 1 L of normal saline."
+     ]
+    ]
+   ],
+   "scenario": "severe_deterioration",
+   "treatment_minute": 131,
+   "triggered_at": 131,
+   "witnesses": {
+    "CENTER_REFERENCE": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       109,
+       1
+      ],
+      [
+       131,
+       2
+      ],
+      [
+       136,
+       1
+      ],
+      [
+       172,
+       2
+      ],
+      [
+       193,
+       3
+      ]
+     ],
+     "f_peak": 1.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 169,
+       "shadow": 109
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        169,
+        1
+       ]
+      ],
+      "minutes_compared": 221,
+      "minutes_that_differ": 110,
+      "shadow_above_legacy": 110,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 240,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": null,
+      "collapse_impending": 227,
+      "collapse_needs_both_failures": true,
+      "delivery_below_normal_bound": 85,
+      "f_above_zero": 88,
+      "obtunded": 131,
+      "perfusion_below_normal_bound": 199,
+      "somnolent": 109,
+      "unresponsive": 193,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": true,
+      "below_0_50_at": 136,
+      "category_at_end": 3,
+      "category_at_treatment": 2,
+      "f_at_end": 1.0,
+      "f_at_treatment": 0.5062,
+      "f_at_upstream_recovery": null,
+      "first_category_descent_at": 136,
+      "from_0_80_to_below_0_50_minutes_by_the_law": 3.995,
+      "minutes_treatment_to_first_descent": 5,
+      "upstream_recovered_at": null
+     }
+    },
+    "HIGH": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       92,
+       1
+      ],
+      [
+       114,
+       2
+      ],
+      [
+       154,
+       1
+      ],
+      [
+       160,
+       2
+      ],
+      [
+       179,
+       3
+      ]
+     ],
+     "f_peak": 1.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 169,
+       "shadow": 92
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        169,
+        1
+       ]
+      ],
+      "minutes_compared": 221,
+      "minutes_that_differ": 130,
+      "shadow_above_legacy": 130,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 240,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": 232,
+      "collapse_impending": 210,
+      "collapse_needs_both_failures": true,
+      "delivery_below_normal_bound": 68,
+      "f_above_zero": 71,
+      "obtunded": 114,
+      "perfusion_below_normal_bound": 185,
+      "somnolent": 92,
+      "unresponsive": 179,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": true,
+      "below_0_50_at": 154,
+      "category_at_end": 3,
+      "category_at_treatment": 2,
+      "f_at_end": 1.0,
+      "f_at_treatment": 0.704,
+      "f_at_upstream_recovery": null,
+      "first_category_descent_at": 154,
+      "from_0_80_to_below_0_50_minutes_by_the_law": 4.935,
+      "minutes_treatment_to_first_descent": 23,
+      "upstream_recovered_at": null
+     }
+    },
+    "LOW": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       126,
+       1
+      ],
+      [
+       140,
+       0
+      ],
+      [
+       169,
+       1
+      ],
+      [
+       186,
+       2
+      ],
+      [
+       209,
+       3
+      ]
+     ],
+     "f_peak": 1.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 169,
+       "shadow": 126
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        169,
+        1
+       ]
+      ],
+      "minutes_compared": 221,
+      "minutes_that_differ": 61,
+      "shadow_above_legacy": 61,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 240,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": null,
+      "collapse_impending": null,
+      "collapse_needs_both_failures": null,
+      "delivery_below_normal_bound": 103,
+      "f_above_zero": 105,
+      "obtunded": 186,
+      "perfusion_below_normal_bound": 215,
+      "somnolent": 126,
+      "unresponsive": 209,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "f_at_treatment": 0.3078,
+      "why": "F stood below 0.50 when the treatment was given: nothing impaired to recover from"
+     }
+    }
+   }
+  },
+  "gi_bleed_72f/untreated": {
+   "case": "gi_bleed_72f",
+   "failures": 0,
+   "minutes_played": 240,
+   "orders": [],
+   "scenario": "untreated",
+   "treatment_minute": null,
+   "triggered_at": null,
+   "witnesses": {
+    "CENTER_REFERENCE": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       109,
+       1
+      ],
+      [
+       131,
+       2
+      ],
+      [
+       157,
+       3
+      ]
+     ],
+     "f_peak": 1.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 138,
+       "shadow": 109
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        138,
+        1
+       ]
+      ],
+      "minutes_compared": 240,
+      "minutes_that_differ": 132,
+      "shadow_above_legacy": 132,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 240,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": 209,
+      "collapse_impending": 190,
+      "collapse_needs_both_failures": true,
+      "delivery_below_normal_bound": 85,
+      "f_above_zero": 88,
+      "obtunded": 131,
+      "perfusion_below_normal_bound": 160,
+      "somnolent": 109,
+      "unresponsive": 157,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "why": "no treatment was given"
+     }
+    },
+    "HIGH": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       92,
+       1
+      ],
+      [
+       114,
+       2
+      ],
+      [
+       140,
+       3
+      ]
+     ],
+     "f_peak": 1.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 138,
+       "shadow": 92
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        138,
+        1
+       ]
+      ],
+      "minutes_compared": 240,
+      "minutes_that_differ": 149,
+      "shadow_above_legacy": 149,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 240,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": 195,
+      "collapse_impending": 172,
+      "collapse_needs_both_failures": true,
+      "delivery_below_normal_bound": 68,
+      "f_above_zero": 71,
+      "obtunded": 114,
+      "perfusion_below_normal_bound": 142,
+      "somnolent": 92,
+      "unresponsive": 140,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "why": "no treatment was given"
+     }
+    },
+    "LOW": {
+     "category_sequence": [
+      [
+       1,
+       0
+      ],
+      [
+       126,
+       1
+      ],
+      [
+       148,
+       2
+      ],
+      [
+       175,
+       3
+      ]
+     ],
+     "f_peak": 1.0,
+     "legacy": {
+      "contradiction_minutes": 0,
+      "first_impairment": {
+       "legacy": 138,
+       "shadow": 126
+      },
+      "legacy_sequence": [
+       [
+        0,
+        0
+       ],
+       [
+        138,
+        1
+       ]
+      ],
+      "minutes_compared": 240,
+      "minutes_that_differ": 105,
+      "shadow_above_legacy": 105,
+      "shadow_below_legacy": 0
+     },
+     "minutes": 240,
+     "order": {
+      "category_never_skips_up": true,
+      "chain_in_order": true,
+      "collapse_established": 219,
+      "collapse_impending": 205,
+      "collapse_needs_both_failures": true,
+      "delivery_below_normal_bound": 103,
+      "f_above_zero": 105,
+      "obtunded": 148,
+      "perfusion_below_normal_bound": 178,
+      "somnolent": 126,
+      "unresponsive": 175,
+      "volume_below_arrival": 1
+     },
+     "recovery": {
+      "applicable": false,
+      "why": "no treatment was given"
+     }
+    }
+   }
+  }
+ },
+ "scenarios": [
+  "untreated",
+  "early_treatment",
+  "delayed_treatment",
+  "fluid_focused",
+  "blood_focused",
+  "severe_deterioration",
+  "recovery_after_severe"
+ ],
+ "series_version": "P3-175",
+ "status": "DEVELOPMENT_ONLY_NOT_CLINICALLY_VALIDATED",
+ "supported_cases": [
+  "gi_bleed_57m",
+  "gi_bleed_72f"
+ ],
+ "witnesses": [
+  "LOW",
+  "CENTER_REFERENCE",
+  "HIGH"
+ ]
+}

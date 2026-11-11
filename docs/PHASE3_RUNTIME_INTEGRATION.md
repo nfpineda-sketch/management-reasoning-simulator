@@ -594,3 +594,11 @@ Nada técnico. El veredicto de P3-29 es **A** (`TECHNICALLY_READY_FOR_EXPLICIT_F
 soportada, D alcance sólo presión, E entorno, G concesión expresa), la tabla de candidatos sobrevivientes y
 la plantilla de autorización futura —no ejecutada— están en
 `docs/PHASE3_FINAL_FACULTY_DECISION_PACK.md`.
+
+### Enmienda 2 certificada en la sombra GI (2026-11-11)
+
+El núcleo común vigente de esta rama es `PHASE2_AMENDMENT_2` (digesto `a0af7d08…`, integrado por merge sin fast-forward; el cierre
+histórico y la Enmienda 1 se reconstruyen desde él). La enmienda está apagada por omisión y se declara **sólo** en tres testigos de
+desarrollo de la sombra GI, cada uno su trayectoria; sin autoridad, sin exposición al residente, sin efecto en la puntuación, el primer
+piloto sin cambios y sin que ningún estado de colapso o consciencia del núcleo termine un encuentro. Detalle, serie, comparación,
+frontera y punto de control: `docs/PHASE3_AMENDMENT_2_GI_SHADOW.md` (filas FD-P3-167 a FD-P3-172).

@@ -144,11 +144,12 @@ def _run(runner, role: str, witness: str | None, session_minutes: int) -> dict:
         captured, artifact_error = None, f"{type(error).__name__}: {str(error)[:200]}"
     profile = runner.profile
     parameter = None
-    if witness is not None:
-        parameter = {"name": fam.TRANSMISSION_FIELD, "declared": fam.TRANSMISSION_WITNESSES.get(witness),
-                     "value": None if profile is None else getattr(profile, fam.TRANSMISSION_FIELD),
-                     "declared_respiratory_quotient": None if profile is None else profile.respiratory_quotient,
-                     "classification": fam.TRANSMISSION_CLASSIFICATION}
+    declaration = runner.adapter.region_declaration() if witness is not None else None
+    if declaration is not None:
+        parameter = {"name": declaration.parameter, "declared": declaration.witnesses.get(witness),
+                     "value": fam.declared_value_of(profile, declaration.parameter),
+                     **(declaration.extras(profile) if declaration.extras else {}),
+                     "classification": declaration.classification}
     minutes = fam.run_channels(runner)
     failed = bool(runner.failures) or runner.anchors is None or int(runner.minutes_done) < int(session_minutes)
     return {
@@ -182,6 +183,18 @@ def _last_channels(runs: Mapping) -> dict | None:
     return None if last is None or not isinstance(last.get("channels"), Mapping) else dict(last["channels"])
 
 
+def _witness_channels(runs: Mapping) -> dict:
+    """Each witness run's last recorded channels (a witness with no minute has none): what the boundary reads of it."""
+    out = {}
+    for name, run in (runs.items() if isinstance(runs, Mapping) else []):
+        if not isinstance(run, Mapping) or run.get("role") != WITNESS_RUN:
+            continue
+        minutes = run.get("minutes") or []
+        last = minutes[-1] if minutes and isinstance(minutes[-1], Mapping) else None
+        out[name] = None if last is None or not isinstance(last.get("channels"), Mapping) else dict(last["channels"])
+    return out
+
+
 def _terminal_boundary(session, runs: Mapping) -> dict:
     declared = None
     try:
@@ -189,7 +202,7 @@ def _terminal_boundary(session, runs: Mapping) -> dict:
         declared = None if profile is None else profile.collapse_output_threshold is not None
     except Exception:
         declared = None
-    return fam.terminal_boundary(session.legacy_terminal, _last_channels(runs), declared)
+    return fam.terminal_boundary(session.legacy_terminal, _last_channels(runs), declared, _witness_channels(runs))
 
 
 def trace_of(session, previous: str | None = None) -> dict:
@@ -256,12 +269,7 @@ def trace_of(session, previous: str | None = None) -> dict:
         "expected_witnesses": list(expected),
         "witness_policy": (fam.ENSEMBLE_POLICY if expected else "this family runs no development region"),
         "selected_witness": None,
-        "region": ({"parameter": fam.TRANSMISSION_FIELD, "classification": fam.TRANSMISSION_CLASSIFICATION,
-                    "conditional_on": fam.transmission_condition(),
-                    "mathematical_region": list(fam.TRANSMISSION_MATHEMATICAL_REGION),
-                    "active_causal_region": dict(fam.TRANSMISSION_ACTIVE_REGION),
-                    "declared_respiratory_quotient": fam.TRANSMISSION_DECLARED_R,
-                    "refused": None if ensemble is None else ensemble.refused} if expected else None),
+        "region": (_region_of(adapter, ensemble) if expected else None),
         "runs": runs,
         "compared_minutes": [] if runner is None else list(runner.compared),
         "divergences": [] if runner is None else [
@@ -273,6 +281,13 @@ def trace_of(session, previous: str | None = None) -> dict:
     }
     trace["trace_digest"] = trace_digest(trace)
     return trace
+
+
+def _region_of(adapter, ensemble) -> dict:
+    """What the trace says of the development region its witnesses sample: the family's own declaration (P3-174)."""
+    declaration = adapter.region_declaration()
+    return {"parameter": declaration.parameter, "classification": declaration.classification,
+            **dict(declaration.region), "refused": None if ensemble is None else ensemble.refused}
 
 
 def trace_id(trace: Mapping) -> str:
@@ -540,7 +555,7 @@ def _inconsistencies(body: Mapping) -> list:
                 boundary.get("core"), dict):
             legacy = boundary["legacy"] if boundary["legacy"].get("terminal") is not None else None
             again = fam.terminal_boundary(legacy, _last_channels(runs),
-                                          boundary["core"].get("collapse_rule_declared"))
+                                          boundary["core"].get("collapse_rule_declared"), _witness_channels(runs))
         if again != boundary:
             problems.append("the terminal boundary is not what the trace's own last minute and legacy record give")
         elif (boundary["state"] in (fam.BOTH_ACTIVE, fam.TERMINAL_NOT_COMPARABLE)
@@ -551,6 +566,7 @@ def _inconsistencies(body: Mapping) -> list:
                             "boundary says neither engine is terminal")
     adapter = fam.adapter_for(family)
     declared = [] if adapter is None or not runs else list(adapter.region_witnesses())
+    declaration = adapter.region_declaration() if declared else None
     if list(body.get("expected_witnesses") or []) != declared:
         problems.append(f"the expected witnesses are not the ones the family declares: {declared}")
     for name, run in runs.items():
@@ -573,14 +589,14 @@ def _inconsistencies(body: Mapping) -> list:
                 problems.append("the session's minutes are not its own run's")
             continue
         parameter = run.get("parameter") if isinstance(run.get("parameter"), dict) else {}
-        value = fam.TRANSMISSION_WITNESSES.get(name)
+        value = None if declaration is None else declaration.witnesses.get(name)
         if run.get("role") != WITNESS_RUN or run.get("witness") != name or name not in declared:
             problems.append(f"run {name} is not the witness its name says")
-        elif (parameter.get("name") != fam.TRANSMISSION_FIELD or parameter.get("declared") != value
+        elif (declaration is None or parameter.get("name") != declaration.parameter or parameter.get("declared") != value
               or parameter.get("value") not in (None, value)):
             problems.append(f"run {name}: its parameter is not the declared value of that witness")
         elif artifact is not None and (artifact.get("scenario") or {}).get("profile", {}).get(
-                fam.TRANSMISSION_FIELD) != value:
+                declaration.parameter) != value:
             problems.append(f"run {name}: its artifact ran another value than the witness declares")
     session = runs.get(SESSION_RUN_NAME) if isinstance(runs.get(SESSION_RUN_NAME), dict) else None
     artifact = session.get("replay_input") if session and isinstance(session.get("replay_input"), dict) else None

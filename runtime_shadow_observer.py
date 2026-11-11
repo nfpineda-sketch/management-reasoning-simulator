@@ -46,7 +46,13 @@ CHANNELS = {
                  ("monitor_rate_bpm", "Heart rate", "beats/min"),
                  ("hb", "Haemoglobin", "g/dL"),
                  ("spo2", "SpO2", "%"),
-                 ("delivery_rel", "Oxygen delivery (DO2)", "relative to arrival")),
+                 ("delivery_rel", "Oxygen delivery (DO2)", "relative to arrival"),
+                 # P3-174: the Amendment-2 witnesses only (the session's own run, committed profile, carries none of these)
+                 ("relative_delivery", "Delivery relative to arrival (Amendment 2)", "fraction of arrival"),
+                 ("relative_perfusion", "Perfusion relative to arrival (Amendment 2)", "fraction of arrival"),
+                 ("systemic_encephalopathy_burden", "Systemic encephalopathy burden F (Amendment 2)", "fraction, 0 to 1"),
+                 ("collapse_burden", "Collapse burden (Amendment 2)", "fraction, 0 to 1"),
+                 ("category_index", "Observable category (0 none, 1 somnolent, 2 obtunded, 3 unresponsive)", "index")),
 }
 DEFAULT_CHANNELS = (("map", "Mean arterial pressure", "mmHg"), ("monitor_rate_bpm", "Heart rate", "beats/min"),
                     ("respiratory_rate", "Respiratory rate", "breaths/min"), ("spo2", "SpO2", "%"),
@@ -604,6 +610,19 @@ FACULTY_QUESTIONS = {
         "Which treatments a resident would reasonably give here are marked as not represented, and does "
         "their absence change what the trace can be used to discuss?",
         "Is this case a suitable candidate for a future resident case, and what would have to be true first?",
+        # P3-177: the three Amendment-2 witnesses (consciousness and collapse). Judgment only; no witness is preferred.
+        "Does the impairment appear too EARLY or too LATE in the untreated course, as a direction (it is not calibrated as "
+        "a speed)? Read each witness apart: none is the answer.",
+        "Does the recovery look too FAST or too SLOW once treatment restores delivery? The faculty reading is that the "
+        "impairment, starting near 0.80, crosses below 0.50 in about 3 to 5 simulated minutes after the upstream physiology has "
+        "recovered, without having to normalise below 0.25 in that interval.",
+        "Is the category progression (none, somnolent, obtunded, unresponsive) educationally plausible, step by step?",
+        "Does the collapse (impending, then established) appear too early or too late, and is it right that it needs both "
+        "perfusion and delivery failing for minutes, never one alone?",
+        "The two GI cases give the SAME shadow impairment timeline (it is read relative to each patient's own arrival) while "
+        "the legacy ladder separates them by absolute pressure. Is that acceptable, or would any trajectory mislead a resident?",
+        "An established collapse is physiological state only and does not end the encounter, which the legacy engine alone "
+        "decides. Is the way the trace states that boundary clear enough to review without misreading it as an outcome?",
     ),
     "opioid": (
         "In this run every channel downstream of the reversal responds in the same simulated minute. Is a "
@@ -619,7 +638,11 @@ FACULTY_QUESTIONS = {
     ),
 }
 UNRESOLVED_PARAMETERS = {
-    "gi_bleed": ("the committed profile is a development default: no magnitude is faculty-approved",),
+    "gi_bleed": ("the committed profile is a development default: no magnitude is faculty-approved",
+                 "PHASE2_AMENDMENT_2 witnesses: every magnitude is a FACULTY_DEFINED_DEVELOPMENT_BEHAVIORAL_REGION, in three "
+                 "named witnesses (LOW, CENTER_REFERENCE, HIGH), none selected, none calibrated, no clinical validation",
+                 "the Amendment-2 composite is supported for GI only: opioid, ACS, pulmonary edema, embolism and asthma do "
+                 "not declare it, and an opioid-specific consciousness mechanism is deferred"),
     "opioid": ("opioid deepening rate: one committed synthetic value, no interval (not identifiable from the "
                "repository's evidence)",
                "naloxone recovery rate: one committed synthetic value",
@@ -787,9 +810,10 @@ def review_markdown(entries: Sequence) -> str:
         lines += ["", "### Region witnesses", ""]
         if entry["witnesses"]:
             region = entry["region"] or {}
-            lines.append(f"{_md(region.get('classification'))}; conditional on "
-                         f"{_md((region.get('conditional_on') or {}).get('parameter'))} = "
-                         f"{_md((region.get('conditional_on') or {}).get('value'))}. None selected.")
+            condition = region.get("conditional_on")
+            lines.append(f"{_md(region.get('classification'))}"
+                         + (f"; conditional on {_md(condition.get('parameter'))} = {_md(condition.get('value'))}"
+                            if condition else f" for {_md(region.get('parameter'))}") + ". None selected.")
             lines += [f"- {_md(w['name'])}: {_md((w['parameter'] or {}).get('declared'))}"
                       f"{' — FAILED, last valid minute ' + _md(w['last_valid_minute']) if w['failed'] else ''}"
                       for w in entry["witnesses"]]
@@ -803,6 +827,12 @@ def review_markdown(entries: Sequence) -> str:
                   f"- common-core run: pulse present {_md((boundary.get('core') or {}).get('pulse_present'))}; "
                   + "; ".join(f"{_md(name)} {_md(value)}" for name, value in
                               ((boundary.get('core') or {}).get('predicates') or {}).items())]
+        beside = boundary.get("amendment_2")
+        if beside:
+            lines += ["", f"Amendment-2 witnesses beside the legacy engine: {_md(beside.get('note'))}", ""] + [
+                f"- {_md(name)}: **{_md(row.get('state'))}** (collapse state {_md(row.get('collapse_state_index'))}, observable "
+                f"category {_md(row.get('category_index'))}, pulse present {_md(row.get('pulse_present'))})"
+                for name, row in (beside.get("witnesses") or {}).items()]
         lines += ["", "### Failures", ""] + ([f"- {_md(f.get('classification'))} at minute {_md(f.get('minute'))}: "
                                              f"{_md(f.get('message'))[:160]}" for f in entry["failures"]] or ["none"])
         lines += ["", "### Unresolved synthetic parameters", ""] + [

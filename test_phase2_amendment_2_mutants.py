@@ -13,7 +13,8 @@ import pytest
 import test_amendment_2_mutants_plugin as plugin
 
 ROOT = Path(__file__).resolve().parent
-FOCUSED = ("test_phase2_amendment_2_physiology.py", "test_phase2_amendment_2_gi_matrix.py")
+FOCUSED = ("test_phase2_amendment_2_physiology.py", "test_phase2_amendment_2_gi_matrix.py",
+           "test_phase2_amendment_2_families.py")      # P3-179: the families file protects "no direct SpO2 ladder reaches the level"
 
 
 def _run(mutant: str):

@@ -346,8 +346,10 @@ def test_p3l_140c_no_point_is_silently_selected_anywhere(live):
     for adapter in fam.ADAPTERS.values():
         assert getattr(adapter, "transmission_witness", None) is None
     assert fam.ADAPTERS["opioid"].profile(fam.COMMITTED) == om.profile()
-    # solo el opioide declara una region en vivo; asma y los demas, ninguna (FD-NEW-4)
-    assert {family for family, adapter in fam.ADAPTERS.items() if adapter.region_witnesses()} == {"opioid"}
+    # solo el opioide y (P3-174, FD 2026-11-11) GI declaran una region en vivo; ACS, edema, embolia y asma, ninguna
+    assert {family for family, adapter in fam.ADAPTERS.items() if adapter.region_witnesses()} == {"opioid", "gi_bleed"}
+    assert getattr(fam.ADAPTERS["gi_bleed"], "amendment_2_witness", None) is None
+    assert fam.GiHaemorrhageAdapter.witness("LOW").region_witnesses() == {}, "un conjunto no anida"
     assert fam.OpioidAdapter.witness("LOW").region_witnesses() == {}, "un conjunto no anida"
     with pytest.raises(ValueError):
         fam.OpioidAdapter.witness("MEAN")
@@ -887,16 +889,20 @@ def test_p3l_144a_the_gi_live_shadow_is_what_it_was():
         encounter.order("Give 1 liter of normal saline IV.")
         encounter.wait_until(30)
     session = encounter.shadow
-    assert session.ensemble is None and session.failures == []
+    # P3-174: GI corre tambien los tres testigos de la Enmienda 2 en vivo; la corrida PROPIA de la sesion (perfil
+    # comprometido, enmienda apagada) y su registro son los de siempre, mas la clave del conjunto.
+    assert session.ensemble is not None and list(session.ensemble.runners) == list(fam.GI_AMENDMENT_2_WITNESS_NAMES)
+    assert session.failures == []
     record = session.record()
-    assert sorted(record) == GI_RECORD_KEYS, "ni una clave nueva en el registro de GI"
-    assert "region_ensemble" not in session.replay()
+    assert sorted(record) == sorted(GI_RECORD_KEYS + ["region_ensemble"]), "GI gana UNA clave: el conjunto"
+    assert "region_ensemble" in session.replay()
+    assert session.runner.profile.amendment_2 is None                      # la corrida de la sesion no declara la enmienda
     assert list(session.digests()) == [row["state_digest"] for row in session.replay()["minutes"]]
     assert record["versions"]["adapter"] == rs.ADAPTER_VERSION
     # el clasificador de GI sigue leyendo su golden
     statuses = {d.status for m in session.minutes for d in m.divergences}
     assert rs.NOT_COMPARABLE not in statuses or rs.golden_scenarios("gi_bleed") > 0
-    assert fam.ADAPTERS["gi_bleed"].region_witnesses() == {}
+    assert list(fam.ADAPTERS["gi_bleed"].region_witnesses()) == list(fam.GI_AMENDMENT_2_WITNESS_NAMES)
 
 
 def test_p3l_144b_no_other_family_opens_a_session():
@@ -943,7 +949,10 @@ def test_p3l_144f_one_family_never_runs_through_another_familys_mapping(live):
     assert fam.ShadowPhysiologyRunner.open("gi_bleed", "gi_bleed_57m", adapter=witness) is None
     assert fam.ShadowPhysiologyRunner.open("opioid", "gi_bleed_57m") is None
     assert fam.ShadowPhysiologyRunner.open("opioid", "opioid_35m", adapter=fam.ADAPTERS["gi_bleed"]) is None
-    assert fam.RegionEnsemble.open("gi_bleed", "gi_bleed_57m") is None
+    gi = fam.RegionEnsemble.open("gi_bleed", "gi_bleed_57m")        # P3-174: GI declara su propia region
+    assert gi is not None and gi.parameter == "amendment_2" and list(gi.runners) == list(fam.GI_AMENDMENT_2_WITNESS_NAMES)
+    assert all(runner.adapter.family == "gi_bleed" for runner in gi.runners.values())
+    assert fam.ShadowPhysiologyRunner.open("opioid", "opioid_35m", adapter=fam.GiHaemorrhageAdapter.witness("LOW")) is None
     for encounter in live.values():
         for runner in _runners(encounter.shadow).values():
             assert runner.adapter.family == "opioid" and runner.case_id == CASE

@@ -553,3 +553,28 @@ resuelta** — queda (1). TD-135 (9): **decidida** — GI es el caso preferido (
   sin la bandera no hace nada.
 - **(7)** `CLAUDE.md` no se actualizó: el linaje vigente no cambió. Si la rama de la Enmienda 2 llega a tener un
   candidato, sus restricciones de ramas deberán nombrarla.
+
+## TD-137 · Fase 3, la Enmienda 2 certificada en la sombra GI (ciclo del 2026-11-11)
+
+**Cierra o actualiza deuda anterior.** TD-136 (1): **respondida** — la Enmienda 2 se implementó como etapa sucesora certificada sólo para GI
+(consciencia compuesta con `F`, colapso blando); la escalera heredada deja de ser lo que mueve la consciencia **cuando el perfil declara la
+enmienda** (apagada por omisión, así que ningún perfil comprometido cambia). TD-136 (2): **cerrada** (la rama tiene su candidato certificado).
+TD-136 (3): **parcial** — la frontera de la traza declara ahora el estado del colapso por testigo junto al motor heredado; la terminalización
+desde el núcleo sigue sin autorizarse.
+
+- **(1)** **Una sola familia.** La enmienda se declara sólo en la sombra GI. Declarada en edema pulmonar o embolia, la compuesta lee más bajo
+  (esos cursos tenían el nivel por la escalera de SpO2 que se retiró); opioide, ACS y asma no se tocan. El mecanismo de consciencia del
+  opioide está diferido por la docencia.
+- **(2)** **Lectura relativa a la llegada.** Los dos casos GI leen igual en la sombra (misma pérdida de volumen relativa), mientras el heredado los
+  separa por PAS absoluta. Registrado como hallazgo para la docencia; no se ajustó nada.
+- **(3)** **Recuperación y tiempo de infusión.** El 3–5 min se mide desde la recuperación aguas arriba; la entrega tarda 9–11 min en recuperarse tras una
+  reposición grave (infusiones de 20–60 min en el reloj del motor), de modo que del pico a F < 0,50 hay 5–14 min desde la orden. La docencia debe
+  decir si debe contarse desde la orden o desde la recuperación aguas arriba.
+- **(4)** **Frontera `UnresolvedBoundary` (gasto cero con pulso).** Sin cambios: sesión y testigos la tocan en el mismo minuto (349 sin tratar). Un
+  colapso establecido (desde el 195–219) no termina el encuentro y el heredado sigue activo.
+- **(5)** **Muestreo del heredado.** Durante la ejecución de una orden el valor heredado se muestrea sólo al final: la comparación cubre los minutos
+  muestreados.
+- **(6)** **Coste en vivo.** Cada turno de GI recalcula cuatro corridas desde la llegada (una sesión y tres testigos); con la bandera apagada no hay
+  coste, y el paquete de revisión se genera fuera del repositorio.
+- **(7)** Sin validación clínica de ninguna magnitud: todas son `FACULTY_DEFINED_DEVELOPMENT_BEHAVIORAL_REGION`.
+
