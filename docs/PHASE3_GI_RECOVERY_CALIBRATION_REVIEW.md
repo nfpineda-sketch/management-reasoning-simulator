@@ -1,6 +1,7 @@
 # Fase 3 · GI: revisión de la temporalidad de la recuperación antes de la instantánea (P3-181 a P3-188) · registro (2026-11-11)
 
-**Veredicto: B · `GI_REGION_NEEDS_ONE_MORE_FACULTY_DECISION`.** En este ciclo **no cambió nada ejecutable**: ni `clinical_core/`, ni los
+**Veredicto al medir: B · `GI_REGION_NEEDS_ONE_MORE_FACULTY_DECISION`. Tras la decisión docente FD-P3-176 (opción a, §8):
+A · `GI_DEVELOPMENT_REGION_READY_FOR_FACULTY_SNAPSHOT_SELECTION`.** En este ciclo **no cambió nada ejecutable**: ni `clinical_core/`, ni los
 testigos, ni la capa de sombra. Se midió, se demostró y se detuvo en la compuerta docente de P3-183B. Sin autoridad
 (`COMMON_CORE_RUNTIME_AUTHORITY = False`), sin exposición al residente, sin efecto en la puntuación, primer piloto sin cambios, ningún
 encuentro terminado por el núcleo común y **sin afirmación de validación clínica**. Registro medido:
@@ -171,3 +172,32 @@ Señalo que (a) es la única coherente con las dos decisiones ya tomadas (ley ai
   qué criterio de divergencia y con la frontera `UnresolvedBoundary` como bloqueo previo). Sin habilitar autoridad.
 * (b) o (c) → **Enmienda sucesora de la recuperación** (un cambio declarado y reversible del núcleo, mutantes propios, la matriz de este
   documento como prueba de aceptación, y **una** certificación completa), y sólo después la instantánea.
+
+## 8 · Decisión docente FD-P3-176: opción (a), recuperación graduada sin cambio del núcleo común (2026-11-11)
+La docencia aprobó la opción (a). **No cambia nada ejecutable**: ni `clinical_core/`, ni la cinética de la Enmienda 2, ni la región de subida,
+ni la región de bajada, ni la semántica relativa a la llegada, ni los cortes de categoría, ni la semántica del colapso.
+
+**Interpretación aprobada.** La recuperación de la consciencia sistémica puede empezar de forma gradual en cuanto mejora la entrega aguas arriba.
+El 3–5 min **no** es un retraso obligatorio adicional tras la entrada formal en la región de recuperación. Por tanto, para la trayectoria GI
+completa:
+1. La trayectoria puede mejorar de forma continua durante la reanimación.
+2. Cruzar de un deterioro grave (≈ 0,80) a < 0,50 en ≈ 6–8 min desde una recuperación aguas arriba significativa es aceptable.
+3. Cuando el objetivo sistémico es esencialmente nulo, la ley aislada de F conserva una escala de ≈ 3–5 min para cruzar una categoría.
+4. Que queden 0–2 min tras la entrada formal es aceptable si la mayor parte de la recuperación ya ocurrió antes de entrar.
+
+**El invariante docente que sustituye al literal de FD-GI-02** (P3-183B, ya enunciado en §3 como tiempo restante de transición) se comprueba sobre los
+seis registros medidos (`test_phase3_gi_recovery_review.py`):
+
+| Condición aprobada | Medido |
+|---|---|
+| 0,80 → < 0,50 en la trayectoria completa: 6–8 min | 6 / 7 / 8 min (LOW, CENTER, HIGH) en los dos casos |
+| Ley aislada de F: 3–5 min | 3,0 / 4,0 / 4,9 min con las constantes de los testigos |
+| 0–2 min tras la entrada, con la mayor parte ya hecha | 0–2 min; el 80–100 % del descenso se hace antes de entrar |
+
+**Reclasificación (P3-187): A · `GI_DEVELOPMENT_REGION_READY_FOR_FACULTY_SNAPSHOT_SELECTION`.** La región de desarrollo de GI queda **lista para
+que la docencia elija una instantánea**; no se eligió ninguna. Esto **no es validación clínica** y **no autoriza autoridad en tiempo de ejecución**
+(`COMMON_CORE_RUNTIME_AUTHORITY = False`). Los escenarios (b) y (c) de §7 quedan descartados por la docencia y siguen sin existir en el núcleo ni
+en la capa; el barrido fuera de línea se conserva en el registro sólo como evidencia de la decisión.
+
+**Paso siguiente (sin ejecutar; requiere un encargo nuevo):** diseño de la **selección de la instantánea de desarrollo de GI** y, después, diseño del
+**experimento de preparación para autoridad en sombra** (§7, respuesta (a)); `UnresolvedBoundary` sigue siendo un bloqueo para una autoridad futura.

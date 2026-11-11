@@ -1099,6 +1099,39 @@
    "target_at_order": 0.8291
   }
  },
+ "faculty_decision": {
+  "clinical_core_changed": false,
+  "id": "FD-P3-176",
+  "invariant": {
+   "full_trajectory_0_80_to_below_0_50_minutes": [
+    6,
+    8
+   ],
+   "isolated_f_decay_0_80_to_0_50_minutes": [
+    3.0,
+    5.0
+   ],
+   "minutes_remaining_after_entry": [
+    0,
+    2
+   ],
+   "remaining_after_entry_acceptable_if_share_done_before_entry_at_least": 0.79
+  },
+  "name": "GRADED_RECOVERY_NO_COMMON_CORE_CHANGE",
+  "not_changed": [
+   "clinical_core",
+   "amendment_2_kinetics",
+   "rise_region",
+   "fall_region",
+   "relative_to_arrival_semantics",
+   "category_thresholds",
+   "collapse_semantics"
+  ],
+  "note": "Not clinical validation; grants no runtime authority; the measured record above is not rewritten.",
+  "option": "a",
+  "verdict_after_decision": "GI_DEVELOPMENT_REGION_READY_FOR_FACULTY_SNAPSHOT_SELECTION",
+  "verdict_at_measurement": "GI_REGION_NEEDS_ONE_MORE_FACULTY_DECISION"
+ },
  "matrix_what_if": {
   "gi_bleed_57m/blood_focused": {
    "CENTER_REFERENCE": {

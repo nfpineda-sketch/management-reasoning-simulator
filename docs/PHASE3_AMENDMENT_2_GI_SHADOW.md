@@ -244,5 +244,5 @@ No se autoriza autoridad ni despliegue. Tres lecturas separadas:
 **Paso más corto siguiente:** revisión docente del paquete de trazas (sin código), con las respuestas a las preguntas 1 a 3, que deciden si la Enmienda 2 necesita un ajuste de región antes de pedir una instantánea aprobada.
 
 **Continuación (2026-11-11).** La docencia respondió a los bloqueos 2 y 3 (FD-GI-01 y FD-GI-02). La revisión exacta de la temporalidad de la
-recuperación, su veredicto y la única pregunta que queda están en `docs/PHASE3_GI_RECOVERY_CALIBRATION_REVIEW.md` (filas FD-P3-173 a FD-P3-176).
-Este registro no se reescribe.
+recuperación, su veredicto y la única pregunta que queda están en `docs/PHASE3_GI_RECOVERY_CALIBRATION_REVIEW.md` (filas FD-P3-173 a FD-P3-177). La docencia aprobó la recuperación graduada sin cambio del núcleo (FD-P3-177) y la región GI de desarrollo
+quedó **lista para la selección de una instantánea**; el bloqueo 3 queda respondido. Este registro no se reescribe.

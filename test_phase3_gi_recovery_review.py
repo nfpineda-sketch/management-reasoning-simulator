@@ -238,3 +238,44 @@ def test_nothing_executable_changed_the_witnesses_are_the_certified_ones_inside_
             assert low <= getattr(profile, field) <= high or abs(getattr(profile, field) - low) < 0.02 \
                 or abs(getattr(profile, field) - high) < 0.02, (name, field)
     assert RECORD["verdict"] == "GI_REGION_NEEDS_ONE_MORE_FACULTY_DECISION"
+
+
+# -- FD-P3-176: la docencia aprobo la opcion (a) -----------------------------------------------------------------------------------------
+
+DECISION = RECORD["faculty_decision"]
+
+
+def test_the_faculty_decision_is_option_a_graded_recovery_and_changes_nothing_in_the_core():
+    # `verdict` es el de la medida y no se reescribe; la decision docente va aparte.
+    assert RECORD["verdict"] == DECISION["verdict_at_measurement"] == "GI_REGION_NEEDS_ONE_MORE_FACULTY_DECISION"
+    assert (DECISION["id"], DECISION["option"], DECISION["name"]) == ("FD-P3-176", "a", "GRADED_RECOVERY_NO_COMMON_CORE_CHANGE")
+    assert DECISION["verdict_after_decision"] == "GI_DEVELOPMENT_REGION_READY_FOR_FACULTY_SNAPSHOT_SELECTION"
+    assert DECISION["clinical_core_changed"] is False
+    assert {"clinical_core", "amendment_2_kinetics", "rise_region", "fall_region", "relative_to_arrival_semantics",
+            "category_thresholds", "collapse_semantics"} == set(DECISION["not_changed"])
+    # Nada de lo aprobado concede autoridad ni elige una instantanea: los tres testigos siguen siendo la region.
+    assert rs.COMMON_CORE_RUNTIME_AUTHORITY is False
+    assert set(fam.ADAPTERS["gi_bleed"].region_witnesses()) == set(sc.WITNESSES) == {"LOW", "CENTER_REFERENCE", "HIGH"}
+
+
+@pytest.mark.parametrize("key", sorted(RECORD["events"]))
+def test_every_recorded_recovery_meets_the_approved_graded_recovery_invariant(key):
+    event = RECORD["events"][key]
+    invariant = DECISION["invariant"]
+    # La trayectoria completa cruza de ~0,80 a < 0,50 en ~6-8 min.
+    low, high = invariant["full_trajectory_0_80_to_below_0_50_minutes"]
+    assert low <= event["minutes_below_0_80_to_below_0_50"] <= high, key
+    # Tras la entrada formal quedan 0-2 min y la mayor parte de la recuperacion ya ocurrio antes.
+    low, high = invariant["minutes_remaining_after_entry"]
+    assert low <= event["minutes_entry_to_below_0_50"] <= high, key
+    assert event["share_of_the_0_80_to_0_50_descent_done_before_entry"] >= \
+        invariant["remaining_after_entry_acceptable_if_share_done_before_entry_at_least"], key
+
+
+@pytest.mark.parametrize("name", sorted(sc.WITNESSES))
+def test_the_isolated_f_decay_keeps_the_approved_three_to_five_minute_category_timescale(name):
+    # Con el objetivo sistemico esencialmente nulo, F cruza 0,80 -> 0,50 en 3-5 min con la constante certificada del testigo.
+    tau = sc.WITNESSES[name].burden_clear_tau
+    isolated = tau * math.log(0.80 / 0.50)
+    low, high = DECISION["invariant"]["isolated_f_decay_0_80_to_0_50_minutes"]
+    assert low - 0.05 <= isolated <= high + 0.05, (name, isolated)

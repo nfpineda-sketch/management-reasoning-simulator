@@ -581,17 +581,19 @@ desde el núcleo sigue sin autorizarse.
 ## TD-138 · Fase 3, la temporalidad de la recuperación GI queda a decisión docente (ciclo del 2026-11-11)
 
 **Cierra o actualiza deuda anterior.** TD-137 (2): **cerrada** — la docencia confirmó la lectura relativa a la llegada (FD-GI-01). TD-137 (3):
-**respondida en parte** — el reloj cuenta desde la entrada en la región de recuperación (FD-GI-02), y la medida exacta mostró que la trayectoria
-completa no puede cumplirlo literalmente.
+**cerrada** — el reloj cuenta desde la entrada en la región de recuperación (FD-GI-02); la medida exacta mostró que la trayectoria completa no
+puede cumplirlo literalmente y la docencia aprobó la recuperación graduada sin cambio del núcleo (FD-P3-177, opción (a)).
 
 - **(1)** **Requisito incompatible con la ley certificada.** F limpia hacia un objetivo graduado desde un minuto después de la orden y la entrega
   tarda 8–9 min en volver a su región normal: el paciente entra en la región de recuperación en 0,43–0,56, no en ≈ 0,80. Ninguna constante de
-  bajada hace las dos cosas (entrar en ≈ 0,80 y cruzar 0,50 en 3–5 min). Pregunta abierta a la docencia: FD-P3-176, respuestas (a), (b), (c).
-- **(2)** **Si la respuesta es (b) o (c), cambia `clinical_core/`.** Hace falta una etapa sucesora declarada, con mutantes propios y **una**
-  certificación completa; la certificación de la Enmienda 2 dejaría de cubrir el núcleo activo. Con (a) no cambia nada.
+  bajada hace las dos cosas (entrar en ≈ 0,80 y cruzar 0,50 en 3–5 min). **Cerrado por la docencia el 2026-11-11 (FD-P3-177): opción (a), limpieza
+  graduada; el invariante es 6–8 min de 0,80 a < 0,50 en la trayectoria completa, 3–5 min en la ley aislada y 0–2 min tras la entrada.**
+- **(2)** **Respuesta (a): `clinical_core/` no cambia.** La certificación de la Enmienda 2 sigue cubriendo el núcleo activo. (b) y (c) quedan descartadas
+  y no existen en el núcleo ni en la capa.
 - **(3)** **Los escenarios hipotéticos no son implementación.** La bajada más lenta y la limpieza retenida se calcularon fuera de línea sobre la
   entrega registrada (exacto porque F no realimenta nada); no existen en el núcleo ni en la capa.
 - **(4)** **La medida anterior de la recuperación trataba a los tres testigos en el minuto del central.** La de este ciclo trata a cada uno en su
   propio primer minuto SIN RESPUESTA; el registro anterior (`PHASE3_GI_AMENDMENT_2_SERIES.json`) no se reescribió y sigue reproduciéndose.
 - **(5)** Sin validación clínica de ninguna magnitud ni de ninguna de las tres respuestas.
-
+- **(6)** **Pendiente siguiente, sin ejecutar.** La región GI de desarrollo queda lista para que la docencia elija una instantánea (FD-P3-177). Ninguna
+  magnitud está aprobada ni validada clínicamente, y sigue sin haber autoridad, exposición al residente ni efecto en la puntuación.

@@ -602,4 +602,4 @@ histórico y la Enmienda 1 se reconstruyen desde él). La enmienda está apagada
 desarrollo de la sombra GI, cada uno su trayectoria; sin autoridad, sin exposición al residente, sin efecto en la puntuación, el primer
 piloto sin cambios y sin que ningún estado de colapso o consciencia del núcleo termine un encuentro. Detalle, serie, comparación,
 frontera y punto de control: `docs/PHASE3_AMENDMENT_2_GI_SHADOW.md` (filas FD-P3-167 a FD-P3-172). La revisión de la
-temporalidad de la recuperación GI que le sigue: `docs/PHASE3_GI_RECOVERY_CALIBRATION_REVIEW.md` (filas FD-P3-173 a FD-P3-176).
+temporalidad de la recuperación GI que le sigue: `docs/PHASE3_GI_RECOVERY_CALIBRATION_REVIEW.md` (filas FD-P3-173 a FD-P3-177).
