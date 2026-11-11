@@ -23,7 +23,7 @@ from clinical_core import opioid_migration as un
 from clinical_core import systemic_stress as ss
 from clinical_core import distributive_tone as dt
 from clinical_core import closure_guard as cg
-from clinical_core import amendment_1 as a1
+from clinical_core import amendment_2 as a2
 from clinical_core import tone_domain as x1
 from clinical_core import respiratory_drive as rd
 from clinical_core import respiratory_mechanics as mc
@@ -44,7 +44,7 @@ def _p2t5_tree():
     with pytest.MonkeyPatch.context() as patch:
         x1.chain(patch)
         cg.chain(patch)
-        a1.chain(patch)
+        a2.chain(patch)
         dt.tree(patch)
         ss.tree(patch)
         un.tree(patch)

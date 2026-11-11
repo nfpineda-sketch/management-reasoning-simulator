@@ -21,16 +21,16 @@ from clinical_core.legacy_adapter import UnsupportedScenario, bank_case, run_leg
 from clinical_core.shadow import (DIFFERENCES, DORMANT, EXPECTED_DIFFERENCES, GOLDEN, SCENARIOS, VARIANTS, acting_mechanisms,
                                   expected_causes, run_shadow)
 from clinical_core.state import SCALAR_CHANNELS
-from clinical_core import amendment_1 as a1
+from clinical_core import amendment_2 as a2
 
 
 @pytest.fixture(autouse=True, scope="module")
 def _closure_tree():
-    """PHASE2_AMENDMENT_1: this file tests what the Phase-2 closure froze, so it reads the tree as the closure
-    left it (amendment_1.tree). The amended tree has its own tests (test_phase2_amendment*.py); what is asserted
+    """PHASE2_AMENDMENT_1 and PHASE2_AMENDMENT_2: this file tests what the Phase-2 closure froze, so it reads the tree as the closure
+    left it (amendment_2.tree, which composes the first amendment's view). The amended tree has its own tests (test_phase2_amendment*.py); what is asserted
     here is historical and its expected values are not rewritten."""
     with pytest.MonkeyPatch.context() as patch:
-        a1.tree(patch)
+        a2.tree(patch)
         yield
 
 

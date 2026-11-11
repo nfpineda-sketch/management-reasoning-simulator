@@ -27,7 +27,7 @@ from clinical_core.logistics import EndoscopicHemostasis
 from clinical_core.modules import GIHaemorrhage
 from clinical_core.provenance import BloodChange, BloodFlow, BloodProcess, Source, blood_attribution
 from clinical_core.state import BLOOD_FIELDS, CHANNEL_DEFINITIONS, BloodState, UnresolvedBoundary
-from clinical_core import amendment_1 as a1
+from clinical_core import amendment_2 as a2
 
 ROOT = Path(__file__).resolve().parent
 DOCUMENT = ROOT / "docs" / "revision" / "P2I2T_ESTADO_HEMORRAGICO_COMPARTIDO.md"
@@ -42,11 +42,11 @@ BLEED = GIHaemorrhage("gi_haemorrhage", 2.5, 0.8, 0.1)
 
 @pytest.fixture(autouse=True, scope="module")
 def _closure_tree():
-    """PHASE2_AMENDMENT_1: this file tests what the Phase-2 closure froze, so it reads the tree as the closure
-    left it (amendment_1.tree). The amended tree has its own tests (test_phase2_amendment*.py); what is asserted
+    """PHASE2_AMENDMENT_1 and PHASE2_AMENDMENT_2: this file tests what the Phase-2 closure froze, so it reads the tree as the closure
+    left it (amendment_2.tree, which composes the first amendment's view). The amended tree has its own tests (test_phase2_amendment*.py); what is asserted
     here is historical and its expected values are not rewritten."""
     with pytest.MonkeyPatch.context() as patch:
-        a1.tree(patch)
+        a2.tree(patch)
         yield
 
 

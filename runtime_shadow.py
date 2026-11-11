@@ -1215,6 +1215,9 @@ CORE_LINEAGE = (
     CoreVersion("PHASE2_AMENDMENT_1", "PHASE2_CLOSURE",
                 "10b45ce2967ea55afccb35291afb5bb1f7f1b01eb4a253e6a0736c02a5878635",
                 "docs/revision/PHASE2_AMENDMENT_1.json", reversal="clinical_core.amendment_1"),
+    CoreVersion("PHASE2_AMENDMENT_2", "PHASE2_AMENDMENT_1",
+                "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2",
+                "docs/revision/PHASE2_AMENDMENT_2.json", reversal="clinical_core.amendment_2"),
 )
 MODULE_VERSION = "P3-11"
 ADAPTER_VERSION = "gi_haemorrhage/P3-11"

@@ -18,6 +18,7 @@ from pathlib import Path
 
 from clinical_core import calibration, closure_guard as cg, decision_pack, lactate_slice, state, tone_domain
 from clinical_core import amendment_1 as a1
+from clinical_core import amendment_2 as a2
 
 ROOT = Path(__file__).resolve().parent
 RECORD = ROOT / "docs" / "revision" / "P2X3_phase2_closure.json"
@@ -35,12 +36,12 @@ def _record() -> dict:
 
 @pytest.fixture(autouse=True, scope="module")
 def _closure_tree():
-    """PHASE2_AMENDMENT_1: this file verifies the HISTORICAL closure, which a successor stage now follows. So
+    """PHASE2_AMENDMENT_1 / PHASE2_AMENDMENT_2: this file verifies the HISTORICAL closure, which two successor stages now follow. So
     every digest the closed packages compute here is computed on the tree the closure froze (amendment_1.tree),
     exactly as each closed stage's own tests read their own tree. The record, its digest and every expected
     value below are the closure's and are not rewritten."""
     with pytest.MonkeyPatch.context() as patch:
-        a1.tree(patch)
+        a2.tree(patch)
         yield
 
 

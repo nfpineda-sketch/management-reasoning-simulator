@@ -72,7 +72,8 @@ def test_e6_the_phase2_digest_is_untouched_by_an_ensemble(acs_ensemble):
     # PHASE2_AMENDMENT_1: the live tree is the closure's successor. What must be unchanged is the closure itself:
     # it is rebuilt from these same live sources by reversing the successor's declared insertions.
     from clinical_core import amendment_1 as a1
-    assert hashlib.sha256(json.dumps(a1.p2x1a_sources(sources), sort_keys=True).encode()).hexdigest() == rs.PHASE2_DIGEST
+    from clinical_core import amendment_2 as a2
+    assert hashlib.sha256(json.dumps(a2.closure_sources_of(sources), sort_keys=True).encode()).hexdigest() == rs.PHASE2_DIGEST
     assert hashlib.sha256(json.dumps(sources, sort_keys=True).encode()).hexdigest() == rs.CORE_LINEAGE[-1].digest
 
 

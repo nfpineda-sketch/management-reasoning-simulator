@@ -210,6 +210,14 @@ class CoreProfile:
     # PaCO2, the drive, L or the tone. Declared only together with the link it scales. No value is chosen
     # here.
     hypoventilation_oxygenation_transmission_fraction: float | None = None
+    # PHASE2_AMENDMENT_2: the declared magnitudes of the mechanistic systemic consciousness (the reversible systemic
+    # encephalopathy burden F) and of the soft circulatory-collapse state, as a ``systemic_consciousness.
+    # Amendment2Profile``. None (every committed profile) is the amendment OFF: consciousness stays the certified
+    # direct ladder, F is not tracked and the collapse rule stays P2E-3's. Declared, the direct pressure and SpO2
+    # ladders no longer reach consciousness, which is the maximum of the primary neurologic state, F and an
+    # established circulatory collapse, and the existing collapse burden is fed by the conjunction of a perfusion
+    # failure and a delivery failure. Development behavioural regions, never a calibration. No value is chosen here.
+    amendment_2: object | None = None
     # P2V-1: the systemic-stress reader of the sympathetic HR target, UNSET (None) by default. Declared, it is the drive
     # per unit of the state's common systemic stress, added to the target like the distress reader: upstream of the
     # common saturation and of the beta-blockade, never a respiratory reader (the stress never feeds the respiratory
@@ -246,6 +254,18 @@ class CoreProfile:
     def __post_init__(self):
         for item in fields(self):
             value = getattr(self, item.name)
+            if item.name == "amendment_2":
+                # PHASE2_AMENDMENT_2: a declared Amendment2Profile validates itself (it is not a numeric gain), must be one,
+                # and cannot be combined with the inherited collapse rule: the reused collapse_burden slot is a 0-1 share
+                # there, not the inherited rule's severity-time burden, and the soft path never stops an encounter.
+                if value is not None:
+                    from .systemic_consciousness import Amendment2Profile
+                    if not isinstance(value, Amendment2Profile):
+                        raise CoreInvariantError("amendment_2 is None or an Amendment2Profile")
+                    if (self.collapse_output_threshold is not None or self.collapse_burden_limit is not None
+                            or self.collapse_repayment_tau_min is not None):
+                        raise CoreInvariantError("amendment_2 cannot be declared with the inherited collapse rule")
+                continue
             if isinstance(value, (tuple, str)) or value is None:
                 continue
             if not math.isfinite(value) or value < 0:
@@ -416,8 +436,12 @@ class CoreProfile:
             raise CoreInvariantError("the lung-water coupling to gas exchange needs the oxygenation mapping of G")
 
     def to_dict(self) -> dict:
-        return {item.name: (list(map(list, getattr(self, item.name))) if isinstance(getattr(self, item.name), tuple)
+        data = {item.name: (list(map(list, getattr(self, item.name))) if isinstance(getattr(self, item.name), tuple)
                             else getattr(self, item.name)) for item in fields(self)}
+        if data.get("amendment_2") is not None:
+            # PHASE2_AMENDMENT_2: a declared profile travels as plain data, like every other field.
+            data["amendment_2"] = data["amendment_2"].to_dict()
+        return data
 
 
 DEFAULT_PROFILE = CoreProfile()
@@ -596,6 +620,12 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
                                                          "the beta-blockade; None by default (no reader); it never "
                                                          "feeds the respiratory drive and is never solved from an "
                                                          "observed HR; SYNTHETIC_ONLY in probes; not approved"),
+    "amendment_2": (
+        PROVISIONAL, "OFF (PHASE2_AMENDMENT_2): the magnitudes of the mechanistic systemic consciousness and the soft "
+                     "circulatory collapse, a systemic_consciousness.Amendment2Profile; None by default, which keeps the "
+                     "certified direct ladder and the P2E-3 collapse rule bit for bit. Faculty-defined DEVELOPMENT "
+                     "behavioural regions (LOW / CENTER_REFERENCE / HIGH witnesses), never a clinical calibration, a "
+                     "production threshold or a resident-facing safety threshold; GI first, no opioid mechanism"),
     "hypoventilation_oxygenation_transmission_fraction": (
         PROVISIONAL, "UNSCALED (PHASE2_AMENDMENT_1): the share of the common relative alveolar link that is "
                      "EXPRESSED, delta_PaO2 = fraction x (-delta_PaCO2 / R); None by default, which "
@@ -1610,6 +1640,12 @@ def collapse_burden_after_minute(state: CoreState, anchors: Anchors, profile: Co
     with ``collapse_repayment_tau_min`` when declared. The rule is off (None) by default, and
     without a pulse the burden no longer changes. Threshold, limit and repayment are TBD.
     """
+    if profile.amendment_2 is not None:
+        # PHASE2_AMENDMENT_2: the soft path -- the conjunction of a perfusion failure and a delivery failure -- feeds
+        # this same slot, as a share of the combined signal with a slower clearance than rise. Low output alone is not
+        # a collapse and neither is a failure of one channel alone.
+        from . import systemic_consciousness as _amendment_2
+        return _amendment_2.collapse_burden_after(state, anchors, profile)
     burden = state.aux.collapse_burden
     threshold = profile.collapse_output_threshold
     if threshold is None or not state.R.pulse_present:
@@ -1918,7 +1954,14 @@ def derive(state: CoreState, anchors: Anchors, profile: CoreProfile = DEFAULT_PR
     if acid_base_active(profile):
         # P2K-2: the candidate physiology replaces the P2K-1 RR: the drive reads the acid burden only (no lactate, no W).
         rr = respiration(state, anchors, profile).respiratory_rate
-    level = max(anchors.consciousness_level, _level(sbp, profile.pressure_levels), _level(spo2, profile.oxygen_levels))
+    if profile.amendment_2 is None:
+        level = max(anchors.consciousness_level, _level(sbp, profile.pressure_levels),
+                    _level(spo2, profile.oxygen_levels))
+    else:
+        # PHASE2_AMENDMENT_2: the direct SBP and SpO2 ladders are duplicative and no longer reach consciousness; the level
+        # is the observable category of the maximum of the primary neurologic state, F and an established collapse.
+        from . import systemic_consciousness as _amendment_2
+        level = _amendment_2.consciousness_level(state, anchors, profile)
     derived = Derived(minute=state.minute, pulse_present=True, rhythm=rhythm.code,
                       monitor_rate_bpm=pulse_rate, pulse_rate_bpm=pulse_rate, output_rel=output_rel,
                       pressure_rel=pressure_rel, delivery_rel=delivery_rel, sbp=sbp, dbp=dbp,

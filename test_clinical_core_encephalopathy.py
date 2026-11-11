@@ -33,7 +33,7 @@ from clinical_core import opioid_migration as un
 from clinical_core import systemic_stress as ss
 from clinical_core import distributive_tone as dt
 from clinical_core import closure_guard as cg
-from clinical_core import amendment_1 as a1
+from clinical_core import amendment_2 as a2
 from clinical_core import tone_domain as x1
 from clinical_core import consciousness_audit as ca
 from clinical_core import decision_pack, lactate_slice
@@ -216,7 +216,7 @@ def _patch(patch) -> None:
     dt.chain(patch)
     x1.chain(patch)
     cg.chain(patch)
-    a1.chain(patch)
+    a2.chain(patch)
     patch.setattr(bf, "freeze_sources", _p2l2_view)
     patch.setattr(ca, "_python", _p2l2_python)
     # P2O-1's analysis imports the candidate only to read its hypoxaemia signal (the candidate unchanged).
