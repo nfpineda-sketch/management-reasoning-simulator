@@ -1,0 +1,4322 @@
+{
+ "adversarial_review": [],
+ "adversarial_review_status": "PENDING",
+ "authority": {
+  "approved_authority_snapshots": [
+   "gi_pressure_committed"
+  ],
+  "common_core_runtime_authority": false,
+  "enabled": false,
+  "granted_by_this_record": false
+ },
+ "binding_contract": {
+  "bound_by": [
+   "snapshot_id",
+   "version",
+   "the file's SHA-256",
+   "identity digest",
+   "record digest",
+   "the digest of the ten values",
+   "common-core lineage (declared, live, and the core's own bytes)",
+   "the ratification record"
+  ],
+  "every_minute": "the run in hand is re-checked against the bound snapshot (adapter, profile, profile digest, the ten values)",
+  "never_read": [
+   "systemic_consciousness.WITNESSES",
+   "systemic_consciousness.development_profile()",
+   "a witness name"
+  ],
+  "profile": "the committed default profile (verified to be the point gi_pressure_committed pins) plus amendment_2 built ONLY from the record's ten values",
+  "refusals": [
+   "WRONG_SNAPSHOT_ID",
+   "WRONG_VERSION",
+   "PARTIAL_SNAPSHOT",
+   "MODIFIED_PARAMETER",
+   "WRONG_DIGEST",
+   "WRONG_CORE_LINEAGE",
+   "WITNESS_SUBSTITUTED_FOR_THE_SNAPSHOT",
+   "NOT_A_DEVELOPMENT_SNAPSHOT_RECORD",
+   "NOT_RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS",
+   "PRESSURE_POINT_MISMATCH"
+  ],
+  "where_it_lives": "TEST-SIDE. The layer still builds its witnesses by name; an authority experiment needs this rule inside the layer, certified."
+ },
+ "checkpoint": {
+  "blockers": [
+   {
+    "blocker": "FD-AUTH-04: the faculty's answers to the consciousness review table (nine representative episodes) are pending; the assistant does not answer them",
+    "id": "C1",
+    "kind": "faculty review"
+   },
+   {
+    "blocker": "FD-AUTH-05: consciousness authority HAS downstream side effects; seven of the eight guards do not exist (history-taking availability, resident-visible text and display, image contract and prompt, trace and event persistence, AI and faculty analysis payloads, reflection prompts, and the legacy comparison captured before the commit)",
+    "id": "C2",
+    "kind": "guards"
+   },
+   {
+    "blocker": "the pair's commit path does not exist in the layer: AUTHORITY_DOMAIN, the ownership contract and commit are numeric-pressure only; it must be built DORMANT and certified, as the pressure path was",
+    "id": "C3",
+    "kind": "technical"
+   },
+   {
+    "blocker": "the snapshot binding is test-side: the layer builds witnesses by name and cannot run GI_DEVELOPMENT_SNAPSHOT_V1 by id and digest",
+    "id": "C4",
+    "kind": "technical"
+   },
+   {
+    "blocker": "the word 'Unresponsive' with a pulse: the legacy engine writes it only at an arrest; the snapshot reads it from minute 158 untreated",
+    "id": "C5",
+    "kind": "faculty decision"
+   },
+   {
+    "blocker": "'Place an IV line.' is the class vascular_access, outside SUPPORTED_ACTIONS: the commonest GI order hard-stops the experiment",
+    "id": "C6",
+    "kind": "faculty or engineering decision"
+   },
+   {
+    "blocker": "one turn is one transaction and an infusion advances the engine's clock inside ONE turn (four units: 120 minutes): a recovery ordered at minute 158 ends at 278, past the window, and every intermediate minute is covered by one boundary check instead of being committed minute by minute",
+    "id": "C7",
+    "kind": "design"
+   },
+   {
+    "blocker": "an authority grant and an approval of a snapshot FOR AUTHORITY: the registry holds only gi_pressure_committed, and stays that way",
+    "id": "C8",
+    "kind": "faculty decision"
+   }
+  ],
+  "next_package": "1. The faculty answers the consciousness review table (C1) and the two word and action questions (C5, C6). 2. With those answers: design and build DORMANT, in the layer, the guards of the readers (C2), the pair commit path (C3) and the snapshot binding (C4), with their own mutants and ONE integrated certification of the layer; decide the turn granularity for infusions (C7). 3. Re-run this dry series through the layer's own dormant path. Only then could a faculty decision (C8) authorize the development experiment. Independently and already possible: the pressure-only development experiment on the active core.",
+  "options": [
+   "GI_PRESSURE_CONSCIOUSNESS_READY_FOR_DEVELOPMENT_AUTHORITY_EXPERIMENT",
+   "PRESSURE_READY_BUT_CONSCIOUSNESS_NOT_READY",
+   "SNAPSHOT_READY_BUT_AUTHORITY_TRANSACTION_NOT_READY",
+   "FURTHER_PHYSIOLOGY_OR_ARCHITECTURE_REQUIRED"
+  ],
+  "provisional": true,
+  "reading": "Pressure: the development-authority series is identical on the active core (every value written and every digest that names no version). Consciousness: every divergence from the legacy engine is mechanistically coherent, the snapshot binds exactly and the dry pair transaction behaves; but the faculty has not yet answered the review of the divergence, the readers of the word have downstream effects whose guards do not exist, and the pair's commit path and the snapshot binding exist only test-side. None of this is an authority grant.",
+  "verdict": "PRESSURE_READY_BUT_CONSCIOUSNESS_NOT_READY"
+ },
+ "collapse_boundary_guard": {
+  "after_the_stop": "no fallback to the legacy engine as authority once a commit has happened: the encounter is INVALID_FOR_CONTINUATION; if nothing was ever committed, authority never began",
+  "covers": "every minute since the last cleared one up to the minute that would be committed (a turn can span many minutes: an infusion advances the engine's clock in one turn)",
+  "detected_in": "compute: the bound run's collapse predicate is part of the candidate, so it is known before validate ends",
+  "does_not_mean": [
+   "the patient died",
+   "a terminal clinical threshold",
+   "a resident-facing outcome",
+   "a rule that ends an encounter"
+  ],
+  "fail_closed": "a minute the bound run cannot show (a failed or unreproduced run) is not a cleared minute",
+  "impending_collapse": "not a stop: only ESTABLISHED is the boundary (FD-AUTH-06)",
+  "means": "EXPERIMENT NOT VALID BEYOND THIS PHYSIOLOGICAL BOUNDARY",
+  "precommit": true,
+  "resident_text": "none: the stop is an experiment event on the faculty surface, never mapped to terminal text",
+  "rule": "if the bound common-core run reads ESTABLISHED circulatory collapse at any minute a transaction would cover, the transaction aborts and the experiment hard-stops BEFORE that minute is committed",
+  "window": "authority_window_end = min(the predefined time limit, the first established-collapse minute); both are checks of the same transaction"
+ },
+ "consciousness_review": {
+  "by_direction": {
+   "COMMON_MORE_IMPAIRED": {
+    "compared_minutes": 263,
+    "episodes": 8
+   },
+   "LEGACY_MORE_IMPAIRED": {
+    "compared_minutes": 196,
+    "episodes": 5
+   },
+   "TRANSIENT": {
+    "compared_minutes": 2,
+    "episodes": 2
+   }
+  },
+  "coherence": {
+   "coherent": 15,
+   "contradictions": []
+  },
+  "compared_minutes": 461,
+  "episode_count": 15,
+  "episodes": [
+   {
+    "actions_before": "none: untreated so far",
+    "at_end": {
+     "F": 0.2398,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Alert",
+     "common_sbp": 61,
+     "legacy": "Drowsy",
+     "legacy_sbp": 73,
+     "minute": 108,
+     "relative_delivery": 0.6829,
+     "relative_perfusion": 0.691
+    },
+    "at_start": {
+     "F": 0.0,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Alert",
+     "common_sbp": 72,
+     "legacy": "Drowsy",
+     "legacy_sbp": 79,
+     "minute": 63,
+     "relative_delivery": 0.8131,
+     "relative_perfusion": 0.8167
+    },
+    "case": "gi_bleed_57m",
+    "coherence": {
+     "verdict": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+     "violations": {
+      "category_is_not_the_composite": 0,
+      "delivery_rises_before_any_order": 0,
+      "f_moves_away_from_its_target": 0
+     }
+    },
+    "common_categories": [
+     "Alert"
+    ],
+    "compared_minutes": 46,
+    "direction": "LEGACY_MORE_IMPAIRED",
+    "end": 108,
+    "first_order_minute": 120,
+    "legacy_categories": [
+     "Drowsy"
+    ],
+    "max_band_gap": 1,
+    "scenario": "delayed_treatment",
+    "span_minutes": 46,
+    "start": 63
+   },
+   {
+    "actions_before": "first order at minute 10 (fluid_focused)",
+    "at_end": {
+     "F": 0.0,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Alert",
+     "common_sbp": 71,
+     "legacy": "Drowsy",
+     "legacy_sbp": 78,
+     "minute": 120,
+     "relative_delivery": 0.7795,
+     "relative_perfusion": 0.8103
+    },
+    "at_start": {
+     "F": 0.0,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Alert",
+     "common_sbp": 74,
+     "legacy": "Drowsy",
+     "legacy_sbp": 79,
+     "minute": 109,
+     "relative_delivery": 0.8111,
+     "relative_perfusion": 0.8421
+    },
+    "case": "gi_bleed_57m",
+    "coherence": {
+     "verdict": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+     "violations": {
+      "category_is_not_the_composite": 0,
+      "delivery_rises_before_any_order": 0,
+      "f_moves_away_from_its_target": 0
+     }
+    },
+    "common_categories": [
+     "Alert"
+    ],
+    "compared_minutes": 12,
+    "direction": "LEGACY_MORE_IMPAIRED",
+    "end": 120,
+    "first_order_minute": 10,
+    "legacy_categories": [
+     "Drowsy"
+    ],
+    "max_band_gap": 1,
+    "scenario": "fluid_focused",
+    "span_minutes": 12,
+    "start": 109
+   },
+   {
+    "actions_before": "none: untreated so far",
+    "at_end": {
+     "F": 0.2398,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Alert",
+     "common_sbp": 61,
+     "legacy": "Drowsy",
+     "legacy_sbp": 73,
+     "minute": 108,
+     "relative_delivery": 0.6829,
+     "relative_perfusion": 0.691
+    },
+    "at_start": {
+     "F": 0.0,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Alert",
+     "common_sbp": 72,
+     "legacy": "Drowsy",
+     "legacy_sbp": 79,
+     "minute": 63,
+     "relative_delivery": 0.8131,
+     "relative_perfusion": 0.8167
+    },
+    "case": "gi_bleed_57m",
+    "coherence": {
+     "verdict": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+     "violations": {
+      "category_is_not_the_composite": 0,
+      "delivery_rises_before_any_order": 0,
+      "f_moves_away_from_its_target": 0
+     }
+    },
+    "common_categories": [
+     "Alert"
+    ],
+    "compared_minutes": 46,
+    "direction": "LEGACY_MORE_IMPAIRED",
+    "end": 108,
+    "first_order_minute": 158,
+    "legacy_categories": [
+     "Drowsy"
+    ],
+    "max_band_gap": 1,
+    "scenario": "recovery_after_severe",
+    "span_minutes": 46,
+    "start": 63
+   },
+   {
+    "actions_before": "first order at minute 158 (recovery_after_severe)",
+    "at_end": {
+     "F": 0.8089,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Unresponsive",
+     "common_sbp": 49,
+     "legacy": "Drowsy",
+     "legacy_sbp": 67,
+     "minute": 158,
+     "relative_delivery": 0.5407,
+     "relative_perfusion": 0.5533
+    },
+    "at_start": {
+     "F": 0.8089,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Unresponsive",
+     "common_sbp": 49,
+     "legacy": "Drowsy",
+     "legacy_sbp": 67,
+     "minute": 158,
+     "relative_delivery": 0.5407,
+     "relative_perfusion": 0.5533
+    },
+    "case": "gi_bleed_57m",
+    "coherence": {
+     "verdict": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+     "violations": {
+      "category_is_not_the_composite": 0,
+      "delivery_rises_before_any_order": 0,
+      "f_moves_away_from_its_target": 0
+     }
+    },
+    "common_categories": [
+     "Unresponsive"
+    ],
+    "compared_minutes": 1,
+    "direction": "TRANSIENT",
+    "end": 158,
+    "first_order_minute": 158,
+    "legacy_categories": [
+     "Drowsy"
+    ],
+    "max_band_gap": 2,
+    "scenario": "recovery_after_severe",
+    "span_minutes": 1,
+    "start": 158
+   },
+   {
+    "actions_before": "none: untreated so far",
+    "at_end": {
+     "F": 0.2398,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Alert",
+     "common_sbp": 61,
+     "legacy": "Drowsy",
+     "legacy_sbp": 73,
+     "minute": 108,
+     "relative_delivery": 0.6829,
+     "relative_perfusion": 0.691
+    },
+    "at_start": {
+     "F": 0.0,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Alert",
+     "common_sbp": 72,
+     "legacy": "Drowsy",
+     "legacy_sbp": 79,
+     "minute": 63,
+     "relative_delivery": 0.8131,
+     "relative_perfusion": 0.8167
+    },
+    "case": "gi_bleed_57m",
+    "coherence": {
+     "verdict": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+     "violations": {
+      "category_is_not_the_composite": 0,
+      "delivery_rises_before_any_order": 0,
+      "f_moves_away_from_its_target": 0
+     }
+    },
+    "common_categories": [
+     "Alert"
+    ],
+    "compared_minutes": 46,
+    "direction": "LEGACY_MORE_IMPAIRED",
+    "end": 108,
+    "first_order_minute": 131,
+    "legacy_categories": [
+     "Drowsy"
+    ],
+    "max_band_gap": 1,
+    "scenario": "severe_deterioration",
+    "span_minutes": 46,
+    "start": 63
+   },
+   {
+    "actions_before": "first order at minute 131 (severe_deterioration)",
+    "at_end": {
+     "F": 0.8629,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Unresponsive",
+     "common_sbp": 49,
+     "legacy": "Drowsy",
+     "legacy_sbp": 65,
+     "minute": 198,
+     "relative_delivery": 0.5262,
+     "relative_perfusion": 0.5529
+    },
+    "at_start": {
+     "F": 0.8108,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Unresponsive",
+     "common_sbp": 50,
+     "legacy": "Drowsy",
+     "legacy_sbp": 65,
+     "minute": 194,
+     "relative_delivery": 0.5391,
+     "relative_perfusion": 0.566
+    },
+    "case": "gi_bleed_57m",
+    "coherence": {
+     "verdict": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+     "violations": {
+      "category_is_not_the_composite": 0,
+      "delivery_rises_before_any_order": 0,
+      "f_moves_away_from_its_target": 0
+     }
+    },
+    "common_categories": [
+     "Unresponsive"
+    ],
+    "compared_minutes": 5,
+    "direction": "COMMON_MORE_IMPAIRED",
+    "end": 198,
+    "first_order_minute": 131,
+    "legacy_categories": [
+     "Drowsy"
+    ],
+    "max_band_gap": 2,
+    "scenario": "severe_deterioration",
+    "span_minutes": 5,
+    "start": 194
+   },
+   {
+    "actions_before": "none: untreated so far",
+    "at_end": {
+     "F": 0.2398,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Alert",
+     "common_sbp": 61,
+     "legacy": "Drowsy",
+     "legacy_sbp": 73,
+     "minute": 108,
+     "relative_delivery": 0.6829,
+     "relative_perfusion": 0.691
+    },
+    "at_start": {
+     "F": 0.0,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Alert",
+     "common_sbp": 72,
+     "legacy": "Drowsy",
+     "legacy_sbp": 79,
+     "minute": 63,
+     "relative_delivery": 0.8131,
+     "relative_perfusion": 0.8167
+    },
+    "case": "gi_bleed_57m",
+    "coherence": {
+     "verdict": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+     "violations": {
+      "category_is_not_the_composite": 0,
+      "delivery_rises_before_any_order": 0,
+      "f_moves_away_from_its_target": 0
+     }
+    },
+    "common_categories": [
+     "Alert"
+    ],
+    "compared_minutes": 46,
+    "direction": "LEGACY_MORE_IMPAIRED",
+    "end": 108,
+    "first_order_minute": null,
+    "legacy_categories": [
+     "Drowsy"
+    ],
+    "max_band_gap": 1,
+    "scenario": "untreated",
+    "span_minutes": 46,
+    "start": 63
+   },
+   {
+    "actions_before": "none: untreated so far",
+    "at_end": {
+     "F": 0.987,
+     "collapse_burden": 0.1712,
+     "collapse_state": 0,
+     "common": "Unresponsive",
+     "common_sbp": 45,
+     "legacy": "Drowsy",
+     "legacy_sbp": 65,
+     "minute": 174,
+     "relative_delivery": 0.4955,
+     "relative_perfusion": 0.5091
+    },
+    "at_start": {
+     "F": 0.8089,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Unresponsive",
+     "common_sbp": 49,
+     "legacy": "Drowsy",
+     "legacy_sbp": 67,
+     "minute": 158,
+     "relative_delivery": 0.5407,
+     "relative_perfusion": 0.5533
+    },
+    "case": "gi_bleed_57m",
+    "coherence": {
+     "verdict": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+     "violations": {
+      "category_is_not_the_composite": 0,
+      "delivery_rises_before_any_order": 0,
+      "f_moves_away_from_its_target": 0
+     }
+    },
+    "common_categories": [
+     "Unresponsive"
+    ],
+    "compared_minutes": 17,
+    "direction": "COMMON_MORE_IMPAIRED",
+    "end": 174,
+    "first_order_minute": null,
+    "legacy_categories": [
+     "Drowsy"
+    ],
+    "max_band_gap": 2,
+    "scenario": "untreated",
+    "span_minutes": 17,
+    "start": 158
+   },
+   {
+    "actions_before": "none: untreated so far",
+    "at_end": {
+     "F": 0.3772,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Drowsy",
+     "common_sbp": 64,
+     "legacy": "Alert",
+     "legacy_sbp": 82,
+     "minute": 120,
+     "relative_delivery": 0.6485,
+     "relative_perfusion": 0.6579
+    },
+    "at_start": {
+     "F": 0.2513,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Drowsy",
+     "common_sbp": 67,
+     "legacy": "Alert",
+     "legacy_sbp": 83,
+     "minute": 109,
+     "relative_delivery": 0.68,
+     "relative_perfusion": 0.6882
+    },
+    "case": "gi_bleed_72f",
+    "coherence": {
+     "verdict": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+     "violations": {
+      "category_is_not_the_composite": 0,
+      "delivery_rises_before_any_order": 0,
+      "f_moves_away_from_its_target": 0
+     }
+    },
+    "common_categories": [
+     "Drowsy"
+    ],
+    "compared_minutes": 12,
+    "direction": "COMMON_MORE_IMPAIRED",
+    "end": 120,
+    "first_order_minute": 120,
+    "legacy_categories": [
+     "Alert"
+    ],
+    "max_band_gap": 1,
+    "scenario": "delayed_treatment",
+    "span_minutes": 12,
+    "start": 109
+   },
+   {
+    "actions_before": "none: untreated so far",
+    "at_end": {
+     "F": 0.5709,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Obtunded",
+     "common_sbp": 60,
+     "legacy": "Alert",
+     "legacy_sbp": 80,
+     "minute": 137,
+     "relative_delivery": 0.6001,
+     "relative_perfusion": 0.6111
+    },
+    "at_start": {
+     "F": 0.2513,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Drowsy",
+     "common_sbp": 67,
+     "legacy": "Alert",
+     "legacy_sbp": 83,
+     "minute": 109,
+     "relative_delivery": 0.68,
+     "relative_perfusion": 0.6882
+    },
+    "case": "gi_bleed_72f",
+    "coherence": {
+     "verdict": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+     "violations": {
+      "category_is_not_the_composite": 0,
+      "delivery_rises_before_any_order": 0,
+      "f_moves_away_from_its_target": 0
+     }
+    },
+    "common_categories": [
+     "Drowsy",
+     "Obtunded"
+    ],
+    "compared_minutes": 29,
+    "direction": "COMMON_MORE_IMPAIRED",
+    "end": 137,
+    "first_order_minute": 158,
+    "legacy_categories": [
+     "Alert"
+    ],
+    "max_band_gap": 2,
+    "scenario": "recovery_after_severe",
+    "span_minutes": 29,
+    "start": 109
+   },
+   {
+    "actions_before": "first order at minute 158 (recovery_after_severe)",
+    "at_end": {
+     "F": 0.8089,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Unresponsive",
+     "common_sbp": 54,
+     "legacy": "Drowsy",
+     "legacy_sbp": 77,
+     "minute": 158,
+     "relative_delivery": 0.5407,
+     "relative_perfusion": 0.5533
+    },
+    "at_start": {
+     "F": 0.8089,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Unresponsive",
+     "common_sbp": 54,
+     "legacy": "Drowsy",
+     "legacy_sbp": 77,
+     "minute": 158,
+     "relative_delivery": 0.5407,
+     "relative_perfusion": 0.5533
+    },
+    "case": "gi_bleed_72f",
+    "coherence": {
+     "verdict": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+     "violations": {
+      "category_is_not_the_composite": 0,
+      "delivery_rises_before_any_order": 0,
+      "f_moves_away_from_its_target": 0
+     }
+    },
+    "common_categories": [
+     "Unresponsive"
+    ],
+    "compared_minutes": 1,
+    "direction": "TRANSIENT",
+    "end": 158,
+    "first_order_minute": 158,
+    "legacy_categories": [
+     "Drowsy"
+    ],
+    "max_band_gap": 2,
+    "scenario": "recovery_after_severe",
+    "span_minutes": 1,
+    "start": 158
+   },
+   {
+    "actions_before": "none: untreated so far",
+    "at_end": {
+     "F": 0.4345,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Drowsy",
+     "common_sbp": 65,
+     "legacy": "Alert",
+     "legacy_sbp": 80,
+     "minute": 168,
+     "relative_delivery": 0.6313,
+     "relative_perfusion": 0.6615
+    },
+    "at_start": {
+     "F": 0.2513,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Drowsy",
+     "common_sbp": 67,
+     "legacy": "Alert",
+     "legacy_sbp": 83,
+     "minute": 109,
+     "relative_delivery": 0.68,
+     "relative_perfusion": 0.6882
+    },
+    "case": "gi_bleed_72f",
+    "coherence": {
+     "verdict": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+     "violations": {
+      "category_is_not_the_composite": 0,
+      "delivery_rises_before_any_order": 0,
+      "f_moves_away_from_its_target": 0
+     }
+    },
+    "common_categories": [
+     "Drowsy",
+     "Obtunded"
+    ],
+    "compared_minutes": 41,
+    "direction": "COMMON_MORE_IMPAIRED",
+    "end": 168,
+    "first_order_minute": 131,
+    "legacy_categories": [
+     "Alert"
+    ],
+    "max_band_gap": 2,
+    "scenario": "severe_deterioration",
+    "span_minutes": 60,
+    "start": 109
+   },
+   {
+    "actions_before": "first order at minute 131 (severe_deterioration)",
+    "at_end": {
+     "F": 1.0,
+     "collapse_burden": 0.5806,
+     "collapse_state": 1,
+     "common": "Unresponsive",
+     "common_sbp": 42,
+     "legacy": "Drowsy",
+     "legacy_sbp": 68,
+     "minute": 240,
+     "relative_delivery": 0.4025,
+     "relative_perfusion": 0.427
+    },
+    "at_start": {
+     "F": 0.8108,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Unresponsive",
+     "common_sbp": 55,
+     "legacy": "Drowsy",
+     "legacy_sbp": 75,
+     "minute": 194,
+     "relative_delivery": 0.5391,
+     "relative_perfusion": 0.566
+    },
+    "case": "gi_bleed_72f",
+    "coherence": {
+     "verdict": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+     "violations": {
+      "category_is_not_the_composite": 0,
+      "delivery_rises_before_any_order": 0,
+      "f_moves_away_from_its_target": 0
+     }
+    },
+    "common_categories": [
+     "Unresponsive"
+    ],
+    "compared_minutes": 47,
+    "direction": "COMMON_MORE_IMPAIRED",
+    "end": 240,
+    "first_order_minute": 131,
+    "legacy_categories": [
+     "Drowsy"
+    ],
+    "max_band_gap": 2,
+    "scenario": "severe_deterioration",
+    "span_minutes": 47,
+    "start": 194
+   },
+   {
+    "actions_before": "none: untreated so far",
+    "at_end": {
+     "F": 0.5709,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Obtunded",
+     "common_sbp": 60,
+     "legacy": "Alert",
+     "legacy_sbp": 80,
+     "minute": 137,
+     "relative_delivery": 0.6001,
+     "relative_perfusion": 0.6111
+    },
+    "at_start": {
+     "F": 0.2513,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Drowsy",
+     "common_sbp": 67,
+     "legacy": "Alert",
+     "legacy_sbp": 83,
+     "minute": 109,
+     "relative_delivery": 0.68,
+     "relative_perfusion": 0.6882
+    },
+    "case": "gi_bleed_72f",
+    "coherence": {
+     "verdict": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+     "violations": {
+      "category_is_not_the_composite": 0,
+      "delivery_rises_before_any_order": 0,
+      "f_moves_away_from_its_target": 0
+     }
+    },
+    "common_categories": [
+     "Drowsy",
+     "Obtunded"
+    ],
+    "compared_minutes": 29,
+    "direction": "COMMON_MORE_IMPAIRED",
+    "end": 137,
+    "first_order_minute": null,
+    "legacy_categories": [
+     "Alert"
+    ],
+    "max_band_gap": 2,
+    "scenario": "untreated",
+    "span_minutes": 29,
+    "start": 109
+   },
+   {
+    "actions_before": "none: untreated so far",
+    "at_end": {
+     "F": 1.0,
+     "collapse_burden": 0.9997,
+     "collapse_state": 2,
+     "common": "Unresponsive",
+     "common_sbp": 32,
+     "legacy": "Drowsy",
+     "legacy_sbp": 66,
+     "minute": 240,
+     "relative_delivery": 0.3097,
+     "relative_perfusion": 0.3242
+    },
+    "at_start": {
+     "F": 0.8089,
+     "collapse_burden": 0.0,
+     "collapse_state": 0,
+     "common": "Unresponsive",
+     "common_sbp": 54,
+     "legacy": "Drowsy",
+     "legacy_sbp": 77,
+     "minute": 158,
+     "relative_delivery": 0.5407,
+     "relative_perfusion": 0.5533
+    },
+    "case": "gi_bleed_72f",
+    "coherence": {
+     "verdict": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+     "violations": {
+      "category_is_not_the_composite": 0,
+      "delivery_rises_before_any_order": 0,
+      "f_moves_away_from_its_target": 0
+     }
+    },
+    "common_categories": [
+     "Unresponsive"
+    ],
+    "compared_minutes": 83,
+    "direction": "COMMON_MORE_IMPAIRED",
+    "end": 240,
+    "first_order_minute": null,
+    "legacy_categories": [
+     "Drowsy"
+    ],
+    "max_band_gap": 2,
+    "scenario": "untreated",
+    "span_minutes": 83,
+    "start": 158
+   }
+  ],
+  "faculty_questions": [
+   "Would this state be defensible to show a resident?",
+   "Is impairment too early or too late?",
+   "Is recovery too early or too late?",
+   "Does the category communicate the physiologic severity appropriately?"
+  ],
+  "faculty_table": [
+   {
+    "actions_before": "none: untreated so far",
+    "case": "gi_bleed_72f",
+    "coherence": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+    "compared_minutes": 83,
+    "direction": "COMMON_MORE_IMPAIRED",
+    "faculty_answers": {
+     "Does the category communicate the physiologic severity appropriately?": null,
+     "Is impairment too early or too late?": null,
+     "Is recovery too early or too late?": null,
+     "Would this state be defensible to show a resident?": null
+    },
+    "legacy_shows": [
+     "Drowsy"
+    ],
+    "max_band_gap": 2,
+    "mechanism_at_end": {
+     "F": 1.0,
+     "collapse_burden": 0.9997,
+     "common_sbp": 32,
+     "legacy_sbp": 66,
+     "relative_delivery": 0.3097
+    },
+    "mechanism_at_start": {
+     "F": 0.8089,
+     "collapse_burden": 0.0,
+     "common_sbp": 54,
+     "legacy_sbp": 77,
+     "relative_delivery": 0.5407
+    },
+    "minutes": [
+     158,
+     240
+    ],
+    "scenario": "untreated",
+    "snapshot_would_show": [
+     "Unresponsive"
+    ]
+   },
+   {
+    "actions_before": "first order at minute 131 (severe_deterioration)",
+    "case": "gi_bleed_72f",
+    "coherence": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+    "compared_minutes": 47,
+    "direction": "COMMON_MORE_IMPAIRED",
+    "faculty_answers": {
+     "Does the category communicate the physiologic severity appropriately?": null,
+     "Is impairment too early or too late?": null,
+     "Is recovery too early or too late?": null,
+     "Would this state be defensible to show a resident?": null
+    },
+    "legacy_shows": [
+     "Drowsy"
+    ],
+    "max_band_gap": 2,
+    "mechanism_at_end": {
+     "F": 1.0,
+     "collapse_burden": 0.5806,
+     "common_sbp": 42,
+     "legacy_sbp": 68,
+     "relative_delivery": 0.4025
+    },
+    "mechanism_at_start": {
+     "F": 0.8108,
+     "collapse_burden": 0.0,
+     "common_sbp": 55,
+     "legacy_sbp": 75,
+     "relative_delivery": 0.5391
+    },
+    "minutes": [
+     194,
+     240
+    ],
+    "scenario": "severe_deterioration",
+    "snapshot_would_show": [
+     "Unresponsive"
+    ]
+   },
+   {
+    "actions_before": "none: untreated so far",
+    "case": "gi_bleed_72f",
+    "coherence": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+    "compared_minutes": 41,
+    "direction": "COMMON_MORE_IMPAIRED",
+    "faculty_answers": {
+     "Does the category communicate the physiologic severity appropriately?": null,
+     "Is impairment too early or too late?": null,
+     "Is recovery too early or too late?": null,
+     "Would this state be defensible to show a resident?": null
+    },
+    "legacy_shows": [
+     "Alert"
+    ],
+    "max_band_gap": 2,
+    "mechanism_at_end": {
+     "F": 0.4345,
+     "collapse_burden": 0.0,
+     "common_sbp": 65,
+     "legacy_sbp": 80,
+     "relative_delivery": 0.6313
+    },
+    "mechanism_at_start": {
+     "F": 0.2513,
+     "collapse_burden": 0.0,
+     "common_sbp": 67,
+     "legacy_sbp": 83,
+     "relative_delivery": 0.68
+    },
+    "minutes": [
+     109,
+     168
+    ],
+    "scenario": "severe_deterioration",
+    "snapshot_would_show": [
+     "Drowsy",
+     "Obtunded"
+    ]
+   },
+   {
+    "actions_before": "none: untreated so far",
+    "case": "gi_bleed_57m",
+    "coherence": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+    "compared_minutes": 46,
+    "direction": "LEGACY_MORE_IMPAIRED",
+    "faculty_answers": {
+     "Does the category communicate the physiologic severity appropriately?": null,
+     "Is impairment too early or too late?": null,
+     "Is recovery too early or too late?": null,
+     "Would this state be defensible to show a resident?": null
+    },
+    "legacy_shows": [
+     "Drowsy"
+    ],
+    "max_band_gap": 1,
+    "mechanism_at_end": {
+     "F": 0.2398,
+     "collapse_burden": 0.0,
+     "common_sbp": 61,
+     "legacy_sbp": 73,
+     "relative_delivery": 0.6829
+    },
+    "mechanism_at_start": {
+     "F": 0.0,
+     "collapse_burden": 0.0,
+     "common_sbp": 72,
+     "legacy_sbp": 79,
+     "relative_delivery": 0.8131
+    },
+    "minutes": [
+     63,
+     108
+    ],
+    "scenario": "delayed_treatment",
+    "snapshot_would_show": [
+     "Alert"
+    ]
+   },
+   {
+    "actions_before": "none: untreated so far",
+    "case": "gi_bleed_57m",
+    "coherence": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+    "compared_minutes": 17,
+    "direction": "COMMON_MORE_IMPAIRED",
+    "faculty_answers": {
+     "Does the category communicate the physiologic severity appropriately?": null,
+     "Is impairment too early or too late?": null,
+     "Is recovery too early or too late?": null,
+     "Would this state be defensible to show a resident?": null
+    },
+    "legacy_shows": [
+     "Drowsy"
+    ],
+    "max_band_gap": 2,
+    "mechanism_at_end": {
+     "F": 0.987,
+     "collapse_burden": 0.1712,
+     "common_sbp": 45,
+     "legacy_sbp": 65,
+     "relative_delivery": 0.4955
+    },
+    "mechanism_at_start": {
+     "F": 0.8089,
+     "collapse_burden": 0.0,
+     "common_sbp": 49,
+     "legacy_sbp": 67,
+     "relative_delivery": 0.5407
+    },
+    "minutes": [
+     158,
+     174
+    ],
+    "scenario": "untreated",
+    "snapshot_would_show": [
+     "Unresponsive"
+    ]
+   },
+   {
+    "actions_before": "first order at minute 10 (fluid_focused)",
+    "case": "gi_bleed_57m",
+    "coherence": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+    "compared_minutes": 12,
+    "direction": "LEGACY_MORE_IMPAIRED",
+    "faculty_answers": {
+     "Does the category communicate the physiologic severity appropriately?": null,
+     "Is impairment too early or too late?": null,
+     "Is recovery too early or too late?": null,
+     "Would this state be defensible to show a resident?": null
+    },
+    "legacy_shows": [
+     "Drowsy"
+    ],
+    "max_band_gap": 1,
+    "mechanism_at_end": {
+     "F": 0.0,
+     "collapse_burden": 0.0,
+     "common_sbp": 71,
+     "legacy_sbp": 78,
+     "relative_delivery": 0.7795
+    },
+    "mechanism_at_start": {
+     "F": 0.0,
+     "collapse_burden": 0.0,
+     "common_sbp": 74,
+     "legacy_sbp": 79,
+     "relative_delivery": 0.8111
+    },
+    "minutes": [
+     109,
+     120
+    ],
+    "scenario": "fluid_focused",
+    "snapshot_would_show": [
+     "Alert"
+    ]
+   },
+   {
+    "actions_before": "none: untreated so far",
+    "case": "gi_bleed_72f",
+    "coherence": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+    "compared_minutes": 12,
+    "direction": "COMMON_MORE_IMPAIRED",
+    "faculty_answers": {
+     "Does the category communicate the physiologic severity appropriately?": null,
+     "Is impairment too early or too late?": null,
+     "Is recovery too early or too late?": null,
+     "Would this state be defensible to show a resident?": null
+    },
+    "legacy_shows": [
+     "Alert"
+    ],
+    "max_band_gap": 1,
+    "mechanism_at_end": {
+     "F": 0.3772,
+     "collapse_burden": 0.0,
+     "common_sbp": 64,
+     "legacy_sbp": 82,
+     "relative_delivery": 0.6485
+    },
+    "mechanism_at_start": {
+     "F": 0.2513,
+     "collapse_burden": 0.0,
+     "common_sbp": 67,
+     "legacy_sbp": 83,
+     "relative_delivery": 0.68
+    },
+    "minutes": [
+     109,
+     120
+    ],
+    "scenario": "delayed_treatment",
+    "snapshot_would_show": [
+     "Drowsy"
+    ]
+   },
+   {
+    "actions_before": "first order at minute 131 (severe_deterioration)",
+    "case": "gi_bleed_57m",
+    "coherence": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+    "compared_minutes": 5,
+    "direction": "COMMON_MORE_IMPAIRED",
+    "faculty_answers": {
+     "Does the category communicate the physiologic severity appropriately?": null,
+     "Is impairment too early or too late?": null,
+     "Is recovery too early or too late?": null,
+     "Would this state be defensible to show a resident?": null
+    },
+    "legacy_shows": [
+     "Drowsy"
+    ],
+    "max_band_gap": 2,
+    "mechanism_at_end": {
+     "F": 0.8629,
+     "collapse_burden": 0.0,
+     "common_sbp": 49,
+     "legacy_sbp": 65,
+     "relative_delivery": 0.5262
+    },
+    "mechanism_at_start": {
+     "F": 0.8108,
+     "collapse_burden": 0.0,
+     "common_sbp": 50,
+     "legacy_sbp": 65,
+     "relative_delivery": 0.5391
+    },
+    "minutes": [
+     194,
+     198
+    ],
+    "scenario": "severe_deterioration",
+    "snapshot_would_show": [
+     "Unresponsive"
+    ]
+   },
+   {
+    "actions_before": "first order at minute 158 (recovery_after_severe)",
+    "case": "gi_bleed_57m",
+    "coherence": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+    "compared_minutes": 1,
+    "direction": "TRANSIENT",
+    "faculty_answers": {
+     "Does the category communicate the physiologic severity appropriately?": null,
+     "Is impairment too early or too late?": null,
+     "Is recovery too early or too late?": null,
+     "Would this state be defensible to show a resident?": null
+    },
+    "legacy_shows": [
+     "Drowsy"
+    ],
+    "max_band_gap": 2,
+    "mechanism_at_end": {
+     "F": 0.8089,
+     "collapse_burden": 0.0,
+     "common_sbp": 49,
+     "legacy_sbp": 67,
+     "relative_delivery": 0.5407
+    },
+    "mechanism_at_start": {
+     "F": 0.8089,
+     "collapse_burden": 0.0,
+     "common_sbp": 49,
+     "legacy_sbp": 67,
+     "relative_delivery": 0.5407
+    },
+    "minutes": [
+     158,
+     158
+    ],
+    "scenario": "recovery_after_severe",
+    "snapshot_would_show": [
+     "Unresponsive"
+    ]
+   }
+  ],
+  "opposite_direction": {
+   "cases": {
+    "gi_bleed_57m": {
+     "F_at_that_minute": 0.251297,
+     "common_first_somnolent_minute": 109,
+     "direction_at_onset": "LEGACY_MORE_IMPAIRED",
+     "legacy_arrival_sbp": 88,
+     "legacy_first_drowsy_minute": 63,
+     "legacy_sbp_at_that_minute": 79,
+     "legacy_sbp_one_minute_before": 80,
+     "relative_delivery_at_that_minute": 0.679989
+    },
+    "gi_bleed_72f": {
+     "F_at_that_minute": 0.251297,
+     "common_first_somnolent_minute": 109,
+     "direction_at_onset": "COMMON_MORE_IMPAIRED",
+     "legacy_arrival_sbp": 98,
+     "legacy_first_drowsy_minute": 138,
+     "legacy_sbp_at_that_minute": 79,
+     "legacy_sbp_one_minute_before": 80,
+     "relative_delivery_at_that_minute": 0.679989
+    }
+   },
+   "explained_by": "ABSOLUTE_PAS_LEGACY_THRESHOLD_VERSUS_RELATIVE_TO_ARRIVAL_SEMANTICS",
+   "legacy_threshold_sbp_drowsy": 80.0
+  },
+  "physiology_modified": false,
+  "source": "the POTENTIAL_EDUCATIONAL_PROBLEM minutes of docs/revision/PHASE3_GI_AUTHORITY_COUNTERFACTUAL.json (14 required runs)"
+ },
+ "pair_design": {
+  "atomicity": [
+   "the pair is validated as ONE transaction: every check in CHECKS must pass or nothing would be written",
+   "the four fields would be written from ONE prepared mapping (the existing commit rule), so pressure-common with consciousness-legacy cannot exist after a commit",
+   "the two halves must be the same physical course: every reading that does not depend on the ten magnitudes is equal in the pressure run and in the bound run, minute by minute",
+   "after the first refusal the experiment is halted for the encounter: no later minute is evaluated as a commit"
+  ],
+  "can_the_architecture_guarantee_it": "YES in the dry transaction (verified on every would-commit minute of the series). NOT YET in the layer: AUTHORITY_DOMAIN, the ownership contract and AuthorityTransaction.commit accept numeric pressure fields only.",
+  "consciousness_domain": {
+   "approval_today": "none: the snapshot is ratified for development experiments, not approved for authority",
+   "mapping": {
+    "0": "Alert",
+    "1": "Drowsy",
+    "2": "Obtunded",
+    "3": "Unresponsive"
+   },
+   "open_point": "the legacy engine writes 'Unresponsive' only at an arrest; the snapshot reads it WITH a pulse from minute 158 untreated. Whether that word may carry both meanings is a faculty decision.",
+   "source": "PHASE2_AMENDMENT_2 composite (F, established collapse) under GI_DEVELOPMENT_SNAPSHOT_V1, read from the SAME run as the pressures",
+   "value": "the legacy word of the common observable category",
+   "written": [
+    "mental_status"
+   ]
+  },
+  "never_written": [
+   "hr",
+   "spo2",
+   "respiratory_rate",
+   "crt",
+   "rhythm",
+   "pulse_present",
+   "lactate",
+   "hemoglobin"
+  ],
+  "not_authoritative": {
+   "collapse_state": "recorded and compared, never written, never shown",
+   "terminal_state": "no terminal rule exists and none is invented"
+  },
+  "pressure_domain": {
+   "approval_today": "gi_pressure_committed (development experiment only)",
+   "derived_by_the_display": [
+    "map"
+   ],
+   "source": "the pressure point of the bound run, shaped like the legacy display",
+   "written": [
+    "sbp",
+    "dbp"
+   ]
+  }
+ },
+ "pressure_recertification": {
+  "closure_fingerprint": {
+   "gi_bleed_57m/A_correct_management": {
+    "committed": 3,
+    "halted": false,
+    "minutes": [
+     [
+      15,
+      "COMMITTED",
+      "c799124c6aefe55d070aeefbf080d246449f01fbdfc68fb0ea85a60d5cb8a925",
+      "597550b20dcfa20b3279dacf9acf8e430400cfebe688e365d8df19178ba65c31",
+      "c799124c6aefe55d070aeefbf080d246449f01fbdfc68fb0ea85a60d5cb8a925",
+      "d9261c04c26ad6a1e940bf7de56d54a4fc7317269c461467e8ae608513f62c21",
+      {
+       "dbp": 66.0,
+       "map": 80.0,
+       "sbp": 107.0
+      }
+     ],
+     [
+      45,
+      "COMMITTED",
+      "2d262d52b60586fe6561541afb7f5e99922d4899ebe591234f2ed41c4910fae1",
+      "da0e1c70e601faa1f3b22d4bb00d61b174107ec9c67ea8c5fcb90e1eeabf5e9f",
+      "2d262d52b60586fe6561541afb7f5e99922d4899ebe591234f2ed41c4910fae1",
+      "c2a61686f4086a0a02a1cfcd01fb7e4f921a6878730944272873500287f52e90",
+      {
+       "dbp": 76.0,
+       "map": 92.0,
+       "sbp": 124.0
+      }
+     ],
+     [
+      60,
+      "COMMITTED",
+      "1ac66c879b393e1327e72baa1bb192865b4b8676ffb09c80557ea414c9a5477f",
+      "a79a12376f7995d71db27b721f0987e1f44b73b76552833274e4723ae376c4a3",
+      "1ac66c879b393e1327e72baa1bb192865b4b8676ffb09c80557ea414c9a5477f",
+      "901b069cb37fe1d9681596cbdfdcdd735cfcd6d30d03b3c7396439e66986e8af",
+      {
+       "dbp": 80.0,
+       "map": 97.0,
+       "sbp": 130.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_57m/B_delayed_management": {
+    "committed": 3,
+    "halted": false,
+    "minutes": [
+     [
+      30,
+      "COMMITTED",
+      "f6bb3eb9e6be163af6738b8462e63a47ee9b48efbc7394776da333720d33c715",
+      "0199e87e3f686c643a59f450c31b2a32ecaa0f58b8d46b14e22b9a0ee2e3da0b",
+      "f6bb3eb9e6be163af6738b8462e63a47ee9b48efbc7394776da333720d33c715",
+      "1938f45fce6b4c141bffb59727e59385bdfc627410149d735579fbfd606e1c7f",
+      {
+       "dbp": 49.0,
+       "map": 59.0,
+       "sbp": 80.0
+      }
+     ],
+     [
+      45,
+      "COMMITTED",
+      "8340f432afc765ff6892b2996f3eedb387ef704faf4aa407052131f7a5eaea87",
+      "cf859724d2584a0fe11ff08a6cb01d8191c384701930e87c1dd9f096edb30fab",
+      "8340f432afc765ff6892b2996f3eedb387ef704faf4aa407052131f7a5eaea87",
+      "96f72fe3600ea2268efd658887f1f02d078d9a5ce26b6a145597af21651c3efc",
+      {
+       "dbp": 62.0,
+       "map": 75.0,
+       "sbp": 101.0
+      }
+     ],
+     [
+      60,
+      "COMMITTED",
+      "704818000002ad4afadbf257c92a78a40f7cad5b7fb809f09fea08ff34505d38",
+      "019f87e6213b6d31c92331ed93eb2ab6a5c4bff40dad1afc46c403195ef0fa64",
+      "704818000002ad4afadbf257c92a78a40f7cad5b7fb809f09fea08ff34505d38",
+      "36d427de047d689826714b1eee9e2e1bbd733d958c8a9719316503256c34f5e1",
+      {
+       "dbp": 68.0,
+       "map": 83.0,
+       "sbp": 112.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_57m/C_omission": {
+    "committed": 2,
+    "halted": false,
+    "minutes": [
+     [
+      30,
+      "COMMITTED",
+      "f6bb3eb9e6be163af6738b8462e63a47ee9b48efbc7394776da333720d33c715",
+      "0199e87e3f686c643a59f450c31b2a32ecaa0f58b8d46b14e22b9a0ee2e3da0b",
+      "f6bb3eb9e6be163af6738b8462e63a47ee9b48efbc7394776da333720d33c715",
+      "1938f45fce6b4c141bffb59727e59385bdfc627410149d735579fbfd606e1c7f",
+      {
+       "dbp": 49.0,
+       "map": 59.0,
+       "sbp": 80.0
+      }
+     ],
+     [
+      60,
+      "COMMITTED",
+      "a43aaeb67c1fd77ecd032abb0c86475c025dc270a22318cc7221287065909e34",
+      "c18743060e3556c5a1278e6ab14593d0eb9f300e947010a7be9436f38956d2d2",
+      "a43aaeb67c1fd77ecd032abb0c86475c025dc270a22318cc7221287065909e34",
+      "08a4ceab98f486bcde103f123a313109af15855c713edcacde6f0f603d801700",
+      {
+       "dbp": 45.0,
+       "map": 54.0,
+       "sbp": 73.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_57m/D_incorrect_treatment": {
+    "committed": 0,
+    "halted": true,
+    "minutes": [
+     [
+      15,
+      "ABORTED",
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     [
+      45,
+      "ABORTED",
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     [
+      60,
+      "ABORTED",
+      null,
+      null,
+      null,
+      null,
+      null
+     ]
+    ]
+   },
+   "gi_bleed_57m/E_excessive_treatment": {
+    "committed": 3,
+    "halted": false,
+    "minutes": [
+     [
+      10,
+      "COMMITTED",
+      "189166f26d9f6c84dc6feea485f6cdee1b9d5dd6c6e57b2d382b9ee512614d05",
+      "0947bcc36855668f698df8a772ba57601a8a7a10e9e8251508997cbbc989cac1",
+      "189166f26d9f6c84dc6feea485f6cdee1b9d5dd6c6e57b2d382b9ee512614d05",
+      "226d9104763595e8180bec159b402e7f83f028c0efcea087f970cb18180011df",
+      {
+       "dbp": 56.0,
+       "map": 68.0,
+       "sbp": 91.0
+      }
+     ],
+     [
+      20,
+      "COMMITTED",
+      "9e1c4e42b274d65abbbd90ffc99e50fd5129199ae9683965e68ab356ca4c13bd",
+      "7752c2188446d7b2c00326748dfd64e050594bd56724c44ea0083b6285bdc4d6",
+      "9e1c4e42b274d65abbbd90ffc99e50fd5129199ae9683965e68ab356ca4c13bd",
+      "0fcccade8ca690a2cb6d73aad1d345b20593e86f57edd9e0f742fbce7d7bc7af",
+      {
+       "dbp": 57.0,
+       "map": 69.0,
+       "sbp": 94.0
+      }
+     ],
+     [
+      30,
+      "COMMITTED",
+      "001a3b60c7b52ab3a1ce60ca4a53c18669e65c4cb755349c1bdfdc72c518f194",
+      "642695520af38655071a63bd7f693550d35e5b0f7bb2df78238becef1c79b994",
+      "001a3b60c7b52ab3a1ce60ca4a53c18669e65c4cb755349c1bdfdc72c518f194",
+      "853934383d7287bebae5d8b807fd18700f1d91004895d5af9e3576046b22c0d4",
+      {
+       "dbp": 58.0,
+       "map": 70.0,
+       "sbp": 95.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_57m/F_start_stop": {
+    "committed": 0,
+    "halted": true,
+    "minutes": [
+     [
+      10,
+      "ABORTED",
+      null,
+      null,
+      null,
+      null,
+      null
+     ]
+    ]
+   },
+   "gi_bleed_57m/G_duplicate_treatment": {
+    "committed": 2,
+    "halted": false,
+    "minutes": [
+     [
+      5,
+      "COMMITTED",
+      "8bae67339a8a676277f60712ce32004e545413cb905f27932c8a491bec502a00",
+      "1d4e449d82f685e46f62fa1beafb7c220861dde00c2b223f4a1764038abf0266",
+      "8bae67339a8a676277f60712ce32004e545413cb905f27932c8a491bec502a00",
+      "d659affe844ffb814e3c9e9df64642326fffd9a15d9674705af0c66c94fee52e",
+      {
+       "dbp": 53.0,
+       "map": 64.0,
+       "sbp": 87.0
+      }
+     ],
+     [
+      10,
+      "COMMITTED",
+      "b0e0dfc6432d0ef38dab829be6fdce9547ff51b4c07b34485751bc8ee9eb11b2",
+      "3037db60c3cfeb104ac20548804e0bebece0af47e6a8681e4c8564bfeefd6b95",
+      "b0e0dfc6432d0ef38dab829be6fdce9547ff51b4c07b34485751bc8ee9eb11b2",
+      "8cc27730bc4505c4ed5bde1dd4ebafc8a0142d6a3bbb676198690b1001b846c2",
+      {
+       "dbp": 53.0,
+       "map": 64.0,
+       "sbp": 86.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_57m/H_unexpected_reasonable": {
+    "committed": 1,
+    "halted": true,
+    "minutes": [
+     [
+      15,
+      "COMMITTED",
+      "c799124c6aefe55d070aeefbf080d246449f01fbdfc68fb0ea85a60d5cb8a925",
+      "597550b20dcfa20b3279dacf9acf8e430400cfebe688e365d8df19178ba65c31",
+      "c799124c6aefe55d070aeefbf080d246449f01fbdfc68fb0ea85a60d5cb8a925",
+      "d9261c04c26ad6a1e940bf7de56d54a4fc7317269c461467e8ae608513f62c21",
+      {
+       "dbp": 66.0,
+       "map": 80.0,
+       "sbp": 107.0
+      }
+     ],
+     [
+      15,
+      "ABORTED",
+      null,
+      null,
+      null,
+      null,
+      null
+     ]
+    ]
+   },
+   "gi_bleed_57m/H_unexpected_reasonable_control": {
+    "committed": 1,
+    "halted": false,
+    "minutes": [
+     [
+      15,
+      "COMMITTED",
+      "c799124c6aefe55d070aeefbf080d246449f01fbdfc68fb0ea85a60d5cb8a925",
+      "597550b20dcfa20b3279dacf9acf8e430400cfebe688e365d8df19178ba65c31",
+      "c799124c6aefe55d070aeefbf080d246449f01fbdfc68fb0ea85a60d5cb8a925",
+      "d9261c04c26ad6a1e940bf7de56d54a4fc7317269c461467e8ae608513f62c21",
+      {
+       "dbp": 66.0,
+       "map": 80.0,
+       "sbp": 107.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_57m/I_waiting": {
+    "committed": 1,
+    "halted": false,
+    "minutes": [
+     [
+      20,
+      "COMMITTED",
+      "e404c6d3ffc5739fdb891bc0b0258b8594665a2581153c6b0731ca161af785f8",
+      "e5dc3ead6e6f32515a67b77147d94aab098935e9aec3c3b51319831f4c9c1d7a",
+      "e404c6d3ffc5739fdb891bc0b0258b8594665a2581153c6b0731ca161af785f8",
+      "dcbdea59046d12c106047101d94cc8efb1f9be1de554a4113b7a466042277b00",
+      {
+       "dbp": 51.0,
+       "map": 62.0,
+       "sbp": 83.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_57m/J_reassessment": {
+    "committed": 1,
+    "halted": false,
+    "minutes": [
+     [
+      15,
+      "COMMITTED",
+      "d99d90670d78d1305911eee65ed687989413a4b6cc8de0b0d92c6ee781678009",
+      "e47a035a992b440d8d5a8b900ebbc6e689ac6d389d6eb673b28ba0ad1ba6c2d7",
+      "d99d90670d78d1305911eee65ed687989413a4b6cc8de0b0d92c6ee781678009",
+      "34c8b7957ccf57932cdbc5b6860c5d5200f9aff100a5ac316bf96cf10f9a44e0",
+      {
+       "dbp": 52.0,
+       "map": 63.0,
+       "sbp": 84.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_57m/J_reassessment_look": {
+    "committed": 1,
+    "halted": false,
+    "minutes": [
+     [
+      2,
+      "COMMITTED",
+      "88030b1a2eb034e27b708f5f97e2b55440de97f1921ebcae02f0856f1a88bf06",
+      "371145766017e01a4b3569c65b5ca8b476ce66fa553fbd351d361dc507894e30",
+      "88030b1a2eb034e27b708f5f97e2b55440de97f1921ebcae02f0856f1a88bf06",
+      "20a746eb696d7407d84ebbdb14d5abf8c6ef57d40c99e40a969a03074e917ee1",
+      {
+       "dbp": 54.0,
+       "map": 65.0,
+       "sbp": 87.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_57m/K_combined_interventions": {
+    "committed": 0,
+    "halted": true,
+    "minutes": [
+     [
+      15,
+      "ABORTED",
+      null,
+      null,
+      null,
+      null,
+      null
+     ]
+    ]
+   },
+   "gi_bleed_57m/deterministic_replay": {
+    "committed": 3,
+    "halted": false,
+    "minutes": [
+     [
+      15,
+      "COMMITTED",
+      "c799124c6aefe55d070aeefbf080d246449f01fbdfc68fb0ea85a60d5cb8a925",
+      "597550b20dcfa20b3279dacf9acf8e430400cfebe688e365d8df19178ba65c31",
+      "c799124c6aefe55d070aeefbf080d246449f01fbdfc68fb0ea85a60d5cb8a925",
+      "d9261c04c26ad6a1e940bf7de56d54a4fc7317269c461467e8ae608513f62c21",
+      {
+       "dbp": 66.0,
+       "map": 80.0,
+       "sbp": 107.0
+      }
+     ],
+     [
+      45,
+      "COMMITTED",
+      "2d262d52b60586fe6561541afb7f5e99922d4899ebe591234f2ed41c4910fae1",
+      "da0e1c70e601faa1f3b22d4bb00d61b174107ec9c67ea8c5fcb90e1eeabf5e9f",
+      "2d262d52b60586fe6561541afb7f5e99922d4899ebe591234f2ed41c4910fae1",
+      "c2a61686f4086a0a02a1cfcd01fb7e4f921a6878730944272873500287f52e90",
+      {
+       "dbp": 76.0,
+       "map": 92.0,
+       "sbp": 124.0
+      }
+     ],
+     [
+      60,
+      "COMMITTED",
+      "1ac66c879b393e1327e72baa1bb192865b4b8676ffb09c80557ea414c9a5477f",
+      "a79a12376f7995d71db27b721f0987e1f44b73b76552833274e4723ae376c4a3",
+      "1ac66c879b393e1327e72baa1bb192865b4b8676ffb09c80557ea414c9a5477f",
+      "901b069cb37fe1d9681596cbdfdcdd735cfcd6d30d03b3c7396439e66986e8af",
+      {
+       "dbp": 80.0,
+       "map": 97.0,
+       "sbp": 130.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_57m/recovery": {
+    "committed": 3,
+    "halted": false,
+    "minutes": [
+     [
+      15,
+      "COMMITTED",
+      "c799124c6aefe55d070aeefbf080d246449f01fbdfc68fb0ea85a60d5cb8a925",
+      "597550b20dcfa20b3279dacf9acf8e430400cfebe688e365d8df19178ba65c31",
+      "c799124c6aefe55d070aeefbf080d246449f01fbdfc68fb0ea85a60d5cb8a925",
+      "d9261c04c26ad6a1e940bf7de56d54a4fc7317269c461467e8ae608513f62c21",
+      {
+       "dbp": 66.0,
+       "map": 80.0,
+       "sbp": 107.0
+      }
+     ],
+     [
+      45,
+      "COMMITTED",
+      "2d262d52b60586fe6561541afb7f5e99922d4899ebe591234f2ed41c4910fae1",
+      "da0e1c70e601faa1f3b22d4bb00d61b174107ec9c67ea8c5fcb90e1eeabf5e9f",
+      "2d262d52b60586fe6561541afb7f5e99922d4899ebe591234f2ed41c4910fae1",
+      "c2a61686f4086a0a02a1cfcd01fb7e4f921a6878730944272873500287f52e90",
+      {
+       "dbp": 76.0,
+       "map": 92.0,
+       "sbp": 124.0
+      }
+     ],
+     [
+      60,
+      "COMMITTED",
+      "1ac66c879b393e1327e72baa1bb192865b4b8676ffb09c80557ea414c9a5477f",
+      "a79a12376f7995d71db27b721f0987e1f44b73b76552833274e4723ae376c4a3",
+      "1ac66c879b393e1327e72baa1bb192865b4b8676ffb09c80557ea414c9a5477f",
+      "901b069cb37fe1d9681596cbdfdcdd735cfcd6d30d03b3c7396439e66986e8af",
+      {
+       "dbp": 80.0,
+       "map": 97.0,
+       "sbp": 130.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_57m/reload_resume": {
+    "committed": 1,
+    "halted": false,
+    "minutes": [
+     [
+      15,
+      "COMMITTED",
+      "c799124c6aefe55d070aeefbf080d246449f01fbdfc68fb0ea85a60d5cb8a925",
+      "597550b20dcfa20b3279dacf9acf8e430400cfebe688e365d8df19178ba65c31",
+      "c799124c6aefe55d070aeefbf080d246449f01fbdfc68fb0ea85a60d5cb8a925",
+      "d9261c04c26ad6a1e940bf7de56d54a4fc7317269c461467e8ae608513f62c21",
+      {
+       "dbp": 66.0,
+       "map": 80.0,
+       "sbp": 107.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_57m/terminal_deterioration": {
+    "committed": 8,
+    "halted": false,
+    "minutes": [
+     [
+      30,
+      "COMMITTED",
+      "f6bb3eb9e6be163af6738b8462e63a47ee9b48efbc7394776da333720d33c715",
+      "0199e87e3f686c643a59f450c31b2a32ecaa0f58b8d46b14e22b9a0ee2e3da0b",
+      "f6bb3eb9e6be163af6738b8462e63a47ee9b48efbc7394776da333720d33c715",
+      "1938f45fce6b4c141bffb59727e59385bdfc627410149d735579fbfd606e1c7f",
+      {
+       "dbp": 49.0,
+       "map": 59.0,
+       "sbp": 80.0
+      }
+     ],
+     [
+      60,
+      "COMMITTED",
+      "a43aaeb67c1fd77ecd032abb0c86475c025dc270a22318cc7221287065909e34",
+      "c18743060e3556c5a1278e6ab14593d0eb9f300e947010a7be9436f38956d2d2",
+      "a43aaeb67c1fd77ecd032abb0c86475c025dc270a22318cc7221287065909e34",
+      "08a4ceab98f486bcde103f123a313109af15855c713edcacde6f0f603d801700",
+      {
+       "dbp": 45.0,
+       "map": 54.0,
+       "sbp": 73.0
+      }
+     ],
+     [
+      90,
+      "COMMITTED",
+      "38b422bf470d16b9476edb5e6fb73af9a7185071e9e12d5ba2bfef6b51e95eb6",
+      "cbf0142698fa3520dd7d5005ce961ce867033c9568f23d28f6d0cd4eee36d8e9",
+      "38b422bf470d16b9476edb5e6fb73af9a7185071e9e12d5ba2bfef6b51e95eb6",
+      "c153ff094f0409f37783bf519abebe86810b52de70722cc874a0b9d49f4647b4",
+      {
+       "dbp": 40.0,
+       "map": 48.0,
+       "sbp": 65.0
+      }
+     ],
+     [
+      120,
+      "COMMITTED",
+      "4a25fda3e610a84d20e216f1ca7cdd88dc7503b0f287d0ec6dd56d8b4a0dd8ce",
+      "224bd6b61988b369709acd79fabd244920cd65096247f52a4b5ea93d49df49ea",
+      "4a25fda3e610a84d20e216f1ca7cdd88dc7503b0f287d0ec6dd56d8b4a0dd8ce",
+      "d25174113ca0e129e809440bdf91911c4f6743a66830041e6123252da71c2070",
+      {
+       "dbp": 36.0,
+       "map": 43.0,
+       "sbp": 58.0
+      }
+     ],
+     [
+      150,
+      "COMMITTED",
+      "efa47a4391ea3af69d75ab2cb19feda39fed248be8cf61583fb563b77532c56f",
+      "7cdbe467539baae40bfd69e25e582493dd8ecff318cca42c8844015e380521f1",
+      "efa47a4391ea3af69d75ab2cb19feda39fed248be8cf61583fb563b77532c56f",
+      "36bcab6ae4a64161ff065eeacc7b05fefdde6c1cf912d0f888027381d6228c3d",
+      {
+       "dbp": 31.0,
+       "map": 38.0,
+       "sbp": 51.0
+      }
+     ],
+     [
+      180,
+      "COMMITTED",
+      "51d81601ef8497cb255c24e6e7721c22c8c962830303657d7a967a89b5672a7e",
+      "a29d2eb7339c9c81e8abccd324c04fc3a36aa02e04e30e5456c8304a496bf279",
+      "51d81601ef8497cb255c24e6e7721c22c8c962830303657d7a967a89b5672a7e",
+      "f46b03bf314c781eec584b5f24a865c6cf0fee1818b59f844a0c70f540f795af",
+      {
+       "dbp": 27.0,
+       "map": 32.0,
+       "sbp": 43.0
+      }
+     ],
+     [
+      210,
+      "COMMITTED",
+      "a9a7cfef5590eac910f4a79d861f027e800ed7495634c5d5abe51463868e26b3",
+      "3bc6923b6497727e3c351e82f2e04b164653c9912d3a0b49fdd0e6829ed871b8",
+      "a9a7cfef5590eac910f4a79d861f027e800ed7495634c5d5abe51463868e26b3",
+      "f03a56f399d3ad73b73c35501aaee240bc15e44396d77b4e767a5a5d0b345764",
+      {
+       "dbp": 22.0,
+       "map": 27.0,
+       "sbp": 36.0
+      }
+     ],
+     [
+      240,
+      "COMMITTED",
+      "e7bef946c41c93312160626e0652ffc620b869109af6db3d2149d37947dd2996",
+      "f8a294c6e22e1d21dfcc7bada22e7c4ad739bf1985507f398f7a8b21a223fd81",
+      "e7bef946c41c93312160626e0652ffc620b869109af6db3d2149d37947dd2996",
+      "3564e1b4df4ae23d6a15af2a978815cf940b19066fce5da90a26d71206338d85",
+      {
+       "dbp": 18.0,
+       "map": 22.0,
+       "sbp": 29.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_72f/A_correct_management": {
+    "committed": 3,
+    "halted": false,
+    "minutes": [
+     [
+      15,
+      "COMMITTED",
+      "e9dd2b1f66c1edd25b3eb69ddd272f83fafbb5272b4a45ace070a77cc1b79157",
+      "a7262dc3af2e04562e6a5e4eaf13bf947bd3623d4af84d58328681543959ce9a",
+      "e9dd2b1f66c1edd25b3eb69ddd272f83fafbb5272b4a45ace070a77cc1b79157",
+      "d7b2f194bee2725ba1679173b93e930ca721a139b284b3957a4cf23642d7c20a",
+      {
+       "dbp": 75.0,
+       "map": 90.0,
+       "sbp": 119.0
+      }
+     ],
+     [
+      45,
+      "COMMITTED",
+      "09a2473b1ba10b169fecbe5d5ec3b0538680da396ef084fb7b9d9888b91260f8",
+      "c18b6d16056aa88e3cab24cb806d792d2cc6d5a17c250fac8fd6633a5732f64a",
+      "09a2473b1ba10b169fecbe5d5ec3b0538680da396ef084fb7b9d9888b91260f8",
+      "9782ef1ed54cf24c0fc23971c18df17304c6b19408678e619fb255dcdd8b500b",
+      {
+       "dbp": 87.0,
+       "map": 104.0,
+       "sbp": 138.0
+      }
+     ],
+     [
+      60,
+      "COMMITTED",
+      "2a7bad24c1d23408d4b8f2c78217329b8a855cee9a04267c1a0806e4c3caac2c",
+      "aeb1788d7ea34287e7f47c226ebf85215b753093bb3a12a799b69c94f2be8d14",
+      "2a7bad24c1d23408d4b8f2c78217329b8a855cee9a04267c1a0806e4c3caac2c",
+      "bec86798b776e81c24a20fb2393ecaff7e8e8d2b0c2097a2174a05e580558216",
+      {
+       "dbp": 92.0,
+       "map": 110.0,
+       "sbp": 145.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_72f/B_delayed_management": {
+    "committed": 3,
+    "halted": false,
+    "minutes": [
+     [
+      30,
+      "COMMITTED",
+      "ffb3d3705e61c23e53f1b5f14bda075d76419ed640a32432f212f901658bba7d",
+      "6f0ee1ce8ce6a5baa97050aa15820cdf678dc4ff5c4b96bb6e764d2976424414",
+      "ffb3d3705e61c23e53f1b5f14bda075d76419ed640a32432f212f901658bba7d",
+      "983da8a12fde960edb646f6dda7bb87ea4ce2bb6b511531b9a5e88788d683afe",
+      {
+       "dbp": 57.0,
+       "map": 68.0,
+       "sbp": 89.0
+      }
+     ],
+     [
+      45,
+      "COMMITTED",
+      "d82004a075f83379331b8dd34875b789223bb81d795be7d7a1cb8bc602a63bde",
+      "cecef06d715de185e8ae961f77bd3c1f8e31f669c2da0b25405dd1907276f834",
+      "d82004a075f83379331b8dd34875b789223bb81d795be7d7a1cb8bc602a63bde",
+      "eb8b3fa2f66afeac205f0ecd47b840ad4180bcfc35cec35dddd0b0ff8a61f8be",
+      {
+       "dbp": 71.0,
+       "map": 85.0,
+       "sbp": 112.0
+      }
+     ],
+     [
+      60,
+      "COMMITTED",
+      "2539f0065c752b6dc00dbd4d06d1ea62446e5ffb57d7a860798b2d716fa3f6a3",
+      "936353bc424c3303dc4d9ef576bb79d759ffce8d90138d8dcd9133812b9d726a",
+      "2539f0065c752b6dc00dbd4d06d1ea62446e5ffb57d7a860798b2d716fa3f6a3",
+      "84cabbb8d1169858ece194384d5aa4f778fcdda66e669dd4a48768da7c58cfb8",
+      {
+       "dbp": 79.0,
+       "map": 94.0,
+       "sbp": 124.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_72f/C_omission": {
+    "committed": 2,
+    "halted": false,
+    "minutes": [
+     [
+      30,
+      "COMMITTED",
+      "ffb3d3705e61c23e53f1b5f14bda075d76419ed640a32432f212f901658bba7d",
+      "6f0ee1ce8ce6a5baa97050aa15820cdf678dc4ff5c4b96bb6e764d2976424414",
+      "ffb3d3705e61c23e53f1b5f14bda075d76419ed640a32432f212f901658bba7d",
+      "983da8a12fde960edb646f6dda7bb87ea4ce2bb6b511531b9a5e88788d683afe",
+      {
+       "dbp": 57.0,
+       "map": 68.0,
+       "sbp": 89.0
+      }
+     ],
+     [
+      60,
+      "COMMITTED",
+      "983201ee5ccccb27d0aadf0926eabc560be82695ada95d762a80072f6805a216",
+      "4319f65f7491cf374278eb202dc5a9b769d30024c7dbc8aa3f26b395074caba7",
+      "983201ee5ccccb27d0aadf0926eabc560be82695ada95d762a80072f6805a216",
+      "d3ef56e447084b09556e81f84fc635b613388afdea41817f81c79a6540b09cee",
+      {
+       "dbp": 51.0,
+       "map": 61.0,
+       "sbp": 81.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_72f/D_incorrect_treatment": {
+    "committed": 0,
+    "halted": true,
+    "minutes": [
+     [
+      15,
+      "ABORTED",
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     [
+      45,
+      "ABORTED",
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     [
+      60,
+      "ABORTED",
+      null,
+      null,
+      null,
+      null,
+      null
+     ]
+    ]
+   },
+   "gi_bleed_72f/E_excessive_treatment": {
+    "committed": 3,
+    "halted": false,
+    "minutes": [
+     [
+      10,
+      "COMMITTED",
+      "d84ee08cc5d70e3f8be417e87031b0c54038af48015fca98cecbf33b57a189fc",
+      "66030b88857ff6b50d4b1b0140c18d1502d0af5023e8c47fa9fb595f2b06d831",
+      "d84ee08cc5d70e3f8be417e87031b0c54038af48015fca98cecbf33b57a189fc",
+      "b2853db555e941376e5420a44d89e2a0d46fca88ef38ab65dd671b0b321771a8",
+      {
+       "dbp": 64.0,
+       "map": 77.0,
+       "sbp": 102.0
+      }
+     ],
+     [
+      20,
+      "COMMITTED",
+      "4b224571816ea0e964f8fbddb0631a7f28566085c21f27ee55c4adc96438186f",
+      "e4666911e228461eb9abe51fe160fba7fded5527cd57076b915df7af007fefba",
+      "4b224571816ea0e964f8fbddb0631a7f28566085c21f27ee55c4adc96438186f",
+      "e7ade7ba98a000e4d9c742454e3270dbfe59429e095c67eca5942cfb310da1e8",
+      {
+       "dbp": 66.0,
+       "map": 79.0,
+       "sbp": 104.0
+      }
+     ],
+     [
+      30,
+      "COMMITTED",
+      "4b093b2731ab7da22615d9090272255ff6b660ec1b12a01df958805f0d4561f1",
+      "56a22971697f90cf60cda761a95f77e39b951e39f8a13bd241b09192e3a49ffc",
+      "4b093b2731ab7da22615d9090272255ff6b660ec1b12a01df958805f0d4561f1",
+      "18c0c14b473aa3df300c37a1c7c5ddb558fc2ac75d2c873f383a04fcdd51fa26",
+      {
+       "dbp": 67.0,
+       "map": 80.0,
+       "sbp": 106.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_72f/F_start_stop": {
+    "committed": 0,
+    "halted": true,
+    "minutes": [
+     [
+      10,
+      "ABORTED",
+      null,
+      null,
+      null,
+      null,
+      null
+     ]
+    ]
+   },
+   "gi_bleed_72f/G_duplicate_treatment": {
+    "committed": 2,
+    "halted": false,
+    "minutes": [
+     [
+      5,
+      "COMMITTED",
+      "be6b15106d3cb1f58d6bd7005fe1e6ca442f05d7ce18a0726cad0d0bd88a73f6",
+      "e4644bac6e17d3d717df7c87f3126767dc2a06b5e88c15b45450ccb747b69fd7",
+      "be6b15106d3cb1f58d6bd7005fe1e6ca442f05d7ce18a0726cad0d0bd88a73f6",
+      "74d19cc740dca76df9a91575b42efc09a7c49189fc62b71561c0206c95109301",
+      {
+       "dbp": 61.0,
+       "map": 73.0,
+       "sbp": 97.0
+      }
+     ],
+     [
+      10,
+      "COMMITTED",
+      "0498f8fcbe6e65bbe6ce97d81a096b64e95bd2fe19d49566c2c4fd60e0817d46",
+      "6e984d8f745edf9700b6c99004d150c9d612045940f81c3657c37c620d7de8da",
+      "0498f8fcbe6e65bbe6ce97d81a096b64e95bd2fe19d49566c2c4fd60e0817d46",
+      "86f157faa110ad18930895319df3235789db1f8934de5156d55a95fb368730d5",
+      {
+       "dbp": 61.0,
+       "map": 73.0,
+       "sbp": 96.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_72f/H_unexpected_reasonable": {
+    "committed": 1,
+    "halted": true,
+    "minutes": [
+     [
+      15,
+      "COMMITTED",
+      "e9dd2b1f66c1edd25b3eb69ddd272f83fafbb5272b4a45ace070a77cc1b79157",
+      "a7262dc3af2e04562e6a5e4eaf13bf947bd3623d4af84d58328681543959ce9a",
+      "e9dd2b1f66c1edd25b3eb69ddd272f83fafbb5272b4a45ace070a77cc1b79157",
+      "d7b2f194bee2725ba1679173b93e930ca721a139b284b3957a4cf23642d7c20a",
+      {
+       "dbp": 75.0,
+       "map": 90.0,
+       "sbp": 119.0
+      }
+     ],
+     [
+      15,
+      "ABORTED",
+      null,
+      null,
+      null,
+      null,
+      null
+     ]
+    ]
+   },
+   "gi_bleed_72f/H_unexpected_reasonable_control": {
+    "committed": 1,
+    "halted": false,
+    "minutes": [
+     [
+      15,
+      "COMMITTED",
+      "e9dd2b1f66c1edd25b3eb69ddd272f83fafbb5272b4a45ace070a77cc1b79157",
+      "a7262dc3af2e04562e6a5e4eaf13bf947bd3623d4af84d58328681543959ce9a",
+      "e9dd2b1f66c1edd25b3eb69ddd272f83fafbb5272b4a45ace070a77cc1b79157",
+      "d7b2f194bee2725ba1679173b93e930ca721a139b284b3957a4cf23642d7c20a",
+      {
+       "dbp": 75.0,
+       "map": 90.0,
+       "sbp": 119.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_72f/I_waiting": {
+    "committed": 1,
+    "halted": false,
+    "minutes": [
+     [
+      20,
+      "COMMITTED",
+      "bde1fb97eb4d9e143110d6e785c151c3d07a6b05d3398b5b8cf56a53f7a15851",
+      "e363fd305c36a87694c1c56afa6e94c18a4a1f0e0eeb0801269975304be368fc",
+      "bde1fb97eb4d9e143110d6e785c151c3d07a6b05d3398b5b8cf56a53f7a15851",
+      "25475719b97ee375f0400145e807727f186df16ba3632fb4a26b2442ed773031",
+      {
+       "dbp": 58.0,
+       "map": 69.0,
+       "sbp": 92.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_72f/J_reassessment": {
+    "committed": 1,
+    "halted": false,
+    "minutes": [
+     [
+      15,
+      "COMMITTED",
+      "c7554ecc16d06b5fbde4285e8c7a7fa76c69a2941fb6d0a5fe05ea7f1a95a110",
+      "44e91a7d2304720716e96122aca49448eea075f57ff3276be05ca5b6d9bcb001",
+      "c7554ecc16d06b5fbde4285e8c7a7fa76c69a2941fb6d0a5fe05ea7f1a95a110",
+      "ac3e480facd2a5157d80406fb02e1910454984da77bfcb55577d8a5a4ecdf9ae",
+      {
+       "dbp": 59.0,
+       "map": 71.0,
+       "sbp": 94.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_72f/J_reassessment_look": {
+    "committed": 1,
+    "halted": false,
+    "minutes": [
+     [
+      2,
+      "COMMITTED",
+      "6eb8ad2b11168589be185255599278bfdfc2b016b5351d7ec2324e41512ca6f5",
+      "c26936bb785255e7bc68cdb9e2e91bffe50e232ec33d5e474add4d3d1169fb1a",
+      "6eb8ad2b11168589be185255599278bfdfc2b016b5351d7ec2324e41512ca6f5",
+      "a4efabdcbf29ff2b76aeb24316df7a33ba44eeb2286ea5a10e1030db900ac094",
+      {
+       "dbp": 62.0,
+       "map": 74.0,
+       "sbp": 97.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_72f/K_combined_interventions": {
+    "committed": 0,
+    "halted": true,
+    "minutes": [
+     [
+      15,
+      "ABORTED",
+      null,
+      null,
+      null,
+      null,
+      null
+     ]
+    ]
+   },
+   "gi_bleed_72f/deterministic_replay": {
+    "committed": 3,
+    "halted": false,
+    "minutes": [
+     [
+      15,
+      "COMMITTED",
+      "e9dd2b1f66c1edd25b3eb69ddd272f83fafbb5272b4a45ace070a77cc1b79157",
+      "a7262dc3af2e04562e6a5e4eaf13bf947bd3623d4af84d58328681543959ce9a",
+      "e9dd2b1f66c1edd25b3eb69ddd272f83fafbb5272b4a45ace070a77cc1b79157",
+      "d7b2f194bee2725ba1679173b93e930ca721a139b284b3957a4cf23642d7c20a",
+      {
+       "dbp": 75.0,
+       "map": 90.0,
+       "sbp": 119.0
+      }
+     ],
+     [
+      45,
+      "COMMITTED",
+      "09a2473b1ba10b169fecbe5d5ec3b0538680da396ef084fb7b9d9888b91260f8",
+      "c18b6d16056aa88e3cab24cb806d792d2cc6d5a17c250fac8fd6633a5732f64a",
+      "09a2473b1ba10b169fecbe5d5ec3b0538680da396ef084fb7b9d9888b91260f8",
+      "9782ef1ed54cf24c0fc23971c18df17304c6b19408678e619fb255dcdd8b500b",
+      {
+       "dbp": 87.0,
+       "map": 104.0,
+       "sbp": 138.0
+      }
+     ],
+     [
+      60,
+      "COMMITTED",
+      "2a7bad24c1d23408d4b8f2c78217329b8a855cee9a04267c1a0806e4c3caac2c",
+      "aeb1788d7ea34287e7f47c226ebf85215b753093bb3a12a799b69c94f2be8d14",
+      "2a7bad24c1d23408d4b8f2c78217329b8a855cee9a04267c1a0806e4c3caac2c",
+      "bec86798b776e81c24a20fb2393ecaff7e8e8d2b0c2097a2174a05e580558216",
+      {
+       "dbp": 92.0,
+       "map": 110.0,
+       "sbp": 145.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_72f/recovery": {
+    "committed": 3,
+    "halted": false,
+    "minutes": [
+     [
+      15,
+      "COMMITTED",
+      "e9dd2b1f66c1edd25b3eb69ddd272f83fafbb5272b4a45ace070a77cc1b79157",
+      "a7262dc3af2e04562e6a5e4eaf13bf947bd3623d4af84d58328681543959ce9a",
+      "e9dd2b1f66c1edd25b3eb69ddd272f83fafbb5272b4a45ace070a77cc1b79157",
+      "d7b2f194bee2725ba1679173b93e930ca721a139b284b3957a4cf23642d7c20a",
+      {
+       "dbp": 75.0,
+       "map": 90.0,
+       "sbp": 119.0
+      }
+     ],
+     [
+      45,
+      "COMMITTED",
+      "09a2473b1ba10b169fecbe5d5ec3b0538680da396ef084fb7b9d9888b91260f8",
+      "c18b6d16056aa88e3cab24cb806d792d2cc6d5a17c250fac8fd6633a5732f64a",
+      "09a2473b1ba10b169fecbe5d5ec3b0538680da396ef084fb7b9d9888b91260f8",
+      "9782ef1ed54cf24c0fc23971c18df17304c6b19408678e619fb255dcdd8b500b",
+      {
+       "dbp": 87.0,
+       "map": 104.0,
+       "sbp": 138.0
+      }
+     ],
+     [
+      60,
+      "COMMITTED",
+      "2a7bad24c1d23408d4b8f2c78217329b8a855cee9a04267c1a0806e4c3caac2c",
+      "aeb1788d7ea34287e7f47c226ebf85215b753093bb3a12a799b69c94f2be8d14",
+      "2a7bad24c1d23408d4b8f2c78217329b8a855cee9a04267c1a0806e4c3caac2c",
+      "bec86798b776e81c24a20fb2393ecaff7e8e8d2b0c2097a2174a05e580558216",
+      {
+       "dbp": 92.0,
+       "map": 110.0,
+       "sbp": 145.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_72f/reload_resume": {
+    "committed": 1,
+    "halted": false,
+    "minutes": [
+     [
+      15,
+      "COMMITTED",
+      "e9dd2b1f66c1edd25b3eb69ddd272f83fafbb5272b4a45ace070a77cc1b79157",
+      "a7262dc3af2e04562e6a5e4eaf13bf947bd3623d4af84d58328681543959ce9a",
+      "e9dd2b1f66c1edd25b3eb69ddd272f83fafbb5272b4a45ace070a77cc1b79157",
+      "d7b2f194bee2725ba1679173b93e930ca721a139b284b3957a4cf23642d7c20a",
+      {
+       "dbp": 75.0,
+       "map": 90.0,
+       "sbp": 119.0
+      }
+     ]
+    ]
+   },
+   "gi_bleed_72f/terminal_deterioration": {
+    "committed": 8,
+    "halted": false,
+    "minutes": [
+     [
+      30,
+      "COMMITTED",
+      "ffb3d3705e61c23e53f1b5f14bda075d76419ed640a32432f212f901658bba7d",
+      "6f0ee1ce8ce6a5baa97050aa15820cdf678dc4ff5c4b96bb6e764d2976424414",
+      "ffb3d3705e61c23e53f1b5f14bda075d76419ed640a32432f212f901658bba7d",
+      "983da8a12fde960edb646f6dda7bb87ea4ce2bb6b511531b9a5e88788d683afe",
+      {
+       "dbp": 57.0,
+       "map": 68.0,
+       "sbp": 89.0
+      }
+     ],
+     [
+      60,
+      "COMMITTED",
+      "983201ee5ccccb27d0aadf0926eabc560be82695ada95d762a80072f6805a216",
+      "4319f65f7491cf374278eb202dc5a9b769d30024c7dbc8aa3f26b395074caba7",
+      "983201ee5ccccb27d0aadf0926eabc560be82695ada95d762a80072f6805a216",
+      "d3ef56e447084b09556e81f84fc635b613388afdea41817f81c79a6540b09cee",
+      {
+       "dbp": 51.0,
+       "map": 61.0,
+       "sbp": 81.0
+      }
+     ],
+     [
+      90,
+      "COMMITTED",
+      "37dc6aa15b73fb5dc70d0afd5cd5c5118242b7a91b72eb122793fad2beafe572",
+      "fc85778c6877b34253a746d89cc887fdd18f6cdfdd227fa7160fca1d83233984",
+      "37dc6aa15b73fb5dc70d0afd5cd5c5118242b7a91b72eb122793fad2beafe572",
+      "1d7b81958521a9272053c80bbdb02cf1b4a80d14be643428ec4f6364f5d0bd50",
+      {
+       "dbp": 46.0,
+       "map": 55.0,
+       "sbp": 73.0
+      }
+     ],
+     [
+      120,
+      "COMMITTED",
+      "b145daa009a5ff71585c5dd29ac369f9b238d4d8e1e0d418dece79b03af0fd46",
+      "0b9df429783d16da0e2bcc2daffbbc8a19c66bc2f426ed1821b28826e2b805ff",
+      "b145daa009a5ff71585c5dd29ac369f9b238d4d8e1e0d418dece79b03af0fd46",
+      "f8ae1ecce416e6aa8556a68540597a8b95b7846c919f25dcd27dcca8cd38a349",
+      {
+       "dbp": 41.0,
+       "map": 49.0,
+       "sbp": 64.0
+      }
+     ],
+     [
+      150,
+      "COMMITTED",
+      "22882366df0e18aa02b2baf8e63640bc0ae069f27e9836326cc76b4c3349045c",
+      "b7ca637135e7eb9d4175e99c5b1512db3a4dac50aa534206158343173eeeed51",
+      "22882366df0e18aa02b2baf8e63640bc0ae069f27e9836326cc76b4c3349045c",
+      "3e3ce2696bdc6094bdaa3953f36130a4ebeeded024a2193121c3ffa6c6da3646",
+      {
+       "dbp": 36.0,
+       "map": 43.0,
+       "sbp": 56.0
+      }
+     ],
+     [
+      180,
+      "COMMITTED",
+      "d26f5a5d271e3e1226e792fb8f022d8479a914838d60afd5b68682623bf95645",
+      "d96aa0447689c7f868f88048028065a681bdb1ae860a22494e56580096992822",
+      "d26f5a5d271e3e1226e792fb8f022d8479a914838d60afd5b68682623bf95645",
+      "a98ccb86e7aee0111340393c620d6d35fd3c49959a64c7b0021c248877f0cace",
+      {
+       "dbp": 31.0,
+       "map": 37.0,
+       "sbp": 48.0
+      }
+     ],
+     [
+      210,
+      "COMMITTED",
+      "6b418bde4d0fff4a0f9d2ee48adb772bc879d6ce205e0f326074e3010c4fb6fc",
+      "d34109d1e3606d71c9521a339ba46dabd9c1f3d8c17dd7c45ee8b3ceb56ec9da",
+      "6b418bde4d0fff4a0f9d2ee48adb772bc879d6ce205e0f326074e3010c4fb6fc",
+      "9a876be1a76db54a634f612e173bd95dae99ff04a2a899a1726f166a006c861d",
+      {
+       "dbp": 25.0,
+       "map": 30.0,
+       "sbp": 40.0
+      }
+     ],
+     [
+      240,
+      "COMMITTED",
+      "f35deaa64afb4accb95d7577b69ae00b8e9cef73624beb93e20b933deb88b2ed",
+      "680444af728bedfcadf90bf3504620290db9d427e8d6dff69d2ba5359f8934b1",
+      "f35deaa64afb4accb95d7577b69ae00b8e9cef73624beb93e20b933deb88b2ed",
+      "b38fd85fa5874410bb8c656e6815f3f76b80e3b4bf36baa912a5fa589817d3a3",
+      {
+       "dbp": 20.0,
+       "map": 24.0,
+       "sbp": 32.0
+      }
+     ]
+    ]
+   }
+  },
+  "closure_tree_commit": "e0c9ae5",
+  "comparison": {
+   "active": {
+    "all_digests_verified": true,
+    "approved": [
+     "gi_pressure_committed"
+    ],
+    "authority_module": "P3-14",
+    "cases": [
+     "gi_bleed_57m",
+     "gi_bleed_72f"
+    ],
+    "committed_minutes": 66,
+    "completed": 26,
+    "domain": [
+     "sbp",
+     "dbp",
+     "map"
+    ],
+    "failure_policy": "HARD_FAIL_VISIBLE_TO_FACULTY",
+    "halted": 8,
+    "layer": "P3-11",
+    "lineage": [
+     "PHASE2_CLOSURE",
+     "PHASE2_AMENDMENT_1",
+     "PHASE2_AMENDMENT_2"
+    ],
+    "mixed_trajectory_declared_when_halted_after_a_commit": true,
+    "phase2_digest": "22b90a6f7f38929cc5c18aa2000579155b4d9109198e35e29ad3991e81d6ce6a",
+    "replay_covers_every_committed_minute": true,
+    "scenarios": 34
+   },
+   "closure": {
+    "all_digests_verified": true,
+    "approved": [
+     "gi_pressure_committed"
+    ],
+    "authority_module": "P3-14",
+    "cases": [
+     "gi_bleed_57m",
+     "gi_bleed_72f"
+    ],
+    "committed_minutes": 66,
+    "completed": 26,
+    "domain": [
+     "sbp",
+     "dbp",
+     "map"
+    ],
+    "failure_policy": "HARD_FAIL_VISIBLE_TO_FACULTY",
+    "halted": 8,
+    "layer": "P3-11",
+    "lineage": [],
+    "mixed_trajectory_declared_when_halted_after_a_commit": true,
+    "phase2_digest": "22b90a6f7f38929cc5c18aa2000579155b4d9109198e35e29ad3991e81d6ce6a",
+    "replay_covers_every_committed_minute": true,
+    "scenarios": 34
+   },
+   "differing_fields": {
+    "artifact_digest": {
+     "count": 34,
+     "why": "the digest of an artifact that carries the fields below"
+    },
+    "experiment_id": {
+     "count": 112,
+     "why": "the identity of the attempt (process-local)"
+    },
+    "input_digest": {
+     "count": 66,
+     "why": "the digest of a replay input that now names the core version and carries two new profile fields"
+    },
+    "phase3_versions.closure_guard_digest": {
+     "count": 100,
+     "why": "the closure guard was extended by the two amendments"
+    },
+    "phase3_versions.core_digest": {
+     "count": 100,
+     "why": "the active lineage member is named (absent in the closure tree)"
+    },
+    "phase3_versions.core_version": {
+     "count": 100,
+     "why": "the active lineage member is named"
+    },
+    "phase3_versions.phase3_layer_digest": {
+     "count": 100,
+     "why": "the Phase-3 layer moved since the closure-core series"
+    },
+    "replay_input.scenario.profile.amendment_2": {
+     "count": 94,
+     "why": "Amendment 2's profile field, OFF (None) in the committed profile"
+    },
+    "replay_input.scenario.profile.hypoventilation_oxygenation_transmission_fraction": {
+     "count": 94,
+     "why": "Amendment 1's profile field, OFF (None) in the committed profile"
+    },
+    "replay_input.versions.closure_guard_digest": {
+     "count": 94,
+     "why": "as above"
+    },
+    "replay_input.versions.core_digest": {
+     "count": 94,
+     "why": "as above"
+    },
+    "replay_input.versions.core_version": {
+     "count": 94,
+     "why": "as above"
+    },
+    "replay_input.versions.phase3_layer_digest": {
+     "count": 94,
+     "why": "as above"
+    },
+    "rollback.phase3_layer_digest": {
+     "count": 8,
+     "why": "as above"
+    },
+    "transaction_digest": {
+     "count": 66,
+     "why": "takes the input digest"
+    }
+   },
+   "minute_records_compared": 78,
+   "must_match_failures": [],
+   "must_match_fields": [
+    "common_candidate",
+    "common_pressures",
+    "written_candidate",
+    "legacy_counterfactual",
+    "candidate_digest",
+    "replay_digest",
+    "written_digest",
+    "state_digest",
+    "precommit_observable_digest",
+    "outcome",
+    "committed",
+    "moved_fields",
+    "validation_failures",
+    "action_kinds",
+    "settled_action_classes",
+    "unsupported_actions",
+    "failure_reason",
+    "minute",
+    "divergence_classes",
+    "action_lineage"
+   ],
+   "scenarios_compared": 34,
+   "top_level_differences": {},
+   "unexplained_differences": [],
+   "verdict": "GI_PRESSURE_AUTHORITY_RECERTIFIED_ON_ACTIVE_CORE"
+  },
+  "harness": "test_runtime_authority_series._play_the_battery_with_authority (the existing development harness), both cases",
+  "retuned": false
+ },
+ "reader_audit": {
+  "downstream_effects": {
+   "available_actions": [
+    "app.py::_clinical_encounter_workspace",
+    "family_engine.py::_order",
+    "family_engine.py::_validate"
+   ],
+   "persistence": [
+    "app.py::learner_vitals_snapshot",
+    "app.py::management_state_snapshot",
+    "record_findings.py::<module>",
+    "trace_phase0.py::<module>"
+   ],
+   "resident_visible_text": [
+    "app.py::_trace_observable_delta",
+    "app.py::_trace_state_text",
+    "app.py::_trace_state_words",
+    "app.py::_vitals_cells",
+    "app.py::format_clinical_update",
+    "cognitive_review.py::<module>",
+    "family_engine.py::clinical_update",
+    "family_engine.py::current_findings",
+    "image_broker.py::edit_prompt",
+    "management_trace_portal.py::render_management_trace_analysis",
+    "management_trace_report.py::<module>",
+    "patient_appearance.py::appearance_summary",
+    "patient_appearance.py::contract_brief"
+   ],
+   "scenario_flow": [
+    "app.py::_critical_adaptation_prompt",
+    "app.py::_expected_response_prompt",
+    "app.py::_reasoning_data_alignment_prompt",
+    "app.py::_trajectory_expert_model",
+    "app.py::observable_state_changed",
+    "family_engine.py::_discharge_alarm",
+    "image_consistency.py::photographic_targets",
+    "visual_observations.py::visual_observations"
+   ],
+   "scoring": [
+    "faculty_analysis.py::<text>",
+    "management_trace_analysis.py::<text>"
+   ],
+   "termination": [
+    "family_engine.py::_discharge_alarm"
+   ]
+  },
+  "executable_readers_of_the_live_observable": 31,
+  "legacy_physiology_reads_the_live_word": false,
+  "live_readers_by_class": {
+   "A_DISPLAY_ONLY": [
+    "app.py::_vitals_cells",
+    "management_trace_portal.py::render_management_trace_analysis",
+    "management_trace_report.py::<module>"
+   ],
+   "B_TEXT_GENERATION": [
+    "app.py::_trace_observable_delta",
+    "app.py::_trace_state_text",
+    "app.py::_trace_state_words",
+    "app.py::format_clinical_update",
+    "cognitive_review.py::<module>",
+    "family_engine.py::clinical_update",
+    "family_engine.py::current_findings",
+    "image_broker.py::edit_prompt",
+    "patient_appearance.py::appearance_summary",
+    "patient_appearance.py::contract_brief"
+   ],
+   "C_CLINICAL_BRANCHING": [
+    "app.py::_critical_adaptation_prompt",
+    "app.py::_expected_response_prompt",
+    "app.py::_reasoning_data_alignment_prompt",
+    "app.py::_trajectory_expert_model",
+    "app.py::observable_state_changed",
+    "image_consistency.py::photographic_targets",
+    "visual_observations.py::visual_observations"
+   ],
+   "D_SCORING": [
+    "faculty_analysis.py::<text>",
+    "management_trace_analysis.py::<text>"
+   ],
+   "E_TERMINATION": [
+    "family_engine.py::_discharge_alarm"
+   ],
+   "F_ORDER_ACTION_ELIGIBILITY": [
+    "app.py::_clinical_encounter_workspace",
+    "family_engine.py::_order",
+    "family_engine.py::_validate"
+   ],
+   "G_PERSISTENCE_SERIALIZATION": [
+    "app.py::learner_vitals_snapshot",
+    "app.py::management_state_snapshot",
+    "record_findings.py::<module>",
+    "trace_phase0.py::<module>"
+   ],
+   "H_TEST_DOC_ONLY": [
+    "app.py::_perfusion_response_direction"
+   ]
+  },
+  "modules_text_only": [
+   "case_authoring.py",
+   "clinical_core/hemodynamic_probes.py",
+   "faculty_analysis.py",
+   "generated_case_coverage.py",
+   "generated_glucose.py",
+   "generated_opioid.py",
+   "management_trace_analysis.py"
+  ],
+  "modules_with_a_syntactic_use": 54,
+  "required_guards": [
+   {
+    "exists": true,
+    "guard": "already refused: these classes are outside SUPPORTED_ACTIONS, so the turn hard-stops the experiment. To declare: the order's own outcome in the halting turn was decided with the written word.",
+    "surface": "order and action eligibility in the legacy engine (oral dextrose, oral carbohydrate, oral antipyretic) and the disposition outcome"
+   },
+   {
+    "exists": false,
+    "guard": "NEW: run the experiment through the scripted harness only (no page), or obtain an explicit faculty acceptance that the available actions follow the common word",
+    "surface": "history-taking availability on the encounter page (cannot_speak)"
+   },
+   {
+    "exists": false,
+    "guard": "NEW: a development-only surface; nothing resident-facing (FD-AUTH-08). These are the intended effect of an authority, so the decision is an exposure decision, not a defect",
+    "surface": "resident-visible text and display (examination findings, clinical update text and cards, vitals panel, visual description)"
+   },
+   {
+    "exists": false,
+    "guard": "NEW: image generation off in the experiment environment (an edit can be a paid call)",
+    "surface": "image contract and image edit prompt"
+   },
+   {
+    "exists": false,
+    "guard": "NEW: an experiment's encounter is marked and kept out of resident records",
+    "surface": "management trace and event snapshots (persistence)"
+   },
+   {
+    "exists": false,
+    "guard": "NEW: no AI analysis and no rubric on an authority-experiment encounter, or a mandatory label; scoring stays legacy",
+    "surface": "AI and faculty analysis payloads (indirect scoring evidence)"
+   },
+   {
+    "exists": false,
+    "guard": "NEW: not shown for an experiment's encounter (no resident), or declared",
+    "surface": "adaptive reflection prompts and expert comparison"
+   },
+   {
+    "exists": false,
+    "guard": "NEW in the pair: capture the legacy word BEFORE the commit, as the pressures are",
+    "surface": "the shadow's own legacy comparison (legacy_adapter.snapshot)"
+   }
+  ],
+  "rows": [
+   {
+    "class": "MENTION_NOT_AN_EXECUTABLE_READ",
+    "consequence": "the initial state of the non-family encounters",
+    "executable_read": false,
+    "function": "<module>",
+    "guard": null,
+    "module": "app.py",
+    "roles": [
+     "WRITE"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "F_ORDER_ACTION_ELIGIBILITY",
+    "consequence": "history-taking is unavailable while the word is unresponsive, obtunded or sedated and no collateral source exists",
+    "executable_read": true,
+    "function": "_clinical_encounter_workspace",
+    "guard": "an AVAILABLE ACTION changes with the word: the snapshot reads Obtunded from minute 131 and Unresponsive from 158 untreated, where the legacy engine reads Drowsy",
+    "module": "app.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "GI_ENCOUNTER_PAGE"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "selects and words an adaptive reflection prompt",
+    "executable_read": true,
+    "function": "_critical_adaptation_prompt",
+    "guard": "as above",
+    "module": "app.py",
+    "roles": [
+     "READ",
+     "READ"
+    ],
+    "where": "GI_AFTER_THE_ENCOUNTER"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "selects and words an adaptive reflection prompt from the change of the word between two states",
+    "executable_read": true,
+    "function": "_expected_response_prompt",
+    "guard": "the reflection a resident answers depends on it: an observation OPPORTUNITY changes (not a score by itself)",
+    "module": "app.py",
+    "roles": [
+     "READ",
+     "READ"
+    ],
+    "where": "GI_AFTER_THE_ENCOUNTER"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "would classify a response as improve or worsen, but no call site exists in app.py (dead code)",
+    "executable_read": true,
+    "function": "_perfusion_response_direction",
+    "guard": null,
+    "module": "app.py",
+    "roles": [
+     "READ",
+     "READ"
+    ],
+    "where": "GI_AFTER_THE_ENCOUNTER"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "selects and words an adaptive reflection prompt",
+    "executable_read": true,
+    "function": "_reasoning_data_alignment_prompt",
+    "guard": "as above",
+    "module": "app.py",
+    "roles": [
+     "READ",
+     "READ",
+     "READ"
+    ],
+    "where": "GI_AFTER_THE_ENCOUNTER"
+   },
+   {
+    "class": "B_TEXT_GENERATION",
+    "consequence": "words what changed between two states in the trace review",
+    "executable_read": true,
+    "function": "_trace_observable_delta",
+    "guard": null,
+    "module": "app.py",
+    "roles": [
+     "READ",
+     "READ"
+    ],
+    "where": "GI_AFTER_THE_ENCOUNTER"
+   },
+   {
+    "class": "B_TEXT_GENERATION",
+    "consequence": "words the state in the trace review",
+    "executable_read": true,
+    "function": "_trace_state_text",
+    "guard": null,
+    "module": "app.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "GI_AFTER_THE_ENCOUNTER"
+   },
+   {
+    "class": "B_TEXT_GENERATION",
+    "consequence": "translates the state's words in the trace review",
+    "executable_read": true,
+    "function": "_trace_state_words",
+    "guard": null,
+    "module": "app.py",
+    "roles": [
+     "FIELD_LIST"
+    ],
+    "where": "GI_AFTER_THE_ENCOUNTER"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "an expert-comparison text reads the word to decide 'impaired perfusion' (written for the sepsis encounters; reach in GI not verified)",
+    "executable_read": true,
+    "function": "_trajectory_expert_model",
+    "guard": "resident-visible feedback",
+    "module": "app.py",
+    "roles": [
+     "READ",
+     "READ"
+    ],
+    "where": "GI_AFTER_THE_ENCOUNTER"
+   },
+   {
+    "class": "A_DISPLAY_ONLY",
+    "consequence": "the vitals panel and the exported page show the word",
+    "executable_read": true,
+    "function": "_vitals_cells",
+    "guard": "resident-visible display (FD-AUTH-08)",
+    "module": "app.py",
+    "roles": [
+     "READ",
+     "READ",
+     "READ"
+    ],
+    "where": "GI_ENCOUNTER_PAGE"
+   },
+   {
+    "class": "WRITER_NOT_A_READER",
+    "consequence": "builds another encounter's state",
+    "executable_read": false,
+    "function": "build_ps002_state",
+    "guard": null,
+    "module": "app.py",
+    "roles": [
+     "WRITE"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "B_TEXT_GENERATION",
+    "consequence": "the clinical update sentence",
+    "executable_read": true,
+    "function": "format_clinical_update",
+    "guard": "resident-visible text (FD-AUTH-08)",
+    "module": "app.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "GI_ENCOUNTER_PAGE"
+   },
+   {
+    "class": "G_PERSISTENCE_SERIALIZATION",
+    "consequence": "freezes the learner-visible state, the word included, into each clinical-update event (shown later, stored with the attempt)",
+    "executable_read": true,
+    "function": "learner_vitals_snapshot",
+    "guard": "an experiment's encounter must stay out of resident records",
+    "module": "app.py",
+    "roles": [
+     "READ",
+     "WRITE"
+    ],
+    "where": "GI_ENCOUNTER_PAGE"
+   },
+   {
+    "class": "G_PERSISTENCE_SERIALIZATION",
+    "consequence": "stores the state before and after each decision in the management trace",
+    "executable_read": true,
+    "function": "management_state_snapshot",
+    "guard": "an experiment's trace must stay out of the resident trace and of any analysis that scores",
+    "module": "app.py",
+    "roles": [
+     "READ",
+     "WRITE"
+    ],
+    "where": "GI_ENCOUNTER_PAGE"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "decides whether a turn adds a clinical-update card and event: a changed word adds one",
+    "executable_read": true,
+    "function": "observable_state_changed",
+    "guard": "resident-visible flow (FD-AUTH-08)",
+    "module": "app.py",
+    "roles": [
+     "FIELD_LIST"
+    ],
+    "where": "GI_ENCOUNTER_PAGE"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "asthma: exhaustion and intubation timing read the word",
+    "executable_read": true,
+    "function": "intubation_timing",
+    "guard": null,
+    "module": "asthma_complications.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OTHER_FAMILY_OF_THE_LEGACY_ENGINE"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "asthma: exhaustion and intubation timing read the word",
+    "executable_read": true,
+    "function": "track_exhaustion",
+    "guard": null,
+    "module": "asthma_complications.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OTHER_FAMILY_OF_THE_LEGACY_ENGINE"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a catalogue reader",
+    "executable_read": true,
+    "function": "readable",
+    "guard": null,
+    "module": "catalog_trajectories.py",
+    "roles": [
+     "READ",
+     "WRITE"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "WRITER_NOT_A_READER",
+    "consequence": "authors a case's observable",
+    "executable_read": false,
+    "function": "_observable",
+    "guard": null,
+    "module": "clinical_cases.py",
+    "roles": [
+     "WRITE"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "the coupled physiology of the non-family encounters reads and writes its own word",
+    "executable_read": false,
+    "function": "intubation_transition",
+    "guard": null,
+    "module": "clinical_physiology.py",
+    "roles": [
+     "WRITE"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "the coupled physiology of the non-family encounters reads and writes its own word",
+    "executable_read": false,
+    "function": "mark_terminal_collapse",
+    "guard": null,
+    "module": "clinical_physiology.py",
+    "roles": [
+     "WRITE"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "the coupled physiology of the non-family encounters reads and writes its own word",
+    "executable_read": false,
+    "function": "procedural_sedation_transition",
+    "guard": null,
+    "module": "clinical_physiology.py",
+    "roles": [
+     "WRITE"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "the coupled physiology of the non-family encounters reads and writes its own word",
+    "executable_read": true,
+    "function": "recompute_coupled_physiology",
+    "guard": null,
+    "module": "clinical_physiology.py",
+    "roles": [
+     "READ",
+     "READ",
+     "READ",
+     "WRITE",
+     "WRITE",
+     "WRITE",
+     "WRITE",
+     "WRITE",
+     "WRITE",
+     "WRITE"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "the coupled physiology of the non-family encounters reads and writes its own word",
+    "executable_read": true,
+    "function": "update_decompensation",
+    "guard": null,
+    "module": "clinical_physiology.py",
+    "roles": [
+     "READ",
+     "WRITE"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "B_TEXT_GENERATION",
+    "consequence": "names the observation in the cognitive review text",
+    "executable_read": true,
+    "function": "<module>",
+    "guard": null,
+    "module": "cognitive_review.py",
+    "roles": [
+     "FIELD_LIST",
+     "WRITE"
+    ],
+    "where": "GI_AFTER_THE_ENCOUNTER"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "the coupled encounter of the non-family engine",
+    "executable_read": false,
+    "function": "examination_updates",
+    "guard": null,
+    "module": "coupled_encounter.py",
+    "roles": [
+     "WRITE"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "the coupled encounter of the non-family engine",
+    "executable_read": true,
+    "function": "hold_mental_while_perfusion_falls",
+    "guard": null,
+    "module": "coupled_encounter.py",
+    "roles": [
+     "READ",
+     "WRITE"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "the coupled encounter of the non-family engine",
+    "executable_read": true,
+    "function": "project",
+    "guard": null,
+    "module": "coupled_encounter.py",
+    "roles": [
+     "READ",
+     "WRITE",
+     "WRITE"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "the coupled encounter of the non-family engine",
+    "executable_read": true,
+    "function": "tick",
+    "guard": null,
+    "module": "coupled_encounter.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "reads the AUTHORED arrival level to anchor the engine's thresholds, once",
+    "executable_read": true,
+    "function": "_arrival_anchors",
+    "guard": null,
+    "module": "family_engine.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "ARRIVAL_ONLY_AUTHORED_BASELINE"
+   },
+   {
+    "class": "E_TERMINATION",
+    "consequence": "reads the LIVE observable after a discharge: a patient who is not awake is 'found ... at home' and brought back (the disposition's outcome)",
+    "executable_read": true,
+    "function": "_discharge_alarm",
+    "guard": "disposition and discharge are outside SUPPORTED_ACTIONS: the turn halts the experiment",
+    "module": "family_engine.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "GI_ENCOUNTER_TURN"
+   },
+   {
+    "class": "F_ORDER_ACTION_ELIGIBILITY",
+    "consequence": "reads the LIVE observable: an oral antipyretic is withheld when the patient is not Alert or Agitated (and says so in text)",
+    "executable_read": true,
+    "function": "_order",
+    "guard": "antipyretic is outside SUPPORTED_ACTIONS: the turn halts the experiment",
+    "module": "family_engine.py",
+    "roles": [
+     "READ",
+     "READ"
+    ],
+    "where": "GI_ENCOUNTER_TURN"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "pulmonary embolism: reads the authored baseline",
+    "executable_read": true,
+    "function": "_pe_attributable",
+    "guard": null,
+    "module": "family_engine.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OTHER_FAMILY_OF_THE_LEGACY_ENGINE"
+   },
+   {
+    "class": "WRITER_NOT_A_READER",
+    "consequence": "the engine RE-WRITES mental_status at every surface from its own ladder (its family state and the authored baseline); its reads here are of the baseline, never of the live observable, so a value written by an authority is overwritten next turn and never feeds the engine's physiology",
+    "executable_read": false,
+    "function": "_surface",
+    "guard": null,
+    "module": "family_engine.py",
+    "roles": [
+     "READ",
+     "READ",
+     "READ",
+     "READ",
+     "WRITE",
+     "WRITE",
+     "WRITE"
+    ],
+    "where": "GI_ENCOUNTER_TURN"
+   },
+   {
+    "class": "F_ORDER_ACTION_ELIGIBILITY",
+    "consequence": "reads the LIVE observable: oral dextrose and oral carbohydrate are refused when the patient is not alert",
+    "executable_read": true,
+    "function": "_validate",
+    "guard": "both order classes are outside SUPPORTED_ACTIONS: the turn halts the experiment; the order's own outcome in that turn was already decided by the written word",
+    "module": "family_engine.py",
+    "roles": [
+     "READ",
+     "READ"
+    ],
+    "where": "GI_ENCOUNTER_TURN"
+   },
+   {
+    "class": "B_TEXT_GENERATION",
+    "consequence": "reads the LIVE observable into the clinical update text",
+    "executable_read": true,
+    "function": "clinical_update",
+    "guard": "resident-visible text (FD-AUTH-08)",
+    "module": "family_engine.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "GI_ENCOUNTER_TURN"
+   },
+   {
+    "class": "B_TEXT_GENERATION",
+    "consequence": "reads the LIVE observable into the examination text the resident reads (general appearance, neurological)",
+    "executable_read": true,
+    "function": "current_findings",
+    "guard": "resident-visible text: not exposed in any cycle without an explicit decision (FD-AUTH-08)",
+    "module": "family_engine.py",
+    "roles": [
+     "READ",
+     "READ",
+     "READ"
+    ],
+    "where": "GI_ENCOUNTER_TURN"
+   },
+   {
+    "class": "G_PERSISTENCE_SERIALIZATION",
+    "consequence": "the generated-case engine (not integrated)",
+    "executable_read": true,
+    "function": "_scene_snapshot",
+    "guard": null,
+    "module": "generated_case.py",
+    "roles": [
+     "READ",
+     "WRITE"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "MENTION_NOT_AN_EXECUTABLE_READ",
+    "consequence": "the generated-case engine (not integrated)",
+    "executable_read": false,
+    "function": "_validate_response_fields",
+    "guard": null,
+    "module": "generated_case_capabilities.py",
+    "roles": [
+     "WRITE"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "MENTION_NOT_AN_EXECUTABLE_READ",
+    "consequence": "the generated-case engine (not integrated)",
+    "executable_read": false,
+    "function": "executable_generation_constraints",
+    "guard": null,
+    "module": "generated_case_capabilities.py",
+    "roles": [
+     "WRITE"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "schema validation of generated cases (not integrated)",
+    "executable_read": false,
+    "function": "<module>",
+    "guard": null,
+    "module": "generated_case_schema.py",
+    "roles": [
+     "WRITE"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "schema validation of generated cases (not integrated)",
+    "executable_read": true,
+    "function": "collect_clinical_issues",
+    "guard": null,
+    "module": "generated_case_schema.py",
+    "roles": [
+     "READ",
+     "READ",
+     "READ",
+     "READ",
+     "READ",
+     "WRITE",
+     "WRITE"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "schema validation of generated cases (not integrated)",
+    "executable_read": true,
+    "function": "validate_clinical_structure",
+    "guard": null,
+    "module": "generated_case_schema.py",
+    "roles": [
+     "READ",
+     "READ",
+     "READ"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "the generated-case engine (not integrated)",
+    "executable_read": true,
+    "function": "<module>",
+    "guard": null,
+    "module": "generated_engine.py",
+    "roles": [
+     "FIELD_LIST"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "the generated-case engine (not integrated)",
+    "executable_read": true,
+    "function": "_surface",
+    "guard": null,
+    "module": "generated_engine.py",
+    "roles": [
+     "READ",
+     "WRITE"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "the generated-case engine (not integrated)",
+    "executable_read": true,
+    "function": "clinical_update",
+    "guard": null,
+    "module": "generated_engine.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "the generated-case engine (not integrated)",
+    "executable_read": true,
+    "function": "current_findings",
+    "guard": null,
+    "module": "generated_engine.py",
+    "roles": [
+     "FIELD_LIST",
+     "FIELD_LIST",
+     "READ",
+     "READ"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "MENTION_NOT_AN_EXECUTABLE_READ",
+    "consequence": "the generated-case engine (not integrated)",
+    "executable_read": false,
+    "function": "<module>",
+    "guard": null,
+    "module": "generated_engine_diagnostics.py",
+    "roles": [
+     "WRITE"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "the generated-case engine (not integrated)",
+    "executable_read": true,
+    "function": "assessment",
+    "guard": null,
+    "module": "generated_pe.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a battery's timeline",
+    "executable_read": true,
+    "function": "observe",
+    "guard": null,
+    "module": "hypoglycemia_battery.py",
+    "roles": [
+     "READ",
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "catalogue contract checks",
+    "executable_read": true,
+    "function": "<module>",
+    "guard": null,
+    "module": "hypoglycemia_catalog.py",
+    "roles": [
+     "FIELD_LIST"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "catalogue contract checks",
+    "executable_read": true,
+    "function": "contract_problems",
+    "guard": null,
+    "module": "hypoglycemia_catalog.py",
+    "roles": [
+     "READ",
+     "READ",
+     "READ",
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "MENTION_NOT_AN_EXECUTABLE_READ",
+    "consequence": "a constant",
+    "executable_read": false,
+    "function": "<module>",
+    "guard": null,
+    "module": "image_bank.py",
+    "roles": [
+     "WRITE"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "A_DISPLAY_ONLY",
+    "consequence": "the faculty's image bank view",
+    "executable_read": true,
+    "function": "_state_line",
+    "guard": null,
+    "module": "image_bank_portal.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "B_TEXT_GENERATION",
+    "consequence": "the prompt of an image edit carries the word",
+    "executable_read": true,
+    "function": "edit_prompt",
+    "guard": "an image edit can be a PAID call: image generation must be off in an experiment",
+    "module": "image_broker.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "GI_ENCOUNTER_PAGE"
+   },
+   {
+    "class": "MENTION_NOT_AN_EXECUTABLE_READ",
+    "consequence": "a field list",
+    "executable_read": false,
+    "function": "<module>",
+    "guard": null,
+    "module": "image_consistency.py",
+    "roles": [
+     "FIELD_LIST"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "the photographic targets an image must meet depend on the word",
+    "executable_read": true,
+    "function": "photographic_targets",
+    "guard": "image selection: resident-visible",
+    "module": "image_consistency.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "GI_ENCOUNTER_PAGE"
+   },
+   {
+    "class": "MENTION_NOT_AN_EXECUTABLE_READ",
+    "consequence": "authored image-pilot states",
+    "executable_read": false,
+    "function": "<module>",
+    "guard": null,
+    "module": "image_pilot.py",
+    "roles": [
+     "WRITE",
+     "WRITE",
+     "WRITE",
+     "WRITE",
+     "WRITE"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "A_DISPLAY_ONLY",
+    "consequence": "the faculty's trace view lists the field",
+    "executable_read": true,
+    "function": "render_management_trace_analysis",
+    "guard": null,
+    "module": "management_trace_portal.py",
+    "roles": [
+     "FIELD_LIST"
+    ],
+    "where": "GI_AFTER_THE_ENCOUNTER"
+   },
+   {
+    "class": "A_DISPLAY_ONLY",
+    "consequence": "the trace report lists the field",
+    "executable_read": true,
+    "function": "<module>",
+    "guard": null,
+    "module": "management_trace_report.py",
+    "roles": [
+     "FIELD_LIST"
+    ],
+    "where": "GI_AFTER_THE_ENCOUNTER"
+   },
+   {
+    "class": "B_TEXT_GENERATION",
+    "consequence": "the appearance brief and summary carry the word",
+    "executable_read": true,
+    "function": "appearance_summary",
+    "guard": "resident-visible description and image contract",
+    "module": "patient_appearance.py",
+    "roles": [
+     "KEY_COMPARE",
+     "WRITE"
+    ],
+    "where": "GI_ENCOUNTER_PAGE"
+   },
+   {
+    "class": "B_TEXT_GENERATION",
+    "consequence": "the appearance brief and summary carry the word",
+    "executable_read": true,
+    "function": "contract_brief",
+    "guard": "resident-visible description and image contract",
+    "module": "patient_appearance.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "GI_ENCOUNTER_PAGE"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "the acceptance battery's own severity reading of a state (a harness, not the runtime)",
+    "executable_read": true,
+    "function": "severity",
+    "guard": null,
+    "module": "pilot_acceptance.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "G_PERSISTENCE_SERIALIZATION",
+    "consequence": "the recorded findings keep the field",
+    "executable_read": true,
+    "function": "<module>",
+    "guard": null,
+    "module": "record_findings.py",
+    "roles": [
+     "FIELD_LIST"
+    ],
+    "where": "GI_AFTER_THE_ENCOUNTER"
+   },
+   {
+    "class": "WRITER_NOT_A_READER",
+    "consequence": "the opioid adapter's arrival identity (shadow layer, another family)",
+    "executable_read": false,
+    "function": "OpioidAdapter",
+    "guard": null,
+    "module": "runtime_shadow_families.py",
+    "roles": [
+     "FIELD_LIST",
+     "OTHER",
+     "WRITE"
+    ],
+    "where": "OTHER_FAMILY_OF_THE_LEGACY_ENGINE"
+   },
+   {
+    "class": "MENTION_NOT_AN_EXECUTABLE_READ",
+    "consequence": "a committed record's field list",
+    "executable_read": false,
+    "function": "<module>",
+    "guard": null,
+    "module": "second_live_family_record.py",
+    "roles": [
+     "FIELD_LIST",
+     "FIELD_LIST"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "G_PERSISTENCE_SERIALIZATION",
+    "consequence": "the trace schema lists the field",
+    "executable_read": true,
+    "function": "<module>",
+    "guard": null,
+    "module": "trace_phase0.py",
+    "roles": [
+     "FIELD_LIST"
+    ],
+    "where": "GI_AFTER_THE_ENCOUNTER"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "the visual profile of the patient changes with the word (obtunded, unresponsive, sedated)",
+    "executable_read": false,
+    "function": "<module>",
+    "guard": "resident-visible description and image contract",
+    "module": "visual_observations.py",
+    "roles": [
+     "WRITE"
+    ],
+    "where": "GI_ENCOUNTER_PAGE"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "the visual profile of the patient changes with the word (obtunded, unresponsive, sedated)",
+    "executable_read": true,
+    "function": "visual_observations",
+    "guard": "resident-visible description and image contract",
+    "module": "visual_observations.py",
+    "roles": [
+     "OTHER",
+     "READ",
+     "READ",
+     "READ",
+     "WRITE"
+    ],
+    "where": "GI_ENCOUNTER_PAGE"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "arrival",
+    "guard": null,
+    "module": "clinical_core/acs_migration.py",
+    "roles": [
+     "READ",
+     "WRITE"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "legacy",
+    "guard": null,
+    "module": "clinical_core/acs_migration.py",
+    "roles": [
+     "FIELD_LIST"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "render_llegada",
+    "guard": null,
+    "module": "clinical_core/acs_migration_report.py",
+    "roles": [
+     "FIELD_LIST"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "render_verdad",
+    "guard": null,
+    "module": "clinical_core/acs_migration_report.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "<module>",
+    "guard": null,
+    "module": "clinical_core/acs_reference.py",
+    "roles": [
+     "FIELD_LIST",
+     "WRITE"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "anchors",
+    "guard": null,
+    "module": "clinical_core/acs_reference.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "consciousness",
+    "guard": null,
+    "module": "clinical_core/asthma_distress_migration.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "render_verdad",
+    "guard": null,
+    "module": "clinical_core/asthma_distress_migration_report.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "arrival",
+    "guard": null,
+    "module": "clinical_core/asthma_migration.py",
+    "roles": [
+     "READ",
+     "READ",
+     "WRITE"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "consciousness",
+    "guard": null,
+    "module": "clinical_core/asthma_migration.py",
+    "roles": [
+     "READ",
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "legacy",
+    "guard": null,
+    "module": "clinical_core/asthma_migration.py",
+    "roles": [
+     "FIELD_LIST"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "render_caso",
+    "guard": null,
+    "module": "clinical_core/asthma_migration_report.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "render_legado",
+    "guard": null,
+    "module": "clinical_core/asthma_migration_report.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "<module>",
+    "guard": null,
+    "module": "clinical_core/asthma_reference.py",
+    "roles": [
+     "FIELD_LIST",
+     "WRITE"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "anchors",
+    "guard": null,
+    "module": "clinical_core/asthma_reference.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "<module>",
+    "guard": null,
+    "module": "clinical_core/collapse_audit.py",
+    "roles": [
+     "FIELD_LIST"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "the certified comparison table",
+    "executable_read": true,
+    "function": "<module>",
+    "guard": null,
+    "module": "clinical_core/comparison.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "SHADOW_COMPARISON_ONLY"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "<module>",
+    "guard": null,
+    "module": "clinical_core/consciousness_audit.py",
+    "roles": [
+     "FIELD_LIST"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "authored",
+    "guard": null,
+    "module": "clinical_core/consciousness_audit.py",
+    "roles": [
+     "KEY_COMPARE",
+     "OTHER",
+     "OTHER"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "arrival",
+    "guard": null,
+    "module": "clinical_core/edema_migration.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "legacy",
+    "guard": null,
+    "module": "clinical_core/edema_migration.py",
+    "roles": [
+     "FIELD_LIST"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "render_caso",
+    "guard": null,
+    "module": "clinical_core/edema_migration_report.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "render_legado",
+    "guard": null,
+    "module": "clinical_core/edema_migration_report.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "<module>",
+    "guard": null,
+    "module": "clinical_core/edema_reference.py",
+    "roles": [
+     "FIELD_LIST",
+     "WRITE"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "anchors",
+    "guard": null,
+    "module": "clinical_core/edema_reference.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "arrival",
+    "guard": null,
+    "module": "clinical_core/embolism_migration.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "legacy",
+    "guard": null,
+    "module": "clinical_core/embolism_migration.py",
+    "roles": [
+     "FIELD_LIST"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "observable_support",
+    "guard": null,
+    "module": "clinical_core/embolism_migration.py",
+    "roles": [
+     "READ",
+     "WRITE"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "_truth_lines",
+    "guard": null,
+    "module": "clinical_core/embolism_migration_report.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "render_legado",
+    "guard": null,
+    "module": "clinical_core/embolism_migration_report.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "<module>",
+    "guard": null,
+    "module": "clinical_core/embolism_reference.py",
+    "roles": [
+     "FIELD_LIST",
+     "WRITE"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "anchors",
+    "guard": null,
+    "module": "clinical_core/embolism_reference.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "<module>",
+    "guard": null,
+    "module": "clinical_core/gi_reference.py",
+    "roles": [
+     "FIELD_LIST",
+     "FIELD_LIST",
+     "FIELD_LIST",
+     "FIELD_LIST"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "<module>",
+    "guard": null,
+    "module": "clinical_core/lactate_slice.py",
+    "roles": [
+     "FIELD_LIST"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "C_CLINICAL_BRANCHING",
+    "consequence": "the common core's arrival anchor of the consciousness level, read once when the shadow opens",
+    "executable_read": true,
+    "function": "anchors_from_legacy",
+    "guard": null,
+    "module": "clinical_core/legacy_adapter.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "ARRIVAL_ONLY_AUTHORED_BASELINE"
+   },
+   {
+    "class": "G_PERSISTENCE_SERIALIZATION",
+    "consequence": "the shadow's per-minute copy of what the legacy engine shows, for comparison only",
+    "executable_read": true,
+    "function": "snapshot",
+    "guard": "under a pair authority the legacy counterfactual must be captured BEFORE the commit, as it is for the pressures",
+    "module": "clinical_core/legacy_adapter.py",
+    "roles": [
+     "READ",
+     "WRITE"
+    ],
+    "where": "SHADOW_COMPARISON_ONLY"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "case_truth",
+    "guard": null,
+    "module": "clinical_core/opioid_migration.py",
+    "roles": [
+     "FIELD_LIST"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "consciousness",
+    "guard": null,
+    "module": "clinical_core/opioid_migration.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "render_verdad",
+    "guard": null,
+    "module": "clinical_core/opioid_migration_report.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "<module>",
+    "guard": null,
+    "module": "clinical_core/opioid_reference.py",
+    "roles": [
+     "FIELD_LIST",
+     "WRITE"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "anchors",
+    "guard": null,
+    "module": "clinical_core/opioid_reference.py",
+    "roles": [
+     "READ"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": true,
+    "function": "<module>",
+    "guard": null,
+    "module": "clinical_core/respiratory_mechanics.py",
+    "roles": [
+     "FIELD_LIST",
+     "WRITE"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "MENTION_NOT_AN_EXECUTABLE_READ",
+    "consequence": "other keys that contain the name (procedural sedation fields)",
+    "executable_read": false,
+    "function": "<text>",
+    "guard": null,
+    "module": "case_authoring.py",
+    "roles": [
+     "TEXT_ONLY"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "H_TEST_DOC_ONLY",
+    "consequence": "a Phase-2 migration, reference, audit or report module: authored arrivals and committed records",
+    "executable_read": false,
+    "function": "<text>",
+    "guard": null,
+    "module": "clinical_core/hemodynamic_probes.py",
+    "roles": [
+     "TEXT_ONLY"
+    ],
+    "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
+   },
+   {
+    "class": "D_SCORING",
+    "consequence": "the same observable scalars enter the faculty analysis payload",
+    "executable_read": true,
+    "function": "<text>",
+    "guard": "as above",
+    "module": "faculty_analysis.py",
+    "roles": [
+     "TEXT_ONLY"
+    ],
+    "where": "GI_AFTER_THE_ENCOUNTER"
+   },
+   {
+    "class": "MENTION_NOT_AN_EXECUTABLE_READ",
+    "consequence": "other keys that contain the name (procedural sedation fields)",
+    "executable_read": false,
+    "function": "<text>",
+    "guard": null,
+    "module": "generated_case_coverage.py",
+    "roles": [
+     "TEXT_ONLY"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "WRITER_NOT_A_READER",
+    "consequence": "the generated-case engine's own function of that name (not integrated)",
+    "executable_read": false,
+    "function": "<text>",
+    "guard": null,
+    "module": "generated_glucose.py",
+    "roles": [
+     "TEXT_ONLY"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "WRITER_NOT_A_READER",
+    "consequence": "the generated-case engine's own function of that name (not integrated)",
+    "executable_read": false,
+    "function": "<text>",
+    "guard": null,
+    "module": "generated_opioid.py",
+    "roles": [
+     "TEXT_ONLY"
+    ],
+    "where": "OTHER_ENGINE_NOT_THE_FAMILY_ENGINE"
+   },
+   {
+    "class": "D_SCORING",
+    "consequence": "the observable scalars of every trace state, the word included, enter the payload of the AI analysis of the management trace",
+    "executable_read": true,
+    "function": "<text>",
+    "guard": "INDIRECT scoring evidence: no AI analysis or rubric may run on an authority-experiment encounter, or it must be labelled as one",
+    "module": "management_trace_analysis.py",
+    "roles": [
+     "TEXT_ONLY"
+    ],
+    "where": "GI_AFTER_THE_ENCOUNTER"
+   }
+  ],
+  "sites": 119,
+  "unclassified": [],
+  "verdict": "CONSCIOUSNESS_AUTHORITY_HAS_DOWNSTREAM_SIDE_EFFECTS"
+ },
+ "review_version": "P3-200",
+ "snapshot_id": "GI_DEVELOPMENT_SNAPSHOT_V1"
+}

@@ -83,7 +83,8 @@ def test_the_record_is_not_an_authority_artifact_and_nothing_reads_it_at_runtime
         assert not any(needle in path.read_text(encoding="utf-8") for needle in needles), path.name
     # and no record of any authority store mentions it
     for path in (ROOT / "docs" / "revision").glob("PHASE3_*AUTHORITY*.json"):
-        if path.name != "PHASE3_GI_AUTHORITY_READINESS.json" and path.name != "PHASE3_GI_AUTHORITY_COUNTERFACTUAL.json":
+        # the three REVIEW records that name the snapshot on purpose (readiness, counterfactual, pre-authority review): none is an authority artifact
+        if path.name not in ("PHASE3_GI_AUTHORITY_READINESS.json", "PHASE3_GI_AUTHORITY_COUNTERFACTUAL.json", "PHASE3_GI_PREAUTHORITY_REVIEW.json"):
             assert "GI_DEVELOPMENT_SNAPSHOT" not in path.read_text(encoding="utf-8"), path.name
 
 
