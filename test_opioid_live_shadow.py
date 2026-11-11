@@ -619,7 +619,7 @@ def test_p3l_141g_every_artifact_names_its_own_adapter_and_the_certified_core(li
     for name, runner in _runners(session).items():
         versions = runner.replay_input().versions
         assert versions["adapter"] == "opioid/P3-141L" == runner.adapter.version, name
-        assert versions["core_version"] == "PHASE2_AMENDMENT_1"
+        assert versions["core_version"] == "PHASE2_AMENDMENT_2"      # P3-173: el nucleo vivo es el sucesor certificado
         assert versions["core_digest"] == rs.CORE_LINEAGE[-1].digest
         assert versions["phase2_digest"] == rs.PHASE2_DIGEST and versions["golden_digest"] == "missing"
     assert rs.family_versions("gi_bleed")["adapter"] == rs.ADAPTER_VERSION
@@ -955,7 +955,7 @@ def test_p3l_144f_one_family_never_runs_through_another_familys_mapping(live):
 
 def test_p3l_144g_the_previous_live_family_and_the_layer_identity_are_reported():
     versions = rs.versions()
-    assert versions["core_version"] == "PHASE2_AMENDMENT_1" and versions["phase3_module"] == "P3-11"
+    assert versions["core_version"] == "PHASE2_AMENDMENT_2" and versions["phase3_module"] == "P3-11"
     assert rs.MODULE_VERSION == ra.EXPECTED_LAYER
     assert rec.LIVE_WIRING["adapter"] == fam.ADAPTERS["opioid"].version
     assert len(rec.LIVE_WIRING["defects_found_and_corrected"]) == 5

@@ -499,7 +499,10 @@ def test_p3r_160a_the_audit_table_is_what_the_code_holds():
     assert {row["status"] for row in audit["architecture"]} == set(rec.ARCHITECTURE_STATUSES) - {"AUXILIARY_EXISTS"}
     # la regla de colapso esta apagada y las dos capas candidatas no tienen quien las llame en vivo
     assert dv.DEFAULT_PROFILE.collapse_output_threshold is None and dv.DEFAULT_PROFILE.collapse_burden_limit is None
-    derived = (ROOT / "clinical_core" / "derived.py").read_text(encoding="utf-8")
+    # P3-173: la auditoria describe derived.py como lo dejo la Enmienda 1 (la Enmienda 2 declara su insercion sobre la
+    # escalera directa); se lee ese arbol por la reversion declarada y probada, no el texto vivo.
+    from clinical_core import amendment_2 as a2
+    derived = a2.a1_text("clinical_core/derived.py")
     assert "APNOEA_BOUNDARY_UNRESOLVED" in derived
     assert "max(anchors.consciousness_level, _level(sbp, profile.pressure_levels), _level(spo2, " in derived
     for name in ("runtime_shadow.py", "runtime_shadow_store.py", "runtime_shadow_observer.py", "app.py",

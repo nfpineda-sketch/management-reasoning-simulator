@@ -20,6 +20,7 @@ import runtime_shadow_observer as obs
 import runtime_shadow_store as store
 import shadow_resolution_record as previous
 import terminal_amendment_record as rec
+from clinical_core import amendment_2 as a2
 from clinical_core import calibration, collapse, derived as dv, encephalopathy, opioid_migration as om
 from test_shadow_observability import GI, NALOXONE, OPIOID, _latest, _play, traces  # noqa: F401
 
@@ -28,17 +29,26 @@ CORE = ROOT / "clinical_core"
 
 
 def _source(name):
-    return (CORE / name).read_text(encoding="utf-8")
+    """P3-173: este paquete es de DISENO (el nucleo era la Enmienda 1 y no cambio en aquel ciclo). El nucleo vivo es hoy
+    su sucesor certificado, que declara sus inserciones: lo que el diseno describe se lee en el arbol de la Enmienda 1,
+    reconstruido por esa reversion declarada y probada."""
+    return a2.a1_text(f"clinical_core/{name}")
 
 
 # -- A2-001: linaje -----------------------------------------------------------------------------------------------------
 
 def test_a2_001_the_lineage_is_the_certified_one_and_the_core_did_not_change():
     lineage = rec.LINEAGE
+    # El registro de diseno describe el nucleo de ENTONCES (la Enmienda 1). Hoy ese miembro sigue en el linaje, con su
+    # digesto, y el nucleo vivo es su sucesor certificado (P3-173): el diseno no se reescribe, se lee contra su miembro.
+    parent = rs.CORE_LINEAGE[1]
+    assert parent.version_id == lineage["parent"]["name"] == lineage["active_core_on_the_phase3_branch"]
+    assert parent.digest == lineage["parent"]["digest"]
+    assert a2.amendment_1_verifies()["digest_recomputes"] is True
     active = rs.active_core()
-    assert active["core_version"] == lineage["parent"]["name"] == lineage["active_core_on_the_phase3_branch"]
-    assert active["core_digest"] == lineage["parent"]["digest"]
-    assert [entry.version_id for entry in rs.CORE_LINEAGE] == ["PHASE2_CLOSURE", "PHASE2_AMENDMENT_1"]
+    assert active["core_version"] == "PHASE2_AMENDMENT_2" and active["core_digest"] == rs.CORE_LINEAGE[-1].digest
+    assert [entry.version_id for entry in rs.CORE_LINEAGE] == ["PHASE2_CLOSURE", "PHASE2_AMENDMENT_1",
+                                                                 "PHASE2_AMENDMENT_2"]
     assert rs.CORE_LINEAGE[0].digest == lineage["historical_closure"]["digest"]
     assert lineage["historical_closure"]["changed"] is False and lineage["parent"]["changed"] is False
     verdict = ev.core_lineage_verdict()
@@ -245,8 +255,9 @@ def test_a2_007_no_threshold_is_identifiable_and_none_was_invented():
     assert not [row for row in found["evidence"] if row["evidence"] == "FACULTY_DEFINED"]
     assert found["development_regions"] == () and len(found["faculty_questions"]) == 6
     assert all(question.count("?") >= 1 for question in found["faculty_questions"])
-    # el nucleo es byte a byte el certificado: nada nuevo pudo entrar en el
-    assert rs.active_core()["core_digest"] == rec.LINEAGE["parent"]["digest"]
+    # el nucleo de ENTONCES es byte a byte el certificado (la Enmienda 1, reconstruida desde el arbol vivo)
+    assert a2.amended_core_digest_now() == rs.CORE_LINEAGE[-1].digest
+    assert a2.amendment_1_verifies()["digest_recomputes"] and rs.CORE_LINEAGE[1].digest == rec.LINEAGE["parent"]["digest"]
     # y la capa de sombra no trae ningun umbral clinico nuevo para la frontera
     for name in ("TERMINAL", "PREDICATE", "CONSCIOUSNESS", "ARREST", "APNOEA"):
         for attribute in dir(fam):
@@ -271,7 +282,9 @@ def test_a2_009_and_010_the_core_was_not_touched_and_the_verdict_is_one_of_the_f
     assert design["verdict"] == "AMENDMENT_2_BLOCKED_ON_FACULTY_THRESHOLDS"
     assert design["verdict"] in design["verdict_options"] and len(design["verdict_options"]) == 4
     assert design["full_certification_required"] is False and design["certified"] is False
-    assert not (CORE / "amendment_2.py").exists()
+    # P3-173: el diseno decidio detenerse; hoy la Enmienda 2 existe como etapa certificada y el registro de diseno
+    # sigue diciendo lo que dijo (no se reescribe).
+    assert (CORE / "amendment_2.py").exists() and rs.CORE_LINEAGE[-1].version_id == "PHASE2_AMENDMENT_2"
     assert "Amendment 2" in rec.NOT_CLAIMED[3] and "any change to common physiology" in rec.NOT_CLAIMED
 
 

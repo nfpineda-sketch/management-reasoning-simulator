@@ -357,8 +357,8 @@ def test_p3o_148b_gi_persists_reloads_and_replays_exactly(traces):
     assert trace["common_core_runtime_authority"] is False and trace["selected_witness"] is None
     assert (trace["authority"], trace["use"]) == rec.TRACE_STORE["provenance_labels"]
     lineage = trace["lineage"]
-    assert lineage["core_version"] == "PHASE2_AMENDMENT_1" and lineage["certified"] is True
-    assert lineage["core_digest"] == "10b45ce2967ea55afccb35291afb5bb1f7f1b01eb4a253e6a0736c02a5878635"
+    assert lineage["core_version"] == "PHASE2_AMENDMENT_2" and lineage["certified"] is True       # P3-173
+    assert lineage["core_digest"] == "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2"
     assert lineage["phase2_digest"] == "22b90a6f7f38929cc5c18aa2000579155b4d9109198e35e29ad3991e81d6ce6a"
     assert lineage["phase3_layer_digest"] == rs.layer_digest()
     assert trace["arrival"]["fingerprint"] == session.encounter_id and trace["arrival"]["eligible"] is True

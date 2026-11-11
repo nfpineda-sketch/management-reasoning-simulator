@@ -139,10 +139,14 @@ def _rounded(value, digits):
 
 def test_p3_integration_the_runtime_is_the_certified_amendment_and_nothing_gained_authority():
     verdict = ev.core_lineage_verdict()
-    assert verdict["ok"] is True and verdict["active_core"] == "PHASE2_AMENDMENT_1" and verdict["status"] == "CERTIFIED"
+    # P3-173: este registro midio el runtime SOBRE PHASE2_AMENDMENT_1 y sigue diciendolo; el nucleo vivo es hoy su
+    # sucesor certificado. Un registro historico no se reescribe: se lee contra el miembro del linaje que lo midio.
+    assert verdict["ok"] is True and verdict["active_core"] == "PHASE2_AMENDMENT_2" and verdict["status"] == "CERTIFIED"
     assert verdict["historical_closure_digest"] == rs.PHASE2_DIGEST
-    assert rec.RUNTIME["core_version"] == verdict["active_core"]
-    assert rec.RUNTIME["core_digest"] == verdict["live_digest"] == rs.CORE_LINEAGE[-1].digest
+    measured = rs.CORE_LINEAGE[1]
+    assert rec.RUNTIME["core_version"] == measured.version_id == "PHASE2_AMENDMENT_1"
+    assert rec.RUNTIME["core_digest"] == measured.digest != verdict["live_digest"]
+    assert verdict["live_digest"] == rs.CORE_LINEAGE[-1].digest
     assert rec.RUNTIME["historical_closure_digest"] == rs.PHASE2_DIGEST
     # nada gano autoridad con la integracion ni con aquel ciclo, y en aquel ciclo nada entro en vivo: el
     # registro de entonces lo dice. El opioide entro DESPUES, por una autorizacion propia (P3-141, segunda
