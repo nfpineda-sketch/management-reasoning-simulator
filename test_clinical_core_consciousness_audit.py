@@ -10,6 +10,7 @@ from __future__ import annotations
 import ast
 import hashlib
 import inspect
+import sys
 import json
 
 import pytest
@@ -173,6 +174,27 @@ def _LIVE_SOURCES_P2O1() -> dict:
     return lw.p2o1_sources(_LIVE_SOURCES_P2O3())
 
 
+
+class _ClosureFunctionSource:
+    """``inspect`` for this closed audit: the source of a function the second amendment changed is the one the closure's
+    tree held (read from the first amendment's text, which the closure shares for these functions); all else is real."""
+
+    def getsource(self, obj):
+        import ast
+        import inspect as real
+        module = getattr(obj, "__module__", "") or ""
+        relative = module.replace(".", "/") + ".py"
+        if module.startswith("clinical_core.") and relative in a2.REVERSAL and hasattr(obj, "__name__"):
+            text = a2.a1_text(relative)
+            for node in ast.walk(ast.parse(text)):
+                if isinstance(node, (ast.FunctionDef, ast.ClassDef)) and node.name == obj.__name__:
+                    return "\n".join(text.split("\n")[node.lineno - 1:node.end_lineno]) + "\n"
+        return real.getsource(obj)
+
+    def __getattr__(self, name):
+        import inspect as real
+        return getattr(real, name)
+
 @pytest.fixture(autouse=True, scope="module")
 def _p2n2_core():
     with pytest.MonkeyPatch.context() as patch:
@@ -192,6 +214,8 @@ def _p2n2_core():
         x1.chain(patch)
         cg.chain(patch)
         a2.chain(patch)
+        patch.setattr(ca, "inspect", _ClosureFunctionSource())
+        patch.setattr(sys.modules[__name__], "inspect", _ClosureFunctionSource())
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         patch.setattr(ca, "closed_unchanged", lambda: go.p2n2_unchanged(ca.CLOSED_AT_P2K5))

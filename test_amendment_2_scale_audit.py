@@ -44,7 +44,9 @@ def test_a2_011_the_scales_of_the_committed_profile():
     # la escalera directa que la enmienda debe reemplazar, y de donde salio
     assert PROFILE.pressure_levels == ((80.0, 1), (65.0, 2)) and PROFILE.oxygen_levels == ((87.0, 1), (80.0, 2))
     assert dv.PARAMETERS["pressure_levels"][0] == dv.ADOPTED and "family_engine" in dv.PARAMETERS["pressure_levels"][1]
-    source = (ROOT / "clinical_core" / "derived.py").read_text(encoding="utf-8")
+    # PHASE2_AMENDMENT_2: this audit documents the tree BEFORE the amendment (the first amendment's), so it reads that text.
+    from clinical_core import amendment_2 as a2
+    source = a2.a1_text("clinical_core/derived.py")
     assert ("level = max(anchors.consciousness_level, _level(sbp, profile.pressure_levels), "
             "_level(spo2, profile.oxygen_levels))") in source
 
@@ -84,7 +86,8 @@ def test_a2_012_the_debt_recovers_only_at_full_delivery_and_over_an_hour():
 
 
 def test_a2_012_no_existing_state_carries_a_consciousness_memory():
-    fields = {item.name for item in dataclasses.fields(AuxiliaryState)}
+    from clinical_core import systemic_consciousness as sc
+    fields = {item.name for item in dataclasses.fields(AuxiliaryState)} - {sc.STATE_FIELD}   # the pre-amendment state
     assert "collapse_burden" in fields                               # el colapso SI tiene su memoria en el estado
     assert not [name for name in fields if "enceph" in name or "conscious" in name or "brain" in name]
     # la memoria que la docencia diseño en P2L-2 existe como capa candidata, fuera del estado y sin magnitudes
