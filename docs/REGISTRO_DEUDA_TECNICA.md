@@ -617,14 +617,14 @@ puede cumplirlo literalmente y la docencia aprobó la recuperación graduada sin
 
 ## TD-140 · Fase 3, ratificación de la instantánea de GI y revisión previa a la autoridad (ciclo del 2026-11-11)
 
-**Cierra o actualiza deuda anterior.** TD-139 (3): **hecha** — los lectores de `mental_status` se auditaron (31 lectores ejecutables del observable vivo; hay efectos aguas abajo). TD-139 (4): **cerrada** — la serie de
+**Cierra o actualiza deuda anterior.** TD-139 (3): **hecha** — los lectores de `mental_status` se auditaron (32 lectores ejecutables del observable vivo tras la corrección de P3-208; hay efectos aguas abajo). TD-139 (4): **cerrada** — la serie de
 autoridad de presión es idéntica en el núcleo activo, y la nota de procedencia de P3-51 estaba cerrada desde P3-55. TD-139 (1) y (2): **siguen abiertas**, ahora con un prototipo del lado de las pruebas (vínculo y
 transacción en seco del par). TD-138 (6): la instantánea quedó **ratificada para experimentos de desarrollo** (FD-AUTH-01).
 
 - **(1)** **El vínculo con la instantánea y la transacción del par viven del lado de las pruebas.** `test_gi_snapshot_binding.py` y `test_gi_pair_dry_run.py` no son la capa: la capa sigue construyendo testigos por
   nombre y `AuthorityTransaction.commit` sólo acepta presión numérica. Un experimento exige construirlos **dormidos en la capa** y certificarlos.
-- **(2)** **Siete guardas de los lectores de `mental_status` no existen:** disponibilidad de la anamnesis, texto y pantalla visibles, contrato y prompt de imagen, persistencia de traza y eventos, payloads del análisis de IA
-  y docente (puntuación indirecta), preguntas de reflexión, y la captura de la palabra heredada antes del compromiso.
+- **(2)** **Ocho guardas de los lectores de `mental_status` no existen:** disponibilidad de la anamnesis, texto y pantalla visibles, contrato y prompt de imagen, persistencia de traza y eventos, payloads del análisis de IA
+  y docente (puntuación indirecta), **la retención de una sugerencia de IA en el portal docente (`record_findings.inert_observables`, hallada en P3-208)**, preguntas de reflexión, y la captura de la palabra heredada antes del compromiso.
 - **(3)** **`vascular_access` no es una acción soportada.** «Place an IV line.» detiene un experimento de autoridad; las series anteriores de este trabajo (contrafactual, sensibilidad) usaron guiones **con** esa orden.
   No afecta a su fisiología (el acceso no tiene efecto fisiológico: los cursos coinciden), pero esos guiones no serían elegibles tal cual.
 - **(4)** **Un turno, una transacción.** Una infusión avanza el reloj del motor dentro de un turno (4 U: 120 min): la recuperación ordenada en el 158 termina en el 278, fuera de la ventana, y sus minutos intermedios se
@@ -636,4 +636,13 @@ transacción en seco del par). TD-138 (6): la instantánea quedó **ratificada p
 - **(8)** **El arnés en seco parchea dos métodos de clase durante la corrida** (`ShadowSession.observe`, `Encounter.order`), como el arnés de autoridad existente; los restaura siempre, pero no es seguro entre hilos.
 - **(9)** **34 de los 461 minutos de divergencia de consciencia** (72 años sin tratar, 207–240) quedan después de la frontera de colapso: un experimento con la guarda de FD-AUTH-06 no los alcanzaría.
 - **(10)** Sin validación clínica de ninguna magnitud ni de la instantánea; las respuestas docentes a la tabla de divergencia están pendientes.
+- **(11)** **(P3-208) El tiempo clínico fuera de un turno de orden no pasa por el sitio de autoridad.** `app.spend_clinical_time` (anamnesis, examen) avisa a la sombra por `observe_time` y nunca al sitio; el sitio no
+  nota un turno que no vio. Con una autoridad activa en la página, esos minutos conservarían las presiones heredadas (lectura del código; **no ejecutado** con autoridad). Ata también a la autoridad de presión ya
+  recertificada: su serie juega sólo turnos de orden por el arnés guionado.
+- **(12)** **(P3-208) El sitio lee los fallos de la sombra del último minuto del turno**, no de todo el turno. Alcanzado sólo por inyección. La transacción en seco es más estricta que el sitio.
+- **(13)** **(P3-208) La auditoría de lectores es un inventario, no una prueba de ausencia.** El recorrido por AST encuentra la clave literal: no ve una clave en una variable, un bucle sobre todo el observable ni el
+  consumidor de un valor derivado. Los consumidores indirectos conocidos se listan a mano.
+- **(14)** **(P3-208) Las comprobaciones del vínculo viven en un proceso de Python:** rechazan un registro u objeto forjado, no código que reescriba el propio verificador. La revisión no probó una edición real de los
+  bytes del núcleo (la simuló), ni ejecutó la página del encuentro, ni repitió las bifurcaciones de ataque en el caso de 72 años.
+- **(15)** **(P3-208) La huella de la ratificación queda fijada en el arnés:** regenerar `GI_DEVELOPMENT_SNAPSHOT_V1_RATIFICATION.json` con otro texto es otra ratificación y exige actualizar la constante.
 
