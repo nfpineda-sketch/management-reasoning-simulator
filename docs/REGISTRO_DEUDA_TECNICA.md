@@ -578,3 +578,20 @@ desde el núcleo sigue sin autorizarse.
   coste, y el paquete de revisión se genera fuera del repositorio.
 - **(7)** Sin validación clínica de ninguna magnitud: todas son `FACULTY_DEFINED_DEVELOPMENT_BEHAVIORAL_REGION`.
 
+## TD-138 · Fase 3, la temporalidad de la recuperación GI queda a decisión docente (ciclo del 2026-11-11)
+
+**Cierra o actualiza deuda anterior.** TD-137 (2): **cerrada** — la docencia confirmó la lectura relativa a la llegada (FD-GI-01). TD-137 (3):
+**respondida en parte** — el reloj cuenta desde la entrada en la región de recuperación (FD-GI-02), y la medida exacta mostró que la trayectoria
+completa no puede cumplirlo literalmente.
+
+- **(1)** **Requisito incompatible con la ley certificada.** F limpia hacia un objetivo graduado desde un minuto después de la orden y la entrega
+  tarda 8–9 min en volver a su región normal: el paciente entra en la región de recuperación en 0,43–0,56, no en ≈ 0,80. Ninguna constante de
+  bajada hace las dos cosas (entrar en ≈ 0,80 y cruzar 0,50 en 3–5 min). Pregunta abierta a la docencia: FD-P3-176, respuestas (a), (b), (c).
+- **(2)** **Si la respuesta es (b) o (c), cambia `clinical_core/`.** Hace falta una etapa sucesora declarada, con mutantes propios y **una**
+  certificación completa; la certificación de la Enmienda 2 dejaría de cubrir el núcleo activo. Con (a) no cambia nada.
+- **(3)** **Los escenarios hipotéticos no son implementación.** La bajada más lenta y la limpieza retenida se calcularon fuera de línea sobre la
+  entrega registrada (exacto porque F no realimenta nada); no existen en el núcleo ni en la capa.
+- **(4)** **La medida anterior de la recuperación trataba a los tres testigos en el minuto del central.** La de este ciclo trata a cada uno en su
+  propio primer minuto SIN RESPUESTA; el registro anterior (`PHASE3_GI_AMENDMENT_2_SERIES.json`) no se reescribió y sigue reproduciéndose.
+- **(5)** Sin validación clínica de ninguna magnitud ni de ninguna de las tres respuestas.
+
