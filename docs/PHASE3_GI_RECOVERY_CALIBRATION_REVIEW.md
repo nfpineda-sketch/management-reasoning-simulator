@@ -199,5 +199,7 @@ que la docencia elija una instantánea**; no se eligió ninguna. Esto **no es va
 (`COMMON_CORE_RUNTIME_AUTHORITY = False`). Los escenarios (b) y (c) de §7 quedan descartados por la docencia y siguen sin existir en el núcleo ni
 en la capa; el barrido fuera de línea se conserva en el registro sólo como evidencia de la decisión.
 
-**Paso siguiente (sin ejecutar; requiere un encargo nuevo):** diseño de la **selección de la instantánea de desarrollo de GI** y, después, diseño del
+**Continuación (2026-11-11):** hecha en `docs/PHASE3_GI_DEVELOPMENT_SNAPSHOT.md` y `docs/PHASE3_GI_AUTHORITY_READINESS.md` (FD-P3-178 a FD-P3-181).
+
+**Paso siguiente tal como se redactó entonces (sin ejecutar; requería un encargo nuevo):** diseño de la **selección de la instantánea de desarrollo de GI** y, después, diseño del
 **experimento de preparación para autoridad en sombra** (§7, respuesta (a)); `UnresolvedBoundary` sigue siendo un bloqueo para una autoridad futura.

@@ -597,3 +597,20 @@ puede cumplirlo literalmente y la docencia aprobó la recuperación graduada sin
 - **(5)** Sin validación clínica de ninguna magnitud ni de ninguna de las tres respuestas.
 - **(6)** **Pendiente siguiente, sin ejecutar.** La región GI de desarrollo queda lista para que la docencia elija una instantánea (FD-P3-177). Ninguna
   magnitud está aprobada ni validada clínicamente, y sigue sin haber autoridad, exposición al residente ni efecto en la puntuación.
+
+## TD-139 · Fase 3, instantánea de desarrollo de GI y preparación para una autoridad de desarrollo (ciclo del 2026-11-11)
+
+**Cierra o actualiza deuda anterior.** TD-138 (6): **cumplida** — la instantánea se eligió y se registró (`GI_DEVELOPMENT_SNAPSHOT_V1`); su **ratificación docente** queda abierta (FD-P3-181). TD-137 (7): sin cambio.
+
+- **(1)** **La capa no puede correr la instantánea por identificador y huella.** Construye los testigos de Amendment 2 por **nombre** (`systemic_consciousness.WITNESSES`). El arnés de este ciclo corre la instantánea
+  como testigo intermedio sustituyendo la entrada del diccionario dentro de un bloque. Una autoridad futura exige que la capa construya el perfil **desde el registro** y verifique valores, huellas y linaje (cambio de la capa y su certificación).
+- **(2)** **La maquinaria de autoridad es de presión.** `AUTHORITY_DOMAIN`, la propiedad y `commit` (que rechaza campos no numéricos) no representan una categoría ni la regla de pareja presión + consciencia.
+- **(3)** **Lectores de `mental_status`: listados, no auditados.** 36 módulos mencionan el campo; el motor heredado lo lee en la validación de la vía oral y la aplicación en retroalimentación, trazas e imágenes.
+- **(4)** **La serie de autoridad de presión corrió en el núcleo de cierre** (`22b90a6f…`), no en el miembro activo (`a0af7d08…`): re-correrla. La nota de procedencia que dejó abierta (P3-51) no se re-audita.
+- **(5)** **Los testigos LOW y HIGH no acotan todo el comportamiento:** hasta 12 min en el colapso establecido y 3 en el inminente; no son vértices en cuatro magnitudes. El barrido de la región completa es la comprobación vigente.
+- **(6)** **El barrido depende de dos casos y nueve escenarios.** Otros casos GI, otros ritmos de reposición o tratamientos nuevos cambian la trayectoria física y obligan a repetirlo.
+- **(7)** **Diferencias respecto del heredado sin decisión docente:** 461 min de consciencia (`POTENTIAL_EDUCATIONAL_PROBLEM`) y la respuesta de sentido opuesto de lactato y FR tras tratar. No se ajustan (FD-GI-03).
+- **(8)** **La PAS común queda por debajo del mínimo del heredado** (50 / 58 mmHg) desde el minuto 153 / 144 sin tratar y llega a ≤ 20 mmHg hacia el 274: la ventana de un experimento se acota en 240 min.
+- **(9)** **`UnresolvedBoundary` desde el minuto 349 sin tratar.** Acotada por el guion; sin mapeo terminal, ningún uso sin acotar ni visible al residente. No se inventa ninguna regla terminal.
+- **(10)** **Hemoglobina:** la tabla de comparación la llama `exact`, pero en el curso GI en vivo el heredado cae (6,69 → 4,54 g/dL a los 240 min) y el común queda ≈ 6,4: el `exact` vale sólo para las corridas de la comparación certificada.
+- **(11)** Sin validación clínica de ninguna magnitud ni de la instantánea.
