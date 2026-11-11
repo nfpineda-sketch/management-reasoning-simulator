@@ -209,7 +209,36 @@ Nota fija: *estado fisiológico sólo; un colapso establecido no termina, bloque
   limpia tan rápido como sube (seis, por las pruebas de la capa integrada); testigo elegido, enmienda fuera de GI, autoridad encendida,
   réplica que no reproduce, la sombra que escribe en el paciente (cinco, por la capa); linaje no certificado y núcleo de otra versión (dos,
   por las compuertas del conjunto). Control sin mutante: verde.
-* **Suite completa del núcleo común:** `ALREADY_VALID_ON_EQUIVALENT_CODE` (véase §9). La suite de la capa Fase 3 y de autoridad se corre sobre el árbol integrado.
+* **Suite completa del núcleo común:** `ALREADY_VALID_ON_EQUIVALENT_CODE`. `clinical_core/` es byte a byte el del candidato certificado `ad7bf81`
+  (`git diff ad7bf81 HEAD -- clinical_core` vacío; digesto `a0af7d08…`), y 442 de los 462 archivos de prueba son idénticos a los de ese candidato (la
+  certificación de la Enmienda 2 corrió 11 359 pruebas, 0 fallas). Lo que difiere es la capa de la Fase 3 y sus pruebas, que sí se corrieron.
+* **Certificación integrada (una, repetida una vez porque el candidato cambió):** 58 archivos de prueba (los 20 que difieren del candidato certificado,
+  los que importan la capa de sombra o de autoridad, los de la Enmienda y el cierre, y los que leen el linaje), Python 3.11.17, 4 particiones, candidato
+  `faf643e`, huella inicial = final, sin cambios sin commit. **Primera corrida** (`3e6b334`): 2475 pruebas, **6 fallas, todas regresiones propias** de este
+  cambio en guardas de aislamiento (5 por un módulo de análisis en la raíz que lee almacén, observador y núcleo, donde sólo pueden hacerlo los módulos
+  declarados de la capa; 1 por el literal «encephalopathy» en el observador). Corregidas sin relajar ninguna guarda (el módulo pasó a ser código de
+  pruebas, `test_gi_amendment_2_series.py`; el observador toma el nombre del canal de la familia). **Segunda corrida** (`faf643e`): **2475 pruebas, 0 fallas, 0
+  errores, 0 omitidas, válida.** Regresiones: 56/56 activas, 10 retiradas. Mutantes del núcleo (16) y de la capa (6 de fisiología + 7 de la capa): todos detectados.
+* **No se corrió** la suite completa del repositorio (≈ 11 k pruebas, ≈ 2 h por partición lenta): innecesaria por equivalencia de código del núcleo y por
+  no haber cambios en `app.py`, el motor heredado, la puntuación ni el primer piloto.
 
 ## 9 · P3-180 · Punto de control de preparación (sólo GI)
-Se completa en el informe final y en `docs/COLA_DECISIONES_AI_ADVISOR.md` (FD-P3-167 a FD-P3-172).
+No se autoriza autoridad ni despliegue. Tres lecturas separadas:
+
+| Lectura | Veredicto | Por qué |
+|---|---|---|
+| `SIMULATION_ENGINE_READINESS` | **`SHADOW_ENGINE_READY_FOR_FACULTY_REVIEW`**, no para autoridad | La Enmienda 2 certificada corre en vivo en la sombra GI, sin tocar nada visible; orden causal, recuperación y colapso coherentes en 14 encuentros; réplica exacta; mutantes detectados. Falta la terminalización desde el núcleo (frontera de gasto cero con pulso, minuto 349) y la autoridad. |
+| `FACULTY_TRACE_REVIEW_READINESS` | **`READY`** | Paquete de cuatro trayectorias con testigos separados, réplica exacta, estado explícito del colapso junto al motor heredado y preguntas de juicio (§6). Se regenera con `test_gi_amendment_2_series.write_faculty_bundle`; vive fuera del repositorio. |
+| `RESIDENT_PILOT_REVIEW_READINESS` | **`NOT_READY_FOR_RESIDENT_PILOT_REVIEW`** | Bloqueos abajo. |
+
+**Bloqueos para la revisión de piloto con residentes, en orden:**
+1. Respuestas docentes a las siete preguntas del paquete (inicio, recuperación, progresión de categorías, colapso, lectura relativa, frontera, riesgo de confundir al residente).
+2. **Lectura relativa a la llegada**: los dos casos GI leen igual en la sombra y el heredado los separa por PAS absoluta. La docencia debe decir cuál es la intención educativa.
+3. **Cuándo cuenta la recuperación de 3–5 min**: desde la recuperación aguas arriba (como se midió) o desde la orden (5–14 min con infusiones de 20–60 min).
+4. **Frontera terminal**: `UnresolvedBoundary` (gasto cero con pulso) y la regla que termina un encuentro (el núcleo determina el estado, el runtime termina) siguen sin autorizarse.
+5. **Instantánea de parámetros aprobada**: toda magnitud es región de desarrollo; ninguna está aprobada ni validada clínicamente.
+6. **Decisión de autoridad y de exposición** (qué vería el residente, si algo) y el diseño de cara al residente.
+7. Coste de cuatro corridas por turno en vivo (no medido bajo carga) y generación del paquete como paso manual.
+8. Mecanismo de consciencia del opioide: diferido (otra familia).
+
+**Paso más corto siguiente:** revisión docente del paquete de trazas (sin código), con las respuestas a las preguntas 1 a 3, que deciden si la Enmienda 2 necesita un ajuste de región antes de pedir una instantánea aprobada.
