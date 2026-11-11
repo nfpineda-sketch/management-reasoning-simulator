@@ -1,5 +1,8 @@
 """P3-175 / P3-176 / P3-178: the GI consciousness and collapse LIVE-SHADOW SERIES (analysis; read-only; development only).
 
+It is TEST-SIDE tooling (its name starts with ``test_``, like the repository's other test harnesses): it plays encounters through
+the shadow and reads the store and the observer, which no module outside the declared shadow layer may do. It has no test of its own.
+
 It plays real GI encounters through the Phase-3 live shadow (``pilot_acceptance.Encounter`` with the shadow flag on), so the
 legacy engine remains the only authority and decides every minute; the session's own run (committed profile, PHASE2_AMENDMENT_2
 OFF) and the three development witnesses of the amendment (LOW, CENTER_REFERENCE, HIGH) are read from the live ensemble, each

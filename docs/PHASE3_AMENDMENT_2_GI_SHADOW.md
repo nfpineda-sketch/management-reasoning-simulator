@@ -178,7 +178,7 @@ muestrea sólo al final, de modo que la comparación cubre los minutos muestread
 
 ## 6 · P3-177 · Paquete de revisión docente
 Generado con las herramientas existentes de persistencia y observador (`runtime_shadow_observer.write_review_package`), fuera del
-repositorio (sólo datos de ejecución) y sin acceso del residente: `gi_amendment_2_series.write_faculty_bundle(destino_absoluto)`.
+repositorio (sólo datos de ejecución) y sin acceso del residente: `test_gi_amendment_2_series.write_faculty_bundle(destino_absoluto)`.
 Cuatro trayectorias representativas: 72f sin tratar, 57m deterioro grave con cristaloide solo, 72f tratamiento tardío, 57m recuperación tras
 deterioro grave. Cada página muestra: la línea de tiempo de acciones, V / presión / entrega / perfusión / F / carga de colapso / categoría con
 **los tres testigos separados** (y la corrida comprometida al lado), el estado de réplica (las cuatro **reproducen exactamente**), la región y

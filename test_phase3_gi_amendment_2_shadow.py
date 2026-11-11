@@ -26,7 +26,7 @@ import runtime_shadow_evidence as ev
 import runtime_shadow_families as fam
 import runtime_shadow_observer as obs
 import runtime_shadow_store as store
-import gi_amendment_2_series as series
+import test_gi_amendment_2_series as series
 from clinical_core import systemic_consciousness as sc
 from test_shadow_observability import GI, _latest, _play, _resealed, traces  # noqa: F401
 

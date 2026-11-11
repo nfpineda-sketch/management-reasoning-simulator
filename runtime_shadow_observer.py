@@ -50,7 +50,7 @@ CHANNELS = {
                  # P3-174: the Amendment-2 witnesses only (the session's own run, committed profile, carries none of these)
                  ("relative_delivery", "Delivery relative to arrival (Amendment 2)", "fraction of arrival"),
                  ("relative_perfusion", "Perfusion relative to arrival (Amendment 2)", "fraction of arrival"),
-                 ("systemic_encephalopathy_burden", "Systemic encephalopathy burden F (Amendment 2)", "fraction, 0 to 1"),
+                 (fam.TRACE_AMENDMENT_2[0], "Systemic burden F (Amendment 2)", "fraction, 0 to 1"),
                  ("collapse_burden", "Collapse burden (Amendment 2)", "fraction, 0 to 1"),
                  ("category_index", "Observable category (0 none, 1 somnolent, 2 obtunded, 3 unresponsive)", "index")),
 }
