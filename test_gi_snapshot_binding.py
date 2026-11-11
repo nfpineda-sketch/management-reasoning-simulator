@@ -10,9 +10,18 @@ magnitudes of ONE immutable record, and refuse anything else. ``bind`` is that r
 * the record is identified by its id, its version, its file hash and its two digests, all pinned here;
 * the Amendment-2 profile is built from the record's values and from nothing else (no witness name, no default argument);
 * the rest of the core profile is the committed default, verified to be the point the pressure approval ``gi_pressure_committed`` pins;
-* the live common core must be the lineage member the record names.
+* the live common core must be the lineage member the record names: it is READ (the layer's lineage and the core's own bytes), and a lineage a
+  caller offers can only add a refusal, never replace that reading.
 
 Every refusal has a code, so a tamper control is a named outcome and not an exception text.
+
+What is verified is what was BUILT, not only what was offered (the independent review of P3-208 bound a record whose values read one thing
+when verified and another when the profile was built): the record is first reduced to plain JSON data, verified in that form, and the profile
+built from it must hash to the pinned values digest and to the pinned profile digest. A ``BoundSnapshot`` made by hand is not a binding:
+``bound_is_v1`` re-derives every identity from the object and compares it with the constants below.
+
+The limit, said once: these are checks inside one Python process. They refuse a wrong, modified, partial or forged record or object. They cannot
+refuse code that rewrites this module's own constants or functions in the same process; that is the layer's job when a binding ever lives there.
 """
 from __future__ import annotations
 
@@ -42,6 +51,12 @@ V1_IDENTITY_DIGEST = "1f292d014255ac968ddc3217400635ca64d22462852056c23bb91850d0
 V1_RECORD_DIGEST = "9e258ab5b3790a5abb30053b30dd40fd0755918673bc4024f9da609fd4f8cdc9"
 #: The digest of the ten values alone, so that "a parameter was modified" is told apart from any other change of the record.
 V1_VALUES_DIGEST = "d998e1de4719ec5ba2459b8fbacae7e265ee0d03e971c3a5a853d201a282314e"
+#: The digest of the WHOLE record, its ``immutability`` block included (``superseded_by`` lives there and no content digest covers it).
+V1_FULL_DIGEST = "a5ab1283d504f91e90e441b442f2d2d4d3d88194164eea45026aec47ce02683e"
+#: The digest of the ONE core profile the ten values build on the committed default: what a run must be carrying, re-derived from the run.
+V1_PROFILE_DIGEST = "c167b45ee0ce6ec29643cba47f2dde3b6eb760a4c6e37f11d3fa7e5e0a8acc89"
+#: The digest of the ratification record (P3-199). The ratification is as immutable as the snapshot: another text is another ratification.
+V1_RATIFICATION_DIGEST = "123135b3e35c7cb8117ed02600e19b8e44e117e4d58feb2cf0a630cb77f58f64"
 V1_CORE_VERSION = "PHASE2_AMENDMENT_2"
 V1_CORE_DIGEST = "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2"
 PRESSURE_POINT = "gi_pressure_committed"
@@ -76,12 +91,32 @@ def _is_number(value: Any) -> bool:
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
 
 
+def plain(value: Any) -> Any:
+    """The value as plain JSON data (exact ``dict`` / ``list`` / ``str`` / ``int`` / ``float`` / ``bool`` / ``None``), or None when it is not JSON.
+
+    A record is verified and used in THIS form only. A mapping or a number of another class can answer one thing to the verification and another
+    to the construction (P3-208, attack 1); after this reduction there is one answer, and it is the one both read."""
+    try:
+        return json.loads(json.dumps(value, allow_nan=False))
+    except Exception:
+        return None
+
+
 def live_lineage() -> dict:
     """The lineage member the live common core IS, read from the layer and from the core's own bytes (never from a record)."""
     from clinical_core import amendment_2 as a2
     member = rs.CORE_LINEAGE[-1]
     return {"version_id": member.version_id, "digest": member.digest, "bytes_digest": a2.amended_core_digest_now(),
             "certified": bool(ev.core_lineage_ok())}
+
+
+def lineage_is_v1(lineage: Any) -> bool:
+    """This lineage reading IS the member the snapshot names: its id, its declared digest, the digest of the core's bytes, and certified."""
+    try:
+        return ((lineage.get("version_id"), lineage.get("digest")) == (V1_CORE_VERSION, V1_CORE_DIGEST)
+                and lineage.get("bytes_digest") == V1_CORE_DIGEST and lineage.get("certified") is True)
+    except Exception:
+        return False
 
 
 def identity_of(record: Mapping) -> dict:
@@ -92,9 +127,13 @@ def identity_of(record: Mapping) -> dict:
 
 
 def verify_record(record: Any, *, raw: bytes | None = None, lineage: Mapping | None = None) -> list:
-    """Every reason this record is NOT the pinned snapshot (an empty list: it is). Never raises."""
+    """Every reason this record is NOT the pinned snapshot (an empty list: it is). Never raises.
+
+    ``lineage`` is an ADDITIONAL claim a caller may offer (a tamper control offers a wrong one). The live lineage is always read here, and both
+    must be the pinned member: an offered lineage cannot stand in for the reading."""
     reasons: list = []
-    if not isinstance(record, Mapping):
+    record = plain(record)
+    if not isinstance(record, dict):
         return [PARTIAL_SNAPSHOT]
     if record.get("snapshot_id") != V1_ID:
         reasons.append(WRONG_SNAPSHOT_ID)
@@ -113,6 +152,13 @@ def verify_record(record: Any, *, raw: bytes | None = None, lineage: Mapping | N
     if stored.get("identity_digest") != V1_IDENTITY_DIGEST or stored.get("record_digest") != V1_RECORD_DIGEST \
             or (raw is not None and hashlib.sha256(raw).hexdigest() != V1_FILE_SHA256):
         reasons.append(WRONG_DIGEST)
+    if raw is not None:
+        try:
+            same_as_the_bytes = json.loads(raw.decode("utf-8")) == record
+        except Exception:
+            same_as_the_bytes = False
+        if not same_as_the_bytes and WRONG_DIGEST not in reasons:
+            reasons.append(WRONG_DIGEST)              # the bytes offered are not the bytes of the record offered
     try:
         content_identity = an.digest(identity_of(record))
         content_record = an.digest({key: value for key, value in record.items() if key != "immutability"})
@@ -120,13 +166,16 @@ def verify_record(record: Any, *, raw: bytes | None = None, lineage: Mapping | N
         content_identity = content_record = None
     if complete and an.digest({name: values[name] for name in sc.FIELDS}) != V1_VALUES_DIGEST:
         reasons.append(MODIFIED_PARAMETER)            # one of the ten values is not the ratified one
-    if (content_identity != V1_IDENTITY_DIGEST or content_record != V1_RECORD_DIGEST) and WRONG_DIGEST not in reasons:
-        reasons.append(WRONG_DIGEST)                  # the content no longer hashes to what the record claims and this file pins
+    try:
+        content_full = an.digest(record)
+    except Exception:
+        content_full = None
+    if (content_identity != V1_IDENTITY_DIGEST or content_record != V1_RECORD_DIGEST or content_full != V1_FULL_DIGEST) \
+            and WRONG_DIGEST not in reasons:
+        reasons.append(WRONG_DIGEST)                  # the content (the immutability block included) is not what this file pins
     declared = record.get("common_core_lineage") if isinstance(record.get("common_core_lineage"), Mapping) else {}
-    live = live_lineage() if lineage is None else dict(lineage)
     if (declared.get("version_id"), declared.get("digest")) != (V1_CORE_VERSION, V1_CORE_DIGEST) \
-            or (live.get("version_id"), live.get("digest")) != (V1_CORE_VERSION, V1_CORE_DIGEST) \
-            or live.get("bytes_digest") != V1_CORE_DIGEST or live.get("certified") is not True:
+            or not lineage_is_v1(live_lineage()) or (lineage is not None and not lineage_is_v1(lineage)):
         reasons.append(WRONG_CORE_LINEAGE)
     registered = (record.get("authority") or {}).get("registered_as_an_authority_artifact") if isinstance(record.get("authority"), Mapping) else None
     if record.get("status") != an.SNAPSHOT_STATUS or registered is not False:
@@ -135,10 +184,19 @@ def verify_record(record: Any, *, raw: bytes | None = None, lineage: Mapping | N
 
 
 def verify_ratification(ratification: Any, record: Mapping) -> list:
-    """Every reason the ratification offered does not ratify THIS record for development experiments."""
-    if not isinstance(ratification, Mapping):
+    """Every reason the ratification offered does not ratify THIS record for development experiments.
+
+    The ratification is the committed record of P3-199, whole: its own digest must be the pinned one and must be the digest of its content. A
+    dictionary that merely carries the right fields is not a ratification (P3-208, attack 1)."""
+    ratification = plain(ratification)
+    if not isinstance(ratification, dict):
         return [NOT_RATIFIED]
-    ok = (ratification.get("status") == RATIFIED and ratification.get("snapshot_id") == V1_ID and ratification.get("version") == V1_VERSION
+    try:
+        whole = an.digest({key: value for key, value in ratification.items() if key != "ratification_digest"})
+    except Exception:
+        whole = None
+    ok = (ratification.get("ratification_digest") == V1_RATIFICATION_DIGEST and whole == V1_RATIFICATION_DIGEST
+          and ratification.get("status") == RATIFIED and ratification.get("snapshot_id") == V1_ID and ratification.get("version") == V1_VERSION
           and ratification.get("identity_digest") == V1_IDENTITY_DIGEST and ratification.get("record_digest") == V1_RECORD_DIGEST
           and ratification.get("snapshot_file_sha256") == V1_FILE_SHA256 and ratification.get("values") == record.get("values")
           and set(IS_NOT) <= set(ratification.get("is_not") or ())
@@ -160,7 +218,8 @@ def profile_digest(profile: Any) -> str:
 
 @dataclasses.dataclass(frozen=True)
 class BoundSnapshot:
-    """A verified ``GI_DEVELOPMENT_SNAPSHOT_V1`` and the ONE core profile built from it. Frozen: a bound snapshot cannot be edited."""
+    """A verified ``GI_DEVELOPMENT_SNAPSHOT_V1`` and the ONE core profile built from it. Frozen against ordinary assignment only: Python can still
+    build one by hand or force an attribute, so no consumer trusts the object -- each re-checks it with ``bound_is_v1``."""
 
     snapshot_id: str
     version: int
@@ -197,8 +256,9 @@ def bind(root: str = ROOT, *, record: Any = None, raw: bytes | None = None, rati
          lineage: Mapping | None = None) -> BoundSnapshot:
     """Bind to the exact ratified snapshot, or raise ``SnapshotBindingError`` with every refusal code.
 
-    With no ``record`` the committed file is read and its raw bytes are hashed. A ``record`` given by the caller is verified by its content and
-    its digests (and by ``raw`` when the caller supplies the bytes it came from): there is no way to bind to a record that is not version 1."""
+    With no ``record`` the committed file is read and its raw bytes are hashed. A ``record`` given by the caller is reduced to plain data and
+    verified by its whole content (and by ``raw``, which must be the bytes of that same record); the profile built from it is then verified
+    against the pinned digests. ``lineage`` can only add a refusal."""
     if record is None:
         with open(os.path.join(root, SNAPSHOT_FILE), "rb") as handle:
             raw = handle.read()
@@ -209,6 +269,7 @@ def bind(root: str = ROOT, *, record: Any = None, raw: bytes | None = None, rati
                 ratification = json.load(handle)
         except (OSError, ValueError):
             ratification = None
+    record = plain(record)                              # one plain copy: what is verified below is what the profile is built from
     reasons = verify_record(record, raw=raw, lineage=lineage)
     if not reasons:
         reasons += verify_ratification(ratification, record)
@@ -217,15 +278,34 @@ def bind(root: str = ROOT, *, record: Any = None, raw: bytes | None = None, rati
     profile = build_profile(record["values"])
     if not pressure_point_matches(profile):
         raise SnapshotBindingError([PRESSURE_POINT_MISMATCH])
-    return BoundSnapshot(V1_ID, V1_VERSION, tuple((name, float(record["values"][name])) for name in sc.FIELDS), V1_IDENTITY_DIGEST,
-                         V1_RECORD_DIGEST, V1_FILE_SHA256, V1_CORE_VERSION, V1_CORE_DIGEST, PRESSURE_POINT, profile, profile_digest(profile))
+    bound = BoundSnapshot(V1_ID, V1_VERSION, tuple((name, float(record["values"][name])) for name in sc.FIELDS), V1_IDENTITY_DIGEST,
+                          V1_RECORD_DIGEST, V1_FILE_SHA256, V1_CORE_VERSION, V1_CORE_DIGEST, PRESSURE_POINT, profile, profile_digest(profile))
+    if not bound_is_v1(bound):                          # what was BUILT is checked, not only what was offered
+        raise SnapshotBindingError([MODIFIED_PARAMETER])
+    return bound
+
+
+def bound_is_v1(bound: Any) -> bool:
+    """This object IS a binding to version 1: every identity it carries and the profile it holds are re-derived and compared with the pinned
+    constants. A ``BoundSnapshot`` built by hand with other values, or edited after the binding, is not one."""
+    try:
+        amendment = bound.profile.amendment_2
+        return (type(bound) is BoundSnapshot and type(amendment) is sc.Amendment2Profile
+                and (bound.snapshot_id, bound.version, bound.identity_digest, bound.record_digest, bound.file_sha256, bound.core_version,
+                     bound.core_digest, bound.pressure_point) == (V1_ID, V1_VERSION, V1_IDENTITY_DIGEST, V1_RECORD_DIGEST, V1_FILE_SHA256,
+                                                                  V1_CORE_VERSION, V1_CORE_DIGEST, PRESSURE_POINT)
+                and an.digest(plain(dict(bound.values))) == V1_VALUES_DIGEST and an.digest(plain(amendment.to_dict())) == V1_VALUES_DIGEST
+                and bound.profile_digest == V1_PROFILE_DIGEST and profile_digest(bound.profile) == V1_PROFILE_DIGEST
+                and pressure_point_matches(bound.profile))
+    except Exception:
+        return False
 
 
 class BoundSnapshotAdapter(fam.GiHaemorrhageAdapter):
     """The GI mapping with the profile of a BOUND snapshot: a development adapter, never registered, that carries no witness name."""
 
     def __init__(self, bound: BoundSnapshot):
-        if not isinstance(bound, BoundSnapshot):
+        if not bound_is_v1(bound):
             raise SnapshotBindingError([WRONG_SNAPSHOT_ID])
         self.bound = bound
         self.amendment_2_witness = None
@@ -256,11 +336,13 @@ def open_bound_runner(bound: BoundSnapshot, case_id: str, state: Mapping | None)
 
 
 def runner_is_bound(runner: Any, bound: BoundSnapshot) -> bool:
-    """The run in hand IS the bound snapshot's: its adapter, its profile object and the digest of that profile, re-read from the run."""
+    """The run in hand IS version 1's: the binding is version 1 (``bound_is_v1``), the run carries that binding, and the profile the run would
+    integrate with hashes to the PINNED digests -- not merely to whatever the binding object says."""
     try:
-        return (isinstance(runner.adapter, BoundSnapshotAdapter) and runner.adapter.bound is bound
-                and runner.profile == bound.profile and profile_digest(runner.profile) == bound.profile_digest
-                and runner.profile.amendment_2.to_dict() == bound.value_map())
+        return (bound_is_v1(bound) and type(runner.adapter) is BoundSnapshotAdapter and runner.adapter.bound is bound
+                and runner.profile == bound.profile and profile_digest(runner.profile) == V1_PROFILE_DIGEST
+                and type(runner.profile.amendment_2) is sc.Amendment2Profile
+                and an.digest(plain(runner.profile.amendment_2.to_dict())) == V1_VALUES_DIGEST)
     except Exception:
         return False
 

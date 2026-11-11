@@ -10,7 +10,8 @@ validación clínica**. No cambió ningún byte de `clinical_core/`, de la capa,
 |---|---|
 | P3-201 lectores | **`CONSCIOUSNESS_AUTHORITY_HAS_DOWNSTREAM_SIDE_EFFECTS`** |
 | P3-202 presión | **`GI_PRESSURE_AUTHORITY_RECERTIFIED_ON_ACTIVE_CORE`** |
-| P3-209 punto de control | **B · `PRESSURE_READY_BUT_CONSCIOUSNESS_NOT_READY`** (provisional hasta cerrar P3-208) |
+| P3-208 revisión adversarial | independiente y de sólo lectura: **18 entradas** · 5 bloqueados · **11 hallazgos corregidos** · 1 declarado · 1 no comprobable (§9) |
+| P3-209 punto de control | **B · `PRESSURE_READY_BUT_CONSCIOUSNESS_NOT_READY`** (definitivo; con dos límites nuevos que también atan a la presión: C9 y C10) |
 
 Registros: `docs/revision/GI_DEVELOPMENT_SNAPSHOT_V1_RATIFICATION.json`, `docs/revision/PHASE3_GI_PREAUTHORITY_REVIEW.json`,
 `docs/revision/PHASE3_GI_PAIR_DRY_RUN.json`. Pruebas: `test_phase3_gi_preauthority_review.py`. Arneses (del lado de las pruebas):
@@ -64,6 +65,9 @@ del compuesto que sostiene el mecanismo (F, o colapso establecido); (2) F se mue
 La comprobación **puede fallar**: una categoría falsa, una F que se aleja de su objetivo y una entrega que sube sin tratar se detectan cada una (prueba). El heredado
 **no** se tomó por correcto en ningún punto.
 
+**Fuera de los episodios también** (corrección de P3-208): las mismas tres comprobaciones se corren sobre **cada** minuto comparado de las 14 corridas (**1930 minutos**), no sólo dentro de las
+ventanas de divergencia: **0** violaciones. La revisión plantó una contradicción en un minuto donde las dos palabras coinciden y ningún episodio la vio; ahora se ve (prueba).
+
 ### 2.3 P3-200D · Tabla para la docencia (nueve episodios representativos, de mayor a menor impacto)
 Para **cada** fila la docencia responde: **(a)** ¿sería defendible mostrar este estado a un residente? **(b)** ¿la alteración llega demasiado pronto o tarde?
 **(c)** ¿la recuperación llega demasiado pronto o tarde? **(d)** ¿la categoría comunica bien la gravedad fisiológica? **No las respondo: es juicio clínico-docente.**
@@ -91,32 +95,39 @@ Lo que la tabla pone delante de la docencia, sin decidirlo:
 **Método.** Recorrido por **AST** de todos los módulos de ejecución (no se abren pruebas, regresiones, herramientas ni el corpus de validación). Se distingue la **mención** de la
 **lectura ejecutable**, y la lectura del **observable vivo** de la lectura de la **llegada autorada**. El inventario queda fijado: una prueba vuelve a recorrer el AST y falla si aparece un sitio sin clasificar.
 
+**Límite del método (declarado tras P3-208).** El recorrido encuentra la clave **literal**. No ve: una clave guardada en una variable o construida en ejecución; un bucle sobre todo el observable
+(`.items()`, `**`, comparar el observable entero); un `getattr` o un ayudante que recibe la clave (lo encuentra, pero sin contarlo como lectura); ni el consumidor de un valor **derivado** de la palabra.
+Por eso la **clase** puesta a mano decide si un sitio es lector, los consumidores indirectos se listan a mano y se verifican por su importación, y **el inventario no es una prueba de que ningún otro código lea la palabra**.
+
 | | |
 |---|---|
 | Módulos con un uso sintáctico | **54** (más 7 que sólo lo nombran en texto) |
 | Sitios (módulo · función) clasificados | **119**, 0 sin clasificar |
-| **Lectores ejecutables del observable vivo en un encuentro GI** | **31** |
+| **Lectores ejecutables del observable vivo en un encuentro GI** | **32** |
 
-### 3.1 Los 31 lectores vivos, por clase
+### 3.1 Los 32 lectores vivos, por clase
 | Clase | N | Lectores | Consecuencia |
 |---|---|---|---|
 | A · sólo pantalla | 3 | `app._vitals_cells`; vista y reporte de la traza | muestran la palabra |
 | B · generación de texto | 10 | `family_engine.current_findings`, `clinical_update`; `app.format_clinical_update`, `_trace_*`; `cognitive_review`; `patient_appearance`; `image_broker.edit_prompt` | texto de examen, de actualización clínica y de la traza; **el prompt de una edición de imagen** (puede ser una llamada pagada) |
-| C · ramificación clínica | 7 | `app.observable_state_changed`; `_expected_response_prompt`, `_critical_adaptation_prompt`, `_reasoning_data_alignment_prompt`; `_trajectory_expert_model`; `image_consistency`; `visual_observations` | añade o no una tarjeta de actualización; **elige** las preguntas de reflexión adaptativa; contrato visual del paciente |
-| **D · puntuación (indirecta)** | 2 | `management_trace_analysis`, `faculty_analysis` | la palabra de **cada** estado de la traza entra en el **payload del análisis de IA y docente** |
+| C · ramificación clínica | 8 | `app.observable_state_changed`; `_expected_response_prompt`, `_critical_adaptation_prompt`, `_reasoning_data_alignment_prompt`; `_trajectory_expert_model`; `image_consistency`; `visual_observations` (función y tabla del módulo) | añade o no una tarjeta de actualización; **elige** las preguntas de reflexión adaptativa; contrato visual del paciente |
+| **D · puntuación (indirecta)** | 3 | `management_trace_analysis`, `faculty_analysis`; **`record_findings`** (y sus consumidores `faculty_portal`, `faculty_report`, `management_trace_report`) | la palabra de **cada** estado de la traza entra en el **payload del análisis de IA y docente**; y decide si el portal docente **retiene** una sugerencia de IA (ver §3.3) |
 | **E · terminación** | 1 | `family_engine._discharge_alarm` | tras un alta, un paciente no despierto «es hallado … en casa» y vuelve |
 | **F · elegibilidad de órdenes y acciones** | 3 | `family_engine._validate` (dextrosa y carbohidrato orales), `_order` (antipirético oral), `app._clinical_encounter_workspace` | órdenes rechazadas o retenidas; **la anamnesis deja de estar disponible** con «obtunded» o «unresponsive» |
-| G · persistencia | 4 | `app.learner_vitals_snapshot`, `management_state_snapshot`; `record_findings`; `trace_phase0` | la palabra queda en eventos, traza e intento |
+| G · persistencia | 3 | `app.learner_vitals_snapshot`, `management_state_snapshot`; `trace_phase0` | la palabra queda en eventos, traza e intento |
 | H · código muerto | 1 | `app._perfusion_response_direction` | sin llamador |
 
 ### 3.2 Lo que **no** lee la palabra viva (verificado)
-* **La fisiología del motor heredado.** `_surface` **reescribe** `mental_status` en cada turno desde su propia escalera; sus lecturas son de la **línea base autorada**. **Sonda en vivo:** se
-  escribió «Unresponsive» en el observable de un encuentro, se dio una orden soportada y el estado completo quedó **idéntico** al del encuentro sin tocar. Dentro del motor, sólo cinco funciones leen el observable vivo.
+* **La fisiología del motor heredado.** `_surface` **reescribe** `mental_status` desde su propia escalera; sus lecturas son de la **línea base autorada**. La afirmación ya no es una constante
+  del registro: se **deriva** del código (por AST, las cuatro lecturas de la clave en `_surface` tienen a `base` por receptor; una superficie sintética que lee el observable vivo la vuelve falsa) y de una
+  **sonda diferencial en vivo**: doce turnos soportados en los dos casos, con la palabra forzada antes de cada turno («Unresponsive», «Obtunded», «Drowsy»): **0** diferencias en signos, estado de familia y libro
+  de órdenes. **Precisión que la revisión encontró:** la palabra escrita se sobrescribe en el siguiente turno que **avanza el reloj**; en un turno de **cero minutos** (una interconsulta) **persiste** en el
+  estado, en la entrada y en su instantánea de observación. Dentro del motor, sólo cinco funciones leen el observable vivo.
 * **El resto de módulos** (88 sitios): otra familia del motor, el motor de casos generados (no integrado), autoría, catálogos, registros y los módulos de migración de `clinical_core/`.
 * **Otros campos de consciencia visibles al residente:** no existen; `learner_vitals_snapshot` expone sólo `mental_status` (no hay GCS ni AVPU autorados).
 
 ### 3.3 P3-201A/B · Efectos aguas abajo y veredicto
-La autoridad sobre la consciencia **podría alterar indirectamente**: el flujo del escenario (8 lectores), la puntuación (2, indirecta), las acciones disponibles (3), la terminación (1) y el texto visible al residente (13).
+La autoridad sobre la consciencia **podría alterar indirectamente**: el flujo del escenario (9 lectores), la puntuación (3 lectores y 3 consumidores, indirecta), las acciones disponibles (3), la terminación (1) y el texto visible al residente (13).
 
 **`CONSCIOUSNESS_AUTHORITY_HAS_DOWNSTREAM_SIDE_EFFECTS`.** Superficies exactas y guardas:
 
@@ -128,6 +139,7 @@ La autoridad sobre la consciencia **podría alterar indirectamente**: el flujo d
 | Contrato y prompt de imagen | **nueva:** generación de imágenes apagada en el entorno del experimento | no |
 | Instantáneas de la traza y de los eventos | **nueva:** el encuentro de un experimento se marca y queda fuera de los registros de residentes | no |
 | Payloads del análisis de IA y docente | **nueva:** sin análisis de IA ni rúbrica sobre un encuentro de experimento, o etiqueta obligatoria; la puntuación sigue siendo heredada | no |
+| **Retención de una sugerencia de IA en la superficie de evaluación docente** (`record_findings.inert_observables` → portal y reportes) | **nueva (hallazgo de P3-208):** la misma regla, o calcular la retención con la palabra heredada. Con la palabra heredada **constante** el portal muestra «Requires faculty review»; con una palabra que **se mueve**, la misma sugerencia se muestra como propuesta | no |
 | Preguntas de reflexión y comparación con experto | **nueva:** no se muestran para un encuentro de experimento, o se declaran | no |
 | Comparación propia de la sombra (`legacy_adapter.snapshot`) | **nueva en el par:** capturar la palabra heredada **antes** del compromiso, como ya se hace con las presiones | no |
 
@@ -160,16 +172,18 @@ vuelve a correr la serie del caso de 57 años y la compara, minuto a minuto, con
 | Colapso | **nada** (se registra y se compara) | — |
 | Terminal | **nada** (no hay regla y no se inventa) | — |
 
-**P3-203A · Atomicidad.** El par se valida como **una** transacción (14 comprobaciones; si una falla, **nada** se escribiría); los cuatro campos saldrían de **un** mapeo preparado; las dos mitades
-deben ser **el mismo curso físico** (toda lectura que no depende de las diez magnitudes es igual en las dos corridas, minuto a minuto); tras el primer rechazo el experimento queda detenido.
+**P3-203A · Atomicidad.** El par se valida como **una** transacción (18 comprobaciones; si una falla, **nada** se escribiría); los cuatro campos saldrían de **un** mapeo preparado; las dos mitades
+deben ser **el mismo curso físico** (parten de las mismas anclas de llegada y toda lectura que no depende de las diez magnitudes es igual en las dos corridas en **cada** minuto del turno); tras el primer
+rechazo el experimento queda detenido. Tras P3-208: una transacción que **lanza** es un rechazo con registro y detención (nunca una vuelta silenciosa al heredado, y nunca una excepción dentro del turno
+heredado); y un turno que la transacción **no vio**, o que llega por una ruta **sin sitio de autoridad**, es un rechazo.
 **¿Lo garantiza la arquitectura?** **Sí en la transacción en seco** (verificado en cada minuto de la serie y atacado: presión pasa y consciencia falla, y al revés). **Todavía no en la capa:**
 `AUTHORITY_DOMAIN`, la propiedad y `commit` aceptan sólo presión numérica. No es motivo de `STOP`: la garantía existe en el diseño probado; lo que falta es construirlo dormido en la capa (bloqueo C3).
 
 ## 6 · P3-204 · Vínculo con la instantánea y construcción del perfil
 **Hallazgo de la auditoría:** la capa construye los testigos **por nombre** (`systemic_consciousness.WITNESSES[nombre]`); «el testigo central» es lo que ese diccionario tenga al arrancar.
 
-**Contrato (`bind`):** identificador, versión, SHA-256 del archivo, huella de identidad, huella del registro, huella de los diez valores, linaje del núcleo (el declarado, el vivo **y los bytes del núcleo**)
-y la ratificación. El `CoreProfile` es el **perfil comprometido por omisión** (verificado como el punto que fija `gi_pressure_committed`) **más un campo**, `amendment_2`, construido **sólo** con los diez valores del
+**Contrato (`bind`):** identificador, versión, SHA-256 del archivo, huella de identidad, huella del registro, huella del registro **entero** (con su bloque de inmutabilidad), huella de los diez valores,
+huella del **perfil construido**, linaje del núcleo (el declarado, el vivo **y los bytes del núcleo**) y la ratificación **por su propia huella fijada**. El `CoreProfile` es el **perfil comprometido por omisión** (verificado como el punto que fija `gi_pressure_committed`) **más un campo**, `amendment_2`, construido **sólo** con los diez valores del
 registro. No se lee ningún nombre de testigo ni `development_profile()`. Huella del perfil ligado: `c167b45e…cc89`. Cada minuto se vuelve a comprobar que la corrida en mano es la ligada.
 
 **P3-204A · Controles de manipulación (15 variantes, todas rechazadas con su código):**
@@ -185,6 +199,20 @@ registro. No se lee ningún nombre de testigo ni `development_profile()`. Huella
 | sin ratificar, ratificación «para autoridad», valores distintos en la ratificación | `NOT_RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS` |
 | registrada como artefacto de autoridad | `NOT_A_DEVELOPMENT_SNAPSHOT_RECORD` |
 
+**Endurecido tras P3-208 (cuatro vías que pasaban y ya no pasan, cada una con su prueba):**
+
+| Vía que pasaba | Qué se hace ahora |
+|---|---|
+| un `BoundSnapshot` **hecho a mano** con los valores de LOW o HIGH y la identidad de V1 daba `WOULD_COMMIT` (la comprobación comparaba la corrida con el objeto ligado, no con lo fijado) | `bound_is_v1` re-deriva cada identidad y las huellas de los diez valores y del perfil **desde el objeto** y las compara con constantes fijadas; lo rechazan `PairDryRun`, el adaptador y `run`, y se repite cada minuto |
+| un registro cuyos números **respondían una cosa al verificar y otra al construir** (subclase de `float` o de `dict`) quedaba ligado con otros valores | el registro se reduce a datos JSON planos **antes** de verificarlo, y el perfil construido debe dar la huella fijada: se verifica **lo construido**, no sólo lo ofrecido |
+| el nivel de llegada de la corrida ligada, subido después de abrir, daba `WOULD_COMMIT` escribiendo «Drowsy», «Obtunded» o «Unresponsive» con el heredado en «Alert» | las anclas de llegada se fijan al abrir y se comparan cada minuto con las de la corrida de la sesión |
+| una ratificación de nueve campos escritos a mano, o la real con las decisiones reescritas, se aceptaba; un registro con `superseded_by` puesto, también | la ratificación debe ser el registro commiteado **entero**; el registro de la instantánea se fija entero |
+
+**Linaje:** se **lee** cada minuto (el veredicto de la capa y los bytes del núcleo). Un linaje que ofrece quien llama **sólo puede añadir** un rechazo; antes lo **sustituía**.
+
+**Límite, dicho una vez:** son comprobaciones dentro de un proceso de Python. Rechazan un registro o un objeto equivocado, modificado, parcial o forjado; **no** pueden rechazar código que reescriba el
+propio verificador en el mismo proceso. Eso lo resuelve la capa cuando el vínculo viva allí.
+
 **Dónde vive:** del lado de las pruebas. La capa necesita esta regla dentro, certificada (bloqueo C4).
 
 ## 7 · P3-205 · Guarda de la frontera de colapso
@@ -197,17 +225,23 @@ registro. No se lee ningún nombre de testigo ni `development_profile()`. Huella
   **intermedio** que ya cedió al final del turno **sigue siendo** un rechazo (prueba).
 * **Falla cerrada:** un minuto que la corrida no puede mostrar no es un minuto despejado (prueba).
 * **Colapso inminente:** no detiene; sólo el establecido es la frontera.
+* **Tipo del estado (tras P3-208):** un estado que no sea exactamente uno de los tres del núcleo (un booleano, un decimal, un texto) es un minuto **no mostrado**.
+* **Por diseño:** un minuto que un turno anterior ya despejó no se vuelve a leer (una corrida cuya historia cambia es su propio fallo).
+* **Comprobado con fisiología real por la revisión:** 57 a sin tratar, un litro de cristaloide ordenado en el 206 hace **un** turno 206→226 en el que el colapso está establecido en 207–208 y ya cedió en el 226: `WOULD_ABORT`, primer minuto establecido 207.
 * **FD-AUTH-07:** `fin de la ventana = min(240, primer minuto de colapso establecido)`; son dos comprobaciones de la misma transacción.
 
 ## 8 · P3-206 y P3-207 · Transacción en seco y serie de manejo
-**Transacción (14 comprobaciones, en orden):** captura → cómputo con V1 exacta → linaje → instantánea → caso → acción soportada → un minuto, una transacción → candidato de presión presente →
+**Transacción (18 comprobaciones, en orden):** la transacción terminó sin lanzar → el estado del encuentro quedó intacto → el turno llegó por una ruta con sitio de autoridad → ningún turno pasó sin verse →
+captura → cómputo con V1 exacta → linaje → instantánea → caso → acción soportada → un minuto, una transacción → candidato de presión presente →
 **presión validada por la transacción existente** (`AuthorityTransaction.capture/compute/validate`, con sus diez comprobaciones) → candidato de consciencia presente → reproducible → el par es un solo curso →
 frontera de colapso → ventana → la corrida común no falló → sólo se moverían los cuatro campos del par. Veredicto `WOULD_COMMIT` o `WOULD_ABORT`; después del primer rechazo, `EXPERIMENT_HALTED`.
 Además, la regla de liquidación del sitio real (una clase no soportada que sólo aparece en el libro liquidado) se aplica tras cada orden.
 **Por cada minuto** el registro guarda el estado heredado autoritativo, el candidato común, el veredicto y el motivo.
 
-**No interferencia (probada en vivo):** el estado del encuentro se resume antes y después de cada transacción (una diferencia es un error del arnés, y la guarda **salta** si se provoca); la trayectoria heredada es
-**idéntica**, minuto a minuto, a la del mismo guion con la sombra apagada y sin arnés; los parches se restauran también si el bloque lanza; dos corridas dan la misma huella.
+**No interferencia (probada en vivo):** la transacción trabaja sobre una **copia** del estado, así que lo que se le entrega no puede alcanzar el encuentro; el estado se resume antes y después (una
+diferencia es un error del arnés: queda **registrada**, rechaza el turno y `run` la lanza **después** de terminar el encuentro, nunca dentro del turno heredado); la trayectoria heredada es
+**idéntica**, minuto a minuto, a la del mismo guion con la sombra apagada y sin arnés; los parches se restauran también si el bloque lanza; dos corridas dan la misma huella. La serie de 20 encuentros se
+**volvió a correr** con el arnés endurecido: las filas son idénticas a las de antes en todas sus columnas.
 
 ### 8.1 Matriz de dos casos (idéntica en los dos; límite 240 min)
 | Escenario | Primer `WOULD_COMMIT` | Último `WOULD_COMMIT` | Primer `WOULD_ABORT` | Motivo |
@@ -235,33 +269,78 @@ restantes quedan `EXPERIMENT_HALTED`. Para referencia de sensibilidad, la fronte
 3. **El residente vería un salto.** En la recuperación dentro de la ventana, la palabra pasa de «Unresponsive» (158) a «Alert» (218) sin fila intermedia: es la granularidad del turno, igual que hoy en el heredado.
 
 ## 9 · P3-208 · Revisión adversarial independiente
-**PENDIENTE en este commit.** La revisión independiente (un revisor de sólo lectura, con los doce ataques del encargo) está en curso. Sus hallazgos, las sondas que los confirmen y las
-correcciones entran en el commit siguiente. **Hasta entonces el veredicto de §10 es PROVISIONAL** y nada de este documento afirma el resultado de esa revisión.
+**Quién y cómo.** Un revisor **independiente y de sólo lectura**: escribió sus sondas fuera del repositorio, no editó nada y **no corrió ninguna autoridad real**. Recibió el código, no las conclusiones.
+Cada hallazgo se **confirmó volviendo a correr su sonda** antes de corregir, y se volvió a correr después. Registro: `adversarial_review` en `docs/revision/PHASE3_GI_PREAUTHORITY_REVIEW.json`
+(18 entradas, cada una con su evidencia y, si se corrigió, el antes, el después y sus pruebas de regresión).
+
+### 9.1 Los doce ataques del encargo
+| # | Ataque | Resultado | Qué se encontró y qué se hizo |
+|---|---|---|---|
+| 1 | Instantánea V1 alterada | **HALLAZGO ALTO · corregido** | cuatro vías pasaban (§6): `BoundSnapshot` hecho a mano, registro que miente al construir, anclas de llegada movidas, ratificación forjada o registro con `superseded_by`. Todas rechazadas ahora |
+| 2 | Linaje equivocado | **HALLAZGO MEDIO · corregido** | un linaje ofrecido por quien llama **sustituía** la lectura viva, y los bytes del núcleo se leían **una vez** al abrir. Ahora se leen cada minuto y lo ofrecido sólo puede añadir un rechazo |
+| 3 | Lector de consciencia con cambio oculto de puntuación | **HALLAZGO MEDIO · corregido en la auditoría** | la fisiología **no** se falsó (0 diferencias en 12 turnos, 2 casos, 3 palabras). Sí: `record_findings` estaba clasificado como persistencia y decide si el portal **retiene** una sugerencia de IA; el recorrido tenía puntos ciegos; una afirmación era una constante. Reclasificado, con su guarda (la novena; no existe), sus tres consumidores y los límites del método declarados |
+| 4 | Acción no soportada tras el primer compromiso | bloqueado · **un hallazgo bajo corregido** | en el turno: `WOULD_ABORT`, `authority_had_begun` cierto y todo lo posterior `EXPERIMENT_HALTED`. En la liquidación se saltaban las filas sin clase y el libro ilegible: ahora detienen |
+| 5 | Presión pasa, consciencia falla | **bloqueado** | nunca se informa una presión sola |
+| 6 | Consciencia pasa, presión falla | bloqueado · **un hallazgo bajo corregido** | un fallo de la sesión en un minuto **anterior** del mismo turno no se leía (regla **heredada del sitio**). La transacción en seco lee ya todo el turno; la regla del sitio se declara (C10) |
+| 7 | Colapso entre captura y compromiso | **bloqueado** | con fisiología real (§7) e inyectado en el primer minuto, uno intermedio, el último y uno no mostrado |
+| 8 | Reproducción que no coincide | **bloqueado** | en cada mitad, también en un minuto intermedio |
+| 9 | Compromiso duplicado | **bloqueado** | segunda vez `WOULD_ABORT`, tercera `EXPERIMENT_HALTED` |
+| 10 | Vuelta al heredado tras el primer compromiso | **HALLAZGO MEDIO · corregido** | (a) una **excepción** dentro del minuto no era un rechazo: sin registro, sin detención, y el minuto siguiente daba `WOULD_COMMIT`; además salía al turno heredado y **faltaban su entrada y sus filas del libro**. (b) el tiempo clínico **fuera de un turno de orden** no se observaba. Ahora ambos son rechazos con registro |
+| 11 | Cambios visibles para el residente | **bloqueado** | estado, entradas, libro, llegada y sesión de sombra idénticos con y sin arnés (57 a con una orden no soportada; 72 a, 61 minutos). La única vía era 10(a) |
+| 12 | Autoridad heredada alterada durante la corrida en seco | bloqueado · **un hallazgo bajo corregido** | testigos, registro de instantáneas aprobadas, banderas y `COMMON_CORE_RUNTIME_AUTHORITY = False` intactos tras ~45 ataques. Un observador **anidado** evaluaba cada turno dos veces: ahora se rechaza |
+
+### 9.2 Hallazgos fuera de los doce
+| Hallazgo | Resultado |
+|---|---|
+| `only_the_pair_would_move` **no podía fallar por sí sola**: el arnés elegía él mismo los cuatro campos; un candidato con frecuencia, saturación y lactato daba `WOULD_COMMIT` | **corregido**: se aplica todo lo que trae la mitad de presión y el conjunto debe ser exactamente el par |
+| La **comparación de presión de P3-202 pasaba en vacío**: dos series vacías, una serie que perdía minutos o sin campos obligatorios leían `RECERTIFIED` | **corregido**; la comparación real **no cambia**: 34 escenarios, 78 minutos, 0 diferencias fuera de las explicadas |
+| El límite de tiempo no tenía techo; la guarda de estado **detectaba pero no prevenía** y lanzaba dentro del turno heredado | **corregido** (§8) |
+| Una contradicción **fuera** de los episodios no la veía nadie | **corregido** (§2.2: 1930 minutos, 0 violaciones) |
+| **Dos límites del sitio de presión que ya existe** (no del arnés) | **aceptado y declarado**, no corregido: la capa no se edita en este ciclo (§9.3) |
+| Lo que la revisión no pudo comprobar | una edición **real** de los bytes del núcleo (se simuló); la **página** del encuentro (sus lectores se leyeron, no se ejecutaron); las bifurcaciones de ataque en 72 a (se corrieron en 57 a; la serie de manejo sí cubre los dos); la suite completa |
+
+### 9.3 Dos límites del sitio de autoridad de presión que ya existe (C9 y C10)
+Son propiedades de la **capa dormida**, leídas de su código y **no modificadas**. La serie de desarrollo no las ejercita, porque juega turnos de orden por el arnés guionado; por eso la recertificación de
+§4 **no dice nada** sobre ellas.
+
+* **C9 · El tiempo clínico fuera de un turno de orden no pasa por el sitio.** Una pregunta de anamnesis o un examen avanzan el reloj del motor por `app.spend_clinical_time` (3 llamadores), que avisa a la
+  sombra (`observe_time`) y **nunca** al sitio de autoridad; y el sitio no tiene regla que note un turno que no vio. **Lectura del código, no una trayectoria medida:** con una autoridad activa, un minuto que
+  pase por esa ruta conservaría las presiones del motor heredado mientras los turnos de orden llevan las comunes. **No se ejecutó con autoridad** (este ciclo lo prohíbe). En la transacción en seco, esa
+  ruta y cualquier turno no visto se rechazan.
+* **C10 · El sitio lee los fallos de la sombra del último minuto del turno.** Un fallo registrado en un minuto intermedio de un turno de varios minutos no rechazaría el compromiso. Sólo se alcanzó por
+  inyección: en los caminos propios de la capa, un avance que falla no registra minutos posteriores.
+
+**Consecuencia para el veredicto:** «presión lista» vale para la ruta que la serie juega (**turnos de orden por el arnés guionado**), no para la página del encuentro.
 
 ## 10 · P3-209 · Punto de control
 **B · `PRESSURE_READY_BUT_CONSCIOUSNESS_NOT_READY`.**
 
-* **Presión: lista.** La serie de autoridad de desarrollo es idéntica en el núcleo activo.
-* **Consciencia: no lista.** Lo medido es favorable (15 de 15 episodios coherentes, vínculo exacto, transacción en seco correcta y atacada), pero faltan cosas que no son de medir.
-* No es `A`: quedan la revisión docente, las guardas de los lectores y el camino de compromiso. No es `C`: la transacción **diseñada** funciona; lo que no está listo es la consciencia. No es `D`: no hace falta
-  fisiología nueva ni rediseño; hace falta **extender** la capa.
+* **Presión: lista, en la ruta que la serie juega.** La serie de autoridad de desarrollo es idéntica en el núcleo activo (turnos de orden por el arnés guionado). La revisión añadió dos límites del sitio
+  que también atan a la presión **antes de cualquier uso en la página del encuentro** (C9, C10).
+* **Consciencia: no lista.** Lo medido es favorable (15 de 15 episodios coherentes y 1930 minutos sin contradicción, vínculo exacto, transacción en seco correcta), pero faltan cosas que no son de medir.
+* **La revisión adversarial no cambió ninguna de las dos mitades del veredicto.** Encontró defectos en once de sus dieciocho entradas, todos en los arneses y en la auditoría de este ciclo (del lado de las pruebas), ya corregidos y
+  con su prueba de regresión, y los dos límites del sitio. El veredicto deja de ser provisional.
+* No es `A`: quedan la revisión docente, las guardas de los lectores y el camino de compromiso. No es `C`: la transacción **diseñada** funciona y resistió la revisión una vez corregida; lo que no está
+  listo es la consciencia. No es `D`: no hace falta fisiología nueva ni rediseño; hace falta **extender** la capa.
 
 ### 10.1 Bloqueos exactos
 | # | Tipo | Bloqueo |
 |---|---|---|
 | C1 | revisión docente | FD-AUTH-04: las respuestas a la tabla de §2.3 están pendientes |
-| C2 | guardas | FD-AUTH-05: la autoridad de consciencia **tiene** efectos aguas abajo; siete de las ocho guardas no existen (§3.3) |
+| C2 | guardas | FD-AUTH-05: la autoridad de consciencia **tiene** efectos aguas abajo; **ocho de las nueve** guardas no existen (§3.3). El inventario encuentra los sitios que **nombran** la palabra; no prueba que ningún otro código la lea |
 | C3 | técnico | el camino de compromiso del par no existe en la capa (`AUTHORITY_DOMAIN`, propiedad y `commit` son de presión numérica): construirlo **dormido** y certificarlo, como se hizo con la presión |
 | C4 | técnico | el vínculo con la instantánea está del lado de las pruebas: la capa construye testigos por nombre |
 | C5 | decisión docente | la palabra «Unresponsive» con pulso (el heredado sólo la escribe en el paro; la instantánea la lee desde el minuto 158 sin tratar) |
 | C6 | decisión docente o de ingeniería | «Place an IV line.» (`vascular_access`) detiene el experimento |
 | C7 | diseño | granularidad del turno frente a la infusión: la recuperación de 4 U termina fuera de la ventana y sus minutos intermedios no se comprometen |
 | C8 | decisión docente | la concesión de autoridad y la aprobación de una instantánea **para autoridad** (el registro sigue con sólo `gi_pressure_committed`) |
+| **C9** | técnico (P3-208; **ata también a la presión**) | el tiempo clínico fuera de un turno de orden (`app.spend_clinical_time`) no pasa por el sitio de autoridad, y el sitio no nota un turno que no vio (§9.3) |
+| **C10** | técnico (P3-208; **ata también a la presión**) | el sitio lee los fallos de la sombra del **último** minuto del turno (§9.3) |
 
 ### 10.2 Paso siguiente (sin ejecutar; requiere un encargo nuevo)
 1. La docencia responde la tabla de §2.3 (C1) y las dos preguntas de palabra y de acción (C5, C6).
-2. Con esas respuestas: diseñar y construir **dormidos, en la capa**, las guardas de los lectores (C2), el camino de compromiso del par (C3) y el vínculo con la instantánea (C4), con sus mutantes y **una**
-   certificación integrada de la capa; decidir la granularidad del turno (C7).
+2. Con esas respuestas: diseñar y construir **dormidos, en la capa**, las guardas de los lectores (C2), el camino de compromiso del par (C3), el vínculo con la instantánea (C4), un sitio o un rechazo
+   explícito para el tiempo fuera de un turno de orden (C9) y la regla de fallos de todo el turno (C10), con sus mutantes y **una** certificación integrada de la capa; decidir la granularidad del turno (C7).
 3. Repetir esta serie en seco por el camino dormido de la propia capa. Sólo entonces una decisión docente (C8) podría autorizar el experimento.
 
-Independiente y ya posible: el experimento de autoridad de desarrollo **sólo de presión** en el núcleo activo.
+Independiente y ya posible: el experimento de autoridad de desarrollo **sólo de presión** en el núcleo activo, **por el arnés guionado (sólo turnos de orden)**; no en la página del encuentro hasta cerrar C9.

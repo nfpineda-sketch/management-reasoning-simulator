@@ -120,6 +120,24 @@ def episodes(counterfactual: Mapping, sensitivity: Mapping, values: Mapping[str,
     return out
 
 
+def run_coherence(counterfactual: Mapping, sensitivity: Mapping, values: Mapping[str, float], runs: str = "required_runs") -> dict:
+    """The same three checks over EVERY compared minute of every run, not only inside the divergence episodes: a structural contradiction at a
+    minute where the two words happen to agree is still one (the independent review of P3-208 planted one there and no episode saw it)."""
+    per_run, compared = {}, 0
+    for key in sorted(counterfactual[runs]):
+        run = counterfactual[runs][key]
+        case, scenario = key.split("/")
+        mechanism = _mechanism(values, an.course_of_record(sensitivity["physical"])[case][scenario]["physical"])
+        minutes = list(run["minutes"])
+        compared += len(minutes)
+        per_run[key] = _coherence(minutes, list(run["domains"]["consciousness_category"]["candidate"]), mechanism, run["first_order_minute"])
+    contradictions = sorted(key for key, found in per_run.items() if found["verdict"] != COHERENT)
+    return {"runs": len(per_run), "compared_minutes": compared, "contradictions": contradictions,
+            "violations": {name: sum(found["violations"][name] for found in per_run.values())
+                           for name in ("category_is_not_the_composite", "f_moves_away_from_its_target", "delivery_rises_before_any_order")},
+            "verdict": COHERENT if not contradictions else CONTRADICTION}
+
+
 def opposite_direction_explanation(counterfactual: Mapping, sensitivity: Mapping, values: Mapping[str, float]) -> dict:
     """Why the two GI cases diverge from the legacy engine in OPPOSITE directions at the onset of impairment, from the untreated runs alone.
 
@@ -214,7 +232,11 @@ def scan_readers(root: str = ROOT) -> dict:
     """``{module: {function: [role, ...]}}`` for every syntactic use of the key, and the modules that only mention it in text.
 
     Roles: READ (``.get(key)``, ``[key]`` loaded, attribute loaded), WRITE (stored, a dict literal's key, a keyword argument), FIELD_LIST (the key
-    inside a tuple, list or set of field names), KEY_COMPARE, PARAM, OTHER. A FIELD_LIST is counted as a read: the fields named are read by a loop."""
+    inside a tuple, list or set of field names), KEY_COMPARE, PARAM, OTHER. A FIELD_LIST is counted as a read: the fields named are read by a loop.
+
+    What this scan CANNOT see is ``SCAN_LIMITS`` below. It finds the literal key; a function that receives the whole observable and walks it
+    never names the key and is invisible here. The roles are therefore information, and the CLASS in ``READER_TABLE`` (a reading of the code by
+    hand) decides whether a site is an executable reader."""
     sites, text_only = {}, []
     for path in runtime_files(root):
         with open(path, encoding="utf-8") as handle:
@@ -264,6 +286,20 @@ def scan_readers(root: str = ROOT) -> dict:
     return {"sites": sites, "text_only": sorted(text_only)}
 
 
+#: What a scan for the literal key cannot see (the independent review of P3-208 showed each with a synthetic module). The audit is an inventory
+#: of the sites that NAME the key plus the consumers found by hand; it is not a proof that no other code reads the word.
+SCAN_LIMITS = (
+    "the key held in a variable or built at run time (an f-string, a .split() of a field string)",
+    "a loop over every item of the observable (.items(), ** unpacking, a comparison of the whole observable)",
+    "getattr with the key, or a helper that receives the key: found, but as role OTHER",
+    "a consumer of a value DERIVED from the word (it never names the key): listed by hand in INDIRECT_CONSUMERS",
+)
+#: Consumers of a value derived from the word. They do not name the key, so no scan finds them: each is verified to import its source.
+INDIRECT_CONSUMERS = {
+    "record_findings.py": ("faculty_portal.py", "faculty_report.py", "management_trace_report.py"),
+}
+
+
 def _row(kind, where, consequence, guard=None):
     return {"class": kind, "where": where, "consequence": consequence, "guard": guard}
 
@@ -273,8 +309,9 @@ def _row(kind, where, consequence, guard=None):
 READER_TABLE = {
     "family_engine.py": {
         "_surface": _row(WRITER, GI_TURN, "the engine RE-WRITES mental_status at every surface from its own ladder (its family state and the authored baseline); "
-                         "its reads here are of the baseline, never of the live observable, so a value written by an authority is overwritten next turn and "
-                         "never feeds the engine's physiology"),
+                         "its reads here are of the baseline, never of the live observable (checked by AST: ``surface_reads``), so a value written by an "
+                         "authority never feeds the engine's physiology. It is overwritten by the next turn that ADVANCES the clock: a zero-minute turn "
+                         "(a consult) leaves the written word in the state, in the entry and in its observation snapshot"),
         "_arrival_anchors": _row(BRANCHING, ARRIVAL, "reads the AUTHORED arrival level to anchor the engine's thresholds, once"),
         "_pe_attributable": _row(BRANCHING, OTHER_FAMILY, "pulmonary embolism: reads the authored baseline"),
         "_validate": _row(ELIGIBILITY, GI_TURN, "reads the LIVE observable: oral dextrose and oral carbohydrate are refused when the patient is not alert",
@@ -317,7 +354,12 @@ READER_TABLE = {
     "management_trace_portal.py": {"*": _row(DISPLAY, GI_AFTER, "the faculty's trace view lists the field")},
     "management_trace_report.py": {"*": _row(DISPLAY, GI_AFTER, "the trace report lists the field")},
     "cognitive_review.py": {"*": _row(TEXT, GI_AFTER, "names the observation in the cognitive review text")},
-    "record_findings.py": {"*": _row(PERSISTENCE, GI_AFTER, "the recorded findings keep the field")},
+    "record_findings.py": {"*": _row(SCORING, GI_AFTER, "``inert_observables`` reads every observed field of the trace, the word among them (label 'alertness'), and "
+                                     "``unsettled`` HOLDS an AI suggestion that names a field which never changed: with the legacy word constant the faculty "
+                                     "portal shows 'Requires faculty review', with a word that moves the same suggestion is shown as proposed. Consumers: "
+                                     "faculty_portal.py, faculty_report.py, management_trace_report.py",
+                                     "INDIRECT scoring evidence on the faculty's evaluation surface: no AI analysis on an authority-experiment encounter, or the "
+                                     "hold computed on the legacy word; scoring stays legacy")},
     "trace_phase0.py": {"*": _row(PERSISTENCE, GI_AFTER, "the trace schema lists the field")},
     "visual_observations.py": {"*": _row(BRANCHING, GI_PAGE, "the visual profile of the patient changes with the word (obtunded, unresponsive, sedated)",
                                          "resident-visible description and image contract")},
@@ -376,9 +418,10 @@ def reader_audit(root: str = ROOT) -> dict:
             if found is None:
                 unclassified.append(f"{module}::{function}")
                 continue
-            reads = any(role in ("READ", "FIELD_LIST", "KEY_COMPARE") for role in roles)
+            # The CLASS decides (a reading of the code by hand); the roles are what the scan saw. A site classed A-H is an executable reader
+            # whatever role the scan gave it: a key passed to a helper, or a module-level table keyed by the field, reads it too.
             rows.append({"module": module, "function": function, "roles": roles,
-                         "executable_read": bool(reads) and found["class"] not in (WRITER, MENTION), **found})
+                         "executable_read": found["class"] not in (WRITER, MENTION), **found})
     for module in scan["text_only"]:
         found = classify(module, "*")
         if found is None:
@@ -398,13 +441,70 @@ def reader_audit(root: str = ROOT) -> dict:
         "resident_visible_text": sorted(f"{r['module']}::{r['function']}" for r in live if r["class"] in (TEXT, DISPLAY)),
         "persistence": sorted(f"{r['module']}::{r['function']}" for r in live if r["class"] == PERSISTENCE),
     }
-    isolated = not any(effects[name] for name in ("scenario_flow", "scoring", "available_actions", "termination"))
+    indirect = indirect_consumers(root)
+    effects["scoring"] = sorted(set(effects["scoring"]) | {f"{consumer}::<consumer of {source}>" for source, found in indirect.items()
+                                                           for consumer in found["verified"]})
+    surface = surface_reads(root)
+    isolated = (not any(effects[name] for name in ("scenario_flow", "scoring", "available_actions", "termination"))
+                and not surface["reads_the_live_word"])
     return {"modules_with_a_syntactic_use": len(scan["sites"]), "modules_text_only": scan["text_only"], "sites": len(rows),
             "executable_readers_of_the_live_observable": len(live), "live_readers_by_class": {key: sorted(value) for key, value in sorted(by_class.items())},
             "downstream_effects": effects, "unclassified": unclassified, "rows": rows,
-            "legacy_physiology_reads_the_live_word": False,
+            "indirect_consumers": indirect, "scan_limits": list(SCAN_LIMITS),
+            # DERIVED, not asserted: the receivers of every read of the key in the engine's surface function, by AST. A test also plays the
+            # encounter twice (the word forced before each turn, and not) and compares the engine's whole state.
+            "surface_reads_of_the_key": surface, "legacy_physiology_reads_the_live_word": surface["reads_the_live_word"],
             "verdict": "CONSCIOUSNESS_AUTHORITY_ISOLATED" if isolated else "CONSCIOUSNESS_AUTHORITY_HAS_DOWNSTREAM_SIDE_EFFECTS",
             "required_guards": REQUIRED_GUARDS}
+
+
+#: The receivers a read of the key may have inside the engine's surface function: the authored baseline of the family state.
+BASELINE_RECEIVERS = ("base",)
+
+
+def surface_reads(root: str = ROOT, source: str | None = None) -> dict:
+    """Every read of the key inside ``family_engine._surface``, with the expression it is read FROM. The engine's physiology does not read the
+    live word exactly when every receiver is the authored baseline; anything else (``state``, ``o``, an observable) makes it a reader."""
+    if source is None:
+        with open(os.path.join(root, "family_engine.py"), encoding="utf-8") as handle:
+            source = handle.read()
+    tree = ast.parse(source)
+    function = next((node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef) and node.name == "_surface"), None)
+    receivers = []
+    for node in ast.walk(function) if function is not None else ():
+        target = None
+        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr in ("get", "pop") and node.args
+                and isinstance(node.args[0], ast.Constant) and node.args[0].value == KEY):
+            target = node.func.value
+        elif (isinstance(node, ast.Subscript) and isinstance(node.ctx, ast.Load) and isinstance(node.slice, ast.Constant)
+              and node.slice.value == KEY):
+            target = node.value
+        elif isinstance(node, ast.Attribute) and node.attr == KEY and isinstance(node.ctx, ast.Load):
+            target = node.value
+        if target is not None:
+            receivers.append(ast.unparse(target))
+    foreign = sorted({name for name in receivers if name not in BASELINE_RECEIVERS})
+    return {"function_found": function is not None, "receivers": sorted(receivers), "not_the_baseline": foreign,
+            "reads_the_live_word": function is None or bool(foreign)}
+
+
+def indirect_consumers(root: str = ROOT) -> dict:
+    """For each source of a derived value, the consumers listed by hand and which of them really import that source (by AST)."""
+    out = {}
+    for source, consumers in INDIRECT_CONSUMERS.items():
+        wanted, verified, missing = source[:-3], [], []
+        for consumer in consumers:
+            try:
+                with open(os.path.join(root, consumer), encoding="utf-8") as handle:
+                    tree = ast.parse(handle.read())
+            except (OSError, SyntaxError):
+                missing.append(consumer)
+                continue
+            imports = any((isinstance(node, ast.Import) and any(alias.name == wanted for alias in node.names))
+                          or (isinstance(node, ast.ImportFrom) and node.module == wanted) for node in ast.walk(tree))
+            (verified if imports else missing).append(consumer)
+        out[source] = {"verified": sorted(verified), "not_found_or_not_importing": sorted(missing)}
+    return out
 
 
 REQUIRED_GUARDS = (
@@ -421,9 +521,65 @@ REQUIRED_GUARDS = (
     {"surface": "management trace and event snapshots (persistence)", "guard": "NEW: an experiment's encounter is marked and kept out of resident records", "exists": False},
     {"surface": "AI and faculty analysis payloads (indirect scoring evidence)",
      "guard": "NEW: no AI analysis and no rubric on an authority-experiment encounter, or a mandatory label; scoring stays legacy", "exists": False},
+    {"surface": "the hold of an AI suggestion on the faculty's evaluation surface (record_findings.inert_observables -> faculty portal and reports)",
+     "guard": "NEW: found by the independent review of P3-208. The same rule as above, or the hold computed on the legacy word: with a word that moves, a "
+              "suggestion the portal holds today ('Requires faculty review') would be shown as proposed", "exists": False},
     {"surface": "adaptive reflection prompts and expert comparison", "guard": "NEW: not shown for an experiment's encounter (no resident), or declared", "exists": False},
     {"surface": "the shadow's own legacy comparison (legacy_adapter.snapshot)", "guard": "NEW in the pair: capture the legacy word BEFORE the commit, as the pressures are", "exists": False},
 )
+
+
+# ============================================================================================================================================
+# P3-208: where the layer's authority site is called, read from the source (the independent review found a route it does not cover)
+# ============================================================================================================================================
+
+def _function(tree: ast.AST, name: str):
+    return next((node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef) and node.name == name), None)
+
+
+def _names_in(node: ast.AST | None) -> set:
+    if node is None:
+        return set()
+    return ({item.attr for item in ast.walk(node) if isinstance(item, ast.Attribute)}
+            | {item.id for item in ast.walk(node) if isinstance(item, ast.Name)})
+
+
+def site_coverage(root: str = ROOT) -> dict:
+    """Two facts about the EXISTING pressure authority site, by AST, with no authority enabled:
+
+    1. the engine's clock also moves OUTSIDE an order turn (``app.spend_clinical_time``: a history question, an examination). That route calls the
+       shadow (``observe_time``) and never the authority site, and the site has no rule that notices a turn it did not see;
+    2. the site reads the shadow's failures of the turn's LAST minute only.
+
+    Neither was exercised by the development series (it plays orders through ``pilot_acceptance.Encounter.order``), so the recertification of
+    P3-202 says nothing about them. Both are declared, not changed: the layer is not edited in this cycle."""
+    with open(os.path.join(root, "app.py"), encoding="utf-8") as handle:
+        app = ast.parse(handle.read())
+    with open(os.path.join(root, "runtime_authority.py"), encoding="utf-8") as handle:
+        authority_source = handle.read()
+    spend = _function(app, "spend_clinical_time")
+    spend_names = _names_in(spend)
+    callers = sum(1 for node in ast.walk(app) if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "spend_clinical_time")
+    site_calls = sum(1 for node in ast.walk(app) if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                     and node.func.id == "_runtime_authority_site")
+    minute = _function(ast.parse(authority_source), "_minute")
+    minute_source = ast.unparse(minute) if minute is not None else ""
+    return {
+        "time_outside_an_order_turn": {
+            "route": "app.spend_clinical_time", "callers_in_app": callers, "calls_the_shadow": "observe_time" in spend_names,
+            "calls_the_authority_site": "_runtime_authority_site" in spend_names or "site_for" in spend_names,
+            "authority_site_call_sites_in_app": site_calls, "the_site_names_the_route": "observe_time" in authority_source,
+            "consequence": "with an authority active, a minute that passes on this route keeps the legacy engine's own pressures while the order turns "
+                           "carry the common ones: a mixed trajectory the site would not record. The development harness never takes this route.",
+            "in_the_dry_transaction": "refused: turn_has_a_transaction_site, and turn_was_observed for any turn the transaction did not see",
+            "evidence": "the source, by AST. NOT executed with an authority: this cycle forbids an actual authority, so the consequence is a reading "
+                        "of the code and not a measured trajectory"},
+        "failures_read_by_the_site": {
+            "rule_in_the_site": "_as_int(item.minute) == minute" in minute_source,
+            "consequence": "a shadow failure recorded at an intermediate minute of a multi-minute turn would not refuse that turn's commit. Reached "
+                           "only by injection so far: in the layer's own paths a failed advance records no later minute.",
+            "in_the_dry_transaction": "stricter: every failure the session recorded since the last turn refuses"},
+    }
 
 
 # ============================================================================================================================================
@@ -452,6 +608,10 @@ MUST_MATCH = ("common_candidate", "common_pressures", "written_candidate", "lega
               "settled_action_classes", "unsupported_actions", "failure_reason", "minute", "divergence_classes", "action_lineage")
 
 
+#: The must-match fields the site writes only for a minute that COMMITTED (an aborted minute has no written state and no settlement).
+COMMIT_ONLY = ("common_pressures", "state_digest", "moved_fields", "settled_action_classes", "action_lineage")
+
+
 def _differences(left: Any, right: Any, path: tuple, sink: dict) -> None:
     if isinstance(left, Mapping) and isinstance(right, Mapping):
         for key in sorted(set(left) | set(right)):
@@ -477,13 +637,23 @@ def compare_pressure_series(closure: Mapping, active: Mapping) -> dict:
             if left[name] != right[name]:
                 top.setdefault(name, []).append(list(key))
         _differences({k: v for k, v in left["artifact"].items() if k != "minutes"}, {k: v for k, v in right["artifact"].items() if k != "minutes"}, (), fields)
-        for one, two in zip(left["artifact"]["minutes"], right["artifact"]["minutes"]):
+        ours, theirs = list(left["artifact"]["minutes"]), list(right["artifact"]["minutes"])
+        if len(ours) != len(theirs) or [item.get("minute") for item in ours] != [item.get("minute") for item in theirs]:
+            top.setdefault("minute_records_differ_in_number_or_order", []).append(list(key))   # zip() below would silently drop the rest
+        for one, two in zip(ours, theirs):
             minutes_compared += 1
             _differences(one, two, (), fields)
             for name in MUST_MATCH:
-                if one.get(name) != two.get(name):
+                # An absent field compares equal to itself, so absence is checked: a field must be on both sides, and may be missing from
+                # both only where the site writes none (a minute that did not commit has no state it wrote)
+                required = name not in COMMIT_ONLY or one.get("outcome") == "COMMITTED" or two.get("outcome") == "COMMITTED"
+                if (name in one) != (name in two) or (required and name not in one):
+                    must_match_failures.append([list(key), one.get("minute"), f"{name}: ABSENT"])
+                elif one.get(name) != two.get(name):
                     must_match_failures.append([list(key), one.get("minute"), name])
     unexplained = sorted(name for name in fields if name not in EXPLAINED_DIFFERENCES)
+    if not a or not b or not minutes_compared:
+        top.setdefault("nothing_was_compared", []).append([len(a), len(b), minutes_compared])       # an empty series recertifies nothing
 
     def totals(dump):
         rows = dump["rows"]

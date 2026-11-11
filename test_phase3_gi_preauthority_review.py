@@ -170,6 +170,97 @@ def test_a_wrong_live_lineage_an_unratified_record_and_wrong_bytes_are_refused()
     assert REVIEW["binding_contract"]["refusals"] == list(binding.REFUSALS)
 
 
+def _low_bound():
+    """A ``BoundSnapshot`` made BY HAND: version 1's identity on the LOW witness's values (the independent review's attack 1)."""
+    low = sc.WITNESSES["LOW"].to_dict()
+    profile = binding.build_profile(low)
+    return binding.BoundSnapshot(binding.V1_ID, binding.V1_VERSION, tuple((name, float(low[name])) for name in sc.FIELDS), binding.V1_IDENTITY_DIGEST,
+                                 binding.V1_RECORD_DIGEST, binding.V1_FILE_SHA256, binding.V1_CORE_VERSION, binding.V1_CORE_DIGEST,
+                                 binding.PRESSURE_POINT, profile, binding.profile_digest(profile))
+
+
+def test_review_what_is_bound_is_what_was_built_and_a_hand_made_binding_is_not_one():
+    real = binding.bind(str(ROOT))
+    assert binding.bound_is_v1(real) and real.profile_digest == binding.V1_PROFILE_DIGEST == BOUND_PROFILE_DIGEST
+    assert an.digest(SNAPSHOT) == binding.V1_FULL_DIGEST and RATIFICATION["ratification_digest"] == binding.V1_RATIFICATION_DIGEST == RATIFICATION_DIGEST
+    forged = _low_bound()
+    assert forged.snapshot_id == real.snapshot_id and forged.identity_digest == real.identity_digest      # it SAYS it is version 1
+    assert not binding.bound_is_v1(forged)
+    with pytest.raises(binding.SnapshotBindingError):
+        binding.BoundSnapshotAdapter(forged)
+    with pytest.raises(binding.SnapshotBindingError):
+        dry.PairDryRun(forged, "gi_bleed_57m", {"sim_time": 0})
+    with pytest.raises(binding.SnapshotBindingError):
+        dry.run("gi_bleed_57m", "probe_short", bound=forged)
+    # a value forced into the real binding after the fact is seen too
+    edited = binding.bind(str(ROOT))
+    object.__setattr__(edited.profile, "amendment_2", sc.WITNESSES["HIGH"])
+    assert not binding.bound_is_v1(edited)
+
+
+def test_review_a_record_that_answers_differently_when_verified_and_when_built_cannot_change_the_profile():
+    class Liar(float):
+        """Reads as the ratified number, converts to another one."""
+        def __new__(cls, real, told):
+            self = super().__new__(cls, real)
+            self._told = told
+            return self
+
+        def __float__(self):
+            return self._told
+
+    class Flipping(dict):
+        """Answers with the ratified values for a while, then with the LOW witness's."""
+        reads = 0
+
+        def __getitem__(self, key):
+            type(self).reads += 1
+            return sc.WITNESSES["LOW"].to_dict()[key] if type(self).reads > 30 else super().__getitem__(key)
+
+    lying = copy.deepcopy(SNAPSHOT)
+    lying["values"]["burden_rise_tau"] = Liar(lying["values"]["burden_rise_tau"], 1.5)
+    lying["values"]["established_burden"] = Liar(lying["values"]["established_burden"], 0.55)
+    flipping = copy.deepcopy(SNAPSHOT)
+    flipping["values"] = Flipping(flipping["values"])
+    for record in (lying, flipping):
+        bound = binding.bind(str(ROOT), record=record)             # reduced to plain data first: one answer, the one both steps read
+        assert binding.bound_is_v1(bound) and bound.profile.amendment_2.to_dict() == SNAPSHOT["values"]
+        assert bound.profile_digest == binding.V1_PROFILE_DIGEST
+    assert binding.plain(float("nan")) is None and binding.plain({1, 2}) is None
+
+
+def test_review_a_forged_ratification_a_superseded_record_and_foreign_bytes_are_refused():
+    nine_fields = {"status": binding.RATIFIED, "snapshot_id": binding.V1_ID, "version": 1, "identity_digest": binding.V1_IDENTITY_DIGEST,
+                   "record_digest": binding.V1_RECORD_DIGEST, "snapshot_file_sha256": binding.V1_FILE_SHA256, "values": SNAPSHOT["values"],
+                   "is_not": list(binding.IS_NOT), "authority": {"added_to_an_approved_authority_snapshot_registry": False}}
+    rewritten = {**copy.deepcopy(RATIFICATION), "faculty_decisions": {"FD-AUTH-01": "approved for authority"}, "ratification_digest": "0" * 64}
+    relabelled = {**copy.deepcopy(RATIFICATION), "ratified_for": "AUTHORITY"}                # the pinned digest left in place over another text
+    for ratification in (nine_fields, rewritten, relabelled):
+        with pytest.raises(binding.SnapshotBindingError) as refused:
+            binding.bind(str(ROOT), record=copy.deepcopy(SNAPSHOT), ratification=ratification)
+        assert refused.value.reasons == (binding.NOT_RATIFIED,)
+    raw = (ROOT / an.SNAPSHOT_FILE).read_bytes()
+    superseded = copy.deepcopy(SNAPSHOT)
+    superseded["immutability"]["superseded_by"] = "GI_DEVELOPMENT_SNAPSHOT_V2"
+    for kwargs in ({"record": superseded}, {"record": superseded, "raw": raw}):
+        with pytest.raises(binding.SnapshotBindingError) as refused:
+            binding.bind(str(ROOT), **kwargs)
+        assert binding.WRONG_DIGEST in refused.value.reasons
+    assert binding.bind(str(ROOT), record=copy.deepcopy(SNAPSHOT), raw=raw).profile_digest == binding.V1_PROFILE_DIGEST
+
+
+def test_review_an_offered_lineage_cannot_stand_in_for_the_live_one(monkeypatch):
+    from clinical_core import amendment_2 as a2
+    forged = {"version_id": binding.V1_CORE_VERSION, "digest": binding.V1_CORE_DIGEST, "bytes_digest": binding.V1_CORE_DIGEST, "certified": True}
+    assert binding.lineage_is_v1(forged) and binding.lineage_is_v1(binding.live_lineage())
+    monkeypatch.setattr(a2, "amended_core_digest_now", lambda: "f" * 64)       # the core's own bytes no longer hash to the certified member
+    assert not binding.lineage_is_v1(binding.live_lineage())
+    for lineage in (None, forged):
+        with pytest.raises(binding.SnapshotBindingError) as refused:
+            binding.bind(str(ROOT), record=copy.deepcopy(SNAPSHOT), lineage=lineage)
+        assert refused.value.reasons == (binding.WRONG_CORE_LINEAGE,)
+
+
 # -- P3-200: the consciousness review ---------------------------------------------------------------------------------------------------------------
 
 def test_the_episodes_re_derive_from_the_committed_records_and_account_for_all_461_minutes():
@@ -229,6 +320,20 @@ def test_every_episode_is_mechanistically_coherent_and_the_coherence_check_can_f
     assert review._coherence(minutes, honest, risen, None)["violations"]["delivery_rises_before_any_order"] >= 1
 
 
+def test_review_coherence_is_checked_over_every_compared_minute_and_a_contradiction_outside_the_episodes_is_seen():
+    stored = REVIEW["consciousness_review"]["whole_run_coherence"]
+    assert _normal(review.run_coherence(COUNTERFACTUAL, SENSITIVITY, SNAPSHOT["values"])) == stored
+    assert (stored["runs"], stored["compared_minutes"], stored["contradictions"], stored["verdict"]) == (14, 1930, [], review.COHERENT)
+    assert set(stored["violations"].values()) == {0}
+    # the independent review planted a contradiction at a minute where the two words agree: no episode covers it, the whole run does
+    planted = copy.deepcopy(COUNTERFACTUAL)
+    key = sorted(planted["required_runs"])[0]
+    domain = planted["required_runs"][key]["domains"]["consciousness_category"]
+    assert domain["candidate"][5] == domain["legacy"][5] == 0
+    domain["candidate"][5] = 3
+    assert review.run_coherence(planted, SENSITIVITY, SNAPSHOT["values"])["contradictions"] == [key]
+
+
 def test_the_faculty_table_is_short_representative_and_left_unanswered():
     table = REVIEW["consciousness_review"]["faculty_table"]
     assert 5 <= len(table) <= 10
@@ -248,7 +353,12 @@ def test_the_reader_inventory_is_the_live_ast_scan_and_every_site_is_classified(
     stored = REVIEW["reader_audit"]
     assert audit["rows"] == stored["rows"] and audit["unclassified"] == stored["unclassified"] == []
     assert (stored["modules_with_a_syntactic_use"], len(stored["modules_text_only"])) == (54, 7)
-    assert stored["executable_readers_of_the_live_observable"] == 31 and stored["sites"] == len(stored["rows"])
+    assert stored["executable_readers_of_the_live_observable"] == 32 and stored["sites"] == len(stored["rows"]) == 119
+    assert {key: len(value) for key, value in stored["live_readers_by_class"].items()} == {
+        review.DISPLAY: 3, review.TEXT: 10, review.BRANCHING: 8, review.SCORING: 3, review.TERMINATION: 1, review.ELIGIBILITY: 3,
+        review.PERSISTENCE: 3, review.TEST_DOC: 1}
+    # the inventory says what it cannot see, and it is not offered as a proof
+    assert stored["scan_limits"] == list(review.SCAN_LIMITS) and len(stored["scan_limits"]) == 4
     for row in stored["rows"]:
         assert row["class"] in (review.DISPLAY, review.TEXT, review.BRANCHING, review.SCORING, review.TERMINATION, review.ELIGIBILITY, review.PERSISTENCE,
                                 review.TEST_DOC, review.WRITER, review.MENTION), row
@@ -277,10 +387,12 @@ def test_consciousness_authority_has_downstream_side_effects_and_the_surfaces_ar
     effects = stored["downstream_effects"]
     assert effects["available_actions"] == ["app.py::_clinical_encounter_workspace", "family_engine.py::_order", "family_engine.py::_validate"]
     assert effects["termination"] == ["family_engine.py::_discharge_alarm"]
-    assert effects["scoring"] == ["faculty_analysis.py::<text>", "management_trace_analysis.py::<text>"]
+    assert effects["scoring"] == ["faculty_analysis.py::<text>", "faculty_portal.py::<consumer of record_findings.py>",
+                                  "faculty_report.py::<consumer of record_findings.py>", "management_trace_analysis.py::<text>",
+                                  "management_trace_report.py::<consumer of record_findings.py>", "record_findings.py::<module>"]
     assert "app.py::observable_state_changed" in effects["scenario_flow"] and "family_engine.py::current_findings" in effects["resident_visible_text"]
     guards = stored["required_guards"]
-    assert len(guards) == 8 and [item["exists"] for item in guards].count(True) == 1 and [item["exists"] for item in guards].count(False) == 7
+    assert len(guards) == 9 and [item["exists"] for item in guards].count(True) == 1 and [item["exists"] for item in guards].count(False) == 8
     # the one existing guard is real: every class whose eligibility or outcome reads the word is refused by the authority
     assert set(authority.unsupported_among(("dextrose", "oral_carbohydrate", "antipyretic", "disposition", "discharge"))) == {
         "dextrose", "oral_carbohydrate", "antipyretic", "disposition", "discharge"}
@@ -290,18 +402,78 @@ def test_consciousness_authority_has_downstream_side_effects_and_the_surfaces_ar
         assert "mental_status" in text.split("_OBSERVABLE = frozenset(")[1].split(")")[0] and '"observable":' in text
 
 
-def test_live_a_written_word_does_not_reach_the_legacy_engines_state_through_a_supported_order():
+def test_review_the_hold_of_an_ai_suggestion_reads_the_word_and_the_audit_now_says_so():
+    """The independent review's finding: ``record_findings`` was classed as persistence. It decides whether the faculty portal HOLDS an AI
+    suggestion, and it does so from whether the word ever changed -- which a consciousness authority changes."""
+    import record_findings as findings
+    row = next(item for item in REVIEW["reader_audit"]["rows"] if item["module"] == "record_findings.py")
+    assert row["class"] == review.SCORING and row["where"] == review.GI_AFTER and row["executable_read"] and row["guard"]
+    assert ("mental_status", "alertness") in findings.OBSERVED
+
+    def trace(words):
+        return [{"decision_time_min": index * 10, "response_time_min": index * 10 + 10,
+                 "state_before": {"observable": {"sbp": 100 - index, "mental_status": words[index]}},
+                 "state_after": {"observable": {"sbp": 99 - index, "mental_status": words[index + 1]}}} for index in range(len(words) - 1)]
+    claim = "The resident did not reassess alertness after the transfusion."
+    constant, moving = findings.encounter_limits(trace(["Alert"] * 4)), findings.encounter_limits(trace(["Alert", "Drowsy", "Drowsy", "Alert"]))
+    assert "alertness" in constant["inert_observables"] and "alertness" not in moving["inert_observables"]
+    assert findings.unsettled(claim, constant) and not findings.unsettled(claim, moving)
+    # its consumers do not name the word, so no scan finds them: they are listed by hand and verified to import it
+    stored = REVIEW["reader_audit"]["indirect_consumers"]
+    assert _normal(review.indirect_consumers(str(ROOT))) == stored
+    assert stored == {"record_findings.py": {"verified": ["faculty_portal.py", "faculty_report.py", "management_trace_report.py"],
+                                            "not_found_or_not_importing": []}}
+
+
+def test_review_the_engine_surface_reads_only_the_baseline_and_the_claim_is_derived_from_the_source():
+    stored = REVIEW["reader_audit"]
+    surface = review.surface_reads(str(ROOT))
+    assert _normal(surface) == stored["surface_reads_of_the_key"]
+    assert surface == {"function_found": True, "receivers": ["base"] * 4, "not_the_baseline": [], "reads_the_live_word": False}
+    assert stored["legacy_physiology_reads_the_live_word"] is False
+    # the claim can be false: a surface that reads the live observable is seen, and so is a surface that is not found
+    reading = "def _surface(state, base):\n    mental = state.get('observable', {}).get('mental_status')\n    return base.get('mental_status')\n"
+    assert review.surface_reads(source=reading)["reads_the_live_word"] is True
+    assert review.surface_reads(source=reading)["not_the_baseline"] == ["state.get('observable', {})"]
+    assert review.surface_reads(source="def other():\n    pass\n")["reads_the_live_word"] is True
+
+
+WORD_SCRIPT = ("Reassess in 2 minutes.", "Give oxygen by nasal cannula at 2 L/min.", "Give pantoprazole 80 mg IV.", "Order a hemoglobin.",
+               "Give 1 L of normal saline.", "Reassess in 5 minutes.", "Transfuse 2 units of packed red blood cells.", "Request urgent upper endoscopy.",
+               "Consult gastroenterology.", "Reassess in 10 minutes.", "Reassess in 30 minutes.", "Reassess in 30 minutes.")
+
+
+def _played_with_the_word(case, word):
+    states = []
     with ev.shadow(rs.MODE_OFF):
-        plain, written = acceptance.Encounter("gi_bleed_57m"), acceptance.Encounter("gi_bleed_57m")
-        for encounter in (plain, written):
-            encounter.wait_until(5, step=1)
-        written.state["observable"]["mental_status"] = "Unresponsive"
-        assert authority.canonical(plain.state) != authority.canonical(written.state)
-        for encounter in (plain, written):
-            encounter.order("Give 1 L of normal saline.")
-        # the engine re-wrote the word from its own ladder and nothing else kept it
-        assert authority.canonical(plain.state) == authority.canonical(written.state)
-        assert plain.state["observable"]["mental_status"] == "Alert"
+        encounter = acceptance.Encounter(case)
+        for text in WORD_SCRIPT:
+            started = int(encounter.minute)
+            if word is not None:
+                encounter.state["observable"]["mental_status"] = word      # what a consciousness commit would have left in the state
+            encounter.order(text)
+            states.append((started, copy.deepcopy(encounter.state)))
+    return states, copy.deepcopy(encounter.ledger)
+
+
+@pytest.mark.parametrize("case", ["gi_bleed_57m", "gi_bleed_72f"])
+def test_live_a_written_word_never_reaches_the_legacy_engines_physiology_and_survives_only_a_zero_minute_turn(case):
+    """Twelve supported turns, the word forced before each one. The engine's physiology, its family state and the order ledger are identical;
+    the word itself survives exactly the turns that did not advance the clock (the two consults)."""
+    plain_states, plain_ledger = _played_with_the_word(case, None)
+    for word in ("Unresponsive", "Obtunded", "Drowsy"):
+        states, ledger = _played_with_the_word(case, word)
+        assert authority.canonical(ledger) == authority.canonical(plain_ledger)
+        kept = []
+        for (started, plain), (_, written) in zip(plain_states, states):
+            without = copy.deepcopy(written)
+            without["observable"]["mental_status"] = plain["observable"]["mental_status"]
+            assert authority.canonical(without) == authority.canonical(plain)                      # nothing but the word differs, ever
+            assert authority.canonical(written["family_state"]) == authority.canonical(plain["family_state"])
+            if written["observable"]["mental_status"] != plain["observable"]["mental_status"]:
+                assert int(written["sim_time"]) == started                                         # a zero-minute turn
+                kept.append(started)
+        assert len(kept) == 2 and {state["observable"]["mental_status"] for _, state in plain_states} == {"Alert"}
 
 
 # -- P3-202: pressure on the active core --------------------------------------------------------------------------------------------------------------
@@ -324,6 +496,52 @@ def test_the_pressure_authority_series_is_recertified_on_the_active_core_with_on
     # the two amendments' profile fields are OFF in the committed profile: that is why the pressures cannot have moved
     base = fam._bundle_profile(fam.COMMITTED)
     assert base.amendment_2 is None and base.hypoventilation_oxygenation_transmission_fraction is None
+
+
+def test_review_the_pressure_comparison_cannot_pass_on_an_empty_a_truncated_or_a_fieldless_series():
+    def minute(index, **extra):
+        return {**{name: f"{name}@{index}" for name in review.MUST_MATCH}, "minute": index, "outcome": "COMMITTED", **extra}
+
+    def dump(minutes):
+        meta = {name: None for name in ("layer", "authority_module", "phase2_digest", "approved", "failure_policy", "domain", "cases", "lineage")}
+        if minutes is None:
+            return {"rows": [], "meta": meta}
+        # the row counters are those of the WHOLE series on both sides, as in the review's probe: only the artifact's minutes can tell them apart
+        row = {"case": "gi_bleed_57m", "scenario": "s", "halted": False, "halt_reason": None, "committed": 3, "minutes": 3,
+               "digest_verified": True, "kinds": [], "settled_classes": [], "site": True, "replay": {"covers_every_committed_minute": True},
+               "artifact": {"minutes": minutes, "mixed_trajectory": False}}
+        return {"rows": [row], "meta": meta}
+    whole = [minute(1), minute(2), minute(3)]
+    ok = "GI_PRESSURE_AUTHORITY_RECERTIFIED_ON_ACTIVE_CORE"
+    assert review.compare_pressure_series(dump(whole), dump(copy.deepcopy(whole)))["verdict"] == ok
+    empty = review.compare_pressure_series(dump(None), dump(None))
+    assert empty["verdict"] == "BLOCKED" and "nothing_was_compared" in empty["top_level_differences"]
+    lost = review.compare_pressure_series(dump(whole), dump(whole[:1]))                 # the same counters, two minutes gone: zip() would drop them
+    assert lost["verdict"] == "BLOCKED" and "minute_records_differ_in_number_or_order" in lost["top_level_differences"]
+    bare = [{"minute": 1, "outcome": "COMMITTED"}, {"minute": 2, "outcome": "COMMITTED"}]
+    fieldless = review.compare_pressure_series(dump(bare), dump(copy.deepcopy(bare)))
+    assert fieldless["verdict"] == "BLOCKED" and any(item[2].endswith("ABSENT") for item in fieldless["must_match_failures"])
+    one_sided = review.compare_pressure_series(dump(whole), dump([minute(1), minute(2), {k: v for k, v in minute(3).items() if k != "replay_digest"}]))
+    assert one_sided["verdict"] == "BLOCKED"
+    # a minute that did not commit legitimately carries no written state: that absence, on both sides, is not a failure
+    aborted = [minute(1), {k: v for k, v in minute(2, outcome="ABORTED").items() if k not in review.COMMIT_ONLY}]
+    assert review.compare_pressure_series(dump(aborted), dump(copy.deepcopy(aborted)))["verdict"] == ok
+
+
+def test_review_two_limits_of_the_existing_site_are_read_from_the_source_and_declared_not_changed():
+    stored = REVIEW["authority_site_coverage"]
+    assert _normal(review.site_coverage(str(ROOT))) == stored
+    route = stored["time_outside_an_order_turn"]
+    assert route["route"] == "app.spend_clinical_time" and route["callers_in_app"] == 3 and route["calls_the_shadow"] is True
+    assert route["calls_the_authority_site"] is False and route["the_site_names_the_route"] is False and route["authority_site_call_sites_in_app"] == 1
+    assert "NOT executed with an authority" in route["evidence"]
+    assert stored["failures_read_by_the_site"]["rule_in_the_site"] is True
+    blockers = {item["id"]: item for item in REVIEW["checkpoint"]["blockers"]}
+    assert "spend_clinical_time" in blockers["C9"]["blocker"] and "LAST minute" in blockers["C10"]["blocker"]
+    assert "binds the pressure half too" in blockers["C9"]["kind"] and "binds the pressure half too" in blockers["C10"]["kind"]
+    # the development harness plays orders only: it never takes the route (that is why the recertification says nothing about it)
+    import test_runtime_authority_series as harness
+    assert "observe_time" not in inspect.getsource(harness) and "spend_clinical_time" not in inspect.getsource(harness)
 
 
 def test_live_the_active_core_series_reproduces_the_closure_core_fingerprint_minute_by_minute():
@@ -353,7 +571,9 @@ def test_the_pair_design_keeps_collapse_and_the_terminal_state_out_and_the_atomi
     assert design["consciousness_domain"]["mapping"] == {"0": "Alert", "1": "Drowsy", "2": "Obtunded", "3": "Unresponsive"}
     assert set(design["not_authoritative"]) == {"collapse_state", "terminal_state"}
     assert dry.PAIR_DOMAIN == ("sbp", "dbp", "map", "mental_status") and not set(dry.PAIR_DOMAIN) & set(dry.NEVER_WRITTEN)
-    assert len(design["atomicity"]) == 4 and "NOT YET in the layer" in design["can_the_architecture_guarantee_it"]
+    assert len(design["atomicity"]) == 6 and "NOT YET in the layer" in design["can_the_architecture_guarantee_it"]
+    assert dry.CHECKS[:4] == ("transaction_completed", "encounter_state_untouched", "turn_has_a_transaction_site", "turn_was_observed")
+    assert len(dry.CHECKS) == 18 and DRY["checks"] == list(dry.CHECKS)
     # the layer's commit really is numeric-pressure only today
     assert "isinstance(value, bool) or not isinstance(value, (int, float))" in inspect.getsource(authority.AuthorityTransaction.commit)
 
@@ -381,6 +601,10 @@ def test_the_collapse_guard_is_precommit_fails_closed_and_is_not_a_terminal_rule
     assert probe._boundary(102)["clear"] is True
     probe._channels = {101: row(2)}
     assert probe._boundary(101) == {"first_established_minute": 101, "minutes_not_shown": [], "clear": False}
+    # a state that is not exactly one of the core's three is a minute not shown (True is not "impending")
+    for odd in (True, 2.0, "2", 3, -1, None):
+        probe._channels = {101: row(odd)}
+        assert probe._boundary(101) == {"first_established_minute": None, "minutes_not_shown": [101], "clear": False}, odd
     assert bound.profile.amendment_2.established_burden == 0.625
 
 
@@ -395,7 +619,7 @@ def test_the_series_covers_both_cases_the_eight_required_scenarios_and_the_two_e
     assert DRY["required_scenarios"] == ["untreated", "early_treatment", "delayed_treatment", "fluid_focused", "blood_focused", "severe_deterioration",
                                          "recovery_after_severe", "late_rescue"]
     assert DRY["extra_scenarios"] == ["recovery_within_window", "unsupported_access"] and DRY["time_limit_min"] == 240
-    assert DRY["snapshot"] == binding.bind(str(ROOT)).summary() and DRY["checks"] == list(dry.CHECKS) and len(dry.CHECKS) == 14
+    assert DRY["snapshot"] == binding.bind(str(ROOT)).summary() and DRY["checks"] == list(dry.CHECKS) and len(dry.CHECKS) == 18
     assert all(DRY["matrix"]["the_two_cases_agree"].values())
 
 
@@ -515,11 +739,157 @@ def test_attack_a_run_whose_profile_is_not_the_bound_one_never_would_commit():
     assert result["summary"]["would_commit_minutes"] == 0 and "snapshot_bound" in _first_abort(result)["failed_checks"]
 
 
-def test_attack_a_wrong_lineage_never_would_commit():
-    def wrong(run, encounter):
-        run.lineage = {**run.lineage, "bytes_digest": "0" * 64}
-    result = dry.run("gi_bleed_57m", "probe_short", tamper=wrong)
+def test_attack_a_wrong_lineage_never_would_commit(monkeypatch):
+    # a wrong lineage OFFERED by the caller refuses; so does writing one over the reading (it is read again every minute, so this changes nothing)
+    def offered(run, encounter):
+        run.offered_lineage = {**binding.live_lineage(), "bytes_digest": "0" * 64}
+    result = dry.run("gi_bleed_57m", "probe_short", tamper=offered)
     assert result["summary"]["would_commit_minutes"] == 0 and "lineage_certified" in _first_abort(result)["failed_checks"]
+
+    def overwritten(run, encounter):
+        run.lineage = {**run.lineage, "bytes_digest": "0" * 64}
+    assert dry.run("gi_bleed_57m", "probe_short", tamper=overwritten)["summary"]["would_commit_minutes"] == 6
+    # the core's bytes change AFTER the dry run opened, and the caller offers a forged "good" lineage: the next minute refuses
+    from clinical_core import amendment_2 as a2
+    forged = {"version_id": binding.V1_CORE_VERSION, "digest": binding.V1_CORE_DIGEST, "bytes_digest": binding.V1_CORE_DIGEST, "certified": True}
+    real = a2.amended_core_digest_now
+
+    def bytes_move_at_three(run, encounter):
+        run.offered_lineage = dict(forged)
+        advance = run._advance
+
+        def moved(session, minute):
+            if minute >= 3:
+                monkeypatch.setattr(a2, "amended_core_digest_now", lambda: "f" * 64)
+            advance(session, minute)
+        run._advance = moved
+    result = dry.run("gi_bleed_57m", "probe_short", tamper=bytes_move_at_three)
+    monkeypatch.setattr(a2, "amended_core_digest_now", real)
+    assert result["summary"]["last_would_commit"] == 2 and _first_abort(result)["minute"] == 3
+    assert _first_abort(result)["failed_checks"] == ["lineage_certified"] and result["halt"]["authority_had_begun"] is True
+
+
+def test_review_attack_the_arrival_anchors_of_the_bound_run_cannot_be_moved():
+    """The independent review's attack: the ten values untouched, the bound run's arrival level raised. The readings that do not depend on the
+    ten magnitudes stay equal, so only the anchors show it."""
+    for level in (1, 2, 3):
+        def raised(run, encounter, level=level):
+            run.runner.anchors = dataclasses.replace(run.runner.anchors, consciousness_level=level)
+        result = dry.run("gi_bleed_57m", "probe_short", tamper=raised)
+        assert result["summary"]["would_commit_minutes"] == 0 and _first_abort(result)["failed_checks"][0] == "snapshot_bound", level
+        assert all(item["would_write"] is None for item in result["records"])
+
+
+def test_review_attack_an_exception_inside_the_transaction_is_an_abort_and_never_reaches_the_legacy_turn(monkeypatch):
+    real = authority.AuthoritySite._replayed_point
+
+    def crashes_at_three(artifact, minute):
+        if minute >= 3:
+            raise RuntimeError("replay crashed")
+        return real(artifact, minute)
+    monkeypatch.setattr(authority.AuthoritySite, "_replayed_point", staticmethod(crashes_at_three))
+    result = dry.run("gi_bleed_57m", "probe_short")                         # does not raise: the turn of minute 3 completed in the legacy engine
+    refused = _first_abort(result)
+    assert refused["minute"] == 3 and refused["failed_checks"] == ["transaction_completed"] and "replay crashed" in refused["detail"]["transaction_completed"]
+    assert result["halt"]["stage"] == "exception" and result["halt"]["authority_had_begun"] is True and result["summary"]["last_would_commit"] == 2
+    assert [item["verdict"] for item in result["records"] if item["minute"] > 3] == [dry.HALTED] * 3            # no later minute would commit
+    # the legacy encounter is the one nobody observed: same clock, same number of entries, same ledger rows
+    monkeypatch.setattr(authority.AuthoritySite, "_replayed_point", staticmethod(real))
+    with ev.shadow(rs.MODE_OFF):
+        alone = acceptance.Encounter("gi_bleed_57m")
+        alone.wait_until(6, step=1)
+    beside = result["encounter"]
+    assert (int(beside.minute), len(beside.entries), len(beside.ledger)) == (int(alone.minute), len(alone.entries), len(alone.ledger)) == (6, 6, 6)
+    assert authority.canonical(beside.state["observable"]) == authority.canonical(alone.state["observable"])
+
+
+def test_review_attack_time_outside_an_order_turn_and_a_turn_nobody_saw_are_refused():
+    with ev.shadow(rs.MODE_SHADOW_COMPARE), dry.observing(registry := {}):
+        encounter = acceptance.Encounter("gi_bleed_57m")
+        run = dry.PairDryRun(binding.bind(str(ROOT)), "gi_bleed_57m", encounter.state)
+        registry[id(encounter.shadow)] = run
+        encounter.wait_until(2, step=1)
+        assert [item["verdict"] for item in run.records] == [dry.WOULD_COMMIT] * 2
+        # the route of app.spend_clinical_time: the engine lets a minute pass and the shadow is told through observe_time
+        import family_engine
+        before = encounter.shadow.capture(encounter.state)
+        passed = family_engine.advance_clinical_time(encounter.state, 1, label="history question")
+        encounter.shadow.observe_time(before, encounter.state, passed)
+        refused = run.records[-1]
+        assert refused["route"] == dry.TIME_OUTSIDE_AN_ORDER and refused["verdict"] == dry.WOULD_ABORT
+        assert refused["failed_checks"][0] == "turn_has_a_transaction_site" and run.halt["authority_had_begun"] is True
+        encounter.wait_until(int(encounter.minute) + 1, step=1)
+        assert run.records[-1]["verdict"] == dry.HALTED and run.would_commit == [1, 2]
+    # a turn the transaction never saw: the clock moved between two turns it was shown
+    with ev.shadow(rs.MODE_SHADOW_COMPARE):
+        encounter = acceptance.Encounter("gi_bleed_57m")
+        run = dry.PairDryRun(binding.bind(str(ROOT)), "gi_bleed_57m", encounter.state)
+        encounter.wait_until(2, step=1)                                       # not observed: nothing is patched here
+        with dry.observing({id(encounter.shadow): run}):
+            encounter.wait_until(3, step=1)
+    assert run.records[0]["minute"] == 3 and run.records[0]["verdict"] == dry.WOULD_ABORT and "turn_was_observed" in run.records[0]["failed_checks"]
+    assert run.records[0]["detail"]["turn_was_observed"] == {"turn_started_at": 2, "last_minute_this_transaction_saw": 0}
+    assert rs.ShadowSession.observe_time.__qualname__ == "ShadowSession.observe_time"
+
+
+def test_review_attack_a_candidate_that_carries_another_field_is_refused_by_the_domain_check_alone(monkeypatch):
+    real = authority.shaped_like_legacy
+    monkeypatch.setattr(authority, "shaped_like_legacy", lambda candidate, legacy: {**real(candidate, legacy), "hr": 999, "lactate": 99.0})
+    result = dry.run("gi_bleed_57m", "probe_short")
+    refused = _first_abort(result)
+    assert refused["minute"] == 1 and refused["failed_checks"] == ["only_the_pair_would_move"] and refused["would_write"] is None
+    assert set(refused["detail"]["only_the_pair_would_move"]["would_write_fields"]) == set(dry.PAIR_DOMAIN) | {"hr", "lactate"}
+    assert {"hr", "lactate"} <= set(refused["would_move"]) and result["summary"]["would_commit_minutes"] == 0
+
+
+def test_review_attack_a_settled_row_without_a_class_and_an_unreadable_ledger_halt_at_settlement():
+    for ledger in ([{"order_id": "t9:0", "fate": "EXECUTED"}], [{"class": None, "fate": "EXECUTED"}], "garbage", None, [None],
+                   [{"class": " Vascular_Access "}], [{"class": "fluid"}, {"class": "intubation"}]):
+        captured = {}
+        result = dry.run("gi_bleed_57m", "probe_short", tamper=lambda run, encounter: captured.update(run=run))
+        run = captured["run"]
+        assert result["halt"] is None and run.would_commit == [1, 2, 3, 4, 5, 6]
+        run.settle(ledger)
+        assert run.halt is not None and run.halt["stage"] == "settlement" and run.halt["authority_had_begun"] is True, ledger
+        assert run.records[-1]["verdict"] == dry.WOULD_COMMIT            # the minute that would already have committed is not rewritten
+    captured = {}
+    dry.run("gi_bleed_57m", "probe_short", tamper=lambda run, encounter: captured.update(run=run))
+    captured["run"].settle([{"class": "fluid"}, {"class": "reassessment"}])
+    assert captured["run"].halt is None
+
+
+def test_review_attack_a_failure_at_an_earlier_minute_of_the_turn_refuses_the_turn():
+    """The existing site reads the failures of the turn's last minute. The dry transaction reads every failure since the last turn."""
+    def fails_inside_the_infusion(run, encounter):
+        advance = run._advance
+
+        def injected(session, minute):
+            if minute > 20 and not any(item.where == "injected" for item in session.failures):
+                session.failures.append(rs.ShadowFailure(15, "injected", "Injected", "a failure at an intermediate minute of this turn", rs.UNEXPECTED))
+            advance(session, minute)
+        run._advance = injected
+    dry.SCENARIOS["probe_infusion"] = {"at": {2: (dry.SALINE,)}, "horizon": 24}
+    result = dry.run("gi_bleed_57m", "probe_infusion", tamper=fails_inside_the_infusion)
+    refused = _first_abort(result)
+    assert refused["minute"] == 22 and result["summary"]["last_would_commit"] == 2
+    assert refused["failed_checks"] == ["pressure_validated"] and "invariants_hold" in refused["detail"]["pressure_validated"]["validation_failures"]
+
+
+def test_review_attack_the_time_limit_can_be_shortened_and_never_lengthened():
+    for asked, held in ((10 ** 9, dry.TIME_LIMIT_MIN), (dry.TIME_LIMIT_MIN + 1, dry.TIME_LIMIT_MIN), (3, 3), (-5, 0)):
+        assert dry.PairDryRun(binding.bind(str(ROOT)), "gi_bleed_57m", {"sim_time": 0}, time_limit=asked).time_limit == held
+    assert dry.run("gi_bleed_57m", "probe_short", time_limit=10 ** 9)["summary"]["time_limit"] == dry.TIME_LIMIT_MIN == 240
+
+
+def test_review_attack_a_second_nested_observer_is_refused_and_every_patch_is_restored():
+    with dry.observing({}):
+        with pytest.raises(RuntimeError, match="already observing"):
+            with dry.observing({}):
+                pass
+        assert getattr(rs.ShadowSession.observe, "_pair_dry_run_patch", False)       # the outer observer is still in place
+    for function, name in ((rs.ShadowSession.observe, "ShadowSession.observe"), (rs.ShadowSession.observe_time, "ShadowSession.observe_time"),
+                           (acceptance.Encounter.order, "Encounter.order")):
+        assert function.__qualname__ == name and not getattr(function, "_pair_dry_run_patch", False)
 
 
 def test_attack_consciousness_fails_while_pressure_passes_and_no_pressure_alone_would_be_written():
@@ -563,10 +933,10 @@ def test_attack_the_same_minute_twice_an_undeclared_turn_and_no_resurrection_aft
     run, encounter = captured["run"], captured["encounter"]
     assert result["summary"]["would_commit_minutes"] == 6 and result["halt"] is None
     before = authority.canonical(encounter.state)
-    again = run.minute(None, encounter.state, encounter.shadow, [{"type": "reassessment"}], "again")
-    assert again["verdict"] == dry.WOULD_ABORT and "minute_not_already_committed" in again["failed_checks"]
+    again = run.minute(copy.deepcopy(encounter.state), encounter.state, encounter.shadow, [{"type": "reassessment"}], "again")
+    assert again["verdict"] == dry.WOULD_ABORT and again["failed_checks"] == ["minute_not_already_committed"]
     assert authority.canonical(encounter.state) == before
-    later = run.minute(None, encounter.state, encounter.shadow, [{"type": "reassessment"}], "later")
+    later = run.minute(copy.deepcopy(encounter.state), encounter.state, encounter.shadow, [{"type": "reassessment"}], "later")
     assert later["verdict"] == dry.HALTED and run.phase == dry.HALTED and run.would_commit[-1] == 6
     # an undeclared turn fails closed on a fresh run
     fresh = dry.PairDryRun(binding.bind(str(ROOT)), "gi_bleed_57m", acceptance.Encounter("gi_bleed_57m").state)
@@ -588,36 +958,73 @@ def test_the_patches_are_restored_even_when_the_block_raises_and_the_state_guard
         with dry.observing({}):
             raise RuntimeError("boom")
     assert rs.ShadowSession.observe.__qualname__ == "ShadowSession.observe" and acceptance.Encounter.order.__qualname__ == "Encounter.order"
-    # the guard that says "the dry run changed the encounter state" raises when something does
+    # The transaction works on a COPY: a write made through what it is handed never reaches the encounter (the review's probe D)
     with ev.shadow(rs.MODE_SHADOW_COMPARE):
         encounter = acceptance.Encounter("gi_bleed_57m")
         run = dry.PairDryRun(binding.bind(str(ROOT)), "gi_bleed_57m", encounter.state)
-        real = run._advance
+        evaluate = run._evaluate
 
-        def meddle(session, minute):
-            real(session, minute)
-            encounter.state["observable"]["sbp"] = 1
-        run._advance = meddle
+        def writes_into_what_it_was_handed(record, minute, before, after, *rest):
+            after["observable"]["sbp"] = 1
+            return evaluate(record, minute, before, after, *rest)
+        run._evaluate = writes_into_what_it_was_handed
         with dry.observing({id(encounter.shadow): run}):
-            with pytest.raises(dry.DryRunViolation):
-                encounter.wait_until(1, step=1)
+            encounter.wait_until(1, step=1)
+        assert encounter.state["observable"]["sbp"] != 1 and run.violations == []
+    # The guard itself: something that holds the ENCOUNTER and writes to it during the dry minute is detected, recorded and refused --
+    # without raising into the legacy turn. ``run`` raises afterwards, once the encounter has ended.
+    def meddle(run, encounter):
+        advance = run._advance
+
+        def meddling(session, minute):
+            advance(session, minute)
+            encounter.state["observable"]["sbp"] = 1
+        run._advance = meddling
+    with ev.shadow(rs.MODE_SHADOW_COMPARE):
+        encounter = acceptance.Encounter("gi_bleed_57m")
+        run = dry.PairDryRun(binding.bind(str(ROOT)), "gi_bleed_57m", encounter.state)
+        meddle(run, encounter)
+        with dry.observing({id(encounter.shadow): run}):
+            encounter.wait_until(1, step=1)                                  # no exception inside the turn
+        assert len(encounter.entries) == 1 and run.violations and run.records[-1]["verdict"] == dry.WOULD_ABORT
+        assert "encounter_state_untouched" in run.records[-1]["failed_checks"] and run.would_commit == [] and run.halt["stage"] == "state_guard"
+    with pytest.raises(dry.DryRunViolation):
+        dry.run("gi_bleed_57m", "probe_short", tamper=meddle)
     assert rs.ShadowSession.observe.__qualname__ == "ShadowSession.observe"
 
 
 # -- P3-208 and P3-209: the review and the checkpoint -------------------------------------------------------------------------------------------------------
 
-def test_the_adversarial_review_status_is_said_and_never_assumed():
-    # The independent review (P3-208) is recorded as PENDING until its findings are in the record: nothing is claimed about it before.
-    assert REVIEW["adversarial_review_status"] in ("PENDING", "DONE")
-    assert (REVIEW["adversarial_review_status"] == "DONE") == bool(REVIEW["adversarial_review"])
-    assert REVIEW["checkpoint"]["provisional"] == (REVIEW["adversarial_review_status"] == "PENDING")
+REQUIRED_ATTACKS = ("altered V1 snapshot", "wrong lineage", "consciousness reader causing hidden scoring change", "action unsupported after first commit",
+                    "pressure passes / consciousness fails", "consciousness passes / pressure fails", "collapse reached between capture and commit",
+                    "replay mismatch", "duplicated commit", "fallback to legacy after first authority commit", "resident-visible output changes",
+                    "legacy authority accidentally changed during dry-run")
+
+
+def test_the_adversarial_review_is_recorded_with_what_was_found_and_what_was_done():
+    findings = REVIEW["adversarial_review"]
+    assert REVIEW["adversarial_review_status"] == "DONE" and REVIEW["checkpoint"]["provisional"] is False
+    assert [item["attack"] for item in findings][:12] == list(REQUIRED_ATTACKS)             # the twelve attacks of the assignment, in its order
+    for item in findings:
+        assert item["attack"] and item["outcome"] in REVIEW["adversarial_review_scope"]["outcomes"], item
+        assert item["evidence"], item
+        if item["outcome"] == "FINDING_CORRECTED":
+            assert item.get("before") and item.get("after") and item.get("regression_tests"), item
+    # every regression test the record cites exists in this module
+    cited = {name for item in findings for name in item.get("regression_tests", [])}
+    assert cited and cited <= {name for name in globals() if name.startswith("test_")}, sorted(cited - set(globals()))
+    outcomes = [item["outcome"] for item in findings]
+    assert outcomes.count("FINDING_CORRECTED") >= 5 and "FINDING_ACCEPTED_AND_DECLARED" in outcomes and "NOT_TESTABLE" in outcomes
+    scope = REVIEW["adversarial_review_scope"]
+    assert "ran no actual authority" in scope["who"] and len(scope["not_tested"]) == 4
 
 
 def test_the_checkpoint_returns_exactly_one_legal_verdict_names_its_blockers_and_grants_nothing():
     checkpoint = REVIEW["checkpoint"]
     assert checkpoint["verdict"] == rec.CHECKPOINT == "PRESSURE_READY_BUT_CONSCIOUSNESS_NOT_READY" and checkpoint["verdict"] in checkpoint["options"]
     assert len(checkpoint["options"]) == 4 and checkpoint["options"].count(checkpoint["verdict"]) == 1
-    assert [item["id"] for item in checkpoint["blockers"]] == [f"C{n}" for n in range(1, 9)]
+    assert [item["id"] for item in checkpoint["blockers"]] == [f"C{n}" for n in range(1, 11)]
+    assert checkpoint["provisional"] is False and "THROUGH THE SCRIPTED HARNESS" in checkpoint["next_package"]
     assert "None of this is an authority grant" in checkpoint["reading"]
     # the two halves of the verdict are the two measured facts
     assert REVIEW["pressure_recertification"]["comparison"]["verdict"] == "GI_PRESSURE_AUTHORITY_RECERTIFIED_ON_ACTIVE_CORE"

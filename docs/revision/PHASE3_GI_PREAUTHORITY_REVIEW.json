@@ -1,6 +1,280 @@
 {
- "adversarial_review": [],
- "adversarial_review_status": "PENDING",
+ "adversarial_review": [
+  {
+   "after": [
+    "bound_is_v1 re-derives every identity and the digests of the ten values and of the built profile from the object and compares them with pinned constants; PairDryRun, the adapter and run() refuse anything else, and the check is repeated every minute",
+    "the record is reduced to plain JSON data before it is verified, and the profile built from it must hash to the pinned profile digest",
+    "the arrival anchors of the bound run are pinned when the dry run opens and compared every minute with the session's own run",
+    "the ratification must be the committed record whole (its pinned digest and the digest of its content); the whole snapshot record, its immutability block included, is pinned"
+   ],
+   "attack": "altered V1 snapshot",
+   "before": [
+    "a BoundSnapshot built by hand with the LOW or HIGH witness's values and version 1's identity gave WOULD_COMMIT on every minute (the snapshot check compared the run with the binding object, never with the pinned snapshot)",
+    "a record whose numbers answered one value to the verification and another to the construction (a float subclass, a dict subclass) was bound with other values",
+    "the bound run's arrival level raised after opening gave WOULD_COMMIT writing Drowsy, Obtunded or Unresponsive while the legacy engine read Alert",
+    "a ratification of nine hand-written fields, or the real one with its decisions rewritten, was accepted; a record with superseded_by set was accepted"
+   ],
+   "evidence": "Already refused: a modified value, digests recomputed inside the record, the three witnesses, a wrong type, an extra key, a wrong version, and a run whose profile or adapter was replaced after the binding. FOUND: four ways through.",
+   "outcome": "FINDING_CORRECTED",
+   "regression_tests": [
+    "test_review_what_is_bound_is_what_was_built_and_a_hand_made_binding_is_not_one",
+    "test_review_a_record_that_answers_differently_when_verified_and_when_built_cannot_change_the_profile",
+    "test_review_a_forged_ratification_a_superseded_record_and_foreign_bytes_are_refused",
+    "test_review_attack_the_arrival_anchors_of_the_bound_run_cannot_be_moved"
+   ],
+   "residual": "checks inside one Python process: they refuse a wrong or forged record or object, not code that rewrites the checker itself",
+   "severity": "HIGH"
+  },
+  {
+   "after": [
+    "the live lineage is always read; an offered lineage can only add a refusal",
+    "the layer's verdict and the core's own bytes are read again at every minute"
+   ],
+   "attack": "wrong lineage",
+   "before": [
+    "a lineage passed by the caller REPLACED the live reading, in bind() and in the dry run: a forged 'certified' lineage gave WOULD_COMMIT while the core's bytes read ffff...",
+    "the digest of the core's bytes was read once, when the dry run opened: changed afterwards, every later minute still gave WOULD_COMMIT"
+   ],
+   "evidence": "Already refused: the layer's verdict false, the lineage truncated, a dry run or a binding opened while the core's bytes read wrong. FOUND: two ways through.",
+   "outcome": "FINDING_CORRECTED",
+   "regression_tests": [
+    "test_review_an_offered_lineage_cannot_stand_in_for_the_live_one",
+    "test_attack_a_wrong_lineage_never_would_commit"
+   ],
+   "residual": "a real edit of the core's bytes was not made (the repository is not touched): it is simulated by replacing what the reader returns",
+   "severity": "MEDIUM"
+  },
+  {
+   "after": [
+    "reclassified as indirect scoring with its guard (the ninth; eight do not exist) and its consumers listed and verified by import",
+    "the limits of the scan are part of the record, the class given by hand decides whether a site is a reader, and the audit says it is an inventory, not a proof",
+    "the claim is derived from the source (every read of the key in the engine's surface function has the authored baseline as its receiver) and from a live differential run of twelve turns in both cases",
+    "the row says exactly which turns keep the word"
+   ],
+   "attack": "consciousness reader causing hidden scoring change",
+   "before": [
+    "record_findings.inert_observables was classed as persistence with no guard. It decides whether the faculty portal HOLDS an AI suggestion: with the legacy word constant the portal shows 'Requires faculty review'; with a word that moves, the same suggestion is shown as proposed. Its three consumers had no row",
+    "the scan finds the literal key only: a key in a variable, a loop over the whole observable, a helper or getattr are invisible or uncounted",
+    "'the legacy physiology does not read the live word' was a literal False in the record",
+    "'overwritten next turn' was false for a turn that advances no minute: the written word stays in the state, the entry and its observation snapshot"
+   ],
+   "evidence": "Physiology NOT falsified: the word forced before each of twelve supported turns in both cases changed nothing in the vitals, the family state or the ledger. FOUND: a reader the audit had mis-classed, three blind spots of the scan and a claim that was a constant.",
+   "outcome": "FINDING_CORRECTED",
+   "regression_tests": [
+    "test_review_the_hold_of_an_ai_suggestion_reads_the_word_and_the_audit_now_says_so",
+    "test_review_the_engine_surface_reads_only_the_baseline_and_the_claim_is_derived_from_the_source",
+    "test_live_a_written_word_never_reaches_the_legacy_engines_physiology_and_survives_only_a_zero_minute_turn",
+    "test_the_reader_inventory_is_the_live_ast_scan_and_every_site_is_classified"
+   ],
+   "residual": "the guard does not exist (blocker C2); a reader that never names the key and is not listed by hand would not be found",
+   "severity": "MEDIUM"
+  },
+  {
+   "after": [
+    "every settled row goes through the site's own filter (a row with no class is untyped_action) and a ledger that is not a list of rows is unreadable: both halt"
+   ],
+   "attack": "action unsupported after first commit",
+   "before": [
+    "a settled row with no class, a ledger that was None or a string, and rows that were not mappings were skipped: no halt"
+   ],
+   "evidence": "BLOCKED in the turn: vascular access after four would-commit minutes gave WOULD_ABORT with authority_had_begun true and every later minute HALTED; an undeclared turn, an added class and an untyped action aborted; a class that exists only in the settled ledger halted at settlement. FOUND at settlement only.",
+   "outcome": "FINDING_CORRECTED",
+   "regression_tests": [
+    "test_review_attack_a_settled_row_without_a_class_and_an_unreadable_ledger_halt_at_settlement",
+    "test_an_unsupported_class_aborts_after_authority_began_and_no_later_minute_would_commit"
+   ],
+   "severity": "LOW"
+  },
+  {
+   "attack": "pressure passes / consciousness fails",
+   "evidence": "a bound run that failed, that lacks the minute, or that is another course gave WOULD_ABORT with nothing to write; no pressure alone is ever reported.",
+   "outcome": "BLOCKED",
+   "regression_tests": [
+    "test_attack_consciousness_fails_while_pressure_passes_and_no_pressure_alone_would_be_written"
+   ]
+  },
+  {
+   "after": [
+    "the dry transaction reads every failure the session recorded since the last turn; the site's own rule is declared as blocker C10 and not changed"
+   ],
+   "attack": "consciousness passes / pressure fails",
+   "before": [
+    "a session failure recorded at an EARLIER minute of the same multi-minute turn was not read (the site's rule reads the turn's last minute): WOULD_COMMIT"
+   ],
+   "evidence": "BLOCKED: a replay that differs or is absent, a legacy arrest, no candidate, a session failure at the minute and a minute not compared all aborted. FOUND: one case inherited from the existing site.",
+   "outcome": "FINDING_CORRECTED",
+   "regression_tests": [
+    "test_review_attack_a_failure_at_an_earlier_minute_of_the_turn_refuses_the_turn",
+    "test_attack_pressure_fails_while_consciousness_passes_and_no_pair_is_reported",
+    "test_review_two_limits_of_the_existing_site_are_read_from_the_source_and_declared_not_changed"
+   ],
+   "severity": "LOW"
+  },
+  {
+   "attack": "collapse reached between capture and commit",
+   "evidence": "real physiology, gi_bleed_57m untreated: would-commit at 206, abort at 207. A litre of crystalloid ordered at 206 makes ONE turn 206 to 226 in which collapse is established at 207 and 208 and is clear again at 226: WOULD_ABORT with first_established_minute 207. An established state injected at the first, a middle, the last and a not-shown minute of a turn all aborted. By design: a minute an earlier turn cleared is not read again, and impending collapse is not the boundary. Tightened in passing: a state that is not exactly one of the core's three is a minute not shown.",
+   "outcome": "BLOCKED",
+   "regression_tests": [
+    "test_the_collapse_guard_is_precommit_fails_closed_and_is_not_a_terminal_rule",
+    "test_the_would_commit_window_ends_at_the_first_established_collapse_or_at_the_time_limit_whichever_is_first"
+   ]
+  },
+  {
+   "attack": "replay mismatch",
+   "evidence": "each half: the pressure replay refuses with minute_reproducible; the consciousness half refuses at the last minute and at an intermediate minute of a turn.",
+   "outcome": "BLOCKED",
+   "regression_tests": [
+    "test_attack_pressure_fails_while_consciousness_passes_and_no_pair_is_reported",
+    "test_attack_consciousness_fails_while_pressure_passes_and_no_pressure_alone_would_be_written"
+   ]
+  },
+  {
+   "attack": "duplicated commit",
+   "evidence": "the same minute a second time gave WOULD_ABORT (minute_not_already_committed), a third call HALTED.",
+   "outcome": "BLOCKED",
+   "regression_tests": [
+    "test_attack_the_same_minute_twice_an_undeclared_turn_and_no_resurrection_after_a_halt"
+   ]
+  },
+  {
+   "after": [
+    "an exception is a WOULD_ABORT (transaction_completed) with a record and a halt and never reaches the turn: the encounter is the one nobody observed",
+    "that route is observed and refused (turn_has_a_transaction_site), and any turn the transaction did not see is refused (turn_was_observed)"
+   ],
+   "attack": "fallback to legacy after first authority commit",
+   "before": [
+    "an exception inside the dry minute was not an abort: no record, no halt, and the next minute gave WOULD_COMMIT. It also left through the patched observer into the legacy turn: the clock had advanced and that turn's entry and ledger rows were missing",
+    "clinical time outside an order turn (ShadowSession.observe_time, the route of app.spend_clinical_time) was not observed at all: the clock moved, the legacy values were what the state showed, and the next order turn gave WOULD_COMMIT"
+   ],
+   "evidence": "No path resets a halt. FOUND: two ways in which the legacy engine simply went on after would-commit minutes, with no abort recorded.",
+   "outcome": "FINDING_CORRECTED",
+   "regression_tests": [
+    "test_review_attack_an_exception_inside_the_transaction_is_an_abort_and_never_reaches_the_legacy_turn",
+    "test_review_attack_time_outside_an_order_turn_and_a_turn_nobody_saw_are_refused"
+   ],
+   "severity": "MEDIUM"
+  },
+  {
+   "attack": "resident-visible output changes",
+   "evidence": "the state, the entries, the ledger, the arrival and the shadow session (failures, gaps, minutes, mirrored actions, record) are identical with and without the harness, on gi_bleed_57m with an unsupported order and on gi_bleed_72f over 61 minutes. The one way to change them was the exception above, now closed.",
+   "outcome": "BLOCKED",
+   "regression_tests": [
+    "test_live_the_dry_run_is_deterministic_reproduces_the_record_and_leaves_the_legacy_encounter_exactly_as_it_was",
+    "test_review_attack_an_exception_inside_the_transaction_is_an_abort_and_never_reaches_the_legacy_turn"
+   ]
+  },
+  {
+   "after": [
+    "a nested observer is refused"
+   ],
+   "attack": "legacy authority accidentally changed during dry-run",
+   "before": [
+    "a second, nested observer on the same registry evaluated every turn twice and produced a spurious abort at minute 1"
+   ],
+   "evidence": "BLOCKED: the witnesses, the approved-snapshot registry, the identity of the patched functions, the environment flags and COMMON_CORE_RUNTIME_AUTHORITY = False are identical after two runs and about forty-five attacks; the patches are restored after an exception; the record digest is equal in two runs and in another process with another hash seed. FOUND: one harness defect.",
+   "outcome": "FINDING_CORRECTED",
+   "regression_tests": [
+    "test_review_attack_a_second_nested_observer_is_refused_and_every_patch_is_restored",
+    "test_the_patches_are_restored_even_when_the_block_raises_and_the_state_guard_is_real"
+   ],
+   "severity": "LOW"
+  },
+  {
+   "after": [
+    "everything the pressure half carries is applied to the throwaway copy and the set of fields must be exactly the pair"
+   ],
+   "attack": "the domain check could not fail on its own (found beyond the twelve)",
+   "before": [
+    "a pressure candidate that also carried a heart rate, a saturation and a lactate gave WOULD_COMMIT"
+   ],
+   "evidence": "only_the_pair_would_move was true by construction: the harness itself chose the four fields.",
+   "outcome": "FINDING_CORRECTED",
+   "regression_tests": [
+    "test_review_attack_a_candidate_that_carries_another_field_is_refused_by_the_domain_check_alone"
+   ],
+   "severity": "LOW"
+  },
+  {
+   "after": [
+    "nothing compared, a different number or order of minute records, and a must-match field absent where the site writes it are each a blocker"
+   ],
+   "attack": "the pressure recertification could pass on nothing (found beyond the twelve)",
+   "before": [
+    "two empty series, an active series that lost minutes or carried extra ones, and minutes with none of the must-match fields all read RECERTIFIED"
+   ],
+   "evidence": "The real comparison is unchanged by the correction: 34 scenarios, 78 minute records, no difference outside the explained fields.",
+   "outcome": "FINDING_CORRECTED",
+   "regression_tests": [
+    "test_review_the_pressure_comparison_cannot_pass_on_an_empty_a_truncated_or_a_fieldless_series",
+    "test_the_pressure_authority_series_is_recertified_on_the_active_core_with_only_explained_differences"
+   ],
+   "severity": "MEDIUM"
+  },
+  {
+   "after": [
+    "a caller can shorten the window, never lengthen it past the predefined limit",
+    "the transaction works on a copy, so a write through what it is handed cannot reach the encounter; the guard keeps a record, refuses the turn and is raised by run() only after the encounter ended"
+   ],
+   "attack": "the window and the state guard (found beyond the twelve)",
+   "before": [
+    "the caller's time limit had no ceiling (a limit of a thousand million was accepted)",
+    "the guard that proves the encounter state is untouched detected a write but did not prevent it, kept no record and raised into the legacy turn"
+   ],
+   "evidence": "The window is inclusive as declared. FOUND: two weaknesses.",
+   "outcome": "FINDING_CORRECTED",
+   "regression_tests": [
+    "test_review_attack_the_time_limit_can_be_shortened_and_never_lengthened",
+    "test_the_patches_are_restored_even_when_the_block_raises_and_the_state_guard_is_real"
+   ],
+   "severity": "LOW"
+  },
+  {
+   "after": [
+    "the same three checks run over every compared minute of the fourteen runs (1930 minutes): none fails"
+   ],
+   "attack": "a contradiction outside the divergence episodes (found beyond the twelve)",
+   "before": [
+    "a contradiction planted at a minute where the two words agree was reported by no episode"
+   ],
+   "evidence": "The coherence checks ran inside the divergence episodes only; inside them every planted contradiction was caught.",
+   "outcome": "FINDING_CORRECTED",
+   "regression_tests": [
+    "test_review_coherence_is_checked_over_every_compared_minute_and_a_contradiction_outside_the_episodes_is_seen"
+   ],
+   "severity": "LOW"
+  },
+  {
+   "attack": "limits of the EXISTING pressure site (found beyond the twelve)",
+   "evidence": "Two properties of the layer's dormant site, read from its source and not changed, because the layer is not edited in this cycle: (1) clinical time outside an order turn never reaches the site and the site does not notice a turn it did not see; (2) the site reads the shadow's failures of a turn's last minute only. Neither is exercised by the development series, which plays order turns through the scripted harness, so the recertification of P3-202 says nothing about them. The first was NOT executed with an authority (forbidden in this cycle): its consequence is a reading of the code. Blockers C9 and C10.",
+   "outcome": "FINDING_ACCEPTED_AND_DECLARED",
+   "regression_tests": [
+    "test_review_two_limits_of_the_existing_site_are_read_from_the_source_and_declared_not_changed"
+   ],
+   "severity": "MEDIUM"
+  },
+  {
+   "attack": "what the review could not test",
+   "evidence": "a real edit of the common core's bytes with the same size and modification time (the layer caches its verdict by path, size and time; the dry transaction also re-hashes the bytes, but the edit itself was only simulated); the encounter page (its readers were read, not executed); the attack forks and the collapse boundary on gi_bleed_72f (run on gi_bleed_57m; the management series covers both cases); the repository's full suite.",
+   "outcome": "NOT_TESTABLE"
+  }
+ ],
+ "adversarial_review_scope": {
+  "each_finding": "confirmed by re-running its probe before any correction, and re-run after it",
+  "not_tested": [
+   "a real edit of the common core's bytes (simulated by replacing what the lineage reader returns)",
+   "the encounter page itself: the page's readers were read, not executed",
+   "the forks of the attacks and the collapse boundary on gi_bleed_72f (run on gi_bleed_57m only); the management series covers both cases",
+   "the full test suite of the repository"
+  ],
+  "outcomes": [
+   "BLOCKED",
+   "FINDING_CORRECTED",
+   "FINDING_ACCEPTED_AND_DECLARED",
+   "NOT_TESTABLE"
+  ],
+  "who": "an independent read-only review: it wrote probes outside the repository, edited nothing and ran no actual authority"
+ },
+ "adversarial_review_status": "DONE",
  "authority": {
   "approved_authority_snapshots": [
    "gi_pressure_committed"
@@ -9,6 +283,24 @@
   "enabled": false,
   "granted_by_this_record": false
  },
+ "authority_site_coverage": {
+  "failures_read_by_the_site": {
+   "consequence": "a shadow failure recorded at an intermediate minute of a multi-minute turn would not refuse that turn's commit. Reached only by injection so far: in the layer's own paths a failed advance records no later minute.",
+   "in_the_dry_transaction": "stricter: every failure the session recorded since the last turn refuses",
+   "rule_in_the_site": true
+  },
+  "time_outside_an_order_turn": {
+   "authority_site_call_sites_in_app": 1,
+   "callers_in_app": 3,
+   "calls_the_authority_site": false,
+   "calls_the_shadow": true,
+   "consequence": "with an authority active, a minute that passes on this route keeps the legacy engine's own pressures while the order turns carry the common ones: a mixed trajectory the site would not record. The development harness never takes this route.",
+   "evidence": "the source, by AST. NOT executed with an authority: this cycle forbids an actual authority, so the consequence is a reading of the code and not a measured trajectory",
+   "in_the_dry_transaction": "refused: turn_has_a_transaction_site, and turn_was_observed for any turn the transaction did not see",
+   "route": "app.spend_clinical_time",
+   "the_site_names_the_route": false
+  }
+ },
  "binding_contract": {
   "bound_by": [
    "snapshot_id",
@@ -16,16 +308,31 @@
    "the file's SHA-256",
    "identity digest",
    "record digest",
+   "the digest of the WHOLE record (its immutability block included)",
    "the digest of the ten values",
+   "the digest of the profile BUILT from them",
    "common-core lineage (declared, live, and the core's own bytes)",
-   "the ratification record"
+   "the ratification record, by its own pinned digest"
   ],
-  "every_minute": "the run in hand is re-checked against the bound snapshot (adapter, profile, profile digest, the ten values)",
+  "every_minute": "the run in hand is re-checked against the PINNED digests of version 1 (the binding object, the adapter, the profile, the ten values) and its arrival anchors against the session's own run",
+  "limit": "checks inside one Python process: they refuse a wrong, modified, partial or forged record or object, not code that rewrites the checker itself",
+  "lineage": "READ every minute from the layer and from the core's own bytes; a lineage a caller offers can only add a refusal",
   "never_read": [
    "systemic_consciousness.WITNESSES",
    "systemic_consciousness.development_profile()",
    "a witness name"
   ],
+  "pinned": {
+   "core_digest": "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2",
+   "core_version": "PHASE2_AMENDMENT_2",
+   "file_sha256": "d9de4800075e2e5bb7e6e445ec0dc9a5d672f53c54212a56cc2f41b9392d4803",
+   "full_record_digest": "a5ab1283d504f91e90e441b442f2d2d4d3d88194164eea45026aec47ce02683e",
+   "identity_digest": "1f292d014255ac968ddc3217400635ca64d22462852056c23bb91850d0d6ec40",
+   "profile_digest": "c167b45ee0ce6ec29643cba47f2dde3b6eb760a4c6e37f11d3fa7e5e0a8acc89",
+   "ratification_digest": "123135b3e35c7cb8117ed02600e19b8e44e117e4d58feb2cf0a630cb77f58f64",
+   "record_digest": "9e258ab5b3790a5abb30053b30dd40fd0755918673bc4024f9da609fd4f8cdc9",
+   "values_digest": "d998e1de4719ec5ba2459b8fbacae7e265ee0d03e971c3a5a853d201a282314e"
+  },
   "profile": "the committed default profile (verified to be the point gi_pressure_committed pins) plus amendment_2 built ONLY from the record's ten values",
   "refusals": [
    "WRONG_SNAPSHOT_ID",
@@ -39,6 +346,7 @@
    "NOT_RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS",
    "PRESSURE_POINT_MISMATCH"
   ],
+  "verified_what_was_built": "the record is reduced to plain JSON data, verified in that form, and the profile built from it must hash to the pinned digests (a record whose numbers answer one thing to the verification and another to the construction builds version 1 or is refused)",
   "where_it_lives": "TEST-SIDE. The layer still builds its witnesses by name; an authority experiment needs this rule inside the layer, certified."
  },
  "checkpoint": {
@@ -49,7 +357,7 @@
     "kind": "faculty review"
    },
    {
-    "blocker": "FD-AUTH-05: consciousness authority HAS downstream side effects; seven of the eight guards do not exist (history-taking availability, resident-visible text and display, image contract and prompt, trace and event persistence, AI and faculty analysis payloads, reflection prompts, and the legacy comparison captured before the commit)",
+    "blocker": "FD-AUTH-05: consciousness authority HAS downstream side effects; eight of the nine guards do not exist (history-taking availability, resident-visible text and display, image contract and prompt, trace and event persistence, AI and faculty analysis payloads, the hold of an AI suggestion on the faculty's evaluation surface, reflection prompts, and the legacy comparison captured before the commit). The inventory finds the sites that NAME the word; it is not a proof that no other code reads it",
     "id": "C2",
     "kind": "guards"
    },
@@ -82,21 +390,32 @@
     "blocker": "an authority grant and an approval of a snapshot FOR AUTHORITY: the registry holds only gi_pressure_committed, and stays that way",
     "id": "C8",
     "kind": "faculty decision"
+   },
+   {
+    "blocker": "clinical time outside an order turn (app.spend_clinical_time: a history question, an examination) moves the engine's clock through the shadow's observe_time and never through the authority site, and the site does not notice a turn it did not see. Read from the source, not executed with an authority. The scripted harness never takes this route, so the recertified series does not cover it",
+    "id": "C9",
+    "kind": "technical (found by the independent review; binds the pressure half too)"
+   },
+   {
+    "blocker": "the site reads the shadow's failures of a turn's LAST minute only. Reached by injection only; declared, not changed (the layer is not edited in this cycle)",
+    "id": "C10",
+    "kind": "technical (found by the independent review; binds the pressure half too)"
    }
   ],
-  "next_package": "1. The faculty answers the consciousness review table (C1) and the two word and action questions (C5, C6). 2. With those answers: design and build DORMANT, in the layer, the guards of the readers (C2), the pair commit path (C3) and the snapshot binding (C4), with their own mutants and ONE integrated certification of the layer; decide the turn granularity for infusions (C7). 3. Re-run this dry series through the layer's own dormant path. Only then could a faculty decision (C8) authorize the development experiment. Independently and already possible: the pressure-only development experiment on the active core.",
+  "next_package": "1. The faculty answers the consciousness review table (C1) and the two word and action questions (C5, C6). 2. With those answers: design and build DORMANT, in the layer, the guards of the readers (C2), the pair commit path (C3), the snapshot binding (C4), a site or an explicit refusal for clinical time outside an order turn (C9) and the whole-turn failure rule (C10), with their own mutants and ONE integrated certification of the layer; decide the turn granularity for infusions (C7). 3. Re-run this dry series through the layer's own dormant path. Only then could a faculty decision (C8) authorize the development experiment. Independently and already possible: the pressure-only development experiment on the active core THROUGH THE SCRIPTED HARNESS (order turns only); not on the encounter page until C9 is closed.",
   "options": [
    "GI_PRESSURE_CONSCIOUSNESS_READY_FOR_DEVELOPMENT_AUTHORITY_EXPERIMENT",
    "PRESSURE_READY_BUT_CONSCIOUSNESS_NOT_READY",
    "SNAPSHOT_READY_BUT_AUTHORITY_TRANSACTION_NOT_READY",
    "FURTHER_PHYSIOLOGY_OR_ARCHITECTURE_REQUIRED"
   ],
-  "provisional": true,
-  "reading": "Pressure: the development-authority series is identical on the active core (every value written and every digest that names no version). Consciousness: every divergence from the legacy engine is mechanistically coherent, the snapshot binds exactly and the dry pair transaction behaves; but the faculty has not yet answered the review of the divergence, the readers of the word have downstream effects whose guards do not exist, and the pair's commit path and the snapshot binding exist only test-side. None of this is an authority grant.",
+  "provisional": false,
+  "reading": "Pressure: the development-authority series is identical on the active core (every value written and every digest that names no version), in the route that series plays: order turns through the scripted harness. Consciousness: every divergence from the legacy engine is mechanistically coherent, the snapshot binds exactly and the dry pair transaction behaves; but the faculty has not yet answered the review of the divergence, the readers of the word have downstream effects whose guards do not exist, and the pair's commit path and the snapshot binding exist only test-side. The independent review (P3-208) changed no half of this verdict and added two limits that bind the pressure half as well before any use on the encounter page: clinical time outside an order turn has no authority site (C9), and the site reads the failures of a turn's last minute only (C10). None of this is an authority grant.",
   "verdict": "PRESSURE_READY_BUT_CONSCIOUSNESS_NOT_READY"
  },
  "collapse_boundary_guard": {
   "after_the_stop": "no fallback to the legacy engine as authority once a commit has happened: the encounter is INVALID_FOR_CONTINUATION; if nothing was ever committed, authority never began",
+  "by_design": "a minute an earlier turn already cleared is not read again: a run whose history changes is its own failure (HistoryRewritten)",
   "covers": "every minute since the last cleared one up to the minute that would be committed (a turn can span many minutes: an infusion advances the engine's clock in one turn)",
   "detected_in": "compute: the bound run's collapse predicate is part of the candidate, so it is known before validate ends",
   "does_not_mean": [
@@ -111,6 +430,7 @@
   "precommit": true,
   "resident_text": "none: the stop is an experiment event on the faculty surface, never mapped to terminal text",
   "rule": "if the bound common-core run reads ESTABLISHED circulatory collapse at any minute a transaction would cover, the transaction aborts and the experiment hard-stops BEFORE that minute is committed",
+  "state_typing": "a collapse state that is not exactly one of the core's three (a boolean, a float, a string) is a minute not shown",
   "window": "authority_window_end = min(the predefined time limit, the first established-collapse minute); both are checks of the same transaction"
  },
  "consciousness_review": {
@@ -1276,14 +1596,27 @@
    "legacy_threshold_sbp_drowsy": 80.0
   },
   "physiology_modified": false,
-  "source": "the POTENTIAL_EDUCATIONAL_PROBLEM minutes of docs/revision/PHASE3_GI_AUTHORITY_COUNTERFACTUAL.json (14 required runs)"
+  "source": "the POTENTIAL_EDUCATIONAL_PROBLEM minutes of docs/revision/PHASE3_GI_AUTHORITY_COUNTERFACTUAL.json (14 required runs)",
+  "whole_run_coherence": {
+   "compared_minutes": 1930,
+   "contradictions": [],
+   "runs": 14,
+   "verdict": "MECHANISTICALLY_COHERENT_DIFFERENCE",
+   "violations": {
+    "category_is_not_the_composite": 0,
+    "delivery_rises_before_any_order": 0,
+    "f_moves_away_from_its_target": 0
+   }
+  }
  },
  "pair_design": {
   "atomicity": [
    "the pair is validated as ONE transaction: every check in CHECKS must pass or nothing would be written",
    "the four fields would be written from ONE prepared mapping (the existing commit rule), so pressure-common with consciousness-legacy cannot exist after a commit",
-   "the two halves must be the same physical course: every reading that does not depend on the ten magnitudes is equal in the pressure run and in the bound run, minute by minute",
-   "after the first refusal the experiment is halted for the encounter: no later minute is evaluated as a commit"
+   "the two halves must be the same physical course: they leave from the same arrival anchors, and every reading that does not depend on the ten magnitudes is equal in the pressure run and in the bound run at EVERY minute of the turn",
+   "after the first refusal the experiment is halted for the encounter: no later minute is evaluated as a commit",
+   "a transaction that RAISES is a refusal with a record and a halt, never a silent return to the legacy engine; and it never raises into the legacy turn",
+   "a turn the transaction did not see (the clock moved without it), or one on a route with no authority site, is a refusal"
   ],
   "can_the_architecture_guarantee_it": "YES in the dry transaction (verified on every would-commit minute of the series). NOT YET in the layer: AUTHORITY_DOMAIN, the ownership contract and AuthorityTransaction.commit accept numeric pressure fields only.",
   "consciousness_domain": {
@@ -2662,7 +2995,6 @@
    "persistence": [
     "app.py::learner_vitals_snapshot",
     "app.py::management_state_snapshot",
-    "record_findings.py::<module>",
     "trace_phase0.py::<module>"
    ],
    "resident_visible_text": [
@@ -2688,17 +3020,32 @@
     "app.py::observable_state_changed",
     "family_engine.py::_discharge_alarm",
     "image_consistency.py::photographic_targets",
+    "visual_observations.py::<module>",
     "visual_observations.py::visual_observations"
    ],
    "scoring": [
     "faculty_analysis.py::<text>",
-    "management_trace_analysis.py::<text>"
+    "faculty_portal.py::<consumer of record_findings.py>",
+    "faculty_report.py::<consumer of record_findings.py>",
+    "management_trace_analysis.py::<text>",
+    "management_trace_report.py::<consumer of record_findings.py>",
+    "record_findings.py::<module>"
    ],
    "termination": [
     "family_engine.py::_discharge_alarm"
    ]
   },
-  "executable_readers_of_the_live_observable": 31,
+  "executable_readers_of_the_live_observable": 32,
+  "indirect_consumers": {
+   "record_findings.py": {
+    "not_found_or_not_importing": [],
+    "verified": [
+     "faculty_portal.py",
+     "faculty_report.py",
+     "management_trace_report.py"
+    ]
+   }
+  },
   "legacy_physiology_reads_the_live_word": false,
   "live_readers_by_class": {
    "A_DISPLAY_ONLY": [
@@ -2725,11 +3072,13 @@
     "app.py::_trajectory_expert_model",
     "app.py::observable_state_changed",
     "image_consistency.py::photographic_targets",
+    "visual_observations.py::<module>",
     "visual_observations.py::visual_observations"
    ],
    "D_SCORING": [
     "faculty_analysis.py::<text>",
-    "management_trace_analysis.py::<text>"
+    "management_trace_analysis.py::<text>",
+    "record_findings.py::<module>"
    ],
    "E_TERMINATION": [
     "family_engine.py::_discharge_alarm"
@@ -2742,7 +3091,6 @@
    "G_PERSISTENCE_SERIALIZATION": [
     "app.py::learner_vitals_snapshot",
     "app.py::management_state_snapshot",
-    "record_findings.py::<module>",
     "trace_phase0.py::<module>"
    ],
    "H_TEST_DOC_ONLY": [
@@ -2789,6 +3137,11 @@
     "exists": false,
     "guard": "NEW: no AI analysis and no rubric on an authority-experiment encounter, or a mandatory label; scoring stays legacy",
     "surface": "AI and faculty analysis payloads (indirect scoring evidence)"
+   },
+   {
+    "exists": false,
+    "guard": "NEW: found by the independent review of P3-208. The same rule as above, or the hold computed on the legacy word: with a word that moves, a suggestion the portal holds today ('Requires faculty review') would be shown as proposed",
+    "surface": "the hold of an AI suggestion on the faculty's evaluation surface (record_findings.inert_observables -> faculty portal and reports)"
    },
    {
     "exists": false,
@@ -3057,7 +3410,7 @@
    {
     "class": "C_CLINICAL_BRANCHING",
     "consequence": "the coupled physiology of the non-family encounters reads and writes its own word",
-    "executable_read": false,
+    "executable_read": true,
     "function": "intubation_transition",
     "guard": null,
     "module": "clinical_physiology.py",
@@ -3069,7 +3422,7 @@
    {
     "class": "C_CLINICAL_BRANCHING",
     "consequence": "the coupled physiology of the non-family encounters reads and writes its own word",
-    "executable_read": false,
+    "executable_read": true,
     "function": "mark_terminal_collapse",
     "guard": null,
     "module": "clinical_physiology.py",
@@ -3081,7 +3434,7 @@
    {
     "class": "C_CLINICAL_BRANCHING",
     "consequence": "the coupled physiology of the non-family encounters reads and writes its own word",
-    "executable_read": false,
+    "executable_read": true,
     "function": "procedural_sedation_transition",
     "guard": null,
     "module": "clinical_physiology.py",
@@ -3140,7 +3493,7 @@
    {
     "class": "C_CLINICAL_BRANCHING",
     "consequence": "the coupled encounter of the non-family engine",
-    "executable_read": false,
+    "executable_read": true,
     "function": "examination_updates",
     "guard": null,
     "module": "coupled_encounter.py",
@@ -3239,7 +3592,7 @@
    },
    {
     "class": "WRITER_NOT_A_READER",
-    "consequence": "the engine RE-WRITES mental_status at every surface from its own ladder (its family state and the authored baseline); its reads here are of the baseline, never of the live observable, so a value written by an authority is overwritten next turn and never feeds the engine's physiology",
+    "consequence": "the engine RE-WRITES mental_status at every surface from its own ladder (its family state and the authored baseline); its reads here are of the baseline, never of the live observable (checked by AST: ``surface_reads``), so a value written by an authority never feeds the engine's physiology. It is overwritten by the next turn that ADVANCES the clock: a zero-minute turn (a consult) leaves the written word in the state, in the entry and in its observation snapshot",
     "executable_read": false,
     "function": "_surface",
     "guard": null,
@@ -3334,7 +3687,7 @@
    {
     "class": "H_TEST_DOC_ONLY",
     "consequence": "schema validation of generated cases (not integrated)",
-    "executable_read": false,
+    "executable_read": true,
     "function": "<module>",
     "guard": null,
     "module": "generated_case_schema.py",
@@ -3629,11 +3982,11 @@
     "where": "OFFLINE_AUTHORING_RECORD_OR_REPORT"
    },
    {
-    "class": "G_PERSISTENCE_SERIALIZATION",
-    "consequence": "the recorded findings keep the field",
+    "class": "D_SCORING",
+    "consequence": "``inert_observables`` reads every observed field of the trace, the word among them (label 'alertness'), and ``unsettled`` HOLDS an AI suggestion that names a field which never changed: with the legacy word constant the faculty portal shows 'Requires faculty review', with a word that moves the same suggestion is shown as proposed. Consumers: faculty_portal.py, faculty_report.py, management_trace_report.py",
     "executable_read": true,
     "function": "<module>",
-    "guard": null,
+    "guard": "INDIRECT scoring evidence on the faculty's evaluation surface: no AI analysis on an authority-experiment encounter, or the hold computed on the legacy word; scoring stays legacy",
     "module": "record_findings.py",
     "roles": [
      "FIELD_LIST"
@@ -3682,7 +4035,7 @@
    {
     "class": "C_CLINICAL_BRANCHING",
     "consequence": "the visual profile of the patient changes with the word (obtunded, unresponsive, sedated)",
-    "executable_read": false,
+    "executable_read": true,
     "function": "<module>",
     "guard": "resident-visible description and image contract",
     "module": "visual_observations.py",
@@ -4313,7 +4666,24 @@
     "where": "GI_AFTER_THE_ENCOUNTER"
    }
   ],
+  "scan_limits": [
+   "the key held in a variable or built at run time (an f-string, a .split() of a field string)",
+   "a loop over every item of the observable (.items(), ** unpacking, a comparison of the whole observable)",
+   "getattr with the key, or a helper that receives the key: found, but as role OTHER",
+   "a consumer of a value DERIVED from the word (it never names the key): listed by hand in INDIRECT_CONSUMERS"
+  ],
   "sites": 119,
+  "surface_reads_of_the_key": {
+   "function_found": true,
+   "not_the_baseline": [],
+   "reads_the_live_word": false,
+   "receivers": [
+    "base",
+    "base",
+    "base",
+    "base"
+   ]
+  },
   "unclassified": [],
   "verdict": "CONSCIOUSNESS_AUTHORITY_HAS_DOWNSTREAM_SIDE_EFFECTS"
  },
