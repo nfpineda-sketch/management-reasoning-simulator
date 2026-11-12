@@ -1285,6 +1285,10 @@ SITE_HALTED = "AUTHORITY_HALTED_AFTER_A_HARD_FAILURE"
 #: P3-248 (review M1): the saved session does not carry the authority site, so an encounter resumed after a commit has none. It is MARKED, durably, instead of left ACTIVE.
 RESUMED_WITHOUT_SITE = "ENCOUNTER_RESUMED_WITHOUT_ITS_AUTHORITY_SITE"
 RESUME_CHECKED_KEY = "phase3_authority_resume_checked_for"
+#: P3-251: where the page's session store keeps the authority-SESSION record (lifecycle, last authoritative minute, halt, continuation). It is in ``curriculum_runtime.SESSION_FIELDS``.
+SESSION_KEY = "phase3_authority_session"
+#: P3-257: after the first REAL commit the durable record is what makes a reopened encounter recognisable, so a record that cannot be written is a hard failure, not a note.
+ARTIFACT_PERSISTENCE_FAILED = "ARTIFACT_PERSISTENCE_FAILED"
 #: The authority configuration of a running experiment changed, which it may not (faculty decision F).
 CONFIGURATION_CHANGED = "AUTHORITY_CONFIGURATION_CHANGED_INSIDE_THE_ENCOUNTER"
 MINUTE_ALREADY_COMMITTED = "MINUTE_ALREADY_COMMITTED"
@@ -1774,13 +1778,96 @@ class AuthoritySite:
             return False
 
     def _persist(self) -> dict:
-        """Hand the artifact to the faculty store. Never raises, and never touches anything else."""
+        """Hand the artifact to the faculty store. Never raises, and never touches anything else -- except that (P3-257) a REAL site that has already committed treats a record that
+        cannot be written as a hard failure (``ARTIFACT_PERSISTENCE_FAILED``, INVALID_FOR_CONTINUATION): a reopened encounter is recognised by that durable record, and an
+        authority session nobody can recognise afterwards would be a silent way back to the legacy engine. Then the authority-session record is published (P3-251)."""
         try:
             import runtime_authority_store as store
             self.stored = store.persist(self.artifact(), environ=self.environ)
         except Exception as error:
             self.stored = {"stored": False, "why": f"STORE_ERROR {type(error).__name__}: {error}"}
-        return dict(self.stored)
+        if (self.grant is not None and self.minutes_committed and not self.halted and not dict(self.stored or {}).get("stored")
+                and not getattr(self, "_failing_to_persist", False)):
+            self._failing_to_persist = True
+            try:
+                self._hard_fail(self.minutes_seen, f"{ARTIFACT_PERSISTENCE_FAILED}: {dict(self.stored or {}).get('why')}", ())
+                try:
+                    import runtime_authority_store as store
+                    self.stored = store.persist(self.artifact(), environ=self.environ)       # the halt itself is recorded if the store lets it
+                except Exception as error:
+                    self.stored = {"stored": False, "why": f"STORE_ERROR {type(error).__name__}: {error}"}
+            except Exception:
+                self.halted, self.experiment_state = True, EXPERIMENT_HALTED
+                self.halt_reason = self.halt_reason or ARTIFACT_PERSISTENCE_FAILED
+            finally:
+                self._failing_to_persist = False
+        self._publish_session()
+        return dict(self.stored or {})
+
+    # -- P3-251: the authority SESSION record ------------------------------------------------------------------------------------------------------------------------
+    def session_record(self, *, encounter_ended: bool = False) -> dict:
+        """The authority-session record of this site (lifecycle, last authoritative minute and pressure, halt, continuation), derived from its artifact and cached until the site changes.
+        Never raises into a caller: a site that cannot describe itself describes itself as INVALID (fail closed)."""
+        try:
+            import runtime_authority_session as session
+            key = (len(self.records), bool(self.halted), len(self.no_advance_turns), str(self.halt_reason), self.experiment_state, bool(self.grant is not None))
+            cached = getattr(self, "_session_cache", None)
+            if cached is None or cached[0] != key:
+                body = self.artifact()
+                record = session.session_record_of(body)
+                # P3-262 (review HIGH-1): the record is derived from the artifact, and an artifact that could not be built is a degraded STUB ("halted, no minutes") that would read as a
+                # halt BEFORE any commit -- a continuable PRECOMMIT_ABORT after authority began, the silent legacy fallback FD-STOP-03 forbids. The site's own facts win: a REAL site that
+                # has committed and whose artifact cannot describe it is HALTED (sticky, so a later healthy artifact says the same) and its record fails closed.
+                if self.grant is not None and self.minutes_committed and (str(body.get("halt_reason") or "").startswith("ARTIFACT_ERROR") or bool(record.get("authority_began")) is False):
+                    reason = str(body.get("halt_reason") or "") if str(body.get("halt_reason") or "").startswith("ARTIFACT_ERROR") else "ARTIFACT_ERROR the artifact does not describe the commits the site made"
+                    if not self.halted:
+                        self.halted, self.experiment_state, self.halt_reason = True, EXPERIMENT_HALTED, reason
+                    record = self._fail_closed_session_record(reason)
+                cached = (key, record)
+                self._session_cache = cached
+            record = cached[1]
+            if encounter_ended and record.get("lifecycle") in (session.PREAUTHORITY, session.ACTIVE_AUTHORITY):
+                body = {name: value for name, value in record.items() if name != "record_digest"}
+                body["lifecycle"] = session.COMPLETED_AUTHORITY
+                return {**body, "record_digest": digest_of(body)}
+            return record
+        except Exception as error:
+            import runtime_authority_session as session
+            body = {"record_type": session.RECORD_TYPE, "version": session.VERSION, "lifecycle": session.INVALID_FOR_CONTINUATION, "continuation_allowed": False,
+                    "stop_policy": "EFFECTIVE_STOP", "legacy_fallback_allowed": False, "authority_began": True, "last_authoritative_minute": max([_as_int(x) for x in self.minutes_committed] or [0]),
+                    "last_authoritative_pressure": None, "halted": True, "halt_reason": f"SESSION_RECORD_ERROR {type(error).__name__}: {error}", "stop_class": session.STOP_INTERNAL,
+                    "case_id": self.case_id, "family": self.family, "snapshot_id": self.snapshot_id, "encounter_id": self.encounter_id, "experiment_id": self.experiment_id}
+            return {**body, "record_digest": digest_of(body)}
+
+    def _fail_closed_session_record(self, reason: str) -> dict:
+        """The session record of a REAL site that has committed and cannot describe itself through its artifact (P3-262, review HIGH-1): INVALID_FOR_CONTINUATION, from the site's OWN
+        facts (its committed minutes and the pressure of its last committed record), never from a degraded artifact."""
+        import runtime_authority_session as session
+        committed = [dict(record) for record in self.records if dict(record).get("committed")]
+        last = committed[-1] if committed else {}
+        grant = dict(self.grant or {})
+        base = {"record_type": session.RECORD_TYPE, "version": session.VERSION, "lifecycle": session.INVALID_FOR_CONTINUATION, "continuation_allowed": False,
+                "stop_policy": "EFFECTIVE_STOP", "legacy_fallback_allowed": False, "authority_began": True,
+                "last_authoritative_minute": max([_as_int(x) for x in self.minutes_committed] or [0]),
+                "last_authoritative_pressure": (dict(last.get("common_pressures") or {}) or None),
+                "grant_id": grant.get("grant_id"), "grant_fingerprint": grant.get("fingerprint"), "authority_mode": None,
+                "case_id": self.case_id, "family": self.family, "snapshot_id": self.snapshot_id,
+                "lineage": {"version_id": grant.get("core_version"), "digest": rs.PHASE2_DIGEST},
+                "encounter_id": self.encounter_id, "experiment_id": self.experiment_id, "attempt": self.attempt,
+                "halted": True, "halt_reason": reason, "stop_class": session.stop_class_of(reason),
+                "failed_minute": None, "failed_operation": None, "last_artifact": {"artifact_digest": "", "minutes_recorded": len(self.records)},
+                "authority_label": REAL_PRESSURE_LABEL}
+        return {**base, "record_digest": digest_of(base)}
+
+    def _publish_session(self) -> None:
+        """Put the session record where the page keeps its session (and therefore where a saved encounter carries it). Never raises."""
+        target = getattr(self, "_session_store", None)
+        if target is None:
+            return
+        try:
+            target[SESSION_KEY] = self.session_record()
+        except Exception:
+            pass
 
     def settle_provenance(self, submission_id: Any, orders: Sequence | None) -> dict:
         """Attach the canonical order identity and fate to the minute already recorded. Never raises.
@@ -2520,9 +2607,10 @@ def site_for(state: Mapping, store: Any,
                 store[SITE_KEY] = None
                 return None
             site = None
-            for key in (SITE_KEY, SITE_REFUSED_KEY, ARTIFACT_KEY, HALTED_KEY):
+            for key in (SITE_KEY, SITE_REFUSED_KEY, ARTIFACT_KEY, HALTED_KEY, SESSION_KEY):
                 store[key] = None
         if site is not None:
+            site._session_store = store          # P3-251: where this site publishes its session record (a non-field attribute: never serialized, never compared)
             if not asked or _configuration_changed(site, live):
                 # The mode is decided at the arrival and may not change inside an encounter. A flag that
                 # disappears or changes mid-encounter is a configuration change, and a configuration
@@ -2551,13 +2639,29 @@ def site_for(state: Mapping, store: Any,
         store[SITE_KEY] = site
         if site is None:
             store[SITE_REFUSED_KEY] = key
+        else:
+            site._session_store = store
+            site._publish_session()              # PREAUTHORITY: the experiment exists and nothing has committed yet
         return site
     except Exception:
         return None
 
 
-def _resumed_artifact(state: Mapping, live: Mapping[str, str]) -> dict | None:
-    """The stored, still-ACTIVE experiment whose last committed minute IS this state: same case, same minute, same committed pressures. Never raises."""
+def durable_match(state: Mapping, live: Mapping[str, str]) -> dict | None:
+    """P3-255: the authority-session record of the stored experiment (active OR halted) whose last committed minute IS this state -- same case, same minute, same committed pressures --
+    or None. It is how a saved encounter that came back without its record is recognised in the durable store. Never raises."""
+    try:
+        body = _resumed_artifact(state, live, include_halted=True)
+        if body is None:
+            return None
+        import runtime_authority_session as session
+        return session.session_record_of(body)
+    except Exception:
+        return None
+
+
+def _resumed_artifact(state: Mapping, live: Mapping[str, str], *, include_halted: bool = False) -> dict | None:
+    """The stored, still-ACTIVE experiment (or, with ``include_halted``, any stored one) whose last committed minute IS this state: same case, same minute, same committed pressures. Never raises."""
     import runtime_authority_store as artifact_store
     from clinical_core import legacy_adapter
     case_id = str(legacy_adapter.engine_case_id(dict(state)))
@@ -2566,11 +2670,13 @@ def _resumed_artifact(state: Mapping, live: Mapping[str, str]) -> dict | None:
     now = (observable.get("sbp"), observable.get("dbp"))
     best = None
     for path in artifact_store.paths(environ=live):
+        if not path.name.startswith(f"{case_id}__"):
+            continue            # P3-262 (review LOW-3): the name of a stored record starts with its case, so another case's files are not even parsed (the guard calls this on every run)
         try:
             body = dict(json.loads(path.read_text(encoding="utf-8")).get("artifact") or {})
         except Exception:
             continue
-        if body.get("case_id") != case_id or body.get("halted") or not body.get("authority_minutes"):
+        if body.get("case_id") != case_id or (body.get("halted") and not include_halted) or not body.get("authority_minutes"):
             continue
         last = [dict(item) for item in (body.get("minutes") or []) if dict(item).get("committed")][-1:]
         if not last or _as_int(last[0].get("minute")) != minute:
@@ -2633,6 +2739,23 @@ def after_orders_settled(store: Any, session: Any, orders: Sequence | None, *, e
     """The second phase of the hook, for an order turn. See ``runtime_authority_pair.after_orders_settled``."""
     import runtime_authority_pair
     runtime_authority_pair.after_orders_settled(store, session, orders, environ=environ)
+
+
+class AuthoritySessionStopped(RuntimeError):
+    """Raised by a page chokepoint that is reached while the experimental authority session is stopped: the loud, fail-closed form of a bypass the page's own gating should have prevented
+    (P3-253). Defined here because the page reaches the layer only through this module."""
+
+
+def continuation_guard(store: Any, state: Mapping | None, *, environ: Mapping[str, str] | None = None, encounter_ended: bool = False) -> dict:
+    """The page's ONE question before it moves the experimental encounter: may this authority session continue? See ``runtime_authority_session.continuation_guard``."""
+    import runtime_authority_session as session
+    return session.continuation_guard(store, state, environ=environ, encounter_ended=encounter_ended)
+
+
+def operation_allowed(decision: Mapping, operation: str) -> bool:
+    """Whether the page may perform ``operation`` under a guard decision: only reading and leaving the session survive a stop."""
+    import runtime_authority_session as session
+    return session.operation_allowed(decision, operation)
 
 
 def forget_dry_evaluator(store: Any) -> None:

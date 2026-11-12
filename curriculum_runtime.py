@@ -43,6 +43,9 @@ SESSION_FIELDS = (
     # Every order with its fate (Phase 0, 0A, 2026-10-06), and every submission received
     # (Phase 0, 0D): they travel with the encounter, so a resumed one keeps them.
     "order_ledger", "submission_log",
+    # Phase 3 (P3-251): the authority-SESSION record travels with the encounter (it exists only when a development authority experiment ran), so a reopened encounter whose experiment
+    # became invalid stays stopped instead of silently continuing on the legacy engine.
+    "phase3_authority_session",
 )
 
 

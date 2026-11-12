@@ -1228,4 +1228,4 @@ ADAPTER_VERSION = "gi_haemorrhage/P3-11"
 LAYER_SOURCES = ("runtime_shadow.py", "runtime_shadow_families.py", "runtime_shadow_evidence.py",
                  "runtime_authority.py", "runtime_authority_store.py", "runtime_shadow_store.py",
                  "runtime_shadow_observer.py", "runtime_authority_pair.py", "runtime_minute_validation.py", "runtime_pair_site.py",
-                 "runtime_pressure_grant.py")
+                 "runtime_pressure_grant.py", "runtime_authority_session.py")

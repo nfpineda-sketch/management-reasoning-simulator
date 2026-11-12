@@ -610,7 +610,8 @@ def reset_session():
     _shadow_was_open = st.session_state.pop("phase3_shadow", None) is not None
     import runtime_authority as _authority_layer
     for key in (_authority_layer.SITE_KEY, _authority_layer.SITE_REFUSED_KEY,
-                _authority_layer.ARTIFACT_KEY, _authority_layer.HALTED_KEY):
+                _authority_layer.ARTIFACT_KEY, _authority_layer.HALTED_KEY, _authority_layer.SESSION_KEY,
+                _authority_layer.RESUME_CHECKED_KEY):
         st.session_state.pop(key, None)
     if _shadow_was_open:
         # P3-215A: the dry evaluator only exists beside a shadow session, so it is dropped with it.
@@ -880,6 +881,10 @@ def spend_clinical_time(minutes, *, activity, request, response=""):
     state = st.session_state.get("state") or {}
     if not state.get("engine_family") or int(minutes or 0) <= 0:
         return None
+    if _authority_blocks("clinical_time"):
+        # Phase 3 (P3-253): a bypass the page's own gating should have prevented. Loud and closed: the clock does not move.
+        import runtime_authority
+        raise runtime_authority.AuthoritySessionStopped("the experimental authority session is stopped: clinical time may not advance")
     from family_engine import advance_clinical_time, pending_results
 
     before = management_state_snapshot(state)
@@ -9165,6 +9170,28 @@ def _after_the_clock_moved(shadow, shadow_before, *, route, ran, submission_id):
     return runtime_authority.after_clock_moved(st.session_state, shadow, shadow_before, st.session_state.state, ran, submission_id, route)
 
 
+def _authority_continuation():
+    """Phase 3 (P3-252): may this experimental encounter session take another clinical step? The answer is ``runtime_authority.continuation_guard``'s; this function orchestrates and decides nothing.
+
+    With the authority flags off and no authority key in the session (the default, and the first pilot) it is a handful of dictionary lookups and always allows. After a REAL development-authority
+    commit followed by an authority failure it denies: the experimental session is INVALID_FOR_CONTINUATION and may not advance clinical time or take a management action (FD-STOP-02).
+    """
+    import runtime_authority
+    return runtime_authority.continuation_guard(st.session_state, st.session_state.get("state"), encounter_ended=bool(st.session_state.get("encounter_ended")))
+
+
+def _authority_blocks(operation):
+    """Phase 3 (P3-253): True when the experimental session is stopped and ``operation`` is one that does not survive a stop (only reading and leaving the session do)."""
+    import runtime_authority
+    return not runtime_authority.operation_allowed(_authority_continuation(), operation)
+
+
+def _render_authority_stop_notice(decision):
+    """Phase 3 (P3-253B): the operational notice of a stopped experimental session. Development-scoped wording only: no patient outcome, no clinical term, no resident-facing medical text."""
+    notice = decision.get("notice") or {}
+    st.warning(f'{notice.get("headline", "")} · {notice.get("body", "")}')
+
+
 def execute_bundle(parsed):
     # Nested so that regressions loading execute_bundle through ast keep its helpers.
     def _record_administration_time(res, action):
@@ -11087,6 +11114,14 @@ def _process_encounter_submission(submission_text, _guard_entry=None, submission
     """Run the existing order pipeline without drawing any encounter UI first."""
     if not str(submission_text or "").strip():
         return
+    if _authority_blocks("order_submission"):
+        # Phase 3 (P3-253): the experimental authority session is stopped. Nothing is parsed, executed, recorded as an order or advanced; the submission is claimed and marked
+        # blocked so a durable pending entry does not make the page loop on it. The notice is drawn by the workspace.
+        if _guard_entry is not None:
+            import submission_guard as _stop_guard
+            _stop_guard.begin(st.session_state, _guard_entry, fields=_SESSION_FIELDS, minute=int(st.session_state.state.get("sim_time", 0) or 0))
+            _stop_guard.finish(st.session_state, "blocked_by_authority_stop")
+        return
     if _guard_entry is not None:
         # Claimed here, where nothing more is drawn until the page reruns: a run
         # stopped before this line leaves the submission waiting, never lost, and
@@ -11579,6 +11614,10 @@ def _clinical_encounter_workspace():
     # Fragment reruns do not execute the top of app.py, so repeat the Phase 0
     # recovery/write-ahead gate here before any encounter element is emitted.
     _submission_guard.recover(st.session_state, _SESSION_FIELDS)
+    # Phase 3 (P3-252/253): ask ONCE per run whether the experimental authority session may continue. Stopped: every region that can alter the encounter below is not drawn,
+    # and every handler that could reach the engine is gated again at its own entry. With the default configuration this is always "continue".
+    _authority_decision = _authority_continuation()
+    _authority_stopped = not _authority_decision["allowed"]
     if ACCOUNT_CONTEXT:
         _submission_guard.write_ahead(
             st.session_state, lambda: _write_session(ACCOUNT_CONTEXT)
@@ -11589,6 +11628,10 @@ def _clinical_encounter_workspace():
     _pre_render_entry = next(iter(_submission_guard.pending(st.session_state)), None)
     if _pre_render_entry is not None:
         _process_encounter_submission(_pre_render_entry["raw_text"], _pre_render_entry, None)
+        # Phase 3 (P3-262, review MEDIUM-1 and LOW-4): the submission just processed may be the one that stopped the experiment, and this run goes on to draw the rest of the
+        # workspace -- and to handle any other trigger that arrived with it -- so the question is asked AGAIN with what is true now.
+        _authority_decision = _authority_continuation()
+        _authority_stopped = not _authority_decision["allowed"]
 
     _in_room = not st.session_state.encounter_ended
     if _in_room and not _FAST_PENDING_SUBMISSION:
@@ -11604,8 +11647,13 @@ def _clinical_encounter_workspace():
             _render_encounter_clock()
         # Drawn beside the monitor, the bedside's own action (UX, second iteration, 2026-10-02).
         with st.container(key="enc-ecg"):
-            _ecg_acquired, _ecg_notice = _room.acquire_ecg_button(st.session_state.state, st.session_state.events)
+            if _authority_stopped or _authority_blocks("ecg_acquisition"):
+                _ecg_acquired, _ecg_notice = False, None          # acquiring an ECG alters the encounter: not drawn while the experimental session is stopped (and asked again at its own handler)
+            else:
+                _ecg_acquired, _ecg_notice = _room.acquire_ecg_button(st.session_state.state, st.session_state.events)
     with st.container(key="encounter-console"):
+        if _authority_stopped:
+            _render_authority_stop_notice(_authority_decision)
         if _ecg_notice:
             (st.error if _ecg_notice[0] == "error" else st.info)(_ecg_notice[1])
         if _ecg_acquired and ACCOUNT_CONTEXT:
@@ -11644,7 +11692,7 @@ def _clinical_encounter_workspace():
                 _render_latest_response()
             orders_panel = st.container()
             from clinical_scene import history_facts, answer_history, associated_symptoms, history_topics, history_topic_facts, setting as scene_setting
-            if encounter_mode == "Talk" and not st.session_state.encounter_ended:
+            if encounter_mode == "Talk" and not st.session_state.encounter_ended and not _authority_stopped:
                 clinical_case = st.session_state.state.get("encounter_spec", {}).get("clinical_case", {})
                 history_source = clinical_case.get("history_source")
                 has_collateral = bool(history_source and str(history_source).strip().lower() not in {"patient", "the patient"})
@@ -11704,7 +11752,7 @@ def _clinical_encounter_workspace():
             # Like talking and treating, examining ends with the encounter: after the
             # close it added a decision to the saved record and moved the clinical
             # clock, and with it the closing minute the rubric's screening reads.
-            if encounter_mode == "Examine" and not st.session_state.encounter_ended:
+            if encounter_mode == "Examine" and not st.session_state.encounter_ended and not _authority_stopped:
                 family_findings = {}
                 if st.session_state.state.get("engine_family"):
                     from family_engine import current_findings
@@ -11744,7 +11792,7 @@ def _clinical_encounter_workspace():
             _guard_entry = None  # the Send submission this run processes (Phase 0, 0D)
             submission_parsed = None
             with orders_panel:
-                if not st.session_state.encounter_ended and (encounter_mode in {"Tests", "Treat"} or st.session_state.get("pending_reasoning")):
+                if not st.session_state.encounter_ended and not _authority_stopped and (encounter_mode in {"Tests", "Treat"} or st.session_state.get("pending_reasoning")):
                     import language as _lang
                     st.caption(_lang.say(
                         "Write what you are doing in your own words: what you think is going on, "
@@ -11889,7 +11937,7 @@ def _clinical_encounter_workspace():
                                         _lang.say(REASONING_GATE_FIELD_LABELS[field]), key=f"retrospective_{urgent_index}_{field}",
                                         height=68)
                                     for field in unstated}
-                                if st.form_submit_button(_record_words("Save retrospective explanation")):
+                                if st.form_submit_button(_record_words("Save retrospective explanation")) and not _authority_blocks("retrospective_explanation"):
                                     if record_retrospective(urgent_entry, retrospective_answers,
                                                             st.session_state.state.get("sim_time")):
                                         if ACCOUNT_CONTEXT:
@@ -11926,7 +11974,7 @@ def _clinical_encounter_workspace():
                             submitted = True
 
                     if any(st.session_state.get(key) for key in ("pending_reasoning", "pending_action", "pending_bundle")):
-                        if st.button(_record_words("Cancel pending orders"), key="cancel_pending_orders"):
+                        if st.button(_record_words("Cancel pending orders"), key="cancel_pending_orders") and not _authority_blocks("cancel_pending_orders"):
                             cancel_pending_order()
                             rerun_app()
 
@@ -11957,7 +12005,7 @@ def _clinical_encounter_workspace():
                     if keep_going.button(_close_lang.say("Continue the encounter")):
                         st.session_state.close_pending = False
                         rerun_app()
-                    if finish_now.button(_close_lang.say("Finish now"), type="primary"):
+                    if finish_now.button(_close_lang.say("Finish now"), type="primary", disabled=_authority_stopped) and not _authority_blocks("finish_encounter"):
                         st.session_state.close_pending = False
                         st.session_state.encounter_close = encounter_close.record(
                             close_kind, destination_recorded=False, warned=True,
@@ -11969,9 +12017,9 @@ def _clinical_encounter_workspace():
                     with st.container(key="enc-close"):
                         complete = st.button(
                             _record_words("Complete Encounter & Begin Review"),
-                            disabled=not bool(st.session_state.management_trace),
+                            disabled=(not bool(st.session_state.management_trace)) or _authority_stopped,
                         )
-                    if complete:
+                    if complete and not _authority_blocks("complete_encounter"):
                         if encounter_close.has_destination(st.session_state.management_trace, st.session_state.state):
                             st.session_state.encounter_close = encounter_close.record(
                                 "clinical_close", destination_recorded=True, warned=False,
