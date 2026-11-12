@@ -210,6 +210,8 @@ DISPLAY, TEXT, BRANCHING, SCORING, TERMINATION, ELIGIBILITY, PERSISTENCE, TEST_D
     "A_DISPLAY_ONLY", "B_TEXT_GENERATION", "C_CLINICAL_BRANCHING", "D_SCORING", "E_TERMINATION", "F_ORDER_ACTION_ELIGIBILITY",
     "G_PERSISTENCE_SERIALIZATION", "H_TEST_DOC_ONLY")
 WRITER, MENTION = "WRITER_NOT_A_READER", "MENTION_NOT_AN_EXECUTABLE_READ"
+#: P3-211: ``observable_view`` IS the mechanism that mediates the readers: it names the key to guard it, it reads nothing for an encounter.
+MECHANISM = "VIEW_MECHANISM_NOT_A_READER"
 #: Where a function runs, relative to a GI family encounter under a future pair authority.
 GI_TURN, GI_PAGE, GI_AFTER, ARRIVAL, OTHER_FAMILY, OTHER_ENGINE, OFFLINE, COMPARISON = (
     "GI_ENCOUNTER_TURN", "GI_ENCOUNTER_PAGE", "GI_AFTER_THE_ENCOUNTER", "ARRIVAL_ONLY_AUTHORED_BASELINE", "OTHER_FAMILY_OF_THE_LEGACY_ENGINE",
@@ -241,7 +243,7 @@ def scan_readers(root: str = ROOT) -> dict:
     for path in runtime_files(root):
         with open(path, encoding="utf-8") as handle:
             source = handle.read()
-        if KEY not in source:
+        if KEY not in source and "mental_status_for" not in source and "legacy_mental_status" not in source:
             continue
         module = os.path.relpath(path, root)
         tree = ast.parse(source)
@@ -277,6 +279,9 @@ def scan_readers(root: str = ROOT) -> dict:
                 role = "READ" if isinstance(node.ctx, ast.Load) else "WRITE"
             elif isinstance(node, ast.arg) and node.arg == KEY:
                 role = "PARAM"
+            elif (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                  and node.func.attr in ("mental_status_for", "legacy_mental_status")):
+                role = "ROUTED"                                   # P3-211: a read made THROUGH observable_view, for itself, by name
             if role is not None:
                 found.setdefault(owner(node), []).append(role)
         if found:
@@ -307,6 +312,9 @@ def _row(kind, where, consequence, guard=None):
 #: The classification, by module and function. ``*`` is the module's default for a function not listed. A row says what the function does WITH the
 #: value and where it runs; ``guard`` is what a future pair authority needs, or None when nothing more than the existing rules is needed.
 READER_TABLE = {
+    "observable_view.py": {"*": {"class": MECHANISM, "where": GI_TURN, "consequence": "the explicit view of the word (P3-211): it mediates readers", "guard": None}},
+    "runtime_authority_pair.py": {"*": {"class": MECHANISM, "where": GI_TURN, "guard": None,
+                                        "consequence": "the dormant pair (P3-213): it carries the common word in the overlay and refuses to write the live field"}},
     "family_engine.py": {
         "_surface": _row(WRITER, GI_TURN, "the engine RE-WRITES mental_status at every surface from its own ladder (its family state and the authored baseline); "
                          "its reads here are of the baseline, never of the live observable (checked by AST: ``surface_reads``), so a value written by an "
@@ -421,7 +429,7 @@ def reader_audit(root: str = ROOT) -> dict:
             # The CLASS decides (a reading of the code by hand); the roles are what the scan saw. A site classed A-H is an executable reader
             # whatever role the scan gave it: a key passed to a helper, or a module-level table keyed by the field, reads it too.
             rows.append({"module": module, "function": function, "roles": roles,
-                         "executable_read": found["class"] not in (WRITER, MENTION), **found})
+                         "executable_read": found["class"] not in (WRITER, MENTION, MECHANISM), **found})
     for module in scan["text_only"]:
         found = classify(module, "*")
         if found is None:

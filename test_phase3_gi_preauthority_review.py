@@ -58,7 +58,9 @@ def test_no_runtime_module_names_the_harness_and_the_dry_transaction_never_calls
     names = ("test_gi_pair_dry_run", "test_gi_snapshot_binding", "test_gi_preauthority_review", "test_gi_preauthority_record", "GI_DEVELOPMENT_SNAPSHOT")
     for path in ROOT.glob("*.py"):
         if not path.name.startswith(("test_", "regression_")):
-            assert not any(name in path.read_text(encoding="utf-8") for name in names), path.name
+            # ADAPTED in P3-214: the layer's pair module names the snapshot (it binds to it); it still names no test-side module
+            forbidden = names[:4] if path.name == "runtime_authority_pair.py" else names
+            assert not any(name in path.read_text(encoding="utf-8") for name in forbidden), path.name
     source = inspect.getsource(dry)
     assert ".commit(" not in source and "open_site" not in source and "AUTHORITY_FLAG" not in source
     assert "setenv" not in source and "os.environ" not in source
@@ -351,7 +353,18 @@ def test_the_faculty_table_is_short_representative_and_left_unanswered():
 def test_the_reader_inventory_is_the_live_ast_scan_and_every_site_is_classified():
     audit = _normal(review.reader_audit(str(ROOT)))
     stored = REVIEW["reader_audit"]
-    assert audit["rows"] == stored["rows"] and audit["unclassified"] == stored["unclassified"] == []
+    # ADAPTED in P3-211: the stored record is the inventory AT THE BASE of that cycle. Since then seven readers read the word THROUGH
+    # ``observable_view`` (their literal reads became ROUTED calls) and the view module itself is a new, non-reader site. The identity of the
+    # inventory is what each site IS -- module, function, class, where, consequence, whether it is an executable reader -- not the syntactic
+    # roles the scan happened to see; that identity is unchanged, and a site that appears or disappears still fails here.
+    identity = ("module", "function", "class", "where", "consequence", "guard", "executable_read")
+    now = [{key: row[key] for key in identity} for row in audit["rows"] if row["module"] not in ("observable_view.py", "runtime_authority_pair.py")]
+    then = [{key: row[key] for key in identity} for row in stored["rows"]]
+    # ADAPTED in P3-219: the independent review of this cycle found that the stored row ``trace_phase0.py::<module>`` was the tuple of field NAMES of a
+    # function -- ``observation_snapshot``, which persists the resident-visible word into every Management-Trace event -- and routed that function through the
+    # view. The same site (same class, consequence and guard) is now found in the function that reads the value. A site that appears or disappears still fails.
+    then = [{**row, "function": "observation_snapshot"} if (row["module"], row["function"]) == ("trace_phase0.py", "<module>") else row for row in then]
+    assert now == then and audit["unclassified"] == stored["unclassified"] == []
     assert (stored["modules_with_a_syntactic_use"], len(stored["modules_text_only"])) == (54, 7)
     assert stored["executable_readers_of_the_live_observable"] == 32 and stored["sites"] == len(stored["rows"]) == 119
     assert {key: len(value) for key, value in stored["live_readers_by_class"].items()} == {
@@ -529,8 +542,18 @@ def test_review_the_pressure_comparison_cannot_pass_on_an_empty_a_truncated_or_a
 
 
 def test_review_two_limits_of_the_existing_site_are_read_from_the_source_and_declared_not_changed():
+    """DECLARED ADAPTATION (P3-215/216). The record of P3-208 is immutable and still says what the review READ: the clinical-time route never reached the
+    authority site, and the site filtered the shadow's failures on the turn's last minute. This cycle closed both on purpose (the page hook of P3-215A and
+    the interval window of P3-216), so the reading reproduced from today's source differs from the record in EXACTLY those three fields -- and in nothing
+    else. What the test protects is unchanged: the reproduced reading is still tied, field by field, to the record."""
     stored = REVIEW["authority_site_coverage"]
-    assert _normal(review.site_coverage(str(ROOT))) == stored
+    now = _normal(review.site_coverage(str(ROOT)))
+    closed = {"time_outside_an_order_turn": {"calls_the_authority_site", "authority_site_call_sites_in_app"}, "failures_read_by_the_site": {"rule_in_the_site"}}
+    assert set(now) == set(stored)
+    for section, fields in closed.items():
+        assert {k: v for k, v in now[section].items() if k not in fields} == {k: v for k, v in stored[section].items() if k not in fields}, section
+    assert now["time_outside_an_order_turn"]["calls_the_authority_site"] is True and now["time_outside_an_order_turn"]["authority_site_call_sites_in_app"] == 2
+    assert now["failures_read_by_the_site"]["rule_in_the_site"] is False, "the site no longer filters the failures on the last minute alone"
     route = stored["time_outside_an_order_turn"]
     assert route["route"] == "app.spend_clinical_time" and route["callers_in_app"] == 3 and route["calls_the_shadow"] is True
     assert route["calls_the_authority_site"] is False and route["the_site_names_the_route"] is False and route["authority_site_call_sites_in_app"] == 1
@@ -676,7 +699,9 @@ def test_an_unsupported_class_aborts_after_authority_began_and_no_later_minute_w
         assert entry["abort_checks"] == ["supported_management", "pressure_validated"] and entry["abort_stage"] == "validation"
         assert RUNS[f"{case}/unsupported_access"]["halt"]["detail"]["supported_management"] == {"unsupported": ["vascular_access"]}
         assert "INVALID_FOR_CONTINUATION" in RUNS[f"{case}/unsupported_access"]["halt"]["consequence"]
-    assert authority.unsupported_among(("vascular_access",)) == ("vascular_access",)
+    # ADAPTED in P3-212 (FD-P3-NEW-03): the stored rows are the P3-206 PROTOTYPE's outcome and stay as history. Vascular access is no longer an
+    # unsupported class -- it is EXECUTED_NO_COMMON_PHYSIOLOGY -- so the same scenario no longer halts; a class that is really unsupported still does.
+    assert authority.unsupported_among(("vascular_access",)) == () and authority.unsupported_among(("intubation",)) == ("intubation",)
 
 
 def test_the_pair_is_one_course_the_recovery_gives_one_band_back_at_a_time_and_the_words_follow_f():
@@ -698,7 +723,16 @@ def test_the_pair_is_one_course_the_recovery_gives_one_band_back_at_a_time_and_t
                 abs(min(abs(burden - cut) for cut in sc.CATEGORY_CUTS)) < 1e-4, (case, row[0])
 
 
-@pytest.mark.parametrize("scenario", ["early_treatment", "unsupported_access"])
+def test_212_the_p3_206_scenario_that_halted_on_an_iv_line_no_longer_halts_now_that_it_is_executed_with_no_common_physiology():
+    """FD-P3-NEW-03: the scenario whose stored record halts at minute 70 on ``vascular_access`` runs on, live, through the same prototype."""
+    result = dry.run("gi_bleed_57m", "unsupported_access")
+    assert result["halt"] is None and result["summary"]["first_would_abort"] is None
+    assert result["summary"]["would_commit_minutes"] > 10 and result["summary"]["last_would_commit"] == 80
+    stored = RUNS["gi_bleed_57m/unsupported_access"]["summary"]
+    assert (stored["last_would_commit"], stored["first_would_abort"]) == (10, 70)           # the P3-206 record keeps what it said then
+
+
+@pytest.mark.parametrize("scenario", ["early_treatment"])
 def test_live_the_dry_run_is_deterministic_reproduces_the_record_and_leaves_the_legacy_encounter_exactly_as_it_was(scenario):
     result = dry.run("gi_bleed_57m", scenario)
     stored = RUNS[f"gi_bleed_57m/{scenario}"]
@@ -844,7 +878,7 @@ def test_review_attack_a_candidate_that_carries_another_field_is_refused_by_the_
 
 def test_review_attack_a_settled_row_without_a_class_and_an_unreadable_ledger_halt_at_settlement():
     for ledger in ([{"order_id": "t9:0", "fate": "EXECUTED"}], [{"class": None, "fate": "EXECUTED"}], "garbage", None, [None],
-                   [{"class": " Vascular_Access "}], [{"class": "fluid"}, {"class": "intubation"}]):
+                   [{"class": " Intubation "}], [{"class": "fluid"}, {"class": "intubation"}]):      # ADAPTED in P3-212: an IV line is no longer unsupported
         captured = {}
         result = dry.run("gi_bleed_57m", "probe_short", tamper=lambda run, encounter: captured.update(run=run))
         run = captured["run"]

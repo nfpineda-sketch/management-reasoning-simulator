@@ -48,7 +48,10 @@ def test_no_runtime_module_imports_or_names_the_analysis_modules_or_the_snapshot
         if path.name.startswith(("test_", "regression_")):
             continue
         text = path.read_text(encoding="utf-8")
-        assert not any(name in text for name in names), path.name
+        # ADAPTED in P3-214: the binding to GI_DEVELOPMENT_SNAPSHOT_V1 now lives in the layer, in ONE module that names the snapshot to verify it. It
+        # still imports no analysis module, registers nothing and no other runtime module names the snapshot.
+        forbidden = names[:3] if path.name == "runtime_authority_pair.py" else names
+        assert not any(name in text for name in forbidden), path.name
 
 
 # -- P3-193: the inventory, checked against the code ---------------------------------------------------------------------------------------------
@@ -86,7 +89,16 @@ def test_the_transaction_machinery_is_pressure_specific_exactly_where_the_record
 
 
 def test_the_readers_of_mental_status_are_exactly_the_recorded_modules():
-    assert surface.mental_status_consumers(str(ROOT)) == READINESS["mental_status_consumers"]
+    # ADAPTED in P3-211/P3-213/P3-219: the record is the count at the base of that cycle. Two modules now NAME the word without reading an encounter's --
+    # ``observable_view`` (the explicit view that mediates the readers) and ``runtime_authority_pair`` (the dormant pair, which carries the common word in the
+    # overlay and refuses to write the live field) -- and the page gained lines by routing its readers through the view. ``family_engine.py`` is NOT among the
+    # changes: it is a source of the Phase-2 calibration freeze and stays byte for byte what it was. Every other module is the record's.
+    now = surface.mental_status_consumers(str(ROOT))
+    assert {"observable_view.py", "runtime_authority_pair.py"} <= set(now)
+    mechanism = {name: now.pop(name) for name in ("observable_view.py", "runtime_authority_pair.py")}
+    recorded = READINESS["mental_status_consumers"]
+    assert {name: count for name, count in now.items() if name not in ("app.py", "trace_phase0.py")} == {name: count for name, count in recorded.items() if name not in ("app.py", "trace_phase0.py")}, (now, mechanism)
+    assert now["app.py"] == recorded["app.py"] + 2 and now["trace_phase0.py"] == recorded["trace_phase0.py"], (now, mechanism)
     assert {"family_engine.py", "app.py", "management_trace_analysis.py", "image_consistency.py"} <= set(READINESS["mental_status_consumers"])
     engine = (ROOT / "family_engine.py").read_text(encoding="utf-8")
     assert "glucose_rescue.ORAL_SAFE_MENTAL" in engine and 'validation_state.get("observable", {}).get("mental_status")' in engine

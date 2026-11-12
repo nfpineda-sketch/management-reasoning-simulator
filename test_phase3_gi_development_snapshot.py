@@ -80,11 +80,15 @@ def test_the_record_is_not_an_authority_artifact_and_nothing_reads_it_at_runtime
     for path in ROOT.glob("*.py"):
         if path.name.startswith(("test_", "regression_")):
             continue
+        if path.name == "runtime_authority_pair.py":
+            continue            # ADAPTED in P3-214: the binding to the snapshot lives in the layer's pair module (dormant, registers nothing); no other module names it
         assert not any(needle in path.read_text(encoding="utf-8") for needle in needles), path.name
     # and no record of any authority store mentions it
     for path in (ROOT / "docs" / "revision").glob("PHASE3_*AUTHORITY*.json"):
-        # the three REVIEW records that name the snapshot on purpose (readiness, counterfactual, pre-authority review): none is an authority artifact
-        if path.name not in ("PHASE3_GI_AUTHORITY_READINESS.json", "PHASE3_GI_AUTHORITY_COUNTERFACTUAL.json", "PHASE3_GI_PREAUTHORITY_REVIEW.json"):
+        # the REVIEW records that name the snapshot on purpose (readiness, counterfactual, pre-authority review and, ADAPTED in P3-220, the checkpoint record of the
+        # dormant-plumbing cycle, which records that V1 is bound and NOT approved): none is an authority artifact
+        if path.name not in ("PHASE3_GI_AUTHORITY_READINESS.json", "PHASE3_GI_AUTHORITY_COUNTERFACTUAL.json", "PHASE3_GI_PREAUTHORITY_REVIEW.json",
+                             "PHASE3_DORMANT_PAIR_AUTHORITY.json"):
             assert "GI_DEVELOPMENT_SNAPSHOT" not in path.read_text(encoding="utf-8"), path.name
 
 
