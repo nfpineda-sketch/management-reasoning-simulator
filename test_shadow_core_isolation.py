@@ -132,10 +132,11 @@ SHADOW_LAYER = frozenset(Path(name).stem for name in __import__("runtime_shadow"
 #: P3-148/P3-149: ``runtime_shadow_store`` (the shadow research trace store) and ``runtime_shadow_observer``
 #: (its read-only faculty observer) are part of the declared layer. Neither is a crossing: no runtime root
 #: imports them, which the guards below keep checking by name. P3-213/214 (declared adaptation): ``runtime_authority_pair`` (the dormant pair authority)
-#: is the third crossing-free layer module added since: nothing outside the layer imports it either.
+#: is the third crossing-free layer module added since: nothing outside the layer imports it either. P3-222/P3-224 (declared adaptation) added two more,
+#: ``runtime_minute_validation`` and ``runtime_pair_site``, under the same rule.
 assert SHADOW_LAYER == {"runtime_shadow", "runtime_shadow_families", "runtime_shadow_evidence",
                         "runtime_authority", "runtime_authority_store", "runtime_shadow_store",
-                        "runtime_shadow_observer", "runtime_authority_pair"}, SHADOW_LAYER
+                        "runtime_shadow_observer", "runtime_authority_pair", "runtime_minute_validation", "runtime_pair_site"}, SHADOW_LAYER
 assert DECLARED_CROSSINGS <= SHADOW_LAYER
 HARNESS = "runtime_shadow_evidence"
 

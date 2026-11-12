@@ -290,7 +290,10 @@ def test_m1_without_the_interval_check_a_hidden_intermediate_failure_commits_and
     assert attack()["verdict"] == pair.WOULD_ABORT
     # DEFENSE IN DEPTH: a hidden intermediate minute is stopped by TWO independent checks -- the per-minute interval validation and the per-minute comparison of
     # the pressure run with the bound run. Remove one and the attack is still stopped; remove both and the end minute alone is judged, and it commits.
-    monkeypatch.setattr(pair.PairDryEvaluator, "_interval", lambda self, *a, **k: [])
+    # P3-222 (declared adaptation): the interval check moved behind ``validate_interval`` (the shared primitive's seam); the mutant removes it THERE. What the test
+    # protects is unchanged: the two independent per-minute checks, and what happens when both are gone.
+    monkeypatch.setattr(pair.PairDryEvaluator, "validate_interval", lambda self, *a, **k: {"mode": None, "rows": [], "ok": True, "first_failed_minute": None, "failed": None,
+                                                                                         "ineligible_after": [], "interval_minutes": []})
     assert attack()["verdict"] == pair.WOULD_ABORT, "the one-course comparison still covers every minute of the turn"
     monkeypatch.setattr(pair, "SHARED_READINGS", ())
     assert attack()["verdict"] == pair.WOULD_COMMIT, "with both gone, only the end minute is judged: this is why the two checks are kept"
