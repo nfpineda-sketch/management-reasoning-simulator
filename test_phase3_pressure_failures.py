@@ -69,11 +69,18 @@ def _assert_invalid_after_a_commit(at, site, *, committed_before, kind, rederive
 
 
 def _nothing_more_commits(at, site):
+    """ADAPTED in P3-253 (FD-STOP-02/03): after the halt the experimental session is STOPPED -- no question box and no order box is drawn, the legacy engine does not run the encounter on,
+    and no minute is ever committed again. (Before the effective stop this ran a question and an order on the legacy engine and checked only that nothing committed.)"""
     held = list(site.minutes_committed)
-    page._ask(at, "Where does it hurt?")
-    page._order(at, "Reassess in 10 minutes.")
+    recorded = len(site.records)
+    stopped = json.dumps(at.session_state["state"], sort_keys=True, default=str)
+    with pytest.raises(StopIteration):
+        page._ask(at, "Where does it hurt?")
+    with pytest.raises(StopIteration):
+        page._order(at, "Reassess in 10 minutes.")
     assert list(site.minutes_committed) == held, "after the halt no minute is ever committed again"
-    assert site.records[-1]["failure_reason"] == ra.SITE_HALTED and site.halted
+    assert json.dumps(at.session_state["state"], sort_keys=True, default=str) == stopped, "the stopped session does not advance"
+    assert len(site.records) == recorded and site.halted, "the stopped session is not even offered to the site again: no new record, no SITE_HALTED turn (that record existed only while the legacy engine ran the encounter on)"
     assert ra.authority_status(at.session_state)["halted"] is True
 
 

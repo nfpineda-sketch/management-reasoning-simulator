@@ -146,10 +146,14 @@ def test_the_streamlit_path_commits_and_then_halts_on_the_unsupported_action(app
     assert failing and all(not item.get("committed") for item in failing), failing
     assert site.artifact()["mixed_trajectory"] is True, "a commit before the halt is declared"
 
-    # No silent fallback: the legacy engine keeps the patient, and nothing re-commits afterwards.
-    _submit(at, "Reassess in 15 minutes.")
+    # ADAPTED in P3-253 (FD-STOP-02/03, the effective stop): after a REAL commit followed by an authority failure the experimental session is STOPPED. Before, "the legacy engine ran on"
+    # (declared, advisory); now no order box is drawn, nothing re-commits and the legacy engine does NOT run the encounter on. What the test protects (no silent fallback, no commit after the halt) holds.
+    import json as _json
+    stopped_state = _json.dumps(at.session_state["state"], sort_keys=True, default=str)
+    with pytest.raises(StopIteration):
+        _submit(at, "Reassess in 15 minutes.")
     assert list(site.minutes_committed) == committed, "no authority commit after the halt"
-    assert dict(at.session_state["state"]["observable"]) != legacy_vitals, "the legacy engine ran on"
+    assert _json.dumps(at.session_state["state"], sort_keys=True, default=str) == stopped_state, "the legacy engine did not run on: the session is stopped"
     assert ra.authority_status(at.session_state)["experiment_state"] == ra.EXPERIMENT_HALTED
 
 

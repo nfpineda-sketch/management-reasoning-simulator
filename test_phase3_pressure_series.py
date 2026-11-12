@@ -84,6 +84,15 @@ def _play(case, steps, *, authority, directory, close=False):
         at = page._open(monkeypatch, case, shadow=True, dry=False, authority=directory if authority else None)
         trail = [_snap(at, "arrival")]
         for position, step in enumerate(steps):
+            if authority and ra.continuation_guard(at.session_state, at.session_state["state"])["allowed"] is False:
+                # ADAPTED in P3-253 (FD-STOP-02/03): once the experiment is INVALID_FOR_CONTINUATION after a real commit the session is STOPPED. The step is OFFERED to the page and the
+                # page cannot take it (no control is drawn); it is recorded as BLOCKED, with the encounter exactly as the stop left it. The OFF leg (the legacy engine) runs on, as it always did.
+                before = json.dumps(at.session_state["state"], sort_keys=True, default=str)
+                with pytest.raises(StopIteration):
+                    _drive(at, step)
+                assert json.dumps(at.session_state["state"], sort_keys=True, default=str) == before, "a blocked step moved the encounter"
+                trail.append({**_snap(at, f"{position}:{step[0]}"), "blocked": True})
+                continue
             _drive(at, step)
             trail.append(_snap(at, f"{position}:{step[0]}"))
         if close:
@@ -149,7 +158,7 @@ def test_p2_the_first_real_commit_is_the_common_authority_s_and_differs_from_the
     for case, name, on, off in _each(runs):
         records = {record["minute"]: record for record in on["site"].records if record.get("committed")}
         for left, right in zip(on["trail"], off["trail"]):
-            if left["label"] in ("arrival", "closed") or left["minute"] not in records or left["committed"] is None or left["minute"] not in left["committed"]:
+            if left["label"] in ("arrival", "closed") or left.get("blocked") or left["minute"] not in records or left["committed"] is None or left["minute"] not in left["committed"]:
                 continue
             record = records[left["minute"]]
             written = record["written_candidate"]
@@ -233,8 +242,10 @@ def test_p8_the_overlay_records_the_common_consciousness_and_writes_it_nowhere(r
         assert rows and all({"category", "mental_status", "F", "relative_delivery", "collapse_state"} <= set(row) for row in rows if row["shown"])
         assert all(turn.get("legacy_mental_status") for turn in overlay["turns"]), "the legacy word is recorded beside the common category"
         for left, right in zip(on["trail"], off["trail"]):
-            assert left["observable"].get("mental_status") == right["observable"].get("mental_status"), (case, name, left["label"], "mental_status is the legacy engine's")
             assert left["overlay_key_in_state"] is False
+            if left.get("blocked"):
+                continue            # ADAPTED in P3-253: the stopped leg is not run any further (its mental_status is the one the stop left: see p17)
+            assert left["observable"].get("mental_status") == right["observable"].get("mental_status"), (case, name, left["label"], "mental_status is the legacy engine's")
         text = ra.canonical(artifact)
         assert "AUTHORITY" not in json.dumps(overlay.get("label")) and "RESIDENT_VISIBLE" not in text
 
@@ -300,12 +311,44 @@ def test_p13_off_versus_on_differ_only_in_the_pressure_values(runs):
         assert [row["label"] for row in on["trail"]] == [row["label"] for row in off["trail"]]
         for left, right in zip(on["trail"], off["trail"]):
             where = f"{case}/{name}/{left['label']}"
+            if left.get("blocked"):
+                continue            # ADAPTED in P3-253: the stopped leg offers no controls and does not move; the isolation claim is about every step the leg RAN (blocked steps: p17)
+            # ADAPTED in P3-253: from the step in which the experiment halts after a real commit the ON page is the STOPPED page (the failing turn ran, then the page drew the stop): no
+            # controls and the operational notice. Everything else of that step is still compared; the controls and the text are compared on every step before it.
+            stopped_page = bool(left["halted"] and left["committed"])
             assert left["minute"] == right["minute"], where
-            assert left["buttons"] == right["buttons"], where
+            if not stopped_page:
+                assert left["buttons"] == right["buttons"], where
             assert _without_pressures(left["observed"]["events"]) == _without_pressures(right["observed"]["events"]), where
             assert left["observed"]["ledger"] == right["observed"]["ledger"], where
             assert _without_pressures(left["observable"]) == _without_pressures(right["observable"]), (where, "a non-pressure observable differs")
-            assert _normalize(left["screen"]) == _normalize(right["screen"]), (where, "the visible text differs beyond the pressure values")
+            if not stopped_page:
+                assert _normalize(left["screen"]) == _normalize(right["screen"]), (where, "the visible text differs beyond the pressure values")
+
+
+def test_p17_a_stopped_scenario_ends_at_the_stop_every_later_step_is_blocked_and_nothing_moves(runs):
+    """ADAPTED/ADDED in P3-253 to P3-261 (FD-STOP-02/03/07). The scenarios in which the experiment halts after a real commit (an unsupported action; the untreated course at the collapse
+    boundary) are STOPPED sessions: every step after the halt is blocked -- no control is drawn, the encounter is exactly as the stop left it, the legacy engine does not run it on, no
+    minute is committed again -- and no step before the halt is blocked. Scenarios that never halt are never blocked."""
+    stopped = 0
+    for case, name, on, off in _each(runs):
+        trail = on["trail"]
+        halted_at = next((index for index, row in enumerate(trail) if row["halted"] and row["committed"]), None)
+        blocked = [index for index, row in enumerate(trail) if row.get("blocked")]
+        if halted_at is None:
+            assert not blocked, (case, name, "a session that never halted was blocked")
+            continue
+        stopped += 1
+        assert blocked == list(range(blocked[0], len(trail))) if blocked else True, (case, name, "blocked steps are exactly the ones after the stop")
+        assert all(index > halted_at for index in blocked), (case, name, "the failing step itself ran (declared limit); only the steps AFTER it are blocked")
+        held = trail[halted_at]
+        assert "Send" not in held["buttons"] and "Examine patient" not in held["buttons"] and "Ask" not in held["buttons"], (case, name, "the stopped page draws no control")
+        assert "DEVELOPMENT AUTHORITY EXPERIMENT HALTED" in held["screen"], (case, name, "the stopped page says so, operationally")
+        for index in blocked:
+            assert trail[index]["observable"] == held["observable"] and trail[index]["minute"] == held["minute"] and trail[index]["observed"] == held["observed"], (case, name, index)
+            assert trail[index]["committed"] == held["committed"] and trail[index]["records"] == held["records"], (case, name, index, "nothing was committed or recorded again")
+        assert on["status"]["halted"] is True
+    assert stopped >= 4, stopped
 
 
 def test_p14_after_the_encounter_is_closed_the_whole_session_is_equal_modulo_the_pressures_scoring_included(runs):
@@ -349,7 +392,9 @@ def _row(case, name, on, off):
             "overlay": {"rows": len(overlay_rows), "words": sorted({row["mental_status"] for row in overlay_rows}), "max_F": round(max((row["F"] for row in overlay_rows), default=0.0), 4),
                         "first_established_minute": established[0] if established else None, "legacy_words": sorted({str(turn["legacy_mental_status"]) for turn in artifact["consciousness_overlay"]["turns"]})},
             "artifact_class": ra.artifact_class(artifact), "verified": bool(ra.verify_artifact(artifact)["complete"]), "replay_reproduces": bool(replay["reproduces"]),
-            "overlay_replay_reproduces": bool(replay["overlay_replay"]["reproduces"]), "halt_replay": replay["halt_reason_replay"]["kind"]}
+            "overlay_replay_reproduces": bool(replay["overlay_replay"]["reproduces"]), "halt_replay": replay["halt_reason_replay"]["kind"],
+            # ADDED in P3-253: only the rows of STOPPED sessions carry it (the other rows are what they were, bit for bit)
+            **({"blocked_steps": [index for index, step in enumerate(on["trail"]) if step.get("blocked")]} if any(step.get("blocked") for step in on["trail"]) else {})}
 
 
 def build_record(runs) -> dict:
