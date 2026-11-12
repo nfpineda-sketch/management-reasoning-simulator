@@ -114,7 +114,9 @@ de alcance, rige la fuente, no este resumen.
   Fuente: encargo del 2026-10-21 y `docs/PHASE2_SHADOW_CORE.md`; para la Fase 3, los encargos del
   2026-11-07, `docs/PHASE3_RUNTIME_INTEGRATION.md` y las filas FD-P3-01 a FD-P3-16 del Decision File; para
   la enmienda y su integración, las filas FD-AMEND1-01 a FD-AMEND1-04, FD-P3-119 y FD-P3-129; para la Enmienda 2 y
-  su integración en la sombra GI, las filas FD-P3-167 a FD-P3-172; para la instantánea de GI y la revisión previa a la autoridad, FD-P3-178 a FD-P3-187.
+  su integración en la sombra GI, las filas FD-P3-167 a FD-P3-172; para la instantánea de GI y la revisión previa a la autoridad, FD-P3-178 a FD-P3-187;
+  para la plomería **dormida** del par presión + consciencia (vista explícita de `mental_status`, `EXECUTED_NO_COMMON_PHYSIOLOGY`, rutas del reloj, un solo gancho; **sin** autoridad, V1 sigue sólo ratificada para
+  desarrollo), `docs/PHASE3_DORMANT_PAIR_AUTHORITY.md` y FD-P3-188 a FD-P3-194.
 
 ## Privacidad y procedencia
 - No commitear datos reales, respuestas externas, secretos ni nombres de médicos.

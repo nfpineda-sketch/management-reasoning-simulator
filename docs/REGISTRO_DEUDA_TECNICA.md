@@ -646,3 +646,23 @@ transacción en seco del par). TD-138 (6): la instantánea quedó **ratificada p
   bytes del núcleo (la simuló), ni ejecutó la página del encuentro, ni repitió las bifurcaciones de ataque en el caso de 72 años.
 - **(15)** **(P3-208) La huella de la ratificación queda fijada en el arnés:** regenerar `GI_DEVELOPMENT_SNAPSHOT_V1_RATIFICATION.json` con otro texto es otra ratificación y exige actualizar la constante.
 
+## TD-141 · Fase 3, plomería dormida del par presión + consciencia y aislamiento aguas abajo (ciclo del 2026-11-12)
+
+**Cierra o actualiza deuda anterior.** TD-140 (1): **cerrada** — el vínculo con V1 y la transacción del par viven **dormidos en la capa** (`runtime_authority_pair.py`) y están probados. TD-140 (2): **hecha** — las ocho
+guardas están contabilizadas (5 lectores enrutados, 13 sobre trazas congeladas, 13 sobre un campo vivo que nadie escribe; siete de ellos consecuentes y sin enrutar bloquean el mapeo; ver el doc §1). TD-140 (3): **cerrada** por
+FD-P3-NEW-03 (el IV se ejecuta y se reconoce). TD-140 (4): **hecha** en la evaluación en seco y en el par (`VALIDATED_ATOMIC_INTERVAL`); **parcial** en el sitio de presión sola. TD-140 (11) (C9): **cerrada** en la página y el
+arnés (un solo gancho). TD-140 (5), (9), (10): **siguen abiertas** (docencia). TD-140 (6), (7), (8): sin cambio.
+
+- **(1)** **No existe un sitio de autoridad del par** (R1): nada compone el evaluador, `PairAuthorityTransaction.commit`, el artefacto, la procedencia, la detención y el almacén. El compromiso del par sólo se ejerció en
+  copias con una aprobación de prueba. Se construye sólo si la docencia lo encarga; construirlo no concede autoridad.
+- **(2)** **El sitio de presión sola valida el candidato y el replay del minuto final**, más todo fallo aún no juzgado; la comprobación por minuto de un turno largo existe sólo en el evaluador del par (R2).
+- **(3)** **Siete lectores consecuentes del campo vivo siguen sin enrutar:** cuatro de imagen (`image_broker.edit_prompt`, `image_consistency.photographic_targets`, `patient_appearance.contract_brief`,
+  `visual_observations.visual_observations`) y los **tres del motor** (`family_engine._validate`, `_order`, `_discharge_alarm`), que **no se pueden enrutar en esta fase** porque `family_engine.py` es fuente del congelamiento de
+  calibración de la Fase 2 (editarlo mueve los digestos que el cierre registra; lo halló la suite completa). Sólo importan si algún día se pide que el campo heredado lleve la palabra común (R3). El escaneo de lectores no ve acceso dinámico: la revisión halló uno
+  (`trace_phase0.observation_snapshot`, ya enrutado) y la auditoría lo declara como límite.
+- **(4)** **`PairAuthorityTransaction._pressure` es alcanzable por código del mismo proceso** (la transacción base tiene la misma propiedad); los estados terminales cierran la resurrección, no el acceso privado.
+- **(5)** **El registro inmutable de V1** conserva una frase («ninguna importación por la capa ni la aplicación») que ya no es cierta; no se edita.
+- **(6)** **La evaluación en seco encendida cuesta un replay de la corrida por turno** (corregido de uno por minuto); la serie usa turnos de 5 y de 2 minutos, no de uno.
+- **(7)** **Un turno sin avance** es una excepción deliberada y acotada del sitio certificado; el comportamiento certificado de «minuto duplicado sin estado previo» se conserva.
+- **Pruebas focalizadas:** véase el informe del ciclo; **suite completa del núcleo común:** no se corrió (diferencia vacía de `clinical_core/`).
+- **Sin cambios de runtime visibles:** no se tocaron fisiología, scoring, D1–D5, textos visibles, el primer piloto, corpus, V3 ni baselines. **Validación externa:** sigue en espera.

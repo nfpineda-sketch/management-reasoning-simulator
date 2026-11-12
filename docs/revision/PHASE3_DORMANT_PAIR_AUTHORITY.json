@@ -1,0 +1,769 @@
+{
+ "authority": {
+  "approved_authority_snapshots": [
+   "gi_pressure_committed"
+  ],
+  "common_core_runtime_authority": false,
+  "granted": false,
+  "v1_in_the_authority_registry": false,
+  "v1_status": "RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS"
+ },
+ "base_head": "50f387b",
+ "binding": {
+  "file_sha256": "d9de4800075e2e5bb7e6e445ec0dc9a5d672f53c54212a56cc2f41b9392d4803",
+  "profile_digest": "c167b45ee0ce6ec29643cba47f2dde3b6eb760a4c6e37f11d3fa7e5e0a8acc89",
+  "refusals": [
+   "WRONG_SNAPSHOT_ID",
+   "WRONG_VERSION",
+   "PARTIAL_SNAPSHOT",
+   "MODIFIED_PARAMETER",
+   "WRONG_DIGEST",
+   "WRONG_CORE_LINEAGE",
+   "WITNESS_SUBSTITUTED_FOR_THE_SNAPSHOT",
+   "NOT_A_DEVELOPMENT_SNAPSHOT_RECORD",
+   "NOT_RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS",
+   "PRESSURE_POINT_MISMATCH"
+  ],
+  "snapshot": "GI_DEVELOPMENT_SNAPSHOT_V1",
+  "version": 1
+ },
+ "blockers": [
+  {
+   "blocker": "the pair authority site: the orchestration that composes the dry evaluator's checks, PairAuthorityTransaction.commit, the artifact, the provenance, the halt and the store, with its page tests under a test-only approval",
+   "id": "R1",
+   "kind": "BUILD (no faculty decision needed to build it; one is needed to enable it)"
+  },
+  {
+   "blocker": "the per-minute candidate and replay validation of the pressure-only site, if that site is to be used for a multi-minute turn without the pair",
+   "id": "R2",
+   "kind": "BUILD"
+  },
+  {
+   "blocker": "routing of the seven consequential live-field readers before any mapping into the live field: the four image/visual ones (image_broker.edit_prompt, image_consistency.photographic_targets, patient_appearance.contract_brief, visual_observations.visual_observations) and the three engine ones (family_engine._validate, _order, _discharge_alarm), which need the Phase-2 calibration-freeze amendment procedure because family_engine.py is one of its sources",
+   "id": "R3",
+   "kind": "BUILD, only if the faculty ever asks for the legacy field to carry the common word"
+  },
+  {
+   "blocker": "the consciousness divergence table (nine representative episodes, FD-P3-187 C1) and the 'Unresponsive with a pulse' reading (C5)",
+   "id": "F1",
+   "kind": "FACULTY"
+  },
+  {
+   "blocker": "the grant of any authority and the approval of a snapshot FOR authority: not requested in this cycle (FD-P3-NEW-07)",
+   "id": "F2",
+   "kind": "FACULTY"
+  }
+ ],
+ "clock": {
+  "granularity": "VALIDATED_ATOMIC_INTERVAL",
+  "no_advance_ok_classes": [
+   "consult",
+   "reassessment",
+   "vascular_access"
+  ],
+  "rejected": "PER_MINUTE_TRANSACTION",
+  "routes": [
+   "order_turn",
+   "clinical_time_outside_an_order_turn"
+  ],
+  "time_limit_min": 240,
+  "writers_of_sim_time": [
+   "app.py::_advance_with_timed_fluids",
+   "coupled_encounter.py::tick",
+   "family_engine.py::advance_clinical_time",
+   "family_engine.py::execute_family_bundle",
+   "generated_engine.py::_minute"
+  ]
+ },
+ "confirmations": {
+  "authority_enabled": false,
+  "clinical_core_bytes_changed": false,
+  "clinical_validation_claimed": false,
+  "common_consciousness_exposed_to_residents": false,
+  "common_state_written_into_an_encounter": false,
+  "first_pilot_changed": false,
+  "legacy_curve_fitting": false,
+  "physiology_retuned": false,
+  "scoring_changed": false,
+  "terminal_rule_invented": false,
+  "v1_promoted_to_authority": false
+ },
+ "dispositions": {
+  "no_common_physiology_allowlist": [
+   "vascular_access"
+  ],
+  "unsupported_classes_still_halt": [
+   "intubation",
+   "vasopressor",
+   "disposition",
+   "anything not declared"
+  ],
+  "vocabulary": [
+   "SUPPORTED_MODELED",
+   "STRUCTURAL_ONLY",
+   "EXECUTED_NO_COMMON_PHYSIOLOGY",
+   "HELD_NOT_EXECUTED",
+   "TERMINAL_NOT_EXECUTABLE",
+   "UNSUPPORTED_ACTION"
+  ]
+ },
+ "pair": {
+  "dry_checks": [
+   "transaction_completed",
+   "encounter_state_untouched",
+   "turn_has_a_transaction_site",
+   "turn_was_observed",
+   "pair_domain_unchanged",
+   "lineage_certified",
+   "snapshot_bound",
+   "case_eligible",
+   "supported_management",
+   "minute_not_already_committed",
+   "pressure_candidate_present",
+   "pressure_validated",
+   "consciousness_candidate_present",
+   "consciousness_reproducible",
+   "pair_is_one_course",
+   "interval_minutes_validated",
+   "collapse_boundary_not_reached",
+   "window_open",
+   "common_run_did_not_fail",
+   "only_the_pair_would_move"
+  ],
+  "never_written": [
+   "hr",
+   "spo2",
+   "respiratory_rate",
+   "crt",
+   "rhythm",
+   "pulse_present_live",
+   "lactate",
+   "hemoglobin",
+   "collapse_state",
+   "mental_status_live"
+  ],
+  "observable_writes": [
+   "sbp",
+   "dbp",
+   "map"
+  ],
+  "overlay_writes": [
+   "consciousness_category",
+   "mental_status",
+   "pulse_present"
+  ],
+  "pair_checks": [
+   "pressure_half_validated",
+   "consciousness_candidate_present",
+   "category_on_the_ladder",
+   "word_is_the_category",
+   "pulse_not_contradicted",
+   "pair_is_one_course",
+   "interval_minutes_validated",
+   "collapse_boundary_not_reached",
+   "window_open",
+   "snapshot_is_v1",
+   "payload_is_the_pair_and_nothing_else",
+   "legacy_mental_status_untouched"
+  ],
+  "payload_fields": [
+   "sbp",
+   "dbp",
+   "map",
+   "consciousness_category",
+   "mental_status",
+   "pulse_present"
+  ]
+ },
+ "readers": {
+  "by_mechanism": {
+   "NO_CALLER": 1,
+   "READS_THE_FROZEN_TRACE_WHICH_THE_ROUTED_SNAPSHOTS_KEEP_LEGACY": 13,
+   "READS_THE_LIVE_FIELD_WHICH_NO_TRANSACTION_WRITES": 13,
+   "ROUTED_THROUGH_THE_VIEW_AND_FROZEN": 5
+  },
+  "common_view_readers": [],
+  "inventory": {
+   "executable_readers": 32,
+   "modules_text_only": 7,
+   "modules_with_a_syntactic_use": 56,
+   "sites": 130,
+   "unclassified": []
+  },
+  "routed": [
+   "app.py::_clinical_encounter_workspace",
+   "app.py::learner_vitals_snapshot",
+   "app.py::management_state_snapshot",
+   "app.py::observable_state_changed",
+   "trace_phase0.py::observation_snapshot"
+  ],
+  "table": {
+   "app.py::_clinical_encounter_workspace": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": true,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "FREEZE_TO_LEGACY_DURING_DEVELOPMENT_AUTHORITY",
+    "kind": "ACTION_AVAILABILITY",
+    "mechanism": "ROUTED_THROUGH_THE_VIEW_AND_FROZEN"
+   },
+   "app.py::_critical_adaptation_prompt": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "FREEZE_TO_LEGACY_DURING_DEVELOPMENT_AUTHORITY",
+    "kind": "CLINICAL_BRANCHING",
+    "mechanism": "READS_THE_FROZEN_TRACE_WHICH_THE_ROUTED_SNAPSHOTS_KEEP_LEGACY"
+   },
+   "app.py::_expected_response_prompt": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "FREEZE_TO_LEGACY_DURING_DEVELOPMENT_AUTHORITY",
+    "kind": "CLINICAL_BRANCHING",
+    "mechanism": "READS_THE_FROZEN_TRACE_WHICH_THE_ROUTED_SNAPSHOTS_KEEP_LEGACY"
+   },
+   "app.py::_perfusion_response_direction": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": false,
+     "resident_visible": false,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "NONE_NEEDED_DISPLAY_OR_DEAD_CODE",
+    "kind": "OTHER",
+    "mechanism": "NO_CALLER"
+   },
+   "app.py::_reasoning_data_alignment_prompt": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "FREEZE_TO_LEGACY_DURING_DEVELOPMENT_AUTHORITY",
+    "kind": "CLINICAL_BRANCHING",
+    "mechanism": "READS_THE_FROZEN_TRACE_WHICH_THE_ROUTED_SNAPSHOTS_KEEP_LEGACY"
+   },
+   "app.py::_trace_observable_delta": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "FREEZE_TO_LEGACY_DURING_DEVELOPMENT_AUTHORITY",
+    "kind": "TEXT_GENERATION",
+    "mechanism": "READS_THE_FROZEN_TRACE_WHICH_THE_ROUTED_SNAPSHOTS_KEEP_LEGACY"
+   },
+   "app.py::_trace_state_text": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "FREEZE_TO_LEGACY_DURING_DEVELOPMENT_AUTHORITY",
+    "kind": "TEXT_GENERATION",
+    "mechanism": "READS_THE_FROZEN_TRACE_WHICH_THE_ROUTED_SNAPSHOTS_KEEP_LEGACY"
+   },
+   "app.py::_trace_state_words": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "FREEZE_TO_LEGACY_DURING_DEVELOPMENT_AUTHORITY",
+    "kind": "TEXT_GENERATION",
+    "mechanism": "READS_THE_FROZEN_TRACE_WHICH_THE_ROUTED_SNAPSHOTS_KEEP_LEGACY"
+   },
+   "app.py::_trajectory_expert_model": {
+    "consequence": {
+     "ai_output": true,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "FREEZE_TO_LEGACY_DURING_DEVELOPMENT_AUTHORITY",
+    "kind": "CLINICAL_BRANCHING",
+    "mechanism": "READS_THE_FROZEN_TRACE_WHICH_THE_ROUTED_SNAPSHOTS_KEEP_LEGACY"
+   },
+   "app.py::_vitals_cells": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "EXPLICITLY_AUTHORIZE_LATER",
+    "kind": "DISPLAY_ONLY",
+    "mechanism": "READS_THE_LIVE_FIELD_WHICH_NO_TRANSACTION_WRITES"
+   },
+   "app.py::format_clinical_update": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "EXPLICITLY_AUTHORIZE_LATER",
+    "kind": "TEXT_GENERATION",
+    "mechanism": "READS_THE_LIVE_FIELD_WHICH_NO_TRANSACTION_WRITES"
+   },
+   "app.py::learner_vitals_snapshot": {
+    "consequence": {
+     "ai_output": true,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "FREEZE_TO_LEGACY_DURING_DEVELOPMENT_AUTHORITY",
+    "kind": "PERSISTENCE",
+    "mechanism": "ROUTED_THROUGH_THE_VIEW_AND_FROZEN"
+   },
+   "app.py::management_state_snapshot": {
+    "consequence": {
+     "ai_output": true,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": true,
+     "termination": false
+    },
+    "guard": "FREEZE_TO_LEGACY_DURING_DEVELOPMENT_AUTHORITY",
+    "kind": "PERSISTENCE",
+    "mechanism": "ROUTED_THROUGH_THE_VIEW_AND_FROZEN"
+   },
+   "app.py::observable_state_changed": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": true,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "FREEZE_TO_LEGACY_DURING_DEVELOPMENT_AUTHORITY",
+    "kind": "CLINICAL_BRANCHING",
+    "mechanism": "ROUTED_THROUGH_THE_VIEW_AND_FROZEN"
+   },
+   "cognitive_review.py::<module>": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "FREEZE_TO_LEGACY_DURING_DEVELOPMENT_AUTHORITY",
+    "kind": "TEXT_GENERATION",
+    "mechanism": "READS_THE_FROZEN_TRACE_WHICH_THE_ROUTED_SNAPSHOTS_KEEP_LEGACY"
+   },
+   "faculty_analysis.py::<text>": {
+    "consequence": {
+     "ai_output": true,
+     "available_actions": false,
+     "resident_visible": false,
+     "scenario_state": false,
+     "scoring": true,
+     "termination": false
+    },
+    "guard": "FREEZE_TO_LEGACY_DURING_DEVELOPMENT_AUTHORITY",
+    "kind": "AI_PAYLOAD",
+    "mechanism": "READS_THE_FROZEN_TRACE_WHICH_THE_ROUTED_SNAPSHOTS_KEEP_LEGACY"
+   },
+   "family_engine.py::_discharge_alarm": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": true,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "EXPLICITLY_AUTHORIZE_LATER",
+    "kind": "DISCHARGE",
+    "mechanism": "READS_THE_LIVE_FIELD_WHICH_NO_TRANSACTION_WRITES"
+   },
+   "family_engine.py::_order": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": true,
+     "resident_visible": true,
+     "scenario_state": true,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "EXPLICITLY_AUTHORIZE_LATER",
+    "kind": "ACTION_AVAILABILITY",
+    "mechanism": "READS_THE_LIVE_FIELD_WHICH_NO_TRANSACTION_WRITES"
+   },
+   "family_engine.py::_validate": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": true,
+     "resident_visible": true,
+     "scenario_state": true,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "EXPLICITLY_AUTHORIZE_LATER",
+    "kind": "ACTION_AVAILABILITY",
+    "mechanism": "READS_THE_LIVE_FIELD_WHICH_NO_TRANSACTION_WRITES"
+   },
+   "family_engine.py::clinical_update": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "EXPLICITLY_AUTHORIZE_LATER",
+    "kind": "TEXT_GENERATION",
+    "mechanism": "READS_THE_LIVE_FIELD_WHICH_NO_TRANSACTION_WRITES"
+   },
+   "family_engine.py::current_findings": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "EXPLICITLY_AUTHORIZE_LATER",
+    "kind": "TEXT_GENERATION",
+    "mechanism": "READS_THE_LIVE_FIELD_WHICH_NO_TRANSACTION_WRITES"
+   },
+   "image_broker.py::edit_prompt": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "EXPLICITLY_AUTHORIZE_LATER",
+    "kind": "TEXT_GENERATION",
+    "mechanism": "READS_THE_LIVE_FIELD_WHICH_NO_TRANSACTION_WRITES"
+   },
+   "image_consistency.py::photographic_targets": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "EXPLICITLY_AUTHORIZE_LATER",
+    "kind": "CLINICAL_BRANCHING",
+    "mechanism": "READS_THE_LIVE_FIELD_WHICH_NO_TRANSACTION_WRITES"
+   },
+   "management_trace_analysis.py::<text>": {
+    "consequence": {
+     "ai_output": true,
+     "available_actions": false,
+     "resident_visible": false,
+     "scenario_state": false,
+     "scoring": true,
+     "termination": false
+    },
+    "guard": "FREEZE_TO_LEGACY_DURING_DEVELOPMENT_AUTHORITY",
+    "kind": "AI_PAYLOAD",
+    "mechanism": "READS_THE_FROZEN_TRACE_WHICH_THE_ROUTED_SNAPSHOTS_KEEP_LEGACY"
+   },
+   "management_trace_portal.py::render_management_trace_analysis": {
+    "consequence": {
+     "ai_output": true,
+     "available_actions": false,
+     "resident_visible": false,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "FREEZE_TO_LEGACY_DURING_DEVELOPMENT_AUTHORITY",
+    "kind": "FACULTY_PORTAL",
+    "mechanism": "READS_THE_FROZEN_TRACE_WHICH_THE_ROUTED_SNAPSHOTS_KEEP_LEGACY"
+   },
+   "management_trace_report.py::<module>": {
+    "consequence": {
+     "ai_output": true,
+     "available_actions": false,
+     "resident_visible": false,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "FREEZE_TO_LEGACY_DURING_DEVELOPMENT_AUTHORITY",
+    "kind": "FACULTY_PORTAL",
+    "mechanism": "READS_THE_FROZEN_TRACE_WHICH_THE_ROUTED_SNAPSHOTS_KEEP_LEGACY"
+   },
+   "patient_appearance.py::appearance_summary": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "EXPLICITLY_AUTHORIZE_LATER",
+    "kind": "TEXT_GENERATION",
+    "mechanism": "READS_THE_LIVE_FIELD_WHICH_NO_TRANSACTION_WRITES"
+   },
+   "patient_appearance.py::contract_brief": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "EXPLICITLY_AUTHORIZE_LATER",
+    "kind": "CLINICAL_BRANCHING",
+    "mechanism": "READS_THE_LIVE_FIELD_WHICH_NO_TRANSACTION_WRITES"
+   },
+   "record_findings.py::<module>": {
+    "consequence": {
+     "ai_output": true,
+     "available_actions": false,
+     "resident_visible": false,
+     "scenario_state": false,
+     "scoring": true,
+     "termination": false
+    },
+    "guard": "FREEZE_TO_LEGACY_DURING_DEVELOPMENT_AUTHORITY",
+    "kind": "FACULTY_PORTAL",
+    "mechanism": "READS_THE_FROZEN_TRACE_WHICH_THE_ROUTED_SNAPSHOTS_KEEP_LEGACY"
+   },
+   "trace_phase0.py::observation_snapshot": {
+    "consequence": {
+     "ai_output": true,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "FREEZE_TO_LEGACY_DURING_DEVELOPMENT_AUTHORITY",
+    "kind": "PERSISTENCE",
+    "mechanism": "ROUTED_THROUGH_THE_VIEW_AND_FROZEN"
+   },
+   "visual_observations.py::<module>": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "EXPLICITLY_AUTHORIZE_LATER",
+    "kind": "CLINICAL_BRANCHING",
+    "mechanism": "READS_THE_LIVE_FIELD_WHICH_NO_TRANSACTION_WRITES"
+   },
+   "visual_observations.py::visual_observations": {
+    "consequence": {
+     "ai_output": false,
+     "available_actions": false,
+     "resident_visible": true,
+     "scenario_state": false,
+     "scoring": false,
+     "termination": false
+    },
+    "guard": "EXPLICITLY_AUTHORIZE_LATER",
+    "kind": "CLINICAL_BRANCHING",
+    "mechanism": "READS_THE_LIVE_FIELD_WHICH_NO_TRANSACTION_WRITES"
+   }
+  },
+  "unrouted_consequential": [
+   "family_engine.py::_discharge_alarm",
+   "family_engine.py::_order",
+   "family_engine.py::_validate",
+   "image_broker.py::edit_prompt",
+   "image_consistency.py::photographic_targets",
+   "patient_appearance.py::contract_brief",
+   "visual_observations.py::visual_observations"
+  ]
+ },
+ "readiness": {
+  "CONSCIOUSNESS_FACULTY_READINESS": {
+   "limits": [
+    "no consciousness authority until the faculty reviews the table (FD-P3-187 C1 and C5 stay open)"
+   ],
+   "scope": "FD-P3-NEW-01: the 15 consciousness divergence episodes remain MECHANISTICALLY_COHERENT_DIFFERENCE and the faculty table is unanswered; FD-P3-NEW-02 allows the common physiology to represent UNRESPONSIVE with a pulse but does NOT authorize mapping it into the legacy live mental_status",
+   "status": "NOT_READY"
+  },
+  "CONSCIOUSNESS_TECHNICAL_READINESS": {
+   "limits": [
+    "mapping the common word into the live legacy field is refused by the writer while seven consequential readers remain unrouted: four image/visual ones and the three ENGINE readers (order eligibility, discharge), which cannot be routed in this phase because family_engine.py is a source of the Phase-2 calibration freeze",
+    "a differential proof over engine, page, AI payload and faculty retention, not a proof of absence: the scan cannot see dynamic access (declared in the audit)"
+   ],
+   "scope": "the common word lives only in an explicit overlay; all 32 executable readers are accounted for (5 routed and frozen to legacy, 13 read frozen traces the routed snapshots keep legacy, 13 read the live field which no transaction writes -- among them the 3 engine readers and the 4 image/visual ones that are consequential --, 1 has no caller); no reader consumes the common word",
+   "status": "OVERLAY_ISOLATION_PROVEN_LIVE_FIELD_MAPPING_BLOCKED"
+  },
+  "PAGE_RUNTIME_READINESS": {
+   "limits": [
+    "no pair authority on the page",
+    "the dry evaluation costs one replay of the run per turn when its flag is on, and nothing when it is off"
+   ],
+   "scope": "with every flag off the page holds no pair state; with the shadow and the dry evaluation on the resident-visible page, the engine's state, the event stream, the order ledger and the Management Trace are identical turn by turn on both GI cases; the ONE hook sees every clock advance",
+   "status": "DRY_ONLY_PAGE_PROVEN_UNCHANGED"
+  },
+  "PAIR_TRANSACTION_READINESS": {
+   "limits": [
+    "there is no pair AUTHORITY SITE: nothing composes the evaluator, the transaction, the artifact, the halt and the persistence for a pair at runtime",
+    "the pair's commit has been exercised on copies with a test-only approval; it has never run inside an encounter, and may not"
+   ],
+   "scope": "one payload (sbp, dbp, MAP, category), all or nothing, gate re-evaluated at commit, bound to the exact ratified V1, validated at every minute of a turn (VALIDATED_ATOMIC_INTERVAL), collapse boundary and 240-minute window, written only into a copy and only into the overlay",
+   "status": "TRANSACTION_AND_DRY_EVALUATION_READY_RUNTIME_SITE_NOT_BUILT"
+  },
+  "PRESSURE_TECHNICAL_READINESS": {
+   "limits": [
+    "development only: the approval is the development approval of the pressure point, not a runtime approval",
+    "the real pressure site validates the END minute's candidate and replay plus every failure since the last judged turn; the per-minute candidate and replay check of every minute of a multi-minute turn exists only in the pair's evaluator"
+   ],
+   "scope": "the scripted harness AND the real page, on BOTH routes by which the clock moves (order turn, clinical time outside an order turn); the IV line no longer halts; every failure not yet judged refuses a turn; the settled ledger of a no-advance turn is judged",
+   "status": "READY_FOR_A_DEVELOPMENT_EXPERIMENT"
+  }
+ },
+ "record_digest": "f3f1919f676f15fbe509b35b8b5275feb5474e6d1884ded472f0deba27478d2e",
+ "record_type": "PHASE3_DORMANT_PAIR_AUTHORITY",
+ "review": [
+  {
+   "consequence": "'Place an IV line. Also give <a class the mapping cannot represent>' kept the experiment going (the unmodelled order appears only in the settled ledger)",
+   "correction": "settle_provenance judges the no-advance turn with the rule the dry evaluator uses (unsupported_in_settlement)",
+   "finding": "a turn that did not advance the clock was never settled against the ledger",
+   "id": "F1",
+   "severity": "HIGH",
+   "tests": [
+    "test_f1_*",
+    "test_f7_*"
+   ],
+   "where": "runtime_authority.settle_provenance"
+  },
+  {
+   "correction": "every failure not yet judged refuses the turn; a kind-less gap is 'untyped_gap', unsupported",
+   "finding": "a capture that failed (before=None) let a multi-minute turn commit a pressure that ignored the treatment; a gap with no kind was dropped",
+   "id": "F2",
+   "severity": "MEDIUM",
+   "tests": [
+    "test_f2_*"
+   ],
+   "where": "runtime_authority._minute"
+  },
+  {
+   "correction": "a high-water mark over the shadow's failures (failures_judged) replaces the minute window, and the no-advance turn reads it",
+   "finding": "a failure stamped at the turn's start, or recorded during a no-advance turn, was never judged",
+   "id": "F3",
+   "severity": "MEDIUM",
+   "tests": [
+    "test_f3_*",
+    "test_s8_*",
+    "test_s9_*"
+   ],
+   "where": "runtime_authority._minute and PairDryEvaluator._no_advance_turn"
+  },
+  {
+   "consequence": "persists the word into every Management-Trace event; harmless today, false assurance the day the image readers are routed",
+   "correction": "routed through observable_view and classified ROUTED (5 routed readers now)",
+   "finding": "an unrouted consequential reader of the live word that the audit had labelled a snapshot of routed readers",
+   "id": "F4",
+   "severity": "MEDIUM",
+   "tests": [
+    "test_f4_*",
+    "test_phase3_dormant_guards.py"
+   ],
+   "where": "trace_phase0.observation_snapshot"
+  },
+  {
+   "correction": "ABORTED and COMMITTED are terminal",
+   "declared_limit": "in-process code can still reach the private inner pressure transaction; the base AuthorityTransaction has the same property",
+   "finding": "a refused pair could be re-validated and committed",
+   "id": "F5",
+   "severity": "LOW",
+   "tests": [
+    "test_f5_*"
+   ],
+   "where": "PairAuthorityTransaction.validate"
+  },
+  {
+   "correction": "exact-int check; overlay_of never raises",
+   "finding": "a malformed overlay made the view raise; a float category was accepted as a rung",
+   "id": "F6",
+   "severity": "LOW",
+   "tests": [
+    "test_f6_*"
+   ],
+   "where": "observable_view / payload_problems"
+  },
+  {
+   "correction": "the shared normalised rule",
+   "finding": "the dry settlement compared the raw class",
+   "id": "F7",
+   "severity": "LOW",
+   "tests": [
+    "test_f7_*"
+   ],
+   "where": "PairDryEvaluator.settle"
+  },
+  {
+   "correction": "case equality in case_eligible; the stale artifact is dropped when a new session is seen; ONE replay per turn",
+   "finding": "the evaluator did not compare its case with the session's; a stale artifact survived into the next encounter; the dry replay was quadratic",
+   "id": "F8",
+   "severity": "LOW",
+   "tests": [
+    "test_f8_*"
+   ],
+   "where": "runtime_authority_pair"
+  }
+ ],
+ "series": {
+  "authority_granted": false,
+  "granularity": "VALIDATED_ATOMIC_INTERVAL",
+  "record_digest": "3464f508ea78196b25c480689ffb0134731aae074eb60125c6be2e5cceddaaea",
+  "runs": 32
+ },
+ "verdict": "C",
+ "verdict_name": "PAIR_TRANSACTION_OR_RUNTIME_STILL_BLOCKED",
+ "version": "P3-210..P3-220"
+}

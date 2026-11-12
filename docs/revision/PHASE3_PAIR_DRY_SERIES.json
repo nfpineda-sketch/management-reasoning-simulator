@@ -1,0 +1,9345 @@
+{
+ "authority_granted": false,
+ "common_core_runtime_authority": false,
+ "granularity": "VALIDATED_ATOMIC_INTERVAL",
+ "record_digest": "3464f508ea78196b25c480689ffb0134731aae074eb60125c6be2e5cceddaaea",
+ "record_type": "PHASE3_PAIR_DRY_SERIES",
+ "runs": [
+  {
+   "case": "gi_bleed_57m",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 36,
+    "mental_status": "Obtunded",
+    "pulse_present": true,
+    "sbp": 56
+   },
+   "legacy_arrested": false,
+   "minutes_played": 240,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     15,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     20,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     25,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     30,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     35,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     40,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     45,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     50,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     55,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     60,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     65,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     125,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     130,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     135,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     140,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     145,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     150,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     155,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     160,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     165,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     170,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     175,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     180,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     185,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     190,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     195,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     200,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     205,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     210,
+     "order",
+     "A",
+     5,
+     "collapse_boundary_not_reached"
+    ],
+    [
+     215,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     220,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     225,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     230,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     235,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     240,
+     "order",
+     "H",
+     0,
+     ""
+    ]
+   ],
+   "orders": [],
+   "scenario": "untreated",
+   "technical": {
+    "abort_checks": [
+     "collapse_boundary_not_reached"
+    ],
+    "abort_detail": {
+     "collapse_boundary_not_reached": {
+      "clear": false,
+      "first_established_minute": 207,
+      "minutes_not_shown": []
+     }
+    },
+    "abort_stage": "validation",
+    "authority_had_begun_at_abort": true,
+    "first_would_abort": 210,
+    "first_would_commit": 5,
+    "halted_minutes": 6,
+    "last_would_commit": 205,
+    "no_advance_turns": 0,
+    "record_digest": "81da944007a30e36508438e45bbf3782396dd98a2c39fc77c193fbdc55eac599",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_ABORT",
+    "violations": [],
+    "would_commit_minutes": 41
+   },
+   "triggered_at": null,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_72f",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 44,
+    "mental_status": "Drowsy",
+    "pulse_present": true,
+    "sbp": 66
+   },
+   "legacy_arrested": false,
+   "minutes_played": 240,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     15,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     20,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     25,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     30,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     35,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     40,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     45,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     50,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     55,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     60,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     65,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     125,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     130,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     135,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     140,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     145,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     150,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     155,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     160,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     165,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     170,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     175,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     180,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     185,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     190,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     195,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     200,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     205,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     210,
+     "order",
+     "A",
+     5,
+     "collapse_boundary_not_reached"
+    ],
+    [
+     215,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     220,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     225,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     230,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     235,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     240,
+     "order",
+     "H",
+     0,
+     ""
+    ]
+   ],
+   "orders": [],
+   "scenario": "untreated",
+   "technical": {
+    "abort_checks": [
+     "collapse_boundary_not_reached"
+    ],
+    "abort_detail": {
+     "collapse_boundary_not_reached": {
+      "clear": false,
+      "first_established_minute": 207,
+      "minutes_not_shown": []
+     }
+    },
+    "abort_stage": "validation",
+    "authority_had_begun_at_abort": true,
+    "first_would_abort": 210,
+    "first_would_commit": 5,
+    "halted_minutes": 6,
+    "last_would_commit": 205,
+    "no_advance_turns": 0,
+    "record_digest": "769d4b9bf099d0ed1a483af20a86cceeb73c79624446b64c23243d450a3253c4",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_ABORT",
+    "violations": [],
+    "would_commit_minutes": 41
+   },
+   "triggered_at": null,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_57m",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 65,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 107
+   },
+   "legacy_arrested": false,
+   "minutes_played": 120,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     60,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 70,
+     "executed": true,
+     "minute": 10,
+     "text": "Place an IV line. Give 1 L of normal saline. Transfuse 2 units of packed red blood cells."
+    }
+   ],
+   "scenario": "early_treatment",
+   "technical": {
+    "abort_checks": null,
+    "abort_detail": null,
+    "abort_stage": null,
+    "authority_had_begun_at_abort": null,
+    "first_would_abort": null,
+    "first_would_commit": 5,
+    "halted_minutes": 0,
+    "last_would_commit": 120,
+    "no_advance_turns": 0,
+    "record_digest": "97581a6da98d30e7cdafd84845dd6c4712173cf8ce9e9a46ad1ea75e7a54e944",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_COMMIT_THROUGHOUT",
+    "violations": [],
+    "would_commit_minutes": 13
+   },
+   "triggered_at": null,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_72f",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 73,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 117
+   },
+   "legacy_arrested": false,
+   "minutes_played": 120,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     60,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 70,
+     "executed": true,
+     "minute": 10,
+     "text": "Place an IV line. Give 1 L of normal saline. Transfuse 2 units of packed red blood cells."
+    }
+   ],
+   "scenario": "early_treatment",
+   "technical": {
+    "abort_checks": null,
+    "abort_detail": null,
+    "abort_stage": null,
+    "authority_had_begun_at_abort": null,
+    "first_would_abort": null,
+    "first_would_commit": 5,
+    "halted_minutes": 0,
+    "last_would_commit": 120,
+    "no_advance_turns": 0,
+    "record_digest": "b5ad1556e9423ff321436a37032cc49c977abb49e35d90da17622d3f0ce7bcd9",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_COMMIT_THROUGHOUT",
+    "violations": [],
+    "would_commit_minutes": 13
+   },
+   "triggered_at": null,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_57m",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 59,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 96
+   },
+   "legacy_arrested": false,
+   "minutes_played": 200,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     15,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     20,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     25,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     30,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     35,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     40,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     45,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     50,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     55,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     60,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     65,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     180,
+     "order",
+     "W",
+     60,
+     ""
+    ],
+    [
+     185,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     190,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     195,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     200,
+     "order",
+     "W",
+     5,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 180,
+     "executed": true,
+     "minute": 120,
+     "text": "Place an IV line. Give 1 L of normal saline. Transfuse 2 units of packed red blood cells."
+    }
+   ],
+   "scenario": "delayed_treatment",
+   "technical": {
+    "abort_checks": null,
+    "abort_detail": null,
+    "abort_stage": null,
+    "authority_had_begun_at_abort": null,
+    "first_would_abort": null,
+    "first_would_commit": 5,
+    "halted_minutes": 0,
+    "last_would_commit": 200,
+    "no_advance_turns": 0,
+    "record_digest": "f750d2dfa297ac71d225e82caa1a3bbf538af1608186df12557d5fecc500bce0",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_COMMIT_THROUGHOUT",
+    "violations": [],
+    "would_commit_minutes": 29
+   },
+   "triggered_at": null,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_72f",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 67,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 106
+   },
+   "legacy_arrested": false,
+   "minutes_played": 200,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     15,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     20,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     25,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     30,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     35,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     40,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     45,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     50,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     55,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     60,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     65,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     180,
+     "order",
+     "W",
+     60,
+     ""
+    ],
+    [
+     185,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     190,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     195,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     200,
+     "order",
+     "W",
+     5,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 180,
+     "executed": true,
+     "minute": 120,
+     "text": "Place an IV line. Give 1 L of normal saline. Transfuse 2 units of packed red blood cells."
+    }
+   ],
+   "scenario": "delayed_treatment",
+   "technical": {
+    "abort_checks": null,
+    "abort_detail": null,
+    "abort_stage": null,
+    "authority_had_begun_at_abort": null,
+    "first_would_abort": null,
+    "first_would_commit": 5,
+    "halted_minutes": 0,
+    "last_would_commit": 200,
+    "no_advance_turns": 0,
+    "record_digest": "4c7ab5c6e34399293f179586862987269b8da2d2ab02b893e9194c97d270a781",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_COMMIT_THROUGHOUT",
+    "violations": [],
+    "would_commit_minutes": 29
+   },
+   "triggered_at": null,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_57m",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 48,
+    "mental_status": "Drowsy",
+    "pulse_present": true,
+    "sbp": 78
+   },
+   "legacy_arrested": false,
+   "minutes_played": 120,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     30,
+     "order",
+     "W",
+     20,
+     ""
+    ],
+    [
+     35,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     40,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     60,
+     "order",
+     "W",
+     20,
+     ""
+    ],
+    [
+     65,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 30,
+     "executed": true,
+     "minute": 10,
+     "text": "Place an IV line. Give 1 L of normal saline."
+    },
+    {
+     "clock_after": 60,
+     "executed": true,
+     "minute": 40,
+     "text": "Give 1 L of normal saline."
+    }
+   ],
+   "scenario": "fluid_only",
+   "technical": {
+    "abort_checks": null,
+    "abort_detail": null,
+    "abort_stage": null,
+    "authority_had_begun_at_abort": null,
+    "first_would_abort": null,
+    "first_would_commit": 5,
+    "halted_minutes": 0,
+    "last_would_commit": 120,
+    "no_advance_turns": 0,
+    "record_digest": "e28af7c97a12bb373b818515e08366f229cfaf22fdf7511fbe4715ea3ad0e207",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_COMMIT_THROUGHOUT",
+    "violations": [],
+    "would_commit_minutes": 18
+   },
+   "triggered_at": null,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_72f",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 56,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 88
+   },
+   "legacy_arrested": false,
+   "minutes_played": 120,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     30,
+     "order",
+     "W",
+     20,
+     ""
+    ],
+    [
+     35,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     40,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     60,
+     "order",
+     "W",
+     20,
+     ""
+    ],
+    [
+     65,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 30,
+     "executed": true,
+     "minute": 10,
+     "text": "Place an IV line. Give 1 L of normal saline."
+    },
+    {
+     "clock_after": 60,
+     "executed": true,
+     "minute": 40,
+     "text": "Give 1 L of normal saline."
+    }
+   ],
+   "scenario": "fluid_only",
+   "technical": {
+    "abort_checks": null,
+    "abort_detail": null,
+    "abort_stage": null,
+    "authority_had_begun_at_abort": null,
+    "first_would_abort": null,
+    "first_would_commit": 5,
+    "halted_minutes": 0,
+    "last_would_commit": 120,
+    "no_advance_turns": 0,
+    "record_digest": "4e31edec8d095decd1edf4d6db8bf7a095a99741ff8827db108a357d861cc128",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_COMMIT_THROUGHOUT",
+    "violations": [],
+    "would_commit_minutes": 18
+   },
+   "triggered_at": null,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_57m",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 63,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 104
+   },
+   "legacy_arrested": false,
+   "minutes_played": 120,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     60,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 70,
+     "executed": true,
+     "minute": 10,
+     "text": "Place an IV line. Transfuse 2 units of packed red blood cells."
+    }
+   ],
+   "scenario": "blood_only",
+   "technical": {
+    "abort_checks": null,
+    "abort_detail": null,
+    "abort_stage": null,
+    "authority_had_begun_at_abort": null,
+    "first_would_abort": null,
+    "first_would_commit": 5,
+    "halted_minutes": 0,
+    "last_would_commit": 120,
+    "no_advance_turns": 0,
+    "record_digest": "9e2e025da5549a3c267eeadf6852ca1a396c4829f37c95485e860fa8bb1753f0",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_COMMIT_THROUGHOUT",
+    "violations": [],
+    "would_commit_minutes": 13
+   },
+   "triggered_at": null,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_72f",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 71,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 114
+   },
+   "legacy_arrested": false,
+   "minutes_played": 120,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     60,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 70,
+     "executed": true,
+     "minute": 10,
+     "text": "Place an IV line. Transfuse 2 units of packed red blood cells."
+    }
+   ],
+   "scenario": "blood_only",
+   "technical": {
+    "abort_checks": null,
+    "abort_detail": null,
+    "abort_stage": null,
+    "authority_had_begun_at_abort": null,
+    "first_would_abort": null,
+    "first_would_commit": 5,
+    "halted_minutes": 0,
+    "last_would_commit": 120,
+    "no_advance_turns": 0,
+    "record_digest": "0774a2127d258250fe33932e8d4573aac5a30547455157c4ec1d50164a63002e",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_COMMIT_THROUGHOUT",
+    "violations": [],
+    "would_commit_minutes": 13
+   },
+   "triggered_at": null,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_57m",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 38,
+    "mental_status": "Obtunded",
+    "pulse_present": true,
+    "sbp": 58
+   },
+   "legacy_arrested": false,
+   "minutes_played": 240,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     15,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     20,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     25,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     30,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     35,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     40,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     45,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     50,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     55,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     60,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     65,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     125,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     130,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     135,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     155,
+     "order",
+     "W",
+     20,
+     ""
+    ],
+    [
+     160,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     165,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     170,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     175,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     180,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     185,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     190,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     195,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     200,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     205,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     210,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     215,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     220,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     225,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     230,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     235,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     240,
+     "order",
+     "W",
+     5,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 155,
+     "executed": true,
+     "minute": 135,
+     "text": "Place an IV line. Give 1 L of normal saline."
+    }
+   ],
+   "scenario": "severe_deterioration",
+   "technical": {
+    "abort_checks": null,
+    "abort_detail": null,
+    "abort_stage": null,
+    "authority_had_begun_at_abort": null,
+    "first_would_abort": null,
+    "first_would_commit": 5,
+    "halted_minutes": 0,
+    "last_would_commit": 240,
+    "no_advance_turns": 0,
+    "record_digest": "8600223656fd5cf7ff1b9eef65d9217b721e90cd601f5a48bfd0a5a6f42a3f07",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_COMMIT_THROUGHOUT",
+    "violations": [],
+    "would_commit_minutes": 45
+   },
+   "triggered_at": 135,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_72f",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 46,
+    "mental_status": "Drowsy",
+    "pulse_present": true,
+    "sbp": 68
+   },
+   "legacy_arrested": false,
+   "minutes_played": 240,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     15,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     20,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     25,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     30,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     35,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     40,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     45,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     50,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     55,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     60,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     65,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     125,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     130,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     135,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     155,
+     "order",
+     "W",
+     20,
+     ""
+    ],
+    [
+     160,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     165,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     170,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     175,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     180,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     185,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     190,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     195,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     200,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     205,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     210,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     215,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     220,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     225,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     230,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     235,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     240,
+     "order",
+     "W",
+     5,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 155,
+     "executed": true,
+     "minute": 135,
+     "text": "Place an IV line. Give 1 L of normal saline."
+    }
+   ],
+   "scenario": "severe_deterioration",
+   "technical": {
+    "abort_checks": null,
+    "abort_detail": null,
+    "abort_stage": null,
+    "authority_had_begun_at_abort": null,
+    "first_would_abort": null,
+    "first_would_commit": 5,
+    "halted_minutes": 0,
+    "last_would_commit": 240,
+    "no_advance_turns": 0,
+    "record_digest": "d685f670672d54930d9a623086728f42fc0255d41a09b70e0e3f3c4d8ddd4464",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_COMMIT_THROUGHOUT",
+    "violations": [],
+    "would_commit_minutes": 45
+   },
+   "triggered_at": 135,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_57m",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 71,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 118
+   },
+   "legacy_arrested": false,
+   "minutes_played": 280,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     15,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     20,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     25,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     30,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     35,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     40,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     45,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     50,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     55,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     60,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     65,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     125,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     130,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     135,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     140,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     145,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     150,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     155,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     160,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     280,
+     "order",
+     "A",
+     120,
+     "window_open"
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 280,
+     "executed": true,
+     "minute": 160,
+     "text": "Place an IV line. Give 1 L of normal saline. Transfuse 4 units of packed red blood cells."
+    }
+   ],
+   "scenario": "recovery_after_severe",
+   "technical": {
+    "abort_checks": [
+     "window_open"
+    ],
+    "abort_detail": {
+     "window_open": {
+      "time_limit": 240
+     }
+    },
+    "abort_stage": "validation",
+    "authority_had_begun_at_abort": true,
+    "first_would_abort": 280,
+    "first_would_commit": 5,
+    "halted_minutes": 0,
+    "last_would_commit": 160,
+    "no_advance_turns": 0,
+    "record_digest": "3e4c66e129a0ac66fe572716feb11bba89c5c7aa6323c6a09eae561a719621d1",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_ABORT",
+    "violations": [],
+    "would_commit_minutes": 32
+   },
+   "triggered_at": 160,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_72f",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 79,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 128
+   },
+   "legacy_arrested": false,
+   "minutes_played": 280,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     15,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     20,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     25,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     30,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     35,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     40,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     45,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     50,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     55,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     60,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     65,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     125,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     130,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     135,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     140,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     145,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     150,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     155,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     160,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     280,
+     "order",
+     "A",
+     120,
+     "window_open"
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 280,
+     "executed": true,
+     "minute": 160,
+     "text": "Place an IV line. Give 1 L of normal saline. Transfuse 4 units of packed red blood cells."
+    }
+   ],
+   "scenario": "recovery_after_severe",
+   "technical": {
+    "abort_checks": [
+     "window_open"
+    ],
+    "abort_detail": {
+     "window_open": {
+      "time_limit": 240
+     }
+    },
+    "abort_stage": "validation",
+    "authority_had_begun_at_abort": true,
+    "first_would_abort": 280,
+    "first_would_commit": 5,
+    "halted_minutes": 0,
+    "last_would_commit": 160,
+    "no_advance_turns": 0,
+    "record_digest": "a044cc9dd011acf51f0aba56f53cd6476f852c2ef4ae52be86f586155a4e0986",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_ABORT",
+    "violations": [],
+    "would_commit_minutes": 32
+   },
+   "triggered_at": 160,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_57m",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 66,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 110
+   },
+   "legacy_arrested": false,
+   "minutes_played": 340,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     15,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     20,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     25,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     30,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     35,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     40,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     45,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     50,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     55,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     60,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     65,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     125,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     130,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     135,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     140,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     145,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     150,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     155,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     160,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     165,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     170,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     175,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     180,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     185,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     190,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     195,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     200,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     205,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     210,
+     "order",
+     "A",
+     5,
+     "collapse_boundary_not_reached"
+    ],
+    [
+     215,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     335,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     340,
+     "order",
+     "H",
+     0,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 335,
+     "executed": true,
+     "minute": 215,
+     "text": "Place an IV line. Give 1 L of normal saline. Transfuse 4 units of packed red blood cells."
+    }
+   ],
+   "scenario": "late_rescue",
+   "technical": {
+    "abort_checks": [
+     "collapse_boundary_not_reached"
+    ],
+    "abort_detail": {
+     "collapse_boundary_not_reached": {
+      "clear": false,
+      "first_established_minute": 207,
+      "minutes_not_shown": []
+     }
+    },
+    "abort_stage": "validation",
+    "authority_had_begun_at_abort": true,
+    "first_would_abort": 210,
+    "first_would_commit": 5,
+    "halted_minutes": 3,
+    "last_would_commit": 205,
+    "no_advance_turns": 0,
+    "record_digest": "d061fd72b97236803f7cc068451bca6d74eae49688280f8ecccdebffe9c55747",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_ABORT",
+    "violations": [],
+    "would_commit_minutes": 41
+   },
+   "triggered_at": null,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_72f",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 74,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 120
+   },
+   "legacy_arrested": false,
+   "minutes_played": 340,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     15,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     20,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     25,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     30,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     35,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     40,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     45,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     50,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     55,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     60,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     65,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     125,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     130,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     135,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     140,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     145,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     150,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     155,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     160,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     165,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     170,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     175,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     180,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     185,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     190,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     195,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     200,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     205,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     210,
+     "order",
+     "A",
+     5,
+     "collapse_boundary_not_reached"
+    ],
+    [
+     215,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     335,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     340,
+     "order",
+     "H",
+     0,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 335,
+     "executed": true,
+     "minute": 215,
+     "text": "Place an IV line. Give 1 L of normal saline. Transfuse 4 units of packed red blood cells."
+    }
+   ],
+   "scenario": "late_rescue",
+   "technical": {
+    "abort_checks": [
+     "collapse_boundary_not_reached"
+    ],
+    "abort_detail": {
+     "collapse_boundary_not_reached": {
+      "clear": false,
+      "first_established_minute": 207,
+      "minutes_not_shown": []
+     }
+    },
+    "abort_stage": "validation",
+    "authority_had_begun_at_abort": true,
+    "first_would_abort": 210,
+    "first_would_commit": 5,
+    "halted_minutes": 3,
+    "last_would_commit": 205,
+    "no_advance_turns": 0,
+    "record_digest": "9b16d9b8c1dfc4c8d4f5e0b17853a7bf89dfe3f3ba75baf84cebfe6a0d9f6791",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_ABORT",
+    "violations": [],
+    "would_commit_minutes": 41
+   },
+   "triggered_at": null,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_57m",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 65,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 107
+   },
+   "legacy_arrested": false,
+   "minutes_played": 120,
+   "multi_minute_or_non_commit_turns": [
+    [
+     0,
+     "order",
+     "N",
+     0,
+     ""
+    ],
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     60,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 0,
+     "executed": true,
+     "minute": 0,
+     "text": "Place an IV line."
+    },
+    {
+     "clock_after": 70,
+     "executed": true,
+     "minute": 10,
+     "text": "Give 1 L of normal saline. Transfuse 2 units of packed red blood cells."
+    }
+   ],
+   "scenario": "iv_line_scenario",
+   "technical": {
+    "abort_checks": null,
+    "abort_detail": null,
+    "abort_stage": null,
+    "authority_had_begun_at_abort": null,
+    "first_would_abort": null,
+    "first_would_commit": 5,
+    "halted_minutes": 0,
+    "last_would_commit": 120,
+    "no_advance_turns": 1,
+    "record_digest": "f1a01c00841b8bb61b2035ce94a85cd7fce02ad0058be52f66ddf96b79d4d6d1",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_COMMIT_THROUGHOUT",
+    "violations": [],
+    "would_commit_minutes": 13
+   },
+   "triggered_at": null,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_72f",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 73,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 117
+   },
+   "legacy_arrested": false,
+   "minutes_played": 120,
+   "multi_minute_or_non_commit_turns": [
+    [
+     0,
+     "order",
+     "N",
+     0,
+     ""
+    ],
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     60,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 0,
+     "executed": true,
+     "minute": 0,
+     "text": "Place an IV line."
+    },
+    {
+     "clock_after": 70,
+     "executed": true,
+     "minute": 10,
+     "text": "Give 1 L of normal saline. Transfuse 2 units of packed red blood cells."
+    }
+   ],
+   "scenario": "iv_line_scenario",
+   "technical": {
+    "abort_checks": null,
+    "abort_detail": null,
+    "abort_stage": null,
+    "authority_had_begun_at_abort": null,
+    "first_would_abort": null,
+    "first_would_commit": 5,
+    "halted_minutes": 0,
+    "last_would_commit": 120,
+    "no_advance_turns": 1,
+    "record_digest": "dd4efe06787959c4c5ca062ad87a8b03e2cebff461f026a00d48acac084b1245",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_COMMIT_THROUGHOUT",
+    "violations": [],
+    "would_commit_minutes": 13
+   },
+   "triggered_at": null,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_57m",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 58,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 92
+   },
+   "legacy_arrested": false,
+   "minutes_played": 81,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     11,
+     "order",
+     "A",
+     1,
+     "supported_management,pressure_validated,interval_minutes_validated"
+    ],
+    [
+     16,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     21,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     26,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     31,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     36,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     41,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     46,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     51,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     56,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     61,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     66,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     71,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     76,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     81,
+     "order",
+     "H",
+     0,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 11,
+     "executed": true,
+     "minute": 10,
+     "text": "Start norepinephrine at 10 mcg/min."
+    }
+   ],
+   "scenario": "unsupported_action_scenario",
+   "technical": {
+    "abort_checks": [
+     "supported_management",
+     "pressure_validated",
+     "interval_minutes_validated"
+    ],
+    "abort_detail": {
+     "interval_minutes_validated": {
+      "failed": [
+       "pressure:supported_management"
+      ],
+      "first_failed_minute": 11,
+      "interval_minutes": [
+       11,
+       11
+      ]
+     },
+     "pressure_validated": {
+      "validation_failures": [
+       "supported_management"
+      ]
+     },
+     "supported_management": {
+      "unsupported": [
+       "norepinephrine"
+      ]
+     }
+    },
+    "abort_stage": "validation",
+    "authority_had_begun_at_abort": true,
+    "first_would_abort": 11,
+    "first_would_commit": 5,
+    "halted_minutes": 14,
+    "last_would_commit": 10,
+    "no_advance_turns": 0,
+    "record_digest": "3080098e40f755640223b8f646a12aa057fbab2e800844b645211c487a3694c9",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_ABORT",
+    "violations": [],
+    "would_commit_minutes": 2
+   },
+   "triggered_at": null,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_72f",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 66,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 102
+   },
+   "legacy_arrested": false,
+   "minutes_played": 81,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     11,
+     "order",
+     "A",
+     1,
+     "supported_management,pressure_validated,interval_minutes_validated"
+    ],
+    [
+     16,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     21,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     26,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     31,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     36,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     41,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     46,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     51,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     56,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     61,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     66,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     71,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     76,
+     "order",
+     "H",
+     0,
+     ""
+    ],
+    [
+     81,
+     "order",
+     "H",
+     0,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 11,
+     "executed": true,
+     "minute": 10,
+     "text": "Start norepinephrine at 10 mcg/min."
+    }
+   ],
+   "scenario": "unsupported_action_scenario",
+   "technical": {
+    "abort_checks": [
+     "supported_management",
+     "pressure_validated",
+     "interval_minutes_validated"
+    ],
+    "abort_detail": {
+     "interval_minutes_validated": {
+      "failed": [
+       "pressure:supported_management"
+      ],
+      "first_failed_minute": 11,
+      "interval_minutes": [
+       11,
+       11
+      ]
+     },
+     "pressure_validated": {
+      "validation_failures": [
+       "supported_management"
+      ]
+     },
+     "supported_management": {
+      "unsupported": [
+       "norepinephrine"
+      ]
+     }
+    },
+    "abort_stage": "validation",
+    "authority_had_begun_at_abort": true,
+    "first_would_abort": 11,
+    "first_would_commit": 5,
+    "halted_minutes": 14,
+    "last_would_commit": 10,
+    "no_advance_turns": 0,
+    "record_digest": "8a2198475bef5dd8afd565cc226b179f158f4ebea1e8e9c959ea944ca8cd7163",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_ABORT",
+    "violations": [],
+    "would_commit_minutes": 2
+   },
+   "triggered_at": null,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_57m",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 56,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 91
+   },
+   "legacy_arrested": false,
+   "minutes_played": 240,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     15,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     20,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     25,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     30,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     35,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     40,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     45,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     50,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     55,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     60,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     65,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     125,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     130,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     135,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     140,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     145,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     150,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     155,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     160,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     220,
+     "order",
+     "W",
+     60,
+     ""
+    ],
+    [
+     225,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     230,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     235,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     240,
+     "order",
+     "W",
+     5,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 220,
+     "executed": true,
+     "minute": 160,
+     "text": "Place an IV line. Give 1 L of normal saline. Transfuse 2 units of packed red blood cells."
+    }
+   ],
+   "scenario": "recovery_within_window",
+   "technical": {
+    "abort_checks": null,
+    "abort_detail": null,
+    "abort_stage": null,
+    "authority_had_begun_at_abort": null,
+    "first_would_abort": null,
+    "first_would_commit": 5,
+    "halted_minutes": 0,
+    "last_would_commit": 240,
+    "no_advance_turns": 0,
+    "record_digest": "f311c67ab196bf9225f9e652cc7c19a131fe843d30f9824376796749dee1b4be",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_COMMIT_THROUGHOUT",
+    "violations": [],
+    "would_commit_minutes": 37
+   },
+   "triggered_at": 160,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_72f",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 64,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 101
+   },
+   "legacy_arrested": false,
+   "minutes_played": 240,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     15,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     20,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     25,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     30,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     35,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     40,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     45,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     50,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     55,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     60,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     65,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     125,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     130,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     135,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     140,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     145,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     150,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     155,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     160,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     220,
+     "order",
+     "W",
+     60,
+     ""
+    ],
+    [
+     225,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     230,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     235,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     240,
+     "order",
+     "W",
+     5,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 220,
+     "executed": true,
+     "minute": 160,
+     "text": "Place an IV line. Give 1 L of normal saline. Transfuse 2 units of packed red blood cells."
+    }
+   ],
+   "scenario": "recovery_within_window",
+   "technical": {
+    "abort_checks": null,
+    "abort_detail": null,
+    "abort_stage": null,
+    "authority_had_begun_at_abort": null,
+    "first_would_abort": null,
+    "first_would_commit": 5,
+    "halted_minutes": 0,
+    "last_would_commit": 240,
+    "no_advance_turns": 0,
+    "record_digest": "21d25459d69052b9a2322b829af5f154e0fc8a969398654fec3f1c7ef6e72711",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_COMMIT_THROUGHOUT",
+    "violations": [],
+    "would_commit_minutes": 37
+   },
+   "triggered_at": 160,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_57m",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 47,
+    "mental_status": "Drowsy",
+    "pulse_present": true,
+    "sbp": 75
+   },
+   "legacy_arrested": false,
+   "minutes_played": 120,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     60,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 70,
+     "executed": true,
+     "minute": 10,
+     "text": "Give 1000 mL normal saline over 60 minutes."
+    }
+   ],
+   "scenario": "infusion_over_60_minutes",
+   "technical": {
+    "abort_checks": null,
+    "abort_detail": null,
+    "abort_stage": null,
+    "authority_had_begun_at_abort": null,
+    "first_would_abort": null,
+    "first_would_commit": 5,
+    "halted_minutes": 0,
+    "last_would_commit": 120,
+    "no_advance_turns": 0,
+    "record_digest": "196efc512b241a35865ac3c62ce810a1454c0984440ecfd4be59db26fcdd1826",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_COMMIT_THROUGHOUT",
+    "violations": [],
+    "would_commit_minutes": 13
+   },
+   "triggered_at": null,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_72f",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 55,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 85
+   },
+   "legacy_arrested": false,
+   "minutes_played": 120,
+   "multi_minute_or_non_commit_turns": [
+    [
+     5,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     10,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     60,
+     ""
+    ],
+    [
+     75,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     80,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     85,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     90,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     95,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     100,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     105,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     110,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     115,
+     "order",
+     "W",
+     5,
+     ""
+    ],
+    [
+     120,
+     "order",
+     "W",
+     5,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 70,
+     "executed": true,
+     "minute": 10,
+     "text": "Give 1000 mL normal saline over 60 minutes."
+    }
+   ],
+   "scenario": "infusion_over_60_minutes",
+   "technical": {
+    "abort_checks": null,
+    "abort_detail": null,
+    "abort_stage": null,
+    "authority_had_begun_at_abort": null,
+    "first_would_abort": null,
+    "first_would_commit": 5,
+    "halted_minutes": 0,
+    "last_would_commit": 120,
+    "no_advance_turns": 0,
+    "record_digest": "5857bf8d822d67173d0c6a8219dff545fcbd4cccff37ca3c6a49bb62cbd4663d",
+    "routes": [
+     "order_turn"
+    ],
+    "verdict": "WOULD_COMMIT_THROUGHOUT",
+    "violations": [],
+    "would_commit_minutes": 13
+   },
+   "triggered_at": null,
+   "waits": "order_turn_waits"
+  },
+  {
+   "case": "gi_bleed_57m",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 36,
+    "mental_status": "Obtunded",
+    "pulse_present": true,
+    "sbp": 56
+   },
+   "legacy_arrested": false,
+   "minutes_played": 240,
+   "multi_minute_or_non_commit_turns": [
+    [
+     2,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     4,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     6,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     8,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     10,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     12,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     14,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     16,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     18,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     20,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     22,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     24,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     26,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     28,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     30,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     32,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     34,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     36,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     38,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     40,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     42,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     44,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     46,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     48,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     50,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     52,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     54,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     56,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     58,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     60,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     62,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     64,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     66,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     68,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     70,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     72,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     74,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     76,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     78,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     80,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     82,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     84,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     86,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     88,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     90,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     92,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     94,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     96,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     98,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     100,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     102,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     104,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     106,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     108,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     110,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     112,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     114,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     116,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     118,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     120,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     122,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     124,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     126,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     128,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     130,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     132,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     134,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     136,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     138,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     140,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     142,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     144,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     146,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     148,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     150,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     152,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     154,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     156,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     158,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     160,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     162,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     164,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     166,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     168,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     170,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     172,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     174,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     176,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     178,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     180,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     182,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     184,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     186,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     188,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     190,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     192,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     194,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     196,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     198,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     200,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     202,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     204,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     206,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     208,
+     "clini",
+     "A",
+     2,
+     "collapse_boundary_not_reached"
+    ],
+    [
+     210,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     212,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     214,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     216,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     218,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     220,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     222,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     224,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     226,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     228,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     230,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     232,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     234,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     236,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     238,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     240,
+     "clini",
+     "H",
+     0,
+     ""
+    ]
+   ],
+   "orders": [],
+   "scenario": "untreated",
+   "technical": {
+    "abort_checks": [
+     "collapse_boundary_not_reached"
+    ],
+    "abort_detail": {
+     "collapse_boundary_not_reached": {
+      "clear": false,
+      "first_established_minute": 207,
+      "minutes_not_shown": []
+     }
+    },
+    "abort_stage": "validation",
+    "authority_had_begun_at_abort": true,
+    "first_would_abort": 208,
+    "first_would_commit": 2,
+    "halted_minutes": 16,
+    "last_would_commit": 206,
+    "no_advance_turns": 0,
+    "record_digest": "a5de697efd3c4b15923718fb117302b20b7d54237ec66620e0965cd6f6a4117a",
+    "routes": [
+     "clinical_time_outside_an_order_turn"
+    ],
+    "verdict": "WOULD_ABORT",
+    "violations": [],
+    "would_commit_minutes": 103
+   },
+   "triggered_at": null,
+   "waits": "clinical_time_waits"
+  },
+  {
+   "case": "gi_bleed_72f",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 44,
+    "mental_status": "Drowsy",
+    "pulse_present": true,
+    "sbp": 66
+   },
+   "legacy_arrested": false,
+   "minutes_played": 240,
+   "multi_minute_or_non_commit_turns": [
+    [
+     2,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     4,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     6,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     8,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     10,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     12,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     14,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     16,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     18,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     20,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     22,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     24,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     26,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     28,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     30,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     32,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     34,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     36,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     38,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     40,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     42,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     44,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     46,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     48,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     50,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     52,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     54,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     56,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     58,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     60,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     62,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     64,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     66,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     68,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     70,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     72,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     74,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     76,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     78,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     80,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     82,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     84,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     86,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     88,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     90,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     92,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     94,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     96,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     98,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     100,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     102,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     104,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     106,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     108,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     110,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     112,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     114,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     116,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     118,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     120,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     122,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     124,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     126,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     128,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     130,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     132,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     134,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     136,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     138,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     140,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     142,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     144,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     146,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     148,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     150,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     152,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     154,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     156,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     158,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     160,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     162,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     164,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     166,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     168,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     170,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     172,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     174,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     176,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     178,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     180,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     182,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     184,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     186,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     188,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     190,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     192,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     194,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     196,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     198,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     200,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     202,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     204,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     206,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     208,
+     "clini",
+     "A",
+     2,
+     "collapse_boundary_not_reached"
+    ],
+    [
+     210,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     212,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     214,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     216,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     218,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     220,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     222,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     224,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     226,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     228,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     230,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     232,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     234,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     236,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     238,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     240,
+     "clini",
+     "H",
+     0,
+     ""
+    ]
+   ],
+   "orders": [],
+   "scenario": "untreated",
+   "technical": {
+    "abort_checks": [
+     "collapse_boundary_not_reached"
+    ],
+    "abort_detail": {
+     "collapse_boundary_not_reached": {
+      "clear": false,
+      "first_established_minute": 207,
+      "minutes_not_shown": []
+     }
+    },
+    "abort_stage": "validation",
+    "authority_had_begun_at_abort": true,
+    "first_would_abort": 208,
+    "first_would_commit": 2,
+    "halted_minutes": 16,
+    "last_would_commit": 206,
+    "no_advance_turns": 0,
+    "record_digest": "bb80af6a84e48e1c3621b3214d43842a533bb093a860ee96b2fc6b41b8059b17",
+    "routes": [
+     "clinical_time_outside_an_order_turn"
+    ],
+    "verdict": "WOULD_ABORT",
+    "violations": [],
+    "would_commit_minutes": 103
+   },
+   "triggered_at": null,
+   "waits": "clinical_time_waits"
+  },
+  {
+   "case": "gi_bleed_57m",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 65,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 107
+   },
+   "legacy_arrested": false,
+   "minutes_played": 120,
+   "multi_minute_or_non_commit_turns": [
+    [
+     2,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     4,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     6,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     8,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     10,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     60,
+     ""
+    ],
+    [
+     72,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     74,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     76,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     78,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     80,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     82,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     84,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     86,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     88,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     90,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     92,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     94,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     96,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     98,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     100,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     102,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     104,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     106,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     108,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     110,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     112,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     114,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     116,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     118,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     120,
+     "clini",
+     "W",
+     2,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 70,
+     "executed": true,
+     "minute": 10,
+     "text": "Place an IV line. Give 1 L of normal saline. Transfuse 2 units of packed red blood cells."
+    }
+   ],
+   "scenario": "early_treatment",
+   "technical": {
+    "abort_checks": null,
+    "abort_detail": null,
+    "abort_stage": null,
+    "authority_had_begun_at_abort": null,
+    "first_would_abort": null,
+    "first_would_commit": 2,
+    "halted_minutes": 0,
+    "last_would_commit": 120,
+    "no_advance_turns": 0,
+    "record_digest": "25f9d7dd33119dd7fd20420f71fe5e3c51dae0cf96fcec8b924ad09348eae6fa",
+    "routes": [
+     "clinical_time_outside_an_order_turn",
+     "order_turn"
+    ],
+    "verdict": "WOULD_COMMIT_THROUGHOUT",
+    "violations": [],
+    "would_commit_minutes": 31
+   },
+   "triggered_at": null,
+   "waits": "clinical_time_waits"
+  },
+  {
+   "case": "gi_bleed_72f",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 73,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 117
+   },
+   "legacy_arrested": false,
+   "minutes_played": 120,
+   "multi_minute_or_non_commit_turns": [
+    [
+     2,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     4,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     6,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     8,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     10,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     60,
+     ""
+    ],
+    [
+     72,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     74,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     76,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     78,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     80,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     82,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     84,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     86,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     88,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     90,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     92,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     94,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     96,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     98,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     100,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     102,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     104,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     106,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     108,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     110,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     112,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     114,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     116,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     118,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     120,
+     "clini",
+     "W",
+     2,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 70,
+     "executed": true,
+     "minute": 10,
+     "text": "Place an IV line. Give 1 L of normal saline. Transfuse 2 units of packed red blood cells."
+    }
+   ],
+   "scenario": "early_treatment",
+   "technical": {
+    "abort_checks": null,
+    "abort_detail": null,
+    "abort_stage": null,
+    "authority_had_begun_at_abort": null,
+    "first_would_abort": null,
+    "first_would_commit": 2,
+    "halted_minutes": 0,
+    "last_would_commit": 120,
+    "no_advance_turns": 0,
+    "record_digest": "5be084dca5a8d5f5239912695e780b1bae040116d3a507328af4a045ae7f6df5",
+    "routes": [
+     "clinical_time_outside_an_order_turn",
+     "order_turn"
+    ],
+    "verdict": "WOULD_COMMIT_THROUGHOUT",
+    "violations": [],
+    "would_commit_minutes": 31
+   },
+   "triggered_at": null,
+   "waits": "clinical_time_waits"
+  },
+  {
+   "case": "gi_bleed_57m",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 65,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 107
+   },
+   "legacy_arrested": false,
+   "minutes_played": 120,
+   "multi_minute_or_non_commit_turns": [
+    [
+     0,
+     "order",
+     "N",
+     0,
+     ""
+    ],
+    [
+     2,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     4,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     6,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     8,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     10,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     60,
+     ""
+    ],
+    [
+     72,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     74,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     76,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     78,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     80,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     82,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     84,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     86,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     88,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     90,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     92,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     94,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     96,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     98,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     100,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     102,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     104,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     106,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     108,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     110,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     112,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     114,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     116,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     118,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     120,
+     "clini",
+     "W",
+     2,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 0,
+     "executed": true,
+     "minute": 0,
+     "text": "Place an IV line."
+    },
+    {
+     "clock_after": 70,
+     "executed": true,
+     "minute": 10,
+     "text": "Give 1 L of normal saline. Transfuse 2 units of packed red blood cells."
+    }
+   ],
+   "scenario": "iv_line_scenario",
+   "technical": {
+    "abort_checks": null,
+    "abort_detail": null,
+    "abort_stage": null,
+    "authority_had_begun_at_abort": null,
+    "first_would_abort": null,
+    "first_would_commit": 2,
+    "halted_minutes": 0,
+    "last_would_commit": 120,
+    "no_advance_turns": 1,
+    "record_digest": "fb063373bdcc4e0eb9c3c1c59d0406c8b19f358d50264c24be1fe2535b653064",
+    "routes": [
+     "clinical_time_outside_an_order_turn",
+     "order_turn"
+    ],
+    "verdict": "WOULD_COMMIT_THROUGHOUT",
+    "violations": [],
+    "would_commit_minutes": 31
+   },
+   "triggered_at": null,
+   "waits": "clinical_time_waits"
+  },
+  {
+   "case": "gi_bleed_72f",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 73,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 117
+   },
+   "legacy_arrested": false,
+   "minutes_played": 120,
+   "multi_minute_or_non_commit_turns": [
+    [
+     0,
+     "order",
+     "N",
+     0,
+     ""
+    ],
+    [
+     2,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     4,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     6,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     8,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     10,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     70,
+     "order",
+     "W",
+     60,
+     ""
+    ],
+    [
+     72,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     74,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     76,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     78,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     80,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     82,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     84,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     86,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     88,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     90,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     92,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     94,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     96,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     98,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     100,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     102,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     104,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     106,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     108,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     110,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     112,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     114,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     116,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     118,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     120,
+     "clini",
+     "W",
+     2,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 0,
+     "executed": true,
+     "minute": 0,
+     "text": "Place an IV line."
+    },
+    {
+     "clock_after": 70,
+     "executed": true,
+     "minute": 10,
+     "text": "Give 1 L of normal saline. Transfuse 2 units of packed red blood cells."
+    }
+   ],
+   "scenario": "iv_line_scenario",
+   "technical": {
+    "abort_checks": null,
+    "abort_detail": null,
+    "abort_stage": null,
+    "authority_had_begun_at_abort": null,
+    "first_would_abort": null,
+    "first_would_commit": 2,
+    "halted_minutes": 0,
+    "last_would_commit": 120,
+    "no_advance_turns": 1,
+    "record_digest": "853540d454f988f7390ac32d6ca98a6027dbfa4f3f67f5676e126b496fe0bcc0",
+    "routes": [
+     "clinical_time_outside_an_order_turn",
+     "order_turn"
+    ],
+    "verdict": "WOULD_COMMIT_THROUGHOUT",
+    "violations": [],
+    "would_commit_minutes": 31
+   },
+   "triggered_at": null,
+   "waits": "clinical_time_waits"
+  },
+  {
+   "case": "gi_bleed_57m",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 58,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 92
+   },
+   "legacy_arrested": false,
+   "minutes_played": 81,
+   "multi_minute_or_non_commit_turns": [
+    [
+     2,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     4,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     6,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     8,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     10,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     11,
+     "order",
+     "A",
+     1,
+     "supported_management,pressure_validated,interval_minutes_validated"
+    ],
+    [
+     13,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     15,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     17,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     19,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     21,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     23,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     25,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     27,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     29,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     31,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     33,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     35,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     37,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     39,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     41,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     43,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     45,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     47,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     49,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     51,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     53,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     55,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     57,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     59,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     61,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     63,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     65,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     67,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     69,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     71,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     73,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     75,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     77,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     79,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     81,
+     "clini",
+     "H",
+     0,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 11,
+     "executed": true,
+     "minute": 10,
+     "text": "Start norepinephrine at 10 mcg/min."
+    }
+   ],
+   "scenario": "unsupported_action_scenario",
+   "technical": {
+    "abort_checks": [
+     "supported_management",
+     "pressure_validated",
+     "interval_minutes_validated"
+    ],
+    "abort_detail": {
+     "interval_minutes_validated": {
+      "failed": [
+       "pressure:supported_management"
+      ],
+      "first_failed_minute": 11,
+      "interval_minutes": [
+       11,
+       11
+      ]
+     },
+     "pressure_validated": {
+      "validation_failures": [
+       "supported_management"
+      ]
+     },
+     "supported_management": {
+      "unsupported": [
+       "norepinephrine"
+      ]
+     }
+    },
+    "abort_stage": "validation",
+    "authority_had_begun_at_abort": true,
+    "first_would_abort": 11,
+    "first_would_commit": 2,
+    "halted_minutes": 35,
+    "last_would_commit": 10,
+    "no_advance_turns": 0,
+    "record_digest": "d97fc376c317135f495128ae30a1ed4d1625166f7d1fe4360aebff6978c325b5",
+    "routes": [
+     "clinical_time_outside_an_order_turn",
+     "order_turn"
+    ],
+    "verdict": "WOULD_ABORT",
+    "violations": [],
+    "would_commit_minutes": 5
+   },
+   "triggered_at": null,
+   "waits": "clinical_time_waits"
+  },
+  {
+   "case": "gi_bleed_72f",
+   "faculty": {
+    "consciousness_authority_decision": "NOT_DECIDED",
+    "pressure_authority": "READY_IN_DEVELOPMENT_HARNESS_ONLY_NOT_PAGE_RUNTIME"
+   },
+   "final_legacy": {
+    "dbp": 66,
+    "mental_status": "Alert",
+    "pulse_present": true,
+    "sbp": 102
+   },
+   "legacy_arrested": false,
+   "minutes_played": 81,
+   "multi_minute_or_non_commit_turns": [
+    [
+     2,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     4,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     6,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     8,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     10,
+     "clini",
+     "W",
+     2,
+     ""
+    ],
+    [
+     11,
+     "order",
+     "A",
+     1,
+     "supported_management,pressure_validated,interval_minutes_validated"
+    ],
+    [
+     13,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     15,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     17,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     19,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     21,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     23,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     25,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     27,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     29,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     31,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     33,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     35,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     37,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     39,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     41,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     43,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     45,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     47,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     49,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     51,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     53,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     55,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     57,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     59,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     61,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     63,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     65,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     67,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     69,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     71,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     73,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     75,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     77,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     79,
+     "clini",
+     "H",
+     0,
+     ""
+    ],
+    [
+     81,
+     "clini",
+     "H",
+     0,
+     ""
+    ]
+   ],
+   "orders": [
+    {
+     "clock_after": 11,
+     "executed": true,
+     "minute": 10,
+     "text": "Start norepinephrine at 10 mcg/min."
+    }
+   ],
+   "scenario": "unsupported_action_scenario",
+   "technical": {
+    "abort_checks": [
+     "supported_management",
+     "pressure_validated",
+     "interval_minutes_validated"
+    ],
+    "abort_detail": {
+     "interval_minutes_validated": {
+      "failed": [
+       "pressure:supported_management"
+      ],
+      "first_failed_minute": 11,
+      "interval_minutes": [
+       11,
+       11
+      ]
+     },
+     "pressure_validated": {
+      "validation_failures": [
+       "supported_management"
+      ]
+     },
+     "supported_management": {
+      "unsupported": [
+       "norepinephrine"
+      ]
+     }
+    },
+    "abort_stage": "validation",
+    "authority_had_begun_at_abort": true,
+    "first_would_abort": 11,
+    "first_would_commit": 2,
+    "halted_minutes": 35,
+    "last_would_commit": 10,
+    "no_advance_turns": 0,
+    "record_digest": "2cc8f49d55659443d97650e2863bd461112a6d0319640771533bc6c647526d07",
+    "routes": [
+     "clinical_time_outside_an_order_turn",
+     "order_turn"
+    ],
+    "verdict": "WOULD_ABORT",
+    "violations": [],
+    "would_commit_minutes": 5
+   },
+   "triggered_at": null,
+   "waits": "clinical_time_waits"
+  }
+ ],
+ "snapshot": "GI_DEVELOPMENT_SNAPSHOT_V1",
+ "statement": "A technical record of what a dry pair transaction would have done beside a legacy-authoritative encounter. Nothing here is an approval, a clinical validation or a decision of the faculty; the two columns are never merged.",
+ "time_limit": 240,
+ "version": "P3-218"
+}
