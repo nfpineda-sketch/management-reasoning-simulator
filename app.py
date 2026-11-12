@@ -607,11 +607,14 @@ def reset_session():
     st.session_state.selected_case = _default_challenge()
     # Phase 3 (P3-11): a reset ends the encounter, so its shadow session ends with it. Dropping it here is
     # what keeps a second attempt at the same case from inheriting the first attempt's shadow run.
-    st.session_state.pop("phase3_shadow", None)
+    _shadow_was_open = st.session_state.pop("phase3_shadow", None) is not None
     import runtime_authority as _authority_layer
     for key in (_authority_layer.SITE_KEY, _authority_layer.SITE_REFUSED_KEY,
                 _authority_layer.ARTIFACT_KEY, _authority_layer.HALTED_KEY):
         st.session_state.pop(key, None)
+    if _shadow_was_open:
+        # P3-215A: the dry evaluator only exists beside a shadow session, so it is dropped with it.
+        _authority_layer.forget_dry_evaluator(st.session_state)
     st.session_state.state = deepcopy(INITIAL_STATE)
     st.session_state.events = []
     st.session_state.history = []
@@ -721,6 +724,7 @@ def learner_vitals_snapshot(state):
     map_value = None
     if pulse_present and sbp is not None and dbp is not None:
         map_value = int(round((float(sbp) + 2.0 * float(dbp)) / 3.0))
+    import observable_view as _observable_view
     return {
         "sim_time_min": int(state.get("sim_time", 0)),
         "pulse_present": pulse_present,
@@ -735,7 +739,8 @@ def learner_vitals_snapshot(state):
         "work_of_breathing": o.get("work_of_breathing"),
         "crt": o.get("crt"),
         "extremities": o.get("extremities"),
-        "mental_status": o.get("mental_status"),
+        # P3-211: the word this reader is FROZEN to read (the legacy one), asked for by name; identical to the live field today.
+        "mental_status": _observable_view.mental_status_for(state, "app.py::learner_vitals_snapshot"),
     }
 
 
@@ -764,6 +769,7 @@ def management_state_snapshot(state):
     o = state.get("observable", {})
     h = state.get("hidden", {})
     tr = state.get("treatments", {})
+    import observable_view as _observable_view
     return {
         "case_id": state.get("case_id"),
         "encounter_variant": (state.get("encounter_spec") or {}).get("generator_version"),
@@ -776,7 +782,7 @@ def management_state_snapshot(state):
             "rhythm": o.get("rhythm"),
             "spo2": o.get("spo2"),
             "crt": o.get("crt"),
-            "mental_status": o.get("mental_status"),
+            "mental_status": _observable_view.mental_status_for(state, "app.py::management_state_snapshot"),
             "extremities": o.get("extremities"),
             "respiratory_rate": o.get("respiratory_rate"),
             "work_of_breathing": o.get("work_of_breathing"),
@@ -834,8 +840,12 @@ def management_state_snapshot(state):
 
 def observable_state_changed(before, after):
     """Return whether a learner-visible physiologic variable changed."""
-    before_observable = (before or {}).get("observable", {}) or {}
-    after_observable = (after or {}).get("observable", {}) or {}
+    import observable_view as _observable_view
+    before_observable = dict((before or {}).get("observable", {}) or {})
+    after_observable = dict((after or {}).get("observable", {}) or {})
+    # P3-211: the word a turn's "did it change" decision reads is the one this reader is frozen to (the legacy one).
+    before_observable["mental_status"] = _observable_view.mental_status_for(before or {}, "app.py::observable_state_changed")
+    after_observable["mental_status"] = _observable_view.mental_status_for(after or {}, "app.py::observable_state_changed")
     keys = (
         "sbp", "dbp", "hr", "rhythm", "spo2", "crt", "mental_status",
         "extremities", "respiratory_rate", "work_of_breathing", "pulse_present",
@@ -876,11 +886,21 @@ def spend_clinical_time(minutes, *, activity, request, response=""):
     started = int(state.get("sim_time", 0))
     _shadow = _runtime_shadow_session()
     _shadow_before = _shadow.capture(state) if _shadow is not None else None
+    if _shadow is not None:
+        # Phase 3 (P3-215): a site opens only at the arrival, so it is opened HERE, while the state is still the arrival, as the order turn opens it
+        # before its own engine call: a first question must not leave the encounter without the experiment its configuration asked for. With the
+        # authority flag off (the default) this is one dictionary lookup and nothing opens.
+        _runtime_authority_site()
     result = advance_clinical_time(state, minutes, label=activity)
     if _shadow is not None:
         # Phase 3 (P3-167): observation only, after the engine let the time pass. It reads the engine's own
         # receipts of the interval (a held order it ran) and never the question or the examination.
         _shadow.observe_time(_shadow_before, st.session_state.state, result)
+    # Phase 3 (P3-215): the clock moved outside an order turn, so the same hook the order turn calls hears it. With the authority and the
+    # dry flag off (the default) it does nothing at all.
+    _prepared = _after_the_clock_moved(_shadow, _shadow_before, route="clinical_time_outside_an_order_turn", ran=None, submission_id=None)
+    if _prepared is not None:
+        st.session_state.state = _prepared
     after = management_state_snapshot(st.session_state.state)
     for summary in result.get("action_summaries", []) or []:
         label = str(summary.get("label") or "")
@@ -9132,6 +9152,19 @@ def _runtime_authority_site():
     return runtime_authority.site_for(st.session_state.state, st.session_state)
 
 
+def _after_the_clock_moved(shadow, shadow_before, *, route, ran, submission_id):
+    """The page's ONE hook for a clock advance (P3-215A): both routes by which the family engine moves the clock call it.
+
+    All of the decision lives in ``runtime_authority`` and the pair layer it reaches: the flags, the case, the arrival, the real authority site on the clinical-time route
+    (which does not exist today) and the dormant pair evaluation. This function orchestrates and decides nothing, and with every flag off it is one
+    dictionary lookup. It returns a prepared state only when a real authority site committed one -- never, today.
+    """
+    if shadow is None:
+        return None
+    import runtime_authority
+    return runtime_authority.after_clock_moved(st.session_state, shadow, shadow_before, st.session_state.state, ran, submission_id, route)
+
+
 def execute_bundle(parsed):
     # Nested so that regressions loading execute_bundle through ast keep its helpers.
     def _record_administration_time(res, action):
@@ -11246,6 +11279,9 @@ def _process_encounter_submission(submission_text, _guard_entry=None, submission
         # Phase 3 (P3-1): observation only, after the engine committed its turn, over the actions whose
         # fate the pipeline already settled. Never authority.
         _shadow.observe(_shadow_before, st.session_state.state, parsed, result, run_actions, submission_id)
+    # Phase 3 (P3-215A): the same one hook the clinical-time route calls; here it only feeds the dormant pair evaluation (the certified block
+    # below holds the real site's minute). Nothing happens with the dry flag off.
+    _after_the_clock_moved(_shadow, _shadow_before, route="order_turn", ran=run_actions, submission_id=submission_id)
     if _authority is not None:
         # Phase 3 (P3-19): the dormant authority call site. Unreachable in this repository, because
         # ``site_for`` returns None without a faculty-approved snapshot. When it ever does open, one
@@ -11260,6 +11296,9 @@ def _process_encounter_submission(submission_text, _guard_entry=None, submission
         turn, result=result, run_actions=run_actions, split=split, minute_before=turn_minute,
         minute_after=int(st.session_state.state.get("sim_time", 0) or 0),
         terminal=bool(result.get("terminal_locked")))
+    if _shadow is not None:
+        import runtime_authority as _authority_hook
+        _authority_hook.after_orders_settled(st.session_state, _shadow, _ledger.snapshot(turn.get("orders") or []))
     if _authority is not None:
         # Phase 3 (P3-46): the commit above does NOT move -- the pressure is written before the pipeline
         # settles each order's fate, exactly as it always was, so no action activates a minute earlier or
@@ -11609,7 +11648,8 @@ def _clinical_encounter_workspace():
                 clinical_case = st.session_state.state.get("encounter_spec", {}).get("clinical_case", {})
                 history_source = clinical_case.get("history_source")
                 has_collateral = bool(history_source and str(history_source).strip().lower() not in {"patient", "the patient"})
-                cannot_speak = str(st.session_state.state['observable'].get('mental_status', '')).lower() in {'unresponsive', 'obtunded', 'sedated'}
+                import observable_view as _observable_view
+                cannot_speak = str(_observable_view.mental_status_for(st.session_state.state, "app.py::_clinical_encounter_workspace", '')).lower() in {'unresponsive', 'obtunded', 'sedated'}
                 if cannot_speak and not has_collateral:
                     st.info(_record_words('The patient cannot provide a history at present. Review the history already obtained in the clinical chart.'))
                 else:

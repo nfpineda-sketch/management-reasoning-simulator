@@ -21,12 +21,16 @@ from __future__ import annotations
 
 from copy import deepcopy
 
+import observable_view
+
 LIMITATION_KINDS = ("unrecognized_order", "recorded_not_modelled", "unsupported_future_execution",
                     "observable_static", "scripted_event", "resuscitation_not_modelled", "engine_inconsistency",
                     "pilot_time_step_limit")
 SCHEMA = "phase0_trace_v1"
 
-_VISIBLE = ("sbp", "dbp", "map", "hr", "spo2", "respiratory_rate", "rhythm", "pulse_present", "mental_status",
+#: The fields a resident could see, in the order the trace has always listed them. The mental-state field is named through the view module and READ through
+#: it (P3-219 review, F4): this function persists the word into every Management-Trace event, so it is a consequential reader of the live field.
+_VISIBLE = ("sbp", "dbp", "map", "hr", "spo2", "respiratory_rate", "rhythm", "pulse_present", observable_view.FIELD,
             "work_of_breathing", "crt", "temperature_c", "glucose_mg_dl", "respiratory_support")
 
 
@@ -39,7 +43,8 @@ def observation_snapshot(state, result=None):
     static = observation_consistency.declaration(state)["studies"]["static"]
     return {
         "minute": int((state or {}).get("sim_time", 0) or 0),
-        "visible": {key: deepcopy(o.get(key)) for key in _VISIBLE if key in o},
+        "visible": {key: deepcopy(observable_view.mental_status_for(state, "trace_phase0.py::observation_snapshot", o.get(key)) if key == observable_view.FIELD
+                                  else o.get(key)) for key in _VISIBLE if key in o},
         "arrest": {"minute": minute} if minute is not None else None,
         "static_results_reported": [study for study in reported if study in static],
         "inconsistencies": observation_consistency.check(state),

@@ -952,6 +952,79 @@ SUPPORTED_ACTIONS = ("fluid", "blood", "ppi", "procedure", "endoscopy", "oxygen"
 #: What the engine may report that carries no physiology and therefore never blocks eligibility.
 STRUCTURAL_ACTIONS = ("reassessment", "consult", "diagnostic")
 
+# -- P3-212 (FD-P3-NEW-03): the disposition of an order the engine EXECUTED and the common core does not model ----------------------------------
+SUPPORTED_MODELED = "SUPPORTED_MODELED"
+STRUCTURAL_ONLY = "STRUCTURAL_ONLY"
+EXECUTED_NO_COMMON_PHYSIOLOGY = "EXECUTED_NO_COMMON_PHYSIOLOGY"
+HELD_NOT_EXECUTED = "HELD_NOT_EXECUTED"
+TERMINAL_NOT_EXECUTABLE = "TERMINAL_NOT_EXECUTABLE"
+UNSUPPORTED_ACTION = "UNSUPPORTED_ACTION"
+ACTION_DISPOSITIONS = (SUPPORTED_MODELED, STRUCTURAL_ONLY, EXECUTED_NO_COMMON_PHYSIOLOGY, HELD_NOT_EXECUTED, TERMINAL_NOT_EXECUTABLE,
+                       UNSUPPORTED_ACTION)
+#: The EXPLICIT allowlist of classes whose execution is acknowledged and traced but creates NO common-core contributor and changes NO physiology.
+#: It is never inferred and never widened by a rule: a class enters this map by a faculty decision, with the reason written here. Vascular access
+#: is the first (FD-P3-NEW-03): no physiologic effect is invented for it, and an authority transaction may continue through it.
+NO_COMMON_PHYSIOLOGY_ACTIONS = MappingProxyType({
+    "vascular_access": "peripheral or intraosseous access is placed, or already in place: the engine records the fact and the common core models "
+                       "no effect of it (fluids and blood execute without it and carry their own volume)",
+})
+#: The ledger's fates that mean the order did NOT act (read lazily from the repository's own vocabulary, never copied).
+_HELD_FATES = frozenset({"HELD_CLARIFICATION", "HELD_REASONING"})
+
+# -- P3-215: every route by which the engine's clock moves ---------------------------------------------------------------------------------------
+#: An order turn (``execute_bundle``) and clinical time spent OUTSIDE an order turn (``app.spend_clinical_time``: a history question, an examination).
+#: The P3-208 review found the second never reached the site. Both are routes now, an unknown one is refused, and the page reaches both through ONE hook.
+ORDER_TURN = "order_turn"
+CLINICAL_TIME = "clinical_time_outside_an_order_turn"
+KNOWN_ROUTES = (ORDER_TURN, CLINICAL_TIME)
+UNKNOWN_ROUTE = "UNKNOWN_CLOCK_ROUTE"
+#: A turn that did NOT advance the clock and whose actions are only structural or acknowledged-no-physiology (an IV line, a consult) has no new
+#: physiological minute: nothing to commit, nothing to validate beyond the management class, and it does not halt (FD-P3-NEW-03). It is recorded.
+NO_ADVANCE_TURN = "NO_ADVANCE_TURN_NOTHING_TO_COMMIT"
+NO_ADVANCE_OK = tuple(sorted((set(STRUCTURAL_ACTIONS) | set(NO_COMMON_PHYSIOLOGY_ACTIONS)) - {"diagnostic"}))
+
+
+def disposition_of(kind: Any, fate: Any = None) -> str:
+    """The disposition of ONE order class, given the fate the ledger settled for it (None before settlement).
+
+    A fate that says the order did not act wins over the class: a held order is HELD_NOT_EXECUTED and a terminal one TERMINAL_NOT_EXECUTABLE
+    whatever it is; a recorded-not-modelled or unrecognized order is UNSUPPORTED_ACTION. Only then does the class decide."""
+    name = str(kind or "").strip().lower() or "untyped_action"
+    settled = str(fate or "").strip().upper()
+    if settled in _HELD_FATES:
+        return HELD_NOT_EXECUTED
+    if settled == TERMINAL_NOT_EXECUTABLE:
+        return TERMINAL_NOT_EXECUTABLE
+    if settled and settled in {str(item) for item in fates_that_did_not_act()}:
+        return UNSUPPORTED_ACTION
+    if name in NO_COMMON_PHYSIOLOGY_ACTIONS:
+        return EXECUTED_NO_COMMON_PHYSIOLOGY
+    if name in STRUCTURAL_ACTIONS and name not in SUPPORTED_ACTIONS:
+        return STRUCTURAL_ONLY
+    if name in SUPPORTED_ACTIONS:
+        return STRUCTURAL_ONLY if name in STRUCTURAL_ACTIONS else SUPPORTED_MODELED
+    return UNSUPPORTED_ACTION
+
+
+def executed_no_common_physiology(rows: Sequence | None) -> tuple:
+    """The order rows of a turn that are EXECUTED_NO_COMMON_PHYSIOLOGY, each recognised EXACTLY ONCE (by canonical order id; a repeated receipt of
+    the same order is one event). A row is ``{"order_id", "type" | "class", "fate"}``: what ``action_fates`` and the settled ledger carry."""
+    out, seen = [], set()
+    for row in list(rows or []):
+        item = dict(row) if isinstance(row, Mapping) else {}
+        kind = item.get("type") or item.get("class") or item.get("kind")
+        if str(kind or "").strip().lower() not in NO_COMMON_PHYSIOLOGY_ACTIONS:
+            continue
+        order = str(item.get("order_id") or "").strip()
+        if disposition_of(kind, item.get("fate")) != EXECUTED_NO_COMMON_PHYSIOLOGY:
+            continue
+        if order and order in seen:
+            continue
+        seen.add(order)
+        out.append({"order_id": order, "class": str(kind).strip().lower(), "fate": str(item.get("fate") or ""),
+                    "disposition": EXECUTED_NO_COMMON_PHYSIOLOGY, "contributor": None, "physiological_mutation": False})
+    return tuple(out)
+
 
 @dataclass(frozen=True)
 class AuthorityEligibility:
@@ -1000,17 +1073,21 @@ def eligibility(scenario: Mapping, *, environ: Mapping[str, str] | None = None) 
     # SUPPORTED_ACTIONS was read by nobody, so it decided nothing.
     contradictory = tuple(sorted(kind for kind, how in coverage.items()
                                  if str(how.get("status")) == "FULLY_MIRRORED"
-                                 and str(kind).strip().lower() not in SUPPORTED_ACTIONS))
+                                 and str(kind).strip().lower() not in SUPPORTED_ACTIONS
+                                 and str(kind).strip().lower() not in NO_COMMON_PHYSIOLOGY_ACTIONS))
     # P3-22: the settled order classes of the whole scenario go through the same filter as the call
     # site's. The coverage is built from the engine's action summaries, and an order the engine does not
     # model (``not_modelled``) produces none, so it used to pass unseen: eligibility and the transaction
     # gave two different answers for the same scenario. They now give one.
     settled = tuple(str(pair[0]) for pair in (scenario.get("fates") or ()) if pair and pair[0])
     unsupported = tuple(sorted(set(
-        [kind for kind, how in coverage.items() if str(how.get("status")) == "UNSUPPORTED"]
+        [kind for kind, how in coverage.items() if str(how.get("status")) == "UNSUPPORTED"
+         and str(kind).strip().lower() not in NO_COMMON_PHYSIOLOGY_ACTIONS]
         + list(contradictory) + list(unsupported_among(settled)))))
     declared = tuple(sorted({str(gap.get("kind")) for gap in (scenario.get("gaps") or [])
-                             if gap.get("kind")}))
+                             if gap.get("kind") and str(gap.get("kind")).strip().lower() not in NO_COMMON_PHYSIOLOGY_ACTIONS}))
+    acknowledged = tuple(sorted({str(gap.get("kind")) for gap in (scenario.get("gaps") or [])
+                                 if str(gap.get("kind") or "").strip().lower() in NO_COMMON_PHYSIOLOGY_ACTIONS}))
     case_id = str(scenario.get("case") or scenario.get("shadow_case_id") or "")
     facts = {
         "case_allowlisted": case_id in AUTHORITY_CASES,
@@ -1027,6 +1104,7 @@ def eligibility(scenario: Mapping, *, environ: Mapping[str, str] | None = None) 
         "unsupported_actions": list(unsupported),
         "settled_classes": sorted(set(settled)),
         "declared_gaps": list(declared),
+        "acknowledged_no_common_physiology": list(acknowledged),
         "contradictory_coverage": list(contradictory),
         "approved_snapshot": bool(_APPROVED_SNAPSHOT_POINTS),
     }
@@ -1039,7 +1117,7 @@ def eligibility(scenario: Mapping, *, environ: Mapping[str, str] | None = None) 
         return AuthorityEligibility(INELIGIBLE_UNSUPPORTED, case_id, scenario.get("scenario"),
                                     tuple(reasons), unsupported, facts)
     for name, ok in facts.items():
-        if name in ("unsupported_actions", "settled_classes", "declared_gaps",
+        if name in ("unsupported_actions", "settled_classes", "declared_gaps", "acknowledged_no_common_physiology",
                     "contradictory_coverage", "family", "approved_snapshot"):
             continue
         if not ok:
@@ -1496,10 +1574,36 @@ def settled_provenance(orders: Sequence | None, submission_id: Any = None) -> tu
 
 
 def unsupported_among(kinds: Sequence[str]) -> tuple:
-    """The classes a pressure authority cannot mirror exactly. An unknown class is unsupported."""
-    allowed = set(SUPPORTED_ACTIONS) | set(STRUCTURAL_ACTIONS)
+    """The classes a pressure authority cannot mirror exactly. An unknown class is unsupported.
+
+    P3-212: a class on the EXPLICIT ``NO_COMMON_PHYSIOLOGY_ACTIONS`` allowlist is not unsupported: it was executed and has nothing to mirror.
+    It is not silently ignored either: every minute records it as ``no_common_physiology``, and a settled fate that says it did not act is
+    still a contradiction (``settle_provenance``) and still a different disposition (``disposition_of``)."""
+    allowed = set(SUPPORTED_ACTIONS) | set(STRUCTURAL_ACTIONS) | set(NO_COMMON_PHYSIOLOGY_ACTIONS)
     return tuple(sorted({str(kind).strip().lower() or "untyped_action" for kind in kinds
                          if str(kind).strip().lower() not in allowed}))
+
+
+UNTYPED_GAP = "untyped_gap"
+
+
+def unsupported_in_settlement(rows: Sequence | None) -> tuple:
+    """The classes of a SETTLED ledger the common mapping cannot represent: the unsupported classes (``unsupported_among``, which normalises the class name)
+    and an allowlisted class (the IV line) whose settled fate says it did NOT act (held, terminal, recorded-not-modelled, unrecognized). The one rule the site
+    and the dry evaluator share, so that neither can accept what the other refuses (P3-219 review, F1 and F7)."""
+    items = [dict(row) if isinstance(row, Mapping) else {} for row in list(rows or [])]
+    found = set(unsupported_among(tuple(str(item.get("class") or "") for item in items)))
+    for item in items:
+        name = str(item.get("class") or "").strip().lower()
+        if name in NO_COMMON_PHYSIOLOGY_ACTIONS and disposition_of(item.get("class"), item.get("fate")) in (HELD_NOT_EXECUTED, TERMINAL_NOT_EXECUTABLE, UNSUPPORTED_ACTION):
+            found.add(name)
+    return tuple(sorted(found))
+
+
+def gap_kinds_of(session: Any) -> tuple:
+    """The kinds of the shadow's declared gaps. A gap that names NO kind is a coverage the shadow lost (the state before a turn could not be copied, so nothing
+    was mirrored): it is ``untyped_gap``, which is unsupported -- never silently dropped (P3-219 review, F2)."""
+    return tuple(str(gap.get("kind")) if gap.get("kind") else UNTYPED_GAP for gap in list(getattr(session, "gaps", []) or []))
 
 
 @dataclass
@@ -1538,6 +1642,11 @@ class AuthoritySite:
     experiment_state: str = field(default=EXPERIMENT_ACTIVE, init=False)
     #: What the store said the last time this artifact was written.
     stored: Mapping[str, Any] | None = field(default=None, init=False)
+    #: P3-212/215: turns that did not advance the clock and carried only structural or acknowledged-no-physiology actions. Recorded, never committed.
+    no_advance_turns: list = field(default_factory=list, init=False)
+    #: How many of the shadow session's failures an earlier turn already judged. A failure the session recorded since is NEW, whatever minute it carries:
+    #: the turn that has not yet been judged owns it (P3-219 review, F3).
+    failures_judged: int = field(default=0, init=False)
 
     # -- the encounter's identity ----------------------------------------------------------------------
     def is_for(self, state: Mapping) -> bool:
@@ -1575,7 +1684,7 @@ class AuthoritySite:
 
     # -- one minute ------------------------------------------------------------------------------------
     def minute(self, before: Mapping | None, after: Mapping, session: Any,
-               ran: Sequence | None, submission_id: str | None = None) -> Mapping | None:
+               ran: Sequence | None, submission_id: str | None = None, route: str = ORDER_TURN) -> Mapping | None:
         """One future authority minute: capture, compute, validate, commit atomically, or abort.
 
         Returns a NEW prepared mapping to install, or None. Never raises into the caller: an unexpected
@@ -1587,7 +1696,7 @@ class AuthoritySite:
             self._persist()
             return None
         try:
-            prepared = self._minute(before, dict(after), session, ran, submission_id)
+            prepared = self._minute(before, dict(after), session, ran, submission_id, route)
         except Exception as error:
             # Through ``_hard_fail``, so an internal error preserves what every other failure preserves:
             # the legacy counterfactual of that minute and a rollback artifact (P3-28 review).
@@ -1601,6 +1710,21 @@ class AuthoritySite:
         # configured, so this writes nothing and says why.
         self._persist()
         return prepared
+
+    @staticmethod
+    def _no_advance(before: Mapping, after: Mapping) -> bool:
+        """The clock did not move AND the authority domain is exactly what it was (the turn changed no pressure): only then is it a no-advance turn.
+
+        The display MAP is a function of ``sbp`` and ``dbp`` that the legacy engine derives the first time it refreshes the observable, so a MAP that
+        APPEARS (``None`` on one side) is that derivation, not a move: the very first order of an encounter -- an IV line -- would otherwise be read as a
+        pressure that moved and refused. A MAP present on both sides that differs, or any change of ``sbp`` or ``dbp``, is a move."""
+        try:
+            one, two = pressure_point(dict(before).get("observable")), pressure_point(dict(after).get("observable"))
+            return (_as_int(dict(before).get("sim_time")) == _as_int(dict(after).get("sim_time"))
+                    and one["sbp"] == two["sbp"] and one["dbp"] == two["dbp"]
+                    and (one["map"] == two["map"] or one["map"] is None or two["map"] is None))
+        except Exception:
+            return False
 
     def _persist(self) -> dict:
         """Hand the artifact to the faculty store. Never raises, and never touches anything else."""
@@ -1632,7 +1756,28 @@ class AuthoritySite:
             record = next((item for item in reversed(self.records)
                            if str(item.get("submission_id") or "") == str(submission_id or "")), None)
             if record is None:
-                report["why"] = "no authority minute carries this submission"
+                quiet = next((item for item in reversed(self.no_advance_turns) if str(item.get("submission_id") or "") == str(submission_id or "")), None)
+                if quiet is None:
+                    report["why"] = "no authority minute carries this submission"
+                    return report
+                # P3-219 review, F1: a turn that did not move the clock is RECORDED, and its settled ledger is judged exactly as a committed minute's is. An order
+                # the engine does not MODEL produces no action for the turn, so the ledger is the only place its class appears (the P3-48 gap): "Place an IV
+                # line. Also give <something the mapping cannot represent>" must not slip through because its first order was acknowledged.
+                settled = settled_provenance(orders, submission_id)
+                unsupported = unsupported_in_settlement(settled)
+                quiet["settled_action_classes"] = sorted({str(item.get("class") or "") for item in settled} - {""})
+                quiet["no_common_physiology"] = [dict(row) for row in executed_no_common_physiology(settled)]
+                quiet["provenance_settled"] = True
+                report["settled"] = len(settled)
+                if unsupported:
+                    report["unsupported"] = list(unsupported)
+                    report["contradictions"].append({"class": list(unsupported), "why": f"{UNSUPPORTED_AUTHORITY_ACTION}: the settled ledger of a turn that did not move "
+                                                     f"the clock carries a management class the common mapping cannot represent"})
+                    quiet["provenance_contradictions"] = [dict(item) for item in report["contradictions"]]
+                    if not self.halted:
+                        self._hard_fail(_as_int(quiet.get("minute")), f"{PROVENANCE_CONTRADICTION}: {report['contradictions']}", list(settled))
+                        report["halted"] = True
+                self._persist()
                 return report
             # P3-53: the link is the repository's own identity, resolved against EVERY settled order of
             # the turn -- no class matching and no submission filter, because ``open_turn`` reuses a held
@@ -1643,6 +1788,9 @@ class AuthoritySite:
             lineage = action_lineage(identities, everything, submission_id)
             record["action_lineage"] = [dict(row) for row in lineage]
             record["action_fates"] = [dict(row) for row in lineage]
+            record["no_common_physiology"] = [dict(row) for row in executed_no_common_physiology(lineage)]
+            record["action_dispositions"] = [{"order_id": dict(row).get("order_id"), "class": dict(row).get("class"), "fate": dict(row).get("fate"),
+                                              "disposition": disposition_of(dict(row).get("class"), dict(row).get("fate"))} for row in lineage]
             record["provenance_settled"] = True
             report["settled"] = len(settled)
             report["lineage"] = [dict(row) for row in lineage]
@@ -1662,7 +1810,7 @@ class AuthoritySite:
             # appears here. The site still decides nothing: it reads the settled classes and applies the
             # same ``unsupported_among`` the eligibility reading applies.
             settled_classes = tuple(str(item.get("class") or "") for item in settled)
-            unsupported = unsupported_among(settled_classes)
+            unsupported = unsupported_in_settlement(settled)
             record["settled_action_classes"] = sorted(set(settled_classes) - {""})
             if unsupported:
                 report["unsupported"] = list(unsupported)
@@ -1682,8 +1830,16 @@ class AuthoritySite:
             report["why"] = f"{type(error).__name__}: {error}"
         return report
 
-    def _minute(self, before, after: Mapping, session, ran, submission_id) -> Mapping | None:
+    def _minute(self, before, after: Mapping, session, ran, submission_id, route: str = ORDER_TURN) -> Mapping | None:
         minute = _as_int(after.get("sim_time"))
+        if route not in KNOWN_ROUTES:
+            return self._hard_fail(minute, f"{UNKNOWN_ROUTE}: {route!r}", ran)
+        if route == CLINICAL_TIME:
+            # Clinical time outside an order turn declares no actions: it is the EMPTY turn, not an undeclared one. An action on this route is a
+            # contradiction (an order has its own route), and fails closed.
+            if ran is not None and list(ran):
+                return self._hard_fail(minute, f"{UNSUPPORTED_AUTHORITY_ACTION}: the clinical-time route carries no actions", ran)
+            ran = ()
         if ran is None:
             # The P3-19 review: the site always passed a tuple on, so "the caller declared nothing" had
             # become "nothing ran". An undeclared turn fails closed here, as it does in the gate.
@@ -1697,11 +1853,26 @@ class AuthoritySite:
         # The declared gaps of the shadow go through the SAME filter as the turn's own classes: a gap on a
         # structural class is not a management-relevant unsupported action, and the three GI treatments
         # with no common writer are, whichever side names them.
-        gap_kinds = tuple(str(gap.get("kind")) for gap in getattr(session, "gaps", []) if gap.get("kind"))
+        gap_kinds = gap_kinds_of(session)
         unsupported = tuple(sorted(set(unsupported_among(kinds)) | set(unsupported_among(gap_kinds))))
+        # P3-219 review, F3: the failures this turn has not been judged for. Taken ONCE, here, so every path below -- the no-advance turn included -- sees them.
+        everything = list(getattr(session, "failures", []) or [])
+        new_failures = everything[self.failures_judged:]
+        self.failures_judged = len(everything)
         if unsupported:
             return self._hard_fail(minute, f"{UNSUPPORTED_AUTHORITY_ACTION}: {list(unsupported)}",
                                    ran, legacy=legacy_observable, unsupported=unsupported)
+        if before is not None and kinds and set(kinds) <= set(NO_ADVANCE_OK) and self._no_advance(before, after):
+            if new_failures:
+                return self._hard_fail(minute, f"{VALIDATION_REFUSED}: the shadow recorded a failure during a turn that did not move the clock: "
+                                               f"{[(_as_int(item.minute), str(item.where)) for item in new_failures][:3]}", ran, legacy=legacy_observable)
+            # P3-212/215: the clock did not move and nothing physiological was asked: there is no new minute to commit and no certified minute is
+            # re-committed. The turn is RECORDED (the artifact lists it), the pressure domain is verified unchanged, and the experiment goes on.
+            self.no_advance_turns.append({"minute": minute, "submission_id": submission_id, "route": route, "action_kinds": list(kinds),
+                                          "action_fates": [dict(row) for row in action_fates(ran)],
+                                          "no_common_physiology": [dict(row) for row in executed_no_common_physiology(action_fates(ran))],
+                                          "pressure_digest": digest_of(pressure_point(legacy_observable)), "outcome": NO_ADVANCE_TURN})
+            return None
         if minute in self.minutes_committed:
             # One minute is one transaction: a turn that did not advance the clock -- a plan, a held
             # order, a clarification -- may not commit the same minute a second time. It is checked AFTER
@@ -1732,7 +1903,10 @@ class AuthoritySite:
         transaction = AuthorityTransaction(minute=minute, case_id=self.case_id, family=self.family,
                                            domain=self.domain, snapshot=self.snapshot)
         transaction.capture(after).compute(written, legacy_point)
-        failures = [item for item in getattr(session, "failures", []) if _as_int(item.minute) == minute]
+        # P3-216 (NEW-06) and the review's F3: EVERY failure the shadow recorded since the last judged turn refuses this one. A turn that advances the clock
+        # by N minutes is one commit of the end state; filtering on ``minute == end`` let a failure at minute k < N commit (found by this cycle's probe), and
+        # a window on the minute stamp still let a failure stamped at the turn's START (a capture that failed) or recorded during a no-advance turn escape.
+        failures = new_failures
         legacy_arrest = bool(dict(after.get("observable") or {}).get("pulse_present") is False)
         valid = transaction.validate(invariants_hold=not failures, replay_digest=replay_digest,
                                      expected_digest=candidate_digest, unsupported=unsupported,
@@ -1746,6 +1920,10 @@ class AuthoritySite:
         # minute could be reproduced. Each minute now carries the input it was computed from.
         provenance["replay_input"] = minute_input
         provenance["precommit_observable_digest"] = digest_of(dict(after.get("observable") or {}))
+        if route == CLINICAL_TIME:
+            # No order was given, so there is no ledger row to settle: the minute is settled by construction. Order turns keep their records
+            # byte for byte (no new key) and settle after the pipeline, as they always did.
+            provenance.update(route=CLINICAL_TIME, provenance_settled=True, provenance_contradictions=[], action_lineage=[])
         if not valid:
             # P3-26-3: the reason a faculty reader sees names the classes that blocked the minute, not
             # only the validation key that caught them.
@@ -1843,6 +2021,7 @@ class AuthoritySite:
             "action_kinds": list(kinds),
             "action_fates": list(fates),
             "unsupported_actions": list(unsupported),
+            "no_common_physiology": [dict(row) for row in executed_no_common_physiology(fates)],
             "input_digest": digests["input"],
             "candidate_digest": digests["candidate"],
             "replay_digest": digests["replay"],
@@ -1879,6 +2058,7 @@ class AuthoritySite:
                 "failure_reason": reason, "failure_policy": FAILURE_POLICY,
                 "action_kinds": list(action_kinds(ran)), "action_fates": list(action_fates(ran)),
                 "unsupported_actions": list(unsupported), "divergence_classes": [],
+                "no_common_physiology": [dict(row) for row in executed_no_common_physiology(action_fates(ran))],
                 "validation_failures": [], "validation_passed": False,
                 # Faculty decision F: the legacy counterfactual of the failed minute is preserved even
                 # when the refusal came before any transaction was opened.
@@ -1977,6 +2157,8 @@ class AuthoritySite:
             "replay_input": (None if self.replay_input is None
                              else json.loads(canonical(self.replay_input))),
         }
+        if self.no_advance_turns:
+            body["no_advance_turns"] = [dict(item) for item in self.no_advance_turns]          # only when there are some: the usual artifact is unchanged
         return {**body, "artifact_digest": digest_of(body)}
 
 
@@ -2142,6 +2324,29 @@ def site_for(state: Mapping, store: Any,
         return None
 
 
+# -- P3-215A: the page's ONE hook for a clock advance reaches the dormant pair layer THROUGH this declared crossing ---------------------------------------
+# ``app.py`` imports this module and nothing else of the layer: the pair authority is a layer module, imported here on use, so the page's import graph
+# crosses into ``clinical_core`` by the same two declared crossings it always had.
+
+def after_clock_moved(store: Any, session: Any, before: Mapping | None, after: Mapping, ran: Sequence | None, submission_id: Any, route: str,
+                      *, environ: Mapping[str, str] | None = None) -> Mapping | None:
+    """The page calls this right after the engine moved the clock, on EVERY route. See ``runtime_authority_pair.after_clock_moved``."""
+    import runtime_authority_pair
+    return runtime_authority_pair.after_clock_moved(store, session, before, after, ran, submission_id, route, environ=environ)
+
+
+def after_orders_settled(store: Any, session: Any, orders: Sequence | None, *, environ: Mapping[str, str] | None = None) -> None:
+    """The second phase of the hook, for an order turn. See ``runtime_authority_pair.after_orders_settled``."""
+    import runtime_authority_pair
+    runtime_authority_pair.after_orders_settled(store, session, orders, environ=environ)
+
+
+def forget_dry_evaluator(store: Any) -> None:
+    """A new encounter drops the dry evaluator beside the shadow session and the site."""
+    import runtime_authority_pair
+    runtime_authority_pair.forget(store)
+
+
 def _same_encounter(site: "AuthoritySite", state: Mapping) -> bool:
     """Whether a state is the arrival this site opened on, by the arrival's own digest."""
     try:
@@ -2164,6 +2369,10 @@ def _configuration_changed(site: "AuthoritySite", live: Mapping[str, str]) -> bo
 def _provenance_is_consistent(minute: Mapping) -> bool:
     """Every class the minute recorded has a canonical order id and a fate under which it acted."""
     item = dict(minute)
+    if item.get("route") == CLINICAL_TIME:
+        # P3-215: the activity route has no orders, so its lineage is EMPTY by contract; a row on it is a contradiction
+        return (bool(item.get("provenance_settled")) and not item.get("provenance_contradictions") and not list(item.get("action_kinds") or [])
+                and not list(item.get("action_lineage") or []))
     if not item.get("provenance_settled"):
         return False
     if item.get("provenance_contradictions"):
