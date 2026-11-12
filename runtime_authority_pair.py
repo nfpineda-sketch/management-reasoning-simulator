@@ -32,6 +32,7 @@ from typing import Any, Mapping, Sequence
 
 import observable_view as view
 import runtime_authority as ra
+import runtime_minute_validation as mv
 import runtime_shadow as rs
 import runtime_shadow_evidence as ev
 import runtime_shadow_families as fam
@@ -575,7 +576,7 @@ PER_MINUTE_TRANSACTION, VALIDATED_ATOMIC_INTERVAL = "PER_MINUTE_TRANSACTION", "V
 GRANULARITY = VALIDATED_ATOMIC_INTERVAL
 #: The readings of one common state that do NOT depend on the Amendment-2 magnitudes: equal in the pressure run and in the bound run, or the pair is
 #: not one course.
-SHARED_READINGS = tuple(name for name in fam.TRACE_READINGS if name != "consciousness_level")
+SHARED_READINGS = mv.SHARED_READINGS
 DRY_FLAG = "MRS_PHASE3_PAIR_DRY_RUN"
 DRY_ON = "on"
 
@@ -659,6 +660,7 @@ class PairDryEvaluator:
         self._channels: dict = {}
         self._last_seen = _as_int(dict(arrival_state).get("sim_time"))
         self._failures_seen = 0
+        self._last_pressure_kwargs: dict | None = None
         self._anchors = _anchors_digest(self.runner)
 
     # -- the common candidate under the bound snapshot -------------------------------------------------------------------------------------
@@ -760,48 +762,19 @@ class PairDryEvaluator:
     # -- the interval: EVERY minute of the turn, with the same checks (P3-216) -----------------------------------------------------------------
     @staticmethod
     def _replay_table(replay_input: Mapping | None) -> dict | None:
-        """The pressures of EVERY minute of the artifact's replay, computed once: ``{minute: pressure_point}``. ``None`` when there is no artifact to replay.
-        (Replaying the whole run once per minute of a turn made the dry evaluation quadratic: P3-219 review, F8.)"""
-        if not replay_input:
-            return None
-        replayed = fam.replay_shadow_encounter(json.loads(ra.canonical(replay_input)))
-        return {_as_int(item["minute"]): ra.pressure_point(item["derived"]) for item in replayed["results"]}
+        """The pressures of EVERY minute of the artifact's replay, computed once: ``{minute: pressure_point}`` (the shared primitive's)."""
+        return mv.replay_table(replay_input)
 
     def _interval(self, minute: int, session, unsupported: Sequence[str], legacy_arrest: bool, turn_minutes: Sequence[int], table: dict | None = None) -> list:
-        """The per-minute validation of ONE turn: for each minute the pressure transaction's own validation (candidate present and finite, reproducible
-        from the immutable artifact, no failure recorded at THAT minute, a supported management, no legacy arrest) and the consciousness candidate's
-        (on the ladder, the core's own reading, the same course as the pressure run). The legacy comparison is a record, not a safety check, and
-        intermediate minutes have none."""
-        rows = []
-        mine = {_as_int(item.minute): dict(item.derived) for item in (self.runner.results if self.runner is not None else [])}
-        theirs = {_as_int(item.minute): item for item in list(getattr(session, "minutes", []) or [])}
-        failures_all = list(getattr(session, "failures", []) or [])
-        for index in turn_minutes:
-            failed, entry = [], theirs.get(index)
-            derived = None if entry is None else dict(entry.derived)
-            pressure = None if derived is None else ra.pressure_point(derived)
-            if pressure is None or any(value is None for value in pressure.values()):
-                failed.append("pressure_candidate_present")
-            else:
-                replayed = None if table is None else table.get(index)
-                step = ra.AuthorityTransaction(minute=index, case_id=self.case_id, snapshot=self.pressure_snapshot)
-                step.capture({"sim_time": index}).compute(ra.shaped_like_legacy(pressure, {}), None)
-                at_this_minute = [item for item in failures_all if _as_int(item.minute) == index]
-                ok = step.validate(invariants_hold=not at_this_minute, replay_digest=ra.digest_of(replayed) if replayed is not None else "",
-                                   expected_digest=ra.digest_of(pressure), unsupported=tuple(unsupported), legacy_arrest=bool(legacy_arrest),
-                                   failures=at_this_minute)
-                if not ok:
-                    failed.extend(f"pressure:{name}" for name in step.failures)
-            row = self._channels.get(index)
-            channels = None if row is None or "channels_unavailable" in row else row["channels"]
-            if channels is None or channels.get("category_index") not in WORD_OF or channels.get("consciousness_level") != channels.get("category_index"):
-                failed.append("consciousness_candidate_present")
-            elif channels.get("pulse_present") is not True:
-                failed.append("pulse_present")
-            if index not in mine or index not in theirs or any(mine[index].get(name) != dict(theirs[index].derived).get(name) for name in SHARED_READINGS):
-                failed.append("pair_is_one_course")
-            rows.append({"minute": index, "ok": not failed, "failed": failed})
-        return rows
+        """The per-minute validation of ONE turn, in pair mode: for each minute the pressure transaction's own validation and the consciousness candidate's
+        (``runtime_minute_validation``: the ONE primitive the pressure-only site uses too). Returns the rows ``[{minute, ok, failed}]``."""
+        return self.validate_interval(minute, session, unsupported, legacy_arrest, turn_minutes, table)["rows"]
+
+    def validate_interval(self, minute: int, session, unsupported: Sequence[str], legacy_arrest: bool, turn_minutes: Sequence[int], table: dict | None = None) -> dict:
+        """The interval's whole verdict (rows, first failed minute, the minutes it makes ineligible), from the shared primitive."""
+        return mv.validate_interval(turn_minutes, mode=mv.PAIR_PRESSURE_CONSCIOUSNESS, case_id=self.case_id, snapshot=self.pressure_snapshot, session=session,
+                                    unsupported=unsupported, legacy_arrest=legacy_arrest, table=table,
+                                    bound_results=list(self.runner.results if self.runner is not None else []), channel_rows=self._channels)
 
     def _evaluate(self, record: dict, minute: int, before: Mapping | None, after: Mapping, legacy_observable: Mapping, session, ran, candidate, route: str) -> None:
         failed, detail = [], {}
@@ -849,6 +822,7 @@ class PairDryEvaluator:
         written = None
         transaction = None
         pair_pressure_kwargs = None
+        self._last_pressure_kwargs = None
         replay_input = ra.AuthoritySite._artifact_input(session)
         table = self._replay_table(replay_input)                                   # ONE replay of the artifact per turn, read at every minute (not one per minute)
         if check("pressure_candidate_present", present):
@@ -858,13 +832,14 @@ class PairDryEvaluator:
             pair_pressure_kwargs = dict(invariants_hold=not failures, replay_digest=ra.digest_of(replayed) if replayed is not None else "",
                                         expected_digest=ra.digest_of(pressure), unsupported=unsupported if declared is not None else None,
                                         legacy_arrest=legacy_observable.get("pulse_present") is False, failures=failures)
+            self._last_pressure_kwargs = pair_pressure_kwargs                          # in memory only: what a commit would hand the pressure half
             probe = ra.AuthorityTransaction(minute=minute, case_id=self.case_id, snapshot=self.pressure_snapshot)
             probe.capture(after).compute(written, ra.pressure_point(legacy_observable))
             valid = probe.validate(**pair_pressure_kwargs)
             check("pressure_validated", valid and probe.state == ra.VALIDATED and not probe.committed, {"validation_failures": list(probe.failures)})
         else:
             failed.append("pressure_validated")
-        has = (candidate is not None and candidate["derived"] is not None and candidate["category"] in WORD_OF
+        has = (candidate is not None and candidate["derived"] is not None and type(candidate["category"]) is int and candidate["category"] in WORD_OF
                and candidate["consciousness_level"] == candidate["category"] and candidate["pulse_present"] is True)
         check("consciousness_candidate_present", has)
         check("consciousness_reproducible", candidate is not None and candidate["reproduced"])
@@ -873,8 +848,8 @@ class PairDryEvaluator:
         apart = [index for index in turn_minutes if index not in mine or index not in theirs
                  or any(mine[index].get(name) != theirs[index].get(name) for name in SHARED_READINGS)]
         check("pair_is_one_course", has and shadow_minute is not None and not apart and candidate["state_digest"] is not None, {"minutes_apart_or_missing": apart[:8]})
-        rows = self._interval(minute, session, unsupported, legacy_observable.get("pulse_present") is False, turn_minutes, table)
-        record["interval"] = rows
+        verdict = self.validate_interval(minute, session, unsupported, legacy_observable.get("pulse_present") is False, turn_minutes, table)
+        rows = record["interval"] = verdict["rows"]
         bad = [row for row in rows if not row["ok"]]
         check("interval_minutes_validated", not bad, {"first_failed_minute": bad[0]["minute"] if bad else None, "failed": bad[0]["failed"] if bad else None,
                                                       "interval_minutes": [turn_minutes[0], turn_minutes[-1]]})
@@ -1024,12 +999,23 @@ def dry_evaluator_for(store: Any, session: Any, *, environ: Mapping[str, str] | 
         elif getattr(session, "arrival", None) is None or not eligibility.get("eligible") or getattr(session, "runner", None) is None:
             why = ARRIVAL_NOT_ELIGIBLE
         else:
-            evaluator = PairDryEvaluator(bind(), session.case_id, session.arrival)
+            import runtime_pair_site as site_module                   # lazily: the site imports this module
+            evaluator = site_module.DormantPairSite(bind(), session.case_id, session.arrival, environ=environ)
     except Exception as error:                            # a binding refused, a runner that would not open: the legacy encounter does not care why
         evaluator, why = None, f"{BINDING_REFUSED}: {type(error).__name__}"
     store[DRY_KEY] = (session, evaluator)
     store[DRY_REFUSAL_KEY] = why
     return evaluator
+
+
+def _persist(evaluator: Any, environ: Mapping[str, str] | None) -> None:
+    """The dormant site's artifact goes to the faculty store when a faculty environment named one (never in production). It never raises."""
+    try:
+        persist = getattr(evaluator, "persist", None)
+        if persist is not None:
+            persist(environ)
+    except Exception:
+        pass
 
 
 def after_clock_moved(store: Any, session: Any, before: Mapping | None, after: Mapping, ran: Sequence | None, submission_id: Any, route: str, *,
@@ -1055,6 +1041,7 @@ def after_clock_moved(store: Any, session: Any, before: Mapping | None, after: M
             if evaluator is not None:
                 evaluator.minute(before, after, session, ran, submission_id, route)
                 store[DRY_ARTIFACT_KEY] = evaluator.summary()
+                _persist(evaluator, environ)
     except Exception as error:                            # the hook is observation: a failure here is recorded, never raised into the turn
         store[DRY_REFUSAL_KEY] = f"HOOK_FAILED: {type(error).__name__}"
     return prepared
@@ -1067,6 +1054,7 @@ def after_orders_settled(store: Any, session: Any, orders: Sequence | None, *, e
         if isinstance(held, tuple) and len(held) == 2 and held[0] is session and held[1] is not None and dry_run_enabled(environ):
             held[1].settle(orders)
             store[DRY_ARTIFACT_KEY] = held[1].summary()
+            _persist(held[1], environ)
     except Exception as error:
         store[DRY_REFUSAL_KEY] = f"SETTLE_FAILED: {type(error).__name__}"
 

@@ -815,6 +815,21 @@ class AuthorityTransaction:
         self.state = VALIDATED
         return True
 
+    def refuse(self, failures: Sequence[str], *, reason: str = "", replay_digest: str | None = None) -> bool:
+        """P3-223 (R2): abort a transaction whose OWN minute validated but whose interval did not.
+
+        A turn that moves the clock by N minutes is one commit of the end state, and an intermediate minute that failed makes that commit ineligible.
+        The transaction cannot see the intermediate minutes, so the site tells it: the transaction becomes ABORTED with its rollback artifact, exactly as
+        a refused ``validate`` leaves it, and it can never be committed afterwards. Only a VALIDATED transaction can be refused this way."""
+        if self.state != VALIDATED:
+            return False
+        self.failures = [str(name) for name in failures]
+        self.state = ABORTED
+        self.reason = reason or f"validation refused: {self.failures}"
+        self.committed = ()
+        self.rollback = rollback_artifact(self, reason=self.reason, replay_digest=replay_digest)
+        return True
+
     def commit(self, target: Mapping, *, environ: Mapping[str, str] | None = None) -> dict:
         """Write the common fields of the authority domain at once, or raise without touching anything.
 
@@ -1911,6 +1926,15 @@ class AuthoritySite:
         valid = transaction.validate(invariants_hold=not failures, replay_digest=replay_digest,
                                      expected_digest=candidate_digest, unsupported=unsupported,
                                      legacy_arrest=legacy_arrest, failures=failures)
+        # P3-223 (R2): the commit is the engine's END state, so EVERY minute the turn crossed must have passed the same per-minute validation the pair
+        # evaluator applies (``runtime_minute_validation``, one primitive for both). Until now only the end minute (and the failures the shadow recorded)
+        # was judged: an intermediate minute with no candidate, or one the artifact does not reproduce, did not stop the commit. The end minute's own
+        # refusal keeps its reason; this refuses only what the end minute passed.
+        between = self._interval_check(valid, minute, session, unsupported, legacy_arrest)
+        if between is not None and not between["ok"]:
+            valid = False
+            transaction.refuse(["interval_minutes_validated"], replay_digest=replay_digest,
+                               reason=f"validation refused: ['interval_minutes_validated'] first failed minute {between['first_failed_minute']}: {between['failed']}")
         provenance = self._provenance(minute, transaction, candidate, after, shadow_minute, kinds,
                                       action_fates(ran), unsupported, submission_id,
                                       {"input": input_digest, "candidate": candidate_digest,
@@ -1932,6 +1956,11 @@ class AuthoritySite:
                       else f"{VALIDATION_REFUSED}: {transaction.failures}")
             if transaction.reason and "snapshot" in transaction.reason:
                 reason = f"{reason} | {transaction.reason}"
+            if between is not None and not between["ok"]:
+                reason = f"{reason} | interval minute {between['first_failed_minute']}: {between['failed']}"
+                provenance["interval_validation"] = {"mode": between["mode"], "interval_minutes": between["interval_minutes"],
+                                                     "first_failed_minute": between["first_failed_minute"], "failed": between["failed"],
+                                                     "ineligible_after": between["ineligible_after"], "rows": between["rows"]}
             return self._hard_fail(minute, reason, ran, provenance=provenance,
                                    transaction=transaction)
         try:
@@ -1956,6 +1985,20 @@ class AuthoritySite:
         return prepared
 
     # -- the pieces ------------------------------------------------------------------------------------
+    def _interval_check(self, end_valid: bool, minute: int, session, unsupported: Sequence[str], legacy_arrest: bool) -> dict | None:
+        """The per-minute validation of the minutes BETWEEN the last judged minute and this turn's end minute, in pressure-only mode (P3-223).
+
+        ``None`` when there is nothing to judge: the end minute already refused (its own reason stands) or the turn crossed no intermediate minute.
+        It reads the shadow session and one replay of the artifact; it writes nothing and commits nothing."""
+        if not end_valid:
+            return None
+        between = list(range(self.minutes_seen + 1, minute))
+        if not between:
+            return None
+        import runtime_minute_validation as validation
+        return validation.validate_interval(between, mode=validation.PRESSURE_ONLY, case_id=self.case_id, snapshot=self.snapshot, session=session,
+                                            unsupported=unsupported, legacy_arrest=legacy_arrest, table=validation.replay_table(self.replay_input))
+
     @staticmethod
     def _shadow_minute(session, minute: int):
         for item in reversed(list(getattr(session, "minutes", []) or [])):
