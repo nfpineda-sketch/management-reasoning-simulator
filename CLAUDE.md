@@ -116,7 +116,8 @@ de alcance, rige la fuente, no este resumen.
   la enmienda y su integración, las filas FD-AMEND1-01 a FD-AMEND1-04, FD-P3-119 y FD-P3-129; para la Enmienda 2 y
   su integración en la sombra GI, las filas FD-P3-167 a FD-P3-172; para la instantánea de GI y la revisión previa a la autoridad, FD-P3-178 a FD-P3-187;
   para la plomería **dormida** del par presión + consciencia (vista explícita de `mental_status`, `EXECUTED_NO_COMMON_PHYSIOLOGY`, rutas del reloj, un solo gancho; **sin** autoridad, V1 sigue sólo ratificada para
-  desarrollo), `docs/PHASE3_DORMANT_PAIR_AUTHORITY.md` y FD-P3-188 a FD-P3-194.
+  desarrollo), `docs/PHASE3_DORMANT_PAIR_AUTHORITY.md` y FD-P3-188 a FD-P3-194; para el sitio **dormido y no activable** de autoridad GI del par (primitiva de validación por minuto, R2 reparado, puerta de armado sin concesión, máquina de estados, artefacto y
+  replay; veredicto A que **no habilita nada**), `docs/PHASE3_DORMANT_GI_AUTHORITY_SITE.md` y FD-P3-195 a FD-P3-202.
 
 ## Privacidad y procedencia
 - No commitear datos reales, respuestas externas, secretos ni nombres de médicos.

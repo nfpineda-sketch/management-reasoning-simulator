@@ -1,0 +1,135 @@
+{
+ "confirmations": {
+  "common_core_runtime_authority_remains_false": true,
+  "first_pilot_unchanged": true,
+  "legacy_mental_status_unchanged": true,
+  "no_active_authority_grant": true,
+  "no_clinical_validation_claim": true,
+  "no_common_state_written_into_a_real_encounter": true,
+  "no_physiology_retuned": true,
+  "no_terminal_rule_invented": true,
+  "resident_ui_unchanged": true,
+  "scoring_unchanged": true,
+  "v1_not_authority_approved": true
+ },
+ "decided_on": "2026-11-12",
+ "dormant_site_series": {
+  "record": "docs/revision/PHASE3_DORMANT_SITE_SERIES.json",
+  "record_digest": "4871ec03a4a41661c066674e272f88b5dd08fa40462d052be6ad7808aa4f0edb",
+  "runs": 36,
+  "states": {
+   "INVALID_FOR_CONTINUATION": 12,
+   "WOULD_COMMIT": 24
+  }
+ },
+ "from_the_code": {
+  "approved_authority_snapshots": [
+   "gi_pressure_committed"
+  ],
+  "arming_conditions": [
+   "global_development_capability",
+   "correct_mode",
+   "certified_lineage",
+   "exact_snapshot",
+   "explicit_pair_authority_grant",
+   "case_allowlisted",
+   "experiment_not_halted",
+   "faculty_approval_permits_domain",
+   "technical_site_healthy"
+  ],
+  "artifact_label": "DORMANT_AUTHORITY_EVALUATION",
+  "artifact_type": "phase3_pair_authority_dormant",
+  "common_core_runtime_authority": false,
+  "faculty_approval": {
+   "GI_PAIR_AUTHORITY": "NOT_GRANTED"
+  },
+  "faculty_conditions": [
+   "explicit_pair_authority_grant",
+   "faculty_approval_permits_domain"
+  ],
+  "grant_fields": [
+   "kind",
+   "grant_id",
+   "domain",
+   "snapshot_id",
+   "snapshot_version",
+   "snapshot_record_digest",
+   "core_version",
+   "core_digest",
+   "cases",
+   "decision_reference",
+   "issued_by_role"
+  ],
+  "grant_registry_is_empty": true,
+  "granularity": "VALIDATED_ATOMIC_INTERVAL",
+  "pressure_series": {
+   "committed_minutes": 66,
+   "completed": 26,
+   "fingerprint": "41ad69758c782926e29f32a6f163abc3150271ac85bd77d23dc05d9debd297a5",
+   "minute_records": 78,
+   "scenarios": 34,
+   "stopped": 8
+  },
+  "reader_audit": {
+   "executable_readers": 32,
+   "frozen_by_the_phase2_closure": 3,
+   "no_caller": 1,
+   "readers_of_the_common_view": 0,
+   "reading_frozen_traces": 13,
+   "reading_the_live_field": 13,
+   "routed": 5,
+   "unrouted_consequential": 7
+  },
+  "snapshot": {
+   "core": "PHASE2_AMENDMENT_2",
+   "core_digest": "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2",
+   "id": "GI_DEVELOPMENT_SNAPSHOT_V1",
+   "profile_digest": "c167b45ee0ce6ec29643cba47f2dde3b6eb760a4c6e37f11d3fa7e5e0a8acc89",
+   "record_digest": "9e258ab5b3790a5abb30053b30dd40fd0755918673bc4024f9da609fd4f8cdc9",
+   "status": "RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS",
+   "version": 1
+  },
+  "states": [
+   "NOT_STARTED",
+   "EVALUATING",
+   "WOULD_COMMIT",
+   "WOULD_ABORT",
+   "EXPERIMENT_HALTED",
+   "INVALID_FOR_CONTINUATION"
+  ],
+  "terminal_states": [
+   "EXPERIMENT_HALTED",
+   "INVALID_FOR_CONTINUATION"
+  ],
+  "time_limit_minutes": 240,
+  "v1_in_the_authority_registry": false,
+  "validation_modes": [
+   "PRESSURE_ONLY",
+   "PAIR_PRESSURE_CONSCIOUSNESS"
+  ]
+ },
+ "record_digest": "4f3f5b9fabdb5e8c8797d714e715f1e03660c3a4c9cd6bf342bfafa4096450b3",
+ "record_type": "PHASE3_DORMANT_SITE_CHECKPOINT",
+ "remaining_blockers": [
+  "C1: the nine divergence episodes of consciousness are unanswered by the faculty (FACULTY_CONSCIOUSNESS_READINESS stays NOT_READY)",
+  "the faculty's explicit pair-authority grant does not exist (GRANT_REGISTRY is empty) and the faculty's approval of the domain is NOT_GRANTED",
+  "GI_DEVELOPMENT_SNAPSHOT_V1 is not in the authority registry: ratification for development experiments is not an approval",
+  "no reader reads the common consciousness: COMMON_VIEW_READERS is empty, and routing any of them is a separate, faculty-requested package",
+  "mapping the common word into the live mental_status stays blocked by seven consequential readers and, among them, three engine readers that the Phase-2 closure freezes",
+  "the checks and the state machine run in one Python process: no defense against in-process code reaching a module constant or a private attribute"
+ ],
+ "statement": "A technical checkpoint. It is not an approval, a grant, a clinical validation or an answer to a faculty question; it enables nothing.",
+ "statuses": {
+  "AUTHORITY_GRANT_READINESS": "GRANT_SCHEMA_AND_GATE_BUILT_NO_GRANT_NOT_GRANTED",
+  "CONSCIOUSNESS_OVERLAY_TECHNICAL_READINESS": "OVERLAY_ISOLATION_PROVEN_AND_PAIR_CANDIDATE_VALIDATED_AT_EVERY_MINUTE",
+  "FACULTY_CONSCIOUSNESS_READINESS": "NOT_READY",
+  "MENTAL_STATUS_LIVE_AUTHORITY_READINESS": "BLOCKED_BY_NAMED_READERS_AND_NOT_REQUESTED",
+  "PAGE_RUNTIME_READINESS": "DORMANT_PAGE_ALL_CLOCK_ROUTES_HOOKED_AND_INVISIBLE_PROVEN",
+  "PAIR_TRANSACTION_READINESS": "DORMANT_SITE_ATOMIC_AND_NOT_ARMED_READY_FOR_A_FACULTY_DECISION",
+  "PRESSURE_TECHNICAL_READINESS": "READY_FOR_A_DEVELOPMENT_EXPERIMENT_R2_CLOSED",
+  "SNAPSHOT_BINDING_READINESS": "V1_PINNED_RATIFIED_FOR_DEVELOPMENT_ONLY_AND_BINDING_PROVEN"
+ },
+ "verdict": "A_TECHNICAL_INFRASTRUCTURE_READY_FOR_FACULTY_AUTHORITY_DECISION",
+ "verdict_enables": "NOTHING: no authority, no grant, no approval of version 1, no write into an encounter, no change of what the resident sees",
+ "version": "P3-237"
+}

@@ -666,3 +666,16 @@ arnés (un solo gancho). TD-140 (5), (9), (10): **siguen abiertas** (docencia). 
 - **(7)** **Un turno sin avance** es una excepción deliberada y acotada del sitio certificado; el comportamiento certificado de «minuto duplicado sin estado previo» se conserva.
 - **Pruebas focalizadas:** véase el informe del ciclo; **suite completa del núcleo común:** no se corrió (diferencia vacía de `clinical_core/`).
 - **Sin cambios de runtime visibles:** no se tocaron fisiología, scoring, D1–D5, textos visibles, el primer piloto, corpus, V3 ni baselines. **Validación externa:** sigue en espera.
+
+## TD-142 · Fase 3, sitio dormido de autoridad GI (ciclo del 2026-11-12)
+
+**Cierra o actualiza deuda anterior.** TD-141 R1: **cerrada** (el sitio dormido existe y está probado). TD-141 R2: **cerrada** (el sitio de presión sola valida cada minuto intermedio con la primitiva compartida; la serie certificada es idéntica). El límite declarado de
+«el sitio no ve el tiempo clínico fuera de un turno de orden» ya estaba cerrado por el gancho único (P3-215).
+**Deuda nueva (ninguna bloquea el veredicto A; ninguna es del residente):**
+1. **Almacén del sitio dormido:** un archivo por turno con las dos entradas de replay completas (crecimiento cuadrático con el largo del encuentro); sólo existe si un entorno de desarrollo nombra el directorio. Conviene un solo archivo por experimento o un formato incremental antes de cualquier uso fuera de las series.
+2. **Copia profunda del estado evaluado en memoria** (`_commit_evidence`), conservada para un compromiso futuro. Nunca se serializa; si el sitio se activa alguna vez, decidir cuánto de ese estado debe retenerse.
+3. **Límites de un solo proceso de Python:** las constantes de la puerta y los atributos privados son alcanzables por código en proceso; la defensa es la revisión de código (pruebas por AST de que ningún otro módulo las asigna ni lee una concesión de un entorno), no una barrera técnica.
+4. **`INVALID_FOR_CONTINUATION` es consultivo hoy** (el motor heredado manda). Si algún día se activa una autoridad, la parada debe ser **efectiva** (el encuentro no continúa en silencio) y eso exige un diseño de interfaz que este ciclo no construye.
+5. **Replay parcial por diseño:** reconstruye lo que depende de la corrida; las razones que dependen de la sesión (acciones no soportadas, fallos registrados) sólo se comprueban por coherencia interna.
+6. **Guarda del reloj:** el inventario estático no resuelve una clave de `sim_time` guardada en una variable; la cubre el tripwire dinámico sobre la página real. Un llamador nuevo de las dos funciones del motor fuera de la página falla una prueba que fija los llamadores (`test_phase3_site_review.py`).
+7. **Sin consumidor de la palabra común:** `COMMON_VIEW_READERS` está vacío; si la docencia pidiera que algún lector la lea, o que el campo heredado la lleve, son paquetes aparte (los tres lectores del motor exigen el procedimiento de enmienda del congelamiento de la Fase 2).
