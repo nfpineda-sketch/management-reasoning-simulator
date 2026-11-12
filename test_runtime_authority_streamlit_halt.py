@@ -223,7 +223,8 @@ def test_the_halted_streamlit_artifact_persists_and_replays_exactly(app_on_the_a
     _submit_treatment(at, UNSUPPORTED)
     site = _site(at)
     artifact = at.session_state[ra.ARTIFACT_KEY]
-    assert artifact["halted"] and sorted(artifact) == sorted(ra.ARTIFACT_FIELDS)
+    # ADAPTED in P3-248: the authorized case runs on the REAL registered point under the grant, so its artifact carries the real fields too (what only a run under the grant carries)
+    assert artifact["halted"] and sorted(artifact) == sorted(ra.ARTIFACT_FIELDS + ra.REAL_ARTIFACT_FIELDS)
     identifier = dict(site.stored).get("artifact_id")
     assert identifier, site.stored
     checked = store.verify(identifier)

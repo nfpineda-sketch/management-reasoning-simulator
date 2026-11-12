@@ -63,16 +63,16 @@ def without_overlay(state):
 
 def test_the_reader_graph_is_reproduced_from_the_source():
     audit = review.reader_audit(str(ROOT))
-    rows = [row for row in audit["rows"] if row["module"] not in ("observable_view.py", "runtime_authority_pair.py")]      # mechanisms, not readers of an encounter
+    rows = [row for row in audit["rows"] if row["module"] not in review.MECHANISM_MODULES]      # mechanisms, not readers of an encounter (P3-248: the two modules of the real pressure authority join the view and the pair)
     assert audit["unclassified"] == []
-    assert (len({row["module"] for row in rows} - set(audit["modules_text_only"])), len(audit["modules_text_only"])) == (54, 7)
+    assert (len({row["module"] for row in rows} - set(audit["modules_text_only"])), len([name for name in audit["modules_text_only"] if name not in review.MECHANISM_MODULES])) == (54, 7)
     assert len(rows) == 119
     live = sorted(f"{row['module']}::{row['function']}" for row in rows if row["where"] in review.LIVE and row["executable_read"])
     assert len(live) == 32 and live == guards.live_reader_ids(str(ROOT)) == sorted(guards.READER_GUARDS)
     # the mechanism module itself is the only new site, and it is told apart from a reader
     assert {row["function"] for row in audit["rows"] if row["module"] == "observable_view.py"} == {"<module>", "structure_problems"}
     assert all(row["class"] == review.MECHANISM and not row["executable_read"]
-               for row in audit["rows"] if row["module"] in ("observable_view.py", "runtime_authority_pair.py"))
+               for row in audit["rows"] if row["module"] in review.MECHANISM_MODULES)
 
 
 def test_every_reader_has_a_class_a_consequence_row_and_a_guard_type():

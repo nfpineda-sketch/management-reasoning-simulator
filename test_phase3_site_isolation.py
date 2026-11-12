@@ -30,7 +30,7 @@ NEW_LAYER_MODULES = ("runtime_minute_validation.py", "runtime_pair_site.py")
 
 def test_k1_the_executable_reader_audit_is_reproduced_from_the_source_with_the_dormant_site_in_the_tree():
     audit = review.reader_audit(str(ROOT))
-    rows = [row for row in audit["rows"] if row["module"] not in ("observable_view.py", "runtime_authority_pair.py")]
+    rows = [row for row in audit["rows"] if row["module"] not in review.MECHANISM_MODULES]
     live = sorted(f"{row['module']}::{row['function']}" for row in rows if row["where"] in review.LIVE and row["executable_read"])
     assert audit["unclassified"] == [] and len(live) == 32 and live == guards.live_reader_ids(str(ROOT)) == sorted(guards.READER_GUARDS)
     by_mechanism = Counter(row["mechanism"] for row in guards.READER_GUARDS.values())

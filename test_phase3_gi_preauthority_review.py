@@ -59,7 +59,8 @@ def test_no_runtime_module_names_the_harness_and_the_dry_transaction_never_calls
     for path in ROOT.glob("*.py"):
         if not path.name.startswith(("test_", "regression_")):
             # ADAPTED in P3-214: the layer's pair module names the snapshot (it binds to it); it still names no test-side module
-            forbidden = names[:4] if path.name == "runtime_authority_pair.py" else names
+            # ADAPTED in P3-248: the pressure grant names the overlay's snapshot id as DATA (the overlay it binds to version 1 is part of what the grant says); it names no test-side module
+            forbidden = names[:4] if path.name in ("runtime_authority_pair.py", "runtime_pressure_grant.py") else names
             assert not any(name in path.read_text(encoding="utf-8") for name in forbidden), path.name
     source = inspect.getsource(dry)
     assert ".commit(" not in source and "open_site" not in source and "AUTHORITY_FLAG" not in source
@@ -358,7 +359,7 @@ def test_the_reader_inventory_is_the_live_ast_scan_and_every_site_is_classified(
     # inventory is what each site IS -- module, function, class, where, consequence, whether it is an executable reader -- not the syntactic
     # roles the scan happened to see; that identity is unchanged, and a site that appears or disappears still fails here.
     identity = ("module", "function", "class", "where", "consequence", "guard", "executable_read")
-    now = [{key: row[key] for key in identity} for row in audit["rows"] if row["module"] not in ("observable_view.py", "runtime_authority_pair.py")]
+    now = [{key: row[key] for key in identity} for row in audit["rows"] if row["module"] not in review.MECHANISM_MODULES]
     then = [{key: row[key] for key in identity} for row in stored["rows"]]
     # ADAPTED in P3-219: the independent review of this cycle found that the stored row ``trace_phase0.py::<module>`` was the tuple of field NAMES of a
     # function -- ``observation_snapshot``, which persists the resident-visible word into every Management-Trace event -- and routed that function through the
@@ -577,9 +578,16 @@ def test_live_the_active_core_series_reproduces_the_closure_core_fingerprint_min
     assert len(rows) == 17
     for row in rows:
         stored = fingerprint[f"{row['case']}/{row['scenario']}"]
-        assert (row["halted"], row["committed"]) == (stored["halted"], stored["committed"]), row["scenario"]
         live = [[item.get("minute"), item.get("outcome"), item.get("candidate_digest"), item.get("written_digest"), item.get("replay_digest"),
                  item.get("state_digest"), item.get("common_pressures")] for item in row["artifact"]["minutes"]]
+        if row["scenario"] == "terminal_deterioration":
+            # ADAPTED in P3-248 (declared; the A/B is test_phase3_minute_validation r2): the real pressure authority's collapse-boundary guard now stops this scenario BEFORE it
+            # commits through an ESTABLISHED collapse (a halt, COLLAPSE_BOUNDARY_REACHED) instead of committing 8 minutes. The 6 minutes it still commits are the stored ones, bit for bit.
+            assert (row["halted"], row["committed"]) == (True, 6) and stored["committed"] == 8 and not stored["halted"], row["scenario"]
+            assert _normal(live)[:6] == stored["minutes"][:6], row["scenario"]
+            assert row["artifact"]["halt_reason"].startswith("COLLAPSE_BOUNDARY_REACHED")
+            continue
+        assert (row["halted"], row["committed"]) == (stored["halted"], stored["committed"]), row["scenario"]
         assert _normal(live) == stored["minutes"], row["scenario"]
         if not row["halted"]:
             assert row["replay"]["covers_every_committed_minute"] and row["digest_verified"]

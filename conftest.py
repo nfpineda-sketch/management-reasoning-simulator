@@ -179,6 +179,38 @@ def _streamlit_layout_context_is_not_inherited():
     reset()
 
 
+_GRANT_SEAM = {"strict": False}
+
+
+@pytest.fixture(autouse=True, scope="session")
+def _pressure_grant_test_seam():
+    """P3-240 (TEST-SIDE ONLY): the certified authority tests exercise the gate with a TEST-ONLY approved point under an id that is NOT the real registered one (an
+    in-process injection that approves nothing real), some of them from module- or session-scoped fixtures. The development grant binds the REAL registered point
+    ``gi_pressure_committed``, so for any other snapshot id this seam answers the grant question ``True`` and leaves every other answer to the real function. The real
+    point -- the only one a production process can ever hold -- always gets the real answer, and a test that needs the real function for ANY id carries
+    ``@pytest.mark.strict_grant``. ``runtime_pressure_grant`` imports nothing of the repository, so this drags no module in."""
+    import runtime_pressure_grant as grants
+
+    real = grants.permits
+
+    def permits(**kwargs):
+        identity = kwargs.get("snapshot_id")
+        if not _GRANT_SEAM["strict"] and identity and identity != grants.PRESSURE_SNAPSHOT_ID:
+            return True, []
+        return real(**kwargs)
+
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(grants, "permits", permits)
+        yield
+
+
+@pytest.fixture(autouse=True)
+def _pressure_grant_strict_marker(request):
+    _GRANT_SEAM["strict"] = bool(request.node.get_closest_marker("strict_grant"))
+    yield
+    _GRANT_SEAM["strict"] = False
+
+
 def onboarded(store, token):
     """A resident who has already been through the one-time account setup.
 
@@ -203,5 +235,6 @@ def onboarded(store, token):
 # certification run names on its own command line. Only the marker those tests use is declared here.
 
 def pytest_configure(config):
+    config.addinivalue_line("markers", "strict_grant: P3-240, use the real runtime_pressure_grant.permits for every snapshot id (the test-only seam is off)")
     config.addinivalue_line("markers", "real_core_lineage: the test reads the real certified-core lineage, never "
                                        "the certification preview")

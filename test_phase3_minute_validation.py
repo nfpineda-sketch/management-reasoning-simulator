@@ -26,6 +26,11 @@ ROOT = Path(__file__).resolve().parent
 #: Taken over (case, scenario, halted, halt_reason, committed, minutes, [minute, outcome, common_pressures, failure_reason]) of the P3-48 series, both cases,
 #: BEFORE the R2 repair and AFTER it: the same digest.
 SERIES_FINGERPRINT = "41ad69758c782926e29f32a6f163abc3150271ac85bd77d23dc05d9debd297a5"
+#: P3-245 (declared adaptation): the real experiment now stops BEFORE a collapse boundary the V1 overlay reads (FD-AUTH-06/17). The certified series above is reproduced EXACTLY
+#: with that guard neutralized (``SERIES_FINGERPRINT``), and with the guard in force ONLY the two ``terminal_deterioration`` scenarios change: 8 commits become 6 (the last commit is
+#: minute 180; established collapse is read at minute 207) and they stop with ``COLLAPSE_BOUNDARY_REACHED`` instead of completing: 24 completed, 10 stopped, 62 committed minutes,
+#: the same 78 minute records, and this fingerprint. The other 32 scenarios keep their rows bit for bit (``NON_TERMINAL_FINGERPRINT`` is equal in both runs).
+SERIES_FINGERPRINT_WITH_THE_BOUNDARY = "162517318417f2c9d3376d86a2e675867fc3a5cf6a09132716bd8f8c0a9137b5"
 
 
 # -- P3-222: the primitive -------------------------------------------------------------------------------------------------------------------------------
@@ -198,26 +203,62 @@ def test_r2_a_transaction_that_passed_its_own_minute_can_be_refused_for_the_inte
 
 # -- P3-223A: the certified pressure series, both cases -----------------------------------------------------------------------------------------------------
 
-@pytest.fixture(scope="module")
-def pressure_series():
+def _series(*, guard: bool):
     rows = []
     for case in ("gi_bleed_57m", "gi_bleed_72f"):
         with pytest.MonkeyPatch.context() as patch:
+            if not guard:
+                patch.setattr(ra.AuthoritySite, "_boundary_guard", lambda self, minute: "")          # the experiment as it was certified, before P3-245's boundary
             rows.extend(series_harness._play_the_battery_with_authority(patch, case))
     return rows
 
 
-def test_r2_the_certified_pressure_series_reproduces_exactly_after_the_repair(pressure_series):
-    """223A. 34 scenarios, 26 complete, 8 stopped, 66 committed minutes, 78 minute records, and the SAME fingerprint as before the repair."""
-    rows = pressure_series
+def _fingerprint(rows):
+    return ra.digest_of([{"case": row["case"], "scenario": row["scenario"], "halted": row["halted"], "halt_reason": row["halt_reason"], "committed": row["committed"],
+                          "minutes": row["minutes"],
+                          "pressures": [[m.get("minute"), m.get("outcome"), m.get("common_pressures"), m.get("failure_reason")] for m in row["artifact"]["minutes"]]}
+                         for row in rows])
+
+
+@pytest.fixture(scope="module")
+def pressure_series():
+    return _series(guard=True)
+
+
+@pytest.fixture(scope="module")
+def pressure_series_before_the_boundary():
+    return _series(guard=False)
+
+
+def test_r2_the_certified_pressure_series_reproduces_exactly_with_the_boundary_neutralized(pressure_series_before_the_boundary):
+    """223A (kept as certified). 34 scenarios, 26 complete, 8 stopped, 66 committed minutes, 78 minute records, and the SAME fingerprint as before the repair, when the P3-245
+    collapse-boundary guard is neutralized: the repair of P3-223 and the grant of P3-240 change not one byte of the certified experiment."""
+    rows = pressure_series_before_the_boundary
     assert len(rows) == 34 and all(row["site"] for row in rows)
     assert (sum(1 for row in rows if not row["halted"]), sum(1 for row in rows if row["halted"])) == (26, 8)
     assert sum(row["committed"] for row in rows) == 66 and sum(row["minutes"] for row in rows) == 78
-    fingerprint = ra.digest_of([{"case": row["case"], "scenario": row["scenario"], "halted": row["halted"], "halt_reason": row["halt_reason"], "committed": row["committed"],
-                                 "minutes": row["minutes"],
-                                 "pressures": [[m.get("minute"), m.get("outcome"), m.get("common_pressures"), m.get("failure_reason")] for m in row["artifact"]["minutes"]]}
-                                for row in rows])
-    assert fingerprint == SERIES_FINGERPRINT
+    assert _fingerprint(rows) == SERIES_FINGERPRINT
+
+
+def test_r2_with_the_boundary_in_force_only_the_two_terminal_deterioration_scenarios_change(pressure_series, pressure_series_before_the_boundary):
+    """P3-245 (declared change): 24 complete, 10 stopped, 62 committed minutes, 78 minute records and the new fingerprint; the other 32 scenarios are identical to the certified
+    ones; each ``terminal_deterioration`` stops with ``COLLAPSE_BOUNDARY_REACHED`` at the interval that holds minute 207, its last commit being minute 180."""
+    rows, before = pressure_series, pressure_series_before_the_boundary
+    assert (sum(1 for row in rows if not row["halted"]), sum(1 for row in rows if row["halted"])) == (24, 10)
+    assert sum(row["committed"] for row in rows) == 62 and sum(row["minutes"] for row in rows) == 78
+    assert _fingerprint(rows) == SERIES_FINGERPRINT_WITH_THE_BOUNDARY
+    changed = [(row["case"], row["scenario"]) for row, old in zip(rows, before) if _fingerprint([row]) != _fingerprint([old])]
+    assert changed == [("gi_bleed_57m", "terminal_deterioration"), ("gi_bleed_72f", "terminal_deterioration")], changed
+    for row in rows:
+        if row["scenario"] == "terminal_deterioration":
+            assert row["halted"] and row["halt_reason"].startswith(ra.COLLAPSE_BOUNDARY_REACHED) and row["committed"] == 6 and max(row["artifact"]["authority_minutes"]) == 180
+            assert "minute 207" in row["halt_reason"]
+
+
+def test_r2_the_certified_pressure_series_replays_after_the_repair(pressure_series):
+    """223A, the verification half: every digest verifies and the replay covers every committed minute of every COMPLETED scenario."""
+    rows = pressure_series
+    assert len(rows) == 34 and all(row["site"] for row in rows)
     assert not [m for row in rows for m in row["artifact"]["minutes"] if m.get("interval_validation")], "no certified scenario crossed a failed intermediate minute"
     # the certified criteria of the series: every digest verifies, and the replay covers every committed minute of every COMPLETED scenario (a scenario halted after a
     # commit declares a mixed trajectory and is not asked to reproduce a continuation it never made)

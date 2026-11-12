@@ -269,7 +269,8 @@ def test_u15_the_layer_digest_is_the_identity_of_the_code_that_ran():
                                      "runtime_authority_store.py",
                                      "runtime_shadow_evidence.py", "runtime_authority.py",
                                      "runtime_shadow_store.py", "runtime_shadow_observer.py",
-                                     "runtime_authority_pair.py", "runtime_minute_validation.py", "runtime_pair_site.py"}
+                                     "runtime_authority_pair.py", "runtime_minute_validation.py", "runtime_pair_site.py",
+                                     "runtime_pressure_grant.py"}                   # P3-239 (declared adaptation): the explicit GI development pressure grant
     for name in rs.LAYER_SOURCES:
         assert (ROOT / name).exists(), name
 

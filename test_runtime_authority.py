@@ -143,11 +143,12 @@ def test_a2_no_single_input_can_open_the_gate(gi_state, monkeypatch):
         assert ra.approved_snapshot("gi_pressure_committed", **context) is None, outside
 
 
-def test_a3_every_one_of_the_nine_conditions_is_evaluated_and_can_be_the_only_failure(gi_state):
+def test_a3_every_one_of_the_ten_conditions_is_evaluated_and_can_be_the_only_failure(gi_state):
     decision = ra.gate(gi_state, environ=BEST)
     assert set(decision.conditions) == set(ra.GATE_CONDITIONS), decision.conditions
     # The gate does not short-circuit: a future experiment must see every condition it still has to meet.
-    assert len(decision.conditions) == 9
+    assert len(decision.conditions) == 10          # P3-240: nine until the explicit development grant became the tenth
+    assert ra.GATE_CONDITIONS[-1] == "explicit_development_grant"
     cases = {
         "authority_flag": {name: value for name, value in BEST.items() if name != ra.AUTHORITY_FLAG},
         "environment": {**BEST, ra.ENVIRONMENT_FLAG: "production"},

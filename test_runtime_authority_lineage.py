@@ -312,7 +312,8 @@ def test_l11_no_scoring_surface_is_reachable_from_the_lineage(_done):
     for forbidden in ("rubric", "radar", "penalt", "competenc", "global_score", "dimension",
                       " assessment", "d1_", "d5_"):
         assert forbidden not in body, forbidden
-    assert sorted(artifact) == sorted(ra.ARTIFACT_FIELDS)
+    # P3-246 (declared adaptation): a run under the grant also carries the fields of a REAL artifact (label, grant, overlay, boundary, ...)
+    assert sorted(artifact) == sorted(ra.ARTIFACT_FIELDS + ra.REAL_ARTIFACT_FIELDS + (("no_advance_turns",) if "no_advance_turns" in artifact else ()))
 
 
 def test_l12_the_pilot_is_still_refused(monkeypatch):

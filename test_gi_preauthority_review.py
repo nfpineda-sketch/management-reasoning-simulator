@@ -309,10 +309,21 @@ def _row(kind, where, consequence, guard=None):
     return {"class": kind, "where": where, "consequence": consequence, "guard": guard}
 
 
+#: The modules that NAME the word as a mechanism, a record or an excluded domain without reading an encounter's: the view that mediates the readers (P3-211), the dormant pair
+#: (P3-213), the real pressure authority site that records the legacy word beside the common overlay as data (P3-243) and the grant that names the word as an excluded domain (P3-239).
+#: Each is told apart from a reader; none feeds the word back. (P3-240..248 added the last two.)
+MECHANISM_MODULES = ("observable_view.py", "runtime_authority_pair.py", "runtime_authority.py", "runtime_pressure_grant.py")
+
 #: The classification, by module and function. ``*`` is the module's default for a function not listed. A row says what the function does WITH the
 #: value and where it runs; ``guard`` is what a future pair authority needs, or None when nothing more than the existing rules is needed.
 READER_TABLE = {
     "observable_view.py": {"*": {"class": MECHANISM, "where": GI_TURN, "consequence": "the explicit view of the word (P3-211): it mediates readers", "guard": None}},
+    # P3-240..248 (the first real pressure authority): both mention the word only as DATA. The site records the legacy word beside the common overlay and its artifact says the overlay
+    # writes nothing; the grant names the word as an EXCLUDED domain (a constant, never a read). Neither feeds the word back to the engine, scoring, a payload or a button.
+    "runtime_authority.py": {"*": {"class": MECHANISM, "where": GI_TURN, "guard": None,
+                                   "consequence": "the real pressure authority site (P3-243) records the legacy word beside the common overlay, as data: it is never fed back, and the artifact says the overlay writes nothing"}},
+    "runtime_pressure_grant.py": {"*": {"class": MECHANISM, "where": GI_TURN, "guard": None,
+                                        "consequence": "the pressure grant names the word as an EXCLUDED domain: a constant of a grant that confers nothing over it"}},
     "runtime_authority_pair.py": {"*": {"class": MECHANISM, "where": GI_TURN, "guard": None,
                                         "consequence": "the dormant pair (P3-213): it carries the common word in the overlay and refuses to write the live field"}},
     "family_engine.py": {

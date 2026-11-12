@@ -120,8 +120,12 @@ def test_s2_the_live_halt_and_the_certified_eligibility_reading_agree(series):
     ineligible = {row["scenario"] for row in battery["rows"]
                   if row["case_id"] == CASE and row["classification"] == ra.INELIGIBLE_UNSUPPORTED}
     halted = {row["scenario"] for row in series if row["halted"]}
-    assert ineligible == halted, {"only in the reading": sorted(ineligible - halted),
-                                  "only live": sorted(halted - ineligible)}
+    # P3-245 (declared adaptation): the experiment also stops BEFORE the collapse boundary the V1 overlay reads (FD-AUTH-06/17). That is not an unsupported action, so the
+    # eligibility reading does not name it: the one scenario of the battery that reaches the boundary is ``terminal_deterioration``, and it is the only difference.
+    boundary = {row["scenario"] for row in series if row["halted"] and row["halt_reason"].startswith(ra.COLLAPSE_BOUNDARY_REACHED)}
+    assert boundary == {"terminal_deterioration"}, boundary
+    assert ineligible == halted - boundary, {"only in the reading": sorted(ineligible - halted),
+                                             "only live": sorted(halted - ineligible - boundary)}
     assert ineligible, "the battery must contain scenarios an unsupported action makes ineligible"
     # And the class that used to slip through is one of them, by name.
     unmodelled = [row for row in series if "not_modelled" in row["settled_classes"]]
@@ -135,7 +139,7 @@ def test_s2_the_live_halt_and_the_certified_eligibility_reading_agree(series):
 
 def test_s3_every_completed_scenario_is_structurally_acceptable(series):
     completed = [row for row in series if not row["halted"]]
-    assert len(completed) == 13, [row["scenario"] for row in completed]
+    assert len(completed) == 12, [row["scenario"] for row in completed]        # 13 until P3-245: ``terminal_deterioration`` now stops at the collapse boundary (declared adaptation)
     for row in completed:
         replay, artifact = row["replay"], row["artifact"]
         assert row["committed"] == row["minutes"] >= 1, row["scenario"]
@@ -195,7 +199,8 @@ def test_s6_no_scoring_or_pilot_state_is_touched_by_the_series(series):
         for forbidden in ("rubric", "radar", "penalt", "competenc", "global_score", "dimension",
                           "assessment_", "d1_", "d5_"):
             assert forbidden not in flat, (row["scenario"], forbidden)
-        assert sorted(artifact) == sorted(ra.ARTIFACT_FIELDS), row["scenario"]
+        # P3-246 (declared adaptation): a run under the grant also carries the fields of a REAL artifact (label, grant, overlay, boundary, ...)
+        assert sorted(artifact) == sorted(ra.ARTIFACT_FIELDS + ra.REAL_ARTIFACT_FIELDS + (("no_advance_turns",) if "no_advance_turns" in artifact else ())), row["scenario"]
         eligibility = dict(artifact.get("eligibility") or {})
         assert eligibility.get("pilot", {}).get("looks_like_the_pilot") is False, row["scenario"]
         assert artifact["environment"] == "development", row["scenario"]

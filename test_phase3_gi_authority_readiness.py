@@ -19,6 +19,7 @@ import runtime_shadow_evidence as ev
 import test_gi_amendment_2_series as series
 import test_gi_authority_surface as surface
 import test_gi_counterfactual as cf
+import test_gi_preauthority_review as review
 import test_gi_snapshot_analysis as an
 from clinical_core import comparison
 
@@ -50,7 +51,8 @@ def test_no_runtime_module_imports_or_names_the_analysis_modules_or_the_snapshot
         text = path.read_text(encoding="utf-8")
         # ADAPTED in P3-214: the binding to GI_DEVELOPMENT_SNAPSHOT_V1 now lives in the layer, in ONE module that names the snapshot to verify it. It
         # still imports no analysis module, registers nothing and no other runtime module names the snapshot.
-        forbidden = names[:3] if path.name == "runtime_authority_pair.py" else names
+        # ADAPTED in P3-248: the pressure grant names the overlay's snapshot id as DATA; it imports no analysis module and registers nothing
+        forbidden = names[:3] if path.name in ("runtime_authority_pair.py", "runtime_pressure_grant.py") else names
         assert not any(name in text for name in forbidden), path.name
 
 
@@ -94,8 +96,10 @@ def test_the_readers_of_mental_status_are_exactly_the_recorded_modules():
     # overlay and refuses to write the live field) -- and the page gained lines by routing its readers through the view. ``family_engine.py`` is NOT among the
     # changes: it is a source of the Phase-2 calibration freeze and stays byte for byte what it was. Every other module is the record's.
     now = surface.mental_status_consumers(str(ROOT))
-    assert {"observable_view.py", "runtime_authority_pair.py"} <= set(now)
-    mechanism = {name: now.pop(name) for name in ("observable_view.py", "runtime_authority_pair.py")}
+    # ADAPTED in P3-248: the real pressure authority site (``runtime_authority``: it records the legacy word beside the common overlay, as data) and its grant
+    # (``runtime_pressure_grant``: it names the word as an EXCLUDED domain) are two more modules that NAME the word without reading an encounter's.
+    assert set(review.MECHANISM_MODULES) <= set(now)
+    mechanism = {name: now.pop(name) for name in review.MECHANISM_MODULES}
     recorded = READINESS["mental_status_consumers"]
     assert {name: count for name, count in now.items() if name not in ("app.py", "trace_phase0.py")} == {name: count for name, count in recorded.items() if name not in ("app.py", "trace_phase0.py")}, (now, mechanism)
     assert now["app.py"] == recorded["app.py"] + 2 and now["trace_phase0.py"] == recorded["trace_phase0.py"], (now, mechanism)
