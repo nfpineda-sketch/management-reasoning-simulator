@@ -38,11 +38,14 @@
   "pressure_snapshot_id": "gi_pressure_committed",
   "window_max_minute": 240
  },
- "record_digest": "dd2aab7159eef9d449304b98bdaeb76b566a65fb6477a8ce4aa397ab5da3e9b2",
+ "record_digest": "f43aa2caae16d3fd748af2b21d1c398be3b9428687838c453b755f010b447072",
  "record_type": "PHASE3_PRESSURE_AUTHORITY_SERIES",
  "runs": [
   {
    "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "blocked_steps": [
+    5
+   ],
    "case": "gi_bleed_57m",
    "committed_minutes": [
     60,
@@ -128,10 +131,10 @@
      ]
     ],
     [
-     300,
+     240,
      [
-      50,
-      32
+      56,
+      36
      ],
      [
       50,
@@ -968,6 +971,9 @@
   },
   {
    "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "blocked_steps": [
+    3
+   ],
    "case": "gi_bleed_57m",
    "committed_minutes": [
     2
@@ -1024,7 +1030,7 @@
      ]
     ],
     [
-     9,
+     7,
      [
       102,
       64
@@ -1277,6 +1283,9 @@
   },
   {
    "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "blocked_steps": [
+    5
+   ],
    "case": "gi_bleed_72f",
    "committed_minutes": [
     60,
@@ -1361,10 +1370,10 @@
      ]
     ],
     [
-     300,
+     240,
      [
-      58,
-      40
+      66,
+      44
      ],
      [
       58,
@@ -2197,6 +2206,9 @@
   },
   {
    "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "blocked_steps": [
+    3
+   ],
    "case": "gi_bleed_72f",
    "committed_minutes": [
     2
@@ -2253,7 +2265,7 @@
      ]
     ],
     [
-     9,
+     7,
      [
       112,
       72

@@ -124,7 +124,8 @@ de alcance, rige la fuente, no este resumen.
   desarrollo), `docs/PHASE3_DORMANT_PAIR_AUTHORITY.md` y FD-P3-188 a FD-P3-194; para el sitio **dormido y no activable** de autoridad GI del par (primitiva de validación por minuto, R2 reparado, puerta de armado sin concesión, máquina de estados, artefacto y
   replay; veredicto A que **no habilita nada**), `docs/PHASE3_DORMANT_GI_AUTHORITY_SITE.md` y FD-P3-195 a FD-P3-202; para las decisiones docentes de C1 y C5 y el **primer experimento real de autoridad de desarrollo de
   presión de GI** (concesión, activación, página real, serie de manejo, superposición de consciencia, fallos tras el compromiso, frontera de colapso, artefacto y replay, aislamiento, revisión independiente y punto de control),
-  `docs/PHASE3_PRESSURE_DEVELOPMENT_AUTHORITY.md` y FD-P3-203 a FD-P3-208.
+  `docs/PHASE3_PRESSURE_DEVELOPMENT_AUTHORITY.md` y FD-P3-203 a FD-P3-208; para la **parada efectiva** de ese experimento (tras el primer compromiso real y un fallo posterior la sesión **no continúa**; sin retroceso al heredado; sin semántica terminal;
+  sólo salir resuelve), `docs/PHASE3_EFFECTIVE_AUTHORITY_STOP.md` y FD-P3-209 a FD-P3-212.
 
 ## Privacidad y procedencia
 - No commitear datos reales, respuestas externas, secretos ni nombres de médicos.

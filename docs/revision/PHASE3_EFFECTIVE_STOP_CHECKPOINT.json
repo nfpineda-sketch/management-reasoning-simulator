@@ -1,0 +1,224 @@
+{
+ "confirmations": {
+  "common_core_runtime_authority_remains_false": true,
+  "first_pilot_unchanged": true,
+  "flags_off_behaviour_identical": true,
+  "gi_pressure_authority_only": true,
+  "legacy_mental_status_unchanged": true,
+  "no_authority_domain_added": true,
+  "no_clinical_terminal_rule_invented": true,
+  "no_clinical_validation_claim": true,
+  "no_common_consciousness_visible_to_residents": true,
+  "no_consciousness_authority": true,
+  "no_physiology_retuned": true,
+  "no_production_authority": true,
+  "no_resident_deployment": true,
+  "scoring_unchanged": true,
+  "v1_not_promoted_to_authority": true
+ },
+ "decided_on": "2026-11-12",
+ "from_the_code": {
+  "approved_authority_snapshots": [
+   "gi_pressure_committed"
+  ],
+  "authority_cases": [
+   "gi_bleed_57m",
+   "gi_bleed_72f"
+  ],
+  "authority_domain": [
+   "sbp",
+   "dbp",
+   "map"
+  ],
+  "common_core_runtime_authority": false,
+  "future_operator_resolutions": [
+   "RESET_FROM_PREAUTHORITY_SNAPSHOT",
+   "START_NEW_ENCOUNTER"
+  ],
+  "grant_excluded_domains": [
+   "consciousness",
+   "mental_status",
+   "collapse",
+   "terminal",
+   "pulse",
+   "oxygenation",
+   "lactate",
+   "hb"
+  ],
+  "grant_fingerprint_is_pinned": true,
+  "grant_id": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V1",
+  "grant_window_minutes": 240,
+  "lifecycle": [
+   "NOT_STARTED",
+   "PREAUTHORITY",
+   "ACTIVE_AUTHORITY",
+   "PRECOMMIT_ABORT",
+   "INVALID_FOR_CONTINUATION",
+   "COMPLETED_AUTHORITY"
+  ],
+  "notice_forbidden_words": [
+   "dead",
+   "death",
+   "died",
+   "arrest",
+   "terminal",
+   "dying",
+   "deceased",
+   "cardiac",
+   "unresponsive",
+   "obtunded"
+  ],
+  "notice_headline": "DEVELOPMENT AUTHORITY EXPERIMENT HALTED",
+  "notice_is_operational": true,
+  "operation_classes": [
+   "READ_ONLY",
+   "ENCOUNTER_MUTATING",
+   "CLINICAL_TIME_ADVANCING",
+   "LEAVES_THE_SESSION"
+  ],
+  "operations_per_class": {
+   "CLINICAL_TIME_ADVANCING": 10,
+   "ENCOUNTER_MUTATING": 5,
+   "LEAVES_THE_SESSION": 3,
+   "READ_ONLY": 6
+  },
+  "operator_resolutions": [
+   "ABANDON_EXPERIMENT"
+  ],
+  "persistence_failure_halt_reason": "ARTIFACT_PERSISTENCE_FAILED",
+  "resumed_without_site_halt_reason": "ENCOUNTER_RESUMED_WITHOUT_ITS_AUTHORITY_SITE",
+  "session_key": "phase3_authority_session",
+  "session_key_travels_with_a_saved_encounter": true,
+  "site_and_artifact_travel_with_a_saved_encounter": [],
+  "stop_classes": [
+   "ARTIFACT_PERSISTENCE",
+   "COLLAPSE_BOUNDARY",
+   "CONFIGURATION_CHANGED",
+   "GATE_OR_LINEAGE",
+   "INTERNAL_ERROR",
+   "OTHER",
+   "REPLAY_OR_ARTIFACT",
+   "RESUMED_WITHOUT_SITE",
+   "STALE_OR_CONFLICTING_STATE",
+   "STATE_UNREADABLE",
+   "UNSUPPORTED_ACTION",
+   "VALIDATION",
+   "WINDOW_CLOSED"
+  ],
+  "stopped_states": [
+   "INVALID_FOR_CONTINUATION"
+  ],
+  "survives_a_stop": [
+   "abandon_experiment",
+   "render_room",
+   "reset_scenario",
+   "return_to_dashboard",
+   "view_authority_status",
+   "view_chart",
+   "view_ecg_recording",
+   "view_results",
+   "view_review"
+  ],
+  "transitions": {
+   "ACTIVE_AUTHORITY": [
+    "ACTIVE_AUTHORITY",
+    "INVALID_FOR_CONTINUATION",
+    "COMPLETED_AUTHORITY"
+   ],
+   "COMPLETED_AUTHORITY": [
+    "COMPLETED_AUTHORITY"
+   ],
+   "INVALID_FOR_CONTINUATION": [
+    "INVALID_FOR_CONTINUATION"
+   ],
+   "NOT_STARTED": [
+    "NOT_STARTED",
+    "PREAUTHORITY"
+   ],
+   "PREAUTHORITY": [
+    "PREAUTHORITY",
+    "ACTIVE_AUTHORITY",
+    "PRECOMMIT_ABORT",
+    "COMPLETED_AUTHORITY"
+   ],
+   "PRECOMMIT_ABORT": [
+    "PRECOMMIT_ABORT"
+   ]
+  }
+ },
+ "pinned_records": {
+  "pressure_series": {
+   "record": "docs/revision/PHASE3_PRESSURE_AUTHORITY_SERIES.json",
+   "record_digest": "f43aa2caae16d3fd748af2b21d1c398be3b9428687838c453b755f010b447072",
+   "runs": 26,
+   "stopped_runs": [
+    "gi_bleed_57m/unsupported_action",
+    "gi_bleed_57m/untreated",
+    "gi_bleed_72f/unsupported_action",
+    "gi_bleed_72f/untreated"
+   ]
+  },
+  "previous_checkpoint": {
+   "post_commit_status_then": "INVALID_FOR_CONTINUATION_DECLARED_NOT_SILENT_BUT_ADVISORY_TO_THE_ENCOUNTER_AND_A_RESUME_IS_MARKED_NOT_PREVENTED",
+   "record": "docs/revision/PHASE3_PRESSURE_CHECKPOINT.json",
+   "record_digest": "1f3d31e1fc27bfd89f629d042d803a126fafc53e714c6b5dc0d98ecd3c8740c7"
+  }
+ },
+ "record_digest": "91965e655c2719e9938fceddf62b053e1ba1bf0fccfd5a51ac8997c96b12f8a6",
+ "record_type": "PHASE3_EFFECTIVE_STOP_CHECKPOINT",
+ "remaining_blockers": [
+  "the turn that fails has already run on the legacy engine when the site judges it, so the stop applies from the NEXT action (the page and the record name the last authoritative minute and pressure)",
+  "the session record is unsigned: a forged, less-restrictive record with a recomputed digest is not refutable from the record alone (the live site and the artifact still win when they exist); a signature needs a key, a faculty decision",
+  "a saved encounter that lost BOTH its record and its site and whose legacy engine then advanced past the last committed minute is not recognised by the durable match (case, minute, committed pressures): a fail-open edge",
+  "one Python process: several processes share only the durable store, whose files are written in one call; two encounters with an identical arrival that diverge at the same minute collide in the create-only store and the later one STOPS",
+  "the only operator resolution implemented is to leave the session (reset, return, abandon): resuming from the preauthority snapshot and starting a new encounter from it are named, not built",
+  "mapping the common consciousness word into the live mental_status stays blocked (seven consequential readers; the faculty decision that the common UNRESPONSIVE is not resident-visible); V1 stays ratified for development experiments only",
+  "the stop notice is development-only English text: it is not a resident-facing or first-pilot text, and a controlled faculty-only environment would need its wording and language decided",
+  "two GI cases and an arrival-relative semantics, accepted for development only: no generalization to a population or to another family (FD-AUTH-24)"
+ ],
+ "reported": {
+  "review": {
+   "equivalent_mutant": "the minute-zero belongs-check of a record is unreachable for a verified record (an authority record always has a last authoritative minute, and the minute test catches minute zero)",
+   "high": 1,
+   "high_and_medium_reproduced_with_an_own_probe_and_repaired": [
+    "HIGH-1 an artifact that cannot be built after the first commit read as a continuable precommit abort",
+    "MEDIUM-1 a trigger coalesced with the failing submission was handled by the session that had just stopped",
+    "MEDIUM-2 removing the authority configuration mid-encounter let the clock route continue on the legacy engine"
+   ],
+   "low": 5,
+   "low_declared_not_repaired": [
+    "LOW-5 the pressure shown after the stop is the legacy value of the failing turn",
+    "LOW-6 a healthy turn recovered by Phase 0 stops with RESUMED_WITHOUT_SITE (availability only)",
+    "LOW-7 (rest) two classification choices; an older build that re-saves the payload drops the new key"
+   ],
+   "low_repaired": [
+    "LOW-3 the durable match parsed every stored file",
+    "LOW-4 the failing run drew no stop notice",
+    "LOW-7 (part) the window and the artifact error have their own stop classes; the notice names how to leave"
+   ],
+   "medium": 2,
+   "mutants_equivalent_declared": 1,
+   "mutants_killed": 33,
+   "mutants_of_the_mechanisms": 34,
+   "reviewer": "independent, read-only, adversarial (19 probes of its own)"
+  }
+ },
+ "statement": "A technical checkpoint of a development experiment. It is not a clinical validation, an approval of version 1, a consciousness authority, a resident deployment or a production authority.",
+ "statuses": {
+  "ARTIFACT_SESSION_CONSISTENCY": "RECORD_SITE_AND_ARTIFACT_AGREE_THE_RECORD_REPLAYS_FROM_THE_ARTIFACT_ALONE_DISAGREEMENT_DENIES_A_COMMIT_WHOSE_RECORD_CANNOT_BE_WRITTEN_STOPS",
+  "COLLAPSE_BOUNDARY_STOP": "PRECOMMIT_EVERY_MINUTE_THE_BOUNDARY_CROSSING_STATE_IS_NEVER_COMMITTED_THEN_THE_SESSION_IS_NOT_CONTINUABLE_AN_EXPERIMENT_STOP_NOT_A_PATIENT_OUTCOME",
+  "PAGE_CONTINUATION_GUARD": "EVERY_ENGINE_ENTRY_AND_EVERY_RESIDENT_CONTROL_IS_BEHIND_THE_GUARD_OR_NOT_DRAWN_INVENTORY_TRIPWIRES_FAIL_ON_ANY_NEW_ROUTE_OR_BUTTON",
+  "POST_COMMIT_STOP": "EFFECTIVE_AFTER_THE_FIRST_REAL_COMMIT_INVALID_FOR_CONTINUATION_BLOCKS_CLINICAL_TIME_AND_MANAGEMENT_ACTIONS_NO_SILENT_LEGACY_FALLBACK_THE_FAILING_TURN_ITSELF_ALREADY_RAN",
+  "PRESSURE_AUTHORITY_VALIDATION": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_UNCHANGED_AND_STILL_VALID_BEHIND_THE_EXPLICIT_GRANT_THE_TENTH_GATE_CONDITION",
+  "RESIDENT_ISOLATION": "FLAGS_OFF_BEHAVIOUR_IDENTICAL_NO_RESIDENT_FACING_CLINICAL_TEXT_NO_COMMON_CONSCIOUSNESS_VISIBLE_THE_FIRST_PILOT_AND_OTHER_FAMILIES_UNTOUCHED_NOT_READY_FOR_RESIDENTS",
+  "RESTART_PERSISTENCE": "THE_SESSION_RECORD_TRAVELS_WITH_THE_SAVED_ENCOUNTER_A_REOPENED_STOPPED_ENCOUNTER_STAYS_STOPPED_FLAGS_ON_OR_OFF_AND_AN_ACTIVE_ONE_WITHOUT_ITS_SITE_IS_STOPPED_AN_UNSIGNED_RECORD_IS_A_DECLARED_LIMIT",
+  "SINGLE_PROCESS_CONCURRENCY": "SINGLE_PROCESS_SESSION_SAFETY_SUFFICIENT_FOR_DEVELOPMENT_NO_MUTABLE_MODULE_STATE_IN_THE_LAYER_SEVERAL_PROCESSES_SHARE_ONLY_THE_DURABLE_STORE"
+ },
+ "supersedes_the_previous_checkpoint_on": [
+  "POST_COMMIT_HARD_FAIL: INVALID_FOR_CONTINUATION was advisory to the encounter",
+  "the resumed encounter was marked, not prevented"
+ ],
+ "verdict": "A_GI_PRESSURE_DEVELOPMENT_AUTHORITY_WITH_EFFECTIVE_STOP_VALIDATED",
+ "verdict_enables": "NOTHING BEYOND the GI pressure development authority the faculty already granted, now with an effective operational stop (SBP, DBP, MAP derived; gi_bleed_57m and gi_bleed_72f; the development environment): no consciousness authority, no write into mental_status, no resident deployment, no production use, no first-pilot change, no approval of version 1 for authority. The next decision is whether the experiment is ready for a CONTROLLED FACULTY-ONLY PILOT ENVIRONMENT; it is not taken here",
+ "version": "P3-264"
+}
