@@ -1,0 +1,174 @@
+{
+ "confirmations": {
+  "common_core_runtime_authority_remains_false": true,
+  "first_pilot_unchanged": true,
+  "legacy_mental_status_unchanged": true,
+  "no_clinical_validation_claim": true,
+  "no_common_consciousness_visible_to_residents": true,
+  "no_consciousness_authority": true,
+  "no_opioid_consciousness_added": true,
+  "no_physiology_retuned": true,
+  "no_production_authority": true,
+  "no_resident_deployment": true,
+  "no_terminal_rule_invented": true,
+  "v1_not_promoted_to_authority": true
+ },
+ "decided_on": "2026-11-12",
+ "decisions": {
+  "record": "docs/revision/PHASE3_PRESSURE_AUTHORITY_DECISIONS.json",
+  "record_digest": "5e8d3fddcc3b2b82a4bf8923780167264f3b7c7e5a747f06c9328a5f21948902"
+ },
+ "from_the_code": {
+  "approved_authority_snapshots": [
+   "gi_pressure_committed"
+  ],
+  "artifact_classes": [
+   "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "HISTORICAL_PRESSURE_EXPERIMENT",
+   "DORMANT_AUTHORITY_EVALUATION",
+   "INCONSISTENT_ARTIFACT"
+  ],
+  "authority_cases": [
+   "gi_bleed_57m",
+   "gi_bleed_72f"
+  ],
+  "authority_domain": [
+   "sbp",
+   "dbp",
+   "map"
+  ],
+  "authority_label": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+  "authority_mode": "PRESSURE_ONLY",
+  "common_core_runtime_authority": false,
+  "gate_conditions": [
+   "authority_flag",
+   "approved_snapshot",
+   "family_and_case",
+   "environment",
+   "authority_domain",
+   "no_pilot",
+   "no_unsupported_action",
+   "phase2_digest",
+   "layer_version",
+   "explicit_development_grant"
+  ],
+  "grant": {
+   "authority_mode": "PRESSURE_ONLY",
+   "cases": [
+    "gi_bleed_57m",
+    "gi_bleed_72f"
+   ],
+   "core_version": "PHASE2_AMENDMENT_2",
+   "decision_reference": "docs/COLA_DECISIONES_AI_ADVISOR.md FD-P3-203 (FD-AUTH-23 a FD-AUTH-31)",
+   "domain": [
+    "sbp",
+    "dbp",
+    "map"
+   ],
+   "excluded_domains": [
+    "consciousness",
+    "mental_status",
+    "collapse",
+    "terminal",
+    "pulse",
+    "oxygenation",
+    "lactate",
+    "hb"
+   ],
+   "fingerprint": "3c29c2b9eb070ea1728bea2b17fd4484ff42c5105070c9402b17e73b29c3c136",
+   "grant_id": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V1",
+   "grant_version": 1,
+   "kind": "FACULTY_GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT",
+   "pressure_snapshot_id": "gi_pressure_committed",
+   "window_max_minute": 240
+  },
+  "grant_excluded_domains": [
+   "consciousness",
+   "mental_status",
+   "collapse",
+   "terminal",
+   "pulse",
+   "oxygenation",
+   "lactate",
+   "hb"
+  ],
+  "grant_fingerprint_is_pinned": true,
+  "grant_window_minutes": 240,
+  "halt_reasons": [
+   "COLLAPSE_BOUNDARY_REACHED",
+   "COLLAPSE_BOUNDARY_NOT_VERIFIABLE",
+   "EXPERIMENT_WINDOW_CLOSED",
+   "UNSUPPORTED_AUTHORITY_ACTION",
+   "PROVENANCE_CONTRADICTS_THE_AUTHORITY_MINUTE",
+   "ENCOUNTER_RESUMED_WITHOUT_ITS_AUTHORITY_SITE"
+  ],
+  "overlay_label": "FACULTY_ACCEPTED_FOR_DEVELOPMENT_COMPARISON",
+  "tenth_condition": "explicit_development_grant",
+  "v1_in_the_authority_registry": false,
+  "v1_status": "RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS"
+ },
+ "real_series": {
+  "all_replay": true,
+  "all_verified": true,
+  "committed_minutes": 84,
+  "halt_kinds": {
+   "COLLAPSE_BOUNDARY_REACHED": 2,
+   "UNSUPPORTED_AUTHORITY_ACTION": 2
+  },
+  "record": "docs/revision/PHASE3_PRESSURE_AUTHORITY_SERIES.json",
+  "record_digest": "dd2aab7159eef9d449304b98bdaeb76b566a65fb6477a8ce4aa397ab5da3e9b2",
+  "runs": 26,
+  "states": {
+   "ACTIVE": 22,
+   "HALTED": 4
+  }
+ },
+ "record_digest": "3d3f3c364c020ba656740a881ed9e279c90425ef158ff9d7ea9e945875eec666",
+ "record_type": "PHASE3_PRESSURE_CHECKPOINT",
+ "remaining_blockers": [
+  "INVALID_FOR_CONTINUATION is advisory to the encounter: the legacy engine keeps running it. An EFFECTIVE stop needs an interface design this cycle does not build and must not invent as a terminal rule (TD-142 item 4, TD-143 item 1); it blocks any use with residents",
+  "mapping the common word into the live mental_status stays blocked: seven consequential readers, three of them engine readers that the Phase-2 closure freezes, and the faculty decision that the common UNRESPONSIVE is not resident-visible (C5)",
+  "GI_DEVELOPMENT_SNAPSHOT_V1 stays ratified for development experiments only: it is not in the authority registry and it is not a pressure calibration",
+  "the grant, the gate and the checks run in one Python process: no defense against in-process code that reassigns a constant; the defense is the pinned fingerprint, the read-only body, the AST tests and code review (TD-143 item 2)",
+  "a resumed encounter has no site (the saved session does not keep it): it is MARKED in the durable store, not prevented, and the legacy engine runs it from there (TD-143 item 5)",
+  "two GI cases and an arrival-relative semantics, accepted for development only: no generalization to a population or to another family (FD-AUTH-24)",
+  "the artifact store grows with the length of the encounter (one file per turn, the overlay and its replay input in each) and the event provenance reads the committed pressure at the start of a turn: the equality of text and events with the legacy run is proven on the series, not by construction (TD-143 items 3 and 7)"
+ ],
+ "reported": {
+  "review": {
+   "high": 0,
+   "low": 8,
+   "low_declared_not_repaired": [
+    "L7",
+    "L8"
+   ],
+   "low_repaired": [
+    "L1",
+    "L2",
+    "L3",
+    "L4",
+    "L5",
+    "L6"
+   ],
+   "medium": 5,
+   "medium_reproduced_with_an_own_probe_and_repaired": 5,
+   "mutants_killed": 19,
+   "mutants_of_the_repairs": 19,
+   "reviewer": "independent, read-only, 24 attacks"
+  }
+ },
+ "statement": "A technical checkpoint of a development experiment. It is not a clinical validation, an approval of version 1, a consciousness authority, a resident deployment or a production authority.",
+ "statuses": {
+  "COLLAPSE_BOUNDARY": "PRECOMMIT_EVERY_MINUTE_FAIL_CLOSED_ESTABLISHED_NOT_IMPENDING_WINDOW_240_NOT_A_TERMINAL_STATE",
+  "CONSCIOUSNESS_LIVE_AUTHORITY": "NOT_GRANTED_BLOCKED_BY_THE_NAMED_READERS_AND_BY_THE_FACULTY_DECISION_THAT_THE_COMMON_WORD_IS_NOT_RESIDENT_VISIBLE",
+  "CONSCIOUSNESS_OVERLAY": "V1_CANDIDATE_OVERLAY_BESIDE_THE_AUTHORITY_RECORDED_NEVER_WRITTEN_NEVER_RESIDENT_VISIBLE",
+  "POST_COMMIT_HARD_FAIL": "INVALID_FOR_CONTINUATION_DECLARED_NOT_SILENT_BUT_ADVISORY_TO_THE_ENCOUNTER_AND_A_RESUME_IS_MARKED_NOT_PREVENTED",
+  "PRESSURE_PAGE_RUNTIME": "REAL_PAGE_26_RUNS_BOTH_CLOCK_ROUTES_COMMON_PRESSURE_COMMITTED_AND_NOTHING_ELSE_CHANGED_FOR_THE_RESIDENT",
+  "PRESSURE_REAL_DEVELOPMENT_AUTHORITY": "ACTIVE_FOR_TWO_GI_CASES_PRESSURE_ONLY_DEVELOPMENT_ONLY_BEHIND_AN_EXPLICIT_GRANT_THE_TENTH_GATE_CONDITION",
+  "PRESSURE_REPLAY": "REAL_ARTIFACTS_VERIFY_AND_REPLAY_FROM_THE_ARTIFACT_ALONE_WITH_THE_OVERLAY_THE_BOUNDARY_AND_THE_HALT_REASON",
+  "RESIDENT_PILOT_READINESS": "NOT_READY_DEVELOPMENT_ONLY_THE_HALT_IS_ADVISORY_AND_THE_CHECKS_RUN_IN_ONE_PROCESS"
+ },
+ "verdict": "A_GI_PRESSURE_DEVELOPMENT_AUTHORITY_EXPERIMENT_VALIDATED",
+ "verdict_enables": "NOTHING BEYOND the GI pressure development authority the faculty already granted (SBP, DBP, MAP derived; gi_bleed_57m and gi_bleed_72f; the development environment): no consciousness authority, no write into mental_status, no resident deployment, no production use, no first-pilot change, no approval of version 1 for authority",
+ "version": "P3-249"
+}

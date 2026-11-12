@@ -1,0 +1,103 @@
+{
+ "assistant_selected_no_answer": true,
+ "authorization": {
+  "authority_domain": [
+   "sbp",
+   "dbp",
+   "map"
+  ],
+  "cases": [
+   "gi_bleed_57m",
+   "gi_bleed_72f"
+  ],
+  "decision": "FD-AUTH-28",
+  "experiment": "THE_FIRST_REAL_GI_DEVELOPMENT_AUTHORITY_EXPERIMENT",
+  "map": "derived from sbp and dbp, as the display derives it",
+  "not_authority": [
+   "consciousness",
+   "mental_status",
+   "collapse",
+   "terminal state",
+   "pulse",
+   "SpO2",
+   "lactate",
+   "other outputs"
+  ],
+  "overlay_label": "FACULTY_ACCEPTED_FOR_DEVELOPMENT_COMPARISON",
+  "overlay_snapshot": "GI_DEVELOPMENT_SNAPSHOT_V1",
+  "overlay_status": "RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS",
+  "pressure_snapshot": "gi_pressure_committed",
+  "scope": "DEVELOPMENT_AUTHORITY_ONLY",
+  "v1_promoted_to_general_authority": false,
+  "v1_used_as_pressure_calibration": false
+ },
+ "conceptual_faculty_status": "READY_FOR_DEVELOPMENT_AUTHORITY_EXPERIMENT_WITH_LIVE_MENTAL_STATUS_STILL_BLOCKED",
+ "decided_on": "2026-11-12",
+ "decision_file_row": "FD-P3-203",
+ "evidence_preserved_unchanged": {
+  "packet": "docs/revision/PHASE3_FACULTY_CONSCIOUSNESS_DIVERGENCE_PACKET.md",
+  "packet_sha256": "3afe6e8a2b1338de704b43c4d2b08d1cc77853eb16e5d1219a3ccbf6669f23d5",
+  "review_faculty_answers_still_null": true,
+  "review_record": "docs/revision/PHASE3_GI_PREAUTHORITY_REVIEW.json",
+  "review_record_sha256": "3cfec3b16e83e8bcd8a67b32b1d5fcdbc2337fa703a2a37f03e88c66f44279bd"
+ },
+ "faculty_answers": {
+  "C1-A": {
+   "answer": "ACCEPT_WITH_LIMITATION",
+   "decision": "FD-AUTH-23",
+   "limitations": [
+    "F and the consciousness thresholds are NOT recalibrated from the differences with the legacy engine",
+    "post-collapse divergence is EXCLUDED from this approval"
+   ],
+   "meaning": "the PRE-COLLAPSE common-core GI consciousness trajectories are educationally defensible for DEVELOPMENT experimentation"
+  },
+  "C1-B": {
+   "answer": "YES_WITH_LIMITATION",
+   "decision": "FD-AUTH-24",
+   "limitations": [
+    "the legacy absolute SBP thresholds and the relative-delivery physiology answer different questions",
+    "the two GI cases suffice for development experimentation, not for population generalization",
+    "the normalization is NOT generalized to unrelated families"
+   ],
+   "meaning": "arrival-relative consciousness semantics remain accepted for GI development"
+  },
+  "C1-C": {
+   "answer": "YES_WITH_LIMITATION",
+   "decision": "FD-AUTH-25",
+   "limitations": [
+    "not clinical validation",
+    "not GCS equivalents",
+    "not production thresholds"
+   ],
+   "meaning": "the development categories NO_MATERIAL_OBSERVABLE_IMPAIRMENT, SOMNOLENT, OBTUNDED, UNRESPONSIVE are accepted for DEVELOPMENT testing only"
+  },
+  "C5": {
+   "answer": "YES_BUT_NOT_RESIDENT_VISIBLE",
+   "decision": "FD-AUTH-26",
+   "limitations": [
+    "common UNRESPONSIVE is NOT written into the legacy live mental_status field",
+    "the resident-visible mental-status field remains legacy-owned in this cycle"
+   ],
+   "meaning": "UNRESPONSIVE_WITH_PULSE is accepted as a valid common-core physiological state"
+  }
+ },
+ "forbidden_in_this_cycle": [
+  "consciousness authority",
+  "writing common consciousness into mental_status",
+  "exposing common consciousness to residents",
+  "approving V1 for consciousness authority",
+  "deploying to residents",
+  "modifying the frozen first pilot",
+  "authorizing production use",
+  "inventing terminal semantics",
+  "retuning physiology",
+  "adding opioid consciousness",
+  "claiming clinical validation"
+ ],
+ "live_mental_status_mapping": "STILL_BLOCKED_BY_THE_NAMED_DOWNSTREAM_READERS",
+ "physiology_is_no_longer_the_blocker": true,
+ "record_digest": "5e8d3fddcc3b2b82a4bf8923780167264f3b7c7e5a747f06c9328a5f21948902",
+ "record_type": "PHASE3_PRESSURE_AUTHORITY_DECISIONS",
+ "statement": "A record of the faculty's decisions. It grants no consciousness authority, does not approve V1 for authority and claims no clinical validation.",
+ "version": "P3-238"
+}

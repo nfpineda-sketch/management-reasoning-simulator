@@ -185,9 +185,9 @@
   "common_view_readers": [],
   "inventory": {
    "executable_readers": 32,
-   "modules_text_only": 7,
-   "modules_with_a_syntactic_use": 56,
-   "sites": 130,
+   "modules_text_only": 8,
+   "modules_with_a_syntactic_use": 57,
+   "sites": 134,
    "unclassified": []
   },
   "routed": [
@@ -666,7 +666,7 @@
    "status": "READY_FOR_A_DEVELOPMENT_EXPERIMENT"
   }
  },
- "record_digest": "f3f1919f676f15fbe509b35b8b5275feb5474e6d1884ded472f0deba27478d2e",
+ "record_digest": "1a4e1474ece06c7b6d7a5fe9695cbb1f3a7c1a993a8f0b3a592b495fd3dd0024",
  "record_type": "PHASE3_DORMANT_PAIR_AUTHORITY",
  "review": [
   {

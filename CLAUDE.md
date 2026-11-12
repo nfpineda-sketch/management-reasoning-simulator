@@ -105,9 +105,14 @@ de alcance, rige la fuente, no este resumen.
     ejecución: `COMMON_CORE_RUNTIME_AUTHORITY = False`;
   - `clinical_core` funciona sólo en sombra, y en la Fase 3 también en vivo **sin autoridad**, detrás de una
     bandera apagada por omisión, invisible para el residente y ausente de la puntuación;
-  - no hay autorización todavía para:
+  - **excepción acotada (decisión docente del 2026-11-12, FD-P3-203):** la **autoridad de desarrollo de presión de GI** (`sbp`, `dbp`, `map` derivada; sólo `gi_bleed_57m` y `gi_bleed_72f`; sólo el
+    entorno de desarrollo; con la instantánea de presión ya aprobada `gi_pressure_committed`, el linaje certificado activo y la concesión explícita, inmutable y con huella fijada
+    `GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V1`, que es la décima condición de la compuerta; ninguna bandera sola, ni `COMMON_CORE_RUNTIME_AUTHORITY`, ni la concesión sola la activan). La consciencia
+    común (V1 exacta) corre **junto** a ella sólo como superposición candidata de comparación (`FACULTY_ACCEPTED_FOR_DEVELOPMENT_COMPARISON`), **no** escribe el `mental_status` vivo, **no** es visible al
+    residente y sigue sin autoridad; no es despliegue a residentes, ni autoridad de producción, ni cambio del primer piloto;
+  - fuera de esa excepción, no hay autorización todavía para:
     - darle autoridad en tiempo de ejecución;
-    - cambiar lo que ve el residente;
+    - cambiar lo que ve el residente (salvo los valores de presión del experimento de desarrollo);
     - migrar fisiología más allá del trabajo en sombra aprobado expresamente;
     - integrar el motor de casos generados (`clinical_physiology`).
 
@@ -117,7 +122,9 @@ de alcance, rige la fuente, no este resumen.
   su integración en la sombra GI, las filas FD-P3-167 a FD-P3-172; para la instantánea de GI y la revisión previa a la autoridad, FD-P3-178 a FD-P3-187;
   para la plomería **dormida** del par presión + consciencia (vista explícita de `mental_status`, `EXECUTED_NO_COMMON_PHYSIOLOGY`, rutas del reloj, un solo gancho; **sin** autoridad, V1 sigue sólo ratificada para
   desarrollo), `docs/PHASE3_DORMANT_PAIR_AUTHORITY.md` y FD-P3-188 a FD-P3-194; para el sitio **dormido y no activable** de autoridad GI del par (primitiva de validación por minuto, R2 reparado, puerta de armado sin concesión, máquina de estados, artefacto y
-  replay; veredicto A que **no habilita nada**), `docs/PHASE3_DORMANT_GI_AUTHORITY_SITE.md` y FD-P3-195 a FD-P3-202.
+  replay; veredicto A que **no habilita nada**), `docs/PHASE3_DORMANT_GI_AUTHORITY_SITE.md` y FD-P3-195 a FD-P3-202; para las decisiones docentes de C1 y C5 y el **primer experimento real de autoridad de desarrollo de
+  presión de GI** (concesión, activación, página real, serie de manejo, superposición de consciencia, fallos tras el compromiso, frontera de colapso, artefacto y replay, aislamiento, revisión independiente y punto de control),
+  `docs/PHASE3_PRESSURE_DEVELOPMENT_AUTHORITY.md` y FD-P3-203 a FD-P3-208.
 
 ## Privacidad y procedencia
 - No commitear datos reales, respuestas externas, secretos ni nombres de médicos.

@@ -1,0 +1,2524 @@
+{
+ "authority": {
+  "approved_authority_snapshots": [
+   "gi_pressure_committed"
+  ],
+  "common_core_runtime_authority": false,
+  "consciousness_authority": false,
+  "mental_status_written": false
+ },
+ "decided_on": "2026-11-12",
+ "grant": {
+  "authority_mode": "PRESSURE_ONLY",
+  "cases": [
+   "gi_bleed_57m",
+   "gi_bleed_72f"
+  ],
+  "core_version": "PHASE2_AMENDMENT_2",
+  "decision_reference": "docs/COLA_DECISIONES_AI_ADVISOR.md FD-P3-203 (FD-AUTH-23 a FD-AUTH-31)",
+  "domain": [
+   "sbp",
+   "dbp",
+   "map"
+  ],
+  "excluded_domains": [
+   "consciousness",
+   "mental_status",
+   "collapse",
+   "terminal",
+   "pulse",
+   "oxygenation",
+   "lactate",
+   "hb"
+  ],
+  "fingerprint": "3c29c2b9eb070ea1728bea2b17fd4484ff42c5105070c9402b17e73b29c3c136",
+  "grant_id": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V1",
+  "grant_version": 1,
+  "kind": "FACULTY_GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT",
+  "pressure_snapshot_id": "gi_pressure_committed",
+  "window_max_minute": 240
+ },
+ "record_digest": "dd2aab7159eef9d449304b98bdaeb76b566a65fb6477a8ce4aa397ab5da3e9b2",
+ "record_type": "PHASE3_PRESSURE_AUTHORITY_SERIES",
+ "runs": [
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_57m",
+   "committed_minutes": [
+    60,
+    120,
+    180
+   ],
+   "first_rejected_minute": 240,
+   "halt_kind": "COLLAPSE_BOUNDARY_REACHED",
+   "halt_replay": "COLLAPSE_BOUNDARY_REACHED",
+   "halted": true,
+   "last_authoritative_commit": 180,
+   "overlay": {
+    "first_established_minute": 207,
+    "legacy_words": [
+     "Alert",
+     "Drowsy",
+     "Obtunded"
+    ],
+    "max_F": 1.0,
+    "rows": 240,
+    "words": [
+     "Alert",
+     "Drowsy",
+     "Obtunded",
+     "Unresponsive"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      88,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     60,
+     [
+      73,
+      45
+     ],
+     [
+      80,
+      50
+     ]
+    ],
+    [
+     120,
+     [
+      58,
+      36
+     ],
+     [
+      72,
+      45
+     ]
+    ],
+    [
+     180,
+     [
+      43,
+      27
+     ],
+     [
+      64,
+      41
+     ]
+    ],
+    [
+     240,
+     [
+      56,
+      36
+     ],
+     [
+      56,
+      36
+     ]
+    ],
+    [
+     300,
+     [
+      50,
+      32
+     ],
+     [
+      50,
+      32
+     ]
+    ]
+   ],
+   "reasserted_turns": 0,
+   "replay_reproduces": true,
+   "scenario": "untreated",
+   "state": "HALTED",
+   "steps": 5,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_57m",
+   "committed_minutes": [
+    5,
+    10,
+    30
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 30,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert"
+    ],
+    "max_F": 0.0,
+    "rows": 30,
+    "words": [
+     "Alert"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      88,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     0,
+     [
+      88,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     5,
+     [
+      91,
+      56
+     ],
+     [
+      89,
+      55
+     ]
+    ],
+    [
+     10,
+     [
+      98,
+      60
+     ],
+     [
+      93,
+      57
+     ]
+    ],
+    [
+     30,
+     [
+      112,
+      68
+     ],
+     [
+      102,
+      62
+     ]
+    ],
+    [
+     30,
+     [
+      112,
+      68
+     ],
+     [
+      102,
+      62
+     ]
+    ]
+   ],
+   "reasserted_turns": 0,
+   "replay_reproduces": true,
+   "scenario": "early_treatment",
+   "state": "ACTIVE",
+   "steps": 4,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_57m",
+   "committed_minutes": [
+    60,
+    120,
+    125,
+    130,
+    150
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 150,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert",
+     "Drowsy"
+    ],
+    "max_F": 0.3887,
+    "rows": 150,
+    "words": [
+     "Alert",
+     "Drowsy"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      88,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     60,
+     [
+      73,
+      45
+     ],
+     [
+      80,
+      50
+     ]
+    ],
+    [
+     120,
+     [
+      58,
+      36
+     ],
+     [
+      72,
+      45
+     ]
+    ],
+    [
+     120,
+     [
+      58,
+      36
+     ],
+     [
+      72,
+      45
+     ]
+    ],
+    [
+     125,
+     [
+      62,
+      38
+     ],
+     [
+      73,
+      46
+     ]
+    ],
+    [
+     130,
+     [
+      72,
+      44
+     ],
+     [
+      77,
+      48
+     ]
+    ],
+    [
+     150,
+     [
+      92,
+      56
+     ],
+     [
+      86,
+      53
+     ]
+    ]
+   ],
+   "reasserted_turns": 1,
+   "replay_reproduces": true,
+   "scenario": "delayed_treatment",
+   "state": "ACTIVE",
+   "steps": 6,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_57m",
+   "committed_minutes": [
+    5,
+    10,
+    30
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 30,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert"
+    ],
+    "max_F": 0.0,
+    "rows": 30,
+    "words": [
+     "Alert"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      88,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     0,
+     [
+      88,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     5,
+     [
+      93,
+      57
+     ],
+     [
+      91,
+      55
+     ]
+    ],
+    [
+     10,
+     [
+      97,
+      59
+     ],
+     [
+      93,
+      57
+     ]
+    ],
+    [
+     30,
+     [
+      89,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ]
+   ],
+   "reasserted_turns": 0,
+   "replay_reproduces": true,
+   "scenario": "fluid_only",
+   "state": "ACTIVE",
+   "steps": 4,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_57m",
+   "committed_minutes": [
+    5,
+    25
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 25,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert"
+    ],
+    "max_F": 0.0,
+    "rows": 25,
+    "words": [
+     "Alert"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      88,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     0,
+     [
+      88,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     5,
+     [
+      92,
+      56
+     ],
+     [
+      90,
+      55
+     ]
+    ],
+    [
+     25,
+     [
+      106,
+      65
+     ],
+     [
+      98,
+      60
+     ]
+    ]
+   ],
+   "reasserted_turns": 0,
+   "replay_reproduces": true,
+   "scenario": "blood_only",
+   "state": "ACTIVE",
+   "steps": 3,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_57m",
+   "committed_minutes": [
+    60,
+    120,
+    180,
+    185,
+    205
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 205,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert",
+     "Drowsy",
+     "Obtunded"
+    ],
+    "max_F": 0.9999,
+    "rows": 205,
+    "words": [
+     "Alert",
+     "Drowsy",
+     "Obtunded",
+     "Unresponsive"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      88,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     60,
+     [
+      73,
+      45
+     ],
+     [
+      80,
+      50
+     ]
+    ],
+    [
+     120,
+     [
+      58,
+      36
+     ],
+     [
+      72,
+      45
+     ]
+    ],
+    [
+     180,
+     [
+      43,
+      27
+     ],
+     [
+      64,
+      41
+     ]
+    ],
+    [
+     185,
+     [
+      48,
+      30
+     ],
+     [
+      65,
+      41
+     ]
+    ],
+    [
+     205,
+     [
+      52,
+      32
+     ],
+     [
+      65,
+      41
+     ]
+    ]
+   ],
+   "reasserted_turns": 0,
+   "replay_reproduces": true,
+   "scenario": "severe_deterioration",
+   "state": "ACTIVE",
+   "steps": 5,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_57m",
+   "committed_minutes": [
+    60,
+    120,
+    125,
+    130,
+    160
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 160,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert",
+     "Drowsy"
+    ],
+    "max_F": 0.3887,
+    "rows": 160,
+    "words": [
+     "Alert",
+     "Drowsy"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      88,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     60,
+     [
+      73,
+      45
+     ],
+     [
+      80,
+      50
+     ]
+    ],
+    [
+     120,
+     [
+      58,
+      36
+     ],
+     [
+      72,
+      45
+     ]
+    ],
+    [
+     120,
+     [
+      58,
+      36
+     ],
+     [
+      72,
+      45
+     ]
+    ],
+    [
+     125,
+     [
+      62,
+      38
+     ],
+     [
+      73,
+      46
+     ]
+    ],
+    [
+     130,
+     [
+      72,
+      44
+     ],
+     [
+      77,
+      48
+     ]
+    ],
+    [
+     160,
+     [
+      98,
+      60
+     ],
+     [
+      89,
+      55
+     ]
+    ]
+   ],
+   "reasserted_turns": 1,
+   "replay_reproduces": true,
+   "scenario": "recovery",
+   "state": "ACTIVE",
+   "steps": 6,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_57m",
+   "committed_minutes": [
+    60,
+    120,
+    180,
+    185,
+    190,
+    205
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 205,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert",
+     "Drowsy",
+     "Obtunded"
+    ],
+    "max_F": 0.9998,
+    "rows": 205,
+    "words": [
+     "Alert",
+     "Drowsy",
+     "Obtunded",
+     "Unresponsive"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      88,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     60,
+     [
+      73,
+      45
+     ],
+     [
+      80,
+      50
+     ]
+    ],
+    [
+     120,
+     [
+      58,
+      36
+     ],
+     [
+      72,
+      45
+     ]
+    ],
+    [
+     180,
+     [
+      43,
+      27
+     ],
+     [
+      64,
+      41
+     ]
+    ],
+    [
+     180,
+     [
+      43,
+      27
+     ],
+     [
+      64,
+      41
+     ]
+    ],
+    [
+     185,
+     [
+      51,
+      31
+     ],
+     [
+      66,
+      42
+     ]
+    ],
+    [
+     190,
+     [
+      65,
+      40
+     ],
+     [
+      71,
+      45
+     ]
+    ],
+    [
+     205,
+     [
+      78,
+      48
+     ],
+     [
+      76,
+      47
+     ]
+    ]
+   ],
+   "reasserted_turns": 1,
+   "replay_reproduces": true,
+   "scenario": "late_rescue",
+   "state": "ACTIVE",
+   "steps": 7,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_57m",
+   "committed_minutes": [
+    2
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 2,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert"
+    ],
+    "max_F": 0.0,
+    "rows": 2,
+    "words": [
+     "Alert"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      88,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     0,
+     [
+      88,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     2,
+     [
+      87,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     2,
+     [
+      87,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     2,
+     [
+      87,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ]
+   ],
+   "reasserted_turns": 1,
+   "replay_reproduces": true,
+   "scenario": "iv_line",
+   "state": "ACTIVE",
+   "steps": 3,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_57m",
+   "committed_minutes": [
+    2
+   ],
+   "first_rejected_minute": 7,
+   "halt_kind": "UNSUPPORTED_AUTHORITY_ACTION",
+   "halt_replay": "UNSUPPORTED_AUTHORITY_ACTION",
+   "halted": true,
+   "last_authoritative_commit": 2,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert"
+    ],
+    "max_F": 0.0,
+    "rows": 7,
+    "words": [
+     "Alert"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      88,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     2,
+     [
+      87,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     7,
+     [
+      102,
+      64
+     ],
+     [
+      102,
+      64
+     ]
+    ],
+    [
+     9,
+     [
+      102,
+      64
+     ],
+     [
+      102,
+      64
+     ]
+    ]
+   ],
+   "reasserted_turns": 0,
+   "replay_reproduces": true,
+   "scenario": "unsupported_action",
+   "state": "HALTED",
+   "steps": 3,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_57m",
+   "committed_minutes": [
+    60,
+    70
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 70,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert"
+    ],
+    "max_F": 0.0,
+    "rows": 70,
+    "words": [
+     "Alert"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      88,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     0,
+     [
+      88,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     60,
+     [
+      82,
+      50
+     ],
+     [
+      84,
+      52
+     ]
+    ],
+    [
+     70,
+     [
+      79,
+      48
+     ],
+     [
+      82,
+      51
+     ]
+    ]
+   ],
+   "reasserted_turns": 0,
+   "replay_reproduces": true,
+   "scenario": "long_infusion",
+   "state": "ACTIVE",
+   "steps": 3,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_57m",
+   "committed_minutes": [
+    2,
+    4,
+    6
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 6,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert"
+    ],
+    "max_F": 0.0,
+    "rows": 6,
+    "words": [
+     "Alert"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      88,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     2,
+     [
+      87,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     4,
+     [
+      87,
+      53
+     ],
+     [
+      87,
+      54
+     ]
+    ],
+    [
+     6,
+     [
+      86,
+      53
+     ],
+     [
+      87,
+      54
+     ]
+    ]
+   ],
+   "reasserted_turns": 0,
+   "replay_reproduces": true,
+   "scenario": "question_time",
+   "state": "ACTIVE",
+   "steps": 3,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_57m",
+   "committed_minutes": [
+    2,
+    4,
+    6
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 6,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert"
+    ],
+    "max_F": 0.0,
+    "rows": 6,
+    "words": [
+     "Alert"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      88,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     2,
+     [
+      87,
+      54
+     ],
+     [
+      88,
+      54
+     ]
+    ],
+    [
+     4,
+     [
+      87,
+      53
+     ],
+     [
+      87,
+      54
+     ]
+    ],
+    [
+     6,
+     [
+      86,
+      53
+     ],
+     [
+      87,
+      54
+     ]
+    ]
+   ],
+   "reasserted_turns": 0,
+   "replay_reproduces": true,
+   "scenario": "exam_time",
+   "state": "ACTIVE",
+   "steps": 3,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_72f",
+   "committed_minutes": [
+    60,
+    120,
+    180
+   ],
+   "first_rejected_minute": 240,
+   "halt_kind": "COLLAPSE_BOUNDARY_REACHED",
+   "halt_replay": "COLLAPSE_BOUNDARY_REACHED",
+   "halted": true,
+   "last_authoritative_commit": 180,
+   "overlay": {
+    "first_established_minute": 207,
+    "legacy_words": [
+     "Alert",
+     "Drowsy"
+    ],
+    "max_F": 1.0,
+    "rows": 240,
+    "words": [
+     "Alert",
+     "Drowsy",
+     "Obtunded",
+     "Unresponsive"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      98,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     60,
+     [
+      81,
+      51
+     ],
+     [
+      90,
+      58
+     ]
+    ],
+    [
+     120,
+     [
+      64,
+      41
+     ],
+     [
+      82,
+      53
+     ]
+    ],
+    [
+     180,
+     [
+      48,
+      31
+     ],
+     [
+      74,
+      49
+     ]
+    ],
+    [
+     240,
+     [
+      66,
+      44
+     ],
+     [
+      66,
+      44
+     ]
+    ],
+    [
+     300,
+     [
+      58,
+      40
+     ],
+     [
+      58,
+      40
+     ]
+    ]
+   ],
+   "reasserted_turns": 0,
+   "replay_reproduces": true,
+   "scenario": "untreated",
+   "state": "HALTED",
+   "steps": 5,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_72f",
+   "committed_minutes": [
+    5,
+    10,
+    30
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 30,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert"
+    ],
+    "max_F": 0.0,
+    "rows": 30,
+    "words": [
+     "Alert"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      98,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     0,
+     [
+      98,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     5,
+     [
+      101,
+      64
+     ],
+     [
+      99,
+      63
+     ]
+    ],
+    [
+     10,
+     [
+      109,
+      69
+     ],
+     [
+      103,
+      65
+     ]
+    ],
+    [
+     30,
+     [
+      124,
+      79
+     ],
+     [
+      112,
+      70
+     ]
+    ],
+    [
+     30,
+     [
+      124,
+      79
+     ],
+     [
+      112,
+      70
+     ]
+    ]
+   ],
+   "reasserted_turns": 0,
+   "replay_reproduces": true,
+   "scenario": "early_treatment",
+   "state": "ACTIVE",
+   "steps": 4,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_72f",
+   "committed_minutes": [
+    60,
+    120,
+    125,
+    130,
+    150
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 150,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert"
+    ],
+    "max_F": 0.3887,
+    "rows": 150,
+    "words": [
+     "Alert",
+     "Drowsy"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      98,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     60,
+     [
+      81,
+      51
+     ],
+     [
+      90,
+      58
+     ]
+    ],
+    [
+     120,
+     [
+      64,
+      41
+     ],
+     [
+      82,
+      53
+     ]
+    ],
+    [
+     120,
+     [
+      64,
+      41
+     ],
+     [
+      82,
+      53
+     ]
+    ],
+    [
+     125,
+     [
+      69,
+      44
+     ],
+     [
+      83,
+      54
+     ]
+    ],
+    [
+     130,
+     [
+      80,
+      51
+     ],
+     [
+      87,
+      56
+     ]
+    ],
+    [
+     150,
+     [
+      102,
+      65
+     ],
+     [
+      96,
+      61
+     ]
+    ]
+   ],
+   "reasserted_turns": 1,
+   "replay_reproduces": true,
+   "scenario": "delayed_treatment",
+   "state": "ACTIVE",
+   "steps": 6,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_72f",
+   "committed_minutes": [
+    5,
+    10,
+    30
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 30,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert"
+    ],
+    "max_F": 0.0,
+    "rows": 30,
+    "words": [
+     "Alert"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      98,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     0,
+     [
+      98,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     5,
+     [
+      103,
+      65
+     ],
+     [
+      101,
+      63
+     ]
+    ],
+    [
+     10,
+     [
+      108,
+      68
+     ],
+     [
+      103,
+      65
+     ]
+    ],
+    [
+     30,
+     [
+      99,
+      63
+     ],
+     [
+      98,
+      62
+     ]
+    ]
+   ],
+   "reasserted_turns": 0,
+   "replay_reproduces": true,
+   "scenario": "fluid_only",
+   "state": "ACTIVE",
+   "steps": 4,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_72f",
+   "committed_minutes": [
+    5,
+    25
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 25,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert"
+    ],
+    "max_F": 0.0,
+    "rows": 25,
+    "words": [
+     "Alert"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      98,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     0,
+     [
+      98,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     5,
+     [
+      102,
+      65
+     ],
+     [
+      100,
+      63
+     ]
+    ],
+    [
+     25,
+     [
+      118,
+      74
+     ],
+     [
+      108,
+      68
+     ]
+    ]
+   ],
+   "reasserted_turns": 0,
+   "replay_reproduces": true,
+   "scenario": "blood_only",
+   "state": "ACTIVE",
+   "steps": 3,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_72f",
+   "committed_minutes": [
+    60,
+    120,
+    180,
+    185,
+    205
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 205,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert",
+     "Drowsy"
+    ],
+    "max_F": 0.9999,
+    "rows": 205,
+    "words": [
+     "Alert",
+     "Drowsy",
+     "Obtunded",
+     "Unresponsive"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      98,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     60,
+     [
+      81,
+      51
+     ],
+     [
+      90,
+      58
+     ]
+    ],
+    [
+     120,
+     [
+      64,
+      41
+     ],
+     [
+      82,
+      53
+     ]
+    ],
+    [
+     180,
+     [
+      48,
+      31
+     ],
+     [
+      74,
+      49
+     ]
+    ],
+    [
+     185,
+     [
+      54,
+      34
+     ],
+     [
+      75,
+      49
+     ]
+    ],
+    [
+     205,
+     [
+      58,
+      36
+     ],
+     [
+      75,
+      49
+     ]
+    ]
+   ],
+   "reasserted_turns": 0,
+   "replay_reproduces": true,
+   "scenario": "severe_deterioration",
+   "state": "ACTIVE",
+   "steps": 5,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_72f",
+   "committed_minutes": [
+    60,
+    120,
+    125,
+    130,
+    160
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 160,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert"
+    ],
+    "max_F": 0.3887,
+    "rows": 160,
+    "words": [
+     "Alert",
+     "Drowsy"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      98,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     60,
+     [
+      81,
+      51
+     ],
+     [
+      90,
+      58
+     ]
+    ],
+    [
+     120,
+     [
+      64,
+      41
+     ],
+     [
+      82,
+      53
+     ]
+    ],
+    [
+     120,
+     [
+      64,
+      41
+     ],
+     [
+      82,
+      53
+     ]
+    ],
+    [
+     125,
+     [
+      69,
+      44
+     ],
+     [
+      83,
+      54
+     ]
+    ],
+    [
+     130,
+     [
+      80,
+      51
+     ],
+     [
+      87,
+      56
+     ]
+    ],
+    [
+     160,
+     [
+      109,
+      69
+     ],
+     [
+      99,
+      63
+     ]
+    ]
+   ],
+   "reasserted_turns": 1,
+   "replay_reproduces": true,
+   "scenario": "recovery",
+   "state": "ACTIVE",
+   "steps": 6,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_72f",
+   "committed_minutes": [
+    60,
+    120,
+    180,
+    185,
+    190,
+    205
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 205,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert",
+     "Drowsy"
+    ],
+    "max_F": 0.9998,
+    "rows": 205,
+    "words": [
+     "Alert",
+     "Drowsy",
+     "Obtunded",
+     "Unresponsive"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      98,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     60,
+     [
+      81,
+      51
+     ],
+     [
+      90,
+      58
+     ]
+    ],
+    [
+     120,
+     [
+      64,
+      41
+     ],
+     [
+      82,
+      53
+     ]
+    ],
+    [
+     180,
+     [
+      48,
+      31
+     ],
+     [
+      74,
+      49
+     ]
+    ],
+    [
+     180,
+     [
+      48,
+      31
+     ],
+     [
+      74,
+      49
+     ]
+    ],
+    [
+     185,
+     [
+      57,
+      36
+     ],
+     [
+      76,
+      50
+     ]
+    ],
+    [
+     190,
+     [
+      72,
+      46
+     ],
+     [
+      81,
+      53
+     ]
+    ],
+    [
+     205,
+     [
+      87,
+      55
+     ],
+     [
+      86,
+      55
+     ]
+    ]
+   ],
+   "reasserted_turns": 1,
+   "replay_reproduces": true,
+   "scenario": "late_rescue",
+   "state": "ACTIVE",
+   "steps": 7,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_72f",
+   "committed_minutes": [
+    2
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 2,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert"
+    ],
+    "max_F": 0.0,
+    "rows": 2,
+    "words": [
+     "Alert"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      98,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     0,
+     [
+      98,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     2,
+     [
+      97,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     2,
+     [
+      97,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     2,
+     [
+      97,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ]
+   ],
+   "reasserted_turns": 1,
+   "replay_reproduces": true,
+   "scenario": "iv_line",
+   "state": "ACTIVE",
+   "steps": 3,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_72f",
+   "committed_minutes": [
+    2
+   ],
+   "first_rejected_minute": 7,
+   "halt_kind": "UNSUPPORTED_AUTHORITY_ACTION",
+   "halt_replay": "UNSUPPORTED_AUTHORITY_ACTION",
+   "halted": true,
+   "last_authoritative_commit": 2,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert"
+    ],
+    "max_F": 0.0,
+    "rows": 7,
+    "words": [
+     "Alert"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      98,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     2,
+     [
+      97,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     7,
+     [
+      112,
+      72
+     ],
+     [
+      112,
+      72
+     ]
+    ],
+    [
+     9,
+     [
+      112,
+      72
+     ],
+     [
+      112,
+      72
+     ]
+    ]
+   ],
+   "reasserted_turns": 0,
+   "replay_reproduces": true,
+   "scenario": "unsupported_action",
+   "state": "HALTED",
+   "steps": 3,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_72f",
+   "committed_minutes": [
+    60,
+    70
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 70,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert"
+    ],
+    "max_F": 0.0,
+    "rows": 70,
+    "words": [
+     "Alert"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      98,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     0,
+     [
+      98,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     60,
+     [
+      92,
+      58
+     ],
+     [
+      94,
+      60
+     ]
+    ],
+    [
+     70,
+     [
+      88,
+      56
+     ],
+     [
+      92,
+      59
+     ]
+    ]
+   ],
+   "reasserted_turns": 0,
+   "replay_reproduces": true,
+   "scenario": "long_infusion",
+   "state": "ACTIVE",
+   "steps": 3,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_72f",
+   "committed_minutes": [
+    2,
+    4,
+    6
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 6,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert"
+    ],
+    "max_F": 0.0,
+    "rows": 6,
+    "words": [
+     "Alert"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      98,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     2,
+     [
+      97,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     4,
+     [
+      97,
+      61
+     ],
+     [
+      97,
+      62
+     ]
+    ],
+    [
+     6,
+     [
+      96,
+      61
+     ],
+     [
+      97,
+      62
+     ]
+    ]
+   ],
+   "reasserted_turns": 0,
+   "replay_reproduces": true,
+   "scenario": "question_time",
+   "state": "ACTIVE",
+   "steps": 3,
+   "verified": true
+  },
+  {
+   "artifact_class": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+   "case": "gi_bleed_72f",
+   "committed_minutes": [
+    2,
+    4,
+    6
+   ],
+   "first_rejected_minute": null,
+   "halt_kind": "",
+   "halt_replay": "NOT_HALTED",
+   "halted": false,
+   "last_authoritative_commit": 6,
+   "overlay": {
+    "first_established_minute": null,
+    "legacy_words": [
+     "Alert"
+    ],
+    "max_F": 0.0,
+    "rows": 6,
+    "words": [
+     "Alert"
+    ]
+   },
+   "overlay_replay_reproduces": true,
+   "pressure_steps_on_off": [
+    [
+     0,
+     [
+      98,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     2,
+     [
+      97,
+      62
+     ],
+     [
+      98,
+      62
+     ]
+    ],
+    [
+     4,
+     [
+      97,
+      61
+     ],
+     [
+      97,
+      62
+     ]
+    ],
+    [
+     6,
+     [
+      96,
+      61
+     ],
+     [
+      97,
+      62
+     ]
+    ]
+   ],
+   "reasserted_turns": 0,
+   "replay_reproduces": true,
+   "scenario": "exam_time",
+   "state": "ACTIVE",
+   "steps": 3,
+   "verified": true
+  }
+ ],
+ "summary": {
+  "all_replay": true,
+  "all_verified": true,
+  "committed_minutes": 84,
+  "halt_kinds": {
+   "COLLAPSE_BOUNDARY_REACHED": 2,
+   "UNSUPPORTED_AUTHORITY_ACTION": 2
+  },
+  "runs": 26,
+  "states": {
+   "ACTIVE": 22,
+   "HALTED": 4
+  }
+ },
+ "version": "P3-242",
+ "what_it_is": "the first REAL GI development pressure authority experiment on the real page: 13 scenarios x 2 cases, authority ON versus OFF"
+}
