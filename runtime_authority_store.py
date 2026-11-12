@@ -97,7 +97,12 @@ def artifact_id(artifact: Mapping) -> str:
     # made every content change a new identity, so the create-only rule could never refuse anything: with
     # the digest out, the same encounter, attempt and minute is the same record, and content that differs
     # under that identity is a collision the store refuses instead of overwriting.
+    quiet = [dict(item) for item in (body.get("no_advance_turns") or [])]
+    # P3-248 (review L1): a turn that did not move the clock changes the record (the turn, its settled ledger, the pressure it re-asserted) without adding a minute, so it
+    # is part of the identity WHEN THERE ARE ANY (an artifact without such turns keeps the identity it always had).
+    extra = {"quiet_turns": [len(quiet), sum(1 for item in quiet if item.get("provenance_settled"))]} if quiet else {}
     return ra.digest_of({
+        **extra,
         "encounter_id": body.get("encounter_id"),
         "experiment_id": body.get("experiment_id"),
         "attempt": body.get("attempt"),
@@ -189,7 +194,9 @@ def records(*, encounter_id: str | None = None, case_id: str | None = None,
                     # and a reader has to be able to ask for the settled one without loading both.
                     "provenance_settled": bool((list(body.get("minutes") or []) or [{}])[-1]
                                                .get("provenance_settled")),
-                    "artifact_digest": body.get("artifact_digest")})
+                    "artifact_digest": body.get("artifact_digest"),
+                    # P3-246B: which kind of experiment artifact this is (REAL under the grant, or HISTORICAL before it)
+                    "artifact_class": ra.artifact_class(body)})
     return sorted(out, key=lambda item: (str(item["encounter_id"]), item["minutes"],
                                          bool(item["provenance_settled"])))
 

@@ -968,6 +968,154 @@ class PairDryEvaluator:
 
 
 # ============================================================================================================================================
+# P3-243: the consciousness OVERLAY beside a real pressure authority. COMPARISON AND TRACE REVIEW ONLY; it is also the one place the collapse BOUNDARY is read.
+# ============================================================================================================================================
+
+OVERLAY_VERSION = "P3-243"
+OVERLAY_LABEL = "FACULTY_ACCEPTED_FOR_DEVELOPMENT_COMPARISON"
+OVERLAY_ROLE = "CANDIDATE_OVERLAY_NONAUTHORITATIVE"
+
+
+class ConsciousnessOverlay(PairDryEvaluator):
+    """The V1-bound common run kept BESIDE a real pressure authority (faculty decisions FD-AUTH-26/30).
+
+    It records, for every minute the pressure experiment crosses, the common category and its word, F, relative delivery and perfusion, the collapse state and the
+    pulse, next to the legacy ``mental_status`` the resident keeps seeing; and it reads the collapse BOUNDARY (ESTABLISHED, FD-AUTH-06) before the pressure site
+    commits a minute. It is NOT an authority: it never writes, never raises into the caller, never touches the state it is handed (hashed before and after) and
+    owns no field of the encounter. Its label is ``FACULTY_ACCEPTED_FOR_DEVELOPMENT_COMPARISON``; it is not resident-visible and it maps nothing into the live field."""
+
+    def __init__(self, bound: BoundSnapshot, case_id: str, arrival_state: Mapping, *, time_limit: int = TIME_LIMIT_MIN):
+        super().__init__(bound, case_id, arrival_state, time_limit=time_limit)
+        self.turns: list = []
+
+    def _row(self, index: int) -> dict:
+        candidate = self._candidate(index)
+        if candidate is None:
+            return {"minute": index, "shown": False}
+        return {"minute": index, "shown": True, "reproduced": bool(candidate["reproduced"]), "category": candidate["category"], WORD_FIELD: candidate["mental_status"],
+                "F": candidate["F"], "collapse_burden": candidate["collapse_burden"], "collapse_state": candidate["collapse_state"],
+                "relative_delivery": candidate["relative_delivery"], "relative_perfusion": candidate["relative_perfusion"], "pulse_present": candidate["pulse_present"]}
+
+    def _one_course(self, session, minutes: Sequence[int]) -> dict:
+        mine = {_as_int(item.minute): dict(item.derived) for item in (self.runner.results if self.runner is not None else [])}
+        theirs = {_as_int(item.minute): dict(item.derived) for item in list(getattr(session, "minutes", []) or [])}
+        apart = [index for index in minutes if index not in mine or index not in theirs or any(mine[index].get(name) != theirs[index].get(name) for name in SHARED_READINGS)]
+        return {"one_course": not apart, "minutes_apart_or_missing": apart[:8]}
+
+    def turn(self, after: Mapping, session: Any) -> dict:
+        """Advance the bound run to ``after``'s minute and describe EVERY minute since the last turn. Never raises; never touches ``after``."""
+        untouched = _digest(after)
+        minute = _as_int(after.get("sim_time")) if isinstance(after, Mapping) else 0
+        first = self._last_seen + 1
+        minutes = list(range(first, minute + 1)) or [minute]
+        observable = dict(after.get("observable") or {}) if isinstance(after, Mapping) else {}
+        record = {"minute": minute, "from_minute": first, "legacy_mental_status": observable.get("mental_status"), "rows": [], "boundary": None, "course": None, "failed": []}
+        try:
+            self._advance(session, minute)
+            record["rows"] = [self._row(index) for index in range(first, minute + 1)]
+            record["course"] = self._one_course(session, minutes)
+            record["boundary"] = self._boundary(minute)
+            if self.runner is None or self.runner.failures:
+                record["failed"].append("common_run_did_not_fail")
+        except Exception as error:
+            record["failed"].append(f"{type(error).__name__}: {error}")
+            record["boundary"] = {"first_established_minute": None, "minutes_not_shown": minutes, "clear": False}
+            record["course"] = record["course"] or {"one_course": False, "minutes_apart_or_missing": minutes[:8]}
+        if _digest(after) != untouched:
+            self.violations.append(f"minute {minute}: the encounter state changed while the overlay read it")
+            record["failed"].append("encounter_state_untouched")
+        record["clear"] = bool(record["boundary"]["clear"] and record["course"]["one_course"] and not record["failed"])
+        if record["clear"]:
+            self._cleared_through = minute
+        self._last_seen = max(self._last_seen, minute)
+        record["digest"] = ra.digest_of({key: value for key, value in record.items() if key != "digest"})
+        self.turns.append(record)
+        return json.loads(json.dumps(record))
+
+    def overlay_summary(self) -> dict:
+        """What the artifact keeps of the overlay: its label, role and snapshot, every turn, and the immutable input of the bound run (so the artifact replays it)."""
+        try:
+            captured = None if self.runner is None else json.loads(ra.canonical(self.runner.replay_input().to_dict()))
+        except Exception:
+            captured = None
+        return {"label": OVERLAY_LABEL, "role": OVERLAY_ROLE, "available": True, "authority": False, "resident_visible": False, "writes_mental_status": False,
+                "written_into_the_encounter": False, "snapshot": self.bound.summary(), "snapshot_is_the_pinned_version_1": bound_is_v1(self.bound),
+                "turns": [dict(item) for item in self.turns], "violations": list(self.violations), "replay_input": captured,
+                "record_digest": ra.digest_of([item["digest"] for item in self.turns])}
+
+
+WORD_FIELD = CONSCIOUSNESS_FIELDS[1]
+
+
+def replay_overlay_artifact(artifact: Mapping) -> dict:
+    """Rebuild the overlay FROM THE ARTIFACT ALONE (P3-246A): the bound run's profile must be the pinned version 1's, every recorded row must be the replayed one,
+    and every turn's boundary reading (the first established minute and the minutes not shown) must be re-derived from the replay. Never raises."""
+    mismatches: list = []
+    out = {"checked": True, "reproduces": False, "rows_compared": 0, "snapshot_matches": False, "boundary_matches": False, "rows_match": False, "mismatches": mismatches,
+           "established_minutes": []}
+    try:
+        overlay = dict((artifact or {}).get("consciousness_overlay") or {})
+        bound_input = overlay.get("replay_input")
+        scenario = None if not bound_input else bound_input.get("scenario")
+        rows = {row["minute"]: row["channels"] for row in fam.artifact_rows(scenario)} if scenario else {}
+        if not rows:
+            mismatches.append("the artifact carries no replay input of the overlay")
+            return out
+        profile = fam._replay_trajectory(scenario)[2]
+        out["snapshot_matches"] = profile_digest(profile) == V1_PROFILE_DIGEST == dict(overlay.get("snapshot") or {}).get("profile_digest")
+        if not out["snapshot_matches"]:
+            mismatches.append("the overlay's rebuilt profile is not the pinned version 1's, or the artifact names another")
+        rows_ok = boundary_ok = True
+        cleared = 0
+        for turn in overlay.get("turns") or []:
+            for row in turn.get("rows") or []:
+                out["rows_compared"] += 1
+                channels = rows.get(row["minute"])
+                category = None if channels is None else channels.get("category_index")
+                expected = None if channels is None else {"shown": True, "category": category, WORD_FIELD: WORD_OF.get(category), "F": channels.get("systemic_encephalopathy_burden"),
+                                                           "collapse_burden": channels.get("collapse_burden"), "collapse_state": channels.get("collapse_state_index"),
+                                                           "relative_delivery": channels.get("relative_delivery"), "relative_perfusion": channels.get("relative_perfusion"),
+                                                           "pulse_present": channels.get("pulse_present")}
+                shown = {name: row.get(name) for name in ("shown", "category", WORD_FIELD, "F", "collapse_burden", "collapse_state", "relative_delivery", "relative_perfusion", "pulse_present")}
+                if expected is None or expected != shown:
+                    rows_ok = False
+                    mismatches.append(f"minute {row['minute']}: the recorded overlay row is not the replayed one: {shown} != {expected}")
+            first, unseen = None, []
+            for index in range(cleared + 1, int(turn["minute"]) + 1):
+                state = None if rows.get(index) is None else rows[index].get("collapse_state_index")
+                if type(state) is not int or state not in (0, 1, ESTABLISHED):
+                    unseen.append(index)
+                elif state >= ESTABLISHED and first is None:
+                    first = index
+                if type(state) is int and state >= ESTABLISHED:
+                    out["established_minutes"].append(index)
+            recorded = dict(turn.get("boundary") or {})
+            if recorded.get("first_established_minute") != first or list(recorded.get("minutes_not_shown") or []) != unseen:
+                boundary_ok = False
+                mismatches.append(f"minute {turn.get('minute')}: the recorded boundary reading is not the replayed one: {recorded} != first={first} unseen={unseen}")
+            # P3-248 (review M4/L6): the turn's own verdict (clear) and its digest are re-derived too: a turn is clear only if its boundary is clear, its course is ONE
+            # course and nothing failed, and its digest is the digest of its content.
+            expected_clear = bool(first is None and not unseen and dict(turn.get("course") or {}).get("one_course") is True and not list(turn.get("failed") or []))
+            if bool(turn.get("clear")) is not expected_clear or bool(recorded.get("clear")) is not bool(first is None and not unseen):
+                boundary_ok = False
+                mismatches.append(f"minute {turn.get('minute')}: the recorded verdict (clear={turn.get('clear')}) is not the one the boundary, the course and the failures give ({expected_clear})")
+            if turn.get("digest") != ra.digest_of({key: value for key, value in dict(turn).items() if key != "digest"}):
+                boundary_ok = False
+                mismatches.append(f"minute {turn.get('minute')}: the turn's digest does not recompute")
+            if first is None and not unseen and turn.get("clear"):
+                cleared = int(turn["minute"])
+        if overlay.get("record_digest") != ra.digest_of([dict(item).get("digest") for item in (overlay.get("turns") or [])]):
+            boundary_ok = False
+            mismatches.append("the overlay's record digest does not recompute from its turns")
+        out.update(rows_match=rows_ok, boundary_matches=boundary_ok)
+        out["established_minutes"] = sorted(set(out["established_minutes"]))
+        out["reproduces"] = bool(rows_ok and boundary_ok and out["snapshot_matches"] and out["rows_compared"] > 0)
+    except Exception as error:
+        mismatches.append(f"{type(error).__name__}: {error}")
+    return out
+
+
+# ============================================================================================================================================
 # P3-215A: the page's ONE hook for a clock advance. The decisions live here; ``app.py`` calls and decides nothing.
 # ============================================================================================================================================
 

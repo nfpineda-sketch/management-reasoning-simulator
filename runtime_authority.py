@@ -116,7 +116,7 @@ EXPECTED_LAYER = "P3-11"
 #: Why the gate refused. Every name here is a condition that must hold for authority to be possible.
 GATE_CONDITIONS = ("authority_flag", "approved_snapshot", "family_and_case", "environment",
                    "authority_domain", "no_pilot", "no_unsupported_action", "phase2_digest",
-                   "layer_version")
+                   "layer_version", "explicit_development_grant")
 
 # -- P3-40: the one registered approval, and what it is NOT --------------------------------------------
 
@@ -475,7 +475,7 @@ def domain_is_coherent(domain: Sequence[str] = AUTHORITY_DOMAIN) -> tuple:
 
 @dataclass(frozen=True)
 class AuthorityGate:
-    """The nine conditions, evaluated together. ``granted`` is False unless every one of them holds."""
+    """The ten conditions (nine until P3-240, plus the explicit development grant), evaluated together. ``granted`` is False unless every one of them holds."""
 
     conditions: Mapping[str, bool]
     reasons: tuple
@@ -493,7 +493,11 @@ class AuthorityGate:
 def gate(state: Mapping | None = None, *, environ: Mapping[str, str] | None = None,
          domain: Sequence[str] = AUTHORITY_DOMAIN, case_id: str | None = None,
          family: str | None = None, unsupported: Sequence[str] | None = None) -> AuthorityGate:
-    """Evaluate the nine conditions of a future limited authority. Never raises; refuses by default.
+    """Evaluate the ten conditions of a limited development authority. Never raises; refuses by default.
+
+    The tenth (P3-240) is the explicit development grant ``runtime_pressure_grant.GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V1``: a registered, immutable,
+    fingerprinted record that must name this exact case, environment, pressure snapshot, domain and core lineage. A flag alone, or the grant alone, never
+    suffices: the other nine still hold, and the flags still select the experiment.
 
     The second condition -- a faculty-approved snapshot -- cannot hold in this repository, so the result
     is always refused today. The other eight are still evaluated, because a gate that short-circuits on
@@ -522,6 +526,11 @@ def gate(state: Mapping | None = None, *, environ: Mapping[str, str] | None = No
         (declared_family is not None and str(declared_family) != str(family))
         or (declared_case is not None and str(declared_case) != str(case_id or "")))
     coherent, why_domain = domain_is_coherent(domain)
+    # P3-240: the grant is read from its own registry (never from the environment, a file or the caller) and must name THIS run.
+    import runtime_pressure_grant as grants
+    member = rs.CORE_LINEAGE[-1]
+    grant_ok, grant_why = grants.permits(case_id=case_id, environment=str(environ.get(ENVIRONMENT_FLAG, "") or "").strip().lower() or None, snapshot_id=snapshot_id,
+                                         family=family, domain=tuple(domain), lineage={"version_id": member.version_id, "digest": member.digest})
     in_secrets = [name for name in (AUTHORITY_FLAG, SNAPSHOT_FLAG, ENVIRONMENT_FLAG)
                   if rs._named_in_secrets(name)]
     is_pilot, why_pilot = looks_like_the_pilot(environ)
@@ -540,6 +549,7 @@ def gate(state: Mapping | None = None, *, environ: Mapping[str, str] | None = No
         "no_unsupported_action": unsupported is not None and not tuple(unsupported),
         "phase2_digest": ev.core_lineage_ok(),
         "layer_version": rs.MODULE_VERSION == EXPECTED_LAYER,
+        "explicit_development_grant": grant_ok,
     }
     reasons = []
     if in_secrets:
@@ -576,6 +586,8 @@ def gate(state: Mapping | None = None, *, environ: Mapping[str, str] | None = No
         reasons.append(ev.core_lineage_reason() or "the common core lineage could not be evaluated")
     if not conditions["layer_version"]:
         reasons.append(f"the Phase-3 layer is {rs.MODULE_VERSION}, not {EXPECTED_LAYER}")
+    if not conditions["explicit_development_grant"]:
+        reasons.append(f"NO_EXPLICIT_DEVELOPMENT_GRANT_FOR_THIS_RUN: {list(grant_why)}")
     return AuthorityGate(conditions, tuple(reasons), snapshot_id)
 
 
@@ -1270,9 +1282,16 @@ UNSUPPORTED_AUTHORITY_ACTION = "UNSUPPORTED_AUTHORITY_ACTION"
 OUT_OF_DOMAIN_WRITE = "OUT_OF_DOMAIN_WRITE_REFUSED"
 VALIDATION_REFUSED = "VALIDATION_REFUSED"
 SITE_HALTED = "AUTHORITY_HALTED_AFTER_A_HARD_FAILURE"
+#: P3-248 (review M1): the saved session does not carry the authority site, so an encounter resumed after a commit has none. It is MARKED, durably, instead of left ACTIVE.
+RESUMED_WITHOUT_SITE = "ENCOUNTER_RESUMED_WITHOUT_ITS_AUTHORITY_SITE"
+RESUME_CHECKED_KEY = "phase3_authority_resume_checked_for"
 #: The authority configuration of a running experiment changed, which it may not (faculty decision F).
 CONFIGURATION_CHANGED = "AUTHORITY_CONFIGURATION_CHANGED_INSIDE_THE_ENCOUNTER"
 MINUTE_ALREADY_COMMITTED = "MINUTE_ALREADY_COMMITTED"
+#: P3-245: the collapse boundary of the experiment (FD-AUTH-06/17) and the experiment window (FD-AUTH-07). Experiment events, never terminal states.
+COLLAPSE_BOUNDARY_REACHED = "COLLAPSE_BOUNDARY_REACHED"
+COLLAPSE_BOUNDARY_NOT_VERIFIABLE = "COLLAPSE_BOUNDARY_NOT_VERIFIABLE"
+WINDOW_CLOSED = "EXPERIMENT_WINDOW_CLOSED"
 #: The key the caller keeps the experiment artifact under, dropped with the encounter like the site.
 ARTIFACT_KEY = "phase3_authority_artifact"
 #: The encounter whose experiment halted. The P3-28 review found that a site halted at minute 0 -- a plan,
@@ -1646,6 +1665,9 @@ class AuthoritySite:
     experiment_id: str = ""
     #: The attempt this encounter is, when the state carries one: part of the artifact's identity.
     attempt: Any = None
+    #: P3-240: the explicit development grant this experiment runs under. ``None`` only for a site opened with a TEST-ONLY approved point (the gate asks for the
+    #: grant, and a production process can hold only the real registered point), in which case the site behaves exactly as it did before the grant existed.
+    grant: Any = None
     records: list = field(default_factory=list, init=False)
     halted: bool = field(default=False, init=False)
     halt_reason: str = field(default="", init=False)
@@ -1662,6 +1684,13 @@ class AuthoritySite:
     #: How many of the shadow session's failures an earlier turn already judged. A failure the session recorded since is NEW, whatever minute it carries:
     #: the turn that has not yet been judged owns it (P3-219 review, F3).
     failures_judged: int = field(default=0, init=False)
+    #: P3-243: the V1 consciousness overlay that runs BESIDE the pressure authority (comparison and trace review only), built lazily from the shadow session.
+    overlay: Any = field(default=None, init=False)
+    overlay_refusal: str = field(default="", init=False)
+    #: The overlay's reading of the turn being judged: consumed by the boundary guard and recorded in the minute.
+    current_overlay: Mapping[str, Any] | None = field(default=None, init=False)
+    #: The legacy observable of the turn being judged, WITHOUT the pressure domain (what the legacy engine keeps owning): recorded in the minute (P3-246).
+    current_legacy: Mapping[str, Any] | None = field(default=None, init=False)
 
     # -- the encounter's identity ----------------------------------------------------------------------
     def is_for(self, state: Mapping) -> bool:
@@ -1707,6 +1736,9 @@ class AuthoritySite:
         """
         minute = _as_int(dict(after).get("sim_time"))
         if self.halted:
+            # P3-248 (review L2): a turn AFTER the halt is a small record, not a copy of the last overlay turn (which was stale and made the artifact grow by the whole turn).
+            self.current_overlay = None
+            self.current_legacy = None
             self.records.append(self._refusal(minute, SITE_HALTED, ran))
             self._persist()
             return None
@@ -1860,6 +1892,15 @@ class AuthoritySite:
             # become "nothing ran". An undeclared turn fails closed here, as it does in the gate.
             return self._hard_fail(minute, f"{UNSUPPORTED_AUTHORITY_ACTION}: the caller did not declare "
                                            f"which actions ran this turn", ran)
+        # P3-243: under a development grant the V1 consciousness overlay is fed EVERY turn that reaches the judgement (a no-advance turn too), before anything is judged,
+        # so the collapse boundary of the interval is known BEFORE a commit and every failure record can name the common state at the rejection. It reads; it never
+        # writes, and the only thing it decides is the boundary.
+        self.current_overlay = self._overlay_turn(after, session) if self.grant is not None else None
+        try:
+            self.current_legacy = (json.loads(canonical({key: value for key, value in dict(after.get("observable") or {}).items() if key not in AUTHORITY_DOMAIN}))
+                                   if self.grant is not None else None)
+        except Exception:
+            self.current_legacy = None
         # The turn's own classes come FIRST: an unsupported management action is the declared policy and
         # it is about the turn, so a faculty reader must see it named even when the minute would also
         # have failed for another reason (P3-26-3).
@@ -1877,17 +1918,28 @@ class AuthoritySite:
         if unsupported:
             return self._hard_fail(minute, f"{UNSUPPORTED_AUTHORITY_ACTION}: {list(unsupported)}",
                                    ran, legacy=legacy_observable, unsupported=unsupported)
-        if before is not None and kinds and set(kinds) <= set(NO_ADVANCE_OK) and self._no_advance(before, after):
+        quiet_turn = before is not None and kinds and set(kinds) <= set(NO_ADVANCE_OK)
+        # P3-241 (found by the first REAL page run): after a real commit at minute m, a turn that does not move the clock still lets the engine refresh its own observable, which
+        # puts the LEGACY pressure of minute m back over the committed one. That is not a move of the patient, and it must not silently hand the pressure back to the legacy
+        # engine: the minute's own recorded legacy counterfactual says nothing moved, so the pressure the minute already committed is re-asserted, unchanged (never a second
+        # commit, never a new value).
+        reasserted = self._reassertion(after, minute) if quiet_turn and _as_int(dict(before).get("sim_time")) == minute else None
+        if quiet_turn and (reasserted is not None or self._no_advance(before, after)):
             if new_failures:
                 return self._hard_fail(minute, f"{VALIDATION_REFUSED}: the shadow recorded a failure during a turn that did not move the clock: "
                                                f"{[(_as_int(item.minute), str(item.where)) for item in new_failures][:3]}", ran, legacy=legacy_observable)
             # P3-212/215: the clock did not move and nothing physiological was asked: there is no new minute to commit and no certified minute is
             # re-committed. The turn is RECORDED (the artifact lists it), the pressure domain is verified unchanged, and the experiment goes on.
-            self.no_advance_turns.append({"minute": minute, "submission_id": submission_id, "route": route, "action_kinds": list(kinds),
-                                          "action_fates": [dict(row) for row in action_fates(ran)],
-                                          "no_common_physiology": [dict(row) for row in executed_no_common_physiology(action_fates(ran))],
-                                          "pressure_digest": digest_of(pressure_point(legacy_observable)), "outcome": NO_ADVANCE_TURN})
-            return None
+            quiet = {"minute": minute, "submission_id": submission_id, "route": route, "action_kinds": list(kinds),
+                     "action_fates": [dict(row) for row in action_fates(ran)],
+                     "no_common_physiology": [dict(row) for row in executed_no_common_physiology(action_fates(ran))],
+                     "pressure_digest": digest_of(pressure_point(legacy_observable)), "outcome": NO_ADVANCE_TURN}
+            if reasserted is not None:
+                quiet["pressure_reasserted"] = True
+            if self.grant is not None:
+                quiet["consciousness_overlay"] = dict(self._real_minute_fields().get("consciousness_overlay") or {}) or None
+            self.no_advance_turns.append(quiet)
+            return reasserted
         if minute in self.minutes_committed:
             # One minute is one transaction: a turn that did not advance the clock -- a plan, a held
             # order, a clarification -- may not commit the same minute a second time. It is checked AFTER
@@ -1902,6 +1954,11 @@ class AuthoritySite:
         candidate = pressure_point(shadow_minute.derived)
         if any(value is None for value in candidate.values()):
             return self._hard_fail(minute, NO_COMMON_CANDIDATE, ran, legacy=legacy_observable)
+        if self.grant is not None:
+            # P3-245: PRECOMMIT, every minute of the interval: a minute past the window, or one the overlay cannot show, or one at an ESTABLISHED collapse, is never committed.
+            stopped = self._boundary_guard(minute)
+            if stopped:
+                return self._hard_fail(minute, stopped, ran, legacy=legacy_observable)
         # P3-19D: every digest below is computed HERE, from the immutable artifact and the candidate.
         self.replay_input = self._artifact_input(session)
         input_digest = digest_of(self.replay_input)
@@ -1944,6 +2001,10 @@ class AuthoritySite:
         # minute could be reproduced. Each minute now carries the input it was computed from.
         provenance["replay_input"] = minute_input
         provenance["precommit_observable_digest"] = digest_of(dict(after.get("observable") or {}))
+        if self.grant is not None:
+            provenance.update(self._real_minute_fields())
+            provenance["interval_check"] = (None if between is None else {"mode": between["mode"], "interval_minutes": between["interval_minutes"], "ok": between["ok"],
+                                                                         "rows": len(between["rows"])})
         if route == CLINICAL_TIME:
             # No order was given, so there is no ledger row to settle: the minute is settled by construction. Order turns keep their records
             # byte for byte (no new key) and settle after the pipeline, as they always did.
@@ -1985,6 +2046,30 @@ class AuthoritySite:
         return prepared
 
     # -- the pieces ------------------------------------------------------------------------------------
+    def _reassertion(self, after: Mapping, minute: int) -> Mapping | None:
+        """The state with the pressure this minute already committed written back over the engine's refresh, or ``None`` when this is not that situation.
+
+        Only under a grant, only for a minute that committed, and only when the engine's refresh of the observable IS the legacy counterfactual that minute recorded (so
+        nothing moved in the legacy engine): then the committed pressure is the authoritative one still. It writes the recorded written candidate (shaped as the legacy
+        engine shows it, MAP derived as the display derives it) and nothing else, and it is checked to touch nothing outside the pressure domain."""
+        try:
+            if self.grant is None or minute not in self.minutes_committed:
+                return None
+            held = next(record for record in reversed(self.records) if _as_int(record.get("minute")) == minute and record.get("committed"))
+            written, legacy_then = dict(held.get("written_candidate") or {}), held.get("legacy_counterfactual")
+            if not written or legacy_then is None or pressure_point(dict(after).get("observable")) != dict(legacy_then):
+                return None
+            prepared = dict(deepcopy(dict(after)))
+            observable = dict(prepared.get("observable") or {})
+            observable.update({"sbp": written["sbp"], "dbp": written["dbp"]})
+            mean = derived_map(written.get("sbp"), written.get("dbp"))
+            if mean is not None:
+                observable["map"] = mean
+            prepared["observable"] = observable
+            return prepared if self._moved(after, prepared) <= {"sbp", "dbp", "map"} else None
+        except Exception:
+            return None
+
     def _interval_check(self, end_valid: bool, minute: int, session, unsupported: Sequence[str], legacy_arrest: bool) -> dict | None:
         """The per-minute validation of the minutes BETWEEN the last judged minute and this turn's end minute, in pressure-only mode (P3-223).
 
@@ -2109,7 +2194,8 @@ class AuthoritySite:
                 "legacy_shape": (None if legacy is None else shape_of(legacy)),
                 "precommit_observable_digest": (None if legacy is None
                                                 else digest_of(dict(legacy))),
-                "phase2_digest": rs.PHASE2_DIGEST}
+                "phase2_digest": rs.PHASE2_DIGEST,
+                **(self._safe_real_minute_fields() if self.grant is not None else {})}
 
     def _hard_fail(self, minute: int, reason: str, ran: Sequence | None, *, provenance: dict | None = None,
                    transaction: "AuthorityTransaction | None" = None,
@@ -2202,7 +2288,99 @@ class AuthoritySite:
         }
         if self.no_advance_turns:
             body["no_advance_turns"] = [dict(item) for item in self.no_advance_turns]          # only when there are some: the usual artifact is unchanged
+        if self.grant is not None:
+            body.update(self._real_artifact_fields())                                           # P3-246: only a run under the grant carries these: the historical artifact is unchanged
         return {**body, "artifact_digest": digest_of(body)}
+
+    # -- P3-240/243/245/246: the grant, the overlay and the boundary ----------------------------------------------------------------------
+    def _overlay_for(self, session):
+        """The overlay beside this experiment, built once from the shadow session's authored arrival. Never raises: an overlay that cannot be built is a refusal named in
+        ``overlay_refusal``, and the boundary guard then fails CLOSED (the boundary cannot be verified, so no minute is committed)."""
+        if self.overlay is not None or self.overlay_refusal:
+            return self.overlay
+        try:
+            import runtime_authority_pair as pair
+            arrival = getattr(session, "arrival", None)
+            if arrival is None or getattr(session, "runner", None) is None:
+                raise ValueError("the shadow session has no authored arrival or runner to bind the overlay to")
+            self.overlay = pair.ConsciousnessOverlay(pair.bind(), self.case_id, arrival)
+        except Exception as error:
+            self.overlay_refusal = f"{type(error).__name__}: {error}"
+        return self.overlay
+
+    def _overlay_turn(self, after: Mapping, session) -> dict:
+        overlay = self._overlay_for(session)
+        if overlay is None:
+            return {"available": False, "why": self.overlay_refusal or "no overlay", "minute": _as_int(dict(after).get("sim_time")), "boundary": None, "clear": False, "rows": []}
+        try:
+            turn = overlay.turn(after, session)
+            turn["available"] = True
+            return turn
+        except Exception as error:               # ``turn`` does not raise; a second line of defence, because the overlay may never break an encounter
+            return {"available": False, "why": f"{type(error).__name__}: {error}", "minute": _as_int(dict(after).get("sim_time")), "boundary": None, "clear": False, "rows": []}
+
+    def _boundary_guard(self, minute: int) -> str:
+        """``''`` when this minute may be judged for a commit, else the reason it may not (a hard failure with that reason)."""
+        window = dict(dict(self.grant or {}).get("window") or {}).get("max_minute")
+        if window is not None and minute > int(window):
+            return f"{WINDOW_CLOSED}: minute {minute} is past the experiment window of {window} minutes"
+        turn = dict(self.current_overlay or {})
+        if not turn.get("available"):
+            return f"{COLLAPSE_BOUNDARY_NOT_VERIFIABLE}: the consciousness overlay that carries the boundary is unavailable ({turn.get('why')})"
+        boundary = dict(turn.get("boundary") or {})
+        if boundary.get("first_established_minute") is not None:
+            return (f"{COLLAPSE_BOUNDARY_REACHED}: the common core reads ESTABLISHED collapse at minute {boundary['first_established_minute']} of the interval "
+                    f"{turn.get('from_minute')}..{minute}: an experiment boundary, never a patient state")
+        if not turn.get("clear"):
+            return (f"{COLLAPSE_BOUNDARY_NOT_VERIFIABLE}: minutes not shown {list(boundary.get('minutes_not_shown') or [])}, "
+                    f"one course {dict(turn.get('course') or {}).get('one_course')}, failures {list(turn.get('failed') or [])}")
+        return ""
+
+    def _safe_real_minute_fields(self) -> dict:
+        """The failure handler's own fields: whatever goes wrong while describing a failure is recorded as part of it, and never escapes into the page (review L3)."""
+        try:
+            return self._real_minute_fields()
+        except Exception as error:
+            return {"grant_id": dict(self.grant or {}).get("grant_id"), "grant_fingerprint": dict(self.grant or {}).get("fingerprint"), "authority_mode": "PRESSURE_ONLY",
+                    "legacy_non_authority": None, "consciousness_overlay": None,
+                    "collapse_boundary": {"policy": "ESTABLISHED_PRECOMMIT_FAIL_CLOSED", "first_established_minute": None, "minutes_not_shown": [], "clear": False},
+                    "real_fields_error": f"{type(error).__name__}: {error}"}
+
+    def _real_minute_fields(self) -> dict:
+        import runtime_pressure_grant as grants
+        turn = dict(self.current_overlay or {})
+        boundary = dict(turn.get("boundary") or {})
+        return {"grant_id": dict(self.grant).get("grant_id"), "grant_fingerprint": dict(self.grant).get("fingerprint"), "authority_mode": grants.AUTHORITY_MODE,
+                "legacy_non_authority": (None if self.current_legacy is None else dict(self.current_legacy)),
+                "consciousness_overlay": ({key: turn.get(key) for key in ("available", "why", "minute", "from_minute", "legacy_mental_status", "rows", "course", "clear", "digest")}
+                                          if turn else None),
+                "collapse_boundary": {"policy": "ESTABLISHED_PRECOMMIT_FAIL_CLOSED", "first_established_minute": boundary.get("first_established_minute"),
+                                      "minutes_not_shown": list(boundary.get("minutes_not_shown") or []), "clear": bool(boundary.get("clear")) and bool(turn.get("clear"))}}
+
+    def _real_artifact_fields(self) -> dict:
+        import runtime_pressure_grant as grants
+        grant = dict(self.grant)
+        policy = dict(grant.get("failure_policy") or {})
+        if self.overlay is not None:
+            overlay = self.overlay.overlay_summary()
+        else:
+            overlay = {"label": grants.OVERLAY_LABEL, "role": "CANDIDATE_OVERLAY_NONAUTHORITATIVE", "available": False, "why": self.overlay_refusal, "authority": False,
+                       "resident_visible": False, "writes_mental_status": False, "written_into_the_encounter": False, "turns": [], "violations": [], "replay_input": None,
+                       "snapshot": None}
+        failed = next((record for record in self.records if record.get("outcome") == ABORTED), None)
+        committed = list(self.minutes_committed)
+        return {"authority_label": grants.ARTIFACT_LABEL, "authority_mode": grants.AUTHORITY_MODE, "grant": grants.summary(grant),
+                "authority_began": bool(committed),
+                "experiment_outcome": ("INVALID_FOR_CONTINUATION" if self.halted and committed else "EXPERIMENT_HALTED" if self.halted else "ACTIVE"),
+                "excluded_domains": list(grants.EXCLUDED_DOMAINS), "consciousness_overlay": overlay,
+                "collapse_boundary": {"policy": dict(grant.get("collapse_boundary") or {}), "window_max_minute": dict(grant.get("window") or {}).get("max_minute"),
+                                      "last_authoritative_commit_minute": (max(committed) if committed else None),
+                                      "first_rejected_minute": (None if failed is None else failed.get("minute")), "rejection_reason": (self.halt_reason if self.halted else ""),
+                                      "common_state_at_rejection": (None if failed is None else dict(failed.get("consciousness_overlay") or {}) or None)},
+                "post_commit_policy": {"before_the_first_commit": policy.get("before_the_first_commit"), "after_the_first_commit": policy.get("after_the_first_commit"),
+                                       "silent_fallback_to_the_legacy_engine": False, "is_patient_death": False,
+                                       "what_the_page_does": ("the legacy engine keeps running the encounter, and the resident sees nothing of the experiment; the experiment is INVALID_FOR_CONTINUATION "
+                                                              "after a commit (EXPERIMENT_HALTED before one): no later minute is authoritative, the artifact is the record, and it is read, never continued")}}
 
 
 def _as_int(value: Any) -> int:
@@ -2294,6 +2472,15 @@ def open_site(state: Mapping, *, environ: Mapping[str, str] | None = None,
                          experiment_id=str(experiment_id or digest_of({"encounter": encounter,
                                                                        "snapshot": decision.snapshot_id,
                                                                        "site": SITE_VERSION})[:16]))
+    # P3-240: the explicit development grant travels with the site, but only when it is the one that authorizes THIS run (the real registered point, the case, the
+    # environment, the family and the live core lineage). A run with a TEST-ONLY point carries none and behaves as before the grant existed.
+    import runtime_pressure_grant as grants
+    member = rs.CORE_LINEAGE[-1]
+    if not grants.grant_problems(grants.GRANT, case_id=case_id, environment=str(live.get(ENVIRONMENT_FLAG, "") or "").strip().lower(), snapshot_id=str(decision.snapshot_id or ""),
+                                 family=site.family, lineage={"version_id": member.version_id, "digest": member.digest}):
+        site.grant = grants.GRANT
+    elif str(decision.snapshot_id or "") == grants.PRESSURE_SNAPSHOT_ID:
+        return None                  # the REAL registered point never runs without the grant it is bound to (a registry that disagrees with the grant opens nothing)
     # P3-46-5: the decision that allowed authority travels with the site, so the artifact says why.
     site.eligibility = eligibility_record(
         decision, family=site.family, case_id=case_id, environment=site.environment,
@@ -2351,6 +2538,8 @@ def site_for(state: Mapping, store: Any,
             return site
         minute = _as_int(dict(state).get("sim_time"))
         if minute != 0 or not asked:
+            if asked and existing is None:
+                note_resume_without_site(state, store, live)
             return None
         if store.get(HALTED_KEY) and store.get(HALTED_KEY) == rs._encounter_id(dict(state)):
             return None
@@ -2363,6 +2552,68 @@ def site_for(state: Mapping, store: Any,
         if site is None:
             store[SITE_REFUSED_KEY] = key
         return site
+    except Exception:
+        return None
+
+
+def _resumed_artifact(state: Mapping, live: Mapping[str, str]) -> dict | None:
+    """The stored, still-ACTIVE experiment whose last committed minute IS this state: same case, same minute, same committed pressures. Never raises."""
+    import runtime_authority_store as artifact_store
+    from clinical_core import legacy_adapter
+    case_id = str(legacy_adapter.engine_case_id(dict(state)))
+    minute = _as_int(dict(state).get("sim_time"))
+    observable = dict(dict(state).get("observable") or {})
+    now = (observable.get("sbp"), observable.get("dbp"))
+    best = None
+    for path in artifact_store.paths(environ=live):
+        try:
+            body = dict(json.loads(path.read_text(encoding="utf-8")).get("artifact") or {})
+        except Exception:
+            continue
+        if body.get("case_id") != case_id or body.get("halted") or not body.get("authority_minutes"):
+            continue
+        last = [dict(item) for item in (body.get("minutes") or []) if dict(item).get("committed")][-1:]
+        if not last or _as_int(last[0].get("minute")) != minute:
+            continue
+        written = dict(last[0].get("written_candidate") or {})
+        if (written.get("sbp"), written.get("dbp")) != now:
+            continue
+        if best is None or len(body.get("minutes") or []) > len(best.get("minutes") or []):
+            best = body
+    return best
+
+
+def note_resume_without_site(state: Mapping, store: Any, live: Mapping[str, str]) -> dict | None:
+    """P3-248 (review M1). The saved session keeps the patient state (with the pressures the common authority committed) but NOT the authority site, so an encounter
+    resumed after a commit has no site and the legacy engine runs it from there. That is a return to the legacy engine; it is never silent: the stored experiment is
+    marked halted (``ENCOUNTER_RESUMED_WITHOUT_ITS_AUTHORITY_SITE``, INVALID_FOR_CONTINUATION, mixed trajectory) and the session carries that artifact so the faculty
+    reading says so. Checked once per case and minute of a session; matched by case, minute and committed pressures; a store that is not configured, or no match, marks
+    nothing. Never raises."""
+    try:
+        minute = _as_int(dict(state).get("sim_time"))
+        from clinical_core import legacy_adapter
+        marked = f"{legacy_adapter.engine_case_id(dict(state))}@{minute}"
+        if store.get(RESUME_CHECKED_KEY) == marked:
+            return None
+        store[RESUME_CHECKED_KEY] = marked
+        import runtime_authority_store as artifact_store
+        if minute <= 0 or not artifact_store.configured(live):
+            return None
+        body = _resumed_artifact(state, live)
+        if body is None:
+            return None
+        reason = (f"{RESUMED_WITHOUT_SITE}: the encounter was resumed at minute {minute} without its authority site (the site is not part of the saved session); the pressures "
+                  f"of minutes {list(body.get('authority_minutes') or [])} stay in the saved state and the legacy engine runs the encounter from here")
+        marker = {key: value for key, value in body.items() if key != "artifact_digest"}
+        marker.update({"halted": True, "halt_reason": reason, "experiment_state": EXPERIMENT_HALTED, "invalid_for_continuation": INVALID_FOR_CONTINUATION,
+                       "mixed_trajectory": True, "resumed_at_minute": minute})
+        if marker.get("authority_label") == REAL_PRESSURE_LABEL:
+            marker["experiment_outcome"] = "INVALID_FOR_CONTINUATION"
+            marker["collapse_boundary"] = {**dict(marker.get("collapse_boundary") or {}), "rejection_reason": reason}
+        marker["artifact_digest"] = digest_of(marker)
+        artifact_store.persist(marker, environ=live)          # the digest covers every field, so the storage receipt is not written into the artifact
+        store[ARTIFACT_KEY] = marker
+        return marker
     except Exception:
         return None
 
@@ -2464,7 +2715,7 @@ def eligibility_is_consistent(artifact: Mapping) -> tuple:
         reasons.append("the eligibility record says the gate did not grant, yet a site was opened")
     conditions = dict(row.get("conditions") or {})
     if conditions and sorted(conditions) != sorted(GATE_CONDITIONS):
-        reasons.append("the eligibility record does not carry the nine gate conditions")
+        reasons.append("the eligibility record does not carry the gate conditions")
     failing = sorted(name for name, ok in conditions.items() if not ok)
     if failing:
         reasons.append(f"the eligibility record carries failing conditions: {failing}")
@@ -2535,7 +2786,20 @@ def replay_site_artifact(artifact: Mapping) -> dict:
     digest_matches = body.get("artifact_digest") == digest_of(
         {key: value for key, value in body.items() if key != "artifact_digest"})
     eligibility_ok, eligibility_why = eligibility_is_consistent(body)
-    return {"minutes": rows, "compared": len(compared),
+    # P3-246A: a run under the grant also replays its overlay and its halt reason FROM THE ARTIFACT ALONE.
+    overlay_replay = None
+    real_run = body.get("authority_label") == REAL_PRESSURE_LABEL or claims_real_content(body)
+    claims = real_artifact_problems(body) if real_run else []
+    if real_run:
+        try:
+            import runtime_authority_pair as pair_module
+            overlay_replay = pair_module.replay_overlay_artifact(body)
+        except Exception as error:
+            overlay_replay = {"checked": True, "reproduces": False, "mismatches": [f"{type(error).__name__}: {error}"], "established_minutes": []}
+    halt_replay = halt_reason_replay(body, overlay_replay)
+    return {"artifact_class": artifact_class(body), "overlay_replay": overlay_replay, "halt_reason_replay": halt_replay, "real_claims_problems": claims,
+            "halt_reason_rederived": bool(halt_replay.get("rederived")),
+            "minutes": rows, "compared": len(compared),
             # P3-46-7: the artifact has to carry the decision that allowed authority, and it has to
             # agree with the artifact it travels in.
             "eligibility_present": isinstance(body.get("eligibility"), Mapping),
@@ -2555,18 +2819,84 @@ def replay_site_artifact(artifact: Mapping) -> dict:
                         if committed and len(compared) == len(committed)
                         else "no committed minute to reproduce" if not committed
                         else "some committed minute does not reproduce"),
+            # P3-248: what the verdict does NOT cover, said apart from it (the verdict text is a certified contract and stays what it was)
+            "verdict_notes": [note for note in (("the halt reason is recorded, not re-derived" if body.get("halted") and not halt_replay.get("rederived") else None),
+                                                ("the artifact contradicts its own claims: " + "; ".join(claims) if claims else None),
+                                                ("the artifact is inconsistent about being a real one" if artifact_class(body) == INCONSISTENT_ARTIFACT else None)) if note],
             # P3-19 review: a verdict that ignored the artifact's own digest called a forged artifact
             # reproducible. The digest is part of the verdict now.
             "reproduces": bool(compared) and len(compared) == len(committed) and digest_matches
                           and all(row["candidate_matches"] and row["transaction_matches"]
                                   and row["pressures_match"] and row["written_matches"]
                                   and row["outcome_consistent"] for row in compared)
-                          and all(row["outcome_consistent"] for row in rows),
+                          and all(row["outcome_consistent"] for row in rows)
+                          and (overlay_replay is None or bool(overlay_replay.get("reproduces"))) and bool(halt_replay["reproduces"])
+                          and not claims and artifact_class(body) != INCONSISTENT_ARTIFACT,
             "artifact_digest": body.get("artifact_digest"),
             "artifact_digest_recomputes": digest_matches,
             "self_certifying": "the digest detects a change, not a determined forger: it has no "
                                "signature, so anyone holding the artifact can recompute it after "
                                "editing. A signed artifact needs a key, which is a faculty decision."}
+
+
+def halt_reason_replay(body: Mapping, overlay_replay: Mapping | None = None) -> dict:
+    """Whether the recorded halt reason is what the artifact's own run says (P3-246A, repaired by the P3-248 review).
+
+    Re-derived from the artifact for the reasons that are DERIVABLE from a run: the collapse boundary (from the replayed overlay), the experiment window (the minute
+    against the grant's PINNED window, never the artifact's own copy), an unsupported management class (the recorded classes against the unsupported list, wherever
+    the artifact records them: the aborted minute, the committed minute or a turn that did not move the clock), a failed validation or interval and a provenance
+    contradiction. A reason that is not derivable from the run (an internal error, a configuration change, a resume) is reported as ``rederived: False``: it is
+    recorded, checked only against the aborted minute that carries it, and never called re-derived.
+
+    Two checks apply to EVERY reason: the aborted minute names the SAME reason the artifact names (a relabelled halt reason does not pass), and evidence is searched
+    where it lives -- a contradiction found while settling a committed minute is recorded on THAT minute, not on the fresh failure record."""
+    import runtime_pressure_grant as grants
+    body = dict(body or {})
+    if not body.get("halted"):
+        return {"applicable": False, "reproduces": True, "kind": "NOT_HALTED", "rederived": True}
+    reason = str(body.get("halt_reason") or "")
+    kind = reason.split(":", 1)[0].strip()
+    records = [dict(record) for record in (body.get("minutes") or [])]
+    quiet = [dict(record) for record in (body.get("no_advance_turns") or [])]
+    failed = next((record for record in records if record.get("outcome") == ABORTED), None)
+    out = {"applicable": True, "kind": kind, "minute": None, "rederived": True, "reproduces": False}
+    if kind == RESUMED_WITHOUT_SITE:
+        # a resume is an event of the session, not of the run: recorded, never re-derived; it needs committed minutes and no failure record
+        return {**out, "rederived": False, "reproduces": bool(failed is None and any(record.get("committed") for record in records) and body.get("resumed_at_minute") is not None),
+                "why": "a resume is recorded, not re-derived"}
+    if failed is None:
+        return {**out, "why": "no aborted minute in the artifact"}
+    minute = _as_int(failed.get("minute"))
+    out["minute"] = minute
+    consistent = str(failed.get("failure_reason") or "") == reason
+    out["recorded_reason_consistent"] = consistent
+    if not consistent:
+        return {**out, "why": "the aborted minute names another reason than the artifact does"}
+    everywhere = [failed] + records + quiet
+    if kind == COLLAPSE_BOUNDARY_REACHED:
+        found = dict(failed.get("collapse_boundary") or {}).get("first_established_minute")
+        established = list((overlay_replay or {}).get("established_minutes") or [])
+        out["reproduces"] = bool(overlay_replay and overlay_replay.get("reproduces") and found is not None and found in established and found <= minute)
+        out["first_established_minute"] = found
+    elif kind == WINDOW_CLOSED:
+        out["reproduces"] = bool(minute > grants.WINDOW_MINUTES)
+    elif kind == UNSUPPORTED_AUTHORITY_ACTION:
+        classes = bool(any(unsupported_among(list(item.get("action_kinds") or ())) or unsupported_among(list(item.get("settled_action_classes") or ())) for item in everywhere)
+                       or any(item.get("unsupported_actions") for item in everywhere))
+        undeclared = ("did not declare which actions ran" in reason or "clinical-time route carries no actions" in reason)
+        out["reproduces"] = bool(classes or undeclared)
+        if undeclared and not classes:
+            out.update(rederived=False, why="an undeclared or misrouted turn is recorded, not re-derived")
+    elif kind == PROVENANCE_CONTRADICTION:
+        out["reproduces"] = bool(any(item.get("provenance_contradictions") for item in everywhere))
+    elif kind == VALIDATION_REFUSED:
+        out["reproduces"] = bool(failed.get("validation_failures") or failed.get("interval_validation"))
+    elif kind == COLLAPSE_BOUNDARY_NOT_VERIFIABLE:
+        boundary = dict(failed.get("collapse_boundary") or {})
+        out["reproduces"] = bool(boundary.get("minutes_not_shown") or not boundary.get("clear") or not dict(failed.get("consciousness_overlay") or {}).get("available", True))
+    else:
+        out.update(rederived=False, reproduces=True, why="this reason is not derivable from the run (it is recorded, not re-derived)")
+    return out
 
 
 # -- P3-22: the GI authority battery, over the dormant logic --------------------------------------------
@@ -2767,6 +3097,13 @@ ARTIFACT_FIELDS = ("artifact", "site", "experiment_id", "encounter_id", "case_id
                    "mode_decided_at", "attempt", "experiment_state", "invalid_for_continuation",
                    "store", "halted", "halt_reason", "mixed_trajectory", "authority_minutes",
                    "eligibility", "action_history", "minutes", "replay_input", "artifact_digest")
+#: P3-246: what an artifact of a run UNDER THE GRANT also carries (the historical artifact has none of these), and what each of its minutes also carries.
+REAL_PRESSURE_LABEL = "REAL_DEVELOPMENT_PRESSURE_AUTHORITY"
+HISTORICAL_PRESSURE_LABEL = "HISTORICAL_PRESSURE_EXPERIMENT"
+DORMANT_LABEL = "DORMANT_AUTHORITY_EVALUATION"
+REAL_ARTIFACT_FIELDS = ("authority_label", "authority_mode", "grant", "excluded_domains", "consciousness_overlay", "collapse_boundary", "post_commit_policy",
+                        "authority_began", "experiment_outcome")
+REAL_MINUTE_FIELDS = ("grant_id", "grant_fingerprint", "authority_mode", "legacy_non_authority", "consciousness_overlay", "collapse_boundary")
 #: What each minute of it must carry.
 ARTIFACT_MINUTE_FIELDS = ("minute", "outcome", "committed", "replay_input",
                           "precommit_observable_digest", "input_digest", "candidate_digest",
@@ -2774,6 +3111,69 @@ ARTIFACT_MINUTE_FIELDS = ("minute", "outcome", "committed", "replay_input",
                           "legacy_shape", "common_candidate", "legacy_counterfactual", "action_kinds",
                           "action_fates", "unsupported_actions", "divergence_classes",
                           "validation_failures", "failure_reason")
+
+
+#: What only a run under the development grant carries (P3-248, review M5): the content, not the label, says that an artifact claims to be a REAL one.
+REAL_CONTENT_KEYS = ("grant", "consciousness_overlay", "authority_mode", "excluded_domains", "post_commit_policy")
+REAL_MINUTE_CONTENT_KEYS = ("grant_id", "grant_fingerprint", "legacy_non_authority", "consciousness_overlay")
+INCONSISTENT_ARTIFACT = "INCONSISTENT_ARTIFACT"
+
+
+def claims_real_content(artifact: Mapping) -> bool:
+    """Whether the artifact carries anything only a run under the grant carries, whatever its label says."""
+    body = dict(artifact or {})
+    return bool(any(key in body for key in REAL_CONTENT_KEYS)
+                or any(key in dict(record) for record in (body.get("minutes") or []) for key in REAL_MINUTE_CONTENT_KEYS)
+                or any("consciousness_overlay" in dict(record) for record in (body.get("no_advance_turns") or [])))
+
+
+def real_artifact_problems(artifact: Mapping) -> list:
+    """What a REAL artifact claims that its own records contradict, by name (P3-248 review, M4 and L6). Every one of these is re-derivable from the artifact alone:
+    the derived fields, the grant it names, the boundary policy and the window against the PINNED constants, and above all that no COMMITTED minute is past the window or
+    lacks a clear collapse boundary (the precommit guard is a rule of the site; the artifact has to show the rule was kept)."""
+    import runtime_pressure_grant as grants
+    body = dict(artifact or {})
+    problems: list = []
+    minutes = [dict(record) for record in (body.get("minutes") or [])]
+    committed = [record for record in minutes if record.get("committed")]
+    aborted = [record for record in minutes if record.get("outcome") == ABORTED]
+    halted, began = bool(body.get("halted")), bool(committed)
+    if list(body.get("authority_minutes") or []) != [record.get("minute") for record in committed]:
+        problems.append("authority_minutes does not list the committed minutes")
+    if body.get("authority_began") is not began:
+        problems.append("authority_began is not what the committed minutes say")
+    expected = "INVALID_FOR_CONTINUATION" if halted and began else "EXPERIMENT_HALTED" if halted else "ACTIVE"
+    if body.get("experiment_outcome") != expected:
+        problems.append(f"experiment_outcome {body.get('experiment_outcome')!r} is not {expected!r}")
+    if bool(body.get("mixed_trajectory")) is not bool(halted and began):
+        problems.append("mixed_trajectory is not (halted and committed)")
+    if str(body.get("invalid_for_continuation") or "") != (INVALID_FOR_CONTINUATION if halted else ""):
+        problems.append("invalid_for_continuation does not follow the halt")
+    if (body.get("experiment_state") == EXPERIMENT_HALTED) is not halted:
+        problems.append("experiment_state does not follow the halt")
+    if halted and not (aborted or body.get("resumed_at_minute") is not None):
+        problems.append("halted without any recorded failure")
+    if aborted and not halted:
+        problems.append("a failure is recorded but the experiment is not halted")
+    if halted and aborted and str(aborted[0].get("failure_reason") or "") != str(body.get("halt_reason") or ""):
+        problems.append("the first recorded failure names another reason than the halt reason")
+    policy = dict(body.get("post_commit_policy") or {})
+    if policy.get("silent_fallback_to_the_legacy_engine") is not False or policy.get("is_patient_death") is not False:
+        problems.append("post_commit_policy claims a silent fallback or a patient death")
+    if canonical(dict(body.get("grant") or {})) != canonical(grants.summary()):
+        problems.append("the grant the artifact names is not the registered grant's summary")
+    boundary = dict(body.get("collapse_boundary") or {})
+    if canonical(dict(boundary.get("policy") or {})) != canonical(dict(grants.GRANT["collapse_boundary"])) or boundary.get("window_max_minute") != grants.WINDOW_MINUTES:
+        problems.append("the collapse boundary policy or the window is not the grant's")
+    for record in committed:
+        at = record.get("minute")
+        reading, overlay = dict(record.get("collapse_boundary") or {}), dict(record.get("consciousness_overlay") or {})
+        if _as_int(at) > grants.WINDOW_MINUTES:
+            problems.append(f"minute {at} was committed past the experiment window of {grants.WINDOW_MINUTES} minutes")
+        if not (reading.get("clear") is True and reading.get("first_established_minute") is None and not list(reading.get("minutes_not_shown") or [])
+                and overlay.get("available") is True and overlay.get("clear") is True):
+            problems.append(f"minute {at} was committed without a clear collapse boundary")
+    return problems
 
 
 def verify_artifact(artifact: Mapping) -> dict:
@@ -2793,10 +3193,57 @@ def verify_artifact(artifact: Mapping) -> dict:
             minute_gaps[str(dict(record).get("minute"))] = absent
     consistent = all(bool(dict(record).get("committed")) == (dict(record).get("outcome") == COMMITTED)
                      for record in dict(artifact).get("minutes") or [])
+    # P3-248 (review M5): an artifact is judged REAL by what it CONTAINS as well as by its label. Lowering or removing the label does not switch the real checks off:
+    # an artifact that carries the grant, the overlay or the real minute fields and does not wear the real label is inconsistent, and so is a label with no such content.
+    label_real = dict(artifact).get("authority_label") == REAL_PRESSURE_LABEL
+    content_real = claims_real_content(artifact)
+    real = label_real or content_real
+    label_matches_content = label_real == content_real
+    real_missing = [name for name in REAL_ARTIFACT_FIELDS if real and name not in dict(artifact)]
+    for record in dict(artifact).get("minutes") or []:
+        absent = [name for name in REAL_MINUTE_FIELDS if real and name not in dict(record)]
+        if absent:
+            minute_gaps[str(dict(record).get("minute"))] = sorted(set(minute_gaps.get(str(dict(record).get("minute")), [])) | set(absent))
+    # a run under the grant must say so honestly: the label, the mode, the excluded domains and a consciousness overlay that claims no authority
+    overlay = dict(dict(artifact).get("consciousness_overlay") or {})
+    honest = (not real) or (label_real and dict(artifact).get("authority_mode") == "PRESSURE_ONLY" and list(dict(artifact).get("domain") or []) == list(AUTHORITY_DOMAIN)
+                            and overlay.get("authority") is False and overlay.get("writes_mental_status") is False and overlay.get("resident_visible") is False
+                            and overlay.get("written_into_the_encounter") is False)
+    # P3-248 (attack 22): a run under the grant names the grant it ran under, and it must be THE registered one (identity and fingerprint), in the artifact and in every minute.
+    import runtime_pressure_grant as grants
+    named = dict(dict(artifact).get("grant") or {})
+    registered = (not real) or (named.get("grant_id") == grants.GRANT_ID and named.get("fingerprint") == grants.GRANT_FINGERPRINT
+                                and list(named.get("excluded_domains") or []) == list(grants.EXCLUDED_DOMAINS) and list(named.get("domain") or []) == list(AUTHORITY_DOMAIN)
+                                and list(dict(artifact).get("excluded_domains") or []) == list(grants.EXCLUDED_DOMAINS)
+                                and all(dict(record).get("grant_fingerprint") == grants.GRANT_FINGERPRINT and dict(record).get("grant_id") == grants.GRANT_ID
+                                        for record in dict(artifact).get("minutes") or []))
+    claims = real_artifact_problems(artifact) if real else []
     return {"digest_matches": recomputed == dict(artifact).get("artifact_digest"),
-            "recomputed": recomputed, "missing_fields": missing, "incomplete_minutes": minute_gaps,
-            "outcomes_consistent": consistent,
-            "complete": not missing and not minute_gaps and consistent}
+            "recomputed": recomputed, "missing_fields": missing + real_missing, "incomplete_minutes": minute_gaps,
+            "outcomes_consistent": consistent, "artifact_class": artifact_class(artifact), "claims_are_honest": bool(honest), "grant_is_the_registered_one": bool(registered),
+            "label_matches_content": bool(label_matches_content), "real_claims_problems": claims,
+            "complete": not missing and not real_missing and not minute_gaps and consistent and bool(honest) and bool(registered) and bool(label_matches_content) and not claims}
+
+
+def artifact_class(artifact: Mapping) -> str:
+    """Which kind of artifact this is (P3-246B): a REAL development pressure experiment under the grant, a HISTORICAL pressure experiment (before the grant), a DORMANT
+    evaluation, or an INCONSISTENT one. The kinds are never mistaken for one another: the dormant one has its own type, a real one carries the label, the grant and the
+    overlay, and one that wears the real label without that content (or carries that content without the label) is INCONSISTENT -- it is never classified by its label alone
+    (P3-248, review M5)."""
+    body = dict(artifact or {})
+    kind = str(body.get("artifact") or "")
+    if kind == "phase3_authority_experiment":
+        label_real = body.get("authority_label") == REAL_PRESSURE_LABEL
+        content_real = claims_real_content(body)
+        grant_named = isinstance(body.get("grant"), Mapping) and bool(dict(body.get("grant")).get("fingerprint"))
+        if label_real and content_real and grant_named:
+            return REAL_PRESSURE_LABEL
+        if label_real or content_real:
+            return INCONSISTENT_ARTIFACT
+        return HISTORICAL_PRESSURE_LABEL
+    if kind == "phase3_pair_authority_dormant" or body.get("label") == DORMANT_LABEL:
+        return DORMANT_LABEL
+    return "UNKNOWN_ARTIFACT"
 
 
 def minimal_artifact(artifact: Mapping) -> dict:
@@ -2883,6 +3330,10 @@ def authority_status(store: Any) -> dict:
                        else "a halted experiment must be read from its artifact, never continued"}
     last = dict((site.records or [{}])[-1])
     return {"mode": MODE_LIMITED_COMMON_AUTHORITY, "authority": True,
+            "authority_label": (None if site.grant is None else REAL_PRESSURE_LABEL), "grant_id": (None if site.grant is None else dict(site.grant).get("grant_id")),
+            "authority_mode": ("PRESSURE_ONLY" if site.grant is not None else None),
+            "overlay_available": (site.overlay is not None) if site.grant is not None else None,
+            "authority_began": (bool(site.minutes_committed) if site.grant is not None else None),
             "experiment_state": site.experiment_state, "halted": bool(site.halted),
             "halt_reason": site.halt_reason, "failure_policy": FAILURE_POLICY,
             "invalid_for_continuation": INVALID_FOR_CONTINUATION if site.halted else "",
