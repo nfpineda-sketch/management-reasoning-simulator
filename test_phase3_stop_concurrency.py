@@ -156,7 +156,11 @@ def test_c6_a_tab_cannot_clear_a_halt_by_dropping_the_record_when_the_experiment
     state = session.state
     tab = {}                                                  # nothing at all came back with the saved encounter
     decision = se.continuation_guard(tab, state, environ=REAL)
-    assert decision["allowed"] in (True, False)               # the strict match decides; both outcomes are declared limits, the failure is not silent
+    # P3-273 (declared adaptation): the encounter carries its provenance anchor, so it is ALWAYS a stop (it used to be the strict durable match, which a legacy engine that ran on defeated)
+    assert decision["allowed"] is False and decision["stop_class"] == se.STOP_PROVENANCE and decision["legacy_fallback_allowed"] is False
+    legacy_only_looking = {key: value for key, value in state.items() if key != ra.PROVENANCE_ANCHOR_KEY}
+    decision = se.continuation_guard({}, legacy_only_looking, environ=REAL)
+    assert decision["allowed"] in (True, False)               # without the anchor the strict match still decides: the declared limit of the store backstop
     if decision["allowed"] is False:
         assert decision["stop_class"] == se.STOP_RESUMED and decision["legacy_fallback_allowed"] is False
 
@@ -169,10 +173,13 @@ def test_c7_unreadable_or_corrupt_shared_state_is_a_stop_never_a_continuation():
     assert decision["allowed"] is False and decision["stop_class"] == se.STOP_UNREADABLE
 
 
-def test_c7b_two_encounters_with_the_identical_arrival_that_diverge_at_the_same_minute_stop_the_later_one_fail_closed():
+def test_c7b_two_encounters_with_the_identical_arrival_that_diverge_at_the_same_minute_collide_and_the_later_one_never_applies_what_it_could_not_make_durable():
     """The residual, stated and proved: the identity of a stored record is the digest of the arrival plus the minute count and outcome, and the store is create-only. Two encounters that
-    arrive IDENTICALLY (the headless driver's fixed seed; never the real page, see c12) and then do DIFFERENT things of the same duration meet as a collision. The later one is an
-    authority session whose record cannot be written: it STOPS (ARTIFACT_PERSISTENCE_FAILED, INVALID_FOR_CONTINUATION, no legacy fallback). It never continues on a record it could not write."""
+    arrive IDENTICALLY (the headless driver's fixed seed; never the real page, see c12) and then do DIFFERENT things of the same duration meet as a collision.
+
+    P3-271 (declared adaptation): the later twin's commit is one the store could not write, so it was never durable and is WITHDRAWN before anything applies it (the page installs a commit only when
+    ``minute`` returns it). Before this cycle that commit stood and the session stopped; now: a FIRST commit that collides is a clean abort (nothing authoritative ever existed: the legacy encounter
+    continues), and a LATER one stops the session at the last durable authoritative minute. Neither ever continues on a record it could not write, and neither applies the pressure it withdrew."""
     directory = Path(tempfile.mkdtemp(prefix="phase3-stop-twins-"))
     with pytest.MonkeyPatch.context() as patch:
         patch.setenv(store.STORE_FLAG, str(directory))
@@ -181,10 +188,25 @@ def test_c7b_two_encounters_with_the_identical_arrival_that_diverge_at_the_same_
         a.order("Give 1 litre of normal saline over 15 minutes.")
         b.order("Give 1 litre of lactated Ringer's over 15 minutes.")
         assert a.site.stored.get("stored") is True and a.guard()["allowed"] is True
-        assert b.site.stored.get("stored") is False and "COLLISION" in str(b.site.stored.get("why"))
+        assert b.site.halted and not b.site.minutes_committed, "the commit that collided was withdrawn: nothing authoritative exists for the later twin"
+        assert any(str(item.get("failure_reason")).startswith(ra.ARTIFACT_PERSISTENCE_FAILED) and item.get("outcome") == ra.ABORTED for item in b.site.artifact()["minutes"])
         record = b.record()
-        assert b.site.halted and record["lifecycle"] == se.INVALID_FOR_CONTINUATION and record["stop_class"] == se.STOP_PERSISTENCE and record["legacy_fallback_allowed"] is False
-        assert b.guard()["allowed"] is False, "the later twin is stopped, not left to continue without a durable record"
+        assert record["lifecycle"] == se.PRECOMMIT_ABORT and record["continuation_allowed"] is True and not record["authority_began"]
+        assert b.guard()["allowed"] is True, "a first commit that never happened is a clean abort: the untouched legacy encounter may continue"
+        # and the same collision at a LATER commit stops the session at the last durable authoritative minute
+        c, d = Session("gi_bleed_57m"), Session("gi_bleed_57m")
+        c.order("Give 500 mL normal saline over 5 minutes.")
+        d.order("Give 500 mL normal saline over 5 minutes.")
+        assert c.site.minutes_committed == d.site.minutes_committed and d.guard()["allowed"] is True, "identical first turns: the store accepts the same record twice"
+        c.order("Give 500 mL normal saline over 5 minutes.")
+        d.order("Give 500 mL lactated Ringer's over 5 minutes.")
+        assert c.guard()["allowed"] is True and d.site.halted
+        last = c.site.minutes_committed[0]
+        assert list(d.site.minutes_committed) == [last], "only the durable commit is authoritative"
+        record = d.record()
+        assert record["lifecycle"] == se.INVALID_FOR_CONTINUATION and record["stop_class"] == se.STOP_PERSISTENCE and record["legacy_fallback_allowed"] is False
+        assert record["last_authoritative_minute"] == last
+        assert d.guard()["allowed"] is False, "the later twin is stopped, not left to continue without a durable record"
 
 
 def test_c12_two_real_page_sessions_of_the_same_case_never_arrive_identically(monkeypatch, tmp_path):

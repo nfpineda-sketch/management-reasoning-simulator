@@ -129,7 +129,9 @@ def _normalize(text: str) -> str:
 
 def _without_pressures(value):
     if isinstance(value, dict):
-        return {key: _without_pressures(item) for key, item in value.items() if key not in PRESSURE_KEYS}
+        # P3-273 (declared adaptation): the provenance anchor a REAL commit writes into the patient state is declared metadata (outside the observable and the authority domain): the OFF/ON comparison
+        # masks it as it masks the pressures, and nothing else (test_phase3_turn_page pins what it is).
+        return {key: _without_pressures(item) for key, item in value.items() if key not in PRESSURE_KEYS and key != ra.PROVENANCE_ANCHOR_KEY}
     if isinstance(value, (list, tuple)):
         return [_without_pressures(item) for item in value]
     return _normalize(value) if isinstance(value, str) else value
@@ -159,6 +161,11 @@ def test_p2_the_first_real_commit_is_the_common_authority_s_and_differs_from_the
         records = {record["minute"]: record for record in on["site"].records if record.get("committed")}
         for left, right in zip(on["trail"], off["trail"]):
             if left["label"] in ("arrival", "closed") or left.get("blocked") or left["minute"] not in records or left["committed"] is None or left["minute"] not in left["committed"]:
+                continue
+            if left["minute"] != right["minute"]:
+                # P3-271 (declared adaptation): the REFUSED step. The ON page stays at the last authoritative minute (the refused turn never happened to it) while the OFF page ran on: the legacy
+                # pressure of the refused interval is the OFF page's, recorded by the site as the refused minute's counterfactual, and is not on the ON page at all.
+                assert left["halted"] and left["committed"], (case, name, left["label"], "only a refused step may leave the ON page behind the OFF page")
                 continue
             record = records[left["minute"]]
             written = record["written_candidate"]
@@ -309,13 +316,24 @@ def test_p13_off_versus_on_differ_only_in_the_pressure_values(runs):
     text equal once the pressure values are masked."""
     for case, name, on, off in _each(runs):
         assert [row["label"] for row in on["trail"]] == [row["label"] for row in off["trail"]]
-        for left, right in zip(on["trail"], off["trail"]):
+        for index, (left, right) in enumerate(zip(on["trail"], off["trail"])):
             where = f"{case}/{name}/{left['label']}"
             if left.get("blocked"):
                 continue            # ADAPTED in P3-253: the stopped leg offers no controls and does not move; the isolation claim is about every step the leg RAN (blocked steps: p17)
-            # ADAPTED in P3-253: from the step in which the experiment halts after a real commit the ON page is the STOPPED page (the failing turn ran, then the page drew the stop): no
-            # controls and the operational notice. Everything else of that step is still compared; the controls and the text are compared on every step before it.
+            # ADAPTED in P3-253: from the step in which the experiment halts after a real commit the ON page is the STOPPED page: no controls and the operational notice.
+            # ADAPTED in P3-271: the refused turn NEVER HAPPENED to the ON page, so at that step the ON page is exactly the ON page of the step before it (and the OFF page, which has no authority,
+            # ran the turn): that is what is compared there, and everything else of every earlier step is still compared against the OFF page.
             stopped_page = bool(left["halted"] and left["committed"])
+            if stopped_page:
+                # The step of a gated order is the reasoning HOLD (a legitimate zero-minute turn the authority never judges: it adds the held order's ledger row and prompt) and then the release the
+                # authority refused. So: the patient and the clock are exactly what they were, the events and the ledger keep everything they had, and the only thing a refused step may have added is that hold.
+                before = on["trail"][index - 1]
+                assert left["minute"] == before["minute"] and left["observable"] == before["observable"], (where, "the refused turn moved the patient or the clock")
+                kept = len(before["observed"]["ledger"])
+                assert left["observed"]["ledger"][:kept] == before["observed"]["ledger"], (where, "the refused turn rewrote the ledger")
+                assert all(fate == "HELD_REASONING" for _, fate in left["observed"]["ledger"][kept:]), (where, "the refused turn claimed an order was executed")
+                assert left["observed"]["events"][:len(before["observed"]["events"])] == before["observed"]["events"], (where, "the refused turn rewrote the events")
+                continue
             assert left["minute"] == right["minute"], where
             if not stopped_page:
                 assert left["buttons"] == right["buttons"], where

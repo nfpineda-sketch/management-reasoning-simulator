@@ -88,7 +88,10 @@ def _answer_the_gate(at):
             next(item for item in at.text_area if item.label == label).set_value(answer)
     next(b for b in at.button if b.label == "Complete reasoning & execute held order").click().run()
     assert not at.exception, [str(item.value)[:300] for item in at.exception]
-    assert not at.session_state["pending_reasoning"]
+    # P3-271 (declared adaptation): the held order is consumed by the turn that runs it. When a real authority session REFUSES that turn the encounter is untouched by it, so the hold is still there: it may
+    # remain only if the authority site halted (any other leftover hold is still a failure).
+    site = at.session_state.get(ra.SITE_KEY)
+    assert not at.session_state["pending_reasoning"] or (site is not None and site.halted), "the held order must have been consumed by the turn that ran it"
 
 
 def _order(at, text):

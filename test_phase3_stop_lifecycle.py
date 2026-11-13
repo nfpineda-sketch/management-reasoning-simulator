@@ -249,7 +249,10 @@ def test_l19_a_record_of_another_case_says_nothing_about_an_encounter_that_is_al
     other.order(FIRST)
     assert other.state["sim_time"] > record["last_authoritative_minute"], "the premise: only the CASE tells the two encounters apart"
     assert se._belongs(record, other.state) is False
-    assert se.continuation_guard({se.SESSION_KEY: _plain(record)}, other.state, environ={})["allowed"] is True
+    unanchored = {key: value for key, value in other.state.items() if key != ra.PROVENANCE_ANCHOR_KEY}
+    assert se.continuation_guard({se.SESSION_KEY: _plain(record)}, unanchored, environ={})["allowed"] is True, "P3-273 (declared adaptation): isolated from the anchor, only the CASE decides"
+    assert se.continuation_guard({se.SESSION_KEY: _plain(record)}, other.state, environ={})["allowed"] is False, \
+        "and the other encounter's OWN anchor, with none of its own evidence in this session, is lost provenance: a stop"
     assert se._belongs(record, stopped.state) is True, "and it still belongs to its own encounter"
 
 

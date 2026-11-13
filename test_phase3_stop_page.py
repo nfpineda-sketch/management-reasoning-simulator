@@ -454,11 +454,9 @@ def test_s15_every_post_commit_failure_is_a_stop_with_its_exact_state_recorded_a
     page._order(at, order)
     assert site.halted, name
     if name == "artifact_persistence":
-        # here the minute was committed for real and THEN its record could not be written: that commit is the last authoritative state (a second, durable witness was the point)
-        assert max(site.minutes_committed) > last
-        last = max(site.minutes_committed)
-        committed = [item for item in site.artifact()["minutes"] if item.get("committed")]
-        pressure_before = dict(committed[-1]["common_pressures"])             # read from the artifact's own last committed minute, not from the record under test
+        # P3-271 (declared adaptation): the commit whose record could not be written was never durable and never applied, so it is WITHDRAWN (it used to stand as the last authoritative state):
+        # the last authoritative state is still the previous commit, and the artifact names the refused minute as ABORTED.
+        assert max(site.minutes_committed) == last and "was not durable and was not applied" in site.halt_reason
     record = _record(at)
     assert record["lifecycle"] == se.INVALID_FOR_CONTINUATION, (name, record["lifecycle"], site.halt_reason)
     assert record["halt_reason"].startswith(reason), (name, record["halt_reason"])
@@ -561,19 +559,22 @@ def test_t1_the_page_functions_that_can_move_the_encounter_are_exactly_the_known
     tree = _app_tree()
     assert _functions_calling(tree, {"advance_clinical_time"}) == {"spend_clinical_time"}
     assert _functions_calling(tree, {"execute_family_bundle"}) == {"execute_bundle"}
-    assert _functions_calling(tree, {"execute_bundle"}) == {"_process_encounter_submission"}
+    assert _functions_calling(tree, {"execute_bundle"}) == {"_process_encounter_submission_turn"}          # P3-271 (declared adaptation): the turn body runs under the authority turn
     assert _functions_calling(tree, {"spend_clinical_time"}) == {"_clinical_encounter_workspace"}
     assert _functions_calling(tree, {"_process_encounter_submission"}) == {"_clinical_encounter_workspace"}
     assert _functions_calling(tree, {"acquire_ecg_button"}) == {"_clinical_encounter_workspace"}
-    assert _functions_calling(tree, {"cancel_pending_order"}) == {"_clinical_encounter_workspace", "_process_encounter_submission"}
+    assert _functions_calling(tree, {"cancel_pending_order"}) == {"_clinical_encounter_workspace", "_process_encounter_submission_turn"}
+    assert _functions_calling(tree, {"_process_encounter_submission_turn"}) == {"_process_encounter_submission"}, "the turn body is reached only through the wrapper that opens the authority turn"
 
 
 def test_t2_every_chokepoint_and_every_mutating_region_asks_the_guard_first():
     spend = _source("spend_clinical_time")
     assert spend.index('_authority_blocks("clinical_time")') < spend.index("advance_clinical_time(state")
     process = _source("_process_encounter_submission")
-    assert process.index('_authority_blocks("order_submission")') < process.index("_stop_guard.begin(") < process.index("_guard.begin(")
-    assert process.index('_authority_blocks("order_submission")') < process.index("add_event(") and process.index('_authority_blocks("order_submission")') < process.index("execute_bundle(")
+    body = _source("_process_encounter_submission_turn")                 # P3-271 (declared adaptation): the wrapper keeps the guard, the turn body keeps the pipeline
+    assert process.index('_authority_blocks("order_submission")') < process.index("_stop_guard.begin(") < process.index("_process_encounter_submission_turn(")
+    assert "add_event(" not in process.split("_process_encounter_submission_turn(")[0] and "execute_bundle(" not in process, "nothing is parsed, recorded or executed before the guard has answered"
+    assert "_guard.begin(" in body and "add_event(" in body and "execute_bundle(" in body
     workspace = _source("_clinical_encounter_workspace")
     assert workspace.index("_authority_continuation()") < workspace.index("_process_encounter_submission(")
     # ADDED in P3-262 (review MEDIUM-1/LOW-4): the question is asked AGAIN right after the pre-render submission is processed, before anything else of the run is drawn or handled

@@ -293,7 +293,7 @@ def test_f5_the_page_settles_the_ledger_once_per_order_turn_through_the_one_hook
     tree = ast.parse(text)
     holders = [function.name for function in ast.walk(tree) if isinstance(function, ast.FunctionDef)
                if any(isinstance(node, ast.Call) and ast.unparse(node.func).endswith("after_orders_settled") for node in ast.walk(function))]
-    assert holders == ["_process_encounter_submission"], holders
+    assert holders == ["_process_encounter_submission_turn"], holders          # P3-271 (declared adaptation): the turn body moved under the authority turn
     call = text[text.index("after_orders_settled("):].split("\n")[0]
     assert "_ledger.snapshot(" in call and "_shadow" in call
 

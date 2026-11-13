@@ -150,21 +150,27 @@ def test_d3_the_application_orchestrates_and_decides_nothing():
     # P3-46 split the provenance from the commit: TWO blocks, and the second one runs after the order
     # pipeline settles each order's fate. The commit itself did not move.
     assert len(blocks) == 2, [ast.unparse(node.test) for node in blocks]
+    # P3-271 (declared adaptation): the commit now receives the SETTLED ledger and is followed, in this order, by the artifact, the turn's verdict and only then the installation of the prepared state;
+    # the provenance block ends with the verdict too. The two blocks and everything they decide are unchanged.
     assert [ast.unparse(node) for node in blocks[0].body] == [
-        "_prepared = _authority.minute(_shadow_before, st.session_state.state, _shadow, run_actions, submission_id)",
-        "if _prepared is not None:\n    st.session_state.state = _prepared",
+        "_prepared = _authority.minute(_shadow_before, st.session_state.state, _shadow, run_actions, submission_id, settled=_ledger.snapshot(turn.get('orders') or []))",
         "st.session_state.phase3_authority_artifact = _authority.artifact()",
+        "_authority_turn_check()",
+        "if _prepared is not None:\n    st.session_state.state = _prepared",
     ], [ast.unparse(node) for node in blocks[0].body]
     assert [ast.unparse(node) for node in blocks[1].body] == [
         "_authority.settle_provenance(submission_id, _ledger.snapshot(turn.get('orders') or []))",
         "st.session_state.phase3_authority_artifact = _authority.artifact()",
+        "_authority_turn_check()",
     ], [ast.unparse(node) for node in blocks[1].body]
-    # And the order is the one the repair depends on: the commit, then the pipeline's settlement, then
-    # the provenance. A reader can check it here instead of trusting a comment.
+    # And the order is the one the repair depends on (P3-271): the pipeline's settlement, THEN the commit, then the provenance. The authority judges the settled lineage and classes BEFORE it commits, so
+    # a contradiction the settlement reveals is a refusal and never a commit that has to be taken back (a committed minute is never rewritten). A reader can check it here instead of trusting a comment.
+    executes = [node.lineno for node in ast.walk(tree) if isinstance(node, ast.Call) and ast.unparse(node.func) == "execute_bundle" and node.lineno < blocks[0].lineno]
     settles = [node for node in ast.walk(tree) if isinstance(node, ast.Call)
                and ast.unparse(node.func) == "_order_pipeline.settle"
-               and blocks[0].lineno < node.lineno < blocks[1].lineno]
-    assert len(settles) == 1, "exactly one settlement stands between the commit and the provenance"
+               and max(executes) < node.lineno < blocks[0].lineno]
+    assert len(executes) == 1 and len(settles) == 1, "exactly one settlement stands between the engine's turn and the commit"
+    assert not [node for node in ast.walk(tree) if isinstance(node, ast.Call) and ast.unparse(node.func) == "_order_pipeline.settle" and node.lineno > blocks[0].lineno], "and none after it"
     # And the site is dropped with the encounter, like the shadow session, by the layer's own names
     # rather than by literals the app could get wrong.
     reset = next(node for node in ast.walk(tree)

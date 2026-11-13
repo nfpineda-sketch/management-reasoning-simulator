@@ -270,7 +270,7 @@ def test_u15_the_layer_digest_is_the_identity_of_the_code_that_ran():
                                      "runtime_shadow_evidence.py", "runtime_authority.py",
                                      "runtime_shadow_store.py", "runtime_shadow_observer.py",
                                      "runtime_authority_pair.py", "runtime_minute_validation.py", "runtime_pair_site.py",
-                                     "runtime_pressure_grant.py", "runtime_authority_session.py"}                   # P3-251 (declared adaptation): the authority-session stop guard. P3-239 (declared adaptation): the explicit GI development pressure grant
+                                     "runtime_pressure_grant.py", "runtime_authority_session.py", "runtime_authority_turn.py"}                   # P3-271 (declared adaptation): runtime_authority_turn, the authority-controlled turn (copy, judge, apply or discard). P3-251 (declared adaptation): the authority-session stop guard. P3-239 (declared adaptation): the explicit GI development pressure grant
     for name in rs.LAYER_SOURCES:
         assert (ROOT / name).exists(), name
 
@@ -412,7 +412,7 @@ def test_u24_the_app_call_site_observes_after_the_engine_and_reads_the_settled_l
     """The two lines in ``app.py``: capture before ``execute_bundle``, observe the settled actions after."""
     tree = ast.parse((ROOT / "app.py").read_text(encoding="utf-8"))
     function = next(node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
-                    and node.name == "_process_encounter_submission")
+                    and node.name == "_process_encounter_submission_turn")        # P3-271 (declared adaptation): the turn body moved under the authority turn
     found: dict = {"capture": [], "execute": [], "observe": [], "settle": []}
     for node in ast.walk(function):
         if not isinstance(node, ast.Call):
