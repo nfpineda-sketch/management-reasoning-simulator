@@ -116,14 +116,14 @@
    "UNSUPPORTED_AUTHORITY_ACTION": 2
   },
   "record": "docs/revision/PHASE3_PRESSURE_AUTHORITY_SERIES.json",
-  "record_digest": "f43aa2caae16d3fd748af2b21d1c398be3b9428687838c453b755f010b447072",
+  "record_digest": "5a40db83d772b16c0c1273a214bc1b53d5016ad2c50aed9632fd23c66e91e2fe",
   "runs": 26,
   "states": {
    "ACTIVE": 22,
    "HALTED": 4
   }
  },
- "record_digest": "1f3d31e1fc27bfd89f629d042d803a126fafc53e714c6b5dc0d98ecd3c8740c7",
+ "record_digest": "77987dab5097001e683113d676f6d545c3c0097ea9d5a6d884f0577d90accea8",
  "record_type": "PHASE3_PRESSURE_CHECKPOINT",
  "remaining_blockers": [
   "INVALID_FOR_CONTINUATION is advisory to the encounter: the legacy engine keeps running it. An EFFECTIVE stop needs an interface design this cycle does not build and must not invent as a terminal rule (TD-142 item 4, TD-143 item 1); it blocks any use with residents",

@@ -92,6 +92,7 @@
   "site_and_artifact_travel_with_a_saved_encounter": [],
   "stop_classes": [
    "ARTIFACT_PERSISTENCE",
+   "AUTHORITY_PROVENANCE",
    "COLLAPSE_BOUNDARY",
    "CONFIGURATION_CHANGED",
    "GATE_OR_LINEAGE",
@@ -149,7 +150,7 @@
  "pinned_records": {
   "pressure_series": {
    "record": "docs/revision/PHASE3_PRESSURE_AUTHORITY_SERIES.json",
-   "record_digest": "f43aa2caae16d3fd748af2b21d1c398be3b9428687838c453b755f010b447072",
+   "record_digest": "5a40db83d772b16c0c1273a214bc1b53d5016ad2c50aed9632fd23c66e91e2fe",
    "runs": 26,
    "stopped_runs": [
     "gi_bleed_57m/unsupported_action",
@@ -161,10 +162,10 @@
   "previous_checkpoint": {
    "post_commit_status_then": "INVALID_FOR_CONTINUATION_DECLARED_NOT_SILENT_BUT_ADVISORY_TO_THE_ENCOUNTER_AND_A_RESUME_IS_MARKED_NOT_PREVENTED",
    "record": "docs/revision/PHASE3_PRESSURE_CHECKPOINT.json",
-   "record_digest": "1f3d31e1fc27bfd89f629d042d803a126fafc53e714c6b5dc0d98ecd3c8740c7"
+   "record_digest": "77987dab5097001e683113d676f6d545c3c0097ea9d5a6d884f0577d90accea8"
   }
  },
- "record_digest": "91965e655c2719e9938fceddf62b053e1ba1bf0fccfd5a51ac8997c96b12f8a6",
+ "record_digest": "13f11d31c3aba0f63275519e38c9b33ee960614b790008aadb45935ce6d5bd0e",
  "record_type": "PHASE3_EFFECTIVE_STOP_CHECKPOINT",
  "remaining_blockers": [
   "the turn that fails has already run on the legacy engine when the site judges it, so the stop applies from the NEXT action (the page and the record name the last authoritative minute and pressure)",
