@@ -1287,6 +1287,14 @@ RESUMED_WITHOUT_SITE = "ENCOUNTER_RESUMED_WITHOUT_ITS_AUTHORITY_SITE"
 RESUME_CHECKED_KEY = "phase3_authority_resume_checked_for"
 #: P3-251: where the page's session store keeps the authority-SESSION record (lifecycle, last authoritative minute, halt, continuation). It is in ``curriculum_runtime.SESSION_FIELDS``.
 SESSION_KEY = "phase3_authority_session"
+#: P3-273: the provenance ANCHOR. A REAL commit writes one monotonic mark, ``authority_occurred``, into the patient state itself (a top-level key, outside ``observable`` and outside the authority
+#: domain, which it does not widen): it travels with the encounter wherever the encounter goes, so an encounter that lost its session record AND its site is still known to have been authoritative.
+PROVENANCE_ANCHOR_KEY = "phase3_authority_anchor"
+PROVENANCE_ANCHOR_INVALID = "PROVENANCE_ANCHOR_INVALID"
+PROVENANCE_LOST = "AUTHORITY_OCCURRED_BUT_ITS_PROVENANCE_IS_LOST"
+#: P3-276 (review H1): a turn of a committed REAL session moved the clock and the site never saw it (a route the site was never asked to judge), so nothing authoritative covers it: the turn is not applied
+#: and the session stops. It is the fail-closed answer to "unjudged", never a silent legacy minute.
+TURN_NOT_JUDGED = "AUTHORITY_TURN_NOT_JUDGED"
 #: P3-257: after the first REAL commit the durable record is what makes a reopened encounter recognisable, so a record that cannot be written is a hard failure, not a note.
 ARTIFACT_PERSISTENCE_FAILED = "ARTIFACT_PERSISTENCE_FAILED"
 #: The authority configuration of a running experiment changed, which it may not (faculty decision F).
@@ -1638,6 +1646,27 @@ def unsupported_in_settlement(rows: Sequence | None) -> tuple:
     return tuple(sorted(found))
 
 
+def settlement_contradictions(identities: Sequence | None, orders: Sequence | None, submission_id: Any, *, quiet: bool = False) -> list:
+    """The contradictions the SETTLED ledger of a turn reveals against the actions the authority was told ran (P3-271): a consumed action whose canonical lineage does not hold, and a settled
+    class the common mapping cannot represent. The same judgement ``AuthoritySite.settle_provenance`` makes after the commit, made here BEFORE it, so a real session never has to take a commit back.
+    ``quiet`` is a turn that did not move the clock: it has no lineage to hold, only classes."""
+    found = []
+    settled = settled_provenance(orders, submission_id)
+    if not quiet:
+        lineage = action_lineage([dict(row) for row in (identities or [])], settled_provenance(orders, None), submission_id)
+        for row in lineage_violations(lineage):
+            found.append({"order_id": dict(row).get("order_id"), "class": dict(row).get("class"), "fate": dict(row).get("fate"), "link": dict(row).get("link"),
+                          "why": "the canonical lineage of a consumed action does not hold"})
+    unsupported = unsupported_in_settlement(settled)
+    if unsupported:
+        found.append({"class": list(unsupported),
+                      "why": (f"{UNSUPPORTED_AUTHORITY_ACTION}: the settled ledger of a turn that did not move the clock carries a management class the common mapping cannot represent"
+                              if quiet else
+                              f"{UNSUPPORTED_AUTHORITY_ACTION}: the settled ledger of this turn carries a management class the common mapping cannot represent, and faculty decision "
+                              f"C makes the encounter ineligible for common authority")})
+    return found
+
+
 def gap_kinds_of(session: Any) -> tuple:
     """The kinds of the shadow's declared gaps. A gap that names NO kind is a coverage the shadow lost (the state before a turn could not be copied, so nothing
     was mirrored): it is ``untyped_gap``, which is unsupported -- never silently dropped (P3-219 review, F2)."""
@@ -1728,15 +1757,21 @@ class AuthoritySite:
 
     @property
     def minutes_seen(self) -> int:
-        return max([_as_int(record.get("minute")) for record in self.records] or [0])
+        """The last minute the encounter REACHED under this site: its last committed minute. A refused minute is a counterfactual (P3-271): the turn that would have reached it was never applied, so the real
+        clock legitimately stays behind it, and counting it would make the halted site of that very encounter 'not its site' (a rewound one) on the next run."""
+        return max([_as_int(record.get("minute")) for record in self.records if record.get("committed")] or [0])
 
     # -- one minute ------------------------------------------------------------------------------------
     def minute(self, before: Mapping | None, after: Mapping, session: Any,
-               ran: Sequence | None, submission_id: str | None = None, route: str = ORDER_TURN) -> Mapping | None:
+               ran: Sequence | None, submission_id: str | None = None, route: str = ORDER_TURN, settled: Sequence | None = None) -> Mapping | None:
         """One future authority minute: capture, compute, validate, commit atomically, or abort.
 
         Returns a NEW prepared mapping to install, or None. Never raises into the caller: an unexpected
         error halts the site and is recorded, because a dormant experiment may not break an encounter.
+
+        ``settled`` (P3-271): the order ledger of the turn AFTER the pipeline settled each order's fate, when the caller has it BEFORE the commit. A real session judges the settled lineage and the
+        settled classes here, before it commits, so that a contradiction the settlement reveals is a refusal of the turn and never a commit that has to be taken back (a committed minute is never
+        rewritten: faculty decision F). The post-commit ``settle_provenance`` stays, and attaches the lineage to the minute as it always did.
         """
         minute = _as_int(dict(after).get("sim_time"))
         if self.halted:
@@ -1746,6 +1781,7 @@ class AuthoritySite:
             self.records.append(self._refusal(minute, SITE_HALTED, ran))
             self._persist()
             return None
+        self._settled_ledger = None if settled is None else list(settled)
         try:
             prepared = self._minute(before, dict(after), session, ran, submission_id, route)
         except Exception as error:
@@ -1759,7 +1795,11 @@ class AuthoritySite:
         # P3-26-4: every outcome of a minute is persisted -- a commit, a refusal, a failure and a halt --
         # so no failure path can be the one that forgot to leave a record. In production the store is not
         # configured, so this writes nothing and says why.
+        self._retracted_minute = None
         self._persist()
+        if getattr(self, "_retracted_minute", None) is not None:
+            # P3-271: the commit of this minute could not be made durable, so it was withdrawn BEFORE anything saw it (see ``_persist``): there is nothing to install.
+            return None
         return prepared
 
     @staticmethod
@@ -1786,11 +1826,25 @@ class AuthoritySite:
             self.stored = store.persist(self.artifact(), environ=self.environ)
         except Exception as error:
             self.stored = {"stored": False, "why": f"STORE_ERROR {type(error).__name__}: {error}"}
+        if dict(self.stored or {}).get("stored"):
+            self._unpersisted_commit = False
+            self._unpersisted_quiet = False
         if (self.grant is not None and self.minutes_committed and not self.halted and not dict(self.stored or {}).get("stored")
                 and not getattr(self, "_failing_to_persist", False)):
             self._failing_to_persist = True
             try:
-                self._hard_fail(self.minutes_seen, f"{ARTIFACT_PERSISTENCE_FAILED}: {dict(self.stored or {}).get('why')}", ())
+                # P3-271: a commit made in THIS call that the store could not write was never durable and never applied (the page installs a commit only when ``minute`` returns it): it is withdrawn
+                # and re-recorded as the failed minute, so the record never claims a minute the encounter did not reach. A commit that WAS durable is never touched (faculty decision F).
+                withdrawn = self._withdraw_unpersisted_commit()
+                if withdrawn is not None:
+                    self._hard_fail(_as_int(withdrawn.get("minute")), f"{ARTIFACT_PERSISTENCE_FAILED}: {dict(self.stored or {}).get('why')}; the commit of minute "
+                                    f"{_as_int(withdrawn.get('minute'))} was not durable and was not applied", (), provenance=withdrawn)
+                else:
+                    # P3-276 (review M2): a zero-minute turn that was only in memory when the store failed is withdrawn from the list of quiet turns, so the artifact never lists a turn
+                    # the encounter never had (the page discards it); the refusal is recorded as the failed minute of that turn.
+                    quiet_minute = self._withdraw_unpersisted_quiet()
+                    self._hard_fail(self.minutes_seen if quiet_minute is None else quiet_minute,
+                                    f"{ARTIFACT_PERSISTENCE_FAILED}: {dict(self.stored or {}).get('why')}" + ("" if quiet_minute is None else "; the zero-minute turn was not durable and was not applied"), ())
                 try:
                     import runtime_authority_store as store
                     self.stored = store.persist(self.artifact(), environ=self.environ)       # the halt itself is recorded if the store lets it
@@ -1803,6 +1857,41 @@ class AuthoritySite:
                 self._failing_to_persist = False
         self._publish_session()
         return dict(self.stored or {})
+
+    def _withdraw_unpersisted_commit(self) -> dict | None:
+        """The commit made in the call that is being persisted, taken back because the store could not write it, as the record of a failed minute (or None when there is no such commit).
+
+        It existed only in memory for the length of ``minute``: nothing durable, nothing applied and nothing shown ever carried it, so withdrawing it rewrites no history. The artifact then
+        says what happened: the minute was refused because it could not be made durable."""
+        if not getattr(self, "_unpersisted_commit", False) or not self.records or not dict(self.records[-1]).get("committed"):
+            return None
+        record = dict(self.records.pop())
+        self._unpersisted_commit = False
+        self._retracted_minute = _as_int(record.get("minute"))
+        for name in ("common_pressures", "moved_fields"):
+            record.pop(name, None)
+        record["committed"] = []
+        return record
+
+    def _withdraw_unpersisted_quiet(self) -> int | None:
+        """The zero-minute turn recorded in the call that is being persisted, taken back because the store could not write it (its minute, or None when there is no such turn)."""
+        if not getattr(self, "_unpersisted_quiet", False) or not self.no_advance_turns:
+            return None
+        quiet = dict(self.no_advance_turns.pop())
+        self._unpersisted_quiet = False
+        return _as_int(quiet.get("minute"))
+
+    def halt_unjudged_turn(self, minute: int, detail: str) -> None:
+        """P3-276 (review H1): the turn of a committed REAL session moved the encounter and the site never judged it. Stops the session (INVALID_FOR_CONTINUATION through the ordinary halt) and
+        records why. Never raises: a verdict about a turn may not break the page."""
+        try:
+            if self.halted:
+                return
+            self._hard_fail(_as_int(minute), f"{TURN_NOT_JUDGED}: {detail}", ())
+            self._persist()
+        except Exception:
+            self.halted, self.experiment_state = True, EXPERIMENT_HALTED
+            self.halt_reason = self.halt_reason or TURN_NOT_JUDGED
 
     # -- P3-251: the authority SESSION record ------------------------------------------------------------------------------------------------------------------------
     def session_record(self, *, encounter_ended: bool = False) -> dict:
@@ -1966,6 +2055,7 @@ class AuthoritySite:
 
     def _minute(self, before, after: Mapping, session, ran, submission_id, route: str = ORDER_TURN) -> Mapping | None:
         minute = _as_int(after.get("sim_time"))
+        settled_rows = getattr(self, "_settled_ledger", None)           # P3-271: the ledger after the pipeline settled the orders, when the caller had it before the commit
         if route not in KNOWN_ROUTES:
             return self._hard_fail(minute, f"{UNKNOWN_ROUTE}: {route!r}", ran)
         if route == CLINICAL_TIME:
@@ -2015,6 +2105,12 @@ class AuthoritySite:
             if new_failures:
                 return self._hard_fail(minute, f"{VALIDATION_REFUSED}: the shadow recorded a failure during a turn that did not move the clock: "
                                                f"{[(_as_int(item.minute), str(item.where)) for item in new_failures][:3]}", ran, legacy=legacy_observable)
+            if settled_rows is not None:
+                # P3-271: a zero-minute turn is judged on its SETTLED classes BEFORE it is recorded (an order the engine does not model produces no action for the turn, so only the settled
+                # ledger names it), so a turn that the authority refuses is never applied to the real encounter.
+                contradictions = settlement_contradictions(action_fates(ran), settled_rows, submission_id, quiet=True)
+                if contradictions:
+                    return self._hard_fail(minute, f"{PROVENANCE_CONTRADICTION}: {contradictions}", list(settled_provenance(settled_rows, submission_id)), legacy=legacy_observable)
             # P3-212/215: the clock did not move and nothing physiological was asked: there is no new minute to commit and no certified minute is
             # re-committed. The turn is RECORDED (the artifact lists it), the pressure domain is verified unchanged, and the experiment goes on.
             quiet = {"minute": minute, "submission_id": submission_id, "route": route, "action_kinds": list(kinds),
@@ -2026,6 +2122,7 @@ class AuthoritySite:
             if self.grant is not None:
                 quiet["consciousness_overlay"] = dict(self._real_minute_fields().get("consciousness_overlay") or {}) or None
             self.no_advance_turns.append(quiet)
+            self._unpersisted_quiet = True            # P3-276 (review M2): durable only once ``_persist`` has written it (a quiet turn the store could not write is withdrawn, like a commit)
             return reasserted
         if minute in self.minutes_committed:
             # One minute is one transaction: a turn that did not advance the clock -- a plan, a held
@@ -2111,6 +2208,13 @@ class AuthoritySite:
                                                      "ineligible_after": between["ineligible_after"], "rows": between["rows"]}
             return self._hard_fail(minute, reason, ran, provenance=provenance,
                                    transaction=transaction)
+        if settled_rows is not None:
+            # P3-271: the lineage of the settled orders and their settled classes are judged BEFORE the commit. A contradiction the settlement reveals refuses the turn; it never leaves a committed
+            # minute that has to be taken back (faculty decision F: a committed minute is never rewritten).
+            contradictions = settlement_contradictions(action_fates(ran), settled_rows, submission_id)
+            if contradictions:
+                provenance["provenance_contradictions"] = [dict(item) for item in contradictions]
+                return self._hard_fail(minute, f"{PROVENANCE_CONTRADICTION}: {contradictions}", ran, provenance=provenance, transaction=transaction)
         try:
             prepared = transaction.commit(after, environ=self.environ)
         except AuthorityRefused as refused:
@@ -2126,10 +2230,19 @@ class AuthoritySite:
             # moves nothing, and that is not an out-of-domain write.
             return self._hard_fail(minute, f"{OUT_OF_DOMAIN_WRITE}: {sorted(moved)}", ran,
                                    provenance=provenance, transaction=transaction)
+        if self.grant is not None:
+            # P3-273: a REAL commit writes the monotonic provenance anchor into the patient state it hands back, AFTER the out-of-domain check (the anchor is metadata that widens no domain): the
+            # encounter then carries the fact that authority occurred wherever it goes, even if its session record and its site are both lost.
+            try:
+                import runtime_authority_session as _session
+                prepared = {**dict(prepared), PROVENANCE_ANCHOR_KEY: _session.advance_anchor(dict(after).get(PROVENANCE_ANCHOR_KEY), self, minute, pressure_point(prepared.get("observable")))}
+            except Exception as error:
+                return self._hard_fail(minute, f"{PROVENANCE_ANCHOR_INVALID}: {type(error).__name__}: {error}", ran, provenance=provenance, transaction=transaction)
         provenance.update({"committed": sorted(transaction.committed), "outcome": COMMITTED,
                            "common_pressures": pressure_point(prepared.get("observable")),
                            "moved_fields": sorted(moved)})
         self.records.append(provenance)
+        self._unpersisted_commit = True          # P3-271: durable only once ``minute`` has persisted it (see ``_persist``)
         return prepared
 
     # -- the pieces ------------------------------------------------------------------------------------
@@ -2206,7 +2319,7 @@ class AuthoritySite:
             return canonical(one) == canonical(two)
 
         outside = {key for key in set(left) | set(right)
-                   if key != "observable" and not same(left.get(key), right.get(key))}
+                   if key not in ("observable", PROVENANCE_ANCHOR_KEY) and not same(left.get(key), right.get(key))}
         if outside:
             return outside
         one, two = dict(left.get("observable") or {}), dict(right.get("observable") or {})
@@ -2756,6 +2869,32 @@ def operation_allowed(decision: Mapping, operation: str) -> bool:
     """Whether the page may perform ``operation`` under a guard decision: only reading and leaving the session survive a stop."""
     import runtime_authority_session as session
     return session.operation_allowed(decision, operation)
+
+
+def authority_turn(store: Any, *, route: str = "") -> Any:
+    """P3-271: the context under which the page runs ONE turn of the encounter. When a real authority session has already committed and can continue, the turn runs on working copies of the
+    encounter and is applied only if the authority holds it valid; otherwise (every flag off, the first pilot, a legacy encounter, a session before its first commit) it is a no-op context and the
+    page runs exactly as it always did. See ``runtime_authority_turn``."""
+    import runtime_authority_turn as turn
+    return turn.begin(store, route=route)
+
+
+def turn_applies(store: Any) -> bool:
+    """P3-271: whether the next turn of this encounter would be transactional (see ``runtime_authority_turn.applies``)."""
+    import runtime_authority_turn as turn
+    return turn.applies(store)
+
+
+def turn_check(store: Any) -> None:
+    """P3-271: called right after the authority judged the turn; a turn it refused is unwound here (``AuthorityTurnDiscarded``, swallowed by the turn's own context). One lookup when no turn is open."""
+    import runtime_authority_turn as turn
+    turn.check(store)
+
+
+def turn_reset(store: Any) -> None:
+    """P3-276 (review L2): close a turn an earlier page run left open (see ``runtime_authority_turn.reset_stale``). One lookup when none is open."""
+    import runtime_authority_turn as turn
+    turn.reset_stale(store)
 
 
 def forget_dry_evaluator(store: Any) -> None:

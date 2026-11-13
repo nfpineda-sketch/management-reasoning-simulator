@@ -904,6 +904,7 @@ def spend_clinical_time(minutes, *, activity, request, response=""):
     # Phase 3 (P3-215): the clock moved outside an order turn, so the same hook the order turn calls hears it. With the authority and the
     # dry flag off (the default) it does nothing at all.
     _prepared = _after_the_clock_moved(_shadow, _shadow_before, route="clinical_time_outside_an_order_turn", ran=None, submission_id=None)
+    _authority_turn_check()
     if _prepared is not None:
         st.session_state.state = _prepared
     after = management_state_snapshot(st.session_state.state)
@@ -8618,8 +8619,13 @@ def complete_pending_reasoning_fields(
     held["reasoning_gate"] = {"required": True, "status": "complete", "missing": [],
                               "noted": reasoning_gate_noted(held)}
     _seal_reasoning(held, pending, "form")
-    st.session_state.pending_reasoning = None
-    clear_reasoning_gate_clarification()
+    if _authority_turn_applies():
+        # Phase 3 (P3-271): under a real authority session the held order is consumed by the turn that RUNS it (inside the authority turn, ``_process_encounter_submission_turn``), not here at
+        # render time: if the authority refuses that turn, the held order and its prompt must still be there, exactly as the resident left them.
+        held["_consume_held_reasoning"] = True
+    else:
+        st.session_state.pending_reasoning = None
+        clear_reasoning_gate_clarification()
     return {"parsed": held, "overridden": False, "transcript": transcript}
 
 
@@ -9184,6 +9190,33 @@ def _authority_blocks(operation):
     """Phase 3 (P3-253): True when the experimental session is stopped and ``operation`` is one that does not survive a stop (only reading and leaving the session do)."""
     import runtime_authority
     return not runtime_authority.operation_allowed(_authority_continuation(), operation)
+
+
+def _authority_turn(route=""):
+    """Phase 3 (P3-271): the context under which ONE turn of the encounter runs. It is the layer's (``runtime_authority.authority_turn``); this function orchestrates and decides nothing.
+
+    Under a real authority session that has already committed, the turn runs on working copies of the encounter and is applied only if the authority holds it valid; a turn it refuses leaves the real
+    encounter exactly as it was. With every authority flag off, in the first pilot and in any legacy encounter it is a no-op context and the page runs exactly as it always did."""
+    import runtime_authority
+    return runtime_authority.authority_turn(st.session_state, route=route)
+
+
+def _authority_turn_applies():
+    """Phase 3 (P3-271): True when the next turn would run on working copies (a real authority session has already committed). The layer decides; this function orchestrates and decides nothing."""
+    import runtime_authority
+    return runtime_authority.turn_applies(st.session_state)
+
+
+def _authority_turn_reset():
+    """Phase 3 (P3-276, review L2): at the start of a page run, close a turn an earlier run left open. The layer decides; this function orchestrates and decides nothing."""
+    import runtime_authority
+    runtime_authority.turn_reset(st.session_state)
+
+
+def _authority_turn_check():
+    """Phase 3 (P3-271): called right after the authority judged the turn; a refused turn is unwound here (the layer's own context drops the copy). A no-op when no turn is open."""
+    import runtime_authority
+    runtime_authority.turn_check(st.session_state)
 
 
 def _render_authority_stop_notice(decision):
@@ -11122,6 +11155,26 @@ def _process_encounter_submission(submission_text, _guard_entry=None, submission
             _stop_guard.begin(st.session_state, _guard_entry, fields=_SESSION_FIELDS, minute=int(st.session_state.state.get("sim_time", 0) or 0))
             _stop_guard.finish(st.session_state, "blocked_by_authority_stop")
         return
+    with _authority_turn("order_turn") as _turn:
+        _process_encounter_submission_turn(submission_text, _guard_entry, submission_parsed)
+    if _turn.decided == "DISCARD":
+        # Phase 3 (P3-271): the authority refused this turn and the encounter was never touched by it: the working copies are dropped and the originals stand. The submission is marked blocked
+        # (the same operational journal entry a stopped session writes) and the encounter is saved with its session record, so a reopened copy stays stopped.
+        if _guard_entry is not None:
+            import submission_guard as _stop_guard
+            _stop_guard.finish(st.session_state, "blocked_by_authority_failure")
+            if ACCOUNT_CONTEXT:
+                save_session(ACCOUNT_CONTEXT)
+            return
+        rerun_app()
+
+
+def _process_encounter_submission_turn(submission_text, _guard_entry=None, submission_parsed=None):
+    """The order turn itself (Phase 3, P3-271: it runs inside ``_authority_turn``, on working copies of the encounter whenever a real authority session has already committed)."""
+    if submission_parsed is not None and submission_parsed.pop("_consume_held_reasoning", False):
+        # The guided form completed a held order and left its consumption to this turn (see ``complete_pending_reasoning_fields``): it happens here, inside the transaction.
+        st.session_state.pending_reasoning = None
+        clear_reasoning_gate_clarification()
     if _guard_entry is not None:
         # Claimed here, where nothing more is drawn until the page reruns: a run
         # stopped before this line leaves the submission waiting, never lost, and
@@ -11317,20 +11370,23 @@ def _process_encounter_submission(submission_text, _guard_entry=None, submission
     # Phase 3 (P3-215A): the same one hook the clinical-time route calls; here it only feeds the dormant pair evaluation (the certified block
     # below holds the real site's minute). Nothing happens with the dry flag off.
     _after_the_clock_moved(_shadow, _shadow_before, route="order_turn", ran=run_actions, submission_id=submission_id)
+    # Phase 3 (P3-271): the pipeline settles each order's fate BEFORE the authority commits the minute, on the working copy, so the authority judges the settled lineage and the settled classes
+    # before it commits and never has to take a commit back. Nothing the settlement reads moves with the commit (the clock is the same; the commit writes pressures only).
+    _order_pipeline.settle(
+        turn, result=result, run_actions=run_actions, split=split, minute_before=turn_minute,
+        minute_after=int(st.session_state.state.get("sim_time", 0) or 0),
+        terminal=bool(result.get("terminal_locked")))
     if _authority is not None:
         # Phase 3 (P3-19): the dormant authority call site. Unreachable in this repository, because
         # ``site_for`` returns None without a faculty-approved snapshot. When it ever does open, one
         # minute is one transaction: it either returns a prepared state with the two common pressures
         # written together, or it commits nothing and halts the encounter's authority visibly.
         _prepared = _authority.minute(_shadow_before, st.session_state.state, _shadow, run_actions,
-                                      submission_id)
+                                      submission_id, settled=_ledger.snapshot(turn.get("orders") or []))
+        st.session_state.phase3_authority_artifact = _authority.artifact()
+        _authority_turn_check()
         if _prepared is not None:
             st.session_state.state = _prepared
-        st.session_state.phase3_authority_artifact = _authority.artifact()
-    _order_pipeline.settle(
-        turn, result=result, run_actions=run_actions, split=split, minute_before=turn_minute,
-        minute_after=int(st.session_state.state.get("sim_time", 0) or 0),
-        terminal=bool(result.get("terminal_locked")))
     if _shadow is not None:
         import runtime_authority as _authority_hook
         _authority_hook.after_orders_settled(st.session_state, _shadow, _ledger.snapshot(turn.get("orders") or []))
@@ -11341,6 +11397,7 @@ def _process_encounter_submission(submission_text, _guard_entry=None, submission
         # found the artifact recording action classes with no order identity and no fate.
         _authority.settle_provenance(submission_id, _ledger.snapshot(turn.get("orders") or []))
         st.session_state.phase3_authority_artifact = _authority.artifact()
+        _authority_turn_check()
     if entry_point == "clarification_answer" or entry_point == "reasoning_followup":
         _order_pipeline.ledger_resolve_held(st.session_state, run_actions, bool(result.get("executed")),
                                             turn_minute, add_event)
@@ -11614,6 +11671,7 @@ def _clinical_encounter_workspace():
     # Fragment reruns do not execute the top of app.py, so repeat the Phase 0
     # recovery/write-ahead gate here before any encounter element is emitted.
     _submission_guard.recover(st.session_state, _SESSION_FIELDS)
+    _authority_turn_reset()
     # Phase 3 (P3-252/253): ask ONCE per run whether the experimental authority session may continue. Stopped: every region that can alter the encounter below is not drawn,
     # and every handler that could reach the engine is gated again at its own entry. With the default configuration this is always "continue".
     _authority_decision = _authority_continuation()
@@ -11716,11 +11774,12 @@ def _clinical_encounter_workspace():
                         ask_patient = st.form_submit_button(_record_words("Ask"))
                     if ask_patient and question.strip():
                         answer = answer_history(question, facts, scene_setting("OPENAI_API_KEY"), state=st.session_state.state)
-                        add_event("you", question)
-                        add_event("patient_history", answer)
-                        import clinical_time as _clock
-                        spend_clinical_time(_clock.ACTIVE_MINUTES["history_question"],
-                                            activity="history_question", request=question, response=answer)
+                        with _authority_turn("history_question"):
+                            add_event("you", question)
+                            add_event("patient_history", answer)
+                            import clinical_time as _clock
+                            spend_clinical_time(_clock.ACTIVE_MINUTES["history_question"],
+                                                activity="history_question", request=question, response=answer)
                         rerun_app()
                     with st.expander(_record_words("History topics")):
                         case_topics = history_topics(st.session_state.state)
@@ -11742,12 +11801,13 @@ def _clinical_encounter_workspace():
                                 response = "Hypertension." if st.session_state.state.get("case_id") == "PS002" else "Hypertension and type 2 diabetes."
                             else:
                                 response = " ".join(f for f in facts if not f.startswith(("I ", "It has burned")))
-                            add_event("you", "Ask about " + topic.lower())
-                            add_event("patient_history", response)
-                            import clinical_time as _clock
-                            spend_clinical_time(_clock.ACTIVE_MINUTES["history_question"],
-                                                activity="history_question",
-                                                request="Ask about " + topic.lower(), response=response)
+                            with _authority_turn("history_topic"):
+                                add_event("you", "Ask about " + topic.lower())
+                                add_event("patient_history", response)
+                                import clinical_time as _clock
+                                spend_clinical_time(_clock.ACTIVE_MINUTES["history_question"],
+                                                    activity="history_question",
+                                                    request="Ask about " + topic.lower(), response=response)
                             rerun_app()
             # Like talking and treating, examining ends with the encounter: after the
             # close it added a decision to the saved record and moved the clinical
@@ -11779,12 +11839,13 @@ def _clinical_encounter_workspace():
                         finding = "Pulse absent. Capillary refill is not measurable."
                     else:
                         finding = "Capillary refill: " + str(observed.get("crt", "—")) + " s. Extremities: " + str(observed.get("extremities", "Not documented"))
-                    add_event("you", "Examine: " + area)
-                    add_event("examination", finding)
-                    import clinical_time as _clock
-                    spend_clinical_time(_clock.examination_minutes([area]),
-                                        activity="examination", request="Examine: " + area,
-                                        response=finding)
+                    with _authority_turn("examination"):
+                        add_event("you", "Examine: " + area)
+                        add_event("examination", finding)
+                        import clinical_time as _clock
+                        spend_clinical_time(_clock.examination_minutes([area]),
+                                            activity="examination", request="Examine: " + area,
+                                            response=finding)
                     rerun_app()
 
             submitted = False

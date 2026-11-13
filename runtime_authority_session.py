@@ -126,7 +126,8 @@ def stop_class_of(reason: str) -> str:
     pairs = ((ra.COLLAPSE_BOUNDARY_REACHED, STOP_COLLAPSE_BOUNDARY), (ra.WINDOW_CLOSED, STOP_WINDOW_CLOSED), (ra.COLLAPSE_BOUNDARY_NOT_VERIFIABLE, STOP_COLLAPSE_BOUNDARY),
              (ra.UNSUPPORTED_AUTHORITY_ACTION, STOP_UNSUPPORTED_ACTION), (ra.PROVENANCE_CONTRADICTION, STOP_UNSUPPORTED_ACTION),
              (ra.GATE_REFUSED, STOP_GATE_OR_LINEAGE), (ra.VALIDATION_REFUSED, STOP_VALIDATION), (ra.RESUMED_WITHOUT_SITE, STOP_RESUMED),
-             (ra.CONFIGURATION_CHANGED, STOP_CONFIGURATION), (ra.ARTIFACT_PERSISTENCE_FAILED, STOP_PERSISTENCE), ("SITE_ERROR", STOP_INTERNAL), ("ARTIFACT_ERROR", STOP_INTERNAL),
+             (ra.CONFIGURATION_CHANGED, STOP_CONFIGURATION), (ra.ARTIFACT_PERSISTENCE_FAILED, STOP_PERSISTENCE), ("SITE_ERROR", STOP_INTERNAL), ("ARTIFACT_ERROR", STOP_INTERNAL), (ra.TURN_NOT_JUDGED, STOP_INTERNAL),
+             (ra.PROVENANCE_ANCHOR_INVALID, "AUTHORITY_PROVENANCE"), (ra.PROVENANCE_LOST, "AUTHORITY_PROVENANCE"),
              (ra.COMMIT_REFUSED, STOP_REPLAY_OR_ARTIFACT), (ra.OUT_OF_DOMAIN_WRITE, STOP_REPLAY_OR_ARTIFACT), (ra.MINUTE_ALREADY_COMMITTED, STOP_REPLAY_OR_ARTIFACT),
              (ra.NO_COMMON_CANDIDATE, STOP_REPLAY_OR_ARTIFACT), (ra.MINUTE_NOT_COMPARED, STOP_REPLAY_OR_ARTIFACT))
     for needle, name in pairs:
@@ -251,14 +252,111 @@ def transition_ok(before: str, after: str) -> bool:
     return after in TRANSITIONS.get(before, ())
 
 
+# -- the durable provenance ANCHOR (P3-273) -------------------------------------------------------------------------------------------------------------------
+# WHAT IT CLOSES (R-FAILOPEN-2). The session record travels with a saved encounter and the artifact lives in a store, but an encounter can come back with NEITHER (an older build that re-saved the
+# payload without the new key, a record deleted or corrupted, a process that lost its objects). If the legacy engine had then advanced it, nothing said the encounter had ever been authoritative.
+# The anchor is one monotonic mark, written by every REAL commit INTO THE PATIENT STATE ITSELF (a top-level key outside the observable and outside the authority domain, which it does not widen): the
+# encounter carries the fact that authority occurred wherever it goes, because it IS the encounter. Moves only NO_AUTHORITY -> AUTHORITY_OCCURRED (an encounter without it is not proven legacy-only: the
+# durable store remains the backstop), never back, and its facts only advance (last minute and commit count up; grant, experiment and case never change).
+# It is a digest-sealed record, NOT a signature: it detects corruption and a half-edit, not a forger who recomputes the digest (declared; signing needs a key, a faculty decision). Deleting it
+# from a state that has a record, a site or an artifact is a disagreement and stops; deleting it from a state that has none of them is the case the store backstop (``durable_match``) still reads.
+ANCHOR_TYPE = "phase3_authority_provenance_anchor"
+ANCHOR_VERSION = "P3-273"
+STATE_NO_AUTHORITY = "NO_AUTHORITY"
+STATE_AUTHORITY_OCCURRED = "AUTHORITY_OCCURRED"
+STOP_PROVENANCE = "AUTHORITY_PROVENANCE"
+_ANCHOR_FIELDS = ("record_type", "version", "authority_state", "case_id", "family", "encounter_id", "experiment_id", "grant_id", "grant_fingerprint", "snapshot_id",
+                  "first_authority_minute", "last_authority_minute", "commits", "last_pressure")
+
+
+def anchor_problems(anchor: Mapping | None) -> list:
+    """Every reason a provenance anchor is not one this module wrote and left unchanged. Empty means it verifies."""
+    problems: list = []
+    try:
+        body = dict(anchor or {})
+        if body.get("record_type") != ANCHOR_TYPE:
+            return ["not a provenance anchor"]
+        digest = body.pop("anchor_digest", None)
+        if digest != ra.digest_of(body):
+            problems.append("the anchor digest does not recompute")
+        for name in _ANCHOR_FIELDS:
+            if name not in body:
+                problems.append(f"missing {name}")
+        if body.get("authority_state") != STATE_AUTHORITY_OCCURRED:
+            problems.append("the anchor does not say authority occurred")
+        first, last, commits = body.get("first_authority_minute"), body.get("last_authority_minute"), body.get("commits")
+        if not all(isinstance(value, int) and not isinstance(value, bool) for value in (first, last, commits)):
+            problems.append("the minutes and the commit count are not integers")
+        elif not (0 < first <= last and commits >= 1):
+            problems.append("the authority minutes are not coherent")
+        if not isinstance(body.get("last_pressure"), Mapping):
+            problems.append("no last pressure")
+    except Exception as error:
+        problems.append(f"{type(error).__name__}: {error}")
+    return problems
+
+
+def advance_anchor(previous: Mapping | None, site: Any, minute: int, pressure: Mapping | None) -> dict:
+    """The anchor after a REAL commit of ``minute``: created at the first commit, advanced at every later one. Raises ``ValueError`` when the encounter's anchor and the site disagree (an anchor that
+    does not verify, one of another experiment, a lost one, a count or a minute that does not follow): the site turns that into a refusal of the minute, never into a silent reset."""
+    grant = dict(getattr(site, "grant", None) or {})
+    prior_commits = len(getattr(site, "minutes_committed", ()) or ())
+    if previous is None:
+        if prior_commits:
+            raise ValueError(f"the encounter lost its provenance anchor: {prior_commits} commit(s) were made and the state carries none")
+        first, commits = minute, 1
+    else:
+        problems = anchor_problems(previous)
+        if problems:
+            raise ValueError("the anchor in the encounter does not verify: " + "; ".join(problems[:3]))
+        previous = dict(previous)
+        for name, mine in (("case_id", site.case_id), ("encounter_id", site.encounter_id), ("grant_id", grant.get("grant_id")), ("grant_fingerprint", grant.get("fingerprint"))):
+            if previous.get(name) != mine:
+                raise ValueError(f"the anchor in the encounter belongs to another experiment ({name})")
+        if previous["commits"] != prior_commits:
+            raise ValueError(f"the anchor counts {previous['commits']} commit(s) and the site made {prior_commits}")
+        if minute <= previous["last_authority_minute"]:
+            raise ValueError(f"the anchor's last authoritative minute {previous['last_authority_minute']} does not precede minute {minute}")
+        first, commits = previous["first_authority_minute"], previous["commits"] + 1
+    body = {"record_type": ANCHOR_TYPE, "version": ANCHOR_VERSION, "authority_state": STATE_AUTHORITY_OCCURRED, "case_id": site.case_id, "family": site.family,
+            "encounter_id": site.encounter_id, "experiment_id": site.experiment_id, "grant_id": grant.get("grant_id"), "grant_fingerprint": grant.get("fingerprint"),
+            "snapshot_id": site.snapshot_id, "first_authority_minute": first, "last_authority_minute": int(minute), "commits": commits, "last_pressure": dict(pressure or {})}
+    return {**body, "anchor_digest": ra.digest_of(body)}
+
+
+def record_from_anchor(anchor: Mapping, reason: str, stop_class: str = STOP_PROVENANCE) -> dict:
+    """A session record built from the anchor alone (the one fact the encounter itself carries), INVALID_FOR_CONTINUATION: what the page needs to say the stop and what a reopened copy needs to
+    stay stopped. It names no failed minute or operation, because nothing failed: the provenance was lost."""
+    body = {"record_type": RECORD_TYPE, "version": VERSION, "lifecycle": INVALID_FOR_CONTINUATION, "continuation_allowed": False, "stop_policy": "EFFECTIVE_STOP", "legacy_fallback_allowed": False,
+            "authority_began": True, "last_authoritative_minute": anchor.get("last_authority_minute"), "last_authoritative_pressure": dict(anchor.get("last_pressure") or {}) or None,
+            "grant_id": anchor.get("grant_id"), "grant_fingerprint": anchor.get("grant_fingerprint"), "authority_mode": None, "case_id": anchor.get("case_id"), "family": anchor.get("family"),
+            "snapshot_id": anchor.get("snapshot_id"), "lineage": {"version_id": None, "digest": None}, "encounter_id": anchor.get("encounter_id"), "experiment_id": anchor.get("experiment_id"),
+            "attempt": None, "halted": True, "halt_reason": reason, "stop_class": stop_class, "failed_minute": None, "failed_operation": None,
+            "last_artifact": {"artifact_digest": "", "minutes_recorded": anchor.get("commits")}, "authority_label": ra.REAL_PRESSURE_LABEL}
+    return {**body, "record_digest": ra.digest_of(body)}
+
+
+def _anchor_belongs(anchor: Mapping, state: Mapping) -> bool:
+    """Whether the anchor in a state is about that state: the same case, and a clock that has not gone back before the anchor's last authoritative minute."""
+    try:
+        from clinical_core import legacy_adapter
+        if str(legacy_adapter.engine_case_id(dict(state))) != str(anchor.get("case_id")):
+            return False
+        return ra._as_int(dict(state).get("sim_time")) >= ra._as_int(anchor.get("last_authority_minute"))
+    except Exception:
+        return False
+
+
 # -- the guard (P3-252) ---------------------------------------------------------------------------------------------------------------------------------------
 def _asked(live: Mapping[str, str]) -> bool:
     return str(live.get(ra.AUTHORITY_FLAG, "") or "").strip().lower() == ra.MODE_LIMITED_COMMON_AUTHORITY
 
 
 def _configuration_holds(claim: Mapping, live: Mapping[str, str]) -> bool:
-    """Whether the live configuration still asks for the experiment the claim describes: the authority mode and the snapshot the site was opened with."""
-    return _asked(live) and str(live.get(ra.SNAPSHOT_FLAG, "") or "").strip() == str(claim.get("snapshot_id") or "")
+    """Whether the live configuration still asks for the experiment the claim describes: the authority mode, the snapshot the site was opened with and (P3-276, review H1) the shadow
+    comparison the site is fed by. Without the shadow the site is never shown a turn of the clock route, so a configuration that lost it can no longer judge anything."""
+    return (_asked(live) and str(live.get(ra.SNAPSHOT_FLAG, "") or "").strip() == str(claim.get("snapshot_id") or "")
+            and ra.rs.mode(live) == ra.rs.MODE_SHADOW_COMPARE)
 
 
 def _decision(allowed: bool, lifecycle: str, reason: str, *, stop_class: str = "", record: Mapping | None = None, sources: Mapping | None = None) -> dict:
@@ -292,6 +390,52 @@ def _belongs(record: Mapping | None, state: Mapping) -> bool:
         return True            # cannot tell: it belongs (the restrictive choice)
 
 
+def _anchor_check(anchor: Any, claims: Mapping, state_map: Mapping, store: Any) -> dict | None:
+    """P3-273B: what the provenance anchor of the encounter adds to the guard. None means the anchor raises no objection (it verifies, it is this encounter's, and every claim agrees with it).
+
+    FAIL CLOSED: an anchor that does not verify, one of another encounter, a claim that disagrees with it, and an anchor with NO claim at all (no site, no record, no artifact: the encounter was
+    authoritative and nothing can say how it ended) are all a stop. The legacy engine is never inferred, because 'legacy only' is exactly what the missing evidence would have to prove."""
+    try:
+        problems = anchor_problems(anchor)
+        if problems:
+            reason = (f"{ra.PROVENANCE_ANCHOR_INVALID}: the encounter carries a provenance anchor that does not verify ({'; '.join(problems[:3])}); authority may have occurred and its provenance cannot "
+                      f"be reconstructed, so the legacy engine may not continue it")
+            return _decision(False, INVALID_FOR_CONTINUATION, reason, stop_class=STOP_PROVENANCE, record={"authority_began": True, "legacy_fallback_allowed": False, "halt_reason": reason})
+        anchor = dict(anchor)
+        if not _anchor_belongs(anchor, state_map):
+            reason = (f"{ra.PROVENANCE_ANCHOR_INVALID}: the provenance anchor is not this encounter's (case {anchor.get('case_id')}, last authoritative minute "
+                      f"{anchor.get('last_authority_minute')}); the legacy engine may not continue it")
+            invalid = record_from_anchor(anchor, reason)
+            return _decision(False, INVALID_FOR_CONTINUATION, reason, stop_class=STOP_PROVENANCE, record=invalid)
+        for name, claim in dict(claims).items():
+            wrong = []
+            if not claim.get("authority_began"):
+                wrong.append("says authority never began")
+            elif claim.get("last_authoritative_minute") != anchor.get("last_authority_minute"):
+                wrong.append(f"puts the last authoritative minute at {claim.get('last_authoritative_minute')}, the anchor at {anchor.get('last_authority_minute')}")
+            if claim.get("encounter_id") != anchor.get("encounter_id") or claim.get("case_id") != anchor.get("case_id"):
+                wrong.append("is about another encounter")
+            if claim.get("grant_id") != anchor.get("grant_id"):
+                wrong.append("names another grant")
+            if wrong:
+                reason = f"the provenance anchor and the {name} disagree: the {name} " + "; it ".join(wrong)
+                invalid = record_from_anchor(anchor, reason, STOP_STALE_OR_CONFLICTING)
+                return _decision(False, INVALID_FOR_CONTINUATION, reason, stop_class=STOP_STALE_OR_CONFLICTING, record=invalid, sources={key: dict(value).get("lifecycle") for key, value in dict(claims).items()})
+        if not claims:
+            reason = (f"{ra.PROVENANCE_LOST}: the encounter carries the mark that authority occurred (last authoritative minute {anchor.get('last_authority_minute')}, {anchor.get('commits')} "
+                      f"commit(s)) but neither its authority-session record nor its site nor its artifact is available: how it ended cannot be reconstructed, and the legacy engine may not continue it")
+            invalid = record_from_anchor(anchor, reason)
+            try:
+                store[SESSION_KEY] = invalid
+            except Exception:
+                pass
+            return _decision(False, INVALID_FOR_CONTINUATION, reason, stop_class=STOP_PROVENANCE, record=invalid, sources={"anchor": STATE_AUTHORITY_OCCURRED})
+        return None
+    except Exception as error:
+        return _decision(False, INVALID_FOR_CONTINUATION, f"the provenance anchor cannot be read ({type(error).__name__}); the guard failed closed", stop_class=STOP_PROVENANCE,
+                         record={"authority_began": True, "legacy_fallback_allowed": False})
+
+
 def continuation_guard(store: Any, state: Mapping | None, *, environ: Mapping[str, str] | None = None, encounter_ended: bool = False) -> dict:
     """AUTHORITY_SESSION_CAN_CONTINUE: may this experimental encounter session take another clinical step? Consulted BEFORE any operation that can advance clinical time, take a
     management action, release a held action, alter the patient or start another authority transaction. Never raises; any doubt is a DENY.
@@ -305,10 +449,11 @@ def continuation_guard(store: Any, state: Mapping | None, *, environ: Mapping[st
         record = store.get(SESSION_KEY)
         artifact = store.get(ra.ARTIFACT_KEY)
         halted_for = store.get(ra.HALTED_KEY)
+        anchor = state.get(ra.PROVENANCE_ANCHOR_KEY) if isinstance(state, Mapping) else None          # P3-273: the one more lookup of the cheap path (in the encounter, not in the store)
     except Exception as error:
         return _decision(False, INVALID_FOR_CONTINUATION, f"the authority-session state cannot be read ({type(error).__name__})", stop_class=STOP_UNREADABLE)
     asked = _asked(live)
-    if site is None and record is None and artifact is None and halted_for is None and not asked:
+    if site is None and record is None and artifact is None and halted_for is None and anchor is None and not asked:
         return _decision(True, NOT_STARTED, "no authority experiment in this encounter")
     try:
         state_map = dict(state or {})
@@ -329,6 +474,23 @@ def continuation_guard(store: Any, state: Mapping | None, *, environ: Mapping[st
                 from_artifact = session_record_of(artifact, encounter_ended=encounter_ended)
                 if _belongs(from_artifact, state_map):
                     claims["artifact"] = from_artifact
+        if anchor is not None:
+            anchored = _anchor_check(anchor, claims, state_map, store)
+            if anchored is not None:
+                return anchored
+        if anchor is None:
+            # P3-276 (review M1): an encounter whose site, record or artifact says authority BEGAN must carry the anchor (the commit that began it wrote it into the state in the same step). A state
+            # that lost it while a claim is alive is a tampered or truncated encounter: the guard does not take 'no anchor' for 'never authoritative'.
+            began = next((claim for claim in claims.values() if claim.get("authority_began") and claim.get("stop_policy") == "EFFECTIVE_STOP"), None)
+            if began is not None:
+                reason = (f"{ra.PROVENANCE_LOST}: the authority session began (last authoritative minute {began.get('last_authoritative_minute')}) but the encounter carries no provenance anchor; "
+                          f"the legacy engine may not continue it")
+                invalid = invalidate_record(began, reason, STOP_PROVENANCE)
+                try:
+                    store[SESSION_KEY] = invalid
+                except Exception:
+                    pass
+                return _decision(False, INVALID_FOR_CONTINUATION, reason, stop_class=STOP_PROVENANCE, record=invalid, sources={name: dict(value).get("lifecycle") for name, value in claims.items()})
         if not claims:
             # no claim about THIS encounter. A saved encounter that comes back with no site and no record is checked against the durable store (flags on only: nothing else can have run)
             if asked and ra._as_int(state_map.get("sim_time")) > 0:
