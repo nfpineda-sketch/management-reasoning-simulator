@@ -312,7 +312,10 @@ def _row(kind, where, consequence, guard=None):
 #: The modules that NAME the word as a mechanism, a record or an excluded domain without reading an encounter's: the view that mediates the readers (P3-211), the dormant pair
 #: (P3-213), the real pressure authority site that records the legacy word beside the common overlay as data (P3-243) and the grant that names the word as an excluded domain (P3-239).
 #: Each is told apart from a reader; none feeds the word back. (P3-240..248 added the last two.)
-MECHANISM_MODULES = ("observable_view.py", "runtime_authority_pair.py", "runtime_authority.py", "runtime_pressure_grant.py")
+#: ADAPTED in P3-283 (the controlled faculty review environment): ``runtime_faculty_bundle.py`` copies the rows of the common consciousness OVERLAY (its own word, labelled nonauthoritative) into a
+#: faculty-only review bundle as data, and ``runtime_faculty_review.py`` names the word only to say the review mode writes nothing into it. Neither reads the live observable's word, neither feeds it
+#: back, and nothing of either is resident visible.
+MECHANISM_MODULES = ("observable_view.py", "runtime_authority_pair.py", "runtime_authority.py", "runtime_pressure_grant.py", "runtime_faculty_bundle.py", "runtime_faculty_review.py")
 
 #: The classification, by module and function. ``*`` is the module's default for a function not listed. A row says what the function does WITH the
 #: value and where it runs; ``guard`` is what a future pair authority needs, or None when nothing more than the existing rules is needed.
@@ -326,6 +329,10 @@ READER_TABLE = {
                                         "consequence": "the pressure grant names the word as an EXCLUDED domain: a constant of a grant that confers nothing over it"}},
     "runtime_authority_pair.py": {"*": {"class": MECHANISM, "where": GI_TURN, "guard": None,
                                         "consequence": "the dormant pair (P3-213): it carries the common word in the overlay and refuses to write the live field"}},
+    "runtime_faculty_bundle.py": {"*": {"class": MECHANISM, "where": GI_TURN, "guard": None,
+                                        "consequence": "the faculty review bundle (P3-283) copies the common overlay's own rows into a faculty-only record as data, labelled nonauthoritative: it never reads the live field, feeds nothing back and is never resident visible"}},
+    "runtime_faculty_review.py": {"*": {"class": MECHANISM, "where": GI_TURN, "guard": None,
+                                        "consequence": "the faculty review mode names the word only to state that it writes nothing into it (text)"}},
     "family_engine.py": {
         "_surface": _row(WRITER, GI_TURN, "the engine RE-WRITES mental_status at every surface from its own ladder (its family state and the authored baseline); "
                          "its reads here are of the baseline, never of the live observable (checked by AST: ``surface_reads``), so a value written by an "

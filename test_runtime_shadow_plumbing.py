@@ -385,7 +385,7 @@ def test_r13_nothing_authoritative_reads_the_shadow_result():
                                             "runtime_shadow_evidence.py", "runtime_authority.py",
                                             "runtime_authority_store.py", "runtime_shadow_store.py",
                                             "runtime_shadow_observer.py", "runtime_authority_pair.py",
-                                            "runtime_minute_validation.py", "runtime_pair_site.py", "runtime_pressure_grant.py", "runtime_authority_session.py", "runtime_authority_turn.py")   # P3-271 (declared adaptation): runtime_authority_turn, the authority-controlled turn (copy, judge, apply or discard). P3-251 (declared adaptation): the authority-session lifecycle and stop guard. P3-239 (declared adaptation): the pressure grant
+                                            "runtime_minute_validation.py", "runtime_pair_site.py", "runtime_pressure_grant.py", "runtime_authority_session.py", "runtime_authority_turn.py", "runtime_faculty_review.py", "runtime_faculty_bundle.py")   # P3-271 (declared adaptation): runtime_authority_turn, the authority-controlled turn (copy, judge, apply or discard). P3-251 (declared adaptation): the authority-session lifecycle and stop guard. P3-239 (declared adaptation): the pressure grant
     readers = []
     for path in sorted(ROOT.glob("*.py")):
         if path.name in runtime_shadow.LAYER_SOURCES or path.name.startswith("test_"):

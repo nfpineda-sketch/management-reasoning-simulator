@@ -138,7 +138,7 @@ SHADOW_LAYER = frozenset(Path(name).stem for name in __import__("runtime_shadow"
 assert SHADOW_LAYER == {"runtime_shadow", "runtime_shadow_families", "runtime_shadow_evidence",
                         "runtime_authority", "runtime_authority_store", "runtime_shadow_store",
                         "runtime_shadow_observer", "runtime_authority_pair", "runtime_minute_validation", "runtime_pair_site",
-                        "runtime_pressure_grant", "runtime_authority_session", "runtime_authority_turn"}, SHADOW_LAYER      # P3-271 (declared adaptation): runtime_authority_turn, the authority-controlled turn (copy, judge, apply or discard). P3-251 (declared adaptation): the authority-session lifecycle and stop guard; ``runtime_authority`` imports it on use and the page reaches it only through ``runtime_authority``
+                        "runtime_pressure_grant", "runtime_authority_session", "runtime_authority_turn", "runtime_faculty_review", "runtime_faculty_bundle"}, SHADOW_LAYER      # P3-271 (declared adaptation): runtime_authority_turn, the authority-controlled turn (copy, judge, apply or discard). P3-251 (declared adaptation): the authority-session lifecycle and stop guard; ``runtime_authority`` imports it on use and the page reaches it only through ``runtime_authority``
 assert DECLARED_CROSSINGS <= SHADOW_LAYER
 HARNESS = "runtime_shadow_evidence"
 

@@ -245,4 +245,12 @@ def test_g13_only_the_grant_module_and_the_gate_name_the_registry_and_the_page_d
     assert readers == ["runtime_pressure_grant.py"], readers
     assert "runtime_pressure_grant" not in _imports(ROOT / "app.py"), "the page cannot see the grant: the layer reads it"
     importers = sorted(path.name for path in ROOT.glob("*.py") if not path.name.startswith("test_") and path.name != "conftest.py" and "runtime_pressure_grant" in _imports(path))
-    assert importers == ["runtime_authority.py"], importers
+    # P3-288 (declared adaptation): the two faculty-review modules READ the identity of the grant (its id, version, cases, mode, snapshot id and fingerprint) to describe and to check the review
+    # configuration; the gate stays the only module that DECIDES with it. What the test protects -- nobody but the gate can permit -- is protected twice: the importers are pinned, and the
+    # attributes the review modules read are pinned to read-only constants (never ``permits``, ``grant_problems``, the registry or any grant constructor).
+    assert importers == ["runtime_authority.py", "runtime_faculty_bundle.py", "runtime_faculty_review.py"], importers
+    read_only = {"AUTHORITY_MODE", "CASES", "FAMILY", "GRANT", "GRANT_FINGERPRINT", "GRANT_ID", "GRANT_VERSION", "PRESSURE_SNAPSHOT_ID"}
+    for name in ("runtime_faculty_review.py", "runtime_faculty_bundle.py"):
+        tree = ast.parse((ROOT / name).read_text(encoding="utf-8"))
+        used = {node.attr for node in ast.walk(tree) if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name) and node.value.id == "grants"}
+        assert used <= read_only, (name, sorted(used - read_only))

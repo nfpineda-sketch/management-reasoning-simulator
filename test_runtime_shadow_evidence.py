@@ -270,7 +270,7 @@ def test_u15_the_layer_digest_is_the_identity_of_the_code_that_ran():
                                      "runtime_shadow_evidence.py", "runtime_authority.py",
                                      "runtime_shadow_store.py", "runtime_shadow_observer.py",
                                      "runtime_authority_pair.py", "runtime_minute_validation.py", "runtime_pair_site.py",
-                                     "runtime_pressure_grant.py", "runtime_authority_session.py", "runtime_authority_turn.py"}                   # P3-271 (declared adaptation): runtime_authority_turn, the authority-controlled turn (copy, judge, apply or discard). P3-251 (declared adaptation): the authority-session stop guard. P3-239 (declared adaptation): the explicit GI development pressure grant
+                                     "runtime_pressure_grant.py", "runtime_authority_session.py", "runtime_authority_turn.py", "runtime_faculty_review.py", "runtime_faculty_bundle.py"}                   # P3-271 (declared adaptation): runtime_authority_turn, the authority-controlled turn (copy, judge, apply or discard). P3-251 (declared adaptation): the authority-session stop guard. P3-239 (declared adaptation): the explicit GI development pressure grant
     for name in rs.LAYER_SOURCES:
         assert (ROOT / name).exists(), name
 
