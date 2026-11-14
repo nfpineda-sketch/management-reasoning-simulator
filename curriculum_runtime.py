@@ -3,6 +3,7 @@ from copy import deepcopy
 from datetime import datetime, timezone
 import hashlib
 import json
+import os
 import secrets
 
 import streamlit as st
@@ -160,11 +161,18 @@ def restore_attempt(context, record, reset_session):
 
 
 def start_encounter(context, initial_state, reset_session, faculty_choice=None, adaptation_plan=None, prior_record=None,
-                    review_case=None):
+                    review_case=None, pinned_variant=None, review_scenario=None):
     store, token, user = context["store"], context["token"], context["user"]
     attempts = store.list_attempts(token)
     own = [a for a in attempts if a["user_id"] == user["id"]]
     active = next((a for a in own if a["status"] == "active"), None)
+    if str(os.environ.get("MRS_FACULTY_DEVELOPMENT_REVIEW", "") or "").strip():
+        # The controlled faculty development review names ONE way to start an encounter: the review launcher, with a pinned authored case. Every other path (the repeat-attempt button, a direct call)
+        # and every resumption of an unfinished attempt is refused here, at the single place that starts encounters (P3-288 review, B2; FD-FAC-08: the review environment never resumes).
+        if not pinned_variant:
+            raise AccountError("The faculty development review starts only its scripted encounters, from the review launcher.")
+        if active:
+            raise AccountError("The faculty development review does not resume an unfinished encounter: abandon it first.")
     if active:
         restore_attempt(context, active, reset_session)
         return
@@ -181,6 +189,11 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
             if review_case not in review:
                 raise AccountError("That case cannot be opened for review under this challenge.")
             assignment["review_case"] = review_case
+        if pinned_variant:
+            # The controlled faculty development review (Phase 3): an authored bank case pinned by id, no generation, no paid picture. Only staff reach this branch.
+            assignment["pinned_variant"] = pinned_variant
+            if review_scenario:
+                assignment["faculty_review_scenario"] = review_scenario
     elif (directive := _waiting_directive(context)) is not None:
         # A faculty member chose this resident's next case, and said why
         # (encounter_directives). The curriculum's rule is not consulted. The
@@ -208,6 +221,9 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
         # The chosen authored case, as the bank has it: no generation and no
         # selection request. The patient's picture is prepared as for any case.
         generation = {"generation_mode": "authored", "variant_id": directive["variant_id"], "api_key": ""}
+    elif assignment.get("pinned_variant"):
+        generation = {"generation_mode": "authored", "variant_id": assignment["pinned_variant"], "api_key": ""}
+        scene_key = ""
     elif assignment.get("review_case"):
         # Opened for review: the configuration as the catalogue builds it, with
         # no generation and no paid picture.

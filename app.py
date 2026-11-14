@@ -76,6 +76,15 @@ ACCOUNT_CONTEXT = require_account_access() if accounts_enabled() else None
 if ACCOUNT_CONTEXT is None:
     require_shared_password()
 
+# Phase 3 (P3-281): the controlled faculty development review mode. With the flag absent -- every ordinary deployment, the first pilot -- this is one environment lookup and nothing is imported.
+# Named, it is decided here, before any encounter or dashboard element: a configuration that is not complete, or an account that is not faculty, stops the page.
+_FACULTY_REVIEW, _FACULTY_LAYER = {}, None
+if os.environ.get("MRS_FACULTY_DEVELOPMENT_REVIEW", "").strip():
+    import faculty_review_ui as _faculty_review_ui
+    import runtime_authority as _authority_for_review
+    _FACULTY_LAYER = _authority_for_review.faculty_review_layer()      # the page's one crossing into the Phase-3 layer
+    _FACULTY_REVIEW = _faculty_review_ui.gate(st, _FACULTY_LAYER, ACCOUNT_CONTEXT, accounts_enabled())
+
 # Phase 0 (0D): before anything reads the encounter, a run that was stopped part way through
 # processing a submission is undone, and the submission waits to run again from the start
 # (submission_guard). Nothing it had applied is kept, and nothing is applied twice.
@@ -4180,10 +4189,15 @@ def begin_repeat_encounter(adaptation_plan, prior_attempt_record=None):
     if context:
         save_session(context)
         choice = (st.session_state.get("encounter_assignment") or {}).get("challenge_id")
+        from account_store import AccountError
         from generated_case import GeneratedCaseError
         try:
             start_encounter(context, INITIAL_STATE, reset_session, choice, adaptation_plan, prior_attempt_record)
         except GeneratedCaseError as exc:
+            st.error(str(exc))
+            st.stop()
+        except AccountError as exc:
+            # In the faculty development review the repeat path is refused (the review starts only its scripted encounters): say so and stay on the encounter that is open.
             st.error(str(exc))
             st.stop()
         return {"adaptation_plan": deepcopy(adaptation_plan)}
@@ -10409,7 +10423,11 @@ if not st.session_state.started:
         # A bedside fragment rerun scheduled before navigation can arrive after the dashboard.
         # Render that same fragment empty first so no previous patient remains over the page.
         _room.clear_room_fragment(ACCOUNT_CONTEXT)
-        render_dashboard(ACCOUNT_CONTEXT, INITIAL_STATE, reset_session)
+        if _FACULTY_REVIEW.get("enabled"):
+            # Phase 3 (P3-281): in the review environment the dashboard is replaced by the scripted review launcher; no other case can be started.
+            _faculty_review_ui.launcher(st, _FACULTY_LAYER, ACCOUNT_CONTEXT, INITIAL_STATE, reset_session, start_encounter)
+        else:
+            render_dashboard(ACCOUNT_CONTEXT, INITIAL_STATE, reset_session)
         st.stop()
     st.subheader("Choose a clinical problem")
     from cognitive_catalog import BIAS_CHALLENGES
@@ -11070,6 +11088,9 @@ def _render_authority_experiment():
 
 def _render_staff_tools():
     """Development controls, drawn for faculty and administrators only (2026-10-02, section 10)."""
+    if _FACULTY_REVIEW.get("enabled"):
+        # Phase 3 (P3-282): the faculty review panel, a surface separate from the resident-facing views (this function is only ever called for staff).
+        _faculty_review_ui.panel(st, _FACULTY_LAYER, lambda: return_to_dashboard(ACCOUNT_CONTEXT, reset_session, abandon=True))
     _render_authority_experiment()
     _room.image_tools(st.session_state.state)
     if not st.session_state.state.get("engine_family"):

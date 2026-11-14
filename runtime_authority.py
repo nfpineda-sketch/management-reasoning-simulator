@@ -2724,7 +2724,7 @@ def site_for(state: Mapping, store: Any,
                 store[key] = None
         if site is not None:
             site._session_store = store          # P3-251: where this site publishes its session record (a non-field attribute: never serialized, never compared)
-            if not asked or _configuration_changed(site, live):
+            if not asked or _configuration_changed(site, live) or _faculty_review_revoked(store, live):
                 # The mode is decided at the arrival and may not change inside an encounter. A flag that
                 # disappears or changes mid-encounter is a configuration change, and a configuration
                 # change is a hard failure the faculty sees -- never a silent return to the legacy engine.
@@ -2748,6 +2748,15 @@ def site_for(state: Mapping, store: Any,
         key = f"{legacy_adapter.engine_case_id(dict(state))}@{minute}"
         if store.get(SITE_REFUSED_KEY) == key:
             return None
+        if str(live.get("MRS_FACULTY_DEVELOPMENT_REVIEW", "") or "").strip() or dict(store.get("phase3_faculty_review") or {}).get("requested") is True:
+            # P3-281A: a named faculty review mode with a missing or partial configuration makes the authority UNAVAILABLE for this encounter, never partially enabled. A session that WAS a review
+            # session and whose flag has since gone is refused too (it does not continue as an ordinary development encounter).
+            import runtime_faculty_review as _review
+            available, why = _review.authority_available(store, live)
+            if not available:
+                store[SITE_REFUSED_KEY] = key
+                store["phase3_faculty_review_refusal"] = why
+                return None
         site = open_site(state, environ=environ)
         store[SITE_KEY] = site
         if site is None:
@@ -2891,6 +2900,15 @@ def turn_check(store: Any) -> None:
     turn.check(store)
 
 
+def faculty_review_layer() -> Any:
+    """The faculty development review layer (P3-281), reached ONLY through this module: the page has one crossing into the Phase-3 layer, so the review environment adds no second path from the
+    page to the common core. Returns a namespace with ``review`` (mode, single process, scenarios) and ``bundles`` (status view, bundle, feedback)."""
+    from types import SimpleNamespace
+    import runtime_faculty_bundle
+    import runtime_faculty_review
+    return SimpleNamespace(review=runtime_faculty_review, bundles=runtime_faculty_bundle)
+
+
 def turn_reset(store: Any) -> None:
     """P3-276 (review L2): close a turn an earlier page run left open (see ``runtime_authority_turn.reset_stale``). One lookup when none is open."""
     import runtime_authority_turn as turn
@@ -2909,6 +2927,23 @@ def _same_encounter(site: "AuthoritySite", state: Mapping) -> bool:
         return rs._encounter_id(dict(state)) == site.encounter_id
     except Exception:
         return False
+
+
+def _faculty_review_revoked(store: Any, live: Mapping[str, str]) -> bool:
+    """Whether a faculty-review SESSION (the process names the review mode, or this session's decision says it was one) no longer holds its review configuration: a flag removed or changed after the
+    page decided is a configuration change like any other, so the experiment halts and never goes on as an ordinary development encounter. An ordinary session answers False after two lookups."""
+    try:
+        named = bool(str(live.get("MRS_FACULTY_DEVELOPMENT_REVIEW", "") or "").strip())
+        requested = dict(store.get("phase3_faculty_review") or {}).get("requested") is True
+    except Exception:
+        return False
+    if not (named or requested):
+        return False
+    try:
+        import runtime_faculty_review as _review
+        return not _review.authority_available(store, live)[0]
+    except Exception:
+        return True
 
 
 def _configuration_changed(site: "AuthoritySite", live: Mapping[str, str]) -> bool:
