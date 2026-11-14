@@ -1,0 +1,482 @@
+{
+ "confirmations": {
+  "common_core_runtime_authority_remains_false": true,
+  "first_pilot_unchanged": true,
+  "flags_off_behaviour_identical": true,
+  "gi_pressure_authority_only": true,
+  "legacy_mental_status_unchanged": true,
+  "multiprocess_not_solved_by_assumption": true,
+  "no_authority_domain_added": true,
+  "no_case_beyond_the_two_gi_cases": true,
+  "no_clinical_validation_claim": true,
+  "no_common_consciousness_visible_to_residents": true,
+  "no_consciousness_authority": true,
+  "no_cryptographic_signing_added": true,
+  "no_faculty_review_started": true,
+  "no_physiology_retuned": true,
+  "no_production_authority": true,
+  "no_resident_deployment": true,
+  "no_second_engine": true,
+  "no_terminal_semantics": true,
+  "scoring_unchanged": true,
+  "v1_not_promoted_to_authority": true
+ },
+ "decided_on": "2026-11-13",
+ "from_the_code": {
+  "after_a_halt": {
+   "allowed": [
+    "abandon_experiment",
+    "render_room",
+    "reset_scenario",
+    "return_to_dashboard",
+    "view_authority_status",
+    "view_chart",
+    "view_ecg_recording",
+    "view_results",
+    "view_review"
+   ],
+   "blocked": [
+    "cancel_pending_orders",
+    "clarification_answer",
+    "clinical_time",
+    "complete_encounter",
+    "ecg_acquisition",
+    "examination",
+    "finish_encounter",
+    "guided_submission",
+    "held_order_release",
+    "history_question",
+    "history_topic",
+    "order_execution",
+    "order_submission",
+    "reasoning_followup",
+    "retrospective_explanation"
+   ],
+   "excluded_unjudged": [
+    "ecg_acquisition",
+    "cancel_pending_orders",
+    "retrospective_explanation"
+   ],
+   "notice": "DEVELOPMENT AUTHORITY EXPERIMENT HALTED",
+   "resolution": "ABANDON_EXPERIMENT",
+   "unsupported_resolutions": [
+    "RESUME",
+    "ROLLBACK",
+    "RESTART_FROM_PREAUTHORITY_SNAPSHOT"
+   ]
+  },
+  "allowlist": [
+   "gi_bleed_57m",
+   "gi_bleed_72f"
+  ],
+  "approved_authority_snapshots": [
+   "gi_pressure_committed"
+  ],
+  "authority_cases": [
+   "gi_bleed_57m",
+   "gi_bleed_72f"
+  ],
+  "authority_domain": [
+   "sbp",
+   "dbp",
+   "map"
+  ],
+  "authority_mode": "PRESSURE_ONLY",
+  "bundle": {
+   "comparator_label": "NONAUTHORITATIVE DEVELOPMENT COMPARISON",
+   "forbidden_phrases": [
+    "match_rate",
+    "hit_rate",
+    "within_tolerance",
+    "closer_to",
+    "better_than",
+    "worse_than"
+   ],
+   "forbidden_words": [
+    "score",
+    "scores",
+    "scored",
+    "closeness",
+    "error",
+    "errors",
+    "rmse",
+    "mae",
+    "agreement",
+    "accuracy",
+    "grade",
+    "graded",
+    "pass",
+    "passed",
+    "fail",
+    "failed",
+    "similarity",
+    "distance",
+    "pct",
+    "percent",
+    "percentage"
+   ],
+   "limitations": 9,
+   "type": "PHASE3_FACULTY_REVIEW_BUNDLE"
+  },
+  "bundle_layer_version": "P3-283",
+  "common_core_runtime_authority": false,
+  "conditions": [
+   "process_flag",
+   "shadow",
+   "shadow_family",
+   "authority_flag",
+   "snapshot",
+   "development_environment",
+   "offline_cases",
+   "store",
+   "accounts",
+   "faculty_role",
+   "no_pilot",
+   "not_streamlit_cloud",
+   "registered_grant",
+   "single_process"
+  ],
+  "configuration_conditions": [
+   "process_flag",
+   "shadow",
+   "shadow_family",
+   "authority_flag",
+   "snapshot",
+   "development_environment",
+   "offline_cases",
+   "store",
+   "accounts",
+   "no_pilot",
+   "not_streamlit_cloud",
+   "registered_grant",
+   "single_process"
+  ],
+  "environment": "development",
+  "environment_conditions": [
+   "process_flag",
+   "shadow",
+   "shadow_family",
+   "authority_flag",
+   "snapshot",
+   "development_environment",
+   "offline_cases"
+  ],
+  "faculty_roles": [
+   "faculty",
+   "admin"
+  ],
+  "family": "gi_bleed",
+  "feedback": {
+   "max_comment_characters": 4000,
+   "overall_choices": [
+    "ACCEPT",
+    "ACCEPT_WITH_LIMITATION",
+    "RECALIBRATE",
+    "REJECT"
+   ],
+   "questions": [
+    {
+     "choices": [
+      "YES",
+      "PARTLY",
+      "NO",
+      "CANNOT_JUDGE"
+     ],
+     "id": "Q1",
+     "stage": "BLINDED_AUTHORITY_ONLY"
+    },
+    {
+     "choices": [
+      "TOO_EARLY",
+      "APPROPRIATE",
+      "TOO_LATE",
+      "NOT_APPLICABLE",
+      "CANNOT_JUDGE"
+     ],
+     "id": "Q2",
+     "stage": "BLINDED_AUTHORITY_ONLY"
+    },
+    {
+     "choices": [
+      "TOO_EARLY",
+      "APPROPRIATE",
+      "TOO_LATE",
+      "NOT_APPLICABLE",
+      "CANNOT_JUDGE"
+     ],
+     "id": "Q3",
+     "stage": "BLINDED_AUTHORITY_ONLY"
+    },
+    {
+     "choices": [
+      "PLAUSIBLE",
+      "TOO_SMALL",
+      "TOO_LARGE",
+      "MIXED",
+      "CANNOT_JUDGE"
+     ],
+     "id": "Q4",
+     "stage": "BLINDED_AUTHORITY_ONLY"
+    },
+    {
+     "choices": [
+      "NO",
+      "POSSIBLY",
+      "YES",
+      "CANNOT_JUDGE"
+     ],
+     "id": "Q5",
+     "stage": "BLINDED_AUTHORITY_ONLY"
+    },
+    {
+     "choices": [
+      "YES",
+      "NO",
+      "NOT_APPLICABLE"
+     ],
+     "id": "Q6",
+     "stage": "HALT"
+    },
+    {
+     "choices": [
+      "NO",
+      "SOME",
+      "YES",
+      "NOT_APPLICABLE"
+     ],
+     "id": "Q7",
+     "stage": "HALT"
+    },
+    {
+     "choices": [
+      "YES",
+      "PARTLY",
+      "NO",
+      "CANNOT_JUDGE"
+     ],
+     "id": "Q8",
+     "stage": "AFTER_COMPARATOR"
+    },
+    {
+     "choices": [
+      "NONE",
+      "MINOR",
+      "MAJOR",
+      "CANNOT_JUDGE"
+     ],
+     "id": "Q9",
+     "stage": "AFTER_COMPARATOR"
+    },
+    {
+     "choices": [
+      "ACCEPT",
+      "ACCEPT_WITH_LIMITATION",
+      "RECALIBRATE",
+      "REJECT"
+     ],
+     "id": "Q10",
+     "stage": "OVERALL"
+    }
+   ],
+   "reviewer_roles": [
+    "faculty",
+    "admin",
+    "faculty_guest_reviewer"
+   ],
+   "type": "PHASE3_FACULTY_REVIEW_FEEDBACK"
+  },
+  "grant_excluded_domains": [
+   "consciousness",
+   "mental_status",
+   "collapse",
+   "terminal",
+   "pulse",
+   "oxygenation",
+   "lactate",
+   "hb"
+  ],
+  "grant_fingerprint_is_pinned": true,
+  "grant_id": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V1",
+  "layer_sources_include_the_review_modules": true,
+  "offline_flag": "MRS_OFFLINE_CASES",
+  "one_place_starts_encounters": true,
+  "page": {
+   "banner": "FACULTY DEVELOPMENT REVIEW \u00b7 controlled, faculty-only, single-process development environment \u00b7 GI pressure development authority only (two synthetic cases). Not a resident pilot, not production, not a clinical validation.",
+   "challenge_id": "R2-05",
+   "generic_refusal": "This is a faculty development review environment. It is not available to this account.",
+   "ui_imports": [
+    "__future__",
+    "account_portal",
+    "typing"
+   ]
+  },
+  "review_directory": "faculty_review",
+  "review_flag": "MRS_FACULTY_DEVELOPMENT_REVIEW",
+  "review_layer_version": "P3-281",
+  "review_mode": "faculty_development_review",
+  "scenario_set_problems": [],
+  "scenarios": [
+   {
+    "case_id": "gi_bleed_57m",
+    "expected": "HALTED_AT_COLLAPSE_BOUNDARY",
+    "id": "FR-A",
+    "series": "untreated"
+   },
+   {
+    "case_id": "gi_bleed_57m",
+    "expected": "ACTIVE_TO_THE_END",
+    "id": "FR-B",
+    "series": "early_treatment"
+   },
+   {
+    "case_id": "gi_bleed_57m",
+    "expected": "ACTIVE_TO_THE_END",
+    "id": "FR-C",
+    "series": "delayed_treatment"
+   },
+   {
+    "case_id": "gi_bleed_72f",
+    "expected": "HALTED_AT_COLLAPSE_BOUNDARY",
+    "id": "FR-D",
+    "series": "untreated"
+   },
+   {
+    "case_id": "gi_bleed_72f",
+    "expected": "ACTIVE_TO_THE_END",
+    "id": "FR-E",
+    "series": "recovery"
+   },
+   {
+    "case_id": "gi_bleed_57m",
+    "expected": "HALTED_BY_UNSUPPORTED_ACTION",
+    "id": "FR-F",
+    "series": "unsupported_action"
+   },
+   {
+    "case_id": "gi_bleed_72f",
+    "expected": "ACTIVE_TO_THE_END",
+    "id": "FR-G",
+    "series": "long_infusion"
+   }
+  ],
+  "session_key": "phase3_faculty_review",
+  "single_process": {
+   "filesystem_statuses": [
+    "LOCAL",
+    "NETWORK_REFUSED",
+    "UNKNOWN_NOT_VERIFIABLE",
+    "NOT_ON_THE_LOCAL_LIST_REFUSED"
+   ],
+   "local_filesystems": [
+    "ext2",
+    "ext3",
+    "ext4",
+    "xfs",
+    "btrfs",
+    "zfs",
+    "tmpfs",
+    "ramfs",
+    "overlay",
+    "overlayfs",
+    "f2fs",
+    "jfs",
+    "reiserfs",
+    "bcachefs",
+    "fuse.overlayfs",
+    "ecryptfs"
+   ],
+   "lock_file": "single_process.lock",
+   "network_filesystems": [
+    "nfs",
+    "nfs4",
+    "cifs",
+    "smb",
+    "smb3",
+    "smbfs",
+    "afs",
+    "ceph",
+    "cephfs",
+    "glusterfs",
+    "9p",
+    "davfs",
+    "fuse.sshfs",
+    "fuse.s3fs",
+    "fuse.gcsfuse",
+    "fuse.glusterfs",
+    "fuse.rclone",
+    "lustre",
+    "gpfs",
+    "virtiofs",
+    "vboxsf"
+   ]
+  }
+ },
+ "pinned_records": {
+  "pressure_series": {
+   "record": "docs/revision/PHASE3_PRESSURE_AUTHORITY_SERIES.json",
+   "record_digest": "5a40db83d772b16c0c1273a214bc1b53d5016ad2c50aed9632fd23c66e91e2fe",
+   "runs": 26
+  },
+  "previous_checkpoint": {
+   "blockers_then": 5,
+   "record": "docs/revision/PHASE3_TURN_CHECKPOINT.json",
+   "record_digest": "6188e557f732fbf5947362d6365eae9e6cd645e2d5bae3ba7d8a5cf84894de5d",
+   "verdict_then": "A_GI_PRESSURE_AUTHORITY_READY_FOR_CONTROLLED_FACULTY_ENVIRONMENT_REVIEW"
+  }
+ },
+ "record_digest": "45b62670af0983f3513e5ec5b290ff866da073b3100177dfa5f4d1a5729c89b2",
+ "record_type": "PHASE3_FACULTY_REVIEW_CHECKPOINT",
+ "remaining_blockers": [
+  "the session record and the provenance anchor are unsigned: accepted as a declared limitation for this single-process development review only (FD-FAC-05); a signature needs a key, a faculty decision",
+  "one process per store on a local filesystem is enforced; several instances with separate disks cannot be seen by the code and are the operator's responsibility, and a store tampered with by hand is detected at the next page run, not prevented in between (FD-FAC-06)",
+  "ECG acquisition, cancelling pending actions and the retrospective explanation are blocked after a halt and excluded from this protocol; there is no resume, rollback or restart from the pre-authority snapshot (FD-FAC-07, FD-FAC-08)",
+  "the identifier filter of the feedback form is a tripwire (it cannot recognise a name with no title and no label) and the grading guard of the bundle reads key words, not the free text of values; the internal feedback API accepts a blinded-answer snapshot fabricated by its caller (the page does not fabricate it)",
+  "the halt notice is the development English text; two GI cases for development only; the common consciousness stays unmapped, nonauthoritative and visible to faculty only as a labelled comparison (FD-FAC-09, FD-FAC-10); V1 is ratified for development experiments only"
+ ],
+ "reported": {
+  "review": {
+   "broken_high": 1,
+   "broken_low": 1,
+   "broken_low_medium": 2,
+   "broken_medium": 1,
+   "equivalent_mutants": [],
+   "held": 8,
+   "low_repaired": [
+    "B4 lock file deleted or directory moved under a running review; thread race on the probe file; filesystem denylist replaced by an allowlist"
+   ],
+   "mutants_equivalent_declared": 0,
+   "mutants_killed": 72,
+   "mutants_of_the_mechanisms": 72,
+   "mutation_note": "71 killed in the first run over the repaired candidate; the one survivor (C1, a misspelled flag with no published decision) was covered by test f26 and killed on rerun; R7 (thread race on the probe file) is probabilistic by nature",
+   "reproduced_with_an_own_probe_before_any_repair_and_repaired": [
+    "HIGH B1 a bundle and a reveal of an earlier encounter survived into the next one (feedback was written against the wrong case and scenario)",
+    "MEDIUM B2 the repeat-attempt button started a non-allowlisted case inside the review environment",
+    "LOW-MEDIUM B3 a shadow-family list that left GI out kept the review enabled and the first turn aborted",
+    "LOW-MEDIUM B5 feedback and bundle integrity: never-stored bundle, extra answer keys, identifier shapes, forged reveal, grading-key variants, scenario/case mismatch, path traversal, truncated files, evidence that fails its own checks, hard-coded overlay flags"
+   ],
+   "reviewer": "independent, read-only, adversarial, on its own copy of the candidate; thirteen attack scenarios",
+   "unclear_or_low": 5,
+   "unclear_repaired_or_declared": [
+    "review flag removed mid-encounter (now a halt)",
+    "a forged enabled decision (the environment is read again)",
+    "non-GI repeat panel (the bundle is shown unusable, no form)",
+    "launcher abandon on an unreadable store (now a visible refusal)",
+    "the lock binds review processes only (declared)"
+   ]
+  }
+ },
+ "statement": "A technical checkpoint of a controlled development review environment. It is not a clinical validation, an approval of version 1, a consciousness authority, a resident deployment, a production authority, a resident pilot or the start of the faculty review.",
+ "statuses": {
+  "ARTIFACT_REVIEW_BUNDLE": "ONE_DETERMINISTIC_CREATE_ONLY_ATOMIC_BUNDLE_PER_ENCOUNTER_THE_AUTHORITY_VIEW_APART_FROM_THE_NONAUTHORITATIVE_COMPARATOR_NO_GRADE_OF_ANY_KIND_AGAINST_THE_LEGACY_ENGINE_EVIDENCE_THAT_FAILS_ITS_OWN_CHECKS_IS_SHOWN_AND_NOT_JUDGED_THE_BUNDLE_NAMES_ITS_STORED_ARTIFACT_AND_BELONGS_TO_THE_ENCOUNTER_ON_SCREEN",
+  "EFFECTIVE_STOP_EXPERIENCE": "AFTER_A_HALT_NOTHING_THAT_MUTATES_THE_ENCOUNTER_RUNS_READING_AND_THE_BUNDLE_STAY_ECG_CANCEL_PENDING_AND_RETROSPECTIVE_EXPLANATION_ARE_BLOCKED_AND_EXCLUDED_THE_ONLY_RESOLUTION_IS_TO_EXIT_THE_NOTICE_IS_OPERATIONAL_AND_SAYS_NOTHING_OF_THE_PATIENT",
+  "FACULTY_ENVIRONMENT_ISOLATION": "DEVELOPMENT_ONLY_FACULTY_ONLY_ACCOUNTS_ONLY_ONE_NAMED_FLAG_FOURTEEN_CONDITIONS_EVERY_ONE_REQUIRED_MISSING_OR_PARTIAL_MEANS_THE_AUTHORITY_IS_UNAVAILABLE_NEVER_PARTIALLY_ENABLED_FLAGS_FROM_THE_PROCESS_NOT_FROM_SECRETS_REREAD_WHENEVER_THE_AUTHORITY_ASKS_A_REVIEW_WHOSE_FLAG_DISAPPEARS_HALTS_ONE_PLACE_STARTS_ENCOUNTERS_AND_REFUSES_ANY_BUT_THE_LAUNCHER_A_REFUSED_CONFIGURATION_WRITES_NOTHING",
+  "FACULTY_FEEDBACK": "TEN_EDUCATIONAL_QUESTIONS_BOUND_TO_ONE_STORED_BUNDLE_BLINDED_ANSWERS_FIXED_AT_THE_REVEAL_ONLY_THE_TEN_QUESTIONS_STORED_CASE_SCENARIO_BUNDLE_AND_ROLE_REQUIRED_IDENTIFIER_TRIPWIRE_NOT_A_GUARANTEE_SYNTHETIC_CASES_ONLY",
+  "PILOT_ISOLATION": "THE_FIRST_PILOT_CONFIGURATION_REFUSES_THE_REVIEW_MODE_THE_FROZEN_PILOT_BRANCH_AND_BASELINES_ARE_UNTOUCHED_FLAGS_OFF_BEHAVIOUR_IS_IDENTICAL_AND_COSTS_ONE_LOOKUP",
+  "PRESSURE_AUTHORITY": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_UNCHANGED_SBP_DBP_MAP_TWO_CASES_BEHIND_THE_EXPLICIT_GRANT_THE_REVIEW_MODE_ENABLES_NOTHING_THE_GRANT_DID_NOT_ALREADY_ALLOW_SEVEN_SCRIPTED_ENCOUNTERS_REPRODUCE_THE_CERTIFIED_SERIES_ON_THE_REAL_PAGE",
+  "RESIDENT_ISOLATION": "A_RESIDENT_ACCOUNT_GETS_A_GENERIC_REFUSAL_NO_LAUNCHER_NO_PANEL_NO_STATUS_NO_BUNDLE_NO_FEEDBACK_THE_RESIDENT_FACING_VIEWS_CARRY_NO_AUTHORITY_VOCABULARY_THE_COMMON_CONSCIOUSNESS_IS_NEVER_RESIDENT_VISIBLE_STAFF_ATTEMPTS_ARE_SANDBOX_AND_NEVER_SCORED_NOT_READY_FOR_RESIDENTS",
+  "SINGLE_PROCESS_ENFORCEMENT": "EXCLUSIVE_FLOCK_ON_A_FILE_INSIDE_THE_STORE_HELD_FOR_THE_LIFE_OF_THE_PROCESS_BOUND_TO_THE_FILES_DEVICE_AND_INODE_A_SECOND_PROCESS_A_FORKED_CHILD_A_DELETED_OR_MOVED_LOCK_AND_A_NETWORK_OR_UNVETTED_FILESYSTEM_ARE_REFUSED_ONE_REVIEW_PROCESS_PER_STORE_ON_A_LOCAL_FILESYSTEM_NOT_ACROSS_MACHINES_NOT_MULTIPROCESS_SOLVED"
+ },
+ "verdict": "A_GI_PRESSURE_AUTHORITY_READY_FOR_CONTROLLED_FACULTY_REVIEW",
+ "verdict_enables": "NOTHING BEYOND the GI pressure development authority the faculty already granted (SBP, DBP, MAP derived; gi_bleed_57m and gi_bleed_72f; the development environment): it makes the experiment ELIGIBLE FOR A CONTROLLED, FACULTY-ONLY, SINGLE-PROCESS DEVELOPMENT REVIEW. It does NOT start that review (the actual faculty review needs a separate instruction), is not a resident pilot, is not production, is not a clinical validation, grants no consciousness authority, no write into mental_status, no first-pilot change and no approval of version 1 for authority. The next step is the ACTUAL FACULTY REVIEW, which is not taken here",
+ "version": "P3-289"
+}
