@@ -70,7 +70,8 @@ def _faculty(world):
     return name, password
 
 
-def _open(world, credentials=None, secrets=None):
+def _open(world, credentials=None, secrets=None, mode="live"):
+    """Sign in. ``mode="live"`` (the default, what every test of this file exercises) switches the faculty launcher to the LIVE review encounter; ``mode="trajectory"`` leaves the primary Trajectory review (UX-003)."""
     credentials = credentials or _faculty(world)
     at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=600)
     at._credentials = credentials
@@ -81,6 +82,10 @@ def _open(world, credentials=None, secrets=None):
     next(item for item in at.text_input if item.label == "Password").set_value(credentials[1])
     next(item for item in at.button if item.label == "Sign in").click().run()
     assert not at.exception, [str(item.value)[:300] for item in at.exception]
+    mode_radio = next((item for item in at.radio if item.label == "Review mode"), None)
+    if mode == "live" and mode_radio is not None:
+        mode_radio.set_value(ui.LIVE_MODE).run()
+        assert not at.exception, [str(item.value)[:300] for item in at.exception]
     return at
 
 
