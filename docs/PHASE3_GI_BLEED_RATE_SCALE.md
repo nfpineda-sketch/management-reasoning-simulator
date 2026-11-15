@@ -14,7 +14,7 @@ del FR-G, que es la primera observación que alcanza la escala **absoluta**.
 
 **Aviso de identificadores.** El encargo nombra sus decisiones «FD-BLD-01» a «FD-BLD-08». Esos identificadores **ya existen**: `FD-BLD-01` a `FD-BLD-09` son las restricciones docentes
 congeladas de sangre (`clinical_core/blood_constraints.py`; p. ej. `FD-BLD-04` es el aporte temprano del cristaloide). Para no crear dos significados, las decisiones nuevas se registran
-como **`FD-RATE-01` a `FD-RATE-08`**, citando el rótulo del encargo. En este documento `FD-BLD-0x` significa **siempre** la restricción congelada. Queda a tu confirmación.
+como **`FD-RATE-01` a `FD-RATE-08`**, citando el rótulo del encargo. En este documento `FD-BLD-0x` significa **siempre** la restricción congelada. *(Nombre confirmado el 2026-11-15 en el encargo siguiente; ver `docs/PHASE3_GI_JOINT_FEASIBILITY.md`.)*
 
 ---
 

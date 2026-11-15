@@ -1,0 +1,93 @@
+{
+ "confirmations": {
+  "amendment_3_not_implemented_and_not_designed": true,
+  "bleeding_controlled_only_in_the_one_unit_reading": true,
+  "clinical_core_untouched": true,
+  "closed_crystalloid_region_not_changed": true,
+  "family_engine_untouched": true,
+  "infusion_semantics_not_changed": true,
+  "no_authority_expansion": true,
+  "no_clinical_validation_claim": true,
+  "no_legacy_curve_fitting": true,
+  "no_norepinephrine_implementation": true,
+  "no_rate_or_pressure_parameter_approved": true,
+  "no_resident_deployment": true,
+  "no_single_bleed_rate_point_chosen": true,
+  "no_source_control_physiology_added": true,
+  "original_human_review_preserved": true
+ },
+ "decided_on": "2026-11-15",
+ "identifier_naming": {
+  "confirmed_by_the_user": true,
+  "recorded_as": "FD-RATE-09 to FD-RATE-13"
+ },
+ "next_faculty_decisions": [
+  "0. Confirm the reading of FD-RATE-09: is +8 to +18 mmHg the effect of the whole unit, complete at minute 30 (the reading used), or must the +8 mmHg floor already be present at minute 15? With the second reading the intersection with the closed crystalloid region is empty.",
+  "1. Is the corner the current physiology allows acceptable for development (one unit about +8 to +12 mmHg with the slow litre preventing about 25 to 35 %), or is the middle of both windows wanted (about +13 mmHg and 25 %)? The middle needs a kernel below the floor of the closed crystalloid region: reopening that region (FD-RATE-12), not Amendment 3.",
+  "2. Is a loss of 7.6 to 9.3 mL-eq/min an acceptable DEVELOPMENT scale for these two authored cases? (a model reading, not clinical data)",
+  "3. Architecture, only if a joint candidate is wanted: extend the CANDIDATE scale band beyond 1500 mL-eq, decide the path of the rate (certified core successor or rate from the snapshot), move the crystalloid kernel inside the closed region, and plan a new blinded human review of FR-B, FR-C, FR-E and FR-G."
+ ],
+ "not_done_on_purpose": [
+  "a commit or push of the P3-327 to P3-336 work (the assignment authorises publication only for P3-326)",
+  "a full-suite certification (nothing in clinical_core or the runtime changed)",
+  "choosing a point of the feasible region, FR-G_V2_CANDIDATE, or any change of gi_pressure_committed, the grant or the snapshot",
+  "an Amendment 3 design (P3-335A applies only to verdict C)",
+  "a faster red-cell unit (it would change the infusion semantics)"
+ ],
+ "overall": {
+  "name": "CURRENT_PHYSIOLOGY_HAS_FEASIBLE_JOINT_REGION",
+  "verdict": "A"
+ },
+ "pinned_records": {
+  "active_core_digest": "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2",
+  "analysis_record_digest": "2ca6bc534f55508209459c834819c4269b59bbd60ec27ee905dcbd289187f059",
+  "bleed_rate_scale_record_digest": "49daa1ba83defb2ca67801b0de8ceb52aee0362f8e60257f9ea3492d06ff36ce",
+  "frg_crystalloid_analysis_record_digest": "604e9ba705cd5ce6334fce1079a9f1d91b8de190c0b83497aa57d7e7a94cc188",
+  "human_review_record_digest": "9ba80fa70d3b38e178caa3aca9432f9227ce6d9591a48c9908c3f5ac4cc6c8d3",
+  "p3_313_checkpoint_digest": "093262fa98e9a4a476ad6005b1c5c6954858ddafd380ad8538c7c7e9bb644bf5",
+  "p3_325_checkpoint_digest": "3198f62afd98655768e38e3e2ccceb226fe6cf842655c8b899d90ce4318d94f3",
+  "review_set_digest": "f65d1127f3fb97926334d695aeab37b92f3a44236cec2ae025025eec90ba1649"
+ },
+ "publication_p3_326": {
+  "analysis_and_tests_commit": "7ae5c9b",
+  "candidate_tree": "6e64e945b2c0ed1ff54d61196d926271c3a1338c",
+  "docs_and_records_commit": "9e8278b",
+  "force_push": false,
+  "pull_request": false,
+  "pushed_to": "origin/phase-3-runtime-integration",
+  "tree_identical_to_the_verified_candidate": true
+ },
+ "record_digest": "f18e181b3a4767384f34c90fb3bb0d483762eda3951434a480f1ffd5b7b601eb",
+ "record_type": "JOINT_FEASIBILITY_CHECKPOINT",
+ "statement": "The three faculty anchors (untreated course, one red-cell unit, slow crystalloid) were tested together against the current GI physiology, read-only. Under the declared reading of the one-unit window (minute 30) the intersection is NONEMPTY with a kernel inside the closed crystalloid region, so by FD-RATE-13 Amendment 3 is not opened. Nothing executable changed; no rate, pressure parameter or kernel is approved; no point is chosen; no FR-G V2 candidate exists.",
+ "statuses": {
+  "AMENDMENT3_STATUS": "NOT_JUSTIFIED · NOT_OPENED · no design written · conditional on the declared reading of the one-unit window",
+  "INTERSECTION_STATUS": "NONEMPTY (declared reading) · bleed rate [7.598, 9.326] mL-eq/min, scale [2258.3, 3048.0] mL-eq, kernel inside the closed crystalloid region (its least-retaining 53 %) · NONEMPTY also at arrival position 0.4 · EMPTY inside the declared CANDIDATE scale band [600, 1500] · EMPTY under the stricter reading (the +8 mmHg floor already at minute 15)",
+  "JOINT_IDENTIFIABILITY": "THREE_COORDINATES · A reads rate / scale, B reads the scale, C reads rate x kernel · inside the verified region the rate is identified within x1.23 and the scale within x1.35 · NOT weakly identified",
+  "PRBC_RESPONSE_REGION": "FACULTY_DEFINED_DEVELOPMENT_BEHAVIORAL_REGION · one unit, bleeding temporarily controlled, +8 to +18 mmHg SBP in about 15 to 30 min · reads the pressure scale only · admits scale [1478.3, 3147.6] mL-eq for both cases · the current point gives +26.6 (57m) and +29.6 (72f) mmHg: too large by FD-RATE-09 · FINITE_DURATION_INFUSION, linear over 30 min, read at minute 30",
+  "SLOW_CRYSTALLOID_REGION": "FACULTY_DEFINED_DEVELOPMENT_BEHAVIORAL_REGION · 1 L over 60 min during active bleeding prevents about 15 to 35 % of the untreated deterioration at minute 60 · reads the bleed rate and the kernel, not the pressure map · reachable 25.3 to 35 % with a closed-region kernel · the current point gives 63 %",
+  "STRUCTURAL_CONFLICT": "NONE_THAT_EMPTIES_THE_INTERSECTION · the single effective-volume channel couples blood and crystalloid and makes the region a corner (lower part of the one-unit window, upper part of the slow-crystalloid window) · the time-invariant retention kernel narrows it · the pressure map is not implicated",
+  "UNTREATED_REGION": "U-OUT faculty envelopes · rate / scale in [0.003060, 0.003365] at the committed arrival position · progressive deterioration, case ordering 57m below 72f, same severity class as the accepted FR-A / FR-D course at every witness"
+ },
+ "verdict_condition": {
+  "declared_reading": "both ends of the +8 .. +18 mmHg window read at minute 30, where the default 30-minute unit ends",
+  "needs_faculty_confirmation": true,
+  "stricter_reading_status_with_the_closed_crystalloid_region": "EMPTY",
+  "verdict_survives_the_stricter_reading": false
+ },
+ "version": "P3-336",
+ "witnesses_not_chosen_points": {
+  "CENTER": {
+   "bleed_rate_ml_min": 8.396979,
+   "scale_ml_eq": 2617.117088
+  },
+  "HIGH": {
+   "bleed_rate_ml_min": 9.279445,
+   "scale_ml_eq": 3017.792596
+  },
+  "LOW": {
+   "bleed_rate_ml_min": 7.598434,
+   "scale_ml_eq": 2269.63969
+  }
+ }
+}

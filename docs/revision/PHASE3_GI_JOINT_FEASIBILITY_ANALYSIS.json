@@ -1,0 +1,1564 @@
+{
+ "decision": {
+  "amendment_3_gate": {
+   "amendment_3": "NOT_JUSTIFIED__NOT_OPENED",
+   "design_written": false,
+   "exact_reason": "the current equations satisfy the untreated envelopes, the one-unit region and the slow-crystalloid region together, with every existing constraint and a kernel inside the closed crystalloid region; by FD-RATE-13 a nonempty feasible region means Amendment 3 is not opened",
+   "name": "CURRENT_PHYSIOLOGY_HAS_FEASIBLE_JOINT_REGION",
+   "verdict": "A",
+   "what_the_region_costs": [
+    "it lies entirely above the declared CANDIDATE band of the preload scale and at three to four times the historical bleed-rate reference",
+    "it is a corner: the lower part of the one-unit window, the upper part of the slow-crystalloid window, the least-retaining part of the closed crystalloid region",
+    "the current point satisfies neither new anchor; every treated trajectory changes magnitude at any feasible point, so FR-B, FR-C, FR-E and FR-G would all need a new blinded human review",
+    "applying any point needs a new pressure snapshot and a certified successor of the core, because the bleed rate is computed inside clinical_core and the scale band is declared there"
+   ],
+   "why_not": {
+    "B": "each coordinate is identified within a factor of about 1.2 to 1.4: the region is narrow, not weakly identified",
+    "C": "the intersection is not empty",
+    "D": "the pressure map holds the untreated course and the transfusion response on separate coordinates",
+    "E": "the three anchors and the existing constraints decide it"
+   }
+  },
+  "case_specific_parameters_introduced": false,
+  "conditional_on_the_window_reading": {
+   "declared_reading_status": "NONEMPTY",
+   "needs_faculty_confirmation": true,
+   "reading": "the verdict is for the declared reading (the one-unit effect read at minute 30, where the unit ends); if the +8 mmHg floor had to be present already at minute 15, the status with the closed crystalloid region would be the stricter one",
+   "stricter_reading_status": "EMPTY",
+   "verdict_survives_the_stricter_reading": false
+  },
+  "identification": {
+   "largest_over_smallest": {
+    "bleed_rate_ml_min": 1.227337,
+    "scale_ml_eq": 1.34968
+   },
+   "weakly_identified": false
+  },
+  "intersection_status": "NONEMPTY",
+  "one_shared_family_region": true,
+  "status_at_the_sensitivity_position": "NONEMPTY",
+  "witnesses_satisfy_everything": true
+ },
+ "depends_on": {
+  "bleed_rate_scale_record_digest": "49daa1ba83defb2ca67801b0de8ceb52aee0362f8e60257f9ea3492d06ff36ce",
+  "frg_crystalloid_analysis_record_digest": "604e9ba705cd5ce6334fce1079a9f1d91b8de190c0b83497aa57d7e7a94cc188"
+ },
+ "evidence_class": "MODEL_ANALYSIS",
+ "executable_change": false,
+ "faculty_anchors": {
+  "FD-RATE-09": {
+   "one_unit_sbp_rise_mmHg": [
+    8.0,
+    18.0
+   ],
+   "status": "FACULTY_DEFINED_DEVELOPMENT_BEHAVIORAL_REGION",
+   "too_large_from_mmHg": 25.0,
+   "window_min": [
+    15,
+    30
+   ]
+  },
+  "FD-RATE-10": {
+   "share_of_untreated_deterioration_prevented_at_60": [
+    0.15,
+    0.35
+   ],
+   "status": "FACULTY_DEFINED_DEVELOPMENT_BEHAVIORAL_REGION"
+  },
+  "FD-RATE-11": "no absolute bleed-rate point is approved: UNRESOLVED_ABSOLUTE_SCALE",
+  "FD-RATE-12": "the closed crystalloid region is not modified",
+  "FD-RATE-13": "Amendment 3 only if A, B and C cannot hold together"
+ },
+ "feasibility": {
+  "by_shared_arrival_position": {
+   "0.4": {
+    "A_untreated": {
+     "common_c": [
+      0.002138,
+      0.002278
+     ],
+     "per_case_c": {
+      "gi_bleed_57m": [
+       0.002138,
+       0.003185
+      ],
+      "gi_bleed_72f": [
+       0.001395,
+       0.002278
+      ]
+     },
+     "status": "NONEMPTY"
+    },
+    "A_x_B_bleed_rate_ml_min": [
+     4.910718,
+     10.932295
+    ],
+    "B_one_unit": {
+     "binding": {
+      "largest_scale": "the +8 mmHg floor in 57m (the lower arrival pressure)",
+      "smallest_scale": "the +18 mmHg ceiling in 72f (the higher arrival pressure)"
+     },
+     "common_scale_ml_eq": [
+      2296.735394,
+      4798.437106
+     ],
+     "per_case_scale_ml_eq": {
+      "gi_bleed_57m": [
+       2046.336259,
+       4798.437106
+      ],
+      "gi_bleed_72f": [
+       2296.735394,
+       5361.101131
+      ]
+     },
+     "status": "NONEMPTY"
+    },
+    "C_slow_crystalloid_by_kernel": {
+     "CLOSED_REGION_LEAST_PROTECTIVE": {
+      "binding": {
+       "largest_scale": "the +8 mmHg floor of one unit",
+       "smallest_scale": "the 35 % ceiling of the slow-crystalloid share"
+      },
+      "bleed_rate_ml_min": [
+       7.453317,
+       10.932295
+      ],
+      "c_at_the_largest_scale": [
+       0.002138,
+       0.002278
+      ],
+      "one_unit_sbp_rise_mmHg": {
+       "gi_bleed_57m": [
+        8.0,
+        11.566349
+       ],
+       "gi_bleed_72f": [
+        8.909091,
+        12.880706
+       ]
+      },
+      "retained_at_60_ml": 134.601636,
+      "scale_ml_eq": [
+       3271.433034,
+       4798.437106
+      ],
+      "share_at_the_least_protected_corner": 0.240178,
+      "share_at_the_most_protected_corner": 0.524699,
+      "share_prevented": [
+       0.240178,
+       0.35
+      ],
+      "status": "NONEMPTY"
+     },
+     "RUNTIME_OUTSIDE_THE_CLOSED_REGION": {
+      "binding": {
+       "largest_scale": "the +8 mmHg floor of one unit",
+       "smallest_scale": "the +18 mmHg ceiling of one unit"
+      },
+      "bleed_rate_ml_min": [
+       5.23266,
+       10.932295
+      ],
+      "c_at_the_largest_scale": [
+       0.002138,
+       0.002278
+      ],
+      "one_unit_sbp_rise_mmHg": {
+       "gi_bleed_57m": [
+        8.0,
+        16.163266
+       ],
+       "gi_bleed_72f": [
+        8.909091,
+        18.0
+       ]
+      },
+      "retained_at_60_ml": 81.887514,
+      "scale_ml_eq": [
+       2296.735394,
+       4798.437106
+      ],
+      "share_at_the_least_protected_corner": 0.146919,
+      "share_at_the_most_protected_corner": 0.322866,
+      "share_prevented": [
+       0.15,
+       0.322866
+      ],
+      "status": "NONEMPTY"
+     }
+    },
+    "closed_region_fibre": {
+     "fibre": {
+      "e_inside_the_closed_region": [
+       0.201733,
+       0.315082
+      ],
+      "s": 0.865,
+      "tau": 57.477
+     },
+     "largest_feasible_e": 0.295896,
+     "retained_at_60_ml_feasible": [
+      134.601636,
+      197.429515
+     ],
+     "retained_at_60_ml_whole_closed_region": [
+      134.60145,
+      233.971517
+     ],
+     "share_of_the_closed_region_span_compatible": 0.632263,
+     "status": "NONEMPTY",
+     "the_most_retaining_kernel_of_the_region_is_compatible": false
+    },
+    "inside_the_declared_scale_band": {
+     "by_kernel": {
+      "CLOSED_REGION_LEAST_PROTECTIVE": {
+       "status": "EMPTY",
+       "why": "the one-unit region and the declared scale band do not overlap"
+      },
+      "RUNTIME_OUTSIDE_THE_CLOSED_REGION": {
+       "status": "EMPTY",
+       "why": "the one-unit region and the declared scale band do not overlap"
+      }
+     },
+     "one_unit_region_within_the_band_ml_eq": [
+      2296.735394,
+      1500.0
+     ]
+    }
+   },
+   "0.5": {
+    "A_untreated": {
+     "common_c": [
+      0.00306,
+      0.003365
+     ],
+     "per_case_c": {
+      "gi_bleed_57m": [
+       0.00306,
+       0.004468
+      ],
+      "gi_bleed_72f": [
+       0.002027,
+       0.003365
+      ]
+     },
+     "status": "NONEMPTY"
+    },
+    "A_x_B_bleed_rate_ml_min": [
+     4.522914,
+     10.59047
+    ],
+    "B_one_unit": {
+     "binding": {
+      "largest_scale": "the +8 mmHg floor in 57m (the lower arrival pressure)",
+      "smallest_scale": "the +18 mmHg ceiling in 72f (the higher arrival pressure)"
+     },
+     "common_scale_ml_eq": [
+      1478.263302,
+      3147.617632
+     ],
+     "per_case_scale_ml_eq": {
+      "gi_bleed_57m": [
+       1310.950639,
+       3147.617632
+      ],
+      "gi_bleed_72f": [
+       1478.263302,
+       3522.871336
+      ]
+     },
+     "status": "NONEMPTY"
+    },
+    "C_slow_crystalloid_by_kernel": {
+     "CLOSED_REGION_LEAST_PROTECTIVE": {
+      "binding": {
+       "largest_scale": "the +8 mmHg floor of one unit",
+       "smallest_scale": "the 35 % ceiling of the slow-crystalloid share"
+      },
+      "bleed_rate_ml_min": [
+       7.598434,
+       10.59047
+      ],
+      "c_at_the_largest_scale": [
+       0.00306,
+       0.003365
+      ],
+      "one_unit_sbp_rise_mmHg": {
+       "gi_bleed_57m": [
+        8.0,
+        10.94678
+       ],
+       "gi_bleed_72f": [
+        8.909091,
+        12.190733
+       ]
+      },
+      "retained_at_60_ml": 134.601636,
+      "scale_ml_eq": [
+       2258.34795,
+       3147.617632
+      ],
+      "share_at_the_least_protected_corner": 0.253222,
+      "share_at_the_most_protected_corner": 0.574348,
+      "share_prevented": [
+       0.253222,
+       0.35
+      ],
+      "status": "NONEMPTY"
+     },
+     "RUNTIME_OUTSIDE_THE_CLOSED_REGION": {
+      "binding": {
+       "largest_scale": "the +8 mmHg floor of one unit",
+       "smallest_scale": "the +18 mmHg ceiling of one unit"
+      },
+      "bleed_rate_ml_min": [
+       4.973763,
+       10.59047
+      ],
+      "c_at_the_largest_scale": [
+       0.00306,
+       0.003365
+      ],
+      "one_unit_sbp_rise_mmHg": {
+       "gi_bleed_57m": [
+        8.0,
+        16.163265
+       ],
+       "gi_bleed_72f": [
+        8.909091,
+        18.0
+       ]
+      },
+      "retained_at_60_ml": 81.887514,
+      "scale_ml_eq": [
+       1478.263302,
+       3147.617632
+      ],
+      "share_at_the_least_protected_corner": 0.155341,
+      "share_at_the_most_protected_corner": 0.355624,
+      "share_prevented": [
+       0.155341,
+       0.35
+      ],
+      "status": "NONEMPTY"
+     }
+    },
+    "closed_region_fibre": {
+     "fibre": {
+      "e_inside_the_closed_region": [
+       0.201733,
+       0.315082
+      ],
+      "s": 0.865,
+      "tau": 57.477
+     },
+     "largest_feasible_e": 0.281169,
+     "retained_at_60_ml_feasible": [
+      134.601636,
+      187.603713
+     ],
+     "retained_at_60_ml_whole_closed_region": [
+      134.60145,
+      233.971517
+     ],
+     "share_of_the_closed_region_span_compatible": 0.533383,
+     "status": "NONEMPTY",
+     "the_most_retaining_kernel_of_the_region_is_compatible": false
+    },
+    "inside_the_declared_scale_band": {
+     "by_kernel": {
+      "CLOSED_REGION_LEAST_PROTECTIVE": {
+       "smallest_share_reachable": 0.519166,
+       "status": "EMPTY"
+      },
+      "RUNTIME_OUTSIDE_THE_CLOSED_REGION": {
+       "smallest_share_reachable": 0.321375,
+       "status": "NONEMPTY"
+      }
+     },
+     "one_unit_region_within_the_band_ml_eq": [
+      1478.263302,
+      1500.0
+     ]
+    }
+   }
+  },
+  "projections": {
+   "bleed_rate_ml_min": [
+    7.598434,
+    10.59047
+   ],
+   "c_rate_over_scale": [
+    0.00306,
+    0.003365
+   ],
+   "crystalloid_retained_at_60_ml": [
+    134.601636,
+    187.603713
+   ],
+   "one_unit_sbp_rise_mmHg": {
+    "gi_bleed_57m": [
+     8.0,
+     10.94678
+    ],
+    "gi_bleed_72f": [
+     8.909091,
+     12.190733
+    ]
+   },
+   "scale_ml_eq": [
+    2258.34795,
+    3147.617632
+   ],
+   "share_prevented_at_60": [
+    0.253222,
+    0.35
+   ]
+  },
+  "relative_to_the_declared_scale_band": {
+   "band_ml_eq": [
+    600.0,
+    1500.0
+   ],
+   "band_status": "CANDIDATE (a declared domain, not evidence)",
+   "feasible_region_is_entirely_above_the_band": true,
+   "smallest_feasible_scale_over_the_band_top": 1.505565
+  },
+  "relative_to_the_historical_reference": {
+   "largest_feasible_rate_over_it": 4.236188,
+   "rate_ml_min": 2.5,
+   "smallest_feasible_rate_over_it": 3.039374
+  },
+  "status": "NONEMPTY",
+  "status_is_for": "all three faculty anchors AND every existing constraint, the closed crystalloid region included, at the committed arrival position",
+  "three_anchors_only_status": "NONEMPTY",
+  "window_reading": {
+   "declared": "both ends of the +8 .. +18 mmHg window are read at minute 30, where the default 30-minute unit ends and the whole response is present (P3-327A)",
+   "stricter_reading_as_a_sensitivity": {
+    "B_one_unit_under_this_reading": {
+     "common_scale_ml_eq": [
+      1478.263302,
+      1573.808819
+     ],
+     "per_case_scale_ml_eq": {
+      "gi_bleed_57m": [
+       1310.950639,
+       1573.808819
+      ],
+      "gi_bleed_72f": [
+       1478.263302,
+       1761.435634
+      ]
+     },
+     "status": "NONEMPTY"
+    },
+    "C_slow_crystalloid_by_kernel": {
+     "CLOSED_REGION_LEAST_PROTECTIVE": {
+      "share_at_the_least_protected_corner": 0.495845,
+      "share_at_the_most_protected_corner": 0.574348,
+      "status": "EMPTY"
+     },
+     "RUNTIME_OUTSIDE_THE_CLOSED_REGION": {
+      "bleed_rate_ml_min": [
+       4.815247,
+       5.295235
+      ],
+      "scale_ml_eq": [
+       1478.263302,
+       1573.808819
+      ],
+      "share_at_the_least_protected_corner": 0.306692,
+      "share_at_the_most_protected_corner": 0.355624,
+      "status": "NONEMPTY"
+     }
+    },
+    "full_unit_sbp_rise_at_30_mmHg_it_implies": {
+     "gi_bleed_57m": [
+      15.272727,
+      16.163265
+     ],
+     "gi_bleed_72f": [
+      17.008264,
+      18.0
+     ]
+    },
+    "is_the_declared_reading": false,
+    "reading": "the +8 mmHg floor required already at minute 15, the +18 mmHg ceiling at minute 30",
+    "status_with_the_closed_crystalloid_region": "EMPTY",
+    "status_with_the_runtime_kernel_for_information": "NONEMPTY"
+   }
+  },
+  "with_every_existing_constraint_readable_and_met": {
+   "bleed_rate_ml_min": [
+    7.598434,
+    9.325842
+   ],
+   "fastest_readable_bleed_rate_ml_min": 9.325842,
+   "limited_by": "FD-BLD-06 in 57m: the frozen 140-minute crystalloid blood reading ends at the core's boundary (UNREADABLE, not failed)",
+   "scale_ml_eq": [
+    2258.34795,
+    3048.045967
+   ],
+   "status": "NONEMPTY"
+  }
+ },
+ "prbc_mechanism": {
+  "bleeding_for_this_anchor": "temporarily controlled in a counterfactual copy (0 mL/min) for THIS reading only; no other scenario of this analysis stops the bleed",
+  "cases": {
+   "gi_bleed_57m": {
+    "chain_at_the_current_point": {
+     "0": {
+      "dbp": 54.0,
+      "effective_volume_change_ml_eq": 0.0,
+      "forward_flow_output_rel": 1.0,
+      "hb": 6.7,
+      "map": 65.333333,
+      "preload_position": 0.5,
+      "sbp": 88.0,
+      "transfused_ml_this_minute": 0.0
+     },
+     "15": {
+      "dbp": 62.895409,
+      "effective_volume_change_ml_eq": 150.0,
+      "forward_flow_output_rel": 1.16473,
+      "hb": 7.180723,
+      "map": 76.09568,
+      "preload_position": 0.582365,
+      "sbp": 102.496221,
+      "transfused_ml_this_minute": 10.0
+     },
+     "30": {
+      "dbp": 70.325478,
+      "effective_volume_change_ml_eq": 300.0,
+      "forward_flow_output_rel": 1.302324,
+      "hb": 7.627907,
+      "map": 85.085147,
+      "preload_position": 0.651162,
+      "sbp": 114.604483,
+      "transfused_ml_this_minute": 10.0
+     },
+     "45": {
+      "dbp": 70.325478,
+      "effective_volume_change_ml_eq": 300.0,
+      "forward_flow_output_rel": 1.302324,
+      "hb": 7.627907,
+      "map": 85.085147,
+      "preload_position": 0.651162,
+      "sbp": 114.604483,
+      "transfused_ml_this_minute": 0.0
+     },
+     "5": {
+      "dbp": 57.144715,
+      "effective_volume_change_ml_eq": 50.0,
+      "forward_flow_output_rel": 1.058235,
+      "hb": 6.864198,
+      "map": 69.13805,
+      "preload_position": 0.529118,
+      "sbp": 93.124721,
+      "transfused_ml_this_minute": 10.0
+     }
+    },
+    "closed_form_agrees": true,
+    "contributor": {
+     "duration_min": null,
+     "start_minute": 0,
+     "type": "PackedRedCells",
+     "unit_hb_g_dl": 20.0,
+     "units": 1.0,
+     "untimed_units_per_min": 0.033333,
+     "volume_ml_per_unit": 300.0
+    },
+    "current_point_is_too_large_by_FD_RATE_09": true,
+    "delivery_is_linear": true,
+    "hb_agrees": true,
+    "hb_at_30": 7.627907,
+    "hb_mixing_closed_form": 7.627907,
+    "nothing_after_the_unit_ends": true,
+    "sbp_rise_at_30_mmHg": 26.604483,
+    "sbp_rise_closed_form_mmHg": 26.604483,
+    "share_of_the_response_at_15_min": 0.544879
+   },
+   "gi_bleed_72f": {
+    "chain_at_the_current_point": {
+     "0": {
+      "dbp": 62.0,
+      "effective_volume_change_ml_eq": 0.0,
+      "forward_flow_output_rel": 1.0,
+      "hb": 6.4,
+      "map": 74.0,
+      "preload_position": 0.5,
+      "sbp": 98.0,
+      "transfused_ml_this_minute": 0.0
+     },
+     "15": {
+      "dbp": 72.213247,
+      "effective_volume_change_ml_eq": 150.0,
+      "forward_flow_output_rel": 1.16473,
+      "hb": 6.891566,
+      "map": 86.190004,
+      "preload_position": 0.582365,
+      "sbp": 114.143519,
+      "transfused_ml_this_minute": 10.0
+     },
+     "30": {
+      "dbp": 80.744068,
+      "effective_volume_change_ml_eq": 300.0,
+      "forward_flow_output_rel": 1.302324,
+      "hb": 7.348837,
+      "map": 96.371952,
+      "preload_position": 0.651162,
+      "sbp": 127.62772,
+      "transfused_ml_this_minute": 10.0
+     },
+     "45": {
+      "dbp": 80.744068,
+      "effective_volume_change_ml_eq": 300.0,
+      "forward_flow_output_rel": 1.302324,
+      "hb": 7.348837,
+      "map": 96.371952,
+      "preload_position": 0.651162,
+      "sbp": 127.62772,
+      "transfused_ml_this_minute": 0.0
+     },
+     "5": {
+      "dbp": 65.610599,
+      "effective_volume_change_ml_eq": 50.0,
+      "forward_flow_output_rel": 1.058235,
+      "hb": 6.567901,
+      "map": 78.309425,
+      "preload_position": 0.529118,
+      "sbp": 103.707076,
+      "transfused_ml_this_minute": 10.0
+     }
+    },
+    "closed_form_agrees": true,
+    "contributor": {
+     "duration_min": null,
+     "start_minute": 0,
+     "type": "PackedRedCells",
+     "unit_hb_g_dl": 20.0,
+     "units": 1.0,
+     "untimed_units_per_min": 0.033333,
+     "volume_ml_per_unit": 300.0
+    },
+    "current_point_is_too_large_by_FD_RATE_09": true,
+    "delivery_is_linear": true,
+    "hb_agrees": true,
+    "hb_at_30": 7.348837,
+    "hb_mixing_closed_form": 7.348837,
+    "nothing_after_the_unit_ends": true,
+    "sbp_rise_at_30_mmHg": 29.62772,
+    "sbp_rise_closed_form_mmHg": 29.62772,
+    "share_of_the_response_at_15_min": 0.544879
+   }
+  },
+  "mechanism": [
+   "each minute the unit delivers units x volume_ml_per_unit of circulating volume as ONE blood flow (RED_CELL_TRANSFUSION) at the unit's haemoglobin concentration",
+   "the shared blood state adds the volume and the red cells; haemoglobin is the mixed concentration, never a fixed step",
+   "V = kappa x circulating-volume change; the preload position is 1 - (1 - f) exp(-V / scale); output and pressure are that position over f (GI: P = 1, T = 1)",
+   "so the pressure response to one unit is SBP_arrival x (1 - f)(1 - exp(-kappa x unit_volume / scale)) / f: it reads the unit volume over the scale and nothing of the bleed rate"
+  ],
+  "timing": {
+   "class": "FINITE_DURATION_INFUSION",
+   "default": "an untimed unit runs at 1/30 unit per minute: 30 minutes, linear",
+   "faculty_window_min": [
+    15,
+    30
+   ],
+   "instantaneous": false,
+   "mapping": "the faculty window of about 15 to 30 minutes is read at minute 30, the end of the default unit, where the whole response is present; at minute 15 half of the volume is in and slightly more than half of the pressure response; nothing in the infusion semantics was changed",
+   "response_complete_at_minute": 30
+  }
+ },
+ "record_digest": "2ca6bc534f55508209459c834819c4269b59bbd60ec27ee905dcbd289187f059",
+ "record_type": "GI_JOINT_FEASIBILITY_ANALYSIS",
+ "reduction": {
+  "b_and_c_are_coupled_through_one_volume_channel": {
+   "CLOSED_REGION_LEAST_PROTECTIVE": {
+    "retained_at_60_ml": 134.601636,
+    "retained_over_one_unit_volume": 0.448672,
+    "share_prevented_over_one_unit_gain_at_three_scales": [
+     3.181726,
+     3.128624,
+     3.098305
+    ],
+    "spread": 0.083421
+   },
+   "RUNTIME_OUTSIDE_THE_CLOSED_REGION": {
+    "retained_at_60_ml": 81.887514,
+    "retained_over_one_unit_volume": 0.272958,
+    "share_prevented_over_one_unit_gain_at_three_scales": [
+     1.969561,
+     1.92611,
+     1.901447
+    ],
+    "spread": 0.068114
+   }
+  },
+  "b_reads_the_scale_only": {
+   "holds": true,
+   "sbp_rise_at_scale_2000_with_and_without_a_kernel_change": [
+    13.650618,
+    13.650618
+   ]
+  },
+  "c_reads_the_rate_and_the_kernel_only": {
+   "holds": true,
+   "max_minus_min": 0.016282,
+   "share_at_8_ml_min_on_four_maps": [
+    0.344594,
+    0.330888,
+    0.328312,
+    0.330888
+   ]
+  },
+  "coordinates": {
+   "A_untreated": "c = bleed_rate x kappa / scale (with the arrival position f): the untreated course reads nothing else (P3-319: invariant to 1.6e-13 mmHg)",
+   "B_one_unit": "u = unit_volume x kappa / scale (with f): the one-unit response reads nothing else",
+   "C_slow_crystalloid": "q = crystalloid retained at 60 min / blood shed in 60 min = R60 / (bleed_rate x 60): the share prevented reads the rate and the kernel, not the map"
+  },
+  "coupling_reading": "blood and crystalloid act on pressure through the same effective volume, so the share a slow litre prevents is a FIXED multiple of the one-unit gain, set by how many unit-volumes the litre still retains at 60 min; changing the scale moves both together",
+  "free_coordinates": [
+   "bleed_rate",
+   "scale",
+   "the kernel's retained volume R60 (inside the closed crystalloid region)",
+   "the arrival position f (kept at the committed 0.5; 0.4 as a sensitivity)"
+  ],
+  "three_constraints_on": "two map coordinates (c and scale, with bleed_rate = c x scale) and one kernel coordinate: A bounds c, B bounds scale, C bounds c x scale / R60"
+ },
+ "structure": {
+  "near_conflicts": [
+   {
+    "empty": true,
+    "measured_share": 0.526457,
+    "reading": "a unit worth +18 mmHg in 72f leaves a slow litre preventing this share with the least protective closed-region kernel",
+    "subset": [
+     "B at its +18 mmHg end",
+     "C",
+     "the closed crystalloid region"
+    ]
+   },
+   {
+    "empty": true,
+    "reading": "inside the declared band the three anchors cannot be met with a closed-region kernel; the band is a declared domain, not evidence",
+    "subset": [
+     "the declared CANDIDATE scale band",
+     "B",
+     "C",
+     "the closed crystalloid region"
+    ]
+   },
+   {
+    "empty": true,
+    "reading": "the more retaining part of the closed crystalloid region is incompatible with the three anchors",
+    "subset": [
+     "the most retaining kernel of the closed region",
+     "A",
+     "B",
+     "C"
+    ]
+   }
+  ],
+  "runtime_kernel_for_information": {
+   "bleed_rate_ml_min": [
+    4.973763,
+    10.59047
+   ],
+   "note": "the runtime kernel is outside the closed crystalloid region (it fails FD-BLD-04 and FD-BLD-05): shown for information, not counted as feasible",
+   "scale_ml_eq": [
+    1478.263302,
+    3147.617632
+   ],
+   "status": "NONEMPTY"
+  },
+  "structural_causes": {
+   "A_one_effective_volume_channel": {
+    "does_it_empty_the_intersection": false,
+    "present": true,
+    "quantified": {
+     "CLOSED_REGION_LEAST_PROTECTIVE": 0.448672,
+     "RUNTIME_OUTSIDE_THE_CLOSED_REGION": 0.272958
+    },
+    "reading": "it is what makes the region a corner: a slow litre is worth 0.27 (runtime) to 0.45 (closed region, least) of a red-cell unit at 60 min, and B and C move together"
+   },
+   "B_no_infusion_rate_dependence_of_retention": {
+    "does_it_empty_the_intersection": false,
+    "present": true,
+    "reading": "the kernel is time-invariant (P3-303): a slow litre retains MORE at its own end than a bolus does at the same minute; it narrows the region, it does not empty it"
+   },
+   "C_pressure_map_cannot_hold_untreated_and_transfusion": {
+    "present": false,
+    "reading": "the map holds both: A fixes rate / scale and B fixes the scale, on separate coordinates"
+   },
+   "D_another_mechanism": {
+    "present": false
+   }
+  },
+  "the_middles_of_the_two_windows": {
+   "closed_region_kernel_reaches_the_middle_share": false,
+   "one_unit_rise_mmHg": 13.0,
+   "reading": "the centres of the two faculty windows are mutually compatible only with a kernel that retains about as little as the runtime one, which is BELOW the floor of the closed crystalloid region",
+   "runtime_kernel_reaches_the_middle_share": true,
+   "scale_ml_eq": 2107.981776,
+   "share_given_at_that_scale_c_low_to_c_high": {
+    "CLOSED_REGION_LEAST_PROTECTIVE": [
+     0.408216,
+     0.374178
+    ],
+    "RUNTIME_OUTSIDE_THE_CLOSED_REGION": [
+     0.251444,
+     0.230478
+    ]
+   },
+   "share_wanted": 0.25
+  },
+  "where_it_sits": {
+   "faculty_share_window": [
+    0.15,
+    0.35
+   ],
+   "faculty_window_mmHg": [
+    8.0,
+    18.0
+   ],
+   "one_unit_window_used_mmHg_72f": [
+    8.909091,
+    12.190733
+   ],
+   "reading": "a CORNER: the lower part of the one-unit window with the upper part of the slow-crystalloid window, and only the least-retaining part of the closed crystalloid region",
+   "share_window_used": [
+    0.253222,
+    0.35
+   ]
+  },
+  "why_the_region_is_nonempty": "the two faculty windows are wide enough to overlap along the one line the physiology allows: with a closed-region kernel the share a slow litre prevents is about three times the one-unit gain, so a unit worth +8 to about +12 mmHg in 72f goes with a share of about 25 to 35 %"
+ },
+ "version": "P3-327",
+ "what_it_is": "A read-only feasibility and identifiability analysis of the three faculty anchors under the current GI physiology. MODEL_ANALYSIS: it approves no rate, no pressure parameter and no kernel, chooses no point, and is not clinical validation.",
+ "witnesses": {
+  "CENTER": {
+   "all_three_anchors_and_every_existing_constraint": true,
+   "arrival_position": 0.5,
+   "bleed_rate_ml_min": 8.396979,
+   "c_rate_over_scale": 0.003208,
+   "case_ordering_57m_below_72f": true,
+   "cases": {
+    "gi_bleed_57m": {
+     "every_existing_constraint_holds": true,
+     "existing_constraints_frozen_evaluator": {
+      "FD-BLD-01": true,
+      "FD-BLD-02": true,
+      "FD-BLD-03": true,
+      "FD-BLD-04": true,
+      "FD-BLD-05": true,
+      "FD-BLD-06": true,
+      "FD-BLD-07": true,
+      "FD-BLD-08": true,
+      "FD-BLD-09": true,
+      "SECOND-UNIT": true,
+      "U-HB": true,
+      "U-OUT": true,
+      "readable": true
+     },
+     "one_unit_below_the_too_large_mark": true,
+     "one_unit_bleeding_controlled": {
+      "0": {
+       "crt_s": 5.0,
+       "dbp": 54.0,
+       "effective_volume_change_ml_eq": 0.0,
+       "hb": 6.7,
+       "lactate": 4.4,
+       "map": 65.333333,
+       "sbp": 88.0,
+       "shadow_hr_non_authoritative": 124.0
+      },
+      "15": {
+       "crt_s": 4.777186,
+       "dbp": 57.007984,
+       "effective_volume_change_ml_eq": 150.0,
+       "hb": 7.180723,
+       "lactate": 4.4,
+       "map": 68.972623,
+       "sbp": 92.9019,
+       "shadow_hr_non_authoritative": 124.0
+      },
+      "30": {
+       "crt_s": 4.566784,
+       "dbp": 59.848413,
+       "effective_volume_change_ml_eq": 300.0,
+       "hb": 7.627907,
+       "lactate": 4.4,
+       "map": 72.409191,
+       "sbp": 97.530747,
+       "shadow_hr_non_authoritative": 124.0
+      },
+      "5": {
+       "crt_s": 4.924305,
+       "dbp": 55.021877,
+       "effective_volume_change_ml_eq": 50.0,
+       "hb": 6.864198,
+       "lactate": 4.4,
+       "map": 66.569678,
+       "sbp": 89.665281,
+       "shadow_hr_non_authoritative": 124.0
+      }
+     },
+     "one_unit_does_not_normalize_perfusion": true,
+     "one_unit_inside_FD_RATE_09": true,
+     "one_unit_not_instantaneous": true,
+     "one_unit_sbp_rise_at_15_mmHg": 4.9019,
+     "one_unit_sbp_rise_at_30_mmHg": 9.530747,
+     "slow_crystalloid": {
+      "bleeding_ml_min_distinct": [
+       8.396979
+      ],
+      "blood_lost_by_60_ml": 503.818738,
+      "core_boundary_minute": null,
+      "fades_after_the_infusion": true,
+      "inside_FD_RATE_10": true,
+      "net_effective_volume_balance_at_60_ml": -316.372094,
+      "retained_crystalloid_at_60_ml": 134.601636,
+      "share_prevented": {
+       "120": 0.090905,
+       "30": 0.350789,
+       "60": 0.316709,
+       "70": 0.24462
+      },
+      "treated_deterioration_at_60_mmHg": 11.307643,
+      "treated_sbp": {
+       "120": 58.411376,
+       "30": 82.56425,
+       "60": 76.692357,
+       "70": 73.466355
+      },
+      "untreated_deterioration_at_60_mmHg": 16.548785,
+      "untreated_effective_volume_balance_at_60_ml": -450.973731,
+      "untreated_sbp": {
+       "120": 55.45266,
+       "30": 79.627142,
+       "60": 71.451215,
+       "70": 68.759819
+      }
+     },
+     "untreated": {
+      "accepted_course_sbp": {
+       "120": 57.892732,
+       "180": 43.344327,
+       "60": 72.615318
+      },
+      "core_boundary_minute": null,
+      "hb_fall_at_120": 0.349963,
+      "progressive_deterioration": true,
+      "sbp": {
+       "120": 55.45266,
+       "180": 39.506242,
+       "60": 71.451215
+      },
+      "u_out_faculty_envelopes": true
+     }
+    },
+    "gi_bleed_72f": {
+     "every_existing_constraint_holds": true,
+     "existing_constraints_frozen_evaluator": {
+      "FD-BLD-01": true,
+      "FD-BLD-02": true,
+      "FD-BLD-03": true,
+      "FD-BLD-04": true,
+      "FD-BLD-05": true,
+      "FD-BLD-06": true,
+      "FD-BLD-07": true,
+      "FD-BLD-08": true,
+      "FD-BLD-09": true,
+      "SECOND-UNIT": true,
+      "U-HB": true,
+      "U-OUT": true,
+      "readable": true
+     },
+     "one_unit_below_the_too_large_mark": true,
+     "one_unit_bleeding_controlled": {
+      "0": {
+       "crt_s": 4.0,
+       "dbp": 62.0,
+       "effective_volume_change_ml_eq": 0.0,
+       "hb": 6.4,
+       "lactate": 3.4,
+       "map": 74.0,
+       "sbp": 98.0,
+       "shadow_hr_non_authoritative": 112.0
+      },
+      "15": {
+       "crt_s": 3.777186,
+       "dbp": 65.453611,
+       "effective_volume_change_ml_eq": 150.0,
+       "hb": 6.891566,
+       "lactate": 3.4,
+       "map": 78.122052,
+       "sbp": 103.458934,
+       "shadow_hr_non_authoritative": 112.0
+      },
+      "30": {
+       "crt_s": 3.566784,
+       "dbp": 68.714845,
+       "effective_volume_change_ml_eq": 300.0,
+       "hb": 7.348837,
+       "lactate": 3.4,
+       "map": 82.014492,
+       "sbp": 108.613787,
+       "shadow_hr_non_authoritative": 112.0
+      },
+      "5": {
+       "crt_s": 3.924305,
+       "dbp": 63.173266,
+       "effective_volume_change_ml_eq": 50.0,
+       "hb": 6.567901,
+       "lactate": 3.4,
+       "map": 75.40035,
+       "sbp": 99.854517,
+       "shadow_hr_non_authoritative": 112.0
+      }
+     },
+     "one_unit_does_not_normalize_perfusion": true,
+     "one_unit_inside_FD_RATE_09": true,
+     "one_unit_not_instantaneous": true,
+     "one_unit_sbp_rise_at_15_mmHg": 5.458934,
+     "one_unit_sbp_rise_at_30_mmHg": 10.613787,
+     "slow_crystalloid": {
+      "bleeding_ml_min_distinct": [
+       8.396979
+      ],
+      "blood_lost_by_60_ml": 503.818738,
+      "core_boundary_minute": null,
+      "fades_after_the_infusion": true,
+      "inside_FD_RATE_10": true,
+      "net_effective_volume_balance_at_60_ml": -316.372094,
+      "retained_crystalloid_at_60_ml": 134.601636,
+      "share_prevented": {
+       "120": 0.090905,
+       "30": 0.350789,
+       "60": 0.316709,
+       "70": 0.24462
+      },
+      "treated_deterioration_at_60_mmHg": 12.592603,
+      "treated_sbp": {
+       "120": 65.049033,
+       "30": 91.946551,
+       "60": 85.407397,
+       "70": 81.814805
+      },
+      "untreated_deterioration_at_60_mmHg": 18.429328,
+      "untreated_effective_volume_balance_at_60_ml": -450.973731,
+      "untreated_sbp": {
+       "120": 61.754098,
+       "30": 88.675681,
+       "60": 79.570672,
+       "70": 76.573435
+      }
+     },
+     "untreated": {
+      "accepted_course_sbp": {
+       "120": 64.471451,
+       "180": 48.269819,
+       "60": 80.867059
+      },
+      "core_boundary_minute": null,
+      "hb_fall_at_120": 0.334293,
+      "progressive_deterioration": true,
+      "sbp": {
+       "120": 61.754098,
+       "180": 43.995588,
+       "60": 79.570672
+      },
+      "u_out_faculty_envelopes": true
+     }
+    }
+   },
+   "is_a_chosen_point": false,
+   "kernel": "CLOSED_REGION_LEAST_PROTECTIVE",
+   "scale_ml_eq": 2617.117088,
+   "why": "the geometric middle of the feasible scales and of the admitted untreated courses"
+  },
+  "HIGH": {
+   "all_three_anchors_and_every_existing_constraint": true,
+   "arrival_position": 0.5,
+   "bleed_rate_ml_min": 9.279445,
+   "c_rate_over_scale": 0.003075,
+   "case_ordering_57m_below_72f": true,
+   "cases": {
+    "gi_bleed_57m": {
+     "every_existing_constraint_holds": true,
+     "existing_constraints_frozen_evaluator": {
+      "FD-BLD-01": true,
+      "FD-BLD-02": true,
+      "FD-BLD-03": true,
+      "FD-BLD-04": true,
+      "FD-BLD-05": true,
+      "FD-BLD-06": true,
+      "FD-BLD-07": true,
+      "FD-BLD-08": true,
+      "FD-BLD-09": true,
+      "SECOND-UNIT": true,
+      "U-HB": true,
+      "U-OUT": true,
+      "readable": true
+     },
+     "one_unit_below_the_too_large_mark": true,
+     "one_unit_bleeding_controlled": {
+      "0": {
+       "crt_s": 5.0,
+       "dbp": 54.0,
+       "effective_volume_change_ml_eq": 0.0,
+       "hb": 6.7,
+       "lactate": 4.4,
+       "map": 65.333333,
+       "sbp": 88.0,
+       "shadow_hr_non_authoritative": 124.0
+      },
+      "15": {
+       "crt_s": 4.80604,
+       "dbp": 56.618466,
+       "effective_volume_change_ml_eq": 150.0,
+       "hb": 7.180723,
+       "lactate": 4.4,
+       "map": 68.501354,
+       "sbp": 92.26713,
+       "shadow_hr_non_authoritative": 124.0
+      },
+      "30": {
+       "crt_s": 4.621484,
+       "dbp": 59.109963,
+       "effective_volume_change_ml_eq": 300.0,
+       "hb": 7.627907,
+       "lactate": 4.4,
+       "map": 71.515758,
+       "sbp": 96.327347,
+       "shadow_hr_non_authoritative": 124.0
+      },
+      "5": {
+       "crt_s": 4.934272,
+       "dbp": 54.887323,
+       "effective_volume_change_ml_eq": 50.0,
+       "hb": 6.864198,
+       "lactate": 4.4,
+       "map": 66.406884,
+       "sbp": 89.446007,
+       "shadow_hr_non_authoritative": 124.0
+      }
+     },
+     "one_unit_does_not_normalize_perfusion": true,
+     "one_unit_inside_FD_RATE_09": true,
+     "one_unit_not_instantaneous": true,
+     "one_unit_sbp_rise_at_15_mmHg": 4.26713,
+     "one_unit_sbp_rise_at_30_mmHg": 8.327347,
+     "slow_crystalloid": {
+      "bleeding_ml_min_distinct": [
+       9.279445
+      ],
+      "blood_lost_by_60_ml": 556.766707,
+      "core_boundary_minute": null,
+      "fades_after_the_infusion": true,
+      "inside_FD_RATE_10": true,
+      "net_effective_volume_balance_at_60_ml": -363.766408,
+      "retained_crystalloid_at_60_ml": 134.601636,
+      "share_prevented": {
+       "120": 0.081885,
+       "30": 0.317487,
+       "60": 0.286561,
+       "70": 0.22113
+      },
+      "treated_deterioration_at_60_mmHg": 11.273372,
+      "treated_sbp": {
+       "120": 59.558367,
+       "30": 82.533824,
+       "60": 76.726628,
+       "70": 73.699162
+      },
+      "untreated_deterioration_at_60_mmHg": 15.801462,
+      "untreated_effective_volume_balance_at_60_ml": -498.368044,
+      "untreated_sbp": {
+       "120": 57.021716,
+       "30": 79.991105,
+       "60": 72.198538,
+       "70": 69.638985
+      }
+     },
+     "untreated": {
+      "accepted_course_sbp": {
+       "120": 57.892732,
+       "180": 43.344327,
+       "60": 72.615318
+      },
+      "core_boundary_minute": null,
+      "hb_fall_at_120": 0.392467,
+      "progressive_deterioration": true,
+      "sbp": {
+       "120": 57.021716,
+       "180": 41.977829,
+       "60": 72.198538
+      },
+      "u_out_faculty_envelopes": true
+     }
+    },
+    "gi_bleed_72f": {
+     "every_existing_constraint_holds": true,
+     "existing_constraints_frozen_evaluator": {
+      "FD-BLD-01": true,
+      "FD-BLD-02": true,
+      "FD-BLD-03": true,
+      "FD-BLD-04": true,
+      "FD-BLD-05": true,
+      "FD-BLD-06": true,
+      "FD-BLD-07": true,
+      "FD-BLD-08": true,
+      "FD-BLD-09": true,
+      "SECOND-UNIT": true,
+      "U-HB": true,
+      "U-OUT": true,
+      "readable": true
+     },
+     "one_unit_below_the_too_large_mark": true,
+     "one_unit_bleeding_controlled": {
+      "0": {
+       "crt_s": 4.0,
+       "dbp": 62.0,
+       "effective_volume_change_ml_eq": 0.0,
+       "hb": 6.4,
+       "lactate": 3.4,
+       "map": 74.0,
+       "sbp": 98.0,
+       "shadow_hr_non_authoritative": 112.0
+      },
+      "15": {
+       "crt_s": 3.80604,
+       "dbp": 65.006387,
+       "effective_volume_change_ml_eq": 150.0,
+       "hb": 6.891566,
+       "lactate": 3.4,
+       "map": 77.588269,
+       "sbp": 102.752031,
+       "shadow_hr_non_authoritative": 112.0
+      },
+      "30": {
+       "crt_s": 3.621484,
+       "dbp": 67.866994,
+       "effective_volume_change_ml_eq": 300.0,
+       "hb": 7.348837,
+       "lactate": 3.4,
+       "map": 81.002542,
+       "sbp": 107.273636,
+       "shadow_hr_non_authoritative": 112.0
+      },
+      "5": {
+       "crt_s": 3.934272,
+       "dbp": 63.018778,
+       "effective_volume_change_ml_eq": 50.0,
+       "hb": 6.567901,
+       "lactate": 3.4,
+       "map": 75.215961,
+       "sbp": 99.610326,
+       "shadow_hr_non_authoritative": 112.0
+      }
+     },
+     "one_unit_does_not_normalize_perfusion": true,
+     "one_unit_inside_FD_RATE_09": true,
+     "one_unit_not_instantaneous": true,
+     "one_unit_sbp_rise_at_15_mmHg": 4.752031,
+     "one_unit_sbp_rise_at_30_mmHg": 9.273636,
+     "slow_crystalloid": {
+      "bleeding_ml_min_distinct": [
+       9.279445
+      ],
+      "blood_lost_by_60_ml": 556.766707,
+      "core_boundary_minute": null,
+      "fades_after_the_infusion": true,
+      "inside_FD_RATE_10": true,
+      "net_effective_volume_balance_at_60_ml": -363.766408,
+      "retained_crystalloid_at_60_ml": 134.601636,
+      "share_prevented": {
+       "120": 0.081885,
+       "30": 0.317487,
+       "60": 0.286561,
+       "70": 0.22113
+      },
+      "treated_deterioration_at_60_mmHg": 12.554437,
+      "treated_sbp": {
+       "120": 66.326364,
+       "30": 91.912668,
+       "60": 85.445563,
+       "70": 82.074067
+      },
+      "untreated_deterioration_at_60_mmHg": 17.597082,
+      "untreated_effective_volume_balance_at_60_ml": -498.368044,
+      "untreated_sbp": {
+       "120": 63.501456,
+       "30": 89.081003,
+       "60": 80.402918,
+       "70": 77.552506
+      }
+     },
+     "untreated": {
+      "accepted_course_sbp": {
+       "120": 64.471451,
+       "180": 48.269819,
+       "60": 80.867059
+      },
+      "core_boundary_minute": null,
+      "hb_fall_at_120": 0.374894,
+      "progressive_deterioration": true,
+      "sbp": {
+       "120": 63.501456,
+       "180": 46.748037,
+       "60": 80.402918
+      },
+      "u_out_faculty_envelopes": true
+     }
+    }
+   },
+   "is_a_chosen_point": false,
+   "kernel": "CLOSED_REGION_LEAST_PROTECTIVE",
+   "scale_ml_eq": 3017.792596,
+   "why": "the largest feasible scale, at the slowest untreated course the envelopes admit (the nearest to the accepted one): the one-unit response near its +8 mmHg floor in 57m"
+  },
+  "LOW": {
+   "all_three_anchors_and_every_existing_constraint": true,
+   "arrival_position": 0.5,
+   "bleed_rate_ml_min": 7.598434,
+   "c_rate_over_scale": 0.003348,
+   "case_ordering_57m_below_72f": true,
+   "cases": {
+    "gi_bleed_57m": {
+     "every_existing_constraint_holds": true,
+     "existing_constraints_frozen_evaluator": {
+      "FD-BLD-01": true,
+      "FD-BLD-02": true,
+      "FD-BLD-03": true,
+      "FD-BLD-04": true,
+      "FD-BLD-05": true,
+      "FD-BLD-06": true,
+      "FD-BLD-07": true,
+      "FD-BLD-08": true,
+      "FD-BLD-09": true,
+      "SECOND-UNIT": true,
+      "U-HB": true,
+      "U-OUT": true,
+      "readable": true
+     },
+     "one_unit_below_the_too_large_mark": true,
+     "one_unit_bleeding_controlled": {
+      "0": {
+       "crt_s": 5.0,
+       "dbp": 54.0,
+       "effective_volume_change_ml_eq": 0.0,
+       "hb": 6.7,
+       "lactate": 4.4,
+       "map": 65.333333,
+       "sbp": 88.0,
+       "shadow_hr_non_authoritative": 124.0
+      },
+      "15": {
+       "crt_s": 4.744187,
+       "dbp": 57.453472,
+       "effective_volume_change_ml_eq": 150.0,
+       "hb": 7.180723,
+       "lactate": 4.4,
+       "map": 69.511608,
+       "sbp": 93.62788,
+       "shadow_hr_non_authoritative": 124.0
+      },
+      "30": {
+       "crt_s": 4.504735,
+       "dbp": 60.686083,
+       "effective_volume_change_ml_eq": 300.0,
+       "hb": 7.627907,
+       "lactate": 4.4,
+       "map": 73.422669,
+       "sbp": 98.895839,
+       "shadow_hr_non_authoritative": 124.0
+      },
+      "5": {
+       "crt_s": 4.912844,
+       "dbp": 55.176608,
+       "effective_volume_change_ml_eq": 50.0,
+       "hb": 6.864198,
+       "lactate": 4.4,
+       "map": 66.756884,
+       "sbp": 89.917436,
+       "shadow_hr_non_authoritative": 124.0
+      }
+     },
+     "one_unit_does_not_normalize_perfusion": true,
+     "one_unit_inside_FD_RATE_09": true,
+     "one_unit_not_instantaneous": true,
+     "one_unit_sbp_rise_at_15_mmHg": 5.62788,
+     "one_unit_sbp_rise_at_30_mmHg": 10.895839,
+     "slow_crystalloid": {
+      "bleeding_ml_min_distinct": [
+       7.598434
+      ],
+      "blood_lost_by_60_ml": 455.906069,
+      "core_boundary_minute": null,
+      "fades_after_the_infusion": true,
+      "inside_FD_RATE_10": true,
+      "net_effective_volume_balance_at_60_ml": -273.484934,
+      "retained_crystalloid_at_60_ml": 134.601636,
+      "share_prevented": {
+       "120": 0.100919,
+       "30": 0.387495,
+       "60": 0.349899,
+       "70": 0.270529
+      },
+      "treated_deterioration_at_60_mmHg": 11.269054,
+      "treated_sbp": {
+       "120": 57.245487,
+       "30": 82.638068,
+       "60": 76.730946,
+       "70": 73.290006
+      },
+      "untreated_deterioration_at_60_mmHg": 17.334308,
+      "untreated_effective_volume_balance_at_60_ml": -408.08657,
+      "untreated_sbp": {
+       "120": 53.79338,
+       "30": 79.245898,
+       "60": 70.665692,
+       "70": 67.834714
+      }
+     },
+     "untreated": {
+      "accepted_course_sbp": {
+       "120": 57.892732,
+       "180": 43.344327,
+       "60": 72.615318
+      },
+      "core_boundary_minute": null,
+      "hb_fall_at_120": 0.312576,
+      "progressive_deterioration": true,
+      "sbp": {
+       "120": 53.79338,
+       "180": 36.878684,
+       "60": 70.665692
+      },
+      "u_out_faculty_envelopes": true
+     }
+    },
+    "gi_bleed_72f": {
+     "every_existing_constraint_holds": true,
+     "existing_constraints_frozen_evaluator": {
+      "FD-BLD-01": true,
+      "FD-BLD-02": true,
+      "FD-BLD-03": true,
+      "FD-BLD-04": true,
+      "FD-BLD-05": true,
+      "FD-BLD-06": true,
+      "FD-BLD-07": true,
+      "FD-BLD-08": true,
+      "FD-BLD-09": true,
+      "SECOND-UNIT": true,
+      "U-HB": true,
+      "U-OUT": true,
+      "readable": true
+     },
+     "one_unit_below_the_too_large_mark": true,
+     "one_unit_bleeding_controlled": {
+      "0": {
+       "crt_s": 4.0,
+       "dbp": 62.0,
+       "effective_volume_change_ml_eq": 0.0,
+       "hb": 6.4,
+       "lactate": 3.4,
+       "map": 74.0,
+       "sbp": 98.0,
+       "shadow_hr_non_authoritative": 112.0
+      },
+      "15": {
+       "crt_s": 3.744187,
+       "dbp": 65.965097,
+       "effective_volume_change_ml_eq": 150.0,
+       "hb": 6.891566,
+       "lactate": 3.4,
+       "map": 78.732536,
+       "sbp": 104.267412,
+       "shadow_hr_non_authoritative": 112.0
+      },
+      "30": {
+       "crt_s": 3.504735,
+       "dbp": 69.676614,
+       "effective_volume_change_ml_eq": 300.0,
+       "hb": 7.348837,
+       "lactate": 3.4,
+       "map": 83.16241,
+       "sbp": 110.134003,
+       "shadow_hr_non_authoritative": 112.0
+      },
+      "5": {
+       "crt_s": 3.912844,
+       "dbp": 63.350921,
+       "effective_volume_change_ml_eq": 50.0,
+       "hb": 6.567901,
+       "lactate": 3.4,
+       "map": 75.612389,
+       "sbp": 100.135326,
+       "shadow_hr_non_authoritative": 112.0
+      }
+     },
+     "one_unit_does_not_normalize_perfusion": true,
+     "one_unit_inside_FD_RATE_09": true,
+     "one_unit_not_instantaneous": true,
+     "one_unit_sbp_rise_at_15_mmHg": 6.267412,
+     "one_unit_sbp_rise_at_30_mmHg": 12.134003,
+     "slow_crystalloid": {
+      "bleeding_ml_min_distinct": [
+       7.598434
+      ],
+      "blood_lost_by_60_ml": 455.906069,
+      "core_boundary_minute": null,
+      "fades_after_the_infusion": true,
+      "inside_FD_RATE_10": true,
+      "net_effective_volume_balance_at_60_ml": -273.484934,
+      "retained_crystalloid_at_60_ml": 134.601636,
+      "share_prevented": {
+       "120": 0.100919,
+       "30": 0.387495,
+       "60": 0.349899,
+       "70": 0.270529
+      },
+      "treated_deterioration_at_60_mmHg": 12.549629,
+      "treated_sbp": {
+       "120": 63.750656,
+       "30": 92.028757,
+       "60": 85.450371,
+       "70": 81.618415
+      },
+      "untreated_deterioration_at_60_mmHg": 19.304115,
+      "untreated_effective_volume_balance_at_60_ml": -408.08657,
+      "untreated_sbp": {
+       "120": 59.906264,
+       "30": 88.251114,
+       "60": 78.695885,
+       "70": 75.543204
+      }
+     },
+     "untreated": {
+      "accepted_course_sbp": {
+       "120": 64.471451,
+       "180": 48.269819,
+       "60": 80.867059
+      },
+      "core_boundary_minute": null,
+      "hb_fall_at_120": 0.29858,
+      "progressive_deterioration": true,
+      "sbp": {
+       "120": 59.906264,
+       "180": 41.069443,
+       "60": 78.695885
+      },
+      "u_out_faculty_envelopes": true
+     }
+    }
+   },
+   "is_a_chosen_point": false,
+   "kernel": "CLOSED_REGION_LEAST_PROTECTIVE",
+   "scale_ml_eq": 2269.63969,
+   "why": "the smallest feasible scale, at the fastest untreated course the envelopes admit: the largest one-unit response the region allows, the slow-crystalloid share at its 35 % ceiling"
+  }
+ }
+}
