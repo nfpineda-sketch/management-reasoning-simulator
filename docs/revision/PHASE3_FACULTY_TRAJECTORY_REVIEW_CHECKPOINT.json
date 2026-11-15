@@ -1,0 +1,188 @@
+{
+ "adversarial_review": {
+  "blockers": 0,
+  "comparator_leak_before_lock": "NOT_REPRODUCED",
+  "first_pass_editable_after_lock": "NOT_REPRODUCED",
+  "major": {
+   "F1": "record and log could disagree (submit not one critical section): FIXED",
+   "F2": "permanent lock-out after a crash between record and closing event: FIXED",
+   "F3": "summary counted records that fail verification and said complete: FIXED"
+  },
+  "minor": {
+   "F4": "stale radio overwrote a newer answer: FIXED (callbacks)",
+   "F5": "edits in the same run as a navigation click lost: FIXED (callbacks)",
+   "F6": "wrong optional scenario opened: FIXED",
+   "F7": "review set self-attested, display fields unchecked: FIXED (pinned in code, cross-checked, item digest in the log identity)",
+   "F8": "disk error showed a traceback with the path: FIXED",
+   "F9": "forged lock revealed the comparator, malformed event raised: FIXED"
+  },
+  "nits": "FR-E purpose line, summary labelled optional counts, generic 'not offered' text, private summary file, directory fsync and short-write check: FIXED; tripwire false positives on number triples: mitigated by an unsaved-comment warning, not changed (the certified filter is reused)",
+  "reviewer": "one independent read-only reviewer, own probes"
+ },
+ "decided_on": "2026-11-14",
+ "limits": [
+  "Not measured with a human reviewer: the new flow's usability and its time per scenario are untested with a person.",
+  "Q5H (stopping point) is added and the common-consciousness questions (Q8, Q9) are left to the live mode: an architect's decision pending faculty confirmation (FD-UX-05).",
+  "Heart rate and capillary refill are shown BEFORE the lock as they were shown in the encounter (legacy engine output; no legacy pressure and nothing labelled comparator): a design note.",
+  "Unsigned session record and single process (FD-FAC-05, FD-FAC-06): a log or record changed by someone with write access is DETECTED and not counted, not prevented.",
+  "One unreadable saved log blocks its scenario until the person who runs the environment moves the file aside (the file is kept).",
+  "The identifier tripwire is the certified bundle layer's: it can refuse clinical number triples; the page says so and the text stays in its box."
+ ],
+ "pins": {
+  "certified_series": "docs/revision/PHASE3_PRESSURE_AUTHORITY_SERIES.json",
+  "certified_series_record_digest": "5a40db83d772b16c0c1273a214bc1b53d5016ad2c50aed9632fd23c66e91e2fe",
+  "required": [
+   "FR-B",
+   "FR-A",
+   "FR-E",
+   "FR-G",
+   "FR-F"
+  ],
+  "review_set": "docs/revision/PHASE3_FACULTY_TRAJECTORY_REVIEW_SET.json",
+  "review_set_digest_pinned_in_code": "f65d1127f3fb97926334d695aeab37b92f3a44236cec2ae025025eec90ba1649",
+  "review_set_loads_pinned": true,
+  "scenarios": [
+   "FR-B",
+   "FR-A",
+   "FR-E",
+   "FR-G",
+   "FR-F",
+   "FR-D",
+   "FR-C"
+  ]
+ },
+ "record_digest": "4439fcb1066f24f0d21745d6d07c57052cd3a17f2ea63043338213a23cca041b",
+ "record_type": "PHASE3_FACULTY_TRAJECTORY_REVIEW_CHECKPOINT",
+ "reviewer_actions": {
+  "new_flow_measured_in_test_u3": {
+   "codes_copied": 0,
+   "files_opened": 0,
+   "five_required": {
+    "answers": 37,
+    "clicks": 10
+   },
+   "menu_exit": false,
+   "per_scenario_with_stop": {
+    "answers": 8,
+    "clicks": 2
+   },
+   "per_scenario_without_stop": {
+    "answers": 7,
+    "clicks": 2
+   }
+  },
+  "old_flow_FR_B_by_inspection_of_the_kit": "about 42 actions and at least 3 file switches, 2 codes copied by hand, a special menu exit",
+  "time": "about 4 minutes per scenario is the AUTHOR'S ESTIMATE, never measured with a person"
+ },
+ "statement": "A technical checkpoint of the faculty trajectory review. It is not a clinical validation, an approval of version 1, a consciousness authority, a resident deployment, a production authority or the start of any further phase.",
+ "statuses": {
+  "ARTIFACT_LINKAGE": {
+   "status": "VERIFIED_BY_THE_CITED_TESTS",
+   "tests": [
+    "test_m8_",
+    "test_m9_",
+    "test_m10_",
+    "test_m11_",
+    "test_m17_",
+    "test_m18_",
+    "test_u2_"
+   ],
+   "what": "one create-only record links reviewer (opaque), scenario, package, artifact, grant, snapshot, review set, item, comparator, blind answers, reveal and post-reveal answers; submit is one critical section"
+  },
+  "AUTOSAVE": {
+   "status": "VERIFIED_BY_THE_CITED_TESTS",
+   "tests": [
+    "test_m5_",
+    "test_m22_",
+    "test_u2_",
+    "test_u10_",
+    "test_u11_",
+    "test_u13_",
+    "test_u14_"
+   ],
+   "what": "each answer is saved as it is given by a callback of the widget the reviewer changed; a refresh restores; a refused comment is said to be unsaved; a disk error is a refusal, never a traceback"
+  },
+  "BLINDED_REVIEW_FLOW": {
+   "status": "VERIFIED_BY_THE_CITED_TESTS",
+   "tests": [
+    "test_m3_",
+    "test_u1_",
+    "test_u2_",
+    "test_u3_"
+   ],
+   "what": "one page per scenario: context, timeline, chart, Q1-Q5 (+Q5H where the experiment stopped), one lock; no comparator, legacy number or identifier reaches the browser before the lock"
+  },
+  "COMPARATOR_REVEAL": {
+   "status": "VERIFIED_BY_THE_CITED_TESTS",
+   "tests": [
+    "test_m4_",
+    "test_m16_",
+    "test_u2_"
+   ],
+   "what": "the legacy comparator exists only for a LOCKED state, is overlaid on the same axes, is labelled nonauthoritative and is never called truth"
+  },
+  "FACULTY_ISOLATION": {
+   "status": "VERIFIED_BY_THE_CITED_TESTS",
+   "tests": [
+    "test_m15_",
+    "test_u6_",
+    "test_u7_"
+   ],
+   "what": "only inside the faculty review launcher of a process that named the review mode and passed its gate; the review modules import nothing of the engine, the authority, the shadow, the grant or the core"
+  },
+  "FIRST_PASS_IMMUTABILITY": {
+   "status": "VERIFIED_BY_THE_CITED_TESTS",
+   "tests": [
+    "test_m6_",
+    "test_m7_",
+    "test_m20_",
+    "test_u2_",
+    "test_u10_"
+   ],
+   "what": "the writer refuses and the reader ignores any change after the lock, a forged chained lock cannot reveal anything, a stale second tab changes nothing"
+  },
+  "RESIDENT_ISOLATION": {
+   "status": "VERIFIED_BY_THE_CITED_TESTS",
+   "tests": [
+    "test_u5_",
+    "test_u7_"
+   ],
+   "what": "a resident account or an ordinary deployment sees nothing of the review and nothing is created for them"
+  },
+  "SCENARIO_NAVIGATION": {
+   "status": "VERIFIED_BY_THE_CITED_TESTS",
+   "tests": [
+    "test_u2_",
+    "test_u3_",
+    "test_u4_",
+    "test_u12_"
+   ],
+   "what": "submit moves to the next scenario by itself; a scenario out of turn cannot be entered; a failed submit does not advance; submitted scenarios are read-only; each optional scenario opens by itself"
+  },
+  "SESSION_SUMMARY": {
+   "status": "VERIFIED_BY_THE_CITED_TESTS",
+   "tests": [
+    "test_m12_",
+    "test_m13_",
+    "test_m19_",
+    "test_u3_"
+   ],
+   "what": "N/N, the four judgment counts and the comments, from records that VERIFY against the log that closed them; an altered, foreign or missing record is not counted and is reported; the technical summary is written by itself"
+  }
+ },
+ "unchanged": {
+  "authority": true,
+  "cases": true,
+  "first_pilot": true,
+  "grant": true,
+  "p3_300_checkpoint_record": "byte-identical (the launcher module gains no import: the page is handed in by app.py)",
+  "physiology": true,
+  "resident_ui": true,
+  "scoring": true,
+  "snapshot": true,
+  "trajectories": true
+ },
+ "verdict": "A_FACULTY_TRAJECTORY_REVIEW_READY_FOR_HUMAN_USE",
+ "verdict_enables": "a first human faculty use of the trajectory review in the controlled development environment, and nothing else; not a clinical validation, not a resident pilot, not an authority expansion",
+ "version": "UX-002"
+}

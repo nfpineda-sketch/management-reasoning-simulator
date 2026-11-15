@@ -4,9 +4,13 @@
 
 Entorno: rama `phase-3-runtime-integration`, publicado en `e6f848f`. Alcance: autoridad de presión de **desarrollo** de GI (`gi_bleed_57m`, `gi_bleed_72f`). **No** es un piloto con residentes, ni producción, ni una validación clínica, ni una autoridad de consciencia.
 
+## Camino principal: revisión de trayectorias (UX-001 a UX-013)
+La primera revisión humana mostró que el flujo en vivo (01–10) era innecesariamente complejo. El camino principal es ahora la **revisión de trayectorias**: una pantalla por escenario, sin archivos, sin códigos y sin salida por menú. Léelo en `11_revision_de_trayectorias.md`; el diseño y la evidencia están en `docs/PHASE3_FACULTY_TRAJECTORY_REVIEW.md`. Los archivos 01–10 describen el **modo en vivo**, que sigue intacto.
+
 ## Qué hay aquí
 | Archivo | Para quién | Qué es |
 |---|---|---|
+| `11_revision_de_trayectorias.md` | revisor | **Camino principal**: una página por escenario, 5 preguntas ciegas, un solo bloqueo/revelado, un solo envío |
 | `01_protocolo.md` | operador y comité docente | El protocolo: revisor objetivo, duración, orden, ciego, primera pasada, vínculos, privacidad, roles |
 | `02_preparacion_operador.md` | operador | Cómo montar el entorno de **un** revisor (proceso único, almacén local, cuenta docente), ensayo y cierre |
 | `03_orientacion.md` | revisor | Orientación de una página |
