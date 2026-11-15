@@ -1,0 +1,260 @@
+{
+ "comparator_changed_judgment": {
+  "answer": "NO",
+  "scenarios": 7
+ },
+ "evidence_class": "HUMAN_FACULTY_REVIEW",
+ "evidence_classes": {
+  "HUMAN_FACULTY_REVIEW": "what the faculty reviewer judged and wrote; only this record and the Decision File rows FD-REVIEW-01 to FD-REVIEW-06 carry it",
+  "LEGACY_COMPARATOR": "the legacy engine's trajectory shown to the reviewer only after the blind judgment was locked; the reviewer reported that it changed no judgment",
+  "MODEL_ANALYSIS": "what the development assistant computed from the executable model (docs/revision/PHASE3_FRG_CRYSTALLOID_ANALYSIS.json); it explains, it does not judge",
+  "TEST_RESULT": "what an automated test asserted (test_phase3_first_review_analysis.py); it protects a measurement, it is not a faculty decision"
+ },
+ "faculty_decisions": [
+  {
+   "id": "FD-REVIEW-01",
+   "text": "Accept the overall GI pressure causal architecture for DEVELOPMENT. Do NOT recalibrate untreated deterioration, early blood/volume response or delayed rescue merely to resemble legacy."
+  },
+  {
+   "id": "FD-REVIEW-02",
+   "text": "FR-G requires targeted recalibration. The target is NOT an exact pressure curve. The target behavior is: slow 1-L crystalloid infusion over 60 min during active hemorrhage -> modest, transient attenuation of deterioration, NOT near-stabilization. The resulting trajectory should remain meaningfully closer to the untreated course than to a rapidly/responsively resuscitated course. No exact mmHg target is supplied."
+  },
+  {
+   "id": "FD-REVIEW-03",
+   "text": "Do NOT fit FR-G directly. Any correction must operate through the GENERAL crystalloid volume/retention mechanism. No case-specific multiplier. No FR-G-specific branch."
+  },
+  {
+   "id": "FD-REVIEW-04",
+   "text": "Preserve previously closed volume behavioral constraints (R30, R60, R120, Rpeak and the closed volume behavioral calibration region). Do not violate those constraints to satisfy FR-G."
+  },
+  {
+   "id": "FD-REVIEW-05",
+   "text": "Source control remains absent from the current GI management mechanism. Do NOT invent source-control physiology in this package. Instead: verify and document whether continued bleeding remains active during FR-B and other treated scenarios; identify whether early improvement eventually reverses if bleeding continues. This is analysis first."
+  },
+  {
+   "id": "FD-REVIEW-06",
+   "implemented": false,
+   "text": "Norepinephrine is now a HIGH-PRIORITY FUTURE MANAGEMENT MECHANISM. Desired future architecture: norepinephrine -> common vascular tone T -> pressure / perfusion -> downstream delivery/debt, with volume/pump interaction. Do NOT implement it in this package. Add/update technical debt / roadmap only."
+  }
+ ],
+ "not_in_this_record": [
+  "the reviewer's name",
+  "the blind first-pass answers Q1 to Q5 (they live in the reviewer's own store)",
+  "any model-written judgment",
+  "any clinical-validation claim"
+ ],
+ "overall_counts": {
+  "ACCEPT": 1,
+  "ACCEPT_WITH_LIMITATION": 5,
+  "RECALIBRATE": 1,
+  "REJECT": 0
+ },
+ "preserved_original_evidence": {
+  "item_digests": {
+   "FR-A": "73beb5e5a5ac",
+   "FR-B": "919d59c66ce5",
+   "FR-C": "a9cd4d952d91",
+   "FR-D": "034bebe20169",
+   "FR-E": "9ad5f47dc470",
+   "FR-F": "3a9ad41c3d85",
+   "FR-G": "1d4d331c6a73"
+  },
+  "p3_300_checkpoint_digest": "45b62670af0983f3513e5ec5b290ff866da073b3100177dfa5f4d1a5729c89b2",
+  "pinned_in_code": "f65d1127f3fb97926334d695aeab37b92f3a44236cec2ae025025eec90ba1649",
+  "review_set_digest": "f65d1127f3fb97926334d695aeab37b92f3a44236cec2ae025025eec90ba1649",
+  "review_set_record": "docs/revision/PHASE3_FACULTY_TRAJECTORY_REVIEW_SET.json",
+  "rule": "the reviewed items are never edited or re-generated: a revised trajectory is a NEW versioned item with its own digest and its own blind log (P3-310); the reviewer's own store is outside this repository"
+ },
+ "provenance": {
+  "date_of_record": "2026-11-15",
+  "environment": "controlled faculty trajectory review (development only; GI pressure authority; one process; the two GI cases; pressure only)",
+  "reported_in": "the faculty review report that opened the 2026-11-15 assignment (P3-301)",
+  "reviewer_identity_recorded": false,
+  "reviewer_name": null,
+  "reviewer_role": "faculty",
+  "transcribed_by": "the development assistant, line breaks joined and no word changed; the FR-G comment is quoted exactly"
+ },
+ "record_digest": "9ba80fa70d3b38e178caa3aca9432f9227ce6d9591a48c9908c3f5ac4cc6c8d3",
+ "record_type": "HUMAN_FACULTY_REVIEW_RECORD",
+ "scenarios": [
+  {
+   "blind_judgment": {
+    "note": "nothing is inferred or filled in: the first-pass answers Q1 to Q5 are not part of this record",
+    "recorded_here": false,
+    "status": "NOT_TRANSCRIBED",
+    "where": "the reviewer's own review store (the per-item event log and the submitted record), which was not provided to this repository"
+   },
+   "comparator_changed_judgment": false,
+   "faculty_conclusion": "Early hemodynamic improvement after crystalloid + packed red cells is plausible.",
+   "limitations": [
+    "The trajectory must not imply that resuscitation alone definitively treats ongoing uncontrolled hemorrhage.",
+    "Without source control, continued bleeding should eventually limit or reverse the improvement."
+   ],
+   "overall": "ACCEPT_WITH_LIMITATION",
+   "post_reveal_judgment": {
+    "overall": "ACCEPT_WITH_LIMITATION",
+    "status": "UNCHANGED_FROM_THE_BLIND_JUDGMENT_AS_REPORTED (comparator changed judgment: NO)"
+   },
+   "required": true,
+   "reviewed_item_digest": "919d59c66ce5",
+   "reviewer_role": "faculty",
+   "scenario_id": "FR-B",
+   "title": "57m early treatment"
+  },
+  {
+   "blind_judgment": {
+    "note": "nothing is inferred or filled in: the first-pass answers Q1 to Q5 are not part of this record",
+    "recorded_here": false,
+    "status": "NOT_TRANSCRIBED",
+    "where": "the reviewer's own review store (the per-item event log and the submitted record), which was not provided to this repository"
+   },
+   "comparator_changed_judgment": false,
+   "faculty_conclusion": "Progressive hypotension, tachycardia and worsening capillary refill are internally coherent with ongoing hemorrhage.",
+   "limitations": [
+    "coarse 60-minute sampling;",
+    "prolonged untreated course is a counterfactual stress test, not acceptable clinical management."
+   ],
+   "overall": "ACCEPT_WITH_LIMITATION",
+   "post_reveal_judgment": {
+    "overall": "ACCEPT_WITH_LIMITATION",
+    "status": "UNCHANGED_FROM_THE_BLIND_JUDGMENT_AS_REPORTED (comparator changed judgment: NO)"
+   },
+   "required": true,
+   "reviewed_item_digest": "73beb5e5a5ac",
+   "reviewer_role": "faculty",
+   "scenario_id": "FR-A",
+   "title": "57m untreated deterioration"
+  },
+  {
+   "blind_judgment": {
+    "note": "nothing is inferred or filled in: the first-pass answers Q1 to Q5 are not part of this record",
+    "recorded_here": false,
+    "status": "NOT_TRANSCRIBED",
+    "where": "the reviewer's own review store (the per-item event log and the submitted record), which was not provided to this repository"
+   },
+   "comparator_changed_judgment": false,
+   "faculty_conclusion": "Direction, timing and magnitude of deterioration/recovery are clinically plausible. Common core is somewhat more aggressive before treatment and more robust after treatment than legacy, but not implausibly so.",
+   "overall": "ACCEPT",
+   "post_reveal_judgment": {
+    "overall": "ACCEPT",
+    "status": "UNCHANGED_FROM_THE_BLIND_JUDGMENT_AS_REPORTED (comparator changed judgment: NO)"
+   },
+   "required": true,
+   "reviewed_item_digest": "9ad5f47dc470",
+   "reviewer_role": "faculty",
+   "scenario_id": "FR-E",
+   "title": "72f delayed treatment and recovery"
+  },
+  {
+   "blind_judgment": {
+    "note": "nothing is inferred or filled in: the first-pass answers Q1 to Q5 are not part of this record",
+    "recorded_here": false,
+    "status": "NOT_TRANSCRIBED",
+    "where": "the reviewer's own review store (the per-item event log and the submitted record), which was not provided to this repository"
+   },
+   "comparator_changed_judgment": false,
+   "faculty_comment_verbatim": "The common-core direction is correct, but the magnitude of deterioration is too small. I would expect the trajectory to remain closer to the untreated course, with only modest transient attenuation from the crystalloid.",
+   "faculty_conclusion": "Direction is correct, but the magnitude of deterioration is TOO SMALL. One litre normal saline infused over 60 minutes during ongoing hemorrhage appears to provide excessive sustained hemodynamic protection.",
+   "faculty_mechanistic_concern": [
+    "crystalloid redistributes during the infusion;",
+    "active blood loss continues simultaneously;",
+    "a slow infusion should not behave like an effective rapid volume challenge;",
+    "the trajectory should remain substantially closer to untreated deterioration, with only modest transient attenuation."
+   ],
+   "overall": "RECALIBRATE",
+   "post_reveal_judgment": {
+    "overall": "RECALIBRATE",
+    "status": "UNCHANGED_FROM_THE_BLIND_JUDGMENT_AS_REPORTED (comparator changed judgment: NO)"
+   },
+   "primary_actionable_finding": true,
+   "required": true,
+   "reviewed_item_digest": "1d4d331c6a73",
+   "reviewer_role": "faculty",
+   "scenario_id": "FR-G",
+   "title": "72f slow crystalloid infusion"
+  },
+  {
+   "blind_judgment": {
+    "note": "nothing is inferred or filled in: the first-pass answers Q1 to Q5 are not part of this record",
+    "recorded_here": false,
+    "status": "NOT_TRANSCRIBED",
+    "where": "the reviewer's own review store (the per-item event log and the submitted record), which was not provided to this repository"
+   },
+   "comparator_changed_judgment": false,
+   "development_priority": "norepinephrine should eventually be represented through a GENERAL vascular-tone mechanism, not remain permanently unsupported. Do NOT implement norepinephrine in this package. Record it as prioritized future physiology work.",
+   "faculty_conclusion": "Current stop is correct. The simulator appropriately refuses to fabricate physiology for an unsupported norepinephrine order.",
+   "overall": "ACCEPT_WITH_LIMITATION",
+   "post_reveal_judgment": {
+    "overall": "ACCEPT_WITH_LIMITATION",
+    "status": "UNCHANGED_FROM_THE_BLIND_JUDGMENT_AS_REPORTED (comparator changed judgment: NO)"
+   },
+   "required": true,
+   "reviewed_item_digest": "3a9ad41c3d85",
+   "reviewer_role": "faculty",
+   "scenario_id": "FR-F",
+   "title": "unsupported norepinephrine"
+  },
+  {
+   "blind_judgment": {
+    "note": "nothing is inferred or filled in: the first-pass answers Q1 to Q5 are not part of this record",
+    "recorded_here": false,
+    "status": "NOT_TRANSCRIBED",
+    "where": "the reviewer's own review store (the per-item event log and the submitted record), which was not provided to this repository"
+   },
+   "comparator_changed_judgment": false,
+   "faculty_conclusion": "Coherent untreated hemorrhage trajectory.",
+   "limitations": [
+    "Same limitation as FR-A: coarse sampling and prolonged untreated course must be understood as a stress test."
+   ],
+   "overall": "ACCEPT_WITH_LIMITATION",
+   "post_reveal_judgment": {
+    "overall": "ACCEPT_WITH_LIMITATION",
+    "status": "UNCHANGED_FROM_THE_BLIND_JUDGMENT_AS_REPORTED (comparator changed judgment: NO)"
+   },
+   "required": false,
+   "reviewed_item_digest": "034bebe20169",
+   "reviewer_role": "faculty",
+   "scenario_id": "FR-D",
+   "title": "72f untreated deterioration"
+  },
+  {
+   "blind_judgment": {
+    "note": "nothing is inferred or filled in: the first-pass answers Q1 to Q5 are not part of this record",
+    "recorded_here": false,
+    "status": "NOT_TRANSCRIBED",
+    "where": "the reviewer's own review store (the per-item event log and the submitted record), which was not provided to this repository"
+   },
+   "comparator_changed_judgment": false,
+   "faculty_conclusion": "Delayed deterioration and subsequent response are internally coherent.",
+   "limitations": [
+    "The prolonged untreated period is a counterfactual stress test rather than acceptable management."
+   ],
+   "overall": "ACCEPT_WITH_LIMITATION",
+   "post_reveal_judgment": {
+    "overall": "ACCEPT_WITH_LIMITATION",
+    "status": "UNCHANGED_FROM_THE_BLIND_JUDGMENT_AS_REPORTED (comparator changed judgment: NO)"
+   },
+   "required": false,
+   "reviewed_item_digest": "a9cd4d952d91",
+   "reviewer_role": "faculty",
+   "scenario_id": "FR-C",
+   "title": "57m delayed treatment"
+  }
+ ],
+ "scope": {
+  "optional": [
+   "FR-D",
+   "FR-C"
+  ],
+  "required": [
+   "FR-B",
+   "FR-A",
+   "FR-E",
+   "FR-G",
+   "FR-F"
+  ],
+  "scenarios_reviewed": 7
+ },
+ "version": "P3-301",
+ "what_it_is": "The first controlled human faculty trajectory review, recorded as HUMAN evidence exactly as the reviewer reported it. It is not converted into an automated truth, it is not a clinical validation, and nothing in it was written by a model."
+}

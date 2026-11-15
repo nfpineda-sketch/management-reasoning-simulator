@@ -1,0 +1,919 @@
+{
+ "bleeding": {
+  "bleeding_active_at_every_minute": true,
+  "runs": {
+   "FR-B": {
+    "contributors": [
+     "GIHaemorrhage",
+     "Crystalloid",
+     "PackedRedCells"
+    ],
+    "distinct_loss_values_ml_min": [
+     2.5
+    ],
+    "has_source_control": false,
+    "minutes": 400,
+    "stops_or_changes": false
+   },
+   "FR-G": {
+    "contributors": [
+     "GIHaemorrhage",
+     "Crystalloid"
+    ],
+    "distinct_loss_values_ml_min": [
+     2.5
+    ],
+    "has_source_control": false,
+    "minutes": 130,
+    "stops_or_changes": false
+   },
+   "untreated_72f": {
+    "contributors": [
+     "GIHaemorrhage"
+    ],
+    "distinct_loss_values_ml_min": [
+     2.5
+    ],
+    "has_source_control": false,
+    "minutes": 130,
+    "stops_or_changes": false
+   }
+  },
+  "source_control_in_any_run": false
+ },
+ "bleeding_rate_sensitivity": {
+  "note": "the bleeding rate is a candidate coordinate coupled to the untreated course the faculty accepted (FD-REVIEW-01); changing it is not a correction available here",
+  "protection_falls_as_bleeding_rises": true,
+  "rates_ml_min": [
+   2.5,
+   3.5,
+   5.0
+  ],
+  "rows": {
+   "2.5": {
+    "region_least_protective_kernel": {
+     "protection_pct_at_60": 95.228029,
+     "sbp_treated_at_60": 97.182421,
+     "sbp_untreated_at_60": 80.867059
+    },
+    "runtime_kernel": {
+     "protection_pct_at_60": 62.89315,
+     "sbp_treated_at_60": 91.642505,
+     "sbp_untreated_at_60": 80.867059
+    }
+   },
+   "3.5": {
+    "region_least_protective_kernel": {
+     "protection_pct_at_60": 73.860569,
+     "sbp_treated_at_60": 91.518113,
+     "sbp_untreated_at_60": 73.202646
+    },
+    "runtime_kernel": {
+     "protection_pct_at_60": 46.346755,
+     "sbp_treated_at_60": 84.695415,
+     "sbp_untreated_at_60": 73.202646
+    }
+   },
+   "5.0": {
+    "region_least_protective_kernel": {
+     "protection_pct_at_60": 54.143419,
+     "sbp_treated_at_60": 80.913304,
+     "sbp_untreated_at_60": 60.738835
+    },
+    "runtime_kernel": {
+     "protection_pct_at_60": 33.974445,
+     "sbp_treated_at_60": 73.398109,
+     "sbp_untreated_at_60": 60.738835
+    }
+   }
+  }
+ },
+ "early_treatment_without_source_control": {
+  "gi_bleed_57m": {
+   "arrival_sbp": 88.0,
+   "bleed_ml_min_distinct": [
+    2.5
+   ],
+   "crosses_below_arrival_at_minute": 261,
+   "hb": {
+    "0": 6.7,
+    "120": 8.374832,
+    "240": 8.3782,
+    "60": 8.223108
+   },
+   "improvement_reverses_after_peak": true,
+   "orders": [
+    "Place an IV line.",
+    "Give 1 litre of normal saline over 15 minutes.",
+    "Transfuse 2 units of packed red cells.",
+    "Reassess in 20 minutes."
+   ],
+   "peak": {
+    "minute": 65,
+    "sbp": 127.615403
+   },
+   "sbp": {
+    "120": 118.301363,
+    "180": 106.79645,
+    "240": 93.127914,
+    "30": 111.601421,
+    "300": 87.555757,
+    "360": 84.926345,
+    "60": 125.508972,
+    "90": 123.457648
+   },
+   "slope_after_peak_mmHg_per_min": -0.136684,
+   "stays_above_arrival_at_240": true,
+   "untreated_sbp": {
+    "120": 57.892732,
+    "60": 72.615318
+   }
+  },
+  "gi_bleed_72f": {
+   "arrival_sbp": 98.0,
+   "bleed_ml_min_distinct": [
+    2.5
+   ],
+   "crosses_below_arrival_at_minute": 261,
+   "hb": {
+    "0": 6.4,
+    "120": 8.117528,
+    "240": 8.120792,
+    "60": 7.963569
+   },
+   "improvement_reverses_after_peak": true,
+   "orders": [
+    "Place an IV line.",
+    "Give 1 litre of normal saline over 15 minutes.",
+    "Transfuse 2 units of packed red cells.",
+    "Reassess in 20 minutes."
+   ],
+   "peak": {
+    "minute": 65,
+    "sbp": 142.117154
+   },
+   "sbp": {
+    "120": 131.7447,
+    "180": 118.93241,
+    "240": 103.710631,
+    "30": 124.2834,
+    "300": 97.505275,
+    "360": 94.577066,
+    "60": 139.771355,
+    "90": 137.486927
+   },
+   "slope_after_peak_mmHg_per_min": -0.152216,
+   "stays_above_arrival_at_240": true,
+   "untreated_sbp": {
+    "120": 64.471451,
+    "60": 80.867059
+   }
+  }
+ },
+ "evidence_class": "MODEL_ANALYSIS",
+ "executable_change": false,
+ "harness_reproduces_the_reviewed_trajectories": {
+  "all_match": true,
+  "scenarios": {
+   "FR-A": {
+    "matches": true,
+    "minutes_compared": 3,
+    "rows": {
+     "120": {
+      "committed": [
+       58.0,
+       36.0
+      ],
+      "reproduced": [
+       58,
+       36
+      ]
+     },
+     "180": {
+      "committed": [
+       43.0,
+       27.0
+      ],
+      "reproduced": [
+       43,
+       27
+      ]
+     },
+     "60": {
+      "committed": [
+       73.0,
+       45.0
+      ],
+      "reproduced": [
+       73,
+       45
+      ]
+     }
+    }
+   },
+   "FR-B": {
+    "matches": true,
+    "minutes_compared": 3,
+    "rows": {
+     "10": {
+      "committed": [
+       98.0,
+       60.0
+      ],
+      "reproduced": [
+       98,
+       60
+      ]
+     },
+     "30": {
+      "committed": [
+       112.0,
+       68.0
+      ],
+      "reproduced": [
+       112,
+       68
+      ]
+     },
+     "5": {
+      "committed": [
+       91.0,
+       56.0
+      ],
+      "reproduced": [
+       91,
+       56
+      ]
+     }
+    }
+   },
+   "FR-C": {
+    "matches": true,
+    "minutes_compared": 5,
+    "rows": {
+     "120": {
+      "committed": [
+       58.0,
+       36.0
+      ],
+      "reproduced": [
+       58,
+       36
+      ]
+     },
+     "125": {
+      "committed": [
+       62.0,
+       38.0
+      ],
+      "reproduced": [
+       62,
+       38
+      ]
+     },
+     "130": {
+      "committed": [
+       72.0,
+       44.0
+      ],
+      "reproduced": [
+       72,
+       44
+      ]
+     },
+     "150": {
+      "committed": [
+       92.0,
+       56.0
+      ],
+      "reproduced": [
+       92,
+       56
+      ]
+     },
+     "60": {
+      "committed": [
+       73.0,
+       45.0
+      ],
+      "reproduced": [
+       73,
+       45
+      ]
+     }
+    }
+   },
+   "FR-D": {
+    "matches": true,
+    "minutes_compared": 3,
+    "rows": {
+     "120": {
+      "committed": [
+       64.0,
+       41.0
+      ],
+      "reproduced": [
+       64,
+       41
+      ]
+     },
+     "180": {
+      "committed": [
+       48.0,
+       31.0
+      ],
+      "reproduced": [
+       48,
+       31
+      ]
+     },
+     "60": {
+      "committed": [
+       81.0,
+       51.0
+      ],
+      "reproduced": [
+       81,
+       51
+      ]
+     }
+    }
+   },
+   "FR-E": {
+    "matches": true,
+    "minutes_compared": 5,
+    "rows": {
+     "120": {
+      "committed": [
+       64.0,
+       41.0
+      ],
+      "reproduced": [
+       64,
+       41
+      ]
+     },
+     "125": {
+      "committed": [
+       69.0,
+       44.0
+      ],
+      "reproduced": [
+       69,
+       44
+      ]
+     },
+     "130": {
+      "committed": [
+       80.0,
+       51.0
+      ],
+      "reproduced": [
+       80,
+       51
+      ]
+     },
+     "160": {
+      "committed": [
+       109.0,
+       69.0
+      ],
+      "reproduced": [
+       109,
+       69
+      ]
+     },
+     "60": {
+      "committed": [
+       81.0,
+       51.0
+      ],
+      "reproduced": [
+       81,
+       51
+      ]
+     }
+    }
+   },
+   "FR-G": {
+    "matches": true,
+    "minutes_compared": 2,
+    "rows": {
+     "60": {
+      "committed": [
+       92.0,
+       58.0
+      ],
+      "reproduced": [
+       92,
+       58
+      ]
+     },
+     "70": {
+      "committed": [
+       88.0,
+       56.0
+      ],
+      "reproduced": [
+       88,
+       56
+      ]
+     }
+    }
+   }
+  }
+ },
+ "infusion_ordering": {
+  "early_expansion_larger_for_the_shorter_bag_at_10_min": true,
+  "peak_falls_as_the_infusion_lengthens": true,
+  "peak_retained_ml": {
+   "15": 108.042192,
+   "20": 103.8333,
+   "5": 117.938233,
+   "60": 81.887514
+  },
+  "retained_ml": {
+   "15": {
+    "10": 75.148902,
+    "120": 51.752722,
+    "15": 108.042192,
+    "20": 99.131655,
+    "240": 50.032102,
+    "30": 85.204369,
+    "45": 71.352529,
+    "5": 39.312744,
+    "60": 62.950964,
+    "90": 54.764393
+   },
+   "20": {
+    "10": 56.361677,
+    "120": 51.920449,
+    "15": 81.031644,
+    "20": 103.8333,
+    "240": 50.035174,
+    "30": 88.573245,
+    "45": 73.395856,
+    "5": 29.484558,
+    "60": 64.190304,
+    "90": 55.220321
+   },
+   "5": {
+    "10": 107.508473,
+    "120": 51.470005,
+    "15": 98.679871,
+    "20": 91.206621,
+    "240": 50.026924,
+    "30": 79.525834,
+    "45": 67.908324,
+    "5": 117.938233,
+    "60": 60.861947,
+    "90": 53.995887
+   },
+   "60": {
+    "10": 18.787226,
+    "120": 54.315506,
+    "15": 27.010548,
+    "20": 34.6111,
+    "240": 50.079041,
+    "30": 48.31164,
+    "45": 66.149773,
+    "5": 9.828186,
+    "60": 81.887514,
+    "90": 61.730761
+   }
+  },
+  "same_floor_at_240": true,
+  "slow_exceeds_the_15min_bag_from_minute": 48
+ },
+ "mass_balance": {
+  "analytic_retained_ml": {
+   "15min": {
+    "1": 8.169414,
+    "10": 75.148902,
+    "120": 51.752722,
+    "15": 108.042192,
+    "30": 85.204369,
+    "45": 71.352529,
+    "5": 39.312744,
+    "60": 62.950964,
+    "70": 59.279771,
+    "90": 54.764393
+   },
+   "60min": {
+    "1": 2.042353,
+    "10": 18.787226,
+    "120": 54.315506,
+    "15": 27.010548,
+    "30": 48.31164,
+    "45": 66.149773,
+    "5": 9.828186,
+    "60": 81.887514,
+    "70": 72.848402,
+    "90": 61.730761
+   },
+   "instantaneous_1min": {
+    "1": 122.541208,
+    "10": 103.739848,
+    "120": 51.373673,
+    "15": 95.489799,
+    "30": 77.590958,
+    "45": 66.734762,
+    "5": 113.486129,
+    "60": 60.150146,
+    "70": 57.272898,
+    "90": 53.73403
+   }
+  },
+  "behaves_as_per_minute_input_with_simultaneous_redistribution": true,
+  "kernel": {
+   "e": 0.125,
+   "s": 0.6,
+   "tau": 30.0
+  },
+  "max_abs_gap_ml": 0.0,
+  "per_duration": {
+   "15": {
+    "max_abs_gap_ml": 0.0,
+    "peak_minute": 15,
+    "peak_net_ml": 108.042192,
+    "total_effective_gain_ml": 125.0
+   },
+   "20": {
+    "max_abs_gap_ml": 0.0,
+    "peak_minute": 20,
+    "peak_net_ml": 103.8333,
+    "total_effective_gain_ml": 125.0
+   },
+   "5": {
+    "max_abs_gap_ml": 0.0,
+    "peak_minute": 5,
+    "peak_net_ml": 117.938233,
+    "total_effective_gain_ml": 125.0
+   },
+   "60": {
+    "max_abs_gap_ml": 0.0,
+    "peak_minute": 60,
+    "peak_net_ml": 81.887514,
+    "total_effective_gain_ml": 125.0
+   }
+  },
+  "permanent_floor_ml": 50.0,
+  "total_effective_gain_is_volume_times_e_for_every_rate": true
+ },
+ "pressure_coupling": {
+  "amplifies_a_small_volume": false,
+  "difference_points": 1.904433,
+  "pressure_drop_prevented_pct_at_60": 62.89315,
+  "slope_sbp_per_ml_when_volume_is_added_5min_bag": 0.110464,
+  "untreated_slope_sbp_per_ml_by_deficit_band": {
+   "0_50_ml_deficit": 0.121231,
+   "100_190_ml_deficit": 0.140132,
+   "50_100_ml_deficit": 0.128824
+  },
+  "volume_deficit_prevented_pct_at_60": 60.988717
+ },
+ "reconstruction": {
+  "arrival": {
+   "dbp": 62.0,
+   "map": 74.0,
+   "sbp": 98.0
+  },
+  "authority_cross_check": {
+   "60": {
+    "reproduced": [
+     91.642505,
+     57.977911
+    ],
+    "reproduced_rounded": [
+     92,
+     58
+    ],
+    "reviewed_committed": [
+     92.0,
+     58.0
+    ]
+   },
+   "70": {
+    "reproduced": [
+     87.967187,
+     55.65271
+    ],
+    "reproduced_rounded": [
+     88,
+     56
+    ],
+    "reviewed_committed": [
+     88.0,
+     56.0
+    ]
+   }
+  },
+  "case": "gi_bleed_72f",
+  "cross_check_matches": true,
+  "infusion": {
+   "delivered_ml_min": 16.666667,
+   "duration_min": 60.0,
+   "effective_ml_per_ml": 0.125,
+   "leak_tau_min": 30.0,
+   "start_minute": 0.0,
+   "transient_share": 0.6,
+   "volume_ml": 1000.0
+  },
+  "orders": [
+   "Place an IV line.",
+   "Give 1 litre of normal saline over 60 minutes. Reassess in 60 minutes.",
+   "Reassess in 10 minutes."
+  ],
+  "scenario": "FR-G",
+  "trace": {
+   "0": {
+    "V": 0.0,
+    "bleed_cum_ml": 0.0,
+    "bleed_ml_min": 0.0,
+    "dbp": 62.0,
+    "effective_gain_ml_min": 0.0,
+    "forward_flow_output_rel": 1.0,
+    "map": 74.0,
+    "net_retained_crystalloid_ml": 0.0,
+    "preload_position": 0.5,
+    "pressure_rel": 1.0,
+    "redistribution_out_cum_ml": 0.0,
+    "redistribution_out_ml_min": 0.0,
+    "refill_cum_ml": 0.0,
+    "refill_ml_min": 0.0,
+    "sbp": 98.0
+   },
+   "10": {
+    "V": -5.756154,
+    "bleed_cum_ml": 25.0,
+    "bleed_ml_min": 2.5,
+    "dbp": 61.57026,
+    "effective_gain_ml_min": 2.083333,
+    "forward_flow_output_rel": 0.993069,
+    "map": 73.487084,
+    "net_retained_crystalloid_ml": 18.787226,
+    "preload_position": 0.496534,
+    "pressure_rel": 0.993069,
+    "redistribution_out_cum_ml": 2.046108,
+    "redistribution_out_ml_min": 0.354336,
+    "refill_cum_ml": 0.456621,
+    "refill_ml_min": 0.090321,
+    "sbp": 97.320733
+   },
+   "15": {
+    "V": -9.438458,
+    "bleed_cum_ml": 37.5,
+    "bleed_ml_min": 2.5,
+    "dbp": 61.293787,
+    "effective_gain_ml_min": 2.083333,
+    "forward_flow_output_rel": 0.988609,
+    "map": 73.157101,
+    "net_retained_crystalloid_ml": 27.010548,
+    "preload_position": 0.494305,
+    "pressure_rel": 0.988609,
+    "redistribution_out_cum_ml": 4.239452,
+    "redistribution_out_ml_min": 0.491837,
+    "refill_cum_ml": 1.050994,
+    "refill_ml_min": 0.137648,
+    "sbp": 96.883728
+   },
+   "30": {
+    "V": -22.506684,
+    "bleed_cum_ml": 75.0,
+    "bleed_ml_min": 2.5,
+    "dbp": 60.302685,
+    "effective_gain_ml_min": 2.083333,
+    "forward_flow_output_rel": 0.972624,
+    "map": 71.974173,
+    "net_retained_crystalloid_ml": 48.31164,
+    "preload_position": 0.486312,
+    "pressure_rel": 0.972624,
+    "redistribution_out_cum_ml": 14.18836,
+    "redistribution_out_ml_min": 0.790151,
+    "refill_cum_ml": 4.181676,
+    "refill_ml_min": 0.268353,
+    "sbp": 95.317148
+   },
+   "45": {
+    "V": -37.202551,
+    "bleed_cum_ml": 112.5,
+    "bleed_ml_min": 2.5,
+    "dbp": 59.169417,
+    "effective_gain_ml_min": 2.083333,
+    "forward_flow_output_rel": 0.954345,
+    "map": 70.621563,
+    "net_retained_crystalloid_ml": 66.149773,
+    "preload_position": 0.477173,
+    "pressure_rel": 0.954345,
+    "redistribution_out_cum_ml": 27.600227,
+    "redistribution_out_ml_min": 0.971087,
+    "refill_cum_ml": 9.147676,
+    "refill_ml_min": 0.383699,
+    "sbp": 93.525853
+   },
+   "5": {
+    "V": -2.568937,
+    "bleed_cum_ml": 12.5,
+    "bleed_ml_min": 2.5,
+    "dbp": 61.808576,
+    "effective_gain_ml_min": 2.083333,
+    "forward_flow_output_rel": 0.996913,
+    "map": 73.771526,
+    "net_retained_crystalloid_ml": 9.828186,
+    "preload_position": 0.498456,
+    "pressure_rel": 0.996913,
+    "redistribution_out_cum_ml": 0.588481,
+    "redistribution_out_ml_min": 0.191898,
+    "refill_cum_ml": 0.102877,
+    "refill_ml_min": 0.04098,
+    "sbp": 97.697427
+   },
+   "60": {
+    "V": -52.379147,
+    "bleed_cum_ml": 150.0,
+    "bleed_ml_min": 2.5,
+    "dbp": 57.977911,
+    "effective_gain_ml_min": 2.083333,
+    "forward_flow_output_rel": 0.935128,
+    "map": 69.199443,
+    "net_retained_crystalloid_ml": 81.887514,
+    "preload_position": 0.467564,
+    "pressure_rel": 0.935128,
+    "redistribution_out_cum_ml": 43.112486,
+    "redistribution_out_ml_min": 1.080831,
+    "refill_cum_ml": 15.733339,
+    "refill_ml_min": 0.485492,
+    "sbp": 91.642505
+   },
+   "70": {
+    "V": -81.222938,
+    "bleed_cum_ml": 175.0,
+    "bleed_ml_min": 2.5,
+    "dbp": 55.65271,
+    "effective_gain_ml_min": 0.0,
+    "forward_flow_output_rel": 0.897624,
+    "map": 66.424203,
+    "net_retained_crystalloid_ml": 72.848402,
+    "preload_position": 0.448812,
+    "pressure_rel": 0.897624,
+    "redistribution_out_cum_ml": 52.151598,
+    "redistribution_out_ml_min": 0.774449,
+    "refill_cum_ml": 20.92866,
+    "refill_ml_min": 0.546619,
+    "sbp": 87.967187
+   }
+  }
+ },
+ "record_digest": "604e9ba705cd5ce6334fce1079a9f1d91b8de190c0b83497aa57d7e7a94cc188",
+ "record_type": "FRG_CRYSTALLOID_ANALYSIS",
+ "verdict": {
+  "A_CONTINUOUS_INFUSION_IMPLEMENTATION_BUG": {
+   "supported": false,
+   "why": "core net crystalloid equals the independent convolution to 1e-6 mL at every minute for 5/15/20/60-minute infusions"
+  },
+  "B_CLOSED_VOLUME_REGION_TOO_PROTECTIVE_FOR_SLOW_INFUSION": {
+   "supported": true,
+   "why": "every kernel inside the closed bands (the least protective point of the three-parameter family, and any kernel that never rises with age) retains more of the 60-minute infusion than the runtime kernel and protects more of the pressure drop; the runtime kernel is already BELOW the region"
+  },
+  "C_PRESSURE_COUPLING_AMPLIFIES_SMALL_VOLUME_EFFECT": {
+   "supported": false,
+   "why": "the share of pressure drop prevented tracks the share of volume deficit prevented; the slope on volume is the same in both directions"
+  },
+  "D_BLEEDING_RATE_OR_TIMING_CAUSES_APPARENT_PROTECTION": {
+   "cofactor": true,
+   "supported": false,
+   "why": "bleeding is constant and active at every minute (no timing artefact); the rate sets the SCALE of the protection but is coupled to the accepted untreated course"
+  },
+  "E_MULTIPLE_MECHANISMS": {
+   "supported": false,
+   "why": "one mechanism (B) accounts for the finding; D is a scale factor and not a separate defect"
+  },
+  "classified_as": "B"
+ },
+ "version": "P3-302",
+ "volume_region": {
+  "core_runs": {
+   "region_least_protective": {
+    "net_retained_60_ml": 134.60145,
+    "point": {
+     "e": 0.201733,
+     "s": 0.865,
+     "tau": 57.477
+    },
+    "protection_pct_at_60": 95.228029,
+    "sbp": {
+     "120": 73.701647,
+     "30": 98.703201,
+     "60": 97.182421,
+     "70": 92.774164
+    }
+   },
+   "runtime": {
+    "net_retained_60_ml": 81.887514,
+    "point": {
+     "e": 0.125,
+     "s": 0.6,
+     "tau": 30.0
+    },
+    "protection_pct_at_60": 62.89315,
+    "sbp": {
+     "120": 72.770888,
+     "30": 95.317148,
+     "60": 91.642505,
+     "70": 87.967187
+    }
+   }
+  },
+  "only_within_the_three_parameter_family": true,
+  "region": {
+   "applies_to": "modelo de cristaloide del adulto GI certificado, con la semántica exacta del repositorio: fracción del volumen infundido retenida intravascularmente, bolsa de 1 L isotónico entrando en 20 min desde el minuto 0, con el sangrado del caso continuando",
+   "domain_e_max": 1.0,
+   "envelopes": {
+    "120": [
+     0.05,
+     0.15
+    ],
+    "30": [
+     0.15,
+     0.25
+    ],
+    "60": [
+     0.1,
+     0.2
+    ],
+    "peak": [
+     0.15,
+     0.27072
+    ]
+   },
+   "scan": {
+    "feasible_pairs": 10939,
+    "s_steps": 100,
+    "tau_steps": 121
+   },
+   "status": "FACULTY_DEFINED_BEHAVIORAL_REGION"
+  },
+  "runtime_point": {
+   "bag_20min": {
+    "120": {
+     "range": [
+      0.05,
+      0.15
+     ],
+     "status": "IN",
+     "value": 0.05192
+    },
+    "30": {
+     "range": [
+      0.15,
+      0.25
+     ],
+     "status": "BELOW",
+     "value": 0.088573
+    },
+    "60": {
+     "range": [
+      0.1,
+      0.2
+     ],
+     "status": "BELOW",
+     "value": 0.06419
+    },
+    "peak": {
+     "range": [
+      0.15,
+      0.27072
+     ],
+     "status": "BELOW",
+     "value": 0.103833
+    }
+   },
+   "classification": "HISTORICAL_PROVISIONAL_NON_SURVIVING_REFERENCE",
+   "e": 0.125,
+   "inside_closed_region": false,
+   "module_agreement_max_abs": 0.0,
+   "outside_direction": "BELOW (retains LESS than the region requires)",
+   "s": 0.6,
+   "tau": 30.0
+  },
+  "slow_infusion_60min": {
+   "any_nonincreasing_kernel_inside_the_closed_bands": {
+    "assumption": "the retained share of an infused mL never rises with its age",
+    "over_runtime_ratio": 1.526484,
+    "retained_at_60_ml_at_least": 125.0,
+    "share_of_the_concurrent_bleed_at_least": 0.833333
+   },
+   "bleed_to_60_ml": 150.0,
+   "least_over_runtime_ratio": 1.643736,
+   "least_protective_point": {
+    "e": 0.201733,
+    "s": 0.865,
+    "tau": 57.477
+   },
+   "region_least_retained_at_60_ml": 134.60145,
+   "region_most_retained_at_60_ml": 233.971517,
+   "runtime_retained_at_60_ml": 81.887514
+  }
+ },
+ "what_it_is": "A read-only reconstruction of why the 60-minute crystalloid infusion of FR-G protects as much as it does. MODEL_ANALYSIS: it is not human review and not clinical validation."
+}

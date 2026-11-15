@@ -1,0 +1,45 @@
+{
+ "confirmations": {
+  "clinical_core_untouched": true,
+  "family_engine_untouched": true,
+  "no_authority_expansion": true,
+  "no_clinical_validation_claim": true,
+  "no_fr_g_specific_branch_or_multiplier": true,
+  "no_legacy_curve_fitting": true,
+  "no_resident_deployment": true,
+  "no_source_control_physiology_invented": true,
+  "norepinephrine_not_implemented": true,
+  "original_human_review_preserved": true
+ },
+ "decided_on": "2026-11-15",
+ "exact_next_human_action": "Faculty decision FD-P3-223: with the closed volume region, the accepted untreated course (bleeding 2.5 mL/min, a candidate coordinate) and the FR-G expectation, one must yield: (1) reopen the bleeding rate, (2) a new slow-infusion retention constraint or lower floors, which needs new physics in a certified successor of the core, or (3) accept the model as ACCEPT_WITH_LIMITATION. Recommended first question, in effective volume and without mmHg: with continued bleeding, what fraction of the volume lost in 60 minutes should 1 L over 60 minutes compensate at minute 60 and at 120 (today 55 percent; no closed-region kernel gives less than 83 percent).",
+ "not_done_on_purpose": [
+  "a correction of the crystalloid model",
+  "FR-G_V2_CANDIDATE",
+  "a volume recertification (nothing executable changed)",
+  "a full-suite certification (nothing in clinical_core or the runtime changed)",
+  "a commit or push (not authorised by the assignment)"
+ ],
+ "overall": {
+  "name": "FR_G_REQUIRES_NEW_FACULTY_VOLUME_DECISION",
+  "verdict": "B"
+ },
+ "pinned_records": {
+  "analysis_record_digest": "604e9ba705cd5ce6334fce1079a9f1d91b8de190c0b83497aa57d7e7a94cc188",
+  "human_review_record_digest": "9ba80fa70d3b38e178caa3aca9432f9227ce6d9591a48c9908c3f5ac4cc6c8d3",
+  "p3_300_checkpoint_digest": "45b62670af0983f3513e5ec5b290ff866da073b3100177dfa5f4d1a5729c89b2",
+  "review_set_digest": "f65d1127f3fb97926334d695aeab37b92f3a44236cec2ae025025eec90ba1649"
+ },
+ "record_digest": "093262fa98e9a4a476ad6005b1c5c6954858ddafd380ad8538c7c7e9bb644bf5",
+ "record_type": "FIRST_FACULTY_REVIEW_CHECKPOINT",
+ "statement": "The first controlled human faculty review is recorded; FR-G's single RECALIBRATE was analysed read-only and classified B; the step P3-306 STOPPED as the assignment orders for B. Nothing executable changed.",
+ "statuses": {
+  "FIRST_HUMAN_FACULTY_REVIEW_RECORDED": "YES",
+  "FR_G_ROOT_CAUSE": "B · CLOSED_VOLUME_REGION_TOO_PROTECTIVE_FOR_SLOW_INFUSION",
+  "FR_G_V2_READY_FOR_HUMAN_REVIEW": "NO · no correction is authorised until the faculty decides, so no FR-G_V2_CANDIDATE exists",
+  "GI_NONREGRESSION": "NO_EXECUTABLE_CHANGE · the committed pressures of FR-A, FR-B, FR-C, FR-D, FR-E and FR-G are reproduced; the review set and the P3-300 checkpoint are byte-identical",
+  "SOURCE_CONTROL_ANALYSIS": "BLEEDING_ACTIVE_AT_EVERY_MINUTE_OF_EVERY_TREATED_RUN · early improvement peaks near minute 65 and reverses slowly (about -0.2 mmHg/min), crossing below the arrival value near minute 261 · no source control exists and none was added",
+  "VOLUME_REGION_STATUS": "CLOSED_AND_UNTOUCHED · the runtime crystalloid point is the historical provisional reference and lies OUTSIDE the region, below it (Rpeak, R30, R60); inside the region FR-G is MORE protected, not less"
+ },
+ "version": "P3-313"
+}
