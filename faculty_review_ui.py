@@ -22,6 +22,10 @@ GENERIC_REFUSAL = "This is a faculty development review environment. It is not a
 BUNDLE_KEY = "phase3_faculty_review_bundle"
 REVEALED_KEY = "phase3_faculty_review_revealed"
 SCENARIO_FIELD = "faculty_review_scenario"
+TRAJECTORY_MODE = "Trajectory review (recommended)"
+LIVE_MODE = "Live review encounter (advanced)"
+MODE_KEY = "faculty_review_mode"
+MODE_CHOICE_KEY = "faculty_review_mode_choice"       # a plain session key: a widget that is not drawn while an encounter is on screen loses its state, the choice must not
 
 
 def _on_cloud() -> bool:
@@ -52,11 +56,22 @@ def gate(st: Any, layer: Any, account_context: Any, accounts: bool) -> dict:
     return decision
 
 
-def launcher(st: Any, layer: Any, context: Any, initial_state: Any, reset_session: Callable, start_encounter: Callable) -> None:
+def launcher(st: Any, layer: Any, context: Any, initial_state: Any, reset_session: Callable, start_encounter: Callable, trajectory_page: Callable | None = None) -> None:
     """The review launcher: the scripted encounters, nothing else. Draws and stops the page when nothing has started."""
     review = layer.review
     st.title("Faculty development review")
     st.warning(BANNER)
+    # UX-001..013: the primary workflow is the TRAJECTORY REVIEW (stored certified trajectories, one page per scenario). The page itself is HANDED IN by the caller (this module imports nothing of it, as it
+    # imports nothing of the Phase-3 layer). The live review encounter below stays unchanged and available. Without a handed-in page there is only the live launcher, as before.
+    if trajectory_page is not None:
+        modes = [TRAJECTORY_MODE, LIVE_MODE]
+        with st.expander("Review mode", expanded=False):
+            mode = st.radio("Review mode", modes, index=modes.index(st.session_state.get(MODE_CHOICE_KEY, TRAJECTORY_MODE)) if st.session_state.get(MODE_CHOICE_KEY) in modes else 0,
+                            horizontal=True, key=MODE_KEY, label_visibility="collapsed")
+        st.session_state[MODE_CHOICE_KEY] = mode
+        if mode == TRAJECTORY_MODE:
+            trajectory_page(st, layer, context)
+            return
     # No encounter is on screen while the launcher is drawn, so nothing of an earlier encounter's review (its bundle, its reveal) may survive into the next one (P3-288 review, B1).
     for key in (BUNDLE_KEY, REVEALED_KEY):
         st.session_state.pop(key, None)
