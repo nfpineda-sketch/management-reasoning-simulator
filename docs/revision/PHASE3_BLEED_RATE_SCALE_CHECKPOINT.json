@@ -1,0 +1,69 @@
+{
+ "confirmations": {
+  "amendment_3_not_created": true,
+  "clinical_core_untouched": true,
+  "crystalloid_region_not_reopened": true,
+  "family_engine_untouched": true,
+  "no_authority_expansion": true,
+  "no_clinical_validation_claim": true,
+  "no_legacy_curve_fitting": true,
+  "no_norepinephrine_implementation": true,
+  "no_rate_or_pressure_parameter_approved": true,
+  "no_resident_deployment": true,
+  "no_single_bleed_rate_point_forced": true,
+  "no_source_control_physiology_added": true,
+  "original_human_review_preserved": true
+ },
+ "decided_on": "2026-11-15",
+ "identifier_collision": {
+  "already_exist": "FD-BLD-01 to FD-BLD-09, the frozen faculty blood constraints of clinical_core/blood_constraints.py",
+  "in_the_assignment": "FD-BLD-01 to FD-BLD-08",
+  "needs_confirmation": true,
+  "recorded_as": "FD-RATE-01 to FD-RATE-08"
+ },
+ "next_faculty_question": "In these two patients, at arrival and with the bleeding controlled, how much should ONE unit of packed red cells raise the systolic pressure? (today +27 mmHg in 57m and +30 in 72f; +30 already breaks FD-BLD-02 in 72f). With U-OUT fixing rate / scale, the answer fixes the scale, the absolute rate and where FR-G falls with each crystalloid kernel.",
+ "not_done_on_purpose": [
+  "a commit or push of the P3-315 to P3-325 work (the assignment authorises publication only for P3-314)",
+  "a full-suite certification (nothing in clinical_core or the runtime changed)",
+  "FR-G_V2_CANDIDATE",
+  "any change of gi_pressure_committed, the grant or the snapshot",
+  "choosing a point of the joint region"
+ ],
+ "overall": {
+  "name": "JOINT_RATE_PRESSURE_CALIBRATION_REQUIRED",
+  "verdict": "B"
+ },
+ "pinned_records": {
+  "active_core_digest": "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2",
+  "analysis_record_digest": "49daa1ba83defb2ca67801b0de8ceb52aee0362f8e60257f9ea3492d06ff36ce",
+  "frg_crystalloid_analysis_record_digest": "604e9ba705cd5ce6334fce1079a9f1d91b8de190c0b83497aa57d7e7a94cc188",
+  "human_review_record_digest": "9ba80fa70d3b38e178caa3aca9432f9227ce6d9591a48c9908c3f5ac4cc6c8d3",
+  "p3_313_checkpoint_digest": "093262fa98e9a4a476ad6005b1c5c6954858ddafd380ad8538c7c7e9bb644bf5",
+  "review_set_digest": "f65d1127f3fb97926334d695aeab37b92f3a44236cec2ae025025eec90ba1649"
+ },
+ "publication_p3_314": {
+  "analysis_and_tests_commit": "388f279",
+  "candidate_tree": "e21010ec3337c8f6177e1a2a483854a7728ea990",
+  "docs_and_records_commit": "018d032",
+  "force_push": false,
+  "pull_request": false,
+  "pushed_to": "origin/phase-3-runtime-integration",
+  "tree_identical_to_the_analysed_candidate": true
+ },
+ "record_digest": "3198f62afd98655768e38e3e2ccceb226fe6cf842655c8b899d90ce4318d94f3",
+ "record_type": "BLEED_RATE_SCALE_CHECKPOINT",
+ "statement": "The absolute GI bleed rate was reopened by faculty / architect decision and audited read-only. The rate alone does not resolve FR-G; it is identified only jointly with the pressure scale. Nothing executable changed, no rate or pressure parameter is approved, no FR-G V2 candidate exists and Amendment 3 is not opened.",
+ "statuses": {
+  "AMENDMENT3_STATUS": "NOT_OPENED · UNRESOLVED · becomes justified (verdict C) only if the faculty anchors the blood response at a scale where a closed-region crystalloid kernel still over-protects",
+  "AUTHORED_ABSOLUTE_BLOOD_LOSS_EVIDENCE": "ABSOLUTE_BLOOD_LOSS_NOT_DIRECTLY_AUTHORED · the cases author the arrival state and a qualitative history; no volume, rate or body size",
+  "BLEED_RATE_PROVENANCE": "TRACED · 2.5 mL-eq/min = 0.003 (legacy dimensionless circulation drift, first commit 8f77d9a of 2026-09-13, no clinical source recorded) x 300 / 0.36 · LEGACY_DERIVED · classified HISTORICAL_DEVELOPMENT_REFERENCE by faculty decision · no numeric rate was ever approved",
+  "FR_G_SENSITIVITY": "RATE_ALONE_DOES_NOT_RESOLVE · share of the untreated fall prevented at 60 min: 0.63 now; at least 0.57 for every rate admitted for 72f under the current map; on the joint manifold 0.36 (runtime kernel) and 0.58 (closed-region kernel) at the top of the declared scale band, 0.25 and 0.40 at the most favourable corner of every declared domain; one third needs 4.83 mL/min (runtime) or 7.94 mL/min (closed region), both beyond the declared scale band",
+  "FR_G_V2_STATUS": "NOT_GENERATED · P3-323 allows it only if a bleed-rate region ALONE resolves the conflict; it does not",
+  "LONG_HORIZON_SOURCE_CONTROL_RISK": "IMPROVEMENT_ALWAYS_REVERSES_NEVER_PLATEAUS · bleeding active at every minute, no source control added · back below arrival after more than 4 h at the current point, at 2 h 25 at the top of the declared band, at 1 h 25 at the closed-region one-third edge",
+  "OTHER_GI_NONREGRESSION": "QUALITATIVE_CONCLUSIONS_HOLD_AT_EVERY_JOINT_WITNESS · untreated courses identical · but every TREATED magnitude moves with the scale (FR-B peak +40 to +19 to +5.5 mmHg; FR-E no longer ends above arrival): the human acceptance of FR-B, FR-C and FR-E does not transfer to another scale",
+  "RATE_IDENTIFIABILITY": "B · BLEED_RATE_AND_PRESSURE_MAP_REQUIRE_JOINT_REGION · the untreated course reads rate / scale only; the absolute scale is reached only by treated behaviour in real mL",
+  "RATE_PRESSURE_COUPLING": "TOTAL_FOR_THE_UNTREATED_COURSE (invariant to 1.6e-13 mmHg on the joint manifold) · ABSENT_FOR_THE_INFUSION_S_PROTECTION (the same on six pressure maps)",
+  "UNTREATED_BEHAVIORAL_COMPATIBILITY": "UNDER_THE_CURRENT_MAP_THE_RATE_IS_PINNED_NEAR_THE_REFERENCE · U-OUT 57m [2.5497, 3.7234], 72f [1.6894, 2.8038], common [2.5497, 2.8038]; broad time windows [2.156, 3.007]; the reference 2.5 is 1.95 percent below the common U-OUT edge"
+ },
+ "version": "P3-325"
+}
