@@ -1,0 +1,93 @@
+{
+ "amendment_3": "CLOSED",
+ "authority": {
+  "common_core_runtime_authority": false,
+  "expanded": false,
+  "live_configuration_bound_to_the_snapshot": false
+ },
+ "date": "2026-11-16",
+ "development_status": {
+  "gi_pressure": "GI_PRESSURE_DEVELOPMENT_CALIBRATION_CLOSED",
+  "meaning": "development only; NOT production, NOT clinical validation, NOT resident deployment"
+ },
+ "executable_change": false,
+ "faculty_decisions": {
+  "FD-RATIFY-01": "GI_JOINT_REGION_V1 is ACCEPTABLE FOR DEVELOPMENT USE (ACCEPT 1, ACCEPT_WITH_LIMITATION 3, RECALIBRATE 0, REJECT 0)",
+  "FD-RATIFY-02": "the repeated FR-B/C/E limitation is a MONITORED DEVELOPMENT LIMITATION, not a reason to recalibrate",
+  "FD-RATIFY-03": "CENTER_REFERENCE is selected as GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1 (a development snapshot, not a clinical calibration)",
+  "FD-RATIFY-04": "LOW and HIGH remain TEST WITNESSES ONLY",
+  "FD-RATIFY-05": "Amendment 3 remains CLOSED",
+  "FD-RATIFY-06": "no further legacy comparison is required; legacy remains nonauthoritative",
+  "FD-RATIFY-07": "GI pressure calibration is CLOSED FOR DEVELOPMENT unless a cross-family contradiction, a dangerous educational effect, a failure under a new intervention or a failure of generalization appears"
+ },
+ "human_record": {
+  "file": "docs/revision/PHASE3_HUMAN_FACULTY_REREVIEW.json",
+  "overall_counts": {
+   "ACCEPT": 1,
+   "ACCEPT_WITH_LIMITATION": 3,
+   "RECALIBRATE": 0,
+   "REJECT": 0
+  },
+  "record_digest": "4af2b53118245b8667d58d3280205ac64101e5c61fb1ecb83ca8bd9f05f05bd8",
+  "verification": "REPORTED_NOT_VERIFIED_AGAINST_PERSISTED_STORE"
+ },
+ "is_not": [
+  "a clinical calibration",
+  "authority-approved production physiology",
+  "resident validation",
+  "a clinical-validation claim"
+ ],
+ "limitation": {
+  "file": "docs/revision/GI_BLOOD_RESUSCITATION_LOW_END_RESPONSE.json",
+  "id": "GI_BLOOD_RESUSCITATION_LOW_END_RESPONSE",
+  "record_digest": "43d66c1655bd8811a0738fd543dd83332c78622a9a32480eeafc3ee6c63eb499"
+ },
+ "ratified_for": "DEVELOPMENT EXPERIMENTS",
+ "record_digest": "6a471a3a1b729214da7e2f57e647d1b3944620cf08642ad5abdbf426692d7747",
+ "record_type": "GI_JOINT_REGION_AND_SNAPSHOT_RATIFICATION",
+ "region": {
+  "id": "GI_JOINT_RATE_PRESSURE_DEVELOPMENT_REGION_V1",
+  "record": "docs/revision/PHASE3_GI_JOINT_REGION_V1.json",
+  "record_digest": "bf7361a1d96fe7fed9aeca697bba4809ef70e87843d71ba5b64a77f832c41539",
+  "record_file_sha256": "eb614a69dcd89271c18242f8b58e5ae0f3e4ea6362d9b2270e3c7b82ce3f8d6e",
+  "record_type": "GI_JOINT_REGION_V1",
+  "status_before": "JOINT_DEVELOPMENT_REGION__NOT_A_CALIBRATED_POINT__NOT_CLINICALLY_VALIDATED",
+  "status_now": "RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS",
+  "structure_preserved": {
+   "coordinates": {
+    "bleed_rate": "never a coordinate: always c x scale (FD-RATE-17)",
+    "c": "bleed rate / preload scale, per minute",
+    "held": {
+     "arrival_position": 0.5,
+     "kappa": 1.0
+    },
+    "kernel": "(e, s, tau) of the crystalloid retention kernel",
+    "scale": "preload scale, mL-eq"
+   },
+   "every_row_has_rate_equal_to_c_times_scale": true,
+   "lattice_rows_checked": 12,
+   "projections_are_not_ranges": {
+    "bleed_rate_ml_eq_per_min": [
+     7.598434,
+     9.325842
+    ],
+    "scale_ml_eq": [
+     2258.34795,
+     3048.045967
+    ],
+    "warning": "a rate from one end with a scale from the other is OUTSIDE the region: only c x scale pairs inside A are points"
+   },
+   "region_record_edited": false,
+   "rule": "the region is ratified as the CORRELATED object it is (rate = c x scale, with the crystalloid kernel); it is not flattened into independent rate and scale ranges, because a rate from one end with a scale from the other is outside it"
+  }
+ },
+ "snapshot": {
+  "file": "docs/revision/GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1.json",
+  "file_sha256": "dc5da76ea764759552d6107fd05584257903e16bb04cefe139486a0b343c922e",
+  "id": "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1",
+  "record_digest": "925973f050bc5f9cdc85f7ff83af6fd9349b4499acfbc4987b3b59ab3a60f6b3",
+  "selected_witness": "CENTER_REFERENCE"
+ },
+ "status": "RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS",
+ "version": "P3-368"
+}

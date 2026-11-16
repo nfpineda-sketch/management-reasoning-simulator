@@ -1,0 +1,141 @@
+{
+ "evidence_class": "HUMAN_FACULTY_REREVIEW",
+ "evidence_classes": {
+  "HUMAN_FACULTY_REREVIEW": "what the faculty reviewer judged in the blinded re-review of the joint-region candidate, as reported; only this record and the Decision File rows FD-RATIFY-01 to FD-RATIFY-07 carry it",
+  "LEGACY_COMPARATOR": "the legacy engine's trajectory; it was NOT shown in this re-review (no comparator, no reveal) and is not used as a requirement for the closure (FD-RATIFY-06)",
+  "MODEL_ANALYSIS": "what the development assistant computed from the executable model (docs/revision/PHASE3_GI_JOINT_REGION_V1.json); it explains and bounds, it does not judge",
+  "TEST_RESULT": "what an automated test asserted (test_phase3_joint_region_ratification.py); it protects a record, it is not a faculty decision"
+ },
+ "not_in_this_record": [
+  "the reviewer's name",
+  "any model-written judgment",
+  "any legacy comparison",
+  "any clinical-validation claim",
+  "the per-event logs (they live in the reviewer's own store)"
+ ],
+ "not_verified": [
+  "the answers Q1 to Q5 and the overall judgments against the persisted logs",
+  "the scenario order as persisted",
+  "the completion state as persisted",
+  "the lock and submit events and their order",
+  "free-text comments (none were reported)"
+ ],
+ "overall_counts": {
+  "ACCEPT": 1,
+  "ACCEPT_WITH_LIMITATION": 3,
+  "RECALIBRATE": 0,
+  "REJECT": 0
+ },
+ "preserved_original_evidence": {
+  "first_review_record": "docs/revision/PHASE3_FIRST_HUMAN_FACULTY_REVIEW.json",
+  "first_review_record_digest": "9ba80fa70d3b38e178caa3aca9432f9227ce6d9591a48c9908c3f5ac4cc6c8d3",
+  "first_review_record_file_sha256": "51c13d9d6b91b4fdbdf4b5d85bab8ba2c7af98790941805cbb25fbaef63598d0",
+  "first_review_set_digest": "f65d1127f3fb97926334d695aeab37b92f3a44236cec2ae025025eec90ba1649",
+  "rule": "the first faculty review (seven scenarios, FD-REVIEW-01 to FD-REVIEW-06) is not edited, re-generated or overwritten; this re-review is a separate versioned set with its own digests and its own record",
+  "transfer_of_first_review_judgments": false
+ },
+ "provenance": {
+  "date_of_record": "2026-11-16",
+  "persisted_store_available_to_the_assistant": false,
+  "reported_in": "the assignment of 2026-11-16 that opened P3-367 ('PHASE 3 — RATIFY GI JOINT PRESSURE REGION')",
+  "reviewer_identity_recorded": false,
+  "reviewer_name": null,
+  "reviewer_role": "faculty",
+  "transcribed_by": "the development assistant; the answers are typed once from the report and no word of the faculty interpretation was changed",
+  "verification": "REPORTED_NOT_VERIFIED_AGAINST_PERSISTED_STORE",
+  "why": "the persisted per-item event logs and submitted records (trajectory_rereview/ and trajectory_rereviews/ of the reviewer's own store) are not in this container; the assignment asked to read them and not to infer answers from itself if they differed. The faculty chose, on 2026-11-16, to register what was reported, as the first review was registered (P3-301)."
+ },
+ "record_digest": "4af2b53118245b8667d58d3280205ac64101e5c61fb1ecb83ca8bd9f05f05bd8",
+ "record_type": "HUMAN_FACULTY_REREVIEW_RECORD",
+ "review": {
+  "candidate_named_by_the_interface": false,
+  "candidate_reviewed": "CENTER_REFERENCE",
+  "completion_as_reported": "RE-REVIEW COMPLETE (4 / 4)",
+  "item_digests_full": {
+   "FR-B": "570391b7c6ef",
+   "FR-C": "f70ce87b966e",
+   "FR-E": "5f70ed627314",
+   "FR-G": "fb3beac7455d"
+  },
+  "item_digests_short": {
+   "FR-B": "570391b7c6ef",
+   "FR-C": "f70ce87b966e",
+   "FR-E": "5f70ed627314",
+   "FR-G": "fb3beac7455d"
+  },
+  "pressure_only_first_pass": true,
+  "review_set_digest": "c30ab7f1fae514ff7e7c4de50e1d11b60f08efc6021804e162b70100d52b344f",
+  "review_set_id": "GI_JOINT_REGION_V1_FACULTY_REREVIEW",
+  "scenario_order_as_reported": [
+   "FR-B",
+   "FR-C",
+   "FR-E",
+   "FR-G"
+  ],
+  "scenarios_reviewed": 4
+ },
+ "scenarios": [
+  {
+   "faculty_interpretation_as_reported": "The response is directionally and temporally coherent, although the pressure increase is at the low end of what would ideally be expected after crystalloid and packed red cells. Given ongoing hemorrhage, the trajectory is acceptable for development.",
+   "first_pass": {
+    "Q1": "Expected",
+    "Q2": "Plausible",
+    "Q3": "Too small",
+    "Q4": "Coherent",
+    "Q5": "Maybe"
+   },
+   "free_text_comments": "NONE_REPORTED",
+   "overall": "ACCEPT_WITH_LIMITATION",
+   "recalibration_in_isolation_requested": false,
+   "reviewed_item_digest": "570391b7c6ef",
+   "scenario_id": "FR-B"
+  },
+  {
+   "faculty_interpretation_as_reported": "Untreated deterioration is coherent. Treatment response begins at an appropriate time and is directionally correct. Magnitude is modest / low-end plausible. Acceptable for development.",
+   "first_pass": {
+    "Q1": "Expected",
+    "Q2": "Plausible",
+    "Q3": "Too small",
+    "Q4": "Coherent",
+    "Q5": "Maybe"
+   },
+   "free_text_comments": "NONE_REPORTED",
+   "overall": "ACCEPT_WITH_LIMITATION",
+   "recalibration_in_isolation_requested": false,
+   "reviewed_item_digest": "f70ce87b966e",
+   "scenario_id": "FR-C"
+  },
+  {
+   "faculty_interpretation_as_reported": "Delayed deterioration and recovery are coherent. Pressure response is modest but remains plausible with ongoing hemorrhage. Acceptable for development.",
+   "first_pass": {
+    "Q1": "Expected",
+    "Q2": "Plausible",
+    "Q3": "Too small",
+    "Q4": "Coherent",
+    "Q5": "Maybe"
+   },
+   "free_text_comments": "NONE_REPORTED",
+   "overall": "ACCEPT_WITH_LIMITATION",
+   "recalibration_in_isolation_requested": false,
+   "reviewed_item_digest": "5f70ed627314",
+   "scenario_id": "FR-E"
+  },
+  {
+   "faculty_interpretation_as_reported": "Slow crystalloid infusion appropriately attenuates deterioration without stabilizing the patient. Hypotension continues to worsen despite completion of the litre. No further recalibration is needed for this scenario.",
+   "first_pass": {
+    "Q1": "Expected",
+    "Q2": "Plausible",
+    "Q3": "Plausible",
+    "Q4": "Coherent",
+    "Q5": "No"
+   },
+   "free_text_comments": "NONE_REPORTED",
+   "overall": "ACCEPT",
+   "recalibration_in_isolation_requested": false,
+   "reviewed_item_digest": "fb3beac7455d",
+   "scenario_id": "FR-G"
+  }
+ ],
+ "version": "P3-367",
+ "what_it_is": "The blinded human faculty re-review of the CENTER_REFERENCE joint-region trajectories, recorded as HUMAN evidence as the reviewer reported it. It is not converted into an automated truth, it is not a clinical validation, and nothing in it was written by a model."
+}

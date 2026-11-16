@@ -1,0 +1,45 @@
+{
+ "date": "2026-11-16",
+ "decisions": [
+  "FD-RATIFY-02",
+  "FD-RATIFY-07"
+ ],
+ "evidence": {
+  "evidence_class": "HUMAN_FACULTY_REREVIEW",
+  "human_record": "docs/revision/PHASE3_HUMAN_FACULTY_REREVIEW.json",
+  "human_record_digest": "4af2b53118245b8667d58d3280205ac64101e5c61fb1ecb83ca8bd9f05f05bd8",
+  "scenarios": [
+   "FR-B",
+   "FR-C",
+   "FR-E"
+  ],
+  "verification": "REPORTED_NOT_VERIFIED_AGAINST_PERSISTED_STORE"
+ },
+ "faculty_reading": "directionally and temporally coherent; the increase is at the low end of what would ideally be expected, and acceptable for development given ongoing hemorrhage",
+ "is_not": [
+  "a calibration target",
+  "a defect to be fixed in this cycle",
+  "clinical validation",
+  "an approved physiology parameter"
+ ],
+ "limitation_id": "GI_BLOOD_RESUSCITATION_LOW_END_RESPONSE",
+ "meaning": "In FR-B, FR-C and FR-E the pressure response after crystalloid plus packed red cells lies at the LOW END of the faculty-plausible range (Q3 'Too small' in the three scenarios, with Q1 Expected, Q2 Plausible and Q4 Coherent).",
+ "not_a_reason_to_recalibrate": [
+  "raising these trajectories by a few mmHg",
+  "a minor numerical preference difference"
+ ],
+ "record_digest": "43d66c1655bd8811a0738fd543dd83332c78622a9a32480eeafc3ee6c63eb499",
+ "record_type": "GI_DEVELOPMENT_LIMITATION",
+ "reopen_only_if": [
+  "another family shows the same deficit",
+  "intervention ordering becomes wrong",
+  "educational risk becomes material",
+  "a new faculty review changes the judgment"
+ ],
+ "status": [
+  "ACCEPTED_WITH_LIMITATION",
+  "MONITOR",
+  "NO_CURRENT_RECALIBRATION"
+ ],
+ "version": "P3-370"
+}

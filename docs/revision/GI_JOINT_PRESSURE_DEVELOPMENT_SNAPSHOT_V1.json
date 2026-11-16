@@ -1,0 +1,229 @@
+{
+ "amendment_3": "CLOSED (FD-RATIFY-05): not designed, not implemented",
+ "binding": {
+  "arrival_position": 0.5,
+  "bleed_rate_ml_eq_per_min": 8.970853509,
+  "c_rate_over_scale_per_min": 0.003326066,
+  "crystalloid_kernel": {
+   "e": 0.213115961,
+   "s": 0.835,
+   "tau_min": 60.624
+  },
+  "preload_scale_ml_eq": 2697.136369656
+ },
+ "binding_source": {
+  "another_point_considered": false,
+  "copied_not_recomputed": true,
+  "optimized": false,
+  "path": "witnesses.CENTER_REFERENCE.binding",
+  "record": "docs/revision/PHASE3_GI_JOINT_REGION_V1.json",
+  "region_record_digest": "bf7361a1d96fe7fed9aeca697bba4809ef70e87843d71ba5b64a77f832c41539",
+  "region_record_file_sha256": "eb614a69dcd89271c18242f8b58e5ae0f3e4ea6362d9b2270e3c7b82ce3f8d6e"
+ },
+ "bound_together": "the rate, the scale and the kernel of this witness were found together; none may be replaced by another witness's value",
+ "date": "2026-11-16",
+ "human_record": {
+  "file": "docs/revision/PHASE3_HUMAN_FACULTY_REREVIEW.json",
+  "record_digest": "4af2b53118245b8667d58d3280205ac64101e5c61fb1ecb83ca8bd9f05f05bd8",
+  "verification": "REPORTED_NOT_VERIFIED_AGAINST_PERSISTED_STORE"
+ },
+ "is_not": [
+  "a clinical calibration",
+  "production authority",
+  "resident validation",
+  "a clinically measured blood-loss rate",
+  "an independent scalar range",
+  "an approved parameter set for the runtime"
+ ],
+ "legacy": "NONAUTHORITATIVE; no comparison to the legacy engine was required for this closure (FD-RATIFY-06)",
+ "limitation": {
+  "file": "docs/revision/GI_BLOOD_RESUSCITATION_LOW_END_RESPONSE.json",
+  "id": "GI_BLOOD_RESUSCITATION_LOW_END_RESPONSE",
+  "status": [
+   "ACCEPTED_WITH_LIMITATION",
+   "MONITOR",
+   "NO_CURRENT_RECALIBRATION"
+  ]
+ },
+ "live_configuration": {
+  "bound": false,
+  "executable_change": false,
+  "statement": "This is a RECORD. Nothing executable reads it: the live GI pressure development authority (snapshot gi_pressure_committed, with GI_DEVELOPMENT_SNAPSHOT_V1) is unchanged and still runs the configuration that the FIRST review displayed. The CENTER_REFERENCE trajectories that the faculty accepted come from the joint-region harness, not from the live authority. Binding the live authority to this snapshot would be a separate EXECUTABLE step that needs its own authorization and its own recertification; it is not part of this cycle."
+ },
+ "margins_from_the_region_record": {
+  "A_untreated": {
+   "c": 0.003326066,
+   "nearest": "upper",
+   "normalized": 0.126342773,
+   "to_lower": 0.000266453,
+   "to_lower_as_a_share_of_c": 0.080110424,
+   "to_upper": 3.8533e-05,
+   "to_upper_as_a_share_of_c": 0.011585062,
+   "window": [
+    0.003059613,
+    0.003364599
+   ]
+  },
+  "B_one_unit": {
+   "nearest": "floor",
+   "normalized": 0.126342922,
+   "sbp_rise_at_30_mmHg": {
+    "gi_bleed_57m": 9.263429221,
+    "gi_bleed_72f": 10.316091632
+   },
+   "to_ceiling_mmHg": 7.683908368,
+   "to_floor_mmHg": 1.263429221,
+   "window_mmHg": [
+    8.0,
+    18.0
+   ]
+  },
+  "C_slow_crystalloid": {
+   "nearest": "ceiling",
+   "normalized": 0.126500126,
+   "share_prevented_at_60": 0.324699975,
+   "to_ceiling": 0.025300025,
+   "to_floor": 0.174699975,
+   "window": [
+    0.15,
+    0.35
+   ]
+  },
+  "K_closed_crystalloid_region": {
+   "behaviour_on_a_1L_20min_bag": {
+    "120": 0.064049115,
+    "30": 0.1626343,
+    "60": 0.112877621,
+    "peak": 0.185494231
+   },
+   "nearest": "30:lower",
+   "normalized": 0.126343,
+   "per_envelope": {
+    "120": {
+     "nearest": "lower",
+     "normalized": 0.140491148,
+     "to_lower": 0.014049115,
+     "to_upper": 0.085950885,
+     "value": 0.064049115,
+     "window": [
+      0.05,
+      0.15
+     ]
+    },
+    "30": {
+     "nearest": "lower",
+     "normalized": 0.126343,
+     "to_lower": 0.0126343,
+     "to_upper": 0.0873657,
+     "value": 0.1626343,
+     "window": [
+      0.15,
+      0.25
+     ]
+    },
+    "60": {
+     "nearest": "lower",
+     "normalized": 0.12877621,
+     "to_lower": 0.012877621,
+     "to_upper": 0.087122379,
+     "value": 0.112877621,
+     "window": [
+      0.1,
+      0.2
+     ]
+    },
+    "peak": {
+     "nearest": "lower",
+     "normalized": 0.294021128,
+     "to_lower": 0.035494231,
+     "to_upper": 0.085225769,
+     "value": 0.185494231,
+     "window": [
+      0.15,
+      0.27072
+     ]
+    }
+   },
+   "retained_at_60_of_1L_over_60min_ml": 147.207471314
+  },
+  "R_existing_constraints_readable": {
+   "bleed_rate_ml_eq_per_min": 8.970853509,
+   "fastest_readable_rate_ml_eq_per_min": 9.325586577,
+   "nearest": "the readability limit of the frozen evaluator",
+   "normalized": 0.205386063,
+   "note": "a limit of READING, not a faculty constraint; normalised by the rate span of the verified region",
+   "to_limit_ml_eq_per_min": 0.354733068
+  },
+  "smallest": {
+   "constraint": "A_untreated",
+   "nearest": "upper",
+   "normalized": 0.126342773
+  }
+ },
+ "minor_numerical_preference_reopens": false,
+ "record_digest": "925973f050bc5f9cdc85f7ff83af6fd9349b4499acfbc4987b3b59ab3a60f6b3",
+ "record_type": "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT",
+ "relation_to_earlier_snapshots": {
+  "GI_DEVELOPMENT_SNAPSHOT_V1": "distinct and unchanged (the midpoint-of-regions development snapshot; FD-AUTH-01)",
+  "gi_pressure_committed": "distinct and unchanged (the approved pressure snapshot of the development authority)"
+ },
+ "reopening_rule": [
+  "a cross-family contradiction",
+  "a dangerous educational effect",
+  "a failure under a new intervention",
+  "a failure of generalization"
+ ],
+ "selected_witness": "CENTER_REFERENCE",
+ "smallest_margin": {
+  "constraint": "A_untreated",
+  "nearest": "upper",
+  "normalized": 0.126342773
+ },
+ "snapshot_id": "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1",
+ "status": "RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS",
+ "version": 1,
+ "why_selected": {
+  "analytic": "CENTER_REFERENCE is the point farthest from every boundary of the analysed feasible joint region: the untreated, one-unit, crystalloid and closed-region margins are equal and the largest possible at once (the maximum robustness/margin)",
+  "criteria_in_the_faculty_decision": [
+   "it lies inside the feasible joint region",
+   "it maximizes the simultaneous margin to the behavioural constraints",
+   "it passed the blinded human faculty re-review",
+   "no reviewed scenario received RECALIBRATE or REJECT"
+  ],
+  "decision": "FD-RATIFY-03",
+  "human": "the blinded human faculty re-review accepted its trajectories: ACCEPT 1, ACCEPT_WITH_LIMITATION 3, RECALIBRATE 0, REJECT 0"
+ },
+ "witnesses_test_only": {
+  "HIGH": {
+   "binding": {
+    "arrival_position": 0.5,
+    "bleed_rate_ml_eq_per_min": 9.086069542,
+    "c_rate_over_scale_per_min": 0.003126758,
+    "crystalloid_kernel": {
+     "e": 0.214972796,
+     "s": 0.835,
+     "tau_min": 60.624
+    },
+    "preload_scale_ml_eq": 2905.907550116
+   },
+   "promoted": false,
+   "role": "TEST_WITNESS_ONLY"
+  },
+  "LOW": {
+   "binding": {
+    "arrival_position": 0.5,
+    "bleed_rate_ml_eq_per_min": 8.259057286,
+    "c_rate_over_scale_per_min": 0.003345332,
+    "crystalloid_kernel": {
+     "e": 0.207344893,
+     "s": 0.865,
+     "tau_min": 60.624
+    },
+    "preload_scale_ml_eq": 2468.830151121
+   },
+   "promoted": false,
+   "role": "TEST_WITNESS_ONLY"
+  },
+  "decision": "FD-RATIFY-04"
+ }
+}
