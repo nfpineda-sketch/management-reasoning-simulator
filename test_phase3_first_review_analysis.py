@@ -4,12 +4,12 @@ Three things are protected here, and they are kept apart on purpose:
 
 * HUMAN_FACULTY_REVIEW: the record of what the reviewer judged. It has no model-written judgment, no name, no invented blind answers, and the human-reviewed
   items it points at are exactly the pinned ones (nothing was overwritten);
-* MODEL_ANALYSIS / TEST_RESULT: ``frg_crystalloid_analysis`` is recomputed from the executable model and compared with the stored record, and each claim of the
+* MODEL_ANALYSIS / TEST_RESULT: ``test_gi_frg_crystalloid_analysis`` is recomputed from the executable model and compared with the stored record, and each claim of the
   verdict (A refuted, B supported, C refuted, bleeding active, mass balance exact, the harness equal to what the faculty saw) is asserted on its own;
 * what was NOT done: no executable change (the runtime crystalloid point is still the historical one), no FR-G-specific branch, no multiplier, no source
   control, no norepinephrine physiology.
 
-``MRS_WRITE_FRG_ANALYSIS=1 python3 frg_crystalloid_analysis.py`` regenerates the stored analysis record; the human record is written by hand and only changes
+``MRS_WRITE_FRG_ANALYSIS=1 python3 test_gi_frg_crystalloid_analysis.py`` regenerates the stored analysis record; the human record is written by hand and only changes
 when the reviewer changes it.
 """
 import hashlib
@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 
 import faculty_trajectory_review as ftr
-import frg_crystalloid_analysis as fa
+import test_gi_frg_crystalloid_analysis as fa
 
 ROOT = Path(__file__).resolve().parent
 HUMAN_PATH = ROOT / "docs" / "revision" / "PHASE3_FIRST_HUMAN_FACULTY_REVIEW.json"
@@ -188,7 +188,7 @@ def test_m8_early_improvement_reverses_slowly_under_continued_bleeding_without_s
 # -- what was NOT done --------------------------------------------------------------------------------------------------------------------------------
 
 def _runtime_sources():
-    skip = {"test_phase3_first_review_analysis.py", "frg_crystalloid_analysis.py"}
+    skip = {"test_phase3_first_review_analysis.py", "test_gi_frg_crystalloid_analysis.py"}          # the analysis harness is test-side (renamed in P3-348)
     for path in sorted(ROOT.glob("*.py")):
         if not path.name.startswith("test_") and path.name not in skip:
             yield path

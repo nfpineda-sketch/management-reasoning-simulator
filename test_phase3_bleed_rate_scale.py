@@ -2,7 +2,7 @@
 
 What is protected, and kept apart:
 
-* MODEL_ANALYSIS / TEST_RESULT: ``gi_bleed_rate_analysis`` is recomputed from the executable model and the frozen faculty evaluators and compared with the stored
+* MODEL_ANALYSIS / TEST_RESULT: ``test_gi_bleed_rate_analysis`` is recomputed from the executable model and the frozen faculty evaluators and compared with the stored
   record, and each claim is asserted on its own: where 2.5 mL/min comes from, that no absolute blood loss is authored, that the untreated course reads only
   rate / scale, that a crystalloid infusion's protection reads only the rate, that the rate ALONE does not resolve FR-G under the current map, the joint region
   and its trade-off, and the verdict B;
@@ -10,7 +10,7 @@ What is protected, and kept apart:
 * what was NOT done: no executable change, no rate approved, no pressure parameter moved, no FR-G V2 candidate, no Amendment 3, no norepinephrine, no source
   control.
 
-``MRS_WRITE_BLEED_RATE_ANALYSIS=1 python3 gi_bleed_rate_analysis.py`` regenerates the stored record, only when the analysis itself changes.
+``MRS_WRITE_BLEED_RATE_ANALYSIS=1 python3 test_gi_bleed_rate_analysis.py`` regenerates the stored record, only when the analysis itself changes.
 """
 import hashlib
 import json
@@ -19,8 +19,8 @@ from pathlib import Path
 import pytest
 
 import faculty_trajectory_review as ftr
-import frg_crystalloid_analysis as fa
-import gi_bleed_rate_analysis as ga
+import test_gi_frg_crystalloid_analysis as fa
+import test_gi_bleed_rate_analysis as ga
 
 ROOT = Path(__file__).resolve().parent
 REVISION = ROOT / "docs" / "revision"

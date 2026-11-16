@@ -2,14 +2,14 @@
 
 What is protected, and kept apart:
 
-* MODEL_ANALYSIS / TEST_RESULT: ``gi_joint_feasibility_analysis`` is recomputed from the executable model and the frozen faculty evaluators and compared with
+* MODEL_ANALYSIS / TEST_RESULT: ``test_gi_joint_feasibility_analysis`` is recomputed from the executable model and the frozen faculty evaluators and compared with
   the stored record; each claim is asserted on its own: the mechanism and the timing of one red-cell unit, the three reduced coordinates, the three constraints
   in their own coordinates, the feasible region and its projections, the witnesses, the structural reading and the gate verdict A;
 * the faculty anchors FD-RATE-09 and FD-RATE-10 are the numbers the faculty gave, and nothing here narrows them to a point;
 * what was NOT done: no executable change, no rate, pressure parameter or kernel approved, no point chosen, no Amendment 3 design or implementation, no change
   of the closed crystalloid region, no FR-G V2 candidate, no norepinephrine, no source control; the human review and every earlier record are byte-identical.
 
-``MRS_WRITE_JOINT_FEASIBILITY=1 python3 gi_joint_feasibility_analysis.py`` regenerates the stored record, only when the analysis itself changes.
+``MRS_WRITE_JOINT_FEASIBILITY=1 python3 test_gi_joint_feasibility_analysis.py`` regenerates the stored record, only when the analysis itself changes.
 """
 import hashlib
 import json
@@ -18,8 +18,8 @@ from pathlib import Path
 import pytest
 
 import faculty_trajectory_review as ftr
-import gi_bleed_rate_analysis as ga
-import gi_joint_feasibility_analysis as gj
+import test_gi_bleed_rate_analysis as ga
+import test_gi_joint_feasibility_analysis as gj
 
 ROOT = Path(__file__).resolve().parent
 REVISION = ROOT / "docs" / "revision"

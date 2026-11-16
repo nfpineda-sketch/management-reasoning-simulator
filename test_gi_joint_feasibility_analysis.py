@@ -15,7 +15,7 @@ The three independent faculty constraints of the Amendment-3 gate (FD-RATE-13):
 
 together with every constraint that already existed (FD-BLD-01 .. FD-BLD-09, U-HB, the closed crystalloid region), which FD-RATE-12 keeps untouched.
 
-Regenerate the stored record with ``MRS_WRITE_JOINT_FEASIBILITY=1 python3 gi_joint_feasibility_analysis.py`` (the person who changes the analysis).
+Regenerate the stored record with ``MRS_WRITE_JOINT_FEASIBILITY=1 python3 test_gi_joint_feasibility_analysis.py`` (the person who changes the analysis).
 """
 from __future__ import annotations
 
@@ -27,8 +27,8 @@ import os
 import re
 from pathlib import Path
 
-import frg_crystalloid_analysis as fa
-import gi_bleed_rate_analysis as ga
+import test_gi_frg_crystalloid_analysis as fa
+import test_gi_bleed_rate_analysis as ga
 
 ROOT = Path(__file__).resolve().parent
 RECORD_PATH = ROOT / "docs" / "revision" / "PHASE3_GI_JOINT_FEASIBILITY_ANALYSIS.json"
@@ -61,7 +61,7 @@ AMBIGUOUS_BELOW = 0.01      # a feasible interval narrower than 1 % of its own v
 # -- running the certified core --------------------------------------------------------------------------------------------------------------------------
 
 def run(scenario: dict, minutes: int, *, rate=None, scale=None, kernel=None, drop_fluid: bool = False, fraction=None):
-    """As ``gi_bleed_rate_analysis.run`` (counterfactual copies only), with the shadow core's own derived readings beside each minute."""
+    """As ``test_gi_bleed_rate_analysis.run`` (counterfactual copies only), with the shadow core's own derived readings beside each minute."""
     from clinical_core import integration
     from clinical_core.interventions.fluids import Crystalloid
     anchors, contributors, _captured, profile = integration.scenario_from_dict(scenario)

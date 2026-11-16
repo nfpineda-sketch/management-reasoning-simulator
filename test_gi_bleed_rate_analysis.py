@@ -1,7 +1,7 @@
 """P3-315 .. P3-325: the ABSOLUTE scale of the GI bleed rate, reopened after the first human faculty review.
 
 MODEL_ANALYSIS, nothing else. TEST-SIDE and READ-ONLY: it imports the certified shadow core, the frozen faculty evaluators of
-``clinical_core.blood_constraints`` and the page-faithful harness of ``frg_crystalloid_analysis`` (which reproduces the pressures the
+``clinical_core.blood_constraints`` and the page-faithful harness of ``test_gi_frg_crystalloid_analysis`` (which reproduces the pressures the
 authority committed in the human-reviewed trajectories), and writes nothing to any encounter, authority record, snapshot, baseline, region or
 faculty review. It approves no rate, no pressure parameter and no region; it changes no physiology (``clinical_core/`` and ``family_engine.py``
 are read, never edited). Every mutation is a COUNTERFACTUAL copy made inside this process to measure a sensitivity.
@@ -21,7 +21,7 @@ What it measures, each recomputed from the executable model:
 * the joint rate x pressure-map region the existing faculty constraints leave, and where FR-G falls in it (P3-321);
 * the qualitative faculty conclusions of FR-A .. FR-G at the justified witnesses, and early treatment to 240 minutes (P3-322).
 
-Regenerate the stored record with ``MRS_WRITE_BLEED_RATE_ANALYSIS=1 python3 gi_bleed_rate_analysis.py`` (the person who changes the analysis).
+Regenerate the stored record with ``MRS_WRITE_BLEED_RATE_ANALYSIS=1 python3 test_gi_bleed_rate_analysis.py`` (the person who changes the analysis).
 """
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ import os
 import re
 from pathlib import Path
 
-import frg_crystalloid_analysis as fa
+import test_gi_frg_crystalloid_analysis as fa
 
 ROOT = Path(__file__).resolve().parent
 RECORD_PATH = ROOT / "docs" / "revision" / "PHASE3_GI_BLEED_RATE_SCALE_ANALYSIS.json"
