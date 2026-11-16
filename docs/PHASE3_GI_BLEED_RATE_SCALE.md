@@ -4,7 +4,7 @@
 > **Decisión de Enmienda 3 (P3-324): `B · JOINT_RATE_PRESSURE_CALIBRATION_REQUIRED`. No se abre la Enmienda 3.**
 > **`FR-G_V2_CANDIDATE`: NO generado** (la tasa sola no resuelve el conflicto; P3-323 prohíbe fabricarlo).
 
-Rama `phase-3-runtime-integration`. **Sólo lectura y análisis** (`MODEL_ANALYSIS`): `gi_bleed_rate_analysis.py`, registro
+Rama `phase-3-runtime-integration`. **Sólo lectura y análisis** (`MODEL_ANALYSIS`): `test_gi_bleed_rate_analysis.py` *(antes `gi_bleed_rate_analysis.py`; renombrado en P3-348)*, registro
 `docs/revision/PHASE3_GI_BLEED_RATE_SCALE_ANALYSIS.json`, pruebas `test_phase3_bleed_rate_scale.py`. **No aprueba ninguna tasa, ningún parámetro de presión ni ninguna región.** No cambia
 `clinical_core/` (el digesto vivo sigue siendo el certificado `a0af7d08…`), ni `family_engine.py`, ni la instantánea `gi_pressure_committed`, ni la autoridad, ni la región de cristaloide
 cerrada. Los juicios humanos de la primera revisión quedan **exactamente** como estaban (registro `9ba80fa7…`). Sin norepinefrina, sin control de fuente nuevo, sin validación clínica.
@@ -34,7 +34,7 @@ como **`FD-RATE-01` a `FD-RATE-08`**, citando el rótulo del encargo. En este do
 | (5, 6, 7) × relleno | P2I-2Y | `docs/revision/P2I2Y_CRISTALOIDE_Y_TASA.md` §1 | robustez frente al relleno | `EXPLORATORY_PROBE` |
 | 2,0 a 3,5 de 0,25 en 0,25 | P3-87 | `docs/PHASE3_VOLUME_BEHAVIOUR_CALIBRATION.md` §7.2 | `U-OUT` contra la tasa | `EXPLORATORY_PROBE` |
 | [2,5497; 3,7234] · [1,6894; 2,8038] · común [2,5497; 2,8038] | P3-89 / P3-90 | `docs/PHASE3_GI_BLEED_RATE_AND_PRESSURE.md` §2.2 | tasas que `U-OUT` admite **en el punto de presión comprometido** | `ANALYTICAL_CONVENIENCE` (derivada de envolventes docentes, condicional al punto de presión) |
-| (2,5; 3,5; 5,0) | P3-305 | `frg_crystalloid_analysis.py` | sensibilidad del FR-G | `EXPLORATORY_PROBE` |
+| (2,5; 3,5; 5,0) | P3-305 | `test_gi_frg_crystalloid_analysis.py` | sensibilidad del FR-G | `EXPLORATORY_PROBE` |
 | **ninguno** | `blood_constraints.DECISIONS["bleed_rate_authority"]` | decisión docente del 2026-10-27 | la **política** (el caso gana; la familia es respaldo; sin ninguno, falla cerrada) | `FACULTY_DEFINED` (la política; «**no numeric bleed rate is approved**») |
 
 No hay ningún registro `AUTHORED_CASE` ni ningún valor `FACULTY_DEFINED`. **Consecuencia exacta:** como la escala de precarga por omisión es la **misma** constante 833,33, `tasa / escala`

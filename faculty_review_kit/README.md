@@ -22,6 +22,7 @@ La primera revisión humana mostró que el flujo en vivo (01–10) era innecesar
 | `09_plan_analisis_posterior.md` | comité docente | **Sólo diseño** del análisis posterior (sin puntaje; el desacuerdo se muestra) |
 | `10_notas_facilitador.md` | operador | Incertidumbres clave (no se muestran al revisor antes de revelar), avisos conocidos y solución de problemas |
 | `paquetes/` | revisor | Por escenario: hoja de autoridad (antes de revelar) y hoja del comparador (después) |
+| `region_conjunta_v1/` | revisor | **Re-revisión ciega** de FR-B, FR-C, FR-E y FR-G con candidatos de la región conjunta (`JOINT_REGION_V1_CANDIDATE`); kit estático, preparado y **no** empezado. Quien revisa lee **sólo** su `README.md`, `conjunto_1.md` y el formulario; el documento técnico del ciclo desvela el ciego y es para quien opera |
 | `tools/session_summary.py` | operador | Resumen técnico **de sólo lectura**: vínculos, verificación, repetición, coincidencia con el guion y completitud; tabula las respuestas sin interpretarlas |
 
 ## Quién juzga qué (FD-FR-08)

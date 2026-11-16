@@ -9,7 +9,7 @@ Evidencia, sin mezclar clases (la primera es de personas; las demás son del mod
 | Clase | Qué es | Dónde |
 |---|---|---|
 | `HUMAN_FACULTY_REVIEW` | lo que la persona revisora juzgó y escribió | `docs/revision/PHASE3_FIRST_HUMAN_FACULTY_REVIEW.json` y FD-REVIEW-01 a FD-REVIEW-06 |
-| `MODEL_ANALYSIS` | lo que se calculó del modelo ejecutable; explica, no juzga | `frg_crystalloid_analysis.py` y `docs/revision/PHASE3_FRG_CRYSTALLOID_ANALYSIS.json` |
+| `MODEL_ANALYSIS` | lo que se calculó del modelo ejecutable; explica, no juzga | `test_gi_frg_crystalloid_analysis.py` *(antes `frg_crystalloid_analysis.py`; renombrado en P3-348)* y `docs/revision/PHASE3_FRG_CRYSTALLOID_ANALYSIS.json` |
 | `TEST_RESULT` | lo que una prueba afirmó | `test_phase3_first_review_analysis.py` |
 | `LEGACY_COMPARATOR` | la trayectoria heredada, mostrada tras el bloqueo de la primera impresión | sin cambio; la revisora informó que **no cambió ningún juicio** |
 

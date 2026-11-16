@@ -3,10 +3,10 @@
 > **Intersección (P3-329A): `NONEMPTY`.**
 > **Compuerta de Enmienda 3 (P3-335): `A · CURRENT_PHYSIOLOGY_HAS_FEASIBLE_JOINT_REGION`. No se abre la Enmienda 3; no se escribió ningún diseño.**
 > **Condición del veredicto:** vale con la ventana de glóbulos leída al **minuto 30** (fin de la unidad). Si el piso de +8 mmHg se exigiera **ya al minuto 15**, la intersección con
-> la región de cristaloide cerrada sería **`EMPTY`** (§5, punto 7). **Requiere tu confirmación de la lectura.**
+> la región de cristaloide cerrada sería **`EMPTY`** (§5, punto 7). **Requería tu confirmación de la lectura; confirmada el 2026-11-15 por FD-RATE-14 (unidad completa, minuto 30): ver `docs/PHASE3_GI_JOINT_REGION.md`.**
 > **No se eligió ningún punto, no se aprobó ninguna tasa ni ningún parámetro, y nada ejecutable cambió.**
 
-Rama `phase-3-runtime-integration`. **Ciclo de factibilidad e identificabilidad, sólo lectura** (`MODEL_ANALYSIS`): `gi_joint_feasibility_analysis.py`, registro
+Rama `phase-3-runtime-integration`. **Ciclo de factibilidad e identificabilidad, sólo lectura** (`MODEL_ANALYSIS`): `test_gi_joint_feasibility_analysis.py` *(antes `gi_joint_feasibility_analysis.py`; renombrado en P3-348)*, registro
 `docs/revision/PHASE3_GI_JOINT_FEASIBILITY_ANALYSIS.json`, pruebas `test_phase3_joint_feasibility.py`. No cambia `clinical_core/` (el digesto vivo sigue siendo el certificado
 `a0af7d08…`), ni `family_engine.py`, ni la instantánea `gi_pressure_committed`, ni la autoridad, ni la región de cristaloide cerrada. Los juicios humanos de la primera revisión quedan
 **exactamente** como estaban (registro `9ba80fa7…`). Sin norepinefrina, sin control de fuente nuevo, sin validación clínica: todas las cifras son **lecturas del modelo**, no afirmaciones

@@ -1,0 +1,182 @@
+{
+ "earlier_review": {
+  "its_judgments_are_not_transferred": "an ACCEPT of the earlier trajectory says nothing about a candidate (FD-RATE-20)",
+  "preserved_unchanged": true,
+  "record": "docs/revision/PHASE3_FIRST_HUMAN_FACULTY_REVIEW.json"
+ },
+ "earlier_reviewed_trajectories_current_configuration": {
+  "FR-B": [
+   {
+    "dbp": 56.0,
+    "map": 68.0,
+    "minute": 5,
+    "sbp": 91.0
+   },
+   {
+    "dbp": 60.0,
+    "map": 73.0,
+    "minute": 10,
+    "sbp": 98.0
+   },
+   {
+    "dbp": 68.0,
+    "map": 83.0,
+    "minute": 30,
+    "sbp": 112.0
+   }
+  ],
+  "FR-C": [
+   {
+    "dbp": 45.0,
+    "map": 54.0,
+    "minute": 60,
+    "sbp": 73.0
+   },
+   {
+    "dbp": 36.0,
+    "map": 43.0,
+    "minute": 120,
+    "sbp": 58.0
+   },
+   {
+    "dbp": 38.0,
+    "map": 46.0,
+    "minute": 125,
+    "sbp": 62.0
+   },
+   {
+    "dbp": 44.0,
+    "map": 53.0,
+    "minute": 130,
+    "sbp": 72.0
+   },
+   {
+    "dbp": 56.0,
+    "map": 68.0,
+    "minute": 150,
+    "sbp": 92.0
+   }
+  ],
+  "FR-E": [
+   {
+    "dbp": 51.0,
+    "map": 61.0,
+    "minute": 60,
+    "sbp": 81.0
+   },
+   {
+    "dbp": 41.0,
+    "map": 49.0,
+    "minute": 120,
+    "sbp": 64.0
+   },
+   {
+    "dbp": 44.0,
+    "map": 52.0,
+    "minute": 125,
+    "sbp": 69.0
+   },
+   {
+    "dbp": 51.0,
+    "map": 61.0,
+    "minute": 130,
+    "sbp": 80.0
+   },
+   {
+    "dbp": 69.0,
+    "map": 82.0,
+    "minute": 160,
+    "sbp": 109.0
+   }
+  ],
+  "FR-G": [
+   {
+    "dbp": 58.0,
+    "map": 69.0,
+    "minute": 60,
+    "sbp": 92.0
+   },
+   {
+    "dbp": 56.0,
+    "map": 67.0,
+    "minute": 70,
+    "sbp": 88.0
+   }
+  ]
+ },
+ "legacy_comparator": {
+  "copied_here": false,
+  "note": "the legacy engine is context, not a reference standard, and no candidate was fitted to it",
+  "where": "docs/revision/PHASE3_FACULTY_TRAJECTORY_REVIEW_SET.json (unchanged), bundle.comparator of each scenario"
+ },
+ "no_set_is_preferred": "the three are test witnesses of one development region; none is a calibration and none is expected to be 'best'",
+ "open_only_after_the_first_pass_is_written_down": true,
+ "record_digest": "4053a89076379d86c48cd90ee86835d26d03dd0d3ee523dbd0b40f83ae1d3978",
+ "record_type": "JOINT_REGION_V1_BLIND_KEY",
+ "sets": {
+  "CONJUNTO-1": {
+   "binding": {
+    "arrival_position": 0.5,
+    "bleed_rate_ml_eq_per_min": 8.970853509,
+    "c_rate_over_scale_per_min": 0.003326066,
+    "crystalloid_kernel": {
+     "e": 0.213115961,
+     "s": 0.835,
+     "tau_min": 60.624
+    },
+    "preload_scale_ml_eq": 2697.136369656
+   },
+   "one_unit_sbp_rise_at_30_mmHg": {
+    "gi_bleed_57m": 9.263429221,
+    "gi_bleed_72f": 10.316091632
+   },
+   "role": "DEVELOPMENT_TEST_WITNESS",
+   "slow_crystalloid_share_at_60": 0.324699975,
+   "why": "the point FARTHEST FROM EVERY BOUNDARY: the untreated, one-unit, slow-crystalloid and closed-region margins are all equal and as large as they can be together; it is not the middle of any window",
+   "witness": "CENTER_REFERENCE"
+  },
+  "CONJUNTO-2": {
+   "binding": {
+    "arrival_position": 0.5,
+    "bleed_rate_ml_eq_per_min": 8.259057286,
+    "c_rate_over_scale_per_min": 0.003345332,
+    "crystalloid_kernel": {
+     "e": 0.207344893,
+     "s": 0.865,
+     "tau_min": 60.624
+    },
+    "preload_scale_ml_eq": 2468.830151121
+   },
+   "one_unit_sbp_rise_at_30_mmHg": {
+    "gi_bleed_57m": 10.069159565,
+    "gi_bleed_72f": 11.213382243
+   },
+   "role": "DEVELOPMENT_TEST_WITNESS",
+   "slow_crystalloid_share_at_60": 0.337365268,
+   "why": "the SMALLEST scale at which every margin is still half of the centre's: the strongest one-unit response and the largest slow-crystalloid share the region allows without touching a boundary",
+   "witness": "LOW"
+  },
+  "CONJUNTO-3": {
+   "binding": {
+    "arrival_position": 0.5,
+    "bleed_rate_ml_eq_per_min": 9.086069542,
+    "c_rate_over_scale_per_min": 0.003126758,
+    "crystalloid_kernel": {
+     "e": 0.214972796,
+     "s": 0.835,
+     "tau_min": 60.624
+    },
+    "preload_scale_ml_eq": 2905.907550116
+   },
+   "one_unit_sbp_rise_at_30_mmHg": {
+    "gi_bleed_57m": 8.631715948,
+    "gi_bleed_72f": 9.61259276
+   },
+   "role": "DEVELOPMENT_TEST_WITNESS",
+   "slow_crystalloid_share_at_60": 0.32225464,
+   "why": "the LARGEST scale at which the one-unit margin is still half of the centre's, with c and the kernel placed to keep the remaining margins as large as possible: the weakest one-unit response and the smallest slow-crystalloid share of the three",
+   "witness": "HIGH"
+  }
+ },
+ "version": "JOINT_REGION_V1_CANDIDATE"
+}

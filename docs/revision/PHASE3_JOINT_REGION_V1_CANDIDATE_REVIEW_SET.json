@@ -1,0 +1,2047 @@
+{
+ "evidence_class": "MODEL_ANALYSIS",
+ "heart_rate_and_capillary_refill_source": "the legacy engine (the engine that runs today), as the encounter ran and exactly as the earlier review displayed them: context, not part of the pressure trajectory being judged; they do not depend on the candidate configuration and do not change between sets",
+ "items": [
+  {
+   "arrival": {
+    "crt": 5,
+    "dbp": 54,
+    "hr": 124,
+    "map": 65,
+    "rr": 26,
+    "sbp": 88,
+    "spo2": 97
+   },
+   "common": [
+    {
+     "dbp": 54.0,
+     "map": 65.0,
+     "minute": 0,
+     "sbp": 88.0
+    },
+    {
+     "dbp": 54.0,
+     "map": 66.0,
+     "minute": 5,
+     "sbp": 89.0
+    },
+    {
+     "dbp": 56.0,
+     "map": 68.0,
+     "minute": 10,
+     "sbp": 91.0
+    },
+    {
+     "dbp": 57.0,
+     "map": 69.0,
+     "minute": 30,
+     "sbp": 92.0
+    }
+   ],
+   "context": "A 57-year-old man presents after nearly fainting when standing. He looks pale and says he feels profoundly weak.",
+   "heart_rate_and_capillary_refill": [
+    {
+     "crt": 5,
+     "hr": 124,
+     "minute": 0
+    },
+    {
+     "crt": 4.9,
+     "hr": 123,
+     "minute": 5
+    },
+    {
+     "crt": 4.5,
+     "hr": 121,
+     "minute": 10
+    },
+    {
+     "crt": 3.8,
+     "hr": 116,
+     "minute": 30
+    }
+   ],
+   "item_id": "CONJUNTO-1/FR-B",
+   "overall_choices": [
+    "ACCEPT",
+    "ACCEPT_WITH_LIMITATION",
+    "RECALIBRATE",
+    "REJECT"
+   ],
+   "purpose": "Does early volume and blood replacement produce a pressure response that begins at an appropriate time and has a plausible size?",
+   "questions": [
+    {
+     "choices": [
+      "Expected",
+      "Partly",
+      "Wrong"
+     ],
+     "id": "Q1",
+     "text": "Does the physiologic evolution move in the expected direction?",
+     "topic": "DIRECTION"
+    },
+    {
+     "choices": [
+      "Too early",
+      "Plausible",
+      "Too late"
+     ],
+     "id": "Q2",
+     "text": "Does the response occur:",
+     "topic": "TIMING"
+    },
+    {
+     "choices": [
+      "Too small",
+      "Plausible",
+      "Too large"
+     ],
+     "id": "Q3",
+     "text": "Is the magnitude:",
+     "topic": "MAGNITUDE"
+    },
+    {
+     "choices": [
+      "Coherent",
+      "Uncertain",
+      "Incoherent"
+     ],
+     "id": "Q4",
+     "text": "Is the response to intervention:",
+     "topic": "MANAGEMENT RESPONSE"
+    },
+    {
+     "choices": [
+      "No",
+      "Maybe",
+      "Yes"
+     ],
+     "id": "Q5",
+     "text": "Could this trajectory mislead a resident?",
+     "topic": "EDUCATIONAL RISK"
+    }
+   ],
+   "required": true,
+   "scenario_id": "FR-B",
+   "set": "CONJUNTO-1",
+   "stopped": false,
+   "timeline": [
+    {
+     "action": "Place an IV line.",
+     "advance": 0,
+     "minute": 0,
+     "n": 1,
+     "result": "peripheral intravenous access already in place; not repeated"
+    },
+    {
+     "action": "Give 1 litre of normal saline over 15 minutes.",
+     "advance": 5,
+     "minute": 0,
+     "n": 2,
+     "result": "normal saline 1000 mL started over 15 min"
+    },
+    {
+     "action": "Transfuse 2 units of packed red cells.",
+     "advance": 5,
+     "minute": 5,
+     "n": 3,
+     "result": "Packed red cells 2 units started"
+    },
+    {
+     "action": "Reassess in 20 minutes.",
+     "advance": 20,
+     "minute": 10,
+     "n": 4,
+     "result": "20 min passed"
+    }
+   ],
+   "title": "57-year-old man, early treatment"
+  },
+  {
+   "arrival": {
+    "crt": 5,
+    "dbp": 54,
+    "hr": 124,
+    "map": 65,
+    "rr": 26,
+    "sbp": 88,
+    "spo2": 97
+   },
+   "common": [
+    {
+     "dbp": 54.0,
+     "map": 65.0,
+     "minute": 0,
+     "sbp": 88.0
+    },
+    {
+     "dbp": 43.0,
+     "map": 52.0,
+     "minute": 60,
+     "sbp": 71.0
+    },
+    {
+     "dbp": 33.0,
+     "map": 40.0,
+     "minute": 120,
+     "sbp": 54.0
+    },
+    {
+     "dbp": 34.0,
+     "map": 41.0,
+     "minute": 125,
+     "sbp": 56.0
+    },
+    {
+     "dbp": 36.0,
+     "map": 44.0,
+     "minute": 130,
+     "sbp": 59.0
+    },
+    {
+     "dbp": 39.0,
+     "map": 47.0,
+     "minute": 150,
+     "sbp": 64.0
+    }
+   ],
+   "context": "A 57-year-old man presents after nearly fainting when standing. He looks pale and says he feels profoundly weak.",
+   "heart_rate_and_capillary_refill": [
+    {
+     "crt": 5,
+     "hr": 124,
+     "minute": 0
+    },
+    {
+     "crt": 5.7,
+     "hr": 128,
+     "minute": 60
+    },
+    {
+     "crt": 6.4,
+     "hr": 133,
+     "minute": 120
+    },
+    {
+     "crt": 6.3,
+     "hr": 132,
+     "minute": 125
+    },
+    {
+     "crt": 6.0,
+     "hr": 130,
+     "minute": 130
+    },
+    {
+     "crt": 5.2,
+     "hr": 125,
+     "minute": 150
+    }
+   ],
+   "item_id": "CONJUNTO-1/FR-C",
+   "overall_choices": [
+    "ACCEPT",
+    "ACCEPT_WITH_LIMITATION",
+    "RECALIBRATE",
+    "REJECT"
+   ],
+   "purpose": "After two hours without treatment, is the deterioration and then the response to the same treatment plausible, and does a resident risk being misled by the trajectory?",
+   "questions": [
+    {
+     "choices": [
+      "Expected",
+      "Partly",
+      "Wrong"
+     ],
+     "id": "Q1",
+     "text": "Does the physiologic evolution move in the expected direction?",
+     "topic": "DIRECTION"
+    },
+    {
+     "choices": [
+      "Too early",
+      "Plausible",
+      "Too late"
+     ],
+     "id": "Q2",
+     "text": "Does the response occur:",
+     "topic": "TIMING"
+    },
+    {
+     "choices": [
+      "Too small",
+      "Plausible",
+      "Too large"
+     ],
+     "id": "Q3",
+     "text": "Is the magnitude:",
+     "topic": "MAGNITUDE"
+    },
+    {
+     "choices": [
+      "Coherent",
+      "Uncertain",
+      "Incoherent"
+     ],
+     "id": "Q4",
+     "text": "Is the response to intervention:",
+     "topic": "MANAGEMENT RESPONSE"
+    },
+    {
+     "choices": [
+      "No",
+      "Maybe",
+      "Yes"
+     ],
+     "id": "Q5",
+     "text": "Could this trajectory mislead a resident?",
+     "topic": "EDUCATIONAL RISK"
+    }
+   ],
+   "required": true,
+   "scenario_id": "FR-C",
+   "set": "CONJUNTO-1",
+   "stopped": false,
+   "timeline": [
+    {
+     "action": "Reassess in 60 minutes.",
+     "advance": 60,
+     "minute": 0,
+     "n": 1,
+     "result": "60 min passed"
+    },
+    {
+     "action": "Reassess in 60 minutes.",
+     "advance": 60,
+     "minute": 60,
+     "n": 2,
+     "result": "60 min passed"
+    },
+    {
+     "action": "Place an IV line.",
+     "advance": 0,
+     "minute": 120,
+     "n": 3,
+     "result": "peripheral intravenous access already in place; not repeated"
+    },
+    {
+     "action": "Give 1 litre of normal saline over 15 minutes.",
+     "advance": 5,
+     "minute": 120,
+     "n": 4,
+     "result": "normal saline 1000 mL started over 15 min"
+    },
+    {
+     "action": "Transfuse 2 units of packed red cells.",
+     "advance": 5,
+     "minute": 125,
+     "n": 5,
+     "result": "Packed red cells 2 units started"
+    },
+    {
+     "action": "Reassess in 20 minutes.",
+     "advance": 20,
+     "minute": 130,
+     "n": 6,
+     "result": "20 min passed"
+    }
+   ],
+   "title": "57-year-old man, delayed treatment"
+  },
+  {
+   "arrival": {
+    "crt": 4,
+    "dbp": 62,
+    "hr": 112,
+    "map": 74,
+    "rr": 24,
+    "sbp": 98,
+    "spo2": 96
+   },
+   "common": [
+    {
+     "dbp": 62.0,
+     "map": 74.0,
+     "minute": 0,
+     "sbp": 98.0
+    },
+    {
+     "dbp": 50.0,
+     "map": 60.0,
+     "minute": 60,
+     "sbp": 79.0
+    },
+    {
+     "dbp": 38.0,
+     "map": 45.0,
+     "minute": 120,
+     "sbp": 60.0
+    },
+    {
+     "dbp": 39.0,
+     "map": 47.0,
+     "minute": 125,
+     "sbp": 62.0
+    },
+    {
+     "dbp": 42.0,
+     "map": 50.0,
+     "minute": 130,
+     "sbp": 66.0
+    },
+    {
+     "dbp": 46.0,
+     "map": 55.0,
+     "minute": 160,
+     "sbp": 72.0
+    }
+   ],
+   "context": "A 72-year-old woman presents with worsening fatigue and lightheadedness. She had to stop walking from the waiting room because she felt faint.",
+   "heart_rate_and_capillary_refill": [
+    {
+     "crt": 4,
+     "hr": 112,
+     "minute": 0
+    },
+    {
+     "crt": 4.7,
+     "hr": 116,
+     "minute": 60
+    },
+    {
+     "crt": 5.4,
+     "hr": 121,
+     "minute": 120
+    },
+    {
+     "crt": 5.3,
+     "hr": 120,
+     "minute": 125
+    },
+    {
+     "crt": 5.0,
+     "hr": 118,
+     "minute": 130
+    },
+    {
+     "crt": 3.9,
+     "hr": 111,
+     "minute": 160
+    }
+   ],
+   "item_id": "CONJUNTO-1/FR-E",
+   "overall_choices": [
+    "ACCEPT",
+    "ACCEPT_WITH_LIMITATION",
+    "RECALIBRATE",
+    "REJECT"
+   ],
+   "purpose": "Is the recovery after delayed treatment coherent in direction, timing and magnitude?",
+   "questions": [
+    {
+     "choices": [
+      "Expected",
+      "Partly",
+      "Wrong"
+     ],
+     "id": "Q1",
+     "text": "Does the physiologic evolution move in the expected direction?",
+     "topic": "DIRECTION"
+    },
+    {
+     "choices": [
+      "Too early",
+      "Plausible",
+      "Too late"
+     ],
+     "id": "Q2",
+     "text": "Does the response occur:",
+     "topic": "TIMING"
+    },
+    {
+     "choices": [
+      "Too small",
+      "Plausible",
+      "Too large"
+     ],
+     "id": "Q3",
+     "text": "Is the magnitude:",
+     "topic": "MAGNITUDE"
+    },
+    {
+     "choices": [
+      "Coherent",
+      "Uncertain",
+      "Incoherent"
+     ],
+     "id": "Q4",
+     "text": "Is the response to intervention:",
+     "topic": "MANAGEMENT RESPONSE"
+    },
+    {
+     "choices": [
+      "No",
+      "Maybe",
+      "Yes"
+     ],
+     "id": "Q5",
+     "text": "Could this trajectory mislead a resident?",
+     "topic": "EDUCATIONAL RISK"
+    }
+   ],
+   "required": true,
+   "scenario_id": "FR-E",
+   "set": "CONJUNTO-1",
+   "stopped": false,
+   "timeline": [
+    {
+     "action": "Reassess in 60 minutes.",
+     "advance": 60,
+     "minute": 0,
+     "n": 1,
+     "result": "60 min passed"
+    },
+    {
+     "action": "Reassess in 60 minutes.",
+     "advance": 60,
+     "minute": 60,
+     "n": 2,
+     "result": "60 min passed"
+    },
+    {
+     "action": "Place an IV line.",
+     "advance": 0,
+     "minute": 120,
+     "n": 3,
+     "result": "peripheral intravenous access already in place; not repeated"
+    },
+    {
+     "action": "Give 1 litre of normal saline over 15 minutes.",
+     "advance": 5,
+     "minute": 120,
+     "n": 4,
+     "result": "normal saline 1000 mL started over 15 min"
+    },
+    {
+     "action": "Transfuse 2 units of packed red cells.",
+     "advance": 5,
+     "minute": 125,
+     "n": 5,
+     "result": "Packed red cells 2 units started"
+    },
+    {
+     "action": "Reassess in 30 minutes.",
+     "advance": 30,
+     "minute": 130,
+     "n": 6,
+     "result": "30 min passed"
+    }
+   ],
+   "title": "72-year-old woman, delayed treatment and recovery"
+  },
+  {
+   "arrival": {
+    "crt": 4,
+    "dbp": 62,
+    "hr": 112,
+    "map": 74,
+    "rr": 24,
+    "sbp": 98,
+    "spo2": 96
+   },
+   "common": [
+    {
+     "dbp": 62.0,
+     "map": 74.0,
+     "minute": 0,
+     "sbp": 98.0
+    },
+    {
+     "dbp": 54.0,
+     "map": 64.0,
+     "minute": 60,
+     "sbp": 85.0
+    },
+    {
+     "dbp": 51.0,
+     "map": 61.0,
+     "minute": 70,
+     "sbp": 81.0
+    }
+   ],
+   "context": "A 72-year-old woman presents with worsening fatigue and lightheadedness. She had to stop walking from the waiting room because she felt faint.",
+   "heart_rate_and_capillary_refill": [
+    {
+     "crt": 4,
+     "hr": 112,
+     "minute": 0
+    },
+    {
+     "crt": 4.3,
+     "hr": 114,
+     "minute": 60
+    },
+    {
+     "crt": 4.5,
+     "hr": 115,
+     "minute": 70
+    }
+   ],
+   "item_id": "CONJUNTO-1/FR-G",
+   "overall_choices": [
+    "ACCEPT",
+    "ACCEPT_WITH_LIMITATION",
+    "RECALIBRATE",
+    "REJECT"
+   ],
+   "purpose": "A single order that spans a long interval: is the pressure trajectory across the whole infusion plausible, and is the response timed with the volume given?",
+   "questions": [
+    {
+     "choices": [
+      "Expected",
+      "Partly",
+      "Wrong"
+     ],
+     "id": "Q1",
+     "text": "Does the physiologic evolution move in the expected direction?",
+     "topic": "DIRECTION"
+    },
+    {
+     "choices": [
+      "Too early",
+      "Plausible",
+      "Too late"
+     ],
+     "id": "Q2",
+     "text": "Does the response occur:",
+     "topic": "TIMING"
+    },
+    {
+     "choices": [
+      "Too small",
+      "Plausible",
+      "Too large"
+     ],
+     "id": "Q3",
+     "text": "Is the magnitude:",
+     "topic": "MAGNITUDE"
+    },
+    {
+     "choices": [
+      "Coherent",
+      "Uncertain",
+      "Incoherent"
+     ],
+     "id": "Q4",
+     "text": "Is the response to intervention:",
+     "topic": "MANAGEMENT RESPONSE"
+    },
+    {
+     "choices": [
+      "No",
+      "Maybe",
+      "Yes"
+     ],
+     "id": "Q5",
+     "text": "Could this trajectory mislead a resident?",
+     "topic": "EDUCATIONAL RISK"
+    }
+   ],
+   "required": true,
+   "scenario_id": "FR-G",
+   "set": "CONJUNTO-1",
+   "stopped": false,
+   "timeline": [
+    {
+     "action": "Place an IV line.",
+     "advance": 0,
+     "minute": 0,
+     "n": 1,
+     "result": "peripheral intravenous access already in place; not repeated"
+    },
+    {
+     "action": "Give 1 litre of normal saline over 60 minutes. Reassess in 60 minutes.",
+     "advance": 60,
+     "minute": 0,
+     "n": 2,
+     "result": "normal saline 1000 mL started over 60 min"
+    },
+    {
+     "action": "Reassess in 10 minutes.",
+     "advance": 10,
+     "minute": 60,
+     "n": 3,
+     "result": "10 min passed"
+    }
+   ],
+   "title": "72-year-old woman, long infusion"
+  },
+  {
+   "arrival": {
+    "crt": 5,
+    "dbp": 54,
+    "hr": 124,
+    "map": 65,
+    "rr": 26,
+    "sbp": 88,
+    "spo2": 97
+   },
+   "common": [
+    {
+     "dbp": 54.0,
+     "map": 65.0,
+     "minute": 0,
+     "sbp": 88.0
+    },
+    {
+     "dbp": 55.0,
+     "map": 66.0,
+     "minute": 5,
+     "sbp": 89.0
+    },
+    {
+     "dbp": 56.0,
+     "map": 68.0,
+     "minute": 10,
+     "sbp": 91.0
+    },
+    {
+     "dbp": 57.0,
+     "map": 69.0,
+     "minute": 30,
+     "sbp": 93.0
+    }
+   ],
+   "context": "A 57-year-old man presents after nearly fainting when standing. He looks pale and says he feels profoundly weak.",
+   "heart_rate_and_capillary_refill": [
+    {
+     "crt": 5,
+     "hr": 124,
+     "minute": 0
+    },
+    {
+     "crt": 4.9,
+     "hr": 123,
+     "minute": 5
+    },
+    {
+     "crt": 4.5,
+     "hr": 121,
+     "minute": 10
+    },
+    {
+     "crt": 3.8,
+     "hr": 116,
+     "minute": 30
+    }
+   ],
+   "item_id": "CONJUNTO-2/FR-B",
+   "overall_choices": [
+    "ACCEPT",
+    "ACCEPT_WITH_LIMITATION",
+    "RECALIBRATE",
+    "REJECT"
+   ],
+   "purpose": "Does early volume and blood replacement produce a pressure response that begins at an appropriate time and has a plausible size?",
+   "questions": [
+    {
+     "choices": [
+      "Expected",
+      "Partly",
+      "Wrong"
+     ],
+     "id": "Q1",
+     "text": "Does the physiologic evolution move in the expected direction?",
+     "topic": "DIRECTION"
+    },
+    {
+     "choices": [
+      "Too early",
+      "Plausible",
+      "Too late"
+     ],
+     "id": "Q2",
+     "text": "Does the response occur:",
+     "topic": "TIMING"
+    },
+    {
+     "choices": [
+      "Too small",
+      "Plausible",
+      "Too large"
+     ],
+     "id": "Q3",
+     "text": "Is the magnitude:",
+     "topic": "MAGNITUDE"
+    },
+    {
+     "choices": [
+      "Coherent",
+      "Uncertain",
+      "Incoherent"
+     ],
+     "id": "Q4",
+     "text": "Is the response to intervention:",
+     "topic": "MANAGEMENT RESPONSE"
+    },
+    {
+     "choices": [
+      "No",
+      "Maybe",
+      "Yes"
+     ],
+     "id": "Q5",
+     "text": "Could this trajectory mislead a resident?",
+     "topic": "EDUCATIONAL RISK"
+    }
+   ],
+   "required": false,
+   "scenario_id": "FR-B",
+   "set": "CONJUNTO-2",
+   "stopped": false,
+   "timeline": [
+    {
+     "action": "Place an IV line.",
+     "advance": 0,
+     "minute": 0,
+     "n": 1,
+     "result": "peripheral intravenous access already in place; not repeated"
+    },
+    {
+     "action": "Give 1 litre of normal saline over 15 minutes.",
+     "advance": 5,
+     "minute": 0,
+     "n": 2,
+     "result": "normal saline 1000 mL started over 15 min"
+    },
+    {
+     "action": "Transfuse 2 units of packed red cells.",
+     "advance": 5,
+     "minute": 5,
+     "n": 3,
+     "result": "Packed red cells 2 units started"
+    },
+    {
+     "action": "Reassess in 20 minutes.",
+     "advance": 20,
+     "minute": 10,
+     "n": 4,
+     "result": "20 min passed"
+    }
+   ],
+   "title": "57-year-old man, early treatment"
+  },
+  {
+   "arrival": {
+    "crt": 5,
+    "dbp": 54,
+    "hr": 124,
+    "map": 65,
+    "rr": 26,
+    "sbp": 88,
+    "spo2": 97
+   },
+   "common": [
+    {
+     "dbp": 54.0,
+     "map": 65.0,
+     "minute": 0,
+     "sbp": 88.0
+    },
+    {
+     "dbp": 43.0,
+     "map": 52.0,
+     "minute": 60,
+     "sbp": 71.0
+    },
+    {
+     "dbp": 33.0,
+     "map": 40.0,
+     "minute": 120,
+     "sbp": 54.0
+    },
+    {
+     "dbp": 34.0,
+     "map": 41.0,
+     "minute": 125,
+     "sbp": 56.0
+    },
+    {
+     "dbp": 37.0,
+     "map": 45.0,
+     "minute": 130,
+     "sbp": 60.0
+    },
+    {
+     "dbp": 40.0,
+     "map": 48.0,
+     "minute": 150,
+     "sbp": 65.0
+    }
+   ],
+   "context": "A 57-year-old man presents after nearly fainting when standing. He looks pale and says he feels profoundly weak.",
+   "heart_rate_and_capillary_refill": [
+    {
+     "crt": 5,
+     "hr": 124,
+     "minute": 0
+    },
+    {
+     "crt": 5.7,
+     "hr": 128,
+     "minute": 60
+    },
+    {
+     "crt": 6.4,
+     "hr": 133,
+     "minute": 120
+    },
+    {
+     "crt": 6.3,
+     "hr": 132,
+     "minute": 125
+    },
+    {
+     "crt": 6.0,
+     "hr": 130,
+     "minute": 130
+    },
+    {
+     "crt": 5.2,
+     "hr": 125,
+     "minute": 150
+    }
+   ],
+   "item_id": "CONJUNTO-2/FR-C",
+   "overall_choices": [
+    "ACCEPT",
+    "ACCEPT_WITH_LIMITATION",
+    "RECALIBRATE",
+    "REJECT"
+   ],
+   "purpose": "After two hours without treatment, is the deterioration and then the response to the same treatment plausible, and does a resident risk being misled by the trajectory?",
+   "questions": [
+    {
+     "choices": [
+      "Expected",
+      "Partly",
+      "Wrong"
+     ],
+     "id": "Q1",
+     "text": "Does the physiologic evolution move in the expected direction?",
+     "topic": "DIRECTION"
+    },
+    {
+     "choices": [
+      "Too early",
+      "Plausible",
+      "Too late"
+     ],
+     "id": "Q2",
+     "text": "Does the response occur:",
+     "topic": "TIMING"
+    },
+    {
+     "choices": [
+      "Too small",
+      "Plausible",
+      "Too large"
+     ],
+     "id": "Q3",
+     "text": "Is the magnitude:",
+     "topic": "MAGNITUDE"
+    },
+    {
+     "choices": [
+      "Coherent",
+      "Uncertain",
+      "Incoherent"
+     ],
+     "id": "Q4",
+     "text": "Is the response to intervention:",
+     "topic": "MANAGEMENT RESPONSE"
+    },
+    {
+     "choices": [
+      "No",
+      "Maybe",
+      "Yes"
+     ],
+     "id": "Q5",
+     "text": "Could this trajectory mislead a resident?",
+     "topic": "EDUCATIONAL RISK"
+    }
+   ],
+   "required": false,
+   "scenario_id": "FR-C",
+   "set": "CONJUNTO-2",
+   "stopped": false,
+   "timeline": [
+    {
+     "action": "Reassess in 60 minutes.",
+     "advance": 60,
+     "minute": 0,
+     "n": 1,
+     "result": "60 min passed"
+    },
+    {
+     "action": "Reassess in 60 minutes.",
+     "advance": 60,
+     "minute": 60,
+     "n": 2,
+     "result": "60 min passed"
+    },
+    {
+     "action": "Place an IV line.",
+     "advance": 0,
+     "minute": 120,
+     "n": 3,
+     "result": "peripheral intravenous access already in place; not repeated"
+    },
+    {
+     "action": "Give 1 litre of normal saline over 15 minutes.",
+     "advance": 5,
+     "minute": 120,
+     "n": 4,
+     "result": "normal saline 1000 mL started over 15 min"
+    },
+    {
+     "action": "Transfuse 2 units of packed red cells.",
+     "advance": 5,
+     "minute": 125,
+     "n": 5,
+     "result": "Packed red cells 2 units started"
+    },
+    {
+     "action": "Reassess in 20 minutes.",
+     "advance": 20,
+     "minute": 130,
+     "n": 6,
+     "result": "20 min passed"
+    }
+   ],
+   "title": "57-year-old man, delayed treatment"
+  },
+  {
+   "arrival": {
+    "crt": 4,
+    "dbp": 62,
+    "hr": 112,
+    "map": 74,
+    "rr": 24,
+    "sbp": 98,
+    "spo2": 96
+   },
+   "common": [
+    {
+     "dbp": 62.0,
+     "map": 74.0,
+     "minute": 0,
+     "sbp": 98.0
+    },
+    {
+     "dbp": 50.0,
+     "map": 60.0,
+     "minute": 60,
+     "sbp": 79.0
+    },
+    {
+     "dbp": 38.0,
+     "map": 45.0,
+     "minute": 120,
+     "sbp": 60.0
+    },
+    {
+     "dbp": 39.0,
+     "map": 47.0,
+     "minute": 125,
+     "sbp": 62.0
+    },
+    {
+     "dbp": 42.0,
+     "map": 50.0,
+     "minute": 130,
+     "sbp": 67.0
+    },
+    {
+     "dbp": 47.0,
+     "map": 56.0,
+     "minute": 160,
+     "sbp": 74.0
+    }
+   ],
+   "context": "A 72-year-old woman presents with worsening fatigue and lightheadedness. She had to stop walking from the waiting room because she felt faint.",
+   "heart_rate_and_capillary_refill": [
+    {
+     "crt": 4,
+     "hr": 112,
+     "minute": 0
+    },
+    {
+     "crt": 4.7,
+     "hr": 116,
+     "minute": 60
+    },
+    {
+     "crt": 5.4,
+     "hr": 121,
+     "minute": 120
+    },
+    {
+     "crt": 5.3,
+     "hr": 120,
+     "minute": 125
+    },
+    {
+     "crt": 5.0,
+     "hr": 118,
+     "minute": 130
+    },
+    {
+     "crt": 3.9,
+     "hr": 111,
+     "minute": 160
+    }
+   ],
+   "item_id": "CONJUNTO-2/FR-E",
+   "overall_choices": [
+    "ACCEPT",
+    "ACCEPT_WITH_LIMITATION",
+    "RECALIBRATE",
+    "REJECT"
+   ],
+   "purpose": "Is the recovery after delayed treatment coherent in direction, timing and magnitude?",
+   "questions": [
+    {
+     "choices": [
+      "Expected",
+      "Partly",
+      "Wrong"
+     ],
+     "id": "Q1",
+     "text": "Does the physiologic evolution move in the expected direction?",
+     "topic": "DIRECTION"
+    },
+    {
+     "choices": [
+      "Too early",
+      "Plausible",
+      "Too late"
+     ],
+     "id": "Q2",
+     "text": "Does the response occur:",
+     "topic": "TIMING"
+    },
+    {
+     "choices": [
+      "Too small",
+      "Plausible",
+      "Too large"
+     ],
+     "id": "Q3",
+     "text": "Is the magnitude:",
+     "topic": "MAGNITUDE"
+    },
+    {
+     "choices": [
+      "Coherent",
+      "Uncertain",
+      "Incoherent"
+     ],
+     "id": "Q4",
+     "text": "Is the response to intervention:",
+     "topic": "MANAGEMENT RESPONSE"
+    },
+    {
+     "choices": [
+      "No",
+      "Maybe",
+      "Yes"
+     ],
+     "id": "Q5",
+     "text": "Could this trajectory mislead a resident?",
+     "topic": "EDUCATIONAL RISK"
+    }
+   ],
+   "required": false,
+   "scenario_id": "FR-E",
+   "set": "CONJUNTO-2",
+   "stopped": false,
+   "timeline": [
+    {
+     "action": "Reassess in 60 minutes.",
+     "advance": 60,
+     "minute": 0,
+     "n": 1,
+     "result": "60 min passed"
+    },
+    {
+     "action": "Reassess in 60 minutes.",
+     "advance": 60,
+     "minute": 60,
+     "n": 2,
+     "result": "60 min passed"
+    },
+    {
+     "action": "Place an IV line.",
+     "advance": 0,
+     "minute": 120,
+     "n": 3,
+     "result": "peripheral intravenous access already in place; not repeated"
+    },
+    {
+     "action": "Give 1 litre of normal saline over 15 minutes.",
+     "advance": 5,
+     "minute": 120,
+     "n": 4,
+     "result": "normal saline 1000 mL started over 15 min"
+    },
+    {
+     "action": "Transfuse 2 units of packed red cells.",
+     "advance": 5,
+     "minute": 125,
+     "n": 5,
+     "result": "Packed red cells 2 units started"
+    },
+    {
+     "action": "Reassess in 30 minutes.",
+     "advance": 30,
+     "minute": 130,
+     "n": 6,
+     "result": "30 min passed"
+    }
+   ],
+   "title": "72-year-old woman, delayed treatment and recovery"
+  },
+  {
+   "arrival": {
+    "crt": 4,
+    "dbp": 62,
+    "hr": 112,
+    "map": 74,
+    "rr": 24,
+    "sbp": 98,
+    "spo2": 96
+   },
+   "common": [
+    {
+     "dbp": 62.0,
+     "map": 74.0,
+     "minute": 0,
+     "sbp": 98.0
+    },
+    {
+     "dbp": 54.0,
+     "map": 64.0,
+     "minute": 60,
+     "sbp": 85.0
+    },
+    {
+     "dbp": 52.0,
+     "map": 62.0,
+     "minute": 70,
+     "sbp": 81.0
+    }
+   ],
+   "context": "A 72-year-old woman presents with worsening fatigue and lightheadedness. She had to stop walking from the waiting room because she felt faint.",
+   "heart_rate_and_capillary_refill": [
+    {
+     "crt": 4,
+     "hr": 112,
+     "minute": 0
+    },
+    {
+     "crt": 4.3,
+     "hr": 114,
+     "minute": 60
+    },
+    {
+     "crt": 4.5,
+     "hr": 115,
+     "minute": 70
+    }
+   ],
+   "item_id": "CONJUNTO-2/FR-G",
+   "overall_choices": [
+    "ACCEPT",
+    "ACCEPT_WITH_LIMITATION",
+    "RECALIBRATE",
+    "REJECT"
+   ],
+   "purpose": "A single order that spans a long interval: is the pressure trajectory across the whole infusion plausible, and is the response timed with the volume given?",
+   "questions": [
+    {
+     "choices": [
+      "Expected",
+      "Partly",
+      "Wrong"
+     ],
+     "id": "Q1",
+     "text": "Does the physiologic evolution move in the expected direction?",
+     "topic": "DIRECTION"
+    },
+    {
+     "choices": [
+      "Too early",
+      "Plausible",
+      "Too late"
+     ],
+     "id": "Q2",
+     "text": "Does the response occur:",
+     "topic": "TIMING"
+    },
+    {
+     "choices": [
+      "Too small",
+      "Plausible",
+      "Too large"
+     ],
+     "id": "Q3",
+     "text": "Is the magnitude:",
+     "topic": "MAGNITUDE"
+    },
+    {
+     "choices": [
+      "Coherent",
+      "Uncertain",
+      "Incoherent"
+     ],
+     "id": "Q4",
+     "text": "Is the response to intervention:",
+     "topic": "MANAGEMENT RESPONSE"
+    },
+    {
+     "choices": [
+      "No",
+      "Maybe",
+      "Yes"
+     ],
+     "id": "Q5",
+     "text": "Could this trajectory mislead a resident?",
+     "topic": "EDUCATIONAL RISK"
+    }
+   ],
+   "required": false,
+   "scenario_id": "FR-G",
+   "set": "CONJUNTO-2",
+   "stopped": false,
+   "timeline": [
+    {
+     "action": "Place an IV line.",
+     "advance": 0,
+     "minute": 0,
+     "n": 1,
+     "result": "peripheral intravenous access already in place; not repeated"
+    },
+    {
+     "action": "Give 1 litre of normal saline over 60 minutes. Reassess in 60 minutes.",
+     "advance": 60,
+     "minute": 0,
+     "n": 2,
+     "result": "normal saline 1000 mL started over 60 min"
+    },
+    {
+     "action": "Reassess in 10 minutes.",
+     "advance": 10,
+     "minute": 60,
+     "n": 3,
+     "result": "10 min passed"
+    }
+   ],
+   "title": "72-year-old woman, long infusion"
+  },
+  {
+   "arrival": {
+    "crt": 5,
+    "dbp": 54,
+    "hr": 124,
+    "map": 65,
+    "rr": 26,
+    "sbp": 88,
+    "spo2": 97
+   },
+   "common": [
+    {
+     "dbp": 54.0,
+     "map": 65.0,
+     "minute": 0,
+     "sbp": 88.0
+    },
+    {
+     "dbp": 54.0,
+     "map": 66.0,
+     "minute": 5,
+     "sbp": 89.0
+    },
+    {
+     "dbp": 56.0,
+     "map": 68.0,
+     "minute": 10,
+     "sbp": 91.0
+    },
+    {
+     "dbp": 56.0,
+     "map": 68.0,
+     "minute": 30,
+     "sbp": 92.0
+    }
+   ],
+   "context": "A 57-year-old man presents after nearly fainting when standing. He looks pale and says he feels profoundly weak.",
+   "heart_rate_and_capillary_refill": [
+    {
+     "crt": 5,
+     "hr": 124,
+     "minute": 0
+    },
+    {
+     "crt": 4.9,
+     "hr": 123,
+     "minute": 5
+    },
+    {
+     "crt": 4.5,
+     "hr": 121,
+     "minute": 10
+    },
+    {
+     "crt": 3.8,
+     "hr": 116,
+     "minute": 30
+    }
+   ],
+   "item_id": "CONJUNTO-3/FR-B",
+   "overall_choices": [
+    "ACCEPT",
+    "ACCEPT_WITH_LIMITATION",
+    "RECALIBRATE",
+    "REJECT"
+   ],
+   "purpose": "Does early volume and blood replacement produce a pressure response that begins at an appropriate time and has a plausible size?",
+   "questions": [
+    {
+     "choices": [
+      "Expected",
+      "Partly",
+      "Wrong"
+     ],
+     "id": "Q1",
+     "text": "Does the physiologic evolution move in the expected direction?",
+     "topic": "DIRECTION"
+    },
+    {
+     "choices": [
+      "Too early",
+      "Plausible",
+      "Too late"
+     ],
+     "id": "Q2",
+     "text": "Does the response occur:",
+     "topic": "TIMING"
+    },
+    {
+     "choices": [
+      "Too small",
+      "Plausible",
+      "Too large"
+     ],
+     "id": "Q3",
+     "text": "Is the magnitude:",
+     "topic": "MAGNITUDE"
+    },
+    {
+     "choices": [
+      "Coherent",
+      "Uncertain",
+      "Incoherent"
+     ],
+     "id": "Q4",
+     "text": "Is the response to intervention:",
+     "topic": "MANAGEMENT RESPONSE"
+    },
+    {
+     "choices": [
+      "No",
+      "Maybe",
+      "Yes"
+     ],
+     "id": "Q5",
+     "text": "Could this trajectory mislead a resident?",
+     "topic": "EDUCATIONAL RISK"
+    }
+   ],
+   "required": false,
+   "scenario_id": "FR-B",
+   "set": "CONJUNTO-3",
+   "stopped": false,
+   "timeline": [
+    {
+     "action": "Place an IV line.",
+     "advance": 0,
+     "minute": 0,
+     "n": 1,
+     "result": "peripheral intravenous access already in place; not repeated"
+    },
+    {
+     "action": "Give 1 litre of normal saline over 15 minutes.",
+     "advance": 5,
+     "minute": 0,
+     "n": 2,
+     "result": "normal saline 1000 mL started over 15 min"
+    },
+    {
+     "action": "Transfuse 2 units of packed red cells.",
+     "advance": 5,
+     "minute": 5,
+     "n": 3,
+     "result": "Packed red cells 2 units started"
+    },
+    {
+     "action": "Reassess in 20 minutes.",
+     "advance": 20,
+     "minute": 10,
+     "n": 4,
+     "result": "20 min passed"
+    }
+   ],
+   "title": "57-year-old man, early treatment"
+  },
+  {
+   "arrival": {
+    "crt": 5,
+    "dbp": 54,
+    "hr": 124,
+    "map": 65,
+    "rr": 26,
+    "sbp": 88,
+    "spo2": 97
+   },
+   "common": [
+    {
+     "dbp": 54.0,
+     "map": 65.0,
+     "minute": 0,
+     "sbp": 88.0
+    },
+    {
+     "dbp": 44.0,
+     "map": 53.0,
+     "minute": 60,
+     "sbp": 72.0
+    },
+    {
+     "dbp": 35.0,
+     "map": 42.0,
+     "minute": 120,
+     "sbp": 56.0
+    },
+    {
+     "dbp": 36.0,
+     "map": 43.0,
+     "minute": 125,
+     "sbp": 58.0
+    },
+    {
+     "dbp": 38.0,
+     "map": 46.0,
+     "minute": 130,
+     "sbp": 61.0
+    },
+    {
+     "dbp": 40.0,
+     "map": 48.0,
+     "minute": 150,
+     "sbp": 65.0
+    }
+   ],
+   "context": "A 57-year-old man presents after nearly fainting when standing. He looks pale and says he feels profoundly weak.",
+   "heart_rate_and_capillary_refill": [
+    {
+     "crt": 5,
+     "hr": 124,
+     "minute": 0
+    },
+    {
+     "crt": 5.7,
+     "hr": 128,
+     "minute": 60
+    },
+    {
+     "crt": 6.4,
+     "hr": 133,
+     "minute": 120
+    },
+    {
+     "crt": 6.3,
+     "hr": 132,
+     "minute": 125
+    },
+    {
+     "crt": 6.0,
+     "hr": 130,
+     "minute": 130
+    },
+    {
+     "crt": 5.2,
+     "hr": 125,
+     "minute": 150
+    }
+   ],
+   "item_id": "CONJUNTO-3/FR-C",
+   "overall_choices": [
+    "ACCEPT",
+    "ACCEPT_WITH_LIMITATION",
+    "RECALIBRATE",
+    "REJECT"
+   ],
+   "purpose": "After two hours without treatment, is the deterioration and then the response to the same treatment plausible, and does a resident risk being misled by the trajectory?",
+   "questions": [
+    {
+     "choices": [
+      "Expected",
+      "Partly",
+      "Wrong"
+     ],
+     "id": "Q1",
+     "text": "Does the physiologic evolution move in the expected direction?",
+     "topic": "DIRECTION"
+    },
+    {
+     "choices": [
+      "Too early",
+      "Plausible",
+      "Too late"
+     ],
+     "id": "Q2",
+     "text": "Does the response occur:",
+     "topic": "TIMING"
+    },
+    {
+     "choices": [
+      "Too small",
+      "Plausible",
+      "Too large"
+     ],
+     "id": "Q3",
+     "text": "Is the magnitude:",
+     "topic": "MAGNITUDE"
+    },
+    {
+     "choices": [
+      "Coherent",
+      "Uncertain",
+      "Incoherent"
+     ],
+     "id": "Q4",
+     "text": "Is the response to intervention:",
+     "topic": "MANAGEMENT RESPONSE"
+    },
+    {
+     "choices": [
+      "No",
+      "Maybe",
+      "Yes"
+     ],
+     "id": "Q5",
+     "text": "Could this trajectory mislead a resident?",
+     "topic": "EDUCATIONAL RISK"
+    }
+   ],
+   "required": false,
+   "scenario_id": "FR-C",
+   "set": "CONJUNTO-3",
+   "stopped": false,
+   "timeline": [
+    {
+     "action": "Reassess in 60 minutes.",
+     "advance": 60,
+     "minute": 0,
+     "n": 1,
+     "result": "60 min passed"
+    },
+    {
+     "action": "Reassess in 60 minutes.",
+     "advance": 60,
+     "minute": 60,
+     "n": 2,
+     "result": "60 min passed"
+    },
+    {
+     "action": "Place an IV line.",
+     "advance": 0,
+     "minute": 120,
+     "n": 3,
+     "result": "peripheral intravenous access already in place; not repeated"
+    },
+    {
+     "action": "Give 1 litre of normal saline over 15 minutes.",
+     "advance": 5,
+     "minute": 120,
+     "n": 4,
+     "result": "normal saline 1000 mL started over 15 min"
+    },
+    {
+     "action": "Transfuse 2 units of packed red cells.",
+     "advance": 5,
+     "minute": 125,
+     "n": 5,
+     "result": "Packed red cells 2 units started"
+    },
+    {
+     "action": "Reassess in 20 minutes.",
+     "advance": 20,
+     "minute": 130,
+     "n": 6,
+     "result": "20 min passed"
+    }
+   ],
+   "title": "57-year-old man, delayed treatment"
+  },
+  {
+   "arrival": {
+    "crt": 4,
+    "dbp": 62,
+    "hr": 112,
+    "map": 74,
+    "rr": 24,
+    "sbp": 98,
+    "spo2": 96
+   },
+   "common": [
+    {
+     "dbp": 62.0,
+     "map": 74.0,
+     "minute": 0,
+     "sbp": 98.0
+    },
+    {
+     "dbp": 51.0,
+     "map": 61.0,
+     "minute": 60,
+     "sbp": 80.0
+    },
+    {
+     "dbp": 40.0,
+     "map": 48.0,
+     "minute": 120,
+     "sbp": 63.0
+    },
+    {
+     "dbp": 41.0,
+     "map": 49.0,
+     "minute": 125,
+     "sbp": 65.0
+    },
+    {
+     "dbp": 43.0,
+     "map": 51.0,
+     "minute": 130,
+     "sbp": 68.0
+    },
+    {
+     "dbp": 47.0,
+     "map": 56.0,
+     "minute": 160,
+     "sbp": 74.0
+    }
+   ],
+   "context": "A 72-year-old woman presents with worsening fatigue and lightheadedness. She had to stop walking from the waiting room because she felt faint.",
+   "heart_rate_and_capillary_refill": [
+    {
+     "crt": 4,
+     "hr": 112,
+     "minute": 0
+    },
+    {
+     "crt": 4.7,
+     "hr": 116,
+     "minute": 60
+    },
+    {
+     "crt": 5.4,
+     "hr": 121,
+     "minute": 120
+    },
+    {
+     "crt": 5.3,
+     "hr": 120,
+     "minute": 125
+    },
+    {
+     "crt": 5.0,
+     "hr": 118,
+     "minute": 130
+    },
+    {
+     "crt": 3.9,
+     "hr": 111,
+     "minute": 160
+    }
+   ],
+   "item_id": "CONJUNTO-3/FR-E",
+   "overall_choices": [
+    "ACCEPT",
+    "ACCEPT_WITH_LIMITATION",
+    "RECALIBRATE",
+    "REJECT"
+   ],
+   "purpose": "Is the recovery after delayed treatment coherent in direction, timing and magnitude?",
+   "questions": [
+    {
+     "choices": [
+      "Expected",
+      "Partly",
+      "Wrong"
+     ],
+     "id": "Q1",
+     "text": "Does the physiologic evolution move in the expected direction?",
+     "topic": "DIRECTION"
+    },
+    {
+     "choices": [
+      "Too early",
+      "Plausible",
+      "Too late"
+     ],
+     "id": "Q2",
+     "text": "Does the response occur:",
+     "topic": "TIMING"
+    },
+    {
+     "choices": [
+      "Too small",
+      "Plausible",
+      "Too large"
+     ],
+     "id": "Q3",
+     "text": "Is the magnitude:",
+     "topic": "MAGNITUDE"
+    },
+    {
+     "choices": [
+      "Coherent",
+      "Uncertain",
+      "Incoherent"
+     ],
+     "id": "Q4",
+     "text": "Is the response to intervention:",
+     "topic": "MANAGEMENT RESPONSE"
+    },
+    {
+     "choices": [
+      "No",
+      "Maybe",
+      "Yes"
+     ],
+     "id": "Q5",
+     "text": "Could this trajectory mislead a resident?",
+     "topic": "EDUCATIONAL RISK"
+    }
+   ],
+   "required": false,
+   "scenario_id": "FR-E",
+   "set": "CONJUNTO-3",
+   "stopped": false,
+   "timeline": [
+    {
+     "action": "Reassess in 60 minutes.",
+     "advance": 60,
+     "minute": 0,
+     "n": 1,
+     "result": "60 min passed"
+    },
+    {
+     "action": "Reassess in 60 minutes.",
+     "advance": 60,
+     "minute": 60,
+     "n": 2,
+     "result": "60 min passed"
+    },
+    {
+     "action": "Place an IV line.",
+     "advance": 0,
+     "minute": 120,
+     "n": 3,
+     "result": "peripheral intravenous access already in place; not repeated"
+    },
+    {
+     "action": "Give 1 litre of normal saline over 15 minutes.",
+     "advance": 5,
+     "minute": 120,
+     "n": 4,
+     "result": "normal saline 1000 mL started over 15 min"
+    },
+    {
+     "action": "Transfuse 2 units of packed red cells.",
+     "advance": 5,
+     "minute": 125,
+     "n": 5,
+     "result": "Packed red cells 2 units started"
+    },
+    {
+     "action": "Reassess in 30 minutes.",
+     "advance": 30,
+     "minute": 130,
+     "n": 6,
+     "result": "30 min passed"
+    }
+   ],
+   "title": "72-year-old woman, delayed treatment and recovery"
+  },
+  {
+   "arrival": {
+    "crt": 4,
+    "dbp": 62,
+    "hr": 112,
+    "map": 74,
+    "rr": 24,
+    "sbp": 98,
+    "spo2": 96
+   },
+   "common": [
+    {
+     "dbp": 62.0,
+     "map": 74.0,
+     "minute": 0,
+     "sbp": 98.0
+    },
+    {
+     "dbp": 54.0,
+     "map": 65.0,
+     "minute": 60,
+     "sbp": 86.0
+    },
+    {
+     "dbp": 52.0,
+     "map": 62.0,
+     "minute": 70,
+     "sbp": 82.0
+    }
+   ],
+   "context": "A 72-year-old woman presents with worsening fatigue and lightheadedness. She had to stop walking from the waiting room because she felt faint.",
+   "heart_rate_and_capillary_refill": [
+    {
+     "crt": 4,
+     "hr": 112,
+     "minute": 0
+    },
+    {
+     "crt": 4.3,
+     "hr": 114,
+     "minute": 60
+    },
+    {
+     "crt": 4.5,
+     "hr": 115,
+     "minute": 70
+    }
+   ],
+   "item_id": "CONJUNTO-3/FR-G",
+   "overall_choices": [
+    "ACCEPT",
+    "ACCEPT_WITH_LIMITATION",
+    "RECALIBRATE",
+    "REJECT"
+   ],
+   "purpose": "A single order that spans a long interval: is the pressure trajectory across the whole infusion plausible, and is the response timed with the volume given?",
+   "questions": [
+    {
+     "choices": [
+      "Expected",
+      "Partly",
+      "Wrong"
+     ],
+     "id": "Q1",
+     "text": "Does the physiologic evolution move in the expected direction?",
+     "topic": "DIRECTION"
+    },
+    {
+     "choices": [
+      "Too early",
+      "Plausible",
+      "Too late"
+     ],
+     "id": "Q2",
+     "text": "Does the response occur:",
+     "topic": "TIMING"
+    },
+    {
+     "choices": [
+      "Too small",
+      "Plausible",
+      "Too large"
+     ],
+     "id": "Q3",
+     "text": "Is the magnitude:",
+     "topic": "MAGNITUDE"
+    },
+    {
+     "choices": [
+      "Coherent",
+      "Uncertain",
+      "Incoherent"
+     ],
+     "id": "Q4",
+     "text": "Is the response to intervention:",
+     "topic": "MANAGEMENT RESPONSE"
+    },
+    {
+     "choices": [
+      "No",
+      "Maybe",
+      "Yes"
+     ],
+     "id": "Q5",
+     "text": "Could this trajectory mislead a resident?",
+     "topic": "EDUCATIONAL RISK"
+    }
+   ],
+   "required": false,
+   "scenario_id": "FR-G",
+   "set": "CONJUNTO-3",
+   "stopped": false,
+   "timeline": [
+    {
+     "action": "Place an IV line.",
+     "advance": 0,
+     "minute": 0,
+     "n": 1,
+     "result": "peripheral intravenous access already in place; not repeated"
+    },
+    {
+     "action": "Give 1 litre of normal saline over 60 minutes. Reassess in 60 minutes.",
+     "advance": 60,
+     "minute": 0,
+     "n": 2,
+     "result": "normal saline 1000 mL started over 60 min"
+    },
+    {
+     "action": "Reassess in 10 minutes.",
+     "advance": 10,
+     "minute": 60,
+     "n": 3,
+     "result": "10 min passed"
+    }
+   ],
+   "title": "72-year-old woman, long infusion"
+  }
+ ],
+ "order": {
+  "first": "CONJUNTO-1",
+  "scenarios": [
+   "FR-B",
+   "FR-C",
+   "FR-E",
+   "FR-G"
+  ],
+  "then_if_wanted": [
+   "CONJUNTO-2",
+   "CONJUNTO-3"
+  ]
+ },
+ "pressure_source": "the certified common core on a counterfactual copy of the captured scenario; whole mmHg as the page displays them",
+ "record_digest": "b6294655252ec22ea264537e80de2bbd5a905302f0235e07364e8f81976e2e76",
+ "record_type": "JOINT_REGION_V1_CANDIDATE_REVIEW_SET",
+ "statement": "Synthetic development cases. Candidate trajectories for a blinded faculty re-review: not a clinical validation, not a calibrated configuration, not a resident pilot.",
+ "version": "JOINT_REGION_V1_CANDIDATE",
+ "what_it_is": "Per set and scenario, the view the faculty trajectory review showed before its first pass was locked, with the pressure of one candidate configuration of the joint development region. It carries no parameter, no witness name, no legacy PRESSURE, no legacy comparator and no earlier trajectory. Heart rate and capillary refill ARE the legacy engine's own values, shown as context exactly as the earlier review showed them."
+}

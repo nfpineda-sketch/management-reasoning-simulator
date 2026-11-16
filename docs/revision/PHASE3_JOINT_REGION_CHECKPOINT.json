@@ -1,0 +1,125 @@
+{
+ "blocker": null,
+ "confirmations": {
+  "clinical_core_untouched": true,
+  "crystalloid_physics_not_modified": true,
+  "no_amendment_3": true,
+  "no_authority_expansion": true,
+  "no_clinical_validation_claim": true,
+  "no_final_calibrated_point_chosen": true,
+  "no_fitting_to_the_legacy_engine": true,
+  "no_norepinephrine_implementation": true,
+  "no_physiology_change": true,
+  "no_resident_deployment": true,
+  "no_source_control_physiology": true,
+  "old_judgments_not_transferred": true,
+  "prior_human_review_not_overwritten": true,
+  "review_page_untouched": true
+ },
+ "decided_on": "2026-11-15",
+ "isolation_regression_found_in_this_cycle": {
+  "cause": "the analysis harnesses of the three earlier cycles were non-test root modules that import clinical_core and the shadow bridge",
+  "does_it_touch_what_runs": false,
+  "remote_branch_until_the_repair_is_published": "still fails those three guards",
+  "repair": {
+   "convention": "an analysis harness that uses the core or the shadow bridge is a test-side module (as test_gi_counterfactual.py)",
+   "guards_changed": false,
+   "prepared_at_this_checkpoint_in_the_working_tree": true,
+   "published_in_its_own_commit_under": "FD-P3-239",
+   "renamed": {
+    "frg_crystalloid_analysis.py": "test_gi_frg_crystalloid_analysis.py",
+    "gi_bleed_rate_analysis.py": "test_gi_bleed_rate_analysis.py",
+    "gi_joint_feasibility_analysis.py": "test_gi_joint_feasibility_analysis.py",
+    "gi_joint_region.py (new in this cycle)": "test_gi_joint_region.py"
+   },
+   "sealed_records_changed": false
+  },
+  "since": "388f279 (the publication of P3-314); they pass at 586d60a, the commit before it",
+  "what": "three isolation guards fail on the PUBLISHED head ddfca36: test_shadow_core_isolation (two tests) and test_runtime_shadow_plumbing::test_r13",
+  "why_it_was_not_seen": "those publications were verified with focused test groups that did not include these two files; the full suite was not run"
+ },
+ "next_human_action": "A human faculty reviewer performs the blinded re-review with faculty_review_kit/region_conjunta_v1: conjunto_1.md ONLY, in the order FR-B, FR-C, FR-E, FR-G, and returns the form; the two sensitivity sets stay unopened unless the faculty asks for them later (FD-P3-239). The result is recorded as HUMAN evidence, apart from this analysis. Nothing is adopted before that.",
+ "not_done_on_purpose": [
+  "the human re-review itself, and any answer on a reviewer's behalf",
+  "a new pressure snapshot, a core successor, a grant or any adoption of a witness",
+  "bringing the candidates into the review page (an executable change)",
+  "choosing a point, tuning a parameter, another witness or another candidate"
+ ],
+ "overall": {
+  "name": "JOINT_REGION_READY_FOR_BLINDED_HUMAN_REREVIEW",
+  "verdict": "A"
+ },
+ "pinned_records": {
+  "active_core_digest": "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2",
+  "blind_key_digest": "4053a89076379d86c48cd90ee86835d26d03dd0d3ee523dbd0b40f83ae1d3978",
+  "candidate_review_set_digest": "b6294655252ec22ea264537e80de2bbd5a905302f0235e07364e8f81976e2e76",
+  "human_review_record_digest": "9ba80fa70d3b38e178caa3aca9432f9227ce6d9591a48c9908c3f5ac4cc6c8d3",
+  "joint_feasibility_record_digest": "2ca6bc534f55508209459c834819c4269b59bbd60ec27ee905dcbd289187f059",
+  "joint_region_record_digest": "bf7361a1d96fe7fed9aeca697bba4809ef70e87843d71ba5b64a77f832c41539",
+  "p3_336_checkpoint_digest": "f18e181b3a4767384f34c90fb3bb0d483762eda3951434a480f1ffd5b7b601eb",
+  "review_set_digest": "f65d1127f3fb97926334d695aeab37b92f3a44236cec2ae025025eec90ba1649"
+ },
+ "publication": {
+  "at_this_checkpoint": "nothing of P3-338 to P3-348 was committed and no full-suite certification had been run",
+  "authorised_afterwards_by": "FD-P3-239",
+  "commits": [
+   "the isolation-guard repair only",
+   "the joint-region analysis and tests",
+   "documents, records and the faculty review kit"
+  ],
+  "condition": "one strong final certification on one frozen candidate (the full repository suite and run_regressions.py, with the three isolation guards run explicitly first); the candidate published is the candidate certified; the result is in the commit message"
+ },
+ "publication_p3_337": {
+  "analysis_and_tests_commit": "32bb4a5",
+  "candidate_tree": "eb258e83fe216bf14fecae6d012067aa19f4fe89",
+  "docs_and_records_commit": "ddfca36",
+  "fetched_before_commit_and_before_push": true,
+  "force_push": false,
+  "pull_request": false,
+  "pushed_to": "origin/phase-3-runtime-integration",
+  "tree_identical_to_the_verified_candidate": true
+ },
+ "record_digest": "1f49d9bceb02a2c64d5e5d4b52f5f260370ced30739f6f0422daf1720a4c7b92",
+ "record_type": "JOINT_REGION_CHECKPOINT",
+ "review_interface": {
+  "blinding_limits": [
+   "procedural only: nothing locks the key file",
+   "it hides the parameter identity from a reviewer who has NOT read the technical material; the cycle document, the Decision File, the debt register and the cycle reports give the candidate pressures beside the reviewed ones and say that conjunto_1 is CENTER_REFERENCE",
+   "two protocol differences from the first review: the overall judgment is given in the first pass, and there is no comparator reveal; the judgments are not comparable one to one"
+  ],
+  "current_page_accepts_the_candidates": false,
+  "heart_rate_and_capillary_refill": "the legacy engine's values, shown as context as in the first review; they do not depend on the candidate configuration",
+  "package": "a static kit with procedural blinding; bringing the candidates to the page would be an executable change, not authorised in this cycle",
+  "why": "faculty_trajectory_review offers only its pinned, certified set, verified against the certified series of the real authority"
+ },
+ "statement": "The joint GI rate / pressure development region is formalised as one object in correlated coordinates, its margins are measured, three development test witnesses are bound, and blinded candidate trajectories of FR-B, FR-C, FR-E and FR-G are ready for a NEW human faculty review. Nothing executable changed; no point is a calibration; no parameter is approved; Amendment 3 stays closed.",
+ "statuses": {
+  "AMENDMENT3_STATUS": "CLOSED (FD-RATE-19) · not designed, not implemented",
+  "CENTER_REFERENCE_WITNESS": "DEVELOPMENT_TEST_WITNESS · bleed rate 8.97 mL-eq/min with scale 2697.1 mL-eq (c = 0.003326) and kernel e 0.2131, s 0.835, tau 60.6 · smallest margin 0.126 of its window (A_untreated) · one complete unit +9.3 / +10.3 mmHg · slow crystalloid 32.5 % · every existing constraint readable and met · not a calibration, not clinically preferred",
+  "FR_B_READY_FOR_REREVIEW": "READY · three JOINT_REGION_V1_CANDIDATE trajectories on the reviewed script and minutes · final SBP 92 to 93 mmHg (reviewed trajectory: 112) · no candidate stops · the earlier human judgment is NOT transferred",
+  "FR_C_READY_FOR_REREVIEW": "READY · three JOINT_REGION_V1_CANDIDATE trajectories on the reviewed script and minutes · final SBP 64 to 65 mmHg (reviewed trajectory: 92) · no candidate stops · the earlier human judgment is NOT transferred",
+  "FR_E_READY_FOR_REREVIEW": "READY · three JOINT_REGION_V1_CANDIDATE trajectories on the reviewed script and minutes · final SBP 72 to 74 mmHg (reviewed trajectory: 109) · no candidate stops · the earlier human judgment is NOT transferred",
+  "FR_G_READY_FOR_REREVIEW": "READY · three JOINT_REGION_V1_CANDIDATE trajectories on the reviewed script and minutes · final SBP 81 to 82 mmHg (reviewed trajectory: 88) · no candidate stops · the earlier human judgment is NOT transferred",
+  "HIGH_WITNESS": "DEVELOPMENT_TEST_WITNESS · bleed rate 9.09 mL-eq/min with scale 2905.9 mL-eq (c = 0.003127) and kernel e 0.2150, s 0.835, tau 60.6 · smallest margin 0.063 of its window (B_one_unit) · one complete unit +8.6 / +9.6 mmHg · slow crystalloid 32.2 % · every existing constraint readable and met · not a calibration, not clinically preferred",
+  "JOINT_REGION_FORMALIZED": "YES · GI_JOINT_RATE_PRESSURE_DEVELOPMENT_REGION_V1 · coordinates (c = rate / scale, scale, crystalloid kernel) at arrival position 0.5 · the bleed rate is never a coordinate · A: c in [0.003060, 0.003365]; B: scale in [1478.3, 3147.6]; C couples all three; K: the closed crystalloid region; R: every existing constraint readable and met",
+  "JOINT_REGION_MARGIN": "NARROW · the largest margin every constraint can keep at once is 0.126 of each window (1.26 mmHg above the one-unit floor, 2.5 points below the slow-crystalloid ceiling, c 1.16 % from its fast edge) · C dominates at small scales, B at large scales, readability at fast rates",
+  "LOW_WITNESS": "DEVELOPMENT_TEST_WITNESS · bleed rate 8.26 mL-eq/min with scale 2468.8 mL-eq (c = 0.003345) and kernel e 0.2073, s 0.865, tau 60.6 · smallest margin 0.063 of its window (K_closed_crystalloid_region) · one complete unit +10.1 / +11.2 mmHg · slow crystalloid 33.7 % · every existing constraint readable and met · not a calibration, not clinically preferred",
+  "OLD_SCALE_BAND_STATUS": "A · PURE_CANDIDATE_ANALYSIS_BAND · [600, 1500] mL-eq entered with commit b4040ba (2026-10-23) as a registry candidate band, status CANDIDATE, 0 of 58 registry entries FACULTY_APPROVED; the faculty approved one point for the development experiment, never the band · marked SUPERSEDED_BY_JOINT_FEASIBILITY_ANALYSIS for the current joint analysis, outside the core (the certified registry is not edited)"
+ },
+ "version": "P3-348",
+ "what_the_reviewer_will_find": {
+  "note": "final systolic pressure of CENTER_REFERENCE minus the reviewed trajectory; whether that is clinically and educationally acceptable is the faculty's judgment, not this analysis's",
+  "the_three_sets_are_nearly_the_same_on_the_page_mmHg": {
+   "FR-B": 1.0,
+   "FR-C": 2.0,
+   "FR-E": 3.0,
+   "FR-G": 1.0
+  },
+  "treated_trajectories_change_a_great_deal": {
+   "FR-B": -20.0,
+   "FR-C": -28.0,
+   "FR-E": -37.0,
+   "FR-G": -7.0
+  }
+ }
+}
