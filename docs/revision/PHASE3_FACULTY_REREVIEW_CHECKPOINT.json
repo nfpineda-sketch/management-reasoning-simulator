@@ -1,0 +1,123 @@
+{
+ "adversarial_review": {
+  "blockers": 0,
+  "count": 1,
+  "fixed": [
+   "F3 lock with two windows or a refused comment",
+   "F4 strict loader that never raises",
+   "F5/F6 tests that could not fail; detectors tested against injected leaks and reads",
+   "F7 log closed without an overall judgment is unreadable; records tests split out; checkpoint resealed",
+   "F8 reviewer instruction wording"
+  ],
+  "independent": true,
+  "not_fixed_and_declared": [
+   "F1 the first review is one click away from the re-review (a faculty decision: block it while the re-review is incomplete?)",
+   "F2 heart rate and capillary refill are not recomputed for the candidate (a faculty decision: keep them in the first pass?)"
+  ],
+  "where": "docs/PHASE3_FACULTY_REREVIEW_INTERACTIVE.md section 10"
+ },
+ "blocker": null,
+ "confirmations": {
+  "clinical_core_untouched": true,
+  "human_review_not_performed_by_the_assistant": true,
+  "no_amendment_3": true,
+  "no_authority_expansion": true,
+  "no_clinical_validation_claim": true,
+  "no_legacy_fitting": true,
+  "no_norepinephrine": true,
+  "no_parameter_point_selected": true,
+  "no_physiology_change": true,
+  "no_resident_deployment": true,
+  "no_source_control_change": true,
+  "original_review_preserved": true
+ },
+ "decided_on": "2026-11-16",
+ "faculty_decisions_pending": [
+  "block the first review (and the live mode) while the re-review is incomplete",
+  "confirm that the re-review is what the launcher opens at sign-in (FD-P3-243)",
+  "keep heart rate and capillary refill in the first pass although they are not recomputed for the candidate",
+  "the word 'that' of FR-G in the reviewer's question (FD-REREVIEW-07 versus the certified kit)"
+ ],
+ "next_human_action": "A human faculty reviewer performs the blinded re-review in the application: sign in, the re-review opens at FR-B, answer Q1-Q5, lock, give the overall judgment and submit, for FR-B, FR-C, FR-E and FR-G in that order (faculty_review_kit/12_rerevision_interactiva.md). No comparison, no sensitivity set and no parameter choice follows until a faculty decision says so.",
+ "not_done_on_purpose": [
+  "the human re-review itself, and any answer on a reviewer's behalf",
+  "exposing LOW/HIGH, the earlier trajectory, the legacy comparator or any parameter",
+  "a parameter point, a snapshot, a core successor, a grant, Amendment 3, norepinephrine, source control, a resident pilot"
+ ],
+ "options_considered": {
+  "A": "INTERACTIVE_JOINT_REREVIEW_READY_FOR_HUMAN_USE",
+  "B": "REVIEW_UI_READY_BUT_PERSISTENCE_NOT_CERTIFIED",
+  "C": "BLINDNESS_LEAK_FOUND",
+  "D": "CANDIDATE_DATA_MISMATCH",
+  "E": "REVIEW_SYSTEM_REQUIRES_REDESIGN"
+ },
+ "overall": {
+  "name": "INTERACTIVE_JOINT_REREVIEW_READY_FOR_HUMAN_USE",
+  "verdict": "A"
+ },
+ "pinned_records": {
+  "active_core_digest": "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2",
+  "blind_key_digest": "4053a89076379d86c48cd90ee86835d26d03dd0d3ee523dbd0b40f83ae1d3978",
+  "candidate_review_set_digest": "b6294655252ec22ea264537e80de2bbd5a905302f0235e07364e8f81976e2e76",
+  "first_review_set_digest": "f65d1127f3fb97926334d695aeab37b92f3a44236cec2ae025025eec90ba1649",
+  "human_review_record_digest": "9ba80fa70d3b38e178caa3aca9432f9227ce6d9591a48c9908c3f5ac4cc6c8d3",
+  "joint_region_checkpoint_digest": "1f49d9bceb02a2c64d5e5d4b52f5f260370ced30739f6f0422daf1720a4c7b92",
+  "rereview_set_digest": "c30ab7f1fae514ff7e7c4de50e1d11b60f08efc6021804e162b70100d52b344f"
+ },
+ "publication": {
+  "authorised_by": "the assignment of 2026-11-16 (checkpoint A and a green certification)",
+  "certification": "one strong certification over one frozen fingerprint; its figures and the fingerprint are in the message of the docs commit",
+  "commits": [
+   "review plumbing and UI",
+   "tests",
+   "docs, records and review kit"
+  ],
+  "force_push": false,
+  "pull_request": false
+ },
+ "record_digest": "ef7bb6604996152170372ec3197e74567d60526c867ff0989ca4eb3e55b3ebe4",
+ "record_type": "FACULTY_REREVIEW_CHECKPOINT",
+ "review_interface": {
+  "blinding_limits": [
+   "procedural, not cryptographic: a reviewer who has read the technical material knows which set it is",
+   "the Review mode selector can open the first review, which shows the earlier trajectories; nothing prevents it",
+   "screenshots sent outside the application are outside its control and the sidebar shows the user name"
+  ],
+  "landing": "after sign-in the faculty launcher opens the re-review directly (no choice, no code, no file)",
+  "lock_rule": "the lock fixes the answers the log holds, and only if the screen shows the same (two windows of one account, or a comment the log refused, refuse the lock and rebuild the screen)",
+  "reuses": [
+   "ReviewLog (event log, lock, atomic record)",
+   "FIRST_PASS and OVERALL",
+   "comment_problem",
+   "progress",
+   "the chart, the interventions table and the autosave callbacks"
+  ],
+  "scenario_order": [
+   "FR-B",
+   "FR-C",
+   "FR-E",
+   "FR-G"
+  ],
+  "stores": {
+   "first_review_directories_touched": false,
+   "logs": "<store>/faculty_review/trajectory_rereview/",
+   "records": "<store>/faculty_review/trajectory_rereviews/"
+  }
+ },
+ "statement": "The blinded faculty re-review of FR-B, FR-C, FR-E and FR-G with the CENTER_REFERENCE trajectories is available in the existing Faculty Trajectory Review: one page per scenario, Q1-Q5, an optional comment, an irreversible lock of the first impression, an overall judgment, submit with automatic advance, and a completion screen. No comparator, no reveal. Only the review UI and its plumbing changed: no physiology, parameter, trajectory, authority or scoring changed, no parameter point was chosen and the human re-review has NOT been done.",
+ "statuses": {
+  "BLINDNESS_AUDIT": "NO_LEAK_FOUND on any screen, tooltip, chart datum, websocket frame or file read of the flow; the leak and file-read detectors were tested against injected leaks; PROCEDURAL limits remain and are disclosed (TD-151 items 2 and 3)",
+  "CANDIDATE_DATA_EQUALITY": "EQUAL · the interactive data are the certified candidate review set's first set, the static kit's tables and what the page draws (test_r2, test_r3, test_p4)",
+  "COMPLETION": "RE-REVIEW COMPLETE 4 / 4 with counts and per-scenario judgments; no parameters, other sets, legacy or earlier judgments",
+  "FIRST_PASS_CONTROLS": "Q1-Q5 with the first review's exact choices + optional comment + LOCK FIRST IMPRESSION; no Q5H, no reveal",
+  "FIRST_REVIEW_PRESERVED": "UNCHANGED · its set, its human record, its logs and records directories are not read or written by the re-review",
+  "HEART_RATE_AND_CAPILLARY_REFILL_CONTEXT": "the values the encounter showed with the earlier trajectory; NOT recomputed for the candidate; the screen says so; an indirect channel for the earlier trajectory, disclosed (TD-151 item 3)",
+  "HUMAN_RE_REVIEW": "NOT_DONE",
+  "LAUNCHER_LANDING": "the re-review (FD-P3-243, pending faculty confirmation); the first review is one click away",
+  "LOCK_IMMUTABILITY": "TESTED · the writer refuses, the reader ignores a forged chained event, a log closed without an overall judgment is unreadable, the page offers no radio after the lock, and the lock refuses a screen that differs from the log (two windows, a refused comment)",
+  "PERSISTENCE": "TESTED · every stage restored after a refresh (AppTest on the real app) and, in a real browser, partial answers; typing then clicking saves",
+  "REREVIEW_SET": "GI_JOINT_REGION_V1_FACULTY_REREVIEW · FR-B, FR-C, FR-E, FR-G · pinned in code",
+  "SCREENSHOT_USABILITY": "no horizontal scroll at 1920x1080, 1366x768, 1024x768, 768x1024; 2.3 screens at 1080p, 3.3 at 768 px; not tested with a person"
+ },
+ "version": "P3-361"
+}

@@ -3,7 +3,7 @@
 **Qué es.** Juzgas trayectorias de presión que ya existen y están certificadas. **No** juegas ningún encuentro, **no** abres archivos, **no** copias códigos. Los archivos `01`–`10` y `paquetes/` describen el modo *en vivo*, que sigue disponible («Review mode → Live review encounter (advanced)») para más adelante.
 
 ## Qué haces (por escenario)
-1. Entra con tu cuenta docente. Verás la pantalla **Faculty Trajectory Review** con el primer escenario (**FR-B**). Si ves el selector «Review encounter», abre el desplegable «Review mode» y elige **Trajectory review**.
+1. Entra con tu cuenta docente. Desde P3-352 la aplicación abre por omisión la **re-revisión** (`12_rerevision_interactiva.md`), no esta. Para esta primera revisión abre el desplegable «Review mode» y elige **Trajectory review (first review)**; verás la pantalla **Faculty Trajectory Review** con el primer escenario (**FR-B**). Si ves el selector «Review encounter», es el modo en vivo: elige **Trajectory review** en el mismo desplegable.
 2. Lee el **contexto**, la **línea de tiempo** (qué se hizo y cuándo) y la **trayectoria** (los números en el gráfico, PAS/PAM/PAD). Los números en gris marcan las intervenciones de la tabla.
 3. Contesta **Q1–Q5** (una pulsación cada una). En los escenarios donde el experimento se detiene hay una pregunta más (**Q5H**). Tus respuestas se guardan solas: si refrescas o cierras el navegador, al volver están ahí.
 4. Pulsa **LOCK FIRST IMPRESSION & REVEAL COMPARATOR**. Desde ese momento tu primera impresión queda fija y nadie puede cambiarla. Aparece el comparador heredado sobre los mismos ejes (línea discontinua), rotulado «Legacy comparator — nonauthoritative comparison». **No es la verdad ni un estándar de referencia**: es contexto para tu juicio.

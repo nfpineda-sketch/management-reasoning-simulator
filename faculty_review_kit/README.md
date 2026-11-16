@@ -23,6 +23,7 @@ La primera revisión humana mostró que el flujo en vivo (01–10) era innecesar
 | `10_notas_facilitador.md` | operador | Incertidumbres clave (no se muestran al revisor antes de revelar), avisos conocidos y solución de problemas |
 | `paquetes/` | revisor | Por escenario: hoja de autoridad (antes de revelar) y hoja del comparador (después) |
 | `region_conjunta_v1/` | revisor | **Re-revisión ciega** de FR-B, FR-C, FR-E y FR-G con candidatos de la región conjunta (`JOINT_REGION_V1_CANDIDATE`); kit estático, preparado y **no** empezado. Quien revisa lee **sólo** su `README.md`, `conjunto_1.md` y el formulario; el documento técnico del ciclo desvela el ciego y es para quien opera |
+| `12_rerevision_interactiva.md` | revisor | **Re-revisión ciega en la pantalla** (FR-B, FR-C, FR-E, FR-G): la misma *Faculty Trajectory Review*, sin editar archivos; es la forma principal de hacerla. Instrucciones de una página, incluidas las capturas para consultar a un colega |
 | `tools/session_summary.py` | operador | Resumen técnico **de sólo lectura**: vínculos, verificación, repetición, coincidencia con el guion y completitud; tabula las respuestas sin interpretarlas |
 
 ## Quién juzga qué (FD-FR-08)
