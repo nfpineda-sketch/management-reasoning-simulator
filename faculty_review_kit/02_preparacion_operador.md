@@ -42,6 +42,7 @@ streamlit run app.py
 - **Las variables van en el entorno del proceso, nunca en el archivo de Secrets** (no se honran allí).
 - **Un solo proceso**: un segundo proceso sobre el mismo almacén se niega (`single_process`). Si necesitas reiniciar, detén el primero.
 - Si falta una condición, la página no lanza nada y la persona docente ve las razones (`FACULTY DEVELOPMENT REVIEW UNAVAILABLE`).
+- **Re-revisión ciega de la región conjunta (FD-REREVIEW-21):** con estas mismas variables, mientras la persona no complete los cuatro escenarios de la re-revisión, la aplicación **no ofrece** la primera revisión ni el modo en vivo; es una retención de procedimiento, no una desactivación del producto. **No pongas `MRS_FACULTY_REREVIEW_GATE`** al lanzar la re-revisión humana: sólo el valor `off` (`export MRS_FACULTY_REREVIEW_GATE=off`; otro valor no libera nada) libera los otros modos desde el mismo lanzador, por ejemplo para ensayar la primera revisión o el modo en vivo con otra cuenta o almacén. Si el operador lo deja puesto, no hay retención.
 
 ## 5 · La persona revisora entra
 Abre la dirección que imprime Streamlit, pestaña `Create account` con el código de invitación, un usuario **no identificable** (p. ej. `revisor1`) y **su propia** contraseña. Debe ver **Faculty development review** y el aviso amarillo.

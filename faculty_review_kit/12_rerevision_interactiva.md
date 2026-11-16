@@ -7,7 +7,7 @@ Esta pantalla **sustituye** a los archivos `.md` del kit `region_conjunta_v1/` c
 ## Cómo entras
 1. El operador arranca la aplicación (igual que en la primera revisión: `02_preparacion_operador.md`, paso 4). Inicia sesión con tu cuenta docente.
 2. Se abre sola la pantalla **Faculty Trajectory Review** con **FR-B**. No hay nada que elegir ni ningún código que copiar.
-   *(La primera revisión sigue disponible en «Review mode → Trajectory review (first review)». No la abras durante esta: te mostraría las trayectorias anteriores.)*
+   *(Mientras no termines los cuatro escenarios, la aplicación no ofrece ningún otro modo de revisión: es a propósito. Al aparecer **RE-REVIEW COMPLETE · 4 / 4** los otros modos vuelven a estar disponibles.)*
 
 ## Qué haces en cada escenario
 1. Lee **What you are judging** (la pregunta de este escenario), el contexto, la tabla **What was done** y la trayectoria (gráfico y tabla de valores).
@@ -25,7 +25,7 @@ Al terminar los cuatro aparece **RE-REVIEW COMPLETE · 4 / 4** con el recuento d
 - **Ojo con lo que sale en la captura:** la barra lateral muestra el nombre de tu usuario. Usa un usuario no identificable o recórtala. La aplicación no controla lo que envías fuera de ella.
 
 ## Qué ves y qué no
-- Ves: la pregunta, el contexto, qué se hizo y cuándo, la presión (PAS, PAD, PAM) y, **como contexto**, la frecuencia cardíaca y el relleno capilar. Estas dos las calcula el motor vigente del simulador; **no** forman parte de la trayectoria de presión que juzgas y **no se recalcularon para ella**: pueden no ser coherentes con la presión que ves.
+- Ves: la pregunta, el contexto, qué se hizo y cuándo y la presión (PAS, PAD, PAM). Es una revisión **sólo de la trayectoria de presión**: la pantalla no muestra la frecuencia cardíaca ni el relleno capilar a propósito, porque no se recalcularon para esta trayectoria y pueden no ser coherentes con la presión que ves; **no los juzgues ni los supongas**.
 - No ves: la revisión anterior, ningún comparador ni parámetros técnicos. Ninguna trayectoria es «la esperada».
 
 ## Si algo sale mal

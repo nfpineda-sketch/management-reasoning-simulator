@@ -1,0 +1,139 @@
+{
+ "blind_first_pass_display": {
+  "not_shown": [
+   "heart rate",
+   "capillary refill"
+  ],
+  "note_on_screen": "Heart rate and capillary refill are intentionally not displayed in this blinded pressure-trajectory re-review: they were not recomputed for this trajectory.",
+  "recomputed_or_replaced": false,
+  "shown": [
+   "SBP",
+   "DBP",
+   "MAP",
+   "interventions and their timing",
+   "arrival: blood pressure, SpO2 and respiratory rate"
+  ],
+  "stored_set_unchanged": true
+ },
+ "blocker": null,
+ "confirmations": {
+  "clinical_core_untouched": true,
+  "human_review_not_performed_by_the_assistant": true,
+  "no_amendment_3": true,
+  "no_authority_expansion": true,
+  "no_candidate_change": true,
+  "no_clinical_validation_claim": true,
+  "no_low_high_exposed": true,
+  "no_norepinephrine": true,
+  "no_parameter_change": true,
+  "no_physiology_change": true,
+  "no_prior_trajectory_exposed": true,
+  "no_resident_deployment": true,
+  "no_source_control_change": true,
+  "no_trajectory_change": true,
+  "original_review_preserved": true
+ },
+ "decided_on": "2026-11-16",
+ "decisions": [
+  "FD-REREVIEW-21",
+  "FD-REREVIEW-22",
+  "FD-REREVIEW-23",
+  "FD-REREVIEW-24",
+  "FD-P3-246",
+  "FD-P3-247"
+ ],
+ "expensive_checks": {
+  "ALREADY_VALID_ON_EQUIVALENT_CODE": "the full suite certified the parent tree 11c3ae8bc1a0febf3e4339450cbb75c73c05402e",
+  "NOT_REACHABLE": "the full ~12,966-test suite: the app.py diff is one launcher argument behind MRS_FACULTY_DEVELOPMENT_REVIEW and the changed modules are imported only from that branch",
+  "REQUIRED_AND_RUN": [
+   "focused re-review module, page and records tests",
+   "first-review and live-mode page tests",
+   "isolation and lineage guards",
+   "run_regressions.py (56 of 56 active)"
+  ],
+  "UNKNOWN": []
+ },
+ "faculty_decisions_pending": [
+  "whether to also remove the SpO2 and respiratory-rate lines from the blinded arrival (FD-REREVIEW-23 names only heart rate and capillary refill)"
+ ],
+ "fr_g_wording": "the exact certified kit wording is kept (FD-REREVIEW-24); the candidate was not regenerated or repinned",
+ "gating": {
+  "behavior": "while the signed-in faculty account's re-review is not complete the launcher draws no 'Review mode' selector, pins the re-review, drops any earlier mode choice and shows one line; the other modes are not reachable from this launcher or session",
+  "fails_closed_on": [
+   "no store",
+   "set not loadable or not verifiable",
+   "account not faculty or without an id",
+   "the predicate raising"
+  ],
+  "not_a_global_disable": true,
+  "operator_switch": {
+   "name": "MRS_FACULTY_REREVIEW_GATE",
+   "status": "NEW: none existed before; a process environment variable, never shown to the reviewer; do not set it for the human re-review",
+   "value_that_releases": "off"
+  },
+  "prior_data_altered_or_deleted": false,
+  "released_when": "the re-review summary of that account says complete: four records that verify against their closed logs (not just any file)"
+ },
+ "limitations": [
+  "procedural blinding, not cryptographic: the technical material in the repository still names the set",
+  "the hold is per account and based on verified records; a live encounter already open in a tab before the patch is not controlled from the held screen",
+  "heart rate and capillary refill remain in the pinned set and in the static kit tables; the blind page does not load them",
+  "the operator switch is new; leaving it on removes the hold",
+  "not tested with a person"
+ ],
+ "next_human_action": "A human faculty reviewer performs the blinded re-review: sign in, the re-review opens at FR-B with no mode selector, answer Q1-Q5, lock, give the overall judgment, submit and next; after RE-REVIEW COMPLETE 4 / 4 the other modes appear.",
+ "not_done_on_purpose": [
+  "the human re-review itself and any answer on a reviewer's behalf",
+  "exposing LOW/HIGH, the earlier trajectory, the legacy comparator or any parameter",
+  "changing physiology, parameters or candidate trajectories",
+  "Amendment 3, norepinephrine or source control",
+  "expanding authority"
+ ],
+ "options_considered": {
+  "A": "BLINDED_REREVIEW_READY_FOR_HUMAN_USE",
+  "B": "GATING_OR_HIDING_NOT_CERTIFIED",
+  "C": "BLINDNESS_LEAK_FOUND",
+  "D": "CANDIDATE_DATA_CHANGED"
+ },
+ "overall": {
+  "name": "BLINDED_REREVIEW_READY_FOR_HUMAN_USE",
+  "verdict": "A"
+ },
+ "pinned_records": {
+  "active_core_digest": "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2",
+  "blind_key_digest": "4053a89076379d86c48cd90ee86835d26d03dd0d3ee523dbd0b40f83ae1d3978",
+  "candidate_review_set_digest": "b6294655252ec22ea264537e80de2bbd5a905302f0235e07364e8f81976e2e76",
+  "first_review_set_digest": "f65d1127f3fb97926334d695aeab37b92f3a44236cec2ae025025eec90ba1649",
+  "human_review_record_digest": "9ba80fa70d3b38e178caa3aca9432f9227ce6d9591a48c9908c3f5ac4cc6c8d3",
+  "joint_region_checkpoint_digest": "1f49d9bceb02a2c64d5e5d4b52f5f260370ced30739f6f0422daf1720a4c7b92",
+  "previous_checkpoint_digest": "ef7bb6604996152170372ec3197e74567d60526c867ff0989ca4eb3e55b3ebe4",
+  "rereview_set_digest": "c30ab7f1fae514ff7e7c4de50e1d11b60f08efc6021804e162b70100d52b344f"
+ },
+ "publication": {
+  "authorised_by": "the assignment of 2026-11-16 (green certification)",
+  "certification": "focused certification over one frozen fingerprint; its figures and the fingerprint are in the message of the docs commit",
+  "commits": [
+   "review gating and pressure-only view with their tests",
+   "docs, records, review kit and checkpoint"
+  ],
+  "force_push": false,
+  "pull_request": false
+ },
+ "record_digest": "514d768387b888cb4b012e143d6747f96a06fb123393446e6f10a1a4835a6634",
+ "record_type": "FACULTY_REREVIEW_BLINDNESS_PATCH_CHECKPOINT",
+ "review_interface": {
+  "stores": {
+   "first_review_directories_touched": false
+  }
+ },
+ "statement": "The blinded faculty re-review of FR-B, FR-C, FR-E and FR-G (CENTER_REFERENCE only) now holds back the original Faculty Trajectory Review and the live faculty simulation from this launcher until the reviewer's re-review is complete (4 / 4), and its blind first pass shows no heart rate and no capillary refill. Nothing about physiology, parameters, candidate trajectories or the stored set changed. The human re-review has NOT been done.",
+ "statuses": {
+  "ACCESS_AFTER_COMPLETION": "TESTED · 3 / 4 does not release; 4 / 4 offers the first review, the re-review and the live launcher with their data intact",
+  "GATING_BEFORE_COMPLETION": "TESTED · no selector, forged session keys or URL change nothing, no read of first-review files (AppTest on the real app.py)",
+  "HEART_RATE_AND_CAPILLARY_REFILL": "ABSENT from every stage, chart datum, tooltip and session key of the blind page; the detector was tested against injected leaks",
+  "HUMAN_RE_REVIEW": "NOT_DONE",
+  "PRESSURE_DATA": "UNCHANGED · equal to the certified candidate review set and the static kit tables (test_r3); stored set digest unchanged",
+  "REAL_BROWSER_CHECK": "no mode selector before 4 / 4, the re-review opens at FR-B, the other modes appear after 4 / 4, no heart rate or capillary refill text (Chromium, external requests blocked, synthetic accounts)"
+ },
+ "version": "P3-366"
+}
