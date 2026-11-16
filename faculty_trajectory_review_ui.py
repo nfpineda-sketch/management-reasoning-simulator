@@ -43,10 +43,11 @@ def interventions(rows: list) -> list:
     return [{"minute": minute, "label": ",".join(numbers)} for minute, numbers in sorted(by_minute.items())]
 
 
-def pressure_chart(common: list, legacy: list | None, markers: list, stop_minute: int | None):
-    """Common trajectory (solid) and, only when handed in, the legacy comparator (dashed) on the SAME axes; intervention markers drawn once. Colour follows the variable, dash follows the series."""
+def pressure_chart(common: list, legacy: list | None, markers: list, stop_minute: int | None, *, common_name: str = COMMON_NAME):
+    """Common trajectory (solid) and, only when handed in, the legacy comparator (dashed) on the SAME axes; intervention markers drawn once. Colour follows the variable, dash follows the series.
+    ``common_name`` is the series name the tooltip shows (the re-review has no comparator and no authority behind its trajectory, so it passes a neutral one)."""
     import altair as alt
-    data = _long(common, COMMON_NAME) + (_long(legacy, LEGACY_NAME) if legacy else [])
+    data = _long(common, common_name) + (_long(legacy, LEGACY_NAME) if legacy else [])
     x_max = max([point["minute"] for point in common] + ([int(stop_minute)] if stop_minute else []) + [10]) * 1.04
     x = alt.X("minute:Q", title="Minutes since arrival", scale=alt.Scale(domain=[0, x_max], nice=False), axis=alt.Axis(tickCount=7, format="d"))
     y = alt.Y("mmHg:Q", title="mmHg", scale=alt.Scale(domain=[0, 140]))
@@ -55,8 +56,8 @@ def pressure_chart(common: list, legacy: list | None, markers: list, stop_minute
     base = alt.Chart(alt.Data(values=data))
     encodings = dict(x=x, y=y, color=color, tooltip=tooltip)
     if legacy:
-        encodings["strokeDash"] = alt.StrokeDash("source:N", scale=alt.Scale(domain=[COMMON_NAME, LEGACY_NAME], range=[[1, 0], [6, 4]]), legend=alt.Legend(title=None, orient="top"))
-        point_shape = alt.Shape("source:N", scale=alt.Scale(domain=[COMMON_NAME, LEGACY_NAME], range=["circle", "diamond"]), legend=None)
+        encodings["strokeDash"] = alt.StrokeDash("source:N", scale=alt.Scale(domain=[common_name, LEGACY_NAME], range=[[1, 0], [6, 4]]), legend=alt.Legend(title=None, orient="top"))
+        point_shape = alt.Shape("source:N", scale=alt.Scale(domain=[common_name, LEGACY_NAME], range=["circle", "diamond"]), legend=None)
         points = base.mark_point(filled=True, size=55).encode(**{**encodings, "shape": point_shape})
     else:
         points = base.mark_point(filled=True, size=55, shape="circle").encode(**encodings)

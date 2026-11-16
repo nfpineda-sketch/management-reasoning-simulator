@@ -82,6 +82,7 @@ _FACULTY_REVIEW, _FACULTY_LAYER = {}, None
 if os.environ.get("MRS_FACULTY_DEVELOPMENT_REVIEW", "").strip():
     import faculty_review_ui as _faculty_review_ui
     import faculty_trajectory_review_ui as _faculty_trajectory_ui       # UX-003: the primary faculty review page (pure: it imports nothing of the Phase-3 layer); handed to the launcher, never imported by it
+    import faculty_trajectory_rereview_ui as _faculty_rereview_ui       # P3-352: the blind re-review page of the joint-region candidate (same review, another stored set); handed to the launcher the same way
     import runtime_authority as _authority_for_review
     _FACULTY_LAYER = _authority_for_review.faculty_review_layer()      # the page's one crossing into the Phase-3 layer
     _FACULTY_REVIEW = _faculty_review_ui.gate(st, _FACULTY_LAYER, ACCOUNT_CONTEXT, accounts_enabled())
@@ -10426,7 +10427,8 @@ if not st.session_state.started:
         _room.clear_room_fragment(ACCOUNT_CONTEXT)
         if _FACULTY_REVIEW.get("enabled"):
             # Phase 3 (P3-281): in the review environment the dashboard is replaced by the scripted review launcher; no other case can be started.
-            _faculty_review_ui.launcher(st, _FACULTY_LAYER, ACCOUNT_CONTEXT, INITIAL_STATE, reset_session, start_encounter, trajectory_page=_faculty_trajectory_ui.draw)
+            _faculty_review_ui.launcher(st, _FACULTY_LAYER, ACCOUNT_CONTEXT, INITIAL_STATE, reset_session, start_encounter, trajectory_page=_faculty_trajectory_ui.draw, rereview_page=_faculty_rereview_ui.draw,
+                                          default_mode=_faculty_review_ui.REREVIEW_MODE)
         else:
             render_dashboard(ACCOUNT_CONTEXT, INITIAL_STATE, reset_session)
         st.stop()

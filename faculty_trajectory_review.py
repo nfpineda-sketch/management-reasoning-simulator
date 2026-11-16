@@ -226,7 +226,7 @@ def comparator_view(item: Mapping, state: Mapping | None) -> dict:
 
 def required_questions(item: Mapping) -> tuple:
     """(the questions that must be answered before the lock, their ids). The stopping-point question exists only where the experiment stopped."""
-    halted = bool(dict(dict(item["bundle"]).get("authority_view") or {}).get("halted"))
+    halted = bool(dict(dict(item.get("bundle") or {}).get("authority_view") or {}).get("halted"))      # an item with no bundle (the re-review set) has no stop: only the five questions
     questions = list(FIRST_PASS) + ([HALT_QUESTION] if halted else [])
     return questions, [question["id"] for question in questions]
 
@@ -267,7 +267,7 @@ def _fold(lines: Sequence[str], item: Mapping) -> dict:
     write time): the lock is final. A lock counts only when EVERY required question has an answer in the log, and what it locks is what the log holds, never what the event claims."""
     _, required = required_questions(item)
     state: dict = {"status": "NEW", "blind": {}, "blind_comment": "", "locked": False, "locked_at": None, "locked_answers": None, "locked_comment": None, "post": {}, "after_reveal_comment": "",
-                   "overall": None, "submitted": False, "submitted_at": None, "submitted_prev": None, "record_id": None, "head": "0" * 64, "events": 0}
+                   "overall_comment": "", "overall": None, "submitted": False, "submitted_at": None, "submitted_prev": None, "record_id": None, "head": "0" * 64, "events": 0}
     previous = "0" * 64
     for index, line in enumerate(lines):
         try:
@@ -293,6 +293,8 @@ def _fold(lines: Sequence[str], item: Mapping) -> dict:
                 state["overall"] = data["value"]
             elif state["locked"] and not done and kind == "after_reveal_comment":
                 state["after_reveal_comment"] = str(data.get("text") or "")
+            elif state["locked"] and not done and kind == "overall_comment":       # written only by a review with no comparator (the re-review); the comparator flow never writes it
+                state["overall_comment"] = str(data.get("text") or "")
             elif kind == "submitted" and state["locked"] and not done:
                 state.update(submitted=True, submitted_at=event.get("at"), submitted_prev=event.get("prev"), record_id=data.get("record_id"))
         except (KeyError, TypeError, ValueError, AttributeError):
@@ -321,12 +323,25 @@ class ReviewLog:
         self.item, self.reviewer, self.set_digest, self.bundles = dict(item), str(reviewer), str(set_digest), bundles
         self.account = dict(account or {})
         self.item_digest = item_digest(item)
-        bundle_id = dict(item["bundle"])["bundle_id"]
-        stem = f"{item['scenario_id']}__{bundle_id}__{self.item_digest}"
-        self.directory = Path(root) / SUBDIR / self.reviewer
+        stem = self._stem()
+        self.directory = Path(root) / self.SUBDIR_NAME / self.reviewer
         self.path = self.directory / f"{stem}.jsonl"
-        self.records = Path(root) / RECORDS_SUBDIR
+        self.records = Path(root) / self.RECORDS_NAME
         self.record_path = self.records / f"{self.reviewer}__{stem}.json"
+
+    #: What a review of ANOTHER kind of item (the re-review) overrides: where its logs and records live, what identifies its item, how its log is replayed and what it needs before it may be submitted.
+    SUBDIR_NAME, RECORDS_NAME = SUBDIR, RECORDS_SUBDIR
+
+    def _stem(self) -> str:
+        return f"{self.item['scenario_id']}__{dict(self.item['bundle'])['bundle_id']}__{self.item_digest}"
+
+    def _replay(self, lines: Sequence[str]) -> dict:
+        return _fold(lines, self.item)
+
+    def _may_submit(self, state: Mapping) -> str | None:
+        if not state["locked"] or not state["overall"] or not state["post"].get("R1"):
+            return "answer the question about the comparator and the overall judgment first"
+        return None
 
     # ---- reading
     def _read(self) -> list:
@@ -339,9 +354,9 @@ class ReviewLog:
 
     def state(self) -> dict:
         try:
-            return _fold(self._read(), self.item)
+            return self._replay(self._read())
         except OSError:
-            return {**_fold([], self.item), "status": "UNREADABLE", "why": "the saved answers cannot be read"}
+            return {**self._replay([]), "status": "UNREADABLE", "why": "the saved answers cannot be read"}
 
     # ---- writing
     def _append(self, kind: str, data: Any, decide: Callable[[dict], str | None], before: Callable[[dict, dict], str | None] | None = None) -> dict:
@@ -361,7 +376,7 @@ class ReviewLog:
                 if len(keep) != len(raw):                 # drop an unacknowledged torn tail before appending
                     os.ftruncate(fd, len(keep))
                 lines = [line for line in keep.decode("utf-8", "replace").split("\n") if line]
-                state = _fold(lines, self.item)
+                state = self._replay(lines)
                 if state["status"] == "UNREADABLE":
                     return {"ok": False, "why": state["why"], "state": state}
                 refusal = decide(state)
@@ -379,7 +394,7 @@ class ReviewLog:
                 os.fsync(fd)
                 if created:
                     _fsync_directory(self.directory)
-                return {"ok": True, "why": "", "state": _fold(lines + [line.decode("utf-8").strip()], self.item)}
+                return {"ok": True, "why": "", "state": self._replay(lines + [line.decode("utf-8").strip()])}
         except OSError:
             return {"ok": False, "why": SAVE_FAILED, "state": state or self.state()}
         finally:
@@ -434,9 +449,7 @@ class ReviewLog:
         def decide(state: dict) -> str | None:
             if state["submitted"]:
                 return "already submitted"
-            if not state["locked"] or not state["overall"] or not state["post"].get("R1"):
-                return "answer the question about the comparator and the overall judgment first"
-            return None
+            return self._may_submit(state)
 
         def data(state: dict) -> dict:
             return {"record_id": self._record(state)["record_id"], "reviewer_role": self.account.get("role")}
@@ -598,10 +611,10 @@ def summarize(root: Path, reviewer: str, items: Mapping, order: Sequence[Mapping
     return {**body, "summary_digest": _digest(body)[:16]}
 
 
-def write_summary(root: Path, summary: Mapping) -> dict:
+def write_summary(root: Path, summary: Mapping, *, subdir: str = SUBDIR) -> dict:
     """The technical summary file, written without any action from the reviewer (private: 0600 in a 0700 directory). It is DERIVED, so a rewrite replaces it atomically (never a partial file)."""
     try:
-        directory = Path(root) / SUBDIR
+        directory = Path(root) / subdir
         directory.mkdir(parents=True, exist_ok=True)
         os.chmod(directory, 0o700)
         path = directory / f"session_summary_{summary['reviewer_ref']}.json"
