@@ -108,10 +108,13 @@ def test_r3_the_interactive_values_equal_the_static_kit_table_by_table():
         kit = sections[scenario_id]
         assert kit["purpose"] == item["purpose"]
         assert [[str(row["minute"]), row["action"], row["result"]] for row in item["timeline"]] == kit["done"], scenario_id
-        shown = [[str(row["minute"]), str(row["sbp"]), str(row["dbp"]), str(row["map"]), str(row["hr"]), ("—" if row["crt"] is None else f"{float(row['crt']):.1f}".rstrip("0").rstrip(".").replace(".", ","))] for row in rr.values_table(item)]       # the kit writes 6 where Python writes 6.0: the same number
-        assert shown == [[cell for cell in row] for row in kit["values"]], scenario_id
+        # what the reviewer is shown: minute, SBP, DBP, MAP (FD-REREVIEW-23); the same four columns of the kit's table
+        assert [[str(row["minute"]), str(row["sbp"]), str(row["dbp"]), str(row["map"])] for row in rr.values_table(item)] == [row[:4] for row in kit["values"]], scenario_id
+        # what the set keeps (it is pinned and certified): the heart rate and capillary refill of the kit, which the page no longer shows
+        kept = [[str(row["hr"]), ("—" if row["crt"] is None else f"{float(row['crt']):.1f}".rstrip("0").rstrip(".").replace(".", ","))] for row in item["context_vitals"]]
+        assert kept == [row[4:] for row in kit["values"]], scenario_id
         arrival = item["arrival"]
-        assert f"PA {arrival['sbp']}/{arrival['dbp']} mmHg (PAM {arrival['map']})" in kit["arrival"] and f"FC {arrival['hr']}/min" in kit["arrival"]
+        assert f"PA {arrival['sbp']}/{arrival['dbp']} mmHg (PAM {arrival['map']})" in kit["arrival"]
 
 
 def test_r4_what_you_are_judging_is_the_question_the_faculty_asked():
@@ -213,7 +216,7 @@ def test_r6d_the_loader_never_raises_on_a_malformed_set(tmp_path):
 
 def test_r7_the_view_has_no_comparator_no_reveal_and_only_the_five_questions():
     view = rr.blind_view(ITEMS["FR-B"])
-    assert sorted(view) == sorted(["scenario_id", "title", "context", "purpose", "arrival", "timeline", "halted", "stop_minute", "common", "context_vitals", "questions"])
+    assert sorted(view) == sorted(["scenario_id", "title", "context", "purpose", "arrival", "timeline", "halted", "stop_minute", "common", "questions"])
     assert [question["id"] for question in view["questions"]] == ["Q1", "Q2", "Q3", "Q4", "Q5"] and view["halted"] is False
     assert [question["choices"] for question in view["questions"]] == [list(question["choices"]) for question in ftr.FIRST_PASS]
     # nothing in the module can return a comparator, a legacy number or another set
@@ -222,6 +225,18 @@ def test_r7_the_view_has_no_comparator_no_reveal_and_only_the_five_questions():
     tree = ast.parse((ROOT / "faculty_trajectory_rereview_ui.py").read_text(encoding="utf-8"))
     names = {node.id for node in ast.walk(tree) if isinstance(node, ast.Name)} | {node.attr for node in ast.walk(tree) if isinstance(node, ast.Attribute)}
     assert not {name for name in names if name in ("comparator_view", "CHANGED", "COMPARATOR_LABEL", "COMPARATOR_NOTE", "Locked")}
+
+
+def test_r7b_the_view_and_the_values_table_carry_no_heart_rate_and_no_capillary_refill_while_the_set_is_unchanged():
+    """FD-REREVIEW-23: the reviewer is shown pressure only. The stored, pinned set still holds the values of the earlier encounter (they are not recomputed, not fabricated and not removed from the set)."""
+    for scenario_id, item in ITEMS.items():
+        view = rr.blind_view(item)
+        assert sorted(view["arrival"]) == sorted(rr.ARRIVAL_SHOWN) and "hr" not in view["arrival"] and "crt" not in view["arrival"]
+        dumped = json.dumps(view, sort_keys=True).lower()
+        assert not re.search(r'"hr"|"crt"|heart|capillary|context_vitals', dumped), scenario_id
+        assert all(sorted(row) == ["dbp", "map", "minute", "sbp"] for row in rr.values_table(item))
+        assert item["arrival"]["hr"] is not None and item["context_vitals"], "the stored set keeps them: nothing was regenerated or repinned"
+    assert LOADED["digest"] == rr.PINNED_SET_DIGEST == "c30ab7f1fae514ff7e7c4de50e1d11b60f08efc6021804e162b70100d52b344f"
 
 
 # -- the durable log ---------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -387,7 +402,7 @@ def test_r12_the_new_modules_import_nothing_of_the_engine_the_authority_the_shad
     imports = {alias.name for node in ast.walk(launcher) if isinstance(node, ast.Import) for alias in node.names} | {str(node.module) for node in ast.walk(launcher) if isinstance(node, ast.ImportFrom)}
     assert not any("trajectory" in name or "rereview" in name for name in imports), imports
     app = (ROOT / "app.py").read_text(encoding="utf-8")
-    assert "rereview_page=_faculty_rereview_ui.draw" in app and "trajectory_page=_faculty_trajectory_ui.draw" in app and "default_mode=_faculty_review_ui.REREVIEW_MODE" in app
+    assert "rereview_page=_faculty_rereview_ui.draw" in app and "trajectory_page=_faculty_trajectory_ui.draw" in app and "default_mode=_faculty_review_ui.REREVIEW_MODE" in app and "hold_prior_modes=_faculty_rereview_ui.prior_modes_held" in app
 
 
 def test_r13_the_first_review_and_the_first_human_review_are_preserved():

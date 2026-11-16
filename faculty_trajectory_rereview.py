@@ -171,11 +171,16 @@ def load_set(path: Path | None = None, *, expected_digest: Any = _PIN) -> dict:
 
 
 # -- what the reviewer is shown ------------------------------------------------------------------------------------------------------------------------------------------------
+#: What of the arrival the reviewer is shown. Heart rate and capillary refill are NOT (FD-REREVIEW-23): the values stored with each scenario were produced by the earlier encounter's trajectory and were not recomputed
+#: for the pressure of this set, so they could carry that trajectory and contradict this one. They stay in the stored set, untouched (the set is pinned), and leave the process only through this function, which drops them.
+ARRIVAL_SHOWN = ("sbp", "dbp", "map", "spo2", "rr")
+
+
 def blind_view(item: Mapping) -> dict:
-    """EVERYTHING the reviewer sees for a scenario, in the shape the trajectory review page draws. There is no other view: no comparator exists in this module."""
-    return {"scenario_id": item["scenario_id"], "title": item["title"], "context": item["context"], "purpose": item["purpose"], "arrival": dict(item["arrival"]),
+    """EVERYTHING the reviewer sees for a scenario, in the shape the trajectory review page draws. There is no other view: no comparator, no heart rate and no capillary refill exist in it."""
+    return {"scenario_id": item["scenario_id"], "title": item["title"], "context": item["context"], "purpose": item["purpose"], "arrival": {key: item["arrival"][key] for key in ARRIVAL_SHOWN},
             "timeline": [dict(row) for row in item["timeline"]], "halted": False, "stop_minute": None, "common": [dict(point) for point in item["common"]],
-            "context_vitals": [dict(row) for row in item["context_vitals"]], "questions": [dict(question, choices=list(question["choices"])) for question in ftr.required_questions(item)[0]]}
+            "questions": [dict(question, choices=list(question["choices"])) for question in ftr.required_questions(item)[0]]}
 
 
 def sequence(items: Mapping) -> list:
@@ -184,10 +189,8 @@ def sequence(items: Mapping) -> list:
 
 
 def values_table(item: Mapping) -> list:
-    """The pressure points with the heart rate and capillary refill of the same minutes, for a table next to the chart (context for the two last, as on the first review's page)."""
-    context = {row["minute"]: row for row in item["context_vitals"]}
-    return [{"minute": point["minute"], "sbp": int(point["sbp"]), "dbp": int(point["dbp"]), "map": int(point["map"]),
-             "hr": context.get(point["minute"], {}).get("hr"), "crt": context.get(point["minute"], {}).get("crt")} for point in item["common"]]
+    """The pressure points, for a table next to the chart: minute, SBP, DBP, MAP. Nothing else (FD-REREVIEW-23)."""
+    return [{"minute": point["minute"], "sbp": int(point["sbp"]), "dbp": int(point["dbp"]), "map": int(point["map"])} for point in item["common"]]
 
 
 # -- the durable review ----------------------------------------------------------------------------------------------------------------------------------------------------------

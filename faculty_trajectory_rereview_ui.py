@@ -11,6 +11,7 @@ it (``rr.load_set`` hands the audit apart, and only the record writer uses it), 
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any
 
 import faculty_trajectory_review as ftr
@@ -20,6 +21,10 @@ import faculty_trajectory_rereview as rr
 LOG = logging.getLogger("faculty_trajectory_rereview")       # what only the person who runs the environment needs: the technical reasons never reach the reviewer's screen
 VIEW_KEY = "rr_view"          # its own session keys and widget keys: the first review's page and this one never share state
 RESYNC_KEY, NOTICE_KEY = "rr_resync", "rr_notice"
+#: The operator's own switch (a process environment variable, like the other review flags; never the Secrets file). ``off`` opens the earlier review modes while the re-review is incomplete, for the operator who needs
+#: them (and for the tests of those modes). Left out, the hold of FD-REREVIEW-21 applies.
+OPERATOR_FLAG, OPERATOR_OPEN = "MRS_FACULTY_REREVIEW_GATE", "off"
+PRESSURE_ONLY_NOTE = ("Heart rate and capillary refill are intentionally not displayed in this blinded pressure-trajectory re-review: they were not recomputed for this trajectory.")
 SUMMARY_VIEW = "summary"
 GENERIC_REFUSAL = tui.GENERIC_REFUSAL
 LOCK_LABEL, NEXT_LABEL, FINISH_LABEL = "LOCK FIRST IMPRESSION", "SUBMIT & NEXT", "SUBMIT & FINISH"
@@ -57,11 +62,34 @@ def _navigation(st: Any, order: list, prog: dict, view: str) -> None:
             st.rerun()
 
 
+def _arrival_line(arrival: dict) -> str:
+    """The arrival as the reviewer is shown it: pressure, oxygen saturation and respiratory rate. No heart rate and no capillary refill (FD-REREVIEW-23)."""
+    parts = [f"BP {arrival['sbp']}/{arrival['dbp']} mmHg", f"SpO₂ {arrival['spo2']}%", f"RR {arrival['rr']}/min"]
+    return "On arrival: " + " · ".join(part for part in parts if "None" not in part) + "."
+
+
 def _values_table(st: Any, item: dict) -> None:
-    rows = [{"Minute": row["minute"], "SBP": row["sbp"], "DBP": row["dbp"], "MAP": row["map"],
-             "Heart rate (context)": "—" if row["hr"] is None else row["hr"], "Capillary refill, s (context)": "—" if row["crt"] is None else row["crt"]} for row in rr.values_table(item)]
-    st.dataframe(rows, hide_index=True, width="stretch")
-    st.caption("SBP, DBP and MAP (mmHg) are the trajectory you are judging. Heart rate and capillary refill are context for your interpretation: they are not part of the pressure trajectory, and they were not recomputed for it.")
+    st.dataframe([{"Minute": row["minute"], "SBP": row["sbp"], "DBP": row["dbp"], "MAP": row["map"]} for row in rr.values_table(item)], hide_index=True, width="stretch")
+    st.caption("SBP, DBP and MAP (mmHg) are the trajectory you are judging. " + PRESSURE_ONLY_NOTE)
+
+
+def prior_modes_held(st: Any, layer: Any, context: Any) -> bool:
+    """FD-REREVIEW-21: True while this reviewer has not completed the re-review, i.e. while the launcher must offer nothing but the re-review. Complete means the summary counts all four scenarios, which it does only
+    for records that verify against the log that closed them: a forged log does not release the hold. Whatever cannot be decided (no store, an unverifiable set, no faculty account) is HELD. The operator's
+    switch (``MRS_FACULTY_REREVIEW_GATE=off``) releases it."""
+    if os.environ.get(OPERATOR_FLAG, "").strip().lower() == OPERATOR_OPEN:
+        return False
+    review = layer.review
+    user = dict(dict(context or {}).get("user") or {})
+    if user.get("role") not in review.FACULTY_ROLES or user.get("id") is None:
+        return True
+    root = review.review_root()
+    loaded = rr.load_set()
+    if root is None or not loaded["ok"]:
+        return True
+    order = rr.sequence(loaded["items"])
+    summary = rr.summarize(root, ftr.reviewer_ref(user["id"]), loaded["items"], order, loaded["digest"], loaded["audit"], bundles=layer.bundles)
+    return not summary["complete"]
 
 
 def _lock(st: Any, log: rr.ReReviewLog, sid: str, required: list, state: dict) -> None:
@@ -106,7 +134,7 @@ def _scenario(st: Any, item: dict, log: rr.ReReviewLog, last: bool) -> None:
     view = rr.blind_view(item)
     st.subheader(view["title"])
     st.info(f"**{JUDGING_LABEL}.** {view['purpose']}")
-    st.markdown("**Clinical context.** " + view["context"] + " " + tui._arrival_line(view["arrival"]))
+    st.markdown("**Clinical context.** " + view["context"] + " " + _arrival_line(view["arrival"]))
     st.markdown("**What was done**")
     tui._timeline_table(st, view, item)
     st.markdown("**Trajectory under review** · solid lines; numbers mark the interventions in the table")

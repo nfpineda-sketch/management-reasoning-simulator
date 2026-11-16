@@ -10428,7 +10428,7 @@ if not st.session_state.started:
         if _FACULTY_REVIEW.get("enabled"):
             # Phase 3 (P3-281): in the review environment the dashboard is replaced by the scripted review launcher; no other case can be started.
             _faculty_review_ui.launcher(st, _FACULTY_LAYER, ACCOUNT_CONTEXT, INITIAL_STATE, reset_session, start_encounter, trajectory_page=_faculty_trajectory_ui.draw, rereview_page=_faculty_rereview_ui.draw,
-                                          default_mode=_faculty_review_ui.REREVIEW_MODE)
+                                          default_mode=_faculty_review_ui.REREVIEW_MODE, hold_prior_modes=_faculty_rereview_ui.prior_modes_held)
         else:
             render_dashboard(ACCOUNT_CONTEXT, INITIAL_STATE, reset_session)
         st.stop()

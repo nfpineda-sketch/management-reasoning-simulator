@@ -18,6 +18,7 @@ import pytest
 from streamlit.testing.v1 import AppTest
 
 import faculty_review_ui as ui
+import faculty_trajectory_rereview_ui as rereview_ui
 import runtime_authority as ra
 import runtime_authority_session as se
 import runtime_authority_store as ras
@@ -36,10 +37,11 @@ INTERNALS = ("PRESSURE_ONLY", "GRANT_V1", "ACTIVE_AUTHORITY", "AUTHORITY_SESSION
 
 
 def _review_env(mp, store_dir, **override):
-    for name in (ra.AUTHORITY_FLAG, ra.SNAPSHOT_FLAG, ra.ENVIRONMENT_FLAG, ras.STORE_FLAG, rs.FLAG, fr.FLAG, fr.OFFLINE_FLAG, "OPENAI_API_KEY") + tuple(ra.PILOT_FLAGS) + tuple(ra.PILOT_REQUIRED_ON):
+    for name in (ra.AUTHORITY_FLAG, ra.SNAPSHOT_FLAG, ra.ENVIRONMENT_FLAG, ras.STORE_FLAG, rs.FLAG, fr.FLAG, fr.OFFLINE_FLAG, rereview_ui.OPERATOR_FLAG, "OPENAI_API_KEY") + tuple(ra.PILOT_FLAGS) + tuple(ra.PILOT_REQUIRED_ON):
         mp.delenv(name, raising=False)
     env = {fr.FLAG: fr.MODE_ON, rs.FLAG: rs.MODE_SHADOW_COMPARE, ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY, ra.SNAPSHOT_FLAG: grants.PRESSURE_SNAPSHOT_ID,
-           ra.ENVIRONMENT_FLAG: "development", fr.OFFLINE_FLAG: "1", ras.STORE_FLAG: str(store_dir)}
+           ra.ENVIRONMENT_FLAG: "development", fr.OFFLINE_FLAG: "1", ras.STORE_FLAG: str(store_dir),
+           rereview_ui.OPERATOR_FLAG: rereview_ui.OPERATOR_OPEN}          # the operator opens the earlier review modes: the tests of those modes (and of the live encounter) exercise them; the re-review tests close the hold again
     env.update(override)
     for name, value in env.items():
         if value is not None:

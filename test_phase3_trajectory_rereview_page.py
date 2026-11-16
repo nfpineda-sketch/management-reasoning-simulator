@@ -79,10 +79,13 @@ def _leaks(snapshot) -> list:
     return found
 
 
-def _open(world, credentials=None):
-    """Sign in. The re-review is the landing page of the launcher: the reviewer makes no choice at all."""
+def _open(world, credentials=None, *, held=True):
+    """Sign in with the hold of FD-REREVIEW-21 in force (the operator's switch is removed: the tests of the earlier modes set it). While the re-review is incomplete the launcher offers nothing else, so there is
+    no choice to make at all; ``held=False`` is for an account that has completed it."""
+    world["mp"].delenv(rui.OPERATOR_FLAG, raising=False)
     at = page._open(world, credentials, mode="rereview")
-    assert next(item for item in at.radio if item.label == "Review mode").value == page.ui.REREVIEW_MODE
+    if held:
+        assert not any(item.label == "Review mode" for item in at.radio), "the earlier review modes must not be offered before the re-review is complete"
     return at
 
 
@@ -225,7 +228,7 @@ def test_p2_the_landing_page_is_the_re_review_with_four_scenarios_in_order_and_o
     nav = [(label, disabled) for label, disabled in landing["buttons"] if label in rr.SCENARIOS]
     assert nav == [("FR-B", False), ("FR-C", True), ("FR-E", True), ("FR-G", True)]
     assert "Re-review · scenario 1 of 4 · 0 of 4 reviewed" in landing["text"] and "Faculty Trajectory Review" in landing["text"]
-    assert [value for label, _, value in landing["radios"] if label == "Review mode"] == [page.ui.REREVIEW_MODE]
+    assert not [label for label, *_ in landing["radios"] if label == "Review mode"] and page.ui.HELD_NOTE in landing["text"]
     assert "Scenario 1 of 5" not in landing["text"] and "Optional scenario" not in landing["text"]            # the first review's page is not what the reviewer lands on
 
 
@@ -234,14 +237,14 @@ def test_p3_the_first_pass_screen_has_what_the_reviewer_needs_and_nothing_else(j
         blank, item = stages["blank"], ITEMS[scenario_id]
         text = blank["text"]
         assert f"**{rui.JUDGING_LABEL}.** {item['purpose']}" in text and f"**Clinical context.** {item['context']}" in text and item["title"] in text
-        assert f"BP {item['arrival']['sbp']}/{item['arrival']['dbp']} mmHg" in text and f"capillary refill {item['arrival']['crt']} s" in text
+        assert f"On arrival: BP {item['arrival']['sbp']}/{item['arrival']['dbp']} mmHg · SpO₂ {item['arrival']['spo2']}% · RR {item['arrival']['rr']}/min." in text
         # interventions: the table the first review drew, row for row
         timeline = [table for table in blank["tables"] if table and "What was done" in table[0]][0]
         assert [(row["Minute"], row["What was done"], row["What the encounter did"]) for row in timeline] == [(row["minute"], row["action"], row["result"]) for row in item["timeline"]]
         # the values table: the trajectory and the two context variables, labelled as such
         values = [table for table in blank["tables"] if table and "SBP" in table[0]][0]
         assert [(row["Minute"], row["SBP"], row["DBP"], row["MAP"]) for row in values] == [(row["minute"], row["sbp"], row["dbp"], row["map"]) for row in rr.values_table(item)]
-        assert "Heart rate (context)" in values[0] and "Capillary refill, s (context)" in values[0] and "they are not part of the pressure trajectory, and they were not recomputed for it" in text
+        assert sorted(values[0]) == ["DBP", "MAP", "Minute", "SBP"] and rui.PRESSURE_ONLY_NOTE in text
         # five questions with their exact choices, one comment box and ONE lock button that waits for the five answers
         radios = _scenario_radios(blank)
         assert [(label, options, value) for label, options, value in radios] == [(QUESTION_LABELS[q], CHOICES[q], None) for q in ANSWERS]
@@ -249,6 +252,44 @@ def test_p3_the_first_pass_screen_has_what_the_reviewer_needs_and_nothing_else(j
         assert [(label, disabled) for label, disabled in blank["buttons"] if label in (rui.LOCK_LABEL, rui.NEXT_LABEL, rui.FINISH_LABEL)] == [(rui.LOCK_LABEL, True)]
         assert not any("Q5H" in label or "STOPPING" in label for label, _, _ in radios) and "experiment stops" not in text
         assert len(blank["charts"]) == 1
+
+
+#: Heart rate and capillary refill, in any of the forms they could take on the page: a label, a column, an arrival part, a tooltip, a hidden widget payload, a chart variable.
+HR_CRT = re.compile(r"heart[ _-]?rate|capillary|\bHR\b|\bcrt\b|\bCRT\b|\bhr\b|pulse", re.I)
+
+
+def _without_the_note(text: str) -> str:
+    return text.replace(rui.PRESSURE_ONLY_NOTE, "")
+
+
+def test_p3b_no_screen_of_the_flow_shows_heart_rate_or_capillary_refill_only_the_note_names_them(journey):
+    """FD-REREVIEW-23. Scanned: the visible text, every element's own text (labels, help, options, the dataframes' protos, the sidebar), the chart specifications and the session keys, on every stage of every scenario."""
+    snapshots = [("landing", journey["landing"])] + [(f"{scenario_id}/{stage}", snapshot) for scenario_id, stages in journey["scenarios"].items() for stage, snapshot in stages.items()] + [("complete", journey["complete"])]
+    for name, snapshot in snapshots:
+        for source in ("text", "protos"):
+            assert HR_CRT.findall(_without_the_note(snapshot[source])) == [], (name, source, HR_CRT.findall(_without_the_note(snapshot[source])))
+        for spec in snapshot["chart_specs"]:
+            assert HR_CRT.findall(spec) == [] and {"SBP", "MAP", "DBP"} >= set(re.findall(r'"variable": "(\w+)"', spec)), name
+        assert not [key for key in snapshot["session_keys"] if HR_CRT.search(key)], name
+        for table in snapshot["tables"]:
+            assert not [column for row in table for column in row if HR_CRT.search(str(column))], name
+    for scenario_id, stages in journey["scenarios"].items():
+        blank = stages["blank"]
+        assert rui.PRESSURE_ONLY_NOTE in blank["text"], "the reviewer is told why the other channels are not there"
+        assert "On arrival:" in blank["text"] and "HR " not in blank["text"] and "capillary" not in _without_the_note(blank["text"])
+
+
+def test_p3c_the_hr_crt_detector_can_fail_it_sees_each_way_they_could_come_back(world, monkeypatch):  # noqa: F811
+    import streamlit as st
+    real_header = rui._header
+    injected = {"arrival line": lambda: st.markdown("On arrival: BP 88/54 mmHg · HR 124/min · capillary refill 5 s."), "tooltip": lambda: st.button("x", help="heart rate 124", key="hr_help"),
+                "column": lambda: st.dataframe([{"Minute": 0, "Heart rate (context)": 124}]), "hidden payload": lambda: st.text_input("hr", value="124", key="hr_hidden", label_visibility="collapsed"),
+                "sidebar": lambda: st.sidebar.caption("CRT 5.0 s")}
+    for name, leak in injected.items():
+        with monkeypatch.context() as patch:
+            patch.setattr(rui, "_header", lambda *args, _leak=leak, **kwargs: (_leak(), real_header(*args, **kwargs))[1])
+            snapshot = _snap(_open(world))
+            assert [source for source in ("text", "protos") if HR_CRT.findall(_without_the_note(snapshot[source]))], f"the detector missed {name}"
 
 
 def test_p4_the_interactive_pressures_are_exactly_the_certified_static_kits(journey):
@@ -259,9 +300,7 @@ def test_p4_the_interactive_pressures_are_exactly_the_certified_static_kits(jour
         for stage in ("blank", "answered", "locked", "overall"):
             assert _chart_rows(stages[stage]) == expected, (scenario_id, stage)
         values = [table for table in stages["blank"]["tables"] if table and "SBP" in table[0]][0]
-        hr_crt = {row["minute"]: (row["hr"], row["crt"]) for row in source["heart_rate_and_capillary_refill"]}
-        assert [(row["Minute"], row["SBP"], row["DBP"], row["MAP"], row["Heart rate (context)"], row["Capillary refill, s (context)"]) for row in values] == [
-            (point["minute"], int(point["sbp"]), int(point["dbp"]), int(point["map"]), hr_crt[point["minute"]][0], hr_crt[point["minute"]][1]) for point in source["common"]], scenario_id
+        assert [(row["Minute"], row["SBP"], row["DBP"], row["MAP"]) for row in values] == [(point["minute"], int(point["sbp"]), int(point["dbp"]), int(point["map"])) for point in source["common"]], scenario_id
         timeline = [table for table in stages["blank"]["tables"] if table and "What was done" in table[0]][0]
         assert [(row["#"], row["Minute"], row["What was done"], row["What the encounter did"]) for row in timeline] == [(row["n"], row["minute"], row["action"], row["result"]) for row in source["timeline"]]
 
@@ -492,16 +531,126 @@ def test_p14_the_whole_re_review_leaves_the_first_reviews_files_and_set_untouche
     assert list((store / rr.SUBDIR).glob("session_summary_*.json"))
 
 
-def test_p15_the_first_review_is_still_there_by_an_explicit_choice_and_the_two_do_not_share_state(journey, world):  # noqa: F811
-    at = _open(world, journey["credentials"])
-    assert "RE-REVIEW COMPLETE · 4 / 4" in _everything(at)
+def _complete_by_log(world, credentials, scenario_ids):
+    """Complete scenarios through the review's own log (the page does the same through its callbacks)."""
+    for scenario_id in scenario_ids:
+        log = _log_of(world, credentials, scenario_id)
+        for question, value in ANSWERS.items():
+            assert log.answer(question, value)["ok"]
+        assert log.lock()["ok"] and log.set_overall(JUDGMENT[scenario_id])["ok"] and log.submit()["ok"]
+
+
+def _modes(at) -> list:
+    return [list(item.options) for item in at.radio if item.label == "Review mode"]
+
+
+def test_p15_the_earlier_modes_are_not_offered_before_the_re_review_is_complete(world):  # noqa: F811
+    at = _open(world)
+    text = _everything(at)
+    assert _modes(at) == [] and page.ui.HELD_NOTE in text
+    assert "Scenario 1 of 5" not in text and not [item for item in at.selectbox if item.label == "Review encounter"] and not _button(at, "Begin review encounter") and not _button(at, "Abandon the unfinished attempt")
+    assert "Re-review · scenario 1 of 4" in text and rui.LOCK_LABEL in " ".join(label for label, _ in _snap(at)["buttons"])
+
+
+def test_p15b_a_forged_choice_of_an_earlier_mode_changes_nothing_and_reads_nothing_of_them(world):  # noqa: F811
+    at = _open(world)
+    _OPENED["paths"].clear()
+    _OPENED["on"] = True
+    try:
+        for key, value in ((page.ui.MODE_CHOICE_KEY, page.ui.TRAJECTORY_MODE), (page.ui.MODE_KEY, page.ui.LIVE_MODE), (page.ui.MODE_CHOICE_KEY, page.ui.LIVE_MODE)):
+            at.session_state[key] = value
+            at.run()
+            _check(at)
+            text = _everything(at)
+            assert "Scenario 1 of 5" not in text and not [item for item in at.selectbox if item.label == "Review encounter"] and "Re-review · scenario 1 of 4" in text, (key, value)
+            assert at.session_state[page.ui.MODE_CHOICE_KEY] == page.ui.REREVIEW_MODE
+    finally:
+        _OPENED["on"] = False
+    assert [path for path in _OPENED["paths"] if any(name in path for name in OTHER_REVIEW_FILES)] == []
+
+
+def test_p15c_three_of_four_scenarios_do_not_release_the_hold_and_the_fourth_does(world):  # noqa: F811
+    credentials = page._faculty(world)
+    _complete_by_log(world, credentials, ("FR-B", "FR-C", "FR-E"))
+    at = _open(world, credentials)
+    assert _modes(at) == [] and "Re-review · scenario 4 of 4 · 3 of 4 reviewed" in _everything(at)
+    _complete_by_log(world, credentials, ("FR-G",))
+    done = _open(world, credentials, held=False)
+    assert _modes(done) == [[page.ui.TRAJECTORY_MODE, page.ui.REREVIEW_MODE, page.ui.LIVE_MODE]] and page.ui.HELD_NOTE not in _everything(done)
+    assert "RE-REVIEW COMPLETE · 4 / 4" in _everything(done)                          # still the landing page: the re-review
+
+
+def test_p15d_a_forged_or_missing_record_does_not_release_the_hold(world):  # noqa: F811
+    credentials = page._faculty(world)
+    _complete_by_log(world, credentials, rr.SCENARIOS)
+    log = _log_of(world, credentials, "FR-E")
+    log.record_path.unlink()                                                           # the log says submitted, the record that must verify it is gone
+    assert _modes(_open(world, credentials)) == []
+    log.record_path.write_text(json.dumps({"record_type": rr.RECORD_TYPE, "record_id": "forged"}), encoding="utf-8")
+    assert _modes(_open(world, credentials)) == []
+
+
+def test_p15e_after_completion_the_first_review_and_the_live_mode_are_back_by_an_explicit_choice_and_the_data_is_intact(journey, world):  # noqa: F811
+    at = _open(world, journey["credentials"], held=False)
+    assert "RE-REVIEW COMPLETE · 4 / 4" in _everything(at) and _modes(at) == [[page.ui.TRAJECTORY_MODE, page.ui.REREVIEW_MODE, page.ui.LIVE_MODE]]
     next(item for item in at.radio if item.label == "Review mode").set_value(page.ui.TRAJECTORY_MODE).run()
     _check(at)
     text = _everything(at)
     assert "Scenario 1 of 5" in text and "RE-REVIEW COMPLETE" not in text and "Re-review ·" not in text          # the first review, with its own five scenarios and its own (empty) progress
+    next(item for item in at.radio if item.label == "Review mode").set_value(page.ui.LIVE_MODE).run()
+    _check(at)
+    assert [item for item in at.selectbox if item.label == "Review encounter"] and _button(at, "Begin review encounter") is not None
     next(item for item in at.radio if item.label == "Review mode").set_value(page.ui.REREVIEW_MODE).run()
     _check(at)
     assert "RE-REVIEW COMPLETE · 4 / 4" in _everything(at)
+    store = Path(world["store"]) / "faculty_review"
+    assert not (store / ftr.SUBDIR).exists() and not (store / ftr.RECORDS_SUBDIR).exists(), "reading the earlier modes wrote nothing of the first review"
+
+
+def test_p15f_the_operators_switch_opens_the_earlier_modes_before_completion(world, monkeypatch):  # noqa: F811
+    credentials = page._faculty(world)
+    _open(world, credentials)                                                          # (the hold is back in force for the module)
+    monkeypatch.setenv(rui.OPERATOR_FLAG, rui.OPERATOR_OPEN)
+    at = page._open(world, credentials, mode="rereview")
+    assert _modes(at) == [[page.ui.TRAJECTORY_MODE, page.ui.REREVIEW_MODE, page.ui.LIVE_MODE]] and page.ui.HELD_NOTE not in _everything(at)
+    assert next(item for item in at.radio if item.label == "Review mode").value == page.ui.REREVIEW_MODE, "the landing page is still the re-review"
+    monkeypatch.setenv(rui.OPERATOR_FLAG, "ON")                                         # anything but 'off' leaves the hold in force
+    assert _modes(page._open(world, credentials, mode="rereview")) == []
+
+
+def test_p15g_what_cannot_be_decided_is_held(world, monkeypatch):  # noqa: F811
+    credentials = page._faculty(world)
+    monkeypatch.setattr(rr, "load_set", lambda *args, **kwargs: {"ok": False, "problems": ["unverifiable"], "digest": None, "items": {}, "audit": {}})
+    at = _open(world, credentials)
+    text = _everything(at)
+    assert _modes(at) == [] and "The stored trajectories cannot be verified" in text and "unverifiable" not in text
+
+
+def test_p15h_the_hold_predicate_itself_fails_closed_for_no_store_no_faculty_account_and_an_unreadable_store(world, tmp_path, monkeypatch):  # noqa: F811
+    monkeypatch.delenv(rui.OPERATOR_FLAG, raising=False)
+
+    class Review:
+        FACULTY_ROLES = ("faculty", "admin")
+
+        def __init__(self, root):
+            self.root = root
+
+        def review_root(self):
+            return self.root
+
+    class Layer:
+        bundles = None
+
+        def __init__(self, root):
+            self.review = Review(root)
+    faculty = {"user": {"role": "faculty", "id": 7}}
+    assert rui.prior_modes_held(None, Layer(None), faculty) is True                                      # no store
+    assert rui.prior_modes_held(None, Layer(tmp_path), {"user": {"role": "resident", "id": 7}}) is True  # not a faculty account
+    assert rui.prior_modes_held(None, Layer(tmp_path), {"user": {"role": "faculty"}}) is True            # no account id
+    assert rui.prior_modes_held(None, Layer(tmp_path), None) is True
+    assert rui.prior_modes_held(None, Layer(tmp_path), faculty) is True                                  # a store with nothing completed
+    monkeypatch.setenv(rui.OPERATOR_FLAG, rui.OPERATOR_OPEN)
+    assert rui.prior_modes_held(None, Layer(None), None) is False                                        # only the operator's switch releases it, whatever else is missing
 
 
 def test_p16_a_resident_never_reaches_the_re_review_and_nothing_is_created_for_them(world):  # noqa: F811
@@ -535,3 +684,44 @@ def _open_resident(world):
     next(item for item in at.button if item.label == "Sign in").click().run()
     _check(at)
     return at
+
+
+def test_p15i_a_hold_predicate_that_raises_holds_and_one_that_says_no_releases_at_the_launcher():
+    """The launcher itself, with no Streamlit: a predicate that raises holds (fail closed), one that says False offers the modes."""
+    class Fake:
+        def __init__(self):
+            self.session_state, self.captions = {}, []
+
+        def title(self, *args, **kwargs): pass
+        def warning(self, *args, **kwargs): pass
+        def expander(self, *args, **kwargs):
+            raise AssertionError("no radio may be drawn while held")
+
+        def caption(self, text):
+            self.captions.append(text)
+
+    class Layer:
+        review = object()
+
+    def run(predicate):
+        drew, fake = [], Fake()
+
+        class Stop(Exception):
+            pass
+
+        def modes_page(name):
+            return lambda *args: drew.append(name)
+        try:
+            page.ui.launcher(fake, Layer, {}, None, None, None, trajectory_page=modes_page("first"), rereview_page=modes_page("re"), default_mode=page.ui.REREVIEW_MODE, hold_prior_modes=predicate)
+        except AssertionError:
+            drew.append("radio drawn")
+        return drew, fake
+
+    def raises(*args):
+        raise RuntimeError("cannot tell")
+    drew, fake = run(raises)
+    assert drew == ["re"] and fake.captions == [page.ui.HELD_NOTE] and fake.session_state[page.ui.MODE_CHOICE_KEY] == page.ui.REREVIEW_MODE
+    drew, fake = run(lambda *args: True)
+    assert drew == ["re"] and fake.captions == [page.ui.HELD_NOTE]
+    drew, _ = run(lambda *args: False)
+    assert drew == ["radio drawn"], "released: the launcher goes on to draw the mode selector"

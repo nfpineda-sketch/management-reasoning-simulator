@@ -24,6 +24,7 @@ REVEALED_KEY = "phase3_faculty_review_revealed"
 SCENARIO_FIELD = "faculty_review_scenario"
 TRAJECTORY_MODE = "Trajectory review (first review)"
 REREVIEW_MODE = "Trajectory re-review"
+HELD_NOTE = "The other review modes open when this re-review is complete."
 LIVE_MODE = "Live review encounter (advanced)"
 MODE_KEY = "faculty_review_mode"
 MODE_CHOICE_KEY = "faculty_review_mode_choice"       # a plain session key: a widget that is not drawn while an encounter is on screen loses its state, the choice must not
@@ -58,7 +59,7 @@ def gate(st: Any, layer: Any, account_context: Any, accounts: bool) -> dict:
 
 
 def launcher(st: Any, layer: Any, context: Any, initial_state: Any, reset_session: Callable, start_encounter: Callable, trajectory_page: Callable | None = None, rereview_page: Callable | None = None,
-             default_mode: str | None = None) -> None:
+             default_mode: str | None = None, hold_prior_modes: Callable | None = None) -> None:
     """The review launcher: the scripted encounters, nothing else. Draws and stops the page when nothing has started."""
     review = layer.review
     st.title("Faculty development review")
@@ -66,6 +67,19 @@ def launcher(st: Any, layer: Any, context: Any, initial_state: Any, reset_sessio
     # UX-001..013: the primary workflow is the TRAJECTORY REVIEW (stored certified trajectories, one page per scenario). The page itself is HANDED IN by the caller (this module imports nothing of it, as it
     # imports nothing of the Phase-3 layer). The live review encounter below stays unchanged and available. Without a handed-in page there is only the live launcher, as before.
     # The blind RE-REVIEW of the joint-region candidate (P3-352) is a second trajectory page, handed in the same way: the same review, a different stored set, and the first review's page and records untouched.
+    if trajectory_page is not None and rereview_page is not None and hold_prior_modes is not None:
+        # FD-REREVIEW-21: while the blind re-review is incomplete, THIS launcher offers nothing but the re-review: not the first review (it draws the earlier trajectories and judgments) and not the live review
+        # encounter. It is a temporary hold on this launcher, not a product switch: the data of the earlier modes is untouched and they return when the re-review is complete. Whatever cannot be decided is held.
+        try:
+            held = bool(hold_prior_modes(st, layer, context))
+        except Exception:
+            held = True
+        if held:
+            st.session_state[MODE_CHOICE_KEY] = REREVIEW_MODE            # a forged or stale choice of another mode is overwritten, and the radio is not drawn at all
+            st.session_state.pop(MODE_KEY, None)
+            st.caption(HELD_NOTE)
+            rereview_page(st, layer, context)
+            return
     if trajectory_page is not None:
         modes = [TRAJECTORY_MODE] + ([REREVIEW_MODE] if rereview_page is not None else []) + [LIVE_MODE]
         # ``default_mode`` is the page a reviewer lands on before choosing anything. The app names the re-review while it is the pending human action: the earlier review's page draws the earlier trajectories (or
