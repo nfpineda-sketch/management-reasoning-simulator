@@ -1,5 +1,7 @@
 # Fase 3 · Región conjunta de GI formalizada y paquete para la re-revisión humana ciega (P3-337 a P3-348, 2026-11-15)
 
+> **Nota 2026-11-16:** la re-revisión humana ciega de los candidatos se reportó completada (`ACCEPT` 1, `ACCEPT_WITH_LIMITATION` 3, `RECALIBRATE` 0, `REJECT` 0) y `CENTER_REFERENCE` quedó ratificado como instantánea de desarrollo; ver `docs/PHASE3_GI_JOINT_REGION_RATIFICATION.md`. Las frases «pendiente de re-revisión humana» y «sin punto elegido» de este documento eran ciertas al escribirse y no se reescriben.
+
 > **Punto de control (P3-348): `A · JOINT_REGION_READY_FOR_BLINDED_HUMAN_REREVIEW`.**
 > **Banda antigua de la escala (P3-338): `A · PURE_CANDIDATE_ANALYSIS_BAND`** → marcada `SUPERSEDED_BY_JOINT_FEASIBILITY_ANALYSIS` para el análisis conjunto, sin reescribir nada.
 > **No se eligió ningún punto como calibración, no se aprobó ningún parámetro, la Enmienda 3 sigue cerrada y nada ejecutable cambió.**

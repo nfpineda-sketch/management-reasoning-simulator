@@ -1,0 +1,182 @@
+{
+ "amendment_3": "CLOSED",
+ "blocker": null,
+ "caveat": "The human re-review record is REPORTED_NOT_VERIFIED_AGAINST_PERSISTED_STORE: the persisted logs are not in this container and the faculty chose, on 2026-11-16, to register what was reported (as the first review was registered). If the persisted store is later provided and differs, stop and reopen this ratification.",
+ "confirmations": {
+  "amendment_3_closed": true,
+  "clinical_core_untouched": true,
+  "first_review_preserved": true,
+  "low_high_test_only": true,
+  "no_authority_expansion": true,
+  "no_candidate_change": true,
+  "no_clinical_validation_claim": true,
+  "no_executable_change": true,
+  "no_legacy_fitting": true,
+  "no_new_calibration": true,
+  "no_norepinephrine_implementation": true,
+  "no_optimization_of_center_reference": true,
+  "no_physiology_change": true,
+  "no_resident_deployment": true,
+  "no_source_control_addition": true
+ },
+ "decided_on": "2026-11-16",
+ "decisions": [
+  "FD-RATIFY-01",
+  "FD-RATIFY-02",
+  "FD-RATIFY-03",
+  "FD-RATIFY-04",
+  "FD-RATIFY-05",
+  "FD-RATIFY-06",
+  "FD-RATIFY-07",
+  "FD-P3-248",
+  "FD-P3-249",
+  "FD-P3-250",
+  "FD-P3-251"
+ ],
+ "gi_pressure_status": "GI_PRESSURE_DEVELOPMENT_CALIBRATION_CLOSED",
+ "gi_pressure_status_meaning": "development only; NOT production, NOT clinical validation, NOT resident deployment",
+ "human_rereview": {
+  "evidence_class": "HUMAN_FACULTY_REREVIEW",
+  "overall_counts": {
+   "ACCEPT": 1,
+   "ACCEPT_WITH_LIMITATION": 3,
+   "RECALIBRATE": 0,
+   "REJECT": 0
+  },
+  "scenarios": {
+   "FR-B": "ACCEPT_WITH_LIMITATION",
+   "FR-C": "ACCEPT_WITH_LIMITATION",
+   "FR-E": "ACCEPT_WITH_LIMITATION",
+   "FR-G": "ACCEPT"
+  },
+  "verification": "REPORTED_NOT_VERIFIED_AGAINST_PERSISTED_STORE"
+ },
+ "limitation": {
+  "id": "GI_BLOOD_RESUSCITATION_LOW_END_RESPONSE",
+  "reopen_only_if": [
+   "another family shows the same deficit",
+   "intervention ordering becomes wrong",
+   "educational risk becomes material",
+   "a new faculty review changes the judgment"
+  ],
+  "status": [
+   "ACCEPTED_WITH_LIMITATION",
+   "MONITOR",
+   "NO_CURRENT_RECALIBRATION"
+  ]
+ },
+ "limitations": [
+  "the human record is reported, not verified against the persisted store",
+  "one reviewer, four scenarios, two GI cases, pressure only (no heart rate, no capillary refill)",
+  "the accepted trajectories are not what the live simulator produces today",
+  "three of four scenarios carry the low-end limitation",
+  "not clinical validation; not production; not resident deployment"
+ ],
+ "next_physiology_priority": {
+  "architecture": "norepinephrine -> common vascular tone T -> pressure/perfusion -> downstream delivery/debt, interacting with volume/preload and with pump/forward flow",
+  "implemented": false,
+  "motivation": "the unsupported-action stop of norepinephrine in FR-F (TD-147)",
+  "name": "COMMON VASCULAR TONE / VASOPRESSOR PATHWAY"
+ },
+ "options_considered": {
+  "A": "GI_PRESSURE_DEVELOPMENT_REGION_RATIFIED_AND_CLOSED",
+  "B": "HUMAN_REREVIEW_RECORD_MISMATCH (could not be evaluated without the persisted store; the reported record is internally valid against the real question choices and the pinned set)",
+  "C": "SNAPSHOT_BINDING_MISMATCH (ruled out by test: the snapshot binding equals the certified CENTER_REFERENCE binding field by field)",
+  "D": "RATIFICATION_REQUIRES_EXECUTABLE_CHANGE (ruled out: the ratification is a set of records; binding the live authority to the snapshot WOULD be executable and was not done)"
+ },
+ "overall": {
+  "name": "GI_PRESSURE_DEVELOPMENT_REGION_RATIFIED_AND_CLOSED",
+  "verdict": "A"
+ },
+ "pending_faculty_decisions": [
+  "whether, when and how to bind the live GI pressure authority to the ratified snapshot (an executable step with its own authorization and recertification; TD-150 item 7 lists what it needs)",
+  "whether the persisted re-review store can be provided to verify the reported record",
+  "when to open the common vascular tone / vasopresor pathway"
+ ],
+ "pinned_records": {
+  "active_core_digest": "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2",
+  "first_review_record_digest": "9ba80fa70d3b38e178caa3aca9432f9227ce6d9591a48c9908c3f5ac4cc6c8d3",
+  "first_review_record_file_sha256": "51c13d9d6b91b4fdbdf4b5d85bab8ba2c7af98790941805cbb25fbaef63598d0",
+  "human_record_digest": "4af2b53118245b8667d58d3280205ac64101e5c61fb1ecb83ca8bd9f05f05bd8",
+  "human_record_file_sha256": "bd772ec8f37a8b425a88dc87931d9d60fc9cb45e2a5426c33a41712aed86615b",
+  "limitation_record_digest": "43d66c1655bd8811a0738fd543dd83332c78622a9a32480eeafc3ee6c63eb499",
+  "previous_checkpoint_digest": "514d768387b888cb4b012e143d6747f96a06fb123393446e6f10a1a4835a6634",
+  "ratification_record_digest": "6a471a3a1b729214da7e2f57e647d1b3944620cf08642ad5abdbf426692d7747",
+  "region_record_digest": "bf7361a1d96fe7fed9aeca697bba4809ef70e87843d71ba5b64a77f832c41539",
+  "region_record_file_sha256": "eb614a69dcd89271c18242f8b58e5ae0f3e4ea6362d9b2270e3c7b82ce3f8d6e",
+  "rereview_set_digest": "c30ab7f1fae514ff7e7c4de50e1d11b60f08efc6021804e162b70100d52b344f",
+  "snapshot_file_sha256": "dc5da76ea764759552d6107fd05584257903e16bb04cefe139486a0b343c922e",
+  "snapshot_record_digest": "925973f050bc5f9cdc85f7ff83af6fd9349b4499acfbc4987b3b59ab3a60f6b3"
+ },
+ "publication": {
+  "authorised_by": "the assignment of 2026-11-16 (checkpoint A)",
+  "commits": [
+   "records and tests",
+   "docs, roadmap, debt, decisions and checkpoint"
+  ],
+  "force_push": false,
+  "pull_request": false
+ },
+ "record_digest": "3b714eb880ce78feaf96a65414235754a257fdaee7972cfb9970b33a65f0bc83",
+ "record_type": "GI_PRESSURE_CALIBRATION_CLOSURE_CHECKPOINT",
+ "snapshot": {
+  "binding": {
+   "arrival_position": 0.5,
+   "bleed_rate_ml_eq_per_min": 8.970853509,
+   "c_rate_over_scale_per_min": 0.003326066,
+   "crystalloid_kernel": {
+    "e": 0.213115961,
+    "s": 0.835,
+    "tau_min": 60.624
+   },
+   "preload_scale_ml_eq": 2697.136369656
+  },
+  "copied_not_recomputed": true,
+  "id": "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1",
+  "live_configuration_bound": false,
+  "selected_witness": "CENTER_REFERENCE"
+ },
+ "statement": "The GI joint rate/pressure development region is ratified for development experiments with its correlated structure; CENTER_REFERENCE is recorded as GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1 (the exact certified binding, copied and not recomputed); LOW and HIGH stay test witnesses; the low-end blood-resuscitation response is a monitored limitation without recalibration; GI pressure calibration is closed for development. Nothing executable changed, the live authority is not bound to the snapshot, and this is not clinical validation.",
+ "statuses": {
+  "FIRST_REVIEW": "UNCHANGED · record 9ba80fa7… byte-identical",
+  "HUMAN_REREVIEW_RECORD": "REPORTED_NOT_VERIFIED_AGAINST_PERSISTED_STORE · sealed · answers valid against the real question choices · bound to the pinned set and item digests",
+  "HUMAN_RE_REVIEW": "REPORTED_COMPLETED",
+  "LIVE_CONFIGURATION": "NOT BOUND to the snapshot: gi_pressure_committed unchanged; binding it is a separate executable step (TD-152, item 3)",
+  "REGION": "RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS · correlated structure preserved (rate = c x scale at every lattice point) · region record byte-identical",
+  "SNAPSHOT_BINDING": "EQUAL to the certified CENTER_REFERENCE binding, field by field · what the faculty reviewed equals the region's CENTER_REFERENCE pressures in the four scenarios"
+ },
+ "validation": {
+  "expensive_checks": {
+   "ALREADY_VALID_ON_EQUIVALENT_CODE": "dormant guards, clock routes, offline cases and boundary contract v2: green on identical code in the previous cycle; the code did not change since",
+   "NOT_REACHABLE": "the full ~12,966-test suite: no executable behavior and no non-test .py module changed",
+   "REQUIRED_AND_RUN": [
+    "the new tests",
+    "the tests that read the Decision File, the debt register or the review records",
+    "the guards that walk the tree (isolation, external ingestion)",
+    "run_regressions.py"
+   ],
+   "UNKNOWN": []
+  },
+  "figures_and_fingerprint": "the counts of each validation run and the working-tree fingerprint are in the message of the docs commit (they belong to one frozen candidate and are not repeated here, so that this record does not depend on the run it describes)",
+  "new_tests": {
+   "count": 10,
+   "files": [
+    "test_phase3_joint_region_ratification.py (9)",
+    "test_phase3_joint_region_ratification_records.py (1)"
+   ],
+   "mutants_caught": "18 of 18: 11 on the records (re-sealed; the region-record byte edit was repeated with a real byte edit after the first script changed nothing) and 7 on the documents and the checkpoint"
+  },
+  "runs": [
+   "run_regressions.py",
+   "the guards that walk the tree (isolation, external ingestion, GI development snapshot, authority readiness, pre-authority review)",
+   "the tests that read the Decision File, the debt register, CLAUDE.md or the review records",
+   "the new tests"
+  ]
+ },
+ "version": "P3-374",
+ "witnesses": {
+  "CENTER_REFERENCE": "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1",
+  "HIGH": "TEST_WITNESS_ONLY",
+  "LOW": "TEST_WITNESS_ONLY"
+ }
+}

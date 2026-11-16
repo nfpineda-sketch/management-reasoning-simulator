@@ -2,6 +2,8 @@
 
 Fecha: 2026-11-16. Rama: `phase-3-runtime-integration`. Alcance: **sólo capa de UX y plomería de revisión**. **No** cambia fisiología, parámetros, trayectorias, autoridad, concesión, instantánea, casos, puntuación, la UI del residente ni el primer piloto; **no** elige un punto de parámetros, **no** abre la Enmienda 3, **no** implementa norepinefrina ni control de fuente; **no** es validación clínica. Decisiones: FD-REREVIEW-01 a FD-REREVIEW-10 y FD-P3-240 a FD-P3-245 (`docs/COLA_DECISIONES_AI_ADVISOR.md`). Deuda: `TD-151`.
 
+**Actualización 2026-11-16 (ratificación): la re-revisión humana se reportó completada y se ratificó para desarrollo; las frases de este documento que dicen que «no se ha hecho» eran ciertas al escribirse y quedan superadas por `docs/PHASE3_GI_JOINT_REGION_RATIFICATION.md` (§10).**
+
 **Actualización (parche de ciego, P3-362 a P3-366, FD-REREVIEW-21 a FD-REREVIEW-24): lo que dicen §4, §7, §8 y §13 sobre la FC, el relleno capilar y el acceso a la primera revisión quedó superado por §14.**
 
 Distingo en todo el documento: **implementado** · **probado** (con el comando y la cifra) · **pendiente**.
