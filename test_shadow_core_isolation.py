@@ -138,7 +138,9 @@ SHADOW_LAYER = frozenset(Path(name).stem for name in __import__("runtime_shadow"
 assert SHADOW_LAYER == {"runtime_shadow", "runtime_shadow_families", "runtime_shadow_evidence",
                         "runtime_authority", "runtime_authority_store", "runtime_shadow_store",
                         "runtime_shadow_observer", "runtime_authority_pair", "runtime_minute_validation", "runtime_pair_site",
-                        "runtime_pressure_grant", "runtime_authority_session", "runtime_authority_turn", "runtime_faculty_review", "runtime_faculty_bundle"}, SHADOW_LAYER      # P3-271 (declared adaptation): runtime_authority_turn, the authority-controlled turn (copy, judge, apply or discard). P3-251 (declared adaptation): the authority-session lifecycle and stop guard; ``runtime_authority`` imports it on use and the page reaches it only through ``runtime_authority``
+                        "runtime_pressure_grant", "runtime_authority_session", "runtime_authority_turn", "runtime_faculty_review", "runtime_faculty_bundle",
+                        "runtime_pressure_snapshot"}, SHADOW_LAYER      # P3-378 (declared adaptation): the binding of the live authority to the ratified GI pressure snapshot joined the layer (it is in LAYER_SOURCES); nothing outside the layer imports it
+#      # P3-271 (declared adaptation): runtime_authority_turn, the authority-controlled turn (copy, judge, apply or discard). P3-251 (declared adaptation): the authority-session lifecycle and stop guard; ``runtime_authority`` imports it on use and the page reaches it only through ``runtime_authority``
 assert DECLARED_CROSSINGS <= SHADOW_LAYER
 HARNESS = "runtime_shadow_evidence"
 
@@ -172,8 +174,9 @@ def test_cutting_the_shadow_bridge_restores_the_phase2_isolation_exactly():
                              and "runtime_authority" in _imports(path))
     assert authority_users == ["app.py"], authority_users
     import runtime_authority
-    assert sorted(runtime_authority.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"], \
-        "the second crossing carries one development-only approval and nothing else"
+    # FD-PROMOTE-01 (declared adaptation): two development approvals are registered now; the crossing carries exactly those and nothing else
+    assert sorted(runtime_authority.APPROVED_SNAPSHOTS) == sorted(["gi_pressure_committed", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"]), \
+        "the second crossing carries the two development-only approvals and nothing else"
     assert runtime_authority.site_for({}, {}) is None and runtime_authority.unreachable_because()
     # The layer itself is named, not matched by prefix: a future runtime_shadow_x.py is not exempt
     # unless the one declaration names it, and every declared source must exist on disk.

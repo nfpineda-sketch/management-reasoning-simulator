@@ -15,6 +15,7 @@ import runtime_authority as ra
 import runtime_authority_pair as pair
 import runtime_pressure_grant as grants
 import runtime_shadow as rs
+import test_phase3_promotion_record_delta as promotion
 
 ROOT = Path(__file__).resolve().parent
 RECORD_PATH = ROOT / "docs" / "revision" / "PHASE3_PRESSURE_CHECKPOINT.json"
@@ -86,7 +87,8 @@ def test_k1_the_checkpoint_record_is_what_the_code_and_the_other_records_say_now
         RECORD_PATH.write_text(json.dumps(build_record(), indent=1, sort_keys=True), encoding="utf-8")
     assert RECORD_PATH.exists(), "the record is produced once and committed"
     stored, live = json.loads(RECORD_PATH.read_text(encoding="utf-8")), build_record()
-    assert stored == json.loads(json.dumps(live)), "the committed checkpoint no longer matches the code: regenerate it deliberately"
+    # FD-PROMOTE-01 (declared adaptation): the committed record is HISTORICAL (it is pinned in later records), so it is not regenerated; the live code differs from it by exactly one declared delta.
+    assert promotion.same_but_for_the_promotion(stored, json.loads(json.dumps(live))), promotion.delta_problems(stored, json.loads(json.dumps(live)))
 
 
 def test_k2_the_record_says_what_it_must_and_claims_nothing_it_may_not():

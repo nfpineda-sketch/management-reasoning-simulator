@@ -242,7 +242,7 @@ def test_d7_the_phase_two_digest_and_the_snapshot_did_not_move():
     import runtime_shadow as rs
     assert rs.PHASE2_DIGEST == "22b90a6f7f38929cc5c18aa2000579155b4d9109198e35e29ad3991e81d6ce6a"
     assert rs.COMMON_CORE_RUNTIME_AUTHORITY is False
-    assert list(ra.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"]
+    assert sorted(ra.APPROVED_SNAPSHOTS) == sorted(["gi_pressure_committed", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"])  # FD-PROMOTE-01 (declared adaptation); the older point below is unchanged
     values = dict(dict(ra.APPROVED_SNAPSHOTS["gi_pressure_committed"])["parameters"])
     assert values == {"preload_curve_scale_ml": 833.3333333333334, "arrival_preload_fraction": 0.5,
                       "pump_preload_coupling": 1.0, "afterload_sensitivity": 0.3,

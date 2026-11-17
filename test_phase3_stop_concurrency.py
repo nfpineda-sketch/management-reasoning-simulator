@@ -247,7 +247,7 @@ def _module_level_mutables(path):
 def test_c8_the_layer_keeps_no_mutable_state_outside_the_page_session_beyond_declared_constants():
     """The reason a single Python process is enough for development: sessions share the interpreter, so any module-level mutable would be shared state. There is none that a session
     writes: only approved constants (read-only data) exist, no ``global`` statement, no cache."""
-    allowed = {"runtime_authority.py": {"_APPROVED_SNAPSHOT_POINTS"}, "runtime_authority_session.py": {"TRANSITIONS", "OPERATIONS"}, "runtime_pressure_grant.py": {"_BODY"}}
+    allowed = {"runtime_authority.py": {"_APPROVED_SNAPSHOT_POINTS"}, "runtime_authority_session.py": {"TRANSITIONS", "OPERATIONS"}, "runtime_pressure_grant.py": {"_BODY", "_BODY_V2"}}
     for path in LAYER:
         found = set(_module_level_mutables(path))
         assert found <= allowed.get(path, set()), (path, sorted(found - allowed.get(path, set())))
@@ -259,7 +259,7 @@ def test_c8_the_layer_keeps_no_mutable_state_outside_the_page_session_beyond_dec
 
 def test_c9_the_declared_constants_are_never_written_by_a_session():
     """The three constant tables are only read: nothing in the layer assigns into them (subscript assignment, update, pop...)."""
-    constants = {"_APPROVED_SNAPSHOT_POINTS", "TRANSITIONS", "OPERATIONS", "_BODY"}
+    constants = {"_APPROVED_SNAPSHOT_POINTS", "TRANSITIONS", "OPERATIONS", "_BODY", "_BODY_V2"}
     for path in LAYER:
         tree = ast.parse((ROOT / path).read_text(encoding="utf-8"))
         for node in ast.walk(tree):

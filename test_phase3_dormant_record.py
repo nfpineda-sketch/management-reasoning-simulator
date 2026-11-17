@@ -140,7 +140,10 @@ def test_the_dormant_record_is_what_the_source_says_today():
     assert RECORD_PATH.exists(), "write it once with write_record()"
     stored = json.loads(RECORD_PATH.read_text(encoding="utf-8"))
     live = build_record()
-    assert stored["record_digest"] == live["record_digest"], "the committed record no longer matches the source: regenerate it deliberately"
+    # FD-PROMOTE-01 (declared adaptation): the committed dormant record is HISTORICAL and is not regenerated; the source differs from it by exactly one declared delta (the approved snapshots list).
+    import test_phase3_promotion_record_delta as promotion
+    live_plain = json.loads(json.dumps(live))
+    assert promotion.same_but_for_the_promotion(stored, live_plain, path=("authority", "approved_authority_snapshots")), promotion.delta_problems(stored, live_plain, path=("authority", "approved_authority_snapshots"))
     assert stored["authority"] == {"granted": False, "common_core_runtime_authority": False, "approved_authority_snapshots": ["gi_pressure_committed"],
                                    "v1_status": "RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS", "v1_in_the_authority_registry": False}
 

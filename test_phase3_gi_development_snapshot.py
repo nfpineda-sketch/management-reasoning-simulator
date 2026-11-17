@@ -75,7 +75,7 @@ def test_the_record_is_not_an_authority_artifact_and_nothing_reads_it_at_runtime
     assert SNAPSHOT["authority"] == {"registered_as_an_authority_artifact": False, "common_core_runtime_authority": False,
                                      "stored_in": "docs/revision (documentation); no authority store, no registry, no import by the layer or the app"}
     assert rs.COMMON_CORE_RUNTIME_AUTHORITY is False
-    assert sorted(authority.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"]
+    assert sorted(authority.APPROVED_SNAPSHOTS) == sorted(["gi_pressure_committed", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"])  # FD-PROMOTE-01 (declared adaptation): two development approvals are registered now; still an exact set
     needles = ("GI_DEVELOPMENT_SNAPSHOT", "GI_DEVELOPMENT_SNAPSHOT_V1")
     for path in ROOT.glob("*.py"):
         if path.name.startswith(("test_", "regression_")):

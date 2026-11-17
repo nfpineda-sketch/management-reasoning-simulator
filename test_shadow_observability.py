@@ -1121,7 +1121,7 @@ def test_p3o_153f_replay_after_failure_reads_what_was_recorded_and_no_more(trace
 def test_p3o_153g_nothing_gained_authority():
     assert rs.COMMON_CORE_RUNTIME_AUTHORITY is False and rs.MODULE_VERSION == ra.EXPECTED_LAYER == "P3-11"
     assert rs.LIVE_FAMILIES == ("gi_bleed", "opioid") and ra.AUTHORITY_FAMILY == "gi_bleed"
-    assert sorted(ra.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"]
+    assert sorted(ra.APPROVED_SNAPSHOTS) == sorted(["gi_pressure_committed", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"])  # FD-PROMOTE-01 (declared adaptation)
     assert ra.site_for({}, {}) is None and rs.mode({}) == rs.MODE_OFF
     assert set(rec.CERTIFICATION["attacks"]) == {
         "repeated initialization", "zero-minute turns", "duplicate actions", "unsupported actions",

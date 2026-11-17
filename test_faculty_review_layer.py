@@ -29,7 +29,7 @@ def store_dir(tmp_path):
 
 
 def _env(store_dir, **override):
-    env = {fr.FLAG: fr.MODE_ON, rs.FLAG: rs.MODE_SHADOW_COMPARE, ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY, ra.SNAPSHOT_FLAG: grants.PRESSURE_SNAPSHOT_ID,
+    env = {fr.FLAG: fr.MODE_ON, rs.FLAG: rs.MODE_SHADOW_COMPARE, ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY, ra.SNAPSHOT_FLAG: grants.PRESSURE_SNAPSHOT_ID_V2,
            ra.ENVIRONMENT_FLAG: "development", fr.OFFLINE_FLAG: "1", ras.STORE_FLAG: str(store_dir)}
     env.update(override)
     return {key: value for key, value in env.items() if value is not None}
@@ -61,9 +61,18 @@ def test_f2_a_complete_configuration_for_a_faculty_account_is_enabled_and_names_
     decision = _evaluate(store_dir)
     assert decision["enabled"] is True and decision["problems"] == [] and decision["access"] == "FACULTY_REVIEWER" and all(decision["conditions"].values())
     assert set(decision["conditions"]) == set(fr.CONDITIONS) and decision["single_process"]["held"] is True
-    assert (decision["authority_mode"], decision["grant_id"], decision["environment"]) == ("PRESSURE_ONLY", grants.GRANT_ID, "development")
+    assert (decision["authority_mode"], decision["grant_id"], decision["environment"]) == ("PRESSURE_ONLY", grants.GRANT_ID_V2, "development")
     assert decision["allowlist"] == ["gi_bleed_57m", "gi_bleed_72f"]
     assert fr.review_root(_env(store_dir)) == store_dir / fr.REVIEW_DIRNAME
+
+
+def test_f2b_the_review_environment_requires_the_ratified_snapshot_and_refuses_the_older_one(store_dir):
+    """FD-PROMOTE-05 (adversarial review, finding 5): new review sessions run the ratified snapshot under grant version 2. The older snapshot id is a REFUSED configuration of the review mode (condition
+    ``snapshot``), not a second accepted one; anything else that names no registered snapshot is refused too."""
+    for name in (grants.PRESSURE_SNAPSHOT_ID, "", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1_LOW", "gi_joint_pressure_development_snapshot_v1"):
+        decision = _evaluate(store_dir, **{ra.SNAPSHOT_FLAG: name})
+        assert decision["enabled"] is False and decision["conditions"]["snapshot"] is False, name
+    assert _evaluate(store_dir)["enabled"] is True
 
 
 @pytest.mark.parametrize("role,access", (("admin", "FACULTY_REVIEWER"), ("faculty", "FACULTY_REVIEWER"), ("resident", "NOT_A_FACULTY_ACCOUNT"), (None, "NOT_A_FACULTY_ACCOUNT"), ("", "NOT_A_FACULTY_ACCOUNT")))
@@ -244,7 +253,7 @@ def test_f15_the_schema_asks_the_ten_educational_questions_and_the_four_overall_
 
 def test_f16_the_review_layer_adds_no_authority_scope_no_consciousness_and_touches_no_scoring_or_pilot():
     assert grants.GRANT["authority_mode"] == "PRESSURE_ONLY" and grants.ENVIRONMENTS == ("development",) and set(grants.DOMAIN) == {"sbp", "dbp", "map"}
-    assert rs.COMMON_CORE_RUNTIME_AUTHORITY is False and sorted(ra.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"]
+    assert rs.COMMON_CORE_RUNTIME_AUTHORITY is False and sorted(ra.APPROVED_SNAPSHOTS) == sorted(["gi_pressure_committed", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"])
     for name in ("rubric.py", "rubric_store.py", "rubric_analysis.py", "progress_store.py", "management_trace_store.py", "pilot_freeze.py", "pilot_acceptance.py", "tools_pilot_preflight.py",
                  "family_engine.py", "scoring.py"):
         path = ROOT / name

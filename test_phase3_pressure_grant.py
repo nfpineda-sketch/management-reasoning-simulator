@@ -53,7 +53,8 @@ def test_g1_the_grant_has_the_declared_identity_and_the_pinned_fingerprint():
     assert grant["grant_id"] == "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V1" and grant["grant_version"] == 1 and grant["kind"] == "FACULTY_GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT"
     assert grant["authority_mode"] == "PRESSURE_ONLY" and grant["status"] == "ACTIVE_FOR_DEVELOPMENT_EXPERIMENT" and grant["purpose"] == "DEVELOPMENT_AUTHORITY_EXPERIMENT_ONLY"
     assert grant["fingerprint"] == grants.GRANT_FINGERPRINT == PINNED_FINGERPRINT == grants.fingerprint_of(grant)
-    assert grants.REGISTERED_GRANTS == (grant,) and grants.GRANT_FINGERPRINT == PINNED_FINGERPRINT, "exactly ONE grant is registered"
+    # FD-PROMOTE-04 (declared adaptation): the registry holds exactly TWO grants now -- version 1 (this one, unchanged) and version 2 (the ratified snapshot); an exact tuple, nothing else.
+    assert grants.REGISTERED_GRANTS == (grant, grants.GRANT_V2) and grants.GRANT_FINGERPRINT == PINNED_FINGERPRINT, "exactly the two registered grants"
     assert grant["issued_by_role"] == "faculty" and "FD-P3-203" in grant["decision_reference"] and grant["issued_on"] == "2026-11-12"
     assert _problems(grant) == []
 
@@ -220,7 +221,7 @@ def test_g10_the_case_allowlist_rejects_everything_else_before_the_first_commit(
 def test_g11_v1_is_not_a_pressure_snapshot_and_the_overlay_snapshot_cannot_stand_in_for_it(gi_state):
     decision = ra.gate(gi_state, environ={**REAL, ra.SNAPSHOT_FLAG: "GI_DEVELOPMENT_SNAPSHOT_V1"}, unsupported=())
     assert not decision.granted and not decision.conditions["approved_snapshot"] and not decision.conditions["explicit_development_grant"]
-    assert "GI_DEVELOPMENT_SNAPSHOT_V1" not in ra.APPROVED_SNAPSHOTS and sorted(ra.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"]
+    assert "GI_DEVELOPMENT_SNAPSHOT_V1" not in ra.APPROVED_SNAPSHOTS and sorted(ra.APPROVED_SNAPSHOTS) == sorted(["gi_pressure_committed", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"])
 
 
 # -- P3-240A/B: nothing reads a grant from outside, the page does not know it -------------------------------------------------------------------------------
@@ -249,7 +250,9 @@ def test_g13_only_the_grant_module_and_the_gate_name_the_registry_and_the_page_d
     # configuration; the gate stays the only module that DECIDES with it. What the test protects -- nobody but the gate can permit -- is protected twice: the importers are pinned, and the
     # attributes the review modules read are pinned to read-only constants (never ``permits``, ``grant_problems``, the registry or any grant constructor).
     assert importers == ["runtime_authority.py", "runtime_faculty_bundle.py", "runtime_faculty_review.py"], importers
-    read_only = {"AUTHORITY_MODE", "CASES", "FAMILY", "GRANT", "GRANT_FINGERPRINT", "GRANT_ID", "GRANT_VERSION", "PRESSURE_SNAPSHOT_ID"}
+    # FD-PROMOTE-04 (declared adaptation): the version-2 twins of the same read-only constants; still no registry, no ``permits``, no ``grant_problems``, no lookup function.
+    read_only = {"AUTHORITY_MODE", "CASES", "FAMILY", "GRANT", "GRANT_FINGERPRINT", "GRANT_ID", "GRANT_VERSION", "PRESSURE_SNAPSHOT_ID",
+                 "GRANT_V2", "GRANT_FINGERPRINT_V2", "GRANT_ID_V2", "GRANT_VERSION_V2", "PRESSURE_SNAPSHOT_ID_V2"}
     for name in ("runtime_faculty_review.py", "runtime_faculty_bundle.py"):
         tree = ast.parse((ROOT / name).read_text(encoding="utf-8"))
         used = {node.attr for node in ast.walk(tree) if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name) and node.value.id == "grants"}

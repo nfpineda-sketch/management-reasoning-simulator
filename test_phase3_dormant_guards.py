@@ -383,7 +383,7 @@ def test_211b_no_scoring_surface_names_the_word_and_the_layer_cannot_reach_one()
 
 
 def test_with_authority_off_the_view_is_inert_the_flag_is_false_and_nothing_registers_the_view_as_an_authority():
-    assert rs.COMMON_CORE_RUNTIME_AUTHORITY is False and sorted(authority.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"]
+    assert rs.COMMON_CORE_RUNTIME_AUTHORITY is False and sorted(authority.APPROVED_SNAPSHOTS) == sorted(["gi_pressure_committed", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"])
     with ev.shadow(rs.MODE_OFF):
         encounter = _encounter_at(10)
     assert view.OVERLAY_KEY not in encounter.state and view.overlay_of(encounter.state) is None

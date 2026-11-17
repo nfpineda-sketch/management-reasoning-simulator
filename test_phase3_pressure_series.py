@@ -433,4 +433,8 @@ def test_p16_the_series_record_is_what_the_real_page_produced(runs):
     if os.environ.get("MRS_WRITE_PRESSURE_SERIES") == "1":
         RECORD_PATH.write_text(json.dumps(live, indent=1, sort_keys=True), encoding="utf-8")
     assert RECORD_PATH.exists(), "the record is produced once and committed"
-    assert json.loads(RECORD_PATH.read_text(encoding="utf-8")) == live, "the committed series no longer matches the real page: regenerate it deliberately"
+    stored = json.loads(RECORD_PATH.read_text(encoding="utf-8"))
+    # FD-PROMOTE-01 (declared adaptation): this record is pinned by later records (P3-300, P3-313 and the trajectory-review set embed its digest), so it is HISTORICAL and not regenerated; the live
+    # page differs from it by exactly one declared delta (the list of approved snapshots, which now holds the promoted one too).
+    import test_phase3_promotion_record_delta as promotion
+    assert promotion.same_but_for_the_promotion(stored, live, path=("authority", "approved_authority_snapshots")), promotion.delta_problems(stored, live, path=("authority", "approved_authority_snapshots"))

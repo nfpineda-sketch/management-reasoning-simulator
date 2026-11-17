@@ -46,7 +46,7 @@ def _normal(value):
 
 def test_authority_stays_disabled_and_v1_is_not_in_the_authority_registry():
     assert rs.COMMON_CORE_RUNTIME_AUTHORITY is False
-    assert sorted(authority.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"]
+    assert sorted(authority.APPROVED_SNAPSHOTS) == sorted(["gi_pressure_committed", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"])  # FD-PROMOTE-01 (declared adaptation): two development approvals are registered now; still an exact set
     assert authority.gate({}, environ={}, unsupported=()).granted is False
     assert authority.AUTHORITY_DOMAIN == ("sbp", "dbp", "map")
     assert REVIEW["authority"] == {"enabled": False, "common_core_runtime_authority": False, "approved_authority_snapshots": ["gi_pressure_committed"],
@@ -72,7 +72,13 @@ def test_no_runtime_module_names_the_harness_and_the_dry_transaction_never_calls
 def test_the_ratification_is_pinned_rebuilds_exactly_and_leaves_version_1_untouched():
     assert hashlib.sha256((ROOT / an.SNAPSHOT_FILE).read_bytes()).hexdigest() == binding.V1_FILE_SHA256
     assert RATIFICATION["ratification_digest"] == RATIFICATION_DIGEST
-    assert _normal(binding.build_ratification(str(ROOT))) == RATIFICATION
+    # FD-PROMOTE-01 (declared adaptation): the ratification of version 1 is HISTORICAL and pinned (its digest below is unchanged). Rebuilt today, it differs in exactly one field -- the registry listing "today"
+    # now names the promoted snapshot too -- so the rebuild is compared with that one field set back to the value it had on the day (and then the pinned digest is re-derived from it).
+    rebuilt = _normal(binding.build_ratification(str(ROOT)))
+    assert rebuilt["authority"]["approved_authority_snapshots_today"] == sorted(["gi_pressure_committed", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"])
+    rebuilt["authority"]["approved_authority_snapshots_today"] = ["gi_pressure_committed"]
+    rebuilt["ratification_digest"] = an.digest({key: value for key, value in rebuilt.items() if key != "ratification_digest"})
+    assert rebuilt == RATIFICATION
     assert an.digest({key: value for key, value in RATIFICATION.items() if key != "ratification_digest"}) == RATIFICATION_DIGEST
 
 
@@ -753,7 +759,7 @@ def test_live_the_dry_run_is_deterministic_reproduces_the_record_and_leaves_the_
     assert all(alone[minute] == beside[minute] for minute in alone)
     # nothing leaked into the process: the patches are gone and the registries are what they were
     assert rs.ShadowSession.observe.__qualname__ == "ShadowSession.observe" and acceptance.Encounter.order.__qualname__ == "Encounter.order"
-    assert sorted(authority.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"] and rs.COMMON_CORE_RUNTIME_AUTHORITY is False
+    assert sorted(authority.APPROVED_SNAPSHOTS) == sorted(["gi_pressure_committed", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"]) and rs.COMMON_CORE_RUNTIME_AUTHORITY is False  # FD-PROMOTE-01 (declared adaptation)
     assert sc.WITNESSES["CENTER_REFERENCE"].to_dict() != SNAPSHOT["values"]
 
 

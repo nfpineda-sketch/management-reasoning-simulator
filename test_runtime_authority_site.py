@@ -27,6 +27,8 @@ import runtime_authority_store as store
 import runtime_shadow as rs
 
 ROOT = Path(__file__).resolve().parent
+#: The development-only approvals the Decision File records (FD-P3-42; FD-PROMOTE-01 added the ratified joint snapshot, and the older point stays registered). An exact set, nothing else.
+APPROVED_DEVELOPMENT_IDS = sorted(["gi_pressure_committed", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"])
 CASE = "gi_bleed_57m"
 DIGEST = "a" * 64
 TEST_ONLY_SNAPSHOT = {"id": "test_only_site_point",
@@ -98,16 +100,15 @@ def test_d1_the_site_refuses_in_every_configuration_but_the_authorized_developme
     everything that names it outside its declared scope. The authorized development configuration is
     exercised by the P3-41 experiment and by ``test_d26``.
     """
-    assert sorted(ra.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"]
+    assert sorted(ra.APPROVED_SNAPSHOTS) == APPROVED_DEVELOPMENT_IDS
+    refused_named = [environ for name in APPROVED_DEVELOPMENT_IDS for environ in (
+        {**BEST, ra.SNAPSHOT_FLAG: name, ra.ENVIRONMENT_FLAG: "production"},
+        {**BEST, ra.SNAPSHOT_FLAG: name, ra.PILOT_FLAGS[0]: "1"},
+        {**BEST, ra.SNAPSHOT_FLAG: name, store.STORE_FLAG: ""})]
     for environ in ({}, {ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY}, BEST,
                     {**BEST, ra.ENVIRONMENT_FLAG: "production"},
                     {**BEST, ra.PILOT_FLAGS[0]: "1"},
-                    {**BEST, ra.SNAPSHOT_FLAG: "a name nobody approved"},
-                    {**BEST, ra.SNAPSHOT_FLAG: "gi_pressure_committed",
-                     ra.ENVIRONMENT_FLAG: "production"},
-                    {**BEST, ra.SNAPSHOT_FLAG: "gi_pressure_committed", ra.PILOT_FLAGS[0]: "1"},
-                    {**BEST, ra.SNAPSHOT_FLAG: "gi_pressure_committed",
-                     store.STORE_FLAG: ""}):
+                    {**BEST, ra.SNAPSHOT_FLAG: "a name nobody approved"}, *refused_named):
         assert ra.open_site(gi_turn["arrival"], environ=environ) is None, environ
         assert ra.site_for(gi_turn["arrival"], {}, environ=environ) is None, environ
     assert ra.unreachable_because()
@@ -384,7 +385,7 @@ def test_d16_the_application_runs_legacy_and_shadow_and_cannot_run_authority(gi_
     # LIMITED_COMMON_AUTHORITY: with every flag a deployment could set, and no approved snapshot.
     for name, value in BEST.items():
         monkeypatch.setenv(name, value)
-    assert sorted(ra.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"]
+    assert sorted(ra.APPROVED_SNAPSHOTS) == APPROVED_DEVELOPMENT_IDS
     assert ra.site_for(gi_turn["arrival"], {}) is None, \
         "BEST names the test-only id, which is not the registered approval"
     assert at.session_state.get("phase3_authority_artifact") is None

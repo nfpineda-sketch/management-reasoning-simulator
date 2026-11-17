@@ -294,7 +294,7 @@ def test_213_the_pair_is_dormant_with_the_flag_off_nothing_commits_even_when_eve
     with pytest.raises(ra.AuthorityRefused) as refused:
         tx.commit(state, environ={})                                                    # no flag, no approval: the nine-condition gate refuses at commit
     assert "gate" in str(refused.value) and tx.state == pair.PAIR_ABORTED and view.OVERLAY_KEY not in state
-    assert rs.COMMON_CORE_RUNTIME_AUTHORITY is False and sorted(ra.APPROVED_POINT_DIGESTS) == ["gi_pressure_committed"] and ra.AUTHORITY_DOMAIN == ("sbp", "dbp", "map")
+    assert rs.COMMON_CORE_RUNTIME_AUTHORITY is False and sorted(ra.APPROVED_POINT_DIGESTS) == sorted(["gi_pressure_committed", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"]) and ra.AUTHORITY_DOMAIN == ("sbp", "dbp", "map")
 
 
 def test_213b_collapse_is_boundary_information_only_it_is_in_no_payload_no_overlay_and_no_write(gi_state, approved, bound):
@@ -422,7 +422,7 @@ def test_214a_binding_promotes_nothing_to_an_authority_registry_and_registers_no
     before = (sorted(ra.APPROVED_SNAPSHOTS), sorted(ra._APPROVED_SNAPSHOT_POINTS), dict(ra.APPROVED_POINT_DIGESTS), sorted(sc.WITNESSES))
     pair.bind(str(ROOT))
     assert (sorted(ra.APPROVED_SNAPSHOTS), sorted(ra._APPROVED_SNAPSHOT_POINTS), dict(ra.APPROVED_POINT_DIGESTS), sorted(sc.WITNESSES)) == before
-    assert before[0] == ["gi_pressure_committed"] and "GI_DEVELOPMENT_SNAPSHOT_V1" not in ra.APPROVED_SNAPSHOTS and "GI_DEVELOPMENT_SNAPSHOT_V1" not in ra._APPROVED_SNAPSHOT_POINTS
+    assert before[0] == sorted(["gi_pressure_committed", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"]) and "GI_DEVELOPMENT_SNAPSHOT_V1" not in ra.APPROVED_SNAPSHOTS and "GI_DEVELOPMENT_SNAPSHOT_V1" not in ra._APPROVED_SNAPSHOT_POINTS
     ratification = json.loads((ROOT / pair.RATIFICATION_FILE).read_text(encoding="utf-8"))
     assert ratification["status"] == "RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS" and ratification["authority"]["added_to_an_approved_authority_snapshot_registry"] is False
     assert os.environ.get(ra.AUTHORITY_FLAG) in (None, "") and rs.COMMON_CORE_RUNTIME_AUTHORITY is False

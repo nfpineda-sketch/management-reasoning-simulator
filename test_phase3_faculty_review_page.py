@@ -33,13 +33,15 @@ from account_store import AccountStore, hash_password
 ROOT = Path(__file__).resolve().parent
 ADMIN, RESIDENT = ("admin", "faculty-review-admin-password"), ("resident1", "faculty-review-resident-password")
 DEATH_WORDS = ("death", "died", "dead", "cardiac arrest", "terminal", "moribund", "expired", "exitus", "fatal")
-INTERNALS = ("PRESSURE_ONLY", "GRANT_V1", "ACTIVE_AUTHORITY", "AUTHORITY_SESSION", "NONAUTHORITATIVE", "comparator", "review bundle", "phase3_", "GI_DEVELOPMENT_SNAPSHOT")
+# FD-PROMOTE (declared adaptation): the version-2 grant and the ratified snapshot are internals too -- they must stay off every resident-facing screen exactly as version 1 did.
+INTERNALS = ("PRESSURE_ONLY", "GRANT_V1", "GRANT_V2", "ACTIVE_AUTHORITY", "AUTHORITY_SESSION", "NONAUTHORITATIVE", "comparator", "review bundle", "phase3_", "GI_DEVELOPMENT_SNAPSHOT",
+             "GI_JOINT_PRESSURE", "gi_joint_pressure")
 
 
 def _review_env(mp, store_dir, **override):
     for name in (ra.AUTHORITY_FLAG, ra.SNAPSHOT_FLAG, ra.ENVIRONMENT_FLAG, ras.STORE_FLAG, rs.FLAG, fr.FLAG, fr.OFFLINE_FLAG, rereview_ui.OPERATOR_FLAG, "OPENAI_API_KEY") + tuple(ra.PILOT_FLAGS) + tuple(ra.PILOT_REQUIRED_ON):
         mp.delenv(name, raising=False)
-    env = {fr.FLAG: fr.MODE_ON, rs.FLAG: rs.MODE_SHADOW_COMPARE, ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY, ra.SNAPSHOT_FLAG: grants.PRESSURE_SNAPSHOT_ID,
+    env = {fr.FLAG: fr.MODE_ON, rs.FLAG: rs.MODE_SHADOW_COMPARE, ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY, ra.SNAPSHOT_FLAG: grants.PRESSURE_SNAPSHOT_ID_V2,
            ra.ENVIRONMENT_FLAG: "development", fr.OFFLINE_FLAG: "1", ras.STORE_FLAG: str(store_dir),
            rereview_ui.OPERATOR_FLAG: rereview_ui.OPERATOR_OPEN}          # the operator opens the earlier review modes: the tests of those modes (and of the live encounter) exercise them; the re-review tests close the hold again
     env.update(override)
@@ -182,10 +184,10 @@ def test_e2_a_review_encounter_starts_the_pinned_allowlisted_case_with_the_press
     state = at.session_state["state"]
     assert state["engine_family"] == "gi_bleed" and state["encounter_spec"]["clinical_case"]["id"] == "gi_bleed_57m"
     site = _site(at)
-    assert site is not None and site.grant["grant_id"] == grants.GRANT_ID and site.environment == "development" and site.case_id == "gi_bleed_57m"
+    assert site is not None and site.grant["grant_id"] == grants.GRANT_ID_V2 and site.environment == "development" and site.case_id == "gi_bleed_57m"
     assert list(site.minutes_committed) == [5, 10, 30] and not site.halted
     assert at.session_state[se.SESSION_KEY]["lifecycle"] == se.ACTIVE_AUTHORITY
-    assert (grants.GRANT["authority_mode"], tuple(grants.GRANT["domain"])) == ("PRESSURE_ONLY", ("sbp", "dbp", "map"))
+    assert (grants.GRANT_V2["authority_mode"], tuple(grants.GRANT_V2["domain"])) == ("PRESSURE_ONLY", ("sbp", "dbp", "map"))
     token = world["accounts"].authenticate(*world["creds"]["FR-B"])
     mine = [item for item in world["accounts"].list_attempts(token) if item["user_id"] == world["accounts"].get_user(token)["id"]]
     assert len(mine) == 1 and mine[0]["is_sandbox"] is True and mine[0]["challenge_id"] == ui.CHALLENGE_ID, "a staff attempt: never a resident's, never scored"
@@ -214,9 +216,9 @@ def test_e3_every_scripted_review_encounter_runs_on_the_real_page_to_the_certifi
 def test_e4_the_panel_shows_the_operational_status_and_the_resident_views_carry_none_of_it(world):
     at = _run(world, "FR-B")
     status = _status(at)
-    assert status["case_id"] == "gi_bleed_57m" and status["grant_id"] == grants.GRANT_ID and status["grant_version"] == grants.GRANT_VERSION and status["authority_mode"] == "PRESSURE_ONLY"
+    assert status["case_id"] == "gi_bleed_57m" and status["grant_id"] == grants.GRANT_ID_V2 and status["grant_version"] == grants.GRANT_VERSION_V2 and status["authority_mode"] == "PRESSURE_ONLY"
     assert status["session_state"] == se.ACTIVE_AUTHORITY and status["last_authoritative_minute"] == 30 and set(status["last_authoritative_pressure"]) == {"sbp", "dbp", "map"}
-    assert status["snapshot_id"] == grants.PRESSURE_SNAPSHOT_ID
+    assert status["snapshot_id"] == grants.PRESSURE_SNAPSHOT_ID_V2
     assert status["lineage"] == {"core_version": grants.CORE_VERSION, "core_digest": grants.CORE_DIGEST, "phase2_closure_digest": rs.PHASE2_DIGEST}, "the active core's version AND digest, with the closure digest named apart"
     assert status["artifact"]["digest"] and status["artifact"]["minutes_recorded"] >= 3 and status["halt"]["halted"] is False
     assert status["faculty_review"] == {"enabled": True, "single_process": True, "allowlist": ["gi_bleed_57m", "gi_bleed_72f"]}

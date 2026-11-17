@@ -167,6 +167,11 @@ def test_t9_nothing_executable_reads_the_new_records_and_no_authority_was_expand
     assert RATIFICATION["executable_change"] is False and RATIFICATION["amendment_3"] == "CLOSED" and REGION["decision"]["amendment_3"].startswith("CLOSED")
     assert RATIFICATION["authority"] == {"expanded": False, "common_core_runtime_authority": False, "live_configuration_bound_to_the_snapshot": False}
     assert SNAPSHOT["live_configuration"]["bound"] is False and SNAPSHOT["live_configuration"]["executable_change"] is False
-    ids = ("GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1", "GI_BLOOD_RESUSCITATION_LOW_END_RESPONSE", "GI_PRESSURE_DEVELOPMENT_CALIBRATION_CLOSED", "PHASE3_HUMAN_FACULTY_REREVIEW")
-    offenders = [path.name for path in ROOT.glob("*.py") if not path.name.startswith("test_") and any(token in path.read_text(encoding="utf-8", errors="replace") for token in ids)]
-    assert offenders == [], f"an executable module names the new records: {offenders}"
+    # FD-PROMOTE-01 (declared adaptation). At the ratification nothing executable named these records; the promotion deliberately binds the live authority to the snapshot, so the executable modules that name
+    # it are now an EXACT declared set. What this still protects: the monitored limitation is named by exactly two modules and only as declared text (nothing executes it, nothing "fixes" it), and no
+    # executable names the closure marker or the human re-review record (the binding pins that record's DIGEST, never its name).
+    declared = {"GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1": ["runtime_authority.py", "runtime_pressure_grant.py", "runtime_pressure_snapshot.py", "runtime_shadow_families.py"],
+                "GI_BLOOD_RESUSCITATION_LOW_END_RESPONSE": ["runtime_authority.py", "runtime_pressure_grant.py"],
+                "GI_PRESSURE_DEVELOPMENT_CALIBRATION_CLOSED": [], "PHASE3_HUMAN_FACULTY_REREVIEW": []}
+    found = {token: sorted(path.name for path in ROOT.glob("*.py") if not path.name.startswith("test_") and token in path.read_text(encoding="utf-8", errors="replace")) for token in declared}
+    assert found == declared, f"the executable modules that name the ratified records are not the declared set: {found}"

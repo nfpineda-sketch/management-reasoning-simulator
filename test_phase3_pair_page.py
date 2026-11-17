@@ -35,6 +35,11 @@ FORBIDDEN_ON_THE_PAGE = ("WOULD_COMMIT", "WOULD_ABORT", "EXPERIMENT_HALTED", "NO
                          "consciousness_category", "VALIDATED_ATOMIC_INTERVAL", "dry run", "dry-run")
 
 
+#: The approved snapshot id the authorized development configuration names. The older point by default; the promotion mirror (``test_phase3_pressure_promotion_stop.py``) switches it to the ratified joint
+#: snapshot for a module and puts it back, so the SAME page proofs run under both configurations without a copy of them.
+AUTHORITY_SNAPSHOT_ID = "gi_pressure_committed"
+
+
 def _clean(monkeypatch, case, *, shadow, dry, authority=None):
     """The page on ``case`` with the flags this test names and, unless ``authority`` is a store directory, no authority flag, no approved snapshot, no store."""
     for name in (ra.AUTHORITY_FLAG, ra.SNAPSHOT_FLAG, ra.ENVIRONMENT_FLAG, store.STORE_FLAG, pair.DRY_FLAG, rs.FLAG, "OPENAI_API_KEY") + tuple(ra.PILOT_FLAGS) + tuple(ra.PILOT_REQUIRED_ON):
@@ -47,7 +52,7 @@ def _clean(monkeypatch, case, *, shadow, dry, authority=None):
         monkeypatch.setenv(pair.DRY_FLAG, pair.DRY_ON)
     if authority is not None:
         # the ONE existing authorized DEVELOPMENT configuration of the pressure experiment (P3-40): used only by the test that proves the clinical-time route
-        for name, value in ((ra.AUTHORITY_FLAG, ra.MODE_LIMITED_COMMON_AUTHORITY), (ra.SNAPSHOT_FLAG, "gi_pressure_committed"), (ra.ENVIRONMENT_FLAG, "development"),
+        for name, value in ((ra.AUTHORITY_FLAG, ra.MODE_LIMITED_COMMON_AUTHORITY), (ra.SNAPSHOT_FLAG, AUTHORITY_SNAPSHOT_ID), (ra.ENVIRONMENT_FLAG, "development"),
                             (store.STORE_FLAG, str(authority)), (rs.FLAG, rs.MODE_SHADOW_COMPARE)):
             monkeypatch.setenv(name, value)
 

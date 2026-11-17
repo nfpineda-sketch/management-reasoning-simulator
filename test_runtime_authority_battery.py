@@ -345,7 +345,7 @@ def test_g19_the_rollback_artifact_reproduces_the_failed_minute(live, monkeypatc
 def test_g20_the_registry_is_empty_when_this_module_is_done(battery):
     """The battery ran with a test-only approval; nothing of it survives."""
     assert battery["authority"]["snapshot_id"] == TEST_ONLY_SNAPSHOT["id"]
-    assert not any(key not in (TEST_ONLY_SNAPSHOT["id"], "gi_pressure_committed")
+    assert not any(key not in (TEST_ONLY_SNAPSHOT["id"], "gi_pressure_committed", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1")
                    for key in ra._APPROVED_SNAPSHOT_POINTS)
     assert ra.unreachable_because() or TEST_ONLY_SNAPSHOT["id"] in ra._APPROVED_SNAPSHOT_POINTS
     decision_file = (ROOT / "docs" / "COLA_DECISIONES_AI_ADVISOR.md").read_text(encoding="utf-8")

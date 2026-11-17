@@ -219,9 +219,10 @@ def test_e3_the_test_only_approval_cannot_exist_in_production(injected, gi_state
 
 
 def test_e4_without_the_injection_the_gate_refuses_again(gi_state):
-    assert sorted(ra.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"], \
-        "the injection must not survive its own test: only the registered approval remains"
-    assert sorted(ra._APPROVED_SNAPSHOT_POINTS) == ["gi_pressure_committed"], \
+    # FD-PROMOTE-01 (declared adaptation): the registered approvals are the two development points; the injection must still not survive
+    assert sorted(ra.APPROVED_SNAPSHOTS) == sorted(["gi_pressure_committed", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"]), \
+        "the injection must not survive its own test: only the registered approvals remain"
+    assert sorted(ra._APPROVED_SNAPSHOT_POINTS) == sorted(["gi_pressure_committed", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"]), \
         "nor in the private mapping it was injected into"
     assert not ra.gate(gi_state, environ=BEST, unsupported=()).granted
 
@@ -385,7 +386,7 @@ def test_e11_the_pressure_domain_reproduces_from_the_artifact(candidate):
 
 def test_e12_no_production_configuration_can_reach_authority_after_these_tests(gi_state):
     """The last word: the injection is gone, and the repository is where it was."""
-    assert sorted(ra.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"]
+    assert sorted(ra.APPROVED_SNAPSHOTS) == sorted(["gi_pressure_committed", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"])  # FD-PROMOTE-01 (declared adaptation)
     assert ra.unreachable_because()
     assert ra.mode(gi_state, environ=BEST) == ra.MODE_LEGACY
     assert rs.COMMON_CORE_RUNTIME_AUTHORITY is False

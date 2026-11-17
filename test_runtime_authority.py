@@ -23,6 +23,9 @@ import runtime_authority_store as store
 import runtime_shadow as rs
 
 ROOT = Path(__file__).resolve().parent
+#: The development-only approvals the Decision File records (FD-P3-42; FD-PROMOTE-01 added the ratified joint snapshot beside the older point, which stays registered for the machinery suites
+#: and for replay). The assertions that said "exactly one" now say "exactly these two": still an exact set, still nothing else.
+APPROVED_DEVELOPMENT_IDS = sorted(["gi_pressure_committed", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"])
 CASE = "gi_bleed_57m"
 #: The most favourable configuration a deployment could possibly produce, short of an approved snapshot.
 BEST = {ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY,
@@ -96,8 +99,8 @@ def test_a1_the_authority_mode_is_unreachable_from_any_production_configuration(
     than a development experiment.
     """
     assert ra.MODES == (ra.MODE_LEGACY, ra.MODE_SHADOW_COMPARE, ra.MODE_LIMITED_COMMON_AUTHORITY)
-    assert sorted(ra.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"], \
-        "only the development-only point the Decision File records may be registered"
+    assert sorted(ra.APPROVED_SNAPSHOTS) == APPROVED_DEVELOPMENT_IDS, \
+        "only the development-only points the Decision File records may be registered"
     granted = ra.development_authority()
     assert granted["every_entry_is_development_only"] and granted["every_entry_is_complete"]
     assert granted["granted"] == ra.PURPOSE_DEVELOPMENT_EXPERIMENT
@@ -368,7 +371,7 @@ def test_a16_exactly_one_production_wiring_point_imports_the_authority_harness()
     assert "runtime_authority.py" in rs.LAYER_SOURCES, "the layer digest must cover it"
     # The import is inert: the site refuses in every configuration, so the encounter runs as it did.
     assert ra.site_for({}, {}) is None and ra.open_site({}) is None
-    assert sorted(ra.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"] and ra.unreachable_because()
+    assert sorted(ra.APPROVED_SNAPSHOTS) == APPROVED_DEVELOPMENT_IDS and ra.unreachable_because()
 
 
 def test_a17_the_harness_computes_no_physiology_of_its_own():
@@ -387,7 +390,7 @@ def test_a17_the_harness_computes_no_physiology_of_its_own():
 def test_c1_the_approved_registry_cannot_be_written_from_outside():
     """It was a plain module dict: any importer could approve a parameter point."""
     before = sorted(ra.APPROVED_SNAPSHOTS)
-    assert before == ["gi_pressure_committed"], "the one development-only approval, and nothing else"
+    assert before == APPROVED_DEVELOPMENT_IDS, "the development-only approvals the Decision File records, and nothing else"
     for attempt in (lambda: ra.APPROVED_SNAPSHOTS.__setitem__("forged", {}),
                     lambda: ra.APPROVED_SNAPSHOTS.update({"forged": {}}),
                     lambda: ra.APPROVED_SNAPSHOTS.setdefault("forged", {}),
@@ -637,7 +640,8 @@ def test_b4_the_remaining_condition_was_the_faculty_snapshot_and_it_is_now_named
         assert not any("NO_FACULTY_APPROVED_AUTHORITY_SNAPSHOT_EXISTS" in reason
                        for reason in row["reasons"]), "it may not say one is missing while one exists"
         assert row["facts"]["approved_snapshot"] is True
-        assert row["facts"]["approving_snapshot"] == "gi_pressure_committed"
+        # Two development approvals are registered now (FD-PROMOTE-01); with no id named the classification reports one of them, in sorted order. It is a classification fact: it selects nothing.
+        assert row["facts"]["approving_snapshot"] == APPROVED_DEVELOPMENT_IDS[0], "with no id named, the first registered approval in sorted order (the ratified joint snapshot)"
         assert row["facts"]["approval_purpose"] == ra.PURPOSE_DEVELOPMENT_EXPERIMENT
         assert any("not a clinical validation" in reason for reason in row["reasons"]), row
 
@@ -711,9 +715,9 @@ DEV_ENV = {ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY, ra.SNAPSHOT_FLAG
            store.STORE_FLAG: STORE_DIR}
 
 
-def test_r1_the_registry_holds_exactly_the_development_only_approval():
+def test_r1_the_registry_holds_exactly_the_development_only_approvals():
     """Faculty decisions A and G of 2026-11-08 approved a POINT for ONE experiment, not a physiology."""
-    assert sorted(ra.APPROVED_SNAPSHOTS) == [DEV_ID]
+    assert sorted(ra.APPROVED_SNAPSHOTS) == APPROVED_DEVELOPMENT_IDS
     entry = ra.APPROVED_SNAPSHOTS[DEV_ID]
     assert ra.snapshot_is_wellformed(entry) == (True, ())
     assert ra.registered_snapshot_is_complete(entry) == (True, ())

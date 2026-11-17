@@ -53,7 +53,8 @@ def test_g1_in_this_repository_the_faculty_conditions_are_false_the_registry_is_
     assert arming["faculty_conditions"] == {"explicit_pair_authority_grant": False, "faculty_approval_permits_domain": False}
     # everything the REPOSITORY can show is in order: the faculty's two are what keep it closed
     assert [name for name in arming["failed"]] == ["global_development_capability", "explicit_pair_authority_grant", "faculty_approval_permits_domain"]
-    assert sorted(ra.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"] and pair.V1_ID not in ra.APPROVED_SNAPSHOTS and rs.COMMON_CORE_RUNTIME_AUTHORITY is False
+    # FD-PROMOTE-01 (declared adaptation): two development approvals are registered now; the consciousness snapshot V1 is still not one of them
+    assert sorted(ra.APPROVED_SNAPSHOTS) == sorted(["gi_pressure_committed", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"]) and pair.V1_ID not in ra.APPROVED_SNAPSHOTS and rs.COMMON_CORE_RUNTIME_AUTHORITY is False
 
 
 def test_g2_no_runtime_module_sets_or_loads_a_grant_or_the_faculty_approval_and_the_fixture_kind_exists_nowhere_else():

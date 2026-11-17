@@ -37,7 +37,7 @@ def test_the_record_enables_no_authority_and_the_gate_stays_closed():
     assert rs.COMMON_CORE_RUNTIME_AUTHORITY is False
     decision = authority.gate({}, environ={}, unsupported=())
     assert decision.granted is False
-    assert sorted(authority.APPROVED_SNAPSHOTS) == ["gi_pressure_committed"]
+    assert sorted(authority.APPROVED_SNAPSHOTS) == sorted(["gi_pressure_committed", "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"])  # FD-PROMOTE-01 (declared adaptation): two development approvals are registered now; still an exact set
     assert authority.AUTHORITY_DOMAIN == ("sbp", "dbp", "map")
     assert COUNTERFACTUAL["non_interference"] == {"common_core_runtime_authority": False, "authority_gate_granted_without_flags": False,
                                                   "gate_refusal_reasons_count": 4}
@@ -114,7 +114,8 @@ def test_the_readers_of_mental_status_are_exactly_the_recorded_modules():
 
 def test_the_prior_pressure_authority_is_reconciled_with_what_the_code_holds_today():
     prior = READINESS["prior_pressure_authority"]
-    assert prior["registry_today"] == sorted(authority.APPROVED_SNAPSHOTS)
+    # FD-PROMOTE-01 (declared adaptation): the record is historical ("registry today" was true on the day it was written); the registry now holds exactly that list plus the promoted snapshot.
+    assert sorted([*prior["registry_today"], "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"]) == sorted(authority.APPROVED_SNAPSHOTS)
     assert authority.FAILURE_POLICY == "HARD_FAIL_VISIBLE_TO_FACULTY" and "HARD_FAIL_VISIBLE_TO_FACULTY" in " ".join(prior["validated"])
     assert authority.AUTHORITY_CASES == ("gi_bleed_57m", "gi_bleed_72f") and authority.ALLOWED_ENVIRONMENTS == ("development", "faculty")
     assert rs.PHASE2_DIGEST.startswith("22b90a6f") and "22b90a6f" in prior["ran_on"]
