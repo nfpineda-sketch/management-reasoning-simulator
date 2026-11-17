@@ -5,6 +5,8 @@ Decisiones: FD-RATIFY-01 a FD-RATIFY-07 y FD-P3-248 a FD-P3-251 (`docs/COLA_DECI
 
 Distingo en todo el documento: **implementado** · **probado** (con la cifra) · **pendiente**.
 
+> **Nota fechada (2026-11-16, ciclo de promoción; `docs/PHASE3_GI_PRESSURE_PROMOTION.md`):** este documento describe la situación **al momento de la ratificación**: la instantánea era un registro que nada ejecutable leía y **no** estaba vinculada a la autoridad viva. **Esa afirmación ya no es la vigente**: la autoridad viva de desarrollo de presión de GI ejecuta ahora `GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1` con la concesión `GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V2` (FD-PROMOTE-01 a FD-PROMOTE-07). El resto de lo decidido aquí (limitación monitoreada, `LOW`/`HIGH` sólo testigos, Enmienda 3 cerrada) sigue vigente.
+
 ## 0 · Qué se decidió (decisión docente del 2026-11-16)
 | Decisión | Contenido |
 |---|---|

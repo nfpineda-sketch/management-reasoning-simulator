@@ -1,0 +1,327 @@
+{
+ "binding": {
+  "in_the_layer_digest": true,
+  "module": "runtime_pressure_snapshot.py",
+  "named_but_unbindable": "no corridor is opened and there is no fallback to the older point",
+  "refusals": [
+   "NOT_A_PRESSURE_SNAPSHOT_RECORD",
+   "WRONG_PRESSURE_SNAPSHOT_ID",
+   "PRESSURE_SNAPSHOT_IS_NOT_RATIFIED_FOR_DEVELOPMENT",
+   "PRESSURE_SNAPSHOT_WRONG_DIGEST",
+   "PRESSURE_SNAPSHOT_MODIFIED_PARAMETER",
+   "PRESSURE_SNAPSHOT_RATE_IS_NOT_C_TIMES_SCALE",
+   "PRESSURE_SNAPSHOT_IS_A_TEST_WITNESS",
+   "PRESSURE_SNAPSHOT_RATIFICATION_DOES_NOT_MATCH",
+   "PRESSURE_SNAPSHOT_REGION_RECORD_DOES_NOT_MATCH",
+   "PRESSURE_SNAPSHOT_HUMAN_RECORD_DOES_NOT_MATCH",
+   "PRESSURE_SNAPSHOT_RECORD_UNREADABLE"
+  ]
+ },
+ "confirmations": {
+  "clinical_core_untouched": true,
+  "common_core_runtime_authority_false": true,
+  "low_and_high_not_promoted": true,
+  "monitored_limitation_not_fixed": true,
+  "no_amendment_3_physiology": true,
+  "no_clinical_validation_claim": true,
+  "no_consciousness_authority": true,
+  "no_historical_record_rewritten": true,
+  "no_new_calibration": true,
+  "no_norepinephrine": true,
+  "no_resident_deployment": true,
+  "no_source_control": true,
+  "no_terminal_authority": true,
+  "scoring_and_first_pilot_unchanged": true
+ },
+ "coordinates": [
+  {
+   "coordinate": "bleed_rate_ml_eq_per_min",
+   "differs": true,
+   "executable_home": "clinical_core.modules.gi_haemorrhage.GIHaemorrhage.blood_loss_ml_per_min",
+   "previous_live": 2.5,
+   "ratified": 8.970853509
+  },
+  {
+   "coordinate": "preload_scale_ml_eq",
+   "differs": true,
+   "executable_home": "clinical_core.derived.CoreProfile.preload_curve_scale_ml",
+   "previous_live": 833.3333333333334,
+   "ratified": 2697.136369656
+  },
+  {
+   "coordinate": "arrival_position",
+   "differs": false,
+   "executable_home": "clinical_core.derived.CoreProfile.arrival_preload_fraction",
+   "previous_live": 0.5,
+   "ratified": 0.5
+  },
+  {
+   "coordinate": "kernel_e",
+   "differs": true,
+   "executable_home": "clinical_core.interventions.fluids.Crystalloid.effective_ml_per_ml",
+   "previous_live": 0.125,
+   "ratified": 0.213115961
+  },
+  {
+   "coordinate": "kernel_s",
+   "differs": true,
+   "executable_home": "clinical_core.interventions.fluids.Crystalloid.transient_share",
+   "previous_live": 0.6,
+   "ratified": 0.835
+  },
+  {
+   "coordinate": "kernel_tau_min",
+   "differs": true,
+   "executable_home": "clinical_core.interventions.fluids.Crystalloid.leak_tau_min",
+   "previous_live": 30.0,
+   "ratified": 60.624
+  }
+ ],
+ "coordinates_that_differ": 5,
+ "decided_on": "2026-11-16",
+ "equality_with_center_reference": {
+  "all_equal": true,
+  "criterion": "the displayed pressures (whole mmHg, derived MAP) at every committed minute equal the human-reviewed CENTER_REFERENCE trajectory; the older authority is not the reference",
+  "minutes_compared": 15,
+  "scenarios": {
+   "FR-B": {
+    "case": "gi_bleed_57m",
+    "displayed_sbp_dbp_map": {
+     "10": [
+      91,
+      56,
+      68
+     ],
+     "30": [
+      92,
+      57,
+      69
+     ],
+     "5": [
+      89,
+      54,
+      66
+     ]
+    },
+    "minutes": [
+     5,
+     10,
+     30
+    ]
+   },
+   "FR-C": {
+    "case": "gi_bleed_57m",
+    "displayed_sbp_dbp_map": {
+     "120": [
+      54,
+      33,
+      40
+     ],
+     "125": [
+      56,
+      34,
+      41
+     ],
+     "130": [
+      59,
+      36,
+      44
+     ],
+     "150": [
+      64,
+      39,
+      47
+     ],
+     "60": [
+      71,
+      43,
+      52
+     ]
+    },
+    "minutes": [
+     60,
+     120,
+     125,
+     130,
+     150
+    ]
+   },
+   "FR-E": {
+    "case": "gi_bleed_72f",
+    "displayed_sbp_dbp_map": {
+     "120": [
+      60,
+      38,
+      45
+     ],
+     "125": [
+      62,
+      39,
+      47
+     ],
+     "130": [
+      66,
+      42,
+      50
+     ],
+     "160": [
+      72,
+      46,
+      55
+     ],
+     "60": [
+      79,
+      50,
+      60
+     ]
+    },
+    "minutes": [
+     60,
+     120,
+     125,
+     130,
+     160
+    ]
+   },
+   "FR-G": {
+    "case": "gi_bleed_72f",
+    "displayed_sbp_dbp_map": {
+     "60": [
+      85,
+      54,
+      64
+     ],
+     "70": [
+      81,
+      51,
+      61
+     ]
+    },
+    "minutes": [
+     60,
+     70
+    ]
+   }
+  }
+ },
+ "grant": {
+  "cases": [
+   "gi_bleed_57m",
+   "gi_bleed_72f"
+  ],
+  "configuration_digest": "70e6826cb2844bace6e3249058638340d00d80f84f8fdd2a5a2e752028db0641",
+  "domain": [
+   "sbp",
+   "dbp",
+   "map"
+  ],
+  "environments": [
+   "development"
+  ],
+  "fingerprint": "8a91145dbfe899dffdc5de1ed28b116c61f4fa5b462a49979727ce8b05b3642f",
+  "id": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V2",
+  "pressure_value_digest": "7270cf8599de0095088601acfe1df4d88b2aa9e38483fbdaf6844a1c2cce65c5",
+  "the_review_environment_requires": "version 2, in new sessions",
+  "version": 2,
+  "version_1": {
+   "fingerprint": "3c29c2b9eb070ea1728bea2b17fd4484ff42c5105070c9402b17e73b29c3c136",
+   "id": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V1",
+   "still_registered": true,
+   "untouched": true
+  }
+ },
+ "limitations": [
+  "GI_BLOOD_RESUSCITATION_LOW_END_RESPONSE stays a monitored limitation; the promotion did not touch it",
+  "FR-A and FR-D under the ratified configuration were machine-checked, not reviewed by a person (the blinded re-review covered FR-B, FR-C, FR-E and FR-G)",
+  "version 1 and the older point stay registered and runnable; retiring them from live activation is a pending faculty decision",
+  "the human re-review record is REPORTED_NOT_VERIFIED_AGAINST_PERSISTED_STORE (TD-152)",
+  "development only; one reviewer, four scenarios, two cases; not a clinical validation"
+ ],
+ "next_physiology_priority": "common vascular-tone / vasopressor pathway (FD-REVIEW-06); not implemented",
+ "nonregression": {
+  "FR_F_unsupported_norepinephrine": "still a correct stop; nothing implemented",
+  "effective_stop_reopen_abort_leaks": "the stop-page proofs are replayed under the promoted configuration",
+  "review_environment_single_process_isolation": "unchanged and proved with the promoted configuration",
+  "untreated_FR_A_FR_D": "still halts at the collapse boundary with the same committed minutes (60, 120, 180); the collapse is established earlier (183 under the promoted point, 207 under the older one)"
+ },
+ "overall": {
+  "name": "GI_PRESSURE_RATIFIED_SNAPSHOT_PROMOTED_TO_LIVE_DEVELOPMENT_AUTHORITY",
+  "verdict": "A"
+ },
+ "pending_faculty_decisions": [
+  "retire the older point and grant version 1 from live activation, or keep them runnable for replay",
+  "decide a versioning scheme for the code-derived historical records before the declared delta accumulates"
+ ],
+ "record_digest": "59bcb0172a81f31912ee37d090b65e9ba124872b9d28a27071cbece7dcc79d90",
+ "record_type": "PHASE3_GI_PRESSURE_PROMOTION_CHECKPOINT",
+ "replay": {
+  "new_runs_identify": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V2",
+  "nothing_rewritten": true,
+  "older_artifacts_replay_under": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V1",
+  "verification_hardening": "every snapshot identity an artifact declares must be the one its named grant binds"
+ },
+ "reported": {
+  "adversarial_review": {
+   "declared_not_changed": [
+    "the dry evaluator still binds the older point",
+    "no .gitattributes pins LF for the hash-pinned JSON (a CRLF checkout fails closed)",
+    "unsigned artifacts: a determined forger of consistent values, minutes and digests is not refutable"
+   ],
+   "every_finding_confirmed_by_an_own_probe_or_reading_before_acting": true,
+   "findings_and_resolutions": [
+    "MEDIUM 1 artifact verification bound the labels of the snapshot to the grant, not the values of the run: reproduced (a consistent relabel verified); repaired (every captured scenario must carry the six values of the snapshot its grant binds; the overlay replay is decided by the grant)",
+    "MEDIUM 2 stale tests, one a collection error that my sweep did not cover: reproduced; four files adapted under the same rule (an exact set, nothing else)",
+    "MEDIUM 3 the only session/site mix guard was incidental: confirmed; an explicit named PRESSURE_CONFIGURATION_MISMATCH check before the candidate is taken",
+    "LOW 4 provenance inside the run named the committed default profile: reproduced; repaired",
+    "LOW 5 the review environment requiring version 2 had no test (and the document named the wrong condition): confirmed; test added, document corrected",
+    "LOW 6 the digests the grant pins were never compared at run time with the binding: confirmed; compared in the gate and in open_site (not in the grant module, which imports nothing of the repository on purpose)",
+    "LOW 7 a bind failure was undiagnosable in the authority record: the reason now names it",
+    "LOW 8 weakened or missing tests (b4 became membership; s11 not mirrored): b4 exact again; s11 mirrored",
+    "INFO 9 duplicated literals, dry evaluator, CRLF checkouts, shadow session without the authority flag: equality test added; the rest declared"
+   ],
+   "hard_invariants_broken": [],
+   "high": 0,
+   "info": 1,
+   "low": 5,
+   "medium": 3,
+   "mutants_of_the_findings_killed": 8,
+   "not_reproduced": [
+    "the exact count of surviving mutants the reviewer reported (what was done: the eight mutants that matter are killed by new tests)"
+   ],
+   "performed": "one independent, read-only, adversarial review of the uncommitted tree, against the attack list of the assignment"
+  }
+ },
+ "snapshot": {
+  "c_rate_over_scale_per_min": 0.003326066,
+  "configuration_digest": "70e6826cb2844bace6e3249058638340d00d80f84f8fdd2a5a2e752028db0641",
+  "human_record_digest": "4af2b53118245b8667d58d3280205ac64101e5c61fb1ecb83ca8bd9f05f05bd8",
+  "id": "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1",
+  "ratification_digest": "6a471a3a1b729214da7e2f57e647d1b3944620cf08642ad5abdbf426692d7747",
+  "record_digest": "925973f050bc5f9cdc85f7ff83af6fd9349b4499acfbc4987b3b59ab3a60f6b3",
+  "region_record_digest": "bf7361a1d96fe7fed9aeca697bba4809ef70e87843d71ba5b64a77f832c41539",
+  "runtime_snapshot_id": "gi_joint_pressure_development_snapshot_v1",
+  "status": "RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS",
+  "values": {
+   "arrival_position": 0.5,
+   "bleed_rate_ml_eq_per_min": 8.970853509,
+   "kernel_e": 0.213115961,
+   "kernel_s": 0.835,
+   "kernel_tau_min": 60.624,
+   "preload_scale_ml_eq": 2697.136369656
+  },
+  "values_digest": "9afd91f5106980410cc1a24591dea4c66e25a2b2d5ba866b3a0fb3b9c11da14f"
+ },
+ "statement": "The live GI pressure DEVELOPMENT authority (sbp, dbp, derived map; gi_bleed_57m and gi_bleed_72f; development only; explicit grant) executes exactly GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1, the CENTER_REFERENCE point ratified on 2026-11-16, instead of the older gi_pressure_committed. It is configuration only: no new physiology, no recalibration, no other point. It is not a clinical validation, not production authority and not a resident deployment.",
+ "successor_decision": {
+  "clinical_core_changed": false,
+  "name": "CONFIG_ONLY_PROMOTION_SUFFICIENT",
+  "predecessor": {
+   "digest": "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2",
+   "version_id": "PHASE2_AMENDMENT_2"
+  },
+  "successor": null,
+  "verdict": "A",
+  "why": "the six coordinates live in fields of objects the Phase 3 layer builds (profile, haemorrhage writer, crystalloid contributors); none is a constant of clinical_core/"
+ },
+ "version": "P3-375..386"
+}

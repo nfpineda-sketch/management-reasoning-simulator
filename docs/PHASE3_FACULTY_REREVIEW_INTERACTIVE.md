@@ -87,11 +87,13 @@ Una certificación sobre **una** huella congelada (suite completa del repositori
 **Operador** (como en `faculty_review_kit/02_preparacion_operador.md`, pasos 1 a 4; las mismas variables, un solo proceso):
 ```bash
 export MRS_FACULTY_DEVELOPMENT_REVIEW=faculty_development_review MRS_PHASE3_SHADOW=shadow_compare MRS_PHASE3_AUTHORITY=limited_common_authority \
-       MRS_PHASE3_AUTHORITY_SNAPSHOT=gi_pressure_committed MRS_PHASE3_AUTHORITY_ENVIRONMENT=development MRS_OFFLINE_CASES=1 \
+       MRS_PHASE3_AUTHORITY_SNAPSHOT=GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1 MRS_PHASE3_AUTHORITY_ENVIRONMENT=development MRS_OFFLINE_CASES=1 \
        MRS_PHASE3_AUTHORITY_STORE="$HOME/faculty_review/R1/store" MRS_AUTH_MODE=accounts MRS_ALLOW_LOCAL_SQLITE=true \
        MRS_DATABASE_URL="sqlite:///$HOME/faculty_review/R1/accounts/accounts.sqlite3"
 streamlit run app.py
 ```
+
+> **Actualización (2026-11-16, ciclo de promoción; `docs/PHASE3_GI_PRESSURE_PROMOTION.md`):** el valor de `MRS_PHASE3_AUTHORITY_SNAPSHOT` de este comando era `gi_pressure_committed` cuando se escribió el documento. El entorno de revisión exige ahora la instantánea ratificada `GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1` (concesión V2) en las sesiones nuevas; con el id anterior el modo de revisión se **niega** (falla cerrado). La re-revisión humana de este documento se hizo sobre la configuración candidata `CENTER_REFERENCE` del conjunto de re-revisión, que es la que la autoridad viva ejecuta ahora.
 **Persona revisora:** (1) abre la dirección que imprime Streamlit; (2) inicia sesión con su cuenta docente; (3) **ya está en la re-revisión** (FR-B): no hay nada que elegir; (4) por escenario: Q1–Q5 → comentario opcional → **LOCK FIRST IMPRESSION** → **Overall judgment** → **SUBMIT & NEXT**; (5) tras FR-G ve **RE-REVIEW COMPLETE · 4 / 4**. Instrucciones de una página: `faculty_review_kit/12_rerevision_interactiva.md`.
 
 ## 13 · Decisiones pendientes y lo que sigue pendiente

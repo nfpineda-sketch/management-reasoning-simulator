@@ -31,7 +31,7 @@ Entra como administrador → barra lateral **Account administration** → `Invit
 export MRS_FACULTY_DEVELOPMENT_REVIEW=faculty_development_review
 export MRS_PHASE3_SHADOW=shadow_compare
 export MRS_PHASE3_AUTHORITY=limited_common_authority
-export MRS_PHASE3_AUTHORITY_SNAPSHOT=gi_pressure_committed
+export MRS_PHASE3_AUTHORITY_SNAPSHOT=GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1   # desde el 2026-11-16 el modo de revisión exige este id (concesión V2); con el id anterior, gi_pressure_committed, el modo se NIEGA
 export MRS_PHASE3_AUTHORITY_ENVIRONMENT=development
 export MRS_OFFLINE_CASES=1
 export MRS_PHASE3_AUTHORITY_STORE="$HOME/faculty_review/R1/store"
