@@ -224,7 +224,9 @@ def environment_conditions(live: Mapping[str, str]) -> dict:
         "shadow": rs.mode(live) == rs.MODE_SHADOW_COMPARE,
         "shadow_family": rs.enabled_for(FAMILY, live),
         "authority_flag": str(live.get(ra.AUTHORITY_FLAG, "") or "").strip().lower() == ra.MODE_LIMITED_COMMON_AUTHORITY and ra.AUTHORITY_FLAG not in secrets_named,
-        "snapshot": str(live.get(ra.SNAPSHOT_FLAG, "") or "").strip() == grants.PRESSURE_SNAPSHOT_ID and ra.SNAPSHOT_FLAG not in secrets_named,
+        # P3-380 (FD-PROMOTE-01): the review environment runs the ratified joint pressure snapshot and nothing else. The older committed point stays registered (its artifacts replay under
+        # their own grant) but a NEW review session never opens on it: the human-ratified behaviour and the live authority are the same thing.
+        "snapshot": str(live.get(ra.SNAPSHOT_FLAG, "") or "").strip() == grants.PRESSURE_SNAPSHOT_ID_V2 and ra.SNAPSHOT_FLAG not in secrets_named,
         "development_environment": str(live.get(ra.ENVIRONMENT_FLAG, "") or "").strip().lower() == ENVIRONMENT and ra.ENVIRONMENT_FLAG not in secrets_named,
         "offline_cases": _truthy(live.get(OFFLINE_FLAG)) and OFFLINE_FLAG not in secrets_named,
     }
@@ -236,7 +238,7 @@ def evaluate(environ: Mapping[str, str] | None = None, *, accounts: bool = False
     ``enabled`` is True only when EVERY condition holds. Anything less is "the authority is unavailable": the page draws no review launcher and ``authority_available`` says no."""
     live = os.environ if environ is None else environ
     record = {"record_type": RECORD_TYPE, "version": VERSION, "requested": False, "enabled": False, "configuration_complete": False, "conditions": {}, "problems": [],
-              "authority_mode": AUTHORITY_MODE, "grant_id": grants.GRANT_ID, "grant_version": grants.GRANT_VERSION, "environment": ENVIRONMENT, "allowlist": list(ALLOWLIST),
+              "authority_mode": AUTHORITY_MODE, "grant_id": grants.GRANT_ID_V2, "grant_version": grants.GRANT_VERSION_V2, "environment": ENVIRONMENT, "allowlist": list(ALLOWLIST),
               "role": role, "access": "NOT_REQUESTED", "single_process": {"held": False}}
     try:
         raw = str(live.get(FLAG, "") or "").strip()
@@ -254,7 +256,7 @@ def evaluate(environ: Mapping[str, str] | None = None, *, accounts: bool = False
             "faculty_role": str(role or "") in FACULTY_ROLES,
             "no_pilot": not is_pilot,
             "not_streamlit_cloud": not on_cloud,
-            "registered_grant": dict(grants.GRANT).get("fingerprint") == grants.GRANT_FINGERPRINT,
+            "registered_grant": dict(grants.GRANT_V2).get("fingerprint") == grants.GRANT_FINGERPRINT_V2,
             "single_process": False,
         }
         # The disk is touched only by a configuration that holds in everything else: a refused configuration (a pilot, the cloud, a shared password, a missing flag) writes nothing.
@@ -266,7 +268,7 @@ def evaluate(environ: Mapping[str, str] | None = None, *, accounts: bool = False
         problems["shadow"] = f"the shadow comparison ({rs.FLAG}) is not on"
         problems["shadow_family"] = f"the live shadow comparison is not on for the {FAMILY!r} family ({rs.FAMILIES_FLAG} leaves it out): the pressure authority has nothing to compare against"
         problems["authority_flag"] = f"{ra.AUTHORITY_FLAG} is not the authority mode (or it is a Secret)"
-        problems["snapshot"] = f"{ra.SNAPSHOT_FLAG} is not {grants.PRESSURE_SNAPSHOT_ID!r} (or it is a Secret)"
+        problems["snapshot"] = f"{ra.SNAPSHOT_FLAG} is not {grants.PRESSURE_SNAPSHOT_ID_V2!r} (or it is a Secret)"
         problems["development_environment"] = f"{ra.ENVIRONMENT_FLAG} is not {ENVIRONMENT!r}, the only environment the registered grant names (or it is a Secret)"
         problems["offline_cases"] = f"{OFFLINE_FLAG} is not on: the review environment uses authored cases only and never pays a provider"
         probed = directory is not None and not store_in_secrets and all(conditions[name] for name in CONFIGURATION_CONDITIONS if name not in ("store", "single_process"))

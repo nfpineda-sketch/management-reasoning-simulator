@@ -143,6 +143,8 @@ ARRIVAL_CONDITIONS = (
     "nothing_on_the_diagnostic_record",  # no study requested, none resulted
 )
 ARRIVAL_REJECTED = "ArrivalNotEligible"
+#: P3-380: the environment names the ratified GI pressure snapshot and the record does not verify. The session runs NOTHING: there is no fallback to the older point.
+PRESSURE_SNAPSHOT_NOT_BOUND = "PressureSnapshotNotBound"
 #: P3-158: what happens to an order the resident asked to hold until a result is back. The engine holds it
 #: (``family_state.deferred_orders``) and runs it itself when the result arrives; only then does the shadow
 #: mirror it, once, dated at the minute the engine REALLY executed it and never at the minute it was placed.
@@ -419,8 +421,23 @@ class ShadowSession:
                     "this state is not an untouched authored arrival, so it is not mapped as one: "
                     + _differences_text(session.eligibility["differences"]), MAPPING_GAP))
                 return
+            # P3-380: the ratified GI pressure snapshot, when (and only when) the environment names it. The same adapter runs the session's own run and the region ensemble, so no
+            # witness is ever compared under another point's hemodynamics. A refusal to bind is a failure that says so and a session that runs nothing: NO fallback to the older point.
+            adapter = None
+            if family == "gi_bleed":
+                import runtime_pressure_snapshot as pressure
+                try:
+                    configuration = pressure.configuration_for(session._environ)
+                except pressure.PressureBindingError as refusal:
+                    session.failures.append(ShadowFailure(0, "start", PRESSURE_SNAPSHOT_NOT_BOUND, f"the environment names {pressure.SNAPSHOT_ID} and it does not bind: "
+                                                          + ", ".join(refusal.reasons), MAPPING_GAP))
+                    session.runner = None
+                    session.ensemble = None
+                    return
+                if configuration is not None:
+                    adapter = runtime_shadow_families.GiHaemorrhageAdapter.configured(configuration)
             session.runner = runtime_shadow_families.ShadowPhysiologyRunner.open(
-                family, session.case_id, state=arrival, scenario_id=scenario_id)
+                family, session.case_id, state=arrival, scenario_id=scenario_id, adapter=adapter)
             if session.runner is None:
                 session.failures.append(ShadowFailure(
                     0, "start", "NoCertifiedAdapter",
@@ -432,7 +449,7 @@ class ShadowSession:
                 session._runner_failures = len(session.runner.failures)
                 if session.runner.anchors is not None:
                     session.ensemble = runtime_shadow_families.RegionEnsemble.open(
-                        family, session.case_id, state=arrival, scenario_id=scenario_id)
+                        family, session.case_id, state=arrival, scenario_id=scenario_id, adapter=adapter)
                     if session.ensemble is not None:
                         session.failures.extend(session.ensemble.new_failures())
         except Exception as error:  # the encounter must not care why the shadow could not start
@@ -858,7 +875,9 @@ class ShadowSession:
             "mode": self.mode,
             "case_id": self.case_id,
             "family": self.family,
-            "parameter_snapshot": (PARAMETER_SNAPSHOT_ID if self.family == "gi_bleed" or self.runner is None
+            "parameter_snapshot": (self.runner.snapshot_.id if self.runner is not None and self.runner.snapshot_ is not None
+                                   and getattr(self.runner.adapter, "pressure_configuration", None) is not None else
+                                   PARAMETER_SNAPSHOT_ID if self.family == "gi_bleed" or self.runner is None
                                    or self.runner.snapshot_ is None else self.runner.snapshot_.id),
             "minutes": [{"minute": item.minute, "state_digest": item.state_digest,
                          "compared": item.compared_against_legacy,
@@ -871,7 +890,9 @@ class ShadowSession:
             "golden_scenario_counts": golden_partial(self.family),
             # P3-141: a GI record keeps exactly what it carried; any other family names its own adapter and
             # its golden's digest, instead of being labelled with the GI adapter's version.
-            "versions": versions() if self.family == "gi_bleed" else family_versions(self.family),
+            "versions": (versions(self.runner.snapshot_.id if self.runner is not None and self.runner.snapshot_ is not None
+                                  and getattr(self.runner.adapter, "pressure_configuration", None) is not None else None)
+                         if self.family == "gi_bleed" else family_versions(self.family)),
             "scenario_id": self.scenario_id,
             "encounter_id": self.encounter_id,
             "compared_minutes": ([] if self.runner is None else list(self.runner.compared)),
@@ -1139,13 +1160,20 @@ def layer_digest() -> str:
     return accumulator.hexdigest()
 
 
-def versions() -> dict:
+def runtime_snapshot_for(approved_snapshot_id: str | None) -> str:
+    """The parameter snapshot id the shadow layer REPORTS for the point an approved snapshot id names (P3-380). The ratified GI pressure snapshot runs its own configuration and says so;
+    every other id (the older committed point, a test-only mechanism, nothing) reports the committed default profile, exactly as before."""
+    import runtime_pressure_snapshot as pressure
+    return pressure.RUNTIME_SNAPSHOT_ID if str(approved_snapshot_id or "") == pressure.SNAPSHOT_ID else PARAMETER_SNAPSHOT_ID
+
+
+def versions(parameter_snapshot: str | None = None) -> dict:
     """What a shadow or replay artifact must carry to be reproducible."""
     from clinical_core import closure_guard
     return {"phase2_closure_head": PHASE2_CLOSURE_HEAD, "phase2_digest": PHASE2_DIGEST,
             **active_core(),
             "phase3_module": MODULE_VERSION, "adapter": ADAPTER_VERSION,
-            "parameter_snapshot": PARAMETER_SNAPSHOT_ID,
+            "parameter_snapshot": parameter_snapshot or PARAMETER_SNAPSHOT_ID,
             "closure_guard_digest": closure_guard.freeze_digest(),
             "phase3_layer_digest": layer_digest()}
 
@@ -1160,14 +1188,14 @@ def active_core() -> dict:
     return {"core_version": entry.version_id if entry is not None else "NOT_IN_THE_LINEAGE", "core_digest": live}
 
 
-def family_versions(family: str) -> dict:
+def family_versions(family: str, parameter_snapshot: str | None = None) -> dict:
     """``versions()`` plus what depends on the family: the golden every divergence is classified against.
 
     ``versions()`` names the GI adapter, the only one there was. For any other family the artifact names
     ITS adapter (P3-141): an opioid artifact labelled with the GI adapter's version would be a false
     provenance. A GI artifact is unchanged.
     """
-    out = {**versions(), "golden_digest": golden_digest(family)}
+    out = {**versions(parameter_snapshot), "golden_digest": golden_digest(family)}
     if str(family or "") != "gi_bleed":
         import runtime_shadow_families             # it imports this module: resolved at call time
         adapter = runtime_shadow_families.adapter_for(family)
@@ -1228,4 +1256,5 @@ ADAPTER_VERSION = "gi_haemorrhage/P3-11"
 LAYER_SOURCES = ("runtime_shadow.py", "runtime_shadow_families.py", "runtime_shadow_evidence.py",
                  "runtime_authority.py", "runtime_authority_store.py", "runtime_shadow_store.py",
                  "runtime_shadow_observer.py", "runtime_authority_pair.py", "runtime_minute_validation.py", "runtime_pair_site.py",
-                 "runtime_pressure_grant.py", "runtime_authority_session.py", "runtime_authority_turn.py", "runtime_faculty_review.py", "runtime_faculty_bundle.py")
+                 "runtime_pressure_grant.py", "runtime_authority_session.py", "runtime_authority_turn.py", "runtime_faculty_review.py", "runtime_faculty_bundle.py",
+                 "runtime_pressure_snapshot.py")

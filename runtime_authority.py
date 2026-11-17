@@ -136,6 +136,8 @@ FORBIDDEN_CLAIMS = ("CLINICALLY_VALIDATED", "CLINICALLY_CALIBRATED", "PRODUCTION
 SNAPSHOT_PARAMETERS = ("preload_curve_scale_ml", "arrival_preload_fraction", "pump_preload_coupling",
                        "afterload_sensitivity", "low_output_pressure_knee", "sbp_per_pressure_deficit",
                        "dbp_per_pressure_deficit")
+#: P3-380: the magnitudes a promoted point carries BEYOND the profile's seven: they live in the scenario's contributors (the haemorrhage's rate and the crystalloid's kernel), not in the profile.
+SCENARIO_PARAMETERS = ("bleed_rate_ml_eq_per_min", "crystalloid_effective_ml_per_ml", "crystalloid_transient_share", "crystalloid_leak_tau_min")
 #: The per-parameter evidence vocabulary P3-31 measured. Approving a POINT is not approving seven
 #: physiological magnitudes, and the record has to say so magnitude by magnitude.
 EVIDENCE_GI_IDENTIFIABLE = "GI_IDENTIFIABLE"
@@ -227,6 +229,74 @@ DEVELOPMENT_EXPERIMENT_SNAPSHOT: Mapping[str, Any] = MappingProxyType({
                         "technical success establishes no clinical calibration"),
 })
 
+#: P3-380 (faculty decisions FD-RATIFY-03 and FD-PROMOTE-01, 2026-11-16): the ratified joint pressure snapshot, promoted to the live DEVELOPMENT authority. It carries the SAME seven profile magnitudes
+#: as the older point except the preload scale (the arrival position is 0.5 in both), and four scenario magnitudes the older point never named. Every value is the one the ratification pins
+#: (``runtime_pressure_snapshot``); none is recomputed or tuned here.
+JOINT_PRESSURE_SNAPSHOT: Mapping[str, Any] = MappingProxyType({
+    "id": "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1",
+    "approved_by_faculty": True,
+    "purpose": PURPOSE_DEVELOPMENT_EXPERIMENT,
+    "faculty_status": STATUS_APPROVED_FOR_DEVELOPMENT,
+    "decision": ("Faculty decisions FD-RATIFY-03 and FD-PROMOTE-01 of 2026-11-16: the CENTER_REFERENCE point of the joint rate/pressure development region, ratified for development experiments after the "
+                 "blinded human re-review (ACCEPT 1, ACCEPT_WITH_LIMITATION 3, RECALIBRATE 0, REJECT 0), is promoted to the live GI pressure DEVELOPMENT authority. It is NOT clinically validated, NOT "
+                 "clinically calibrated, NOT approved for production and NOT approved for residents. Promoting it is not approving the clinical truth of each magnitude: it makes the live experiment run the "
+                 "behaviour the faculty already accepted. The monitored limitation GI_BLOOD_RESUSCITATION_LOW_END_RESPONSE stays as it is."),
+    "decision_reference": "docs/COLA_DECISIONES_AI_ADVISOR.md FD-RATIFY-03 and FD-PROMOTE-01 to FD-PROMOTE-07",
+    "runtime_parameter_snapshot_id": "gi_joint_pressure_development_snapshot_v1",
+    "parameters": MappingProxyType({
+        "preload_curve_scale_ml": 2697.136369656,
+        "arrival_preload_fraction": 0.5,
+        "pump_preload_coupling": 1.0,
+        "afterload_sensitivity": 0.3,
+        "low_output_pressure_knee": 0.5,
+        "sbp_per_pressure_deficit": 45.0,
+        "dbp_per_pressure_deficit": 25.0,
+    }),
+    "scenario_parameters": MappingProxyType({
+        "bleed_rate_ml_eq_per_min": 8.970853509,
+        "crystalloid_effective_ml_per_ml": 0.213115961,
+        "crystalloid_transient_share": 0.835,
+        "crystalloid_leak_tau_min": 60.624,
+    }),
+    "parameter_evidence": MappingProxyType({
+        **{name: DEVELOPMENT_EXPERIMENT_SNAPSHOT["parameter_evidence"][name] for name in SNAPSHOT_PARAMETERS if name != "preload_curve_scale_ml"},
+        "preload_curve_scale_ml": MappingProxyType({
+            "status": EVIDENCE_GI_IDENTIFIABLE,
+            "why": "moved alone it changes the GI systolic trajectory by tens of mmHg (P3-31); in this point it is identified JOINTLY with the bleed rate (c = rate / scale, FD-RATE-17), the "
+                   "crystalloid kernel and the faculty's one-unit and slow-crystalloid anchors, inside the ratified joint region, and accepted in the blinded human re-review"}),
+    }),
+    "scenario_parameter_evidence": MappingProxyType({
+        "bleed_rate_ml_eq_per_min": MappingProxyType({
+            "status": EVIDENCE_GI_IDENTIFIABLE,
+            "why": "never an independent coordinate: it is c x scale of the ratified point, identified with the scale and the kernel together; it is not a clinically measured blood-loss rate"}),
+        "crystalloid_effective_ml_per_ml": MappingProxyType({"status": EVIDENCE_GI_IDENTIFIABLE, "why": "the kernel's initial effect e, found together with s and tau inside the closed crystalloid region"}),
+        "crystalloid_transient_share": MappingProxyType({"status": EVIDENCE_GI_IDENTIFIABLE, "why": "the kernel's transient share s, found together with e and tau inside the closed crystalloid region"}),
+        "crystalloid_leak_tau_min": MappingProxyType({"status": EVIDENCE_GI_IDENTIFIABLE, "why": "the kernel's leak time constant tau, found together with e and s inside the closed crystalloid region"}),
+    }),
+    "phase2_provenance": MappingProxyType({
+        "closure_head": rs.PHASE2_CLOSURE_HEAD if hasattr(rs, "PHASE2_CLOSURE_HEAD") else "d2cca46",
+        "digest": rs.PHASE2_DIGEST,
+        "source": "docs/revision/GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1.json (the CENTER_REFERENCE binding of docs/revision/PHASE3_GI_JOINT_REGION_V1.json), applied to the certified "
+                  "common core as configuration only: no source of clinical_core changed; status CANDIDATE, 0 of 58 registry entries FACULTY_APPROVED",
+        "runtime_point": "gi_joint_pressure_development_snapshot_v1",
+    }),
+    "scope": MappingProxyType({
+        "family": AUTHORITY_FAMILY,
+        "cases": AUTHORITY_CASES,
+        "domain": AUTHORITY_DOMAIN,
+        "environments": ALLOWED_ENVIRONMENTS,
+        "pilot": "EXCLUDED",
+        "production": "EXCLUDED",
+        "resident_visible": "EXCLUDED",
+        "scoring": "UNCHANGED_LEGACY",
+        "nonpressure_physiology": "LEGACY_AUTHORITY",
+        "artifact_store": "REQUIRED",
+    }),
+    "not_established": ("no parameter point is clinically valid", "no numeric acceptance tolerance exists",
+                        "five of the seven profile magnitudes are not identifiable from GI evidence",
+                        "technical success establishes no clinical calibration"),
+})
+
 #: Faculty-approved authority snapshots, by id. It holds exactly what an explicit faculty decision put
 #: there, and today that is one DEVELOPMENT-ONLY point (P3-40). It was empty until 2026-11-08, and
 #: ``test_runtime_authority.py`` fails if an entry appears whose decision is not recorded in the Decision
@@ -237,6 +307,7 @@ DEVELOPMENT_EXPERIMENT_SNAPSHOT: Mapping[str, Any] = MappingProxyType({
 #: injects into it deliberately, which is a name the production scan watches.
 _APPROVED_SNAPSHOT_POINTS: dict = {
     DEVELOPMENT_EXPERIMENT_SNAPSHOT["id"]: DEVELOPMENT_EXPERIMENT_SNAPSHOT,
+    JOINT_PRESSURE_SNAPSHOT["id"]: JOINT_PRESSURE_SNAPSHOT,
 }
 APPROVED_SNAPSHOTS: Mapping[str, Mapping[str, Any]] = MappingProxyType(_APPROVED_SNAPSHOT_POINTS)
 
@@ -249,6 +320,12 @@ APPROVED_SNAPSHOTS: Mapping[str, Mapping[str, Any]] = MappingProxyType(_APPROVED
 #: without the faculty decision that would have to accompany it.
 APPROVED_POINT_DIGESTS: Mapping[str, str] = MappingProxyType({
     "gi_pressure_committed": "c4fb416f30ad7afbcdc8b0c16d9464d98e87ba64054bebfb257f27848f4c1961",
+    # P3-380: over the seven profile magnitudes AND the four scenario magnitudes (see ``approved_values_match``)
+    "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1": "7270cf8599de0095088601acfe1df4d88b2aa9e38483fbdaf6844a1c2cce65c5",
+})
+#: What each registered approval's runtime parameter snapshot id must be (the id the shadow layer reports for the point it ran). An id not listed here is judged against the older point's.
+RUNTIME_PARAMETER_IDS: Mapping[str, str] = MappingProxyType({
+    "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1": "gi_joint_pressure_development_snapshot_v1",
 })
 
 #: What a faculty approval must carry. An id alone is not provenance: P3-17 showed that a lookup by id
@@ -282,9 +359,10 @@ def snapshot_is_wellformed(snapshot: Any) -> tuple:
     if not isinstance(parameters, Mapping) or not parameters:
         reasons.append("parameters must be a non-empty mapping of named magnitudes")
     ran = str(snapshot.get("runtime_parameter_snapshot_id") or "")
-    if ran != rs.PARAMETER_SNAPSHOT_ID:
+    expected_runtime = RUNTIME_PARAMETER_IDS.get(str(snapshot.get("id") or ""), rs.PARAMETER_SNAPSHOT_ID)
+    if ran != expected_runtime:
         reasons.append(f"the approved point {ran!r} is not the point the shadow runner ran "
-                       f"({rs.PARAMETER_SNAPSHOT_ID!r})")
+                       f"({expected_runtime!r})")
     registered = _APPROVED_SNAPSHOT_POINTS.get(str(snapshot.get("id") or ""))
     if registered is None:
         reasons.append("the snapshot is not in the faculty-approved registry")
@@ -344,6 +422,16 @@ def registered_snapshot_is_complete(snapshot: Any) -> tuple:
                                f"{list(EVIDENCE_STATUSES)}")
             elif not str(entry.get("why") or "").strip():
                 reasons.append(f"the evidence status of {name!r} carries no reason")
+    if "scenario_parameters" in snapshot or "scenario_parameter_evidence" in snapshot:
+        scenario, scenario_evidence = snapshot.get("scenario_parameters"), snapshot.get("scenario_parameter_evidence")
+        if not isinstance(scenario, Mapping) or tuple(sorted(scenario)) != tuple(sorted(SCENARIO_PARAMETERS)):
+            reasons.append(f"scenario_parameters must name exactly {list(SCENARIO_PARAMETERS)}")
+        if not isinstance(scenario_evidence, Mapping) or tuple(sorted(scenario_evidence)) != tuple(sorted(SCENARIO_PARAMETERS)):
+            reasons.append("scenario_parameter_evidence must carry one entry per scenario magnitude")
+        else:
+            for name, entry in scenario_evidence.items():
+                if not isinstance(entry, Mapping) or entry.get("status") not in EVIDENCE_STATUSES or not str(entry.get("why") or "").strip():
+                    reasons.append(f"the evidence of the scenario magnitude {name!r} must carry a status of {list(EVIDENCE_STATUSES)} and a reason")
     scope = snapshot.get("scope")
     if not isinstance(scope, Mapping):
         reasons.append("scope must be a mapping: an approval with no declared scope is a general switch")
@@ -353,6 +441,17 @@ def registered_snapshot_is_complete(snapshot: Any) -> tuple:
             if str(scope.get(name) or "").upper() != expected:
                 reasons.append(f"scope[{name!r}] must be {expected!r}")
     return (not reasons), tuple(reasons)
+
+
+def binding_agrees_with_the_grant(grant: Any) -> bool:
+    """FD-PROMOTE-05: the configuration digest a grant pins for the ratified snapshot is the digest of the configuration ``runtime_pressure_snapshot`` would execute, compared at run time. A grant that binds
+    another snapshot has nothing to agree with here."""
+    try:
+        import runtime_pressure_snapshot as pressure
+        pinned = dict(dict(grant or {}).get("pressure_snapshot") or {})
+        return pinned.get("id") != pressure.SNAPSHOT_ID or pinned.get("configuration_digest") == pressure.CONFIGURATION_DIGEST
+    except Exception:
+        return False
 
 
 def approved_values_match(snapshot_id: str, snapshot: Any) -> bool:
@@ -369,6 +468,12 @@ def approved_values_match(snapshot_id: str, snapshot: Any) -> bool:
     parameters = snapshot.get("parameters")
     if not isinstance(parameters, Mapping):
         return False
+    if "scenario_parameters" in snapshot:
+        scenario = snapshot.get("scenario_parameters")
+        if not isinstance(scenario, Mapping):
+            return False
+        return digest_of({"parameters": {str(name): value for name, value in parameters.items()},
+                          "scenario_parameters": {str(name): value for name, value in scenario.items()}}) == expected
     return digest_of({str(name): value for name, value in parameters.items()}) == expected
 
 
@@ -531,6 +636,12 @@ def gate(state: Mapping | None = None, *, environ: Mapping[str, str] | None = No
     member = rs.CORE_LINEAGE[-1]
     grant_ok, grant_why = grants.permits(case_id=case_id, environment=str(environ.get(ENVIRONMENT_FLAG, "") or "").strip().lower() or None, snapshot_id=snapshot_id,
                                          family=family, domain=tuple(domain), lineage={"version_id": member.version_id, "digest": member.digest})
+    # P3-379 (adversarial review, finding 6): the grant that permits the run also has to agree, AT RUN TIME, with the configuration the binding would execute (checked here and not in the grant module,
+    # which imports nothing of the repository on purpose: ``test_phase3_pressure_grant.py::test_g12``).
+    if grant_ok:
+        bound_grant = grants.grant_for_snapshot(str(snapshot_id or ""))
+        if bound_grant is not None and not binding_agrees_with_the_grant(bound_grant):
+            grant_ok, grant_why = False, [f"{grants.CONFIGURATION_MISMATCH}: the configuration digest the grant pins is not the one the binding would execute"]
     in_secrets = [name for name in (AUTHORITY_FLAG, SNAPSHOT_FLAG, ENVIRONMENT_FLAG)
                   if rs._named_in_secrets(name)]
     is_pilot, why_pilot = looks_like_the_pilot(environ)
@@ -933,7 +1044,10 @@ class AuthorityTransaction:
             "validation_failures": list(self.failures),
             "committed": list(self.committed),
             "reason": self.reason,
-            "versions": rs.family_versions(self.family),
+            # A transaction carries its approved point as a mapping, not an id: the id is read from the point itself. A malformed
+            # or absent snapshot reports the committed default profile, exactly as before (it is a record, never a selection).
+            "versions": rs.family_versions(self.family, rs.runtime_snapshot_for(
+                self.snapshot.get("id") if isinstance(self.snapshot, Mapping) else None)),
         }
 
 
@@ -1277,6 +1391,8 @@ NO_AUTHORITY_FLAG = "NO_AUTHORITY_FLAG"
 GATE_REFUSED = "AUTHORITY_GATE_REFUSED"
 COMMIT_REFUSED = "AUTHORITY_COMMIT_REFUSED"
 NO_COMMON_CANDIDATE = "NO_COMMON_CANDIDATE_FOR_THIS_MINUTE"
+#: P3-380 (adversarial review, finding 3): the shadow session ran one pressure configuration and the site's approved snapshot names another. Named, checked BEFORE the candidate is taken, and never a side effect of the overlay.
+PRESSURE_CONFIGURATION_MISMATCH = "PRESSURE_CONFIGURATION_MISMATCH"
 MINUTE_NOT_COMPARED = "MINUTE_NOT_COMPARED_AGAINST_LEGACY"
 UNSUPPORTED_AUTHORITY_ACTION = "UNSUPPORTED_AUTHORITY_ACTION"
 OUT_OF_DOMAIN_WRITE = "OUT_OF_DOMAIN_WRITE_REFUSED"
@@ -2069,6 +2185,11 @@ class AuthoritySite:
             # become "nothing ran". An undeclared turn fails closed here, as it does in the gate.
             return self._hard_fail(minute, f"{UNSUPPORTED_AUTHORITY_ACTION}: the caller did not declare "
                                            f"which actions ran this turn", ran)
+        # P3-380: one run, one configuration. The pressure the session computed must be the one this site's approved snapshot names (the verified ratified configuration, or the older point), or nothing is judged:
+        # no minute is committed on values that belong to another snapshot than the one the site, the grant and the artifact will name.
+        mismatch = self._configuration_mismatch(session)
+        if mismatch:
+            return self._hard_fail(minute, f"{PRESSURE_CONFIGURATION_MISMATCH}: {mismatch}", ran)
         # P3-243: under a development grant the V1 consciousness overlay is fed EVERY turn that reaches the judgement (a no-advance turn too), before anything is judged,
         # so the collapse boundary of the interval is known BEFORE a commit and every failure record can name the common state at the rejection. It reads; it never
         # writes, and the only thing it decides is the boundary.
@@ -2132,7 +2253,11 @@ class AuthoritySite:
                                    legacy=legacy_observable)
         shadow_minute = self._shadow_minute(session, minute)
         if shadow_minute is None:
-            return self._hard_fail(minute, NO_COMMON_CANDIDATE, ran, legacy=legacy_observable)
+            # P3-380 (adversarial review, finding 7): when the reason there is no candidate is that the session could not BIND the ratified snapshot, the authority's own record says so (the class
+            # is unchanged: it is still "no common candidate"); every other case keeps the bare reason it always had.
+            unbound = [item for item in (getattr(session, "failures", []) or []) if str(getattr(item, "exception", "")) == rs.PRESSURE_SNAPSHOT_NOT_BOUND]
+            reason = NO_COMMON_CANDIDATE if not unbound else f"{NO_COMMON_CANDIDATE}: {rs.PRESSURE_SNAPSHOT_NOT_BOUND}: {str(getattr(unbound[0], 'message', ''))[:240]}"
+            return self._hard_fail(minute, reason, ran, legacy=legacy_observable)
         if not shadow_minute.compared_against_legacy:
             return self._hard_fail(minute, MINUTE_NOT_COMPARED, ran, legacy=legacy_observable)
         candidate = pressure_point(shadow_minute.derived)
@@ -2343,7 +2468,7 @@ class AuthoritySite:
             "snapshot": dict(self.snapshot) if isinstance(self.snapshot, Mapping) else self.snapshot,
             "phase2_closure_head": rs.PHASE2_CLOSURE_HEAD,
             "phase2_digest": rs.PHASE2_DIGEST,
-            "phase3_versions": rs.family_versions(self.family),
+            "phase3_versions": rs.family_versions(self.family, rs.runtime_snapshot_for(self.snapshot_id)),
             "authority_module": MODULE_VERSION,
             "submission_id": submission_id,
             "action_kinds": list(kinds),
@@ -2463,7 +2588,7 @@ class AuthoritySite:
             "snapshot": dict(self.snapshot) if isinstance(self.snapshot, Mapping) else self.snapshot,
             "phase2_closure_head": rs.PHASE2_CLOSURE_HEAD,
             "phase2_digest": rs.PHASE2_DIGEST,
-            "phase3_versions": rs.family_versions(self.family),
+            "phase3_versions": rs.family_versions(self.family, rs.runtime_snapshot_for(self.snapshot_id)),
             "authority_module": MODULE_VERSION,
             "failure_policy": FAILURE_POLICY,
             "mode_decided_at": MODE_DECIDED_AT,
@@ -2493,6 +2618,23 @@ class AuthoritySite:
         return {**body, "artifact_digest": digest_of(body)}
 
     # -- P3-240/243/245/246: the grant, the overlay and the boundary ----------------------------------------------------------------------
+    def _configuration_mismatch(self, session) -> str:
+        """``''`` when the shadow session ran the pressure configuration this site's approved snapshot names; else why not. A session with no runner is not this check's concern (the candidate is then
+        missing and the minute fails for that reason). The ratified snapshot is re-bound from the records every time: nothing is cached."""
+        runner = getattr(session, "runner", None)
+        if runner is None:
+            return ""
+        import runtime_pressure_snapshot as pressure
+        ran = getattr(getattr(runner, "adapter", None), "pressure_configuration", None)
+        try:
+            wanted = pressure.bind() if self.snapshot_id == pressure.SNAPSHOT_ID else None
+        except pressure.PressureBindingError as refusal:
+            return f"the site's snapshot {self.snapshot_id!r} does not bind: {', '.join(refusal.reasons)}"
+        if (wanted is None) != (ran is None) or (wanted is not None and ran != wanted):
+            return (f"the site's approved snapshot is {self.snapshot_id!r} and the shadow session ran "
+                    f"{'the ratified configuration' if ran is not None else 'the older point'}")
+        return ""
+
     def _overlay_for(self, session):
         """The overlay beside this experiment, built once from the shadow session's authored arrival. Never raises: an overlay that cannot be built is a refusal named in
         ``overlay_refusal``, and the boundary guard then fails CLOSED (the boundary cannot be verified, so no minute is committed)."""
@@ -2503,7 +2645,15 @@ class AuthoritySite:
             arrival = getattr(session, "arrival", None)
             if arrival is None or getattr(session, "runner", None) is None:
                 raise ValueError("the shadow session has no authored arrival or runner to bind the overlay to")
-            self.overlay = pair.ConsciousnessOverlay(pair.bind(), self.case_id, arrival)
+            # P3-380: the overlay runs the SAME hemodynamics as the pressure the site commits. A site opened under the ratified joint pressure snapshot binds the overlay to that configuration
+            # (verified against the pinned records); any other site binds the older committed point, exactly as before. The session's runner must carry the same configuration: a site whose
+            # session ran the other point refuses (no mixed old/new values).
+            import runtime_pressure_snapshot as pressure
+            configuration = pressure.bind() if self.snapshot_id == pressure.SNAPSHOT_ID else None
+            session_configuration = getattr(getattr(session.runner, "adapter", None), "pressure_configuration", None)
+            if (configuration is None) != (session_configuration is None) or (configuration is not None and session_configuration != configuration):
+                raise ValueError("the shadow session and the site run different pressure configurations")
+            self.overlay = pair.ConsciousnessOverlay(pair.bind(pressure=configuration), self.case_id, arrival)
         except Exception as error:
             self.overlay_refusal = f"{type(error).__name__}: {error}"
         return self.overlay
@@ -2676,11 +2826,15 @@ def open_site(state: Mapping, *, environ: Mapping[str, str] | None = None,
     # environment, the family and the live core lineage). A run with a TEST-ONLY point carries none and behaves as before the grant existed.
     import runtime_pressure_grant as grants
     member = rs.CORE_LINEAGE[-1]
-    if not grants.grant_problems(grants.GRANT, case_id=case_id, environment=str(live.get(ENVIRONMENT_FLAG, "") or "").strip().lower(), snapshot_id=str(decision.snapshot_id or ""),
-                                 family=site.family, lineage={"version_id": member.version_id, "digest": member.digest}):
-        site.grant = grants.GRANT
-    elif str(decision.snapshot_id or "") == grants.PRESSURE_SNAPSHOT_ID:
-        return None                  # the REAL registered point never runs without the grant it is bound to (a registry that disagrees with the grant opens nothing)
+    # P3-380: the grant a run needs is decided by the snapshot it NAMES (each registered pressure point is bound to exactly one grant version); a snapshot no grant binds (the test-only mechanism)
+    # carries none and behaves as before the grant existed.
+    bound_grant = grants.grant_for_snapshot(str(decision.snapshot_id or ""))
+    if bound_grant is not None and binding_agrees_with_the_grant(bound_grant) and not grants.grant_problems(
+            bound_grant, case_id=case_id, environment=str(live.get(ENVIRONMENT_FLAG, "") or "").strip().lower(), snapshot_id=str(decision.snapshot_id or ""), family=site.family,
+            lineage={"version_id": member.version_id, "digest": member.digest}):
+        site.grant = bound_grant
+    elif str(decision.snapshot_id or "") in grants.REAL_SNAPSHOT_IDS:
+        return None                  # a REAL registered point never runs without the grant it is bound to (a registry that disagrees with the grant opens nothing)
     # P3-46-5: the decision that allowed authority travels with the site, so the artifact says why.
     site.eligibility = eligibility_record(
         decision, family=site.family, case_id=case_id, environment=site.environment,
@@ -3090,7 +3244,11 @@ def replay_site_artifact(artifact: Mapping) -> dict:
     if real_run:
         try:
             import runtime_authority_pair as pair_module
-            overlay_replay = pair_module.replay_overlay_artifact(body)
+            import runtime_pressure_grant as grants
+            carried_grant = dict(body.get("grant") or {})
+            named_grant = grants.registered_grant(carried_grant.get("grant_id"), carried_grant.get("fingerprint"))
+            bound_id = None if named_grant is None else dict(named_grant.get("pressure_snapshot") or {}).get("id")
+            overlay_replay = pair_module.replay_overlay_artifact(body, bound_id)
         except Exception as error:
             overlay_replay = {"checked": True, "reproduces": False, "mismatches": [f"{type(error).__name__}: {error}"], "established_minutes": []}
     halt_replay = halt_reason_replay(body, overlay_replay)
@@ -3457,10 +3615,33 @@ def real_artifact_problems(artifact: Mapping) -> list:
     policy = dict(body.get("post_commit_policy") or {})
     if policy.get("silent_fallback_to_the_legacy_engine") is not False or policy.get("is_patient_death") is not False:
         problems.append("post_commit_policy claims a silent fallback or a patient death")
-    if canonical(dict(body.get("grant") or {})) != canonical(grants.summary()):
+    named_grant = grants.registered_grant(dict(body.get("grant") or {}).get("grant_id"), dict(body.get("grant") or {}).get("fingerprint"))
+    if named_grant is None or canonical(dict(body.get("grant") or {})) != canonical(grants.summary(named_grant)):
         problems.append("the grant the artifact names is not the registered grant's summary")
+    if named_grant is not None:
+        # P3-381 (attack list: mixed old/new snapshot values, wrong grant on replay): every identity of the snapshot the artifact carries -- the top-level id, the snapshot mapping's own id and the id
+        # of every minute that names one -- is the ONE snapshot the named grant binds. A version-2 grant over an older snapshot id (or the other way round) is not a run that happened.
+        bound = str(dict(named_grant.get("pressure_snapshot") or {}).get("id") or "")
+        carried = {str(body.get("snapshot_id") or ""), str(dict(body.get("snapshot") or {}).get("id") or "")}
+        carried |= {str(record.get("snapshot_id")) for record in minutes if record.get("snapshot_id") not in (None, "")}
+        if carried != {bound}:
+            problems.append(f"the snapshot the artifact carries ({sorted(carried)}) is not the one its grant binds ({bound!r})")
+        # ... and the VALUES the run carried are that snapshot's, not only its label (adversarial review, finding 1): every captured scenario of the session (the artifact's own and each minute's)
+        # is held to the six coordinates of the snapshot the grant binds. An id with no pinned values (a test-only point) is not held to any.
+        import runtime_authority_pair as pair
+        try:
+            values = pair.snapshot_values(bound)
+        except Exception as error:                       # the promoted snapshot does not bind: no run of it can be judged, and none verifies
+            values = None
+            problems.append(f"the values of the snapshot the grant binds ({bound!r}) cannot be established: {type(error).__name__}")
+        if values is not None:
+            captured = [("the artifact", body.get("replay_input"))] + [(f"minute {record.get('minute')}", record.get("replay_input")) for record in minutes]
+            for where, replay_input in captured:
+                if replay_input and not pair.scenario_has_the_values(dict(replay_input).get("scenario"), values):
+                    problems.append(f"the captured scenario of {where} does not carry the values of the snapshot its grant binds ({bound!r})")
     boundary = dict(body.get("collapse_boundary") or {})
-    if canonical(dict(boundary.get("policy") or {})) != canonical(dict(grants.GRANT["collapse_boundary"])) or boundary.get("window_max_minute") != grants.WINDOW_MINUTES:
+    if (canonical(dict(boundary.get("policy") or {})) != canonical(dict((named_grant or grants.GRANT)["collapse_boundary"]))
+            or boundary.get("window_max_minute") != grants.WINDOW_MINUTES):
         problems.append("the collapse boundary policy or the window is not the grant's")
     for record in committed:
         at = record.get("minute")
@@ -3509,10 +3690,11 @@ def verify_artifact(artifact: Mapping) -> dict:
     # P3-248 (attack 22): a run under the grant names the grant it ran under, and it must be THE registered one (identity and fingerprint), in the artifact and in every minute.
     import runtime_pressure_grant as grants
     named = dict(dict(artifact).get("grant") or {})
-    registered = (not real) or (named.get("grant_id") == grants.GRANT_ID and named.get("fingerprint") == grants.GRANT_FINGERPRINT
+    named_grant = grants.registered_grant(named.get("grant_id"), named.get("fingerprint"))
+    registered = (not real) or (named_grant is not None
                                 and list(named.get("excluded_domains") or []) == list(grants.EXCLUDED_DOMAINS) and list(named.get("domain") or []) == list(AUTHORITY_DOMAIN)
                                 and list(dict(artifact).get("excluded_domains") or []) == list(grants.EXCLUDED_DOMAINS)
-                                and all(dict(record).get("grant_fingerprint") == grants.GRANT_FINGERPRINT and dict(record).get("grant_id") == grants.GRANT_ID
+                                and all(dict(record).get("grant_fingerprint") == named_grant.get("fingerprint") and dict(record).get("grant_id") == named_grant.get("grant_id")
                                         for record in dict(artifact).get("minutes") or []))
     claims = real_artifact_problems(artifact) if real else []
     return {"digest_matches": recomputed == dict(artifact).get("artifact_digest"),

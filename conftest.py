@@ -195,7 +195,7 @@ def _pressure_grant_test_seam():
 
     def permits(**kwargs):
         identity = kwargs.get("snapshot_id")
-        if not _GRANT_SEAM["strict"] and identity and identity != grants.PRESSURE_SNAPSHOT_ID:
+        if not _GRANT_SEAM["strict"] and identity and identity not in grants.REAL_SNAPSHOT_IDS:
             return True, []
         return real(**kwargs)
 

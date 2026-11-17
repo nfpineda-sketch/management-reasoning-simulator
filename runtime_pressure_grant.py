@@ -14,6 +14,11 @@ boundary policy, the failure policy, the consciousness OVERLAY (``GI_DEVELOPMENT
 What it excludes, explicitly and not by omission: consciousness, ``mental_status``, collapse, terminal state, pulse, oxygenation, lactate and
 haemoglobin. A grant that lists any of them in its domain, or fails to list one of them as excluded, is refused. Adding a domain is a NEW grant
 version, never an edit of this one: the body is frozen, its fingerprint is pinned in this file, and the module does not import if they differ.
+
+P3-379 (the faculty decision of 2026-11-16, FD-PROMOTE-05): ``GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V2`` is that NEW version. It binds the ratified
+``GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1`` (by id, by the pinned digest of the approved values and by the pinned digest of the whole configuration), the certified lineage
+(``PHASE2_AMENDMENT_2``: the promotion is configuration only, no core successor was needed) and the same scope, window, boundary, failure policy and overlay as version 1. Version 1 is
+neither edited nor removed: it stays registered, readable, and the artifacts it authorized still verify and replay under it. Which grant a run needs is decided by the snapshot it names.
 """
 from __future__ import annotations
 
@@ -22,7 +27,7 @@ import json
 from types import MappingProxyType
 from typing import Any, Mapping, Sequence
 
-MODULE_VERSION = "P3-239"
+MODULE_VERSION = "P3-239/379"
 
 GRANT_KIND = "FACULTY_GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT"
 GRANT_ID = "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V1"
@@ -48,6 +53,17 @@ PRESSURE_VALUE_DIGEST = "c4fb416f30ad7afbcdc8b0c16d9464d98e87ba64054bebfb257f278
 CORE_VERSION = "PHASE2_AMENDMENT_2"
 CORE_DIGEST = "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2"
 OVERLAY_SNAPSHOT_ID = "GI_DEVELOPMENT_SNAPSHOT_V1"
+
+# -- version 2 (P3-379): the ratified joint pressure snapshot ------------------------------------------------------------------------------------------------
+GRANT_ID_V2 = "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V2"
+GRANT_VERSION_V2 = 2
+PRESSURE_SNAPSHOT_ID_V2 = "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"
+#: The digest of the values ``runtime_authority`` approved for version 2 (the seven profile magnitudes and the four scenario magnitudes), written as a literal on purpose.
+PRESSURE_VALUE_DIGEST_V2 = "7270cf8599de0095088601acfe1df4d88b2aa9e38483fbdaf6844a1c2cce65c5"
+#: The digest of the whole configuration identity (the six executable values and the records they come from): ``runtime_pressure_snapshot.CONFIGURATION_DIGEST``, as a literal.
+CONFIGURATION_DIGEST_V2 = "70e6826cb2844bace6e3249058638340d00d80f84f8fdd2a5a2e752028db0641"
+#: The snapshot ids that name a REAL registered pressure point: a run that names one of them never opens without the grant it is bound to.
+REAL_SNAPSHOT_IDS = (PRESSURE_SNAPSHOT_ID, PRESSURE_SNAPSHOT_ID_V2)
 
 #: What a grant of this kind may never claim, anywhere in its record.
 FORBIDDEN_CLAIMS = ("CLINICALLY_VALIDATED", "CLINICALLY_CALIBRATED", "PRODUCTION_APPROVED", "RESIDENT_APPROVED", "CLINICALLY_APPROVED",
@@ -77,6 +93,8 @@ OVERLAY_AUTHORITATIVE = "GRANT_OVERLAY_CLAIMS_AUTHORITY_OR_RESIDENT_VISIBILITY"
 FINGERPRINT_MISMATCH = "GRANT_FINGERPRINT_DOES_NOT_MATCH_ITS_BODY"
 FINGERPRINT_NOT_PINNED = "GRANT_FINGERPRINT_IS_NOT_THE_PINNED_ONE"
 FORBIDDEN_CLAIM = "GRANT_CARRIES_A_CLAIM_NO_FACULTY_DECISION_GRANTED"
+CONFIGURATION_MISMATCH = "GRANT_PINS_ANOTHER_PRESSURE_CONFIGURATION"
+PROMOTION_POLICY_WRONG = "GRANT_PROMOTION_POLICY_IS_NOT_CONFIG_ONLY_ON_THE_CERTIFIED_LINEAGE"
 RUN_DIMENSION_NOT_NAMED = "THE_RUN_DOES_NOT_NAME_EVERY_DIMENSION_THE_GRANT_BINDS"
 UNKNOWN_GRANT = "GRANT_IS_NOT_IN_THE_REGISTRY"
 NO_DECISION = "GRANT_HAS_NO_DECISION_REFERENCE"
@@ -135,8 +153,51 @@ _BODY = {
 GRANT_FINGERPRINT = "3c29c2b9eb070ea1728bea2b17fd4484ff42c5105070c9402b17e73b29c3c136"
 
 GRANT: Mapping[str, Any] = _freeze({**_BODY, "fingerprint": fingerprint_of(_BODY)})
-#: The registry: exactly one active grant, by this faculty decision. Read-only (a tuple of frozen mappings).
-REGISTERED_GRANTS: tuple = (GRANT,)
+
+# -- version 2 (P3-379) ------------------------------------------------------------------------------------------------------------------------------------------
+_BODY_V2 = {
+    **{key: value for key, value in _BODY.items() if key not in ("grant_id", "grant_version", "pressure_snapshot", "decision_reference", "issued_on", "not_granted")},
+    "grant_id": GRANT_ID_V2, "grant_version": GRANT_VERSION_V2,
+    "pressure_snapshot": {"id": PRESSURE_SNAPSHOT_ID_V2, "value_digest": PRESSURE_VALUE_DIGEST_V2, "configuration_digest": CONFIGURATION_DIGEST_V2,
+                          "faculty_status": "RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS",
+                          "decision_reference": "docs/COLA_DECISIONES_AI_ADVISOR.md FD-RATIFY-03 and FD-PROMOTE-01",
+                          "record": "docs/revision/GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1.json"},
+    "promotion": {"lineage_decision": "CONFIG_ONLY_PROMOTION_SUFFICIENT", "successor_core_required": False, "core_sources_changed": False,
+                  "supersedes_grant_id": GRANT_ID, "supersedes_pressure_snapshot_id": PRESSURE_SNAPSHOT_ID,
+                  "older_grant_remains_readable_and_its_artifacts_replayable": True, "new_calibration": False, "new_physiology": False, "amendment_3": "CLOSED",
+                  "monitored_limitation": "GI_BLOOD_RESUSCITATION_LOW_END_RESPONSE (kept, not fixed)"},
+    "decision_reference": "docs/COLA_DECISIONES_AI_ADVISOR.md FD-PROMOTE-01 to FD-PROMOTE-07 (on FD-RATIFY-01 to FD-RATIFY-07)",
+    "issued_by_role": "faculty", "issued_on": "2026-11-16",
+    "not_granted": ("production", "resident deployment", "the first pilot", "consciousness authority", "mental_status writes",
+                    "terminal semantics", "clinical validation", "any non-pressure domain", "a new calibration", "Amendment 3 physiology", "norepinephrine", "source control"),
+}
+#: The pinned fingerprint of the body above (version 2). A grant is never edited: another body is another version.
+GRANT_FINGERPRINT_V2 = "8a91145dbfe899dffdc5de1ed28b116c61f4fa5b462a49979727ce8b05b3642f"
+GRANT_V2: Mapping[str, Any] = _freeze({**_BODY_V2, "fingerprint": fingerprint_of(_BODY_V2)})
+
+#: What each registered version pins, by id. Read by ``grant_problems``: a grant is judged against ITS OWN version's pins and by no other version's.
+_SPECS: Mapping[str, Mapping[str, Any]] = MappingProxyType({
+    GRANT_ID: MappingProxyType({"version": GRANT_VERSION, "snapshot_id": PRESSURE_SNAPSHOT_ID, "value_digest": PRESSURE_VALUE_DIGEST, "fingerprint": GRANT_FINGERPRINT,
+                                "configuration_digest": None}),
+    GRANT_ID_V2: MappingProxyType({"version": GRANT_VERSION_V2, "snapshot_id": PRESSURE_SNAPSHOT_ID_V2, "value_digest": PRESSURE_VALUE_DIGEST_V2, "fingerprint": GRANT_FINGERPRINT_V2,
+                                   "configuration_digest": CONFIGURATION_DIGEST_V2}),
+})
+#: The registry: the registered grants, by faculty decision (version 1 of 2026-11-12, version 2 of 2026-11-16). Read-only (a tuple of frozen mappings).
+REGISTERED_GRANTS: tuple = (GRANT, GRANT_V2)
+
+
+def registered_grant(grant_id: Any, fingerprint: Any = None) -> Mapping[str, Any] | None:
+    """The registered grant of that id (and, when asked, that fingerprint), or None: how an artifact's grant block is resolved to the version it ran under."""
+    for item in REGISTERED_GRANTS:
+        if item.get("grant_id") == grant_id and (fingerprint is None or item.get("fingerprint") == fingerprint):
+            return item
+    return None
+
+
+def grant_for_snapshot(snapshot_id: Any) -> Mapping[str, Any] | None:
+    """The registered grant that binds this pressure snapshot, or None. A snapshot id is bound to exactly one version."""
+    found = [item for item in REGISTERED_GRANTS if dict(item.get("pressure_snapshot") or {}).get("id") == snapshot_id]
+    return found[0] if len(found) == 1 else None
 
 
 def grant_problems(grant: Any, *, case_id: str | None = None, environment: str | None = None, snapshot_id: str | None = None, family: str | None = None,
@@ -162,8 +223,10 @@ def grant_problems(grant: Any, *, case_id: str | None = None, environment: str |
             problems.append(WRONG_PURPOSE)
         if not str(grant.get("decision_reference") or "").strip():
             problems.append(NO_DECISION)
-        if grant.get("grant_id") != GRANT_ID or grant.get("grant_version") != GRANT_VERSION:
+        spec = _SPECS.get(grant.get("grant_id"))
+        if spec is None or grant.get("grant_version") != spec["version"] or isinstance(grant.get("grant_version"), bool):
             problems.append(NOT_IN_REGISTRY_ID)
+            spec = _SPECS[GRANT_ID]                       # the rest is judged against version 1's pins, so an unknown id still gets every other refusal by name
         domain, excluded = tuple(grant.get("domain") or ()), tuple(grant.get("excluded_domains") or ())
         if domain != DOMAIN:
             problems.append(DOMAIN_NOT_PRESSURE)
@@ -172,10 +235,18 @@ def grant_problems(grant: Any, *, case_id: str | None = None, environment: str |
         if set(domain) & set(excluded):
             problems.append(EXCLUSION_OVERLAPS)
         snapshot = dict(grant.get("pressure_snapshot") or {})
-        if snapshot.get("id") != PRESSURE_SNAPSHOT_ID or (snapshot_id is not None and snapshot.get("id") != snapshot_id):
+        if snapshot.get("id") != spec["snapshot_id"] or (snapshot_id is not None and snapshot.get("id") != snapshot_id):
             problems.append(SNAPSHOT_MISMATCH)
-        if snapshot.get("value_digest") != PRESSURE_VALUE_DIGEST:
+        if snapshot.get("value_digest") != spec["value_digest"]:
             problems.append(SNAPSHOT_DIGEST_MISMATCH)
+        if spec["configuration_digest"] is not None:
+            if snapshot.get("configuration_digest") != spec["configuration_digest"]:
+                problems.append(CONFIGURATION_MISMATCH)
+            promotion = dict(grant.get("promotion") or {})
+            if (promotion.get("lineage_decision") != "CONFIG_ONLY_PROMOTION_SUFFICIENT" or promotion.get("successor_core_required") is not False or promotion.get("core_sources_changed") is not False
+                    or promotion.get("supersedes_grant_id") != GRANT_ID or promotion.get("new_calibration") is not False or promotion.get("new_physiology") is not False
+                    or promotion.get("amendment_3") != "CLOSED"):
+                problems.append(PROMOTION_POLICY_WRONG)
         core = dict(grant.get("core_lineage") or {})
         if core.get("version_id") != CORE_VERSION or core.get("digest") != CORE_DIGEST:
             problems.append(CORE_MISMATCH)
@@ -207,7 +278,7 @@ def grant_problems(grant: Any, *, case_id: str | None = None, environment: str |
             problems.append(OVERLAY_AUTHORITATIVE)
         if grant.get("fingerprint") != fingerprint_of(grant):
             problems.append(FINGERPRINT_MISMATCH)
-        if grant.get("fingerprint") != GRANT_FINGERPRINT:
+        if grant.get("fingerprint") != spec["fingerprint"]:
             problems.append(FINGERPRINT_NOT_PINNED)
     except Exception as error:
         problems.append(f"{NOT_A_GRANT}: {type(error).__name__}")
@@ -240,7 +311,9 @@ def permits(*, case_id: str | None, environment: str | None, snapshot_id: str | 
 def summary(grant: Mapping | None = None) -> dict:
     """What an artifact says about the grant it ran under: identity and bindings, never the whole body."""
     grant = GRANT if grant is None else grant
-    return {"grant_id": grant.get("grant_id"), "grant_version": grant.get("grant_version"), "kind": grant.get("kind"), "authority_mode": grant.get("authority_mode"),
+    extra = {} if "promotion" not in grant else {"pressure_configuration_digest": dict(grant.get("pressure_snapshot") or {}).get("configuration_digest"),
+                                                 "lineage_decision": dict(grant.get("promotion") or {}).get("lineage_decision")}
+    return {**extra, "grant_id": grant.get("grant_id"), "grant_version": grant.get("grant_version"), "kind": grant.get("kind"), "authority_mode": grant.get("authority_mode"),
             "fingerprint": grant.get("fingerprint"), "domain": list(grant.get("domain") or ()), "excluded_domains": list(grant.get("excluded_domains") or ()),
             "cases": list(grant.get("cases") or ()), "pressure_snapshot_id": dict(grant.get("pressure_snapshot") or {}).get("id"),
             "core_version": dict(grant.get("core_lineage") or {}).get("version_id"), "window_max_minute": dict(grant.get("window") or {}).get("max_minute"),
@@ -251,9 +324,12 @@ def _guard_the_grant() -> None:
     """Refuse to import a grant that has drifted: its body must match the fingerprint pinned in this file, and be a grant ``grant_problems`` accepts."""
     if fingerprint_of(_BODY) != GRANT_FINGERPRINT:
         raise RuntimeError(f"the pressure grant body changed (fingerprint {fingerprint_of(_BODY)}): a grant is never edited; issue a new version and pin it")
-    found = grant_problems(GRANT)
-    if found:
-        raise RuntimeError(f"the registered pressure grant is not a valid grant: {found}")
+    if fingerprint_of(_BODY_V2) != GRANT_FINGERPRINT_V2:
+        raise RuntimeError(f"the pressure grant version 2 body changed (fingerprint {fingerprint_of(_BODY_V2)}): a grant is never edited; issue a new version and pin it")
+    for registered in REGISTERED_GRANTS:
+        found = grant_problems(registered)
+        if found:
+            raise RuntimeError(f"the registered pressure grant {registered.get('grant_id')} is not a valid grant: {found}")
 
 
 _guard_the_grant()

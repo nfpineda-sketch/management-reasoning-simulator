@@ -33,6 +33,7 @@ from typing import Any, Mapping, Sequence
 import observable_view as view
 import runtime_authority as ra
 import runtime_minute_validation as mv
+import runtime_pressure_snapshot as ps
 import runtime_shadow as rs
 import runtime_shadow_evidence as ev
 import runtime_shadow_families as fam
@@ -66,6 +67,9 @@ V1_RATIFICATION_DIGEST = "123135b3e35c7cb8117ed02600e19b8e44e117e4d58feb2cf0a630
 V1_CORE_VERSION = "PHASE2_AMENDMENT_2"
 V1_CORE_DIGEST = "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2"
 PRESSURE_POINT = "gi_pressure_committed"
+#: P3-380: the digest of the ONE core profile the ten values of version 1 build on the ratified joint pressure point (its preload scale and arrival position): what a run under the
+#: promoted snapshot must be carrying. The consciousness values are version 1's, unchanged (FD-PROMOTE-03: no consciousness change).
+V2_PROFILE_DIGEST = "e0e932476c078a57196424ed5c9c68894c95d8b614f754105dc1832d535571c7"
 
 RATIFIED = "RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS"
 IS_NOT = ("clinical calibration", "production profile", "resident profile", "authority-approved snapshot")
@@ -213,10 +217,10 @@ def verify_ratification(ratification: Any, record: Mapping) -> list:
     return [] if ok else [NOT_RATIFIED]
 
 
-def pressure_point_matches(profile: Any) -> bool:
+def pressure_point_matches(profile: Any, point: str = PRESSURE_POINT) -> bool:
     """The base profile is the point the pressure approval pins: same id, same pinned digest, same values."""
-    approved = ra.APPROVED_SNAPSHOTS.get(PRESSURE_POINT)
-    if approved is None or not ra.approved_values_match(PRESSURE_POINT, approved):
+    approved = ra.APPROVED_SNAPSHOTS.get(point)
+    if approved is None or not ra.approved_values_match(point, approved):
         return False
     return all(getattr(profile, name, None) == value for name, value in dict(approved["parameters"]).items())
 
@@ -241,20 +245,31 @@ class BoundSnapshot:
     pressure_point: str
     profile: Any
     profile_digest: str
+    #: P3-380: the ratified joint pressure configuration this binding runs on (None: the older committed point, exactly as before).
+    pressure_configuration: Any = None
 
     def value_map(self) -> dict:
         return dict(self.values)
 
     def summary(self) -> dict:
-        return {"snapshot_id": self.snapshot_id, "version": self.version, "values": self.value_map(), "identity_digest": self.identity_digest,
-                "record_digest": self.record_digest, "file_sha256": self.file_sha256, "core_version": self.core_version,
-                "core_digest": self.core_digest, "pressure_point": self.pressure_point, "profile_digest": self.profile_digest}
+        out = {"snapshot_id": self.snapshot_id, "version": self.version, "values": self.value_map(), "identity_digest": self.identity_digest,
+               "record_digest": self.record_digest, "file_sha256": self.file_sha256, "core_version": self.core_version,
+               "core_digest": self.core_digest, "pressure_point": self.pressure_point, "profile_digest": self.profile_digest}
+        if self.pressure_configuration is not None:
+            out["pressure_configuration"] = self.pressure_configuration.summary()      # only a promoted binding says so: a version-1 summary keeps exactly the keys it had
+        return out
 
 
-def build_profile(values: Mapping[str, float]):
+def build_profile(values: Mapping[str, float], pressure: Any = None):
     """The core profile of the pair: the committed default (the pressure approval's point) plus ONE field, ``amendment_2``, built from the record's
-    ten values. No witness name and no default argument is read: ``sc.development_profile()`` is never called."""
+    ten values. No witness name and no default argument is read: ``sc.development_profile()`` is never called. With ``pressure`` (P3-380) the base is the
+    committed default carrying the ratified joint pressure point's preload scale and arrival position instead."""
     base = fam._bundle_profile(fam.COMMITTED)
+    if pressure is not None:
+        try:
+            base = ps.apply_profile(base, pressure)
+        except ps.PressureBindingError:
+            raise SnapshotBindingError([PRESSURE_POINT_MISMATCH]) from None
     if base.amendment_2 is not None:
         raise SnapshotBindingError([PRESSURE_POINT_MISMATCH])
     amendment = sc.Amendment2Profile(**{name: float(values[name]) for name in sc.FIELDS})
@@ -266,18 +281,23 @@ def bound_is_v1(bound: Any) -> bool:
     constants. A ``BoundSnapshot`` built by hand with other values, or edited after the binding, is not one."""
     try:
         amendment = bound.profile.amendment_2
+        configuration = bound.pressure_configuration
+        # the consciousness half is version 1's in every case; the pressure half is the older committed point or the pinned promoted one, and nothing in between
+        point, expected_profile = (PRESSURE_POINT, V1_PROFILE_DIGEST) if configuration is None else (ps.SNAPSHOT_ID, V2_PROFILE_DIGEST)
+        if configuration is not None and not ps.configuration_is_pinned(configuration):
+            return False
         return (type(bound) is BoundSnapshot and type(amendment) is sc.Amendment2Profile
                 and (bound.snapshot_id, bound.version, bound.identity_digest, bound.record_digest, bound.file_sha256, bound.core_version,
                      bound.core_digest, bound.pressure_point) == (V1_ID, V1_VERSION, V1_IDENTITY_DIGEST, V1_RECORD_DIGEST, V1_FILE_SHA256,
-                                                                  V1_CORE_VERSION, V1_CORE_DIGEST, PRESSURE_POINT)
+                                                                  V1_CORE_VERSION, V1_CORE_DIGEST, point)
                 and digest(plain(dict(bound.values))) == V1_VALUES_DIGEST and digest(plain(amendment.to_dict())) == V1_VALUES_DIGEST
-                and bound.profile_digest == V1_PROFILE_DIGEST and profile_digest(bound.profile) == V1_PROFILE_DIGEST
-                and pressure_point_matches(bound.profile))
+                and bound.profile_digest == expected_profile and profile_digest(bound.profile) == expected_profile
+                and pressure_point_matches(bound.profile, point))
     except Exception:
         return False
 
 
-def bind(root: str = ROOT, *, record: Any = None, raw: bytes | None = None, ratification: Any = None, lineage: Mapping | None = None) -> BoundSnapshot:
+def bind(root: str = ROOT, *, record: Any = None, raw: bytes | None = None, ratification: Any = None, lineage: Mapping | None = None, pressure: Any = None) -> BoundSnapshot:
     """Bind to the exact ratified snapshot, or raise ``SnapshotBindingError`` with every refusal code.
 
     With no ``record`` the committed file is read and its raw bytes are hashed. A ``record`` given by the caller is reduced to plain data and verified
@@ -299,11 +319,14 @@ def bind(root: str = ROOT, *, record: Any = None, raw: bytes | None = None, rati
         reasons += verify_ratification(ratification, record)
     if reasons:
         raise SnapshotBindingError(reasons)
-    profile = build_profile(record["values"])
-    if not pressure_point_matches(profile):
+    if pressure is not None and not ps.configuration_is_pinned(pressure):
+        raise SnapshotBindingError([PRESSURE_POINT_MISMATCH])
+    point = PRESSURE_POINT if pressure is None else ps.SNAPSHOT_ID
+    profile = build_profile(record["values"], pressure)
+    if not pressure_point_matches(profile, point):
         raise SnapshotBindingError([PRESSURE_POINT_MISMATCH])
     bound = BoundSnapshot(V1_ID, V1_VERSION, tuple((name, float(record["values"][name])) for name in sc.FIELDS), V1_IDENTITY_DIGEST,
-                          V1_RECORD_DIGEST, V1_FILE_SHA256, V1_CORE_VERSION, V1_CORE_DIGEST, PRESSURE_POINT, profile, profile_digest(profile))
+                          V1_RECORD_DIGEST, V1_FILE_SHA256, V1_CORE_VERSION, V1_CORE_DIGEST, point, profile, profile_digest(profile), pressure)
     if not bound_is_v1(bound):                          # what was BUILT is checked, not only what was offered
         raise SnapshotBindingError([MODIFIED_PARAMETER])
     return bound
@@ -317,7 +340,9 @@ class BoundSnapshotAdapter(fam.GiHaemorrhageAdapter):
             raise SnapshotBindingError([WRONG_SNAPSHOT_ID])
         self.bound = bound
         self.amendment_2_witness = None
-        self.version = f"{fam.GiHaemorrhageAdapter.version}+bound/{bound.snapshot_id}"
+        # P3-380: a promoted binding carries the ratified pressure configuration, and the inherited writers and interventions apply it (the profile is already the bound one)
+        self.pressure_configuration = bound.pressure_configuration
+        self.version = f"{fam.GiHaemorrhageAdapter.version}+bound/{bound.snapshot_id}" + ("" if bound.pressure_configuration is None else f"+pressure/{ps.SNAPSHOT_ID}")
 
     def region_witnesses(self) -> dict:
         return {}
@@ -328,6 +353,15 @@ class BoundSnapshotAdapter(fam.GiHaemorrhageAdapter):
         return self.bound.profile
 
     def snapshot(self, point: str = fam.COMMITTED):
+        if self.bound.pressure_configuration is not None:
+            cfg = self.bound.pressure_configuration
+            return fam.ShadowParameterSnapshot(
+                f"bound::{self.bound.snapshot_id}+{cfg.runtime_snapshot_id}", self.family, fam.COMMITTED,
+                ("clinical_core.legacy_adapter: the arrival and the haemorrhage module are read from the case",
+                 f"runtime_pressure_snapshot: {cfg.snapshot_id} (record {cfg.record_digest}, configuration {cfg.configuration_digest}): the same hemodynamics as the session's own run",
+                 f"amendment_2 built ONLY from {SNAPSHOT_FILE}: identity {self.bound.identity_digest}, record {self.bound.record_digest}",
+                 f"common core {self.bound.core_version} {self.bound.core_digest}",
+                 "a development snapshot ratified for development experiments: not an authority approval and not clinical truth"))
         return fam.ShadowParameterSnapshot(
             f"bound::{self.bound.snapshot_id}", self.family, fam.COMMITTED,
             ("clinical_core.legacy_adapter: the arrival and the haemorrhage module are read from the case",
@@ -346,8 +380,10 @@ def runner_is_bound(runner: Any, bound: BoundSnapshot) -> bool:
     """The run in hand IS version 1's: the binding is version 1 (``bound_is_v1``), the run carries that binding, and the profile the run would
     integrate with hashes to the PINNED digests -- not merely to whatever the binding object says."""
     try:
+        expected_profile = V1_PROFILE_DIGEST if bound.pressure_configuration is None else V2_PROFILE_DIGEST
         return (bound_is_v1(bound) and type(runner.adapter) is BoundSnapshotAdapter and runner.adapter.bound is bound
-                and runner.profile == bound.profile and profile_digest(runner.profile) == V1_PROFILE_DIGEST
+                and runner.adapter.pressure_configuration is bound.pressure_configuration
+                and runner.profile == bound.profile and profile_digest(runner.profile) == expected_profile
                 and type(runner.profile.amendment_2) is sc.Amendment2Profile
                 and digest(plain(runner.profile.amendment_2.to_dict())) == V1_VALUES_DIGEST)
     except Exception:
@@ -646,7 +682,7 @@ class PairDryEvaluator:
         #: FD-AUTH-07: the predefined limit is the ceiling. A caller may shorten the window, never lengthen it.
         self.bound, self.case_id, self.time_limit = bound, str(case_id), max(0, min(int(time_limit), TIME_LIMIT_MIN))
         self.runner = open_bound_runner(bound, case_id, deepcopy(dict(arrival_state)))
-        self.pressure_snapshot = ra.approved_snapshot(PRESSURE_POINT, environment="development", family=ra.AUTHORITY_FAMILY, case_id=self.case_id,
+        self.pressure_snapshot = ra.approved_snapshot(bound.pressure_point, environment="development", family=ra.AUTHORITY_FAMILY, case_id=self.case_id,
                                                       domain=ra.AUTHORITY_DOMAIN)
         #: A lineage the caller OFFERS (a tamper control offers a wrong one). It can only add a refusal: the live lineage is read every minute.
         self.offered_lineage = None if lineage is None else dict(lineage)
@@ -1047,7 +1083,47 @@ class ConsciousnessOverlay(PairDryEvaluator):
 WORD_FIELD = CONSCIOUSNESS_FIELDS[1]
 
 
-def replay_overlay_artifact(artifact: Mapping) -> dict:
+#: What the older approved point ran (``gi_pressure_committed``; FD-PROMOTE-01 keeps it registered and replayable): the six coordinates of the pressure experiment, typed here once so that an artifact that names
+#: the older snapshot can be held to them. ``test_phase3_pressure_promotion.py::test_b6`` re-derives every one of them from the older adapter.
+OLDER_POINT_ID = "gi_pressure_committed"
+OLDER_POINT = MappingProxyType({"bleed_rate_ml_eq_per_min": 2.5, "preload_scale_ml_eq": 833.3333333333334, "arrival_position": 0.5, "kernel_e": 0.125, "kernel_s": 0.6, "kernel_tau_min": 30.0})
+
+
+def snapshot_values(snapshot_id: Any) -> Mapping | None:
+    """The six values a run of this approved snapshot must carry: the verified configuration's for the ratified joint snapshot (``PressureBindingError`` if it does not bind) and the older point's for the
+    older snapshot. ``None`` for any other id (a test-only point has no pinned values)."""
+    if snapshot_id == ps.SNAPSHOT_ID:
+        return ps.bind().values()
+    if snapshot_id == OLDER_POINT_ID:
+        return OLDER_POINT
+    return None
+
+
+def scenario_has_the_values(scenario: Any, values: Mapping) -> bool:
+    """The captured scenario's haemorrhage is at the values' rate, every crystalloid at their kernel, and the profile at their scale and arrival position."""
+    try:
+        from clinical_core import integration
+        from clinical_core.interventions.fluids import Crystalloid
+        from clinical_core.modules.gi_haemorrhage import GIHaemorrhage
+        _anchors, contributors, _minutes, profile = integration.scenario_from_dict(scenario)
+        haemorrhages = [item for item in contributors if isinstance(item, GIHaemorrhage)]
+        crystalloids = [item for item in contributors if isinstance(item, Crystalloid)]
+        return (len(haemorrhages) == 1 and haemorrhages[0].blood_loss_ml_per_min == values["bleed_rate_ml_eq_per_min"]
+                and all((item.effective_ml_per_ml, item.transient_share, item.leak_tau_min) == (values["kernel_e"], values["kernel_s"], values["kernel_tau_min"]) for item in crystalloids)
+                and profile.preload_curve_scale_ml == values["preload_scale_ml_eq"] and profile.arrival_preload_fraction == values["arrival_position"])
+    except Exception:
+        return False
+
+
+def scenario_is_at_the_configuration(scenario: Any, cfg: Any) -> bool:
+    """The captured scenario's haemorrhage is at the configuration's rate and every crystalloid at its kernel (the profile is checked by its digest too, by the overlay replay)."""
+    try:
+        return ps.configuration_is_pinned(cfg) and scenario_has_the_values(scenario, cfg.values())
+    except Exception:
+        return False
+
+
+def replay_overlay_artifact(artifact: Mapping, bound_snapshot_id: Any = None) -> dict:
     """Rebuild the overlay FROM THE ARTIFACT ALONE (P3-246A): the bound run's profile must be the pinned version 1's, every recorded row must be the replayed one,
     and every turn's boundary reading (the first established minute and the minutes not shown) must be re-derived from the replay. Never raises."""
     mismatches: list = []
@@ -1062,9 +1138,24 @@ def replay_overlay_artifact(artifact: Mapping) -> dict:
             mismatches.append("the artifact carries no replay input of the overlay")
             return out
         profile = fam._replay_trajectory(scenario)[2]
-        out["snapshot_matches"] = profile_digest(profile) == V1_PROFILE_DIGEST == dict(overlay.get("snapshot") or {}).get("profile_digest")
+        named = dict(overlay.get("snapshot") or {})
+        promoted = "pressure_configuration" in named
+        # P3-381 (adversarial review, finding 1): when the caller knows the snapshot the artifact's registered grant binds (it resolves the grant; this module never imports it), what the overlay must be
+        # is decided by THAT snapshot, never by what the artifact says about itself.
+        if bound_snapshot_id is not None:
+            bound_is_promoted = bound_snapshot_id == ps.SNAPSHOT_ID
+            if bound_is_promoted != promoted:
+                mismatches.append("the overlay names a pressure configuration the grant of the artifact does not bind (or the other way round)")
+                promoted = bound_is_promoted
+        expected_profile = V2_PROFILE_DIGEST if promoted else V1_PROFILE_DIGEST
+        out["snapshot_matches"] = profile_digest(profile) == expected_profile == named.get("profile_digest")
+        if promoted:
+            # the artifact names the promoted configuration: it must BE the pinned one, and the contributors the replay input carries must be at its rate and kernel
+            out["snapshot_matches"] = bool(out["snapshot_matches"] and dict(named["pressure_configuration"]) == ps._expected().summary()
+                                           and named.get("pressure_point") == ps.SNAPSHOT_ID and scenario_is_at_the_configuration(scenario, ps._expected()))
         if not out["snapshot_matches"]:
-            mismatches.append("the overlay's rebuilt profile is not the pinned version 1's, or the artifact names another")
+            mismatches.append("the overlay's rebuilt profile is not the pinned version 1's, or the artifact names another" if not promoted else
+                              "the overlay's rebuilt profile, rate or kernel is not the pinned promoted configuration's, or the artifact names another")
         rows_ok = boundary_ok = True
         cleared = 0
         for turn in overlay.get("turns") or []:

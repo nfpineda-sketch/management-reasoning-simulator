@@ -372,23 +372,44 @@ class GiHaemorrhageAdapter(RuntimeFamilyAdapter):
     maps = ("fluid", "blood", "oxygen", "ppi")
     #: The witness this adapter was built with (None: the registered adapter, the committed profile).
     amendment_2_witness: str | None = None
+    #: P3-378: the ratified GI pressure configuration this adapter runs (``runtime_pressure_snapshot.PressureConfiguration``), or None for the older committed point
+    #: (``gi_pressure_committed``). It is carried by a DEVELOPMENT adapter that is never registered, and it is re-checked every time it is used.
+    pressure_configuration: Any = None
 
     @classmethod
-    def witness(cls, name: str) -> "GiHaemorrhageAdapter":
-        """A development adapter carrying ONE witness of the Amendment-2 region. Never registered."""
+    def witness(cls, name: str, pressure_configuration: Any = None) -> "GiHaemorrhageAdapter":
+        """A development adapter carrying ONE witness of the Amendment-2 region. Never registered. With a pressure configuration the witness runs the SAME hemodynamics as the
+        session's own run (the consciousness witnesses are never compared under another point's pressure)."""
         if name not in GI_AMENDMENT_2_WITNESS_NAMES:
             raise ValueError(f"unknown Amendment-2 witness {name!r}: {list(GI_AMENDMENT_2_WITNESS_NAMES)}")
         adapter = cls()
         adapter.amendment_2_witness = name
         adapter.version = f"{cls.version}+amendment_2/P3-174"
+        if pressure_configuration is not None:
+            adapter._with_pressure(pressure_configuration)
         return adapter
+
+    @classmethod
+    def configured(cls, pressure_configuration: Any) -> "GiHaemorrhageAdapter":
+        """P3-378: the GI adapter running the ratified ``GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1`` (the profile's scale and arrival position, the haemorrhage's rate and every
+        crystalloid's kernel), the committed profile otherwise. A development adapter: never in ``ADAPTERS``, and it refuses a configuration that is not the pinned one."""
+        adapter = cls()
+        adapter._with_pressure(pressure_configuration)
+        return adapter
+
+    def _with_pressure(self, pressure_configuration: Any) -> None:
+        import runtime_pressure_snapshot as pressure
+        if not pressure.configuration_is_pinned(pressure_configuration):
+            raise pressure.PressureBindingError([pressure.MODIFIED_PARAMETER])
+        self.pressure_configuration = pressure_configuration
+        self.version = f"{self.version}+pressure/{pressure_configuration.snapshot_id}"
 
     def region_witnesses(self) -> dict:
         """The live ensemble of the registered adapter: every witness, in declared order. A witness adapter declares
         none of its own, so an ensemble never nests."""
         if self.amendment_2_witness is not None:
             return {}
-        return {name: type(self).witness(name) for name in GI_AMENDMENT_2_WITNESS_NAMES}
+        return {name: type(self).witness(name, self.pressure_configuration) for name in GI_AMENDMENT_2_WITNESS_NAMES}
 
     def region_declaration(self) -> RegionDeclaration:
         from clinical_core import systemic_consciousness as sc
@@ -408,6 +429,9 @@ class GiHaemorrhageAdapter(RuntimeFamilyAdapter):
 
     def profile(self, point: str):
         base = _bundle_profile(point)
+        if self.pressure_configuration is not None:
+            import runtime_pressure_snapshot as pressure
+            base = pressure.apply_profile(base, self.pressure_configuration)
         if self.amendment_2_witness is None:
             return base
         import dataclasses
@@ -418,6 +442,18 @@ class GiHaemorrhageAdapter(RuntimeFamilyAdapter):
         from clinical_core import calibration
         arrival = ("clinical_core.legacy_adapter: the arrival and the haemorrhage module are read from "
                    "the case",)
+        if self.pressure_configuration is not None:
+            import runtime_pressure_snapshot as pressure
+            cfg = self.pressure_configuration
+            run = arrival + (
+                f"runtime_pressure_snapshot: {cfg.snapshot_id} (record {cfg.record_digest}, configuration {cfg.configuration_digest}): the profile's preload scale and arrival position, "
+                "the haemorrhage's rate and every crystalloid's kernel, as ratified for development experiments; every other magnitude is the committed default profile's",
+                "a development configuration: not a clinical calibration, not production, not resident-approved")
+            if self.amendment_2_witness is not None:
+                from clinical_core import systemic_consciousness as sc
+                run = run + (f"clinical_core.systemic_consciousness.WITNESSES[{self.amendment_2_witness!r}]: {sc.STATUS}, a development witness, not a selection and not clinical truth",)
+                return ShadowParameterSnapshot(f"gi_amendment_2_{self.amendment_2_witness.lower()}+{pressure.RUNTIME_SNAPSHOT_ID}", self.family, point if point in POINTS else COMMITTED, run)
+            return ShadowParameterSnapshot(pressure.RUNTIME_SNAPSHOT_ID, self.family, point if point in POINTS else COMMITTED, run)
         if self.amendment_2_witness is not None:
             from clinical_core import systemic_consciousness as sc
             name = self.amendment_2_witness
@@ -457,11 +493,19 @@ class GiHaemorrhageAdapter(RuntimeFamilyAdapter):
         from clinical_core import legacy_adapter
         if state is None:
             state = legacy_adapter.bank_case(case_id)
-        return (legacy_adapter.haemorrhage_from_legacy(state),)
+        written = (legacy_adapter.haemorrhage_from_legacy(state),)
+        if self.pressure_configuration is not None:
+            import runtime_pressure_snapshot as pressure
+            written = pressure.apply_writers(written, self.pressure_configuration)
+        return written
 
     def interventions(self, mirrored: Sequence, state: Mapping | None = None) -> tuple:
         endoscopy = (state or {}).get("family_state", {}).get("endoscopy_at") if state else None
-        return gi_interventions(mirrored, None if endoscopy is None else int(endoscopy))
+        built, gaps = gi_interventions(mirrored, None if endoscopy is None else int(endoscopy))
+        if self.pressure_configuration is not None:
+            import runtime_pressure_snapshot as pressure
+            built = pressure.apply_interventions(built, self.pressure_configuration)
+        return built, gaps
 
 
 class AcsIschaemiaAdapter(RuntimeFamilyAdapter):
@@ -1202,7 +1246,10 @@ class ShadowPhysiologyRunner:
             self.case_id, self.adapter.family, self.adapter.version,
             self.snapshot_.to_dict() if self.snapshot_ else {}, self.minutes_done,
             tuple(_event_identity(event) for event in self.mirrored),
-            scenario, {**rs.family_versions(self.adapter.family), "families_module": MODULE_VERSION},
+            # P3-380 (adversarial review, finding 4): a run that carries the ratified pressure configuration says so in its OWN provenance too -- the parameter snapshot it names is the one whose values
+            # the scenario holds, never the committed default profile's label. A run on the older point keeps the label it always had.
+            scenario, {**rs.family_versions(self.adapter.family, self.snapshot_.id if (self.snapshot_ and isinstance(self.adapter, GiHaemorrhageAdapter) and self.adapter.pressure_configuration is not None) else None),
+                       "families_module": MODULE_VERSION},
             self.scenario_id)
 
     def digests(self) -> tuple:
@@ -1477,7 +1524,7 @@ class RegionEnsemble:
 
     @classmethod
     def open(cls, family: str, case_id: str, *, state: Mapping | None = None,
-             scenario_id: str | None = None) -> "RegionEnsemble | None":
+             scenario_id: str | None = None, adapter: RuntimeFamilyAdapter | None = None) -> "RegionEnsemble | None":
         """The ensemble of this family's registered adapter, or None when it declares no live region.
 
         Fail closed on the core's lineage. The parameter a witness sets exists only in a certified
@@ -1485,7 +1532,10 @@ class RegionEnsemble:
         member of the lineage; otherwise no witness opens and the reason is recorded. A lineage that cannot
         be evaluated is a refusal too.
         """
-        adapter = adapter_for(family)
+        if adapter is None:
+            adapter = adapter_for(family)
+        elif adapter.family != str(family or ""):
+            return None
         witnesses = {} if adapter is None else adapter.region_witnesses()
         if not witnesses:
             return None
