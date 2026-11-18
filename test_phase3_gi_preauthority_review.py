@@ -85,7 +85,9 @@ def test_the_ratification_is_pinned_rebuilds_exactly_and_leaves_version_1_untouc
 def test_the_ratification_says_what_was_ratified_and_what_it_is_not():
     assert (RATIFICATION["snapshot_id"], RATIFICATION["version"], RATIFICATION["status"]) == ("GI_DEVELOPMENT_SNAPSHOT_V1", 1, "RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS")
     assert RATIFICATION["is_not"] == ["clinical calibration", "production profile", "resident profile", "authority-approved snapshot"]
-    assert RATIFICATION["values"] == SNAPSHOT["values"] and RATIFICATION["common_core_lineage"]["digest"] == rs.CORE_LINEAGE[-1].digest
+    # PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): the ratification names the member that was active when it was ratified (the second amendment); it is still registered and the live core descends from it.
+    assert RATIFICATION["values"] == SNAPSHOT["values"] and RATIFICATION["common_core_lineage"]["digest"] == rs.CORE_LINEAGE[2].digest
+    assert rs.CORE_LINEAGE[2].version_id == "PHASE2_AMENDMENT_2" and rs.core_is_or_descends_from(rs.CORE_LINEAGE[-1].version_id, ("PHASE2_AMENDMENT_2",))
     for key in ("selection_criteria", "boundary_margins", "sensitivity_witnesses", "faculty_decisions", "uncertainty", "falsifiers", "region_bounds"):
         assert RATIFICATION[key], key
     assert RATIFICATION["min_margin"] == 0.5 and set(RATIFICATION["boundary_margins"].values()) == {0.5}
@@ -259,7 +261,8 @@ def test_review_a_forged_ratification_a_superseded_record_and_foreign_bytes_are_
 
 
 def test_review_an_offered_lineage_cannot_stand_in_for_the_live_one(monkeypatch):
-    from clinical_core import amendment_2 as a2
+    import importlib
+    a2 = importlib.import_module(rs.CORE_LINEAGE[-1].reversal)                 # PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): the LIVE stage, whose digest of the core's bytes the binding reads
     forged = {"version_id": binding.V1_CORE_VERSION, "digest": binding.V1_CORE_DIGEST, "bytes_digest": binding.V1_CORE_DIGEST, "certified": True}
     assert binding.lineage_is_v1(forged) and binding.lineage_is_v1(binding.live_lineage())
     monkeypatch.setattr(a2, "amended_core_digest_now", lambda: "f" * 64)       # the core's own bytes no longer hash to the certified member
@@ -798,7 +801,8 @@ def test_attack_a_wrong_lineage_never_would_commit(monkeypatch):
         run.lineage = {**run.lineage, "bytes_digest": "0" * 64}
     assert dry.run("gi_bleed_57m", "probe_short", tamper=overwritten)["summary"]["would_commit_minutes"] == 6
     # the core's bytes change AFTER the dry run opened, and the caller offers a forged "good" lineage: the next minute refuses
-    from clinical_core import amendment_2 as a2
+    import importlib
+    a2 = importlib.import_module(rs.CORE_LINEAGE[-1].reversal)                 # PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): the LIVE stage, whose digest of the core's bytes the binding reads
     forged = {"version_id": binding.V1_CORE_VERSION, "digest": binding.V1_CORE_DIGEST, "bytes_digest": binding.V1_CORE_DIGEST, "certified": True}
     real = a2.amended_core_digest_now
 

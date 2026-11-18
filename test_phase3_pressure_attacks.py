@@ -22,8 +22,10 @@ import runtime_shadow as rs
 ROOT = Path(__file__).resolve().parent
 CASE = "gi_bleed_57m"
 STORE_DIR = tempfile.mkdtemp(prefix="phase3-pressure-attacks-")
+# P3-387 / FD-TONE-09 (declared adaptation, 2026-11-17): this file exercises the OLDER pressure point, whose grant is superseded for new sessions. It opens only as a
+# declared historical reconstruction, so the environment built here declares it. The ordinary configuration is defended in test_phase3_grant_supersession.
 REAL = {ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY, ra.SNAPSHOT_FLAG: "gi_pressure_committed", ra.ENVIRONMENT_FLAG: "development", rs.FLAG: rs.MODE_SHADOW_COMPARE,
-        store.STORE_FLAG: STORE_DIR}
+        store.STORE_FLAG: STORE_DIR, "MRS_PHASE3_HISTORICAL_RECONSTRUCTION": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V1"}
 OVERLAY_TOKENS = ("FACULTY_ACCEPTED_FOR_DEVELOPMENT_COMPARISON", "CANDIDATE_OVERLAY", "relative_delivery", "collapse_burden", "systemic_encephalopathy", "ConsciousnessOverlay")
 
 

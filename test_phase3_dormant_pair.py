@@ -411,7 +411,17 @@ def test_214_a_hand_built_binding_a_forged_ratification_and_an_offered_lineage_a
         assert refused.value.reasons == (pair.NOT_RATIFIED,)
     from clinical_core import amendment_2 as a2
     forged_lineage = {"version_id": pair.V1_CORE_VERSION, "digest": pair.V1_CORE_DIGEST, "bytes_digest": pair.V1_CORE_DIGEST, "certified": True}
+    # PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): the live digest is read from the stage of the ACTIVE lineage member, so the forgery is tried there too; and a registered successor whose
+    # PREDECESSOR no longer recomputes to the snapshot's core is refused as well (the rebind stands on that recomputation).
+    from clinical_core import amendment_3 as a3
+    with monkeypatch.context() as broken:
+        broken.setattr(a3, "amendment_2_digest_now", lambda: "f" * 64)
+        with pytest.raises(pair.SnapshotBindingError) as refused:
+            pair.bind(str(ROOT))
+        assert refused.value.reasons == (pair.WRONG_CORE_LINEAGE,)
+    assert pair.bind(str(ROOT)).core_digest == pair.V1_CORE_DIGEST
     monkeypatch.setattr(a2, "amended_core_digest_now", lambda: "f" * 64)
+    monkeypatch.setattr(a3, "amended_core_digest_now", lambda: "f" * 64)
     for lineage in (None, forged_lineage):
         with pytest.raises(pair.SnapshotBindingError) as refused:
             pair.bind(str(ROOT), lineage=lineage)

@@ -184,7 +184,8 @@ def test_e2_a_review_encounter_starts_the_pinned_allowlisted_case_with_the_press
     state = at.session_state["state"]
     assert state["engine_family"] == "gi_bleed" and state["encounter_spec"]["clinical_case"]["id"] == "gi_bleed_57m"
     site = _site(at)
-    assert site is not None and site.grant["grant_id"] == grants.GRANT_ID_V2 and site.environment == "development" and site.case_id == "gi_bleed_57m"
+    # FD-TONE-11 (declared adaptation, 2026-11-17): a NEW session runs the live grant, V3, a pure lineage re-ligation of V2 (same snapshot, same cases, pressure only).
+    assert site is not None and site.grant["grant_id"] == grants.LIVE_GRANT_ID == grants.GRANT_ID_V3 and site.environment == "development" and site.case_id == "gi_bleed_57m"
     assert list(site.minutes_committed) == [5, 10, 30] and not site.halted
     assert at.session_state[se.SESSION_KEY]["lifecycle"] == se.ACTIVE_AUTHORITY
     assert (grants.GRANT_V2["authority_mode"], tuple(grants.GRANT_V2["domain"])) == ("PRESSURE_ONLY", ("sbp", "dbp", "map"))
@@ -216,10 +217,13 @@ def test_e3_every_scripted_review_encounter_runs_on_the_real_page_to_the_certifi
 def test_e4_the_panel_shows_the_operational_status_and_the_resident_views_carry_none_of_it(world):
     at = _run(world, "FR-B")
     status = _status(at)
-    assert status["case_id"] == "gi_bleed_57m" and status["grant_id"] == grants.GRANT_ID_V2 and status["grant_version"] == grants.GRANT_VERSION_V2 and status["authority_mode"] == "PRESSURE_ONLY"
+    # FD-TONE-11 (declared adaptation, 2026-11-17): a NEW session runs the live grant, V3, a pure lineage re-ligation of V2 (same snapshot, same cases, pressure only).
+    assert status["case_id"] == "gi_bleed_57m" and status["grant_id"] == grants.LIVE_GRANT_ID and status["grant_version"] == grants.GRANT_VERSION_V3 and status["authority_mode"] == "PRESSURE_ONLY"
     assert status["session_state"] == se.ACTIVE_AUTHORITY and status["last_authoritative_minute"] == 30 and set(status["last_authoritative_pressure"]) == {"sbp", "dbp", "map"}
     assert status["snapshot_id"] == grants.PRESSURE_SNAPSHOT_ID_V2
-    assert status["lineage"] == {"core_version": grants.CORE_VERSION, "core_digest": grants.CORE_DIGEST, "phase2_closure_digest": rs.PHASE2_DIGEST}, "the active core's version AND digest, with the closure digest named apart"
+    # FD-TONE-10 (declared adaptation, 2026-11-17): the active core is the one the LIVE grant binds (PHASE2_AMENDMENT_3), the last certified member of the lineage.
+    assert (grants.CORE_VERSION_V3, grants.CORE_DIGEST_V3) == (rs.CORE_LINEAGE[-1].version_id, rs.CORE_LINEAGE[-1].digest)
+    assert status["lineage"] == {"core_version": grants.CORE_VERSION_V3, "core_digest": grants.CORE_DIGEST_V3, "phase2_closure_digest": rs.PHASE2_DIGEST}, "the active core's version AND digest, with the closure digest named apart"
     assert status["artifact"]["digest"] and status["artifact"]["minutes_recorded"] >= 3 and status["halt"]["halted"] is False
     assert status["faculty_review"] == {"enabled": True, "single_process": True, "allowlist": ["gi_bleed_57m", "gi_bleed_72f"]}
     assert "consciousness" not in json.dumps(status).lower(), "the status never shows the common consciousness as a state of the encounter"

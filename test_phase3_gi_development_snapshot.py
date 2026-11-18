@@ -94,10 +94,14 @@ def test_the_record_is_not_an_authority_artifact_and_nothing_reads_it_at_runtime
 
 
 def test_the_record_binds_the_active_common_core_lineage_and_nothing_in_the_core_moved():
-    lineage = rs.CORE_LINEAGE[-1]
+    # PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): the record binds the lineage member that was ACTIVE when it was written (the second amendment). That member is still registered, its digest still
+    # recomputes from the live tree through the successor's declared reversal, and the live core is that member or a registered descendant of it.
+    from clinical_core import amendment_3 as a3
+    lineage = rs.CORE_LINEAGE[2]
     assert SNAPSHOT["common_core_lineage"]["version_id"] == lineage.version_id == "PHASE2_AMENDMENT_2"
     assert SNAPSHOT["common_core_lineage"]["digest"] == lineage.digest == "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2"
-    assert a2.amended_core_digest_now() == lineage.digest
+    assert a3.amendment_2_digest_now() == lineage.digest
+    assert rs.core_is_or_descends_from(rs.CORE_LINEAGE[-1].version_id, (lineage.version_id,))
 
 
 # -- P3-189 and P3-191: the criteria and the selection ----------------------------------------------------------------------------------------------

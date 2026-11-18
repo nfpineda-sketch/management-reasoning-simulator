@@ -227,7 +227,9 @@ def test_the_two_cases_differ_only_slightly_and_only_while_treated():
 # -- P3-185: nada cambio ---------------------------------------------------------------------------------------------------------------
 
 def test_nothing_executable_changed_the_witnesses_are_the_certified_ones_inside_the_certified_region():
-    assert a2.amended_core_digest_now() == rs.CORE_LINEAGE[-1].digest == \
+    # PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): "nothing executable changed" is a statement about the core this review ran on: the second amendment's digest still recomputes from the live tree.
+    from clinical_core import amendment_3 as a3
+    assert a3.amendment_2_digest_now() == rs.CORE_LINEAGE[2].digest == \
         "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2"
     assert rs.COMMON_CORE_RUNTIME_AUTHORITY is False
     for name, adapter in fam.ADAPTERS["gi_bleed"].region_witnesses().items():

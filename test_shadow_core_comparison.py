@@ -16,7 +16,7 @@ from clinical_core.derived import DEFAULT_PROFILE
 from clinical_core.integration import run
 from clinical_core.legacy_adapter import (anchors_from_legacy, bank_case, contributors_from_legacy, run_legacy)
 from clinical_core.modules import GIHaemorrhage
-from clinical_core import amendment_2 as a2
+from clinical_core import amendment_3 as a3
 from clinical_core.shadow import (DECISIONS, DIFFERENCES, DORMANT, EXPECTED_DIFFERENCES, GOLDEN, SCENARIOS, VARIANTS,
                                   ShadowResult, acting_mechanisms, classify, consciousness_attribution,
                                   expected_causes, golden_report, run_shadow)
@@ -30,7 +30,7 @@ def _closure_tree():
     left it (amendment_2.tree, which composes the first amendment's view). The amended tree has its own tests (test_phase2_amendment*.py); what is asserted
     here is historical and its expected values are not rewritten."""
     with pytest.MonkeyPatch.context() as patch:
-        a2.tree(patch)
+        a3.tree(patch)
         yield
 
 

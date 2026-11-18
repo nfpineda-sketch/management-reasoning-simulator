@@ -44,9 +44,10 @@ def test_a2_011_the_scales_of_the_committed_profile():
     # la escalera directa que la enmienda debe reemplazar, y de donde salio
     assert PROFILE.pressure_levels == ((80.0, 1), (65.0, 2)) and PROFILE.oxygen_levels == ((87.0, 1), (80.0, 2))
     assert dv.PARAMETERS["pressure_levels"][0] == dv.ADOPTED and "family_engine" in dv.PARAMETERS["pressure_levels"][1]
-    # PHASE2_AMENDMENT_2: this audit documents the tree BEFORE the amendment (the first amendment's), so it reads that text.
-    from clinical_core import amendment_2 as a2
-    source = a2.a1_text("clinical_core/derived.py")
+    # PHASE2_AMENDMENT_2: this audit documents the tree BEFORE the amendment (the first amendment's), so it reads that text
+    # (PHASE2_AMENDMENT_3: through the newest stage, which reverses its own insertions first).
+    from clinical_core import amendment_3 as a3
+    source = a3.a1_text("clinical_core/derived.py")
     assert ("level = max(anchors.consciousness_level, _level(sbp, profile.pressure_levels), "
             "_level(spo2, profile.oxygen_levels))") in source
 

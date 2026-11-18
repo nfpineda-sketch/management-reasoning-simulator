@@ -17,7 +17,7 @@ from pathlib import Path
 import pytest
 
 from clinical_core import amendment_1 as a1
-from clinical_core import amendment_2 as a2
+from clinical_core import amendment_3 as a3
 from clinical_core import blood_anchors as ba
 from clinical_core import blood_probes as bp
 from clinical_core import calibration, decision_pack, lactate_slice
@@ -40,7 +40,7 @@ def _first_amendment_tree():
     """PHASE2_AMENDMENT_2: this file tests what the FIRST amendment left, so it reads the tree as that amendment left it
     (the second amendment's insertions reversed, its field and memory hidden). The live tree has its own tests."""
     with pytest.MonkeyPatch.context() as patch:
-        a2.amendment_1_tree(patch)
+        a3.amendment_1_tree(patch)
         yield
 
 
@@ -62,7 +62,7 @@ def test_a_generated_document_keeps_its_historical_value_and_gains_a_versioned_s
     # el sucesor es lo que el generador da sobre el arbol enmendado, y solo eso
     assert GENERATORS[name]() == successor
     # el historico sigue saliendo de los archivos vivos, por la reversion declarada
-    with a2.closure_view():
+    with a3.closure_view():
         assert GENERATORS[name]() == historical
     assert GENERATORS[name]() == successor, "la vista del cierre no se restauro"
     # el documento historico no se regenero: dice su digesto de cierre, no el sucesor, y sus bytes son los fijados
@@ -84,7 +84,7 @@ def test_a_generated_digest_moves_only_because_declared_sources_moved(name):
     """La causa del digesto nuevo, RECALCULADA: las entradas del generador sobre el arbol enmendado frente a las
     mismas bajo la vista del cierre. Se mueven las fuentes que esta etapa declara, y ninguna otra."""
     live = INPUTS[name]()
-    with a2.closure_view():
+    with a3.closure_view():
         closure = INPUTS[name]()
     moved = sorted(source for source in set(live) | set(closure) if live.get(source) != closure.get(source))
     stated = ARTIFACTS["generated_documents"][name]["inputs"]
@@ -98,7 +98,7 @@ def test_the_calibration_freeze_digest_did_not_move():
     stated = ARTIFACTS["calibration_freeze_digest"]
     assert stated["unchanged"] is True and stated["PHASE2_CLOSURE"] == stated["PHASE2_AMENDMENT_1"]
     assert calibration.frozen_digest() == stated["PHASE2_AMENDMENT_1"]
-    with a2.closure_view():
+    with a3.closure_view():
         assert calibration.frozen_digest() == stated["PHASE2_CLOSURE"]
 
 

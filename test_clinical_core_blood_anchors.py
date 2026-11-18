@@ -13,7 +13,7 @@ import pytest
 
 from clinical_core import blood_anchors as ba, blood_probes, calibration, migration_authority
 from clinical_core.derived import DEFAULT_PROFILE
-from clinical_core import amendment_2 as a2
+from clinical_core import amendment_3 as a3
 
 ROOT = Path(__file__).resolve().parent
 DOCUMENT = ROOT / "docs" / "revision" / "P2I2U_ANCLAS_HEMORRAGIA_COMPARTIDA.md"
@@ -26,7 +26,7 @@ def _closure_tree():
     left it (amendment_2.tree, which composes the first amendment's view). The amended tree has its own tests (test_phase2_amendment*.py); what is asserted
     here is historical and its expected values are not rewritten."""
     with pytest.MonkeyPatch.context() as patch:
-        a2.tree(patch)
+        a3.tree(patch)
         yield
 
 

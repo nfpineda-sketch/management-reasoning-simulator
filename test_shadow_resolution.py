@@ -501,8 +501,9 @@ def test_p3r_160a_the_audit_table_is_what_the_code_holds():
     assert dv.DEFAULT_PROFILE.collapse_output_threshold is None and dv.DEFAULT_PROFILE.collapse_burden_limit is None
     # P3-173: la auditoria describe derived.py como lo dejo la Enmienda 1 (la Enmienda 2 declara su insercion sobre la
     # escalera directa); se lee ese arbol por la reversion declarada y probada, no el texto vivo.
-    from clinical_core import amendment_2 as a2
-    derived = a2.a1_text("clinical_core/derived.py")
+    # PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): the same tree, read through the stage that knows the whole chain.
+    from clinical_core import amendment_3 as a3
+    derived = a3.a1_text("clinical_core/derived.py")
     assert "APNOEA_BOUNDARY_UNRESOLVED" in derived
     assert "max(anchors.consciousness_level, _level(sbp, profile.pressure_levels), _level(spo2, " in derived
     for name in ("runtime_shadow.py", "runtime_shadow_store.py", "runtime_shadow_observer.py", "app.py",

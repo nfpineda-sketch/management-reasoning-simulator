@@ -262,10 +262,13 @@ def test_j2_no_rate_no_pressure_parameter_and_no_physiology_moved():
     assert blood_anchors.REFERENCE["bleed_ml_per_min"] == 2.5
     assert (legacy.GI_BLEED["crystalloid_per_ml"], legacy.GI_BLEED["crystalloid_transient"], legacy.GI_BLEED["crystalloid_leak_tau_min"]) == (0.00015, 0.6, 30.0)
     assert pair.V1_CORE_DIGEST == grants.CORE_DIGEST == "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2"
-    from clinical_core import amendment_2
-    assert amendment_2.amended_core_digest_now() == grants.CORE_DIGEST, "every source of clinical_core/ is the certified one: no physiology was added, source control included"
-    for path in sorted((ROOT / "clinical_core").rglob("*.py")):
-        assert "norepinephrine" not in path.read_text(encoding="utf-8").lower(), f"{path.name}: norepinephrine was not implemented"
+    # PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): the live core is a certified successor of the one this cycle stood on. What is defended is unchanged -- this cycle added no physiology -- and is read
+    # as: the second amendment's digest still RECOMPUTES from the live tree through the successor's declared reversal. FD-TONE-02 later authorized norepinephrine as the first writer of the
+    # common vasoconstrictor support: it lives ONLY in the two files that successor owns, and nowhere in the core this cycle left.
+    from clinical_core import amendment_3
+    assert amendment_3.amendment_2_digest_now() == grants.CORE_DIGEST, "every source of the core this cycle stood on is the certified one: no physiology was added, source control included"
+    named = sorted(path.relative_to(ROOT).as_posix() for path in sorted((ROOT / "clinical_core").rglob("*.py")) if "norepinephrine" in path.read_text(encoding="utf-8").lower())
+    assert named == sorted(amendment_3.OWN), "norepinephrine exists only in the files of PHASE2_AMENDMENT_3"
 
 
 # -- P3-325: the decisions, the debt and the checkpoint -------------------------------------------------------------------------------------------------

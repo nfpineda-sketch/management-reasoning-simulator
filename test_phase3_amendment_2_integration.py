@@ -23,7 +23,7 @@ import pytest
 
 import runtime_shadow as rs
 import runtime_shadow_evidence as ev
-from clinical_core import acs_migration as an, acs_reference as ar, amendment_1 as a1, amendment_2 as a2
+from clinical_core import acs_migration as an, acs_reference as ar, amendment_1 as a1, amendment_2 as a2, amendment_3 as a3
 from clinical_core import asthma_migration as sm, asthma_reference as sr, blood_anchors as ba
 from clinical_core import blood_fluid_calibration as bf, closure_guard as cg, derived as dv, edema_migration as pe
 from clinical_core import edema_reference as er, embolism_migration as em, embolism_reference as mr
@@ -54,15 +54,22 @@ DEFAULT_OFF_BASELINE = {
 
 @pytest.mark.real_core_lineage
 def test_the_integrated_core_is_the_certified_amendment_2_and_both_predecessors_reconstruct_exactly():
-    assert a2.amended_core_digest_now() == CERTIFIED_DIGEST == rs.CORE_LINEAGE[-1].digest
-    assert a2.amendment_1_verifies() == {"digest_recomputes": True, "reversal_proven": True}
+    # PHASE2_AMENDMENT_3 (2026-11-17): the live core is a certified SUCCESSOR of the second amendment. What this test defends is unchanged
+    # -- the second amendment's certified digest, the first amendment's and the closure's all recompute -- and is now read through the
+    # stage that knows the whole chain; the active core is the second amendment or a registered descendant of it.
+    assert a3.amendment_2_digest_now() == CERTIFIED_DIGEST == rs.CORE_LINEAGE[2].digest
+    assert a3.amendment_2_verifies() == {"digest_recomputes": True, "reversal_proven": True}
+    assert a3.amendment_1_verifies() == {"digest_recomputes": True, "reversal_proven": True}
     assert rs.CORE_LINEAGE[1].digest == AMENDMENT_1_DIGEST
-    assert a2.historical_closure_verifies() == {"reversal_proven": True, "common_untouched": True, "touched": [],
+    assert a3.historical_closure_verifies() == {"reversal_proven": True, "common_untouched": True, "touched": [],
                                                 "closure_digest_recomputes": True, "closure_record_states_it": True}
     assert rs.PHASE2_DIGEST == CLOSURE_DIGEST
     verdict = ev.core_lineage_verdict()
-    assert verdict["ok"] is True and verdict["status"] == "CERTIFIED" and verdict["active_core"] == "PHASE2_AMENDMENT_2"
-    assert verdict["failed"] == [] and verdict["active_core_recomputes"] and verdict["historical_closure_verifies"]
+    assert rs.core_is_or_descends_from(verdict["active_core"], ("PHASE2_AMENDMENT_2",))
+    assert verdict["active_core_recomputes"] and verdict["historical_closure_verifies"]
+    # the REAL lineage: certified, or a successor whose own record still says CANDIDATE and nothing else is wrong with it
+    assert verdict["failed"] in ([], ["active_core_certified"]) and verdict["ok"] is (verdict["failed"] == [])
+    assert verdict["status"] == ("CERTIFIED" if verdict["ok"] else "CANDIDATE")
 
 
 @pytest.mark.real_core_lineage
@@ -96,7 +103,7 @@ def _freeze_files(view):
 
 def test_pi1_both_freeze_digests_recompute_exactly_under_the_closure_view_of_the_stage_that_knows_the_whole_chain():
     recorded = json.loads(a1.CLOSURE_RECORD.read_text(encoding="utf-8"))["freeze_digests"]
-    with a2.closure_view():
+    with a3.closure_view():
         assert cg.freeze_digest() == recorded["closure_guard_P2X1A"] == a1.P2X1A_FREEZE_DIGEST
         assert td.freeze_digest() == recorded["tone_domain_on_the_live_tree"]
 
@@ -106,23 +113,27 @@ def test_pi1_the_nested_first_amendment_view_misreads_exactly_the_two_files_it_n
     Enmienda 1), la vista de cierre PROPIA de la Enmienda 1 solo tiene reversiones para los archivos que la Enmienda 1
     modifico (derived.py, decision_pack.py): ``state.py`` e ``integration.py`` los lee crudos del disco, y ahi esta el texto
     de la Enmienda 2. Son exactamente esos dos los que difieren del cierre; nada mas."""
-    closure = _freeze_files(a2.closure_view)
-    with monkeypatch.context() as patch:
-        a2.amendment_1_tree(patch)
-        nested = _freeze_files(a1.closure_view)
+    # PHASE2_AMENDMENT_3 (2026-11-17): lo que se afirma es del arbol de la SEGUNDA enmienda, asi que se lee en ese arbol
+    # (``a3.amendment_2_tree``); "vivo" es aqui el texto que dejo la Enmienda 2, no el de una etapa posterior.
+    with monkeypatch.context() as second:
+        a3.amendment_2_tree(second)
+        closure = _freeze_files(a2.closure_view)
+        with monkeypatch.context() as patch:
+            a2.amendment_1_tree(patch)
+            nested = _freeze_files(a1.closure_view)
     assert closure.keys() == nested.keys()
     assert sorted(path for path in closure if closure[path] != nested[path]) == ["clinical_core/integration.py",
                                                                                  "clinical_core/state.py"]
     assert "clinical_core/state.py" not in a1.REVERSAL and "clinical_core/integration.py" not in a1.REVERSAL
     for relative in ("clinical_core/state.py", "clinical_core/integration.py"):
         live = hashlib.sha256((_root() / relative).read_bytes()).hexdigest()
-        assert nested[relative] == live and closure[relative] != live        # el anidado lee el texto VIVO (el de la Enmienda 2)
+        assert nested[relative] == live and closure[relative] != live        # el anidado lee el texto CRUDO del disco (hoy, el de la etapa vigente)
         assert relative in a2.REVERSAL                                       # y la Enmienda 2 SI declara su reversion
 
 
 def test_pi1_the_first_amendments_own_certified_digest_still_recomputes_on_its_own_tree(monkeypatch):
     with monkeypatch.context() as patch:
-        a2.amendment_1_tree(patch)
+        a3.amendment_1_tree(patch)
         assert a1.amended_core_digest_now() == AMENDMENT_1_DIGEST
         assert a1.historical_closure_verifies()["closure_digest_recomputes"] is True
 

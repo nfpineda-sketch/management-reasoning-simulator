@@ -25,8 +25,10 @@ import runtime_pressure_grant as grants
 import runtime_shadow as rs
 
 STORE_DIR = tempfile.mkdtemp(prefix="phase3-pressure-review-")
+# P3-387 / FD-TONE-09 (declared adaptation, 2026-11-17): this file exercises the OLDER pressure point, whose grant is superseded for new sessions. It opens only as a
+# declared historical reconstruction, so the environment built here declares it. The ordinary configuration is defended in test_phase3_grant_supersession.
 REAL = {ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY, ra.SNAPSHOT_FLAG: "gi_pressure_committed", ra.ENVIRONMENT_FLAG: "development", rs.FLAG: rs.MODE_SHADOW_COMPARE,
-        store.STORE_FLAG: STORE_DIR}
+        store.STORE_FLAG: STORE_DIR, "MRS_PHASE3_HISTORICAL_RECONSTRUCTION": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V1"}
 CASE = "gi_bleed_57m"
 
 
@@ -344,9 +346,13 @@ def test_r9_the_failure_handler_cannot_raise_into_the_page(monkeypatch):
 
 
 def test_r10_the_one_question_names_every_dimension_of_the_run():
-    good = dict(case_id=CASE, environment="development", snapshot_id="gi_pressure_committed", family="gi_bleed", domain=grants.DOMAIN,
+    # 2026-11-17 (FD-TONE-11): the one question is answered by the LIVE grant (V3, a re-ligation of the same snapshot); the first grant's snapshot no longer opens a new session, so the
+    # complete run is named with the live grant's snapshot and the superseded one is shown refused for that reason and no other.
+    good = dict(case_id=CASE, environment="development", snapshot_id=grants.PRESSURE_SNAPSHOT_ID_V2, family="gi_bleed", domain=grants.DOMAIN,
                 lineage={"version_id": rs.CORE_LINEAGE[-1].version_id, "digest": rs.CORE_LINEAGE[-1].digest})
     assert grants.permits(**good)[0] is True
+    superseded = grants.permits(**dict(good, snapshot_id="gi_pressure_committed"))
+    assert superseded[0] is False and any(grants.SUPERSEDED_FOR_NEW_SESSIONS in reason for reason in superseded[1]), superseded
     for name in ("case_id", "environment", "snapshot_id", "family", "lineage"):
         omitted = dict(good, **{name: None})
         ok, reasons = grants.permits(**omitted)

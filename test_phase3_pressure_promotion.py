@@ -229,7 +229,9 @@ def test_g1_grant_version_2_binds_the_snapshot_the_configuration_the_lineage_the
     assert grant["pressure_snapshot"]["id"] == V2 and grant["pressure_snapshot"]["value_digest"] == ra.APPROVED_POINT_DIGESTS[V2] == grants.PRESSURE_VALUE_DIGEST_V2
     assert grant["pressure_snapshot"].get("configuration_digest") == ps.CONFIGURATION_DIGEST
     assert tuple(grant["cases"]) == ("gi_bleed_57m", "gi_bleed_72f") and grant["family"] == "gi_bleed" and tuple(grant["environments"]) == ("development",) and tuple(grant["domain"]) == ("sbp", "dbp", "map")
-    assert grant["core_lineage"]["version_id"] == rs.CORE_LINEAGE[-1].version_id and grant["core_lineage"]["digest"] == rs.CORE_LINEAGE[-1].digest, "no successor core: the lineage is the certified one"
+    # PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): version 2 names the member it was issued on (the second amendment): the promotion needed no successor core. A successor exists since 2026-11-17 for another
+    # reason, and version 3 is version 2 re-bound to it (test_phase3_grant_supersession).
+    assert grant["core_lineage"]["version_id"] == rs.CORE_LINEAGE[2].version_id == "PHASE2_AMENDMENT_2" and grant["core_lineage"]["digest"] == rs.CORE_LINEAGE[2].digest, "no successor core: the lineage is the certified one"
     assert grant["window"]["max_minute"] == 240 and grant["failure_policy"] == grants.GRANT["failure_policy"], "the effective-stop semantics are the version-1 ones, unchanged"
     assert grant["collapse_boundary"] == grants.GRANT["collapse_boundary"] and list(grant["excluded_domains"]) == list(grants.EXCLUDED_DOMAINS)
     assert grant["issued_on"] == "2026-11-16" and "FD-PROMOTE" in grant["decision_reference"]
@@ -237,14 +239,18 @@ def test_g1_grant_version_2_binds_the_snapshot_the_configuration_the_lineage_the
 
 def test_g2_version_1_is_untouched_both_are_registered_and_each_snapshot_belongs_to_exactly_one_grant():
     assert grants.GRANT_FINGERPRINT == v1_grant_tests.PINNED_FINGERPRINT and grants.GRANT["grant_id"] == "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V1" and grants.GRANT["pressure_snapshot"]["id"] == V1
-    assert grants.REGISTERED_GRANTS == (grants.GRANT, grants.GRANT_V2) and grants.REAL_SNAPSHOT_IDS == (V1, V2)
-    assert grants.grant_for_snapshot(V1) is grants.GRANT and grants.grant_for_snapshot(V2) is grants.GRANT_V2 and grants.grant_for_snapshot("nothing") is None
+    # FD-TONE-09 to FD-TONE-11 (declared adaptation, 2026-11-17): versions 1 and 2 are untouched and registered; version 3 is the live one. Each snapshot still belongs to exactly one
+    # version of each generation: by ordinary configuration the ratified snapshot resolves to the live version and the older point to none; a declared reconstruction resolves each to its own.
+    assert grants.REGISTERED_GRANTS == (grants.GRANT, grants.GRANT_V2, grants.GRANT_V3) and grants.REAL_SNAPSHOT_IDS == (V1, V2)
+    assert grants.grant_for_snapshot(V1, grants.GRANT_ID) is grants.GRANT and grants.grant_for_snapshot(V2, grants.GRANT_ID_V2) is grants.GRANT_V2 and grants.grant_for_snapshot("nothing") is None
+    assert grants.grant_for_snapshot(V1) is None and grants.grant_for_snapshot(V2) is grants.GRANT_V3
     assert grants.registered_grant(grants.GRANT_ID_V2, grants.GRANT_FINGERPRINT_V2) is grants.GRANT_V2 and grants.registered_grant(grants.GRANT_ID_V2, grants.GRANT_FINGERPRINT) is None
 
 
 def test_g3_each_grant_is_judged_against_its_own_snapshot_and_a_cross_version_pairing_is_refused():
     common = dict(case_id="gi_bleed_57m", environment="development", family="gi_bleed", lineage=rs.CORE_LINEAGE[-1])
-    lineage = {"version_id": rs.CORE_LINEAGE[-1].version_id, "digest": rs.CORE_LINEAGE[-1].digest}
+    lineage = grants.lineage_of(grants.GRANT_V2)           # declared adaptation (2026-11-17): both versions are judged against the member they name, which the live core rebuilds
+    assert lineage == grants.lineage_of(grants.GRANT) == {"version_id": rs.CORE_LINEAGE[2].version_id, "digest": rs.CORE_LINEAGE[2].digest}
     ok_2 = grants.grant_problems(grants.GRANT_V2, snapshot_id=V2, **{**common, "lineage": lineage})
     ok_1 = grants.grant_problems(grants.GRANT, snapshot_id=V1, **{**common, "lineage": lineage})
     assert ok_2 == [] and ok_1 == [], (ok_2, ok_1)
@@ -340,7 +346,8 @@ def test_e1_the_live_authority_reproduces_the_human_reviewed_center_reference_pr
     run = promoted_runs[scenario]
     site, seen = run["site"], run["seen"]
     candidate = _candidate(scenario)
-    assert site is not None and site.snapshot_id == V2 and site.grant["grant_id"] == grants.GRANT_ID_V2 and site.minutes_committed, "the page ran the promoted authority"
+    # FD-TONE-10 (declared adaptation): a NEW session runs the ratified snapshot under the live grant, version 3 (the lineage rebind of version 2)
+    assert site is not None and site.snapshot_id == V2 and site.grant["grant_id"] == grants.LIVE_GRANT_ID and site.minutes_committed, "the page ran the promoted authority"
     committed = sorted(site.minutes_committed)
     assert set(committed) <= set(candidate), (scenario, committed, sorted(candidate))
     for minute in committed:
@@ -356,8 +363,10 @@ def test_e1_the_live_authority_reproduces_the_human_reviewed_center_reference_pr
 def test_e2_no_run_was_compared_with_or_fell_back_to_the_older_authority(promoted_runs):
     for scenario, run in promoted_runs.items():
         artifact = run["artifact"]
-        assert artifact["snapshot_id"] == V2 and artifact["grant"]["grant_id"] == grants.GRANT_ID_V2 and artifact["grant"]["fingerprint"] == grants.GRANT_FINGERPRINT_V2, scenario
-        assert all(record["grant_id"] == grants.GRANT_ID_V2 and record["grant_fingerprint"] == grants.GRANT_FINGERPRINT_V2 and record["snapshot_id"] == V2 for record in artifact["minutes"]), scenario
+        # FD-TONE-10 (declared adaptation): a new run names the live grant (version 3) and nothing of the superseded ones
+        assert artifact["snapshot_id"] == V2 and artifact["grant"]["grant_id"] == grants.LIVE_GRANT_ID and artifact["grant"]["fingerprint"] == grants.GRANT_FINGERPRINT_V3, scenario
+        assert all(record["grant_id"] == grants.LIVE_GRANT_ID and record["grant_fingerprint"] == grants.GRANT_FINGERPRINT_V3 and record["snapshot_id"] == V2 for record in artifact["minutes"]), scenario
+        assert artifact["grant"].get("supersedes_grant_id") == grants.GRANT_ID_V2 and artifact["grant"]["lineage_decision"] == "LINEAGE_REBIND_ONLY", scenario
         assert artifact["phase3_versions"]["parameter_snapshot"] == ps.RUNTIME_SNAPSHOT_ID, (scenario, "the shadow layer reports the promoted point and nothing else")
         assert V1 not in ra.canonical(artifact), (scenario, "no trace of the older approved id in a promoted run's artifact")
         # adversarial review, finding 4: the provenance INSIDE the run names the promoted snapshot too -- the captured input of the artifact and of every minute that carries one (never the committed default
@@ -504,7 +513,9 @@ def _encounter_under(monkeypatch, snapshot_id, directory, case="gi_bleed_57m"):
 def test_m1_a_session_that_ran_one_configuration_under_a_site_that_names_the_other_commits_nothing_and_says_why(monkeypatch, tmp_path, session_runs, site_names):
     import runtime_authority_session as se
     encounter, arrival, ran = _encounter_under(monkeypatch, session_runs, tmp_path / "store")
-    environ = {ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY, ra.SNAPSHOT_FLAG: site_names, ra.ENVIRONMENT_FLAG: "development", rs.FLAG: rs.MODE_SHADOW_COMPARE, "MRS_PHASE3_AUTHORITY_STORE": str(tmp_path / "store")}
+    # P3-387 (declared adaptation): the side that names the OLDER point opens it as a declared historical reconstruction; the mix this test is about is unchanged
+    environ = {ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY, ra.SNAPSHOT_FLAG: site_names, ra.ENVIRONMENT_FLAG: "development", rs.FLAG: rs.MODE_SHADOW_COMPARE, "MRS_PHASE3_AUTHORITY_STORE": str(tmp_path / "store"),
+               grants.HISTORICAL_RECONSTRUCTION_FLAG: grants.GRANT_ID}
     site = ra.open_site(arrival, environ=environ)
     assert site is not None and site.snapshot_id == site_names
     assert site._configuration_mismatch(encounter.shadow), "the check is its own and it names the mix"

@@ -119,7 +119,8 @@ def test_the_prior_pressure_authority_is_reconciled_with_what_the_code_holds_tod
     assert authority.FAILURE_POLICY == "HARD_FAIL_VISIBLE_TO_FACULTY" and "HARD_FAIL_VISIBLE_TO_FACULTY" in " ".join(prior["validated"])
     assert authority.AUTHORITY_CASES == ("gi_bleed_57m", "gi_bleed_72f") and authority.ALLOWED_ENVIRONMENTS == ("development", "faculty")
     assert rs.PHASE2_DIGEST.startswith("22b90a6f") and "22b90a6f" in prior["ran_on"]
-    assert rs.CORE_LINEAGE[-1].version_id == "PHASE2_AMENDMENT_2" and "a0af7d08" in prior["ran_on"]
+    # PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): the record is historical -- it ran on the second amendment, which stays a registered member of the lineage under its successor.
+    assert rs.CORE_LINEAGE[2].version_id == "PHASE2_AMENDMENT_2" and rs.CORE_LINEAGE[2].digest.startswith("a0af7d08") and "a0af7d08" in prior["ran_on"]
     assert any("consciousness, collapse or any other output" in item for item in prior["not_established"])
 
 

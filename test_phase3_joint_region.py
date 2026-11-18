@@ -99,7 +99,9 @@ def test_b1_the_old_scale_band_is_a_pure_candidate_analysis_band_and_is_marked_s
     supersession = band["supersession"]
     assert supersession["mark"] == "SUPERSEDED_BY_JOINT_FEASIBILITY_ANALYSIS" and supersession["registry_edited"] is False and supersession["rewrites_historical_evidence"] is False
     assert supersession["registry_still_says"] == "CANDIDATE [600, 1500]"
-    assert amendment_2.amended_core_digest_now() == CORE_DIGEST, "the registry lives in the certified core and was not edited"
+    # PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): the registry of the core this audit read is the second amendment's, whose digest still recomputes from the live tree through the successor's reversal.
+    from clinical_core import amendment_3
+    assert amendment_3.amendment_2_digest_now() == CORE_DIGEST, "the registry lives in the certified core and was not edited"
     cola = (ROOT / "docs" / "COLA_DECISIONES_AI_ADVISOR.md").read_text(encoding="utf-8")
     assert all(f"| {row} |" in cola for row in band["decision_file_rows_that_named_the_scale_before_this_audit"])
     found = subprocess.run(["git", "log", "-1", "--format=%ad %s", "--date=short", "b4040ba"], cwd=ROOT, capture_output=True, text=True)
@@ -375,17 +377,21 @@ def test_j1_the_verdict_is_A_and_each_other_verdict_is_reachable(built, record):
 def test_i1_the_core_the_closed_region_and_every_earlier_record_are_untouched():
     import runtime_pressure_grant as grants
     import volume_behaviour_record as vbr
-    from clinical_core import amendment_2, legacy_adapter
-    assert amendment_2.amended_core_digest_now() == grants.CORE_DIGEST == CORE_DIGEST
+    from clinical_core import amendment_3, legacy_adapter
+    # PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): read through the successor's declared reversal (see test_b1).
+    assert amendment_3.amendment_2_digest_now() == grants.CORE_DIGEST == CORE_DIGEST
     assert vbr.EFFECTIVE_REGION == {"peak": (0.15, 0.27072), 30: (0.15, 0.25), 60: (0.10, 0.20), 120: (0.05, 0.15)} and vbr.STATUS == "FACULTY_DEFINED_BEHAVIORAL_REGION"
     assert legacy_adapter.LEGACY_LITERALS["gi_bleeding_circulation_per_min"][0] == 0.003, "the running bleed rate is still the historical reference"
     assert gj.load_record()["record_digest"] == FEASIBILITY_RECORD_DIGEST
     for name, expected in (("PHASE3_JOINT_FEASIBILITY_CHECKPOINT.json", P3_336_DIGEST), ("PHASE3_BLEED_RATE_SCALE_CHECKPOINT.json", P3_325_DIGEST),
                            ("PHASE3_FIRST_FACULTY_REVIEW_CHECKPOINT.json", P3_313_DIGEST)):
         assert _load(REVISION / name)["record_digest"] == expected, name
-    assert not list(REVISION.glob("*AMENDMENT_3*")) and not list((ROOT / "docs").glob("*AMENDMENT_3*")), "Amendment 3 stays closed: no design"
-    for path in sorted((ROOT / "clinical_core").rglob("*.py")):
-        assert "norepinephrine" not in path.read_text(encoding="utf-8").lower(), f"{path.name}: norepinephrine was not implemented"
+    # PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): this cycle kept Amendment 3 closed. It was opened LATER by an explicit faculty decision (FD-TONE-10) for the common vascular tone: what exists under
+    # that name is that amendment's own record, and norepinephrine lives only in the two core files it owns.
+    third = sorted(path.name for path in list(REVISION.glob("*AMENDMENT_3*")) + list((ROOT / "docs").glob("*AMENDMENT_3*")))
+    assert third == ["PHASE2_AMENDMENT_3.json", "PHASE2_AMENDMENT_3.md"] and "FD-TONE" in _load(REVISION / "PHASE2_AMENDMENT_3.json")["authorized"]
+    named = sorted(path.relative_to(ROOT).as_posix() for path in sorted((ROOT / "clinical_core").rglob("*.py")) if "norepinephrine" in path.read_text(encoding="utf-8").lower())
+    assert named == sorted(amendment_3.OWN), "norepinephrine exists only in the files of PHASE2_AMENDMENT_3"
     source = (ROOT / "test_gi_joint_region.py").read_text(encoding="utf-8")
     assert "import faculty_trajectory_review" not in source and "runtime_authority" not in source and "runtime_pressure_grant" not in source, "the analysis reaches no page, authority or grant"
 

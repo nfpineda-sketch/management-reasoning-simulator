@@ -21,7 +21,7 @@ import pytest
 import runtime_shadow as rs
 import runtime_shadow_evidence as ev
 from clinical_core import amendment_1 as a1
-from clinical_core import amendment_2 as a2
+from clinical_core import amendment_3 as a3
 
 pytestmark = pytest.mark.real_core_lineage
 ROOT = Path(__file__).resolve().parent
@@ -34,7 +34,7 @@ def _first_amendment_tree():
     """PHASE2_AMENDMENT_2: this file tests what the FIRST amendment left, so it reads the tree as that amendment left it
     (the second amendment's insertions reversed, its field and memory hidden). The live tree has its own tests."""
     with pytest.MonkeyPatch.context() as patch:
-        a2.amendment_1_tree(patch)
+        a3.amendment_1_tree(patch)
         yield
 
 
@@ -75,7 +75,7 @@ def _certified(monkeypatch):
 # El registro de linaje ---------------------------------------------------------------------------------
 
 def test_the_lineage_is_immutable_and_roots_at_the_historical_closure():
-    assert isinstance(rs.CORE_LINEAGE, tuple) and len(rs.CORE_LINEAGE) == 3
+    assert isinstance(rs.CORE_LINEAGE, tuple) and len(rs.CORE_LINEAGE) == 4
     assert dataclasses.is_dataclass(CLOSURE) and CLOSURE.__dataclass_params__.frozen
     with pytest.raises(dataclasses.FrozenInstanceError):
         AMENDMENT.digest = "0" * 64
@@ -120,7 +120,7 @@ def test_the_historical_closure_still_recomputes_from_the_live_tree():
 def test_every_closure_freeze_digest_recomputes_under_the_closure_view():
     from clinical_core import calibration, closure_guard as cg, decision_pack, lactate_slice, tone_domain
     recorded = json.loads(a1.CLOSURE_RECORD.read_text(encoding="utf-8"))["freeze_digests"]
-    with a2.closure_view():
+    with a3.closure_view():
         now = {"calibration": calibration.frozen_digest(), "closure_guard_P2X1A": cg.freeze_digest(),
                "tone_domain_on_the_live_tree": tone_domain.freeze_digest(),
                "lactate_slice": lactate_slice.slice_digest(), "decision_pack": decision_pack.pack_digest()}
@@ -135,7 +135,7 @@ def test_no_historical_file_or_digest_constant_was_rewritten():
     assert set(untouched) == set(a1.closure_sources()) - set(a1.REVERSAL)
     constants = 0
     for path in sorted((ROOT / "clinical_core").glob("*.py")):
-        if path.name in ("amendment_1.py", "amendment_2.py"):   # the successor stage restates the first digest
+        if path.name in ("amendment_1.py", "amendment_2.py", "amendment_3.py"):   # the successor stages restate the earlier digests
             continue
         constants += len(re.findall(r'^[A-Z0-9_]*(?:DIGEST|SHA)[A-Z0-9_]* = "[0-9a-f]{64}"',
                                     path.read_text(encoding="utf-8"), re.M))
@@ -146,7 +146,7 @@ def test_the_view_changes_what_closed_packages_read_and_nothing_else():
     from clinical_core import derived as dv
     live_fields = [f.name for f in dataclasses.fields(dv.CoreProfile)]
     assert a1.NEW_PROFILE_FIELD in live_fields and a1.NEW_PROFILE_FIELD in dv.PARAMETERS
-    with a2.closure_view():
+    with a3.closure_view():
         assert a1.NEW_PROFILE_FIELD not in [f.name for f in dataclasses.fields(dv.CoreProfile)]
         assert a1.NEW_PROFILE_FIELD not in dv.PARAMETERS
         assert "amendment_1.py" not in {p.name for p in a1._TreeDir().glob("*.py")}
@@ -386,7 +386,7 @@ def test_a_closure_view_that_cannot_be_installed_whole_is_not_left_installed_in_
 
     monkeypatch.setattr(a1, "tree", half)
     with pytest.raises(RuntimeError):
-        with a2.closure_view():
+        with a3.closure_view():
             raise AssertionError("the body must not run")
     assert (cg._live, dv.PARAMETERS, dv.CoreProfile.__dataclass_fields__, dv.CoreProfile.__repr__) == before
     assert a1.NEW_PROFILE_FIELD in dv.PARAMETERS

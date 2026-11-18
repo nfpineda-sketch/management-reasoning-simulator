@@ -17,7 +17,7 @@ import pytest
 
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import closure_guard as cg
-from clinical_core import amendment_2 as a2
+from clinical_core import amendment_3 as a3
 from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import distributive_tone as dt
@@ -42,7 +42,7 @@ def _closure_tree():
     left it (amendment_2.tree, which composes the first amendment's view). The amended tree has its own tests (test_phase2_amendment*.py); what is asserted
     here is historical and its expected values are not rewritten."""
     with pytest.MonkeyPatch.context() as patch:
-        a2.tree(patch)
+        a3.tree(patch)
         yield
 
 
@@ -140,8 +140,14 @@ def test_the_gi_profile_is_the_case_the_p2x1_review_demonstrated():
     reached the channel and the clamp shaped the value."""
     anchors, profile = dt.committed_pairs()["gi"]
     assert profile.deficit_to_tone_gain == 0.0 and profile.vasodilatory_burden_to_tone_gain is None
-    source = inspect.getsource(ig.step)
-    assert "if profile.deficit_to_tone_gain > 0.0 or profile.vasodilatory_burden_to_tone_gain is not None:" in source
+    # PHASE2_AMENDMENT_3 (declared adaptation): the line this package froze is read from the file as the stage's predecessor left it (the declared reversal), and it
+    # is not rewritten. The live condition carries one more reader -- the vasoconstrictor support, UNSET in every committed profile -- so for this profile it is the
+    # same condition, and the refusal below is still the live code's.
+    assert "if profile.deficit_to_tone_gain > 0.0 or profile.vasodilatory_burden_to_tone_gain is not None:" in a3.a2_text("clinical_core/integration.py")
+    live = inspect.getsource(ig.step)
+    assert ("if profile.deficit_to_tone_gain > 0.0 or profile.vasodilatory_burden_to_tone_gain is not None \\\n"
+            "            or profile.vasoconstrictor_support_to_tone_gain is not None:") in live
+    assert profile.vasoconstrictor_support_to_tone_gain is None
     with pytest.raises(CoreInvariantError, match="only clinical owner"):
         step(dv.arrival_state(anchors, profile), (dt._FamilyTone("fam"),), anchors, profile)
 

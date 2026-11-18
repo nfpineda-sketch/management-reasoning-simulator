@@ -141,7 +141,9 @@ def test_p3_integration_the_runtime_is_the_certified_amendment_and_nothing_gaine
     verdict = ev.core_lineage_verdict()
     # P3-173: este registro midio el runtime SOBRE PHASE2_AMENDMENT_1 y sigue diciendolo; el nucleo vivo es hoy su
     # sucesor certificado. Un registro historico no se reescribe: se lee contra el miembro del linaje que lo midio.
-    assert verdict["ok"] is True and verdict["active_core"] == "PHASE2_AMENDMENT_2" and verdict["status"] == "CERTIFIED"
+    # PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): the live core is the LAST certified member of the lineage, a registered descendant of the second amendment.
+    assert verdict["ok"] is True and verdict["active_core"] == rs.CORE_LINEAGE[-1].version_id and verdict["status"] == "CERTIFIED"
+    assert rs.core_is_or_descends_from(verdict["active_core"], ("PHASE2_AMENDMENT_2",))
     assert verdict["historical_closure_digest"] == rs.PHASE2_DIGEST
     measured = rs.CORE_LINEAGE[1]
     assert rec.RUNTIME["core_version"] == measured.version_id == "PHASE2_AMENDMENT_1"

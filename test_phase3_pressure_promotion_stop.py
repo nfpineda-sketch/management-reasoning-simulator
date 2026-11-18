@@ -43,4 +43,5 @@ def test_m0_this_module_really_runs_the_promoted_snapshot(monkeypatch, tmp_path)
     at = page._open(monkeypatch, "gi_bleed_57m", shadow=True, dry=False, authority=str(tmp_path / "store"))
     page._ask(at, "What brought you in today?")
     site = at.session_state.get(ra.SITE_KEY)
-    assert site is not None and site.snapshot_id == grants.PRESSURE_SNAPSHOT_ID_V2 and site.grant["grant_id"] == grants.GRANT_ID_V2 and site.minutes_committed and not site.halted
+    # FD-TONE-11 (declared adaptation, 2026-11-17): a NEW session runs the live grant, V3, a pure lineage re-ligation of V2 (same snapshot, same cases, pressure only).
+    assert site is not None and site.snapshot_id == grants.PRESSURE_SNAPSHOT_ID_V2 and site.grant["grant_id"] == grants.LIVE_GRANT_ID and site.minutes_committed and not site.halted

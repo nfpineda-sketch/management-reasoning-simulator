@@ -139,7 +139,7 @@ assert SHADOW_LAYER == {"runtime_shadow", "runtime_shadow_families", "runtime_sh
                         "runtime_authority", "runtime_authority_store", "runtime_shadow_store",
                         "runtime_shadow_observer", "runtime_authority_pair", "runtime_minute_validation", "runtime_pair_site",
                         "runtime_pressure_grant", "runtime_authority_session", "runtime_authority_turn", "runtime_faculty_review", "runtime_faculty_bundle",
-                        "runtime_pressure_snapshot"}, SHADOW_LAYER      # P3-378 (declared adaptation): the binding of the live authority to the ratified GI pressure snapshot joined the layer (it is in LAYER_SOURCES); nothing outside the layer imports it
+                        "runtime_pressure_snapshot", "runtime_tone_support"}, SHADOW_LAYER      # P3-396 (declared adaptation): the development mapping of the common vasoconstrictor support joined the layer (it is in LAYER_SOURCES); only test code imports it. P3-378 (declared adaptation): the binding of the live authority to the ratified GI pressure snapshot joined the layer (it is in LAYER_SOURCES); nothing outside the layer imports it
 #      # P3-271 (declared adaptation): runtime_authority_turn, the authority-controlled turn (copy, judge, apply or discard). P3-251 (declared adaptation): the authority-session lifecycle and stop guard; ``runtime_authority`` imports it on use and the page reaches it only through ``runtime_authority``
 assert DECLARED_CROSSINGS <= SHADOW_LAYER
 HARNESS = "runtime_shadow_evidence"

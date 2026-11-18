@@ -271,7 +271,8 @@ def test_u15_the_layer_digest_is_the_identity_of_the_code_that_ran():
                                      "runtime_shadow_store.py", "runtime_shadow_observer.py",
                                      "runtime_authority_pair.py", "runtime_minute_validation.py", "runtime_pair_site.py",
                                      "runtime_pressure_grant.py", "runtime_authority_session.py", "runtime_authority_turn.py", "runtime_faculty_review.py", "runtime_faculty_bundle.py",
-                                     "runtime_pressure_snapshot.py"}   # P3-378 (declared adaptation): the binding of the live authority to the ratified GI pressure snapshot is part of the layer, so the digest covers it                   # P3-271 (declared adaptation): runtime_authority_turn, the authority-controlled turn (copy, judge, apply or discard). P3-251 (declared adaptation): the authority-session stop guard. P3-239 (declared adaptation): the explicit GI development pressure grant
+                                     "runtime_pressure_snapshot.py",
+                                     "runtime_tone_support.py"}   # P3-396 (declared adaptation): the development mapping of the common vasoconstrictor support joins the layer, so the digest covers it. P3-378 (declared adaptation): the binding of the live authority to the ratified GI pressure snapshot is part of the layer, so the digest covers it                   # P3-271 (declared adaptation): runtime_authority_turn, the authority-controlled turn (copy, judge, apply or discard). P3-251 (declared adaptation): the authority-session stop guard. P3-239 (declared adaptation): the explicit GI development pressure grant
     for name in rs.LAYER_SOURCES:
         assert (ROOT / name).exists(), name
 
@@ -478,9 +479,9 @@ def test_u28_the_phase2_closure_digest_is_unchanged():
     # PHASE2_AMENDMENT_1: the live tree is the closure's successor. The closure itself is what must be unchanged,
     # and it is rebuilt from these same live sources by reversing the successor's declared insertions.
     from clinical_core import amendment_1 as a1
-    from clinical_core import amendment_2 as a2
-    closure = a2.closure_sources_of(sources)
-    assert len(closure) == 141 and len(sources) == 144
+    from clinical_core import amendment_3 as a3
+    closure = a3.closure_sources_of(sources)
+    assert len(closure) == 141 and len(sources) == 146           # PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): the live package holds the third stage's two files as well
     digest = hashlib.sha256(json.dumps(closure, sort_keys=True).encode("utf-8")).hexdigest()
     assert digest == rs.PHASE2_DIGEST
     live = hashlib.sha256(json.dumps(sources, sort_keys=True).encode("utf-8")).hexdigest()

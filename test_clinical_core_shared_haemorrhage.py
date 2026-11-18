@@ -27,7 +27,7 @@ from clinical_core.logistics import EndoscopicHemostasis
 from clinical_core.modules import GIHaemorrhage
 from clinical_core.provenance import BloodChange, BloodFlow, BloodProcess, Source, blood_attribution
 from clinical_core.state import BLOOD_FIELDS, CHANNEL_DEFINITIONS, BloodState, UnresolvedBoundary
-from clinical_core import amendment_2 as a2
+from clinical_core import amendment_3 as a3
 
 ROOT = Path(__file__).resolve().parent
 DOCUMENT = ROOT / "docs" / "revision" / "P2I2T_ESTADO_HEMORRAGICO_COMPARTIDO.md"
@@ -46,7 +46,7 @@ def _closure_tree():
     left it (amendment_2.tree, which composes the first amendment's view). The amended tree has its own tests (test_phase2_amendment*.py); what is asserted
     here is historical and its expected values are not rewritten."""
     with pytest.MonkeyPatch.context() as patch:
-        a2.tree(patch)
+        a3.tree(patch)
         yield
 
 

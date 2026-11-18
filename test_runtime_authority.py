@@ -710,9 +710,11 @@ def test_b9_no_code_path_changes_the_mode_inside_an_encounter():
 # -- P3-40: the registered development-only approval and the grant it carries -------------------------
 
 DEV_ID = "gi_pressure_committed"
+# P3-387 / FD-TONE-09 (declared adaptation, 2026-11-17): this file exercises the OLDER pressure point, whose grant is superseded for new sessions. It opens only as a
+# declared historical reconstruction, so the environment these tests build declares it. The ordinary configuration is defended in test_phase3_grant_supersession.
 DEV_ENV = {ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY, ra.SNAPSHOT_FLAG: DEV_ID,
            ra.ENVIRONMENT_FLAG: "development", rs.FLAG: rs.MODE_SHADOW_COMPARE,
-           store.STORE_FLAG: STORE_DIR}
+           store.STORE_FLAG: STORE_DIR, "MRS_PHASE3_HISTORICAL_RECONSTRUCTION": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V1"}
 
 
 def test_r1_the_registry_holds_exactly_the_development_only_approvals():

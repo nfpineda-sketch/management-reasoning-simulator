@@ -38,11 +38,11 @@ PROBE_SOURCE = Source(SourceKind.DISEASE_MODULE, "p2w1-test")
 @pytest.fixture(autouse=True, scope="module")
 def _p2w1_tree():
     from clinical_core import closure_guard as cg
-    from clinical_core import amendment_2 as a2
+    from clinical_core import amendment_3 as a3
     from clinical_core import tone_domain as x1
     with pytest.MonkeyPatch.context() as patch:
         cg.tree(patch)
-        a2.chain(patch)
+        a3.chain(patch)
         x1.tree(patch)
         yield
 

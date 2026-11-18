@@ -111,7 +111,9 @@ def test_b1_the_site_binds_the_pinned_version_1_and_the_artifact_names_every_dig
     assert summary["profile_digest"] == pair.V1_PROFILE_DIGEST and (summary["core_version"], summary["core_digest"]) == (pair.V1_CORE_VERSION, pair.V1_CORE_DIGEST)
     artifact = infusion["site"].artifact()
     assert artifact["snapshot_status"] == pair.RATIFIED == "RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS" and artifact["snapshot_is_authority_approved"] is False
-    assert artifact["lineage"]["digest"] == pair.V1_CORE_DIGEST and artifact["lineage"]["certified"] is True
+    # PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): the dormant site names the LIVE lineage member -- the snapshot's own core or the registered successor that rebuilds it exactly.
+    assert artifact["lineage"]["digest"] in pair.accepted_lineage_digests() and artifact["lineage"]["certified"] is True
+    assert artifact["lineage"]["digest"] == pair.live_lineage()["digest"] and pair.V1_CORE_DIGEST in pair.accepted_lineage_digests()
     # the profile of the bound run is the one built from the record, not one a caller supplied
     assert pair.runner_is_bound(infusion["site"].runner, infusion["site"].bound)
 

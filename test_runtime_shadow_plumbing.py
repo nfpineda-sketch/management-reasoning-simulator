@@ -386,7 +386,7 @@ def test_r13_nothing_authoritative_reads_the_shadow_result():
                                             "runtime_authority_store.py", "runtime_shadow_store.py",
                                             "runtime_shadow_observer.py", "runtime_authority_pair.py",
                                             "runtime_minute_validation.py", "runtime_pair_site.py", "runtime_pressure_grant.py", "runtime_authority_session.py", "runtime_authority_turn.py", "runtime_faculty_review.py", "runtime_faculty_bundle.py",
-                                            "runtime_pressure_snapshot.py")   # P3-378 (declared adaptation): the binding module joined the layer; nothing outside the layer imports it (the readers list below is unchanged)
+                                            "runtime_pressure_snapshot.py", "runtime_tone_support.py")   # P3-396 (declared adaptation): the development mapping of the common vasoconstrictor support joined the layer; only test code imports it. P3-378 (declared adaptation): the binding module joined the layer; nothing outside the layer imports it (the readers list below is unchanged)
     #    # P3-271 (declared adaptation): runtime_authority_turn, the authority-controlled turn (copy, judge, apply or discard). P3-251 (declared adaptation): the authority-session lifecycle and stop guard. P3-239 (declared adaptation): the pressure grant
     readers = []
     for path in sorted(ROOT.glob("*.py")):
@@ -463,8 +463,8 @@ def test_r17_the_phase2_closure_digest_is_unchanged():
     # PHASE2_AMENDMENT_1: the live tree is the closure's successor. What must be unchanged is the closure itself:
     # it is rebuilt from these same live sources by reversing the successor's declared insertions.
     from clinical_core import amendment_1 as a1
-    from clinical_core import amendment_2 as a2
-    closure = a2.closure_sources_of(sources)
+    from clinical_core import amendment_3 as a3
+    closure = a3.closure_sources_of(sources)
     digest = hashlib.sha256(json.dumps(closure, sort_keys=True).encode("utf-8")).hexdigest()
     assert digest == runtime_shadow.PHASE2_DIGEST
     live = hashlib.sha256(json.dumps(sources, sort_keys=True).encode("utf-8")).hexdigest()

@@ -61,7 +61,9 @@ def test_f2_a_complete_configuration_for_a_faculty_account_is_enabled_and_names_
     decision = _evaluate(store_dir)
     assert decision["enabled"] is True and decision["problems"] == [] and decision["access"] == "FACULTY_REVIEWER" and all(decision["conditions"].values())
     assert set(decision["conditions"]) == set(fr.CONDITIONS) and decision["single_process"]["held"] is True
-    assert (decision["authority_mode"], decision["grant_id"], decision["environment"]) == ("PRESSURE_ONLY", grants.GRANT_ID_V2, "development")
+    # FD-TONE-10 (declared adaptation, 2026-11-17): the live grant is version 3, a pure lineage rebind of version 2 (same snapshot, same scope)
+    assert (decision["authority_mode"], decision["grant_id"], decision["environment"]) == ("PRESSURE_ONLY", grants.LIVE_GRANT_ID, "development")
+    assert grants.LIVE_GRANT_ID == grants.GRANT_ID_V3 and grants.GRANT_V3["pressure_snapshot"] == grants.GRANT_V2["pressure_snapshot"]
     assert decision["allowlist"] == ["gi_bleed_57m", "gi_bleed_72f"]
     assert fr.review_root(_env(store_dir)) == store_dir / fr.REVIEW_DIRNAME
 

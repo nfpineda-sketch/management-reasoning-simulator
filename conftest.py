@@ -204,6 +204,31 @@ def _pressure_grant_test_seam():
         yield
 
 
+@pytest.fixture(autouse=True, scope="session")
+def _the_older_pressure_point_is_a_declared_historical_reconstruction():
+    """P3-387 (TEST-SIDE ONLY; faculty decision FD-TONE-09). ``GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V1`` and its pressure point ``gi_pressure_committed`` are superseded: they
+    replay and verify what they authorized and no longer open a session by ordinary configuration. The certified authority tests that RUN that older point are therefore, since that
+    decision, explicit HISTORICAL RECONSTRUCTIONS of that experiment, and the suite declares it the only way a process can: the declaration variable names version 1 for the session.
+
+    It is the real path, not a seam: the gate and the site read the variable, ask the registry, and check that the live certified core rebuilds the lineage version 1 names. It reaches
+    only code that reads the process environment (a test that hands the gate its own ``environ`` mapping declares it there), it changes nothing for the live grant, and a test that needs
+    ORDINARY configuration -- the point of the decision: no declaration, no session -- carries ``@pytest.mark.ordinary_configuration``."""
+    import runtime_pressure_grant as grants
+
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setenv(grants.HISTORICAL_RECONSTRUCTION_FLAG, grants.GRANT_ID)
+        yield
+
+
+@pytest.fixture(autouse=True)
+def _ordinary_configuration_marker(request, monkeypatch):
+    if request.node.get_closest_marker("ordinary_configuration") is not None:
+        import runtime_pressure_grant as grants
+
+        monkeypatch.delenv(grants.HISTORICAL_RECONSTRUCTION_FLAG, raising=False)
+    yield
+
+
 @pytest.fixture(autouse=True)
 def _pressure_grant_strict_marker(request):
     _GRANT_SEAM["strict"] = bool(request.node.get_closest_marker("strict_grant"))
@@ -236,5 +261,6 @@ def onboarded(store, token):
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "strict_grant: P3-240, use the real runtime_pressure_grant.permits for every snapshot id (the test-only seam is off)")
+    config.addinivalue_line("markers", "ordinary_configuration: P3-387 (FD-TONE-09), the process declares NO historical reconstruction: a superseded grant opens nothing")
     config.addinivalue_line("markers", "real_core_lineage: the test reads the real certified-core lineage, never "
                                        "the certification preview")

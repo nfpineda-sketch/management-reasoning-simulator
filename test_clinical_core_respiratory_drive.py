@@ -30,7 +30,7 @@ from clinical_core import opioid_migration as un
 from clinical_core import systemic_stress as ss
 from clinical_core import distributive_tone as dt
 from clinical_core import closure_guard as cg
-from clinical_core import amendment_2 as a2
+from clinical_core import amendment_3 as a3
 from clinical_core import tone_domain as x1
 from clinical_core.state import CoreInvariantError
 
@@ -134,7 +134,7 @@ def _p2p2_tree():
         dt.chain(patch)
         x1.chain(patch)
         cg.chain(patch)
-        a2.chain(patch)
+        a3.chain(patch)
         patch.setattr(bf, "freeze_sources", lambda: em.p2p2_sources(_LIVE_SOURCES_P2Q2()))
         yield
 

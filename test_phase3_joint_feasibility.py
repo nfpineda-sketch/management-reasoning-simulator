@@ -217,8 +217,9 @@ def test_g2_the_gate_is_not_vacuous_an_empty_intersection_would_return_C_and_a_f
 def test_h1_the_core_the_closed_region_the_human_review_and_every_earlier_record_are_untouched():
     import runtime_pressure_grant as grants
     import volume_behaviour_record as vbr
-    from clinical_core import amendment_2, legacy_adapter
-    assert amendment_2.amended_core_digest_now() == grants.CORE_DIGEST == "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2"
+    from clinical_core import amendment_3, legacy_adapter
+    # PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): the core this analysis stood on is untouched = the second amendment's digest still recomputes from the live tree through the successor's reversal.
+    assert amendment_3.amendment_2_digest_now() == grants.CORE_DIGEST == "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2"
     assert vbr.EFFECTIVE_REGION == {"peak": (0.15, 0.27072), 30: (0.15, 0.25), 60: (0.10, 0.20), 120: (0.05, 0.15)} and vbr.STATUS == "FACULTY_DEFINED_BEHAVIORAL_REGION"
     assert legacy_adapter.LEGACY_LITERALS["gi_bleeding_circulation_per_min"][0] == 0.003 and legacy_adapter.LEGACY_LITERALS["untimed_blood_units_per_min"][0] == 1 / 30
     human = json.loads((REVISION / "PHASE3_FIRST_HUMAN_FACULTY_REVIEW.json").read_text(encoding="utf-8"))
@@ -228,9 +229,14 @@ def test_h1_the_core_the_closed_region_the_human_review_and_every_earlier_record
         assert json.loads((REVISION / name).read_text(encoding="utf-8"))["record_digest"] == expected, name
     stored = json.loads((REVISION / "PHASE3_FACULTY_TRAJECTORY_REVIEW_SET.json").read_text(encoding="utf-8"))
     assert stored["record_digest"] == ftr.PINNED_SET_DIGEST and [item["scenario_id"] for item in stored["items"]] == ["FR-A", "FR-B", "FR-C", "FR-D", "FR-E", "FR-F", "FR-G"]
-    assert not list(REVISION.glob("*V2*")) and not list(REVISION.glob("*AMENDMENT_3*")) and not list((ROOT / "docs").glob("*AMENDMENT_3*")), "no V2 candidate, no Amendment 3 design"
-    for path in sorted((ROOT / "clinical_core").rglob("*.py")):
-        assert "norepinephrine" not in path.read_text(encoding="utf-8").lower(), f"{path.name}: norepinephrine was not implemented"
+    # PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): THIS cycle produced no V2 candidate and opened no amendment, and that still holds of what it left. An Amendment 3 was opened LATER, by an explicit
+    # faculty decision (FD-TONE-10) and for another purpose -- the common vascular tone: what exists under that name is that amendment's own record, which names that decision, and
+    # norepinephrine lives only in the two core files that amendment owns.
+    assert not list(REVISION.glob("*V2*")), "no V2 candidate"
+    third = sorted(path.name for path in list(REVISION.glob("*AMENDMENT_3*")) + list((ROOT / "docs").glob("*AMENDMENT_3*")))
+    assert third == ["PHASE2_AMENDMENT_3.json", "PHASE2_AMENDMENT_3.md"] and "FD-TONE" in json.loads((REVISION / "PHASE2_AMENDMENT_3.json").read_text(encoding="utf-8"))["authorized"]
+    named = sorted(path.relative_to(ROOT).as_posix() for path in sorted((ROOT / "clinical_core").rglob("*.py")) if "norepinephrine" in path.read_text(encoding="utf-8").lower())
+    assert named == sorted(amendment_3.OWN), "norepinephrine exists only in the files of PHASE2_AMENDMENT_3"
 
 
 # -- P3-336 ----------------------------------------------------------------------------------------------------------------------------------------------

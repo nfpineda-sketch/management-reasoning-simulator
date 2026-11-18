@@ -20,7 +20,8 @@ import runtime_shadow_observer as obs
 import runtime_shadow_store as store
 import shadow_resolution_record as previous
 import terminal_amendment_record as rec
-from clinical_core import amendment_2 as a2
+# PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): the design package reads the first amendment's tree through the stage that knows the WHOLE chain of declared reversals (the live one).
+from clinical_core import amendment_3 as a2
 from clinical_core import calibration, collapse, derived as dv, encephalopathy, opioid_migration as om
 from test_shadow_observability import GI, NALOXONE, OPIOID, _latest, _play, traces  # noqa: F401
 
@@ -46,9 +47,10 @@ def test_a2_001_the_lineage_is_the_certified_one_and_the_core_did_not_change():
     assert parent.digest == lineage["parent"]["digest"]
     assert a2.amendment_1_verifies()["digest_recomputes"] is True
     active = rs.active_core()
-    assert active["core_version"] == "PHASE2_AMENDMENT_2" and active["core_digest"] == rs.CORE_LINEAGE[-1].digest
-    assert [entry.version_id for entry in rs.CORE_LINEAGE] == ["PHASE2_CLOSURE", "PHASE2_AMENDMENT_1",
-                                                                 "PHASE2_AMENDMENT_2"]
+    assert active["core_version"] == rs.CORE_LINEAGE[-1].version_id and active["core_digest"] == rs.CORE_LINEAGE[-1].digest
+    assert rs.core_is_or_descends_from(active["core_version"], ("PHASE2_AMENDMENT_2",))
+    assert [entry.version_id for entry in rs.CORE_LINEAGE][:3] == ["PHASE2_CLOSURE", "PHASE2_AMENDMENT_1",
+                                                                     "PHASE2_AMENDMENT_2"]
     assert rs.CORE_LINEAGE[0].digest == lineage["historical_closure"]["digest"]
     assert lineage["historical_closure"]["changed"] is False and lineage["parent"]["changed"] is False
     verdict = ev.core_lineage_verdict()
@@ -284,7 +286,7 @@ def test_a2_009_and_010_the_core_was_not_touched_and_the_verdict_is_one_of_the_f
     assert design["full_certification_required"] is False and design["certified"] is False
     # P3-173: el diseno decidio detenerse; hoy la Enmienda 2 existe como etapa certificada y el registro de diseno
     # sigue diciendo lo que dijo (no se reescribe).
-    assert (CORE / "amendment_2.py").exists() and rs.CORE_LINEAGE[-1].version_id == "PHASE2_AMENDMENT_2"
+    assert (CORE / "amendment_2.py").exists() and rs.CORE_LINEAGE[2].version_id == "PHASE2_AMENDMENT_2"
     assert "Amendment 2" in rec.NOT_CLAIMED[3] and "any change to common physiology" in rec.NOT_CLAIMED
 
 

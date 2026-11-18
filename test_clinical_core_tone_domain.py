@@ -20,7 +20,7 @@ from clinical_core import decision_pack, lactate_slice
 from clinical_core import derived as dv
 from clinical_core import distributive_tone as dt
 from clinical_core import closure_guard as cg
-from clinical_core import amendment_2 as a2
+from clinical_core import amendment_3 as a3
 from clinical_core import tone_domain as x1
 from clinical_core.integration import CHANNEL_BOUNDS, step, tone_domain
 from clinical_core.state import Channel, CoreInvariantError
@@ -39,7 +39,7 @@ def _p2x1_tree():
     read the tree as P2X-1 left it (cg.chain, cg.p2x1_sources)."""
     with pytest.MonkeyPatch.context() as patch:
         cg.tree(patch)
-        a2.chain(patch)
+        a3.chain(patch)
         yield
 
 
@@ -83,7 +83,7 @@ def test_the_reversal_is_not_evadable():
 def test_the_p2w1_tree_reads_the_p2w1_files(monkeypatch):
     with pytest.MonkeyPatch.context() as patch:
         cg.tree(patch)
-        a2.chain(patch)
+        a3.chain(patch)
         x1.tree(patch)
         assert dt.freeze_digest() == x1.P2W1_FREEZE_DIGEST
         assert all(dt.proofs().values())
@@ -279,7 +279,7 @@ def test_no_historical_digest_is_rewritten():
     assert record["freeze_digest"]
     with pytest.MonkeyPatch.context() as patch:
         cg.tree(patch)
-        a2.chain(patch)
+        a3.chain(patch)
         x1.tree(patch)
         assert dt.freeze_digest() == x1.P2W1_FREEZE_DIGEST
     p2w1 = json.loads(dt.RECORD.read_text(encoding="utf-8"))
@@ -464,7 +464,11 @@ def test_the_contraction_witness_runs_with_the_distributive_factor_at_one():
     assert unset["loop_slope_bound"] == declared["loop_slope_bound"] and unset["distributive_reader"] is False
     step(dv.arrival_state(anchors, x1.acs_profile(afterload_sensitivity=sensitivity)), (), anchors,
          x1.acs_profile(afterload_sensitivity=sensitivity))   # accepted: the check is skipped without the reader
-    assert "if domain[\"distributive_reader\"]:" in inspect.getsource(step.__globals__["_vascular_tone"])
+    # PHASE2_AMENDMENT_3 (declared adaptation): the line this package pinned is read from the file as the stage's predecessor left it; the live check also sits behind the
+    # vasoconstrictor reader, which this profile leaves UNSET, so for it the check is still skipped (the step above is the live code's).
+    assert "if domain[\"distributive_reader\"]:" in a3.a2_text("clinical_core/integration.py")
+    assert "if domain[\"distributive_reader\"] or profile.vasoconstrictor_support_to_tone_gain is not None:" in inspect.getsource(step.__globals__["_vascular_tone"])
+    assert x1.acs_profile(afterload_sensitivity=sensitivity).vasoconstrictor_support_to_tone_gain is None
 
 
 def test_the_slope_is_never_verified_with_the_distributive_factor_above_one():

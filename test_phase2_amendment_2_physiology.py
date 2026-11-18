@@ -13,6 +13,7 @@ import math
 import pytest
 
 from clinical_core import amendment_2 as a2
+from clinical_core import amendment_3 as a3
 from clinical_core import blood_anchors as ba
 from clinical_core import derived as dv
 from clinical_core import encephalopathy as en
@@ -299,7 +300,16 @@ def test_no_pulse_is_a_separate_hard_immediate_path():
     assert sc.collapse_burden_after(arrested, anchors, full) == arrested.aux.collapse_burden
 
 
-def test_the_existing_collapse_burden_slot_is_reused_and_no_third_memory_exists():
+@pytest.fixture
+def second_amendment_tree():
+    """PHASE2_AMENDMENT_3: what the SECOND amendment left, for the tests that state the shape of ITS tree (a later stage
+    added a memory and a reader of its own, which that tree does not have)."""
+    with pytest.MonkeyPatch.context() as patch:
+        a3.amendment_2_tree(patch)
+        yield
+
+
+def test_the_existing_collapse_burden_slot_is_reused_and_no_third_memory_exists(second_amendment_tree):
     assert "collapse_burden" in AUXILIARY_FIELDS
     assert sc.STATE_FIELD == "systemic_encephalopathy_burden" and sc.STATE_FIELD not in AUXILIARY_FIELDS
     declared = [f.name for f in dataclasses.fields(AuxiliaryState) if f.name not in AUXILIARY_FIELDS]
@@ -340,7 +350,7 @@ def test_a_malformed_profile_is_refused_never_repaired(change):
         dataclasses.replace(sc.development_profile(), **change)
 
 
-def test_the_stage_still_reconstructs_both_earlier_cores_with_the_physiology_in_place():
+def test_the_stage_still_reconstructs_both_earlier_cores_with_the_physiology_in_place(second_amendment_tree):
     assert a2.amendment_1_digest_now() == a2.AMENDMENT_1_DIGEST
     assert all(a2.proofs().values())
     assert a2.non_regression()["pass"] is True

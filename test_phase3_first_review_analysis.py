@@ -95,8 +95,12 @@ def test_h5_the_six_faculty_decisions_are_recorded_and_norepinephrine_is_a_roadm
     for index in range(1, 7):
         assert f"| FD-REVIEW-0{index} |" in cola
     assert "TD-147" in debt and "norepinefrina" in debt.lower() and "tono vascular" in debt.lower()
-    for path in sorted((ROOT / "clinical_core").rglob("*.py")):
-        assert "norepinephrine" not in path.read_text(encoding="utf-8").lower(), f"{path.name}: no norepinephrine physiology exists, and none was added"
+    # PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): when the human review was recorded, norepinephrine was a roadmap item and nothing implemented it; that record still says so (above). FD-TONE-02 later
+    # authorized it as the FIRST writer of the common vasoconstrictor support: it lives only in the two files PHASE2_AMENDMENT_3 owns, and the core that review ran on has none and still recomputes.
+    from clinical_core import amendment_3
+    named = sorted(path.relative_to(ROOT).as_posix() for path in sorted((ROOT / "clinical_core").rglob("*.py")) if "norepinephrine" in path.read_text(encoding="utf-8").lower())
+    assert named == sorted(amendment_3.OWN), "norepinephrine exists only in the files of PHASE2_AMENDMENT_3"
+    assert amendment_3.amendment_2_digest_now() == "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2"
 
 
 # -- MODEL_ANALYSIS: the stored record is the recomputed one -----------------------------------------------------------------------------------------

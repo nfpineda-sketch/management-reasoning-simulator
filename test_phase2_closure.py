@@ -18,7 +18,7 @@ from pathlib import Path
 
 from clinical_core import calibration, closure_guard as cg, decision_pack, lactate_slice, state, tone_domain
 from clinical_core import amendment_1 as a1
-from clinical_core import amendment_2 as a2
+from clinical_core import amendment_3 as a3
 
 ROOT = Path(__file__).resolve().parent
 RECORD = ROOT / "docs" / "revision" / "P2X3_phase2_closure.json"
@@ -41,7 +41,7 @@ def _closure_tree():
     exactly as each closed stage's own tests read their own tree. The record, its digest and every expected
     value below are the closure's and are not rewritten."""
     with pytest.MonkeyPatch.context() as patch:
-        a2.tree(patch)
+        a3.tree(patch)
         yield
 
 

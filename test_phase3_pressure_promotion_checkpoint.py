@@ -53,6 +53,11 @@ REVIEW = {
     "declared_not_changed": ["the dry evaluator still binds the older point", "no .gitattributes pins LF for the hash-pinned JSON (a CRLF checkout fails closed)", "unsigned artifacts: a determined forger of consistent values, minutes and digests is not refutable"]}
 
 
+#: 2026-11-17 (declared adaptation, P3-388): the promotion's successor decision was taken on PHASE2_AMENDMENT_2, the active member that day. The checkpoint is a historical record and
+#: is not regenerated: it keeps naming THAT member, which the lineage still registers and rebuilds, whatever member is active now.
+PROMOTED_ON = next(member for member in rs.CORE_LINEAGE if member.version_id == "PHASE2_AMENDMENT_2")
+
+
 def _digest(body):
     return ra.digest_of(body)
 
@@ -71,7 +76,7 @@ def build_record():
                       "validation, not production authority and not a resident deployment."),
         "successor_decision": {"verdict": "A", "name": "CONFIG_ONLY_PROMOTION_SUFFICIENT",
                                "why": "the six coordinates live in fields of objects the Phase 3 layer builds (profile, haemorrhage writer, crystalloid contributors); none is a constant of clinical_core/",
-                               "predecessor": {"version_id": rs.CORE_LINEAGE[-1].version_id, "digest": rs.CORE_LINEAGE[-1].digest}, "successor": None, "clinical_core_changed": False},
+                               "predecessor": {"version_id": PROMOTED_ON.version_id, "digest": PROMOTED_ON.digest}, "successor": None, "clinical_core_changed": False},
         "snapshot": {"id": V2, "runtime_snapshot_id": ps.RUNTIME_SNAPSHOT_ID, "status": ps.STATUS, "values": cfg.values(), "c_rate_over_scale_per_min": cfg.c_rate_over_scale_per_min,
                      "configuration_digest": cfg.configuration_digest, "values_digest": cfg.values_digest, "record_digest": cfg.record_digest, "ratification_digest": cfg.ratification_digest,
                      "region_record_digest": cfg.region_record_digest, "human_record_digest": cfg.human_record_digest},

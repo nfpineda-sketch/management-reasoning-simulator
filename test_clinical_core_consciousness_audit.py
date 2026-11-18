@@ -32,6 +32,7 @@ from clinical_core import systemic_stress as ss
 from clinical_core import distributive_tone as dt
 from clinical_core import closure_guard as cg
 from clinical_core import amendment_2 as a2
+from clinical_core import amendment_3 as a3
 from clinical_core import tone_domain as x1
 from clinical_core import consciousness_audit as ca
 from clinical_core import decision_pack, lactate_slice
@@ -213,7 +214,7 @@ def _p2n2_core():
         dt.chain(patch)
         x1.chain(patch)
         cg.chain(patch)
-        a2.chain(patch)
+        a3.chain(patch)
         patch.setattr(ca, "inspect", _ClosureFunctionSource())
         patch.setattr(sys.modules[__name__], "inspect", _ClosureFunctionSource())
         patch.setattr(vt, "_live", go.p2n2_text)

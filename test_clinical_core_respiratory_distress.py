@@ -25,7 +25,7 @@ from clinical_core import opioid_migration as un
 from clinical_core import systemic_stress as ss
 from clinical_core import distributive_tone as dt
 from clinical_core import closure_guard as cg
-from clinical_core import amendment_2 as a2
+from clinical_core import amendment_3 as a3
 from clinical_core import tone_domain as x1
 from clinical_core import respiratory_mechanics as mc
 from clinical_core.integration import step
@@ -99,7 +99,7 @@ def _p2t1_tree():
         dt.chain(patch)
         x1.chain(patch)
         cg.chain(patch)
-        a2.chain(patch)
+        a3.chain(patch)
         patch.setattr(bf, "freeze_sources", lambda: xm.p2t1_sources(_LIVE_SOURCES_P2T1A()))
         yield
 

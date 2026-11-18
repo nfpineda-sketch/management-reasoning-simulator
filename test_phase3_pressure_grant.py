@@ -22,8 +22,13 @@ import runtime_shadow as rs
 ROOT = Path(__file__).resolve().parent
 CASE, OTHER = "gi_bleed_57m", "gi_bleed_72f"
 PINNED_FINGERPRINT = "3c29c2b9eb070ea1728bea2b17fd4484ff42c5105070c9402b17e73b29c3c136"
-REAL = {ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY, ra.SNAPSHOT_FLAG: "gi_pressure_committed", ra.ENVIRONMENT_FLAG: "development"}
-MEMBER = {"version_id": rs.CORE_LINEAGE[-1].version_id, "digest": rs.CORE_LINEAGE[-1].digest}
+# P3-387 / FD-TONE-09 (declared adaptation, 2026-11-17): this file exercises the OLDER pressure point, whose grant is superseded for new sessions. It opens only as a
+# declared historical reconstruction, so the environment built here declares it. The ordinary configuration is defended in test_phase3_grant_supersession.
+REAL = {ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY, ra.SNAPSHOT_FLAG: "gi_pressure_committed", ra.ENVIRONMENT_FLAG: "development", "MRS_PHASE3_HISTORICAL_RECONSTRUCTION": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V1"}
+# PHASE2_AMENDMENT_3 (declared adaptation, 2026-11-17): version 1 names the lineage member it was issued on (the second amendment). That member is still registered and the live
+# certified core rebuilds it exactly, which is what a declared reconstruction of this grant is judged against; it is no longer the LAST member of the lineage.
+MEMBER = {"version_id": rs.CORE_LINEAGE[2].version_id, "digest": rs.CORE_LINEAGE[2].digest}
+assert MEMBER == grants.lineage_of(grants.GRANT) and MEMBER["version_id"] == "PHASE2_AMENDMENT_2"
 
 
 @pytest.fixture(scope="module")
@@ -54,7 +59,8 @@ def test_g1_the_grant_has_the_declared_identity_and_the_pinned_fingerprint():
     assert grant["authority_mode"] == "PRESSURE_ONLY" and grant["status"] == "ACTIVE_FOR_DEVELOPMENT_EXPERIMENT" and grant["purpose"] == "DEVELOPMENT_AUTHORITY_EXPERIMENT_ONLY"
     assert grant["fingerprint"] == grants.GRANT_FINGERPRINT == PINNED_FINGERPRINT == grants.fingerprint_of(grant)
     # FD-PROMOTE-04 (declared adaptation): the registry holds exactly TWO grants now -- version 1 (this one, unchanged) and version 2 (the ratified snapshot); an exact tuple, nothing else.
-    assert grants.REGISTERED_GRANTS == (grant, grants.GRANT_V2) and grants.GRANT_FINGERPRINT == PINNED_FINGERPRINT, "exactly the two registered grants"
+    # FD-TONE-10 (declared adaptation, 2026-11-17): and version 3, the lineage rebind of version 2 on the successor core. Versions 1 and 2 are unchanged and stay registered.
+    assert grants.REGISTERED_GRANTS == (grant, grants.GRANT_V2, grants.GRANT_V3) and grants.GRANT_FINGERPRINT == PINNED_FINGERPRINT, "exactly the three registered grants"
     assert grant["issued_by_role"] == "faculty" and "FD-P3-203" in grant["decision_reference"] and grant["issued_on"] == "2026-11-12"
     assert _problems(grant) == []
 
@@ -63,7 +69,7 @@ def test_g2_the_grant_binds_the_authority_mode_the_cases_the_snapshot_the_lineag
     grant = grants.GRANT
     assert tuple(grant["cases"]) == (CASE, OTHER) and grant["family"] == "gi_bleed" and tuple(grant["environments"]) == ("development",)
     assert grant["pressure_snapshot"]["id"] == "gi_pressure_committed" and grant["pressure_snapshot"]["value_digest"] == ra.APPROVED_POINT_DIGESTS["gi_pressure_committed"]
-    assert grant["core_lineage"]["version_id"] == rs.CORE_LINEAGE[-1].version_id and grant["core_lineage"]["digest"] == rs.CORE_LINEAGE[-1].digest
+    assert dict(grant["core_lineage"]) == MEMBER             # the registered member it was issued on (see MEMBER): unchanged, and no longer the last of the lineage
     assert grant["window"]["max_minute"] == 240 == grants.WINDOW_MINUTES
     boundary = grant["collapse_boundary"]
     assert boundary["boundary"] == "ESTABLISHED" and boundary["impending_is_a_boundary"] is False and boundary["fails_closed"] is True and boundary["is_a_terminal_state"] is False
@@ -251,8 +257,10 @@ def test_g13_only_the_grant_module_and_the_gate_name_the_registry_and_the_page_d
     # attributes the review modules read are pinned to read-only constants (never ``permits``, ``grant_problems``, the registry or any grant constructor).
     assert importers == ["runtime_authority.py", "runtime_faculty_bundle.py", "runtime_faculty_review.py"], importers
     # FD-PROMOTE-04 (declared adaptation): the version-2 twins of the same read-only constants; still no registry, no ``permits``, no ``grant_problems``, no lookup function.
+    # FD-TONE-10 (declared adaptation, 2026-11-17): the version-3 twins and the name of the live version; still read-only constants only.
     read_only = {"AUTHORITY_MODE", "CASES", "FAMILY", "GRANT", "GRANT_FINGERPRINT", "GRANT_ID", "GRANT_VERSION", "PRESSURE_SNAPSHOT_ID",
-                 "GRANT_V2", "GRANT_FINGERPRINT_V2", "GRANT_ID_V2", "GRANT_VERSION_V2", "PRESSURE_SNAPSHOT_ID_V2"}
+                 "GRANT_V2", "GRANT_FINGERPRINT_V2", "GRANT_ID_V2", "GRANT_VERSION_V2", "PRESSURE_SNAPSHOT_ID_V2",
+                 "GRANT_V3", "GRANT_FINGERPRINT_V3", "GRANT_ID_V3", "GRANT_VERSION_V3", "LIVE_GRANT_ID"}
     for name in ("runtime_faculty_review.py", "runtime_faculty_bundle.py"):
         tree = ast.parse((ROOT / name).read_text(encoding="utf-8"))
         used = {node.attr for node in ast.walk(tree) if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name) and node.value.id == "grants"}
