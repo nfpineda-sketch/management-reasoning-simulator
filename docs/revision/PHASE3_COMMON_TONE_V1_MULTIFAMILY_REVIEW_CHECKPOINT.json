@@ -1,0 +1,259 @@
+{
+  "adversarial_review": {
+    "evidence_class": "MODEL_ANALYSIS",
+    "findings": [
+      {
+        "disposition": "FIXED: the launcher offers only the tone review until its five scenarios are submitted and verified (MRS_FACULTY_TONE_GATE=off releases it for the operator); the re-review hold keeps its precedence",
+        "finding": "with the review at 0/5 the first review, the re-review and the live mode stayed selectable and draw earlier trajectories, the legacy comparator, heart rate, capillary refill and earlier judgments",
+        "id": "1",
+        "severity": "HIGH"
+      },
+      {
+        "disposition": "FIXED: it waits for the verified summary",
+        "finding": "the LOW/HIGH optional check opened on log statuses, not on verified records",
+        "id": "2",
+        "severity": "MEDIUM_HIGH"
+      },
+      {
+        "disposition": "FIXED: a technical problem, never an exception",
+        "finding": "a malformed record file crashed the summary page with a traceback",
+        "id": "3",
+        "severity": "MEDIUM"
+      },
+      {
+        "disposition": "FIXED: the digest is part of the log name",
+        "finding": "log identity did not bind the set digest",
+        "id": "4",
+        "severity": "MEDIUM_LOW"
+      },
+      {
+        "disposition": "FIXED: the submit waits for what is written to be saved",
+        "finding": "a refused overall comment was dropped in silence when the scenario was submitted",
+        "id": "5",
+        "severity": "LOW"
+      },
+      {
+        "disposition": "FIXED",
+        "finding": "load_set could raise on a re-signed and pinned set with a malformed section",
+        "id": "6",
+        "severity": "LOW"
+      },
+      {
+        "disposition": "FIXED (defence in depth: the pinned digest is the real defence)",
+        "finding": "the leak filter did not cover the text forms of heart rate, capillary refill, lactate, mental status, cardiac index, tone state",
+        "id": "7",
+        "severity": "LOW"
+      },
+      {
+        "disposition": "DECLARED: only the page gates it; there is no browser route",
+        "finding": "SensitivityLog writes before the fifth submit if called by hand",
+        "id": "8",
+        "severity": "LOW"
+      },
+      {
+        "disposition": "ACCEPTED (intended); launcher comments corrected",
+        "finding": "with the re-review operator switch the landing page is the tone review",
+        "id": "9",
+        "severity": "LOW"
+      }
+    ],
+    "inside_the_tone_page": "no leak found: stored item fields, views, chart specs and tooltips, session keys, sidebar, files read and url parameters were attacked",
+    "reviewer": "one independent, read-only agent; every finding confirmed with a probe before it was reported"
+  },
+  "certification": {
+    "candidate_base_head": "deb97269b17424d628295924e3c142372f77748b",
+    "candidate_changes": 19,
+    "errors": 0,
+    "failures": 0,
+    "fingerprint": "f5579ea52c10b7e7384c1995b5da86f11bbfe8d6a34e496f337f996d9f215c97",
+    "fingerprint_at_the_end": "f5579ea52c10b7e7384c1995b5da86f11bbfe8d6a34e496f337f996d9f215c97",
+    "finished": "2026-11-18T17:26:02Z",
+    "note": "the full suite and the regressions ran ONCE on the candidate's frozen fingerprint (the working tree against the base plus the new files, before this record, the decision rows and the index entry of this record existed). The tree that is published adds only this record, its index entry and pin, the decision rows and the numbers in the document; those, and the tests that read them, were run again on the final tree (reported with the delivery).",
+    "partitions": 24,
+    "regressions_active_passed": 56,
+    "regressions_active_total": 56,
+    "regressions_retired": 10,
+    "resumptions": 0,
+    "skipped": 97,
+    "started": "2026-11-18T15:03:54Z",
+    "tests": 13390,
+    "valid": true,
+    "workers": 4,
+    "xfail": 1
+  },
+  "confirmations": {
+    "common_core_runtime_authority": false,
+    "human_review_not_performed": true,
+    "no_clinical_validation_claim": true,
+    "no_consciousness_authority": true,
+    "no_gi_recalibration": true,
+    "no_norepinephrine_authority_expansion": true,
+    "no_parameter_selected": true,
+    "no_physiology_change": true,
+    "no_resident_deployment": true,
+    "no_source_control": true,
+    "no_terminal_authority": true,
+    "no_witness_substituted": true
+  },
+  "decision_reference": "FD-TONEREV-01 to FD-TONEREV-07",
+  "evidence_class": "MODEL_ANALYSIS",
+  "facts": {
+    "excluded": [
+      {
+        "case_id": "opioid_35m",
+        "reason": "the exact certified trajectory can be generated and equals the stored probe, but it is not clinically meaningful for this question: the authored patient is normotensive (arrival 106/64 mmHg) and the case is a respiratory-depression physiology, so a vasopressor order has no indication and judging its pressure response would ask the reviewer about a response nobody would elicit",
+        "scenario": "opioid"
+      },
+      {
+        "case_id": "asthma_49m",
+        "reason": "the exact certified trajectory can be generated and equals the stored probe, but it is not clinically meaningful for this question: the authored patient is already hypertensive (arrival 142/86 mmHg) and the case is a respiratory-failure physiology, so a vasopressor order has no indication and judging its pressure response would ask the reviewer about a response nobody would elicit",
+        "scenario": "asthma"
+      }
+    ],
+    "limitations_shown_only_in_the_final_summary": [
+      "COMMON_TONE_PUMP_DEPENDENCE_NOT_YET_VALIDATED",
+      "CONSCIOUSNESS_UNDER_TONE_UNRESOLVED",
+      "TITRATION_AND_STOP_NOT_SUPPORTED"
+    ],
+    "optional_included": [],
+    "order": [
+      "FR-F",
+      "SYNTH",
+      "ACS",
+      "PULM-EDEMA",
+      "PE"
+    ],
+    "sensitivity_offered": [
+      "FR-F",
+      "SYNTH",
+      "ACS",
+      "PULM-EDEMA",
+      "PE"
+    ],
+    "sensitivity_rule": {
+      "declared": "before any trajectory was looked at",
+      "map_span_mmhg": 10,
+      "meaning": "offered only where the pressure at the last minute, or the highest systolic pressure, differs by at least this much between the LOW and the HIGH setting",
+      "sbp_span_mmhg": 15
+    },
+    "set_id": "COMMON_TONE_V1_MULTIFAMILY_FACULTY_REVIEW",
+    "set_record_digest": "22ed59069e441aca96939ccf359ceec00a8bd55ddc0b182ff7bbcfcdd6e91487",
+    "witness": "CENTER_REFERENCE"
+  },
+  "limitations": [
+    "the human review has not been done",
+    "the pulmonary-edema case is hypertensive (218/116 mmHg) and the order takes it to 260/138 mmHg: kept because the assignment requires it, flagged for the reviewer",
+    "heart rate and capillary refill are not shown (not recomputed)",
+    "the launcher offers only this review until its five scenarios are submitted and verified (MRS_FACULTY_TONE_GATE=off releases it for the operator); the re-review hold (FD-REREVIEW-21) keeps its precedence and still withholds this mode while the account's re-review is incomplete in its own store",
+    "the set record has no signature (the same limit as TD-153 item 7)"
+  ],
+  "next_human_action": "A faculty reviewer performs the five-scenario review (about 20 minutes) and, optionally, the sensitivity check; a faculty decision then follows the interpretation guidance of FD-TONEREV-06. Nothing else is to be done until then.",
+  "open_faculty_decisions": [
+    "the result of the human review",
+    "whether the tone mode should also be offered while the re-review is incomplete (TD-156 item 5)",
+    "whether opioid and asthma are wanted as a variant of the set",
+    "whether a pump-dependent afterload sensitivity is needed before any educational use of a vasopressor (COMMON_TONE_PUMP_DEPENDENCE_NOT_YET_VALIDATED)"
+  ],
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-18",
+    "generating_code": {
+      "clinical_core": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "set_record_digest": "22ed59069e441aca96939ccf359ceec00a8bd55ddc0b182ff7bbcfcdd6e91487",
+      "test_tone_review_analysis.py": "27257888844ca6208dbaa44aef368039427de5a51411104027bdb6b774586424"
+    },
+    "generating_code_fingerprint": "c3d7a034657a92a232a1f4e31d00314ed77ee29cfb587fd7a5dc137366559cf0",
+    "grant_id": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V3",
+    "record_id": "COMMON_TONE_V1_MULTIFAMILY_REVIEW_CHECKPOINT_V1",
+    "record_schema_version": 1,
+    "source_data_digest": "1093933c767c85afa8ef8d55cdb8c8567be18a190e92f520aeb92f135f2d82a4",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "record_digest": "cce4df48c44208a2f0b3d1dcd8beb51d59939476ba4bf0eb79cbf1a9824a03cb",
+  "record_type": "COMMON_TONE_MULTIFAMILY_REVIEW_CHECKPOINT",
+  "sequence": [
+    {
+      "id": "P3-402",
+      "outcome": "every trajectory is the certified source's: FR-F is the stored record's rows (not recomputed); the family and synthetic trajectories are regenerated with the certified calls and EQUAL to the stored values",
+      "what": "source audit"
+    },
+    {
+      "id": "P3-403",
+      "outcome": "five REQUIRED scenarios included; opioid and asthma EXCLUDED (exact trajectory exists; a vasopressor has no indication)",
+      "what": "selection"
+    },
+    {
+      "id": "P3-404",
+      "outcome": "COMMON_TONE_V1_MULTIFAMILY_FACULTY_REVIEW; versioned, sealed, indexed, digest pinned in code",
+      "what": "review identity"
+    },
+    {
+      "id": "P3-405",
+      "outcome": "CENTER_REFERENCE only, exact certified values; LOW and HIGH stored apart; nothing of the mechanism stored with the items",
+      "what": "data"
+    },
+    {
+      "id": "P3-406",
+      "outcome": "the existing review, same design; lands directly; one scenario at a time; Q1-Q5, lock, overall, submit and next",
+      "what": "UI"
+    },
+    {
+      "id": "P3-407",
+      "outcome": "autosave, refresh restores, lock final, one record per scenario; the log carries the set digest",
+      "what": "persistence"
+    },
+    {
+      "id": "P3-408",
+      "outcome": "only after the fifth VERIFIED submit; LOW/CENTER/HIGH on the same axes; one question per scenario; never required",
+      "what": "optional sensitivity"
+    },
+    {
+      "id": "P3-409",
+      "outcome": "REVIEW COMPLETE, counts, table, limitations shown only here",
+      "what": "summary"
+    },
+    {
+      "id": "P3-410",
+      "outcome": "no leak in any first-pass screen, element, chart, key or file read; the other review modes are held until the review is complete (finding 1 of the adversarial review)",
+      "what": "blindness audit"
+    },
+    {
+      "id": "P3-411",
+      "outcome": "real browser at 1366x768 and 1440x900: no horizontal scroll; context, chart, table and questions reachable by scrolling",
+      "what": "screenshot usability"
+    },
+    {
+      "id": "P3-412",
+      "outcome": "module, page (real app) and records tests; earlier mode tests adapted declaredly",
+      "what": "focused tests"
+    },
+    {
+      "id": "P3-413",
+      "outcome": "full suite 13390 tests, 0 failures, 0 errors; regressions 56/56 active, 10 retired, on one frozen fingerprint",
+      "what": "certification"
+    },
+    {
+      "id": "P3-414",
+      "outcome": "B: CORE_SCENARIOS_READY_BUT_OPTIONAL_SCENARIOS_EXCLUDED",
+      "what": "checkpoint"
+    }
+  ],
+  "statement": "The multifamily faculty review of the common vascular tone / norepinephrine pathway is ready for a human reviewer: five scenarios (FR-F, the synthetic low-tone probe, ACS, pulmonary edema, pulmonary embolism) with the CENTER_REFERENCE trajectories exactly as the certified records hold them, the faculty's own questions, the lock, the overall judgment, an optional sensitivity check that exists only after the fifth submit, and a final summary that states the limitations. The two optional scenarios (opioid, asthma) were excluded on purpose. The human review has NOT been done; nothing about physiology, parameters, trajectories or authority changed.",
+  "verdict": "B",
+  "verdict_name": "CORE_SCENARIOS_READY_BUT_OPTIONAL_SCENARIOS_EXCLUDED",
+  "verdicts": {
+    "A": "MULTIFAMILY_TONE_REVIEW_READY_FOR_HUMAN_USE",
+    "B": "CORE_SCENARIOS_READY_BUT_OPTIONAL_SCENARIOS_EXCLUDED",
+    "C": "REVIEW_UI_READY_BUT_PERSISTENCE_NOT_CERTIFIED",
+    "D": "BLINDNESS_LEAK_FOUND",
+    "E": "CANDIDATE_SOURCE_MISMATCH"
+  },
+  "version": "COMMON_TONE_V1_MULTIFAMILY_REVIEW_CHECKPOINT_V1",
+  "why_not_the_others": {
+    "A": "the optional scenarios are not part of the set: their exact certified trajectories exist but a vasopressor has no indication in a normotensive or hypertensive respiratory-failure patient, so judging them would not be meaningful",
+    "C": "persistence is certified: the lock is final, a refresh restores progress, one record per scenario, a forged or altered log is unreadable and the optional answers autosave in their own log",
+    "D": "no first-pass screen, element, chart, session key, file read or forged route carried another setting, a parameter, the configuration, an earlier trajectory or judgment, the comparator, heart rate, capillary refill or a limitation",
+    "E": "every scenario equals its certified source: FR-F is the stored record's rows, the others are regenerated with the certified calls and equal the stored values"
+  }
+}

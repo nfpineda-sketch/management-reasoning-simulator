@@ -1,0 +1,3509 @@
+{
+  "audit": {
+    "decision_reference": "FD-TONE-01 to FD-TONE-12 (the pathway); the faculty request of 2026-11-18 (the review)",
+    "no_parameter_selected": true,
+    "no_physiology_change": true,
+    "no_witness_substituted": true,
+    "not_stored_with_the_items": [
+      "heart rate and capillary refill are not recomputed for these trajectories and are not stored with them",
+      "the tone state, flow, oxygen delivery, oxygen debt, consciousness and collapse state are model state: they are not stored with the items and never drawn"
+    ],
+    "selection": {
+      "excluded": [
+        {
+          "arrival_pressure": "106/64 mmHg",
+          "case_id": "opioid_35m",
+          "reason": "the exact certified trajectory can be generated and equals the stored probe, but it is not clinically meaningful for this question: the authored patient is normotensive (arrival 106/64 mmHg) and the case is a respiratory-depression physiology, so a vasopressor order has no indication and judging its pressure response would ask the reviewer about a response nobody would elicit",
+          "reproduced_exactly_from_the_certified_call": true,
+          "scenario": "opioid",
+          "status": "EXCLUDED"
+        },
+        {
+          "arrival_pressure": "142/86 mmHg",
+          "case_id": "asthma_49m",
+          "reason": "the exact certified trajectory can be generated and equals the stored probe, but it is not clinically meaningful for this question: the authored patient is already hypertensive (arrival 142/86 mmHg) and the case is a respiratory-failure physiology, so a vasopressor order has no indication and judging its pressure response would ask the reviewer about a response nobody would elicit",
+          "reproduced_exactly_from_the_certified_call": true,
+          "scenario": "asthma",
+          "status": "EXCLUDED"
+        }
+      ],
+      "optional_included": [],
+      "required": [
+        "FR-F",
+        "SYNTH",
+        "ACS",
+        "PULM-EDEMA",
+        "PE"
+      ]
+    },
+    "sensitivity_rule": {
+      "declared": "before any trajectory was looked at",
+      "map_span_mmhg": 10,
+      "meaning": "offered only where the pressure at the last minute, or the highest systolic pressure, differs by at least this much between the LOW and the HIGH setting",
+      "sbp_span_mmhg": 15
+    },
+    "sources": {
+      "ACS": {
+        "case_id": "acs_70f_left_main",
+        "case_id_equals_stored": true,
+        "causal_facts_equal_stored": true,
+        "family": "acs",
+        "first_point_is_the_authored_arrival": true,
+        "high_observed_equals_stored": true,
+        "low_observed_equals_stored": true,
+        "no_gap_and_no_failure": true,
+        "observed_equals_stored": true,
+        "recomputed": true,
+        "recomputed_with_the_certified_call_and_equal_to_the_stored_record": true,
+        "replays_exactly": true,
+        "source_file_sha256": "6289c21e761c034e900e192f57ba217c3956e86a76ae35ac9425881370010ab3",
+        "source_record": "docs/revision/PHASE3_COMMON_TONE_PROBES.json",
+        "source_record_digest": "0503574262a9786be20325f24a5f76f6190fe1a42fc08edba36920ed51d17004",
+        "source_record_id": "COMMON_TONE_PROBES_V1",
+        "stored_run_replays_exactly": true,
+        "taken_from": "the certified harness call (test_tone_pathway_analysis.shadow_run: the family's registered mapping plus the declared reader, witness CENTER_REFERENCE, a start at 10 mcg/min at minute 5, read to minute 30), the call the stored family probe used",
+        "the_order_is_built": true,
+        "unmapped_reference_equals_stored": true
+      },
+      "FR-F": {
+        "displayed_pressure_at_the_reassessments_equals_the_stored_ones": true,
+        "first_point_is_the_authored_arrival": true,
+        "order_in_the_record": {
+          "operation": "start",
+          "rate": 10.0,
+          "type": "norepinephrine",
+          "units": "mcg/min"
+        },
+        "order_minute_in_the_record": 2,
+        "reassessment_minutes": [
+          2,
+          7,
+          17,
+          32
+        ],
+        "recomputed": false,
+        "source_file_sha256": "1178c5fee9908f838d85539d4e29fc89ca367b0f322fbc1dd8e33bf4ef8f6091",
+        "source_record": "docs/revision/PHASE3_FRF_TONE_V1_CANDIDATE.json",
+        "source_record_digest": "1d01730a69912f727046e310849927d40258e89103e0a354a2e3062586d568bd",
+        "source_record_id": "FR-F_TONE_V1_CANDIDATE",
+        "taken_from": "witnesses.CENTER_REFERENCE.per_minute, minutes 0 to 32, unchanged (nothing recomputed)",
+        "the_order_minute_and_rate_shown_are_the_record_s": true
+      },
+      "PE": {
+        "case_id": "pulmonary_embolism_61m",
+        "case_id_equals_stored": true,
+        "causal_facts_equal_stored": true,
+        "family": "pulmonary_embolism",
+        "first_point_is_the_authored_arrival": true,
+        "high_observed_equals_stored": true,
+        "low_observed_equals_stored": true,
+        "no_gap_and_no_failure": true,
+        "observed_equals_stored": true,
+        "recomputed": true,
+        "recomputed_with_the_certified_call_and_equal_to_the_stored_record": true,
+        "replays_exactly": true,
+        "source_file_sha256": "6289c21e761c034e900e192f57ba217c3956e86a76ae35ac9425881370010ab3",
+        "source_record": "docs/revision/PHASE3_COMMON_TONE_PROBES.json",
+        "source_record_digest": "0503574262a9786be20325f24a5f76f6190fe1a42fc08edba36920ed51d17004",
+        "source_record_id": "COMMON_TONE_PROBES_V1",
+        "stored_run_replays_exactly": true,
+        "taken_from": "the certified harness call (test_tone_pathway_analysis.shadow_run: the family's registered mapping plus the declared reader, witness CENTER_REFERENCE, a start at 10 mcg/min at minute 5, read to minute 30), the call the stored family probe used",
+        "the_order_is_built": true,
+        "unmapped_reference_equals_stored": true
+      },
+      "PULM-EDEMA": {
+        "case_id": "pulmonary_edema_58m",
+        "case_id_equals_stored": true,
+        "causal_facts_equal_stored": true,
+        "family": "pulmonary_edema",
+        "first_point_is_the_authored_arrival": true,
+        "high_observed_equals_stored": true,
+        "low_observed_equals_stored": true,
+        "no_gap_and_no_failure": true,
+        "observed_equals_stored": true,
+        "recomputed": true,
+        "recomputed_with_the_certified_call_and_equal_to_the_stored_record": true,
+        "replays_exactly": true,
+        "source_file_sha256": "6289c21e761c034e900e192f57ba217c3956e86a76ae35ac9425881370010ab3",
+        "source_record": "docs/revision/PHASE3_COMMON_TONE_PROBES.json",
+        "source_record_digest": "0503574262a9786be20325f24a5f76f6190fe1a42fc08edba36920ed51d17004",
+        "source_record_id": "COMMON_TONE_PROBES_V1",
+        "stored_run_replays_exactly": true,
+        "taken_from": "the certified harness call (test_tone_pathway_analysis.shadow_run: the family's registered mapping plus the declared reader, witness CENTER_REFERENCE, a start at 10 mcg/min at minute 5, read to minute 30), the call the stored family probe used",
+        "the_order_is_built": true,
+        "unmapped_reference_equals_stored": true
+      },
+      "SYNTH": {
+        "arrival_map_equals_stored": true,
+        "first_point_is_the_synthetic_baseline": true,
+        "map_before_the_order_equals_stored": true,
+        "map_with_support_equals_stored": true,
+        "map_without_support_equals_stored": true,
+        "recomputed": true,
+        "recomputed_with_the_certified_call_and_equal_to_the_stored_record": true,
+        "source_file_sha256": "6289c21e761c034e900e192f57ba217c3956e86a76ae35ac9425881370010ab3",
+        "source_record": "docs/revision/PHASE3_COMMON_TONE_PROBES.json",
+        "source_record_digest": "0503574262a9786be20325f24a5f76f6190fe1a42fc08edba36920ed51d17004",
+        "source_record_id": "COMMON_TONE_PROBES_V1",
+        "synthetic_only": "SYNTHETIC_ONLY: clinical_core.distributive_tone probe anchors and scripted burden; no authored case and no family adapter",
+        "taken_from": "clinical_core.distributive_tone probe anchors and scripted burden (0 to 4 min), norepinephrine 10 mcg/min from minute 10, witness CENTER_REFERENCE, to minute 40: the construction of test_tone_pathway_analysis.core_distributive",
+        "the_whole_stored_probe_is_reproduced": true
+      }
+    },
+    "witness": "CENTER_REFERENCE"
+  },
+  "items": [
+    {
+      "arrival": {
+        "dbp": 54,
+        "map": 65,
+        "rr": 26,
+        "sbp": 88,
+        "spo2": 97
+      },
+      "banner": "SYNTHETIC DEVELOPMENT CASE",
+      "baseline_facts": [
+        "Abdomen: Mild epigastric tenderness without guarding. Rectal examination reveals black tarry stool.",
+        "Bedside ultrasound, left ventricle: Small cavity with hyperdynamic contraction; near-obliteration of the cavity in systole",
+        "Bedside ultrasound, inferior vena cava: 0.9 cm; near-complete inspiratory collapse",
+        "Hemoglobin 6.7 g/dL"
+      ],
+      "common": [
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 0,
+          "sbp": 88
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 1,
+          "sbp": 88
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 2,
+          "sbp": 87
+        },
+        {
+          "dbp": 53,
+          "map": 64,
+          "minute": 3,
+          "sbp": 87
+        },
+        {
+          "dbp": 60,
+          "map": 73,
+          "minute": 4,
+          "sbp": 98
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 5,
+          "sbp": 101
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 6,
+          "sbp": 102
+        },
+        {
+          "dbp": 63,
+          "map": 76,
+          "minute": 7,
+          "sbp": 102
+        },
+        {
+          "dbp": 63,
+          "map": 76,
+          "minute": 8,
+          "sbp": 102
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 9,
+          "sbp": 102
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 10,
+          "sbp": 101
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 11,
+          "sbp": 101
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 12,
+          "sbp": 101
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 13,
+          "sbp": 100
+        },
+        {
+          "dbp": 61,
+          "map": 74,
+          "minute": 14,
+          "sbp": 100
+        },
+        {
+          "dbp": 61,
+          "map": 74,
+          "minute": 15,
+          "sbp": 100
+        },
+        {
+          "dbp": 61,
+          "map": 74,
+          "minute": 16,
+          "sbp": 99
+        },
+        {
+          "dbp": 61,
+          "map": 74,
+          "minute": 17,
+          "sbp": 99
+        },
+        {
+          "dbp": 61,
+          "map": 74,
+          "minute": 18,
+          "sbp": 99
+        },
+        {
+          "dbp": 60,
+          "map": 73,
+          "minute": 19,
+          "sbp": 98
+        },
+        {
+          "dbp": 60,
+          "map": 73,
+          "minute": 20,
+          "sbp": 98
+        },
+        {
+          "dbp": 60,
+          "map": 73,
+          "minute": 21,
+          "sbp": 98
+        },
+        {
+          "dbp": 60,
+          "map": 72,
+          "minute": 22,
+          "sbp": 97
+        },
+        {
+          "dbp": 60,
+          "map": 72,
+          "minute": 23,
+          "sbp": 97
+        },
+        {
+          "dbp": 59,
+          "map": 72,
+          "minute": 24,
+          "sbp": 97
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 25,
+          "sbp": 96
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 26,
+          "sbp": 96
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 27,
+          "sbp": 96
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 28,
+          "sbp": 95
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 29,
+          "sbp": 95
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 30,
+          "sbp": 95
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 31,
+          "sbp": 94
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 32,
+          "sbp": 94
+        }
+      ],
+      "context": "A 57-year-old man presents after nearly fainting when standing. He looks pale and says he feels profoundly weak. Authored diagnosis: Upper gastrointestinal bleeding with hemorrhagic hypoperfusion.",
+      "intervention": "Norepinephrine 10 mcg/min, started at minute 2 and kept at that rate to the end. Nothing else is given or changed; the underlying problem is left untreated.",
+      "kind": "AUTHORED_CASE",
+      "note": "An authored synthetic case for development, not a patient.",
+      "purpose": "Does norepinephrine produce a pressure response with an appropriate direction, timing, and magnitude in this patient with ongoing hemorrhage, without implying that vasopressor support corrects the underlying volume loss?",
+      "required": true,
+      "scenario_id": "FR-F",
+      "short": "GI hemorrhage",
+      "stopped": false,
+      "table_minutes": [
+        0,
+        2,
+        4,
+        7,
+        12,
+        17,
+        24,
+        32
+      ],
+      "timeline": [
+        {
+          "action": "Start norepinephrine 10 mcg/min",
+          "advance": 30,
+          "executed": true,
+          "intervention": true,
+          "minute": 2,
+          "n": 1,
+          "result": "Infusion kept at 10 mcg/min to minute 32 (no titration, no stop)"
+        }
+      ],
+      "title": "57-year-old man with an upper gastrointestinal bleed: norepinephrine during ongoing hemorrhage"
+    },
+    {
+      "arrival": {
+        "dbp": 75,
+        "map": 90,
+        "rr": null,
+        "sbp": 120,
+        "spo2": null
+      },
+      "banner": "SYNTHETIC DEVELOPMENT PHYSIOLOGY PROBE",
+      "baseline_facts": [
+        "The heart and the circulating volume are not changed during the probe.",
+        "There is no patient, no history and no examination: this is a physiology probe."
+      ],
+      "common": [
+        {
+          "dbp": 75,
+          "map": 90,
+          "minute": 0,
+          "sbp": 120
+        },
+        {
+          "dbp": 75,
+          "map": 90,
+          "minute": 1,
+          "sbp": 120
+        },
+        {
+          "dbp": 64,
+          "map": 77,
+          "minute": 2,
+          "sbp": 102
+        },
+        {
+          "dbp": 56,
+          "map": 67,
+          "minute": 3,
+          "sbp": 89
+        },
+        {
+          "dbp": 49,
+          "map": 59,
+          "minute": 4,
+          "sbp": 79
+        },
+        {
+          "dbp": 44,
+          "map": 53,
+          "minute": 5,
+          "sbp": 71
+        },
+        {
+          "dbp": 44,
+          "map": 53,
+          "minute": 6,
+          "sbp": 71
+        },
+        {
+          "dbp": 44,
+          "map": 53,
+          "minute": 7,
+          "sbp": 71
+        },
+        {
+          "dbp": 44,
+          "map": 53,
+          "minute": 8,
+          "sbp": 71
+        },
+        {
+          "dbp": 44,
+          "map": 53,
+          "minute": 9,
+          "sbp": 71
+        },
+        {
+          "dbp": 44,
+          "map": 53,
+          "minute": 10,
+          "sbp": 71
+        },
+        {
+          "dbp": 44,
+          "map": 53,
+          "minute": 11,
+          "sbp": 71
+        },
+        {
+          "dbp": 51,
+          "map": 61,
+          "minute": 12,
+          "sbp": 82
+        },
+        {
+          "dbp": 53,
+          "map": 64,
+          "minute": 13,
+          "sbp": 85
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 14,
+          "sbp": 86
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 15,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 16,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 17,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 18,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 19,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 20,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 21,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 22,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 23,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 24,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 25,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 26,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 27,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 28,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 29,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 30,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 31,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 32,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 33,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 34,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 35,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 36,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 37,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 38,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 39,
+          "sbp": 87
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 40,
+          "sbp": 87
+        }
+      ],
+      "context": "A synthetic state, not a patient: vascular tone falls over the first 4 minutes (a scripted loss of tone) while the heart and the circulating volume are unchanged. The pressure before the fall is 120/75 mmHg (MAP 90).",
+      "intervention": "Norepinephrine 10 mcg/min, started at minute 10 and kept at that rate to the end. Nothing else is given or changed.",
+      "kind": "SYNTHETIC_PROBE",
+      "note": "This is a synthetic development physiology probe, not a clinical case.",
+      "purpose": "Does vascular-tone support move pressure toward a more plausible state without creating flow or volume?",
+      "required": true,
+      "scenario_id": "SYNTH",
+      "short": "Low-tone probe",
+      "stopped": false,
+      "table_minutes": [
+        0,
+        4,
+        10,
+        12,
+        14,
+        20,
+        30,
+        40
+      ],
+      "timeline": [
+        {
+          "action": "Start norepinephrine 10 mcg/min",
+          "advance": 30,
+          "executed": true,
+          "intervention": true,
+          "minute": 10,
+          "n": 1,
+          "result": "Infusion kept at 10 mcg/min to minute 40 (no titration, no stop)"
+        }
+      ],
+      "title": "SYNTHETIC DEVELOPMENT PHYSIOLOGY PROBE: loss of vascular tone, then norepinephrine"
+    },
+    {
+      "arrival": {
+        "dbp": 66,
+        "map": 79,
+        "rr": 26,
+        "sbp": 104,
+        "spo2": 94
+      },
+      "banner": "SYNTHETIC DEVELOPMENT CASE",
+      "baseline_facts": [
+        "Respiratory: Mildly increased effort; scattered basal crackles.",
+        "Bedside ultrasound, left ventricle: Globally mildly reduced contraction without a single focal defect",
+        "Bedside ultrasound, inferior vena cava: 1.9 cm; about 50% inspiratory collapse",
+        "Bedside ultrasound, lungs: Scattered B-lines at both bases; no diffuse B-line pattern"
+      ],
+      "common": [
+        {
+          "dbp": 66,
+          "map": 79,
+          "minute": 0,
+          "sbp": 104
+        },
+        {
+          "dbp": 66,
+          "map": 79,
+          "minute": 1,
+          "sbp": 104
+        },
+        {
+          "dbp": 66,
+          "map": 79,
+          "minute": 2,
+          "sbp": 104
+        },
+        {
+          "dbp": 66,
+          "map": 79,
+          "minute": 3,
+          "sbp": 104
+        },
+        {
+          "dbp": 66,
+          "map": 78,
+          "minute": 4,
+          "sbp": 103
+        },
+        {
+          "dbp": 66,
+          "map": 78,
+          "minute": 5,
+          "sbp": 103
+        },
+        {
+          "dbp": 66,
+          "map": 78,
+          "minute": 6,
+          "sbp": 103
+        },
+        {
+          "dbp": 74,
+          "map": 88,
+          "minute": 7,
+          "sbp": 116
+        },
+        {
+          "dbp": 77,
+          "map": 92,
+          "minute": 8,
+          "sbp": 122
+        },
+        {
+          "dbp": 78,
+          "map": 93,
+          "minute": 9,
+          "sbp": 124
+        },
+        {
+          "dbp": 79,
+          "map": 94,
+          "minute": 10,
+          "sbp": 124
+        },
+        {
+          "dbp": 79,
+          "map": 94,
+          "minute": 11,
+          "sbp": 125
+        },
+        {
+          "dbp": 79,
+          "map": 94,
+          "minute": 12,
+          "sbp": 125
+        },
+        {
+          "dbp": 79,
+          "map": 94,
+          "minute": 13,
+          "sbp": 125
+        },
+        {
+          "dbp": 79,
+          "map": 94,
+          "minute": 14,
+          "sbp": 125
+        },
+        {
+          "dbp": 79,
+          "map": 94,
+          "minute": 15,
+          "sbp": 124
+        },
+        {
+          "dbp": 79,
+          "map": 94,
+          "minute": 16,
+          "sbp": 124
+        },
+        {
+          "dbp": 79,
+          "map": 94,
+          "minute": 17,
+          "sbp": 124
+        },
+        {
+          "dbp": 79,
+          "map": 94,
+          "minute": 18,
+          "sbp": 124
+        },
+        {
+          "dbp": 79,
+          "map": 94,
+          "minute": 19,
+          "sbp": 124
+        },
+        {
+          "dbp": 79,
+          "map": 94,
+          "minute": 20,
+          "sbp": 124
+        },
+        {
+          "dbp": 78,
+          "map": 93,
+          "minute": 21,
+          "sbp": 124
+        },
+        {
+          "dbp": 78,
+          "map": 93,
+          "minute": 22,
+          "sbp": 123
+        },
+        {
+          "dbp": 78,
+          "map": 93,
+          "minute": 23,
+          "sbp": 123
+        },
+        {
+          "dbp": 78,
+          "map": 93,
+          "minute": 24,
+          "sbp": 123
+        },
+        {
+          "dbp": 78,
+          "map": 93,
+          "minute": 25,
+          "sbp": 123
+        },
+        {
+          "dbp": 78,
+          "map": 93,
+          "minute": 26,
+          "sbp": 123
+        },
+        {
+          "dbp": 78,
+          "map": 93,
+          "minute": 27,
+          "sbp": 123
+        },
+        {
+          "dbp": 78,
+          "map": 93,
+          "minute": 28,
+          "sbp": 122
+        },
+        {
+          "dbp": 78,
+          "map": 93,
+          "minute": 29,
+          "sbp": 122
+        },
+        {
+          "dbp": 77,
+          "map": 92,
+          "minute": 30,
+          "sbp": 122
+        }
+      ],
+      "context": "A 70-year-old woman presents with chest pressure, breathlessness and sweating that began an hour ago. Authored diagnosis: Left main or severe three-vessel ischemia with diffuse ST depression and ST elevation in aVR.",
+      "intervention": "Norepinephrine 10 mcg/min, started at minute 5 and kept at that rate to the end. Nothing else is given or changed; the underlying problem is left untreated.",
+      "kind": "AUTHORED_CASE",
+      "note": "An authored synthetic case for development, not a patient.",
+      "purpose": "Does the pressure response to norepinephrine remain clinically defensible in a patient whose forward flow is limited, without implying that vasoconstriction corrects pump failure?",
+      "required": true,
+      "scenario_id": "ACS",
+      "short": "ACS",
+      "stopped": false,
+      "table_minutes": [
+        0,
+        5,
+        7,
+        10,
+        15,
+        20,
+        25,
+        30
+      ],
+      "timeline": [
+        {
+          "action": "Start norepinephrine 10 mcg/min",
+          "advance": 25,
+          "executed": true,
+          "intervention": true,
+          "minute": 5,
+          "n": 1,
+          "result": "Infusion kept at 10 mcg/min to minute 30 (no titration, no stop)"
+        }
+      ],
+      "title": "70-year-old woman with a left main acute coronary syndrome: norepinephrine with limited forward flow"
+    },
+    {
+      "arrival": {
+        "dbp": 116,
+        "map": 150,
+        "rr": 38,
+        "sbp": 218,
+        "spo2": 81
+      },
+      "banner": "SYNTHETIC DEVELOPMENT CASE",
+      "baseline_facts": [
+        "Respiratory: Severe respiratory effort with widespread bilateral crackles and some expiratory wheeze.",
+        "Bedside ultrasound, left ventricle: Moderately reduced global contraction",
+        "Bedside ultrasound, inferior vena cava: 2.4 cm; <50% inspiratory collapse",
+        "Bedside ultrasound, lungs: Diffuse bilateral B-lines in the anterior and lateral zones"
+      ],
+      "common": [
+        {
+          "dbp": 116,
+          "map": 150,
+          "minute": 0,
+          "sbp": 218
+        },
+        {
+          "dbp": 116,
+          "map": 150,
+          "minute": 1,
+          "sbp": 218
+        },
+        {
+          "dbp": 116,
+          "map": 150,
+          "minute": 2,
+          "sbp": 218
+        },
+        {
+          "dbp": 116,
+          "map": 150,
+          "minute": 3,
+          "sbp": 218
+        },
+        {
+          "dbp": 116,
+          "map": 150,
+          "minute": 4,
+          "sbp": 218
+        },
+        {
+          "dbp": 116,
+          "map": 150,
+          "minute": 5,
+          "sbp": 218
+        },
+        {
+          "dbp": 116,
+          "map": 150,
+          "minute": 6,
+          "sbp": 218
+        },
+        {
+          "dbp": 131,
+          "map": 169,
+          "minute": 7,
+          "sbp": 246
+        },
+        {
+          "dbp": 135,
+          "map": 175,
+          "minute": 8,
+          "sbp": 254
+        },
+        {
+          "dbp": 137,
+          "map": 177,
+          "minute": 9,
+          "sbp": 257
+        },
+        {
+          "dbp": 138,
+          "map": 178,
+          "minute": 10,
+          "sbp": 259
+        },
+        {
+          "dbp": 138,
+          "map": 178,
+          "minute": 11,
+          "sbp": 259
+        },
+        {
+          "dbp": 138,
+          "map": 179,
+          "minute": 12,
+          "sbp": 260
+        },
+        {
+          "dbp": 138,
+          "map": 179,
+          "minute": 13,
+          "sbp": 260
+        },
+        {
+          "dbp": 138,
+          "map": 179,
+          "minute": 14,
+          "sbp": 260
+        },
+        {
+          "dbp": 138,
+          "map": 179,
+          "minute": 15,
+          "sbp": 260
+        },
+        {
+          "dbp": 138,
+          "map": 179,
+          "minute": 16,
+          "sbp": 260
+        },
+        {
+          "dbp": 138,
+          "map": 179,
+          "minute": 17,
+          "sbp": 260
+        },
+        {
+          "dbp": 138,
+          "map": 179,
+          "minute": 18,
+          "sbp": 260
+        },
+        {
+          "dbp": 138,
+          "map": 179,
+          "minute": 19,
+          "sbp": 260
+        },
+        {
+          "dbp": 138,
+          "map": 179,
+          "minute": 20,
+          "sbp": 260
+        },
+        {
+          "dbp": 138,
+          "map": 179,
+          "minute": 21,
+          "sbp": 260
+        },
+        {
+          "dbp": 138,
+          "map": 179,
+          "minute": 22,
+          "sbp": 260
+        },
+        {
+          "dbp": 138,
+          "map": 179,
+          "minute": 23,
+          "sbp": 260
+        },
+        {
+          "dbp": 138,
+          "map": 179,
+          "minute": 24,
+          "sbp": 260
+        },
+        {
+          "dbp": 138,
+          "map": 179,
+          "minute": 25,
+          "sbp": 260
+        },
+        {
+          "dbp": 138,
+          "map": 179,
+          "minute": 26,
+          "sbp": 260
+        },
+        {
+          "dbp": 138,
+          "map": 179,
+          "minute": 27,
+          "sbp": 260
+        },
+        {
+          "dbp": 138,
+          "map": 179,
+          "minute": 28,
+          "sbp": 260
+        },
+        {
+          "dbp": 138,
+          "map": 179,
+          "minute": 29,
+          "sbp": 260
+        },
+        {
+          "dbp": 138,
+          "map": 179,
+          "minute": 30,
+          "sbp": 260
+        }
+      ],
+      "context": "A 58-year-old man arrives with rapidly worsening breathlessness. He remains upright and can speak only a few words at a time. Authored diagnosis: Hypertensive acute cardiogenic pulmonary edema.",
+      "intervention": "Norepinephrine 10 mcg/min, started at minute 5 and kept at that rate to the end. Nothing else is given or changed; the underlying problem is left untreated.",
+      "kind": "AUTHORED_CASE",
+      "note": "An authored synthetic case for development, not a patient.",
+      "purpose": "Does norepinephrine produce a pressure response that is directionally plausible without overstating benefit in a congested, pump-limited patient?",
+      "required": true,
+      "scenario_id": "PULM-EDEMA",
+      "short": "Pulm. edema",
+      "stopped": false,
+      "table_minutes": [
+        0,
+        5,
+        7,
+        10,
+        15,
+        20,
+        25,
+        30
+      ],
+      "timeline": [
+        {
+          "action": "Start norepinephrine 10 mcg/min",
+          "advance": 25,
+          "executed": true,
+          "intervention": true,
+          "minute": 5,
+          "n": 1,
+          "result": "Infusion kept at 10 mcg/min to minute 30 (no titration, no stop)"
+        }
+      ],
+      "title": "58-year-old man with hypertensive pulmonary edema: norepinephrine in a congested, pump-limited patient"
+    },
+    {
+      "arrival": {
+        "dbp": 54,
+        "map": 65,
+        "rr": 32,
+        "sbp": 86,
+        "spo2": 88
+      },
+      "banner": "SYNTHETIC DEVELOPMENT CASE",
+      "baseline_facts": [
+        "Bedside ultrasound, right ventricle: Larger than the LV; septal flattening with a D-shaped LV; reduced free-wall contraction with apical sparing (McConnell sign)",
+        "Bedside ultrasound, left ventricle: Small, underfilled cavity with vigorous contraction",
+        "Bedside ultrasound, inferior vena cava: 2.3 cm; minimal inspiratory collapse",
+        "Extremities: Left calf swelling and tenderness."
+      ],
+      "common": [
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 0,
+          "sbp": 86
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 1,
+          "sbp": 86
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 2,
+          "sbp": 86
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 3,
+          "sbp": 86
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 4,
+          "sbp": 86
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 5,
+          "sbp": 86
+        },
+        {
+          "dbp": 54,
+          "map": 64,
+          "minute": 6,
+          "sbp": 85
+        },
+        {
+          "dbp": 61,
+          "map": 73,
+          "minute": 7,
+          "sbp": 96
+        },
+        {
+          "dbp": 63,
+          "map": 76,
+          "minute": 8,
+          "sbp": 101
+        },
+        {
+          "dbp": 64,
+          "map": 77,
+          "minute": 9,
+          "sbp": 102
+        },
+        {
+          "dbp": 65,
+          "map": 78,
+          "minute": 10,
+          "sbp": 103
+        },
+        {
+          "dbp": 65,
+          "map": 78,
+          "minute": 11,
+          "sbp": 103
+        },
+        {
+          "dbp": 65,
+          "map": 78,
+          "minute": 12,
+          "sbp": 103
+        },
+        {
+          "dbp": 65,
+          "map": 78,
+          "minute": 13,
+          "sbp": 103
+        },
+        {
+          "dbp": 65,
+          "map": 78,
+          "minute": 14,
+          "sbp": 103
+        },
+        {
+          "dbp": 65,
+          "map": 78,
+          "minute": 15,
+          "sbp": 103
+        },
+        {
+          "dbp": 65,
+          "map": 78,
+          "minute": 16,
+          "sbp": 103
+        },
+        {
+          "dbp": 65,
+          "map": 78,
+          "minute": 17,
+          "sbp": 103
+        },
+        {
+          "dbp": 65,
+          "map": 78,
+          "minute": 18,
+          "sbp": 103
+        },
+        {
+          "dbp": 65,
+          "map": 78,
+          "minute": 19,
+          "sbp": 103
+        },
+        {
+          "dbp": 64,
+          "map": 77,
+          "minute": 20,
+          "sbp": 103
+        },
+        {
+          "dbp": 64,
+          "map": 77,
+          "minute": 21,
+          "sbp": 102
+        },
+        {
+          "dbp": 64,
+          "map": 77,
+          "minute": 22,
+          "sbp": 102
+        },
+        {
+          "dbp": 64,
+          "map": 77,
+          "minute": 23,
+          "sbp": 102
+        },
+        {
+          "dbp": 64,
+          "map": 77,
+          "minute": 24,
+          "sbp": 102
+        },
+        {
+          "dbp": 64,
+          "map": 77,
+          "minute": 25,
+          "sbp": 102
+        },
+        {
+          "dbp": 64,
+          "map": 77,
+          "minute": 26,
+          "sbp": 102
+        },
+        {
+          "dbp": 64,
+          "map": 77,
+          "minute": 27,
+          "sbp": 102
+        },
+        {
+          "dbp": 64,
+          "map": 77,
+          "minute": 28,
+          "sbp": 102
+        },
+        {
+          "dbp": 64,
+          "map": 77,
+          "minute": 29,
+          "sbp": 102
+        },
+        {
+          "dbp": 64,
+          "map": 76,
+          "minute": 30,
+          "sbp": 101
+        }
+      ],
+      "context": "A 61-year-old man is brought in after nearly collapsing. He is breathless and says he feels faint even while lying on the trolley. Authored diagnosis: High-risk pulmonary embolism with obstructive shock.",
+      "intervention": "Norepinephrine 10 mcg/min, started at minute 5 and kept at that rate to the end. Nothing else is given or changed; the underlying problem is left untreated.",
+      "kind": "AUTHORED_CASE",
+      "note": "An authored synthetic case for development, not a patient.",
+      "purpose": "Does norepinephrine produce a plausible pressure response in an obstructive low-flow state without implying correction of the underlying obstruction?",
+      "required": true,
+      "scenario_id": "PE",
+      "short": "Pulm. embolism",
+      "stopped": false,
+      "table_minutes": [
+        0,
+        5,
+        7,
+        10,
+        15,
+        20,
+        25,
+        30
+      ],
+      "timeline": [
+        {
+          "action": "Start norepinephrine 10 mcg/min",
+          "advance": 25,
+          "executed": true,
+          "intervention": true,
+          "minute": 5,
+          "n": 1,
+          "result": "Infusion kept at 10 mcg/min to minute 30 (no titration, no stop)"
+        }
+      ],
+      "title": "61-year-old man with a high-risk pulmonary embolism: norepinephrine in an obstructive low-flow state"
+    }
+  ],
+  "limitations": [
+    {
+      "id": "COMMON_TONE_PUMP_DEPENDENCE_NOT_YET_VALIDATED",
+      "text": "How strongly the pressure response depends on the state of the pump is not yet validated. The ACS and pulmonary-edema judgments inform whether the pathway is acceptable for development; they do not support educational promotion."
+    },
+    {
+      "id": "CONSCIOUSNESS_UNDER_TONE_UNRESOLVED",
+      "text": "Consciousness under vascular-tone support was neither shown nor judged in this review. It remains unresolved."
+    },
+    {
+      "id": "TITRATION_AND_STOP_NOT_SUPPORTED",
+      "text": "Only a single start of norepinephrine at a fixed rate is represented. Titration, rate changes and stopping the infusion are not supported."
+    }
+  ],
+  "order": [
+    "FR-F",
+    "SYNTH",
+    "ACS",
+    "PULM-EDEMA",
+    "PE"
+  ],
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-18",
+    "generating_code": {
+      "application_module_count": 316,
+      "application_modules": "c133674d8bf40349e085d55a27c9798ef0ce17903616a21efa011d0fabdcf9e3",
+      "clinical_core": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "excluded_review_modules": [
+        "faculty_tone_review.py",
+        "faculty_tone_review_ui.py"
+      ],
+      "test_tone_pathway_analysis.py": "ba48e1600752029ecb6b38bbb75c99db3ade6b96313d0b8aa2f18d6ea6e032b6",
+      "test_tone_review_analysis.py": "27257888844ca6208dbaa44aef368039427de5a51411104027bdb6b774586424"
+    },
+    "generating_code_fingerprint": "db9972365bce851746c09b275683093296a93d5071c77468004fef076f0dd5c6",
+    "grant_id": null,
+    "record_id": "COMMON_TONE_V1_MULTIFAMILY_FACULTY_REVIEW",
+    "record_schema_version": 1,
+    "source_data_digest": "56577e71c5afb62c7188fdc792b025c566e0840de06b5f3031a17d4960c1078e",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "record_digest": "22ed59069e441aca96939ccf359ceec00a8bd55ddc0b182ff7bbcfcdd6e91487",
+  "record_type": "PHASE3_COMMON_TONE_MULTIFAMILY_REVIEW_SET",
+  "sensitivity": {
+    "scenarios": [
+      {
+        "material": true,
+        "points": {
+          "HIGH": [
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 0,
+              "sbp": 88
+            },
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 1,
+              "sbp": 88
+            },
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 2,
+              "sbp": 87
+            },
+            {
+              "dbp": 53,
+              "map": 64,
+              "minute": 3,
+              "sbp": 87
+            },
+            {
+              "dbp": 71,
+              "map": 86,
+              "minute": 4,
+              "sbp": 116
+            },
+            {
+              "dbp": 72,
+              "map": 87,
+              "minute": 5,
+              "sbp": 117
+            },
+            {
+              "dbp": 72,
+              "map": 87,
+              "minute": 6,
+              "sbp": 117
+            },
+            {
+              "dbp": 72,
+              "map": 87,
+              "minute": 7,
+              "sbp": 117
+            },
+            {
+              "dbp": 71,
+              "map": 86,
+              "minute": 8,
+              "sbp": 116
+            },
+            {
+              "dbp": 71,
+              "map": 86,
+              "minute": 9,
+              "sbp": 116
+            },
+            {
+              "dbp": 71,
+              "map": 86,
+              "minute": 10,
+              "sbp": 115
+            },
+            {
+              "dbp": 71,
+              "map": 86,
+              "minute": 11,
+              "sbp": 115
+            },
+            {
+              "dbp": 70,
+              "map": 85,
+              "minute": 12,
+              "sbp": 115
+            },
+            {
+              "dbp": 70,
+              "map": 85,
+              "minute": 13,
+              "sbp": 114
+            },
+            {
+              "dbp": 70,
+              "map": 85,
+              "minute": 14,
+              "sbp": 114
+            },
+            {
+              "dbp": 70,
+              "map": 84,
+              "minute": 15,
+              "sbp": 113
+            },
+            {
+              "dbp": 69,
+              "map": 84,
+              "minute": 16,
+              "sbp": 113
+            },
+            {
+              "dbp": 69,
+              "map": 84,
+              "minute": 17,
+              "sbp": 113
+            },
+            {
+              "dbp": 69,
+              "map": 83,
+              "minute": 18,
+              "sbp": 112
+            },
+            {
+              "dbp": 69,
+              "map": 83,
+              "minute": 19,
+              "sbp": 112
+            },
+            {
+              "dbp": 68,
+              "map": 82,
+              "minute": 20,
+              "sbp": 111
+            },
+            {
+              "dbp": 68,
+              "map": 82,
+              "minute": 21,
+              "sbp": 111
+            },
+            {
+              "dbp": 68,
+              "map": 82,
+              "minute": 22,
+              "sbp": 111
+            },
+            {
+              "dbp": 68,
+              "map": 82,
+              "minute": 23,
+              "sbp": 110
+            },
+            {
+              "dbp": 67,
+              "map": 81,
+              "minute": 24,
+              "sbp": 110
+            },
+            {
+              "dbp": 67,
+              "map": 81,
+              "minute": 25,
+              "sbp": 109
+            },
+            {
+              "dbp": 67,
+              "map": 81,
+              "minute": 26,
+              "sbp": 109
+            },
+            {
+              "dbp": 67,
+              "map": 81,
+              "minute": 27,
+              "sbp": 109
+            },
+            {
+              "dbp": 66,
+              "map": 80,
+              "minute": 28,
+              "sbp": 108
+            },
+            {
+              "dbp": 66,
+              "map": 80,
+              "minute": 29,
+              "sbp": 108
+            },
+            {
+              "dbp": 66,
+              "map": 80,
+              "minute": 30,
+              "sbp": 108
+            },
+            {
+              "dbp": 66,
+              "map": 80,
+              "minute": 31,
+              "sbp": 107
+            },
+            {
+              "dbp": 66,
+              "map": 80,
+              "minute": 32,
+              "sbp": 107
+            }
+          ],
+          "LOW": [
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 0,
+              "sbp": 88
+            },
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 1,
+              "sbp": 88
+            },
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 2,
+              "sbp": 87
+            },
+            {
+              "dbp": 53,
+              "map": 64,
+              "minute": 3,
+              "sbp": 87
+            },
+            {
+              "dbp": 55,
+              "map": 66,
+              "minute": 4,
+              "sbp": 89
+            },
+            {
+              "dbp": 55,
+              "map": 67,
+              "minute": 5,
+              "sbp": 90
+            },
+            {
+              "dbp": 56,
+              "map": 68,
+              "minute": 6,
+              "sbp": 91
+            },
+            {
+              "dbp": 56,
+              "map": 68,
+              "minute": 7,
+              "sbp": 91
+            },
+            {
+              "dbp": 56,
+              "map": 68,
+              "minute": 8,
+              "sbp": 91
+            },
+            {
+              "dbp": 56,
+              "map": 68,
+              "minute": 9,
+              "sbp": 91
+            },
+            {
+              "dbp": 56,
+              "map": 67,
+              "minute": 10,
+              "sbp": 90
+            },
+            {
+              "dbp": 55,
+              "map": 67,
+              "minute": 11,
+              "sbp": 90
+            },
+            {
+              "dbp": 55,
+              "map": 67,
+              "minute": 12,
+              "sbp": 90
+            },
+            {
+              "dbp": 55,
+              "map": 67,
+              "minute": 13,
+              "sbp": 90
+            },
+            {
+              "dbp": 55,
+              "map": 67,
+              "minute": 14,
+              "sbp": 90
+            },
+            {
+              "dbp": 55,
+              "map": 66,
+              "minute": 15,
+              "sbp": 89
+            },
+            {
+              "dbp": 55,
+              "map": 66,
+              "minute": 16,
+              "sbp": 89
+            },
+            {
+              "dbp": 54,
+              "map": 66,
+              "minute": 17,
+              "sbp": 89
+            },
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 18,
+              "sbp": 88
+            },
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 19,
+              "sbp": 88
+            },
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 20,
+              "sbp": 88
+            },
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 21,
+              "sbp": 87
+            },
+            {
+              "dbp": 53,
+              "map": 64,
+              "minute": 22,
+              "sbp": 87
+            },
+            {
+              "dbp": 53,
+              "map": 64,
+              "minute": 23,
+              "sbp": 87
+            },
+            {
+              "dbp": 53,
+              "map": 64,
+              "minute": 24,
+              "sbp": 87
+            },
+            {
+              "dbp": 53,
+              "map": 64,
+              "minute": 25,
+              "sbp": 86
+            },
+            {
+              "dbp": 53,
+              "map": 64,
+              "minute": 26,
+              "sbp": 86
+            },
+            {
+              "dbp": 53,
+              "map": 64,
+              "minute": 27,
+              "sbp": 86
+            },
+            {
+              "dbp": 52,
+              "map": 63,
+              "minute": 28,
+              "sbp": 85
+            },
+            {
+              "dbp": 52,
+              "map": 63,
+              "minute": 29,
+              "sbp": 85
+            },
+            {
+              "dbp": 52,
+              "map": 63,
+              "minute": 30,
+              "sbp": 85
+            },
+            {
+              "dbp": 52,
+              "map": 63,
+              "minute": 31,
+              "sbp": 84
+            },
+            {
+              "dbp": 52,
+              "map": 63,
+              "minute": 32,
+              "sbp": 84
+            }
+          ]
+        },
+        "scenario_id": "FR-F"
+      },
+      {
+        "material": true,
+        "points": {
+          "HIGH": [
+            {
+              "dbp": 75,
+              "map": 90,
+              "minute": 0,
+              "sbp": 120
+            },
+            {
+              "dbp": 75,
+              "map": 90,
+              "minute": 1,
+              "sbp": 120
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 2,
+              "sbp": 102
+            },
+            {
+              "dbp": 56,
+              "map": 67,
+              "minute": 3,
+              "sbp": 89
+            },
+            {
+              "dbp": 49,
+              "map": 59,
+              "minute": 4,
+              "sbp": 79
+            },
+            {
+              "dbp": 44,
+              "map": 53,
+              "minute": 5,
+              "sbp": 71
+            },
+            {
+              "dbp": 44,
+              "map": 53,
+              "minute": 6,
+              "sbp": 71
+            },
+            {
+              "dbp": 44,
+              "map": 53,
+              "minute": 7,
+              "sbp": 71
+            },
+            {
+              "dbp": 44,
+              "map": 53,
+              "minute": 8,
+              "sbp": 71
+            },
+            {
+              "dbp": 44,
+              "map": 53,
+              "minute": 9,
+              "sbp": 71
+            },
+            {
+              "dbp": 44,
+              "map": 53,
+              "minute": 10,
+              "sbp": 71
+            },
+            {
+              "dbp": 44,
+              "map": 53,
+              "minute": 11,
+              "sbp": 71
+            },
+            {
+              "dbp": 63,
+              "map": 76,
+              "minute": 12,
+              "sbp": 101
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 13,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 14,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 15,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 16,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 17,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 18,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 19,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 20,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 21,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 22,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 23,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 24,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 25,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 26,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 27,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 28,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 29,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 30,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 31,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 32,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 33,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 34,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 35,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 36,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 37,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 38,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 39,
+              "sbp": 102
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 40,
+              "sbp": 102
+            }
+          ],
+          "LOW": [
+            {
+              "dbp": 75,
+              "map": 90,
+              "minute": 0,
+              "sbp": 120
+            },
+            {
+              "dbp": 75,
+              "map": 90,
+              "minute": 1,
+              "sbp": 120
+            },
+            {
+              "dbp": 64,
+              "map": 77,
+              "minute": 2,
+              "sbp": 102
+            },
+            {
+              "dbp": 56,
+              "map": 67,
+              "minute": 3,
+              "sbp": 89
+            },
+            {
+              "dbp": 49,
+              "map": 59,
+              "minute": 4,
+              "sbp": 79
+            },
+            {
+              "dbp": 44,
+              "map": 53,
+              "minute": 5,
+              "sbp": 71
+            },
+            {
+              "dbp": 44,
+              "map": 53,
+              "minute": 6,
+              "sbp": 71
+            },
+            {
+              "dbp": 44,
+              "map": 53,
+              "minute": 7,
+              "sbp": 71
+            },
+            {
+              "dbp": 44,
+              "map": 53,
+              "minute": 8,
+              "sbp": 71
+            },
+            {
+              "dbp": 44,
+              "map": 53,
+              "minute": 9,
+              "sbp": 71
+            },
+            {
+              "dbp": 44,
+              "map": 53,
+              "minute": 10,
+              "sbp": 71
+            },
+            {
+              "dbp": 44,
+              "map": 53,
+              "minute": 11,
+              "sbp": 71
+            },
+            {
+              "dbp": 45,
+              "map": 54,
+              "minute": 12,
+              "sbp": 73
+            },
+            {
+              "dbp": 46,
+              "map": 55,
+              "minute": 13,
+              "sbp": 74
+            },
+            {
+              "dbp": 47,
+              "map": 56,
+              "minute": 14,
+              "sbp": 75
+            },
+            {
+              "dbp": 47,
+              "map": 56,
+              "minute": 15,
+              "sbp": 75
+            },
+            {
+              "dbp": 47,
+              "map": 57,
+              "minute": 16,
+              "sbp": 76
+            },
+            {
+              "dbp": 47,
+              "map": 57,
+              "minute": 17,
+              "sbp": 76
+            },
+            {
+              "dbp": 47,
+              "map": 57,
+              "minute": 18,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 19,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 20,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 21,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 22,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 23,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 24,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 25,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 26,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 27,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 28,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 29,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 30,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 31,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 32,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 33,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 34,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 35,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 36,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 37,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 38,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 39,
+              "sbp": 76
+            },
+            {
+              "dbp": 48,
+              "map": 57,
+              "minute": 40,
+              "sbp": 76
+            }
+          ]
+        },
+        "scenario_id": "SYNTH"
+      },
+      {
+        "material": true,
+        "points": {
+          "HIGH": [
+            {
+              "dbp": 66,
+              "map": 79,
+              "minute": 0,
+              "sbp": 104
+            },
+            {
+              "dbp": 66,
+              "map": 79,
+              "minute": 1,
+              "sbp": 104
+            },
+            {
+              "dbp": 66,
+              "map": 79,
+              "minute": 2,
+              "sbp": 104
+            },
+            {
+              "dbp": 66,
+              "map": 79,
+              "minute": 3,
+              "sbp": 104
+            },
+            {
+              "dbp": 66,
+              "map": 78,
+              "minute": 4,
+              "sbp": 103
+            },
+            {
+              "dbp": 66,
+              "map": 78,
+              "minute": 5,
+              "sbp": 103
+            },
+            {
+              "dbp": 66,
+              "map": 78,
+              "minute": 6,
+              "sbp": 103
+            },
+            {
+              "dbp": 88,
+              "map": 105,
+              "minute": 7,
+              "sbp": 138
+            },
+            {
+              "dbp": 91,
+              "map": 109,
+              "minute": 8,
+              "sbp": 144
+            },
+            {
+              "dbp": 92,
+              "map": 110,
+              "minute": 9,
+              "sbp": 145
+            },
+            {
+              "dbp": 92,
+              "map": 110,
+              "minute": 10,
+              "sbp": 145
+            },
+            {
+              "dbp": 92,
+              "map": 109,
+              "minute": 11,
+              "sbp": 144
+            },
+            {
+              "dbp": 92,
+              "map": 109,
+              "minute": 12,
+              "sbp": 144
+            },
+            {
+              "dbp": 91,
+              "map": 109,
+              "minute": 13,
+              "sbp": 144
+            },
+            {
+              "dbp": 91,
+              "map": 109,
+              "minute": 14,
+              "sbp": 144
+            },
+            {
+              "dbp": 91,
+              "map": 109,
+              "minute": 15,
+              "sbp": 144
+            },
+            {
+              "dbp": 91,
+              "map": 108,
+              "minute": 16,
+              "sbp": 143
+            },
+            {
+              "dbp": 91,
+              "map": 108,
+              "minute": 17,
+              "sbp": 143
+            },
+            {
+              "dbp": 91,
+              "map": 108,
+              "minute": 18,
+              "sbp": 143
+            },
+            {
+              "dbp": 91,
+              "map": 108,
+              "minute": 19,
+              "sbp": 143
+            },
+            {
+              "dbp": 91,
+              "map": 108,
+              "minute": 20,
+              "sbp": 143
+            },
+            {
+              "dbp": 90,
+              "map": 107,
+              "minute": 21,
+              "sbp": 142
+            },
+            {
+              "dbp": 90,
+              "map": 107,
+              "minute": 22,
+              "sbp": 142
+            },
+            {
+              "dbp": 90,
+              "map": 107,
+              "minute": 23,
+              "sbp": 142
+            },
+            {
+              "dbp": 90,
+              "map": 107,
+              "minute": 24,
+              "sbp": 142
+            },
+            {
+              "dbp": 90,
+              "map": 107,
+              "minute": 25,
+              "sbp": 142
+            },
+            {
+              "dbp": 90,
+              "map": 107,
+              "minute": 26,
+              "sbp": 141
+            },
+            {
+              "dbp": 90,
+              "map": 107,
+              "minute": 27,
+              "sbp": 141
+            },
+            {
+              "dbp": 90,
+              "map": 107,
+              "minute": 28,
+              "sbp": 141
+            },
+            {
+              "dbp": 89,
+              "map": 106,
+              "minute": 29,
+              "sbp": 141
+            },
+            {
+              "dbp": 89,
+              "map": 106,
+              "minute": 30,
+              "sbp": 141
+            }
+          ],
+          "LOW": [
+            {
+              "dbp": 66,
+              "map": 79,
+              "minute": 0,
+              "sbp": 104
+            },
+            {
+              "dbp": 66,
+              "map": 79,
+              "minute": 1,
+              "sbp": 104
+            },
+            {
+              "dbp": 66,
+              "map": 79,
+              "minute": 2,
+              "sbp": 104
+            },
+            {
+              "dbp": 66,
+              "map": 79,
+              "minute": 3,
+              "sbp": 104
+            },
+            {
+              "dbp": 66,
+              "map": 78,
+              "minute": 4,
+              "sbp": 103
+            },
+            {
+              "dbp": 66,
+              "map": 78,
+              "minute": 5,
+              "sbp": 103
+            },
+            {
+              "dbp": 66,
+              "map": 78,
+              "minute": 6,
+              "sbp": 103
+            },
+            {
+              "dbp": 67,
+              "map": 80,
+              "minute": 7,
+              "sbp": 106
+            },
+            {
+              "dbp": 68,
+              "map": 81,
+              "minute": 8,
+              "sbp": 107
+            },
+            {
+              "dbp": 69,
+              "map": 82,
+              "minute": 9,
+              "sbp": 108
+            },
+            {
+              "dbp": 69,
+              "map": 82,
+              "minute": 10,
+              "sbp": 109
+            },
+            {
+              "dbp": 69,
+              "map": 82,
+              "minute": 11,
+              "sbp": 109
+            },
+            {
+              "dbp": 70,
+              "map": 83,
+              "minute": 12,
+              "sbp": 110
+            },
+            {
+              "dbp": 70,
+              "map": 83,
+              "minute": 13,
+              "sbp": 110
+            },
+            {
+              "dbp": 70,
+              "map": 83,
+              "minute": 14,
+              "sbp": 110
+            },
+            {
+              "dbp": 70,
+              "map": 83,
+              "minute": 15,
+              "sbp": 110
+            },
+            {
+              "dbp": 70,
+              "map": 83,
+              "minute": 16,
+              "sbp": 110
+            },
+            {
+              "dbp": 70,
+              "map": 83,
+              "minute": 17,
+              "sbp": 110
+            },
+            {
+              "dbp": 69,
+              "map": 82,
+              "minute": 18,
+              "sbp": 109
+            },
+            {
+              "dbp": 69,
+              "map": 82,
+              "minute": 19,
+              "sbp": 109
+            },
+            {
+              "dbp": 69,
+              "map": 82,
+              "minute": 20,
+              "sbp": 109
+            },
+            {
+              "dbp": 69,
+              "map": 82,
+              "minute": 21,
+              "sbp": 109
+            },
+            {
+              "dbp": 69,
+              "map": 82,
+              "minute": 22,
+              "sbp": 109
+            },
+            {
+              "dbp": 69,
+              "map": 82,
+              "minute": 23,
+              "sbp": 109
+            },
+            {
+              "dbp": 69,
+              "map": 82,
+              "minute": 24,
+              "sbp": 109
+            },
+            {
+              "dbp": 69,
+              "map": 82,
+              "minute": 25,
+              "sbp": 109
+            },
+            {
+              "dbp": 69,
+              "map": 82,
+              "minute": 26,
+              "sbp": 108
+            },
+            {
+              "dbp": 69,
+              "map": 82,
+              "minute": 27,
+              "sbp": 108
+            },
+            {
+              "dbp": 69,
+              "map": 82,
+              "minute": 28,
+              "sbp": 108
+            },
+            {
+              "dbp": 69,
+              "map": 82,
+              "minute": 29,
+              "sbp": 108
+            },
+            {
+              "dbp": 68,
+              "map": 81,
+              "minute": 30,
+              "sbp": 108
+            }
+          ]
+        },
+        "scenario_id": "ACS"
+      },
+      {
+        "material": true,
+        "points": {
+          "HIGH": [
+            {
+              "dbp": 116,
+              "map": 150,
+              "minute": 0,
+              "sbp": 218
+            },
+            {
+              "dbp": 116,
+              "map": 150,
+              "minute": 1,
+              "sbp": 218
+            },
+            {
+              "dbp": 116,
+              "map": 150,
+              "minute": 2,
+              "sbp": 218
+            },
+            {
+              "dbp": 116,
+              "map": 150,
+              "minute": 3,
+              "sbp": 218
+            },
+            {
+              "dbp": 116,
+              "map": 150,
+              "minute": 4,
+              "sbp": 218
+            },
+            {
+              "dbp": 116,
+              "map": 150,
+              "minute": 5,
+              "sbp": 218
+            },
+            {
+              "dbp": 116,
+              "map": 150,
+              "minute": 6,
+              "sbp": 218
+            },
+            {
+              "dbp": 156,
+              "map": 201,
+              "minute": 7,
+              "sbp": 292
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 8,
+              "sbp": 295
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 9,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 10,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 11,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 12,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 13,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 14,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 15,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 16,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 17,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 18,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 19,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 20,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 21,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 22,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 23,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 24,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 25,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 26,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 27,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 28,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 29,
+              "sbp": 296
+            },
+            {
+              "dbp": 157,
+              "map": 203,
+              "minute": 30,
+              "sbp": 296
+            }
+          ],
+          "LOW": [
+            {
+              "dbp": 116,
+              "map": 150,
+              "minute": 0,
+              "sbp": 218
+            },
+            {
+              "dbp": 116,
+              "map": 150,
+              "minute": 1,
+              "sbp": 218
+            },
+            {
+              "dbp": 116,
+              "map": 150,
+              "minute": 2,
+              "sbp": 218
+            },
+            {
+              "dbp": 116,
+              "map": 150,
+              "minute": 3,
+              "sbp": 218
+            },
+            {
+              "dbp": 116,
+              "map": 150,
+              "minute": 4,
+              "sbp": 218
+            },
+            {
+              "dbp": 116,
+              "map": 150,
+              "minute": 5,
+              "sbp": 218
+            },
+            {
+              "dbp": 116,
+              "map": 150,
+              "minute": 6,
+              "sbp": 218
+            },
+            {
+              "dbp": 119,
+              "map": 154,
+              "minute": 7,
+              "sbp": 224
+            },
+            {
+              "dbp": 121,
+              "map": 156,
+              "minute": 8,
+              "sbp": 227
+            },
+            {
+              "dbp": 122,
+              "map": 158,
+              "minute": 9,
+              "sbp": 229
+            },
+            {
+              "dbp": 122,
+              "map": 158,
+              "minute": 10,
+              "sbp": 230
+            },
+            {
+              "dbp": 123,
+              "map": 159,
+              "minute": 11,
+              "sbp": 231
+            },
+            {
+              "dbp": 123,
+              "map": 159,
+              "minute": 12,
+              "sbp": 231
+            },
+            {
+              "dbp": 123,
+              "map": 159,
+              "minute": 13,
+              "sbp": 232
+            },
+            {
+              "dbp": 124,
+              "map": 160,
+              "minute": 14,
+              "sbp": 232
+            },
+            {
+              "dbp": 124,
+              "map": 160,
+              "minute": 15,
+              "sbp": 232
+            },
+            {
+              "dbp": 124,
+              "map": 160,
+              "minute": 16,
+              "sbp": 232
+            },
+            {
+              "dbp": 124,
+              "map": 160,
+              "minute": 17,
+              "sbp": 233
+            },
+            {
+              "dbp": 124,
+              "map": 160,
+              "minute": 18,
+              "sbp": 233
+            },
+            {
+              "dbp": 124,
+              "map": 160,
+              "minute": 19,
+              "sbp": 233
+            },
+            {
+              "dbp": 124,
+              "map": 160,
+              "minute": 20,
+              "sbp": 233
+            },
+            {
+              "dbp": 124,
+              "map": 160,
+              "minute": 21,
+              "sbp": 233
+            },
+            {
+              "dbp": 124,
+              "map": 160,
+              "minute": 22,
+              "sbp": 233
+            },
+            {
+              "dbp": 124,
+              "map": 160,
+              "minute": 23,
+              "sbp": 233
+            },
+            {
+              "dbp": 124,
+              "map": 160,
+              "minute": 24,
+              "sbp": 233
+            },
+            {
+              "dbp": 124,
+              "map": 160,
+              "minute": 25,
+              "sbp": 233
+            },
+            {
+              "dbp": 124,
+              "map": 160,
+              "minute": 26,
+              "sbp": 233
+            },
+            {
+              "dbp": 124,
+              "map": 160,
+              "minute": 27,
+              "sbp": 233
+            },
+            {
+              "dbp": 124,
+              "map": 160,
+              "minute": 28,
+              "sbp": 233
+            },
+            {
+              "dbp": 124,
+              "map": 160,
+              "minute": 29,
+              "sbp": 233
+            },
+            {
+              "dbp": 124,
+              "map": 160,
+              "minute": 30,
+              "sbp": 233
+            }
+          ]
+        },
+        "scenario_id": "PULM-EDEMA"
+      },
+      {
+        "material": true,
+        "points": {
+          "HIGH": [
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 0,
+              "sbp": 86
+            },
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 1,
+              "sbp": 86
+            },
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 2,
+              "sbp": 86
+            },
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 3,
+              "sbp": 86
+            },
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 4,
+              "sbp": 86
+            },
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 5,
+              "sbp": 86
+            },
+            {
+              "dbp": 54,
+              "map": 64,
+              "minute": 6,
+              "sbp": 85
+            },
+            {
+              "dbp": 72,
+              "map": 86,
+              "minute": 7,
+              "sbp": 114
+            },
+            {
+              "dbp": 75,
+              "map": 90,
+              "minute": 8,
+              "sbp": 119
+            },
+            {
+              "dbp": 75,
+              "map": 90,
+              "minute": 9,
+              "sbp": 120
+            },
+            {
+              "dbp": 75,
+              "map": 90,
+              "minute": 10,
+              "sbp": 120
+            },
+            {
+              "dbp": 75,
+              "map": 90,
+              "minute": 11,
+              "sbp": 120
+            },
+            {
+              "dbp": 75,
+              "map": 90,
+              "minute": 12,
+              "sbp": 119
+            },
+            {
+              "dbp": 75,
+              "map": 90,
+              "minute": 13,
+              "sbp": 119
+            },
+            {
+              "dbp": 75,
+              "map": 90,
+              "minute": 14,
+              "sbp": 119
+            },
+            {
+              "dbp": 75,
+              "map": 90,
+              "minute": 15,
+              "sbp": 119
+            },
+            {
+              "dbp": 75,
+              "map": 90,
+              "minute": 16,
+              "sbp": 119
+            },
+            {
+              "dbp": 75,
+              "map": 90,
+              "minute": 17,
+              "sbp": 119
+            },
+            {
+              "dbp": 74,
+              "map": 89,
+              "minute": 18,
+              "sbp": 119
+            },
+            {
+              "dbp": 74,
+              "map": 89,
+              "minute": 19,
+              "sbp": 118
+            },
+            {
+              "dbp": 74,
+              "map": 89,
+              "minute": 20,
+              "sbp": 118
+            },
+            {
+              "dbp": 74,
+              "map": 89,
+              "minute": 21,
+              "sbp": 118
+            },
+            {
+              "dbp": 74,
+              "map": 89,
+              "minute": 22,
+              "sbp": 118
+            },
+            {
+              "dbp": 74,
+              "map": 89,
+              "minute": 23,
+              "sbp": 118
+            },
+            {
+              "dbp": 74,
+              "map": 89,
+              "minute": 24,
+              "sbp": 118
+            },
+            {
+              "dbp": 74,
+              "map": 89,
+              "minute": 25,
+              "sbp": 118
+            },
+            {
+              "dbp": 74,
+              "map": 88,
+              "minute": 26,
+              "sbp": 117
+            },
+            {
+              "dbp": 74,
+              "map": 88,
+              "minute": 27,
+              "sbp": 117
+            },
+            {
+              "dbp": 74,
+              "map": 88,
+              "minute": 28,
+              "sbp": 117
+            },
+            {
+              "dbp": 73,
+              "map": 88,
+              "minute": 29,
+              "sbp": 117
+            },
+            {
+              "dbp": 73,
+              "map": 88,
+              "minute": 30,
+              "sbp": 117
+            }
+          ],
+          "LOW": [
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 0,
+              "sbp": 86
+            },
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 1,
+              "sbp": 86
+            },
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 2,
+              "sbp": 86
+            },
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 3,
+              "sbp": 86
+            },
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 4,
+              "sbp": 86
+            },
+            {
+              "dbp": 54,
+              "map": 65,
+              "minute": 5,
+              "sbp": 86
+            },
+            {
+              "dbp": 54,
+              "map": 64,
+              "minute": 6,
+              "sbp": 85
+            },
+            {
+              "dbp": 55,
+              "map": 66,
+              "minute": 7,
+              "sbp": 88
+            },
+            {
+              "dbp": 56,
+              "map": 67,
+              "minute": 8,
+              "sbp": 89
+            },
+            {
+              "dbp": 56,
+              "map": 67,
+              "minute": 9,
+              "sbp": 90
+            },
+            {
+              "dbp": 57,
+              "map": 68,
+              "minute": 10,
+              "sbp": 90
+            },
+            {
+              "dbp": 57,
+              "map": 68,
+              "minute": 11,
+              "sbp": 91
+            },
+            {
+              "dbp": 57,
+              "map": 68,
+              "minute": 12,
+              "sbp": 91
+            },
+            {
+              "dbp": 57,
+              "map": 68,
+              "minute": 13,
+              "sbp": 91
+            },
+            {
+              "dbp": 57,
+              "map": 68,
+              "minute": 14,
+              "sbp": 91
+            },
+            {
+              "dbp": 57,
+              "map": 68,
+              "minute": 15,
+              "sbp": 91
+            },
+            {
+              "dbp": 57,
+              "map": 68,
+              "minute": 16,
+              "sbp": 91
+            },
+            {
+              "dbp": 57,
+              "map": 68,
+              "minute": 17,
+              "sbp": 91
+            },
+            {
+              "dbp": 57,
+              "map": 68,
+              "minute": 18,
+              "sbp": 91
+            },
+            {
+              "dbp": 57,
+              "map": 68,
+              "minute": 19,
+              "sbp": 91
+            },
+            {
+              "dbp": 57,
+              "map": 68,
+              "minute": 20,
+              "sbp": 91
+            },
+            {
+              "dbp": 57,
+              "map": 68,
+              "minute": 21,
+              "sbp": 91
+            },
+            {
+              "dbp": 57,
+              "map": 68,
+              "minute": 22,
+              "sbp": 90
+            },
+            {
+              "dbp": 57,
+              "map": 68,
+              "minute": 23,
+              "sbp": 90
+            },
+            {
+              "dbp": 57,
+              "map": 68,
+              "minute": 24,
+              "sbp": 90
+            },
+            {
+              "dbp": 57,
+              "map": 68,
+              "minute": 25,
+              "sbp": 90
+            },
+            {
+              "dbp": 57,
+              "map": 68,
+              "minute": 26,
+              "sbp": 90
+            },
+            {
+              "dbp": 57,
+              "map": 68,
+              "minute": 27,
+              "sbp": 90
+            },
+            {
+              "dbp": 56,
+              "map": 67,
+              "minute": 28,
+              "sbp": 90
+            },
+            {
+              "dbp": 56,
+              "map": 67,
+              "minute": 29,
+              "sbp": 90
+            },
+            {
+              "dbp": 56,
+              "map": 67,
+              "minute": 30,
+              "sbp": 90
+            }
+          ]
+        },
+        "scenario_id": "PE"
+      }
+    ]
+  },
+  "set_id": "COMMON_TONE_V1_MULTIFAMILY_FACULTY_REVIEW",
+  "statement": "Synthetic development cases and one synthetic physiology probe. A faculty judgment of stored development trajectories of ONE norepinephrine order: not a clinical validation, not a calibrated configuration, not a score, not a resident pilot.",
+  "version": "TONE-REVIEW-1",
+  "what_it_is": "Five review scenarios of ONE norepinephrine order (a start at 10 mcg/min, never changed) -- a hemorrhage, a synthetic low-tone probe, a pump-limited ACS, a congested pulmonary edema and an obstructive pulmonary embolism -- with the trajectories of the CENTER_REFERENCE setting taken from, or proven equal to, the certified common-tone records. No comparator, no earlier trajectory and no other set are part of the items."
+}

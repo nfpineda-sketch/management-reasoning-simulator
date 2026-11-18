@@ -285,6 +285,18 @@
       "record_digest": "0503574262a9786be20325f24a5f76f6190fe1a42fc08edba36920ed51d17004",
       "record_id": "COMMON_TONE_PROBES_V1"
     },
+    "PHASE3_COMMON_TONE_V1_MULTIFAMILY_REVIEW_CHECKPOINT.json": {
+      "class": "VERSIONED",
+      "file_sha256": "e7deff9e7176911178a61b8508b95e6a53691f4c93aad0413bde1ea1bdf70f3a",
+      "record_digest": "cce4df48c44208a2f0b3d1dcd8beb51d59939476ba4bf0eb79cbf1a9824a03cb",
+      "record_id": "COMMON_TONE_V1_MULTIFAMILY_REVIEW_CHECKPOINT_V1"
+    },
+    "PHASE3_COMMON_TONE_V1_MULTIFAMILY_REVIEW_SET.json": {
+      "class": "VERSIONED",
+      "file_sha256": "b856a479e31f86454a7b0295ab30856cca318f4f95ce51d7630e4c30e5b53855",
+      "record_digest": "22ed59069e441aca96939ccf359ceec00a8bd55ddc0b182ff7bbcfcdd6e91487",
+      "record_id": "COMMON_TONE_V1_MULTIFAMILY_FACULTY_REVIEW"
+    },
     "PHASE3_DORMANT_PAIR_AUTHORITY.json": {
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "a2dddcd9ee33b84910bad5b4148c39d6ba49e712c082b1481fbe7e1446654363"
