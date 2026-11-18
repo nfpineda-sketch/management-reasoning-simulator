@@ -443,6 +443,16 @@ def registered_snapshot_is_complete(snapshot: Any) -> tuple:
     return (not reasons), tuple(reasons)
 
 
+def historical_reconstruction(environ: Mapping[str, str] | None = None) -> str | None:
+    """P3-387 (FD-TONE-09): the superseded grant this process DECLARES it reconstructs, or None. The declaration is a process-environment variable naming that grant's exact id; it is
+    never honoured from a Streamlit Secret, and a value that is not the id of a superseded registered grant declares nothing."""
+    import runtime_pressure_grant as grants
+    live = os.environ if environ is None else environ
+    if rs._named_in_secrets(grants.HISTORICAL_RECONSTRUCTION_FLAG):
+        return None
+    return grants.reconstruction_named(live)
+
+
 def binding_agrees_with_the_grant(grant: Any) -> bool:
     """FD-PROMOTE-05: the configuration digest a grant pins for the ratified snapshot is the digest of the configuration ``runtime_pressure_snapshot`` would execute, compared at run time. A grant that binds
     another snapshot has nothing to agree with here."""
@@ -634,12 +644,16 @@ def gate(state: Mapping | None = None, *, environ: Mapping[str, str] | None = No
     # P3-240: the grant is read from its own registry (never from the environment, a file or the caller) and must name THIS run.
     import runtime_pressure_grant as grants
     member = rs.CORE_LINEAGE[-1]
+    # P3-387 (FD-TONE-09): a superseded grant opens nothing by ordinary configuration. A run that DECLARES the historical reconstruction of one (never from a Secret) is asked against
+    # the lineage member the live certified core rebuilds, which this layer reads from the lineage itself.
+    reconstruction = historical_reconstruction(environ)
     grant_ok, grant_why = grants.permits(case_id=case_id, environment=str(environ.get(ENVIRONMENT_FLAG, "") or "").strip().lower() or None, snapshot_id=snapshot_id,
-                                         family=family, domain=tuple(domain), lineage={"version_id": member.version_id, "digest": member.digest})
+                                         family=family, domain=tuple(domain), lineage={"version_id": member.version_id, "digest": member.digest},
+                                         historical_reconstruction=reconstruction, rebuilt_lineages=ev.rebuilt_predecessors() if reconstruction else ())
     # P3-379 (adversarial review, finding 6): the grant that permits the run also has to agree, AT RUN TIME, with the configuration the binding would execute (checked here and not in the grant module,
     # which imports nothing of the repository on purpose: ``test_phase3_pressure_grant.py::test_g12``).
     if grant_ok:
-        bound_grant = grants.grant_for_snapshot(str(snapshot_id or ""))
+        bound_grant = grants.grant_for_snapshot(str(snapshot_id or ""), reconstruction)
         if bound_grant is not None and not binding_agrees_with_the_grant(bound_grant):
             grant_ok, grant_why = False, [f"{grants.CONFIGURATION_MISMATCH}: the configuration digest the grant pins is not the one the binding would execute"]
     in_secrets = [name for name in (AUTHORITY_FLAG, SNAPSHOT_FLAG, ENVIRONMENT_FLAG)
@@ -2828,10 +2842,23 @@ def open_site(state: Mapping, *, environ: Mapping[str, str] | None = None,
     member = rs.CORE_LINEAGE[-1]
     # P3-380: the grant a run needs is decided by the snapshot it NAMES (each registered pressure point is bound to exactly one grant version); a snapshot no grant binds (the test-only mechanism)
     # carries none and behaves as before the grant existed.
-    bound_grant = grants.grant_for_snapshot(str(decision.snapshot_id or ""))
+    # P3-387 (FD-TONE-09): the grant that travels is the one the run stands under: the live version, or -- only for a run that DECLARES it -- the superseded version it reconstructs,
+    # judged against its own lineage member once the live certified core is seen to rebuild that member exactly.
+    reconstruction = historical_reconstruction(live)
+    bound_grant = grants.grant_for_snapshot(str(decision.snapshot_id or ""), reconstruction)
+    grant_lineage = {"version_id": member.version_id, "digest": member.digest}
+    reconstructed = bool(bound_grant is not None and grants.is_superseded(bound_grant.get("grant_id")))
+    if reconstructed:
+        import runtime_shadow_evidence as _lineage
+        own = grants.lineage_of(bound_grant)
+        if reconstruction == bound_grant.get("grant_id") and any((item.get("version_id"), item.get("digest")) == (own.get("version_id"), own.get("digest"))
+                                                                for item in _lineage.rebuilt_predecessors()):
+            grant_lineage = own
+        else:
+            bound_grant = None              # superseded and not a declared, rebuildable reconstruction: it travels with no site
     if bound_grant is not None and binding_agrees_with_the_grant(bound_grant) and not grants.grant_problems(
             bound_grant, case_id=case_id, environment=str(live.get(ENVIRONMENT_FLAG, "") or "").strip().lower(), snapshot_id=str(decision.snapshot_id or ""), family=site.family,
-            lineage={"version_id": member.version_id, "digest": member.digest}):
+            lineage=grant_lineage):
         site.grant = bound_grant
     elif str(decision.snapshot_id or "") in grants.REAL_SNAPSHOT_IDS:
         return None                  # a REAL registered point never runs without the grant it is bound to (a registry that disagrees with the grant opens nothing)
@@ -2839,6 +2866,12 @@ def open_site(state: Mapping, *, environ: Mapping[str, str] | None = None,
     site.eligibility = eligibility_record(
         decision, family=site.family, case_id=case_id, environment=site.environment,
         snapshot=snapshot, domain=site.domain, store_configured=True, environ=live)
+    if reconstructed and site.grant is not None:
+        # A reconstruction says so in the record of why authority was allowed: which superseded grant it re-runs, on which live core, and which lineage member that core rebuilt for it.
+        site.eligibility["historical_reconstruction"] = {
+            "grant_id": site.grant.get("grant_id"), "superseded_by": dict(grants.SUPERSEDED[site.grant.get("grant_id")])["by"],
+            "live_core": {"version_id": member.version_id, "digest": member.digest}, "rebuilt_core": dict(grant_lineage),
+            "declared_by": grants.HISTORICAL_RECONSTRUCTION_FLAG, "is_a_new_development_session": False}
     return site
 
 

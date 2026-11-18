@@ -88,13 +88,15 @@ def _core_lineage(grant: Mapping) -> dict:
     own = dict(dict(grant).get("core_lineage") or {})
     if own:
         return own
-    # P3-380: the grant the artifact NAMES (version 1 or 2), read through the read-only constants only (never the registry): an artifact that names none is read against the review
-    # environment's grant (version 2); an id that is neither registered version resolves to nothing, as before.
+    # P3-380, P3-387: the grant the artifact NAMES (version 1, 2 or 3), read through the read-only constants only (never the registry): an artifact that names none is read against
+    # the review environment's grant (the live one, version 3); an id that is no registered version resolves to nothing, as before.
     named = dict(grant).get("grant_id")
     if named == grants.GRANT_ID:
         registered = dict(grants.GRANT)
-    elif named in (None, grants.GRANT_ID_V2):
+    elif named == grants.GRANT_ID_V2:
         registered = dict(grants.GRANT_V2)
+    elif named in (None, grants.GRANT_ID_V3):
+        registered = dict(grants.GRANT_V3)
     else:
         registered = {}
     return dict(registered.get("core_lineage") or {})

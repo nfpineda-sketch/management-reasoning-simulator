@@ -1,0 +1,429 @@
+{
+  "adopted_on": "2026-11-17",
+  "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+  "decision_reference": "docs/COLA_DECISIONES_AI_ADVISOR.md FD-RECORD-01 to FD-RECORD-04 (P3-388)",
+  "legacy_adopted_at": "caa0b0fd2e1f7026ca01c57b70ad85cf92bc945d",
+  "legacy_entries_digest": "1afe6c43ab5e4accb33e4b6924d5f63e8c36e23c21c81760eec7251605b38789",
+  "records": {
+    "GI_BLOOD_RESUSCITATION_LOW_END_RESPONSE.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "676a1763204d5a56c285a0a63eb7880c5f339558ad063983ed051b70790a3928"
+    },
+    "GI_DEVELOPMENT_SNAPSHOT_V1.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "d9de4800075e2e5bb7e6e445ec0dc9a5d672f53c54212a56cc2f41b9392d4803"
+    },
+    "GI_DEVELOPMENT_SNAPSHOT_V1_RATIFICATION.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "26bda64cda384170da40663df0572051bc7a23d8dcb30f6d4d8461cb14a3c727"
+    },
+    "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "dc5da76ea764759552d6107fd05584257903e16bb04cefe139486a0b343c922e"
+    },
+    "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1_RATIFICATION.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "d9cdd2779b9f81f2abf6b321b8e3bec38d08a0755c11ec898ddc2a3d8f94b60c"
+    },
+    "P2G_decision_pack.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "834d34a5a7f9971474c708a1325b0fb6ea5128d87ef44e9862e19644d7bc644a"
+    },
+    "P2I2AA_blood_fluid_tau_closure.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "5b4197bbe771594d6ed4118aa099c3eb28d8c1f3fa10c8cd98b6d596a71cef33"
+    },
+    "P2I2AB_lactate_rebuild.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "583f8437073d6a39d8b5fd65b04c8b91a53df9886c57754b54b2bb403b471763"
+    },
+    "P2I2AC_lactate_adequacy.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "4661d98b682baef91a66edfa544c198ced71c65113c2a53e2b37dcb66ce49a19"
+    },
+    "P2I2AD_lactate_closure.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "542daac20006a14faf918ed94b338b41ddd705bbcc2364c6f6e89c1b20d0db98"
+    },
+    "P2I2AE_hr_structure.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "b26b04ba7a5a3525ebe2931ff0497979ac09fc75b0b5fd16274d28d97530ee7d"
+    },
+    "P2I2AF_hr_shock.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "a5c0a9f3f6600f5d3f35209462323fa8c479ab7396ddb101b22fb2aea104093a"
+    },
+    "P2I2AG_hr_primary.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "781c7d099ce88dd8362d4718fba2d42a9d53c4c9acbe4289278df28847b0d170"
+    },
+    "P2I2AI_arrival_severity.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "0ba48ea735f924cdcde3538ea1136514fb37ad4982ce508e966bfa203d447bf1"
+    },
+    "P2I2AJ_hr_observables.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "209db24136e478dc3bd2c392db4459b0fa9c3506b361eff6ab91053ebed9f66e"
+    },
+    "P2I2AK_hr_envelope_filter.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "e612fefd5efdd61dfdd97eaf8ff19d5b74ccc39e1cc2b36ca77f937510e06bbd"
+    },
+    "P2I2P_oxygen_probes.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "608797a6cb8460e12d157957e8abfe64e2461f2cfa9973d5dad7da12e63f347e"
+    },
+    "P2I2Q_hemodynamic_probes.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "390483112f658728b328f236c87119184ce28adce3d0829d9c564eafb3d11a27"
+    },
+    "P2I2S_haemorrhage_probes.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "b5d23c4c0b75ce8f3b890147e8b7f24a40009988048e6c9cb8f27e3925e96173"
+    },
+    "P2I2T_blood_probes.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "2118dfb899ad86c00e8f07768f7264e23b80f40376340e403aeb3ab7650dfa45"
+    },
+    "P2I2U_blood_anchors.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "b1872af6108abf474e65d583fb2b4a5553ec425a0f3578aed1a3d9b6218ed73e"
+    },
+    "P2I2VR_blood_filter.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "69c285199c3b9c07c4972abe411f7a85833f42b40071a54feee10830874ecab1"
+    },
+    "P2I2VR_blood_sensitivity.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "90bb23b8423713f04a24b1696fc4ea9fd007b29034ece76cde4029641295fed8"
+    },
+    "P2I2V_blood_diagnostic.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "ac696611ad3aa71349d9a2928f1358b1c5258130ed72edb97b88596011252f30"
+    },
+    "P2I2V_blood_filter.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "9738a5ee0a471e6e0492833bea144fa21b138631611dfaa80bce51c6d0a1a3e4"
+    },
+    "P2I2V_blood_sensitivity.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "2b78b807b562df49f0a9ed8aa58cc97e2f1a1f9f1775518470913f28b957d478"
+    },
+    "P2I2W_blood_extension.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "d8ee3f1c224ac1cc44edbdfdb182b94dc618c192ddf054f3cfe3acdd8e620bde"
+    },
+    "P2I2X_blood_rate_boundary.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "14767d45b605ebd23a9c7dbcccdb678e45c8a368064682495481db7c373b5ec7"
+    },
+    "P2I2Y_blood_fluid_calibration.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "b4a53ee4fa3c3c75569e7525c6599406404b3d80c48b7030a23f62ededc7b51c"
+    },
+    "P2I2Z_blood_fluid_readiness.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "34445930aab47b7a6756c753de944352207feacbaf6d782e972212a2d55f28d6"
+    },
+    "P2I2_lactate_constraints.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "7b6e8a3a8b4f5046e2adbc342ccaf3d04b08aa35672a2eb27ec8870fb5a2dc30"
+    },
+    "P2I_lactate_slice.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "655bbb70fdbf23d53c559628da49b050057d70d5081e580629f35eedbc1af9c9"
+    },
+    "P2J1_pressure_tone.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "421e5aa34a35a9ad92f3b17994ef90f70b26cd74b646a7a01b42522ad13bb64b"
+    },
+    "P2J2_vascular_tone.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "0c5c9feda158d9d799a0d12f900a9776fcca917ea0b80bfd7b580ec604031924"
+    },
+    "P2J3_pressure_tone_filter.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "bcecbe1651df99b9351f58162e99b312b01b23a109e785722d282faeae3151de"
+    },
+    "P2J4_baroreflex.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "e67682cf989edc08a6b56ffb185136a4da2778934d46a27f7a9255bace429c08"
+    },
+    "P2K1_rr_audit.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "e297209a8d7bbe1c475e12b3f23f5881f95ec232ee68523b621d48ca7ef2824a"
+    },
+    "P2K2_acid_base.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "e71cc7d53c4d1e0623edf087c6ad62f02398ddbf54428aa65c49fc148225eb8e"
+    },
+    "P2K3_ventilation_surface.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "730d40e985849d0cd168bd0ba09a2e4cee987b289984663f345574cf1a67d01e"
+    },
+    "P2K4_ventilation_filter.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "faa5b3228dd5fccf3b41c765d5591bf02e04909f2f3562c52b576b01c4cfeb2f"
+    },
+    "P2K5_respiratory_monotonicity.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "4c567527096d11253b6ebb054436b19a1797ae4f0aeee802fe5c7e824e7de523"
+    },
+    "P2L1_consciousness_audit.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "dcb1b40ae92cd785bec0723d6262948ab616d7b2513656ecd3cf81e2fadf607b"
+    },
+    "P2L2_encephalopathy_architecture.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "a3dd53caef2bb4862dcb3ac3f1f108a7518c85060c6eb0a40ee6d30a2cb9f206"
+    },
+    "P2M1_collapse_audit.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "443df2b4d4a3bb5e04a28ddff2fb98ff7939ed375c3d9cc60cc14179657c8df5"
+    },
+    "P2M2_collapse_architecture.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "460acee4e937a028b73980a1650c3e6af3a0fe20928b3acc3c08a8dfb8fbe6cf"
+    },
+    "P2N2_acs_migration.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "ef91ccc593669e73af615a1e57454ffa85fc0ee1af9100eb906e0f831d7b6816"
+    },
+    "P2O1_gas_exchange.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "3db6c7c6c6c13a4f9bf637047eefd929a2886a2e331433be9f2f4c9253247605"
+    },
+    "P2O3_lung_water_reference.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "efc8882c5c8bf3d7c8d18e7f9b1d61f80e713d0fd1d2f2a0d1b7149587834f8b"
+    },
+    "P2P1_pulmonary_edema.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "d8545cb5a072f529d6cb518c53c5f3b206e125633e8d4050688dcbcadf818b0b"
+    },
+    "P2P2_respiratory_drive.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "e362f67b073726cdb89520a25302ee3795c5eb2bfe654b75861adb556858e659"
+    },
+    "P2Q2_pulmonary_embolism.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "bc743e79bfe3bee845dc56411089993b5da091e4a1a2ce4fb31447afbc4f9ada"
+    },
+    "P2S2_respiratory_mechanics.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "a63f0900d34af07dd8d2e94095e50954764edd310c0ccf51f01b10137979d1e6"
+    },
+    "P2S3_asthma_migration.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "709e6389365c49b010abdfedbf05ac42e51533d855eff9f2b50ff0e37081e4dd"
+    },
+    "P2T1A_distress_closure.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "daacac03d8d4d7356ea3aceed6a01e44fb28d8452c610a510c11deffd6ae7611"
+    },
+    "P2T1_respiratory_distress.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "dd32bc6dc02e5fdfe3dd6e35dff00df559730a62573faf9c0ea7cbca29bdecea"
+    },
+    "P2T3_asthma_distress_migration.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "6fa395eaaf70dbf1f11c91e08d5758495e907b68b02e79ad83b509aae8ae13ac"
+    },
+    "P2T5_oxygenation_link.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "87b753188255c28d0ae159bb30ca785dd7cb44c948d56ffcac26997ad2c7f8a3"
+    },
+    "P2U1_opioid_migration.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "409f9870f237cc286339f0340780f1be30fbe7cc2204eeb71327d80f02ca8a2b"
+    },
+    "P2V1_systemic_stress.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "5de3392985bf50db57b89df84b30987248c625cc6f8f932b6410e805354f66e9"
+    },
+    "P2W1_distributive_tone.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "1ad221db80ed989b9a5f35a199fdb88962533db05c70a3666705f3ab8437e645"
+    },
+    "P2X1A_closure_guard.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "234a9448c7221618b2d343b2161d8e69ca7b3f09526d9ffb73ecfceac24b3317"
+    },
+    "P2X1_tone_domain.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "dd37487c3689076822180c262b5cb7f93cf06ed889ce8f99e73b0a4a733120d1"
+    },
+    "P2X3_phase2_closure.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "fcd947a647e46dcd46f33dbe490ec59458081547208379ce25b8c3065dd642aa"
+    },
+    "PHASE2_AMENDMENT_1.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "6e28a06613784c267bc08bb8ad423f06be73c29d7f38cc4baf12af1056967ee0"
+    },
+    "PHASE2_AMENDMENT_2.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "3e1983414ddd6234aced3ece132c31bb7f30a61b8ee2da3c349827a2c290544b"
+    },
+    "PHASE2_AMENDMENT_3.json": {
+      "class": "LINEAGE_RECORD_OPEN_UNTIL_CERTIFIED"
+    },
+    "PHASE3_BLEED_RATE_SCALE_CHECKPOINT.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "e961c54819bffe458aff72d2fbc43fab3df3384308907c378387c79e4563531a"
+    },
+    "PHASE3_COMMON_TONE_PROBES.json": {
+      "class": "VERSIONED",
+      "file_sha256": "6289c21e761c034e900e192f57ba217c3956e86a76ae35ac9425881370010ab3",
+      "record_digest": "0503574262a9786be20325f24a5f76f6190fe1a42fc08edba36920ed51d17004",
+      "record_id": "COMMON_TONE_PROBES_V1"
+    },
+    "PHASE3_DORMANT_PAIR_AUTHORITY.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "a2dddcd9ee33b84910bad5b4148c39d6ba49e712c082b1481fbe7e1446654363"
+    },
+    "PHASE3_DORMANT_SITE_CHECKPOINT.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "bb143edad028b94a481e4341c67fdee7d2b2d29b69d90dd4b6e49821613958ce"
+    },
+    "PHASE3_DORMANT_SITE_SERIES.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "a2591f9bab0aadb7cc13c0ebdfd78a2cbb9a4617366ebf4d0205a744f8c86096"
+    },
+    "PHASE3_EFFECTIVE_STOP_CHECKPOINT.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "9e16eafcb8e7e86eb04deac45957dcb15f04ef7a94190bad5d25ecea21fff34f"
+    },
+    "PHASE3_FACULTY_REREVIEW_BLINDNESS_PATCH_CHECKPOINT.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "5a1a6678d9f983db4ef497564acbfb2fed00b7102fb69b3fd3e8d5d800d3f62f"
+    },
+    "PHASE3_FACULTY_REREVIEW_CHECKPOINT.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "0db184d70a08f3248da661ee1b752049ab6748c5e3a3eda6660eb7d3c62507f8"
+    },
+    "PHASE3_FACULTY_REVIEW_CHECKPOINT.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "3e39963884fd5fb13e81797be2e3c3cb7cf3d6148719bc3933a897c2dcaa9e96"
+    },
+    "PHASE3_FACULTY_TRAJECTORY_REVIEW_CHECKPOINT.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "23490898239ca55047bc04b4023fd414835b3b05b49d906e2090636ba2831c38"
+    },
+    "PHASE3_FACULTY_TRAJECTORY_REVIEW_SET.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "6cfd782d56073ab7dd92878eafe7ecc36a24ac749b86f0e429bf5a123ac1d4c9"
+    },
+    "PHASE3_FIRST_FACULTY_REVIEW_CHECKPOINT.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "72d0a4dc12697a6ac985942f314fd98661602726e0042a1d545601ce85c89ea2"
+    },
+    "PHASE3_FIRST_HUMAN_FACULTY_REVIEW.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "51c13d9d6b91b4fdbdf4b5d85bab8ba2c7af98790941805cbb25fbaef63598d0"
+    },
+    "PHASE3_FRF_TONE_V1_CANDIDATE.json": {
+      "class": "VERSIONED",
+      "file_sha256": "1178c5fee9908f838d85539d4e29fc89ca367b0f322fbc1dd8e33bf4ef8f6091",
+      "record_digest": "1d01730a69912f727046e310849927d40258e89103e0a354a2e3062586d568bd",
+      "record_id": "FR-F_TONE_V1_CANDIDATE"
+    },
+    "PHASE3_FRG_CRYSTALLOID_ANALYSIS.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "3b2f77c1fca7e485424cdd3ed43ee1158c73380271fe58914b040fd9b649a018"
+    },
+    "PHASE3_GI_AMENDMENT_2_SERIES.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "ba989d91600ff59f3e839678ffd82b2a3b689bf3f0a6fa6bc90a4fe6c91c1e12"
+    },
+    "PHASE3_GI_AUTHORITY_COUNTERFACTUAL.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "0db815bee894b87109ed02c23db99aa359d1f0e33404b9cc9cc3a52f1fcaa6ad"
+    },
+    "PHASE3_GI_AUTHORITY_READINESS.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "94a10b17b457feac2af4327f323c9175b9ebe84b04871b1cf1de1076ed154f95"
+    },
+    "PHASE3_GI_BLEED_RATE_SCALE_ANALYSIS.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "0303f9f26250dd780853bf017824846cb6f1a1cc38a64ffdfd76ab9f886d913d"
+    },
+    "PHASE3_GI_JOINT_FEASIBILITY_ANALYSIS.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "8601310595e841cfae506b6bce23de1bef4bd8c36aff826c5e9fcb3c54e4ad83"
+    },
+    "PHASE3_GI_JOINT_REGION_V1.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "eb614a69dcd89271c18242f8b58e5ae0f3e4ea6362d9b2270e3c7b82ce3f8d6e"
+    },
+    "PHASE3_GI_PAIR_DRY_RUN.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "966a71246f120913c66d2cce55a940a5b5a0de0c4ee5e36cb8f73bf2eaf458bd"
+    },
+    "PHASE3_GI_PREAUTHORITY_REVIEW.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "3cfec3b16e83e8bcd8a67b32b1d5fcdbc2337fa703a2a37f03e88c66f44279bd"
+    },
+    "PHASE3_GI_PRESSURE_CALIBRATION_CLOSURE_CHECKPOINT.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "9259d2c454ac6894fb3db38d884dac2c276f2c4ab16d64d32bf44af7abf7277d"
+    },
+    "PHASE3_GI_PRESSURE_PROMOTION_CHECKPOINT.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "c09039153d37dec4f43845f9380c8d2eef24759ad19447466701f8ff9ecc0740"
+    },
+    "PHASE3_GI_RECOVERY_REVIEW.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "96b453ee293972843a848242b1b54353a08c46d42bab248e4546cd62144cd8fa"
+    },
+    "PHASE3_GI_SNAPSHOT_SENSITIVITY.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "c4e873efe895137469c6c2c1e4817a2721fece1fc9b8c6f6585f4b42d8cb3914"
+    },
+    "PHASE3_HUMAN_FACULTY_REREVIEW.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "bd772ec8f37a8b425a88dc87931d9d60fc9cb45e2a5426c33a41712aed86615b"
+    },
+    "PHASE3_JOINT_FEASIBILITY_CHECKPOINT.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "d667df19caf94029ad33cbd57ea6f5131655fd8f69ef75018b545419d5f21907"
+    },
+    "PHASE3_JOINT_REGION_CHECKPOINT.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "23ab4d246d0f560d4e49f03c0ec5c15a3980b42e26118b4a5892abf4058caa30"
+    },
+    "PHASE3_JOINT_REGION_V1_BLIND_KEY.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "a9f063e0f66354889155986aa062dc10b0f33d6d3d7b803140dfc0ba6f4f3b9b"
+    },
+    "PHASE3_JOINT_REGION_V1_CANDIDATE_REVIEW_SET.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "e479a825329347258602bc061beea8fbd24677542535e5ff815580259e75720b"
+    },
+    "PHASE3_JOINT_REGION_V1_FACULTY_REREVIEW_SET.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "2f2f205b53960cf3190afb7e3f79d178d8b7a933b6b8fa5a306d8d8b664ac053"
+    },
+    "PHASE3_PAIR_DRY_SERIES.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "dedcfd6baba99bdbb8a69ecded6f306bbba724bf51b2d8a0b7283de0a14c2ada"
+    },
+    "PHASE3_PRESSURE_AUTHORITY_DECISIONS.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "b91843c3f5e730128c9d9dbb4a77fc337bbb313458d9c485d198ebde1f1d66ea"
+    },
+    "PHASE3_PRESSURE_AUTHORITY_SERIES.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "495e9ec4d81b19cebbd7c1e91e2bd3bfa34dc95ae4b05b34f2f95d0cab761aa5"
+    },
+    "PHASE3_PRESSURE_CHECKPOINT.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "95fb2c9a39ce2234b665d03e8421c611522d414695425027d946d1d7094db859"
+    },
+    "PHASE3_TURN_CHECKPOINT.json": {
+      "class": "LEGACY_UNVERSIONED",
+      "file_sha256": "970a0b5323ca85df43878eb17c0a5d66eb3672f1b2de98844067a71c7321c080"
+    }
+  },
+  "rule": "A record listed here is immutable: its bytes are the pinned ones. It is never regenerated under new code; a newer representation is a successor record that names the one it supersedes."
+}

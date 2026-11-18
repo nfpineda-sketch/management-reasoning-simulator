@@ -1,0 +1,53 @@
+{
+  "amended": {
+    "added_sources": [
+      "clinical_core/amendment_3.py",
+      "clinical_core/vascular_support.py"
+    ],
+    "changed_sources": [
+      "clinical_core/decision_pack.py",
+      "clinical_core/derived.py",
+      "clinical_core/integration.py",
+      "clinical_core/provenance.py",
+      "clinical_core/state.py"
+    ],
+    "clinical_core_modules": 146,
+    "core_digest": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+    "declared_insertions": {
+      "clinical_core/decision_pack.py": 1,
+      "clinical_core/derived.py": 5,
+      "clinical_core/integration.py": 18,
+      "clinical_core/provenance.py": 5,
+      "clinical_core/state.py": 4
+    },
+    "removed_sources": [],
+    "stage_module": "clinical_core/amendment_3.py"
+  },
+  "amendment": "PHASE2_AMENDMENT_3",
+  "authorized": "2026-11-17 (faculty decisions FD-TONE-01 to FD-TONE-12)",
+  "branch": "phase-3-runtime-integration",
+  "certification": {
+    "status": "CANDIDATE"
+  },
+  "historical_closure": {
+    "clinical_core_modules": 141,
+    "head": "d2cca46626ed5d45a792ec9456d46fb75fe87731",
+    "note": "IMMUTABLE. Not rewritten. Verified from the live files by reversing this stage's declared insertions, then the second amendment's, then the first amendment's.",
+    "phase2_digest": "22b90a6f7f38929cc5c18aa2000579155b4d9109198e35e29ad3991e81d6ce6a",
+    "record": "docs/revision/P2X3_phase2_closure.json"
+  },
+  "not_claimed": [
+    "No clinical calibration and no dose-response: every magnitude is a DEVELOPMENT_BEHAVIOURAL_REGION with three test witnesses, none chosen.",
+    "No mmHg target, no titration engine, no weight-based dose and no second vasoactive drug.",
+    "No runtime authority, no resident-visible change and no scoring effect: the live GI pressure authority does not accept norepinephrine.",
+    "No volume and no pump output created by the support; no change to the hard no-pulse semantics.",
+    "No encounter termination from the common core."
+  ],
+  "parent": "PHASE2_AMENDMENT_2",
+  "predecessor_amendment": {
+    "amendment": "PHASE2_AMENDMENT_2",
+    "clinical_core_modules": 144,
+    "core_digest": "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2",
+    "record": "docs/revision/PHASE2_AMENDMENT_2.json"
+  }
+}

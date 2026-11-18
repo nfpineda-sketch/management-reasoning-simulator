@@ -238,7 +238,7 @@ def evaluate(environ: Mapping[str, str] | None = None, *, accounts: bool = False
     ``enabled`` is True only when EVERY condition holds. Anything less is "the authority is unavailable": the page draws no review launcher and ``authority_available`` says no."""
     live = os.environ if environ is None else environ
     record = {"record_type": RECORD_TYPE, "version": VERSION, "requested": False, "enabled": False, "configuration_complete": False, "conditions": {}, "problems": [],
-              "authority_mode": AUTHORITY_MODE, "grant_id": grants.GRANT_ID_V2, "grant_version": grants.GRANT_VERSION_V2, "environment": ENVIRONMENT, "allowlist": list(ALLOWLIST),
+              "authority_mode": AUTHORITY_MODE, "grant_id": grants.LIVE_GRANT_ID, "grant_version": grants.GRANT_VERSION_V3, "environment": ENVIRONMENT, "allowlist": list(ALLOWLIST),
               "role": role, "access": "NOT_REQUESTED", "single_process": {"held": False}}
     try:
         raw = str(live.get(FLAG, "") or "").strip()
@@ -256,7 +256,10 @@ def evaluate(environ: Mapping[str, str] | None = None, *, accounts: bool = False
             "faculty_role": str(role or "") in FACULTY_ROLES,
             "no_pilot": not is_pilot,
             "not_streamlit_cloud": not on_cloud,
-            "registered_grant": dict(grants.GRANT_V2).get("fingerprint") == grants.GRANT_FINGERPRINT_V2,
+            # P3-387 (FD-TONE-09/11): the review runs the LIVE grant and nothing else: the version the ratified snapshot resolves to must be version 3 by its pinned fingerprint, and a
+            # process that declares the historical reconstruction of the superseded version 2 is not a review session.
+            "registered_grant": (dict(grants.GRANT_V3).get("fingerprint") == grants.GRANT_FINGERPRINT_V3 and grants.LIVE_GRANT_ID == grants.GRANT_ID_V3
+                                 and ra.historical_reconstruction(live) != grants.GRANT_ID_V2),
             "single_process": False,
         }
         # The disk is touched only by a configuration that holds in everything else: a refused configuration (a pilot, the cloud, a shared password, a missing flag) writes nothing.
@@ -278,7 +281,7 @@ def evaluate(environ: Mapping[str, str] | None = None, *, accounts: bool = False
         problems["faculty_role"] = "the signed-in account is not a faculty or administrator account"
         problems["no_pilot"] = f"the first pilot's configuration is present: {pilot_why}"
         problems["not_streamlit_cloud"] = "Streamlit Community Cloud is refused: its filesystem is ephemeral and its instances are not under this operator's control"
-        problems["registered_grant"] = "the registered grant is not the pinned one"
+        problems["registered_grant"] = "the registered grant is not the pinned live one (or the process declares a historical reconstruction of a superseded grant)"
         # The lock is only taken when everything else holds: a misconfigured process must not hold a store.
         if all(conditions[name] for name in CONFIGURATION_CONDITIONS if name != "single_process"):
             lock = acquire_single_process_lock(directory)

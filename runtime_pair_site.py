@@ -436,7 +436,7 @@ def _consistency_problems(artifact: Mapping) -> list:
             problems.append("an armed gate or a prepared commit: this is not a dormant evaluation")
         snapshot = artifact.get("snapshot") or {}
         if (snapshot.get("snapshot_id"), snapshot.get("record_digest"), snapshot.get("profile_digest"), snapshot.get("core_digest")) != (
-                pair.V1_ID, pair.V1_RECORD_DIGEST, pair.V1_PROFILE_DIGEST, pair.V1_CORE_DIGEST) or (artifact.get("lineage") or {}).get("digest") != pair.V1_CORE_DIGEST:
+                pair.V1_ID, pair.V1_RECORD_DIGEST, pair.V1_PROFILE_DIGEST, pair.V1_CORE_DIGEST) or (artifact.get("lineage") or {}).get("digest") not in pair.accepted_lineage_digests():
             problems.append("the artifact does not name the pinned version 1 and its core")
     except Exception as error:
         problems.append(f"{type(error).__name__}: {error}")

@@ -1,0 +1,2082 @@
+{
+  "across_families": {
+    "built_in_every_family": true,
+    "every_run_replays_exactly": true,
+    "map_gain_mmhg_center_reference": {
+      "highest": 28.899081,
+      "lowest": 11.470707
+    },
+    "no_family_run_failed": true,
+    "no_universal_mmhg_gain": true,
+    "one_order_mapping": "runtime_tone_support.map_orders: it reads the order and the witness, never the family or the case",
+    "pressure_ratio_center_reference": {
+      "highest": 1.217297,
+      "lowest": 1.192661
+    },
+    "registered_families": [
+      "acs",
+      "asthma",
+      "gi_bleed",
+      "opioid",
+      "pulmonary_edema",
+      "pulmonary_embolism"
+    ],
+    "volume_pump_haemoglobin_and_lung_water_untouched_everywhere": true
+  },
+  "chosen_witness": null,
+  "core_probes": {
+    "consciousness_reading": {
+      "amendment_2_soft_collapse": {
+        "consciousness_witness": "CENTER_REFERENCE",
+        "read_until": 230,
+        "runs": {
+          "support_10_mcg_min_from_minute_30": {
+            "delivery_rel_at_the_end": 0.183542864,
+            "first_established": 191,
+            "first_impending": 178,
+            "map_at_the_end": 18.42838765
+          },
+          "support_40_mcg_min_from_minute_30": {
+            "delivery_rel_at_the_end": 0.174879127,
+            "first_established": 199,
+            "first_impending": 187,
+            "map_at_the_end": 19.989695372
+          },
+          "without_support": {
+            "delivery_rel_at_the_end": 0.200061722,
+            "first_established": 171,
+            "first_impending": 156,
+            "map_at_the_end": 15.45149426
+          }
+        },
+        "the_support_delays_or_removes_the_collapse_predicate_while_delivery_is_lower": true
+      },
+      "case": "gi_bleed_72f, untreated",
+      "direct_pressure_ladder": {
+        "delivery_is_lower_with_support_wherever_the_level_is_better": true,
+        "first": {
+          "delivery_rel_with": 0.744622486,
+          "delivery_rel_without": 0.81163851,
+          "level_with": 0,
+          "level_without": 1,
+          "map_with": 71.852938706,
+          "map_without": 60.245925531,
+          "minute": 52
+        },
+        "minutes_the_level_differs": 70,
+        "the_level_is_never_worse_with_support_while_both_have_a_pulse": true
+      },
+      "not_offered_by_the_development_mapping": "runtime_tone_support.with_tone_support refuses an Amendment-2 witness adapter: this interaction has not been reviewed",
+      "witness": "CENTER_REFERENCE"
+    },
+    "distributive": {
+      "arrival": {
+        "T": 1.0,
+        "burden": 0.0,
+        "delivery_rel": 1.0,
+        "map": 90.0,
+        "minute": 0,
+        "output_rel": 1.0,
+        "pressure_rel": 1.0,
+        "support": null
+      },
+      "flow_moves_toward_arrival_and_stays_at_or_above_it": true,
+      "low_tone_before_the_order": {
+        "T": 0.5,
+        "burden": 1.0,
+        "delivery_rel": 1.176470588,
+        "map": 52.941176471,
+        "minute": 10,
+        "output_rel": 1.176470588,
+        "pressure_rel": 0.588235294,
+        "support": 0.0
+      },
+      "low_tone_with_support": {
+        "T": 0.65,
+        "burden": 1.0,
+        "delivery_rel": 1.117318436,
+        "map": 65.363128468,
+        "minute": 40,
+        "output_rel": 1.117318436,
+        "pressure_rel": 0.726256983,
+        "support": 1.0
+      },
+      "low_tone_without_support": {
+        "T": 0.5,
+        "burden": 1.0,
+        "delivery_rel": 1.176470588,
+        "map": 52.941176471,
+        "minute": 40,
+        "output_rel": 1.176470588,
+        "pressure_rel": 0.588235294,
+        "support": 0.0
+      },
+      "pressure_moves_toward_arrival": true,
+      "probe": "SYNTHETIC_ONLY: clinical_core.distributive_tone probe anchors and scripted burden; no authored case and no family adapter",
+      "tone_is_the_product_of_both_factors": true,
+      "witness": "CENTER_REFERENCE"
+    },
+    "no_flow": {
+      "empty_preload": [
+        {
+          "delivery_rel": 0.0,
+          "output_rel": 0.0,
+          "pressure_rel": 0.0,
+          "tone": 1.0
+        },
+        {
+          "delivery_rel": 0.0,
+          "output_rel": 0.0,
+          "pressure_rel": 0.0,
+          "tone": 1.299999527
+        },
+        {
+          "delivery_rel": 0.0,
+          "output_rel": 0.0,
+          "pressure_rel": 0.0,
+          "tone": 2.5
+        }
+      ],
+      "no_flow_has_no_pressure": true,
+      "no_pulse": [
+        {
+          "delivery_rel": 0.0,
+          "map": null,
+          "output_rel": 0.0,
+          "pressure_rel": 0.0,
+          "pulse_present": false,
+          "rhythm": "asystole",
+          "sbp": null,
+          "support": 0.99999838,
+          "tone": 1.299999527
+        },
+        {
+          "delivery_rel": 0.0,
+          "map": null,
+          "output_rel": 0.0,
+          "pressure_rel": 0.0,
+          "pulse_present": false,
+          "rhythm": "asystole",
+          "sbp": null,
+          "support": 0.99999838,
+          "tone": 2.5
+        },
+        {
+          "delivery_rel": 0.0,
+          "map": null,
+          "output_rel": 0.0,
+          "pressure_rel": 0.0,
+          "pulse_present": false,
+          "rhythm": "pulseless_electrical_activity",
+          "sbp": null,
+          "support": 0.99999838,
+          "tone": 1.299999527
+        },
+        {
+          "delivery_rel": 0.0,
+          "map": null,
+          "output_rel": 0.0,
+          "pressure_rel": 0.0,
+          "pulse_present": false,
+          "rhythm": "pulseless_electrical_activity",
+          "sbp": null,
+          "support": 0.99999838,
+          "tone": 2.5
+        }
+      ],
+      "no_pulse_has_no_circulation": true,
+      "witness": "CENTER_REFERENCE"
+    },
+    "saturation": {
+      "a_gain_that_could_reach_the_guard_is_refused_before_execution": {
+        "10.0": true,
+        "2.0": true,
+        "3.0": true
+      },
+      "a_rate_past_it_is_refused_at_the_order": true,
+      "by_rate": [
+        {
+          "D": 29.605860885,
+          "T": 1.199999999,
+          "delivery_rel": 0.806232376,
+          "map": 71.726379517,
+          "output_rel": 0.807729499,
+          "rate_mcg_min": 5.0,
+          "support": 0.5
+        },
+        {
+          "D": 30.161147833,
+          "T": 1.299999999,
+          "delivery_rel": 0.784042494,
+          "map": 75.564947228,
+          "output_rel": 0.785498412,
+          "rate_mcg_min": 10.0,
+          "support": 1.0
+        },
+        {
+          "D": 30.695061235,
+          "T": 1.399999999,
+          "delivery_rel": 0.763041356,
+          "map": 79.197877388,
+          "output_rel": 0.764458276,
+          "rate_mcg_min": 20.0,
+          "support": 2.0
+        },
+        {
+          "D": 31.108928291,
+          "T": 1.48,
+          "delivery_rel": 0.747033495,
+          "map": 81.967033946,
+          "output_rel": 0.74842069,
+          "rate_mcg_min": 40.0,
+          "support": 4.0
+        },
+        {
+          "D": 31.379238306,
+          "T": 1.533333333,
+          "delivery_rel": 0.736729585,
+          "map": 83.749479549,
+          "output_rel": 0.738097646,
+          "rate_mcg_min": 80.0,
+          "support": 8.0
+        },
+        {
+          "D": 31.708956907,
+          "T": 1.599414062,
+          "delivery_rel": 0.724350547,
+          "map": 85.890895834,
+          "output_rel": 0.725695621,
+          "rate_mcg_min": 10230.0,
+          "support": 1022.999998
+        }
+      ],
+      "debt_rises_with_the_rate": true,
+      "delivery_falls_as_the_rate_rises": true,
+      "each_further_unit_of_rate_adds_less_tone": true,
+      "largest_rate_the_writer_represents_mcg_min": 10230.0,
+      "tone_ceiling": 1.6,
+      "tone_guard_upper": 3.0,
+      "tone_never_reaches_its_ceiling": true,
+      "without": {
+        "D": 28.418969787,
+        "map": 63.358301925
+      },
+      "witness": "CENTER_REFERENCE"
+    },
+    "static_dependence": {
+      "states": {
+        "depleted_and_failing_pump": {
+          "map_at_arrival_tone": 27.158938354,
+          "map_at_raised_tone": 32.391394368,
+          "map_gain_mmhg": 5.232456,
+          "output_ratio": 0.917431193,
+          "pressure_ratio": 1.19266055
+        },
+        "failing_pump": {
+          "map_at_arrival_tone": 37.0,
+          "map_at_raised_tone": 44.128440367,
+          "map_gain_mmhg": 7.12844,
+          "output_ratio": 0.917431193,
+          "pressure_ratio": 1.19266055
+        },
+        "replete": {
+          "map_at_arrival_tone": 74.0,
+          "map_at_raised_tone": 88.256880734,
+          "map_gain_mmhg": 14.256881,
+          "output_ratio": 0.917431193,
+          "pressure_ratio": 1.19266055
+        },
+        "very_volume_depleted": {
+          "map_at_arrival_tone": 18.532197998,
+          "map_at_raised_tone": 22.102621465,
+          "map_gain_mmhg": 3.570423,
+          "output_ratio": 0.917431193,
+          "pressure_ratio": 1.19266055
+        },
+        "volume_depleted": {
+          "map_at_arrival_tone": 49.566456703,
+          "map_at_raised_tone": 59.115957536,
+          "map_gain_mmhg": 9.549501,
+          "output_ratio": 0.917431193,
+          "pressure_ratio": 1.19266055
+        }
+      },
+      "the_output_cost_of_tone_is_the_same_fraction_in_every_state": true,
+      "tone": 1.3,
+      "witness": "CENTER_REFERENCE"
+    },
+    "stopped_infusion": {
+      "cases": {
+        "one_stopped": {
+          "first_minute_at_exactly_zero_after_the_last_stop": 32,
+          "minutes": 240,
+          "never_negative": true,
+          "peak_support": 0.12166866,
+          "ran_to_the_end": true,
+          "state_is_exactly_the_sum_of_its_writers_every_minute": true,
+          "tone_back_at_arrival_at_the_end": true
+        },
+        "two_overlapping_and_stopped": {
+          "first_minute_at_exactly_zero_after_the_last_stop": 57,
+          "minutes": 240,
+          "never_negative": true,
+          "peak_support": 0.607156749,
+          "ran_to_the_end": true,
+          "state_is_exactly_the_sum_of_its_writers_every_minute": true,
+          "tone_back_at_arrival_at_the_end": true
+        }
+      },
+      "resolution": 9.094947017729282e-13,
+      "witness": "LOW"
+    },
+    "volume_dependence": {
+      "case": "gi_bleed_72f, untreated",
+      "fewer_mmhg_as_the_volume_falls": true,
+      "orders": [
+        {
+          "V_before": -12.397123449,
+          "map_gain_mmhg": 13.220448,
+          "map_with": 81.843651966,
+          "map_without": 68.623204013,
+          "order_minute": 5,
+          "output_rel_without": 0.927340595,
+          "pressure_ratio": 1.192653,
+          "read_at": 20,
+          "volume_identical": true
+        },
+        {
+          "V_before": -134.266660934,
+          "map_gain_mmhg": 10.472814,
+          "map_with": 64.833912781,
+          "map_without": 54.36109847,
+          "order_minute": 60,
+          "output_rel_without": 0.734609439,
+          "pressure_ratio": 1.192653,
+          "read_at": 75,
+          "volume_identical": true
+        },
+        {
+          "V_before": -227.898166778,
+          "map_gain_mmhg": 8.054858,
+          "map_with": 49.865105617,
+          "map_without": 41.810247144,
+          "order_minute": 110,
+          "output_rel_without": 0.56500334,
+          "pressure_ratio": 1.192653,
+          "read_at": 125,
+          "volume_identical": true
+        }
+      ],
+      "witness": "CENTER_REFERENCE"
+    }
+  },
+  "decision_reference": "FD-TONE-01 to FD-TONE-12",
+  "edge_case_matrix": [
+    {
+      "as_predicted": true,
+      "case": "hemorrhagic_low_volume",
+      "evidence": {
+        "at_minute": 30,
+        "case_id": "gi_bleed_57m",
+        "delivery_ratio": 0.917431,
+        "map_gain_mmhg": 11.470707,
+        "output_ratio": 0.917431,
+        "pressure_ratio": 1.192661,
+        "probe": "family:gi_bleed"
+      },
+      "family": "gi_bleed",
+      "not_represented": [
+        "venous return recruited by venoconstriction (the support does not raise preload)",
+        "pressure-dependent bleeding (a higher pressure does not bleed faster here)"
+      ],
+      "observed": {
+        "bounded": true,
+        "flow": "DOWN",
+        "pressure": "UP"
+      },
+      "predicted": {
+        "bounded": true,
+        "class": "PRESSURE_SUPPORT_AT_A_FLOW_COST",
+        "flow": "DOWN",
+        "pressure": "UP",
+        "why": "tone multiplies the flow there is, so pressure rises while the bleed goes on; the afterload lowers output, so delivery falls and the debt accrues faster; no volume is added, so the pressure keeps falling with the bleed"
+      }
+    },
+    {
+      "as_predicted": true,
+      "case": "cardiogenic_pump_limited",
+      "evidence": {
+        "at_minute": 30,
+        "case_id": "acs_70f_left_main",
+        "delivery_ratio": 0.904877,
+        "map_gain_mmhg": 16.481346,
+        "output_ratio": 0.904877,
+        "pressure_ratio": 1.217297,
+        "probe": "family:acs"
+      },
+      "family": "acs",
+      "not_represented": [
+        "a pump-dependent afterload sensitivity (a failing ventricle loses more output per unit of afterload; the sensitivity is one number for every pump)",
+        "coronary perfusion pressure acting on the pump",
+        "the drug's inotropy"
+      ],
+      "observed": {
+        "bounded": true,
+        "flow": "DOWN",
+        "pressure": "UP"
+      },
+      "predicted": {
+        "bounded": true,
+        "class": "PRESSURE_SUPPORT_AT_A_FLOW_COST",
+        "flow": "DOWN",
+        "pressure": "UP",
+        "why": "the same factor on a smaller flow: fewer mmHg than with a preserved pump, and output falls through the afterload"
+      }
+    },
+    {
+      "as_predicted": true,
+      "case": "pulmonary_congestion",
+      "evidence": {
+        "at_minute": 30,
+        "case_id": "pulmonary_edema_58m",
+        "delivery_ratio": 0.917431,
+        "map_gain_mmhg": 28.899081,
+        "output_ratio": 0.917431,
+        "pressure_ratio": 1.192661,
+        "probe": "family:pulmonary_edema"
+      },
+      "family": "pulmonary_edema",
+      "not_represented": [
+        "afterload-driven lung water (lung water is not read from tone)",
+        "the factor is on the patient's own arrival pressure, so the same order buys MORE mmHg at a higher arrival pressure"
+      ],
+      "observed": {
+        "bounded": true,
+        "flow": "DOWN",
+        "pressure": "UP"
+      },
+      "predicted": {
+        "bounded": true,
+        "class": "HARM_OR_NON_BENEFIT",
+        "flow": "DOWN",
+        "pressure": "UP",
+        "why": "a patient who is not hypotensive gains pressure they do not need and loses flow"
+      }
+    },
+    {
+      "as_predicted": true,
+      "case": "obstructive",
+      "evidence": {
+        "at_minute": 30,
+        "case_id": "pulmonary_embolism_61m",
+        "delivery_ratio": 0.904709,
+        "map_gain_mmhg": 13.537427,
+        "output_ratio": 0.904709,
+        "pressure_ratio": 1.215861,
+        "probe": "family:pulmonary_embolism"
+      },
+      "family": "pulmonary_embolism",
+      "not_represented": [
+        "right-ventricular coronary perfusion"
+      ],
+      "observed": {
+        "bounded": true,
+        "flow": "DOWN",
+        "pressure": "UP"
+      },
+      "predicted": {
+        "bounded": true,
+        "class": "PRESSURE_SUPPORT_AT_A_FLOW_COST",
+        "flow": "DOWN",
+        "pressure": "UP",
+        "why": "as with any reduced forward flow: the factor is the tone's, the flow sets what it multiplies"
+      }
+    },
+    {
+      "as_predicted": true,
+      "case": "normal_hemodynamics",
+      "evidence": {
+        "at_minute": 30,
+        "case_id": "asthma_49m",
+        "delivery_ratio": 0.917431,
+        "map_gain_mmhg": 20.165137,
+        "output_ratio": 0.917431,
+        "pressure_ratio": 1.192661,
+        "probe": "family:asthma"
+      },
+      "family": "asthma",
+      "not_represented": [],
+      "observed": {
+        "bounded": true,
+        "flow": "DOWN",
+        "pressure": "UP"
+      },
+      "predicted": {
+        "bounded": true,
+        "class": "HARM_OR_NON_BENEFIT",
+        "flow": "DOWN",
+        "pressure": "UP",
+        "why": "pressure above the patient's own arrival and less flow: no benefit"
+      }
+    },
+    {
+      "as_predicted": true,
+      "case": "normal_hemodynamics",
+      "evidence": {
+        "at_minute": 30,
+        "case_id": "opioid_35m",
+        "delivery_ratio": 0.917431,
+        "map_gain_mmhg": 15.027522,
+        "output_ratio": 0.917431,
+        "pressure_ratio": 1.192661,
+        "probe": "family:opioid"
+      },
+      "family": "opioid",
+      "not_represented": [],
+      "observed": {
+        "bounded": true,
+        "flow": "DOWN",
+        "pressure": "UP"
+      },
+      "predicted": {
+        "bounded": true,
+        "class": "HARM_OR_NON_BENEFIT",
+        "flow": "DOWN",
+        "pressure": "UP",
+        "why": "pressure above the patient's own arrival and less flow: no benefit"
+      }
+    },
+    {
+      "as_predicted": true,
+      "case": "distributive_like_low_tone",
+      "evidence": {
+        "low_tone_with_support": {
+          "T": 0.65,
+          "burden": 1.0,
+          "delivery_rel": 1.117318436,
+          "map": 65.363128468,
+          "minute": 40,
+          "output_rel": 1.117318436,
+          "pressure_rel": 0.726256983,
+          "support": 1.0
+        },
+        "low_tone_without_support": {
+          "T": 0.5,
+          "burden": 1.0,
+          "delivery_rel": 1.176470588,
+          "map": 52.941176471,
+          "minute": 40,
+          "output_rel": 1.176470588,
+          "pressure_rel": 0.588235294,
+          "support": 0.0
+        },
+        "probe": "core:distributive"
+      },
+      "not_represented": [
+        "no authored distributive case exists: the vasodilatory reader is SYNTHETIC_ONLY and the burden here is a scripted probe"
+      ],
+      "observed": {
+        "bounded": true,
+        "flow": "TOWARD_ARRIVAL",
+        "pressure": "UP"
+      },
+      "predicted": {
+        "bounded": true,
+        "class": "RESTORES_TOWARD_ARRIVAL",
+        "flow": "TOWARD_ARRIVAL",
+        "pressure": "UP",
+        "why": "a burden lowers the tone target and the support raises it: the two factors multiply, so pressure and flow both move back toward arrival and flow stays at or above it"
+      }
+    },
+    {
+      "as_predicted": true,
+      "case": "no_pulse",
+      "evidence": {
+        "probe": "core:no_flow.no_pulse"
+      },
+      "not_represented": [],
+      "observed": {
+        "bounded": true,
+        "flow": "NONE",
+        "pressure": "NONE"
+      },
+      "predicted": {
+        "bounded": true,
+        "class": "NO_EFFECT",
+        "flow": "NONE",
+        "pressure": "NONE",
+        "why": "hard no-pulse semantics: without a pulse there is no pressure, output or delivery whatever the tone"
+      }
+    },
+    {
+      "as_predicted": true,
+      "case": "empty_preload_no_flow",
+      "evidence": {
+        "probe": "core:no_flow.empty_preload"
+      },
+      "not_represented": [],
+      "observed": {
+        "bounded": true,
+        "flow": "NONE",
+        "pressure": "NONE"
+      },
+      "predicted": {
+        "bounded": true,
+        "class": "NO_EFFECT",
+        "flow": "NONE",
+        "pressure": "NONE",
+        "why": "pressure is output x tone: with no forward flow no tone makes a pressure"
+      }
+    },
+    {
+      "as_predicted": true,
+      "case": "already_high_tone",
+      "evidence": {
+        "probe": "core:saturation",
+        "tone_at_10": 1.299999999,
+        "tone_at_80": 1.533333333,
+        "tone_at_the_largest_rate": 1.599414062,
+        "tone_ceiling": 1.6
+      },
+      "not_represented": [
+        "ischaemia from excessive vasoconstriction beyond the loss of flow",
+        "a patient who ARRIVES vasoconstricted is not nearer the ceiling: arrival is the scale (tone 1), so only the exogenous support saturates"
+      ],
+      "observed": {
+        "bounded": true,
+        "flow": "DOWN",
+        "pressure": "UP"
+      },
+      "predicted": {
+        "bounded": true,
+        "class": "DIMINISHING_RETURNS",
+        "flow": "DOWN",
+        "pressure": "UP",
+        "why": "the support saturates: each further mcg/min adds less tone, the tone never reaches 1 + k, and delivery falls further"
+      }
+    }
+  ],
+  "evidence_class": "MODEL_ANALYSIS",
+  "family_probes": {
+    "acs": {
+      "case_id": "acs_70f_left_main",
+      "family": "acs",
+      "mapping": "the family's own registered (committed) shadow mapping, plus the declared reader: the SAME order mapping in every family",
+      "order_minute": 5,
+      "role": "cardiogenic_pump_limited",
+      "without_the_mapping": {
+        "at_the_end": {
+          "D": 25.189734139,
+          "L": 0.034881855,
+          "P": 0.95,
+          "T": 1.021429721,
+          "V": 0.0,
+          "dbp": 63.634542363,
+          "delivery_rel": 0.943931543,
+          "hb": 12.2,
+          "map": 75.847232311,
+          "minute": 30,
+          "output_rel": 0.943931543,
+          "pressure_rel": 0.964159733,
+          "pulse_present": true,
+          "sbp": 100.272612208,
+          "support": null
+        },
+        "at_the_order": {
+          "D": 20.765230138,
+          "L": 0.000829876,
+          "P": 0.991666667,
+          "T": 1.002887782,
+          "V": 0.0,
+          "dbp": 65.582189209,
+          "delivery_rel": 0.990808295,
+          "hb": 12.2,
+          "map": 78.168669966,
+          "minute": 5,
+          "output_rel": 0.990808295,
+          "pressure_rel": 0.993669533,
+          "pulse_present": true,
+          "sbp": 103.341631481,
+          "support": null
+        },
+        "gaps": [
+          {
+            "kind": "norepinephrine",
+            "order_id": "probe-m005-norepinephrine",
+            "why": "no core intervention for this order type"
+          }
+        ]
+      },
+      "witnesses": {
+        "CENTER_REFERENCE": {
+          "built": true,
+          "facts": {
+            "debt_never_below_the_unmapped_run": true,
+            "delivery_never_above_the_unmapped_run": true,
+            "first_minute_pressure_differs": 7,
+            "first_minute_tone_differs": 7,
+            "first_minute_with_support": 6,
+            "identical_through_the_minute_after_the_order": true,
+            "largest_tone": 1.374090247,
+            "order_minute": 5,
+            "output_never_above_the_unmapped_run": true,
+            "pressure_never_below_the_unmapped_run": true,
+            "tone_below_its_ceiling": true,
+            "tone_ceiling": 1.6,
+            "untouched_state": {
+              "L": true,
+              "P": true,
+              "V": true,
+              "hb": true
+            }
+          },
+          "failures": [],
+          "gaps": [],
+          "observed": [
+            {
+              "delivery_ratio": 0.9442,
+              "map_gain_mmhg": 10.109571,
+              "map_with": 88.096509882,
+              "map_without": 77.986938677,
+              "minute": 7,
+              "output_ratio": 0.9442,
+              "pressure_ratio": 1.129632
+            },
+            {
+              "delivery_ratio": 0.908895,
+              "map_gain_mmhg": 16.411629,
+              "map_with": 94.124659362,
+              "map_without": 77.71303085,
+              "minute": 10,
+              "output_ratio": 0.908895,
+              "pressure_ratio": 1.211182
+            },
+            {
+              "delivery_ratio": 0.904877,
+              "map_gain_mmhg": 16.481346,
+              "map_with": 92.328578269,
+              "map_without": 75.847232311,
+              "minute": 30,
+              "output_ratio": 0.904877,
+              "pressure_ratio": 1.217297
+            }
+          ],
+          "replays_exactly": true
+        },
+        "HIGH": {
+          "built": true,
+          "facts": {
+            "debt_never_below_the_unmapped_run": true,
+            "delivery_never_above_the_unmapped_run": true,
+            "first_minute_pressure_differs": 7,
+            "first_minute_tone_differs": 7,
+            "first_minute_with_support": 6,
+            "identical_through_the_minute_after_the_order": true,
+            "largest_tone": 1.739791803,
+            "order_minute": 5,
+            "output_never_above_the_unmapped_run": true,
+            "pressure_never_below_the_unmapped_run": true,
+            "tone_below_its_ceiling": true,
+            "tone_ceiling": 1.9,
+            "untouched_state": {
+              "L": true,
+              "P": true,
+              "V": true,
+              "hb": true
+            }
+          },
+          "failures": [],
+          "gaps": [],
+          "observed": [
+            {
+              "delivery_ratio": 0.853535,
+              "map_gain_mmhg": 26.535983,
+              "map_with": 104.522921517,
+              "map_without": 77.986938677,
+              "minute": 7,
+              "output_ratio": 0.853535,
+              "pressure_ratio": 1.340262
+            },
+            {
+              "delivery_ratio": 0.824093,
+              "map_gain_mmhg": 31.687713,
+              "map_with": 109.400744058,
+              "map_without": 77.71303085,
+              "minute": 10,
+              "output_ratio": 0.824093,
+              "pressure_ratio": 1.407753
+            },
+            {
+              "delivery_ratio": 0.823634,
+              "map_gain_mmhg": 30.557912,
+              "map_with": 106.405144609,
+              "map_without": 75.847232311,
+              "minute": 30,
+              "output_ratio": 0.823634,
+              "pressure_ratio": 1.402888
+            }
+          ],
+          "replays_exactly": true
+        },
+        "LOW": {
+          "built": true,
+          "facts": {
+            "debt_never_below_the_unmapped_run": true,
+            "delivery_never_above_the_unmapped_run": true,
+            "first_minute_pressure_differs": 7,
+            "first_minute_tone_differs": 7,
+            "first_minute_with_support": 6,
+            "identical_through_the_minute_after_the_order": true,
+            "largest_tone": 1.137274672,
+            "order_minute": 5,
+            "output_never_above_the_unmapped_run": true,
+            "pressure_never_below_the_unmapped_run": true,
+            "tone_below_its_ceiling": true,
+            "tone_ceiling": 1.3,
+            "untouched_state": {
+              "L": true,
+              "P": true,
+              "V": true,
+              "hb": true
+            }
+          },
+          "failures": [],
+          "gaps": [],
+          "observed": [
+            {
+              "delivery_ratio": 0.988917,
+              "map_gain_mmhg": 2.007895,
+              "map_with": 79.994833616,
+              "map_without": 77.986938677,
+              "minute": 7,
+              "output_ratio": 0.988917,
+              "pressure_ratio": 1.025747
+            },
+            {
+              "delivery_ratio": 0.97344,
+              "map_gain_mmhg": 4.784544,
+              "map_with": 82.497574766,
+              "map_without": 77.71303085,
+              "minute": 10,
+              "output_ratio": 0.97344,
+              "pressure_ratio": 1.061567
+            },
+            {
+              "delivery_ratio": 0.966621,
+              "map_gain_mmhg": 5.783351,
+              "map_with": 81.630583664,
+              "map_without": 75.847232311,
+              "minute": 30,
+              "output_ratio": 0.966621,
+              "pressure_ratio": 1.07625
+            }
+          ],
+          "replays_exactly": true
+        }
+      }
+    },
+    "asthma": {
+      "case_id": "asthma_49m",
+      "family": "asthma",
+      "mapping": "the family's own registered (committed) shadow mapping, plus the declared reader: the SAME order mapping in every family",
+      "order_minute": 5,
+      "role": "normal_hemodynamics",
+      "without_the_mapping": {
+        "at_the_end": {
+          "D": 0.0,
+          "L": 0.0,
+          "P": 1.0,
+          "T": 1.0,
+          "V": 0.0,
+          "dbp": 86.0,
+          "delivery_rel": 1.0,
+          "hb": 14.2,
+          "map": 104.666666667,
+          "minute": 30,
+          "output_rel": 1.0,
+          "pressure_rel": 1.0,
+          "pulse_present": true,
+          "sbp": 142.0,
+          "support": null
+        },
+        "at_the_order": {
+          "D": 0.0,
+          "L": 0.0,
+          "P": 1.0,
+          "T": 1.0,
+          "V": 0.0,
+          "dbp": 86.0,
+          "delivery_rel": 1.0,
+          "hb": 14.2,
+          "map": 104.666666667,
+          "minute": 5,
+          "output_rel": 1.0,
+          "pressure_rel": 1.0,
+          "pulse_present": true,
+          "sbp": 142.0,
+          "support": null
+        },
+        "gaps": [
+          {
+            "kind": "norepinephrine",
+            "order_id": "probe-m005-norepinephrine",
+            "why": "no core intervention for this order type"
+          }
+        ]
+      },
+      "witnesses": {
+        "CENTER_REFERENCE": {
+          "built": true,
+          "facts": {
+            "debt_never_below_the_unmapped_run": true,
+            "delivery_never_above_the_unmapped_run": true,
+            "first_minute_pressure_differs": 7,
+            "first_minute_tone_differs": 7,
+            "first_minute_with_support": 6,
+            "identical_through_the_minute_after_the_order": true,
+            "largest_tone": 1.299999983,
+            "order_minute": 5,
+            "output_never_above_the_unmapped_run": true,
+            "pressure_never_below_the_unmapped_run": true,
+            "tone_below_its_ceiling": true,
+            "tone_ceiling": 1.6,
+            "untouched_state": {
+              "L": true,
+              "P": true,
+              "V": true,
+              "hb": true
+            }
+          },
+          "failures": [],
+          "gaps": [],
+          "observed": [
+            {
+              "delivery_ratio": 0.944361,
+              "map_gain_mmhg": 13.588249,
+              "map_with": 118.254915298,
+              "map_without": 104.666666667,
+              "minute": 7,
+              "output_ratio": 0.944361,
+              "pressure_ratio": 1.129824
+            },
+            {
+              "delivery_ratio": 0.920166,
+              "map_gain_mmhg": 19.497293,
+              "map_with": 124.163960147,
+              "map_without": 104.666666667,
+              "minute": 10,
+              "output_ratio": 0.920166,
+              "pressure_ratio": 1.18628
+            },
+            {
+              "delivery_ratio": 0.917431,
+              "map_gain_mmhg": 20.165137,
+              "map_with": 124.83180324,
+              "map_without": 104.666666667,
+              "minute": 30,
+              "output_ratio": 0.917431,
+              "pressure_ratio": 1.192661
+            }
+          ],
+          "replays_exactly": true
+        },
+        "HIGH": {
+          "built": true,
+          "facts": {
+            "debt_never_below_the_unmapped_run": true,
+            "delivery_never_above_the_unmapped_run": true,
+            "first_minute_pressure_differs": 7,
+            "first_minute_tone_differs": 7,
+            "first_minute_with_support": 6,
+            "identical_through_the_minute_after_the_order": true,
+            "largest_tone": 1.6,
+            "order_minute": 5,
+            "output_never_above_the_unmapped_run": true,
+            "pressure_never_below_the_unmapped_run": true,
+            "tone_below_its_ceiling": true,
+            "tone_ceiling": 1.9,
+            "untouched_state": {
+              "L": true,
+              "P": true,
+              "V": true,
+              "hb": true
+            }
+          },
+          "failures": [],
+          "gaps": [],
+          "observed": [
+            {
+              "delivery_ratio": 0.853917,
+              "map_gain_mmhg": 35.676821,
+              "map_with": 140.343488136,
+              "map_without": 104.666666667,
+              "minute": 7,
+              "output_ratio": 0.853917,
+              "pressure_ratio": 1.340861
+            },
+            {
+              "delivery_ratio": 0.847472,
+              "map_gain_mmhg": 37.250706,
+              "map_with": 141.917372765,
+              "map_without": 104.666666667,
+              "minute": 10,
+              "output_ratio": 0.847472,
+              "pressure_ratio": 1.355898
+            },
+            {
+              "delivery_ratio": 0.847458,
+              "map_gain_mmhg": 37.254237,
+              "map_with": 141.920903955,
+              "map_without": 104.666666667,
+              "minute": 30,
+              "output_ratio": 0.847458,
+              "pressure_ratio": 1.355932
+            }
+          ],
+          "replays_exactly": true
+        },
+        "LOW": {
+          "built": true,
+          "facts": {
+            "debt_never_below_the_unmapped_run": true,
+            "delivery_never_above_the_unmapped_run": true,
+            "first_minute_pressure_differs": 7,
+            "first_minute_tone_differs": 7,
+            "first_minute_with_support": 6,
+            "identical_through_the_minute_after_the_order": true,
+            "largest_tone": 1.099977633,
+            "order_minute": 5,
+            "output_never_above_the_unmapped_run": true,
+            "pressure_never_below_the_unmapped_run": true,
+            "tone_below_its_ceiling": true,
+            "tone_ceiling": 1.3,
+            "untouched_state": {
+              "L": true,
+              "P": true,
+              "V": true,
+              "hb": true
+            }
+          },
+          "failures": [],
+          "gaps": [],
+          "observed": [
+            {
+              "delivery_ratio": 0.988951,
+              "map_gain_mmhg": 2.698438,
+              "map_with": 107.365104696,
+              "map_without": 104.666666667,
+              "minute": 7,
+              "output_ratio": 0.988951,
+              "pressure_ratio": 1.025781
+            },
+            {
+              "delivery_ratio": 0.976353,
+              "map_gain_mmhg": 5.775237,
+              "map_with": 110.441903222,
+              "map_without": 104.666666667,
+              "minute": 10,
+              "output_ratio": 0.976353,
+              "pressure_ratio": 1.055177
+            },
+            {
+              "delivery_ratio": 0.97088,
+              "map_gain_mmhg": 7.111724,
+              "map_with": 111.778390603,
+              "map_without": 104.666666667,
+              "minute": 30,
+              "output_ratio": 0.97088,
+              "pressure_ratio": 1.067946
+            }
+          ],
+          "replays_exactly": true
+        }
+      }
+    },
+    "gi_bleed": {
+      "case_id": "gi_bleed_57m",
+      "family": "gi_bleed",
+      "mapping": "the family's own registered (committed) shadow mapping, plus the declared reader: the SAME order mapping in every family",
+      "order_minute": 5,
+      "role": "hemorrhagic_low_volume",
+      "without_the_mapping": {
+        "at_the_end": {
+          "D": 1.302710622,
+          "L": 0.0,
+          "P": 1.0,
+          "T": 1.0,
+          "V": -70.818324063,
+          "dbp": 49.210337276,
+          "delivery_rel": 0.910338508,
+          "hb": 6.69291231,
+          "map": 59.538432753,
+          "minute": 30,
+          "output_rel": 0.911302542,
+          "pressure_rel": 0.911302542,
+          "pulse_present": true,
+          "sbp": 80.194623709,
+          "support": null
+        },
+        "at_the_order": {
+          "D": 0.030035784,
+          "L": 0.0,
+          "P": 1.0,
+          "T": 1.0,
+          "V": -12.397123449,
+          "dbp": 53.190661243,
+          "delivery_rel": 0.984986849,
+          "hb": 6.699827255,
+          "map": 64.354133356,
+          "minute": 5,
+          "output_rel": 0.985012245,
+          "pressure_rel": 0.985012245,
+          "pulse_present": true,
+          "sbp": 86.681077582,
+          "support": null
+        },
+        "gaps": [
+          {
+            "kind": "norepinephrine",
+            "order_id": "probe-m005-norepinephrine",
+            "why": "no core intervention for this order type yet"
+          }
+        ]
+      },
+      "witnesses": {
+        "CENTER_REFERENCE": {
+          "built": true,
+          "facts": {
+            "debt_never_below_the_unmapped_run": true,
+            "delivery_never_above_the_unmapped_run": true,
+            "first_minute_pressure_differs": 7,
+            "first_minute_tone_differs": 7,
+            "first_minute_with_support": 6,
+            "identical_through_the_minute_after_the_order": true,
+            "largest_tone": 1.299999983,
+            "order_minute": 5,
+            "output_never_above_the_unmapped_run": true,
+            "pressure_never_below_the_unmapped_run": true,
+            "tone_below_its_ceiling": true,
+            "tone_ceiling": 1.6,
+            "untouched_state": {
+              "L": true,
+              "P": true,
+              "V": true,
+              "hb": true
+            }
+          },
+          "failures": [],
+          "gaps": [],
+          "observed": [
+            {
+              "delivery_ratio": 0.944361,
+              "map_gain_mmhg": 8.304068,
+              "map_with": 72.268093374,
+              "map_without": 63.964025688,
+              "minute": 7,
+              "output_ratio": 0.944361,
+              "pressure_ratio": 1.129824
+            },
+            {
+              "delivery_ratio": 0.920166,
+              "map_gain_mmhg": 11.806515,
+              "map_with": 75.187030897,
+              "map_without": 63.380516305,
+              "minute": 10,
+              "output_ratio": 0.920166,
+              "pressure_ratio": 1.18628
+            },
+            {
+              "delivery_ratio": 0.917431,
+              "map_gain_mmhg": 11.470707,
+              "map_with": 71.009139389,
+              "map_without": 59.538432753,
+              "minute": 30,
+              "output_ratio": 0.917431,
+              "pressure_ratio": 1.192661
+            }
+          ],
+          "replays_exactly": true
+        },
+        "HIGH": {
+          "built": true,
+          "facts": {
+            "debt_never_below_the_unmapped_run": true,
+            "delivery_never_above_the_unmapped_run": true,
+            "first_minute_pressure_differs": 7,
+            "first_minute_tone_differs": 7,
+            "first_minute_with_support": 6,
+            "identical_through_the_minute_after_the_order": true,
+            "largest_tone": 1.6,
+            "order_minute": 5,
+            "output_never_above_the_unmapped_run": true,
+            "pressure_never_below_the_unmapped_run": true,
+            "tone_below_its_ceiling": true,
+            "tone_ceiling": 1.9,
+            "untouched_state": {
+              "L": true,
+              "P": true,
+              "V": true,
+              "hb": true
+            }
+          },
+          "failures": [],
+          "gaps": [],
+          "observed": [
+            {
+              "delivery_ratio": 0.853917,
+              "map_gain_mmhg": 21.802864,
+              "map_with": 85.766889939,
+              "map_without": 63.964025688,
+              "minute": 7,
+              "output_ratio": 0.853917,
+              "pressure_ratio": 1.340861
+            },
+            {
+              "delivery_ratio": 0.847472,
+              "map_gain_mmhg": 22.557029,
+              "map_with": 85.937544826,
+              "map_without": 63.380516305,
+              "minute": 10,
+              "output_ratio": 0.847472,
+              "pressure_ratio": 1.355898
+            },
+            {
+              "delivery_ratio": 0.847458,
+              "map_gain_mmhg": 21.191646,
+              "map_with": 80.73007831,
+              "map_without": 59.538432753,
+              "minute": 30,
+              "output_ratio": 0.847458,
+              "pressure_ratio": 1.355932
+            }
+          ],
+          "replays_exactly": true
+        },
+        "LOW": {
+          "built": true,
+          "facts": {
+            "debt_never_below_the_unmapped_run": true,
+            "delivery_never_above_the_unmapped_run": true,
+            "first_minute_pressure_differs": 7,
+            "first_minute_tone_differs": 7,
+            "first_minute_with_support": 6,
+            "identical_through_the_minute_after_the_order": true,
+            "largest_tone": 1.099977633,
+            "order_minute": 5,
+            "output_never_above_the_unmapped_run": true,
+            "pressure_never_below_the_unmapped_run": true,
+            "tone_below_its_ceiling": true,
+            "tone_ceiling": 1.3,
+            "untouched_state": {
+              "L": true,
+              "P": true,
+              "V": true,
+              "hb": true
+            }
+          },
+          "failures": [],
+          "gaps": [],
+          "observed": [
+            {
+              "delivery_ratio": 0.988951,
+              "map_gain_mmhg": 1.649073,
+              "map_with": 65.613098549,
+              "map_without": 63.964025688,
+              "minute": 7,
+              "output_ratio": 0.988951,
+              "pressure_ratio": 1.025781
+            },
+            {
+              "delivery_ratio": 0.976353,
+              "map_gain_mmhg": 3.497173,
+              "map_with": 66.877689629,
+              "map_without": 63.380516305,
+              "minute": 10,
+              "output_ratio": 0.976353,
+              "pressure_ratio": 1.055177
+            },
+            {
+              "delivery_ratio": 0.97088,
+              "map_gain_mmhg": 4.045423,
+              "map_with": 63.58385534,
+              "map_without": 59.538432753,
+              "minute": 30,
+              "output_ratio": 0.97088,
+              "pressure_ratio": 1.067946
+            }
+          ],
+          "replays_exactly": true
+        }
+      }
+    },
+    "opioid": {
+      "case_id": "opioid_35m",
+      "family": "opioid",
+      "mapping": "the family's own registered (committed) shadow mapping, plus the declared reader: the SAME order mapping in every family",
+      "order_minute": 5,
+      "role": "normal_hemodynamics",
+      "without_the_mapping": {
+        "at_the_end": {
+          "D": 0.0,
+          "L": 0.0,
+          "P": 1.0,
+          "T": 1.0,
+          "V": 0.0,
+          "dbp": 64.0,
+          "delivery_rel": 1.0,
+          "hb": 14.5,
+          "map": 78.0,
+          "minute": 30,
+          "output_rel": 1.0,
+          "pressure_rel": 1.0,
+          "pulse_present": true,
+          "sbp": 106.0,
+          "support": null
+        },
+        "at_the_order": {
+          "D": 0.0,
+          "L": 0.0,
+          "P": 1.0,
+          "T": 1.0,
+          "V": 0.0,
+          "dbp": 64.0,
+          "delivery_rel": 1.0,
+          "hb": 14.5,
+          "map": 78.0,
+          "minute": 5,
+          "output_rel": 1.0,
+          "pressure_rel": 1.0,
+          "pulse_present": true,
+          "sbp": 106.0,
+          "support": null
+        },
+        "gaps": [
+          {
+            "kind": "norepinephrine",
+            "order_id": "probe-m005-norepinephrine",
+            "why": "no core intervention for this order type"
+          }
+        ]
+      },
+      "witnesses": {
+        "CENTER_REFERENCE": {
+          "built": true,
+          "facts": {
+            "debt_never_below_the_unmapped_run": true,
+            "delivery_never_above_the_unmapped_run": true,
+            "first_minute_pressure_differs": 7,
+            "first_minute_tone_differs": 7,
+            "first_minute_with_support": 6,
+            "identical_through_the_minute_after_the_order": true,
+            "largest_tone": 1.299999983,
+            "order_minute": 5,
+            "output_never_above_the_unmapped_run": true,
+            "pressure_never_below_the_unmapped_run": true,
+            "tone_below_its_ceiling": true,
+            "tone_ceiling": 1.6,
+            "untouched_state": {
+              "L": true,
+              "P": true,
+              "V": true,
+              "hb": true
+            }
+          },
+          "failures": [],
+          "gaps": [],
+          "observed": [
+            {
+              "delivery_ratio": 0.944361,
+              "map_gain_mmhg": 10.126274,
+              "map_with": 88.126274458,
+              "map_without": 78.0,
+              "minute": 7,
+              "output_ratio": 0.944361,
+              "pressure_ratio": 1.129824
+            },
+            {
+              "delivery_ratio": 0.920166,
+              "map_gain_mmhg": 14.52983,
+              "map_with": 92.529830174,
+              "map_without": 78.0,
+              "minute": 10,
+              "output_ratio": 0.920166,
+              "pressure_ratio": 1.18628
+            },
+            {
+              "delivery_ratio": 0.917431,
+              "map_gain_mmhg": 15.027522,
+              "map_with": 93.02752216,
+              "map_without": 78.0,
+              "minute": 30,
+              "output_ratio": 0.917431,
+              "pressure_ratio": 1.192661
+            }
+          ],
+          "replays_exactly": true
+        },
+        "HIGH": {
+          "built": true,
+          "facts": {
+            "debt_never_below_the_unmapped_run": true,
+            "delivery_never_above_the_unmapped_run": true,
+            "first_minute_pressure_differs": 7,
+            "first_minute_tone_differs": 7,
+            "first_minute_with_support": 6,
+            "identical_through_the_minute_after_the_order": true,
+            "largest_tone": 1.6,
+            "order_minute": 5,
+            "output_never_above_the_unmapped_run": true,
+            "pressure_never_below_the_unmapped_run": true,
+            "tone_below_its_ceiling": true,
+            "tone_ceiling": 1.9,
+            "untouched_state": {
+              "L": true,
+              "P": true,
+              "V": true,
+              "hb": true
+            }
+          },
+          "failures": [],
+          "gaps": [],
+          "observed": [
+            {
+              "delivery_ratio": 0.853917,
+              "map_gain_mmhg": 26.587185,
+              "map_with": 104.587185426,
+              "map_without": 78.0,
+              "minute": 7,
+              "output_ratio": 0.853917,
+              "pressure_ratio": 1.340861
+            },
+            {
+              "delivery_ratio": 0.847472,
+              "map_gain_mmhg": 27.76008,
+              "map_with": 105.760080341,
+              "map_without": 78.0,
+              "minute": 10,
+              "output_ratio": 0.847472,
+              "pressure_ratio": 1.355898
+            },
+            {
+              "delivery_ratio": 0.847458,
+              "map_gain_mmhg": 27.762712,
+              "map_with": 105.762711864,
+              "map_without": 78.0,
+              "minute": 30,
+              "output_ratio": 0.847458,
+              "pressure_ratio": 1.355932
+            }
+          ],
+          "replays_exactly": true
+        },
+        "LOW": {
+          "built": true,
+          "facts": {
+            "debt_never_below_the_unmapped_run": true,
+            "delivery_never_above_the_unmapped_run": true,
+            "first_minute_pressure_differs": 7,
+            "first_minute_tone_differs": 7,
+            "first_minute_with_support": 6,
+            "identical_through_the_minute_after_the_order": true,
+            "largest_tone": 1.099977633,
+            "order_minute": 5,
+            "output_never_above_the_unmapped_run": true,
+            "pressure_never_below_the_unmapped_run": true,
+            "tone_below_its_ceiling": true,
+            "tone_ceiling": 1.3,
+            "untouched_state": {
+              "L": true,
+              "P": true,
+              "V": true,
+              "hb": true
+            }
+          },
+          "failures": [],
+          "gaps": [],
+          "observed": [
+            {
+              "delivery_ratio": 0.988951,
+              "map_gain_mmhg": 2.010938,
+              "map_with": 80.010937895,
+              "map_without": 78.0,
+              "minute": 7,
+              "output_ratio": 0.988951,
+              "pressure_ratio": 1.025781
+            },
+            {
+              "delivery_ratio": 0.976353,
+              "map_gain_mmhg": 4.303839,
+              "map_with": 82.303838707,
+              "map_without": 78.0,
+              "minute": 10,
+              "output_ratio": 0.976353,
+              "pressure_ratio": 1.055177
+            },
+            {
+              "delivery_ratio": 0.97088,
+              "map_gain_mmhg": 5.29982,
+              "map_with": 83.299819749,
+              "map_without": 78.0,
+              "minute": 30,
+              "output_ratio": 0.97088,
+              "pressure_ratio": 1.067946
+            }
+          ],
+          "replays_exactly": true
+        }
+      }
+    },
+    "pulmonary_edema": {
+      "case_id": "pulmonary_edema_58m",
+      "family": "pulmonary_edema",
+      "mapping": "the family's own registered (committed) shadow mapping, plus the declared reader: the SAME order mapping in every family",
+      "order_minute": 5,
+      "role": "pulmonary_congestion",
+      "without_the_mapping": {
+        "at_the_end": {
+          "D": 0.0,
+          "L": 0.141297679,
+          "P": 1.0,
+          "T": 1.0,
+          "V": 0.0,
+          "dbp": 116.0,
+          "delivery_rel": 0.991277921,
+          "hb": 14.3,
+          "map": 150.0,
+          "minute": 30,
+          "output_rel": 1.0,
+          "pressure_rel": 1.0,
+          "pulse_present": true,
+          "sbp": 218.0,
+          "support": null
+        },
+        "at_the_order": {
+          "D": 0.0,
+          "L": 0.024792963,
+          "P": 1.0,
+          "T": 1.0,
+          "V": 0.0,
+          "dbp": 116.0,
+          "delivery_rel": 0.99846957,
+          "hb": 14.3,
+          "map": 150.0,
+          "minute": 5,
+          "output_rel": 1.0,
+          "pressure_rel": 1.0,
+          "pulse_present": true,
+          "sbp": 218.0,
+          "support": null
+        },
+        "gaps": [
+          {
+            "kind": "norepinephrine",
+            "order_id": "probe-m005-norepinephrine",
+            "why": "no core intervention for this order type"
+          }
+        ]
+      },
+      "witnesses": {
+        "CENTER_REFERENCE": {
+          "built": true,
+          "facts": {
+            "debt_never_below_the_unmapped_run": true,
+            "delivery_never_above_the_unmapped_run": true,
+            "first_minute_pressure_differs": 7,
+            "first_minute_tone_differs": 7,
+            "first_minute_with_support": 6,
+            "identical_through_the_minute_after_the_order": true,
+            "largest_tone": 1.299999983,
+            "order_minute": 5,
+            "output_never_above_the_unmapped_run": true,
+            "pressure_never_below_the_unmapped_run": true,
+            "tone_below_its_ceiling": true,
+            "tone_ceiling": 1.6,
+            "untouched_state": {
+              "L": true,
+              "P": true,
+              "V": true,
+              "hb": true
+            }
+          },
+          "failures": [],
+          "gaps": [],
+          "observed": [
+            {
+              "delivery_ratio": 0.944361,
+              "map_gain_mmhg": 19.473605,
+              "map_with": 169.473604726,
+              "map_without": 150.0,
+              "minute": 7,
+              "output_ratio": 0.944361,
+              "pressure_ratio": 1.129824
+            },
+            {
+              "delivery_ratio": 0.920166,
+              "map_gain_mmhg": 27.941981,
+              "map_with": 177.941981103,
+              "map_without": 150.0,
+              "minute": 10,
+              "output_ratio": 0.920166,
+              "pressure_ratio": 1.18628
+            },
+            {
+              "delivery_ratio": 0.917431,
+              "map_gain_mmhg": 28.899081,
+              "map_with": 178.899081077,
+              "map_without": 150.0,
+              "minute": 30,
+              "output_ratio": 0.917431,
+              "pressure_ratio": 1.192661
+            }
+          ],
+          "replays_exactly": true
+        },
+        "HIGH": {
+          "built": true,
+          "facts": {
+            "debt_never_below_the_unmapped_run": true,
+            "delivery_never_above_the_unmapped_run": true,
+            "first_minute_pressure_differs": 7,
+            "first_minute_tone_differs": 7,
+            "first_minute_with_support": 6,
+            "identical_through_the_minute_after_the_order": true,
+            "largest_tone": 1.6,
+            "order_minute": 5,
+            "output_never_above_the_unmapped_run": true,
+            "pressure_never_below_the_unmapped_run": true,
+            "tone_below_its_ceiling": true,
+            "tone_ceiling": 1.9,
+            "untouched_state": {
+              "L": true,
+              "P": true,
+              "V": true,
+              "hb": true
+            }
+          },
+          "failures": [],
+          "gaps": [],
+          "observed": [
+            {
+              "delivery_ratio": 0.853917,
+              "map_gain_mmhg": 51.129203,
+              "map_with": 201.129202743,
+              "map_without": 150.0,
+              "minute": 7,
+              "output_ratio": 0.853917,
+              "pressure_ratio": 1.340861
+            },
+            {
+              "delivery_ratio": 0.847472,
+              "map_gain_mmhg": 53.38477,
+              "map_with": 203.384769886,
+              "map_without": 150.0,
+              "minute": 10,
+              "output_ratio": 0.847472,
+              "pressure_ratio": 1.355898
+            },
+            {
+              "delivery_ratio": 0.847458,
+              "map_gain_mmhg": 53.389831,
+              "map_with": 203.389830508,
+              "map_without": 150.0,
+              "minute": 30,
+              "output_ratio": 0.847458,
+              "pressure_ratio": 1.355932
+            }
+          ],
+          "replays_exactly": true
+        },
+        "LOW": {
+          "built": true,
+          "facts": {
+            "debt_never_below_the_unmapped_run": true,
+            "delivery_never_above_the_unmapped_run": true,
+            "first_minute_pressure_differs": 7,
+            "first_minute_tone_differs": 7,
+            "first_minute_with_support": 6,
+            "identical_through_the_minute_after_the_order": true,
+            "largest_tone": 1.099977633,
+            "order_minute": 5,
+            "output_never_above_the_unmapped_run": true,
+            "pressure_never_below_the_unmapped_run": true,
+            "tone_below_its_ceiling": true,
+            "tone_ceiling": 1.3,
+            "untouched_state": {
+              "L": true,
+              "P": true,
+              "V": true,
+              "hb": true
+            }
+          },
+          "failures": [],
+          "gaps": [],
+          "observed": [
+            {
+              "delivery_ratio": 0.988951,
+              "map_gain_mmhg": 3.867188,
+              "map_with": 153.867188259,
+              "map_without": 150.0,
+              "minute": 7,
+              "output_ratio": 0.988951,
+              "pressure_ratio": 1.025781
+            },
+            {
+              "delivery_ratio": 0.976353,
+              "map_gain_mmhg": 8.276613,
+              "map_with": 158.276612898,
+              "map_without": 150.0,
+              "minute": 10,
+              "output_ratio": 0.976353,
+              "pressure_ratio": 1.055177
+            },
+            {
+              "delivery_ratio": 0.97088,
+              "map_gain_mmhg": 10.191961,
+              "map_with": 160.191961055,
+              "map_without": 150.0,
+              "minute": 30,
+              "output_ratio": 0.97088,
+              "pressure_ratio": 1.067946
+            }
+          ],
+          "replays_exactly": true
+        }
+      }
+    },
+    "pulmonary_embolism": {
+      "case_id": "pulmonary_embolism_61m",
+      "family": "pulmonary_embolism",
+      "mapping": "the family's own registered (committed) shadow mapping, plus the declared reader: the SAME order mapping in every family",
+      "order_minute": 5,
+      "role": "obstructive",
+      "without_the_mapping": {
+        "at_the_end": {
+          "D": 25.472238617,
+          "L": 0.0,
+          "P": 0.95,
+          "T": 1.030038452,
+          "V": 0.0,
+          "dbp": 52.36904707,
+          "delivery_rel": 0.9214548,
+          "hb": 11.6,
+          "map": 62.713550195,
+          "minute": 30,
+          "output_rel": 0.941515499,
+          "pressure_rel": 0.969797168,
+          "pulse_present": true,
+          "sbp": 83.402556445,
+          "support": null
+        },
+        "at_the_order": {
+          "D": 20.771684228,
+          "L": 0.0,
+          "P": 0.991666667,
+          "T": 1.004109177,
+          "V": 0.0,
+          "dbp": 53.703842859,
+          "delivery_rel": 0.986928484,
+          "hb": 11.6,
+          "map": 64.31200935,
+          "minute": 5,
+          "output_rel": 0.990445692,
+          "pressure_rel": 0.994515609,
+          "pulse_present": true,
+          "sbp": 85.528342331,
+          "support": null
+        },
+        "gaps": [
+          {
+            "kind": "norepinephrine",
+            "order_id": "probe-m005-norepinephrine",
+            "why": "no core intervention for this order type"
+          }
+        ]
+      },
+      "witnesses": {
+        "CENTER_REFERENCE": {
+          "built": true,
+          "facts": {
+            "debt_never_below_the_unmapped_run": true,
+            "delivery_never_above_the_unmapped_run": true,
+            "first_minute_pressure_differs": 7,
+            "first_minute_tone_differs": 7,
+            "first_minute_with_support": 6,
+            "identical_through_the_minute_after_the_order": true,
+            "largest_tone": 1.384294533,
+            "order_minute": 5,
+            "output_never_above_the_unmapped_run": true,
+            "pressure_never_below_the_unmapped_run": true,
+            "tone_below_its_ceiling": true,
+            "tone_ceiling": 1.6,
+            "untouched_state": {
+              "L": true,
+              "P": true,
+              "V": true,
+              "hb": true
+            }
+          },
+          "failures": [],
+          "gaps": [],
+          "observed": [
+            {
+              "delivery_ratio": 0.944133,
+              "map_gain_mmhg": 8.315883,
+              "map_with": 72.506068149,
+              "map_without": 64.190184654,
+              "minute": 7,
+              "output_ratio": 0.944133,
+              "pressure_ratio": 1.129551
+            },
+            {
+              "delivery_ratio": 0.908835,
+              "map_gain_mmhg": 13.488563,
+              "map_with": 77.493993799,
+              "map_without": 64.005431,
+              "minute": 10,
+              "output_ratio": 0.908835,
+              "pressure_ratio": 1.210741
+            },
+            {
+              "delivery_ratio": 0.904709,
+              "map_gain_mmhg": 13.537427,
+              "map_with": 76.250977358,
+              "map_without": 62.713550195,
+              "minute": 30,
+              "output_ratio": 0.904709,
+              "pressure_ratio": 1.215861
+            }
+          ],
+          "replays_exactly": true
+        },
+        "HIGH": {
+          "built": true,
+          "facts": {
+            "debt_never_below_the_unmapped_run": true,
+            "delivery_never_above_the_unmapped_run": true,
+            "first_minute_pressure_differs": 7,
+            "first_minute_tone_differs": 7,
+            "first_minute_with_support": 6,
+            "identical_through_the_minute_after_the_order": true,
+            "largest_tone": 1.751251821,
+            "order_minute": 5,
+            "output_never_above_the_unmapped_run": true,
+            "pressure_never_below_the_unmapped_run": true,
+            "tone_below_its_ceiling": true,
+            "tone_ceiling": 1.9,
+            "untouched_state": {
+              "L": true,
+              "P": true,
+              "V": true,
+              "hb": true
+            }
+          },
+          "failures": [],
+          "gaps": [],
+          "observed": [
+            {
+              "delivery_ratio": 0.853374,
+              "map_gain_mmhg": 21.825304,
+              "map_with": 86.015489057,
+              "map_without": 64.190184654,
+              "minute": 7,
+              "output_ratio": 0.853374,
+              "pressure_ratio": 1.34001
+            },
+            {
+              "delivery_ratio": 0.824025,
+              "map_gain_mmhg": 26.036875,
+              "map_with": 90.042306434,
+              "map_without": 64.005431,
+              "minute": 10,
+              "output_ratio": 0.824025,
+              "pressure_ratio": 1.406792
+            },
+            {
+              "delivery_ratio": 0.82343,
+              "map_gain_mmhg": 25.084217,
+              "map_with": 87.797767151,
+              "map_without": 62.713550195,
+              "minute": 30,
+              "output_ratio": 0.82343,
+              "pressure_ratio": 1.399981
+            }
+          ],
+          "replays_exactly": true
+        },
+        "LOW": {
+          "built": true,
+          "facts": {
+            "debt_never_below_the_unmapped_run": true,
+            "delivery_never_above_the_unmapped_run": true,
+            "first_minute_pressure_differs": 7,
+            "first_minute_tone_differs": 7,
+            "first_minute_with_support": 6,
+            "identical_through_the_minute_after_the_order": true,
+            "largest_tone": 1.146458091,
+            "order_minute": 5,
+            "output_never_above_the_unmapped_run": true,
+            "pressure_never_below_the_unmapped_run": true,
+            "tone_below_its_ceiling": true,
+            "tone_ceiling": 1.3,
+            "untouched_state": {
+              "L": true,
+              "P": true,
+              "V": true,
+              "hb": true
+            }
+          },
+          "failures": [],
+          "gaps": [],
+          "observed": [
+            {
+              "delivery_ratio": 0.988903,
+              "map_gain_mmhg": 1.65174,
+              "map_with": 65.841924209,
+              "map_without": 64.190184654,
+              "minute": 7,
+              "output_ratio": 0.988903,
+              "pressure_ratio": 1.025732
+            },
+            {
+              "delivery_ratio": 0.973415,
+              "map_gain_mmhg": 3.933443,
+              "map_with": 67.938874442,
+              "map_without": 64.005431,
+              "minute": 10,
+              "output_ratio": 0.973415,
+              "pressure_ratio": 1.061455
+            },
+            {
+              "delivery_ratio": 0.966544,
+              "map_gain_mmhg": 4.75289,
+              "map_with": 67.466440238,
+              "map_without": 62.713550195,
+              "minute": 30,
+              "output_ratio": 0.966544,
+              "pressure_ratio": 1.075787
+            }
+          ],
+          "replays_exactly": true
+        }
+      }
+    }
+  },
+  "limitations": [
+    "a patient who ARRIVES vasoconstricted is not nearer the ceiling: arrival is the scale (tone 1), so only the exogenous support saturates",
+    "a patient who arrives already on a vasopressor cannot be represented: arrival is the scale (tone 1, support 0)",
+    "a pump-dependent afterload sensitivity (a failing ventricle loses more output per unit of afterload; the sensitivity is one number for every pump)",
+    "afterload-driven lung water (lung water is not read from tone)",
+    "coronary perfusion pressure acting on the pump",
+    "ischaemia from excessive vasoconstriction beyond the loss of flow",
+    "no authored distributive case exists: the vasodilatory reader is SYNTHETIC_ONLY and the burden here is a scripted probe",
+    "only norepinephrine writes the support, and only the encounter's first order of the kind -- a start at a fixed rate in mcg/min -- is mapped",
+    "output and delivery never rise with tone: the afterload is the only path from tone to flow, and its sensitivity is one number for every pump and volume",
+    "pressure-dependent bleeding (a higher pressure does not bleed faster here)",
+    "right-ventricular coronary perfusion",
+    "the consciousness readings are taken from the pressure, so with support they read BETTER while output and delivery are lower: the direct pressure ladder, and the Amendment-2 soft-collapse conjunction, which the support can keep from establishing (the development mapping refuses that combination)",
+    "the drug's inotropy",
+    "the factor is on the patient's own arrival pressure, so the same order buys MORE mmHg at a higher arrival pressure",
+    "venous return recruited by venoconstriction (the support does not raise preload)"
+  ],
+  "no_narrow_region": "every confidence is below 0.80, so no narrow region is adopted and no point is chosen (FD-TONE-06)",
+  "order": {
+    "kind": "norepinephrine",
+    "minute": 5,
+    "operation": "start",
+    "rate": 10.0,
+    "read_until": 30,
+    "units": "mcg/min"
+  },
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-17",
+    "generating_code": {
+      "application_module_count": 316,
+      "application_modules": "7c290a18ca98883ab6fa86a08138068d25c09a00543d700ba87ad632255c69cf",
+      "clinical_core": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "test_tone_pathway_analysis.py": "ba48e1600752029ecb6b38bbb75c99db3ade6b96313d0b8aa2f18d6ea6e032b6"
+    },
+    "generating_code_fingerprint": "086a1c5d6c970434d7ac6d404f47b3a07ecc7029f107bdbdb0272409523d31b5",
+    "grant_id": null,
+    "record_id": "COMMON_TONE_PROBES_V1",
+    "record_schema_version": 1,
+    "source_data_digest": "a5e79c82d835c57fed9d3d99828d8938b8d07859f2996462f6078b2d22729578",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "record_digest": "0503574262a9786be20325f24a5f76f6190fe1a42fc08edba36920ed51d17004",
+  "record_type": "COMMON_TONE_DEVELOPMENT_PROBES",
+  "region": {
+    "half_effect_rate_mcg_min": {
+      "assumption": "the steady support is proportional to the rate (the saturation lives in the common factor)",
+      "bounds": [
+        5.0,
+        20.0
+      ],
+      "confidence": 0.5,
+      "evidence": "the authored order is a fixed rate in mcg/min (FR-F: 10 mcg/min); clinical infusions span roughly one order of magnitude around it",
+      "falsifier": "a faculty reviewer finds that 10 mcg/min produces almost no effect or an almost maximal one",
+      "uncertainty": "wide: potency varies with weight, acidosis and receptor desensitisation, none of which is modelled",
+      "unit": "mcg/min"
+    },
+    "offset_tau_min": {
+      "assumption": "the offset is first order and independent of how long the infusion ran",
+      "bounds": [
+        1.0,
+        5.0
+      ],
+      "confidence": 0.6,
+      "evidence": "a plasma half-life of a few minutes",
+      "falsifier": "a stopped infusion that keeps supporting pressure for tens of minutes, or loses it within one",
+      "uncertainty": "moderate; not exercised by the first authored order, which is never stopped",
+      "unit": "min"
+    },
+    "onset_tau_min": {
+      "assumption": "one first-order process stands for mixing, distribution and receptor response",
+      "bounds": [
+        0.5,
+        3.0
+      ],
+      "confidence": 0.7,
+      "evidence": "the drug acts within one to two minutes and is at steady effect within several",
+      "falsifier": "a faculty reviewer finds the pressure at the first reassessment arrives too early or too late",
+      "uncertainty": "moderate: the timing CLASS (minutes, not seconds and not tens of minutes) is firmer than any value",
+      "unit": "min"
+    },
+    "tone_gain": {
+      "assumption": "the effect on tone saturates (an Emax form) and composes multiplicatively with the tone the state already has",
+      "bounds": [
+        0.3,
+        0.9
+      ],
+      "confidence": 0.5,
+      "evidence": "a vasopressor raises arterial pressure in a dose-dependent, saturating way; no source in this repository gives a magnitude, and the faculty supplied no mmHg target. The upper bound is the core's own, not a clinical one: where the committed compensation can reach 1.5 times the arrival tone, a gain of 1.0 puts the largest reachable target on T's guard (3.0), which the tone domain refuses before execution; 0.9 is inside it in every committed family profile",
+      "falsifier": "a faculty reviewer finds the pressure response at a saturating support implausibly small or large for a patient with preserved flow",
+      "uncertainty": "wide: the true ceiling depends on the patient, the vascular bed and the receptor state",
+      "unit": "fraction of the arrival tone"
+    }
+  },
+  "statement": "Synthetic development cases run in the shadow. Development probes of a behavioural region: not a clinical validation, not a calibration, not a dose-response, not runtime authority and not visible to a resident. No witness is chosen.",
+  "status": "DEVELOPMENT_PROBES",
+  "version": "COMMON_TONE_PROBES_V1",
+  "witnesses": {
+    "CENTER_REFERENCE": {
+      "half_effect_rate_mcg_min": 10.0,
+      "offset_tau_min": 2.5,
+      "onset_tau_min": 1.5,
+      "tone_gain": 0.6
+    },
+    "HIGH": {
+      "half_effect_rate_mcg_min": 5.0,
+      "offset_tau_min": 5.0,
+      "onset_tau_min": 0.5,
+      "tone_gain": 0.9
+    },
+    "LOW": {
+      "half_effect_rate_mcg_min": 20.0,
+      "offset_tau_min": 1.0,
+      "onset_tau_min": 3.0,
+      "tone_gain": 0.3
+    }
+  }
+}
