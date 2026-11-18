@@ -1,0 +1,379 @@
+{
+  "adversarial_review": {
+    "evidence_class": "MODEL_ANALYSIS",
+    "findings": [
+      {
+        "disposition": "FIXED: the writers' grid (2**-40); the state is exactly the sum of its writers every minute",
+        "finding": "the support accumulated in free binary64: a stopped infusion left a residue, and with the LOW offset a negative one refused the run",
+        "id": "H1",
+        "severity": "MAJOR"
+      },
+      {
+        "disposition": "FIXED (the combination is refused) and DECLARED (core probe and limitation): a faculty decision",
+        "finding": "tone support could be declared on an Amendment-2 consciousness witness, where it delays the soft collapse while delivery falls",
+        "id": "H2",
+        "severity": "MINOR"
+      },
+      {
+        "disposition": "FIXED: the digest of every entry is pinned in the test and the classes are enforced",
+        "finding": "the pins of the record index were not themselves pinned; lineage classes usable outside amendment records",
+        "id": "H3",
+        "severity": "MINOR"
+      },
+      {
+        "disposition": "FIXED: the core, every application module by content and the harness",
+        "finding": "the generating-code fingerprint of the new records covered a short list of files",
+        "id": "H4",
+        "severity": "MINOR"
+      },
+      {
+        "disposition": "FIXED: the minute's conservation invariant and an explicit refusal",
+        "finding": "no conservation invariant for the support; a carried support was dropped in silence under an UNSET reader",
+        "id": "H5",
+        "severity": "MINOR"
+      },
+      {
+        "disposition": "FIXED: only the encounter's first order of the kind can be built",
+        "finding": "order mapping: a weight-based start followed by a fixed one built the second; lexicographic tie-break; duplicate ids",
+        "id": "H6",
+        "severity": "MINOR"
+      },
+      {
+        "disposition": "FIXED: the refusal names the declared factor; overflow is a provenance refusal; a limit on the steady support",
+        "finding": "loop-bound message, overflow of the sum, absurd rates",
+        "id": "H7",
+        "severity": "NOTE"
+      },
+      {
+        "disposition": "FIXED: the grant that binds the snapshot decides alone, on the live grant's core",
+        "finding": "a declared historical reconstruction accepted the rebuilt lineage the caller offered",
+        "id": "H8",
+        "severity": "NOTE"
+      },
+      {
+        "disposition": "FIXED: the assertion requires CERTIFIED; the comment is corrected; the GI snapshot's digest is a typed literal",
+        "finding": "a real-lineage assertion tolerant of CANDIDATE; a stale comment; checkpoint fact naming",
+        "id": "H9",
+        "severity": "NOTE"
+      },
+      {
+        "disposition": "DECLARED: pre-existing at every change of lineage member; a limitation, no code change",
+        "finding": "shadow traces stored under the second amendment do not replay on the live core",
+        "id": "H10",
+        "severity": "NOTE"
+      }
+    ],
+    "how": "one independent read-only review of the code (not of the author's conclusions); every finding was confirmed with a probe before it was repaired",
+    "reviews": 1,
+    "unresolved_blocking_findings": []
+  },
+  "certification": {
+    "candidate_head": "93e4cf7fb806c2dd9193f677f88dbccf79496f30",
+    "candidate_tree": "84c3edfb389c50a16c3f1b32a9d0d3d2543e8195",
+    "earlier_launches_discarded": 4,
+    "errors": 0,
+    "failures": 0,
+    "fingerprint": "e1fd602e7aa88057e4a8a0531573e989a4d57ef39287567b1bcc8fe32f4cba0c",
+    "note": "the full suite and the regressions ran on the candidate's frozen fingerprint; four earlier launches (two on other candidates, two killed by a container restart) were discarded and nothing of them is reused. The final tree, with this record and the certification written, is run again in full on the REAL lineage before it is published; that run is reported with the delivery and cannot be written into the tree it certifies.",
+    "regressions_failed": 0,
+    "regressions_passed": 56,
+    "regressions_retired": 10,
+    "skipped": 99,
+    "stage": "CANDIDATE_UNDER_THE_CERTIFICATION_PREVIEW",
+    "tests": 13230,
+    "xfailed": 1
+  },
+  "confirmations": {
+    "gi_pressure_snapshot_unchanged": true,
+    "live_authority_still_stops_on_norepinephrine": true,
+    "no_clinical_validation_claim": true,
+    "no_consciousness_authority_expansion": true,
+    "no_gi_recalibration": true,
+    "no_resident_deployment": true,
+    "no_source_control": true,
+    "no_terminal_authority_expansion": true
+  },
+  "decision_reference": "FD-TONE-01 to FD-TONE-12",
+  "evidence_class": "MODEL_ANALYSIS",
+  "facts": {
+    "authority": {
+      "authority_cases": [
+        "gi_bleed_57m",
+        "gi_bleed_72f"
+      ],
+      "authority_domain": [
+        "sbp",
+        "dbp",
+        "map"
+      ],
+      "common_core_runtime_authority": false,
+      "norepinephrine_is_a_supported_authority_action": false,
+      "registered_adapters_declaring_the_reader": []
+    },
+    "candidate": {
+      "chosen_witness": null,
+      "every_check_true_in_every_witness": true,
+      "faculty_verdict": null,
+      "record": "docs/revision/PHASE3_FRF_TONE_V1_CANDIDATE.json",
+      "record_digest": "1d01730a69912f727046e310849927d40258e89103e0a354a2e3062586d568bd",
+      "version": "FR-F_TONE_V1_CANDIDATE"
+    },
+    "core": {
+      "amendment": "PHASE2_AMENDMENT_3",
+      "digest": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "off_by_default": true,
+      "predecessor_digests": {
+        "PHASE2_AMENDMENT_1": "10b45ce2967ea55afccb35291afb5bb1f7f1b01eb4a253e6a0736c02a5878635",
+        "PHASE2_AMENDMENT_2": "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2",
+        "PHASE2_CLOSURE": "22b90a6f7f38929cc5c18aa2000579155b4d9109198e35e29ad3991e81d6ce6a"
+      },
+      "predecessors_rebuilt_from_the_live_tree": {
+        "PHASE2_AMENDMENT_1": {
+          "digest_recomputes": true,
+          "reversal_proven": true
+        },
+        "PHASE2_AMENDMENT_2": {
+          "digest_recomputes": true,
+          "reversal_proven": true
+        },
+        "PHASE2_CLOSURE": {
+          "closure_digest_recomputes": true,
+          "closure_record_states_it": true,
+          "common_untouched": true,
+          "reversal_proven": true,
+          "touched": []
+        }
+      },
+      "registered_as_the_last_lineage_member": true,
+      "sources": 146
+    },
+    "gi_pressure_snapshot": {
+      "configuration_digest": "70e6826cb2844bace6e3249058638340d00d80f84f8fdd2a5a2e752028db0641",
+      "configuration_is_the_one_both_grants_pin": true,
+      "gi_mapping_still_maps": [
+        "fluid",
+        "blood",
+        "oxygen",
+        "ppi"
+      ],
+      "id": "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1",
+      "record_file_sha256": "dc5da76ea764759552d6107fd05584257903e16bb04cefe139486a0b343c922e",
+      "record_is_byte_for_byte_the_one_pinned_before_this_cycle": true
+    },
+    "grants": {
+      "live": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V3",
+      "live_fingerprint": "cf90210a5a7929f653bd5b0da6f2a68f5831209dad1e7d56b0986c4244920d90",
+      "live_grant_is_a_lineage_rebind_only": true,
+      "norepinephrine_not_granted": true,
+      "older_fingerprints_unchanged": {
+        "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V1": "3c29c2b9eb070ea1728bea2b17fd4484ff42c5105070c9402b17e73b29c3c136",
+        "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V2": "8a91145dbfe899dffdc5de1ed28b116c61f4fa5b462a49979727ce8b05b3642f"
+      },
+      "superseded": {
+        "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V1": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V2",
+        "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V2": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V3"
+      }
+    },
+    "mapping": {
+      "chosen_witness": null,
+      "declared_gaps": {
+        "another_operation": "norepinephrine {operation} has no core mapping: only a start at a fixed rate is mapped (no titration and no stop)",
+        "any_order_after_an_unmapped_first": "the encounter's first norepinephrine order was not mapped, so the run does not mirror its vasopressor and maps no later order of the kind either",
+        "any_order_after_the_first": "norepinephrine {operation} after the run's infusion started is not mapped (no titration, no stop, no restart): the run keeps the infusion it mapped and, from this order on, no longer mirrors the encounter's vasopressor",
+        "no_rate": "a norepinephrine start without a finite positive rate is not mapped",
+        "other_units": "norepinephrine in {units} is not mapped: only a fixed rate in mcg/min (a weight-based dose needs a weight this mapping does not read)"
+      },
+      "mapped": {
+        "contributor": "norepinephrine",
+        "kind": "norepinephrine",
+        "operation": "start",
+        "units": "mcg/min"
+      },
+      "module_version": "P3-396",
+      "not_granted": [
+        "runtime authority",
+        "a registered adapter",
+        "resident visibility",
+        "scoring",
+        "the first pilot",
+        "a clinical dose-response",
+        "an mmHg target",
+        "titration",
+        "a weight-based dose",
+        "any other vasopressor",
+        "clinical validation"
+      ],
+      "only_the_first_order_of_the_kind_can_be_built": true,
+      "profile_field": "vasoconstrictor_support_to_tone_gain",
+      "refused_on_an_amendment_2_witness": true,
+      "registered_adapters_declaring_it": [],
+      "revision": "PHASE2_AMENDMENT_3",
+      "status": "DEVELOPMENT_SHADOW_ONLY",
+      "witnesses": [
+        "LOW",
+        "CENTER_REFERENCE",
+        "HIGH"
+      ]
+    },
+    "probes": {
+      "across_families": {
+        "built_in_every_family": true,
+        "every_run_replays_exactly": true,
+        "no_family_run_failed": true,
+        "no_universal_mmhg_gain": true,
+        "volume_pump_haemoglobin_and_lung_water_untouched_everywhere": true
+      },
+      "families": [
+        "acs",
+        "asthma",
+        "gi_bleed",
+        "opioid",
+        "pulmonary_edema",
+        "pulmonary_embolism"
+      ],
+      "matrix_as_predicted": 10,
+      "matrix_cases": 10,
+      "record": "docs/revision/PHASE3_COMMON_TONE_PROBES.json",
+      "record_digest": "0503574262a9786be20325f24a5f76f6190fe1a42fc08edba36920ed51d17004",
+      "version": "COMMON_TONE_PROBES_V1"
+    }
+  },
+  "limitations": [
+    "a patient who ARRIVES vasoconstricted is not nearer the ceiling: arrival is the scale (tone 1), so only the exogenous support saturates",
+    "a patient who arrives already on a vasopressor cannot be represented: arrival is the scale (tone 1, support 0)",
+    "a pump-dependent afterload sensitivity (a failing ventricle loses more output per unit of afterload; the sensitivity is one number for every pump)",
+    "afterload-driven lung water (lung water is not read from tone)",
+    "coronary perfusion pressure acting on the pump",
+    "ischaemia from excessive vasoconstriction beyond the loss of flow",
+    "no authored distributive case exists: the vasodilatory reader is SYNTHETIC_ONLY and the burden here is a scripted probe",
+    "only norepinephrine writes the support, and only the encounter's first order of the kind -- a start at a fixed rate in mcg/min -- is mapped",
+    "output and delivery never rise with tone: the afterload is the only path from tone to flow, and its sensitivity is one number for every pump and volume",
+    "pressure-dependent bleeding (a higher pressure does not bleed faster here)",
+    "right-ventricular coronary perfusion",
+    "the consciousness readings are taken from the pressure, so with support they read BETTER while output and delivery are lower: the direct pressure ladder, and the Amendment-2 soft-collapse conjunction, which the support can keep from establishing (the development mapping refuses that combination)",
+    "the drug's inotropy",
+    "the factor is on the patient's own arrival pressure, so the same order buys MORE mmHg at a higher arrival pressure",
+    "venous return recruited by venoconstriction (the support does not raise preload)"
+  ],
+  "next_human_action": "A faculty member decides how the FR-F candidate is put before a human reviewer (which witness or witnesses, blinded or not, with which questions) and whether a pump-dependent afterload sensitivity is needed before any educational use of a vasopressor. Nothing else is to be done until then.",
+  "open_faculty_decisions": [
+    "how FR-F_TONE_V1_CANDIDATE is reviewed by a human (no review set and no screen were built)",
+    "whether the output cost of tone must depend on the pump (today one sensitivity for every pump and volume)",
+    "whether the support should recruit venous return or carry any inotropic effect",
+    "whether a patient who arrives vasoconstricted or already on a vasopressor has to be representable",
+    "whether an authored distributive case is wanted (the vasodilatory reader is SYNTHETIC_ONLY)",
+    "whether stopping and titrating the infusion must be mapped before a human review",
+    "the human re-review of FR-A and FR-D under the ratified pressure snapshot (desirable, not blocking: FD-TONE-08)"
+  ],
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-17",
+    "generating_code": {
+      "clinical_core": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "test_tone_pathway_checkpoint.py": "a8dd12a50dfc618eccd97eb648b68c357c445ec6d1afe91527430d36e56440f9"
+    },
+    "generating_code_fingerprint": "f4b42bb825336c024a2b1b5d47cefa0a86547022a5dbbd6e2f8e2e1f443fd94f",
+    "grant_id": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V3",
+    "record_id": "COMMON_TONE_CHECKPOINT_V1",
+    "record_schema_version": 1,
+    "source_data_digest": "39b5942a496b12673219b1145abe0053805e9502c09f17255c1f960d257a6bf1",
+    "source_snapshot_id": "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1",
+    "supersedes": null
+  },
+  "record_digest": "42d32a1f4100f0ccddf1c256353587b12c720c65a71a0b523cce5bd3177801b1",
+  "record_type": "COMMON_VASCULAR_TONE_CHECKPOINT",
+  "sequence": [
+    {
+      "id": "P3-387",
+      "outcome": "a superseded grant opens no new session by ordinary configuration; only a declared historical reconstruction names it",
+      "what": "V1/V2 activation audit"
+    },
+    {
+      "id": "P3-388",
+      "outcome": "contract, index and the first VERSIONED records",
+      "what": "historical record versioning"
+    },
+    {
+      "id": "P3-389",
+      "outcome": "B: PARTIAL_TONE_PHYSIOLOGY_EXISTS_BUT_NEEDS_SUCCESSOR",
+      "what": "existing tone audit"
+    },
+    {
+      "id": "P3-390",
+      "outcome": "aux.vasoconstrictor_support, a general state; None while its reader is UNSET",
+      "what": "minimum state"
+    },
+    {
+      "id": "P3-391",
+      "outcome": "tone target = C(s) x B(b) x K(u); pressure and afterload read T as before",
+      "what": "coupling"
+    },
+    {
+      "id": "P3-392",
+      "outcome": "a fixed-rate infusion with first-order onset and offset; reads its order and time only",
+      "what": "norepinephrine writer"
+    },
+    {
+      "id": "P3-393",
+      "outcome": "ten cases, predicted before the run",
+      "what": "edge-case matrix"
+    },
+    {
+      "id": "P3-394",
+      "outcome": "broad bounds, every confidence below 0.80, three witnesses, none chosen",
+      "what": "development region"
+    },
+    {
+      "id": "P3-395",
+      "outcome": "C: PHASE2 AMENDMENT 3 -- COMMON VASCULAR TONE",
+      "what": "successor decision"
+    },
+    {
+      "id": "P3-396",
+      "outcome": "the amendment (off by default) and the development mapping in the shadow",
+      "what": "implementation"
+    },
+    {
+      "id": "P3-397",
+      "outcome": "a versioned candidate with no verdict",
+      "what": "FR-F development migration"
+    },
+    {
+      "id": "P3-398",
+      "outcome": "one mapping in the six registered families",
+      "what": "multifamily probes"
+    },
+    {
+      "id": "P3-399",
+      "outcome": "one independent read-only review",
+      "what": "adversarial review"
+    },
+    {
+      "id": "P3-400",
+      "outcome": "full suite and regressions on a frozen fingerprint",
+      "what": "certification"
+    },
+    {
+      "id": "P3-401",
+      "outcome": "this record",
+      "what": "checkpoint"
+    }
+  ],
+  "statement": "Synthetic development cases run in the shadow. Development probes of a behavioural region: not a clinical validation, not a calibration, not a dose-response, not runtime authority and not visible to a resident. No witness is chosen.",
+  "verdict": "A",
+  "verdict_name": "COMMON_VASCULAR_TONE_PATHWAY_READY_FOR_HUMAN_DEVELOPMENT_REVIEW",
+  "verdicts": {
+    "A": "COMMON_VASCULAR_TONE_PATHWAY_READY_FOR_HUMAN_DEVELOPMENT_REVIEW",
+    "B": "TONE_ARCHITECTURE_DEFINED_BUT_IMPLEMENTATION_REQUIRES_FACULTY_DECISION",
+    "C": "NOREPINEPHRINE_WRITER_BLOCKED_BY_ORDER_SEMANTICS",
+    "D": "COMMON_TONE_REQUIRES_BROADER_CORE_REDESIGN",
+    "E": "MULTIFAMILY_PROBES_REVEALED_NONGENERAL_BEHAVIOR"
+  },
+  "version": "COMMON_TONE_CHECKPOINT_V1",
+  "why_not_the_others": {
+    "B": "no implementation step waits on a faculty decision: the two the audit raised (the amendment and the grant re-ligation) were decided on 2026-11-17 (FD-TONE-10 to FD-TONE-12)",
+    "C": "the engine's order carries what the writer needs (a start, a rate, mcg/min); the shapes that are not mapped are declared gaps, and FR-F needs none of them",
+    "D": "the pathway is a declared, reversible insertion on the certified core: one memory, one profile field, one change record, one contributor",
+    "E": "the same order runs through one mapping in every registered family and the ten-case matrix came out as predicted"
+  }
+}

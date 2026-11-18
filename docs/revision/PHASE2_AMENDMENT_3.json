@@ -27,7 +27,65 @@
   "authorized": "2026-11-17 (faculty decisions FD-TONE-01 to FD-TONE-12)",
   "branch": "phase-3-runtime-integration",
   "certification": {
-    "status": "CANDIDATE"
+    "adversarial_review": {
+      "blocking": 0,
+      "detail": "docs/PHASE3_COMMON_VASCULAR_TONE.md, section 13.1",
+      "major_confirmed_and_fixed": 1,
+      "minor_confirmed_and_fixed_or_declared": 5,
+      "notes": 4,
+      "reviews": 1
+    },
+    "candidate_fingerprint": "e1fd602e7aa88057e4a8a0531573e989a4d57ef39287567b1bcc8fe32f4cba0c",
+    "candidate_head": "93e4cf7fb806c2dd9193f677f88dbccf79496f30",
+    "candidate_tree": "84c3edfb389c50a16c3f1b32a9d0d3d2543e8195",
+    "certified_core_digest": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+    "certified_on": "2026-11-18",
+    "earlier_runs": {
+      "first": {
+        "candidate": "another",
+        "cause": "a declared insertion of this stage had parenthesised the condition a closed audit uses as a text marker in integration.py",
+        "failed_test": "test_clinical_core_collapse_audit.py::test_the_trigger_audit_catches_a_planted_trigger",
+        "repair": "the insertion keeps the marker (a continuation line); the core digest changed, every pin was renewed and the two versioned records were regenerated",
+        "stopped_at": "about 21%"
+      },
+      "launches": 4,
+      "outcome": "four earlier launches were stopped or killed and their results discarded; nothing of them is reused",
+      "second": {
+        "candidate": "another",
+        "cause": "older tests that pinned PHASE2_AMENDMENT_2 as the live core, or grant V2 as the grant of a new session",
+        "failed_tests": 14,
+        "files": 6,
+        "repair": "declared adaptations of those tests (docs/PHASE3_COMMON_VASCULAR_TONE.md, section 12); no executable file changed",
+        "stopped_at": "three partitions finished, the fourth at 82% (its remaining 21 files were then run apart: 650 passed)"
+      },
+      "third_and_fourth": {
+        "candidate": "this one",
+        "cause": "the container was restarted by the platform about one and two hours into the run (no failure had been seen; memory was not short)",
+        "repair": "the certifying run used a resumable runner; it finished without needing a resume"
+      }
+    },
+    "full_suite": {
+      "candidate_unchanged": true,
+      "errors": 0,
+      "failures": 0,
+      "partitions": 24,
+      "ran_with": "-p test_core_certification_preview and MRS_CORE_CERTIFICATION_PREVIEW=PHASE2_AMENDMENT_3 (the lineage entry was CANDIDATE throughout; tests marked real_core_lineage read the real status)",
+      "resumable_runner": "24 blocks, 4 at a time, one fingerprint taken at the start and re-checked at every block and at the end; this run needed no resume",
+      "skipped": 99,
+      "tests": 13230,
+      "timeout_per_partition_s": 9000,
+      "valid": true,
+      "xfailed": 1
+    },
+    "promotion": "metadata, records and documentation only: no executable file changed after the candidate; the final tree was then run in full on the REAL lineage (no preview) before publication, and that run is reported with the delivery, not in this tree",
+    "python": "3.11.17",
+    "regressions": {
+      "active": 56,
+      "failed": 0,
+      "passed": 56,
+      "retired": 10
+    },
+    "status": "CERTIFIED"
   },
   "historical_closure": {
     "clinical_core_modules": 141,

@@ -67,8 +67,8 @@ def test_the_integrated_core_is_the_certified_amendment_2_and_both_predecessors_
     verdict = ev.core_lineage_verdict()
     assert rs.core_is_or_descends_from(verdict["active_core"], ("PHASE2_AMENDMENT_2",))
     assert verdict["active_core_recomputes"] and verdict["historical_closure_verifies"]
-    # the REAL lineage: certified, or a successor whose own record still says CANDIDATE and nothing else is wrong with it
-    assert verdict["failed"] in ([], ["active_core_certified"]) and verdict["ok"] is (verdict["failed"] == [])
+    # the REAL lineage (no harness preview): the active core is a CERTIFIED member and nothing is wrong with it
+    assert verdict["failed"] == [] and verdict["ok"] is True and verdict["status"] == rs.CERTIFIED
     assert verdict["status"] == ("CERTIFIED" if verdict["ok"] else "CANDIDATE")
 
 

@@ -1,6 +1,6 @@
 # Enmienda 3 · Tono vascular común: soporte vasoconstrictor y primer escritor · registro (2026-11-17)
 
-**Estado: CANDIDATA (la certificación se registra en el commit de promoción; el estado vigente es siempre el de `PHASE2_AMENDMENT_3.json`).** Sucesor formal de `PHASE2_AMENDMENT_2`, sólo en sombra: apagado por omisión
+**Estado: CERTIFICADA el 2026-11-18 sobre el candidato `93e4cf7` (el estado vigente es siempre el de `PHASE2_AMENDMENT_3.json`).** Sucesor formal de `PHASE2_AMENDMENT_2`, sólo en sombra: apagado por omisión
 (`CoreProfile.vasoconstrictor_support_to_tone_gain = None`), sin autoridad en tiempo de ejecución, invisible para el residente y
 ausente de la puntuación. **No hay afirmación de validación clínica ni de dosis-respuesta:** toda magnitud es una
 `DEVELOPMENT_BEHAVIOURAL_REGION` con tres testigos de prueba (`LOW`, `CENTER_REFERENCE`, `HIGH`), ninguno elegido.
@@ -60,4 +60,8 @@ silencio. Declarar el lector sin escritor registra un soporte de 0 y no cambia n
 - El núcleo común no termina un encuentro.
 
 ## 6 · Certificación
-Pendiente en este commit: la certificación del candidato se registra en el commit de promoción.
+Candidato certificado: huella `e1fd602e7aa88057e4a8a0531573e989a4d57ef39287567b1bcc8fe32f4cba0c`, commit `93e4cf7fb806c2dd9193f677f88dbccf79496f30` (árbol `84c3edfb389c50a16c3f1b32a9d0d3d2543e8195`). Suite completa: **13 230 pruebas, 0 fallas, 0 errores**, 99 omitidas, 1 xfail; regresiones **56/56** activas (10 retiradas, declaradas por el propio ejecutor). La corrida usó la vista previa de certificación (`MRS_CORE_CERTIFICATION_PREVIEW=PHASE2_AMENDMENT_3`): el registro decía `CANDIDATE` y las pruebas marcadas `real_core_lineage` leyeron el estado real.
+
+Cuatro lanzamientos anteriores se descartaron y **no se reutilizó nada** de ellos: dos sobre otros candidatos (un marcador de texto de una auditoría cerrada que una inserción de esta etapa había alterado, y 14 pruebas antiguas que fijaban la Enmienda 2 o la concesión V2 como vigentes) y dos sobre este mismo candidato que la plataforma interrumpió al reiniciar el contenedor. La corrida que certifica usó un ejecutor reanudable (24 bloques, una huella tomada al inicio y comprobada en cada bloque y al final) y no necesitó reanudarse. Revisión adversarial: una, independiente y de sólo lectura; ningún hallazgo bloqueante (`docs/PHASE3_COMMON_VASCULAR_TONE.md`, §13.1).
+
+La promoción cambió sólo metadatos, registros y documentación, además de una aserción de prueba estrechada a `CERTIFIED` y la evidencia tipada del punto de control: **ningún archivo ejecutable** cambió después del candidato. El árbol final se corrió de nuevo completo sobre el linaje **real** antes de publicarse; esas cifras van en el informe de entrega, porque escribirlas aquí cambiaría la huella que certifican.

@@ -266,11 +266,18 @@
       "file_sha256": "3e1983414ddd6234aced3ece132c31bb7f30a61b8ee2da3c349827a2c290544b"
     },
     "PHASE2_AMENDMENT_3.json": {
-      "class": "LINEAGE_RECORD_OPEN_UNTIL_CERTIFIED"
+      "class": "LINEAGE_RECORD",
+      "file_sha256": "78041745d23691bca8d9a85f28a27216275a61957bac031e1b3a6b3e622bb14b"
     },
     "PHASE3_BLEED_RATE_SCALE_CHECKPOINT.json": {
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "e961c54819bffe458aff72d2fbc43fab3df3384308907c378387c79e4563531a"
+    },
+    "PHASE3_COMMON_TONE_CHECKPOINT.json": {
+      "class": "VERSIONED",
+      "file_sha256": "cd7d069df6d2028d5aaa0733f2bef5695050cc660c0c7a93481d18aea7935c86",
+      "record_digest": "42d32a1f4100f0ccddf1c256353587b12c720c65a71a0b523cce5bd3177801b1",
+      "record_id": "COMMON_TONE_CHECKPOINT_V1"
     },
     "PHASE3_COMMON_TONE_PROBES.json": {
       "class": "VERSIONED",

@@ -318,7 +318,11 @@ sonda antes de corregirlo.
 **Mutantes (herramienta de trabajo, fuera del repositorio).** 19 mutantes sembrados a mano y aplicados en proceso sobre las cuatro suites nuevas (control: 115 aprobadas): 12 de la vía de tono, la supersesión de concesiones y el linaje, y 7 que deshacen las correcciones de H1, H2, H5 y H6. **Los 19 fueron detectados.** No son una suite permanente.
 
 ### 13.2 · Certificación (P3-400)
-Pendiente en este commit: las cifras de la certificación se registran en el commit de promoción.
+**Etapa 1 · el candidato.** Candidato certificado: huella `e1fd602e7aa88057e4a8a0531573e989a4d57ef39287567b1bcc8fe32f4cba0c`, commit `93e4cf7fb806c2dd9193f677f88dbccf79496f30` (árbol `84c3edfb389c50a16c3f1b32a9d0d3d2543e8195`). Suite completa: **13 230 pruebas, 0 fallas, 0 errores**, 99 omitidas, 1 xfail; regresiones **56/56** activas (10 retiradas, declaradas por el propio ejecutor). La corrida usó la vista previa de certificación (`MRS_CORE_CERTIFICATION_PREVIEW=PHASE2_AMENDMENT_3`): el registro decía `CANDIDATE` y las pruebas marcadas `real_core_lineage` leyeron el estado real.
+
+*Lanzamientos descartados (nada de ellos se reutiliza):* (1) sobre otro candidato, detenido al 21 % con 1 falla: una inserción de la Enmienda 3 había puesto entre paréntesis la condición que la auditoría cerrada `collapse_audit` usa como marcador de texto en `integration.py`; la inserción se reescribió para conservarlo y el digesto del núcleo pasó a `867bac09…`. (2) Sobre otro candidato, corrida de descubrimiento: 14 pruebas en 6 archivos fijaban la Enmienda 2 como núcleo vivo o la V2 como concesión de una sesión nueva; se adaptaron de forma declarada (§12). (3) y (4) Sobre este candidato: la plataforma reinició el contenedor a la hora y a las dos horas de corrida, sin fallas vistas y sin escasez de memoria. La corrida que certifica usó un ejecutor **reanudable** (24 bloques de archivos, cuatro a la vez, una huella tomada al inicio y comprobada en cada bloque y al final) y terminó sin necesitar reanudación.
+
+**Etapa 2 · el árbol final sobre el linaje real.** Escribir la certificación en `PHASE2_AMENDMENT_3.json`, el índice y este punto de control cambia la huella; por eso el árbol final se corre de nuevo completo, **sin** vista previa, antes de publicarse. Sus cifras van en el informe de entrega: escribirlas en el árbol cambiaría la huella que certifican.
 
 ## 14 · Limitaciones
 Todo lo siguiente es **desarrollo en la sombra**: nada es autoritativo, visible al residente, puntuado ni validado
@@ -351,4 +355,12 @@ clínicamente.
     como registro de lo que aquel núcleo produjo y se verifican por su propia huella.
 
 ## 15 · P3-401 · Punto de control
-Pendiente en este commit: el punto de control se escribe tras la certificación, en el commit de promoción.
+Registro: `docs/revision/PHASE3_COMMON_TONE_CHECKPOINT.json` (`COMMON_TONE_CHECKPOINT_V1`, clase `VERSIONED`).
+
+**Veredicto: A · `COMMON_VASCULAR_TONE_PATHWAY_READY_FOR_HUMAN_DEVELOPMENT_REVIEW`.** Es el único que admiten los hechos recomputados del árbol y la evidencia tipada: la matriz salió 10/10 como se predijo y la misma orden corre por un solo mapeo en las seis familias (no E); FR-F cumple las siete comprobaciones en los tres testigos (no C); la vía es una inserción declarada y reversible sobre el núcleo certificado (no D); y ninguna etapa de implementación espera una decisión docente, la revisión no dejó hallazgos bloqueantes y la certificación quedó en verde (no B).
+
+«Lista para revisión humana de desarrollo» **no** es una aceptación: FR-F es un candidato sin veredicto y ningún testigo está elegido.
+
+**Siguiente acción humana:** una persona docente decide cómo se presenta el candidato de FR-F a un revisor (qué testigo o testigos, a ciegas o no, con qué preguntas) y si hace falta una sensibilidad a la poscarga dependiente de la bomba antes de cualquier uso educativo de un vasopresor.
+
+**Decisiones docentes abiertas:** la revisión humana de FR-F; el costo de gasto del tono según la bomba; retorno venoso e inotropismo; el paciente que llega vasoconstreñido o ya con vasopresor; un caso distributivo autorado; detener y titular la infusión; la lectura de consciencia bajo soporte (limitación 7); y la re-revisión humana de FR-A y FR-D (deseable, no bloqueante).

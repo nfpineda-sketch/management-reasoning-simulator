@@ -50,7 +50,46 @@ SEQUENCE = (
 )
 
 #: Typed by whoever certifies (see the module docstring). ``None`` until the candidate has been reviewed and certified: the record cannot be written before.
-EVIDENCE: dict | None = None
+EVIDENCE: dict | None = {
+    "adversarial_review": {
+        "reviews": 1, "how": "one independent read-only review of the code (not of the author's conclusions); every finding was confirmed with a probe before it was repaired",
+        "evidence_class": "MODEL_ANALYSIS",
+        "findings": [
+            {"id": "H1", "severity": "MAJOR", "finding": "the support accumulated in free binary64: a stopped infusion left a residue, and with the LOW offset a negative one refused the run",
+             "disposition": "FIXED: the writers' grid (2**-40); the state is exactly the sum of its writers every minute"},
+            {"id": "H2", "severity": "MINOR", "finding": "tone support could be declared on an Amendment-2 consciousness witness, where it delays the soft collapse while delivery falls",
+             "disposition": "FIXED (the combination is refused) and DECLARED (core probe and limitation): a faculty decision"},
+            {"id": "H3", "severity": "MINOR", "finding": "the pins of the record index were not themselves pinned; lineage classes usable outside amendment records",
+             "disposition": "FIXED: the digest of every entry is pinned in the test and the classes are enforced"},
+            {"id": "H4", "severity": "MINOR", "finding": "the generating-code fingerprint of the new records covered a short list of files",
+             "disposition": "FIXED: the core, every application module by content and the harness"},
+            {"id": "H5", "severity": "MINOR", "finding": "no conservation invariant for the support; a carried support was dropped in silence under an UNSET reader",
+             "disposition": "FIXED: the minute's conservation invariant and an explicit refusal"},
+            {"id": "H6", "severity": "MINOR", "finding": "order mapping: a weight-based start followed by a fixed one built the second; lexicographic tie-break; duplicate ids",
+             "disposition": "FIXED: only the encounter's first order of the kind can be built"},
+            {"id": "H7", "severity": "NOTE", "finding": "loop-bound message, overflow of the sum, absurd rates",
+             "disposition": "FIXED: the refusal names the declared factor; overflow is a provenance refusal; a limit on the steady support"},
+            {"id": "H8", "severity": "NOTE", "finding": "a declared historical reconstruction accepted the rebuilt lineage the caller offered",
+             "disposition": "FIXED: the grant that binds the snapshot decides alone, on the live grant's core"},
+            {"id": "H9", "severity": "NOTE", "finding": "a real-lineage assertion tolerant of CANDIDATE; a stale comment; checkpoint fact naming",
+             "disposition": "FIXED: the assertion requires CERTIFIED; the comment is corrected; the GI snapshot's digest is a typed literal"},
+            {"id": "H10", "severity": "NOTE", "finding": "shadow traces stored under the second amendment do not replay on the live core",
+             "disposition": "DECLARED: pre-existing at every change of lineage member; a limitation, no code change"},
+        ],
+        "unresolved_blocking_findings": [],
+    },
+    "certification": {
+        "stage": "CANDIDATE_UNDER_THE_CERTIFICATION_PREVIEW",
+        "fingerprint": "e1fd602e7aa88057e4a8a0531573e989a4d57ef39287567b1bcc8fe32f4cba0c",
+        "candidate_head": "93e4cf7fb806c2dd9193f677f88dbccf79496f30", "candidate_tree": "84c3edfb389c50a16c3f1b32a9d0d3d2543e8195",
+        "tests": 13230, "failures": 0, "errors": 0, "skipped": 99, "xfailed": 1,
+        "regressions_passed": 56, "regressions_failed": 0, "regressions_retired": 10,
+        "earlier_launches_discarded": 4,
+        "note": "the full suite and the regressions ran on the candidate's frozen fingerprint; four earlier launches (two on other candidates, two killed by a container restart) "
+                "were discarded and nothing of them is reused. The final tree, with this record and the certification written, is run again in full on the REAL lineage before "
+                "it is published; that run is reported with the delivery and cannot be written into the tree it certifies.",
+    },
+}
 
 
 def _sha(path: Path) -> str:
