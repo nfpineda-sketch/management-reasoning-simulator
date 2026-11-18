@@ -1,0 +1,135 @@
+{
+  "binding": {
+    "half_effect_rate_mcg_min": 10.0,
+    "offset_tau_min": 2.5,
+    "onset_tau_min": 1.5,
+    "tone_gain": 0.6
+  },
+  "binding_source": {
+    "another_point_considered": false,
+    "copied_not_recomputed": true,
+    "core_digest": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+    "core_function": "clinical_core.vascular_support.witness('CENTER_REFERENCE')",
+    "equal_in_every_certified_source": {
+      "the_certified_frf_candidate": true,
+      "the_certified_probe_record": true,
+      "the_core_witness": true
+    },
+    "frf_candidate": {
+      "file": "docs/revision/PHASE3_FRF_TONE_V1_CANDIDATE.json",
+      "file_sha256": "1178c5fee9908f838d85539d4e29fc89ca367b0f322fbc1dd8e33bf4ef8f6091",
+      "path_in_record": "witnesses.CENTER_REFERENCE.witness",
+      "record_digest": "1d01730a69912f727046e310849927d40258e89103e0a354a2e3062586d568bd"
+    },
+    "optimized": false,
+    "probes_record": {
+      "file": "docs/revision/PHASE3_COMMON_TONE_PROBES.json",
+      "file_sha256": "6289c21e761c034e900e192f57ba217c3956e86a76ae35ac9425881370010ab3",
+      "path_in_record": "witnesses.CENTER_REFERENCE",
+      "record_digest": "0503574262a9786be20325f24a5f76f6190fe1a42fc08edba36920ed51d17004"
+    }
+  },
+  "binding_units": {
+    "half_effect_rate_mcg_min": "mcg/min",
+    "offset_tau_min": "min",
+    "onset_tau_min": "min",
+    "tone_gain": "fraction of the arrival tone"
+  },
+  "bound_together": "the four values are ONE point of the development region; none may be replaced by another witness's value, and none is a separate range",
+  "is_not": [
+    "a clinical calibration",
+    "a clinical dose-response",
+    "an mmHg target",
+    "production validation",
+    "resident approval",
+    "authority",
+    "a clinical-validation claim"
+  ],
+  "limitations": [
+    "COMMON_TONE_PUMP_DEPENDENCE_NOT_YET_VALIDATED",
+    "CONSCIOUSNESS_UNDER_TONE_UNRESOLVED",
+    "TITRATION_AND_STOP_NOT_SUPPORTED"
+  ],
+  "live_configuration": {
+    "bound": false,
+    "executable_change": false,
+    "statement": "This is a RECORD. Nothing executable reads it: runtime_tone_support still takes a witness NAME for a development shadow copy, no registered adapter declares the reader, the live GI pressure authority still stops on a norepinephrine order, and binding anything to this snapshot would be a separate EXECUTABLE step with its own authorization and recertification."
+  },
+  "profile_field": "vasoconstrictor_support_to_tone_gain",
+  "profile_field_takes": "tone_gain (the other three values are the constants of the norepinephrine order the common writer receives)",
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-18",
+    "generating_code": {
+      "clinical_core": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "test_tone_pathway_analysis.py": "ba48e1600752029ecb6b38bbb75c99db3ade6b96313d0b8aa2f18d6ea6e032b6",
+      "test_tone_ratification_analysis.py": "a847ed876db6f87b83ee40e126014ac5471c69d9bf8eb9df10d0c7c037d32921",
+      "test_tone_review_analysis.py": "27257888844ca6208dbaa44aef368039427de5a51411104027bdb6b774586424"
+    },
+    "generating_code_fingerprint": "babc336689f50f46eb1211057a36bb00e999df840d3a0c562cb151629d4db1b4",
+    "grant_id": null,
+    "record_id": "COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1",
+    "record_schema_version": 1,
+    "source_data_digest": "caa5a6821719148c1875da480cf1ee4de3953b9e17e79aad66f3070d661a045b",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "record_digest": "ee1740ca77173ce0797268f8327f21fc29304c5c54ff2c642c1f2bdfb3270356",
+  "record_type": "COMMON_TONE_DEVELOPMENT_SNAPSHOT",
+  "region": {
+    "bounds": {
+      "half_effect_rate_mcg_min": [
+        5.0,
+        20.0
+      ],
+      "offset_tau_min": [
+        1.0,
+        5.0
+      ],
+      "onset_tau_min": [
+        0.5,
+        3.0
+      ],
+      "tone_gain": [
+        0.3,
+        0.9
+      ]
+    },
+    "confidences": {
+      "half_effect_rate_mcg_min": 0.5,
+      "offset_tau_min": 0.6,
+      "onset_tau_min": 0.7,
+      "tone_gain": 0.5
+    },
+    "note": "every confidence of the region is below 0.80: no narrow region is adopted and this point is not a calibration (FD-TONE-06)"
+  },
+  "reopening_rule": "a different point replaces this snapshot only through a new faculty review and a successor record; this record is never edited",
+  "reviewed_with": {
+    "human_record": {
+      "file": "docs/revision/PHASE3_HUMAN_COMMON_TONE_MULTIFAMILY_REVIEW.json",
+      "record_digest": "50807dfc418226aed48826864abf6ac14c8d5d785f9e1f2ed68207091afe0804",
+      "verification": "HUMAN_FACULTY_REVIEW_REPORTED_NOT_STORE_VERIFIED"
+    },
+    "review_set_digest": "22ed59069e441aca96939ccf359ceec00a8bd55ddc0b182ff7bbcfcdd6e91487",
+    "review_set_id": "COMMON_TONE_V1_MULTIFAMILY_FACULTY_REVIEW",
+    "reviewed_trajectory_digests": {
+      "ACS": "4666a3723b21cab061e41357fb6862287c0e0d2ddf020f7fb936e6e90007fb3b",
+      "FR-F": "d2d62bd64b456882d32341c60ab160d9bea8437a4198249f25c20e3d30097e25",
+      "PE": "ae989e5289b568c545065c6310b3cd855fcb5f55f87f5855f222b01d2765e12e",
+      "PULM-EDEMA": "bdb147687a4aae5878c52db0b44a9ff2b0b494d3fb49a35c2e551c1b41c7ea9f",
+      "SYNTH": "32fbb4a8c783ff5c3388400a5991417e420ceb6e82ac05ae28aacb613ea1155c"
+    },
+    "trajectories_are_the_certified_ones": "the reviewed trajectories were produced from, or proven equal to, the certified records with exactly this binding (docs/PHASE3_COMMON_TONE_FACULTY_REVIEW.md §1)",
+    "witness_the_reviewer_saw": "CENTER_REFERENCE"
+  },
+  "selected_witness": "CENTER_REFERENCE",
+  "snapshot_id": "COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1",
+  "status": "RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS",
+  "version": "P3-418",
+  "witnesses_test_only": {
+    "HIGH": "TEST_WITNESS_ONLY",
+    "LOW": "TEST_WITNESS_ONLY",
+    "decision": "FD-TONE-RATIFY-04",
+    "reopening": "only if future evidence requires another calibration cycle"
+  }
+}

@@ -5,6 +5,18 @@
   "legacy_adopted_at": "caa0b0fd2e1f7026ca01c57b70ad85cf92bc945d",
   "legacy_entries_digest": "1afe6c43ab5e4accb33e4b6924d5f63e8c36e23c21c81760eec7251605b38789",
   "records": {
+    "COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1.json": {
+      "class": "VERSIONED",
+      "file_sha256": "1f2ebb46190e72ec150897037a397f788164fb7f29b46337dbb94328d0be8e2c",
+      "record_digest": "ee1740ca77173ce0797268f8327f21fc29304c5c54ff2c642c1f2bdfb3270356",
+      "record_id": "COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1"
+    },
+    "COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1_RATIFICATION.json": {
+      "class": "VERSIONED",
+      "file_sha256": "d23df1c7a0a27803cf0c318eb0417163eecd65e70ad014c369e06659c842f1b4",
+      "record_digest": "a5a8f4370e240a07406111e0fedf40884e7e382dbd08643949bc82201452bab2",
+      "record_id": "COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1_RATIFICATION"
+    },
     "GI_BLOOD_RESUSCITATION_LOW_END_RESPONSE.json": {
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "676a1763204d5a56c285a0a63eb7880c5f339558ad063983ed051b70790a3928"
@@ -398,6 +410,12 @@
     "PHASE3_GI_SNAPSHOT_SENSITIVITY.json": {
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "c4e873efe895137469c6c2c1e4817a2721fece1fc9b8c6f6585f4b42d8cb3914"
+    },
+    "PHASE3_HUMAN_COMMON_TONE_MULTIFAMILY_REVIEW.json": {
+      "class": "VERSIONED",
+      "file_sha256": "0246cdcfbb8bc9f9140a9968cef8089e347f660ba20399d54f614202f17a2ca5",
+      "record_digest": "50807dfc418226aed48826864abf6ac14c8d5d785f9e1f2ed68207091afe0804",
+      "record_id": "HUMAN_COMMON_TONE_MULTIFAMILY_REVIEW_V1"
     },
     "PHASE3_HUMAN_FACULTY_REREVIEW.json": {
       "class": "LEGACY_UNVERSIONED",

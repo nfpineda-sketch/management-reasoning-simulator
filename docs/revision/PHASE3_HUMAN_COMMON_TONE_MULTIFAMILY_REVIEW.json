@@ -1,0 +1,211 @@
+{
+  "evidence_class": "HUMAN_FACULTY_REVIEW",
+  "evidence_classes": {
+    "HUMAN_FACULTY_REVIEW": "what the faculty reviewer judged in the blind multifamily review of the CENTER_REFERENCE tone trajectories, as reported; only this record and the Decision File rows FD-TONE-RATIFY-01 to FD-TONE-RATIFY-09 carry it",
+    "MODEL_ANALYSIS": "what the development assistant computed or read from the executable model and the certified records; it explains and bounds, it does not judge",
+    "TEST_RESULT": "what an automated test asserted; it protects a record, it is not a faculty decision"
+  },
+  "not_in_this_record": [
+    "the reviewer's name",
+    "any model-written judgment",
+    "any legacy comparison",
+    "any clinical-validation claim",
+    "the per-event logs (they live in the reviewer's own store)"
+  ],
+  "not_verified": [
+    "the answers Q1 to Q5 and the overall judgments against the persisted logs",
+    "the scenario order as persisted",
+    "the completion state as persisted",
+    "the lock and submit events and their order",
+    "free-text comments (none were reported)",
+    "whether the optional sensitivity check was opened"
+  ],
+  "overall_counts": {
+    "ACCEPT": 1,
+    "ACCEPT_WITH_LIMITATION": 3,
+    "RECALIBRATE": 0,
+    "REJECT": 1
+  },
+  "overall_counts_recomputed_from_the_scenarios": {
+    "ACCEPT": 1,
+    "ACCEPT_WITH_LIMITATION": 3,
+    "RECALIBRATE": 0,
+    "REJECT": 1
+  },
+  "preserved_original_evidence": {
+    "first_human_review": {
+      "file": "docs/revision/PHASE3_FIRST_HUMAN_FACULTY_REVIEW.json",
+      "file_sha256": "51c13d9d6b91b4fdbdf4b5d85bab8ba2c7af98790941805cbb25fbaef63598d0",
+      "record_digest": "9ba80fa70d3b38e178caa3aca9432f9227ce6d9591a48c9908c3f5ac4cc6c8d3"
+    },
+    "first_review_set_digest_pinned_in_code": "f65d1127f3fb97926334d695aeab37b92f3a44236cec2ae025025eec90ba1649",
+    "frf_candidate": {
+      "file": "docs/revision/PHASE3_FRF_TONE_V1_CANDIDATE.json",
+      "file_sha256": "1178c5fee9908f838d85539d4e29fc89ca367b0f322fbc1dd8e33bf4ef8f6091",
+      "record_digest": "1d01730a69912f727046e310849927d40258e89103e0a354a2e3062586d568bd"
+    },
+    "human_rereview": {
+      "file": "docs/revision/PHASE3_HUMAN_FACULTY_REREVIEW.json",
+      "file_sha256": "bd772ec8f37a8b425a88dc87931d9d60fc9cb45e2a5426c33a41712aed86615b",
+      "record_digest": "4af2b53118245b8667d58d3280205ac64101e5c61fb1ecb83ca8bd9f05f05bd8"
+    },
+    "tone_probes": {
+      "file": "docs/revision/PHASE3_COMMON_TONE_PROBES.json",
+      "file_sha256": "6289c21e761c034e900e192f57ba217c3956e86a76ae35ac9425881370010ab3",
+      "record_digest": "0503574262a9786be20325f24a5f76f6190fe1a42fc08edba36920ed51d17004"
+    },
+    "tone_review_checkpoint": {
+      "file": "docs/revision/PHASE3_COMMON_TONE_V1_MULTIFAMILY_REVIEW_CHECKPOINT.json",
+      "file_sha256": "e7deff9e7176911178a61b8508b95e6a53691f4c93aad0413bde1ea1bdf70f3a",
+      "record_digest": "cce4df48c44208a2f0b3d1dcd8beb51d59939476ba4bf0eb79cbf1a9824a03cb"
+    },
+    "tone_review_set": {
+      "file": "docs/revision/PHASE3_COMMON_TONE_V1_MULTIFAMILY_REVIEW_SET.json",
+      "file_sha256": "b856a479e31f86454a7b0295ab30856cca318f4f95ce51d7630e4c30e5b53855",
+      "record_digest": "22ed59069e441aca96939ccf359ceec00a8bd55ddc0b182ff7bbcfcdd6e91487"
+    },
+    "tone_review_set_digest_pinned_in_code": "22ed59069e441aca96939ccf359ceec00a8bd55ddc0b182ff7bbcfcdd6e91487"
+  },
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-18",
+    "generating_code": {
+      "clinical_core": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "test_tone_pathway_analysis.py": "ba48e1600752029ecb6b38bbb75c99db3ade6b96313d0b8aa2f18d6ea6e032b6",
+      "test_tone_ratification_analysis.py": "a847ed876db6f87b83ee40e126014ac5471c69d9bf8eb9df10d0c7c037d32921",
+      "test_tone_review_analysis.py": "27257888844ca6208dbaa44aef368039427de5a51411104027bdb6b774586424"
+    },
+    "generating_code_fingerprint": "babc336689f50f46eb1211057a36bb00e999df840d3a0c562cb151629d4db1b4",
+    "grant_id": null,
+    "record_id": "HUMAN_COMMON_TONE_MULTIFAMILY_REVIEW_V1",
+    "record_schema_version": 1,
+    "source_data_digest": "64a11917b9220e77cceb1e07b0af8c845837e5fda37b0f9c21f753e10c2688e9",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "provenance_of_the_evidence": {
+    "date_of_record": "2026-11-18",
+    "persisted_store_available_to_the_assistant": false,
+    "reported_in": "the assignment of 2026-11-18 that opened P3-415 ('PHASE 3 — RATIFY COMMON VASCULAR TONE DEVELOPMENT SNAPSHOT AFTER MULTIFAMILY HUMAN FACULTY REVIEW')",
+    "reviewer_identity_recorded": false,
+    "reviewer_name": null,
+    "reviewer_role": "faculty",
+    "transcribed_by": "the development assistant; the judgments and interpretations are typed once from the report and no word of the faculty interpretation was changed",
+    "verification": "HUMAN_FACULTY_REVIEW_REPORTED_NOT_STORE_VERIFIED",
+    "why": "the persisted logs of this review (tone_review/, tone_reviews/ and tone_sensitivity/ of the reviewer's own store) are not in this container: the only review store found here holds no tone review; the assignment asked to read the store if available and, if not, to use the reported results and mark the provenance, without inventing comments or events"
+  },
+  "record_digest": "50807dfc418226aed48826864abf6ac14c8d5d785f9e1f2ed68207091afe0804",
+  "record_type": "HUMAN_FACULTY_COMMON_TONE_MULTIFAMILY_REVIEW_RECORD",
+  "review": {
+    "candidate_named_by_the_interface": false,
+    "candidate_reviewed": "CENTER_REFERENCE",
+    "completion_as_reported": "NOT_REPORTED_AS_A_STRING",
+    "item_digests_note": "computed here from the pinned set (what the review logs carry); the faculty did not report them",
+    "optional_sensitivity_check": "NOT_REPORTED (FD-TONE-RATIFY-09: not required for this decision)",
+    "pressure_only_first_pass": true,
+    "review_set_digest": "22ed59069e441aca96939ccf359ceec00a8bd55ddc0b182ff7bbcfcdd6e91487",
+    "review_set_id": "COMMON_TONE_V1_MULTIFAMILY_FACULTY_REVIEW",
+    "scenario_order_as_reported": [
+      "FR-F",
+      "SYNTH",
+      "ACS",
+      "PULM-EDEMA",
+      "PE"
+    ],
+    "scenarios_with_reported_judgments": 5
+  },
+  "scenarios": [
+    {
+      "faculty_interpretation_as_reported": "Norepinephrine produces an appropriate early pressure response.\n\nThe benefit is incomplete and attenuates while hemorrhage remains untreated.\n\nThe pressure improvement must not be interpreted as correction of underlying volume loss.",
+      "first_pass": {
+        "Q1": "Expected",
+        "Q2": "Plausible",
+        "Q3": "Plausible",
+        "Q4": "Coherent",
+        "Q5": "Maybe"
+      },
+      "free_text_comments": "NONE_REPORTED",
+      "overall": "ACCEPT_WITH_LIMITATION",
+      "recalibration_in_isolation_requested": false,
+      "reported_name": "GI HEMORRHAGE",
+      "reviewed_item_digest": "d8ca8ea38d43",
+      "reviewed_trajectory_digest": "d2d62bd64b456882d32341c60ab160d9bea8437a4198249f25c20e3d30097e25",
+      "scenario_id": "FR-F",
+      "title_in_the_set": "57-year-old man with an upper gastrointestinal bleed: norepinephrine during ongoing hemorrhage"
+    },
+    {
+      "faculty_interpretation_as_reported": "The response is a clean development-positive control.\n\nVascular-tone support restores part of the pressure lost from reduced tone without unrealistically returning the system to its original baseline.",
+      "first_pass": {
+        "Q1": "Expected",
+        "Q2": "Plausible",
+        "Q3": "Plausible",
+        "Q4": "Coherent",
+        "Q5": "No"
+      },
+      "free_text_comments": "NONE_REPORTED",
+      "overall": "ACCEPT",
+      "recalibration_in_isolation_requested": false,
+      "reported_name": "LOW-TONE SYNTHETIC PROBE",
+      "reviewed_item_digest": "92728a6fa840",
+      "reviewed_trajectory_digest": "32fbb4a8c783ff5c3388400a5991417e420ceb6e82ac05ae28aacb613ea1155c",
+      "scenario_id": "SYNTH",
+      "title_in_the_set": "SYNTHETIC DEVELOPMENT PHYSIOLOGY PROBE: loss of vascular tone, then norepinephrine"
+    },
+    {
+      "faculty_interpretation_as_reported": "The pressure response is directionally and temporally defensible.\n\nHowever:\n\nthe patient is not hypotensive,\nthe state is pump-limited,\nand norepinephrine does not correct pump failure.\n\nThis remains a pump-dependence limitation.\n\nDo NOT globally recalibrate the tone pathway from this scenario.",
+      "first_pass": {
+        "Q1": "Expected",
+        "Q2": "Plausible",
+        "Q3": "Plausible",
+        "Q4": "Uncertain",
+        "Q5": "Yes"
+      },
+      "free_text_comments": "NONE_REPORTED",
+      "overall": "ACCEPT_WITH_LIMITATION",
+      "recalibration_in_isolation_requested": false,
+      "reported_name": "ACS / PUMP-LIMITED",
+      "reviewed_item_digest": "c1e87b70f49b",
+      "reviewed_trajectory_digest": "4666a3723b21cab061e41357fb6862287c0e0d2ddf020f7fb936e6e90007fb3b",
+      "scenario_id": "ACS",
+      "title_in_the_set": "70-year-old woman with a left main acute coronary syndrome: norepinephrine with limited forward flow"
+    },
+    {
+      "faculty_interpretation_as_reported": "The pressure rise itself is physiologically understandable.\n\nHowever:\n\nthe patient is already profoundly hypertensive with acute cardiogenic pulmonary edema.\n\nNorepinephrine is clinically inappropriate and drives pressure further into an extreme range.\n\nIMPORTANT:\n\nThis REJECT is primarily a judgment of the MANAGEMENT CONTEXT / EDUCATIONAL USE of this intervention.\n\nIt is NOT, by itself, evidence that the common vascular-tone mechanism requires global recalibration.\n\nDo NOT retune T merely to make norepinephrine look acceptable in a patient who should not receive it.",
+      "first_pass": {
+        "Q1": "Expected",
+        "Q2": "Plausible",
+        "Q3": "Too large",
+        "Q4": "Incoherent",
+        "Q5": "Yes"
+      },
+      "free_text_comments": "NONE_REPORTED",
+      "overall": "REJECT",
+      "recalibration_in_isolation_requested": false,
+      "reported_name": "HYPERTENSIVE PULMONARY EDEMA",
+      "reviewed_item_digest": "6709f611aa8b",
+      "reviewed_trajectory_digest": "bdb147687a4aae5878c52db0b44a9ff2b0b494d3fb49a35c2e551c1b41c7ea9f",
+      "scenario_id": "PULM-EDEMA",
+      "title_in_the_set": "58-year-old man with hypertensive pulmonary edema: norepinephrine in a congested, pump-limited patient"
+    },
+    {
+      "faculty_interpretation_as_reported": "The pressure response is clinically defensible as temporary hemodynamic support in obstructive shock.\n\nIt must not imply correction of the pulmonary vascular obstruction.",
+      "first_pass": {
+        "Q1": "Expected",
+        "Q2": "Plausible",
+        "Q3": "Plausible",
+        "Q4": "Coherent",
+        "Q5": "Maybe"
+      },
+      "free_text_comments": "NONE_REPORTED",
+      "overall": "ACCEPT_WITH_LIMITATION",
+      "recalibration_in_isolation_requested": false,
+      "reported_name": "HIGH-RISK PULMONARY EMBOLISM",
+      "reviewed_item_digest": "eb8970436cfb",
+      "reviewed_trajectory_digest": "ae989e5289b568c545065c6310b3cd855fcb5f55f87f5855f222b01d2765e12e",
+      "scenario_id": "PE",
+      "title_in_the_set": "61-year-old man with a high-risk pulmonary embolism: norepinephrine in an obstructive low-flow state"
+    }
+  ],
+  "version": "P3-415",
+  "what_it_is": "The human faculty review of the five CENTER_REFERENCE tone trajectories (one norepinephrine order), recorded as HUMAN evidence as the reviewer reported it. It is not converted into an automated truth, it is not a clinical validation, and nothing in it was written by a model. No comment, event or sensitivity answer that was not reported was added."
+}

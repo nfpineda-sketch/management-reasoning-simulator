@@ -1,0 +1,400 @@
+{
+  "authority": {
+    "common_core_runtime_authority": false,
+    "expanded": false,
+    "live_configuration_bound_to_the_snapshot": false,
+    "norepinephrine_authority_granted": false,
+    "not_granted": [
+      "runtime authority",
+      "a registered adapter",
+      "resident visibility",
+      "scoring",
+      "the first pilot",
+      "a clinical dose-response",
+      "an mmHg target",
+      "titration",
+      "a weight-based dose",
+      "any other vasopressor",
+      "consciousness authority",
+      "terminal authority",
+      "clinical validation"
+    ]
+  },
+  "classification_rule": "a scenario is a MECHANISM_FAILURE only if the recorded human judgment says so; none does. Each entry quotes the recorded human text it rests on (human_basis) and the quotation is checked against the human record",
+  "classification_vocabulary": [
+    "MECHANISM_FAILURE",
+    "INAPPROPRIATE_INTERVENTION_CONTEXT",
+    "EDUCATIONAL_LIMITATION"
+  ],
+  "date": "2026-11-18",
+  "development_status": {
+    "common_tone": "COMMON_TONE_DEVELOPMENT_RATIFIED",
+    "meaning": "development only; NOT production, NOT clinical validation, NOT resident deployment"
+  },
+  "executable_change": false,
+  "faculty_decisions": {
+    "FD-TONE-RATIFY-01": "Human review totals: ACCEPT 1, ACCEPT_WITH_LIMITATION 3, RECALIBRATE 0, REJECT 1. The single REJECT is a clinically inappropriate vasopressor intervention in an already severely hypertensive pulmonary-edema patient: the review is NOT to be interpreted as failure of the common tone mechanism.",
+    "FD-TONE-RATIFY-02": "The common vascular-tone pathway is ACCEPTABLE FOR DEVELOPMENT for appropriately selected supportive vasopressor contexts.",
+    "FD-TONE-RATIFY-03": "CENTER_REFERENCE is promoted to COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1. Reason: accepted in the low-tone positive control; acceptable with limitations in hemorrhagic and obstructive shock; no scenario requested global tone recalibration; the ACS limitation is pump-context dependent; the pulmonary-edema rejection reflects an inappropriate intervention context. A DEVELOPMENT snapshot, NOT a clinical calibration, production validation or resident approval.",
+    "FD-TONE-RATIFY-04": "LOW and HIGH remain TEST_WITNESS_ONLY. No further calibration cycle unless future evidence requires it.",
+    "FD-TONE-RATIFY-05": "COMMON_TONE_PUMP_DEPENDENCE_NOT_YET_VALIDATED persists as a MONITORED DEVELOPMENT LIMITATION: it blocks educational promotion of vasopressor behaviour in pump-limited families; it does NOT block continued development of the common tone mechanism.",
+    "FD-TONE-RATIFY-06": "The hypertensive pulmonary-edema scenario is classified INAPPROPRIATE_INTERVENTION_CONTEXT and, optionally, NEGATIVE_CONTROL_CANDIDATE for future management-reasoning work. Its physiology is not altered so that the intervention appears beneficial.",
+    "FD-TONE-RATIFY-07": "CONSCIOUSNESS_UNDER_TONE_UNRESOLVED persists: pressure-derived consciousness interpretation under active tone support stays blocked.",
+    "FD-TONE-RATIFY-08": "TITRATION_AND_STOP_NOT_SUPPORTED persists as the NEXT HIGH-PRIORITY MANAGEMENT GAP; the next implementation target after ratification is norepinephrine rate change / titration / stop semantics. NOT implemented in this ratification package unless explicitly authorized later.",
+    "FD-TONE-RATIFY-09": "No sensitivity review is required for the current development decision; the LOW/HIGH review remains optional future work and ratification is not delayed for it."
+  },
+  "human_record": {
+    "file": "docs/revision/PHASE3_HUMAN_COMMON_TONE_MULTIFAMILY_REVIEW.json",
+    "overall_counts": {
+      "ACCEPT": 1,
+      "ACCEPT_WITH_LIMITATION": 3,
+      "RECALIBRATE": 0,
+      "REJECT": 1
+    },
+    "record_digest": "50807dfc418226aed48826864abf6ac14c8d5d785f9e1f2ed68207091afe0804",
+    "verification": "HUMAN_FACULTY_REVIEW_REPORTED_NOT_STORE_VERIFIED"
+  },
+  "is_not": [
+    "a clinical calibration",
+    "production validation",
+    "resident approval",
+    "a clinical-validation claim",
+    "an approval of norepinephrine in any patient",
+    "an educational promotion of vasopressor behaviour"
+  ],
+  "limitations": {
+    "COMMON_TONE_PUMP_DEPENDENCE_NOT_YET_VALIDATED": {
+      "blocks": [
+        "educational promotion of vasopressor behaviour in pump-limited families"
+      ],
+      "decision": "FD-TONE-RATIFY-05",
+      "does_not_block": [
+        "continued development of the common tone mechanism",
+        "this ratification"
+      ],
+      "not_to_do_now": [
+        "a pump-specific afterload sensitivity",
+        "a global recalibration of the tone pathway"
+      ],
+      "reopen_only_if": [
+        "a future faculty review asks for a pump-dependent afterload sensitivity",
+        "another pump-limited family shows the same deficit",
+        "educational use of a vasopressor in a pump-limited family is proposed"
+      ],
+      "status": "MONITORED_DEVELOPMENT_LIMITATION",
+      "what_it_is": "the output cost of tone is one sensitivity for every pump and volume (a certified limitation of the pathway); how the pressure response should depend on the state of the pump is not validated, and the ACS review (not hypotensive, pump-limited) is where it showed"
+    },
+    "CONSCIOUSNESS_UNDER_TONE_UNRESOLVED": {
+      "blocks": [
+        "pressure-derived consciousness interpretation under active tone support",
+        "any consciousness authority or resident-visible interpretation under active tone support"
+      ],
+      "decision": "FD-TONE-RATIFY-07",
+      "does_not_block": [
+        "continued development of the common tone mechanism"
+      ],
+      "status": "OPEN_DEVELOPMENT_LIMITATION",
+      "what_it_is": "the consciousness readings are taken from the pressure, so with support they read BETTER while output and delivery are lower (a certified limitation of the pathway); the development mapping refuses the support on an Amendment-2 consciousness witness"
+    },
+    "TITRATION_AND_STOP_NOT_SUPPORTED": {
+      "blocks": [
+        "any claim that a norepinephrine rate change or a stop is represented"
+      ],
+      "decision": "FD-TONE-RATIFY-08",
+      "does_not_block": [
+        "this ratification"
+      ],
+      "status": "NEXT_HIGH_PRIORITY_MANAGEMENT_GAP",
+      "what_it_is": "only a single start of norepinephrine at a fixed rate in mcg/min is mapped; an adjustment, a stop, a weight-based dose and any later start are declared gaps (runtime_tone_support)"
+    }
+  },
+  "mechanism_failures": [],
+  "negative_control": {
+    "case_id": "pulmonary_edema_58m",
+    "classification": "INAPPROPRIATE_INTERVENTION_CONTEXT",
+    "future_use": "a negative-control management scenario (a vasopressor ordered for a profoundly hypertensive patient with acute cardiogenic pulmonary edema)",
+    "id": "HYPERTENSIVE_PULMONARY_EDEMA_NOREPI",
+    "negative_control_candidate": true,
+    "norepinephrine_made_unavailable": false,
+    "physiology_altered": false,
+    "why_not_unavailable": "the action is inappropriate in this context, not in general: the common mechanism must keep representing it so that the inappropriate order has a consequence to be judged"
+  },
+  "next_management_priority": {
+    "authorized_to_implement": false,
+    "decision": "FD-TONE-RATIFY-08",
+    "desired_future_behaviour": [
+      "start",
+      "increase",
+      "decrease",
+      "stop"
+    ],
+    "first_step_when_authorized": "an audit of what the engine mirrors for a rate change and a stop, of how the writer represents a rate that changes over time, and of what each ordering means for the support the offset constant already decays",
+    "id": "NOREPINEPHRINE_TITRATION_AND_STOP_SEMANTICS",
+    "implemented": false,
+    "through": "the SAME common writer of the common vasoconstrictor support",
+    "without": [
+      "a drug -> mmHg shortcut",
+      "multiple competing tone writers",
+      "case-specific branches"
+    ]
+  },
+  "physiology_change": false,
+  "preserved_original_evidence": {
+    "first_human_review": {
+      "file": "docs/revision/PHASE3_FIRST_HUMAN_FACULTY_REVIEW.json",
+      "file_sha256": "51c13d9d6b91b4fdbdf4b5d85bab8ba2c7af98790941805cbb25fbaef63598d0",
+      "record_digest": "9ba80fa70d3b38e178caa3aca9432f9227ce6d9591a48c9908c3f5ac4cc6c8d3"
+    },
+    "first_review_set_digest_pinned_in_code": "f65d1127f3fb97926334d695aeab37b92f3a44236cec2ae025025eec90ba1649",
+    "frf_candidate": {
+      "file": "docs/revision/PHASE3_FRF_TONE_V1_CANDIDATE.json",
+      "file_sha256": "1178c5fee9908f838d85539d4e29fc89ca367b0f322fbc1dd8e33bf4ef8f6091",
+      "record_digest": "1d01730a69912f727046e310849927d40258e89103e0a354a2e3062586d568bd"
+    },
+    "human_rereview": {
+      "file": "docs/revision/PHASE3_HUMAN_FACULTY_REREVIEW.json",
+      "file_sha256": "bd772ec8f37a8b425a88dc87931d9d60fc9cb45e2a5426c33a41712aed86615b",
+      "record_digest": "4af2b53118245b8667d58d3280205ac64101e5c61fb1ecb83ca8bd9f05f05bd8"
+    },
+    "tone_probes": {
+      "file": "docs/revision/PHASE3_COMMON_TONE_PROBES.json",
+      "file_sha256": "6289c21e761c034e900e192f57ba217c3956e86a76ae35ac9425881370010ab3",
+      "record_digest": "0503574262a9786be20325f24a5f76f6190fe1a42fc08edba36920ed51d17004"
+    },
+    "tone_review_checkpoint": {
+      "file": "docs/revision/PHASE3_COMMON_TONE_V1_MULTIFAMILY_REVIEW_CHECKPOINT.json",
+      "file_sha256": "e7deff9e7176911178a61b8508b95e6a53691f4c93aad0413bde1ea1bdf70f3a",
+      "record_digest": "cce4df48c44208a2f0b3d1dcd8beb51d59939476ba4bf0eb79cbf1a9824a03cb"
+    },
+    "tone_review_set": {
+      "file": "docs/revision/PHASE3_COMMON_TONE_V1_MULTIFAMILY_REVIEW_SET.json",
+      "file_sha256": "b856a479e31f86454a7b0295ab30856cca318f4f95ce51d7630e4c30e5b53855",
+      "record_digest": "22ed59069e441aca96939ccf359ceec00a8bd55ddc0b182ff7bbcfcdd6e91487"
+    },
+    "tone_review_set_digest_pinned_in_code": "22ed59069e441aca96939ccf359ceec00a8bd55ddc0b182ff7bbcfcdd6e91487"
+  },
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-18",
+    "generating_code": {
+      "clinical_core": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "test_tone_pathway_analysis.py": "ba48e1600752029ecb6b38bbb75c99db3ade6b96313d0b8aa2f18d6ea6e032b6",
+      "test_tone_ratification_analysis.py": "a847ed876db6f87b83ee40e126014ac5471c69d9bf8eb9df10d0c7c037d32921",
+      "test_tone_review_analysis.py": "27257888844ca6208dbaa44aef368039427de5a51411104027bdb6b774586424"
+    },
+    "generating_code_fingerprint": "babc336689f50f46eb1211057a36bb00e999df840d3a0c562cb151629d4db1b4",
+    "grant_id": null,
+    "record_id": "COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1_RATIFICATION",
+    "record_schema_version": 1,
+    "source_data_digest": "6923d59834a07eb81799badbb93e9817730cf49df974fdaa4b7ad365ba0caf00",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "pulmonary_edema_audit": {
+    "case_id": "pulmonary_edema_58m",
+    "classification": "INAPPROPRIATE_INTERVENTION_CONTEXT",
+    "does_the_recorded_judgment_support_mechanism_failure": false,
+    "model_analysis": {
+      "by_family": {
+        "acs": {
+          "case_id": "acs_70f_left_main",
+          "map_gain_mmhg": 16.481346,
+          "map_with": 92.328578269,
+          "map_without": 75.847232311,
+          "minute": 30,
+          "pressure_ratio": 1.217297
+        },
+        "asthma": {
+          "case_id": "asthma_49m",
+          "map_gain_mmhg": 20.165137,
+          "map_with": 124.83180324,
+          "map_without": 104.666666667,
+          "minute": 30,
+          "pressure_ratio": 1.192661
+        },
+        "gi_bleed": {
+          "case_id": "gi_bleed_57m",
+          "map_gain_mmhg": 11.470707,
+          "map_with": 71.009139389,
+          "map_without": 59.538432753,
+          "minute": 30,
+          "pressure_ratio": 1.192661
+        },
+        "opioid": {
+          "case_id": "opioid_35m",
+          "map_gain_mmhg": 15.027522,
+          "map_with": 93.02752216,
+          "map_without": 78.0,
+          "minute": 30,
+          "pressure_ratio": 1.192661
+        },
+        "pulmonary_edema": {
+          "case_id": "pulmonary_edema_58m",
+          "map_gain_mmhg": 28.899081,
+          "map_with": 178.899081077,
+          "map_without": 150.0,
+          "minute": 30,
+          "pressure_ratio": 1.192661
+        },
+        "pulmonary_embolism": {
+          "case_id": "pulmonary_embolism_61m",
+          "map_gain_mmhg": 13.537427,
+          "map_with": 76.250977358,
+          "map_without": 62.713550195,
+          "minute": 30,
+          "pressure_ratio": 1.215861
+        }
+      },
+      "consequence": "no change to T, to the pump coupling or to any parameter follows from it (FD-TONE-RATIFY-06)",
+      "does_not_judge": true,
+      "evidence_class": "MODEL_ANALYSIS",
+      "reading": "at minute 30 the SAME mechanism gives the same relative response in pulmonary edema, gastrointestinal bleed, asthma and opioid (pressure ratio 1.192661) and a slightly higher one in ACS and pulmonary embolism; the absolute rise is largest in pulmonary edema (28.9 mmHg of mean pressure) because its baseline is the highest (150 mmHg), not because the mechanism acts differently there. Changing T to shrink that rise would change every family, to look better in a patient who should not receive the drug",
+      "source": "docs/revision/PHASE3_COMMON_TONE_PROBES.json family_probes.*.witnesses.CENTER_REFERENCE.observed (the last observed minute)"
+    },
+    "negative_control_candidate": true,
+    "reading": {
+      "direction_and_timing": "Q1 Expected and Q2 Plausible: the faculty found the direction and the timing of the response right",
+      "magnitude_management_and_educational_risk": "Q3 Too large, Q4 Incoherent and Q5 Yes were given with the faculty's own explanation: the patient is already profoundly hypertensive with acute cardiogenic pulmonary edema and the intervention drives pressure further into an extreme range"
+    },
+    "recorded_human_judgment": {
+      "Q1": "Expected",
+      "Q2": "Plausible",
+      "Q3": "Too large",
+      "Q4": "Incoherent",
+      "Q5": "Yes",
+      "overall": "REJECT"
+    },
+    "scenario_id": "PULM-EDEMA",
+    "why_not": "the faculty stated that the REJECT is primarily a judgment of the management context and educational use, that it is NOT by itself evidence that the common mechanism needs global recalibration, and that T is not to be retuned to make the intervention look acceptable in a patient who should not receive it; no scenario was RECALIBRATE"
+  },
+  "pump_coupling_modified": false,
+  "ratified": "COMMON VASCULAR TONE PATHWAY (PHASE2_AMENDMENT_3 vasoconstrictor support, norepinephrine start at a fixed rate as its first writer)",
+  "ratified_for": "DEVELOPMENT EXPERIMENTS under appropriately selected supportive vasopressor contexts",
+  "record_digest": "a5a8f4370e240a07406111e0fedf40884e7e382dbd08643949bc82201452bab2",
+  "record_type": "COMMON_TONE_DEVELOPMENT_RATIFICATION",
+  "scenario_classification": {
+    "ACS": {
+      "classification": "EDUCATIONAL_LIMITATION",
+      "first_pass": {
+        "Q1": "Expected",
+        "Q2": "Plausible",
+        "Q3": "Plausible",
+        "Q4": "Uncertain",
+        "Q5": "Yes"
+      },
+      "global_recalibration_requested": false,
+      "human_basis": [
+        "The pressure response is directionally and temporally defensible.",
+        "This remains a pump-dependence limitation.",
+        "Do NOT globally recalibrate the tone pathway from this scenario."
+      ],
+      "limitation_ids": [
+        "COMMON_TONE_PUMP_DEPENDENCE_NOT_YET_VALIDATED"
+      ],
+      "meaning": "a pump-context limitation of what the pressure response means in a pump-limited patient who is not hypotensive; not a tone-pathway recalibration",
+      "mechanism_failure": false,
+      "overall": "ACCEPT_WITH_LIMITATION"
+    },
+    "FR-F": {
+      "classification": "EDUCATIONAL_LIMITATION",
+      "first_pass": {
+        "Q1": "Expected",
+        "Q2": "Plausible",
+        "Q3": "Plausible",
+        "Q4": "Coherent",
+        "Q5": "Maybe"
+      },
+      "global_recalibration_requested": false,
+      "human_basis": [
+        "Norepinephrine produces an appropriate early pressure response.",
+        "must not be interpreted as correction of underlying volume loss"
+      ],
+      "limitation_ids": [
+        "COMMON_TONE_PRESSURE_BENEFIT_MUST_NOT_IMPLY_VOLUME_CORRECTION"
+      ],
+      "meaning": "an educational caution about how the pressure improvement is read, not a defect of the mechanism",
+      "mechanism_failure": false,
+      "overall": "ACCEPT_WITH_LIMITATION"
+    },
+    "PE": {
+      "classification": "EDUCATIONAL_LIMITATION",
+      "first_pass": {
+        "Q1": "Expected",
+        "Q2": "Plausible",
+        "Q3": "Plausible",
+        "Q4": "Coherent",
+        "Q5": "Maybe"
+      },
+      "global_recalibration_requested": false,
+      "human_basis": [
+        "The pressure response is clinically defensible as temporary hemodynamic support in obstructive shock.",
+        "It must not imply correction of the pulmonary vascular obstruction."
+      ],
+      "limitation_ids": [
+        "COMMON_TONE_PRESSURE_BENEFIT_MUST_NOT_IMPLY_OBSTRUCTION_CORRECTION"
+      ],
+      "meaning": "an educational caution: temporary support is not correction of the obstruction",
+      "mechanism_failure": false,
+      "overall": "ACCEPT_WITH_LIMITATION"
+    },
+    "PULM-EDEMA": {
+      "classification": "INAPPROPRIATE_INTERVENTION_CONTEXT",
+      "first_pass": {
+        "Q1": "Expected",
+        "Q2": "Plausible",
+        "Q3": "Too large",
+        "Q4": "Incoherent",
+        "Q5": "Yes"
+      },
+      "global_recalibration_requested": false,
+      "human_basis": [
+        "The pressure rise itself is physiologically understandable.",
+        "Norepinephrine is clinically inappropriate",
+        "This REJECT is primarily a judgment of the MANAGEMENT CONTEXT / EDUCATIONAL USE of this intervention.",
+        "It is NOT, by itself, evidence that the common vascular-tone mechanism requires global recalibration.",
+        "Do NOT retune T merely to make norepinephrine look acceptable in a patient who should not receive it."
+      ],
+      "limitation_ids": [],
+      "meaning": "the faculty rejected giving this vasopressor to this patient, not the way the common mechanism responds to it",
+      "mechanism_failure": false,
+      "negative_control_candidate": true,
+      "overall": "REJECT"
+    },
+    "SYNTH": {
+      "classification": "DEVELOPMENT_POSITIVE_CONTROL",
+      "first_pass": {
+        "Q1": "Expected",
+        "Q2": "Plausible",
+        "Q3": "Plausible",
+        "Q4": "Coherent",
+        "Q5": "No"
+      },
+      "global_recalibration_requested": false,
+      "human_basis": [
+        "The response is a clean development-positive control."
+      ],
+      "limitation_ids": [],
+      "meaning": "the mechanism does what it should in the one state built to test it, and does not return the system to its original baseline",
+      "mechanism_failure": false,
+      "overall": "ACCEPT"
+    }
+  },
+  "scenario_limitation_labels": {
+    "COMMON_TONE_PRESSURE_BENEFIT_MUST_NOT_IMPLY_OBSTRUCTION_CORRECTION": "PE: temporary hemodynamic support in obstructive shock is not correction of the obstruction",
+    "COMMON_TONE_PRESSURE_BENEFIT_MUST_NOT_IMPLY_VOLUME_CORRECTION": "FR-F: the pressure benefit attenuates while the hemorrhage is untreated and is not correction of the volume loss"
+  },
+  "snapshot": {
+    "file": "docs/revision/COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1.json",
+    "file_sha256": "1f2ebb46190e72ec150897037a397f788164fb7f29b46337dbb94328d0be8e2c",
+    "id": "COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1",
+    "record_digest": "ee1740ca77173ce0797268f8327f21fc29304c5c54ff2c642c1f2bdfb3270356",
+    "selected_witness": "CENTER_REFERENCE",
+    "witnesses_test_only": [
+      "LOW",
+      "HIGH"
+    ]
+  },
+  "status": "RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS",
+  "tone_recalibrated": false,
+  "version": "P3-417"
+}
