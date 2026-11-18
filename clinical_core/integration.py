@@ -49,7 +49,7 @@ from .derived import (ADOPTED, AUXILIARY_SOURCES, BLOOD_COMPOSITION, COLLAPSE, D
 from .provenance import (BLOOD_PROCESSES, AuxiliaryChange, BloodChange, BloodFlow, BloodProcess, ChannelDelta,
                          CoreEvent, DemandModifier, MinuteRecord, ProvenanceError, RhythmTransition, SettingChange,
                          Source, SourceKind, MechanicsChange, DistressChange, AvailabilityChange,
-                         SystemicStressChange, VasodilationChange)
+                         SystemicStressChange, VasodilationChange, VasoconstrictionChange)
 from .state import (AUXILIARY_FIELDS, BLOOD_FIELDS, Anchors, AuxiliaryState, BloodState, Channel, CoreInvariantError,
                     CoreState, FrozenRecord, SCALAR_CHANNELS, UnresolvedBoundary, digest, initial_state)
 
@@ -126,6 +126,7 @@ class Contribution:
     availability: tuple[AvailabilityChange, ...] = ()  # changes to the common central availability this minute (P2U-1)
     systemic_stress: tuple[SystemicStressChange, ...] = ()  # changes to the common systemic stress this minute (P2V-1)
     vasodilation: tuple[VasodilationChange, ...] = ()  # changes to the common vasodilatory burden this minute (P2W-1)
+    vasoconstriction: tuple[VasoconstrictionChange, ...] = ()  # changes to the common vasoconstrictor support (PHASE2_AMENDMENT_3)
 
 
 NOTHING = Contribution()
@@ -196,7 +197,7 @@ def _plain(value):
 
 def from_spec(spec: Mapping[str, Any]) -> Contributor:
     # Every contributor type the package defines is registered here, whatever was imported before.
-    from . import interventions, logistics, modules  # noqa: F401
+    from . import interventions, logistics, modules, vascular_support  # noqa: F401
     data = dict(spec)
     name = data.pop("type")
     if name not in _REGISTRY:
@@ -305,15 +306,19 @@ def tone_domain(anchors: Anchors, profile: CoreProfile) -> dict:
     normalization = 1.0 + gain * arrival_signal
     loss = profile.vasodilatory_burden_to_tone_gain
     recovery_max = 1.0 if loss is None else 1.0 + loss * anchors.arrival_vasodilatory_burden
+    # PHASE2_AMENDMENT_3: the vasoconstrictor factor is below 1 + k whatever the support, so 1 + k scales the largest
+    # reachable target and the loop's slope bound the way the distributive recovery does (1 exactly while UNSET).
+    support_max = 1.0 if profile.vasoconstrictor_support_to_tone_gain is None \
+        else 1.0 + profile.vasoconstrictor_support_to_tone_gain
     lower, upper = CHANNEL_BOUNDS[Channel.T][0], CHANNEL_BOUNDS[Channel.T][1]
     afterload_at_the_lower_end = 1.0 / (1.0 + sensitivity * (lower - 1.0))
     return {"arrival_signal": arrival_signal, "compensation_min": 1.0 / normalization,
             "compensation_max": (1.0 + gain) / normalization, "recovery_max": recovery_max,
             "distributive_reader": loss is not None,
-            "largest_target": (1.0 + gain) / normalization * recovery_max,
+            "largest_target": (1.0 + gain) / normalization * recovery_max * support_max,
             "smallest_target": "0 (approached as the burden grows; no clinical maximum burden is declared)",
             "supported": (lower, upper),
-            "loop_slope_bound": recovery_max * gain * sensitivity * afterload_at_the_lower_end / normalization,
+            "loop_slope_bound": recovery_max * support_max * gain * sensitivity * afterload_at_the_lower_end / normalization,
             "p2j2_slope_bound": gain * sensitivity}
 
 
@@ -397,15 +402,22 @@ def _vascular_tone(state: CoreState, deltas: Sequence[ChannelDelta], anchors: An
         # where the distributive reader is declared; the supported domain is interior whatever the reader
         # (FACULTY DECISION 2), and the derived value already carries the arrival normalization and the recovery
         # factor, so this is both broader than P2X-1's check and exact where P2J-2's 1 + g is conservative.
+        # PHASE2_AMENDMENT_3: the refusal names the third factor when it is declared (the text is unchanged while UNSET).
+        ceiling = "" if profile.vasoconstrictor_support_to_tone_gain is None else \
+            f" times the vasoconstrictor ceiling {1.0 + profile.vasoconstrictor_support_to_tone_gain!r}"
         raise CoreInvariantError(
             f"the tone target's largest reachable value {domain['largest_target']!r} (the compensation's "
-            f"{domain['compensation_max']!r} times the distributive recovery {domain['recovery_max']!r}) reaches "
+            f"{domain['compensation_max']!r} times the distributive recovery {domain['recovery_max']!r}{ceiling}) reaches "
             f"or passes T's guard {upper!r}: the guard would shape the response (P2X-1, strict and unconditional "
             "since P2X-1A)")
-    if domain["distributive_reader"]:
+    if domain["distributive_reader"] or profile.vasoconstrictor_support_to_tone_gain is not None:
         if domain["loop_slope_bound"] >= 1.0:
+            # PHASE2_AMENDMENT_3: the refusal names the factor that is declared (unchanged with the distributive reader alone).
+            named = "the distributive factor" if domain["distributive_reader"] else "the vasoconstrictor ceiling"
+            if domain["distributive_reader"] and profile.vasoconstrictor_support_to_tone_gain is not None:
+                named = "the distributive factor and the vasoconstrictor ceiling"
             raise CoreInvariantError(
-                f"the tone loop's derived bound with the distributive factor, {domain['loop_slope_bound']!r}, is not "
+                f"the tone loop's derived bound with {named}, {domain['loop_slope_bound']!r}, is not "
                 f"below 1, so the delayed loop is not a contraction over T's supported range (P2X-1)")
     writers = sorted({delta.source.key for delta in deltas if delta.channel is Channel.T})
     if writers:
@@ -499,13 +511,18 @@ def _check_owned(contributor: Contributor, contribution: Contribution, minute: i
                                                                for item in contribution.vasodilation):
         raise ProvenanceError(f"{contributor.source.key}: the vasodilatory burden changes only by a tuple of "
                               "VasodilationChange records")
+    if not isinstance(contribution.vasoconstriction, tuple) or any(not isinstance(item, VasoconstrictionChange)
+                                                                   for item in contribution.vasoconstriction):
+        raise ProvenanceError(f"{contributor.source.key}: the vasoconstrictor support changes only by a tuple of "
+                              "VasoconstrictionChange records")
     if contributor.source.kind is not SourceKind.SCRIPTED_EVENT and any(delta.channel in BLOOD_CHANNELS
                                                                          for delta in contribution.deltas):
         raise ProvenanceError(f"{contributor.source.key} wrote V or Hb directly: volume and red cells move only "
                               "through the shared blood state (a BloodFlow, P2I-2T)")
     for item in (contribution.deltas + contribution.transitions + contribution.settings + contribution.events
                  + contribution.demand + contribution.blood + contribution.mechanics + contribution.distress
-                 + contribution.availability + contribution.systemic_stress + contribution.vasodilation):
+                 + contribution.availability + contribution.systemic_stress + contribution.vasodilation
+                 + contribution.vasoconstriction):
         if item.source != contributor.source:
             raise ProvenanceError(f"{contributor.source.key} wrote a change attributed to {item.source.key}")
         if item.minute != minute:
@@ -568,7 +585,7 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
         deltas.append(ChannelDelta(Channel.L, -clearance, LUNG_WATER_CLEARANCE, minute,
                                    "lung water above arrival clearing slowly"))
     transitions, settings, events, modifiers, flows, mechanics, distress = [], [], [], [], [], [], []
-    availability, systemic_stress, vasodilation = [], [], []
+    availability, systemic_stress, vasodilation, vasoconstriction = [], [], [], []
     internal = {}
     for contributor in ordered:
         # A contributor sees only the signals it declares it responds to.
@@ -586,6 +603,7 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
         availability.extend(contribution.availability)
         systemic_stress.extend(contribution.systemic_stress)
         vasodilation.extend(contribution.vasodilation)
+        vasoconstriction.extend(contribution.vasoconstriction)
         if contribution.internal is not None:
             internal[contributor.source.key] = contribution.internal
     if respiratory_mechanics_active(profile) and any(delta.channel is Channel.W for delta in deltas):
@@ -616,7 +634,8 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
                                                 f"{target.code.value}"))
     _tone_ownership(deltas, minute,
                     frozenset(contributor.source.key for contributor in ordered if _is_a_probe(contributor)))
-    if profile.deficit_to_tone_gain > 0.0 or profile.vasodilatory_burden_to_tone_gain is not None:
+    if profile.deficit_to_tone_gain > 0.0 or profile.vasodilatory_burden_to_tone_gain is not None \
+            or profile.vasoconstrictor_support_to_tone_gain is not None:
         # P2W-1: the tone response also runs for a declared vasodilatory reader, so a family's burden always reaches T
         # where its reader exists, even with the compensatory gain at 0 (with the reader UNSET this is P2J-2's
         # condition exactly, so nothing before P2W-1 changes).
@@ -697,7 +716,8 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
                          central_availability=_availability_after(state, availability, profile, minute),
                          systemic_stress=_systemic_stress_after(state, systemic_stress, profile, minute),
                          vasodilatory_burden=_vasodilation_after(state, vasodilation, profile, minute),
-                         systemic_encephalopathy_burden=_systemic_burden_after(state, anchors, profile))
+                         systemic_encephalopathy_burden=_systemic_burden_after(state, anchors, profile),
+                         vasoconstrictor_support=_vasoconstriction_after(state, vasoconstriction, profile, minute))
     aux = replace(aux, sympathetic_drive=sympathetic_after_minute(state, new_state.evolve(aux=aux), anchors, profile))
     new_state = new_state.evolve(aux=aux)
     changes = tuple(AuxiliaryChange(name, getattr(state.aux, name), getattr(aux, name), AUXILIARY_SOURCES[name],
@@ -707,7 +727,8 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
                           settings=tuple(settings), events=tuple(events), internal_updates=tuple(sorted(internal)),
                           auxiliary=changes, demand=tuple(modifiers), blood=blood_changes,
                           mechanics=tuple(mechanics), distress=tuple(distress), availability=tuple(availability),
-                          systemic_stress=tuple(systemic_stress), vasodilation=tuple(vasodilation))
+                          systemic_stress=tuple(systemic_stress), vasodilation=tuple(vasodilation),
+                          vasoconstriction=tuple(vasoconstriction))
     _check_conservation(state, new_state, record)
     _check_blood(state, new_state, record, anchors, profile)
     derive(new_state, anchors, profile)   # the observation invariants hold, or this minute fails
@@ -775,6 +796,33 @@ def _vasodilation_after(state: CoreState, vasodilation: list, profile: CoreProfi
     if value < 0.0:
         raise ProvenanceError(f"minute {minute}: the vasodilation changes take the burden to {value!r}, below 0 "
                               "(P2W-1)")
+    return value
+
+
+def _vasoconstriction_after(state: CoreState, vasoconstriction: list, profile: CoreProfile,
+                            minute: int) -> float | None:
+    """PHASE2_AMENDMENT_3: the vasoconstrictor support after the minute: the value it starts with (0 before any writer)
+    plus the minute's changes, summed once by P2T-1A's rule (``distress_sum``). None (not tracked) while its reader is
+    UNSET, and then a change is refused, because nothing would read it, and so is a state that already carries a
+    support (it would be dropped in silence); a minute that would take it materially below 0, or whose changes do not
+    sum to a finite value, is refused, never held. The core adds no kinetics and no coupling of its own."""
+    if profile.vasoconstrictor_support_to_tone_gain is None:
+        if vasoconstriction:
+            raise ProvenanceError(f"minute {minute}: {vasoconstriction[0].source.key} changed the vasoconstrictor "
+                                  "support while its reader is UNSET (PHASE2_AMENDMENT_3): nothing would read it")
+        if state.aux.vasoconstrictor_support:
+            raise ProvenanceError(f"minute {minute}: the state carries a vasoconstrictor support of "
+                                  f"{state.aux.vasoconstrictor_support!r} while its reader is UNSET (PHASE2_AMENDMENT_3): "
+                                  "it would be dropped in silence")
+        return None
+    try:
+        value = distress_sum(state.aux.vasoconstrictor_support or 0.0, [item.amount for item in vasoconstriction])
+    except OverflowError:
+        raise ProvenanceError(f"minute {minute}: the vasoconstriction changes do not sum to a finite support "
+                              "(PHASE2_AMENDMENT_3)") from None
+    if value < 0.0:
+        raise ProvenanceError(f"minute {minute}: the vasoconstriction changes take the support to {value!r}, below 0 "
+                              "(PHASE2_AMENDMENT_3)")
     return value
 
 
@@ -849,6 +897,11 @@ def _check_conservation(before: CoreState, after: CoreState, record: MinuteRecor
                                                      [item.amount for item in record.vasodilation]):
         # P2W-1: the vasodilatory burden moves by exactly the minute's recorded changes, never otherwise.
         raise ProvenanceError("the vasodilatory burden changed by other than its recorded changes")
+    if (after.aux.vasoconstrictor_support or 0.0) != distress_sum(before.aux.vasoconstrictor_support or 0.0,
+                                                                  [item.amount for item in record.vasoconstriction]):
+        # PHASE2_AMENDMENT_3: the vasoconstrictor support moves by exactly the minute's recorded changes, never
+        # otherwise (not tracked reads as none: an untracked state and a support of 0 are the same state).
+        raise ProvenanceError("the vasoconstrictor support changed by other than its recorded changes")
     for channel in SCALAR_CHANNELS:
         change = after.value(channel) - before.value(channel)
         total = record.total(channel)

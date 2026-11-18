@@ -66,6 +66,12 @@ V1_PROFILE_DIGEST = "c167b45ee0ce6ec29643cba47f2dde3b6eb760a4c6e37f11d3fa7e5e0a8
 V1_RATIFICATION_DIGEST = "123135b3e35c7cb8117ed02600e19b8e44e117e4d58feb2cf0a630cb77f58f64"
 V1_CORE_VERSION = "PHASE2_AMENDMENT_2"
 V1_CORE_DIGEST = "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2"
+#: P3-387/395 (FD-TONE-11, the lineage re-ligation): the snapshot's record names ``PHASE2_AMENDMENT_2``, immutably, and stays as it is. The common core gained ONE certified successor,
+#: ``PHASE2_AMENDMENT_3``, whose only physiology is off by default and never declared here, and whose own stage module rebuilds the ``PHASE2_AMENDMENT_2`` tree byte for byte from the live
+#: files. The binding therefore accepts the live core when it IS the member the record names, or when it is THIS successor and the member the record names still recomputes from the
+#: live bytes. Nothing else: a later successor needs its own entry here, by a faculty decision, and no other record's lineage is touched.
+REBOUND_CORE_VERSION = "PHASE2_AMENDMENT_3"
+REBOUND_CORE_DIGEST = "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c"
 PRESSURE_POINT = "gi_pressure_committed"
 #: P3-380: the digest of the ONE core profile the ten values of version 1 build on the ratified joint pressure point (its preload scale and arrival position): what a run under the
 #: promoted snapshot must be carrying. The consciousness values are version 1's, unchanged (FD-PROMOTE-03: no consciousness change).
@@ -122,18 +128,37 @@ def plain(value: Any) -> Any:
 
 def live_lineage() -> dict:
     """The lineage member the live common core IS, read from the layer and from the core's own bytes (never from a record)."""
-    from clinical_core import amendment_2 as a2
+    import importlib
     member = rs.CORE_LINEAGE[-1]
-    return {"version_id": member.version_id, "digest": member.digest, "bytes_digest": a2.amended_core_digest_now(), "certified": bool(ev.core_lineage_ok())}
+    stage = importlib.import_module(member.reversal)                 # the live stage's own definition of its digest, as the lineage gate reads it
+    reading = {"version_id": member.version_id, "digest": member.digest, "bytes_digest": stage.amended_core_digest_now(), "certified": bool(ev.core_lineage_ok())}
+    if member.version_id == REBOUND_CORE_VERSION:
+        # FD-TONE-11: the member the snapshot's record names, RECOMPUTED from the live bytes by the successor's declared reversal (never copied from a constant)
+        reading["predecessor"] = {"version_id": V1_CORE_VERSION, "digest_recomputed": stage.amendment_2_digest_now()}
+    return reading
 
 
 def lineage_is_v1(lineage: Any) -> bool:
     """This lineage reading IS the member the snapshot names: its id, its declared digest, the digest of the core's bytes, and certified."""
     try:
-        return ((lineage.get("version_id"), lineage.get("digest")) == (V1_CORE_VERSION, V1_CORE_DIGEST)
-                and lineage.get("bytes_digest") == V1_CORE_DIGEST and lineage.get("certified") is True)
+        if lineage.get("certified") is not True:
+            return False
+        named = (lineage.get("version_id"), lineage.get("digest"))
+        if named == (V1_CORE_VERSION, V1_CORE_DIGEST):
+            return lineage.get("bytes_digest") == V1_CORE_DIGEST
+        if named == (REBOUND_CORE_VERSION, REBOUND_CORE_DIGEST):
+            # FD-TONE-11: the one registered successor, and only while it still rebuilds the member the record names
+            predecessor = lineage.get("predecessor") if isinstance(lineage.get("predecessor"), Mapping) else {}
+            return (lineage.get("bytes_digest") == REBOUND_CORE_DIGEST and predecessor.get("version_id") == V1_CORE_VERSION
+                    and predecessor.get("digest_recomputed") == V1_CORE_DIGEST)
+        return False
     except Exception:
         return False
+
+
+def accepted_lineage_digests() -> tuple:
+    """The digests of the lineage members the snapshot may be used on: the one its record names and the one registered re-ligation (FD-TONE-11)."""
+    return (V1_CORE_DIGEST, REBOUND_CORE_DIGEST)
 
 
 def identity_of(record: Mapping) -> dict:
@@ -225,8 +250,17 @@ def pressure_point_matches(profile: Any, point: str = PRESSURE_POINT) -> bool:
     return all(getattr(profile, name, None) == value for name, value in dict(approved["parameters"]).items())
 
 
+#: Profile fields a certified SUCCESSOR of the snapshot's core added (P3-387). UNSET, such a field is not part of the profile the snapshot's core
+#: knew, so the pinned digests still describe the profile; SET, the key stays in the digest and the profile is no longer the ratified one.
+SUCCESSOR_PROFILE_FIELDS = ("vasoconstrictor_support_to_tone_gain",)
+
+
 def profile_digest(profile: Any) -> str:
-    return digest(dataclasses.asdict(profile))
+    data = dataclasses.asdict(profile)
+    for name in SUCCESSOR_PROFILE_FIELDS:
+        if name in data and data[name] is None:
+            del data[name]
+    return digest(data)
 
 
 @dataclasses.dataclass(frozen=True)

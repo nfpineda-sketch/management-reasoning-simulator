@@ -379,6 +379,46 @@ class VasodilationChange:
 
 
 @dataclass(frozen=True)
+class VasoconstrictionChange:
+    """PHASE2_AMENDMENT_3: one source's change to the common vasoconstrictor support in one minute.
+
+    The amount adds to the support the minute starts with (finite; 0 changes nothing), as a vasodilation change adds to
+    the burden: the support stays where its writers leave it, and the core adds no kinetics of its own (a writer brings
+    its own onset and offset). The support is a common input, never a drug term in the tone equation: a writer declares
+    what its own mechanism (a vasopressor infusion first; later another vasopressor or an endogenous vasoconstrictive
+    state) does to it, and the core only sums the changes. It is NOT a negative vasodilatory burden (P2X-1, FACULTY
+    DECISIONS 2 and 5): the two are separate inputs with separate readers. A minute whose changes would take the
+    support below 0 is refused; with its reader UNSET a change is refused, because nothing would read it. The channel T
+    keeps exactly one writer, the core's tone response.
+
+    WRITER CONTRACT, binding on every writer, as P2X-1's is on the burden: the amount may NOT be computed from the
+    current MAP, pressure_rel, T, the relative output or delivery, the capillary refill or the sympathetic drive (no
+    closed pressure -> support -> T -> pressure loop is authorized, and a titration engine is not part of this stage).
+    A writer's allowed inputs are its own order, time and its own declared mechanism. It never writes V or Hb (a
+    vasoconstrictor adds no volume) and never writes P (it creates no pump output).
+    """
+
+    amount: float
+    source: Source
+    minute: int
+    description: str
+
+    def __post_init__(self):
+        if isinstance(self.amount, bool) or not isinstance(self.amount, (int, float)) \
+                or not math.isfinite(self.amount):
+            raise ProvenanceError(f"a vasoconstriction change is a finite number, not {self.amount!r}")
+        object.__setattr__(self, "amount", float(self.amount))
+        if not isinstance(self.source, Source):
+            raise ProvenanceError("every vasoconstriction change names its Source")
+        _minute(self.minute)
+        _description(self.description)
+
+    def to_dict(self) -> dict:
+        return {"type": "vasoconstriction", "amount": self.amount, "source": self.source.to_dict(),
+                "minute": self.minute, "description": self.description}
+
+
+@dataclass(frozen=True)
 class AvailabilityChange:
     """P2U-1: one source's change to the common central respiratory drive availability in one minute.
 
@@ -592,12 +632,14 @@ class MinuteRecord:
     availability: tuple[AvailabilityChange, ...] = field(default=())
     systemic_stress: tuple[SystemicStressChange, ...] = field(default=())
     vasodilation: tuple[VasodilationChange, ...] = field(default=())
+    # PHASE2_AMENDMENT_3: empty in every minute no writer changed the vasoconstrictor support, and then not serialized.
+    vasoconstriction: tuple[VasoconstrictionChange, ...] = field(default=())
 
     def __post_init__(self):
         _minute(self.minute)
         for item in (self.deltas + self.transitions + self.settings + self.events + self.auxiliary + self.demand
                      + self.blood + self.mechanics + self.distress + self.availability + self.systemic_stress
-                     + self.vasodilation):
+                     + self.vasodilation + self.vasoconstriction):
             if item.minute != self.minute:
                 raise ProvenanceError("a record holds only changes applied in its own minute")
 
@@ -612,7 +654,7 @@ class MinuteRecord:
         return totals
 
     def to_dict(self) -> dict:
-        return {"minute": self.minute, "deltas": [item.to_dict() for item in self.deltas],
+        data = {"minute": self.minute, "deltas": [item.to_dict() for item in self.deltas],
                 "transitions": [item.to_dict() for item in self.transitions],
                 "settings": [item.to_dict() for item in self.settings],
                 "events": [item.to_dict() for item in self.events],
@@ -625,6 +667,11 @@ class MinuteRecord:
                 "availability": [item.to_dict() for item in self.availability],
                 "systemic_stress": [item.to_dict() for item in self.systemic_stress],
                 "vasodilation": [item.to_dict() for item in self.vasodilation]}
+        if self.vasoconstriction:
+            # PHASE2_AMENDMENT_3: named only where a writer changed the support, so every record without one serializes
+            # (and digests) exactly as it did.
+            data["vasoconstriction"] = [item.to_dict() for item in self.vasoconstriction]
+        return data
 
 
 def attribution(records: Iterable[MinuteRecord], channel: Channel) -> dict[str, float]:

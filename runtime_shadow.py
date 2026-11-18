@@ -1246,7 +1246,30 @@ CORE_LINEAGE = (
     CoreVersion("PHASE2_AMENDMENT_2", "PHASE2_AMENDMENT_1",
                 "a0af7d08fec3aaf93606b5635cad9f26980428a5ab8d8f66afb1317bb4586ce2",
                 "docs/revision/PHASE2_AMENDMENT_2.json", reversal="clinical_core.amendment_2"),
+    CoreVersion("PHASE2_AMENDMENT_3", "PHASE2_AMENDMENT_2",
+                "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+                "docs/revision/PHASE2_AMENDMENT_3.json", reversal="clinical_core.amendment_3"),
 )
+
+
+def core_is_or_descends_from(version_id: Any, ancestors: Any) -> bool:
+    """``version_id`` is one of ``ancestors`` or a registered descendant of one.
+
+    The lineage only adds: what a version introduced is in every successor built on it, so a parameter that
+    "exists only in" a version exists in its descendants too. This reads the registered parents and nothing
+    else -- it does not say the version is certified (the lineage verdict does)."""
+    by_id = {version.version_id: version for version in CORE_LINEAGE}
+    wanted = set(ancestors or ())
+    seen: set = set()
+    current = by_id.get(version_id)
+    while current is not None and current.version_id not in seen:
+        if current.version_id in wanted:
+            return True
+        seen.add(current.version_id)
+        current = by_id.get(current.parent)
+    return False
+
+
 MODULE_VERSION = "P3-11"
 ADAPTER_VERSION = "gi_haemorrhage/P3-11"
 #: The Phase-3 layer's own sources, whose digest identifies the code that produced an artifact.
@@ -1257,4 +1280,4 @@ LAYER_SOURCES = ("runtime_shadow.py", "runtime_shadow_families.py", "runtime_sha
                  "runtime_authority.py", "runtime_authority_store.py", "runtime_shadow_store.py",
                  "runtime_shadow_observer.py", "runtime_authority_pair.py", "runtime_minute_validation.py", "runtime_pair_site.py",
                  "runtime_pressure_grant.py", "runtime_authority_session.py", "runtime_authority_turn.py", "runtime_faculty_review.py", "runtime_faculty_bundle.py",
-                 "runtime_pressure_snapshot.py")
+                 "runtime_pressure_snapshot.py", "runtime_tone_support.py")

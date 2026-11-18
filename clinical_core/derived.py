@@ -228,6 +228,12 @@ class CoreProfile:
     # at or below 1 that is 1 exactly at arrival (so the authored arrival pressure stays the scale), decreasing in the
     # burden, and never a second deficit reader. The core stays T's only writer. No value is chosen here.
     vasodilatory_burden_to_tone_gain: float | None = None
+    # PHASE2_AMENDMENT_3: the vasoconstrictor reader of the common tone target, UNSET (None) by default. Declared, the
+    # target is multiplied by 1 + k u / (1 + u), u the state's common vasoconstrictor support: a factor at or above 1,
+    # exactly 1 with no support (so the authored arrival pressure stays the scale), increasing in the support and
+    # bounded by 1 + k. A third independent factor beside the compensation and the distributive one: never a volume,
+    # never a pump term, never a pressure gain of its own. The core stays T's only writer. No value is chosen here.
+    vasoconstrictor_support_to_tone_gain: float | None = None
     pressure_levels: tuple[tuple[float, int], ...] = ((80.0, 1), (65.0, 2))
     oxygen_levels: tuple[tuple[float, int], ...] = ((87.0, 1), (80.0, 2))
     # P2E-3: the collapse rule is off (None) unless a profile declares it. No clinical threshold,
@@ -367,6 +373,14 @@ class CoreProfile:
             # tone). The factor stays positive at any burden, so no upper bound is mathematically needed.
             raise CoreInvariantError("vasodilatory_burden_to_tone_gain is None (UNSET: no vasodilatory reader) or a "
                                      "finite positive tone loss per unit of burden")
+        support = self.vasoconstrictor_support_to_tone_gain
+        if support is not None and (isinstance(support, bool) or not isinstance(support, (int, float))
+                                    or not math.isfinite(support) or support <= 0.0):
+            # PHASE2_AMENDMENT_3: UNSET is None (no reader); declared, the gain is finite and positive: the largest
+            # fractional rise of the tone target the support can cause. The factor is bounded by 1 + k, and the tone
+            # domain refuses, before execution, a gain whose largest target would reach T's guard.
+            raise CoreInvariantError("vasoconstrictor_support_to_tone_gain is None (UNSET: no vasoconstrictor "
+                                     "reader) or a finite positive largest fractional tone rise")
         gain = self.systemic_stress_to_sympathetic_gain
         if gain is not None and (isinstance(gain, bool) or not isinstance(gain, (int, float))
                                  or not math.isfinite(gain) or gain <= 0.0):
@@ -441,6 +455,10 @@ class CoreProfile:
         if data.get("amendment_2") is not None:
             # PHASE2_AMENDMENT_2: a declared profile travels as plain data, like every other field.
             data["amendment_2"] = data["amendment_2"].to_dict()
+        if data.get("vasoconstrictor_support_to_tone_gain") is None:
+            # PHASE2_AMENDMENT_3: an UNSET reader is not named, so every profile without it travels (and digests)
+            # exactly as it did.
+            data.pop("vasoconstrictor_support_to_tone_gain", None)
         return data
 
 
@@ -614,6 +632,16 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
                                                       "no pressure, deficit, D, baroreflex or systemic stress and is "
                                                       "never solved from an observed MAP; SYNTHETIC_ONLY in probes; "
                                                       "not approved"),
+    "vasoconstrictor_support_to_tone_gain": (PROVISIONAL, "UNSET (PHASE2_AMENDMENT_3): the largest fractional rise of "
+                                                          "the common tone target that the common vasoconstrictor "
+                                                          "support can cause, as the bounded factor "
+                                                          "1 + k u / (1 + u) on the target (1 with no support, so "
+                                                          "the arrival tone stays 1 exactly); None by default (no "
+                                                          "reader); it reads no pressure, deficit, D, baroreflex, "
+                                                          "volume or pump and is never solved from an observed MAP; "
+                                                          "a DEVELOPMENT behavioural region (LOW / CENTER_REFERENCE "
+                                                          "/ HIGH witnesses), never a clinical dose-response; not "
+                                                          "approved"),
     "systemic_stress_to_sympathetic_gain": (PROVISIONAL, "UNSET (P2V-1): sympathetic drive per unit of the common "
                                                          "systemic stress (non-respiratory adrenergic activation), "
                                                          "added to the HR target upstream of the common saturation and "
@@ -1581,6 +1609,14 @@ def tone_target(state: CoreState, anchors: Anchors, profile: CoreProfile) -> flo
         # lowers it, and a large burden dominates a bounded compensation. UNSET (None) by default.
         target *= ((1.0 + tone_loss * anchors.arrival_vasodilatory_burden)
                    / (1.0 + tone_loss * state.aux.vasodilatory_burden))
+    support_gain = profile.vasoconstrictor_support_to_tone_gain
+    if support_gain is not None:
+        # PHASE2_AMENDMENT_3: the vasoconstrictor reader: what an exogenous vasoconstrictor adds to the tone the state
+        # already calls for, as a bounded factor at or above 1 that is 1 exactly with no support (so arrival stays the
+        # scale). A third independent factor: it reads no deficit and no burden, adds no volume and no pump output,
+        # and the core stays T's only writer. UNSET (None) by default.
+        from . import vascular_support as _amendment_3
+        target *= _amendment_3.tone_factor(state.aux.vasoconstrictor_support, support_gain)
     return target
 
 

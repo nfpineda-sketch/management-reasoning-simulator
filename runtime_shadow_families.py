@@ -196,6 +196,12 @@ class RuntimeFamilyAdapter:
     #: Runtime action types this family maps to a core contributor, and the ones it declares as gaps.
     maps: tuple = ()
     gaps_declared: Mapping[str, str] = {}
+    #: P3-396: the witness of the common vasoconstrictor support (PHASE2_AMENDMENT_3) a DEVELOPMENT copy of this adapter declares
+    #: (``runtime_tone_support.with_tone_support``), or None -- which is every registered adapter: no family declares the reader by registration.
+    tone_support_witness: str | None = None
+    #: The witness of the PHASE2_AMENDMENT_2 consciousness region a development adapter carries, or None -- every adapter but the GI witnesses of P3-174.
+    #: Declared here so that a reader of any family's adapter asks for it by name (P3-396: tone support is not declared on such a witness).
+    amendment_2_witness: str | None = None
 
     def supports(self, case_id: str) -> str | None:
         """None when the case is one this adapter certifies, else the reason it is refused."""
@@ -1107,6 +1113,13 @@ def gi_interventions(mirrored: Sequence, endoscopy_at: int | None) -> tuple:
 
 # -- the generic runner --------------------------------------------------------------------------------------
 
+def _runs_its_own_parameters(adapter: RuntimeFamilyAdapter) -> bool:
+    """A development adapter whose magnitudes are not its family's committed ones: the ratified GI pressure configuration
+    (P3-380) or a declared witness of the common vasoconstrictor support (P3-396). Its run names its own snapshot."""
+    return ((isinstance(adapter, GiHaemorrhageAdapter) and adapter.pressure_configuration is not None)
+            or adapter.tone_support_witness is not None)
+
+
 @dataclass
 class ShadowPhysiologyRunner:
     """One shadow run of one encounter: open it, mirror what the engine executed, advance, read the result.
@@ -1248,7 +1261,8 @@ class ShadowPhysiologyRunner:
             tuple(_event_identity(event) for event in self.mirrored),
             # P3-380 (adversarial review, finding 4): a run that carries the ratified pressure configuration says so in its OWN provenance too -- the parameter snapshot it names is the one whose values
             # the scenario holds, never the committed default profile's label. A run on the older point keeps the label it always had.
-            scenario, {**rs.family_versions(self.adapter.family, self.snapshot_.id if (self.snapshot_ and isinstance(self.adapter, GiHaemorrhageAdapter) and self.adapter.pressure_configuration is not None) else None),
+            # P3-396: the same holds for a development copy that declares the common vasoconstrictor reader, in any family.
+            scenario, {**rs.family_versions(self.adapter.family, self.snapshot_.id if (self.snapshot_ and _runs_its_own_parameters(self.adapter)) else None),
                        "families_module": MODULE_VERSION},
             self.scenario_id)
 
@@ -1547,9 +1561,9 @@ class RegionEnsemble:
                                           or "the common core lineage could not be evaluated")
             if why is None and declaration.requires_core:
                 active = evidence.core_lineage_verdict().get("active_core")
-                if active not in declaration.requires_core:
-                    why = (f"the parameter {declaration.parameter} exists only in {list(declaration.requires_core)}; "
-                           f"the live core is {active}")
+                if not rs.core_is_or_descends_from(active, declaration.requires_core):
+                    why = (f"the parameter {declaration.parameter} exists only in {list(declaration.requires_core)} and their "
+                           f"registered successors; the live core is {active}")
         except Exception as error:
             why = f"the common core lineage could not be evaluated: {type(error).__name__}"
         if why is not None:

@@ -558,6 +558,11 @@ class AuxiliaryState:
     # AUXILIARY_FIELDS, so no digest of a state that does not carry it changes. It is distinct from D, from N and from
     # the collapse burden, and only a profile that declares the amendment writes it.
     systemic_encephalopathy_burden: float | None = None
+    # PHASE2_AMENDMENT_3: the common exogenous vasoconstrictor support, at or above 0 (0 none), in half-maximal units of
+    # its tone effect. None is NOT TRACKED (every profile whose reader is UNSET), and then the state serializes exactly
+    # as it did: this field is not one of AUXILIARY_FIELDS. It is not T (the core stays T's only writer), not the
+    # vasodilatory burden with its sign changed, not volume and not pump; only vasoconstriction changes write it.
+    vasoconstrictor_support: float | None = None
 
     def __post_init__(self):
         for name in AUXILIARY_FIELDS:
@@ -566,6 +571,10 @@ class AuxiliaryState:
             _finite(self.systemic_encephalopathy_burden, "systemic_encephalopathy_burden")
             if not 0.0 <= self.systemic_encephalopathy_burden <= 1.0:
                 raise CoreInvariantError("the systemic encephalopathy burden is a share between 0 and 1")
+        if self.vasoconstrictor_support is not None:
+            _finite(self.vasoconstrictor_support, "vasoconstrictor_support")
+            if self.vasoconstrictor_support < 0.0:
+                raise CoreInvariantError("the vasoconstrictor support is never negative")
         if self.sympathetic_drive < 0:
             # P2D-3: withdrawal of drive lets the rate fall back to the intrinsic rate, never below.
             raise CoreInvariantError("the sympathetic drive is never negative")
@@ -600,11 +609,13 @@ class AuxiliaryState:
         data = {name: getattr(self, name) for name in AUXILIARY_FIELDS}
         if self.systemic_encephalopathy_burden is not None:
             data["systemic_encephalopathy_burden"] = self.systemic_encephalopathy_burden
+        if self.vasoconstrictor_support is not None:
+            data["vasoconstrictor_support"] = self.vasoconstrictor_support
         return data
 
     @classmethod
     def from_dict(cls, data: Mapping) -> "AuxiliaryState":
-        optional = {"systemic_encephalopathy_burden"}
+        optional = {"systemic_encephalopathy_burden", "vasoconstrictor_support"}
         if not set(AUXILIARY_FIELDS) <= set(data) <= set(AUXILIARY_FIELDS) | optional:
             raise CoreInvariantError(f"auxiliary state names exactly {sorted(AUXILIARY_FIELDS)} (and, only where it is "
                                      f"tracked, {sorted(optional)}), not {sorted(data)}")

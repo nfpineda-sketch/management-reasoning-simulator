@@ -273,6 +273,31 @@ def core_lineage_verdict() -> dict:
             "failed": sorted(name for name, held in conditions.items() if not held)}
 
 
+#: How each successor stage names the recomputation of ITS OWN predecessor's digest from the live tree (the stage modules live in the core; this layer only asks).
+_PREDECESSOR_DIGEST_OF = {"clinical_core.amendment_1": "historical_closure_digest_now", "clinical_core.amendment_2": "amendment_1_digest_now",
+                          "clinical_core.amendment_3": "amendment_2_digest_now"}
+
+
+def rebuilt_predecessors() -> tuple:
+    """P3-387 (FD-TONE-09): the earlier lineage member the LIVE certified core rebuilds byte for byte, as ``({"version_id", "digest"},)``, or ``()``.
+
+    Only the IMMEDIATE predecessor is offered, and only while the whole lineage verdict holds and the live stage's own declared reversal recomputes that predecessor's certified digest.
+    It is what an explicit historical reconstruction of a superseded grant is checked against: a grant's own word about its lineage is never enough. Never raises."""
+    try:
+        verdict = core_lineage_verdict()
+        if verdict["ok"] is not True:
+            return ()
+        entry = next(version for version in rs.CORE_LINEAGE if version.version_id == verdict["active_core"])
+        if entry.parent is None or not entry.reversal:
+            return ()
+        parent = next(version for version in rs.CORE_LINEAGE if version.version_id == entry.parent)
+        import importlib
+        recomputed = getattr(importlib.import_module(entry.reversal), _PREDECESSOR_DIGEST_OF[entry.reversal])()
+        return ({"version_id": parent.version_id, "digest": parent.digest},) if recomputed == parent.digest else ()
+    except Exception:
+        return ()
+
+
 def core_lineage_ok() -> bool:
     try:
         return core_lineage_verdict()["ok"] is True
