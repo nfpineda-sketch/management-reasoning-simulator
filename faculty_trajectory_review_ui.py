@@ -43,14 +43,15 @@ def interventions(rows: list) -> list:
     return [{"minute": minute, "label": ",".join(numbers)} for minute, numbers in sorted(by_minute.items())]
 
 
-def pressure_chart(common: list, legacy: list | None, markers: list, stop_minute: int | None, *, common_name: str = COMMON_NAME):
+def pressure_chart(common: list, legacy: list | None, markers: list, stop_minute: int | None, *, common_name: str = COMMON_NAME, y_max: float = 140, x_title: str = "Minutes since arrival"):
     """Common trajectory (solid) and, only when handed in, the legacy comparator (dashed) on the SAME axes; intervention markers drawn once. Colour follows the variable, dash follows the series.
-    ``common_name`` is the series name the tooltip shows (the re-review has no comparator and no authority behind its trajectory, so it passes a neutral one)."""
+    ``common_name`` is the series name the tooltip shows (the re-review has no comparator and no authority behind its trajectory, so it passes a neutral one). ``y_max`` and ``x_title`` default to what every earlier
+    review draws; a review of a hypertensive scenario (the tone review) hands in a taller axis so that nothing is clipped, and one of a synthetic probe a title without an arrival."""
     import altair as alt
     data = _long(common, common_name) + (_long(legacy, LEGACY_NAME) if legacy else [])
     x_max = max([point["minute"] for point in common] + ([int(stop_minute)] if stop_minute else []) + [10]) * 1.04
-    x = alt.X("minute:Q", title="Minutes since arrival", scale=alt.Scale(domain=[0, x_max], nice=False), axis=alt.Axis(tickCount=7, format="d"))
-    y = alt.Y("mmHg:Q", title="mmHg", scale=alt.Scale(domain=[0, 140]))
+    x = alt.X("minute:Q", title=x_title, scale=alt.Scale(domain=[0, x_max], nice=False), axis=alt.Axis(tickCount=7, format="d"))
+    y = alt.Y("mmHg:Q", title="mmHg", scale=alt.Scale(domain=[0, y_max]))
     color = alt.Color("variable:N", scale=alt.Scale(domain=list(VARIABLES), range=[COLORS[name] for name in VARIABLES]), legend=alt.Legend(title=None, orient="top"))
     tooltip = [alt.Tooltip("variable:N", title="Variable"), alt.Tooltip("minute:Q", title="Minute"), alt.Tooltip("mmHg:Q", title="mmHg"), alt.Tooltip("source:N", title="Series")]
     base = alt.Chart(alt.Data(values=data))
