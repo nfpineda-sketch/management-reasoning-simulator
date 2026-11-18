@@ -297,6 +297,12 @@
       "record_digest": "0503574262a9786be20325f24a5f76f6190fe1a42fc08edba36920ed51d17004",
       "record_id": "COMMON_TONE_PROBES_V1"
     },
+    "PHASE3_COMMON_TONE_RATIFICATION_CHECKPOINT.json": {
+      "class": "VERSIONED",
+      "file_sha256": "eb247570a78c665d7f8bd360b73700bba45bb1942bbeaa49f8b1323613c388d7",
+      "record_digest": "4a205ddf2193b5d4c4d82291e632e0419d7f2a1cb4524dabba1b5bd38f74215e",
+      "record_id": "COMMON_TONE_RATIFICATION_CHECKPOINT_V1"
+    },
     "PHASE3_COMMON_TONE_V1_MULTIFAMILY_REVIEW_CHECKPOINT.json": {
       "class": "VERSIONED",
       "file_sha256": "e7deff9e7176911178a61b8508b95e6a53691f4c93aad0413bde1ea1bdf70f3a",
