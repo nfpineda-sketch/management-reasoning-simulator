@@ -1,5 +1,7 @@
 # Fase 3 · Titulación y suspensión de norepinefrina por la vía común de tono vascular (P3-424 a P3-437)
 
+> **Nota 2026-11-19 (revisión de titulación):** las trayectorias de titulación de la hemorragia digestiva que este documento deja listas para revisión humana tienen ya su revisión interactiva (`docs/PHASE3_NOREPINEPHRINE_TITRATION_REVIEW.md`, FD-TITREV-01 a FD-TITREV-13): cinco escenarios (aumento, reducción, suspensión, secuencia y reinicio), sólo capa de UX. **La revisión humana no se hizo.** Las frases de este documento sobre una revisión humana pendiente siguen siendo ciertas y **no se editan**.
+
 Encargo del 2026-11-18; cerrado el 2026-11-19. Rama `phase-3-runtime-integration`; linaje `PHASE2_AMENDMENT_3` (certificado, digesto `867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c`); instantánea `COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1` ratificada sólo para desarrollo; la norepinefrina sigue **fuera** de la autoridad viva.
 
 **Esto es semántica de órdenes en la sombra de desarrollo. No cambia fisiología, constantes del tono, acoplamiento con la poscarga, autoridad, puntuación ni el primer piloto; no edita `clinical_core/`; no es validación clínica ni calibración.** Convierte la norepinefrina de «un inicio a tasa fija para siempre» en una intervención de manejo que se puede iniciar, aumentar, disminuir y suspender, por la **misma** vía: escritor de norepinefrina → soporte vasoconstrictor común → tono `T`.

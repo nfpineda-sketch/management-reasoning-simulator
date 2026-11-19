@@ -1,0 +1,326 @@
+{
+  "adversarial_review": {
+    "attacks_that_failed": [
+      "fidelity of each series to the certified probe",
+      "loader fuzz (no exception on 8,275 mutations, deep nesting, NaN, a directory path)",
+      "12 concurrent locks gave one lock and 12 concurrent submits one record",
+      "a record copied to another reviewer's path was not counted",
+      "forged mode and view keys read nothing of another mode",
+      "precedence of the three holds and fail-closed behaviour",
+      "a broad leak search over text, protocols, charts and tooltips",
+      "scope creep (core digest, runtime files, grants)",
+      "private data and model identity in new files"
+    ],
+    "every_finding_was_confirmed_with_a_probe": true,
+    "findings": [
+      {
+        "disposition": "REPAIRED with a test",
+        "finding": "the limitations on an incomplete summary were not protected at the page level (a mutant that drew them survived; the code was right)",
+        "id": 1,
+        "severity": "MINOR"
+      },
+      {
+        "disposition": "REPAIRED with a test (p10e)",
+        "finding": "a refused first-pass comment at the lock had no page test",
+        "id": 2,
+        "severity": "MINOR"
+      },
+      {
+        "disposition": "REPAIRED: the tests read the notes in their own words",
+        "finding": "the note about heart rate and capillary refill was checked against the module's own constant",
+        "id": 3,
+        "severity": "MINOR"
+      },
+      {
+        "disposition": "DECLARED and the docstring corrected: only the digest pinned in code guards the authored narrative",
+        "finding": "the loader checks less than its docstring said: of 8,275 re-signed and pinned mutations 2,070 were accepted (the result column, advance, authored text, the text of a limitation)",
+        "id": 4,
+        "severity": "MINOR"
+      },
+      {
+        "disposition": "REPAIRED: broader filter and 14 text forms in the test",
+        "finding": "the leak filter was narrower than the faculty's list (tau, cardiac flow, delivery of O2, pulse, gain, titrate, mg/kg, soft collapse passed in a re-signed set)",
+        "id": 5,
+        "severity": "NOTE"
+      },
+      {
+        "disposition": "TESTED apart (t15a, t15c, t8e); the session key is harmless",
+        "finding": "redundant checks without a test (reviewer, scenario, set and linkage of a record; the transition of a change; a session key)",
+        "id": 6,
+        "severity": "NOTE"
+      },
+      {
+        "disposition": "CLEANED what was this package's; the inherited stays",
+        "finding": "an unused import, an outdated comment in an adapted test, the inherited SUBMIT & FINISH label and the inherited note about heart rate",
+        "id": 7,
+        "severity": "NOTE"
+      }
+    ],
+    "independent": true,
+    "reviewer": "an independent read-only agent that did not write the package, working on a copy of the tree and in temporary directories",
+    "reviews": 1,
+    "suspected_not_confirmed": [
+      "the module-count adaptation of the tone records test is an exemption list that grows with each later review"
+    ],
+    "unresolved_blocking_findings": []
+  },
+  "certification": {
+    "after_the_certification": {
+      "added": [
+        "this checkpoint record",
+        "its entry in the records index and the index pin in test_phase3_historical_record_versioning.py",
+        "sections 10 and 11 of the document",
+        "the FD-P3-280 row of the Decision File"
+      ],
+      "executable_change": false,
+      "focused_rerun": "see the document, section 10",
+      "said_plainly": "the full suite ran on the candidate above, not on the final tree: the two differ by the four additions listed, none of them executable"
+    },
+    "before_the_freeze": {
+      "earlier_page_files_rerun_whole": {
+        "test_phase3_tone_review_page.py": 46,
+        "test_phase3_trajectory_rereview_page.py": 30,
+        "test_phase3_trajectory_review_page.py": 14
+      },
+      "focused": "module 144 passed; real page 38 passed; records and sources 28 passed and 3 skipped until this checkpoint existed",
+      "mutants": {
+        "killed": 21,
+        "survived_the_first_time": 7,
+        "what": "one mutant per protection of the package, run against a COPY of the tree; the tree was never mutated",
+        "written": 21
+      },
+      "tree_walking_guards": {
+        "files": 20,
+        "passed": 616,
+        "skipped": 3
+      }
+    },
+    "candidate": {
+      "base": "c268ffda341861c4fbe899ee5eaedeb8d06a4a81",
+      "branch": "phase-3-runtime-integration",
+      "contents": "the working tree with the review module, its page, the launcher mode and hold, app.py, the sealed review set with its index entry and pin, the harness of the set, the three new test files, the adapted earlier tests, the document, the decision rows FD-TITREV-01 to 13 and FD-P3-277 to 279, TD-159, the CLAUDE.md clause and the two notes -- BEFORE this checkpoint record, its index entry and pin, sections 10 and 11 of the document and the FD-P3-280 row were added",
+      "fingerprint": "b4a6899857e6d11c58327e481cc04f15e3829039e0f1b84fb5f3ee07a8470aa7",
+      "uncommitted_changes": 24
+    },
+    "dependency_analysis": "the full suite was required: several guards walk every root module (ROOT.glob('*.py'): contract limits, lineage of the amendments, dormant guards, the records index), the change adds two root modules, touches the shared launcher and app.py, adds an indexed record and adapts earlier page tests",
+    "full_suite": {
+      "errors": 0,
+      "failures": 0,
+      "fingerprint_at_end": "b4a6899857e6d11c58327e481cc04f15e3829039e0f1b84fb5f3ee07a8470aa7",
+      "fingerprint_at_start": "b4a6899857e6d11c58327e481cc04f15e3829039e0f1b84fb5f3ee07a8470aa7",
+      "finished": "2026-11-19T20:56:27",
+      "partitions": 24,
+      "resumptions": 0,
+      "runner": "the skill's partitioned runner functions (fingerprint, partitions, JUnit summary) under a resumable wrapper kept outside the repository",
+      "skipped": 101,
+      "started": "2026-11-19T18:23:31",
+      "tests": 13692,
+      "valid": true,
+      "xfail": 1
+    },
+    "not_run": [
+      "a human review of any titration trajectory (it is the next human action)",
+      "LOW and HIGH trajectories of these histories (the review neither shows nor asks for them)",
+      "a resident session"
+    ],
+    "regressions": {
+      "active_passed": 56,
+      "active_total": 56,
+      "exit_code": 0,
+      "retired_not_run": 10,
+      "runner": "run_regressions.py"
+    },
+    "scope": "FULL"
+  },
+  "confirmations": {
+    "common_core_runtime_authority": false,
+    "human_review_not_performed": true,
+    "no_clinical_validation_claim": true,
+    "no_consciousness_authority": true,
+    "no_map_target_titration": true,
+    "no_new_vasopressor": true,
+    "no_norepinephrine_authority_expansion": true,
+    "no_parameter_selected": true,
+    "no_physiology_change": true,
+    "no_pump_coupling_change": true,
+    "no_resident_deployment": true,
+    "no_terminal_authority": true,
+    "no_tone_recalibration": true,
+    "no_weight_based_dosing": true,
+    "no_witness_substituted": true
+  },
+  "decision_reference": "FD-TITREV-01 to FD-TITREV-13",
+  "evidence_class": "MODEL_ANALYSIS",
+  "facts": {
+    "adapted_earlier_tests": [
+      "test_phase3_faculty_review_page.py (fixture)",
+      "test_phase3_tone_review.py t16",
+      "test_phase3_trajectory_rereview.py (landing assertion)",
+      "test_phase3_trajectory_rereview_page.py p15c p15e p15f",
+      "test_phase3_tone_review_page.py (_open, p16b, p20b)",
+      "test_phase3_tone_review_records.py c2 (module count)"
+    ],
+    "blindness": {
+      "forbidden_terms": 38,
+      "hits_outside_the_final_summary": 0,
+      "transport_bytes": 984836,
+      "transport_frames": 3847
+    },
+    "common_core_digest": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+    "excluded": [],
+    "launcher": {
+      "landing_page": "titration review",
+      "mode": "Norepinephrine titration review",
+      "operator_switch": "MRS_FACULTY_TITRATION_GATE=off",
+      "precedence": [
+        "re-review hold",
+        "tone hold",
+        "titration hold"
+      ]
+    },
+    "limitations_shown_only_in_the_final_summary": [
+      "EXPLICIT_ABSOLUTE_MCG_MIN_ONLY",
+      "NO_WEIGHT_BASED_DOSING",
+      "NO_MAP_TARGET_TITRATION",
+      "MALFORMED_ORDER_CLOSES_THE_MODELLED_INFUSION",
+      "CONSCIOUSNESS_UNDER_TONE_UNRESOLVED",
+      "COMMON_TONE_PUMP_DEPENDENCE_NOT_YET_VALIDATED"
+    ],
+    "mutants_killed": 21,
+    "not_included": [
+      {
+        "reason": "it has already undergone human faculty review (FD-TITREV-05)",
+        "scenario": "START-only"
+      }
+    ],
+    "order": [
+      "TIT-1",
+      "TIT-2",
+      "TIT-3",
+      "TIT-4",
+      "TIT-5"
+    ],
+    "probes": {
+      "TIT-1": "B_START_INCREASE",
+      "TIT-2": "C_START_DECREASE",
+      "TIT-3": "D_START_STOP",
+      "TIT-4": "E_START_INCREASE_DECREASE_STOP",
+      "TIT-5": "F_START_STOP_RESTART"
+    },
+    "screenshots": {
+      "horizontal_scroll": false,
+      "screenshots_per_scenario": 3,
+      "viewports": [
+        "1366x768",
+        "1440x900"
+      ]
+    },
+    "set_id": "NOREPINEPHRINE_TITRATION_V1_FACULTY_REVIEW",
+    "set_record_digest": "576e11f2555012932c26ead757e932eeae15672bf9af05df724dec688fd2bb59",
+    "tests": {
+      "module": 144,
+      "real_page": 38,
+      "records_and_sources": 31
+    },
+    "witness": "CENTER_REFERENCE"
+  },
+  "limitations": [
+    "the human review has not been done",
+    "one witness (CENTER_REFERENCE): no LOW/HIGH run of these histories, and the review neither shows nor asks for one",
+    "explicit absolute mcg/min only; an order that closes the modelled infusion is not recovered later in that encounter (TD-158)",
+    "heart rate and capillary refill are not shown (not recomputed for these trajectories); consciousness under tone and pump dependence stay open and do not block this review",
+    "the pressure axis is 0 to 140 mmHg, as in the earlier reviews: responses of 10 to 20 mmHg read as small changes on the graph; the table gives the numbers",
+    "the launcher offers only this review until its five scenarios are submitted and verified (MRS_FACULTY_TITRATION_GATE=off releases it for the operator); the re-review and tone holds keep their precedence",
+    "the set record has no signature (the same limit as TD-153 item 7)"
+  ],
+  "next_human_action": "A faculty reviewer performs the five-scenario review (about 20 minutes) and says whether the explicit norepinephrine rate-change semantics -- onset while the rate rises, offset while it falls -- are plausible enough for DEVELOPMENT. Nothing else is to be done until then.",
+  "open_faculty_decisions": [
+    "the result of the human review",
+    "whether the shadow should mirror the engine's SETTLED order (so that 'stop the infusion' is followed), with the legacy 'MAP 65' defect settled first (TD-158)",
+    "whether the first refused order should keep closing the infusion for the rest of the encounter",
+    "whether the negative-control scenario is ever built into the application",
+    "whether the pump-dependence and consciousness limitations need work before any educational use"
+  ],
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-19",
+    "generating_code": {
+      "clinical_core": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "set_record_digest": "576e11f2555012932c26ead757e932eeae15672bf9af05df724dec688fd2bb59",
+      "test_titration_review_checkpoint.py": "ce3f5e9659d5ed7cf388a94dafb831b04b60e25fea93e9f59a5901f944f520d5"
+    },
+    "generating_code_fingerprint": "24c82cca58a6acb33c551abeb84eba437832772d39b4040c72cf330e4832210d",
+    "grant_id": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V3",
+    "record_id": "NOREPINEPHRINE_TITRATION_V1_REVIEW_CHECKPOINT_V1",
+    "record_schema_version": 1,
+    "source_data_digest": "8e413806ea2e5b53b39e10a4a7c8138628b4f6c6d4fc74aba844f9c5023a71d3",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "record_digest": "33512070d052acb434a97f69b43df41e48d88d4020158226382becba4f5e3530",
+  "record_type": "NOREPINEPHRINE_TITRATION_REVIEW_CHECKPOINT",
+  "sequence": [
+    {
+      "result": "source audit: each trajectory is the stored per-minute series of a certified probe (B, C, D, E, restart), taken unchanged, equal to what the certified harness call produces today",
+      "step": "P3-438"
+    },
+    {
+      "result": "scenario set: all five included; the restart needed no new code and no new physiology; nothing excluded; the start-only case is not part of the set",
+      "step": "P3-439"
+    },
+    {
+      "result": "versioned, sealed, indexed set NOREPINEPHRINE_TITRATION_V1_FACULTY_REVIEW with its digest pinned in code; each scenario held to the faculty's question and plan; no LOW/HIGH stored",
+      "step": "P3-440"
+    },
+    {
+      "result": "the existing Faculty Trajectory Review reused; every rate change marked on the graph; launcher mode and hold (precedence after the re-review and tone holds); earlier tests adapted and declared",
+      "step": "P3-441"
+    },
+    {
+      "result": "persistence: autosave, irreversible lock, refresh, one record per scenario, automatic next; a lock from an out-of-date screen locks nothing",
+      "step": "P3-442"
+    },
+    {
+      "result": "final summary: REVIEW COMPLETE, counts, scenario/overall/Q1-Q5 table, six current limitations only there",
+      "step": "P3-443"
+    },
+    {
+      "result": "blindness audit: every stage on the real page, 3,847 websocket messages in a real browser, 38 forbidden terms: zero outside the final summary",
+      "step": "P3-444"
+    },
+    {
+      "result": "real browser at 1366 x 768 and 1440 x 900: no horizontal scroll; three screenshots per scenario hold everything needed to judge",
+      "step": "P3-445"
+    },
+    {
+      "result": "focused tests (module, real page, records), 21 mutants all killed, one independent adversarial review (no blocker or major)",
+      "step": "P3-446"
+    },
+    {
+      "result": "full certification on ONE frozen fingerprint b4a6899857e6: 13 692 tests, 0 failures, 0 errors, 101 skipped; regressions 56/56 active",
+      "step": "P3-447"
+    },
+    {
+      "result": "checkpoint A, with the human review not done; STOP",
+      "step": "P3-448"
+    }
+  ],
+  "statement": "The faculty review of the explicit norepinephrine rate-change semantics is ready for a human reviewer: five scenarios of ONE gastrointestinal hemorrhage case (an increase, a decrease, a stop, a sequence of changes and a restart) with the CENTER_REFERENCE trajectories exactly as the certified titration probes hold them, each change of the rate marked on the graph, the faculty's own question for each scenario, Q1 to Q5, the lock, the overall judgment, automatic move to the next scenario, persistence that survives a refresh, and a final summary that states the current limitations. The human review has NOT been done; nothing about physiology, parameters, trajectories or authority changed.",
+  "verdict": "A",
+  "verdict_name": "NOREPINEPHRINE_TITRATION_REVIEW_READY_FOR_HUMAN_USE",
+  "verdicts": {
+    "A": "NOREPINEPHRINE_TITRATION_REVIEW_READY_FOR_HUMAN_USE",
+    "B": "CORE_TITRATION_SCENARIOS_READY_BUT_RESTART_EXCLUDED",
+    "C": "REVIEW_UI_READY_BUT_PERSISTENCE_NOT_CERTIFIED",
+    "D": "BLINDNESS_LEAK_FOUND",
+    "E": "CERTIFIED_TRAJECTORY_SOURCE_MISMATCH"
+  },
+  "version": "NOREPINEPHRINE_TITRATION_V1_REVIEW_CHECKPOINT_V1",
+  "why_not_the_others": {
+    "A": "this is the verdict",
+    "B": "the restart (TIT-5) IS in the set: its deterministic trajectory was already certified (the restart probe), so no new code and no new physiology were needed and nothing was excluded",
+    "C": "persistence is certified: autosave, an irreversible lock, a refresh that restores answers, comment, lock, overall judgment and progress, one record per scenario, a lock from an out-of-date screen locks nothing, a forged or altered log is unreadable, and a record that does not verify is not counted",
+    "D": "no first-pass screen, element, chart specification, session key, file read, forged route or websocket message carried the configuration, another setting, a parameter, the writer or the rate history, an earlier trajectory or judgment, the comparator, heart rate, capillary refill or a limitation before the summary",
+    "E": "every scenario equals its certified source: the stored per-minute series of the certified probe, equal to what the certified harness call produces today, with the orders and the rate history of the faculty's plan"
+  }
+}

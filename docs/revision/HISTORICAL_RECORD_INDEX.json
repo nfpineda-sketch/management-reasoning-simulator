@@ -465,6 +465,18 @@
       "record_digest": "9bf782128b34ee7addb69ce9d391ded5c0d0d952de58f35fd5bd2d2f609e6b61",
       "record_id": "NOREPINEPHRINE_TITRATION_PROBES_V1"
     },
+    "PHASE3_NOREPINEPHRINE_TITRATION_V1_REVIEW_CHECKPOINT.json": {
+      "class": "VERSIONED",
+      "file_sha256": "7d4e305e8db1fb46a00b07cc70419f94e590080c1132d810baa7c35fe3a1f972",
+      "record_digest": "33512070d052acb434a97f69b43df41e48d88d4020158226382becba4f5e3530",
+      "record_id": "NOREPINEPHRINE_TITRATION_V1_REVIEW_CHECKPOINT_V1"
+    },
+    "PHASE3_NOREPINEPHRINE_TITRATION_V1_REVIEW_SET.json": {
+      "class": "VERSIONED",
+      "file_sha256": "0a0eb213e9c685de85573950f90556efcde3bc390ca7b74d2cfdc8ed1ae83674",
+      "record_digest": "576e11f2555012932c26ead757e932eeae15672bf9af05df724dec688fd2bb59",
+      "record_id": "NOREPINEPHRINE_TITRATION_V1_FACULTY_REVIEW"
+    },
     "PHASE3_PAIR_DRY_SERIES.json": {
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "dedcfd6baba99bdbb8a69ecded6f306bbba724bf51b2d8a0b7283de0a14c2ada"

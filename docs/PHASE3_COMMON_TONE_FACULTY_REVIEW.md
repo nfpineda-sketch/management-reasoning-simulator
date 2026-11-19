@@ -2,6 +2,8 @@
 
 > **Nota 2026-11-18 (ratificación):** la revisión humana multiescenario se reportó completada (`ACCEPT` 1, `ACCEPT_WITH_LIMITATION` 3, `RECALIBRATE` 0, `REJECT` 1; **reportada, no verificada contra el almacén persistido**) y `CENTER_REFERENCE` quedó ratificado como `COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1`, sólo para desarrollo; ver `docs/PHASE3_COMMON_TONE_RATIFICATION.md`. Las frases «la revisión humana no se hizo», «ningún testigo ratificado/elegido» y «FR-F es un candidato sin veredicto» de este documento eran ciertas al escribirlo y **no se editan**.
 
+> **Nota 2026-11-19 (revisión de titulación):** con la revisión de titulación (`docs/PHASE3_NOREPINEPHRINE_TITRATION_REVIEW.md`) el lanzador aterriza en ésa y **retiene** los demás modos hasta el quinto envío verificado de esa persona; la revisión de tono pasa a ser una elección explícita y el selector ofrece **cinco** modos. Lo que este documento dice del aterrizaje y de la lista de cuatro modos era cierto al escribirlo y **no se edita**.
+
 Encargo del 2026-11-18. Rama `phase-3-runtime-integration`; linaje `PHASE2_AMENDMENT_3` (certificado, digesto `867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c`); sin autoridad de norepinefrina; ningún testigo ratificado; la instantánea de presión de GI no cambió; sin despliegue a residentes.
 **Esto es capa de revisión (UX y plomería de persistencia). No cambia fisiología, parámetros, trayectorias, autoridad, puntuación ni el primer piloto, y no es una validación clínica.** La revisión humana **no se hizo**: este documento y el entorno la dejan lista.
 
