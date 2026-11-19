@@ -1741,6 +1741,11 @@ def action_dispositions(adapter: RuntimeFamilyAdapter, mirrored: Sequence, state
                  "disposition": UNACCOUNTED, "effective_minute": None,
                  "why": f"the mapping could not be evaluated: {type(error).__name__}"} for event in mirrored]
     built_ids = {str(item.id) for item in built if hasattr(item, "id")}
+    for item in built:
+        # P3-431: ONE contributor may answer for several mirrored orders (an infusion whose rate was ordered more than once) and names
+        # them itself; each of those orders is in the run, so none of them is reported as dropped.
+        if hasattr(item, "carried_order_ids"):
+            built_ids.update(str(order) for order in item.carried_order_ids)
     gap_of = {str(gap.get("order_id")): str(gap.get("why") or "") for gap in gaps}
     reversal = next((type(item).__name__ for item in built if type(item).__name__ == "NaloxoneReversal"), None)
     first_reversal = next((event.order_id for event in sorted(mirrored, key=lambda item: item.minute)
