@@ -1,0 +1,394 @@
+{
+  "adversarial_review": {
+    "attack_list": [
+      "two active norepinephrine writers",
+      "rate changes double-counting",
+      "STOP instantly setting T to baseline",
+      "STOP never decaying",
+      "old infusion persisting after supersession",
+      "same-minute ambiguity",
+      "negative dose accepted",
+      "mcg/kg/min silently interpreted as mcg/min",
+      "replay losing rate-change history",
+      "restart changing physiology",
+      "direct drug -> mmHg shortcut",
+      "GI / tone snapshot drift",
+      "authority expansion",
+      "resident-visible unsupported behavior"
+    ],
+    "attacks_that_failed": [
+      "two active writers",
+      "double counting and grid errors",
+      "a stop that sets T to baseline at once",
+      "a stop that never decays",
+      "an old infusion persisting after supersession",
+      "invalid rates and units accepted",
+      "mcg/kg/min read as mcg/min",
+      "replay losing the history",
+      "turn division or a change of writer type altering the physiology",
+      "a drug -> mmHg shortcut",
+      "drift of the certified records",
+      "authority expansion or resident-visible behaviour"
+    ],
+    "every_finding_was_reproduced_with_a_probe_before_it_was_repaired": true,
+    "findings": [
+      {
+        "confirmed": true,
+        "disposition": "REPAIRED in the mapping: while the norepinephrine runs such an order closes the infusion and is declared with its reason. NOT repaired at its root: the mirror handing the order over unresolved is in the shared layer and was not changed -- an open decision",
+        "finding": "'Stop the infusion.' and 'Increase the infusion rate to 20 mcg/min.' are resolved by the engine to the running norepinephrine, but the mirror hands them over as infusion_adjustment with an empty receipt; the mapping looked only at the norepinephrine kind, so the shadow kept the pressor running WITHOUT saying so (fail open)",
+        "id": 1,
+        "severity": "BLOCKER"
+      },
+      {
+        "confirmed": true,
+        "disposition": "PARTLY repaired, and said so. Kept: the order is read as written (a bare number is never read as a rate: 'MAP 65' has the same shape). Added: the bare continuation, the comparison with the receipt, the parser's real shape in the tests, the real-text probes; the audit was corrected. STILL TRUE: after a refusal the shadow does not follow even an explicit later stop -- a declared limitation and an open decision",
+        "finding": "the mapping judges the parsed order, before the engine completes it: 'Increase norepinephrine to 12.' arrives without units, is refused, closes the infusion, and a later stop is ignored; the audit said a stop carries neither rate nor units, which is false; the pressure-target tests used a shape the parser never emits",
+        "id": 2,
+        "severity": "MAJOR"
+      },
+      {
+        "confirmed": true,
+        "disposition": "REPAIRED: it is replaced within its minute, and the history the run keeps ends before that minute",
+        "finding": "a refused order in the minute of a valid one: the valid rate of that minute, which never ran, was carried for the rest of the encounter",
+        "id": 3,
+        "severity": "MAJOR"
+      },
+      {
+        "confirmed": true,
+        "disposition": "REPAIRED: a declared order never becomes a carried one; a property test over 1,501 order streams, prefix by prefix",
+        "finding": "stale gaps: three orders arriving turn by turn left 'nothing to build' gaps beside the SAME orders reported as built",
+        "id": 4,
+        "severity": "MAJOR"
+      },
+      {
+        "confirmed": true,
+        "disposition": "REPAIRED: they are declared gaps",
+        "finding": "the dispositions reported BUILT, with an effective minute, for orders that never acted (replaced within their minute)",
+        "id": 5,
+        "severity": "MINOR"
+      },
+      {
+        "confirmed": true,
+        "disposition": "REPAIRED: every outcome is recomputed, one order a minute, and a specification must name its four fields. What the writer cannot check (that the orders it names are the encounter's) is stated",
+        "finding": "the writer validated only the (minute, rate) projection of its orders: a mislabelled outcome was accepted, and a specification without units or version was rebuilt with the defaults",
+        "id": 6,
+        "severity": "MINOR"
+      },
+      {
+        "confirmed": true,
+        "disposition": "REPAIRED: each is a declared gap",
+        "finding": "malformed input raised instead of being declared (a rate of 10**400, an action that is not a mapping, an order id that is not text)",
+        "id": 7,
+        "severity": "MINOR"
+      },
+      {
+        "confirmed": true,
+        "disposition": "PARTLY repaired: the mapping registers again each time it builds -- and, after the first certification run showed the same loss for the core's OWN writer, it registers both writers it builds. The rate-history type is STILL listed inside a historical view (documented: nothing builds it there)",
+        "finding": "the type's registration at import leaks into the historical views of the lineage and is lost when the registry is swapped",
+        "id": 8,
+        "severity": "MINOR"
+      },
+      {
+        "confirmed": true,
+        "disposition": "REPAIRED where it is this package's: the bound is held exactly, direction is stated as it is and tested so, an independent numerical integration, the pressure check asserted, 'the only' withdrawn, arrival contradictions refused, type and rates compared, punctuation fixed. DECLARED, unchanged: the replay points are the core's behaviour, and that the expectations were written before the runs is a statement no test can prove",
+        "finding": "the core's replay enforces neither one writer nor the witness constants; the approach could pass its target by rounding; claims the tests did not prove (a direction statement that is false of orders, an 'independent' closed form that was a transcription, a pressure check computed and not asserted, 'the only rule'); smaller points (a sort that hid arrival contradictions, a truncated minute, an unchecked action type, gap texts joined without punctuation)",
+        "id": "9-12",
+        "severity": "NOTE"
+      }
+    ],
+    "independent": true,
+    "open_after_the_repair": [
+      "the shadow does not FOLLOW an order that names no drug or an adjustment written without units: it closes the infusion, says so, and from then on does not show what the engine runs"
+    ],
+    "outside_the_change_reported": [
+      "the legacy engine runs 'titrate norepinephrine to MAP 65' as 65 mcg/min when an infusion is running",
+      "the registered adapters declare infusion_adjustment as a gap, which is right for them: they map no vasopressor",
+      "the core registers a contributor type when its module is first imported, and loses the registration when that happens under a module-scoped historical view"
+    ],
+    "reviewer": "an independent read-only agent that did not write the package",
+    "reviews": 1,
+    "suspected_and_then_found_by_the_certification": [
+      "cross-test contamination of the registry: the first full run found it, for the core's own writer and without this package's doing; see certification.earlier_run_not_green"
+    ],
+    "suspected_not_confirmed": [
+      "that the live authority stops on an order that names no drug: infusion_adjustment is not in SUPPORTED_ACTIONS (read, not run)",
+      "an adjustment of a stopped infusion: the real engine refuses it, so it cannot arrive; the mapping reads it as a restart (open decision)"
+    ],
+    "unresolved_blocking_findings": []
+  },
+  "certification": {
+    "after_the_certification": {
+      "added": [
+        "this checkpoint record",
+        "its entry in the records index and the index pin in test_phase3_historical_record_versioning.py",
+        "sections 13 and 14 of the document",
+        "the FD-P3-276 row of the Decision File"
+      ],
+      "executable_change": false,
+      "focused_rerun": "the records, the versioning and the document guards are run again on the final tree; their figures are in the document (section 13) and in the FD-P3-276 row, not here, because this record is one of the files they read",
+      "said_plainly": "the full suite ran on the candidate above, not on the final tree: the two differ by the four additions listed, none of them executable"
+    },
+    "before_the_freeze": {
+      "focused": "after the two repairs: the titration, tone support, ratification, checkpoint, pathway-records and tone-review tests, the shadow ensemble, families, evidence, plumbing, observability, resolution, synchronization and isolation tests, the Amendment-3 lineage and the records versioning: 679 passed, 4 skipped, 0 failed; the pair that failed in the first run, in that order (the edema migration, then the tone review records): 53 passed; and, after the harness's design text and the debt register were brought in line and the two records were generated again, the records, versioning and document guards, the shadow ensemble and the new registration test: 97 passed, 2 skipped (those wait for the checkpoint)",
+      "mutants": {
+        "killed": 14,
+        "what": "one mutant per rule of the repaired mapping, run against the focused tests; the file was restored after each",
+        "written": 14
+      }
+    },
+    "candidate": {
+      "base": "b087215675f361e4de76b759253da55ceae22906",
+      "branch": "phase-3-runtime-integration",
+      "contents": "the working tree with the repaired mapping, the tests, the harness, the probes and negative-control records with their index entries and pin, the document (sections 0 to 12 and 15), the decision rows FD-TITRATE-01 to 13 and FD-P3-273 to 275, TD-158 and the CLAUDE.md clause, with the two repairs the first certification run called for -- BEFORE this checkpoint record, the document's sections 13 and 14, the FD-P3-276 row and the checkpoint's index entry were added",
+      "fingerprint": "9a14a6ce2f96433f2ce458fe71e15d8cd04cba825fb94207bb58c97a0f0d78e0",
+      "uncommitted_changes": 18
+    },
+    "earlier_run_not_green": {
+      "errors": 0,
+      "failures": 3,
+      "failures_classified": [
+        {
+          "classification": "REGRESSION_OF_THIS_CHANGE",
+          "evidence": "the guard forbids a three-argument getattr in runtime_shadow_families.py; the line P3-431 added to action_dispositions used one",
+          "repair": "the line asks hasattr and reads the attribute: the same behaviour, no fallback value",
+          "test": "test_runtime_shadow_ensemble.py::test_no_adapter_invents_a_magnitude_as_a_fallback",
+          "why_the_focused_runs_missed_it": "test_runtime_shadow_ensemble.py was not among the files run before the first freeze; it is among those run before the second"
+        },
+        {
+          "classification": "PRE_EXISTING_ORDER_DEPENDENCE_NOT_CAUSED_BY_THIS_CHANGE",
+          "evidence": "reproduced in isolation by running test_clinical_core_edema_migration.py before the test, and reproduced IDENTICALLY on the base commit in a clean worktree (1 failed, 36 passed; ProvenanceError: no contributor type 'norepinephrine'). Cause: integration.from_spec imports clinical_core.vascular_support lazily; under that file's module-scoped historical view the registry is swapped, the core's writer registers into the swapped registry, and the live registry has lost it when the view ends. The new test files of this package moved the partition boundaries so that the two files now share a process",
+          "repair": "in the Phase-3 layer only: the mapping registers BOTH writers it builds each time it builds. The root cause is in clinical_core, which is not edited: reported, and it can affect any other core type first imported under a view",
+          "test": "test_phase3_tone_review_records.py::test_c3 and ::test_c3b (one cause)"
+        }
+      ],
+      "fingerprint": "34ed90d8edbae57044a75980c53323ad0e82247f328cd16356bba81fe99d45fd",
+      "finished": "2026-11-19T02:13:43",
+      "regressions": "56/56 active",
+      "said_plainly": "this run was NOT green and its figures are not claimed for the certified candidate: the full suite and the regressions were run again, from the start, on the new fingerprint",
+      "skipped": 99,
+      "started": "2026-11-19T00:07:17",
+      "tests": 13478,
+      "valid_run": true
+    },
+    "full_suite": {
+      "errors": 0,
+      "failures": 0,
+      "fingerprint_at_end": "9a14a6ce2f96433f2ce458fe71e15d8cd04cba825fb94207bb58c97a0f0d78e0",
+      "fingerprint_at_start": "9a14a6ce2f96433f2ce458fe71e15d8cd04cba825fb94207bb58c97a0f0d78e0",
+      "finished": "2026-11-19T04:53:52",
+      "partitions": 24,
+      "resumptions": 0,
+      "runner": "the skill's partitioned runner functions (fingerprint, partitions, JUnit summary) under a resumable wrapper kept outside the repository",
+      "skipped": 99,
+      "started": "2026-11-19T02:58:45",
+      "tests": 13479,
+      "valid": true,
+      "xfail": 1
+    },
+    "not_run": [
+      "a session with the live GI pressure authority and an order that names no drug (read from SUPPORTED_ACTIONS, not run)",
+      "LOW and HIGH trajectories of these histories (FD-TITRATE-13)",
+      "any human review of a titration trajectory"
+    ],
+    "records": "the probes and the negative-control records were generated again with the repaired code before the freeze (they had never been in a commit); against the first draft only the artifact digest of edge case 14 changed, which binds the layer that made it",
+    "regressions": {
+      "active_passed": 56,
+      "active_total": 56,
+      "exit_code": 0,
+      "retired_not_run": 10,
+      "runner": "run_regressions.py"
+    },
+    "scope": "FULL"
+  },
+  "confirmations": {
+    "clinical_core_not_edited": true,
+    "no_authority_expansion": true,
+    "no_automatic_titration_or_pressure_target": true,
+    "no_clinical_validation_claim": true,
+    "no_consciousness_authority": true,
+    "no_new_physiology": true,
+    "no_other_vasopressor": true,
+    "no_pump_coupling_change": true,
+    "no_resident_deployment": true,
+    "no_terminal_authority": true,
+    "no_tone_recalibration": true,
+    "no_weight_based_dosing": true
+  },
+  "decision_reference": "FD-TITRATE-01 to FD-TITRATE-13",
+  "facts": {
+    "certifying_run_green": true,
+    "common_core_runtime_authority": false,
+    "core_digest": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+    "edge_cases_as_expected": {
+      "01_START_FROM_ZERO": true,
+      "02_INCREASE": true,
+      "03_DECREASE": true,
+      "04_STOP": true,
+      "05_RESTART_AFTER_STOP": true,
+      "06_DUPLICATE_IDENTICAL_RATE": true,
+      "07_TWO_ORDERS_IN_ONE_MINUTE": true,
+      "08_INVALID_UNIT": true,
+      "09_NEGATIVE_DOSE": true,
+      "10_STOP_WITHOUT_PRIOR_START": true,
+      "11A_WEIGHT_BASED_FIRST_ORDER": true,
+      "11B_WEIGHT_BASED_RATE_CHANGE": true,
+      "12_MALFORMED_ORDER": true,
+      "13_NO_PULSE_STATE": true,
+      "14_SESSION_RESTART_AND_REPLAY": true,
+      "15A_ORDER_WITHOUT_A_WHOLE_MINUTE": true,
+      "15B_ORDER_DATED_BEFORE_A_RECORDED_MINUTE": true,
+      "15C_ORDERS_AGAINST_THE_CLOCK": true,
+      "16_ORDER_THAT_NAMES_NO_DRUG": true,
+      "17_REFUSED_ORDER_IN_THE_MINUTE_OF_A_VALID_ONE": true,
+      "18_ORDERS_OF_ONE_MINUTE_ARRIVING_TURN_BY_TURN": true
+    },
+    "first_certification_run_green": false,
+    "focused_rerun_on_the_final_tree": "see the document, section 13",
+    "gi_checks": {
+      "DIRECTION": true,
+      "HISTORICAL": true,
+      "ORDERING": true,
+      "PERSISTENCE_AND_DECAY": true,
+      "SMOOTHNESS": true,
+      "TIMING": true,
+      "UNTOUCHED_STATE": true
+    },
+    "governance": "RUNTIME_ADAPTER_ONLY",
+    "multifamily_no_regression": true,
+    "mutants_killed": 14,
+    "negative_control_record_digest": "4e5daf49d65daae1db64f4e9be03dbbf2feb726e03a62e81f186ef39721a9885",
+    "no_run_differs_from_the_engine_without_saying_so": true,
+    "norepinephrine_in_supported_actions": false,
+    "norepinephrine_not_granted_by_the_live_grant": true,
+    "order_semantics_audit": "SMALL_NOREPINEPHRINE_EVENT_ADAPTER_REQUIRED",
+    "probes_record_digest": "9bf782128b34ee7addb69ce9d391ded5c0d0d952de58f35fd5bd2d2f609e6b61",
+    "real_text_probes_as_expected": {
+      "R1_STOP_THE_INFUSION": true,
+      "R2_INCREASE_THE_INFUSION_RATE": true,
+      "R3_INCREASE_WITHOUT_UNITS_THEN_STOP": true,
+      "R4_CONTINUE_WITHOUT_A_RATE": true,
+      "R5_PRESSURE_TARGET": true,
+      "R6_WEIGHT_BASED_START": true,
+      "R7_STOP_THAT_CARRIES_A_RATE": true,
+      "R8_TWO_ORDERS_IN_ONE_TURN": true
+    },
+    "writer_version": "norepinephrine_rate_history/P3-431"
+  },
+  "limitations": [
+    "one witness (CENTER_REFERENCE): no LOW/HIGH run of these histories (FD-TITRATE-13)",
+    "the rule for a rate change (onset while rising, offset while falling) is the continuous extension of the reviewed start and of the core's stop; no faculty member has yet reviewed a titration trajectory",
+    "heart rate, capillary refill, consciousness, output, delivery and debt are not part of what is read here; consciousness under tone stays unresolved and is not derived",
+    "pump-limited families are run for non-regression only: the pump-dependence limitation stays open and nothing is promoted",
+    "an order the engine ran and the session did not observe (a held order released in an unobserved interval) is declared by the session, not by this mapping: the run cannot know the infusion changed",
+    "the mirror hands an order over as it was written, before the engine resolves or completes it. So an order that names no drug ('stop the infusion') and an adjustment written without units ('increase norepinephrine to 12') CLOSE the infusion: the run declares it, keeps computing the history it had mapped, and from then on does not show what the engine runs -- a later explicit stop included. Mirroring the engine's settled order instead is a change to the shared mirror, not made here",
+    "the legacy engine runs 'titrate norepinephrine to MAP 65' as 65 mcg/min when an infusion is running (a legacy parser defect, outside this package); the mapping refuses the order",
+    "a rate history replays only where the development mapping module is loaded",
+    "the legacy engine keeps its own vasopressor rule and remains the only runtime authority; norepinephrine is outside the live authority"
+  ],
+  "next_human_action": "A faculty member looks at the titration and stop development trajectories of the GI hemorrhage case (direction, timing, ordering, smoothness, persistence and decay; no mmHg calibration) and says whether the rule for a rate change -- onset while rising, offset while falling -- is acceptable for development.",
+  "open_faculty_decisions": [
+    "whether the titration and stop trajectories are acceptable for development (a human review, not held)",
+    "whether the shadow should mirror the engine's SETTLED order (so that 'stop the infusion' and an adjustment written without units are followed) instead of closing the infusion: an architectural change to the shared mirror, with the legacy 'MAP 65' defect to be settled first",
+    "whether the first refused order should keep closing the infusion for the rest of the encounter, or a later explicit rate or stop should be followed again",
+    "whether an adjustment ordered while the infusion is stopped should keep being read as a restart",
+    "whether the negative-control scenario is ever built into the application",
+    "whether the pump-dependence and consciousness limitations need work before any educational use"
+  ],
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-19",
+    "generating_code": {
+      "application_module_count": 318,
+      "application_modules": "1f7e792eeb7300711a94b96ba9d4f9d789efd21e1e5bff6af60756dc13c5cd16",
+      "clinical_core": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "negative_control_record_digest": "4e5daf49d65daae1db64f4e9be03dbbf2feb726e03a62e81f186ef39721a9885",
+      "probes_record_digest": "9bf782128b34ee7addb69ce9d391ded5c0d0d952de58f35fd5bd2d2f609e6b61",
+      "test_tone_pathway_analysis.py": "ba48e1600752029ecb6b38bbb75c99db3ade6b96313d0b8aa2f18d6ea6e032b6",
+      "test_tone_titration_analysis.py": "f7ee268aa6d9bb0c468efded79f792b2fd3d2a52778d682fbc39bd1e0c74c09c"
+    },
+    "generating_code_fingerprint": "ca8107b1df2b46410c0f2f864d76d319b8280b9861acfb31be694e9c3a8be1cb",
+    "grant_id": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V3",
+    "record_id": "NOREPINEPHRINE_TITRATION_CHECKPOINT_V1",
+    "record_schema_version": 1,
+    "source_data_digest": "8b051fdf8f52416f57364b14b79749c6a7889874f1a3da7007f0fea270f84715",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "record_digest": "c5c4538780d7ad7ac43e98550fb2b1128dbfa24e0042e44bd2f65e9c62db11e3",
+  "record_type": "NOREPINEPHRINE_TITRATION_CHECKPOINT",
+  "sequence": [
+    {
+      "result": "order-semantics audit, read-only first: B, SMALL_NOREPINEPHRINE_EVENT_ADAPTER_REQUIRED; corrected after the review (the mirror hands the order over as written; orders that name no drug; a stop may carry a rate)",
+      "step": "P3-424"
+    },
+    {
+      "result": "ONE infusion as an ordered event stream; the rate ordered is the last valid event's; rates are never integrated together",
+      "step": "P3-425"
+    },
+    {
+      "result": "temporal contract: an order at minute s first acts over (s, s + 1]; no look-ahead; within a minute the last valid order is the only one carried; the mirror's order is the engine's",
+      "step": "P3-426"
+    },
+    {
+      "result": "START, INCREASE, DECREASE, STOP and RESTART through the same writer -> common support -> T path; onset constant below the target, offset constant above it; no pressure targeting",
+      "step": "P3-427"
+    },
+    {
+      "result": "the artifact binds the rate history, the orders carried, the units, the writer's version and the witness and lineage; a single start still builds the core's own writer and replays unchanged",
+      "step": "P3-428"
+    },
+    {
+      "result": "edge-case matrix: 17 rows written before executing, all as expected; after the review one revised (its original kept), four added: 21 rows, all as expected",
+      "step": "P3-429"
+    },
+    {
+      "result": "governance A, RUNTIME_ADAPTER_ONLY: clinical_core not edited, no Amendment 4, no new lineage member, no new grant",
+      "step": "P3-430"
+    },
+    {
+      "result": "minimum titration path implemented in the Phase-3 development mapping; repaired after the review and after the first certification run",
+      "step": "P3-431"
+    },
+    {
+      "result": "GI hemorrhage development probes through the real encounter: the seven predictions written before the runs all hold; eight real-text probes of the review's sentences, all as expected",
+      "step": "P3-432"
+    },
+    {
+      "result": "multifamily non-regression: the same support in every family, the certified single start unchanged number by number, no reading changed with no order; pump-limited use not promoted",
+      "step": "P3-433"
+    },
+    {
+      "result": "HYPERTENSIVE_PULMONARY_EDEMA_NOREPI recorded as NEGATIVE_CONTROL_MANAGEMENT_SCENARIO with its physiology untouched and its REJECT kept",
+      "step": "P3-434"
+    },
+    {
+      "result": "one independent adversarial review: 1 blocker, 3 major, 4 minor and notes; every finding reproduced, repaired or declared; 14 mutants of the repaired mapping killed",
+      "step": "P3-435"
+    },
+    {
+      "result": "a first full run on 34ed90d8edba was NOT green (3 failures: one regression of this change, repaired; two from one pre-existing order dependence, shown on the base commit and repaired in the layer). Full certification again on ONE frozen fingerprint 9a14a6ce2f96: 13479 tests, 0 failures, 0 errors, 99 skipped; regressions 56/56 active",
+      "step": "P3-436"
+    },
+    {
+      "result": "checkpoint A, with the limitation the review found stated first among the open decisions; STOP",
+      "step": "P3-437"
+    }
+  ],
+  "statement": "Synthetic development cases run in the shadow. Development probes of order semantics on an already ratified development snapshot: not a clinical validation, not a calibration, not a dose-response, not authority and not for residents. Norepinephrine stays outside the live authority.",
+  "verdict": "A",
+  "verdict_name": "NOREPINEPHRINE_TITRATION_AND_STOP_READY_FOR_HUMAN_DEVELOPMENT_REVIEW",
+  "verdicts": {
+    "A": "NOREPINEPHRINE_TITRATION_AND_STOP_READY_FOR_HUMAN_DEVELOPMENT_REVIEW",
+    "B": "ORDER_SEMANTICS_REQUIRE_FACULTY_DECISION",
+    "C": "TITRATION_REQUIRES_GENERIC_INFUSION_REDESIGN",
+    "D": "REPLAY_SEMANTICS_NOT_CERTIFIABLE",
+    "E": "IMPLEMENTATION_REQUIRES_NEW_PHYSIOLOGY"
+  },
+  "version": "NOREPINEPHRINE_TITRATION_CHECKPOINT_V1",
+  "why_not_the_others": {
+    "B": "the order semantics this package needed were decided by FD-TITRATE-01 to 13 and are implemented and certified for orders that name the drug and say mcg/min. What stays open -- following the engine's settled order, following an explicit order again after a refusal -- widens what the shadow follows and does not change the trajectories to be reviewed. If the faculty holds that 'stop the infusion' must be followed before any human review, B is the reading: that judgment is theirs, and it is the first open decision",
+    "C": "the engine's generic order model already represents a start, a rate change and a stop with one absolute active rate; no redesign of it was needed",
+    "D": "a rate history survives JSON, replays exactly, is refused by name where its writer is not loaded, and the single-start artifacts replay unchanged",
+    "E": "no file of clinical_core changed and no constant was added or changed: the writer is the core's own, with a rate that changes"
+  }
+}

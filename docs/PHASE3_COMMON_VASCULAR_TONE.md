@@ -1,5 +1,7 @@
 # Vía común de tono vascular y primer vasopresor (P3-387 a P3-401)
 
+> **Nota 2026-11-18 (titulación):** la docencia autorizó después la titulación y la suspensión de norepinefrina (FD-TITRATE-01 a FD-TITRATE-13) y el mapeo de desarrollo lee ahora la historia de tasas —inicio, aumento, disminución, suspensión y reinicio, en mcg/min— por un solo escritor, sólo en la sombra y sin cambiar ninguna constante; ver `docs/PHASE3_NOREPINEPHRINE_TITRATION.md`. Las frases «sólo se mapea el primer inicio», «sin titulación ni suspensión» y «sin implementar ni autorizada» de este documento eran ciertas al escribirlo y **no se editan**.
+
 > **Nota 2026-11-18 (ratificación):** la revisión humana multiescenario se reportó completada (`ACCEPT` 1, `ACCEPT_WITH_LIMITATION` 3, `RECALIBRATE` 0, `REJECT` 1; **reportada, no verificada contra el almacén persistido**) y `CENTER_REFERENCE` quedó ratificado como `COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1`, sólo para desarrollo; ver `docs/PHASE3_COMMON_TONE_RATIFICATION.md`. Las frases «la revisión humana no se hizo», «ningún testigo ratificado/elegido» y «FR-F es un candidato sin veredicto» de este documento eran ciertas al escribirlo y **no se editan**.
 
 Fecha: 2026-11-17. Rama: `phase-3-runtime-integration`. Alcance: **Enmienda 3 del núcleo común (apagada por omisión) y su

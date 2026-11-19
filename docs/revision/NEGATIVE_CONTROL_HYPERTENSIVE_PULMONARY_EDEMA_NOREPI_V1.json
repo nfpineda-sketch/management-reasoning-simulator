@@ -1,0 +1,126 @@
+{
+  "case": {
+    "arrival_pressure_displayed": {
+      "dbp": 116,
+      "map": 150,
+      "minute": 0,
+      "sbp": 218
+    },
+    "case_id": "pulmonary_edema_58m",
+    "family": "pulmonary_edema",
+    "title_in_the_review_set": "58-year-old man with hypertensive pulmonary edema: norepinephrine in a congested, pump-limited patient"
+  },
+  "classification": "NEGATIVE_CONTROL_MANAGEMENT_SCENARIO",
+  "date": "2026-11-19",
+  "decided_on": "2026-11-18",
+  "decision_reference": "FD-TITRATE-10 (it formalizes FD-TONE-RATIFY-06)",
+  "earlier_classification": {
+    "classification": "INAPPROPRIATE_INTERVENTION_CONTEXT",
+    "negative_control_candidate": true,
+    "record": {
+      "file": "docs/revision/COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1_RATIFICATION.json",
+      "record_digest": "a5a8f4370e240a07406111e0fedf40884e7e382dbd08643949bc82201452bab2"
+    }
+  },
+  "human_evidence": {
+    "evidence_class": "HUMAN_FACULTY_REVIEW",
+    "faculty_interpretation_as_reported": "The pressure rise itself is physiologically understandable.\n\nHowever:\n\nthe patient is already profoundly hypertensive with acute cardiogenic pulmonary edema.\n\nNorepinephrine is clinically inappropriate and drives pressure further into an extreme range.\n\nIMPORTANT:\n\nThis REJECT is primarily a judgment of the MANAGEMENT CONTEXT / EDUCATIONAL USE of this intervention.\n\nIt is NOT, by itself, evidence that the common vascular-tone mechanism requires global recalibration.\n\nDo NOT retune T merely to make norepinephrine look acceptable in a patient who should not receive it.",
+    "first_pass": {
+      "Q1": "Expected",
+      "Q2": "Plausible",
+      "Q3": "Too large",
+      "Q4": "Incoherent",
+      "Q5": "Yes"
+    },
+    "overall": "REJECT",
+    "record": {
+      "file": "docs/revision/PHASE3_HUMAN_COMMON_TONE_MULTIFAMILY_REVIEW.json",
+      "record_digest": "50807dfc418226aed48826864abf6ac14c8d5d785f9e1f2ed68207091afe0804",
+      "verification": "HUMAN_FACULTY_REVIEW_REPORTED_NOT_STORE_VERIFIED"
+    },
+    "the_reject_is_not_converted": "the REJECT stays a REJECT of the management action; it is not a mechanism failure and it is not softened into an acceptance"
+  },
+  "intervention": {
+    "as_reviewed": "Norepinephrine 10 mcg/min, started at minute 5 and kept at that rate to the end. Nothing else is given or changed; the underlying problem is left untreated.",
+    "minute": 5,
+    "order": "norepinephrine, start, 10 mcg/min",
+    "read_until": 30
+  },
+  "is_not": [
+    "a mechanism failure",
+    "a recalibration request",
+    "a change of the case's physiology",
+    "a restriction of the order",
+    "clinical validation",
+    "an educational claim about pump-limited families"
+  ],
+  "mechanism_failure": false,
+  "physiology": {
+    "altered": false,
+    "displayed_pressure": {
+      "at_the_end": {
+        "dbp": 138,
+        "map": 179,
+        "minute": 30,
+        "sbp": 260
+      },
+      "at_the_order": {
+        "dbp": 116,
+        "map": 150,
+        "minute": 5,
+        "sbp": 218
+      },
+      "without_the_order_at_the_end": {
+        "dbp": 116,
+        "map": 150,
+        "minute": 30,
+        "sbp": 218
+      }
+    },
+    "nothing_was_changed_to_make_the_intervention_look_beneficial_or_harmless": true,
+    "review_set_digest": "22ed59069e441aca96939ccf359ceec00a8bd55ddc0b182ff7bbcfcdd6e91487",
+    "reviewed_item_digest": "6709f611aa8b",
+    "reviewed_trajectory_digest": "bdb147687a4aae5878c52db0b44a9ff2b0b494d3fb49a35c2e551c1b41c7ea9f",
+    "the_trajectory_recomputed_now_is_the_one_the_faculty_reviewed": true,
+    "witness": "CENTER_REFERENCE",
+    "writer": [
+      "norepinephrine"
+    ]
+  },
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-19",
+    "generating_code": {
+      "application_module_count": 318,
+      "application_modules": "1f7e792eeb7300711a94b96ba9d4f9d789efd21e1e5bff6af60756dc13c5cd16",
+      "clinical_core": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "test_tone_pathway_analysis.py": "ba48e1600752029ecb6b38bbb75c99db3ade6b96313d0b8aa2f18d6ea6e032b6",
+      "test_tone_titration_analysis.py": "f7ee268aa6d9bb0c468efded79f792b2fd3d2a52778d682fbc39bd1e0c74c09c"
+    },
+    "generating_code_fingerprint": "0081bf661c5c5c5de575fa741739e9c0f6ec3c79788a30b0d644bb001224229c",
+    "grant_id": null,
+    "record_id": "NEGATIVE_CONTROL_HYPERTENSIVE_PULMONARY_EDEMA_NOREPI_V1",
+    "record_schema_version": 1,
+    "source_data_digest": "c8e4ec2eed5dbf84fde652e987af0f1dbb934f23da07f6c405e6c7d882164081",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "purpose": "To show that a physiologically understandable pressor response can still be a clinically inappropriate management action: the response of the common mechanism is what it is, and the order is the wrong one for this patient. Physiologic response is not appropriate management.",
+  "record_digest": "4e5daf49d65daae1db64f4e9be03dbbf2feb726e03a62e81f186ef39721a9885",
+  "record_type": "NEGATIVE_CONTROL_MANAGEMENT_SCENARIO",
+  "scenario_id": "HYPERTENSIVE_PULMONARY_EDEMA_NOREPI",
+  "titration_and_stop": "not part of this scenario: it is the single start the faculty reviewed; nothing in it was re-run with a rate change",
+  "use": {
+    "built_into_the_application": false,
+    "future": "a management-reasoning scenario in which the order is available and its consequence can be judged; building it is a separate decision",
+    "norepinephrine_made_unavailable": false,
+    "resident_visible": false,
+    "scored": false,
+    "status": "FORMALIZED_AS_A_RECORD"
+  },
+  "version": "P3-434",
+  "what_it_is_evidence_of": [
+    "a pressure response in the expected direction and with a plausible timing (Q1 Expected, Q2 Plausible)",
+    "a management action the faculty rejected for this patient (Q3 Too large, Q4 Incoherent, Q5 Yes: already profoundly hypertensive, acute cardiogenic pulmonary edema)"
+  ]
+}

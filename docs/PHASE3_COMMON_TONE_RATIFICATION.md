@@ -1,5 +1,7 @@
 # Fase 3 · Ratificación de la instantánea de desarrollo de la vía común de tono vascular (P3-415 a P3-423)
 
+> **Nota 2026-11-18 (titulación):** la docencia autorizó después la titulación y la suspensión de norepinefrina (FD-TITRATE-01 a FD-TITRATE-13) y el mapeo de desarrollo lee ahora la historia de tasas —inicio, aumento, disminución, suspensión y reinicio, en mcg/min— por un solo escritor, sólo en la sombra y sin cambiar ninguna constante; ver `docs/PHASE3_NOREPINEPHRINE_TITRATION.md`. Las frases «sólo se mapea el primer inicio», «sin titulación ni suspensión» y «sin implementar ni autorizada» de este documento eran ciertas al escribirlo y **no se editan**.
+
 Encargo del 2026-11-18. Rama `phase-3-runtime-integration`; linaje `PHASE2_AMENDMENT_3` (certificado, digesto `867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c`); conjunto revisado `COMMON_TONE_V1_MULTIFAMILY_FACULTY_REVIEW`; testigo revisado `CENTER_REFERENCE`.
 
 **Esto es un registro de decisión. No cambia fisiología, parámetros, trayectorias, acoplamiento con la poscarga, autoridad, puntuación ni el primer piloto, y no es una validación clínica.** Convierte la revisión docente humana de las cinco trayectorias de presión ante una orden de norepinefrina en una ratificación de desarrollo, duradera y trazable. La instantánea es un **registro que nada ejecutable lee**.

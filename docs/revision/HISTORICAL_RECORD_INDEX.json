@@ -37,6 +37,12 @@
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "d9cdd2779b9f81f2abf6b321b8e3bec38d08a0755c11ec898ddc2a3d8f94b60c"
     },
+    "NEGATIVE_CONTROL_HYPERTENSIVE_PULMONARY_EDEMA_NOREPI_V1.json": {
+      "class": "VERSIONED",
+      "file_sha256": "d76451326510bb367a6d49d7fed99abf8cbdd88927eb1f3d4dd261a1aa6c5dc5",
+      "record_digest": "4e5daf49d65daae1db64f4e9be03dbbf2feb726e03a62e81f186ef39721a9885",
+      "record_id": "NEGATIVE_CONTROL_HYPERTENSIVE_PULMONARY_EDEMA_NOREPI_V1"
+    },
     "P2G_decision_pack.json": {
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "834d34a5a7f9971474c708a1325b0fb6ea5128d87ef44e9862e19644d7bc644a"
@@ -446,6 +452,18 @@
     "PHASE3_JOINT_REGION_V1_FACULTY_REREVIEW_SET.json": {
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "2f2f205b53960cf3190afb7e3f79d178d8b7a933b6b8fa5a306d8d8b664ac053"
+    },
+    "PHASE3_NOREPINEPHRINE_TITRATION_CHECKPOINT.json": {
+      "class": "VERSIONED",
+      "file_sha256": "72cd6c810acd467fc03707b4343e0932021470a8a152ca4276cc6ef258408007",
+      "record_digest": "c5c4538780d7ad7ac43e98550fb2b1128dbfa24e0042e44bd2f65e9c62db11e3",
+      "record_id": "NOREPINEPHRINE_TITRATION_CHECKPOINT_V1"
+    },
+    "PHASE3_NOREPINEPHRINE_TITRATION_PROBES.json": {
+      "class": "VERSIONED",
+      "file_sha256": "030249f8d0d1fcf4df1a28105995f3fa3ec02209b6214fb5d6eedcc45a2cd10f",
+      "record_digest": "9bf782128b34ee7addb69ce9d391ded5c0d0d952de58f35fd5bd2d2f609e6b61",
+      "record_id": "NOREPINEPHRINE_TITRATION_PROBES_V1"
     },
     "PHASE3_PAIR_DRY_SERIES.json": {
       "class": "LEGACY_UNVERSIONED",
