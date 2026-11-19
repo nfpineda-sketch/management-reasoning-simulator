@@ -1,0 +1,1611 @@
+{
+  "audit": {
+    "decision_reference": "FD-TITREV-01 to FD-TITREV-13 (the review); FD-TITRATE-01 to FD-TITRATE-13 (the semantics it reviews)",
+    "no_parameter_selected": true,
+    "no_physiology_change": true,
+    "no_witness_substituted": true,
+    "not_stored_with_the_items": [
+      "heart rate and capillary refill are not recomputed for these trajectories and are not stored with them",
+      "the tone state, the support of the infusion, the rate history of the writer, flow, oxygen delivery, oxygen debt, consciousness and collapse state are model state: they are not stored with the items and never drawn",
+      "no other setting of the response (LOW, HIGH) is stored or shown (FD-TITREV-06)"
+    ],
+    "selection": {
+      "excluded": [],
+      "not_included": [
+        {
+          "reason": "it has already undergone human faculty review (FD-TITREV-05)",
+          "scenario": "START-only"
+        }
+      ],
+      "reason": "all five deterministic trajectories are already certified: B, C, D, E and the restart probe of the titration probes record; the restart needed no new code and no new physiology",
+      "required": [
+        "TIT-1",
+        "TIT-2",
+        "TIT-3",
+        "TIT-4",
+        "TIT-5"
+      ]
+    },
+    "sources": {
+      "TIT-1": {
+        "case_id": "gi_bleed_57m",
+        "every_order_was_built": true,
+        "first_point_is_the_authored_arrival": true,
+        "orders_of_the_probe_equal_the_plan": true,
+        "probe": "B_START_INCREASE",
+        "rate_history_equals_the_faculty_plan": true,
+        "recomputed_to_check": true,
+        "regenerated_orders_equal_the_stored_ones": true,
+        "regenerated_rate_history_equals_the_stored_one": true,
+        "regenerated_script_equals_the_stored_one": true,
+        "regenerated_series_equals_the_stored_one": true,
+        "source_file_sha256": "030249f8d0d1fcf4df1a28105995f3fa3ec02209b6214fb5d6eedcc45a2cd10f",
+        "source_record": "docs/revision/PHASE3_NOREPINEPHRINE_TITRATION_PROBES.json",
+        "source_record_digest": "9bf782128b34ee7addb69ce9d391ded5c0d0d952de58f35fd5bd2d2f609e6b61",
+        "source_record_id": "NOREPINEPHRINE_TITRATION_PROBES_V1",
+        "taken_from": "gi_probes.probes[B_START_INCREASE].per_minute, minutes 0 to 32, unchanged (nothing recomputed to make the scenario)",
+        "the_displayed_pressure_at_the_reads_is_the_series": true,
+        "the_map_is_the_displayed_rule": true,
+        "the_stored_probe_replays_exactly": true,
+        "the_unmapped_run_is_the_no_order_run": true,
+        "witness": "CENTER_REFERENCE"
+      },
+      "TIT-2": {
+        "case_id": "gi_bleed_57m",
+        "every_order_was_built": true,
+        "first_point_is_the_authored_arrival": true,
+        "orders_of_the_probe_equal_the_plan": true,
+        "probe": "C_START_DECREASE",
+        "rate_history_equals_the_faculty_plan": true,
+        "recomputed_to_check": true,
+        "regenerated_orders_equal_the_stored_ones": true,
+        "regenerated_rate_history_equals_the_stored_one": true,
+        "regenerated_script_equals_the_stored_one": true,
+        "regenerated_series_equals_the_stored_one": true,
+        "source_file_sha256": "030249f8d0d1fcf4df1a28105995f3fa3ec02209b6214fb5d6eedcc45a2cd10f",
+        "source_record": "docs/revision/PHASE3_NOREPINEPHRINE_TITRATION_PROBES.json",
+        "source_record_digest": "9bf782128b34ee7addb69ce9d391ded5c0d0d952de58f35fd5bd2d2f609e6b61",
+        "source_record_id": "NOREPINEPHRINE_TITRATION_PROBES_V1",
+        "taken_from": "gi_probes.probes[C_START_DECREASE].per_minute, minutes 0 to 32, unchanged (nothing recomputed to make the scenario)",
+        "the_displayed_pressure_at_the_reads_is_the_series": true,
+        "the_map_is_the_displayed_rule": true,
+        "the_stored_probe_replays_exactly": true,
+        "the_unmapped_run_is_the_no_order_run": true,
+        "witness": "CENTER_REFERENCE"
+      },
+      "TIT-3": {
+        "case_id": "gi_bleed_57m",
+        "every_order_was_built": true,
+        "first_point_is_the_authored_arrival": true,
+        "orders_of_the_probe_equal_the_plan": true,
+        "probe": "D_START_STOP",
+        "rate_history_equals_the_faculty_plan": true,
+        "recomputed_to_check": true,
+        "regenerated_orders_equal_the_stored_ones": true,
+        "regenerated_rate_history_equals_the_stored_one": true,
+        "regenerated_script_equals_the_stored_one": true,
+        "regenerated_series_equals_the_stored_one": true,
+        "source_file_sha256": "030249f8d0d1fcf4df1a28105995f3fa3ec02209b6214fb5d6eedcc45a2cd10f",
+        "source_record": "docs/revision/PHASE3_NOREPINEPHRINE_TITRATION_PROBES.json",
+        "source_record_digest": "9bf782128b34ee7addb69ce9d391ded5c0d0d952de58f35fd5bd2d2f609e6b61",
+        "source_record_id": "NOREPINEPHRINE_TITRATION_PROBES_V1",
+        "taken_from": "gi_probes.probes[D_START_STOP].per_minute, minutes 0 to 32, unchanged (nothing recomputed to make the scenario)",
+        "the_displayed_pressure_at_the_reads_is_the_series": true,
+        "the_map_is_the_displayed_rule": true,
+        "the_stored_probe_replays_exactly": true,
+        "the_unmapped_run_is_the_no_order_run": true,
+        "witness": "CENTER_REFERENCE"
+      },
+      "TIT-4": {
+        "case_id": "gi_bleed_57m",
+        "every_order_was_built": true,
+        "first_point_is_the_authored_arrival": true,
+        "orders_of_the_probe_equal_the_plan": true,
+        "probe": "E_START_INCREASE_DECREASE_STOP",
+        "rate_history_equals_the_faculty_plan": true,
+        "recomputed_to_check": true,
+        "regenerated_orders_equal_the_stored_ones": true,
+        "regenerated_rate_history_equals_the_stored_one": true,
+        "regenerated_script_equals_the_stored_one": true,
+        "regenerated_series_equals_the_stored_one": true,
+        "source_file_sha256": "030249f8d0d1fcf4df1a28105995f3fa3ec02209b6214fb5d6eedcc45a2cd10f",
+        "source_record": "docs/revision/PHASE3_NOREPINEPHRINE_TITRATION_PROBES.json",
+        "source_record_digest": "9bf782128b34ee7addb69ce9d391ded5c0d0d952de58f35fd5bd2d2f609e6b61",
+        "source_record_id": "NOREPINEPHRINE_TITRATION_PROBES_V1",
+        "taken_from": "gi_probes.probes[E_START_INCREASE_DECREASE_STOP].per_minute, minutes 0 to 32, unchanged (nothing recomputed to make the scenario)",
+        "the_displayed_pressure_at_the_reads_is_the_series": true,
+        "the_map_is_the_displayed_rule": true,
+        "the_stored_probe_replays_exactly": true,
+        "the_unmapped_run_is_the_no_order_run": true,
+        "witness": "CENTER_REFERENCE"
+      },
+      "TIT-5": {
+        "case_id": "gi_bleed_57m",
+        "every_order_was_built": true,
+        "first_point_is_the_authored_arrival": true,
+        "orders_of_the_probe_equal_the_plan": true,
+        "probe": "F_START_STOP_RESTART",
+        "rate_history_equals_the_faculty_plan": true,
+        "recomputed_to_check": true,
+        "regenerated_orders_equal_the_stored_ones": true,
+        "regenerated_rate_history_equals_the_stored_one": true,
+        "regenerated_script_equals_the_stored_one": true,
+        "regenerated_series_equals_the_stored_one": true,
+        "source_file_sha256": "030249f8d0d1fcf4df1a28105995f3fa3ec02209b6214fb5d6eedcc45a2cd10f",
+        "source_record": "docs/revision/PHASE3_NOREPINEPHRINE_TITRATION_PROBES.json",
+        "source_record_digest": "9bf782128b34ee7addb69ce9d391ded5c0d0d952de58f35fd5bd2d2f609e6b61",
+        "source_record_id": "NOREPINEPHRINE_TITRATION_PROBES_V1",
+        "taken_from": "gi_probes.probes[F_START_STOP_RESTART].per_minute, minutes 0 to 32, unchanged (nothing recomputed to make the scenario)",
+        "the_displayed_pressure_at_the_reads_is_the_series": true,
+        "the_map_is_the_displayed_rule": true,
+        "the_stored_probe_replays_exactly": true,
+        "the_unmapped_run_is_the_no_order_run": true,
+        "witness": "CENTER_REFERENCE"
+      }
+    },
+    "witness": "CENTER_REFERENCE"
+  },
+  "items": [
+    {
+      "arrival": {
+        "dbp": 54,
+        "map": 65,
+        "rr": 26,
+        "sbp": 88,
+        "spo2": 97
+      },
+      "banner": "SYNTHETIC DEVELOPMENT CASE",
+      "baseline_facts": [
+        "Abdomen: Mild epigastric tenderness without guarding. Rectal examination reveals black tarry stool.",
+        "Bedside ultrasound, left ventricle: Small cavity with hyperdynamic contraction; near-obliteration of the cavity in systole",
+        "Bedside ultrasound, inferior vena cava: 0.9 cm; near-complete inspiratory collapse",
+        "Hemoglobin 6.7 g/dL"
+      ],
+      "common": [
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 0,
+          "sbp": 88
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 1,
+          "sbp": 88
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 2,
+          "sbp": 87
+        },
+        {
+          "dbp": 53,
+          "map": 64,
+          "minute": 3,
+          "sbp": 87
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 4,
+          "sbp": 94
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 5,
+          "sbp": 96
+        },
+        {
+          "dbp": 59,
+          "map": 72,
+          "minute": 6,
+          "sbp": 97
+        },
+        {
+          "dbp": 59,
+          "map": 72,
+          "minute": 7,
+          "sbp": 97
+        },
+        {
+          "dbp": 59,
+          "map": 72,
+          "minute": 8,
+          "sbp": 97
+        },
+        {
+          "dbp": 59,
+          "map": 72,
+          "minute": 9,
+          "sbp": 97
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 10,
+          "sbp": 96
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 11,
+          "sbp": 96
+        },
+        {
+          "dbp": 60,
+          "map": 73,
+          "minute": 12,
+          "sbp": 99
+        },
+        {
+          "dbp": 61,
+          "map": 74,
+          "minute": 13,
+          "sbp": 99
+        },
+        {
+          "dbp": 61,
+          "map": 74,
+          "minute": 14,
+          "sbp": 100
+        },
+        {
+          "dbp": 61,
+          "map": 74,
+          "minute": 15,
+          "sbp": 99
+        },
+        {
+          "dbp": 61,
+          "map": 74,
+          "minute": 16,
+          "sbp": 99
+        },
+        {
+          "dbp": 61,
+          "map": 74,
+          "minute": 17,
+          "sbp": 99
+        },
+        {
+          "dbp": 61,
+          "map": 74,
+          "minute": 18,
+          "sbp": 99
+        },
+        {
+          "dbp": 60,
+          "map": 73,
+          "minute": 19,
+          "sbp": 98
+        },
+        {
+          "dbp": 60,
+          "map": 73,
+          "minute": 20,
+          "sbp": 98
+        },
+        {
+          "dbp": 60,
+          "map": 73,
+          "minute": 21,
+          "sbp": 98
+        },
+        {
+          "dbp": 60,
+          "map": 72,
+          "minute": 22,
+          "sbp": 97
+        },
+        {
+          "dbp": 60,
+          "map": 72,
+          "minute": 23,
+          "sbp": 97
+        },
+        {
+          "dbp": 59,
+          "map": 72,
+          "minute": 24,
+          "sbp": 97
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 25,
+          "sbp": 96
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 26,
+          "sbp": 96
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 27,
+          "sbp": 96
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 28,
+          "sbp": 95
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 29,
+          "sbp": 95
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 30,
+          "sbp": 95
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 31,
+          "sbp": 94
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 32,
+          "sbp": 94
+        }
+      ],
+      "context": "A 57-year-old man presents after nearly fainting when standing. He looks pale and says he feels profoundly weak. Authored diagnosis: Upper gastrointestinal bleeding with hemorrhagic hypoperfusion.",
+      "intervention": "Norepinephrine 5 mcg/min started at minute 2, increased to 10 mcg/min at minute 10 and kept at that rate to the end. Nothing else is given or changed; the underlying problem is left untreated.",
+      "kind": "AUTHORED_CASE",
+      "note": "An authored synthetic case for development, not a patient.",
+      "purpose": "Does the pressure response increase smoothly and at an appropriate time after the norepinephrine rate is increased?",
+      "rate_changes": [
+        {
+          "minute": 2,
+          "n": 1,
+          "operation": "START",
+          "rate_mcg_min": 5.0
+        },
+        {
+          "minute": 10,
+          "n": 2,
+          "operation": "INCREASE",
+          "rate_mcg_min": 10.0
+        }
+      ],
+      "required": true,
+      "scenario_id": "TIT-1",
+      "short": "Increase",
+      "stopped": false,
+      "table_minutes": [
+        0,
+        2,
+        4,
+        10,
+        12,
+        14,
+        18,
+        25,
+        32
+      ],
+      "timeline": [
+        {
+          "action": "Start norepinephrine 5 mcg/min",
+          "advance": 8,
+          "executed": true,
+          "intervention": true,
+          "minute": 2,
+          "n": 1,
+          "result": "Infusion running at 5 mcg/min until minute 10"
+        },
+        {
+          "action": "Increase norepinephrine to 10 mcg/min",
+          "advance": 22,
+          "executed": true,
+          "intervention": true,
+          "minute": 10,
+          "n": 2,
+          "result": "Infusion running at 10 mcg/min to minute 32"
+        }
+      ],
+      "title": "57-year-old man with an upper gastrointestinal bleed: norepinephrine increased from 5 to 10 mcg/min"
+    },
+    {
+      "arrival": {
+        "dbp": 54,
+        "map": 65,
+        "rr": 26,
+        "sbp": 88,
+        "spo2": 97
+      },
+      "banner": "SYNTHETIC DEVELOPMENT CASE",
+      "baseline_facts": [
+        "Abdomen: Mild epigastric tenderness without guarding. Rectal examination reveals black tarry stool.",
+        "Bedside ultrasound, left ventricle: Small cavity with hyperdynamic contraction; near-obliteration of the cavity in systole",
+        "Bedside ultrasound, inferior vena cava: 0.9 cm; near-complete inspiratory collapse",
+        "Hemoglobin 6.7 g/dL"
+      ],
+      "common": [
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 0,
+          "sbp": 88
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 1,
+          "sbp": 88
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 2,
+          "sbp": 87
+        },
+        {
+          "dbp": 53,
+          "map": 64,
+          "minute": 3,
+          "sbp": 87
+        },
+        {
+          "dbp": 60,
+          "map": 73,
+          "minute": 4,
+          "sbp": 98
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 5,
+          "sbp": 101
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 6,
+          "sbp": 102
+        },
+        {
+          "dbp": 63,
+          "map": 76,
+          "minute": 7,
+          "sbp": 102
+        },
+        {
+          "dbp": 63,
+          "map": 76,
+          "minute": 8,
+          "sbp": 102
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 9,
+          "sbp": 102
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 10,
+          "sbp": 101
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 11,
+          "sbp": 101
+        },
+        {
+          "dbp": 61,
+          "map": 74,
+          "minute": 12,
+          "sbp": 99
+        },
+        {
+          "dbp": 60,
+          "map": 72,
+          "minute": 13,
+          "sbp": 97
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 14,
+          "sbp": 96
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 15,
+          "sbp": 95
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 16,
+          "sbp": 94
+        },
+        {
+          "dbp": 57,
+          "map": 69,
+          "minute": 17,
+          "sbp": 93
+        },
+        {
+          "dbp": 57,
+          "map": 69,
+          "minute": 18,
+          "sbp": 93
+        },
+        {
+          "dbp": 57,
+          "map": 69,
+          "minute": 19,
+          "sbp": 92
+        },
+        {
+          "dbp": 56,
+          "map": 68,
+          "minute": 20,
+          "sbp": 92
+        },
+        {
+          "dbp": 56,
+          "map": 68,
+          "minute": 21,
+          "sbp": 91
+        },
+        {
+          "dbp": 56,
+          "map": 68,
+          "minute": 22,
+          "sbp": 91
+        },
+        {
+          "dbp": 56,
+          "map": 68,
+          "minute": 23,
+          "sbp": 91
+        },
+        {
+          "dbp": 55,
+          "map": 67,
+          "minute": 24,
+          "sbp": 90
+        },
+        {
+          "dbp": 55,
+          "map": 67,
+          "minute": 25,
+          "sbp": 90
+        },
+        {
+          "dbp": 55,
+          "map": 67,
+          "minute": 26,
+          "sbp": 90
+        },
+        {
+          "dbp": 55,
+          "map": 66,
+          "minute": 27,
+          "sbp": 89
+        },
+        {
+          "dbp": 55,
+          "map": 66,
+          "minute": 28,
+          "sbp": 89
+        },
+        {
+          "dbp": 54,
+          "map": 66,
+          "minute": 29,
+          "sbp": 89
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 30,
+          "sbp": 88
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 31,
+          "sbp": 88
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 32,
+          "sbp": 88
+        }
+      ],
+      "context": "A 57-year-old man presents after nearly fainting when standing. He looks pale and says he feels profoundly weak. Authored diagnosis: Upper gastrointestinal bleeding with hemorrhagic hypoperfusion.",
+      "intervention": "Norepinephrine 10 mcg/min started at minute 2, reduced to 4 mcg/min at minute 10 and kept at that rate to the end. Nothing else is given or changed; the underlying problem is left untreated.",
+      "kind": "AUTHORED_CASE",
+      "note": "An authored synthetic case for development, not a patient.",
+      "purpose": "Does the pressure response decrease smoothly and at an appropriate time after the norepinephrine rate is reduced?",
+      "rate_changes": [
+        {
+          "minute": 2,
+          "n": 1,
+          "operation": "START",
+          "rate_mcg_min": 10.0
+        },
+        {
+          "minute": 10,
+          "n": 2,
+          "operation": "DECREASE",
+          "rate_mcg_min": 4.0
+        }
+      ],
+      "required": true,
+      "scenario_id": "TIT-2",
+      "short": "Decrease",
+      "stopped": false,
+      "table_minutes": [
+        0,
+        2,
+        4,
+        10,
+        12,
+        14,
+        18,
+        25,
+        32
+      ],
+      "timeline": [
+        {
+          "action": "Start norepinephrine 10 mcg/min",
+          "advance": 8,
+          "executed": true,
+          "intervention": true,
+          "minute": 2,
+          "n": 1,
+          "result": "Infusion running at 10 mcg/min until minute 10"
+        },
+        {
+          "action": "Decrease norepinephrine to 4 mcg/min",
+          "advance": 22,
+          "executed": true,
+          "intervention": true,
+          "minute": 10,
+          "n": 2,
+          "result": "Infusion running at 4 mcg/min to minute 32"
+        }
+      ],
+      "title": "57-year-old man with an upper gastrointestinal bleed: norepinephrine reduced from 10 to 4 mcg/min"
+    },
+    {
+      "arrival": {
+        "dbp": 54,
+        "map": 65,
+        "rr": 26,
+        "sbp": 88,
+        "spo2": 97
+      },
+      "banner": "SYNTHETIC DEVELOPMENT CASE",
+      "baseline_facts": [
+        "Abdomen: Mild epigastric tenderness without guarding. Rectal examination reveals black tarry stool.",
+        "Bedside ultrasound, left ventricle: Small cavity with hyperdynamic contraction; near-obliteration of the cavity in systole",
+        "Bedside ultrasound, inferior vena cava: 0.9 cm; near-complete inspiratory collapse",
+        "Hemoglobin 6.7 g/dL"
+      ],
+      "common": [
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 0,
+          "sbp": 88
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 1,
+          "sbp": 88
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 2,
+          "sbp": 87
+        },
+        {
+          "dbp": 53,
+          "map": 64,
+          "minute": 3,
+          "sbp": 87
+        },
+        {
+          "dbp": 60,
+          "map": 73,
+          "minute": 4,
+          "sbp": 98
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 5,
+          "sbp": 101
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 6,
+          "sbp": 102
+        },
+        {
+          "dbp": 63,
+          "map": 76,
+          "minute": 7,
+          "sbp": 102
+        },
+        {
+          "dbp": 63,
+          "map": 76,
+          "minute": 8,
+          "sbp": 102
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 9,
+          "sbp": 102
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 10,
+          "sbp": 101
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 11,
+          "sbp": 101
+        },
+        {
+          "dbp": 60,
+          "map": 73,
+          "minute": 12,
+          "sbp": 98
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 13,
+          "sbp": 95
+        },
+        {
+          "dbp": 56,
+          "map": 68,
+          "minute": 14,
+          "sbp": 92
+        },
+        {
+          "dbp": 55,
+          "map": 66,
+          "minute": 15,
+          "sbp": 89
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 16,
+          "sbp": 87
+        },
+        {
+          "dbp": 53,
+          "map": 64,
+          "minute": 17,
+          "sbp": 86
+        },
+        {
+          "dbp": 52,
+          "map": 63,
+          "minute": 18,
+          "sbp": 85
+        },
+        {
+          "dbp": 51,
+          "map": 62,
+          "minute": 19,
+          "sbp": 84
+        },
+        {
+          "dbp": 51,
+          "map": 62,
+          "minute": 20,
+          "sbp": 83
+        },
+        {
+          "dbp": 51,
+          "map": 62,
+          "minute": 21,
+          "sbp": 83
+        },
+        {
+          "dbp": 50,
+          "map": 61,
+          "minute": 22,
+          "sbp": 82
+        },
+        {
+          "dbp": 50,
+          "map": 61,
+          "minute": 23,
+          "sbp": 82
+        },
+        {
+          "dbp": 50,
+          "map": 60,
+          "minute": 24,
+          "sbp": 81
+        },
+        {
+          "dbp": 50,
+          "map": 60,
+          "minute": 25,
+          "sbp": 81
+        },
+        {
+          "dbp": 49,
+          "map": 60,
+          "minute": 26,
+          "sbp": 81
+        },
+        {
+          "dbp": 49,
+          "map": 59,
+          "minute": 27,
+          "sbp": 80
+        },
+        {
+          "dbp": 49,
+          "map": 59,
+          "minute": 28,
+          "sbp": 80
+        },
+        {
+          "dbp": 49,
+          "map": 59,
+          "minute": 29,
+          "sbp": 80
+        },
+        {
+          "dbp": 49,
+          "map": 59,
+          "minute": 30,
+          "sbp": 79
+        },
+        {
+          "dbp": 48,
+          "map": 58,
+          "minute": 31,
+          "sbp": 79
+        },
+        {
+          "dbp": 48,
+          "map": 58,
+          "minute": 32,
+          "sbp": 79
+        }
+      ],
+      "context": "A 57-year-old man presents after nearly fainting when standing. He looks pale and says he feels profoundly weak. Authored diagnosis: Upper gastrointestinal bleeding with hemorrhagic hypoperfusion.",
+      "intervention": "Norepinephrine 10 mcg/min started at minute 2 and stopped at minute 10; it is not given again. Nothing else is given or changed; the underlying problem is left untreated.",
+      "kind": "AUTHORED_CASE",
+      "note": "An authored synthetic case for development, not a patient.",
+      "purpose": "After norepinephrine is stopped, does the pressure effect decay with a clinically plausible delay rather than disappearing instantly?",
+      "rate_changes": [
+        {
+          "minute": 2,
+          "n": 1,
+          "operation": "START",
+          "rate_mcg_min": 10.0
+        },
+        {
+          "minute": 10,
+          "n": 2,
+          "operation": "STOP",
+          "rate_mcg_min": 0.0
+        }
+      ],
+      "required": true,
+      "scenario_id": "TIT-3",
+      "short": "Stop",
+      "stopped": false,
+      "table_minutes": [
+        0,
+        2,
+        4,
+        10,
+        12,
+        14,
+        18,
+        25,
+        32
+      ],
+      "timeline": [
+        {
+          "action": "Start norepinephrine 10 mcg/min",
+          "advance": 8,
+          "executed": true,
+          "intervention": true,
+          "minute": 2,
+          "n": 1,
+          "result": "Infusion running at 10 mcg/min until minute 10"
+        },
+        {
+          "action": "Stop norepinephrine",
+          "advance": 22,
+          "executed": true,
+          "intervention": true,
+          "minute": 10,
+          "n": 2,
+          "result": "Infusion off to minute 32"
+        }
+      ],
+      "title": "57-year-old man with an upper gastrointestinal bleed: norepinephrine started and then stopped"
+    },
+    {
+      "arrival": {
+        "dbp": 54,
+        "map": 65,
+        "rr": 26,
+        "sbp": 88,
+        "spo2": 97
+      },
+      "banner": "SYNTHETIC DEVELOPMENT CASE",
+      "baseline_facts": [
+        "Abdomen: Mild epigastric tenderness without guarding. Rectal examination reveals black tarry stool.",
+        "Bedside ultrasound, left ventricle: Small cavity with hyperdynamic contraction; near-obliteration of the cavity in systole",
+        "Bedside ultrasound, inferior vena cava: 0.9 cm; near-complete inspiratory collapse",
+        "Hemoglobin 6.7 g/dL"
+      ],
+      "common": [
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 0,
+          "sbp": 88
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 1,
+          "sbp": 88
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 2,
+          "sbp": 87
+        },
+        {
+          "dbp": 53,
+          "map": 64,
+          "minute": 3,
+          "sbp": 87
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 4,
+          "sbp": 94
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 5,
+          "sbp": 96
+        },
+        {
+          "dbp": 59,
+          "map": 72,
+          "minute": 6,
+          "sbp": 97
+        },
+        {
+          "dbp": 59,
+          "map": 72,
+          "minute": 7,
+          "sbp": 97
+        },
+        {
+          "dbp": 59,
+          "map": 72,
+          "minute": 8,
+          "sbp": 97
+        },
+        {
+          "dbp": 59,
+          "map": 72,
+          "minute": 9,
+          "sbp": 97
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 10,
+          "sbp": 96
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 11,
+          "sbp": 96
+        },
+        {
+          "dbp": 60,
+          "map": 73,
+          "minute": 12,
+          "sbp": 99
+        },
+        {
+          "dbp": 61,
+          "map": 74,
+          "minute": 13,
+          "sbp": 99
+        },
+        {
+          "dbp": 61,
+          "map": 74,
+          "minute": 14,
+          "sbp": 100
+        },
+        {
+          "dbp": 61,
+          "map": 74,
+          "minute": 15,
+          "sbp": 99
+        },
+        {
+          "dbp": 61,
+          "map": 74,
+          "minute": 16,
+          "sbp": 99
+        },
+        {
+          "dbp": 61,
+          "map": 74,
+          "minute": 17,
+          "sbp": 99
+        },
+        {
+          "dbp": 61,
+          "map": 74,
+          "minute": 18,
+          "sbp": 99
+        },
+        {
+          "dbp": 60,
+          "map": 73,
+          "minute": 19,
+          "sbp": 98
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 20,
+          "sbp": 96
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 21,
+          "sbp": 95
+        },
+        {
+          "dbp": 57,
+          "map": 69,
+          "minute": 22,
+          "sbp": 93
+        },
+        {
+          "dbp": 57,
+          "map": 69,
+          "minute": 23,
+          "sbp": 92
+        },
+        {
+          "dbp": 56,
+          "map": 68,
+          "minute": 24,
+          "sbp": 91
+        },
+        {
+          "dbp": 56,
+          "map": 68,
+          "minute": 25,
+          "sbp": 91
+        },
+        {
+          "dbp": 55,
+          "map": 67,
+          "minute": 26,
+          "sbp": 90
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 27,
+          "sbp": 87
+        },
+        {
+          "dbp": 52,
+          "map": 63,
+          "minute": 28,
+          "sbp": 85
+        },
+        {
+          "dbp": 51,
+          "map": 62,
+          "minute": 29,
+          "sbp": 83
+        },
+        {
+          "dbp": 50,
+          "map": 61,
+          "minute": 30,
+          "sbp": 82
+        },
+        {
+          "dbp": 50,
+          "map": 60,
+          "minute": 31,
+          "sbp": 81
+        },
+        {
+          "dbp": 49,
+          "map": 59,
+          "minute": 32,
+          "sbp": 80
+        }
+      ],
+      "context": "A 57-year-old man presents after nearly fainting when standing. He looks pale and says he feels profoundly weak. Authored diagnosis: Upper gastrointestinal bleeding with hemorrhagic hypoperfusion.",
+      "intervention": "Norepinephrine 5 mcg/min started at minute 2, increased to 10 mcg/min at minute 10, reduced to 4 mcg/min at minute 18 and stopped at minute 25; it is not given again. Nothing else is given or changed; the underlying problem is left untreated.",
+      "kind": "AUTHORED_CASE",
+      "note": "An authored synthetic case for development, not a patient.",
+      "purpose": "Across sequential rate changes, does the pressure trajectory follow the ordered norepinephrine dose changes in the correct direction and sequence?",
+      "rate_changes": [
+        {
+          "minute": 2,
+          "n": 1,
+          "operation": "START",
+          "rate_mcg_min": 5.0
+        },
+        {
+          "minute": 10,
+          "n": 2,
+          "operation": "INCREASE",
+          "rate_mcg_min": 10.0
+        },
+        {
+          "minute": 18,
+          "n": 3,
+          "operation": "DECREASE",
+          "rate_mcg_min": 4.0
+        },
+        {
+          "minute": 25,
+          "n": 4,
+          "operation": "STOP",
+          "rate_mcg_min": 0.0
+        }
+      ],
+      "required": true,
+      "scenario_id": "TIT-4",
+      "short": "Sequence",
+      "stopped": false,
+      "table_minutes": [
+        0,
+        2,
+        4,
+        10,
+        12,
+        18,
+        20,
+        25,
+        27,
+        32
+      ],
+      "timeline": [
+        {
+          "action": "Start norepinephrine 5 mcg/min",
+          "advance": 8,
+          "executed": true,
+          "intervention": true,
+          "minute": 2,
+          "n": 1,
+          "result": "Infusion running at 5 mcg/min until minute 10"
+        },
+        {
+          "action": "Increase norepinephrine to 10 mcg/min",
+          "advance": 8,
+          "executed": true,
+          "intervention": true,
+          "minute": 10,
+          "n": 2,
+          "result": "Infusion running at 10 mcg/min until minute 18"
+        },
+        {
+          "action": "Decrease norepinephrine to 4 mcg/min",
+          "advance": 7,
+          "executed": true,
+          "intervention": true,
+          "minute": 18,
+          "n": 3,
+          "result": "Infusion running at 4 mcg/min until minute 25"
+        },
+        {
+          "action": "Stop norepinephrine",
+          "advance": 7,
+          "executed": true,
+          "intervention": true,
+          "minute": 25,
+          "n": 4,
+          "result": "Infusion off to minute 32"
+        }
+      ],
+      "title": "57-year-old man with an upper gastrointestinal bleed: norepinephrine increased, reduced and then stopped"
+    },
+    {
+      "arrival": {
+        "dbp": 54,
+        "map": 65,
+        "rr": 26,
+        "sbp": 88,
+        "spo2": 97
+      },
+      "banner": "SYNTHETIC DEVELOPMENT CASE",
+      "baseline_facts": [
+        "Abdomen: Mild epigastric tenderness without guarding. Rectal examination reveals black tarry stool.",
+        "Bedside ultrasound, left ventricle: Small cavity with hyperdynamic contraction; near-obliteration of the cavity in systole",
+        "Bedside ultrasound, inferior vena cava: 0.9 cm; near-complete inspiratory collapse",
+        "Hemoglobin 6.7 g/dL"
+      ],
+      "common": [
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 0,
+          "sbp": 88
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 1,
+          "sbp": 88
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 2,
+          "sbp": 87
+        },
+        {
+          "dbp": 53,
+          "map": 64,
+          "minute": 3,
+          "sbp": 87
+        },
+        {
+          "dbp": 60,
+          "map": 73,
+          "minute": 4,
+          "sbp": 98
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 5,
+          "sbp": 101
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 6,
+          "sbp": 102
+        },
+        {
+          "dbp": 63,
+          "map": 76,
+          "minute": 7,
+          "sbp": 102
+        },
+        {
+          "dbp": 63,
+          "map": 76,
+          "minute": 8,
+          "sbp": 102
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 9,
+          "sbp": 102
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 10,
+          "sbp": 101
+        },
+        {
+          "dbp": 62,
+          "map": 75,
+          "minute": 11,
+          "sbp": 101
+        },
+        {
+          "dbp": 60,
+          "map": 73,
+          "minute": 12,
+          "sbp": 98
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 13,
+          "sbp": 95
+        },
+        {
+          "dbp": 56,
+          "map": 68,
+          "minute": 14,
+          "sbp": 92
+        },
+        {
+          "dbp": 55,
+          "map": 66,
+          "minute": 15,
+          "sbp": 89
+        },
+        {
+          "dbp": 54,
+          "map": 65,
+          "minute": 16,
+          "sbp": 87
+        },
+        {
+          "dbp": 53,
+          "map": 64,
+          "minute": 17,
+          "sbp": 86
+        },
+        {
+          "dbp": 52,
+          "map": 63,
+          "minute": 18,
+          "sbp": 85
+        },
+        {
+          "dbp": 51,
+          "map": 62,
+          "minute": 19,
+          "sbp": 84
+        },
+        {
+          "dbp": 57,
+          "map": 69,
+          "minute": 20,
+          "sbp": 93
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 21,
+          "sbp": 96
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 22,
+          "sbp": 96
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 23,
+          "sbp": 96
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 24,
+          "sbp": 96
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 25,
+          "sbp": 96
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 26,
+          "sbp": 96
+        },
+        {
+          "dbp": 59,
+          "map": 71,
+          "minute": 27,
+          "sbp": 96
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 28,
+          "sbp": 95
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 29,
+          "sbp": 95
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 30,
+          "sbp": 95
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 31,
+          "sbp": 94
+        },
+        {
+          "dbp": 58,
+          "map": 70,
+          "minute": 32,
+          "sbp": 94
+        }
+      ],
+      "context": "A 57-year-old man presents after nearly fainting when standing. He looks pale and says he feels profoundly weak. Authored diagnosis: Upper gastrointestinal bleeding with hemorrhagic hypoperfusion.",
+      "intervention": "Norepinephrine 10 mcg/min started at minute 2, stopped at minute 10 and restarted at 10 mcg/min at minute 18, then kept at that rate to the end. Nothing else is given or changed; the underlying problem is left untreated.",
+      "kind": "AUTHORED_CASE",
+      "note": "An authored synthetic case for development, not a patient.",
+      "purpose": "After norepinephrine is stopped and later restarted at an explicit valid rate, does the pressure response reappear causally without retaining an inappropriate residual effect?",
+      "rate_changes": [
+        {
+          "minute": 2,
+          "n": 1,
+          "operation": "START",
+          "rate_mcg_min": 10.0
+        },
+        {
+          "minute": 10,
+          "n": 2,
+          "operation": "STOP",
+          "rate_mcg_min": 0.0
+        },
+        {
+          "minute": 18,
+          "n": 3,
+          "operation": "RESTART",
+          "rate_mcg_min": 10.0
+        }
+      ],
+      "required": true,
+      "scenario_id": "TIT-5",
+      "short": "Restart",
+      "stopped": false,
+      "table_minutes": [
+        0,
+        2,
+        4,
+        10,
+        12,
+        18,
+        20,
+        25,
+        32
+      ],
+      "timeline": [
+        {
+          "action": "Start norepinephrine 10 mcg/min",
+          "advance": 8,
+          "executed": true,
+          "intervention": true,
+          "minute": 2,
+          "n": 1,
+          "result": "Infusion running at 10 mcg/min until minute 10"
+        },
+        {
+          "action": "Stop norepinephrine",
+          "advance": 8,
+          "executed": true,
+          "intervention": true,
+          "minute": 10,
+          "n": 2,
+          "result": "Infusion off until minute 18"
+        },
+        {
+          "action": "Restart norepinephrine at 10 mcg/min",
+          "advance": 14,
+          "executed": true,
+          "intervention": true,
+          "minute": 18,
+          "n": 3,
+          "result": "Infusion running at 10 mcg/min to minute 32"
+        }
+      ],
+      "title": "57-year-old man with an upper gastrointestinal bleed: norepinephrine stopped and later restarted"
+    }
+  ],
+  "limitations": [
+    {
+      "id": "EXPLICIT_ABSOLUTE_MCG_MIN_ONLY",
+      "text": "Only explicit absolute norepinephrine rates in mcg/min are represented. A relative instruction (for example, \"increase norepinephrine\") while no infusion is running is not supported."
+    },
+    {
+      "id": "NO_WEIGHT_BASED_DOSING",
+      "text": "Weight-based doses (mcg/kg/min) are not represented and are never converted."
+    },
+    {
+      "id": "NO_MAP_TARGET_TITRATION",
+      "text": "Titration to a pressure target (for example, \"titrate to MAP 65\") is not represented: no rate is ever chosen from a pressure."
+    },
+    {
+      "id": "MALFORMED_ORDER_CLOSES_THE_MODELLED_INFUSION",
+      "text": "An order the system cannot read as an explicit absolute rate (an unsupported or malformed order) ends the modelled infusion for the rest of the encounter. It is declared, and nothing later in that encounter recovers it."
+    },
+    {
+      "id": "CONSCIOUSNESS_UNDER_TONE_UNRESOLVED",
+      "text": "Consciousness under vascular-tone support was neither shown nor judged in this review. It remains unresolved."
+    },
+    {
+      "id": "COMMON_TONE_PUMP_DEPENDENCE_NOT_YET_VALIDATED",
+      "text": "How strongly the pressure response depends on the state of the pump is not yet validated. This review used a hemorrhage case and does not support the use of a vasopressor in pump-limited conditions."
+    }
+  ],
+  "order": [
+    "TIT-1",
+    "TIT-2",
+    "TIT-3",
+    "TIT-4",
+    "TIT-5"
+  ],
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-19",
+    "generating_code": {
+      "clinical_core": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "excluded_review_modules": [
+        "faculty_titration_review.py",
+        "faculty_titration_review_ui.py"
+      ],
+      "test_titration_review_analysis.py": "c5b983bc964185915c1228546e6de337e3a2e5d37dda36f999c37c1fe5893f0f",
+      "test_tone_review_analysis.py": "27257888844ca6208dbaa44aef368039427de5a51411104027bdb6b774586424",
+      "test_tone_titration_analysis.py": "f7ee268aa6d9bb0c468efded79f792b2fd3d2a52778d682fbc39bd1e0c74c09c"
+    },
+    "generating_code_fingerprint": "06311b790b2148008fe3c9ccdc39dc2199e93e60e8ca2a33119fa36ae526a15e",
+    "grant_id": null,
+    "record_id": "NOREPINEPHRINE_TITRATION_V1_FACULTY_REVIEW",
+    "record_schema_version": 1,
+    "source_data_digest": "09b0d45bc225b96e59e2f3c7e70c278d7a9f12db133de21b111b5895401c44ff",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "record_digest": "576e11f2555012932c26ead757e932eeae15672bf9af05df724dec688fd2bb59",
+  "record_type": "PHASE3_NOREPINEPHRINE_TITRATION_REVIEW_SET",
+  "set_id": "NOREPINEPHRINE_TITRATION_V1_FACULTY_REVIEW",
+  "statement": "Synthetic development case. A faculty judgment of stored development trajectories of explicit norepinephrine rate changes (mcg/min): not a clinical validation, not a calibrated configuration, not a dose-response, not a score, not a resident pilot.",
+  "version": "TITRATION-REVIEW-1",
+  "what_it_is": "Five review scenarios of explicit norepinephrine rate changes in mcg/min in ONE upper gastrointestinal hemorrhage case -- an increase, a decrease, a stop, a sequence of changes and a restart -- with the trajectories of the CENTER_REFERENCE setting taken unchanged from the certified titration probes. No comparator, no earlier trajectory, no other setting and no other set are part of the items."
+}
