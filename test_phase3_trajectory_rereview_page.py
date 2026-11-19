@@ -576,8 +576,8 @@ def test_p15c_three_of_four_scenarios_do_not_release_the_hold_and_the_fourth_doe
     assert _modes(at) == [] and "Re-review · scenario 4 of 4 · 3 of 4 reviewed" in _everything(at)
     _complete_by_log(world, credentials, ("FR-G",))
     done = _open(world, credentials, held=False)
-    assert _modes(done) == [[page.ui.TRAJECTORY_MODE, page.ui.REREVIEW_MODE, page.ui.TONE_MODE, page.ui.LIVE_MODE]] and page.ui.HELD_NOTE not in _everything(done)
-    assert next(item for item in done.radio if item.label == "Review mode").value == page.ui.TONE_MODE, "once released, the landing page is the tone review (P3-406)"
+    assert _modes(done) == [[page.ui.TRAJECTORY_MODE, page.ui.REREVIEW_MODE, page.ui.TONE_MODE, page.ui.TITRATION_MODE, page.ui.LIVE_MODE]] and page.ui.HELD_NOTE not in _everything(done)
+    assert next(item for item in done.radio if item.label == "Review mode").value == page.ui.TITRATION_MODE, "once released, the landing page is the titration review (P3-441; the tone review was the landing page until then, P3-406)"
     next(item for item in done.radio if item.label == "Review mode").set_value(page.ui.REREVIEW_MODE).run()
     _check(done)
     assert "RE-REVIEW COMPLETE · 4 / 4" in _everything(done)                          # the re-review, by an explicit choice
@@ -595,7 +595,7 @@ def test_p15d_a_forged_or_missing_record_does_not_release_the_hold(world):  # no
 
 def test_p15e_after_completion_the_first_review_and_the_live_mode_are_back_by_an_explicit_choice_and_the_data_is_intact(journey, world):  # noqa: F811
     at = _open(world, journey["credentials"], held=False)
-    assert _modes(at) == [[page.ui.TRAJECTORY_MODE, page.ui.REREVIEW_MODE, page.ui.TONE_MODE, page.ui.LIVE_MODE]] and next(item for item in at.radio if item.label == "Review mode").value == page.ui.TONE_MODE
+    assert _modes(at) == [[page.ui.TRAJECTORY_MODE, page.ui.REREVIEW_MODE, page.ui.TONE_MODE, page.ui.TITRATION_MODE, page.ui.LIVE_MODE]] and next(item for item in at.radio if item.label == "Review mode").value == page.ui.TITRATION_MODE
     next(item for item in at.radio if item.label == "Review mode").set_value(page.ui.REREVIEW_MODE).run()
     _check(at)
     assert "RE-REVIEW COMPLETE · 4 / 4" in _everything(at)
@@ -618,8 +618,8 @@ def test_p15f_the_operators_switch_opens_the_earlier_modes_before_completion(wor
     _open(world, credentials)                                                          # (the hold is back in force for the module)
     monkeypatch.setenv(rui.OPERATOR_FLAG, rui.OPERATOR_OPEN)
     at = page._open(world, credentials, mode="rereview")
-    assert _modes(at) == [[page.ui.TRAJECTORY_MODE, page.ui.REREVIEW_MODE, page.ui.TONE_MODE, page.ui.LIVE_MODE]] and page.ui.HELD_NOTE not in _everything(at)
-    assert next(item for item in at.radio if item.label == "Review mode").value == page.ui.TONE_MODE, "released, the landing page is the tone review (P3-406)"
+    assert _modes(at) == [[page.ui.TRAJECTORY_MODE, page.ui.REREVIEW_MODE, page.ui.TONE_MODE, page.ui.TITRATION_MODE, page.ui.LIVE_MODE]] and page.ui.HELD_NOTE not in _everything(at)
+    assert next(item for item in at.radio if item.label == "Review mode").value == page.ui.TITRATION_MODE, "released, the landing page is the titration review (P3-441; the tone review was the landing page until then, P3-406)"
     monkeypatch.setenv(rui.OPERATOR_FLAG, "ON")                                         # anything but 'off' leaves the hold in force
     assert _modes(page._open(world, credentials, mode="rereview")) == []
 

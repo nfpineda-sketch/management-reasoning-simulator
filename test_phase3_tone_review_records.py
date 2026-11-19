@@ -49,7 +49,8 @@ def test_c2_the_generating_code_names_the_certified_core_and_leaves_out_only_the
     parts = RECORD["provenance"]["generating_code"]
     assert parts["clinical_core"] == CORE_DIGEST and parts["excluded_review_modules"] == list(build.REVIEW_MODULES) == ["faculty_tone_review.py", "faculty_tone_review_ui.py"]
     assert set(parts) == {"clinical_core", "application_modules", "application_module_count", "excluded_review_modules", "test_tone_pathway_analysis.py", "test_tone_review_analysis.py"}
-    modules = {name for name in ta.application_modules() if name not in build.REVIEW_MODULES}
+    newer = ("faculty_titration_review.py", "faculty_titration_review_ui.py")           # (declared adaptation, P3-440: the two modules of the later titration review did not exist when this set was generated)
+    modules = {name for name in ta.application_modules() if name not in build.REVIEW_MODULES and name not in newer}
     assert parts["application_module_count"] == len(modules)
     from clinical_core import amendment_3 as a3
     assert a3.amended_core_digest_now() == CORE_DIGEST, "the core that generated the set is the certified Amendment-3 core, unchanged"

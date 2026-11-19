@@ -402,7 +402,7 @@ def test_r12_the_new_modules_import_nothing_of_the_engine_the_authority_the_shad
     imports = {alias.name for node in ast.walk(launcher) if isinstance(node, ast.Import) for alias in node.names} | {str(node.module) for node in ast.walk(launcher) if isinstance(node, ast.ImportFrom)}
     assert not any("trajectory" in name or "rereview" in name for name in imports), imports
     app = (ROOT / "app.py").read_text(encoding="utf-8")
-    assert "rereview_page=_faculty_rereview_ui.draw" in app and "trajectory_page=_faculty_trajectory_ui.draw" in app and "default_mode=_faculty_review_ui.TONE_MODE" in app and "hold_prior_modes=_faculty_rereview_ui.prior_modes_held" in app      # (the landing page after the re-review is the tone review: P3-406)
+    assert "rereview_page=_faculty_rereview_ui.draw" in app and "trajectory_page=_faculty_trajectory_ui.draw" in app and "default_mode=_faculty_review_ui.TITRATION_MODE" in app and "hold_prior_modes=_faculty_rereview_ui.prior_modes_held" in app      # (the landing page after the re-review is the titration review: P3-441; it was the tone review, P3-406)
 
 
 def test_r13_the_first_review_and_the_first_human_review_are_preserved():

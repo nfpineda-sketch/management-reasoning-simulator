@@ -18,6 +18,7 @@ import pytest
 from streamlit.testing.v1 import AppTest
 
 import faculty_review_ui as ui
+import faculty_titration_review_ui as titration_ui
 import faculty_tone_review_ui as tone_ui
 import faculty_trajectory_rereview_ui as rereview_ui
 import runtime_authority as ra
@@ -40,12 +41,13 @@ INTERNALS = ("PRESSURE_ONLY", "GRANT_V1", "GRANT_V2", "ACTIVE_AUTHORITY", "AUTHO
 
 
 def _review_env(mp, store_dir, **override):
-    for name in (ra.AUTHORITY_FLAG, ra.SNAPSHOT_FLAG, ra.ENVIRONMENT_FLAG, ras.STORE_FLAG, rs.FLAG, fr.FLAG, fr.OFFLINE_FLAG, rereview_ui.OPERATOR_FLAG, tone_ui.OPERATOR_FLAG, "OPENAI_API_KEY") + tuple(ra.PILOT_FLAGS) + tuple(ra.PILOT_REQUIRED_ON):
+    for name in (ra.AUTHORITY_FLAG, ra.SNAPSHOT_FLAG, ra.ENVIRONMENT_FLAG, ras.STORE_FLAG, rs.FLAG, fr.FLAG, fr.OFFLINE_FLAG, rereview_ui.OPERATOR_FLAG, tone_ui.OPERATOR_FLAG, titration_ui.OPERATOR_FLAG, "OPENAI_API_KEY") + tuple(ra.PILOT_FLAGS) + tuple(ra.PILOT_REQUIRED_ON):
         mp.delenv(name, raising=False)
     env = {fr.FLAG: fr.MODE_ON, rs.FLAG: rs.MODE_SHADOW_COMPARE, ra.AUTHORITY_FLAG: ra.MODE_LIMITED_COMMON_AUTHORITY, ra.SNAPSHOT_FLAG: grants.PRESSURE_SNAPSHOT_ID_V2,
            ra.ENVIRONMENT_FLAG: "development", fr.OFFLINE_FLAG: "1", ras.STORE_FLAG: str(store_dir),
            rereview_ui.OPERATOR_FLAG: rereview_ui.OPERATOR_OPEN,          # the operator opens the earlier review modes: the tests of those modes (and of the live encounter) exercise them; the re-review tests close the hold again
-           tone_ui.OPERATOR_FLAG: tone_ui.OPERATOR_OPEN}                  # and the tone review's own hold (P3-406: the other modes wait for its five scenarios); the tone-review tests close it again
+           tone_ui.OPERATOR_FLAG: tone_ui.OPERATOR_OPEN,                  # and the tone review's own hold (P3-406: the other modes wait for its five scenarios); the tone-review tests close it again
+           titration_ui.OPERATOR_FLAG: titration_ui.OPERATOR_OPEN}        # and the titration review's own hold (P3-441: the other modes wait for its five scenarios); the titration-review tests close it again
     env.update(override)
     for name, value in env.items():
         if value is not None:
