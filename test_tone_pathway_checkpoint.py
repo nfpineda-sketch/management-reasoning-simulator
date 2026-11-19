@@ -248,8 +248,15 @@ def test_the_checkpoint_is_a_sealed_versioned_record_with_exactly_one_verdict(ch
 
 def test_what_the_checkpoint_says_of_the_tree_is_what_the_tree_says(checkpoint):
     found = facts()
-    for section in ("grants", "authority", "gi_pressure_snapshot", "mapping", "candidate", "probes"):
+    for section in ("grants", "authority", "gi_pressure_snapshot", "candidate", "probes"):
         assert checkpoint["facts"][section] == json.loads(json.dumps(found[section])), section
+    # P3-431 (declared adaptation, FD-TITRATE-01): the mapping grew after this checkpoint -- it reads a rate change and a stop -- so the checkpoint, which is history and is not edited,
+    # says what the mapping WAS (only the first start), and the tree says what it IS. What still must agree is everything the later package did not touch.
+    then, now = checkpoint["facts"]["mapping"], json.loads(json.dumps(found["mapping"]))
+    assert then["module_version"] == "P3-396" and then["only_the_first_order_of_the_kind_can_be_built"] is True and now["module_version"] == "P3-431"
+    for key in ("revision", "status", "refused_on_an_amendment_2_witness", "profile_field", "witnesses", "chosen_witness", "registered_adapters_declaring_it"):
+        assert then[key] == now[key], key
+    assert then["mapped"]["kind"] == now["mapped"]["kind"] and then["mapped"]["units"] == now["mapped"]["units"] and then["mapped"]["contributor"] == now["mapped"]["contributor_of_a_single_carried_order"]
     core = checkpoint["facts"]["core"]
     assert core == json.loads(json.dumps(found["core"]))
     assert core["off_by_default"] is True and core["registered_as_the_last_lineage_member"] is True

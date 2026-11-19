@@ -100,20 +100,29 @@ def test_the_mapping_names_no_family_no_case_and_reads_no_pressure():
 
 
 def test_one_order_shape_is_built_and_every_other_is_a_declared_gap_with_its_reason():
-    """``order_disposition`` judges the order ALONE (whether it is the encounter's first is ``map_orders``'s)."""
+    """``order_disposition`` judges the order ALONE (whether the run saw the infusion start is ``infusion_history``'s).
+
+    P3-431 (declared adaptation, FD-TITRATE-01): an adjustment, a continuation and a stop are READ now -- each sets ONE absolute rate, 0 for a stop -- where they used to be
+    'no core mapping'. Everything else this test protected still holds: other units, a weight-based dose and a rate that is not a finite positive number are refused with their reason."""
     assert ts.order_disposition(START) == (10.0, None)
     assert ts.order_disposition({**START, "rate": 4}) == (4.0, None)
-    for changes, text in (({"operation": "adjust"}, "no core mapping"), ({"operation": "stop", "rate": None, "units": None}, "no core mapping"),
-                          ({"operation": None}, "no core mapping"), ({"units": "mcg/kg/min"}, "weight"),
-                          ({"units": None}, "only a fixed rate in mcg/min"), ({"rate": None}, "positive rate"), ({"rate": 0.0}, "positive rate"),
+    assert ts.order_disposition({**START, "operation": "adjust", "rate": 6}) == (6.0, None) and ts.order_disposition({**START, "operation": "continue"}) == (10.0, None)
+    assert ts.order_disposition({"type": "norepinephrine", "operation": "stop", "rate": None, "units": None}) == (0.0, None)
+    for changes, text in (({"operation": None}, "not an operation this mapping reads"), ({"operation": "titrate to MAP 65"}, "not an operation this mapping reads"),
+                          ({"operation": ["start"]}, "not an operation this mapping reads"), ({"units": "mcg/kg/min"}, "weight"),
+                          ({"operation": "adjust", "units": "mcg/kg/min"}, "weight"),
+                          ({"units": None}, "gives no units"), ({"units": "mg/h"}, "only a fixed rate in mcg/min"), ({"rate": None}, "positive rate"), ({"rate": 0.0}, "positive rate"),
                           ({"rate": -5.0}, "positive rate"), ({"rate": math.nan}, "positive rate"), ({"rate": math.inf}, "positive rate"),
-                          ({"rate": True}, "positive rate"), ({"rate": "10"}, "positive rate")):
+                          ({"rate": True}, "positive rate"), ({"rate": "10"}, "positive rate"), ({"operation": "adjust", "rate": 0.0}, "positive rate")):
         rate, why = ts.order_disposition({**START, **changes})
         assert rate is None and text in why, (changes, why)
     assert ts.order_disposition(None)[0] is None
 
 
 def test_only_the_first_order_of_the_kind_is_built_and_nothing_else_in_the_run_is_touched():
+    """P3-431 (declared adaptation, FD-TITRATE-01 and FD-TITRATE-07): the later orders -- an adjustment, a stop and a restart -- used to be declared gaps of a run that 'no longer
+    mirrors the vasopressor'; they are now CARRIED by the encounter's ONE infusion, which still carries the id of the first order and the witness's constants. What the test
+    protected still holds: ONE contributor of the kind, and nothing else in the run touched."""
     events = [_event(5, "o1"), _event(10, "o2", operation="adjust", rate=20.0), _event(20, "o3", operation="stop", rate=None, units=None), _event(25, "o4")]
     other_built, other_gaps = ("a-fluid", "an-oxygen"), [{"order_id": "x9", "kind": "dopamine", "why": "no core intervention for this order type"}]
     family_gaps = other_gaps + [{"order_id": event.order_id, "kind": "norepinephrine", "why": "no core intervention for this order type yet"} for event in events]
@@ -123,10 +132,13 @@ def test_only_the_first_order_of_the_kind_is_built_and_nothing_else_in_the_run_i
     infusion = built[2]
     assert isinstance(infusion, vs.Norepinephrine) and (infusion.id, infusion.start_minute, infusion.rate_mcg_min, infusion.stop_minute) == ("o1", 5, 10.0, None)
     assert (infusion.half_effect_rate_mcg_min, infusion.onset_tau_min, infusion.offset_tau_min) == (point["half_effect_rate_mcg_min"], point["onset_tau_min"], point["offset_tau_min"])
-    assert gaps[0] == other_gaps[0] and [gap["order_id"] for gap in gaps[1:]] == ["o2", "o3", "o4"]
-    # every order after the infusion the run mapped -- an adjustment, a stop, and a restart alike -- says the same thing: not mapped, and the run no longer mirrors the vasopressor
-    for gap, operation in zip(gaps[1:], ("adjust", "stop", "start")):
-        assert "after the run's infusion started is not mapped" in gap["why"] and repr(operation) in gap["why"] and "no longer mirrors" in gap["why"], gap
+    assert type(infusion) is ts.NorepinephrineRateHistory and infusion.changes == ((10, 20.0), (20, 0.0), (25, 10.0)) and infusion.carried_order_ids == ("o1", "o2", "o3", "o4")
+    assert [row[3] for row in infusion.orders] == [ts.STARTED, ts.INCREASED, ts.STOPPED, ts.RESTARTED]
+    assert gaps == other_gaps, "no order of the kind is a gap, and the other family's gap is as it was"
+    # a single start is still the core's own writer, exactly as before
+    alone, none = ts.map_orders(events[:1], other_built, family_gaps[:2], point)
+    assert type(alone[2]) is vs.Norepinephrine and alone[2] == vs.Norepinephrine("o1", 5, 10.0, half_effect_rate_mcg_min=point["half_effect_rate_mcg_min"],
+                                                                                 onset_tau_min=point["onset_tau_min"], offset_tau_min=point["offset_tau_min"]) and none == other_gaps
 
 
 def test_an_unmappable_first_order_is_never_replaced_by_a_later_one():
@@ -143,13 +155,20 @@ def test_an_unmappable_first_order_is_never_replaced_by_a_later_one():
 
 
 def test_the_first_order_is_the_engines_first_not_the_mirrors_first_nor_the_alphabets():
+    """P3-435 (declared adaptation, after the adversarial review). The engine's order IS the mirror's own (the mirror dates every order at the minute the engine ran it, so its minutes
+    never go back). An order dated BEFORE one that came before it used to be sorted into place; it is now a contradiction the mapping does not resolve: no order of the kind is mapped
+    and each says why. What this test protected still holds, and more strictly: a later order is never built in the place of the encounter's first."""
     point = vs.witness("CENTER_REFERENCE")
-    # the minute decides ...
     built, gaps = ts.map_orders([_event(25, "late"), _event(5, "early")], (), [], point)
-    assert [(item.id, item.start_minute) for item in built] == [("early", 5)] and [gap["order_id"] for gap in gaps] == ["late"]
-    # ... and within one minute the position in the mirror does, never the order id's spelling
+    assert built == () and [(gap["order_id"], gap["why"]) for gap in gaps] == [(name, f"{ts.GAP_CHRONOLOGY}. {ts.NOT_MIRRORED}") for name in ("late", "early")]
+    # in time, the later order -- the same rate again -- is carried by the ONE infusion, and changes nothing  (P3-431, declared adaptation: it used to be a gap)
+    built, gaps = ts.map_orders([_event(5, "early"), _event(25, "late")], (), [], point)
+    assert [(item.id, item.start_minute) for item in built] == [("early", 5)] and gaps == []
+    assert built[0].carried_order_ids == ("early", "late") and built[0].changes == () and [row[3] for row in built[0].orders] == [ts.STARTED, ts.IDEMPOTENT]
+    # ... and within one minute the position in the mirror decides, never the order id's spelling: a start and then a stop leave nothing running and no modelled interval to carry
+    # either, so nothing is built and each says why (the start was replaced within its minute; the stop stopped nothing)
     built, gaps = ts.map_orders([_event(5, "m005-z"), _event(5, "m005-a", operation="stop", rate=None, units=None)], (), [], point)
-    assert [item.id for item in built] == ["m005-z"] and [gap["order_id"] for gap in gaps] == ["m005-a"]
+    assert built == () and [(gap["order_id"], gap["why"]) for gap in gaps] == [("m005-z", ts.GAP_REPLACED.format(operation="start")), ("m005-a", ts.GAP_NOTHING_TO_BUILD.format(operation="stop"))]
     built, gaps = ts.map_orders([_event(5, "m005-z", operation="stop", rate=None, units=None), _event(5, "m005-a")], (), [], point)
     assert built == () and [gap["order_id"] for gap in gaps] == ["m005-z", "m005-a"]
 
@@ -171,7 +190,8 @@ def test_it_is_refused_on_an_amendment_2_consciousness_witness():
     for name in fam.GI_AMENDMENT_2_WITNESS_NAMES:
         with pytest.raises(ValueError, match="Amendment-2 consciousness witness"):
             ts.with_tone_support(gi.witness(name), "CENTER_REFERENCE")
-    assert ts.summary()["refused_on_an_amendment_2_witness"] is True and ts.summary()["only_the_first_order_of_the_kind_can_be_built"] is True
+    # P3-431 (declared adaptation): 'only the first order can be built' is no longer said -- the later orders are carried by the ONE infusion -- and what is said instead is checked
+    assert ts.summary()["refused_on_an_amendment_2_witness"] is True and ts.summary()["one_infusion_one_ordered_rate"] is True and ts.summary()["refusal_closes_the_infusion"] is True
 
 
 def test_each_copy_has_a_class_of_its_own_and_the_module_keeps_no_cache():

@@ -275,8 +275,11 @@ def test_t16_titration_and_stop_are_the_next_priority_and_are_not_implemented_or
     assert nxt["desired_future_behaviour"] == ["start", "increase", "decrease", "stop"] and "the SAME common writer" in nxt["through"]
     assert nxt["without"] == ["a drug -> mmHg shortcut", "multiple competing tone writers", "case-specific branches"]
     import runtime_tone_support as rts
-    assert "no titration and no stop" in rts.GAP_OPERATION and "no titration, no stop, no restart" in rts.GAP_AFTER_THE_INFUSION, "the gaps the mapping declares are still declared: titration and stop are not represented"
+    # P3-431 (declared adaptation): the RECORD still says what was true when it was written -- titration and stop were the next priority, neither implemented nor authorized -- and it is
+    # not edited. The faculty then authorized them (FD-TITRATE-01) and the mapping reads them; the two assertions on the mapping's old gap texts were replaced by what still binds it.
+    assert RATIFICATION["limitations"]["TITRATION_AND_STOP_NOT_SUPPORTED"]["status"] == "NEXT_HIGH_PRIORITY_MANAGEMENT_GAP"
     assert rts.STATUS == "DEVELOPMENT_SHADOW_ONLY" and rts.MAPPED_OPERATION == "start" and rts.MAPPED_UNITS == "mcg/min"
+    assert any("automatic titration" in item for item in rts.NOT_GRANTED) and "a weight-based dose" in rts.NOT_GRANTED and "runtime authority" in rts.NOT_GRANTED
 
 
 def test_t17_the_scenario_limitations_do_not_widen_the_blocked_set_and_nothing_is_made_unavailable():
