@@ -511,6 +511,18 @@
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "95fb2c9a39ce2234b665d03e8421c611522d414695425027d946d1d7094db859"
     },
+    "PHASE3_READER_SUCCESSION_TARGET_SAFETY.json": {
+      "class": "VERSIONED",
+      "file_sha256": "93da307768edd28b87b10f900bd0d916306cfff6d3687f709d5f42451d8a2066",
+      "record_digest": "6d4f2d17a5d7d8cf9b2227d2992e57d34b286645cff30ea3b3542d277fb97509",
+      "record_id": "PHASE3_READER_SUCCESSION_TARGET_SAFETY_V1"
+    },
+    "PHASE3_TARGET_RATE_SOURCE_CHECKPOINT.json": {
+      "class": "VERSIONED",
+      "file_sha256": "2ecbd4d63afb36829a1ead0c4447338d0b3a779ca71c9ceed1f8016e08e911f8",
+      "record_digest": "250fd6817d255c1b9c604dc0087bd56c48dcd82eb31740796cb455cd53690abc",
+      "record_id": "TARGET_RATE_SOURCE_CHECKPOINT_V1"
+    },
     "PHASE3_TURN_CHECKPOINT.json": {
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "970a0b5323ca85df43878eb17c0a5d66eb3672f1b2de98844067a71c7321c080"

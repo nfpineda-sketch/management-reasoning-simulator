@@ -1,0 +1,662 @@
+{
+  "authority": {
+    "common_core_runtime_authority": false,
+    "expanded": false
+  },
+  "behavior": [
+    {
+      "historical_reader": [
+        {
+          "operation": "adjust",
+          "rate": 65.0,
+          "type": "norepinephrine",
+          "units": null
+        }
+      ],
+      "successor_reader": [
+        {
+          "incomplete_explicit_rate": {
+            "agent": "norepinephrine",
+            "operation": "adjust",
+            "reason": "NUMBER_WITHOUT_RATE_UNITS"
+          },
+          "type": "clarification"
+        }
+      ],
+      "text": "titrate norepinephrine to MAP 65"
+    },
+    {
+      "historical_reader": [
+        {
+          "operation": "adjust",
+          "rate": 65.0,
+          "type": "norepinephrine",
+          "units": null
+        }
+      ],
+      "successor_reader": [
+        {
+          "incomplete_explicit_rate": {
+            "agent": "norepinephrine",
+            "operation": "adjust",
+            "reason": "NUMBER_WITHOUT_RATE_UNITS"
+          },
+          "type": "clarification"
+        }
+      ],
+      "text": "titrate norepinephrine to MAP >65"
+    },
+    {
+      "historical_reader": [],
+      "successor_reader": [],
+      "text": "maintain MAP 65"
+    },
+    {
+      "historical_reader": [],
+      "successor_reader": [],
+      "text": "target MAP 65 with norepinephrine"
+    },
+    {
+      "historical_reader": [
+        {
+          "operation": "adjust",
+          "rate": 10.0,
+          "type": "norepinephrine",
+          "units": "mcg/min"
+        }
+      ],
+      "successor_reader": [
+        {
+          "operation": "adjust",
+          "rate": 10.0,
+          "type": "norepinephrine",
+          "units": "mcg/min"
+        }
+      ],
+      "text": "increase norepinephrine to 10 mcg/min"
+    },
+    {
+      "historical_reader": [
+        {
+          "operation": "start",
+          "rate": 10.0,
+          "type": "norepinephrine",
+          "units": "mcg/min"
+        }
+      ],
+      "successor_reader": [
+        {
+          "operation": "start",
+          "rate": 10.0,
+          "type": "norepinephrine",
+          "units": "mcg/min"
+        }
+      ],
+      "text": "norepinephrine 10 mcg/min"
+    },
+    {
+      "historical_reader": [
+        {
+          "operation": "adjust",
+          "rate": 4.0,
+          "type": "norepinephrine",
+          "units": "mcg/min"
+        }
+      ],
+      "successor_reader": [
+        {
+          "operation": "adjust",
+          "rate": 4.0,
+          "type": "norepinephrine",
+          "units": "mcg/min"
+        }
+      ],
+      "text": "decrease norepinephrine to 4 mcg/min"
+    },
+    {
+      "historical_reader": [
+        {
+          "operation": "stop",
+          "rate": null,
+          "type": "norepinephrine",
+          "units": null
+        }
+      ],
+      "successor_reader": [
+        {
+          "operation": "stop",
+          "rate": null,
+          "type": "norepinephrine",
+          "units": null
+        }
+      ],
+      "text": "stop norepinephrine"
+    },
+    {
+      "historical_reader": [
+        {
+          "operation": "start",
+          "rate": 0.1,
+          "type": "norepinephrine",
+          "units": "mcg/kg/min"
+        }
+      ],
+      "successor_reader": [
+        {
+          "operation": "start",
+          "rate": 0.1,
+          "type": "norepinephrine",
+          "units": "mcg/kg/min"
+        }
+      ],
+      "text": "0.1 mcg/kg/min: norepinephrine 0.1 mcg/kg/min"
+    },
+    {
+      "historical_reader": [
+        {
+          "operation": "adjust",
+          "rate": null,
+          "type": "norepinephrine",
+          "units": null
+        }
+      ],
+      "successor_reader": [
+        {
+          "incomplete_explicit_rate": {
+            "agent": "norepinephrine",
+            "operation": "adjust",
+            "reason": "NO_EXPLICIT_RATE"
+          },
+          "type": "clarification"
+        }
+      ],
+      "text": "increase norepinephrine"
+    },
+    {
+      "historical_reader": [
+        {
+          "operation": "adjust",
+          "rate": 12.0,
+          "type": "norepinephrine",
+          "units": null
+        }
+      ],
+      "successor_reader": [
+        {
+          "incomplete_explicit_rate": {
+            "agent": "norepinephrine",
+            "operation": "adjust",
+            "reason": "NUMBER_WITHOUT_RATE_UNITS"
+          },
+          "type": "clarification"
+        }
+      ],
+      "text": "increase norepinephrine to 12"
+    },
+    {
+      "historical_reader": [
+        {
+          "operation": "adjust",
+          "rate": null,
+          "type": "norepinephrine",
+          "units": null
+        }
+      ],
+      "successor_reader": [
+        {
+          "incomplete_explicit_rate": {
+            "agent": "norepinephrine",
+            "operation": "adjust",
+            "reason": "NO_EXPLICIT_RATE"
+          },
+          "type": "clarification"
+        }
+      ],
+      "text": "decrease norepinephrine"
+    },
+    {
+      "historical_reader": [
+        {
+          "operation": "adjust",
+          "rate": null,
+          "type": "norepinephrine",
+          "units": null
+        }
+      ],
+      "successor_reader": [
+        {
+          "incomplete_explicit_rate": {
+            "agent": "norepinephrine",
+            "operation": "adjust",
+            "reason": "NO_EXPLICIT_RATE"
+          },
+          "type": "clarification"
+        }
+      ],
+      "text": "wean norepinephrine off"
+    },
+    {
+      "historical_reader": [],
+      "successor_reader": [
+        {
+          "operation": "start",
+          "rate": null,
+          "type": "norepinephrine",
+          "units": null
+        }
+      ],
+      "text": "restart norepinephrine"
+    },
+    {
+      "historical_reader": [
+        {
+          "type": "clarification"
+        }
+      ],
+      "successor_reader": [
+        {
+          "operation": "start",
+          "rate": 10.0,
+          "type": "norepinephrine",
+          "units": "mcg/min"
+        }
+      ],
+      "text": "restart norepinephrine at 10 mcg/min"
+    },
+    {
+      "historical_reader": [
+        {
+          "operation": "adjust",
+          "rate_mcg_min": 120.0,
+          "type": "nitroglycerin"
+        }
+      ],
+      "successor_reader": [
+        {
+          "incomplete_explicit_rate": {
+            "agent": "nitroglycerin",
+            "operation": "adjust",
+            "reason": "NUMBER_WITHOUT_RATE_UNITS"
+          },
+          "type": "clarification"
+        }
+      ],
+      "text": "titrate nitroglycerin to SBP 120"
+    },
+    {
+      "historical_reader": [
+        {
+          "operation": "start",
+          "rate_mcg_min": 140.0,
+          "type": "nitroglycerin"
+        }
+      ],
+      "successor_reader": [
+        {
+          "incomplete_explicit_rate": {
+            "agent": "nitroglycerin",
+            "operation": "start",
+            "reason": "NUMBER_WITHOUT_RATE_UNITS"
+          },
+          "type": "clarification"
+        }
+      ],
+      "text": "nitroglycerin to keep SBP <140"
+    },
+    {
+      "historical_reader": [
+        {
+          "operation": "start",
+          "rate_mcg_min": 20.0,
+          "type": "nitroglycerin"
+        }
+      ],
+      "successor_reader": [
+        {
+          "operation": "start",
+          "rate_mcg_min": 20.0,
+          "type": "nitroglycerin"
+        }
+      ],
+      "text": "nitroglycerin 20 mcg/min"
+    },
+    {
+      "historical_reader": [
+        {
+          "operation": "start",
+          "rate_mcg_min": 20.0,
+          "type": "nitroglycerin"
+        }
+      ],
+      "successor_reader": [
+        {
+          "incomplete_explicit_rate": {
+            "agent": "nitroglycerin",
+            "operation": "start",
+            "reason": "NUMBER_WITHOUT_RATE_UNITS"
+          },
+          "type": "clarification"
+        }
+      ],
+      "text": "nitroglycerin 20"
+    },
+    {
+      "historical_reader": [
+        {
+          "operation": "adjust",
+          "rate": 65.0,
+          "type": "epinephrine",
+          "units": null
+        }
+      ],
+      "successor_reader": [
+        {
+          "incomplete_explicit_rate": {
+            "agent": "epinephrine",
+            "operation": "adjust",
+            "reason": "NUMBER_WITHOUT_RATE_UNITS"
+          },
+          "type": "clarification"
+        }
+      ],
+      "text": "titrate epinephrine to MAP 65"
+    },
+    {
+      "historical_reader": [
+        {
+          "operation": "adjust",
+          "rate": 65.0,
+          "type": "dobutamine",
+          "units": null
+        }
+      ],
+      "successor_reader": [
+        {
+          "incomplete_explicit_rate": {
+            "agent": "dobutamine",
+            "operation": "adjust",
+            "reason": "NUMBER_WITHOUT_RATE_UNITS"
+          },
+          "type": "clarification"
+        }
+      ],
+      "text": "titrate dobutamine to MAP 65"
+    },
+    {
+      "historical_reader": [
+        {
+          "operation": "adjust",
+          "rate": 65.0,
+          "type": "norepinephrine",
+          "units": null
+        }
+      ],
+      "successor_reader": [
+        {
+          "incomplete_explicit_rate": {
+            "agent": "norepinephrine",
+            "operation": "adjust",
+            "reason": "NUMBER_WITHOUT_RATE_UNITS"
+          },
+          "type": "clarification"
+        }
+      ],
+      "text": "titula noradrenalina a PAM 65"
+    },
+    {
+      "historical_reader": [
+        {
+          "type": "clarification"
+        }
+      ],
+      "successor_reader": [
+        {
+          "operation": "start",
+          "rate": 10.0,
+          "type": "norepinephrine",
+          "units": "mcg/min"
+        }
+      ],
+      "text": "reinicia la noradrenalina a 10 mcg/min"
+    },
+    {
+      "historical_reader": [
+        {
+          "operation": "continue",
+          "rate": null,
+          "type": "norepinephrine",
+          "units": null
+        }
+      ],
+      "successor_reader": [
+        {
+          "operation": "continue",
+          "rate": null,
+          "type": "norepinephrine",
+          "units": null
+        }
+      ],
+      "text": "continue norepinephrine"
+    },
+    {
+      "historical_reader": [
+        {
+          "operation": "start",
+          "rate": null,
+          "type": "norepinephrine",
+          "units": null
+        }
+      ],
+      "successor_reader": [
+        {
+          "operation": "start",
+          "rate": null,
+          "type": "norepinephrine",
+          "units": null
+        }
+      ],
+      "text": "start norepinephrine"
+    }
+  ],
+  "core_digest": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+  "date": "2026-11-20",
+  "decision_reference": "FD-TARGET-01 to FD-TARGET-11",
+  "defense_in_depth": "order_pipeline.incomplete_explicit_rate stays: it holds a structured infusion that carries a rate with no units or an adjustment with no rate, whatever produced it; for nitroglycerin only the adjustment with no rate (its unit is in the field name)",
+  "evidence_class": "MODEL_ANALYSIS",
+  "executable_change": true,
+  "executable_files_changed": [
+    "family_parser.py",
+    "order_pipeline.py",
+    "order_ledger.py",
+    "pending_family_orders.py",
+    "app.py",
+    "language.py",
+    "reader_succession.py"
+  ],
+  "faculty_decisions": {
+    "FD-TARGET-01": "The parser freeze is lifted ONLY for a narrowly scoped safety correction; the invariant is PHYSIOLOGIC_TARGET != DRUG_RATE; no broad parser redesign; no change to unrelated parsing.",
+    "FD-TARGET-02": "Repair the earliest correct semantic layer: MAP 65, MAP >65, SBP 90, SBP >100, pressure goal 65 are target (or at minimum non-rate) information and NEVER an executable drug rate.",
+    "FD-TARGET-03": "The downstream structural rule in order_pipeline stays as DEFENSE IN DEPTH; the source fix and the downstream boundary must agree.",
+    "FD-TARGET-04": "The source rule covers norepinephrine, epinephrine, dobutamine and nitroglycerin where the order model exposes them; no new drug physiology and no new medication.",
+    "FD-TARGET-05": "Explicit supported absolute rates remain valid (norepinephrine 10 mcg/min, increase to 12 mcg/min, decrease to 4 mcg/min, nitroglycerin 20 mcg/min).",
+    "FD-TARGET-06": "Incomplete rate commands (increase norepinephrine, increase norepinephrine to 12, restart norepinephrine) never execute and are never a silent no-op: INCOMPLETE_EXPLICIT_RATE; ask for an explicit rate with units; infer nothing.",
+    "FD-TARGET-07": "'restart norepinephrine at 10 mcg/min' is a valid START/RESTART; 'restart norepinephrine' with no explicit supported rate stays incomplete; no previous-rate reuse.",
+    "FD-TARGET-08": "PERMANENT_FAIL_CLOSED stays for the shadow after a malformed or unsupported order; no recovery semantics in this package.",
+    "FD-TARGET-09": "RAW_ORDER_REMAINS_CORRECT_BOUNDARY stays for the shared mirror; no raw/resolved hybrid; the shadow does not move to engine-resolved orders.",
+    "FD-TARGET-10": "The approved Spanish clarification: 'La orden especifica un objetivo o una tasa incompleta. Indique una tasa explícita con sus unidades para continuar.' (neutral, non-prescriptive, it does not call the detected number a dose).",
+    "FD-TARGET-11": "No physiology change, no tone recalibration, no authority expansion."
+  },
+  "freeze": {
+    "calibration": {
+      "after_the_succession": {
+        "components": {
+          "authority_registries": "e305793eefead76fb733761f3305148e3df85aa9074445d94f051cb5709d2314",
+          "bands": "99ca99f1b0d032056cfdabb90e1354683ef5ba093e896a0d5c10bc9c2ca192ca",
+          "gi_reference": "ee3114ce9eeeb426a7b843943819aa88095b6cb09674e4c895c93a6ad1de0867",
+          "harness_sources": "995aefa0835d6ba233c75357c9acfaede22058306f6654ad865327a726a56bda",
+          "input_adapter_sources": "e83dca618fdaaa9239d861e1e1d6928dc703bfe33206a05cef44a5b0e9495bc5",
+          "input_path_sources": "e879d406b6d87575dd1ac8f85a874548ccd5bb5ac453bf9dea787919126e1236",
+          "migration_sources": "6033f4437627ed1f78c2c2ea03764986572639d94596982963a44f5964a2cb29",
+          "rules": "af88ab18a117b24b79fb7654ac78d83404c93abc7c0c1e86ca1d6c4c156e0709",
+          "scenario_inputs": "8de2bd0a29a820dbb46493064ffdbb72542fb0e98175b7d886dcfa22049cb36d",
+          "scenarios": "7380daec5536c8f9a23c857df2138c99a16d63eace51d62b295aa3f4ed100b58"
+        },
+        "digest": "4bdf9ef3430278aec5eb3038ecb5d062c459a58227993959a7075bfd67be2bca"
+      },
+      "before_the_succession": {
+        "components": {
+          "authority_registries": "e305793eefead76fb733761f3305148e3df85aa9074445d94f051cb5709d2314",
+          "bands": "99ca99f1b0d032056cfdabb90e1354683ef5ba093e896a0d5c10bc9c2ca192ca",
+          "gi_reference": "ee3114ce9eeeb426a7b843943819aa88095b6cb09674e4c895c93a6ad1de0867",
+          "harness_sources": "995aefa0835d6ba233c75357c9acfaede22058306f6654ad865327a726a56bda",
+          "input_adapter_sources": "e83dca618fdaaa9239d861e1e1d6928dc703bfe33206a05cef44a5b0e9495bc5",
+          "input_path_sources": "8bbff3d408efba2024917559156cfaa732c920b3bc7a45e0bac0e3e4838f65b9",
+          "migration_sources": "6033f4437627ed1f78c2c2ea03764986572639d94596982963a44f5964a2cb29",
+          "rules": "af88ab18a117b24b79fb7654ac78d83404c93abc7c0c1e86ca1d6c4c156e0709",
+          "scenario_inputs": "8de2bd0a29a820dbb46493064ffdbb72542fb0e98175b7d886dcfa22049cb36d",
+          "scenarios": "7380daec5536c8f9a23c857df2138c99a16d63eace51d62b295aa3f4ed100b58"
+        },
+        "digest": "c1eeb5538a4ea990cbcb4432b0c28e6cb8c351ffe08c96a6036f82d3b65a9b85"
+      },
+      "components_that_moved": [
+        "input_path_sources"
+      ],
+      "input_path_sources_list_unchanged": true,
+      "scenario_inputs_identical": true
+    },
+    "closure_freeze_digests": {
+      "equal": true,
+      "recomputed_under_the_closure_view_and_the_historical_reader": {
+        "calibration": "c1eeb5538a4ea990cbcb4432b0c28e6cb8c351ffe08c96a6036f82d3b65a9b85",
+        "closure_guard_P2X1A": "eca47d357674ec56fe489c30f1757cf940c55a4e5d5edb2a9ffb9fac0213e853",
+        "decision_pack": "e0fdfbe33abe643ab43793354525d2dc8604be5d2c1f0be2cfc7dd339ed13a15",
+        "lactate_slice": "3c4648e7bdc51baae1c3b6454314b05baf5430bef6032d72a75169a8ff64be10",
+        "tone_domain_on_the_live_tree": "a9634ffd1c9d609904702f2bc95f2d3cb15d3f064b1e671529478925ef7ae16a"
+      },
+      "recorded_in_the_closure_record": {
+        "calibration": "c1eeb5538a4ea990cbcb4432b0c28e6cb8c351ffe08c96a6036f82d3b65a9b85",
+        "closure_guard_P2X1A": "eca47d357674ec56fe489c30f1757cf940c55a4e5d5edb2a9ffb9fac0213e853",
+        "decision_pack": "e0fdfbe33abe643ab43793354525d2dc8604be5d2c1f0be2cfc7dd339ed13a15",
+        "lactate_slice": "3c4648e7bdc51baae1c3b6454314b05baf5430bef6032d72a75169a8ff64be10",
+        "tone_domain_on_the_live_tree": "a9634ffd1c9d609904702f2bc95f2d3cb15d3f064b1e671529478925ef7ae16a"
+      }
+    },
+    "generated_documents": {
+      "blood_anchors": {
+        "under_the_historical_reader": "7f127b89dc8cd533e58b18257daac23aa693ba874c2993f9d57de43192db2db7",
+        "under_the_successor_reader": "7ceb97a0aa220e76fae5ed2b51060baaa2e720e514fe2acb5748b083916a7fec"
+      },
+      "blood_probes": {
+        "under_the_historical_reader": "b502f13ff0d243edabda9345dbad9c9ef9971353bf7748581abc39b9cdb0bd33",
+        "under_the_successor_reader": "85d5e6d6798c699a5e958365af325bf71da1668944b81c0553e66830af182372"
+      },
+      "decision_pack": {
+        "under_the_historical_reader": "fedded4fabd62635d03b186a6fc4147e76eec913377a08f0a875fdbc522cba8b",
+        "under_the_successor_reader": "a4487dde1de1aed478743d918d8a97e9ece40a56a0cba402db21a89b052987b6"
+      },
+      "lactate_slice": {
+        "under_the_historical_reader": "93f313ebea0c9a21c4cb6349a0f64d327119dd2fe08ea25c5963982eea86d100",
+        "under_the_successor_reader": "3134b5e0dfadf0216492f1e4dbe5b887c28d529a1c5ce1b2abc76f73f2c1c7bf"
+      }
+    }
+  },
+  "historical_digests_recompute_by": "reader_succession.install(patch) / historical_reader_view(), composed INSIDE clinical_core.amendment_3.closure_view(); clinical_core is not edited",
+  "is_not": [
+    "a clinical validation",
+    "an approval of any medication order",
+    "a recovery semantic for a malformed order",
+    "a change of the shadow boundary"
+  ],
+  "physiology_change": false,
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-20",
+    "generating_code": {
+      "clinical_core": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "family_parser.py": "a1f5dd86780956430224257e05108b1c81b9ffee0908f1c8b3e78dd936ced2ee",
+      "reader_succession.py": "d0cfde904bbb04b5d06185f7ecf7e8c20a265dfe652aa5a700ff1dbf809cb308",
+      "test_reader_succession_analysis.py": "a75ba3a330b3f9e7d3c4f601c5cda41deb5c1fe9311382820ed7af3e2e8f0d0c"
+    },
+    "generating_code_fingerprint": "b91e859a0deca8d04c17646e0e7366bcf598d22ac5a33f6f23c4413284878db8",
+    "grant_id": null,
+    "record_id": "PHASE3_READER_SUCCESSION_TARGET_SAFETY_V1",
+    "record_schema_version": 1,
+    "source_data_digest": "4756df051ea0a2bdf8303888f22b8de0e3349a1ad06d81a306b098747233ab95",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "reader": {
+    "file": "family_parser.py",
+    "historical": {
+      "accepted_by": "the pre-Phase-1 reader freeze and the Phase-2 closure",
+      "git_blob": "1d17bf8b3dce66da5f1c8291237e2e7a7afde1c0",
+      "sha256": "7157bd8682f2d9e98bf5c41fdf94de42623baf84d18402147d666074d453ae58"
+    },
+    "successor": {
+      "frozen_again_by": "test_prephase1_reader_freeze.py (EXPECTED_BLOBS)",
+      "git_blob": "7a85714eb2b6fccb47507384a71fe91451e71ecb",
+      "sha256": "a1f5dd86780956430224257e05108b1c81b9ffee0908f1c8b3e78dd936ced2ee"
+    },
+    "the_other_four_reader_files": "byte-identical to the V3 freeze (shared_order_language.py, shared_order_quantities.py, active_order_context.py, weight_based_doses.py)"
+  },
+  "record_digest": "6d4f2d17a5d7d8cf9b2227d2992e57d34b286645cff30ea3b3542d277fb97509",
+  "record_type": "READER_SUCCESSION_RECORD",
+  "reversal": {
+    "historical_reader_runs_as": "family_parser_phase2_closure (never replaces family_parser in sys.modules)",
+    "hunk_count": 7,
+    "hunks": [
+      {
+        "historical_text": "\n# An explicit instruction to wait for a result before acting. Deliberately\n",
+        "successor_text": "\n# FD-TARGET-01 to FD-TARGET-10 (2026-11-20): a physiologic TARGET is never a DRUG RATE. A number that carries no rate unit\n# (\"titrate norepinephrine to MAP 65\", \"nitroglycerin to keep SBP 120\", \"increase norepinephrine to 12\") is not a rate, and a\n# relative change with no rate at all (\"increase norepinephrine\", \"wean norepinephrine off\") has nothing to execute: the order is\n# INCOMPLETE and is asked for, never completed from the running infusion or from the number beside it. The message names no\n# number, so it cannot suggest that a detected target is a dose. The reader gives no rate at all unless one is written with its\n# unit; the order pipeline holds the same orders again when they arrive as structured actions (defense in depth).\nINCOMPLETE_EXPLICIT_RATE = (\"The order specifies a target or an incomplete rate. Specify an explicit rate with its units to continue.\")\n\n\ndef _incomplete_explicit_rate(agent, operation, reason):\n    \"\"\"The non-executable representation of an infusion order that gave no explicit rate with units.\"\"\"\n    return {**_clarification(INCOMPLETE_EXPLICIT_RATE),\n            \"incomplete_explicit_rate\": {\"agent\": agent, \"operation\": operation, \"reason\": reason}}\n\n\n# An explicit instruction to wait for a result before acting. Deliberately\n"
+      },
+      {
+        "historical_text": "\ndef _parse_piece_core(piece, inherited=None):\n",
+        "successor_text": "\n_RESTART_INFUSION = re.compile(\n    r\"^(?P<lead>(?:(?:i\\s+(?:will|want to)|i'll|i am going to|voy a|quiero|vamos a|i|we)\\s+)?)\"\n    r\"(?:restart|re-start|resume|reinicia(?:r|mos)?|reinicio|reanuda(?:r|mos)?|retoma(?:r|mos)?)\\s+\"\n    r\"(?=(?:(?:the|la|el)\\s+)?(?:norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|levophed|nitroglycerin|nitroglicerina|nitro|\"\n    r\"dobutamine|dobutamina|epinephrine|epinefrina|adrenaline|adrenalina|epi)\\b)\", re.I)\n#: What a restart of one of the four infusions can be read as. A restart that reads as anything else (\"restart epinephrine 0.3 mg IM\", \"restart nitroglycerin 1000 mcg IV bolus\") is a\n#: one-shot dose, not an infusion: it is left exactly as the historical reader left it (not read), never turned into a START of that dose (adversarial review, FD-TARGET-07).\n_INFUSION_TYPES = frozenset({\"norepinephrine\", \"epinephrine\", \"dobutamine\", \"nitroglycerin\"})\n\n\ndef _reads_as_an_infusion(actions):\n    return bool(actions) and all(action.get(\"type\") in _INFUSION_TYPES or action.get(\"incomplete_explicit_rate\") for action in actions)\n\n\ndef _parse_piece_core(piece, inherited=None):\n"
+      },
+      {
+        "historical_text": "        return [{\"type\": \"monitoring\", \"operation\": \"start\"}], \"monitor\"\n    command = _COMMAND.match(text)\n",
+        "successor_text": "        return [{\"type\": \"monitoring\", \"operation\": \"start\"}], \"monitor\"\n    # FD-TARGET-07: \"restart norepinephrine at 10 mcg/min\" is a START with an explicit rate; \"restart norepinephrine\" is a start with no\n    # rate, which is asked for. The previous rate is never reused. Only the four vasoactive infusions the engine runs are read this\n    # way, so no other family's wording changes.\n    restarted = _RESTART_INFUSION.match(text)\n    if restarted:\n        actions, as_verb = _parse_piece_core(restarted[\"lead\"] + \"start \" + text[restarted.end():], inherited)\n        if _reads_as_an_infusion(actions):\n            return actions, as_verb\n    command = _COMMAND.match(text)\n"
+      },
+      {
+        "historical_text": "        if not rate_match:\n            bare_rates = re.findall(r\"(?<![\\w.])(-?(?:\\d+(?:\\.\\d+)?|\\.\\d+))(?![\\w.])\", body)\n",
+        "successor_text": "        if not rate_match:\n            # A number without a rate unit is NOT a rate (FD-TARGET-02/05/06). It used to become ``rate`` here, so a pressure target\n            # (\"MAP 65\", \"SBP 120\") was read as 65 or 120 and, for an adjustment, completed with the running infusion's units.\n            bare_rates = re.findall(r\"(?<![\\w.])(-?(?:\\d+(?:\\.\\d+)?|\\.\\d+))(?![\\w.])\", body)\n"
+      },
+      {
+        "historical_text": "            bare_rates = re.findall(r\"(?<![\\w.])(-?(?:\\d+(?:\\.\\d+)?|\\.\\d+))(?![\\w.])\", body)\n            if len(bare_rates) == 1 and not re.search(r\"\\b(?:minutes?|mins?|hours?|horas?|minutos?)\\b\", body):\n                rate = float(bare_rates[0])\n        if rate_match:\n",
+        "successor_text": "            bare_rates = re.findall(r\"(?<![\\w.])(-?(?:\\d+(?:\\.\\d+)?|\\.\\d+))(?![\\w.])\", body)\n            time_word = re.search(r\"\\b(?:minutes?|mins?|hours?|horas?|minutos?)\\b\", body)\n            if _operation(verb) in {\"start\", \"adjust\"} and len(bare_rates) == 1 and not time_word:\n                return [_incomplete_explicit_rate(kind, _operation(verb), \"NUMBER_WITHOUT_RATE_UNITS\")], verb\n            if _operation(verb) == \"adjust\":\n                return [_incomplete_explicit_rate(kind, \"adjust\", \"NO_EXPLICIT_RATE\")], verb\n        if rate_match:\n"
+      },
+      {
+        "historical_text": "        if not command:\n            continue\n",
+        "successor_text": "        if not command:\n            # \"My priority is perfusion, restart norepinephrine at 5 mcg/min\": the restart verbs are not in _COMMAND, and the order must not be dropped as reasoning.\n            if _RESTART_INFUSION.match(rest) and _reads_as_an_infusion(_parse_piece(re.split(r\"\\s*(?:,|\\+|\\band\\b|\\by\\b|\\bthen\\b|\\bluego\\b)\\s*\", rest, maxsplit=1)[0])[0]):\n                return rest\n            continue\n"
+      },
+      {
+        "historical_text": "        parsed, _ = _parse_piece(first)\n        if not any(action[\"type\"] != \"clarification\" for action in parsed):\n            continue\n",
+        "successor_text": "        parsed, _ = _parse_piece(first)\n        # An infusion order that is INCOMPLETE (a target, a number with no rate unit, a relative change with no rate) is still an order that must be asked for: \"my priority is perfusion, titrate norepinephrine to\n        # MAP 65\" used to execute 65 mcg/min; read as reasoning only, it would be dropped without telling the resident that nothing ran (FD-TARGET-06).\n        if not any(action[\"type\"] != \"clarification\" or action.get(\"incomplete_explicit_rate\") for action in parsed):\n            continue\n"
+      }
+    ],
+    "mechanism": "declared reversible hunks (the precedent of the amendments); reader_succession.historical_reader_bytes() applies them to the live file and proves the result against the pinned identity",
+    "proven": true
+  },
+  "statement": "The order reader (family_parser.py) was repaired ONCE under the faculty's lifting of its freeze for a narrowly scoped safety correction: a physiologic target is never a drug rate. The reader of the Phase-2 closure stays reconstructable byte for byte and in behavior; every Phase-2 digest recomputes from it; the calibration freeze moved in exactly one component and the materialized scenario inputs did not move; nothing sealed was rewritten and nothing in clinical_core/ was edited.",
+  "tone_recalibrated": false,
+  "version": "PHASE3_READER_SUCCESSION_TARGET_SAFETY_V1",
+  "what_changed_in_behavior": [
+    "a target or a number with no rate unit beside an infusion is never a rate (INCOMPLETE_EXPLICIT_RATE)",
+    "an adjustment with no rate is asked, not completed from the running infusion",
+    "restart/resume of the four infusions is a start",
+    "the neutral approved message, in English and Spanish"
+  ],
+  "what_did_not_change": [
+    "clinical_core/ (any file)",
+    "the core digest of PHASE2_AMENDMENT_3",
+    "COMMON_CORE_RUNTIME_AUTHORITY",
+    "the physiology constants and the tone parameters",
+    "family_engine.py",
+    "active_order_context.py",
+    "shared_order_language.py",
+    "shared_order_quantities.py",
+    "weight_based_doses.py",
+    "the Phase-2 INPUT_PATH_SOURCES list",
+    "any sealed record"
+  ]
+}

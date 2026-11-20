@@ -1,0 +1,283 @@
+{
+  "adversarial_review": {
+    "findings": [
+      {
+        "disposition": "REPRODUCED; side effect of the change; REPAIRED (app.py)",
+        "id": "F4"
+      },
+      {
+        "disposition": "REPRODUCED; side effect (+ a previous decimal-point cause); REPAIRED (ledger, pending, pipeline)",
+        "id": "F5"
+      },
+      {
+        "disposition": "REPRODUCED; side effect; REPAIRED (restart only when the rest reads as an infusion)",
+        "id": "F6"
+      },
+      {
+        "disposition": "REPRODUCED; REPAIRED (same vocabulary; restart after reasoning)",
+        "id": "F7b/F7c"
+      },
+      {
+        "disposition": "REPRODUCED; by design; DECLARED (L-5, L-6)",
+        "id": "F7a/F8"
+      },
+      {
+        "disposition": "REPRODUCED; PREDATE the change and are not targets; DECLARED (L-1 to L-4), not changed (FD-TARGET-01)",
+        "id": "F1/F2/F3/F9"
+      },
+      {
+        "disposition": "no emitter / function-level; DECLARED (L-7, L-8)",
+        "id": "F10/F11"
+      }
+    ],
+    "held": [
+      "no target or unit-less number reached the engine as a rate with the live reader in ~45000 end-to-end texts",
+      "zero unexplained differences against the historical reader outside the vasoactive rule (26702 mined literals, 15574 generated texts)",
+      "exact Spanish text",
+      "historical reconstruction exact"
+    ],
+    "independent": true,
+    "reviewer": "an independent read-only agent that did not write the change, working on a copy of the tree and in temporary directories; it was given the attack list and the invariants, not the conclusion",
+    "reviews": 1,
+    "unresolved_blocking_findings": []
+  },
+  "certification": {
+    "after_the_certification": {
+      "added": [
+        "this checkpoint record",
+        "its entry in the records index and the index pin in test_phase3_historical_record_versioning.py",
+        "sections 11 and 12 of the document",
+        "the FD-P3-288 row"
+      ],
+      "executable_change": false,
+      "focused_rerun": "see the document, section 11",
+      "said_plainly": "the full suite ran on the candidate above, not on the final tree: the two differ by the four additions listed, none of them executable"
+    },
+    "before_the_freeze": {
+      "generated_documents": "4 files (blood anchors, lactate slice, shared haemorrhage, calibration framework): 79 passed",
+      "mutants": {
+        "control_passes": true,
+        "killed": 30,
+        "survived": 0,
+        "what": "one mutant per protection, against a COPY of the tree; the first run was discarded (every reader mutant was killed by the succession guard, not by behavior)"
+      },
+      "order_path_focused_set": "201 files in four shards on an earlier tree of the same cycle: three shards complete and green (1747 + 1731 + 1053 passed); the fourth was stopped when the tree moved and is covered by the full suite",
+      "reviewer_corpora_repeated_on_the_final_tree": {
+        "explicit_rate_failures": 0,
+        "explicit_rate_texts": 42768,
+        "incomplete_command_cases": 17920,
+        "incomplete_command_failures": 0,
+        "target_leaks": 1,
+        "target_texts": 19978,
+        "the_leak": "F1 (a non-rate unit on a role-named adjustment with nitroglycerin running; predates the change)"
+      }
+    },
+    "candidate": {
+      "base": "28776cd684fff112a0cd466b291245675dd55c4b",
+      "branch": "phase-3-runtime-integration",
+      "contents": "the working tree with the reader successor (family_parser.py, reader_succession.py), the pipeline barrier, the ledger/pending/app/language changes that the independent review required, the corrections-registry entries and the regenerated catalogue, the successor record with its index entry and pin, the new tests and the adapted ones (declared), the checkpoint BUILDER, the document up to section 10 and the Decision File rows FD-TARGET-01 to 11 and FD-P3-285 to 287, TD-161 and the CLAUDE.md clause -- BEFORE this checkpoint record, its index entry and pin, sections 11 and 12 of the document and the FD-P3-288 row were added",
+      "fingerprint": "dee16666c7565f365ee348d33f66c3f9c7662fdc1d83bc50262953108460b68f",
+      "uncommitted_changes": 74
+    },
+    "dependency_analysis": "the full suite was required: the change is in the order reader (frozen until this cycle), in root modules on the path of every order (order_pipeline.py, order_ledger.py, pending_family_orders.py), adds a root test family and an indexed record, and adapts tests of the closed Phase-2 packages, the reader freeze and the calibration freeze",
+    "earlier_attempts_discarded": [
+      {
+        "causes": [
+          "A: four test files called succession.closure_view(), which reader_succession.py does not define (13 failures): the mechanical edit was wrong at those sites; the design is a3.closure_view() with succession.historical_reader_view() inside it",
+          "B: the guard that no runtime module mentions the closure view read the word in the docstring of reader_succession.py (1 failure)",
+          "C: the tone-review record test counted 316 application modules and there are 317 with the new tool module (1 failure; declared adaptation, as in P3-440)"
+        ],
+        "classification": "REGRESSION OF THE CHANGE (test and tool layer; no order behavior)",
+        "disposition": "reproduced isolated (7 failing tests in 4 files, the rest followed from the same cause), repaired in tests and in one docstring (no executable behavior changed), the successor record and the index rebuilt, focused tests green, NEW fingerprint, ONE new full certification; nothing of the first run is reused or mixed",
+        "errors": 0,
+        "failures": 16,
+        "fingerprint": "4ef3a05b8f20f2948b60f7efc81eb9007971794cbeb7ca0dd0efefa1499cd54b",
+        "note": "an even earlier run on another fingerprint was stopped and discarded before it ended because the checkpoint builder was not yet in the candidate",
+        "regressions": "20/20 equivalent exit 0",
+        "tests": 14090,
+        "valid": true
+      }
+    ],
+    "full_suite": {
+      "errors": 0,
+      "failures": 0,
+      "fingerprint_at_end": "dee16666c7565f365ee348d33f66c3f9c7662fdc1d83bc50262953108460b68f",
+      "fingerprint_at_start": "dee16666c7565f365ee348d33f66c3f9c7662fdc1d83bc50262953108460b68f",
+      "finished": "2026-11-20T22:21:16",
+      "partitions": 24,
+      "resumptions": 0,
+      "runner": "the skill's partitioned runner functions (fingerprint, partitions, JUnit summary) under a resumable wrapper kept outside the repository",
+      "skipped": 98,
+      "started": "2026-11-20T19:42:37",
+      "tests": 14090,
+      "valid": true,
+      "xfail": 1
+    },
+    "not_run": [
+      "a browser run (no page layout changed: one line of the reasoning extractor in app.py, covered by tests that call it)",
+      "validation/ and any external response (frozen and not opened)"
+    ],
+    "regressions": {
+      "active_passed": 56,
+      "active_total": 56,
+      "exit_code": 0,
+      "retired_not_run": 10,
+      "runner": "run_regressions.py"
+    },
+    "scope": "FULL"
+  },
+  "confirmations": {
+    "common_core_runtime_authority": false,
+    "no_clinical_core_edit": true,
+    "no_clinical_validation_claim": true,
+    "no_consciousness_authority": true,
+    "no_malformed_order_recovery": true,
+    "no_map_target_titration": true,
+    "no_new_drug": true,
+    "no_norepinephrine_authority_expansion": true,
+    "no_parameter_selected": true,
+    "no_physiology_change": true,
+    "no_pump_coupling_change": true,
+    "no_resident_deployment": true,
+    "no_sealed_record_rewritten": true,
+    "no_shadow_boundary_change": true,
+    "no_terminal_authority": true,
+    "no_tone_recalibration": true,
+    "no_weight_based_dosing": true
+  },
+  "decision_reference": "FD-TARGET-01 to FD-TARGET-11",
+  "evidence_class": "MODEL_ANALYSIS",
+  "facts": {
+    "calibration_freeze_components_that_moved": [
+      "input_path_sources"
+    ],
+    "closure_freeze_digests_recompute": true,
+    "core_digest": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+    "executable_files_changed": [
+      "family_parser.py",
+      "order_pipeline.py",
+      "order_ledger.py",
+      "pending_family_orders.py",
+      "app.py",
+      "language.py",
+      "reader_succession.py"
+    ],
+    "executable_files_not_changed": [
+      "family_engine.py",
+      "active_order_context.py",
+      "shared_order_language.py",
+      "shared_order_quantities.py",
+      "weight_based_doses.py",
+      "runtime_shadow.py",
+      "runtime_tone_support.py",
+      "clinical_core/"
+    ],
+    "reader": {
+      "historical_git_blob": "1d17bf8b3dce66da5f1c8291237e2e7a7afde1c0",
+      "hunks": 7,
+      "successor_git_blob": "7a85714eb2b6fccb47507384a71fe91451e71ecb"
+    },
+    "scenario_inputs_identical": true,
+    "successor_record_digest": "6d4f2d17a5d7d8cf9b2227d2992e57d34b286645cff30ea3b3542d277fb97509"
+  },
+  "limitations": [
+    "L-1: a role-named adjustment with another unit ('increase the infusion to 40 mL/h') runs as 40 mcg/min when nitroglycerin is running (unit dropped in frozen completion code; predates the change)",
+    "L-2: the rate of another drug in the same clause is attributed to the vasoactive ('... to MAP 65 with propofol 5 mcg/min' -> 5 mcg/min; predates the change)",
+    "L-3: a stop inherited from a list stops the vasopressor ('stop NS, norepinephrine to MAP 65'; a stop is never held; predates the change)",
+    "L-4: a deferred order with an explicit rate runs now ('... to 12 mcg/min in 5 minutes': the duration reads '/min'; predates the change)",
+    "L-5: 'restart norepinephrine' with no rate gets the engine's question, not the approved text (nothing runs, nothing is inferred)",
+    "L-6: 'continue norepinephrine at 12' continues at the running rate with no message (the number is not executed)",
+    "L-7: the pipeline barrier reads rate, rate_value and units only; the engine reads rate_mcg_min for any infusion; the reader does not emit that shape",
+    "L-8: the legacy page path for non-family cases accepts a numeric reply to 'what dose?' as a rate (function level; the interface was not driven)",
+    "L-9: for nitroglycerin the source is the ONLY barrier of the bare number (its unit lives in the field name)",
+    "L-10: an incomplete order is held per turn; there is no recovery of malformed orders (not authorized)",
+    "mcg/kg/min still enters through weight_based_doses (the shadow fails closed); no automatic MAP titration; no relative orders with context",
+    "the new records have no signature (the same limit as TD-153 item 7)"
+  ],
+  "next_human_action": "A faculty member decides, in order of value: (1) whether a unit-compatibility guard and a per-drug rate attribution are added to the order pipeline for orders that name no drug (L-1, L-2), (2) how a stop inherited from a list and a deferred order with '/min' should read (L-3, L-4), (3) the text of 'restart' with no rate and what follows 'continue' (L-5, L-6), (4) whether the legacy numeric reply of the page is retired (L-8). Nothing else is to be done until then.",
+  "open_faculty_decisions": [
+    "a unit-compatibility guard for role-named adjustments and per-drug rate attribution (L-1, L-2)",
+    "the stop inherited from a list and the deferred order with '/min' (L-3, L-4)",
+    "unify the text of 'restart' with no rate with the approved one; what a number after 'continue' means (L-5, L-6)",
+    "retire the legacy numeric reply of the page (L-8)"
+  ],
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-20",
+    "generating_code": {
+      "app.py": "dc4d4d340a37e047bfb323c350e83e209c259d88dc1e6d1d02d27af3f97ae571",
+      "clinical_core": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "family_parser.py": "a1f5dd86780956430224257e05108b1c81b9ffee0908f1c8b3e78dd936ced2ee",
+      "language.py": "6f6073d9c830a7061251ca0fe3ec01d0c2b21372f446c30f1fe52c9adea224a0",
+      "order_ledger.py": "086232b6609fa8bd689ade32131109e36ee0a3aa3476173e48f3a32d72312448",
+      "order_pipeline.py": "01da06d58154a80ee14ee59f32f0f7ba0a22aa4b907db3143d98ce0cd1ffe509",
+      "pending_family_orders.py": "ff8bac4a8742c15376fb50b6dd0904bd555256135b44248812290a6dde53fbc4",
+      "reader_succession.py": "d0cfde904bbb04b5d06185f7ecf7e8c20a265dfe652aa5a700ff1dbf809cb308",
+      "successor_record_digest": "6d4f2d17a5d7d8cf9b2227d2992e57d34b286645cff30ea3b3542d277fb97509",
+      "test_phase3_target_order_boundary.py": "d05ab4e0b6784c8a51b56a79f375bc31f2a2ce4ee1a2bfa7df918e54a6726fd9",
+      "test_phase3_target_rate_source.py": "1e144faf9604ffaff5563297b184dcad4e90d23fc1f3f62ce1f0c534e3c8cc5e",
+      "test_target_rate_source_checkpoint.py": "d6802e110c743bfb58c2986bb6b5cfba4fb53c374c263efa8a66058ce1cda068"
+    },
+    "generating_code_fingerprint": "1b687db098b98a093353262e7c7fd062276ec25866b703ca32aec970b38c42bd",
+    "grant_id": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V3",
+    "record_id": "TARGET_RATE_SOURCE_CHECKPOINT_V1",
+    "record_schema_version": 1,
+    "source_data_digest": "331ddff262dc283bf0051b58ae8a20f89da18d08c341115f74da89a3490c7512",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "record_digest": "250fd6817d255c1b9c604dc0087bd56c48dcd82eb31740796cb455cd53690abc",
+  "record_type": "TARGET_RATE_SOURCE_CHECKPOINT",
+  "sequence": [
+    {
+      "result": "freeze and governance audit: the first edit of the 35 frozen sources since the Phase-2 closure; a composable historical-reader view proven outside clinical_core",
+      "step": "P3-462"
+    },
+    {
+      "result": "no structured target in the reader; the question mechanism is reused with a marker that carries no number",
+      "step": "P3-463"
+    },
+    {
+      "result": "structural source rule for the four infusions; nitroglycerin closed; incomplete and relative commands asked; explicit restart read",
+      "step": "P3-464 to P3-468"
+    },
+    {
+      "result": "defense in depth: each barrier protects alone; 30 mutants killed by behavior tests",
+      "step": "P3-469"
+    },
+    {
+      "result": "formal succession (reader_succession.py), sealed and indexed record, pins; the closure reader rebuilt byte for byte",
+      "step": "P3-470"
+    },
+    {
+      "result": "ONE independent adversarial review; side effects reproduced and repaired; predating behaviors declared",
+      "step": "P3-471"
+    },
+    {
+      "result": "full certification on one fingerprint: 14090 tests, 0 failures; regressions 56/56",
+      "step": "P3-472"
+    },
+    {
+      "result": "verdict A",
+      "step": "P3-473"
+    }
+  ],
+  "statement": "A physiologic target (MAP 65, SBP 90, a pressure goal, with or without '>', in either language) is never executed as a drug rate. The order reader no longer reads a rate of norepinephrine, epinephrine, dobutamine or nitroglycerin unless it is written with its unit; a number with no rate unit, and a relative change with no rate, is the approved question and carries no number; an explicit absolute rate is read exactly as before; the restart of one of the four infusions is a start that needs an explicit rate and never reuses the previous one. The pipeline barrier of the previous cycle stays as defense in depth and each barrier protects alone (proven with the other removed, and by mutants). The reader freeze was lifted ONCE, narrowly (FD-TARGET-01): the reader of the Phase-2 closure is rebuilt byte for byte from the successor by declared reversible hunks, every Phase-2 digest recomputes from it, the calibration freeze moved in exactly one component and the materialized scenario inputs did not move; nothing sealed was rewritten and nothing in clinical_core/ was edited. The independent review found side effects of the change (reasoning extraction, the record of the order, the 'then' sequence, a decimal point, the restart of one-shot doses, a restart alias) and they were reproduced and repaired; it also found behaviors that predate the change and are not a target (a non-rate unit on a role-named adjustment, the rate of another drug in the same clause, a stop inherited from a list, '/min' read as a duration): they are declared as limitations and decisions, not changed (FD-TARGET-01 forbids an unrelated parsing change).",
+  "verdict": "A",
+  "verdict_name": "TARGET_RATE_SEMANTICS_REPAIRED_AT_SOURCE_AND_DEFENSE_IN_DEPTH_CERTIFIED",
+  "verdicts": {
+    "A": "TARGET_RATE_SEMANTICS_REPAIRED_AT_SOURCE_AND_DEFENSE_IN_DEPTH_CERTIFIED",
+    "B": "NOREPINEPHRINE_FIXED_BUT_NITROGLYCERIN_REQUIRES_SEPARATE_PARSER_SUCCESSOR",
+    "C": "PARSER_FREEZE_REQUIRES_FACULTY_GOVERNANCE_DECISION",
+    "D": "RELATIVE_ORDER_SEMANTICS_REQUIRE_BROADER_ORDER_REDESIGN",
+    "E": "SOURCE_FIX_BREAKS_HISTORICAL_RECONSTRUCTION"
+  },
+  "version": "TARGET_RATE_SOURCE_CHECKPOINT_V1",
+  "why_not_the_others": {
+    "A": "this is the verdict",
+    "B": "nitroglycerin is closed at the source with the same structural rule (its bare number is a question, 'titrate nitroglycerin to SBP 120' is no longer 120 mcg/min); its pipeline barrier is partial by design (the unit is in the field name) and that is declared, not a reason for a separate parser successor",
+    "C": "the freeze was lifted by the faculty (FD-TARGET-01) and the minimum formally correct mechanism was found and proven: no governance decision is outstanding for this repair",
+    "D": "the incomplete and relative commands ('increase norepinephrine', 'increase norepinephrine to 12', 'restart norepinephrine') needed no new order language: the existing question mechanism carries them; the semantics that remain open (relative orders with context, targets as an input to titration) were not part of this mandate",
+    "E": "the historical reconstruction is exact: SHA-256 and git blob of the closure reader are reproduced, every recorded closure digest recomputes with the reader of its time, and no sealed record changed"
+  }
+}
