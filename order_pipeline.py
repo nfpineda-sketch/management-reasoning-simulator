@@ -280,6 +280,29 @@ def _position(text, action):
 
 _WAITING_FOR_WEIGHT = "waiting for the patient's weight"
 
+#: A number without units is never a rate (faculty decision FD-NR-05, 2026-11-20). "Titrate norepinephrine to MAP 65" leaves the reader as an adjustment to a rate of 65 with NO units; the engine completes a
+#: missing unit of an adjustment from the running infusion (``active_order_context``), so it ran 65 mcg/min: the pressure the resident aimed for became a dose. The reader is frozen (the pre-Phase-1 reader freeze
+#: and the Phase-2 calibration freeze pin it) and the completion is part of that frozen path, so the repair is made here, before the engine: an infusion order that carries a rate WITHOUT units is held as a question
+#: and nothing is executed. The rule is structural, not a list of words: it does not matter whether the number was a MAP, a PA, a TAM, a heart rate or a typo. The held copy keeps NO number (a later answer such as
+#: "mcg/min" must not complete it into a dose), and a stop, which needs no rate, is never held.
+UNITS_REQUIRED = ("{name} was written with a rate but no units, so nothing was converted or executed. A number without units (a pressure target such as MAP 65 included) is never read as a rate. "
+                  "To change it, state an explicit absolute infusion rate in mcg/kg/min or mcg/min, or say cancel.")
+_UNIT_COMPLETED_INFUSIONS = {"norepinephrine": "Norepinephrine", "dobutamine": "Dobutamine", "epinephrine": "Epinephrine"}
+
+
+def unitless_infusion_rate(action):
+    """``(question, copy of the action without the number)`` when an infusion order carries a rate with no units, else ``None``."""
+    kind = action.get("type") if isinstance(action, dict) else None
+    if kind in _UNIT_COMPLETED_INFUSIONS:
+        if str(action.get("operation") or "start").lower() == "stop" or action.get("rate") is None or action.get("units"):
+            return None
+        return UNITS_REQUIRED.format(name=_UNIT_COMPLETED_INFUSIONS[kind]), {**action, "rate": None}
+    if kind == "infusion_adjustment" and str(action.get("operation") or "").lower() != "stop":
+        if action.get("rate_value") is None or action.get("rate_units"):
+            return None
+        return UNITS_REQUIRED.format(name="The infusion"), {**action, "rate_value": None}
+    return None
+
 
 def _an_answer_can_complete(state, base, held, dependent):
     """Whether the page will keep what is held for an answer: the weight it waits for, or the
@@ -314,6 +337,11 @@ def split_bundle(state, parsed, *, text="", weight_waiting=()):
             else:
                 held.append((action, str(action.get("message") or "the order needs a clarification"), "question"))
                 question = question or action.get("message")
+            continue
+        unitless = unitless_infusion_rate(action)
+        if unitless:
+            held.append((unitless[1], unitless[0], "question"))
+            question = question or unitless[0]
             continue
         trial = accepted + [action]
         _, error = _validate(state, {**base, "actions": [L.strip_tags(a) for a in trial]})

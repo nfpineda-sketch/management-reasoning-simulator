@@ -115,6 +115,9 @@ INSTRUCTION_2026_10_17_WORKSPACE_FRAGMENT = ("Instrucción del 2026-10-17 para a
                                                 "la reproducción mínima hosted: un único fragmento nombrado para "
                                                 "todo el workspace del encuentro, desde b21c345, sin tocar "
                                                 "pilot-residents-v1 hasta nueva autorización")
+INSTRUCTION_2026_11_20_TARGET_ORDER = ("Instrucción docente del 2026-11-20 (FD-NR-05, ratificación del control manual de "
+                                      "tasa de norepinefrina: el defecto heredado «objetivo como tasa» se reproduce, rastrea "
+                                      "y repara antes de tocar la frontera de la sombra)")
 
 CORRECTIONS = (
     {
@@ -3790,6 +3793,36 @@ CORRECTIONS = (
             "test_prephase1_workspace_fragment.py::test_submission_processing_is_extracted_from_the_render_tree",
             "test_prephase1_workspace_fragment.py::test_ordinary_send_finishes_and_renders_in_the_same_fragment_run",
             "test_prephase1_workspace_fragment.py::test_bedside_has_no_nested_streamlit_fragment",
+        ],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-11-20-01",
+        "date": "2026-11-20",
+        "title": "Órdenes de infusión: un número sin unidades nunca se ejecuta como tasa",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("«Titrate norepinephrine to MAP 65» salía del lector como un ajuste a una tasa de 65 sin unidades, y el motor, que "
+                   "completa la unidad que falta con la de la infusión en curso, lo ejecutaba como 65 mcg/min: la presión que el "
+                   "residente buscaba se volvía una dosis. El lector, la completación y el motor están congelados (prueba del lector "
+                   "congelado y digesto de la congelación de calibración de la Fase 2) y no se tocaron. La reparación se hace antes "
+                   "del motor, en el paso por el turno: una orden de norepinefrina, dobutamina, epinefrina u orden por el rol que trae "
+                   "una tasa sin unidades se retiene como pregunta, no ejecuta nada y su copia retenida no conserva el número, sea cual "
+                   "sea el número (una PAM, una PA, una FC o un error). Una tasa con unidades, una suspensión y una orden sin número se "
+                   "leen exactamente como antes. Nitroglicerina no se cubre (su unidad está en el nombre del campo y la reparación está "
+                   "en el lector congelado). Sin cambio del lector, del motor, del espejo, de la sombra, de la fisiología ni de la autoridad."),
+        "authorised_by": INSTRUCTION_2026_11_20_TARGET_ORDER,
+        "affects": {"modules": ["order_pipeline", "language"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": [
+            "test_phase3_target_order_boundary.py::test_t2_an_infusion_order_with_a_number_and_no_units_is_held_and_nothing_runs",
+            "test_phase3_target_order_boundary.py::test_t3_an_explicit_rate_with_units_runs_exactly_as_before",
+            "test_phase3_target_order_boundary.py::test_t4_a_stop_is_never_held_whatever_number_is_beside_it",
+            "test_phase3_target_order_boundary.py::test_t8_a_generated_corpus_of_targets_never_reaches_the_engine_as_a_rate",
+            "test_phase3_target_order_boundary.py::test_t9_a_reply_that_only_gives_the_units_cannot_complete_the_held_order_into_a_dose",
+            "test_phase3_target_order_boundary.py::test_t10_through_the_real_encounter_a_target_is_never_executed_as_a_rate",
+            "test_phase3_target_order_boundary.py::test_t15_start_increase_decrease_stop_and_restart_by_explicit_rate_still_run_and_are_mirrored_as_before",
+            "test_phase3_target_order_boundary.py::test_t19_the_spanish_message_is_there_and_says_the_same_thing",
         ],
         "preservation": None,
     }
