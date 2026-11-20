@@ -8,6 +8,7 @@ import json
 from dataclasses import replace
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import calibration, decision_pack, gi_reference, migration, migration_authority
 from clinical_core.derived import DEFAULT_PROFILE, CoreProfile
@@ -26,6 +27,7 @@ def _closure_tree():
     the live tree, this stage's registration in ``PACK_DIGEST_EXCLUDED`` included."""
     with pytest.MonkeyPatch.context() as patch:
         a3.tree(patch)
+        succession.install(patch)
         yield
 
 

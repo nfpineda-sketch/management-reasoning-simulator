@@ -20,6 +20,7 @@ import re
 from pathlib import Path
 
 import pytest
+import reader_succession as succession
 
 import runtime_shadow as rs
 import runtime_shadow_evidence as ev
@@ -536,7 +537,7 @@ def test_every_import_time_copy_of_a_live_listing_is_declared_by_the_stage():
                 assert not any(item == new or getattr(item, "name", None) == new for item in value), (name, attribute)
     # every such copy is reached by the stage's registry scan (``PARAMETERS``) or by the first amendment's declared list
     assert {attribute for _, attribute in found} <= {"PARAMETERS", "P2T3_PARAMETERS"}, found
-    with a3.closure_view():
+    with a3.closure_view(), succession.historical_reader_view():
         for module_name, attribute in sorted(found):
             held = getattr(importlib.import_module(f"clinical_core.{module_name}"), attribute)
             assert new not in held, (module_name, attribute)

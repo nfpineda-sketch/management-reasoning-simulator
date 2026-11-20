@@ -9,6 +9,7 @@ from dataclasses import replace
 from pathlib import Path
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import calibration, decision_pack, gi_reference, lactate_slice
 from clinical_core import migration_authority as authority
@@ -28,6 +29,7 @@ def _closure_tree():
     here is historical and its expected values are not rewritten."""
     with pytest.MonkeyPatch.context() as patch:
         a3.tree(patch)
+        succession.install(patch)
         yield
 
 

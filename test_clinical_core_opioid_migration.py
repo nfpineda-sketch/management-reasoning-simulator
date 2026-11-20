@@ -12,6 +12,7 @@ import math
 from dataclasses import replace
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import decision_pack, lactate_slice
@@ -48,6 +49,7 @@ def _p2u1_tree():
         x1.chain(patch)
         cg.chain(patch)
         a3.chain(patch)
+        succession.install(patch)
         dt.tree(patch)
         ss.tree(patch)
         yield

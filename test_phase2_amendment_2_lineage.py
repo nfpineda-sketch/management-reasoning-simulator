@@ -17,6 +17,7 @@ import re
 from pathlib import Path
 
 import pytest
+import reader_succession as succession
 
 import runtime_shadow as rs
 import runtime_shadow_evidence as ev
@@ -36,6 +37,7 @@ def _second_amendment_tree():
     (the third stage's insertions reversed, its reader, memory, change and writer hidden). The live tree has its own tests."""
     with pytest.MonkeyPatch.context() as patch:
         a3.amendment_2_tree(patch)
+        succession.install(patch)
         yield
 
 

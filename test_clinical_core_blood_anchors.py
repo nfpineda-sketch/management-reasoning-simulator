@@ -10,6 +10,7 @@ import math
 from pathlib import Path
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import blood_anchors as ba, blood_probes, calibration, migration_authority
 from clinical_core.derived import DEFAULT_PROFILE
@@ -27,6 +28,7 @@ def _closure_tree():
     here is historical and its expected values are not rewritten."""
     with pytest.MonkeyPatch.context() as patch:
         a3.tree(patch)
+        succession.install(patch)
         yield
 
 

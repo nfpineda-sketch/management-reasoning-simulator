@@ -12,6 +12,7 @@ import math
 from dataclasses import fields, replace
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import acs_reference as ar
 from clinical_core import blood_fluid_calibration as bf
@@ -43,6 +44,7 @@ def _p2w1_tree():
     with pytest.MonkeyPatch.context() as patch:
         cg.tree(patch)
         a3.chain(patch)
+        succession.install(patch)
         x1.tree(patch)
         yield
 

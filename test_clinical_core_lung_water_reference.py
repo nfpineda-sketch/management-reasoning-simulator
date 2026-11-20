@@ -11,6 +11,7 @@ import json
 from dataclasses import dataclass, replace
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import acs_migration as an
 from clinical_core import acs_reference as ar
@@ -165,6 +166,7 @@ def _p2o3_tree():
         x1.chain(patch)
         cg.chain(patch)
         a3.chain(patch)
+        succession.install(patch)
         patch.setattr(bf, "freeze_sources", lambda: pe.p2o3_sources(_LIVE_SOURCES_P2P1()))
         yield
 

@@ -8,6 +8,7 @@ import json
 from dataclasses import replace
 
 import pytest
+import reader_succession as succession
 
 import pilot_acceptance
 from contracts_v2 import trace
@@ -31,6 +32,7 @@ def _closure_tree():
     here is historical and its expected values are not rewritten."""
     with pytest.MonkeyPatch.context() as patch:
         a3.tree(patch)
+        succession.install(patch)
         yield
 
 

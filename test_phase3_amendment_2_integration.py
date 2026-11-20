@@ -20,6 +20,7 @@ import hashlib
 import json
 
 import pytest
+import reader_succession as succession
 
 import runtime_shadow as rs
 import runtime_shadow_evidence as ev
@@ -103,7 +104,7 @@ def _freeze_files(view):
 
 def test_pi1_both_freeze_digests_recompute_exactly_under_the_closure_view_of_the_stage_that_knows_the_whole_chain():
     recorded = json.loads(a1.CLOSURE_RECORD.read_text(encoding="utf-8"))["freeze_digests"]
-    with a3.closure_view():
+    with a3.closure_view(), succession.historical_reader_view():
         assert cg.freeze_digest() == recorded["closure_guard_P2X1A"] == a1.P2X1A_FREEZE_DIGEST
         assert td.freeze_digest() == recorded["tone_domain_on_the_live_tree"]
 
@@ -117,6 +118,7 @@ def test_pi1_the_nested_first_amendment_view_misreads_exactly_the_two_files_it_n
     # (``a3.amendment_2_tree``); "vivo" es aqui el texto que dejo la Enmienda 2, no el de una etapa posterior.
     with monkeypatch.context() as second:
         a3.amendment_2_tree(second)
+        succession.install(second)
         closure = _freeze_files(a2.closure_view)
         with monkeypatch.context() as patch:
             a2.amendment_1_tree(patch)
@@ -134,6 +136,7 @@ def test_pi1_the_nested_first_amendment_view_misreads_exactly_the_two_files_it_n
 def test_pi1_the_first_amendments_own_certified_digest_still_recomputes_on_its_own_tree(monkeypatch):
     with monkeypatch.context() as patch:
         a3.amendment_1_tree(patch)
+        succession.install(patch)
         assert a1.amended_core_digest_now() == AMENDMENT_1_DIGEST
         assert a1.historical_closure_verifies()["closure_digest_recomputes"] is True
 

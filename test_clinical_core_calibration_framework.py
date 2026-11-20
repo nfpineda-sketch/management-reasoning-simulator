@@ -10,6 +10,7 @@ from dataclasses import replace
 
 import pytest
 
+import reader_succession as succession
 from clinical_core import a9, calibration, gi_reference
 from clinical_core.derived import DEFAULT_PROFILE, CoreProfile
 from clinical_core.migration import (FACULTY, FACULTY_AUTHORING_DECISION_REQUIRED, FAMILY_DEFAULT, NOT_REQUIRED,
@@ -80,6 +81,11 @@ FROZEN_COMPONENTS = {
     "scenario_inputs": "8de2bd0a29a820dbb46493064ffdbb72542fb0e98175b7d886dcfa22049cb36d",
 }
 FROZEN_DIGEST = "c1eeb5538a4ea990cbcb4432b0c28e6cb8c351ffe08c96a6036f82d3b65a9b85"
+#: FD-TARGET-01 (2026-11-20): the faculty lifted the reader freeze for ONE safety correction, so ``family_parser.py`` -- one of the ``INPUT_PATH_SOURCES`` -- changed once. EXACTLY ONE component of the freeze moves
+#: with it (``input_path_sources``); the materialized ``scenario_inputs`` and every other component do not. The frozen values above stay the values of the reader of the Phase-2 closure, and they still recompute:
+#: ``reader_succession.historical_reader_view()`` rebuilds that reader from the live file. The successor values are pinned here. (``scripts: regenerated with the reader pin``)
+SUCCESSOR_INPUT_PATH_SOURCES = "e879d406b6d87575dd1ac8f85a874548ccd5bb5ac453bf9dea787919126e1236"
+SUCCESSOR_FROZEN_DIGEST = "4bdf9ef3430278aec5eb3038ecb5d062c459a58227993959a7075bfd67be2bca"
 SCENARIO_INPUTS_BEFORE_P2K2 = "afb2051e7fa04f1765aaf920c82f51dc6675d19bcbcb425c2ee581d8fa60d347"
 P2K2_INPUTS = ("intrinsic_respiratory_rate", "arrival_bicarbonate", "arrival_paco2")
 P2O3_INPUTS = ("reversible_lung_water",)
@@ -224,9 +230,16 @@ def test_every_profile_band_contains_the_canonical_value_or_says_it_is_off():
 # P2F-8 / P2F-9 -- frozen rules, sweep, no legacy optimization ---------------------------------
 
 def test_the_rules_are_frozen():
-    assert calibration.digest_components() == FROZEN_COMPONENTS, (
-        "a component of the calibration freeze changed: record which and why, then update the digest")
-    assert calibration.frozen_digest() == FROZEN_DIGEST
+    # the freeze of the Phase-2 closure, recomputed under the reader of its own time (reader_succession): it did not move
+    with succession.historical_reader_view():
+        assert calibration.digest_components() == FROZEN_COMPONENTS, (
+            "a component of the calibration freeze changed: record which and why, then update the digest")
+        assert calibration.frozen_digest() == FROZEN_DIGEST
+    # the live freeze after the reader's successor (FD-TARGET-01): one component moved, nothing else
+    live = calibration.digest_components()
+    assert {name: value for name, value in live.items() if name != "input_path_sources"} == {name: value for name, value in FROZEN_COMPONENTS.items() if name != "input_path_sources"}
+    assert live["input_path_sources"] == SUCCESSOR_INPUT_PATH_SOURCES != FROZEN_COMPONENTS["input_path_sources"]
+    assert calibration.frozen_digest() == SUCCESSOR_FROZEN_DIGEST != FROZEN_DIGEST
     inputs = calibration.scenario_inputs()
     for case in inputs:
         assert all(inputs[case]["arrival_anchors"].pop(name) is None for name in P2K2_INPUTS)

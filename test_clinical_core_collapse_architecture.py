@@ -12,6 +12,7 @@ import json
 import math
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import gas_exchange_architecture as go
@@ -193,6 +194,7 @@ def _patch(patch) -> None:
     x1.chain(patch)
     cg.chain(patch)
     a3.chain(patch)
+    succession.install(patch)
     patch.setattr(bf, "freeze_sources", _p2m2_view)
     patch.setattr(cy, "imported_by", _p2m2_imported_by)
 

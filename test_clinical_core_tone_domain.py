@@ -14,6 +14,7 @@ import math
 from dataclasses import replace
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import decision_pack, lactate_slice
@@ -40,6 +41,7 @@ def _p2x1_tree():
     with pytest.MonkeyPatch.context() as patch:
         cg.tree(patch)
         a3.chain(patch)
+        succession.install(patch)
         yield
 
 
@@ -84,6 +86,7 @@ def test_the_p2w1_tree_reads_the_p2w1_files(monkeypatch):
     with pytest.MonkeyPatch.context() as patch:
         cg.tree(patch)
         a3.chain(patch)
+        succession.install(patch)
         x1.tree(patch)
         assert dt.freeze_digest() == x1.P2W1_FREEZE_DIGEST
         assert all(dt.proofs().values())
@@ -280,6 +283,7 @@ def test_no_historical_digest_is_rewritten():
     with pytest.MonkeyPatch.context() as patch:
         cg.tree(patch)
         a3.chain(patch)
+        succession.install(patch)
         x1.tree(patch)
         assert dt.freeze_digest() == x1.P2W1_FREEZE_DIGEST
     p2w1 = json.loads(dt.RECORD.read_text(encoding="utf-8"))

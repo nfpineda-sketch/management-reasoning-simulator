@@ -11,6 +11,7 @@ import inspect
 import json
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import blood_anchors
 from clinical_core import baroreflex as br
@@ -199,6 +200,7 @@ def _p2n2_core():
         x1.chain(patch)
         cg.chain(patch)
         a3.chain(patch)
+        succession.install(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         yield

@@ -14,6 +14,7 @@ import json
 from dataclasses import replace
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import closure_guard as cg
@@ -43,6 +44,7 @@ def _closure_tree():
     here is historical and its expected values are not rewritten."""
     with pytest.MonkeyPatch.context() as patch:
         a3.tree(patch)
+        succession.install(patch)
         yield
 
 

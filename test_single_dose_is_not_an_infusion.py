@@ -63,8 +63,11 @@ def test_an_infusion_rate_still_starts_an_infusion(text, rate):
 
 
 def test_a_bare_number_still_asks_for_units_rather_than_being_refused():
+    # FD-TARGET-02/05/06 (2026-11-20): a number with no rate unit is NOT a rate. It used to be read as ``rate 0.1, units None`` and asked for its units; now the order is INCOMPLETE and
+    # asks for an explicit rate WITH its units. What this test protects still holds: it is asked, never refused as a single dose, and nothing runs.
     action = only("start norepinephrine .1")
-    assert action == {"type": "norepinephrine", "rate": 0.1, "units": None, "operation": "start"}
+    assert action["type"] == "clarification" and action["incomplete_explicit_rate"] == {"agent": "norepinephrine", "operation": "start", "reason": "NUMBER_WITHOUT_RATE_UNITS"}
+    assert "explicit rate with its units" in action["message"] and "single dose" not in action["message"] and "0.1" not in action["message"]
 
 
 def test_a_weight_based_rate_in_words_is_understood():

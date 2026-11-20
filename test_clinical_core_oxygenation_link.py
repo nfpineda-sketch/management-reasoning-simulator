@@ -12,6 +12,7 @@ import math
 from dataclasses import replace
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import asthma_distress_migration as tm
 from clinical_core import blood_fluid_calibration as bf
@@ -45,6 +46,7 @@ def _p2t5_tree():
         x1.chain(patch)
         cg.chain(patch)
         a3.chain(patch)
+        succession.install(patch)
         dt.tree(patch)
         ss.tree(patch)
         un.tree(patch)

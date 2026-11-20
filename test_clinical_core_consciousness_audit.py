@@ -14,6 +14,7 @@ import sys
 import json
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import gas_exchange_architecture as go
@@ -215,6 +216,7 @@ def _p2n2_core():
         x1.chain(patch)
         cg.chain(patch)
         a3.chain(patch)
+        succession.install(patch)
         patch.setattr(ca, "inspect", _ClosureFunctionSource())
         patch.setattr(sys.modules[__name__], "inspect", _ClosureFunctionSource())
         patch.setattr(vt, "_live", go.p2n2_text)

@@ -40,7 +40,8 @@ def test_repeat_never_invents_a_previous_administration(text):
 @pytest.mark.parametrize('initial,replies,expected',[
     ('Start oxygen 4 L/min',['NC'],{'device':'nasal cannula','flow_lpm':4}),
     ('Start oxygen NC',['4 L/min'],{'device':'nasal cannula','flow_lpm':4}),
-    ('Start norepinephrine .1',['mcg/kg/min'],{'rate':.1,'units':'mcg/kg/min'}),
+    # FD-TARGET-06 (2026-11-20): a bare '.1' is not a rate, so the held order never receives it and a reply of only the units cannot make a dose of it; the support order that is MISSING its rate is completed by an explicit rate with its units.
+    ('Start norepinephrine',['0.1 mcg/kg/min'],{'rate':.1,'units':'mcg/kg/min'}),
     ('Start nitroglycerin',['10 mcg/min'],{'rate_mcg_min':10}),
     ('Start BiPAP',['IPAP 12 EPAP 6','FiO2 40%'],{'mode':'BiPAP','ipap_cmh2o':12,'epap_cmh2o':6,'fio2_percent':40}),
 ])

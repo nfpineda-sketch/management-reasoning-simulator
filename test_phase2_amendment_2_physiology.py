@@ -11,6 +11,7 @@ import inspect
 import math
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import amendment_2 as a2
 from clinical_core import amendment_3 as a3
@@ -306,6 +307,7 @@ def second_amendment_tree():
     added a memory and a reader of its own, which that tree does not have)."""
     with pytest.MonkeyPatch.context() as patch:
         a3.amendment_2_tree(patch)
+        succession.install(patch)
         yield
 
 

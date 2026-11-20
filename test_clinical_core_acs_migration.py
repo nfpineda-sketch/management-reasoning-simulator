@@ -13,6 +13,7 @@ import math
 from dataclasses import replace
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import acs_migration as an
 from clinical_core import acs_reference as ar
@@ -185,6 +186,7 @@ def _p2n2_core():
         x1.chain(patch)
         cg.chain(patch)
         a3.chain(patch)
+        succession.install(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         patch.setattr(an, "upstream_unchanged", _p2n2_upstream)

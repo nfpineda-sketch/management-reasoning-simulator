@@ -87,9 +87,10 @@ def test_waiting_is_not_an_order():
 # --- the boundary -----------------------------------------------------------
 
 @pytest.mark.parametrize("text, expected", [
-    # A titration names a drug and a new setting: it executes.
+    # A titration names a drug and a new setting: it executes. With no new setting it is still an order and not a goal (never dropped as reasoning), but there is nothing to execute: it is INCOMPLETE and asks for an
+    # explicit rate with its units (FD-TARGET-06, 2026-11-20), where it used to be completed from the running infusion and do nothing.
     ("Bajar la nitroglicerina a 20 mcg/min.", "nitroglycerin"),
-    ("Bajar la noradrenalina.", "norepinephrine"),
+    ("Bajar la noradrenalina.", "clarification"),
     ("Subir el oxigeno a 5 L/min.", "oxygen"),
 ])
 def test_a_titration_is_not_read_as_a_goal(text, expected):

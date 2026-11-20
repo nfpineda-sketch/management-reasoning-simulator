@@ -14,6 +14,7 @@ from dataclasses import replace
 from pathlib import Path
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import acs_migration as an
 from clinical_core import acs_reference as ar
@@ -65,6 +66,7 @@ def _p2o1_core_through_the_chain():
         x1.chain(patch)
         cg.chain(patch)
         a3.chain(patch)
+        succession.install(patch)
         yield
 
 

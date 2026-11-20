@@ -14,6 +14,7 @@ import json
 from fractions import Fraction
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import gas_exchange_architecture as go
@@ -180,6 +181,7 @@ def _p2n2_core():
         x1.chain(patch)
         cg.chain(patch)
         a3.chain(patch)
+        succession.install(patch)
         patch.setattr(vt, "_live", go.p2n2_text)
         patch.setattr(bf, "freeze_sources", lambda: go.p2n2_sources(_LIVE_SOURCES_P2O1()))
         patch.setattr(rm, "closed_unchanged", lambda: go.p2n2_unchanged(rm.CLOSED_AT_P2K4))

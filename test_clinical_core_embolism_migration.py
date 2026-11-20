@@ -10,6 +10,7 @@ import hashlib
 import json
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import decision_pack, lactate_slice
@@ -127,6 +128,7 @@ def _p2q2_tree():
         x1.chain(patch)
         cg.chain(patch)
         a3.chain(patch)
+        succession.install(patch)
         patch.setattr(bf, "freeze_sources", lambda: mc.p2q2_sources(_LIVE_SOURCES_P2S2()))
         yield
 

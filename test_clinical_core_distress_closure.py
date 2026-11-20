@@ -14,6 +14,7 @@ import math
 from dataclasses import fields, replace
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import decision_pack, lactate_slice
@@ -92,6 +93,7 @@ def _p2t1a_tree():
         x1.chain(patch)
         cg.chain(patch)
         a3.chain(patch)
+        succession.install(patch)
         patch.setattr(bf, "freeze_sources", lambda: tm.p2t1a_sources(_LIVE_SOURCES_P2T3()))
         yield
 

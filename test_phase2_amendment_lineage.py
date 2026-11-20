@@ -18,6 +18,7 @@ from pathlib import Path
 
 import pytest
 
+import reader_succession as succession
 import runtime_shadow as rs
 import runtime_shadow_evidence as ev
 from clinical_core import amendment_1 as a1
@@ -35,6 +36,7 @@ def _first_amendment_tree():
     (the second amendment's insertions reversed, its field and memory hidden). The live tree has its own tests."""
     with pytest.MonkeyPatch.context() as patch:
         a3.amendment_1_tree(patch)
+        succession.install(patch)           # FD-TARGET-01: the reader of that stage is the reader of the Phase-2 closure, rebuilt by reader_succession
         yield
 
 
@@ -120,7 +122,7 @@ def test_the_historical_closure_still_recomputes_from_the_live_tree():
 def test_every_closure_freeze_digest_recomputes_under_the_closure_view():
     from clinical_core import calibration, closure_guard as cg, decision_pack, lactate_slice, tone_domain
     recorded = json.loads(a1.CLOSURE_RECORD.read_text(encoding="utf-8"))["freeze_digests"]
-    with a3.closure_view():
+    with a3.closure_view(), succession.historical_reader_view():   # the closure view reverts clinical_core/; the reader of the closure is rebuilt on top of it
         now = {"calibration": calibration.frozen_digest(), "closure_guard_P2X1A": cg.freeze_digest(),
                "tone_domain_on_the_live_tree": tone_domain.freeze_digest(),
                "lactate_slice": lactate_slice.slice_digest(), "decision_pack": decision_pack.pack_digest()}
@@ -146,7 +148,7 @@ def test_the_view_changes_what_closed_packages_read_and_nothing_else():
     from clinical_core import derived as dv
     live_fields = [f.name for f in dataclasses.fields(dv.CoreProfile)]
     assert a1.NEW_PROFILE_FIELD in live_fields and a1.NEW_PROFILE_FIELD in dv.PARAMETERS
-    with a3.closure_view():
+    with a3.closure_view(), succession.historical_reader_view():
         assert a1.NEW_PROFILE_FIELD not in [f.name for f in dataclasses.fields(dv.CoreProfile)]
         assert a1.NEW_PROFILE_FIELD not in dv.PARAMETERS
         assert "amendment_1.py" not in {p.name for p in a1._TreeDir().glob("*.py")}
@@ -386,7 +388,7 @@ def test_a_closure_view_that_cannot_be_installed_whole_is_not_left_installed_in_
 
     monkeypatch.setattr(a1, "tree", half)
     with pytest.raises(RuntimeError):
-        with a3.closure_view():
+        with a3.closure_view(), succession.historical_reader_view():
             raise AssertionError("the body must not run")
     assert (cg._live, dv.PARAMETERS, dv.CoreProfile.__dataclass_fields__, dv.CoreProfile.__repr__) == before
     assert a1.NEW_PROFILE_FIELD in dv.PARAMETERS

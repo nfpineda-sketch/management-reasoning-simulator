@@ -19,6 +19,7 @@ from pathlib import Path
 from clinical_core import calibration, closure_guard as cg, decision_pack, lactate_slice, state, tone_domain
 from clinical_core import amendment_1 as a1
 from clinical_core import amendment_3 as a3
+import reader_succession as succession
 
 ROOT = Path(__file__).resolve().parent
 RECORD = ROOT / "docs" / "revision" / "P2X3_phase2_closure.json"
@@ -42,6 +43,7 @@ def _closure_tree():
     value below are the closure's and are not rewritten."""
     with pytest.MonkeyPatch.context() as patch:
         a3.tree(patch)
+        succession.install(patch)           # FD-TARGET-01: the reader of that stage is the reader of the Phase-2 closure, rebuilt by reader_succession
         yield
 
 

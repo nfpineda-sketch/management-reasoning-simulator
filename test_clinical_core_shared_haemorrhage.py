@@ -13,6 +13,7 @@ from dataclasses import dataclass, fields, replace
 from pathlib import Path
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import (Anchors, Channel, ChannelDelta, Contribution, Contributor, CoreInvariantError, CoreState,
                            ProvenanceError, RhythmState, SourceKind, run, scenario_from_dict, scenario_to_dict)
@@ -47,6 +48,7 @@ def _closure_tree():
     here is historical and its expected values are not rewritten."""
     with pytest.MonkeyPatch.context() as patch:
         a3.tree(patch)
+        succession.install(patch)
         yield
 
 

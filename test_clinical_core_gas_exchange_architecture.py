@@ -10,6 +10,7 @@ import math
 from dataclasses import replace
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import blood_fluid_calibration as bf
 from clinical_core import decision_pack, lactate_slice
@@ -159,6 +160,7 @@ def _p2o1_core():
         x1.chain(patch)
         cg.chain(patch)
         a3.chain(patch)
+        succession.install(patch)
         patch.setattr(bf, "freeze_sources", lambda: lw.p2o1_sources(_LIVE_SOURCES_P2O3()))
         yield
 

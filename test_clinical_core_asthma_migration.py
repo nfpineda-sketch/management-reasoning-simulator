@@ -11,6 +11,7 @@ import hashlib
 import json
 
 import pytest
+import reader_succession as succession
 
 from clinical_core import asthma_migration as sm
 from clinical_core import respiratory_distress as dm
@@ -108,6 +109,7 @@ def _p2s3_tree():
         x1.chain(patch)
         cg.chain(patch)
         a3.chain(patch)
+        succession.install(patch)
         patch.setattr(bf, "freeze_sources", lambda: dm.p2s3_sources(_LIVE_SOURCES_P2T1()))
         yield
 
@@ -159,6 +161,7 @@ def test_closed_packages_read_the_p2s2_tree():
         x1.chain(patch)
         cg.chain(patch)
         a3.chain(patch)
+        succession.install(patch)
         assert "asthma" not in mc._live("clinical_core/lactate_slice.py")
         assert "asthma" not in mc._live("clinical_core/decision_pack.py")
         assert all(mc.proofs().values())
