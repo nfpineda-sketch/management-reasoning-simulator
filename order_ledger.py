@@ -374,6 +374,11 @@ def _covers(entry, action):
     pending = action.get("pending_action") if isinstance(action.get("pending_action"), dict) else None
     if pending and _covers(entry, pending):
         return True
+    incomplete = action.get("incomplete_explicit_rate")
+    if isinstance(incomplete, dict):
+        # The reader's question about an infusion order that gave no explicit rate with its units (FD-TARGET-06) IS its reading of the mention of that infusion: the mention is
+        # not a second order the reader did not read (a duplicate "held with the reader's question" entry for one order).
+        return entry["kind"] == "drug" and fold(entry["agent"] or entry["key"] or "") == fold(incomplete.get("agent") or "")
     kind = action.get("type")
     if kind == "repeat_order" and entry["kind"] in ("drug", "fluid", "blood"):
         # A repeat names the drug it repeats, or the kind of order it repeats.

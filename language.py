@@ -844,14 +844,9 @@ _X1_RULES = (
   "ambiguos."),
  (r"Specify nitroglycerin as an absolute infusion rate in mcg/min\.",
   "Indica la nitroglicerina como una velocidad de infusión absoluta, en mcg/min."),
- # FD-NR-05 (2026-11-20): a number without units is never a rate; the order is held and nothing is executed.
- (r"(\w+(?: infusion)?) was written with a rate but no units, so nothing was converted or executed\. A number without units "
-  r"\(a pressure target such as MAP 65 included\) is never read as a rate\. To change it, state an explicit absolute infusion "
-  r"rate in mcg/kg/min or mcg/min, or say cancel\.",
-  lambda m: ("La infusión" if m[1] == "The infusion" else _named_es(m[1]).capitalize()) + " se escribió con una velocidad pero sin "
-            "unidades, así que no se convirtió ni se ejecutó nada. Un número sin unidades (un objetivo de presión como PAM 65 "
-            "incluido) nunca se lee como una velocidad. Para cambiarla, indica una velocidad de infusión absoluta en "
-            "mcg/kg/min o mcg/min, o di cancelar."),
+ # FD-TARGET-10 (2026-11-20): neutral, it names no number and so cannot suggest that a detected target is a dose.
+ (r"The order specifies a target or an incomplete rate\. Specify an explicit rate with its units to continue\.",
+  "La orden especifica un objetivo o una tasa incompleta. Indique una tasa explícita con sus unidades para continuar."),
  (r"Specify one target oxygen device and its flow in L/min \(for example, " + _OXYGEN_EXAMPLES_EN + r"\)\.",
   "Indica un solo dispositivo de oxígeno y su flujo en L/min (por ejemplo, " + _OXYGEN_EXAMPLES_ES + ")."),
  (r"Specify one absolute target oxygen flow in L/min \(for example, " + _OXYGEN_EXAMPLES_EN + r"\)\.",

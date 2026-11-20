@@ -119,6 +119,9 @@ INSTRUCTION_2026_11_20_TARGET_ORDER = ("Instrucción docente del 2026-11-20 (FD-
                                       "tasa de norepinefrina: el defecto heredado «objetivo como tasa» se reproduce, rastrea "
                                       "y repara antes de tocar la frontera de la sombra)")
 
+INSTRUCTION_2026_11_20_TARGET_SOURCE = ("Instrucción docente del 2026-11-20 (FD-TARGET-01 a FD-TARGET-11: «objetivo fisiológico ≠ tasa de fármaco» reparado en la fuente, "
+                                        "con el levantamiento acotado del congelamiento del lector y el segundo cerrojo conservado como defensa en profundidad)")
+
 CORRECTIONS = (
     {
         "id": "C-2026-09-25-01",
@@ -3815,14 +3818,52 @@ CORRECTIONS = (
         "affects": {"modules": ["order_pipeline", "language"], "versions": {}},
         "clinical_relevance": "clinical",
         "tests": [
-            "test_phase3_target_order_boundary.py::test_t2_an_infusion_order_with_a_number_and_no_units_is_held_and_nothing_runs",
+            "test_phase3_target_order_boundary.py::test_t2_barrier_two_alone_an_infusion_order_with_a_number_and_no_units_is_held_and_nothing_runs",
             "test_phase3_target_order_boundary.py::test_t3_an_explicit_rate_with_units_runs_exactly_as_before",
             "test_phase3_target_order_boundary.py::test_t4_a_stop_is_never_held_whatever_number_is_beside_it",
-            "test_phase3_target_order_boundary.py::test_t8_a_generated_corpus_of_targets_never_reaches_the_engine_as_a_rate",
+            "test_phase3_target_order_boundary.py::test_t8_a_generated_corpus_of_targets_never_reaches_the_engine_as_a_rate_through_either_barrier",
             "test_phase3_target_order_boundary.py::test_t9_a_reply_that_only_gives_the_units_cannot_complete_the_held_order_into_a_dose",
             "test_phase3_target_order_boundary.py::test_t10_through_the_real_encounter_a_target_is_never_executed_as_a_rate",
             "test_phase3_target_order_boundary.py::test_t15_start_increase_decrease_stop_and_restart_by_explicit_rate_still_run_and_are_mirrored_as_before",
-            "test_phase3_target_order_boundary.py::test_t19_the_spanish_message_is_there_and_says_the_same_thing",
+            "test_phase3_target_order_boundary.py::test_t19_the_spanish_message_is_the_approved_one_and_names_no_number",
+        ],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-11-20-02",
+        "date": "2026-11-20",
+        "title": "Órdenes de infusión: un objetivo o una tasa incompleta nunca es una tasa, y se repara en el lector",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("La corrección anterior (C-2026-11-20-01) contuvo el defecto antes del motor, pero el lector seguía entregando «titrate norepinephrine to MAP 65» como un ajuste a una tasa "
+                   "de 65 sin unidades, y «titrate nitroglycerin to SBP 120» como 120 mcg/min (la unidad de nitroglicerina está en el nombre del campo, y ahí el segundo cerrojo no puede "
+                   "distinguir un número suelto de una tasa). Se levanta, con alcance estricto y con un registro sucesor declarado, el congelamiento del lector (FD-TARGET-01): el lector "
+                   "ya sólo lee una tasa de norepinefrina, epinefrina, dobutamina o nitroglicerina cuando viene escrita con su unidad; un número sin unidad de tasa y un cambio relativo sin "
+                   "tasa son una pregunta que no lleva ningún número y que no ejecuta nada ni se queda en silencio; «reiniciar/reanudar» una de las cuatro infusiones es un inicio que "
+                   "exige tasa explícita y nunca reutiliza la anterior (y un bolo o una dosis IM con ese verbo sigue sin leerse). El segundo cerrojo del paso por el turno se conserva como "
+                   "defensa en profundidad. Efectos colaterales corregidos tras la revisión adversarial: el extractor de razonamiento ya no guarda la orden incompleta como modelo de "
+                   "trabajo, la orden incompleta se registra una sola vez y como retenida (no «no entendida»), retiene lo que se escribió tras ella con «then», y un punto decimal no termina "
+                   "la oración de la regla de secuencia. El lector anterior se reconstruye byte a byte (reader_succession) y todo digesto de la Fase 2 sigue recalculándose con él. Sin "
+                   "cambio de fisiología, de tono, del acoplamiento con la bomba, del espejo, de la sombra, de la autoridad ni de clinical_core/."),
+        "authorised_by": INSTRUCTION_2026_11_20_TARGET_SOURCE,
+        "affects": {"modules": ["family_parser", "order_pipeline", "order_ledger", "pending_family_orders", "app", "language", "reader_succession"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": [
+            "test_phase3_target_rate_source.py::test_s1_a_target_beside_norepinephrine_is_never_a_rate",
+            "test_phase3_target_rate_source.py::test_s2_a_target_beside_any_modelled_vasoactive_infusion_is_never_a_rate",
+            "test_phase3_target_rate_source.py::test_s2b_nitroglycerin_120_is_not_120_mcg_per_min",
+            "test_phase3_target_rate_source.py::test_s3_an_explicit_rate_with_its_units_is_read_exactly_as_before",
+            "test_phase3_target_rate_source.py::test_s4_an_incomplete_rate_command_is_an_incomplete_order_never_a_rate_and_never_a_no_op",
+            "test_phase3_target_rate_source.py::test_s5_an_explicit_restart_is_a_start_with_its_explicit_rate",
+            "test_phase3_target_rate_source.py::test_s6_every_other_order_is_read_exactly_as_the_historical_reader_read_it",
+            "test_phase3_target_rate_source.py::test_s7_a_generated_corpus_never_turns_a_number_without_a_rate_unit_into_a_rate",
+            "test_phase3_target_rate_source.py::test_s8_the_stored_working_model_never_swallows_an_incomplete_infusion_order",
+            "test_phase3_target_rate_source.py::test_s8b_an_order_written_after_an_incomplete_infusion_order_with_then_waits_with_it",
+            "test_phase3_target_rate_source.py::test_s8c_an_incomplete_infusion_order_is_recorded_once_and_as_held_not_as_not_understood",
+            "test_phase3_target_rate_source.py::test_s8d_a_restart_of_a_one_shot_dose_is_not_read_as_a_start_of_that_dose",
+            "test_phase3_target_order_boundary.py::test_t17_each_barrier_alone_stops_the_target_and_neither_one_lets_it_through_only_when_both_are_gone",
+            "test_phase3_reader_succession.py::test_v1_the_reader_of_the_closure_is_rebuilt_from_the_live_file_byte_for_byte",
+            "test_phase3_reader_succession.py::test_v5_every_phase_two_freeze_digest_recomputes_from_the_historical_reader_and_clinical_core_is_untouched",
         ],
         "preservation": None,
     }

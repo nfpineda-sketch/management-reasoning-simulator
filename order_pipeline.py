@@ -42,6 +42,8 @@ _AIRWAY_GROUP = frozenset({"procedural_sedation", "neuromuscular_blockade", "int
                            "invasive_ventilation"})
 _SEQUENCE = re.compile(r"(?<![a-z])(?:then|luego|despues|after\s+that|afterwards|posteriormente|followed\s+by|"
                        r"seguido\s+de|y\s+despues)(?![a-z])")
+#: A full stop that ends a sentence. A decimal point is not one ("titrate dobutamine to CI 2.5 then give 500 mL NS" is one sequence, FD-TARGET-06 review): a point between two digits is part of the number.
+_SENTENCE_BREAK = re.compile(r"(?<!\d)\.|\.(?!\d)")
 _NOT_MODELLED_REFUSAL = "requires a generated encounter"
 _STUDY_QUESTION = re.compile(r"(?<![a-z])(?:study|studies|estudio|estudios|investigation|examination|examen)(?![a-z])",
                              re.I)
@@ -280,27 +282,36 @@ def _position(text, action):
 
 _WAITING_FOR_WEIGHT = "waiting for the patient's weight"
 
-#: A number without units is never a rate (faculty decision FD-NR-05, 2026-11-20). "Titrate norepinephrine to MAP 65" leaves the reader as an adjustment to a rate of 65 with NO units; the engine completes a
-#: missing unit of an adjustment from the running infusion (``active_order_context``), so it ran 65 mcg/min: the pressure the resident aimed for became a dose. The reader is frozen (the pre-Phase-1 reader freeze
-#: and the Phase-2 calibration freeze pin it) and the completion is part of that frozen path, so the repair is made here, before the engine: an infusion order that carries a rate WITHOUT units is held as a question
-#: and nothing is executed. The rule is structural, not a list of words: it does not matter whether the number was a MAP, a PA, a TAM, a heart rate or a typo. The held copy keeps NO number (a later answer such as
-#: "mcg/min" must not complete it into a dose), and a stop, which needs no rate, is never held.
-UNITS_REQUIRED = ("{name} was written with a rate but no units, so nothing was converted or executed. A number without units (a pressure target such as MAP 65 included) is never read as a rate. "
-                  "To change it, state an explicit absolute infusion rate in mcg/kg/min or mcg/min, or say cancel.")
-_UNIT_COMPLETED_INFUSIONS = {"norepinephrine": "Norepinephrine", "dobutamine": "Dobutamine", "epinephrine": "Epinephrine"}
+#: A number without units is never a rate, and a relative change with no rate has nothing to execute (faculty decisions FD-NR-05, 2026-11-20, and FD-TARGET-01 to FD-TARGET-06, 2026-11-20). "Titrate norepinephrine to MAP 65" used to leave
+#: the reader as an adjustment to a rate of 65 with NO units; the engine completes a missing unit of an adjustment from the running infusion (``active_order_context``), so it ran 65 mcg/min: the pressure the resident aimed for
+#: became a dose. The reader is now repaired AT THE SOURCE (it emits no rate unless one is written with its unit; ``family_parser.INCOMPLETE_EXPLICIT_RATE``). THIS barrier stays, as defense in depth (FD-TARGET-03): it
+#: reads the STRUCTURED order, whatever produced it, and holds an infusion that carries a rate with no units, or an adjustment that carries no rate at all, as a question. Nothing is executed and the held copy keeps NO number
+#: (a later answer such as "mcg/min" must not complete it into a dose). A stop, which needs no rate, is never held, and a continue is held only if it carries a number with no units. The rule is structural, not a list of words: a MAP, a PA, a TAM, a heart rate or a typo are
+#: all the same thing -- a number without units. Nitroglycerin carries its unit in the NAME of its field (``rate_mcg_min``), so this barrier cannot tell a bare number from an explicit rate there: for it the reader is the
+#: only barrier of that part, and only the adjustment with no rate is held here.
+INCOMPLETE_EXPLICIT_RATE = "The order specifies a target or an incomplete rate. Specify an explicit rate with its units to continue."
+_UNIT_COMPLETED_INFUSIONS = ("norepinephrine", "dobutamine", "epinephrine")
 
 
-def unitless_infusion_rate(action):
-    """``(question, copy of the action without the number)`` when an infusion order carries a rate with no units, else ``None``."""
+def incomplete_explicit_rate(action):
+    """``(question, copy of the action without any rate)`` when an infusion order gave no explicit rate with units, else ``None``."""
     kind = action.get("type") if isinstance(action, dict) else None
+    operation = str(action.get("operation") or "start").lower() if isinstance(action, dict) else ""
     if kind in _UNIT_COMPLETED_INFUSIONS:
-        if str(action.get("operation") or "start").lower() == "stop" or action.get("rate") is None or action.get("units"):
+        if operation == "stop":
             return None
-        return UNITS_REQUIRED.format(name=_UNIT_COMPLETED_INFUSIONS[kind]), {**action, "rate": None}
-    if kind == "infusion_adjustment" and str(action.get("operation") or "").lower() != "stop":
+        # a CONTINUE is held only when it carries a number with no units: the engine's completion would run that number with the running infusion's units
+        if (action.get("rate") is not None and not action.get("units")) or (operation == "adjust" and action.get("rate") is None):
+            return INCOMPLETE_EXPLICIT_RATE, {**action, "rate": None}
+        return None
+    if kind == "nitroglycerin":
+        if operation == "adjust" and action.get("rate_mcg_min") is None:
+            return INCOMPLETE_EXPLICIT_RATE, dict(action)
+        return None
+    if kind == "infusion_adjustment" and operation != "stop":
         if action.get("rate_value") is None or action.get("rate_units"):
             return None
-        return UNITS_REQUIRED.format(name="The infusion"), {**action, "rate_value": None}
+        return INCOMPLETE_EXPLICIT_RATE, {**action, "rate_value": None}
     return None
 
 
@@ -338,7 +349,7 @@ def split_bundle(state, parsed, *, text="", weight_waiting=()):
                 held.append((action, str(action.get("message") or "the order needs a clarification"), "question"))
                 question = question or action.get("message")
             continue
-        unitless = unitless_infusion_rate(action)
+        unitless = incomplete_explicit_rate(action)
         if unitless:
             held.append((unitless[1], unitless[0], "question"))
             question = question or unitless[0]
@@ -377,7 +388,7 @@ def split_bundle(state, parsed, *, text="", weight_waiting=()):
                 if mine is None or theirs is None:
                     continue
                 if theirs < mine and any(theirs < mark < mine for mark in sequence_marks) \
-                        and folded.rfind(".", theirs, mine) < 0:
+                        and not _SENTENCE_BREAK.search(folded, theirs, mine):
                     reason = "written after an order that has not run (\"then\")"
                     break
         if reason:

@@ -2013,6 +2013,21 @@ def _clarification(message):
     return {"type": "clarification", "message": message}
 
 
+# FD-TARGET-01 to FD-TARGET-10 (2026-11-20): a physiologic TARGET is never a DRUG RATE. A number that carries no rate unit
+# ("titrate norepinephrine to MAP 65", "nitroglycerin to keep SBP 120", "increase norepinephrine to 12") is not a rate, and a
+# relative change with no rate at all ("increase norepinephrine", "wean norepinephrine off") has nothing to execute: the order is
+# INCOMPLETE and is asked for, never completed from the running infusion or from the number beside it. The message names no
+# number, so it cannot suggest that a detected target is a dose. The reader gives no rate at all unless one is written with its
+# unit; the order pipeline holds the same orders again when they arrive as structured actions (defense in depth).
+INCOMPLETE_EXPLICIT_RATE = ("The order specifies a target or an incomplete rate. Specify an explicit rate with its units to continue.")
+
+
+def _incomplete_explicit_rate(agent, operation, reason):
+    """The non-executable representation of an infusion order that gave no explicit rate with units."""
+    return {**_clarification(INCOMPLETE_EXPLICIT_RATE),
+            "incomplete_explicit_rate": {"agent": agent, "operation": operation, "reason": reason}}
+
+
 # An explicit instruction to wait for a result before acting. Deliberately
 # narrow: it has to name the waiting, not merely sequence two orders, because
 # "give oxygen and then reassess" is not a dependency and must keep parsing as
@@ -2745,6 +2760,20 @@ def _attached_treatment(body):
     return []
 
 
+_RESTART_INFUSION = re.compile(
+    r"^(?P<lead>(?:(?:i\s+(?:will|want to)|i'll|i am going to|voy a|quiero|vamos a|i|we)\s+)?)"
+    r"(?:restart|re-start|resume|reinicia(?:r|mos)?|reinicio|reanuda(?:r|mos)?|retoma(?:r|mos)?)\s+"
+    r"(?=(?:(?:the|la|el)\s+)?(?:norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|levophed|nitroglycerin|nitroglicerina|nitro|"
+    r"dobutamine|dobutamina|epinephrine|epinefrina|adrenaline|adrenalina|epi)\b)", re.I)
+#: What a restart of one of the four infusions can be read as. A restart that reads as anything else ("restart epinephrine 0.3 mg IM", "restart nitroglycerin 1000 mcg IV bolus") is a
+#: one-shot dose, not an infusion: it is left exactly as the historical reader left it (not read), never turned into a START of that dose (adversarial review, FD-TARGET-07).
+_INFUSION_TYPES = frozenset({"norepinephrine", "epinephrine", "dobutamine", "nitroglycerin"})
+
+
+def _reads_as_an_infusion(actions):
+    return bool(actions) and all(action.get("type") in _INFUSION_TYPES or action.get("incomplete_explicit_rate") for action in actions)
+
+
 def _parse_piece_core(piece, inherited=None):
     # "Preparo intubacion", "preparo la intubacion", "preparo todo para intubar":
     # the first person and the article dropped the order in silence (2026-09-25).
@@ -2762,6 +2791,14 @@ def _parse_piece_core(piece, inherited=None):
         # The monitor itself (DF-16a). The verb still reaches the items after
         # it, so "monitorizar, PA y FC" keeps watching what it names.
         return [{"type": "monitoring", "operation": "start"}], "monitor"
+    # FD-TARGET-07: "restart norepinephrine at 10 mcg/min" is a START with an explicit rate; "restart norepinephrine" is a start with no
+    # rate, which is asked for. The previous rate is never reused. Only the four vasoactive infusions the engine runs are read this
+    # way, so no other family's wording changes.
+    restarted = _RESTART_INFUSION.match(text)
+    if restarted:
+        actions, as_verb = _parse_piece_core(restarted["lead"] + "start " + text[restarted.end():], inherited)
+        if _reads_as_an_infusion(actions):
+            return actions, as_verb
     command = _COMMAND.match(text)
     verb = command["verb"] if command else inherited
     # A disposition names one destination and takes no list. "Hospitalizar en
@@ -3526,9 +3563,14 @@ def _parse_piece_core(piece, inherited=None):
                                                "dose": float(mass_dose[1]) if mass_dose else None,
                                                "units": mass_dose[2] if mass_dose else None}}], verb
         if not rate_match:
+            # A number without a rate unit is NOT a rate (FD-TARGET-02/05/06). It used to become ``rate`` here, so a pressure target
+            # ("MAP 65", "SBP 120") was read as 65 or 120 and, for an adjustment, completed with the running infusion's units.
             bare_rates = re.findall(r"(?<![\w.])(-?(?:\d+(?:\.\d+)?|\.\d+))(?![\w.])", body)
-            if len(bare_rates) == 1 and not re.search(r"\b(?:minutes?|mins?|hours?|horas?|minutos?)\b", body):
-                rate = float(bare_rates[0])
+            time_word = re.search(r"\b(?:minutes?|mins?|hours?|horas?|minutos?)\b", body)
+            if _operation(verb) in {"start", "adjust"} and len(bare_rates) == 1 and not time_word:
+                return [_incomplete_explicit_rate(kind, _operation(verb), "NUMBER_WITHOUT_RATE_UNITS")], verb
+            if _operation(verb) == "adjust":
+                return [_incomplete_explicit_rate(kind, "adjust", "NO_EXPLICIT_RATE")], verb
         if rate_match:
             rate = float(rate_match[1]) * (1000 if rate_match[2] == "mg" else 1)
             if rate_match[4].startswith("h"):
@@ -3841,6 +3883,9 @@ def _order_after_reasoning(text):
         rest = text[boundary.end():]
         command = _COMMAND.match(rest)
         if not command:
+            # "My priority is perfusion, restart norepinephrine at 5 mcg/min": the restart verbs are not in _COMMAND, and the order must not be dropped as reasoning.
+            if _RESTART_INFUSION.match(rest) and _reads_as_an_infusion(_parse_piece(re.split(r"\s*(?:,|\+|\band\b|\by\b|\bthen\b|\bluego\b)\s*", rest, maxsplit=1)[0])[0]):
+                return rest
             continue
         if command["verb"] in _GOAL_VERBS and _PHYSIOLOGICAL_OBJECT.match(rest[command.end():]):
             continue
@@ -3852,7 +3897,9 @@ def _order_after_reasoning(text):
         # reasoning: the clause counts only if it names an order the parser knows.
         first = re.split(r"\s*(?:,|\+|\band\b|\by\b|\be\b(?=\s+[a-z])|\bthen\b|\bluego\b)\s*", rest, maxsplit=1)[0]
         parsed, _ = _parse_piece(first)
-        if not any(action["type"] != "clarification" for action in parsed):
+        # An infusion order that is INCOMPLETE (a target, a number with no rate unit, a relative change with no rate) is still an order that must be asked for: "my priority is perfusion, titrate norepinephrine to
+        # MAP 65" used to execute 65 mcg/min; read as reasoning only, it would be dropped without telling the resident that nothing ran (FD-TARGET-06).
+        if not any(action["type"] != "clarification" or action.get("incomplete_explicit_rate") for action in parsed):
             continue
         return rest
     return None

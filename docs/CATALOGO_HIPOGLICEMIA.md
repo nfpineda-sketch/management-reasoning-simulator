@@ -277,6 +277,7 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-10-15-04 | Gobernanza de presentación: pacing preparation y Magnesio sérico | general | text | cosmetic | — |
 | C-2026-10-17-01 | Hosted: un solo fragmento nombrado para todo el workspace del encuentro | general | technical_defect | none | — |
 | C-2026-11-20-01 | Órdenes de infusión: un número sin unidades nunca se ejecuta como tasa | general | technical_defect | clinical | — |
+| C-2026-11-20-02 | Órdenes de infusión: un objetivo o una tasa incompleta nunca es una tasa, y se repara en el lector | general | technical_defect | clinical | — |
 
 ## La batería, configuración por configuración
 

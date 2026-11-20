@@ -46,7 +46,9 @@ def hold_incomplete_bundle(parsed, state=None):
     if not indices:
         return None
     executable = [a for a in parsed.get('actions', [])
-                  if a.get('type') not in {'clarification', 'reassessment'}]
+                  if a.get('type') not in {'clarification', 'reassessment'}
+                  # An infusion order that gave no explicit rate with its units is an order the resident wrote and must complete (FD-TARGET-06), not an unreadable fragment.
+                  or a.get('incomplete_explicit_rate')]
     if not executable:
         # Nothing worth preserving: a lone unreadable fragment is not a bundle.
         return None

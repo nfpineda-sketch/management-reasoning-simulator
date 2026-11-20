@@ -5985,7 +5985,9 @@ def extract_explicit_reasoning(text):
         # advice, an indicated medicine -- is an order too, never a working
         # model: "salbutamol 5 mg nbz, repetir cada 20 minutos si persiste el
         # broncoespasmo" was quoted back as the model (DF-16b, 2026-09-28).
-        return (any(action.get("type") not in {"reassessment", "clarification"} for action in parsed["actions"])
+        # An infusion order that is incomplete (a target, a number with no rate unit, a relative change with no rate) is an order that is asked for, not a working model
+        # (FD-TARGET-06): read as reasoning it would be stored as the model and the order would disappear from the record of what was ordered.
+        return (any(action.get("type") not in {"reassessment", "clarification"} or action.get("incomplete_explicit_rate") for action in parsed["actions"])
                 or bool(parsed.get("future_details")))
 
     def _is_reassessment(clause):
