@@ -546,21 +546,37 @@ def test_r2_the_reviews_own_sentences_through_the_real_encounter_never_leave_the
     """The order is read AS WRITTEN. Through the real parser, engine and mirror: an order that names no drug and a rate without units close the infusion and SAY so; a pressure target is never
     read as a rate; a weight-based dose is never converted; a bare continuation and a stop that carries a rate are read for what they are."""
     assert set(real_text["probes"]) == set(tt.REAL_TEXT_SCRIPTS) == set(tt.REAL_TEXT_EXPECTED) and len(real_text["probes"]) == 8
+    # ADAPTED (P3-455, 2026-11-20). The expectations the harness holds for R3 and R5 were written about LEGACY DEFECTS of the unit-less rate: the reader emits "Increase norepinephrine to 12" and "Titrate norepinephrine to
+    # MAP 65" as rates WITHOUT units, the engine completed the missing unit from the running infusion and ran 12 and 65 mcg/min, and the shadow (which reads the order as written) refused them. FD-NR-05 repaired it before
+    # the engine, in the order pipeline (the reader and the engine are frozen): a rate without units is held as a question and never reaches the engine or the mirror. So R3 and R5 no longer behave as those historical
+    # expectations say. The harness and its sealed records are NOT edited: they stay as the record of what was observed. What this test protects is unchanged and now stronger: a number without units is never read as a
+    # rate, the run and the engine agree, and the later stop of R3 is followed. The other six probes are held exactly as before.
+    historical_defects = {
+        "R3_INCREASE_WITHOUT_UNITS_THEN_STOP": {"kinds": ["norepinephrine", "norepinephrine"], "outcomes": [ts.STARTED, ts.STOPPED], "writer": "norepinephrine_rate_history", "states_equal_to": "DIFFERENT_STATES",
+                                                "engine_rate_at_the_end": 0.0, "run_rate_at_the_end": 0.0, "says_it_no_longer_mirrors": False},
+        "R5_PRESSURE_TARGET": {"kinds": ["norepinephrine"], "outcomes": [ts.STARTED], "writer": "norepinephrine", "states_equal_to": "A10_START", "engine_rate_at_the_end": 10.0, "run_rate_at_the_end": 10.0,
+                               "says_it_no_longer_mirrors": False}}
     for name, probe in real_text["probes"].items():
+        if name in historical_defects:
+            assert probe["as_expected"] is False, f"the historical expectation of {name} described the defect that was repaired"
+            assert probe["observed"] == historical_defects[name], (name, probe["observed"])
+            assert probe["failures"] == [] and probe["replays_exactly"] is True and probe["gaps"] == [] and probe["the_run_and_the_engine_run_the_same_rate"] is True
+            continue
         assert probe["as_expected"] is True and probe["observed"] == tt.REAL_TEXT_EXPECTED[name] and probe["failures"] == [] and probe["replays_exactly"] is True, (name, probe["observed"])
         if not probe["the_run_and_the_engine_run_the_same_rate"]:
             assert probe["observed"]["says_it_no_longer_mirrors"] or probe["observed"]["outcomes"] == [ts.REFUSED], (name, "a run that no longer shows what the engine runs says so")
-    assert real_text["all_as_expected"] is True and real_text["no_run_differs_from_the_engine_without_saying_so"] is True
+    assert real_text["all_as_expected"] is False and sorted(name for name, probe in real_text["probes"].items() if not probe["as_expected"]) == sorted(historical_defects)
+    assert real_text["no_run_differs_from_the_engine_without_saying_so"] is True
     handed = {name: probe["as_the_mirror_hands_it_over"] for name, probe in real_text["probes"].items()}
     # how the mirror really hands these orders over: this is what the first audit missed
     assert handed["R1_STOP_THE_INFUSION"][1] == {"minute": 10, "kind": "infusion_adjustment", "action": {"type": "infusion_adjustment", "operation": "stop", "rate_value": None, "rate_units": None}, "receipt": {}}
-    assert handed["R3_INCREASE_WITHOUT_UNITS_THEN_STOP"][1]["action"] == {"type": "norepinephrine", "operation": "adjust", "rate": 12.0, "units": None}
-    assert handed["R3_INCREASE_WITHOUT_UNITS_THEN_STOP"][1]["receipt"] == {"type": "norepinephrine", "operation": "adjust", "rate": 12.0, "units": "mcg/min"}, "the engine completed it; the order did not say it"
-    assert handed["R5_PRESSURE_TARGET"][1]["action"] == {"type": "norepinephrine", "operation": "adjust", "rate": 65.0, "units": None}, "a pressure target arrives as a bare number"
-    assert real_text["probes"]["R5_PRESSURE_TARGET"]["observed"]["engine_rate_at_the_end"] == 65.0 and real_text["probes"]["R5_PRESSURE_TARGET"]["observed"]["run_rate_at_the_end"] == 10.0
+    assert [item["action"]["operation"] for item in handed["R3_INCREASE_WITHOUT_UNITS_THEN_STOP"]] == ["start", "stop"], "the order without units is held before the engine: only the start and the stop are handed over"
+    assert len(handed["R5_PRESSURE_TARGET"]) == 1 and handed["R5_PRESSURE_TARGET"][0]["action"]["operation"] == "start", "a pressure target no longer reaches the mirror at all: only the start is handed over"
+    assert real_text["probes"]["R5_PRESSURE_TARGET"]["observed"]["engine_rate_at_the_end"] == 10.0 and real_text["probes"]["R5_PRESSURE_TARGET"]["observed"]["run_rate_at_the_end"] == 10.0
     assert handed["R6_WEIGHT_BASED_START"][0]["action"]["units"] == "mcg/kg/min" and real_text["probes"]["R6_WEIGHT_BASED_START"]["observed"]["writer"] is None
     assert handed["R7_STOP_THAT_CARRIES_A_RATE"][1]["action"] == {"type": "norepinephrine", "operation": "stop", "rate": 10.0, "units": "mcg/min"}, "a stop may carry a rate and units, and is a stop"
-    assert "gives no units" in real_text["probes"]["R5_PRESSURE_TARGET"]["gaps"][0]["why"] and "never read as a rate" in real_text["probes"]["R5_PRESSURE_TARGET"]["gaps"][0]["why"]
+    assert real_text["probes"]["R3_INCREASE_WITHOUT_UNITS_THEN_STOP"]["gaps"] == [], "the order without units never reaches the mirror, so there is nothing to refuse"
+    assert ts.order_disposition({"type": "norepinephrine", "operation": "adjust", "rate": 12.0, "units": None}, {"type": "norepinephrine", "operation": "adjust", "rate": 12.0, "units": "mcg/min"}) == (None, ts.GAP_NO_UNITS.format(operation="adjust")), "the belt and braces of the shadow: a rate without units is still refused as written"
 
 
 def test_r3_a_refused_order_in_the_minute_of_a_valid_one_leaves_the_history_that_ran_before_that_minute():
