@@ -1,0 +1,317 @@
+{
+  "adversarial_review": {
+    "attacks_that_failed": [
+      "same-minute target + explicit rate",
+      "repeat_order and deferred target",
+      "malformed-then-valid sequences",
+      "scope creep (core digest, runtime files, grants)",
+      "private data and model identity in new files"
+    ],
+    "every_finding_was_confirmed_with_a_probe": true,
+    "findings": [
+      {
+        "disposition": "REPRODUCED; the design was replaced by a structural rule; 0 leaks over the 91508 phrasings it covers; nitroglycerin declared as residual",
+        "finding": "a vocabulary of pressure words cannot hold every target (121630 of 1.65 million phrasings leaked)",
+        "id": "BLOCKER-1"
+      },
+      {
+        "disposition": "REPRODUCED; the reader was reverted byte for byte; the governance question is the faculty decision number 0",
+        "finding": "the change turned the reader freeze (and, as found here, the calibration freeze digest) red with no recorded decision",
+        "id": "MAJOR-2"
+      },
+      {
+        "disposition": "REPRODUCED; gone with the structural rule (a continuation without a rate is not held); 'to 10 gamma' is held as a number without units (declared)",
+        "finding": "false positives: continuations and indications held with a misleading message",
+        "id": "MINOR-3"
+      },
+      {
+        "disposition": "MOOT for the final design; 13 new mutants over the final rule, all killed",
+        "finding": "mutants survived for vocabulary alternatives",
+        "id": "MINOR-4"
+      },
+      {
+        "disposition": "declared; the bare number is now held",
+        "finding": "relative commands, weight-based orders and a bare number",
+        "id": "NOTE-5"
+      },
+      {
+        "disposition": "none needed",
+        "finding": "not falsified: same-minute, deferred and repeat orders; no changes outside the declared files; the records carry only what was reported",
+        "id": "NOTE-6/7/8"
+      }
+    ],
+    "independent": true,
+    "reviewed_design": "the FIRST design (a pressure-word guard in the reader); it was defeated and replaced by the structural rule in the order pipeline, which was then measured against the reviewer's own corpus and mutated",
+    "reviewer": "an independent read-only agent that did not write the package, working on a copy of the tree and in temporary directories",
+    "reviews": 1,
+    "suspected_not_confirmed": [],
+    "unresolved_blocking_findings": []
+  },
+  "certification": {
+    "after_the_certification": {
+      "added": [
+        "this checkpoint record",
+        "its entry in the records index and the index pin in test_phase3_historical_record_versioning.py",
+        "sections 12 and 13 of the document",
+        "the FD-P3-284 row of the Decision File"
+      ],
+      "executable_change": false,
+      "focused_rerun": "see the document, section 12",
+      "said_plainly": "the full suite ran on the candidate above, not on the final tree: the two differ by the four additions listed, none of them executable"
+    },
+    "before_the_freeze": {
+      "corpus": "0 leaks over the 91508 norepinephrine/epinephrine/dobutamine phrasings of the reviewer's corpus; 30122 nitroglycerin phrasings are not covered (declared residual)",
+      "freeze_isolation_and_records_guards": "19 files, 717 passed, 5 skipped (the freezes, contract, isolation, documents, registry, records)",
+      "freezes": "the reader pin (test_prephase1_reader_freeze) and the calibration freeze digest are green; family_parser.py, family_engine.py, active_order_context.py are byte-identical to the base",
+      "mutants": {
+        "killed": 13,
+        "survived": 0,
+        "what": "one mutant per protection of the rule, run against a COPY of the tree; the tree was never mutated"
+      },
+      "new_tests": "86 in test_phase3_target_order_boundary.py",
+      "parser_and_engine_related_set": "70 files, 3236 passed, 0 failed",
+      "regressions": "56/56 active"
+    },
+    "candidate": {
+      "base": "1b072e2fd41686df37b5cd5b5dbf091ef61139c7",
+      "branch": "phase-3-runtime-integration",
+      "contents": "the working tree with the pipeline rule and the Spanish message, the corrections-registry entry and the catalogue regenerated from it, the new tests, the adapted R3/R5 expectations of the titration test, the two sealed ratification records with their index entries and pin, the document up to section 11, the decision rows FD-NR-01 to 07 and FD-P3-281 to 283, TD-160 and the CLAUDE.md clause -- BEFORE this checkpoint record, its index entry and pin, sections 12 and 13 of the document and the FD-P3-284 row were added",
+      "fingerprint": "b625a7e66060c25c6669e3105ebb560b7979a25864a73f8b65e060e210f322b6",
+      "uncommitted_changes": 20
+    },
+    "dependency_analysis": "the full suite was required: the change is in a root module on the path of every order (order_pipeline.py), adds a root test family, an indexed record and adapts an earlier test; several guards walk every root module (contract limits, lineage of the amendments, the freezes, the records index)",
+    "first_certification_not_the_final_one": {
+      "cause": "docs/CATALOGO_HIPOGLICEMIA.md is generated from the corrections registry and the new entry C-2026-11-20-01 was not in it (a one-line difference)",
+      "classification": "REGRESSION OF THIS CHANGE (reproduced alone)",
+      "failure": "test_hypoglycemia_battery.py::test_the_published_catalogue_is_the_one_the_code_produces",
+      "failures": 1,
+      "fingerprint": "77960017ffc36750d3a0e0d7f872504a4f3016358d9d0e6a3f17c96be1972e1a",
+      "fix": "the catalogue regenerated with its own tool, nothing by hand; a NEW fingerprint and ONE new full certification (this one); results of the two fingerprints are never mixed",
+      "regressions": "56/56 active",
+      "tests": 13798,
+      "why_the_focused_set_missed_it": "chosen by text search; the generated-catalogue test sits in a nine-minute file that the focused set did not include"
+    },
+    "full_suite": {
+      "errors": 0,
+      "failures": 0,
+      "fingerprint_at_end": "b625a7e66060c25c6669e3105ebb560b7979a25864a73f8b65e060e210f322b6",
+      "fingerprint_at_start": "b625a7e66060c25c6669e3105ebb560b7979a25864a73f8b65e060e210f322b6",
+      "finished": "2026-11-20T09:00:28",
+      "partitions": 24,
+      "resumptions": 0,
+      "runner": "the skill's partitioned runner functions (fingerprint, partitions, JUnit summary) under a resumable wrapper kept outside the repository",
+      "skipped": 100,
+      "started": "2026-11-20T06:41:18",
+      "tests": 13798,
+      "valid": true,
+      "xfail": 1
+    },
+    "not_run": [
+      "a browser run (no page changed: the order pipeline is the page's own path and the real-encounter tests cover it)",
+      "validation/ and any external response (frozen and not opened)"
+    ],
+    "regressions": {
+      "active_passed": 56,
+      "active_total": 56,
+      "exit_code": 0,
+      "retired_not_run": 10,
+      "runner": "run_regressions.py"
+    },
+    "scope": "FULL"
+  },
+  "confirmations": {
+    "common_core_runtime_authority": false,
+    "no_clinical_validation_claim": true,
+    "no_consciousness_authority": true,
+    "no_malformed_order_recovery_change": true,
+    "no_map_target_titration": true,
+    "no_new_shared_mirror_contract": true,
+    "no_new_vasopressor": true,
+    "no_norepinephrine_authority_expansion": true,
+    "no_parameter_selected": true,
+    "no_physiology_change": true,
+    "no_pump_coupling_change": true,
+    "no_resident_deployment": true,
+    "no_terminal_authority": true,
+    "no_tone_recalibration": true,
+    "no_weight_based_dosing": true,
+    "no_witness_substituted": true,
+    "persisted_store_verified": false
+  },
+  "decision_reference": "FD-NR-01 to FD-NR-07",
+  "evidence_class": "MODEL_ANALYSIS",
+  "facts": {
+    "certification_wall_clock": {
+      "finished": "2026-11-20T09:00:28",
+      "started": "2026-11-20T06:41:18"
+    },
+    "closure_record_digest": "54360488a48921e65c553ad126a6b1848603dadf187e4f5428980fc3a5165263",
+    "closure_status": "NOREPINEPHRINE_MANUAL_RATE_CONTROL_DEVELOPMENT_SEMANTICS_CLOSED",
+    "executable_files_changed": [
+      "order_pipeline.py",
+      "language.py"
+    ],
+    "executable_files_not_changed": [
+      "family_parser.py",
+      "family_engine.py",
+      "active_order_context.py",
+      "runtime_shadow.py",
+      "runtime_tone_support.py",
+      "clinical_core/"
+    ],
+    "failure_classification": {
+      "layers": {
+        "engine_completion": "enabling (necessary)",
+        "mirror": "not confused",
+        "shadow_mapping": "not confused",
+        "text_interpreter": "origin (necessary)",
+        "writer": "never reached"
+      },
+      "name": "MULTIPLE_LAYERS",
+      "verdict": "F"
+    },
+    "first_design_discarded": {
+      "design": "pressure-word vocabulary guard in the reader",
+      "reason": "independent review: 121630 of 1.65 million phrasings still leaked; false positives; broke the reader freeze and the calibration freeze"
+    },
+    "human_record_digest": "b40e19d052dd29967fc914ca6a2cad911ad775bea340c91322997e130af0e18b",
+    "malformed_order_recovery": {
+      "faculty_decision_if_recovery_is_wanted": true,
+      "implemented": false,
+      "recommendation": "KEEP_PERMANENT_FAIL_CLOSED"
+    },
+    "overall_counts": {
+      "ACCEPT": 5,
+      "ACCEPT_WITH_LIMITATION": 0,
+      "RECALIBRATE": 0,
+      "REJECT": 0
+    },
+    "provenance_of_the_human_evidence": "HUMAN_FACULTY_REVIEW_REPORTED_NOT_STORE_VERIFIED",
+    "raw_vs_resolved_verdict": {
+      "name": "RAW_ORDER_REMAINS_CORRECT_BOUNDARY",
+      "verdict": "A"
+    },
+    "reader_freeze": {
+      "calibration_freeze_digest_changed": false,
+      "governance_decision_pending": "lift the reader freeze to repair at the source (it would also cover nitroglycerin)",
+      "reader_changed": false
+    },
+    "residual": {
+      "nitroglycerin": "its unit is in the field name (rate_mcg_min): a bare number is still read as 120 mcg/min; predates the cycle; the reader is frozen"
+    },
+    "review_set_digest": "576e11f2555012932c26ead757e932eeae15672bf9af05df724dec688fd2bb59"
+  },
+  "limitations": [
+    "the human review is reported, not verified against the persisted store (only the five overall judgments were reported)",
+    "the repair is after the reader, not at the source: the frozen reader still emits a bare number as a rate with no units (rate 65, units None); repairing it there needs the reader freeze lifted",
+    "nitroglycerin is NOT covered: its only unit is in the field name, so 'titrate nitroglycerin to SBP 120' still reads as 120 mcg/min (predates the cycle; test t18 records it)",
+    "an order of norepinephrine, dobutamine or epinephrine with a number and no units now asks for the units, including the shorthand 'increase norepinephrine to 12' (a declared effect)",
+    "the interpreter does not read the verb 'restart' (it is held as an unrecognized order, with no dose); the supported restart is the explicit start after a stop",
+    "a relative command without a number ('increase norepinephrine') is completed by the engine with the running rate (no real change, no warning); the shadow refuses it and says so",
+    "the shadow does not follow orders the engine resolves (an order that names no drug, mcg/kg/min): declared fidelity gaps; following them would need a new shared mirror contract",
+    "the new Spanish message is a development wording that the faculty has not approved (TD-46)",
+    "the new records have no signature (the same limit as TD-153 item 7)"
+  ],
+  "next_human_action": "A faculty member decides, in this order of value: (0) whether to lift the reader freeze to repair the defect at the source (it would also cover nitroglycerin, the residual that is still unsafe), (1) whether the shadow should follow the orders the engine resolves (an architectural choice for the shared mirror: a hybrid that keeps the raw order and adds the engine's resolution with its provenance), (2) whether a later explicit valid order should recover the shadow after a malformed order, and with what tolerance, and (3) whether the interpreter should be taught the verb 'restart', should ask for the rate of 'increase norepinephrine' and should accept the shorthand 'increase to 12'. Nothing else is to be done until then.",
+  "open_faculty_decisions": [
+    "whether to lift the reader freeze to repair the target-as-rate defect at the source (also covers nitroglycerin)",
+    "whether the shadow follows orders the engine resolves (hybrid with provenance) -- architectural",
+    "whether a later explicit valid order recovers the shadow after a malformed order, and the continuity tolerance",
+    "whether the interpreter reads the verb 'restart', asks for the rate of a relative command and accepts a rate without units",
+    "the approval of the Spanish wording of the new message",
+    "whether the verified store of the human review should be supplied so that the record can be verified"
+  ],
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-20",
+    "generating_code": {
+      "clinical_core": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "closure_record_digest": "54360488a48921e65c553ad126a6b1848603dadf187e4f5428980fc3a5165263",
+      "family_parser.py": "7157bd8682f2d9e98bf5c41fdf94de42623baf84d18402147d666074d453ae58",
+      "human_record_digest": "b40e19d052dd29967fc914ca6a2cad911ad775bea340c91322997e130af0e18b",
+      "language.py": "b42d021465196d7ad9b7b707a0f2b72c7cc2dcc2ac0fcdc69b70ebc445cc911d",
+      "order_pipeline.py": "e5848b7c35cc7e885a9d38b6e3e9e087844c28de49851a3987ee6bc3eac59000",
+      "test_nr_target_fix_checkpoint.py": "53d479eb7f0cb335d32e7052a4489ac4a2a40f44e2bce669e04f25bf9e2fd2bd",
+      "test_phase3_target_order_boundary.py": "fa693a330f668d0f5adbfbcd3aadf84efe76714963541163dae4960dd4a45294"
+    },
+    "generating_code_fingerprint": "38d5d8de8b21fbd3864b153655e8817f75348c40c50a5f7c1b231f0bf4bd35d7",
+    "grant_id": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V3",
+    "record_id": "NOREPINEPHRINE_TARGET_ORDER_CHECKPOINT_V1",
+    "record_schema_version": 1,
+    "source_data_digest": "7b4f45ef37774473c4991ce04b5119b491a69d375e42b58ceda36456990631d3",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "record_digest": "74882696b614b4744e7e693d55c5414b75ff76bca0a3d57c9cac2d493dd5b146",
+  "record_type": "NOREPINEPHRINE_TARGET_ORDER_CHECKPOINT",
+  "sequence": [
+    {
+      "result": "the human review preserved as REPORTED_NOT_STORE_VERIFIED (five overall judgments ACCEPT); nothing invented",
+      "step": "P3-449"
+    },
+    {
+      "result": "ratification record NOREPINEPHRINE_MANUAL_RATE_CONTROL_DEVELOPMENT_SEMANTICS_CLOSED, sealed and indexed; no physics, snapshot or authority change",
+      "step": "P3-450"
+    },
+    {
+      "result": "order-representation map, reader to artifact; the defect needs TWO layers; the reader and the completion are frozen",
+      "step": "P3-451"
+    },
+    {
+      "result": "ten texts reproduced end to end; MAP 65 ran as 65 mcg/min with 10 mcg/min running; quantified on 28 target texts",
+      "step": "P3-452"
+    },
+    {
+      "result": "F MULTIPLE_LAYERS (reader origin, engine completion enabling; mirror, mapping and writer not at fault)",
+      "step": "P3-453"
+    },
+    {
+      "result": "design: a number without units is never a rate, structural, before the engine; the first (vocabulary) design discarded",
+      "step": "P3-454"
+    },
+    {
+      "result": "order_pipeline.split_bundle rule and the Spanish message; correction C-2026-11-20-01; no frozen file touched",
+      "step": "P3-455"
+    },
+    {
+      "result": "TIT-1..5, the single start, the PE and the low-tone probes unchanged; R3 and R5 expectations adapted and declared",
+      "step": "P3-456"
+    },
+    {
+      "result": "verdict A RAW_ORDER_REMAINS_CORRECT_BOUNDARY; no shared mirror contract invented",
+      "step": "P3-457"
+    },
+    {
+      "result": "recommendation (not implemented): keep PERMANENT_FAIL_CLOSED",
+      "step": "P3-458"
+    },
+    {
+      "result": "one independent review; every finding confirmed by a probe; the first design replaced",
+      "step": "P3-459"
+    },
+    {
+      "result": "one full certification on one frozen fingerprint plus the regressions",
+      "step": "P3-460"
+    }
+  ],
+  "statement": "The manual norepinephrine rate-control semantics -- start, increase, decrease, stop and restart by an explicit absolute rate in mcg/min -- are ratified for DEVELOPMENT (status NOREPINEPHRINE_MANUAL_RATE_CONTROL_DEVELOPMENT_SEMANTICS_CLOSED; the human review is reported, not verified against the persisted store). The inherited defect by which 'titrate norepinephrine to MAP 65' was executed as 65 mcg/min was reproduced end to end, traced to two layers (the frozen reader fabricated the rate from the only number of the clause; the frozen engine completion made it executable by inheriting the running infusion's units) and repaired before the engine, in the order pipeline, which is not frozen: an infusion order that carries a rate WITHOUT units is held as a question, nothing is executed and the held copy keeps no number. The rule is structural -- no list of words -- so a MAP, a PA, a heart rate or a typo are the same thing. The reader, the completion and the engine were NOT touched (a first design that did was defeated by the independent review and broke two freezes; it was reverted). The only executable changes are the pipeline rule and the Spanish text of its message. The shadow keeps consuming the order as written (verdict A of the boundary audit); malformed-order recovery was analysed and not changed. Nitroglycerin, which carries its unit in the field name, is NOT covered (a residual that predates the cycle).",
+  "verdict": "A",
+  "verdict_name": "MANUAL_NOREPINEPHRINE_SEMANTICS_RATIFIED_AND_TARGET_ORDER_BUG_FIXED",
+  "verdicts": {
+    "A": "MANUAL_NOREPINEPHRINE_SEMANTICS_RATIFIED_AND_TARGET_ORDER_BUG_FIXED",
+    "B": "MANUAL_SEMANTICS_RATIFIED_TARGET_FIX_SAFE_BOUNDARY_UNRESOLVED",
+    "C": "GENERIC_ORDER_PARSER_CHANGE_REQUIRES_BROADER_REVIEW",
+    "D": "RAW_VS_RESOLVED_ORDER_REQUIRES_FACULTY_DECISION",
+    "E": "MALFORMED_ORDER_POLICY_BLOCKS_SAFE_PROGRESS",
+    "F": "ORDER_MODEL_REQUIRES_BROADER_REDESIGN"
+  },
+  "version": "NOREPINEPHRINE_TARGET_ORDER_CHECKPOINT_V1",
+  "why_not_the_others": {
+    "A": "this is the verdict",
+    "B": "the boundary audit returned A (raw order remains the correct boundary): nothing about the safe boundary is unresolved",
+    "C": "the repair is one structural rule in the order pipeline, after the reader and before the engine, for the infusion orders that complete a missing unit (norepinephrine, dobutamine, epinephrine and the role-named order); the generic parser was NOT changed (it is frozen), no other family of orders changed, and the other interpreter findings (the verb 'restart', a relative command without a rate, nitroglycerin) were NOT changed; a source-level repair would need the reader freeze lifted, which is a faculty decision, not a blocker of this fix",
+    "D": "the raw-versus-resolved choice is not genuinely open for this stage: the raw boundary is the safest, the only one compatible with everything certified, and every divergence measured is a declared fidelity gap, not a safety defect; moving toward resolved orders WOULD be a faculty decision and none was made",
+    "E": "no malformed-order behavior creates a demonstrated safety defect: the shadow has no authority over norepinephrine, is invisible to the resident and declares every divergence; recovery was analysed and is a separate faculty decision (FD-NR-07)",
+    "F": "the order model needed no redesign: one structural rule in the pipeline repaired the defect and every other layer behaved as designed"
+  }
+}

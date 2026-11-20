@@ -296,3 +296,7 @@ Registro: `docs/revision/PHASE3_NOREPINEPHRINE_TITRATION_CHECKPOINT.json`. Las o
 6. Si las limitaciones de dependencia de la bomba y de consciencia exigen trabajo antes de cualquier uso educativo.
 
 **No se hizo y no está autorizado:** objetivos automáticos de PAM, dosificación por peso, otro vasopresor, recalibración del tono, cambio del acoplamiento con la bomba, retorno venoso o inotropía, ampliación de la autoridad de norepinefrina, piloto con residentes.
+
+---
+
+**Nota 2026-11-20 (objetivo ≠ tasa).** El defecto heredado de «MAP 65» que este documento declara «no tocado» se reprodujo, rastreó y reparó antes del motor, sin tocar el lector congelado (`docs/PHASE3_NOREPINEPHRINE_TARGET_ORDER_BOUNDARY.md`, FD-P3-282, `TD-160`): una orden de infusión con un número sin unidades se retiene y nunca crea una dosis. Lo escrito arriba describe el estado de entonces y **no se edita**. El espejo compartido sigue entregando la orden tal como se escribió (veredicto A de la frontera) y el cierre persistente ante una orden mal formada sigue (FD-NR-07).

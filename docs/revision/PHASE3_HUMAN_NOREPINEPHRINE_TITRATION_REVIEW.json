@@ -1,0 +1,175 @@
+{
+  "evidence_class": "HUMAN_FACULTY_REVIEW",
+  "evidence_classes": {
+    "HUMAN_FACULTY_REVIEW": "what the faculty reviewer judged in the blind review of the CENTER_REFERENCE norepinephrine rate-change trajectories, as reported; only this record and the Decision File rows FD-NR-01 to FD-NR-07 carry it",
+    "MODEL_ANALYSIS": "what the development assistant computed or read from the executable model and the certified records; it explains and bounds, it does not judge",
+    "TEST_RESULT": "what an automated test asserted; it protects a record, it is not a faculty decision"
+  },
+  "not_in_this_record": [
+    "the reviewer's name",
+    "any model-written judgment",
+    "any legacy comparison",
+    "any clinical-validation claim",
+    "the per-event logs (they live in the reviewer's own store)"
+  ],
+  "not_verified": [
+    "the answers Q1 to Q5 (not reported)",
+    "the overall judgments against the persisted logs",
+    "the scenario order as persisted",
+    "the completion screen",
+    "the lock and submit events, their order and their timestamps",
+    "free-text comments (none were reported)",
+    "the reviewer's identity"
+  ],
+  "overall_counts": {
+    "ACCEPT": 5,
+    "ACCEPT_WITH_LIMITATION": 0,
+    "RECALIBRATE": 0,
+    "REJECT": 0
+  },
+  "overall_counts_recomputed_from_the_scenarios": {
+    "ACCEPT": 5,
+    "ACCEPT_WITH_LIMITATION": 0,
+    "RECALIBRATE": 0,
+    "REJECT": 0
+  },
+  "preserved_original_evidence": {
+    "common_tone_ratification": {
+      "file": "docs/revision/COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1_RATIFICATION.json",
+      "file_sha256": "d23df1c7a0a27803cf0c318eb0417163eecd65e70ad014c369e06659c842f1b4",
+      "record_digest": "a5a8f4370e240a07406111e0fedf40884e7e382dbd08643949bc82201452bab2"
+    },
+    "common_tone_snapshot": {
+      "file": "docs/revision/COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1.json",
+      "file_sha256": "1f2ebb46190e72ec150897037a397f788164fb7f29b46337dbb94328d0be8e2c",
+      "record_digest": "ee1740ca77173ce0797268f8327f21fc29304c5c54ff2c642c1f2bdfb3270356"
+    },
+    "titration_checkpoint": {
+      "file": "docs/revision/PHASE3_NOREPINEPHRINE_TITRATION_CHECKPOINT.json",
+      "file_sha256": "72cd6c810acd467fc03707b4343e0932021470a8a152ca4276cc6ef258408007",
+      "record_digest": "c5c4538780d7ad7ac43e98550fb2b1128dbfa24e0042e44bd2f65e9c62db11e3"
+    },
+    "titration_probes": {
+      "file": "docs/revision/PHASE3_NOREPINEPHRINE_TITRATION_PROBES.json",
+      "file_sha256": "030249f8d0d1fcf4df1a28105995f3fa3ec02209b6214fb5d6eedcc45a2cd10f",
+      "record_digest": "9bf782128b34ee7addb69ce9d391ded5c0d0d952de58f35fd5bd2d2f609e6b61"
+    },
+    "titration_review_checkpoint": {
+      "file": "docs/revision/PHASE3_NOREPINEPHRINE_TITRATION_V1_REVIEW_CHECKPOINT.json",
+      "file_sha256": "7d4e305e8db1fb46a00b07cc70419f94e590080c1132d810baa7c35fe3a1f972",
+      "record_digest": "33512070d052acb434a97f69b43df41e48d88d4020158226382becba4f5e3530"
+    },
+    "titration_review_set": {
+      "file": "docs/revision/PHASE3_NOREPINEPHRINE_TITRATION_V1_REVIEW_SET.json",
+      "file_sha256": "0a0eb213e9c685de85573950f90556efcde3bc390ca7b74d2cfdc8ed1ae83674",
+      "record_digest": "576e11f2555012932c26ead757e932eeae15672bf9af05df724dec688fd2bb59"
+    },
+    "titration_review_set_digest_pinned_in_code": "576e11f2555012932c26ead757e932eeae15672bf9af05df724dec688fd2bb59"
+  },
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-20",
+    "generating_code": {
+      "clinical_core": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "faculty_titration_review.py": "f056fb4c6af8b5585e92575bcef10534b3d331c06b26546c230221fa1ed1f1b2",
+      "test_nr_manual_ratification_analysis.py": "d86143db875ffdf9efeca46fc7dcea7d999a3b69c4ebdf635f15516e4b33d974"
+    },
+    "generating_code_fingerprint": "430cb9b8cba335feab3f1604aed4abf835468b3da29ef554c062057fb998f7fe",
+    "grant_id": null,
+    "record_id": "HUMAN_NOREPINEPHRINE_TITRATION_REVIEW_V1",
+    "record_schema_version": 1,
+    "source_data_digest": "09022ccf9781499875b205fce3ab75cf533293f55539b8fa70298045cc7f1872",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "provenance_of_the_evidence": {
+    "date_of_record": "2026-11-20",
+    "persisted_store_available_to_the_assistant": false,
+    "reported_in": "the assignment of 2026-11-20 that opened P3-449 ('PHASE 3 — RATIFY MANUAL NOREPINEPHRINE RATE-CONTROL SEMANTICS AND AUDIT TARGET-BASED ORDER PARSING')",
+    "reviewer_identity_recorded": false,
+    "reviewer_name": null,
+    "reviewer_role": "faculty",
+    "transcribed_by": "the development assistant; the five judgments are typed once from the report and nothing was added",
+    "verification": "HUMAN_FACULTY_REVIEW_REPORTED_NOT_STORE_VERIFIED",
+    "why": "the persisted logs of this review (titration_review/ and titration_reviews/ of the reviewer's own store) are not in this container: the reviewer's store found here holds no records, and the other titration-review directories found are the assistant's own synthetic test and screenshot sessions, which are NOT human evidence and were not read as such; the assignment asked to read the store if available and, if not, to use the reported results and mark the provenance, without inventing comments, lock events, timestamps or reviewer identity"
+  },
+  "record_digest": "b40e19d052dd29967fc914ca6a2cad911ad775bea340c91322997e130af0e18b",
+  "record_type": "HUMAN_FACULTY_NOREPINEPHRINE_TITRATION_REVIEW_RECORD",
+  "review": {
+    "candidate_named_by_the_interface": false,
+    "candidate_reviewed": "CENTER_REFERENCE",
+    "completion_as_reported": "COMPLETE (5 of 5 judgments reported)",
+    "completion_screen_string": "NOT_REPORTED",
+    "item_digests_note": "computed here from the pinned set (what the review logs carry); the faculty did not report them",
+    "pressure_only_first_pass": true,
+    "review_set_digest": "576e11f2555012932c26ead757e932eeae15672bf9af05df724dec688fd2bb59",
+    "review_set_id": "NOREPINEPHRINE_TITRATION_V1_FACULTY_REVIEW",
+    "scenario_order_as_reported": [
+      "TIT-1",
+      "TIT-2",
+      "TIT-3",
+      "TIT-4",
+      "TIT-5"
+    ],
+    "scenarios_with_reported_judgments": 5
+  },
+  "scenarios": [
+    {
+      "first_pass_answers_Q1_to_Q5": "NOT_REPORTED",
+      "free_text_comments": "NONE_REPORTED",
+      "overall": "ACCEPT",
+      "recalibration_requested": false,
+      "reported_name": "increase 5 -> 10 mcg/min",
+      "reviewed_item_digest": "13e7e975bd1c",
+      "reviewed_trajectory_digest": "bd0c585f5a7a6f07aa03930efa88a7ead73327451d3ed57e59b5c376c5aea3f4",
+      "scenario_id": "TIT-1",
+      "title_in_the_set": "57-year-old man with an upper gastrointestinal bleed: norepinephrine increased from 5 to 10 mcg/min"
+    },
+    {
+      "first_pass_answers_Q1_to_Q5": "NOT_REPORTED",
+      "free_text_comments": "NONE_REPORTED",
+      "overall": "ACCEPT",
+      "recalibration_requested": false,
+      "reported_name": "decrease 10 -> 4 mcg/min",
+      "reviewed_item_digest": "f1317588a8e0",
+      "reviewed_trajectory_digest": "f0cf807cf2a2fb59b1a40b4bf53bb2367fac4497d440daea8a75049412956353",
+      "scenario_id": "TIT-2",
+      "title_in_the_set": "57-year-old man with an upper gastrointestinal bleed: norepinephrine reduced from 10 to 4 mcg/min"
+    },
+    {
+      "first_pass_answers_Q1_to_Q5": "NOT_REPORTED",
+      "free_text_comments": "NONE_REPORTED",
+      "overall": "ACCEPT",
+      "recalibration_requested": false,
+      "reported_name": "stop",
+      "reviewed_item_digest": "5645e047ee0c",
+      "reviewed_trajectory_digest": "9fafa6d32586df9d1f554a276643dcbd0669a282c1c1f11e27d06b0d40e0a795",
+      "scenario_id": "TIT-3",
+      "title_in_the_set": "57-year-old man with an upper gastrointestinal bleed: norepinephrine started and then stopped"
+    },
+    {
+      "first_pass_answers_Q1_to_Q5": "NOT_REPORTED",
+      "free_text_comments": "NONE_REPORTED",
+      "overall": "ACCEPT",
+      "recalibration_requested": false,
+      "reported_name": "sequence 5 -> 10 -> 4 -> stop",
+      "reviewed_item_digest": "d3d14dc41cf5",
+      "reviewed_trajectory_digest": "89fc79e0e3279e70c6c7c86cd2545d9245918640f04ef2fa42bc6bf249cede8b",
+      "scenario_id": "TIT-4",
+      "title_in_the_set": "57-year-old man with an upper gastrointestinal bleed: norepinephrine increased, reduced and then stopped"
+    },
+    {
+      "first_pass_answers_Q1_to_Q5": "NOT_REPORTED",
+      "free_text_comments": "NONE_REPORTED",
+      "overall": "ACCEPT",
+      "recalibration_requested": false,
+      "reported_name": "restart 10 -> stop -> 10",
+      "reviewed_item_digest": "467310e42522",
+      "reviewed_trajectory_digest": "4972bc3d6817b6a4299783d3007c2ca541955ec007658575c4207260167cd19d",
+      "scenario_id": "TIT-5",
+      "title_in_the_set": "57-year-old man with an upper gastrointestinal bleed: norepinephrine stopped and later restarted"
+    }
+  ],
+  "version": "P3-449",
+  "what_it_is": "The human faculty review of the five CENTER_REFERENCE norepinephrine rate-change trajectories of one gastrointestinal-hemorrhage case, recorded as HUMAN evidence as the reviewer reported it. It is not converted into an automated truth, it is not a clinical validation, and nothing in it was written by a model. No answer, comment, event or timestamp that was not reported was added."
+}

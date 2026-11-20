@@ -186,3 +186,7 @@ Si el almacén de esa persona **no** contiene la re-revisión o la revisión de 
 10. **Sin exportación**: la captura de pantalla es el único medio de compartir; el resumen técnico de la sesión se escribe solo y no se muestra.
 11. **Sin cambios fuera de lo declarado:** no se tocó el núcleo (`clinical_core/`, digesto fijado), la fisiología de tono ni su titulación, el acoplamiento con la bomba o la poscarga, la calibración de GI, el volumen, la entrega, la consciencia, la dosis-respuesta ni el mapeo de desarrollo; sin parámetro elegido, sin autoridad de norepinefrina, sin control de fuente, sin autoridad de consciencia ni terminal, sin despliegue a residentes ni validación clínica; `COMMON_CORE_RUNTIME_AUTHORITY = False`.
 12. **Pendiente (decisión docente):** el resultado de la revisión humana y, según la guía de §5, si la regla del cambio de tasa es aceptable para desarrollo.
+
+---
+
+**Nota 2026-11-20 (objetivo ≠ tasa).** El defecto heredado de «MAP 65» que este documento declara «no tocado» se reprodujo, rastreó y reparó antes del motor, sin tocar el lector congelado (`docs/PHASE3_NOREPINEPHRINE_TARGET_ORDER_BOUNDARY.md`, FD-P3-282, `TD-160`): una orden de infusión con un número sin unidades se retiene y nunca crea una dosis. Lo escrito arriba describe el estado de entonces y **no se edita**. El espejo compartido sigue entregando la orden tal como se escribió (veredicto A de la frontera) y el cierre persistente ante una orden mal formada sigue (FD-NR-07).
