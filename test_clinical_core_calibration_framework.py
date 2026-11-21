@@ -84,8 +84,12 @@ FROZEN_DIGEST = "c1eeb5538a4ea990cbcb4432b0c28e6cb8c351ffe08c96a6036f82d3b65a9b8
 #: FD-TARGET-01 (2026-11-20): the faculty lifted the reader freeze for ONE safety correction, so ``family_parser.py`` -- one of the ``INPUT_PATH_SOURCES`` -- changed once. EXACTLY ONE component of the freeze moves
 #: with it (``input_path_sources``); the materialized ``scenario_inputs`` and every other component do not. The frozen values above stay the values of the reader of the Phase-2 closure, and they still recompute:
 #: ``reader_succession.historical_reader_view()`` rebuilds that reader from the live file. The successor values are pinned here. (``scripts: regenerated with the reader pin``)
-SUCCESSOR_INPUT_PATH_SOURCES = "e879d406b6d87575dd1ac8f85a874548ccd5bb5ac453bf9dea787919126e1236"
-SUCCESSOR_FROZEN_DIGEST = "4bdf9ef3430278aec5eb3038ecb5d062c459a58227993959a7075bfd67be2bca"
+TARGET_SAFETY_INPUT_PATH_SOURCES = "e879d406b6d87575dd1ac8f85a874548ccd5bb5ac453bf9dea787919126e1236"
+TARGET_SAFETY_FROZEN_DIGEST = "4bdf9ef3430278aec5eb3038ecb5d062c459a58227993959a7075bfd67be2bca"
+#: FD-ORDER-01 to FD-ORDER-11 (2026-11-21): the SECOND successor. Again exactly one component moves (``input_path_sources``); the first successor's values above recompute under
+#: ``reader_succession.target_safety_reader_view()``, and the closure's under ``historical_reader_view()``. (``scripts: regenerated with the reader pin``)
+ORDER_SAFETY_INPUT_PATH_SOURCES = "abf609da252cd150c2031c0c1161bd25835e86d571e3d28caeca11d09be7ac98"
+ORDER_SAFETY_FROZEN_DIGEST = "b40083f58eb9efbd05f9336da776d28af96b7ac1b6ba9d4a52dab92099af24af"
 SCENARIO_INPUTS_BEFORE_P2K2 = "afb2051e7fa04f1765aaf920c82f51dc6675d19bcbcb425c2ee581d8fa60d347"
 P2K2_INPUTS = ("intrinsic_respiratory_rate", "arrival_bicarbonate", "arrival_paco2")
 P2O3_INPUTS = ("reversible_lung_water",)
@@ -235,11 +239,17 @@ def test_the_rules_are_frozen():
         assert calibration.digest_components() == FROZEN_COMPONENTS, (
             "a component of the calibration freeze changed: record which and why, then update the digest")
         assert calibration.frozen_digest() == FROZEN_DIGEST
-    # the live freeze after the reader's successor (FD-TARGET-01): one component moved, nothing else
+    # the freeze under the reader of the FIRST successor (FD-TARGET-01): one component moved, nothing else
+    with succession.target_safety_reader_view():
+        first = calibration.digest_components()
+        assert {name: value for name, value in first.items() if name != "input_path_sources"} == {name: value for name, value in FROZEN_COMPONENTS.items() if name != "input_path_sources"}
+        assert first["input_path_sources"] == TARGET_SAFETY_INPUT_PATH_SOURCES != FROZEN_COMPONENTS["input_path_sources"]
+        assert calibration.frozen_digest() == TARGET_SAFETY_FROZEN_DIGEST != FROZEN_DIGEST
+    # the live freeze after the reader's SECOND successor (FD-ORDER-01 to 11): again one component moved, nothing else
     live = calibration.digest_components()
     assert {name: value for name, value in live.items() if name != "input_path_sources"} == {name: value for name, value in FROZEN_COMPONENTS.items() if name != "input_path_sources"}
-    assert live["input_path_sources"] == SUCCESSOR_INPUT_PATH_SOURCES != FROZEN_COMPONENTS["input_path_sources"]
-    assert calibration.frozen_digest() == SUCCESSOR_FROZEN_DIGEST != FROZEN_DIGEST
+    assert live["input_path_sources"] == ORDER_SAFETY_INPUT_PATH_SOURCES != TARGET_SAFETY_INPUT_PATH_SOURCES != FROZEN_COMPONENTS["input_path_sources"]
+    assert calibration.frozen_digest() == ORDER_SAFETY_FROZEN_DIGEST != TARGET_SAFETY_FROZEN_DIGEST != FROZEN_DIGEST
     inputs = calibration.scenario_inputs()
     for case in inputs:
         assert all(inputs[case]["arrival_anchors"].pop(name) is None for name in P2K2_INPUTS)

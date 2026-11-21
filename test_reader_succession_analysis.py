@@ -63,20 +63,22 @@ def _actions(reader, text):
 
 
 def behavior() -> list:
-    import family_parser as live
+    # the record of the FIRST succession (sealed): its "successor" is the reader of that succession (state 2), rebuilt from the live file by reader_succession, never the live reader of a later cycle
+    successor = rsu.target_safety_reader_module()
     old = rsu.historical_reader_module()
-    return [{"text": text, "historical_reader": _actions(old, text), "successor_reader": _actions(live, text)} for text in BEHAVIOR_TEXTS]
+    return [{"text": text, "historical_reader": _actions(old, text), "successor_reader": _actions(successor, text)} for text in BEHAVIOR_TEXTS]
 
 
 def freeze_state() -> dict:
     """The calibration freeze before (the reader of the closure) and after (the successor), and the five closure freeze digests, recomputed."""
     from clinical_core import amendment_3 as a3, calibration, closure_guard as cg, decision_pack, lactate_slice, tone_domain
     from clinical_core import amendment_1 as a1, blood_anchors as ba, blood_probes as bp
-    components_now, digest_now = calibration.digest_components(), calibration.frozen_digest()
+    with rsu.target_safety_reader_view():
+        components_now, digest_now = calibration.digest_components(), calibration.frozen_digest()
+        generated_after = {"decision_pack": decision_pack.pack_digest(), "lactate_slice": lactate_slice.slice_digest(), "blood_anchors": ba.anchors_digest(), "blood_probes": bp.probes_digest()}
     with rsu.historical_reader_view():
         components_before, digest_before = calibration.digest_components(), calibration.frozen_digest()
         generated_before = {"decision_pack": decision_pack.pack_digest(), "lactate_slice": lactate_slice.slice_digest(), "blood_anchors": ba.anchors_digest(), "blood_probes": bp.probes_digest()}
-    generated_after = {"decision_pack": decision_pack.pack_digest(), "lactate_slice": lactate_slice.slice_digest(), "blood_anchors": ba.anchors_digest(), "blood_probes": bp.probes_digest()}
     recorded = json.loads(a1.CLOSURE_RECORD.read_text(encoding="utf-8"))["freeze_digests"]
     with a3.closure_view():
         with rsu.historical_reader_view():
@@ -107,7 +109,7 @@ def build() -> dict:
                           "did not move; nothing sealed was rewritten and nothing in clinical_core/ was edited."),
             "faculty_decisions": dict(DECISIONS),
             "reader": {"file": rsu.READER, "historical": {"git_blob": rsu.HISTORICAL_GIT_BLOB, "sha256": rsu.HISTORICAL_SHA256, "accepted_by": "the pre-Phase-1 reader freeze and the Phase-2 closure"},
-                       "successor": {"git_blob": rsu.SUCCESSOR_GIT_BLOB, "sha256": rsu.SUCCESSOR_SHA256, "frozen_again_by": "test_prephase1_reader_freeze.py (EXPECTED_BLOBS)"},
+                       "successor": {"git_blob": rsu.TARGET_SAFETY_GIT_BLOB, "sha256": rsu.TARGET_SAFETY_SHA256, "frozen_again_by": "test_prephase1_reader_freeze.py (EXPECTED_BLOBS)"},
                        "the_other_four_reader_files": "byte-identical to the V3 freeze (shared_order_language.py, shared_order_quantities.py, active_order_context.py, weight_based_doses.py)"},
             "reversal": {"mechanism": "declared reversible hunks (the precedent of the amendments); reader_succession.historical_reader_bytes() applies them to the live file and proves the result against the pinned identity",
                          "hunks": [{"successor_text": new, "historical_text": old} for new, old in rsu.REVERSAL], "hunk_count": len(rsu.REVERSAL),

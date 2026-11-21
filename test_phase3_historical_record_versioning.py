@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parent
 LEGACY_ENTRIES_DIGEST = "1afe6c43ab5e4accb33e4b6924d5f63e8c36e23c21c81760eec7251605b38789"
 #: The digest of EVERY entry of the repository's index (legacy, versioned and lineage). It is typed here on purpose: adding a record, or certifying the open lineage
 #: record, moves this constant in the same change, and nothing else can move a pin without moving it (adversarial review, finding 3).
-ALL_ENTRIES_DIGEST = "acd1afbf2b27104edfd3d2e3b772a393d80d9d731fc752c561dc6bba957e7b32"
+ALL_ENTRIES_DIGEST = "4ec1ed8b6d55094988ae050820e21e5c857de314fcbc8013bf2ecffcbba14bd3"
 CODE = {"core_digest": "c" * 64, "phase3_layer_digest": "d" * 64, "generator": {"some_generator.py": "e" * 64}}
 
 

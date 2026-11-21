@@ -156,9 +156,11 @@ def test_s5b_a_restart_of_nitroglycerin_with_an_explicit_rate_is_a_start_too():
 @pytest.mark.parametrize("text", ["restart norepinephrine", "resume norepinephrine", "reinicia la noradrenalina", "restart nitroglycerin"])
 def test_s5c_a_restart_without_an_explicit_rate_is_incomplete_and_the_previous_rate_is_not_reused(text):
     live = _live(text)
-    assert len(live) == 1 and live[0]["operation"] == "start" and not _has_a_number(live) and live[0]["type"] in INFUSIONS, (text, live)
+    # FD-ORDER-05 (2026-11-21): a restart with no explicit rate is the APPROVED incomplete-rate question (the previous cycle left the engine's own question, "Specify or confirm ... dose and units", declared as L-5)
+    assert len(live) == 1 and _is_incomplete(live[0], "nitroglycerin" if "nitro" in text else "norepinephrine", "start", "NO_EXPLICIT_RATE"), (text, live)
     encounter, entries, mirrored = boundary._play(boundary.START10, "Reassess in 2 minutes.", "Stop norepinephrine.", text if "nitro" not in text else "restart norepinephrine")
-    assert entries[-1]["executed"] is False and boundary._rate(encounter) == 0.0, "the engine asks for the rate: it does not restart at the previous 10 mcg/min"
+    assert entries[-1]["executed"] is False and boundary._rate(encounter) == 0.0, "the question asks for the rate: it does not restart at the previous 10 mcg/min"
+    assert entries[-1]["clarification"] == MESSAGE
 
 
 def test_s5d_the_restart_verb_is_read_only_for_the_four_infusions():
@@ -302,7 +304,7 @@ def test_s8f_a_restart_written_beside_another_order_never_vanishes():
     _, entries, _ = boundary._play(boundary.START10 + " Reassess in 2 minutes.", "Stop norepinephrine. Reassess in 2 minutes.", "restart levophed, reassess in 5 minutes")
     last = entries[-1]
     assert last["executed"] is False and last["clarification"], last
-    assert any(o["class"] == "norepinephrine" and o["fate"] == "HELD_CLARIFICATION" for o in last["orders"]), last["orders"]
+    assert any(o["span"] == "restart levophed" and o["fate"] == "HELD_CLARIFICATION" for o in last["orders"]), last["orders"]
 
 
 @pytest.mark.parametrize("text, rate", [("My priority is perfusion, restart norepinephrine at 5 mcg/min", 5.0), ("Because MAP is 58, restart norepinephrine at 5 mcg/min", 5.0),

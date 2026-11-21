@@ -130,7 +130,7 @@ def test_t1_the_live_reader_emits_no_rate_for_a_target_and_the_historical_reader
     assert old == [{"type": "norepinephrine", "rate": 65.0, "units": None, "operation": "adjust"}], "the historical reader: the defect"
     assert len(live) == 1 and live[0]["type"] == "clarification" and not _numbers(live[0]) and live[0]["message"] == fp.INCOMPLETE_EXPLICIT_RATE == op.INCOMPLETE_EXPLICIT_RATE
     assert live[0]["incomplete_explicit_rate"] == {"agent": "norepinephrine", "operation": "adjust", "reason": "NUMBER_WITHOUT_RATE_UNITS"}
-    assert succession.verify() == {"live_is_the_successor": True, "historical_rebuilt": True, "hunks": len(succession.REVERSAL)}
+    assert succession.verify() == {"live_is_the_successor": True, "target_safety_rebuilt": True, "historical_rebuilt": True, "hunks": len(succession.REVERSAL), "order_safety_hunks": len(succession.REVERSAL_ORDER_SAFETY)}
     assert _legacy_parse("Titula noradrenalina a PA 100")["actions"][0]["rate"] == 100.0, "the historical reader read ANY number as a rate: a list of words could never hold them all"
 
 
@@ -316,7 +316,7 @@ def _final_state_after(monkeypatch, *, source: bool, pipeline: bool, drug_script
     if not source:
         monkeypatch.setattr(fp, "parse_family_actions", succession.historical_reader_module().parse_family_actions)
     if not pipeline:
-        monkeypatch.setattr(op, "incomplete_explicit_rate", lambda action: None)
+        monkeypatch.setattr(op, "incomplete_explicit_rate", lambda action, text="", state=None: None)
     encounter, entries, _ = _play(*drug_script)
     return _rate(encounter), entries[-1]["executed"]
 
