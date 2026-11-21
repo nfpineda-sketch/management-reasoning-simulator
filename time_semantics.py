@@ -81,6 +81,30 @@ _DURATION = re.compile(
     r"\b(?:over|run(?:ning)?\s+(?:in|over)|infus\w*|durante|a\s+pasar|pasar\s+en|en\s+bolo|en\s+infusion|"
     r"per\s+(?:minute|hour)|por\s+(?:minuto|hora)|/\s*(?:min|h|hr|hora))\b", re.I)
 
+# FD-ORDER-04 (2026-11-21): the "/min" of a vasoactive RATE UNIT ("mcg/min", "mcg/kg/min", "mg per minute") is the denominator of a rate, never the
+# time over which an order runs. ``_DURATION`` reads "/min" as a duration, so "increase norepinephrine to 12 mcg/min in 5 minutes" was never taken out
+# of the turn as an order for LATER and ran at once. Only the mass-per-time unit of a clause that NAMES one of the four infusions the engine runs is
+# set aside, and only for this test: every other clause reads "/min", "/h" and "per minute" exactly as before, and an explicit rate is still read
+# by the reader, which this layer does not change.
+_VASOACTIVE_NAME = re.compile(r"\b(?:norepinephrine|norepinefrina|noradrenal\w*|norepi|levophed|epinephrine|epinefrina|adrenalin\w*|epi|dobutamin\w*|nitroglycerin\w*|nitroglicerin\w*|"
+                              r"nitro)\b", re.I)
+_MASS_RATE_UNIT = re.compile(r"(?:mcg|ug|\u00b5g|\u03bcg|microgram\w*|mg)(?:(?:\s*/\s*|\s+(?:per|por)\s+)kg)?(?:\s*/\s*|\s+(?:per|por|each|every|cada|a\s+la|al)\s+)"
+                             r"(?:min(?:ute)?s?|minutos?|h(?:r|our)?s?|horas?)\b", re.I)
+# The role-named infusion ("the infusion", "the drip") given a rate in the units a vasoactive runs in is read like the named ones; the word "infusion" itself, in a clause that names a
+# vasoactive infusion, says WHAT the order is about and not how long it runs (adversarial review F12: "stop the norepinephrine infusion in 5 minutes" stopped it at once).
+_ROLE_NAME = re.compile(r"\b(?:infus\w*|drip|goteo|bomba)\b", re.I)
+_INFUSION_WORD = re.compile(r"\binfus\w*\b", re.I)
+_VASOACTIVE_RATE_UNIT = re.compile(r"(?:mcg|ug|\u00b5g|\u03bcg|microgram\w*)(?:(?:\s*/\s*|\s+(?:per|por)\s+)kg)?(?:\s*/\s*|\s+(?:per|por)\s+)min(?:ute)?s?\b", re.I)
+
+
+def _runs_for_a_duration(clause, raw=None):
+    """Whether the clause says how long something runs (a duration), not when it starts. ``raw`` is the clause as written (the clause splitter folds the micro sign of "\u00b5g/min" away)."""
+    written = raw if raw is not None else clause
+    if not _VASOACTIVE_NAME.search(written) and not (_ROLE_NAME.search(written) and _VASOACTIVE_RATE_UNIT.search(written)):
+        return bool(_DURATION.search(clause))
+    return bool(_DURATION.search(_INFUSION_WORD.sub(" ", _MASS_RATE_UNIT.sub(" rate ", written))))
+
+
 _VOLUME_TYPES = {"fluid", "blood", "oxygen"}
 # A destination's time belongs to its plan (a follow-up "in 48 hours", a discharge "in 2 hours"):
 # the reader already records it as a plan or a follow-up, and this layer leaves it there.
@@ -129,7 +153,7 @@ def _later_orders(text, parsed):
     actions = parsed.setdefault("actions", [])
     for _sentence, _terminator, clause, start in pieces:
         when = _later(clause)
-        if not when or _LOOK.search(clause) or _DURATION.search(clause) or _FOLLOW_UP.search(clause):
+        if not when or _LOOK.search(clause) or _runs_for_a_duration(clause, order_ledger._raw(text, index, start, start + len(clause))) or _FOLLOW_UP.search(clause):
             continue
         words = order_ledger._raw(text, index, start, start + len(clause))
         heard = [a for a in _parse(words).get("actions") or [] if a.get("type") != "clarification"]

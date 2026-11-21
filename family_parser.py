@@ -2028,6 +2028,102 @@ def _incomplete_explicit_rate(agent, operation, reason):
             "incomplete_explicit_rate": {"agent": agent, "operation": operation, "reason": reason}}
 
 
+# FD-ORDER-01 to FD-ORDER-06 (2026-11-21): WHO a rate and a stop belong to. A rate belongs to AT MOST ONE drug and a stop to at most one drug; an ambiguity is never
+# settled by the number that happens to be nearest, it is asked.
+#  * RATE. When the piece of the order names no other medication, the rate written in it is this drug's, as before. When it names another medication too, a rate belongs to
+#    the drug NAMED JUST BEFORE it (through the connectors of a dose only: "at", "to", "rate of", ...) or just after it ("5 mcg/min of propofol"). A piece in which a rate is
+#    claimed by ANOTHER drug, or by no one, is held WHOLE and asked (nothing runs, no number is kept, and no other medicine's order is dropped in silence).
+#  * STOP. A stop belongs to a vasoactive drug only when the stop verb governs that drug's NAME: the verb is written in the same piece with no exception between them ("stop all
+#    except norepinephrine", "stop NS but keep norepinephrine" never stop it), or the piece is a BARE name in a list the verb distributes over ("stop NS, norepinephrine"). A
+#    piece that says anything more ("norepinephrine to MAP 65", "norepinephrine at 12") does not inherit the stop: it is read as the order it is, which asks for its rate.
+_VASOACTIVE_ALIASES = {
+    "norepinephrine": r"norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|levophed",
+    "epinephrine": r"epinephrine|epinefrina|adrenaline|adrenalina|(?<!nor-)(?<!nor )epi",
+    "dobutamine": r"dobutamine|dobutamina",
+    "nitroglycerin": r"nitroglycerin|nitroglicerina|nitro",
+}
+_ANY_VASOACTIVE = "|".join(_VASOACTIVE_ALIASES.values())
+# Other ways a resident writes the four infusions that this reader does NOT read as orders ("NTG", "GTN", "NE", "nor-epi", "levo"). RECOGNITION ONLY, like the list below: they make a piece
+# that names the drug that way see that someone is named, so a rate written beside such a name is never read as another infusion's (adversarial review F09, F13). They are the
+# drug's own name inside a piece of that drug and another medicine's name in every other piece.
+_RECOGNISED_ALIASES = {
+    "norepinephrine": r"ne|nor[\s-]?epi|nore|noradr|norad|levo|norepinephrine?s?",
+    "epinephrine": r"adrenalin|epipen|adr",
+    "dobutamine": r"dobuta|dobutrex|dobu",
+    "nitroglycerin": r"ntg|gtn|tng|glyceryl\s+trinitrate|nitroglycerine|nitroglicerine|nitroglic|nitros",
+}
+# Names of other medicines a resident writes beside a vasoactive infusion. It is RECOGNITION ONLY (it supports nothing and gives no medicine a rate): it lets this reader see that
+# a piece names someone else. The reader's own agents (``_AGENTS``) and the other three infusions are added to it.
+_OTHER_INFUSION_AGENTS = (r"vasopressin|vasopresina|terlipressin\w*|dopamine|dopamina|phenylephrine|fenilefrina|milrinone|milrinona|esmolol|nicardipine|nicardipino|clevidipine|"
+                          r"nitroprusside|nitroprusiato|labetalol|isoproterenol|isoprenalina|lidocaine|lidocaina|adenosine|adenosina|insulin|insulina|heparin|heparina|"
+                          r"octreotide|octreotido|levosimendan|angiotensin\w*|methylene\s+blue|azul\s+de\s+metileno|oxytocin|oxitocina|magnesium|magnesio|potassium|potasio|"
+                          r"bicarbonate|bicarbonato|amiodarone|amiodarona|diltiazem|propofol|midazolam|fentanyl|fentanilo|ketamine|ketamina|dexmedetomidine|dexmedetomidina|"
+                          r"morphine|morfina|naloxone|naloxona|furosemide|furosemida|atropine|atropina|dextrose|glucosa|aminophylline|aminofilina|procainamide|procainamida|"
+                          r"alteplase|tenecteplase|tpa|remifentanil|remifentanilo|sufentanil|sufentanilo|rocuronium|rocuronio|vecuronium|vecuronio|cisatracurium|cisatracurio|"
+                          r"treprostinil|treprostinilo|epoprostenol|epoprostenolo|ephedrine|efedrina|nesiritide|nesiritida|alprostadil|prostaglandin\w*|hydralazine|hidralazina|enalaprilat|"
+                          r"propranolol|metoprolol|verapamil|verapamilo|digoxin|digoxina|lorazepam|diazepam|haloperidol|bivalirudin|argatroban|tirofiban|eptifibatide|cangrelor|"
+                          r"nimodipine|nimodipino|neosynephrine|pitressin|giapreza|phentolamine|fentolamina|methylergonovine|terbutaline|terbutalina|salbutamol|albuterol|"
+                          r"aminocaproic|tranexamic|tranexamico|amiodarone|ibutilide|vasopresor\w*|vasopressor\w*|inotrope\w*|inotropo\w*|sildenafil|iloprost|inhaled\s+nitric\s+oxide|nitric\s+oxide")
+# What may stand between a drug's name and the number that is its rate: only the connectors of a dose.
+_DOSE_CONNECTORS = re.compile(r"(?:[\s:=@(-]|\b(?:at|to|a|en|de|del|of|rate|tasa|dose|dosis|infusion|infusión|drip|gtt|goteo|iv|ev|up|hasta|titrated?|titulad[oa]|for)\b)*", re.I)
+# An EXCEPTION to a stop ("all except", "but keep") or a negation placed directly before the infusion's name ("stop NS not norepinephrine"): the stop does not govern that name. It counts only BEFORE the name
+# (between the verb and its object): "stop norepinephrine but keep the saline" and "stop norepinephrine to keep MAP above 65" stop the infusion. The class is closed: a reason that merely contains "not"
+# ("stop norepinephrine, the pressure is not low") is not an exception and the stop stands.
+_STOP_EXCEPTION = re.compile(r"\b(?:except|excepting|excluding|exclude|but|other\s+than|besides|apart\s+from|aside\s+from|keep|maintain|leave|"
+                             r"excepto|exceptuando|menos|salvo|pero|mantener|manten|mantenga|mantengo|deja|dejar|deje)\b"
+                             r"|\b(?:not|don't|dont|never|no|nunca|ni)\s+(?:the\s+|la\s+|el\s+)?(?:" + _ANY_VASOACTIVE + r")\b", re.I)
+_BARE_NAME_FILLERS = re.compile(r"\b(?:the|el|la|los|las|this|that|esta|este|esa|ese|su|his|her|its|a|an|un|una|infusion|infusions|infusión|infusiones|drip|drips|gtt|goteo|"
+                                r"perfusion|perfusión|bomba|pump|order|orden|please|por\s+favor|now|ahora|also|too|tambien|también)\b", re.I)
+
+
+def _drug_name_spans(body, own, own_kind=None):
+    """``[(start, end, "own" | "other")]`` for each medicine name in the piece: the words this piece's order is about (``own``), and every other medicine the reader can see."""
+    own_names = own + (r"|" + _RECOGNISED_ALIASES[own_kind] if own_kind in _RECOGNISED_ALIASES else "")
+    spans = [(m.start(), m.end(), "own") for m in re.finditer(r"\b(?:" + own_names + r")\b", body)]
+    others = [r"(?:" + pattern + r")" for other, pattern in _VASOACTIVE_ALIASES.items() if other != own_kind]
+    others += [r"(?:" + pattern + r")" for other, pattern in _RECOGNISED_ALIASES.items() if other != own_kind]
+    others.append(r"(?:" + _OTHER_INFUSION_AGENTS + r")")
+    others += [r"(?:" + pattern + r")" for agents in _AGENTS.values() for pattern in agents.values()]
+    spans += [(m.start(), m.end(), "other") for m in re.finditer(r"\b(?:" + "|".join(others) + r")\b", body)]
+    return sorted(spans)
+
+
+def _rate_claimant(body, literal, spans):
+    """Which drug a written rate belongs to: ``"own"``, ``"other"`` or ``None`` (no drug claims it). Never the nearest name by distance: the drug named just before the number
+    with only the connectors of a dose between them, or the drug a trailing "of <drug>" names."""
+    trailing = re.match(r"\s*(?:of|de|del)\s+(?:the\s+|la\s+|el\s+)?", body[literal.end():])
+    if trailing:
+        begins = literal.end() + trailing.end()
+        for start, end, who in spans:
+            if start == begins:
+                # "12 mcg/min of propofol" is propofol's, whatever is written before the number (adversarial review F10).
+                return who
+    before = [span for span in spans if span[1] <= literal.start()]
+    if before:
+        start, end, who = before[-1]
+        if _DOSE_CONNECTORS.fullmatch(body[end:literal.start()]):
+            return who
+    return None
+
+
+def _own_rate_literals(body, own, own_kind, literals):
+    """``(mine, foreign, ambiguous)``: the rate literals of the piece split by who they belong to. A piece that names no other medicine keeps every literal as before."""
+    spans = _drug_name_spans(body, own, own_kind)
+    if not any(who == "other" for _, _, who in spans):
+        return list(literals), [], []
+    mine, foreign, ambiguous = [], [], []
+    for literal in literals:
+        who = _rate_claimant(body, literal, spans)
+        (mine if who == "own" else foreign if who == "other" else ambiguous).append(literal)
+    return mine, foreign, ambiguous
+
+
+def _bare_vasoactive_name(body):
+    """Whether the piece is only the NAME of an infusion (with its article or the word "infusion"): the only piece that takes a stop from the list before it."""
+    rest = _BARE_NAME_FILLERS.sub(" ", re.sub(r"\b(?:" + _ANY_VASOACTIVE + r")\b", " ", body))
+    return not re.sub(r"[\s.,;:!?()\-]+", "", rest)
+
+
 # An explicit instruction to wait for a result before acting. Deliberately
 # narrow: it has to name the waiting, not merely sequence two orders, because
 # "give oxygen and then reassess" is not a dependency and must keep parsing as
@@ -2764,14 +2860,24 @@ _RESTART_INFUSION = re.compile(
     r"^(?P<lead>(?:(?:i\s+(?:will|want to)|i'll|i am going to|voy a|quiero|vamos a|i|we)\s+)?)"
     r"(?:restart|re-start|resume|reinicia(?:r|mos)?|reinicio|reanuda(?:r|mos)?|retoma(?:r|mos)?)\s+"
     r"(?=(?:(?:the|la|el)\s+)?(?:norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|levophed|nitroglycerin|nitroglicerina|nitro|"
-    r"dobutamine|dobutamina|epinephrine|epinefrina|adrenaline|adrenalina|epi)\b)", re.I)
+    r"dobutamine|dobutamina|epinephrine|epinefrina|adrenaline|adrenalina|(?<!nor-)(?<!nor )epi)\b)", re.I)
 #: What a restart of one of the four infusions can be read as. A restart that reads as anything else ("restart epinephrine 0.3 mg IM", "restart nitroglycerin 1000 mcg IV bolus") is a
 #: one-shot dose, not an infusion: it is left exactly as the historical reader left it (not read), never turned into a START of that dose (adversarial review, FD-TARGET-07).
 _INFUSION_TYPES = frozenset({"norepinephrine", "epinephrine", "dobutamine", "nitroglycerin"})
 
 
+_AMBIGUOUS_RATE = "Specify a single absolute target infusion rate; a relative change or several rates is ambiguous."
+
+
 def _reads_as_an_infusion(actions):
-    return bool(actions) and all(action.get("type") in _INFUSION_TYPES or action.get("incomplete_explicit_rate") for action in actions)
+    return bool(actions) and all(action.get("type") in _INFUSION_TYPES or action.get("incomplete_explicit_rate") or action.get("message") == _AMBIGUOUS_RATE for action in actions)
+
+
+def _restart_needs_a_rate(action):
+    """A restart that carries no explicit rate: the approved incomplete-rate question, with no number (the engine's own question for it says the same in other words)."""
+    if action.get("type") in _INFUSION_TYPES and action.get("operation") == "start" and action.get("rate") is None and action.get("rate_mcg_min") is None:
+        return _incomplete_explicit_rate(action["type"], "start", "NO_EXPLICIT_RATE")
+    return action
 
 
 def _parse_piece_core(piece, inherited=None):
@@ -2798,7 +2904,8 @@ def _parse_piece_core(piece, inherited=None):
     if restarted:
         actions, as_verb = _parse_piece_core(restarted["lead"] + "start " + text[restarted.end():], inherited)
         if _reads_as_an_infusion(actions):
-            return actions, as_verb
+            # FD-ORDER-05: a restart with no explicit rate is the approved incomplete-rate question, not the engine's own; the previous rate is never reused.
+            return [_restart_needs_a_rate(action) for action in actions], as_verb
     command = _COMMAND.match(text)
     verb = command["verb"] if command else inherited
     # A disposition names one destination and takes no list. "Hospitalizar en
@@ -3415,7 +3522,13 @@ def _parse_piece_core(piece, inherited=None):
     if (_operation(verb) in {"adjust", "continue", "stop"}
             and re.search(r"\b(?:infusion|drip|goteo|bomba)\b", body)
             and not re.search(_NAMED_INFUSION, body)):
-        rate, units = _amount(body, r"mcg\s*/\s*kg\s*/\s*min|mcg\s*/\s*min|ug\s*/\s*kg\s*/\s*min|ug\s*/\s*min|ml\s*/\s*h(?:r|ora)?")
+        rate_units = r"mcg\s*/\s*kg\s*/\s*min|mcg\s*/\s*min|ug\s*/\s*kg\s*/\s*min|ug\s*/\s*min|ml\s*/\s*h(?:r|ora)?"
+        # FD-ORDER-02: the rate another medicine of the same piece claims is not the running infusion's ("increase the infusion to MAP 65 with propofol 5 mcg/min").
+        written = list(re.finditer(r"(?<![\w.])(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(" + rate_units + r")\b", body))
+        mine, foreign, unclaimed = _own_rate_literals(body, r"infusion|drip|goteo|bomba", None, written)
+        if foreign or unclaimed:
+            return [_clarification("Specify a single absolute target infusion rate; a relative change or several rates is ambiguous.")], verb
+        rate, units = _amount(body, rate_units)
         return [{"type": "infusion_adjustment", "operation": _operation(verb),
                  "rate_value": rate, "rate_units": units}], verb
     # Faculty decision 13 of 2026-09-21: the nursing and support orders a
@@ -3473,16 +3586,34 @@ def _parse_piece_core(piece, inherited=None):
         if cpap and epap is None:
             epap = float(cpap[1])
         return [{"type": "niv", "mode": mode, "ipap_cmh2o": ipap, "epap_cmh2o": epap, "fio2_percent": _settings(body, "fio2"), "operation": _operation(verb)}], verb
-    if re.search(r"\b(?:dobutamine|dobutamina|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|levophed|nitroglycerin|nitroglicerina|nitro|epinephrine|epinefrina|adrenaline|adrenalina|epi)\b", body):
-        kind = ("epinephrine" if re.search(r"\b(?:epinephrine|epinefrina|adrenaline|adrenalina|epi)\b", body)
+    if re.search(r"\b(?:dobutamine|dobutamina|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|levophed|nitroglycerin|nitroglicerina|nitro|epinephrine|epinefrina|adrenaline|adrenalina|(?<!nor-)(?<!nor )epi)\b", body):
+        kind = ("epinephrine" if re.search(r"\b(?:epinephrine|epinefrina|adrenaline|adrenalina|(?<!nor-)(?<!nor )epi)\b", body)
                 else "nitroglycerin" if re.search(r"\b(?:nitroglycerin|nitroglicerina|nitro)\b", body)
                 else "dobutamine" if re.search(r"\b(?:dobutamine|dobutamina)\b", body) else "norepinephrine")
+        # FD-ORDER-03: a STOP belongs to this infusion only if the verb governs its name. A stop inherited from a list is taken only by a piece that is the bare name; anything
+        # more ("norepinephrine to MAP 65") is read as the order it is, without the verb; an exception ("all except norepinephrine", "NS but keep norepinephrine") is not read.
+        if _operation(verb) == "stop":
+            if command is None and not _bare_vasoactive_name(body):
+                return _parse_piece_core(text, None)
+            named = re.search(r"\b(?:" + _VASOACTIVE_ALIASES[kind] + r")\b", body)
+            if named and _STOP_EXCEPTION.search(body[:named.end()]):
+                # What an exception keeps is not stopped by the pieces after it either: the verb ends here ("stop all except dobutamine and norepinephrine").
+                return [_unreadable(text)], None
+            if sum(1 for pattern in _VASOACTIVE_ALIASES.values() if re.search(r"\b(?:" + pattern + r")\b", body)) > 1:
+                # One stop that names two infusions does not say which one it governs ("stop norepinephrine while dobutamine continues"): it is never settled by the reader's fixed
+                # priority between them (adversarial review F08).
+                return [_unreadable(text)], None
         # A rate may be written with a slash or in words: "20 mcg/min",
         # "20 mcg per minute", "20 mcg por minuto".
         per = r"(?:\s*/\s*|\s+(?:per|por|each|every|cada|a\s+la|al)\s+)"
         rate_matches = list(re.finditer(
             r"(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(mcg|ug|mg)" + per + r"(kg" + per + r")?"
             r"(min(?:ute)?s?|minutos?|h(?:r|our)?s?|horas?)\b", body))
+        # FD-ORDER-02: a rate belongs to at most ONE drug. One that another medicine of the same piece claims is not this infusion's; one that no one claims is asked.
+        rate_matches, foreign_rates, unclaimed_rates = _own_rate_literals(body, _VASOACTIVE_ALIASES[kind], kind, rate_matches)
+        if foreign_rates or unclaimed_rates:
+            # The whole piece is held, as it always was for two rates: reading only this infusion's part would drop the other medicine's order in silence.
+            return [_clarification("Specify a single absolute target infusion rate; a relative change or several rates is ambiguous.")], verb
         if len(rate_matches) > 1 or (_operation(verb) == "adjust" and re.search(r"\b(?:by|en)\s+-?\d", body)):
             return [_clarification("Specify a single absolute target infusion rate; a relative change or several rates is ambiguous.")], verb
         rate_match = rate_matches[0] if rate_matches else None
@@ -3567,7 +3698,8 @@ def _parse_piece_core(piece, inherited=None):
             # ("MAP 65", "SBP 120") was read as 65 or 120 and, for an adjustment, completed with the running infusion's units.
             bare_rates = re.findall(r"(?<![\w.])(-?(?:\d+(?:\.\d+)?|\.\d+))(?![\w.])", body)
             time_word = re.search(r"\b(?:minutes?|mins?|hours?|horas?|minutos?)\b", body)
-            if _operation(verb) in {"start", "adjust"} and len(bare_rates) == 1 and not time_word:
+            # FD-ORDER-06: a number beside "continue" is no rate either ("continue norepinephrine at 12" used to continue the running rate in silence): it is asked.
+            if _operation(verb) in {"start", "adjust", "continue"} and len(bare_rates) == 1 and not time_word:
                 return [_incomplete_explicit_rate(kind, _operation(verb), "NUMBER_WITHOUT_RATE_UNITS")], verb
             if _operation(verb) == "adjust":
                 return [_incomplete_explicit_rate(kind, "adjust", "NO_EXPLICIT_RATE")], verb
@@ -5118,6 +5250,9 @@ def parse_family_actions(text) -> dict:
                     # "Reevaluar en 30 min y luego alta" is no second reassessment (TD-39, cycle 9).
                     inherited = None
                 parsed, inherited = _parse_piece(piece, inherited)
+                if inherited in _STOP_VERBS and _STOP_EXCEPTION.search(piece):
+                    # An exception ("all except", "but keep") ends the stop: the items listed after it are what is kept (adversarial review F07).
+                    inherited = None
             if waiting and any(action.get("type") == "blood" for action in parsed):
                 # "Once blood arrives, 2 units O-neg", "After the CT, transfuse 2
                 # units PRBC": red cells that wait for something are asked about,
@@ -5254,6 +5389,9 @@ def parse_family_actions(text) -> dict:
         study = next((a["diagnostic"] for a in actions if a.get("type") == "diagnostic"), None)
         for action in deferred["actions"]:
             if action.get("type") in {"clarification", "reassessment"}:
+                if action.get("incomplete_explicit_rate") or action.get("message") == _AMBIGUOUS_RATE:
+                    # An infusion order with no explicit rate is asked even when it waits: dropping it would lose what was written with no word (adversarial review F06).
+                    actions.append(action)
                 continue
             # What it waits for: the study named in the same entry when there is
             # one, and otherwise every result that is still out.

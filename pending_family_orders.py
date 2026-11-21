@@ -190,6 +190,11 @@ def complete_bundle(pending, text, state=None):
         if not prefix:
             return None
         unit_only = re.fullmatch(r'(?:mcg|ug)\s*/\s*(?:kg\s*/\s*)?min', body)
+        if a['type'] in ('norepinephrine', 'nitroglycerin', 'dobutamine') and not unit_only:
+            # The answer is for THIS infusion and is one rate with its unit now (adversarial review F11): another drug's rate, two rates or a time to wait are asked again.
+            from order_pipeline import answer_is_one_rate_of, INCOMPLETE_EXPLICIT_RATE
+            if not answer_is_one_rate_of(body, a['type']):
+                return {'clarification': INCOMPLETE_EXPLICIT_RATE}
         candidate_text = prefix + ('1 ' if unit_only else '') + body
         candidates = parse_family_actions(candidate_text)['actions']
         if len(candidates) != 1:

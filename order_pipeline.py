@@ -292,9 +292,72 @@ _WAITING_FOR_WEIGHT = "waiting for the patient's weight"
 INCOMPLETE_EXPLICIT_RATE = "The order specifies a target or an incomplete rate. Specify an explicit rate with its units to continue."
 _UNIT_COMPLETED_INFUSIONS = ("norepinephrine", "dobutamine", "epinephrine")
 
+#: FD-ORDER-01 and FD-ORDER-07 (2026-11-21). A rate is executable only if its drug is attributed, the rate is explicit, its unit is explicit AND the unit is one this drug runs in. Two things
+#: the first barrier of the previous cycle could not see, and this one now does, with the same structural rule (no list of words):
+#:  * an adjustment named only by its ROLE ("increase the infusion to 40 mL/h") is resolved by the engine's completion against whatever infusion is running, and the unit it was written in is
+#:    dropped there (nitroglycerin took 40 mL/h as 40 mcg/min). Its unit must be one a vasoactive infusion runs in (mcg/min, mcg/kg/min), and mcg/kg/min is not one nitroglycerin runs in.
+#:  * a rate that arrives in the field ``rate_mcg_min`` (the form nitroglycerin is stored in, and the one the engine reads for any infusion) carries its unit in the NAME of the field, so the number
+#:    alone cannot tell a rate from a pressure target. It is executable only if the number is WRITTEN, with a mass-per-time unit, in a clause of the order that names that drug.
+_VASOACTIVE_RATE_UNITS = frozenset({"mcg/min", "mcg/kg/min"})
+_RATE_UNIT_WORDS = r"(?:\s*/\s*|\s+(?:per|por|each|every|cada|a\s+la|al)\s+)"
+_WRITTEN_RATE = re.compile(r"(?<![\w.])(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(mcg|ug|mg|micrograms?|microgramos?)" + _RATE_UNIT_WORDS + r"(kg" + _RATE_UNIT_WORDS + r")?(min(?:ute)?s?|minutos?|h(?:r|our)?s?|horas?)\b")
+_NAMED_RATE_AGENT = {
+    "norepinephrine": re.compile(r"(?<![a-z])(?:norepinephrine|noradrenalin[ae]?|norepinefrina|norepi|levophed)(?![a-z])"),
+    "epinephrine": re.compile(r"(?<![a-z])(?:epinephrine|adrenalin[ae]?|epinefrina|epi)(?![a-z])"),
+    "nitroglycerin": re.compile(r"(?<![a-z])(?:nitroglycerine?|ntg|nitroglicerina|nitro)(?![a-z])"),
+    "dobutamine": re.compile(r"(?<![a-z])(?:dobutamin[ae])(?![a-z])"),
+}
 
-def incomplete_explicit_rate(action):
-    """``(question, copy of the action without any rate)`` when an infusion order gave no explicit rate with units, else ``None``."""
+
+def _normalized_rate_unit(units):
+    return re.sub(r"\s+", "", str(units or "").lower().replace("\u00b5", "u").replace("\u03bc", "u")).replace("ug", "mcg")
+
+
+def _written_absolute_rates(text, kind):
+    """The mass-per-minute rates (mcg/min) WRITTEN, with their unit, in the clauses of the order that name this drug; the whole order when none does."""
+    # The micro sign is folded away by the clause splitter ("30 \u00b5g/min" would read as grams): it is a letter here.
+    text = str(text).replace("\u00b5", "u").replace("\u03bc", "u")
+    folded = L.fold(text)
+    _, pieces = L._clauses(text)
+    pattern = _NAMED_RATE_AGENT.get(kind)
+    others = [other for name, other in _NAMED_RATE_AGENT.items() if name != kind]
+    # The clauses of this drug, and the continuation the page appends to a held order when it is answered ("Clarification: 20 mcg/min"): that answer names no other infusion, and the
+    # clause of the question names only the drug, so a rate written in it was never going to be found there (adversarial review F01). A clause that names ANOTHER infusion never counts.
+    clauses = [clause for _sentence, _terminator, clause, _start in pieces
+               if pattern and (pattern.search(clause) or (clause.lstrip().startswith("clarification") and not any(other.search(clause) for other in others)))] or [folded]
+    rates = []
+    for clause in clauses:
+        for match in _WRITTEN_RATE.finditer(clause):
+            if match[3]:
+                continue  # per kilogram: not an absolute rate in mcg/min
+            value = float(match[1]) * (1000 if match[2] == "mg" else 1)  # "ug", "mcg", "micrograms": already micrograms
+            rates.append(value / 60 if match[4].startswith("h") else value)
+    return rates
+
+
+def answer_is_one_rate_of(text, kind):
+    """Whether the reply to "what rate?" for a held ``kind`` infusion order is ONE rate written with its unit, that names no other medicine and no time it should wait for.
+
+    The reply is read as an answer for the drug that asked (adversarial review F11): "dobutamine 12 mcg/min" answers nothing for norepinephrine, "12 mcg/min and 5 mcg/min" is two rates,
+    "12 mcg/min in 5 minutes" is an order for later. In each case the question is asked again; nothing is completed, and no unit is taken from anywhere but what was written."""
+    import family_parser as reader
+    import time_semantics
+    body = L.fold(str(text).replace("\u00b5", "u").replace("\u03bc", "u"))
+    if len(list(_WRITTEN_RATE.finditer(body))) != 1:
+        return False
+    if kind in reader._VASOACTIVE_ALIASES and any(who == "other" for _, _, who in reader._drug_name_spans(body, reader._VASOACTIVE_ALIASES[kind], kind)):
+        return False
+    return not time_semantics._later(body)
+
+
+def _is_written(number, rates):
+    return any(abs(number - rate) <= 1e-9 + 1e-6 * abs(rate) for rate in rates)
+
+
+def incomplete_explicit_rate(action, text="", state=None):
+    """``(question, copy of the action without any rate)`` when an infusion order gave no explicit rate with units that its drug runs in, else ``None``.
+
+    ``text`` is the order as it was written and ``state`` the encounter: with them the barrier also reads the unit a rate was written in and the infusion an adjustment will land on."""
     kind = action.get("type") if isinstance(action, dict) else None
     operation = str(action.get("operation") or "start").lower() if isinstance(action, dict) else ""
     if kind in _UNIT_COMPLETED_INFUSIONS:
@@ -302,16 +365,24 @@ def incomplete_explicit_rate(action):
             return None
         # a CONTINUE is held only when it carries a number with no units: the engine's completion would run that number with the running infusion's units
         if (action.get("rate") is not None and not action.get("units")) or (operation == "adjust" and action.get("rate") is None):
-            return INCOMPLETE_EXPLICIT_RATE, {**action, "rate": None}
-        return None
-    if kind == "nitroglycerin":
-        if operation == "adjust" and action.get("rate_mcg_min") is None:
+            return INCOMPLETE_EXPLICIT_RATE, {**action, "rate": None, **({"rate_mcg_min": None} if "rate_mcg_min" in action else {})}
+    if kind in _UNIT_COMPLETED_INFUSIONS or kind == "nitroglycerin":
+        if operation == "stop":
+            return None
+        if kind == "nitroglycerin" and operation == "adjust" and action.get("rate_mcg_min") is None:
             return INCOMPLETE_EXPLICIT_RATE, dict(action)
+        number = action.get("rate_mcg_min")
+        if number is not None and text and not _is_written(float(number), _written_absolute_rates(text, kind)):
+            return INCOMPLETE_EXPLICIT_RATE, {**action, "rate_mcg_min": None}
         return None
     if kind == "infusion_adjustment" and operation != "stop":
-        if action.get("rate_value") is None or action.get("rate_units"):
+        if action.get("rate_value") is None:
             return None
-        return INCOMPLETE_EXPLICIT_RATE, {**action, "rate_value": None}
+        units = _normalized_rate_unit(action.get("rate_units"))
+        running = [name for name in ("norepinephrine", "nitroglycerin", "dobutamine") if ((state or {}).get("treatments") or {}).get(name)]
+        unsupported = units not in _VASOACTIVE_RATE_UNITS or (units == "mcg/kg/min" and running == ["nitroglycerin"])
+        if unsupported:
+            return INCOMPLETE_EXPLICIT_RATE, {**action, "rate_value": None, "rate_units": None}
     return None
 
 
@@ -349,7 +420,7 @@ def split_bundle(state, parsed, *, text="", weight_waiting=()):
                 held.append((action, str(action.get("message") or "the order needs a clarification"), "question"))
                 question = question or action.get("message")
             continue
-        unitless = incomplete_explicit_rate(action)
+        unitless = incomplete_explicit_rate(action, text=text, state=state)
         if unitless:
             held.append((unitless[1], unitless[0], "question"))
             question = question or unitless[0]

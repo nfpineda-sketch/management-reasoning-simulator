@@ -122,6 +122,10 @@ INSTRUCTION_2026_11_20_TARGET_ORDER = ("Instrucción docente del 2026-11-20 (FD-
 INSTRUCTION_2026_11_20_TARGET_SOURCE = ("Instrucción docente del 2026-11-20 (FD-TARGET-01 a FD-TARGET-11: «objetivo fisiológico ≠ tasa de fármaco» reparado en la fuente, "
                                         "con el levantamiento acotado del congelamiento del lector y el segundo cerrojo conservado como defensa en profundidad)")
 
+INSTRUCTION_2026_11_21_ORDER_SAFETY = ("Instrucción docente del 2026-11-21 (FD-ORDER-01 a FD-ORDER-11: endurecimiento final de la seguridad de las órdenes vasoactivas —unidad compatible, una tasa y una "
+                                       "suspensión por fármaco, «/min» que no es duración, «restart»/«continue» sin tasa, la barrera posterior que lee rate_mcg_min y la respuesta numérica—, "
+                                       "con el levantamiento acotado del congelamiento del lector por segunda vez)")
+
 CORRECTIONS = (
     {
         "id": "C-2026-09-25-01",
@@ -3866,7 +3870,43 @@ CORRECTIONS = (
             "test_phase3_reader_succession.py::test_v5_every_phase_two_freeze_digest_recomputes_from_the_historical_reader_and_clinical_core_is_untouched",
         ],
         "preservation": None,
-    }
+    },
+    {
+        "id": "C-2026-11-21-01",
+        "date": "2026-11-21",
+        "title": "Órdenes vasoactivas: una tasa y una suspensión pertenecen a un solo fármaco, la unidad se exige y la orden incompleta nunca se vuelve ejecutable",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("El ciclo anterior (C-2026-11-20-02) cerró «objetivo ≠ tasa» y declaró ocho conductas previas (L-1 a L-8, TD-161) que podían ejecutar una tasa equivocada o volver ejecutable una orden "
+                   "incompleta. Se reprodujeron y se cerraron sólo ésas, con el congelamiento del lector levantado por segunda vez y con alcance estricto (FD-ORDER-01 a 11): un ajuste «de la infusión» en una "
+                   "unidad que ninguna infusión vasoactiva corre ya no se ejecuta (L-1); la tasa que otro medicamento reclama en la misma pieza no se atribuye al vasoactivo y la pieza se pregunta entera, "
+                   "sin heurística del número más cercano (L-2); una suspensión heredada de una lista, un vecino o una excepción no suspende un vasoactivo, sólo la que gobierna su nombre (L-3); el «/min» "
+                   "de una tasa de un vasoactivo no es la duración de una orden diferida (L-4); «restart» y «continue … at 12» sin tasa con unidad son la pregunta aprobada de tasa incompleta (L-5, L-6); "
+                   "la barrera del paso por el turno lee rate_mcg_min y exige el número escrito con su unidad en la cláusula del fármaco, de modo que cada barrera de la nitroglicerina protege sola (L-7); "
+                   "la respuesta de sólo un número en la ruta heredada de la página nunca es una tasa ni toma la unidad de la infusión en curso (L-8). Las órdenes válidas se leen y ejecutan exactamente como "
+                   "antes. El lector del cierre de la Fase 2 y el del primer sucesor se reconstruyen byte a byte desde el vivo (reader_succession) y todo digesto histórico se recalcula con el lector de su "
+                   "época; ningún registro sellado se reescribió. Sin cambio de fisiología, de tono, del acoplamiento con la bomba, del espejo, de la sombra, de la autoridad ni de clinical_core/."),
+        "authorised_by": INSTRUCTION_2026_11_21_ORDER_SAFETY,
+        "affects": {"modules": ["family_parser", "order_pipeline", "time_semantics", "app", "reader_succession"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": [
+            "test_phase3_order_safety_hardening.py::test_l1_an_adjustment_named_by_its_role_with_a_unit_no_vasoactive_runs_in_never_runs",
+            "test_phase3_order_safety_hardening.py::test_l2_the_reader_never_gives_a_vasoactive_infusion_the_rate_of_another_medicine_in_the_same_piece",
+            "test_phase3_order_safety_hardening.py::test_l2_in_the_real_encounter_nothing_runs_and_the_running_rate_does_not_move",
+            "test_phase3_order_safety_hardening.py::test_l3_a_stop_is_never_given_to_a_vasoactive_infusion_by_a_list_a_neighbour_or_an_exception",
+            "test_phase3_order_safety_hardening.py::test_l3_a_stop_that_is_written_for_the_drug_still_stops_it",
+            "test_phase3_order_safety_hardening.py::test_l4_an_order_for_later_that_carries_a_rate_unit_is_a_plan_not_something_done_now",
+            "test_phase3_order_safety_hardening.py::test_l5_a_restart_with_no_explicit_rate_is_the_approved_incomplete_rate_question",
+            "test_phase3_order_safety_hardening.py::test_l6_a_continue_with_a_number_and_no_unit_is_incomplete_not_a_silent_continue",
+            "test_phase3_order_safety_hardening.py::test_p3_479_the_whole_increase_restart_continue_matrix_in_the_real_encounter",
+            "test_phase3_order_safety_hardening.py::test_l7_the_pipeline_alone_holds_what_the_historical_reader_gave_as_a_nitroglycerin_rate",
+            "test_phase3_order_safety_hardening.py::test_l7_the_source_alone_holds_it_when_the_pipeline_barrier_is_removed",
+            "test_phase3_order_safety_hardening.py::test_l8_the_legacy_page_asks_again_when_the_answer_to_what_rate_is_not_a_rate_with_its_unit",
+            "test_phase3_order_safety_hardening.py::test_p3_482_a_valid_order_runs_with_no_numerical_drift_against_the_reader_of_the_first_successor",
+            "test_phase3_order_safety_hardening.py::test_p3_482_and_against_the_reader_of_the_phase_two_closure_for_every_order_it_read",
+        ],
+        "preservation": None,
+    },
 )
 
 

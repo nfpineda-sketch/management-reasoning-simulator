@@ -5666,12 +5666,9 @@ def try_resolve_pending_action(text):
             rate, units = parse_agent_mcg_rate(text, ["dobutamine"])
             if rate is None:
                 rate, units = parse_mcg_rate(text)
-            if rate is None:
-                bare = re.fullmatch(r"\s*(\d+(?:\.\d+)?)\s*", text)
-                if bare:
-                    rate = float(bare.group(1))
-                    units = "mcg/kg/min"
-            if rate is None or units != "mcg/kg/min":
+            # FD-ORDER-08: a number alone is never a rate. The unit is not taken from the drug's usual one (it was "mcg/kg/min" here): it has to be written.
+            import order_pipeline as _pipeline
+            if rate is None or units != "mcg/kg/min" or not _pipeline.answer_is_one_rate_of(text, "dobutamine"):
                 return {"clarification": "Please specify the dobutamine dose in mcg/kg/min (for example, 5 mcg/kg/min)."}
             resolved["rate"] = rate
             resolved["units"] = units
@@ -5726,16 +5723,10 @@ def try_resolve_pending_action(text):
     if pending.get("type") == "norepinephrine":
         resolved = dict(pending)
         rate, units = parse_mcg_rate(text)
-        active = st.session_state.state["treatments"]
-        if rate is None:
-            bare = re.fullmatch(r"\s*(\d+(?:\.\d+)?)\s*", text)
-            if bare and active.get("norepinephrine"):
-                rate = float(bare.group(1))
-                units = active.get("norepinephrine_units")
-            else:
-                return {"clarification": "What norepinephrine infusion rate would you like to use (for example, 0.05 mcg/kg/min or 5 mcg/min)?"}
-        if units is None and active.get("norepinephrine"):
-            units = active.get("norepinephrine_units")
+        # FD-ORDER-08: a number alone is never a rate, and its unit is never taken from the infusion that is running (a bare "12" ran as 12 mcg/min): rate AND unit must be written.
+        import order_pipeline as _pipeline
+        if rate is None or units is None or not _pipeline.answer_is_one_rate_of(text, "norepinephrine"):
+            return {"clarification": "What norepinephrine infusion rate would you like to use (for example, 0.05 mcg/kg/min or 5 mcg/min)?"}
         resolved["rate"] = rate
         resolved["units"] = units
         st.session_state.pending_action = None
