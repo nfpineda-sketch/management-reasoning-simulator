@@ -1,0 +1,288 @@
+{
+  "adversarial_review": {
+    "after_the_repairs_on_the_reviewers_corpora": {
+      "rate_ownership_3000_texts": {
+        "live_shapes": "56 unlisted medicine names (L-11) and 46 two infusions sharing one rate in a non-stop piece (L-15)",
+        "violations_closure": 1066,
+        "violations_first_successor": 600,
+        "violations_live": 102
+      },
+      "stop_attribution_3000_texts": {
+        "wrong_stop_first_successor": 1171,
+        "wrong_stop_live": 0
+      }
+    },
+    "declared": [
+      "F03 goal and time phrase read as a plan (L-14)",
+      "F05 valid order with a non-dose word and another medicine is asked (L-14)",
+      "F14 the barrier alone does not enforce ownership of an explicit rate (L-2 one layer)",
+      "F15 ceiling, step or baseline executed as the rate (L-13)",
+      "F16 not a defect (explicit mass/time conversion)",
+      "F17 relative arithmetic (out of scope)",
+      "generic time phrases (L-12) and the closed list of medicine names (L-11)"
+    ],
+    "findings": 17,
+    "generated_cases": 81000,
+    "material_reproduced_and_repaired": [
+      "F01 nitroglycerin answer refused for good (regression)",
+      "F02 micrograms spelled out or with the micro sign held (regression)",
+      "F06 an incomplete order of a deferred part vanished",
+      "F07 the last drug of an exception list was stopped",
+      "F08 a stop naming two infusions stopped the first by priority",
+      "F09 other names of the four infusions and other medicines",
+      "F10 a rate followed by 'of <drug>'",
+      "F11 answers: another drug, two rates, a time (family and legacy paths)",
+      "F12 the word 'infusion', alias 'epi', micro sign, per kg per minute, role-named",
+      "F13 'nor-epi' read as epinephrine"
+    ],
+    "new_unsafe_execution": 0,
+    "reader_differences_classified": 5921,
+    "reviewer": "one independent read-only agent that did not write the change, on a COPY of the tree (validation/ and faculty_review* never opened)",
+    "texts": 26779,
+    "unexplained_differences": 14
+  },
+  "certification": {
+    "after_the_certification_only_non_executable": [
+      "sections 13 to 15 of the document",
+      "decision row FD-P3-292",
+      "this checkpoint record, its index entry and the index pin"
+    ],
+    "before_the_freeze": {
+      "focused_failures": 0,
+      "focused_test_files": 151,
+      "focused_tests_passed": 5028,
+      "generated_corpus_texts": 83894,
+      "guards_after_the_records": 741,
+      "mined_texts": 1486,
+      "mutants": {
+        "first_pass_survivors": 4,
+        "killed": 53,
+        "survivors_closed_by": "four direct tests and the removal of dead alternatives; the ten affected mutants were run again and all were killed",
+        "total": 53
+      },
+      "new_test_file_tests": 355,
+      "unexplained_differences": 0
+    },
+    "candidate": {
+      "base": "08b9873bb0fa1dc26b45620b64dd43222b1b97a7",
+      "branch": "phase-3-runtime-integration",
+      "changed_or_new_files": 24,
+      "fingerprint": "6978a030e2919f592ece9311825e6b406bde20ff83dab768299adf92b30b88ed",
+      "fingerprint_at_start_equals_at_end": true,
+      "valid": true
+    },
+    "full_suite": {
+      "end": "2026-11-21T04:41:45Z",
+      "errors": 0,
+      "failures": 0,
+      "partitions": 24,
+      "resumptions": 0,
+      "runner": "the partitioned runner of the skill, under a resumable wrapper kept outside the repository",
+      "skipped": 98,
+      "start": "2026-11-21T02:17:10Z",
+      "tests": 14452,
+      "xfail": 1
+    },
+    "regressions": {
+      "active_passed": 56,
+      "active_total": 56,
+      "retired_not_run": 10,
+      "runner": "run_regressions.py"
+    }
+  },
+  "closure_audit": {
+    "L-1": {
+      "note": "an adjustment named by its role runs only in a unit a vasoactive infusion runs in (reader drops the number; pipeline rule on structured forms); mL/h on nitroglycerin no longer runs as mcg/min",
+      "status": "CLOSED"
+    },
+    "L-10": {
+      "note": "an isolated held order is held per turn and there is no recovery of malformed orders (FD-ORDER-09: PERMANENT_FAIL_CLOSED stays)",
+      "status": "INTENTIONALLY_DEFERRED"
+    },
+    "L-11": {
+      "note": "the recognition of other medicines (and of the other names of the four infusions) is a CLOSED list; an unlisted medicine beside an infusion's only rate literal is not seen",
+      "status": "INTENTIONALLY_DEFERRED"
+    },
+    "L-12": {
+      "note": "time phrases the common time system does not recognise ('despues de', 'luego de', 'in 5 minutes,' with a comma, 'wait 5 minutes then', 'in five minutes', 'later') run a vasoactive order at once, like every other order",
+      "status": "INTENTIONALLY_DEFERRED"
+    },
+    "L-13": {
+      "note": "a ceiling, step or baseline ('to MAP 65 max 20 mcg/min') is executed as the rate: a clinical-semantics decision",
+      "status": "INTENTIONALLY_DEFERRED"
+    },
+    "L-14": {
+      "note": "'... to 12 mcg/min to reach MAP 65 in 10 minutes' is a plan (nothing runs); a valid single-rate order with a non-dose word and another medicine in the piece is asked",
+      "status": "INTENTIONALLY_DEFERRED"
+    },
+    "L-15": {
+      "note": "a non-stop piece that names two infusions reads the first by the reader's priority ('start norepinephrine while dobutamine runs' asks for dobutamine's rate); 'stop X then Y' stops Y; 'restart X in 5 minutes' is asked; 'levophed 12' and 'epi 12' are not read; 'nor-epi' is asked; '2 mcg/min more' is read as absolute",
+      "status": "INTENTIONALLY_DEFERRED"
+    },
+    "L-2": {
+      "note": "a rate belongs to at most one drug, structurally (the drug named just before it through dose connectors, or 'of <drug>' after it); a foreign or unclaimed rate holds the whole piece; the recognition of other medicines is a closed list (L-11)",
+      "status": "CLOSED"
+    },
+    "L-3": {
+      "note": "a stop governs a vasoactive only if the verb governs its name; never inherited by a piece that says more, never through an exception (which also ends the stop for the pieces after it), never chosen by priority between two infusions named in one piece",
+      "status": "CLOSED"
+    },
+    "L-4": {
+      "note": "the '/min' of a vasoactive rate unit (and the word 'infusion' naming it) is not a duration; the generic time phrases of the common time system are not part of this (L-12)",
+      "status": "CLOSED"
+    },
+    "L-5": {
+      "note": "'restart <drug>' with no explicit rate is the approved incomplete-rate question; the previous rate is never reused",
+      "status": "CLOSED"
+    },
+    "L-6": {
+      "note": "'continue <drug> at 12' is the approved incomplete-rate question; '... at 12 mcg/min' is valid",
+      "status": "CLOSED"
+    },
+    "L-7": {
+      "note": "the pipeline barrier reads rate_mcg_min; each barrier of a target-as-rate or incomplete-rate order protects alone (proven with the other removed, and by mutants)",
+      "status": "MITIGATED_BY_DEFENSE_IN_DEPTH"
+    },
+    "L-8": {
+      "note": "an answer is ONE rate with its unit, for the drug that asked, with no time to wait for, on the family path and on the legacy page path; units are taken from nothing but what was written",
+      "status": "CLOSED"
+    },
+    "L-9": {
+      "note": "nitroglycerin is no longer protected by the source alone: the pipeline barrier reads rate_mcg_min and requires the number to be written with its unit in the drug's clauses",
+      "status": "MITIGATED_BY_DEFENSE_IN_DEPTH"
+    }
+  },
+  "confirmations": {
+    "common_core_runtime_authority": false,
+    "no_clinical_core_edit": true,
+    "no_clinical_validation_claim": true,
+    "no_consciousness_authority": true,
+    "no_malformed_order_recovery": true,
+    "no_map_target_titration": true,
+    "no_new_drug": true,
+    "no_norepinephrine_authority_expansion": true,
+    "no_parameter_selected": true,
+    "no_physiology_change": true,
+    "no_pump_coupling_change": true,
+    "no_resident_deployment": true,
+    "no_sealed_record_rewritten": true,
+    "no_shadow_boundary_change": true,
+    "no_terminal_authority": true,
+    "no_tone_recalibration": true,
+    "no_weight_based_dosing": true
+  },
+  "decision_reference": "FD-ORDER-01 to FD-ORDER-11",
+  "evidence_class": "MODEL_ANALYSIS",
+  "facts": {
+    "calibration_freeze_components_that_moved": [
+      "input_path_sources"
+    ],
+    "closure_freeze_digests_recompute": true,
+    "core_digest": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+    "executable_files_changed": [
+      "family_parser.py",
+      "order_pipeline.py",
+      "time_semantics.py",
+      "pending_family_orders.py",
+      "app.py",
+      "reader_succession.py"
+    ],
+    "executable_files_not_changed": [
+      "family_engine.py",
+      "active_order_context.py",
+      "shared_order_language.py",
+      "shared_order_quantities.py",
+      "weight_based_doses.py",
+      "runtime_shadow.py",
+      "runtime_tone_support.py",
+      "clinical_core/"
+    ],
+    "reader": {
+      "historical_git_blob": "1d17bf8b3dce66da5f1c8291237e2e7a7afde1c0",
+      "hunks_first_succession": 7,
+      "hunks_second_succession": 12,
+      "successor_git_blob": "a71a3888bc687a17a9eea24a6b06096ad58ae448",
+      "target_safety_git_blob": "7a85714eb2b6fccb47507384a71fe91451e71ecb"
+    },
+    "scenario_inputs_identical": true,
+    "successor_record_digest": "286053a6ac8063a46ccc83db78357f861f87193f92892a561a91ede4b2b00b5a",
+    "timing": {
+      "certification": "2026-11-21T02:17:10Z to 2026-11-21T04:41:45Z",
+      "cycle_start": "2026-11-20T23:59:21Z"
+    }
+  },
+  "limitations": [
+    "L-10: an isolated held order is held per turn and there is no recovery of malformed orders (FD-ORDER-09: PERMANENT_FAIL_CLOSED stays)",
+    "L-11: the recognition of other medicines (and of the other names of the four infusions) is a CLOSED list; an unlisted medicine beside an infusion's only rate literal is not seen",
+    "L-12: time phrases the common time system does not recognise ('despues de', 'luego de', 'in 5 minutes,' with a comma, 'wait 5 minutes then', 'in five minutes', 'later') run a vasoactive order at once, like every other order",
+    "L-13: a ceiling, step or baseline ('to MAP 65 max 20 mcg/min') is executed as the rate: a clinical-semantics decision",
+    "L-14: '... to 12 mcg/min to reach MAP 65 in 10 minutes' is a plan (nothing runs); a valid single-rate order with a non-dose word and another medicine in the piece is asked",
+    "L-15: a non-stop piece that names two infusions reads the first by the reader's priority ('start norepinephrine while dobutamine runs' asks for dobutamine's rate); 'stop X then Y' stops Y; 'restart X in 5 minutes' is asked; 'levophed 12' and 'epi 12' are not read; 'nor-epi' is asked; '2 mcg/min more' is read as absolute",
+    "the new records have no signature (the same limit as TD-153 item 7)"
+  ],
+  "next_human_action": "Return to the authority and simulator-development line. A faculty member decides, only if and when it is wanted, in order of value: (1) whether a ceiling, step or baseline written beside a target is a rate (L-13); (2) whether generic medication recognition replaces the closed list (L-11); (3) how the common time system reads the remaining time phrases (L-12). Nothing else is to be done on order parsing until then.",
+  "open_faculty_decisions": [
+    "ceiling/step/baseline numbers beside a target (L-13)",
+    "generic medication recognition instead of a closed list (L-11)",
+    "the remaining time phrases of the common time system (L-12)",
+    "retire the legacy numeric reply of the page, if it is not conducted (kept closed by this package)"
+  ],
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-21",
+    "generating_code": {
+      "app.py": "31839d8fa6cd318f80470bd3fca1abb4b8c5fb8f5f739e8f9f5bd30af962503b",
+      "clinical_core": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "family_parser.py": "39308bfd456f3b8443d9050bf9917ed3d7c47cd2a0086484dae113417b50d1c5",
+      "order_pipeline.py": "7df07c7684b4bf5320c9e2259969e2cc5d3634952fa554d361afee471ed61cfc",
+      "pending_family_orders.py": "d44941f3234a67fceb69df733dd700afecc9ea257692ef8d169322a4b6c98611",
+      "reader_succession.py": "97eef67a2a39925bffc4a5318041de808bcd6c667d29c37b085768638e302032",
+      "successor_record_digest": "286053a6ac8063a46ccc83db78357f861f87193f92892a561a91ede4b2b00b5a",
+      "test_order_safety_hardening_checkpoint.py": "f8aafa7813d03aee37535b038b8f7c89b5a8ac5dd2d6eb6849899781f8aa94a1",
+      "test_phase3_order_safety_hardening.py": "d23e9d6928b8334c96a3296c4dce8fc7827d71bdbdf58ab2f50ed56844fdd7d2",
+      "time_semantics.py": "008b497c75c75de79622e23c47dd5a9c39f916048628230c05c6bbb3823ae39b"
+    },
+    "generating_code_fingerprint": "dbadc8fefdeecc8e1c1eaf820e2bfa0181a569743b231bd92343d6c07bfae508",
+    "grant_id": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V3",
+    "record_id": "ORDER_SAFETY_CHECKPOINT_V1",
+    "record_schema_version": 1,
+    "source_data_digest": "f973da906255b0228e0362afdbf23a7fb1b564d417c5972910dedb91f95e996b",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "record_digest": "e5ccba3ca2c1dd5051ce0287cf4c1f1c963b2a2aa3e72cff6da8c2bc1b5bd908",
+  "record_type": "ORDER_SAFETY_CHECKPOINT",
+  "sequence": [
+    "P3-474 reproduce L-1 to L-8 through the real path before any code",
+    "P3-475/476 ownership contract and unit guard",
+    "P3-477 stop attribution",
+    "P3-478 the '/min' of a deferred order",
+    "P3-479 restart/continue matrix",
+    "P3-480 the pipeline barrier reads rate_mcg_min",
+    "P3-481 numeric-only answers",
+    "P3-482 valid orders without numerical drift",
+    "P3-483 succession of three readers and the sealed record",
+    "P3-484 corpora, one independent review, reproduction and repair of F01 to F13, 53 mutants",
+    "P3-485 closure audit L-1 to L-15",
+    "P3-486 one full certification on one fingerprint",
+    "P3-487 checkpoint (verdict B) and publication"
+  ],
+  "statement": "The demonstrated order semantics that could execute the wrong vasoactive rate, attribute another drug's rate, stop the wrong infusion, make an incomplete order executable or bypass the defense in depth are closed: a rate and a stop belong to one drug (structurally, with no nearest-number heuristic), the unit is required and compatible with the drug, the '/min' of a rate unit is not a duration, a restart or a continue with no rate with its unit is the approved incomplete-rate question, the pipeline barrier reads rate_mcg_min so each barrier of nitroglycerin protects alone, and an answer is one rate with its unit for the drug that asked. The reader freeze was lifted a second time, narrowly: the reader of the first successor and the reader of the Phase-2 closure are rebuilt byte for byte from the live one, every Phase-2 digest recomputes from the closure reader, the calibration freeze moved in exactly one component and nothing sealed was rewritten. One independent adversarial review found 17 behaviors; the material ones (two of them regressions of this very change) were reproduced and repaired and the rest are declared. What remains is low-risk semantics that needs a faculty decision, listed with its exact shape.",
+  "verdict": "B",
+  "verdict_name": "HIGH_RISK_ORDER_GAPS_FIXED_WITH_LOW_RISK_SEMANTICS_DEFERRED",
+  "verdicts": {
+    "A": "VASOACTIVE_ORDER_EXECUTION_SAFETY_BOUNDARY_CLOSED",
+    "B": "HIGH_RISK_ORDER_GAPS_FIXED_WITH_LOW_RISK_SEMANTICS_DEFERRED",
+    "C": "DRUG_RATE_ATTRIBUTION_REQUIRES_GENERIC_ORDER_REDESIGN",
+    "D": "HISTORICAL_RECONSTRUCTION_BLOCKS_SOURCE_FIX",
+    "E": "NEW_MATERIAL_ORDER_EXECUTION_SAFETY_DEFECT_FOUND"
+  },
+  "version": "ORDER_SAFETY_CHECKPOINT_V1",
+  "why_not_the_others": {
+    "A": "not every limitation is closed: the closed-list recognition of other medicines, the generic time phrases, the ceiling/step/baseline number and the two-infusion non-stop piece remain, each declared with its shape",
+    "B": "this is the verdict",
+    "C": "the demonstrated gaps were closed with structural rules inside the existing order language; a generic medication-recognition redesign is the only thing that would close L-11 and it is not needed to close what was demonstrated",
+    "D": "the historical reconstruction is exact for both successions: the git blob and SHA-256 of the closure reader and of the first successor are reproduced, every recorded closure digest recomputes with the reader of its time and no sealed record changed",
+    "E": "every material defect the review found was reproduced and repaired inside this package; no unrepaired material order-execution defect remains: what remains needs a faculty decision on clinical semantics and is declared"
+  }
+}

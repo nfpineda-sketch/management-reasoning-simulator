@@ -495,6 +495,12 @@
       "record_digest": "576e11f2555012932c26ead757e932eeae15672bf9af05df724dec688fd2bb59",
       "record_id": "NOREPINEPHRINE_TITRATION_V1_FACULTY_REVIEW"
     },
+    "PHASE3_ORDER_SAFETY_CHECKPOINT.json": {
+      "class": "VERSIONED",
+      "file_sha256": "62073a1ebc418d98a262290b2264df22e32f3d01286030db9c6b7b6a79093bbd",
+      "record_digest": "e5ccba3ca2c1dd5051ce0287cf4c1f1c963b2a2aa3e72cff6da8c2bc1b5bd908",
+      "record_id": "ORDER_SAFETY_CHECKPOINT_V1"
+    },
     "PHASE3_PAIR_DRY_SERIES.json": {
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "dedcfd6baba99bdbb8a69ecded6f306bbba724bf51b2d8a0b7283de0a14c2ada"
@@ -510,6 +516,12 @@
     "PHASE3_PRESSURE_CHECKPOINT.json": {
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "95fb2c9a39ce2234b665d03e8421c611522d414695425027d946d1d7094db859"
+    },
+    "PHASE3_READER_SUCCESSION_ORDER_SAFETY.json": {
+      "class": "VERSIONED",
+      "file_sha256": "90d51d50948bec80493a77fab56a391900f9ffb5f7c40047fec11c87f86f59db",
+      "record_digest": "286053a6ac8063a46ccc83db78357f861f87193f92892a561a91ede4b2b00b5a",
+      "record_id": "PHASE3_READER_SUCCESSION_ORDER_SAFETY_V1"
     },
     "PHASE3_READER_SUCCESSION_TARGET_SAFETY.json": {
       "class": "VERSIONED",
