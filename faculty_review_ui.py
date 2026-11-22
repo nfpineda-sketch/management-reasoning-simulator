@@ -22,6 +22,8 @@ TONE_BANNER = ("FACULTY DEVELOPMENT REVIEW · controlled, faculty-only developme
                "Not a resident pilot, not production, not a clinical validation.")
 TITRATION_BANNER = ("FACULTY DEVELOPMENT REVIEW · controlled, faculty-only development environment · stored development trajectories of one synthetic case. "
                     "Not a resident pilot, not production, not a clinical validation.")
+MANAGEMENT_BANNER = ("FACULTY DEVELOPMENT REVIEW · controlled, faculty-only development environment · stored development management paths of one synthetic case, each with its management trace. "
+                     "Not a resident pilot, not production, not a clinical validation.")
 GENERIC_REFUSAL = "This is a faculty development review environment. It is not available to this account."
 BUNDLE_KEY = "phase3_faculty_review_bundle"
 REVEALED_KEY = "phase3_faculty_review_revealed"
@@ -30,9 +32,11 @@ TRAJECTORY_MODE = "Trajectory review (first review)"
 REREVIEW_MODE = "Trajectory re-review"
 TONE_MODE = "Norepinephrine review (vascular tone)"
 TITRATION_MODE = "Norepinephrine titration review"
+MANAGEMENT_MODE = "Management trace review (GI paths)"
 HELD_NOTE = "The other review modes open when this re-review is complete."
 TONE_HELD_NOTE = "The other review modes open when this review is complete."
 TITRATION_HELD_NOTE = "The other review modes open when this review is complete."
+MANAGEMENT_HELD_NOTE = "The other review modes open when this review is complete."
 LIVE_MODE = "Live review encounter (advanced)"
 MODE_KEY = "faculty_review_mode"
 MODE_CHOICE_KEY = "faculty_review_mode_choice"       # a plain session key: a widget that is not drawn while an encounter is on screen loses its state, the choice must not
@@ -68,7 +72,7 @@ def gate(st: Any, layer: Any, account_context: Any, accounts: bool) -> dict:
 
 def launcher(st: Any, layer: Any, context: Any, initial_state: Any, reset_session: Callable, start_encounter: Callable, trajectory_page: Callable | None = None, rereview_page: Callable | None = None,
              default_mode: str | None = None, hold_prior_modes: Callable | None = None, tone_page: Callable | None = None, hold_other_modes: Callable | None = None,
-             titration_page: Callable | None = None, hold_titration: Callable | None = None) -> None:
+             titration_page: Callable | None = None, hold_titration: Callable | None = None, management_page: Callable | None = None, hold_management: Callable | None = None) -> None:
     """The review launcher: the scripted encounters, nothing else. Draws and stops the page when nothing has started."""
     review = layer.review
     st.title("Faculty development review")
@@ -120,16 +124,32 @@ def launcher(st: Any, layer: Any, context: Any, initial_state: Any, reset_sessio
             st.caption(TITRATION_HELD_NOTE)
             titration_page(st, layer, context)
             return
+    if trajectory_page is not None and management_page is not None and hold_management is not None:
+        # The same hold for the GI MANAGEMENT-TRACE review (P3-514): while this reviewer has not completed it, THIS launcher offers nothing but it (the other modes draw earlier trajectories, the legacy comparator
+        # and the reviewer's earlier judgments). A temporary hold on this launcher, not a product switch: the data of the other modes is untouched and they return when the ten paths are submitted. Whatever cannot
+        # be decided is held. It comes AFTER the other holds: a reviewer whose earlier review is still pending is shown that one first, exactly as before.
+        try:
+            held_management = bool(hold_management(st, layer, context))
+        except Exception:
+            held_management = True
+        if held_management:
+            st.session_state[MODE_CHOICE_KEY] = MANAGEMENT_MODE
+            st.session_state.pop(MODE_KEY, None)
+            st.warning(MANAGEMENT_BANNER)
+            st.caption(MANAGEMENT_HELD_NOTE)
+            management_page(st, layer, context)
+            return
     if trajectory_page is not None:
         # The multifamily TONE review (norepinephrine / vascular tone, five scenarios) is a third trajectory page, handed in the same way: the same review on another stored set, the other pages and their records untouched.
-        modes = [TRAJECTORY_MODE] + ([REREVIEW_MODE] if rereview_page is not None else []) + ([TONE_MODE] if tone_page is not None else []) + ([TITRATION_MODE] if titration_page is not None else []) + [LIVE_MODE]
+        modes = [TRAJECTORY_MODE] + ([REREVIEW_MODE] if rereview_page is not None else []) + ([TONE_MODE] if tone_page is not None else []) + ([TITRATION_MODE] if titration_page is not None else []) + ([MANAGEMENT_MODE] if management_page is not None else []) + [LIVE_MODE]
         # ``default_mode`` is the page a reviewer lands on before choosing anything. The app names the tone review (P3-406); while the re-review is pending the hold above shows it instead (the earlier review's page draws
         # the earlier trajectories or the reviewer's earlier judgments, and nothing of them may be on screen before a blind first pass). Left out, the default is what it always was.
         landing = default_mode if default_mode in modes else TRAJECTORY_MODE
         # The banner names the environment. The tone review (stored trajectories of synthetic cases and one probe) says what IT is, not the live GI authority's scope; the mode in force is the radio's value (set by the
         # browser before this run), else the choice remembered, else the landing page.
         in_force = next((value for value in (st.session_state.get(MODE_KEY), st.session_state.get(MODE_CHOICE_KEY)) if value in modes), landing)
-        st.warning(TONE_BANNER if in_force == TONE_MODE and tone_page is not None else TITRATION_BANNER if in_force == TITRATION_MODE and titration_page is not None else BANNER)
+        st.warning(TONE_BANNER if in_force == TONE_MODE and tone_page is not None else TITRATION_BANNER if in_force == TITRATION_MODE and titration_page is not None
+                   else MANAGEMENT_BANNER if in_force == MANAGEMENT_MODE and management_page is not None else BANNER)
         with st.expander("Review mode", expanded=False):
             mode = st.radio("Review mode", modes, index=modes.index(st.session_state.get(MODE_CHOICE_KEY, landing)) if st.session_state.get(MODE_CHOICE_KEY) in modes else modes.index(landing),
                             horizontal=True, key=MODE_KEY, label_visibility="collapsed")
@@ -145,6 +165,9 @@ def launcher(st: Any, layer: Any, context: Any, initial_state: Any, reset_sessio
             return
         if mode == TITRATION_MODE and titration_page is not None:
             titration_page(st, layer, context)
+            return
+        if mode == MANAGEMENT_MODE and management_page is not None:
+            management_page(st, layer, context)
             return
     if trajectory_page is None:
         st.warning(BANNER)

@@ -50,6 +50,10 @@ FIRST_PASS = (
 )
 #: Asked only where the experiment stopped: the halt-experience review the first protocol made of FR-A, FR-D and FR-F must not be lost.
 HALT_QUESTION = {"id": "Q5H", "topic": "STOPPING POINT", "text": "Did the experiment stop at an understandable point?", "choices": ("Understandable", "Uncertain", "Not understandable")}
+#: P3-514 (FD-MTRACE-02): the ONE focused question a stored set may add to the five, by id and only from this registry. An item asks for it with ``extra_questions``; an item without that key (every earlier set)
+#: is asked exactly what it was asked before.
+EXTRA_QUESTIONS = {"Q6": {"id": "Q6", "topic": "MANAGEMENT MEANING", "text": "How would you classify the management shown?",
+                          "choices": ("Reasonable", "Temporizing", "Incomplete", "Clearly nonbeneficial")}}
 CHANGED = {"id": "R1", "text": "Did seeing the legacy comparator change your judgment?",
            "choices": ("No", "Yes — increases confidence in common-core trajectory", "Yes — increases concern about common-core trajectory")}
 OVERALL = ("ACCEPT", "ACCEPT_WITH_LIMITATION", "RECALIBRATE", "REJECT")
@@ -227,12 +231,13 @@ def comparator_view(item: Mapping, state: Mapping | None) -> dict:
 def required_questions(item: Mapping) -> tuple:
     """(the questions that must be answered before the lock, their ids). The stopping-point question exists only where the experiment stopped."""
     halted = bool(dict(dict(item.get("bundle") or {}).get("authority_view") or {}).get("halted"))      # an item with no bundle (the re-review set) has no stop: only the five questions
-    questions = list(FIRST_PASS) + ([HALT_QUESTION] if halted else [])
+    extra = [EXTRA_QUESTIONS[question] for question in (item.get("extra_questions") or ()) if question in EXTRA_QUESTIONS]
+    questions = list(FIRST_PASS) + extra + ([HALT_QUESTION] if halted else [])
     return questions, [question["id"] for question in questions]
 
 
 def choices_of(question_id: str) -> tuple | None:
-    for question in tuple(FIRST_PASS) + (HALT_QUESTION, CHANGED):
+    for question in tuple(FIRST_PASS) + tuple(EXTRA_QUESTIONS.values()) + (HALT_QUESTION, CHANGED):
         if question["id"] == question_id:
             return tuple(question["choices"])
     return None

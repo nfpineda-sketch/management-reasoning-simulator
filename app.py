@@ -85,6 +85,7 @@ if os.environ.get("MRS_FACULTY_DEVELOPMENT_REVIEW", "").strip():
     import faculty_trajectory_rereview_ui as _faculty_rereview_ui       # P3-352: the blind re-review page of the joint-region candidate (same review, another stored set); handed to the launcher the same way
     import faculty_tone_review_ui as _faculty_tone_ui                   # P3-406: the multifamily norepinephrine / vascular-tone review page (same review, another stored set); handed to the launcher the same way
     import faculty_titration_review_ui as _faculty_titration_ui         # P3-441: the norepinephrine titration review page (same review, another stored set); handed to the launcher the same way
+    import faculty_management_review_ui as _faculty_management_ui       # P3-514: the GI management-trace review page (same review, another stored set); handed to the launcher the same way
     import runtime_authority as _authority_for_review
     _FACULTY_LAYER = _authority_for_review.faculty_review_layer()      # the page's one crossing into the Phase-3 layer
     _FACULTY_REVIEW = _faculty_review_ui.gate(st, _FACULTY_LAYER, ACCOUNT_CONTEXT, accounts_enabled())
@@ -10423,8 +10424,9 @@ if not st.session_state.started:
         if _FACULTY_REVIEW.get("enabled"):
             # Phase 3 (P3-281): in the review environment the dashboard is replaced by the scripted review launcher; no other case can be started.
             _faculty_review_ui.launcher(st, _FACULTY_LAYER, ACCOUNT_CONTEXT, INITIAL_STATE, reset_session, start_encounter, trajectory_page=_faculty_trajectory_ui.draw, rereview_page=_faculty_rereview_ui.draw,
-                                          default_mode=_faculty_review_ui.TITRATION_MODE, hold_prior_modes=_faculty_rereview_ui.prior_modes_held, tone_page=_faculty_tone_ui.draw, hold_other_modes=_faculty_tone_ui.other_modes_held,
-                                          titration_page=_faculty_titration_ui.draw, hold_titration=_faculty_titration_ui.other_modes_held)
+                                          default_mode=_faculty_review_ui.MANAGEMENT_MODE, hold_prior_modes=_faculty_rereview_ui.prior_modes_held, tone_page=_faculty_tone_ui.draw, hold_other_modes=_faculty_tone_ui.other_modes_held,
+                                          titration_page=_faculty_titration_ui.draw, hold_titration=_faculty_titration_ui.other_modes_held,
+                                          management_page=_faculty_management_ui.draw, hold_management=_faculty_management_ui.other_modes_held)
         else:
             render_dashboard(ACCOUNT_CONTEXT, INITIAL_STATE, reset_session)
         st.stop()
