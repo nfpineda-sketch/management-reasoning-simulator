@@ -531,7 +531,7 @@ def test_t16_the_new_modules_import_nothing_of_the_engine_the_authority_the_shad
     imports = {alias.name for node in ast.walk(launcher) if isinstance(node, ast.Import) for alias in node.names} | {str(node.module) for node in ast.walk(launcher) if isinstance(node, ast.ImportFrom)}
     assert not any("trajectory" in name or "rereview" in name or "tone" in name or "titration" in name for name in imports), imports
     app = (ROOT / "app.py").read_text(encoding="utf-8")
-    assert "titration_page=_faculty_titration_ui.draw" in app and "hold_titration=_faculty_titration_ui.other_modes_held" in app and "default_mode=_faculty_review_ui.TITRATION_MODE" in app
+    assert "titration_page=_faculty_titration_ui.draw" in app and "hold_titration=_faculty_titration_ui.other_modes_held" in app and "default_mode=_faculty_review_ui.MANAGEMENT_MODE" in app      # P3-514 (declared adaptation): the landing page after the earlier reviews is now the GI management-trace review
     assert "tone_page=_faculty_tone_ui.draw" in app and "rereview_page=_faculty_rereview_ui.draw" in app and "hold_prior_modes=_faculty_rereview_ui.prior_modes_held" in app
 
 

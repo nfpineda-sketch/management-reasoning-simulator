@@ -502,9 +502,11 @@ def test_p11_a_whole_review_leaves_the_earlier_reviews_pages_and_records_untouch
 
 def test_p11b_after_completion_the_other_modes_return_by_an_explicit_choice_and_the_titration_data_is_intact(journey, world):  # noqa: F811
     at = _open(world, journey["credentials"], land=True)
-    assert _modes(at) == [[page.ui.TRAJECTORY_MODE, page.ui.REREVIEW_MODE, page.ui.TONE_MODE, page.ui.TITRATION_MODE, page.ui.LIVE_MODE]]
-    assert next(item for item in at.radio if item.label == "Review mode").value == page.ui.TITRATION_MODE and "REVIEW COMPLETE · 5 / 5" in _everything(at)
-    assert page.ui.TITRATION_HELD_NOTE not in _everything(at)
+    assert _modes(at) == [[page.ui.TRAJECTORY_MODE, page.ui.REREVIEW_MODE, page.ui.TONE_MODE, page.ui.TITRATION_MODE, page.ui.MANAGEMENT_MODE, page.ui.LIVE_MODE]]
+    assert next(item for item in at.radio if item.label == "Review mode").value == page.ui.MANAGEMENT_MODE, "released, the landing page is the newest review, the management-trace review (P3-514)"
+    next(item for item in at.radio if item.label == "Review mode").set_value(page.ui.TITRATION_MODE).run()
+    _check(at)
+    assert "REVIEW COMPLETE · 5 / 5" in _everything(at) and page.ui.TITRATION_HELD_NOTE not in _everything(at)
     next(item for item in at.radio if item.label == "Review mode").set_value(page.ui.TONE_MODE).run()
     _check(at)
     assert ITEMS["TIT-1"]["title"] not in _everything(at) and page.ui.TONE_BANNER in _everything(at), "the tone review is its own page again"
@@ -545,8 +547,11 @@ def test_p12b_the_hold_is_released_only_by_five_verified_records_by_the_operator
     assert _modes(_open(world, credentials)) == [], "four of five do not release it"
     _complete_by_log(world, credentials, (LAST,))
     done = _open(world, credentials, land=True)
-    assert _modes(done) == [[page.ui.TRAJECTORY_MODE, page.ui.REREVIEW_MODE, page.ui.TONE_MODE, page.ui.TITRATION_MODE, page.ui.LIVE_MODE]] and page.ui.TITRATION_HELD_NOTE not in _everything(done)
-    assert next(item for item in done.radio if item.label == "Review mode").value == page.ui.TITRATION_MODE and "REVIEW COMPLETE · 5 / 5" in _everything(done)
+    assert _modes(done) == [[page.ui.TRAJECTORY_MODE, page.ui.REREVIEW_MODE, page.ui.TONE_MODE, page.ui.TITRATION_MODE, page.ui.MANAGEMENT_MODE, page.ui.LIVE_MODE]] and page.ui.TITRATION_HELD_NOTE not in _everything(done)
+    assert next(item for item in done.radio if item.label == "Review mode").value == page.ui.MANAGEMENT_MODE, "released, the landing page is the newest review (P3-514)"
+    next(item for item in done.radio if item.label == "Review mode").set_value(page.ui.TITRATION_MODE).run()
+    _check(done)
+    assert "REVIEW COMPLETE · 5 / 5" in _everything(done)
     log = _log_of(world, credentials, "TIT-3")
     kept = log.record_path.read_text(encoding="utf-8")
     log.record_path.unlink()                                                          # the log says submitted, the record that must verify it is gone: the hold comes back
@@ -557,7 +562,7 @@ def test_p12b_the_hold_is_released_only_by_five_verified_records_by_the_operator
     assert _modes(_open(world, credentials)) != []
     other = page._faculty(world)
     assert [list(item.options) for item in _open(world, other, hold=False, land=True).radio if item.label == "Review mode"] == [
-        [page.ui.TRAJECTORY_MODE, page.ui.REREVIEW_MODE, page.ui.TONE_MODE, page.ui.TITRATION_MODE, page.ui.LIVE_MODE]], "the operator's switch"
+        [page.ui.TRAJECTORY_MODE, page.ui.REREVIEW_MODE, page.ui.TONE_MODE, page.ui.TITRATION_MODE, page.ui.MANAGEMENT_MODE, page.ui.LIVE_MODE]], "the operator's switch"
     monkeypatch.setenv(tui.OPERATOR_FLAG, "ON")                                       # anything but 'off' leaves the hold in force
     assert _modes(page._open(world, other, mode="titration")) == []
     monkeypatch.setattr(ftt, "load_set", lambda *args, **kwargs: {"ok": False, "problems": ["unverifiable"], "digest": None, "items": {}, "limitations": [], "audit": {}})

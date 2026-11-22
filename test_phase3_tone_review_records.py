@@ -49,7 +49,8 @@ def test_c2_the_generating_code_names_the_certified_core_and_leaves_out_only_the
     parts = RECORD["provenance"]["generating_code"]
     assert parts["clinical_core"] == CORE_DIGEST and parts["excluded_review_modules"] == list(build.REVIEW_MODULES) == ["faculty_tone_review.py", "faculty_tone_review_ui.py"]
     assert set(parts) == {"clinical_core", "application_modules", "application_module_count", "excluded_review_modules", "test_tone_pathway_analysis.py", "test_tone_review_analysis.py"}
-    newer = ("faculty_titration_review.py", "faculty_titration_review_ui.py", "reader_succession.py", "runtime_tone_snapshot.py", "runtime_ne_grant.py", "runtime_ne_authority.py")           # (declared adaptations: P3-440, the two modules of the later titration review; P3-473/FD-TARGET-01, the reader-succession tool; none of them existed when this set was generated)
+    newer = ("faculty_titration_review.py", "faculty_titration_review_ui.py", "reader_succession.py", "runtime_tone_snapshot.py", "runtime_ne_grant.py", "runtime_ne_authority.py",
+             "development_management_trace.py", "faculty_management_review.py", "faculty_management_review_ui.py")           # P3-505/P3-514 (declared adaptation): the three root modules of the later management-trace package           # (declared adaptations: P3-440, the two modules of the later titration review; P3-473/FD-TARGET-01, the reader-succession tool; none of them existed when this set was generated)
     modules = {name for name in ta.application_modules() if name not in build.REVIEW_MODULES and name not in newer}
     assert parts["application_module_count"] == len(modules)
     from clinical_core import amendment_3 as a3
