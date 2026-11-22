@@ -465,6 +465,12 @@
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "2f2f205b53960cf3190afb7e3f79d178d8b7a933b6b8fa5a306d8d8b664ac053"
     },
+    "PHASE3_NOREPINEPHRINE_AUTHORITY_CHECKPOINT.json": {
+      "class": "VERSIONED",
+      "file_sha256": "3bf3216659c95aa09dc44e7de5a8b98f239f7e8c235902ffee93f2c4bc76d5dc",
+      "record_digest": "4cac8d311b9e502f844d1d0896145c80305553385062296dd3ea5764fd828060",
+      "record_id": "NOREPINEPHRINE_AUTHORITY_CHECKPOINT_V1"
+    },
     "PHASE3_NOREPINEPHRINE_TARGET_ORDER_CHECKPOINT.json": {
       "class": "VERSIONED",
       "file_sha256": "0a61d78243a016a36901a3c44a6b347805c318c1b34369fc1507ae8b249bf8aa",

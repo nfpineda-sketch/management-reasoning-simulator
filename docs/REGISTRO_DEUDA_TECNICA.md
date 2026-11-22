@@ -1001,3 +1001,16 @@ Correcciones: `C-2026-11-21-01` (y las del 2026-11-20). Documento: `docs/PHASE3_
 4. **El congelamiento del lector se levantó por SEGUNDA vez, acotado:** el estado aceptado del lector es ahora su **segundo sucesor** (`test_prephase1_reader_freeze.py`), con el del primer sucesor y el del cierre reconstruibles byte a byte (tres lectores). Cualquier cambio posterior del lector exige una sucesión nueva y una decisión docente.
 5. **Pruebas adaptadas, declaradas:** los pines del lector y de la congelación de calibración (los tres estados), las pruebas de sucesión y del primer registro, y las del ciclo anterior que fijaban lo que este ciclo cambió **a propósito** (`restart` sin tasa, un número tras `continue`); cada una protege lo mismo. El detalle va en el registro sucesor.
 6. **Sin firma** del registro nuevo (sello y digesto en el índice): el mismo límite que `TD-153`, ítem 7.
+
+
+## TD-163 · Fase 3, promoción del control manual de norepinefrina a autoridad viva de desarrollo: lo que sigue sin cubrirse (ciclo del 2026-11-21)
+
+Decisiones: `FD-AUTHNE-01` a `FD-AUTHNE-12`. Documento: `docs/PHASE3_NOREPINEPHRINE_LIVE_AUTHORITY.md`. **Cambio ejecutable** (sin tocar `clinical_core/`, el lector, `family_engine.py`, `active_order_context.py`, el espejo, la V1/V2/V3 de la concesión de presión ni la fisiología): `runtime_ne_grant.py`, `runtime_tone_snapshot.py`, `runtime_ne_authority.py` (nuevos) y los puntos de enganche acotados de `runtime_authority.py`, `runtime_shadow.py`, `runtime_authority_pair.py`, `runtime_authority_session.py` y `runtime_faculty_review.py`. Sin autoridad de consciencia ni terminal, sin despliegue a residentes, sin validación clínica.
+
+1. **Superposición de consciencia bajo tono (`CONSCIOUSNESS_UNDER_TONE_UNRESOLVED`, abierta).** La superposición V1 corre ahora la misma hemodinámica que la presión (con norepinefrina); sólo es la guarda de la frontera de colapso que ya era, no escribe `mental_status` y no es visible. **Esa combinación no ha sido revisada por la facultad.**
+2. **`COMMON_TONE_PUMP_DEPENDENCE_NOT_YET_VALIDATED` (monitoreada).** No se promovió en familias limitadas por la bomba ni en el edema pulmonar.
+3. **«Continue norepinephrine» sin tasa** es falla cerrada (no está en la lista ratificada; la sombra lo leía como «sin cambio»): decidir si se acepta como no-op.
+4. **Órdenes compuestas con cláusulas de titulación (A7).** El lector congelado las deja fuera y la orden se ejecuta como la tasa explícita que contiene; no se reparó (tercera sucesión del lector y decisión docente). Una orden de norepinefrina retenida por la cola de pendientes no se probó de extremo a extremo.
+5. **La igualdad con las trayectorias ratificadas es medida, no un juicio humano nuevo:** lo que la facultad revisó fue la sombra; que la autoridad viva lo reproduce se verificó minuto a minuto.
+6. **Sin firma** del registro de punto de control (sello y digesto en el índice): el mismo límite que `TD-153`, ítem 7.
+7. **No se implementó, por mandato (FD-AUTHNE-12):** familias limitadas por la bomba, titulación por objetivo, dosis por peso, otro vasopresor, autoridad de consciencia o terminal, piloto con residentes.

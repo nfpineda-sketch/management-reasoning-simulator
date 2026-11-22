@@ -1,0 +1,311 @@
+{
+  "adversarial_review": {
+    "also_declared": "a norepinephrine order held by the pending-order queue was not tested end to end",
+    "declared_not_repaired": [
+      "A7"
+    ],
+    "findings": 7,
+    "material": 1,
+    "mode": "independent, read-only",
+    "repaired": [
+      "A1",
+      "A2",
+      "A3",
+      "A4",
+      "A5",
+      "A6"
+    ],
+    "reproduced_before_repair": true,
+    "reviews": 1
+  },
+  "certification": {
+    "candidate": {
+      "base": "3140e2ab5d325badd599b8f346c712c7334e5dcd",
+      "branch": "phase-3-runtime-integration",
+      "changed_or_new_files": 27,
+      "fingerprint": "635210e40388762ea045add67b5ebf5ea8c1c56d5a0e1e759788e946e96ed1de",
+      "fingerprint_at_start_equals_at_end": true,
+      "same_fingerprint_in_every_invocation": true,
+      "scope": "code, tests and the document as they stood before the certification; the Decision File row FD-P3-296, this record and its index entry were added after it",
+      "valid": true
+    },
+    "controlled_rerun_of_the_failures": {
+      "classification": "ENVIRONMENTAL (load): no failing assertion; every one passes alone on the unchanged candidate",
+      "errors": 0,
+      "failures": 0,
+      "files": {
+        "test_catalog_review_in_the_sandbox": "6/6",
+        "test_curriculum_app": "9/9",
+        "test_faculty_cohort": "7/7",
+        "test_image_bank_portal": "6/6",
+        "test_inactive_account_portfolio_export": "3/3",
+        "test_pilot_screens_cycle10": "5/5"
+      },
+      "method": "the six files with failures, one at a time with no other load, on the same fingerprint",
+      "tests": 36
+    },
+    "full_suite": {
+      "apptest_alone": {
+        "test_catalog_review_in_the_sandbox": "6/6",
+        "test_curriculum_app": "9/9"
+      },
+      "end": "2026-11-21T23:39:33Z",
+      "main_run": {
+        "errors": 0,
+        "failure_class": "all 21 are 'AppTest script run timed out after 20(s)' in six AppTest files, under the load of 24 parallel partitions (the 20 s limit is the test's own)",
+        "failures": 21,
+        "partitions": 24,
+        "skipped": 99,
+        "tests": 14623,
+        "xfail": 1
+      },
+      "note": "the two --ignore flags of the main run did not exclude the two files because they were also named as partition arguments: those tests ran in both invocations",
+      "runner": "the partitioned runner of the skill, three invocations on the same fingerprint (the main run over 24 partitions plus two AppTest files run alone)",
+      "start": "2026-11-21T20:59:36Z"
+    },
+    "helper_added_to_the_authority": "runtime_authority.settled_unsupported: with nothing carried the reader rule is called exactly as before (one argument); the carried class is passed only under the new grant",
+    "history_declared": {
+      "certification_1": "DISCARDED: fingerprint df21b900…, 14623 tests, 12 failures = 10 AppTest timeouts (environmental) + 2 real regressions caused by this change (test_phase3_dormant_record and the closed rule call in test_phase3_turn_page) that were repaired; the candidate changed, so a new full certification was run",
+      "certification_2": "DISCARDED: interrupted when the container was reclaimed (no tracked background task); no result used",
+      "certification_3": "OF RECORD (this one)"
+    },
+    "regressions": {
+      "active_passed": 56,
+      "active_total": 56,
+      "retired_not_run": 10,
+      "runner": "run_regressions.py"
+    },
+    "test_adaptations_declared": [
+      "test_shadow_core_isolation.py",
+      "test_runtime_shadow_evidence.py",
+      "test_runtime_shadow_plumbing.py",
+      "test_gi_preauthority_review.py",
+      "test_phase3_gi_authority_readiness.py",
+      "test_phase3_gi_preauthority_review.py",
+      "test_phase3_tone_ratification.py",
+      "test_phase3_tone_review_records.py",
+      "test_phase3_tone_support.py",
+      "test_phase3_tone_titration.py",
+      "test_phase3_gi_development_snapshot.py",
+      "test_phase3_joint_region_ratification.py",
+      "test_phase3_dormant_record.py (the stored historical record is not regenerated: +1 in the syntactic-use inventory and in the sites is declared and the record re-sealed for the comparison)"
+    ]
+  },
+  "confirmations": {
+    "center_reference_never_recomputed": true,
+    "common_core_runtime_authority": false,
+    "low_and_high_never_read": true,
+    "no_clinical_core_edit": true,
+    "no_clinical_validation_claim": true,
+    "no_consciousness_authority": true,
+    "no_malformed_order_recovery": true,
+    "no_map_target_titration": true,
+    "no_new_physiology": true,
+    "no_other_vasopressor": true,
+    "no_parameter_selected": true,
+    "no_previous_grant_mutated": true,
+    "no_pump_coupling_change": true,
+    "no_reader_edit": true,
+    "no_resident_deployment": true,
+    "no_sealed_record_rewritten": true,
+    "no_terminal_authority": true,
+    "no_tone_recalibration": true,
+    "no_weight_based_dosing": true
+  },
+  "decision_reference": "FD-AUTHNE-01 to FD-AUTHNE-12",
+  "evidence_class": "MODEL_ANALYSIS",
+  "facts": {
+    "artifact_label": "REAL_DEVELOPMENT_PRESSURE_AUTHORITY",
+    "equality": {
+      "FR-F": "exact",
+      "TIT-1_to_TIT-5": "exact",
+      "cases": [
+        "gi_bleed_57m",
+        "gi_bleed_72f"
+      ],
+      "differences": 0,
+      "minutes_compared_each": 32
+    },
+    "executable_files_added": [
+      "runtime_ne_grant.py",
+      "runtime_tone_snapshot.py",
+      "runtime_ne_authority.py"
+    ],
+    "executable_files_changed": [
+      "runtime_authority.py",
+      "runtime_shadow.py",
+      "runtime_authority_pair.py",
+      "runtime_authority_session.py",
+      "runtime_faculty_review.py"
+    ],
+    "executable_files_not_changed": [
+      "clinical_core/",
+      "family_parser.py",
+      "family_engine.py",
+      "active_order_context.py",
+      "order_pipeline.py",
+      "app.py",
+      "runtime_pressure_grant.py",
+      "runtime_pressure_snapshot.py",
+      "runtime_tone_support.py",
+      "runtime_shadow_families.py"
+    ],
+    "grant": {
+      "cases": [
+        "gi_bleed_57m",
+        "gi_bleed_72f"
+      ],
+      "domains": [
+        "sbp",
+        "dbp",
+        "map"
+      ],
+      "extends": "GI_PRESSURE_DEVELOPMENT_AUTHORITY_GRANT_V3",
+      "fingerprint": "d79637c47343b82f0fbb4cb54cc89f5c3027d596d1e4fe086642e50580a45fb7",
+      "id": "GI_NOREPINEPHRINE_DEVELOPMENT_AUTHORITY_GRANT_V1",
+      "previous_grants_mutated": false
+    },
+    "overlay_profile_digest": "ca3878729d07815fe6aa8071257b4d80a202b9d3281dd75f24ba8ab216a7df6e",
+    "pressure_snapshot": "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1",
+    "reader": {
+      "git_blob": "a71a3888bc687a17a9eea24a6b06096ad58ae448",
+      "sha256": "39308bfd456f3b8443d9050bf9917ed3d7c47cd2a0086484dae113417b50d1c5"
+    },
+    "tone_snapshot": {
+      "binding": {
+        "half_effect_rate_mcg_min": 10.0,
+        "offset_tau_min": 2.5,
+        "onset_tau_min": 1.5,
+        "tone_gain": 0.6
+      },
+      "configuration": {
+        "configuration_digest": "bdc90a1719472be39d5d5f8a95d08799189dd1e1507a39b238441fdabe93e5d4",
+        "core_digest": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+        "core_version": "PHASE2_AMENDMENT_3",
+        "human_record_digest": "50807dfc418226aed48826864abf6ac14c8d5d785f9e1f2ed68207091afe0804",
+        "profile_field": "vasoconstrictor_support_to_tone_gain",
+        "ratification_digest": "a5a8f4370e240a07406111e0fedf40884e7e382dbd08643949bc82201452bab2",
+        "record_digest": "ee1740ca77173ce0797268f8327f21fc29304c5c54ff2c642c1f2bdfb3270356",
+        "record_file_sha256": "1f2ebb46190e72ec150897037a397f788164fb7f29b46337dbb94328d0be8e2c",
+        "runtime_snapshot_id": "common_tone_development_snapshot_v1",
+        "snapshot_id": "COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1",
+        "values": {
+          "half_effect_rate_mcg_min": 10.0,
+          "offset_tau_min": 2.5,
+          "onset_tau_min": 1.5,
+          "tone_gain": 0.6
+        },
+        "values_digest": "6d5a4654c9f0167e450ec7abeb02291ac7d4cde4e4ffed27ab85b1163fc5bd8c"
+      },
+      "id": "COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1"
+    },
+    "without_norepinephrine": "FR-A, FR-B, FR-C, FR-D, FR-E and FR-G identical to the previous grant to the last digit"
+  },
+  "limitations": [
+    "CONSCIOUSNESS_UNDER_TONE_UNRESOLVED stays open: the overlay now runs the same haemodynamics as the pressure (with norepinephrine); it is only the collapse-boundary guard it already was, writes no mental_status and is not resident-visible; that combination has not been reviewed by the faculty",
+    "COMMON_TONE_PUMP_DEPENDENCE_NOT_YET_VALIDATED stays monitored: nothing was promoted in pump-limited families or in pulmonary edema",
+    "'continue norepinephrine' with no rate is a permanent fail-closed (not in the ratified list): a faculty decision whether to accept it as a no-op",
+    "A7: compound orders with titration clauses are read by the frozen reader without those clauses; no reader repair was made (third succession and a faculty decision)",
+    "a norepinephrine order HELD by the pending-order queue was not tested end to end",
+    "the live equality with the ratified trajectories is MEASURED (minute by minute), not a new human judgment: what the faculty reviewed was the shadow",
+    "the checkpoint record has no signature (the same limit as TD-153 item 7)"
+  ],
+  "next_human_action": "A faculty member decides, in order of value and only if and when it is wanted: (1) whether the consciousness under tone (CONSCIOUSNESS_UNDER_TONE_UNRESOLVED) may be reviewed with the live norepinephrine path; (2) whether 'continue norepinephrine' with no rate is a no-op; (3) whether the compound-order clauses of A7 need a third reader succession. Nothing else is to be built on this line until then; the authority stays development-only.",
+  "open_faculty_decisions": [
+    "review of the consciousness under tone with the live norepinephrine path",
+    "'continue norepinephrine' with no rate: no-op or fail-closed",
+    "compound orders with titration clauses (A7)",
+    "pump-limited families (COMMON_TONE_PUMP_DEPENDENCE_NOT_YET_VALIDATED)"
+  ],
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-21",
+    "generating_code": {
+      "clinical_core": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "runtime_authority.py": "f8a0814c0320f4139f5cda7f7b1c206379362a745cfefe52c70433dc81f8187b",
+      "runtime_authority_pair.py": "6f0647f530c32bc95151b85b8cfa9c5fab0b0eec7476478f42968c0671d5c8a6",
+      "runtime_authority_session.py": "1e8d19fc9120b576ac0c15107196a703c325af0d20c6566f495a5b3830d34072",
+      "runtime_faculty_review.py": "5ff936e42a0e3b5a250e203cb969cd865f0c1f66f927e032ab4b544c1a835ce7",
+      "runtime_ne_authority.py": "8d131b6909064b0493fd4dcf3e6597fdbb5c752d86e8b0b1afbdfe6ea8592b41",
+      "runtime_ne_grant.py": "4d07aad8dec9cc40c072a2afebc246c582a362a646d9f491993adb0d9809a181",
+      "runtime_shadow.py": "83b8a0fe191f9bec04472b3563645ba46693ab5805ee18bbd65e80ceb72d6f80",
+      "runtime_tone_snapshot.py": "346fa925464d45a7d3831c9e5abf808e86fedf1c53e22614e99078314de812e3",
+      "test_ne_authority_checkpoint.py": "bad0cbd5b466456512c0b0119a13f264d09107770659fde7bf4b94159174c6d5",
+      "test_phase3_ne_authority.py": "4340b6654ee500d800fff18933254c25449a12f122a443ed2d9c0472a4c44482"
+    },
+    "generating_code_fingerprint": "0ad34d2cc812345d5cd288aa1b7f7c8cb1437d1e981bddf96d86040d9be5f440",
+    "grant_id": "GI_NOREPINEPHRINE_DEVELOPMENT_AUTHORITY_GRANT_V1",
+    "record_id": "NOREPINEPHRINE_AUTHORITY_CHECKPOINT_V1",
+    "record_schema_version": 1,
+    "source_data_digest": "f8a82628e17e87546cf50f60a603b536e485a3ae248870f652246abf9125da15",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "record_digest": "4cac8d311b9e502f844d1d0896145c80305553385062296dd3ea5764fd828060",
+  "record_type": "NOREPINEPHRINE_AUTHORITY_CHECKPOINT",
+  "review_findings": {
+    "A1": {
+      "class": "MATERIAL",
+      "note": "a norepinephrine run relabelled as the earlier grant, with an honest overlay spliced in, passed verification: the grant the artifact names now decides and the content must agree",
+      "outcome": "REPAIRED"
+    },
+    "A2": {
+      "class": "MINOR",
+      "note": "the contract rows are the writer's orders and their semantics are recomputed from the artifact alone",
+      "outcome": "REPAIRED"
+    },
+    "A3": {
+      "class": "MINOR",
+      "note": "the carried class is modelled, not 'unsupported', in the artifact's dispositions",
+      "outcome": "REPAIRED"
+    },
+    "A4": {
+      "class": "MINOR",
+      "note": "the contract reads the class as the site does and never passes what it cannot see",
+      "outcome": "REPAIRED"
+    },
+    "A5": {
+      "class": "MINOR",
+      "note": "verifying an earlier artifact registers nothing new in the core (checked in a fresh process)",
+      "outcome": "REPAIRED"
+    },
+    "A6": {
+      "class": "MINOR",
+      "note": "the artifact carries the label the grant names (a surviving mutant of that check was closed with a direct test)",
+      "outcome": "REPAIRED"
+    },
+    "A7": {
+      "class": "LOW_RISK_SEMANTICS",
+      "note": "a compound norepinephrine order with titration clauses ('q5 min increase by 2', '(max 20)', 'at 5 to 10 mcg/min') is read by the frozen reader without those clauses and runs as the explicit rate it does contain; repairing the reader needs a third succession and a faculty decision",
+      "outcome": "DECLARED_NOT_REPAIRED"
+    }
+  },
+  "sequence": [
+    "P3-488 audit of the live authority boundary (read-only)",
+    "P3-489 to P3-493 new grant, order contract, tone binding, pressure integration, fail-closed matrix",
+    "P3-494 to P3-499 artifact and replay, FR-F and TIT-1 to TIT-5 live equality, non-regression, PE probe, isolation",
+    "P3-500 one independent adversarial review, findings A1-A6 repaired, A7 declared",
+    "P3-501 one full certification of record on one fingerprint (third attempt; the first two discarded)",
+    "P3-502 checkpoint, verdict A, hard stop"
+  ],
+  "statement": "The ratified manual norepinephrine rate control (start, increase, decrease, stop and restart with explicit absolute mcg/min rates) runs under the live DEVELOPMENT authority of the GI pressure, only in gi_bleed_57m and gi_bleed_72f and only on sbp/dbp/map (the tone support is an internal state, never resident-visible and never scored). It is a NEW versioned grant (GI_NOREPINEPHRINE_DEVELOPMENT_AUTHORITY_GRANT_V1) that extends and does not mutate the previous one, and it is opened only by the exact tone snapshot id together with the ratified pressure snapshot. The authority verifies the order contract by itself (the raw order stays the correct boundary; the certified reader stays the barrier), anything unsupported is a permanent fail-closed with no recovery, and the artifact and its replay carry the grant, the tone configuration, the writer and a clean contract per minute: an artifact renamed, relabelled or altered fails even with its digest recomputed, and the earlier artifacts replay as before. No tone value, coupling, snapshot, bleed rate or crystalloid kernel was changed, nothing in clinical_core/ or in the frozen reader was edited, and the consciousness under tone stays open.",
+  "verdict": "A",
+  "verdict_name": "GI_NOREPINEPHRINE_MANUAL_CONTROL_PROMOTED_TO_LIVE_DEVELOPMENT_AUTHORITY",
+  "verdicts": {
+    "A": "GI_NOREPINEPHRINE_MANUAL_CONTROL_PROMOTED_TO_LIVE_DEVELOPMENT_AUTHORITY",
+    "B": "NOREPINEPHRINE_AUTHORITY_READY_BUT_ARTIFACT_REPLAY_NOT_CERTIFIED",
+    "C": "ORDER_SAFETY_CONTRACT_NOT_STRONG_ENOUGH_FOR_AUTHORITY",
+    "D": "TONE_SNAPSHOT_BINDING_MISMATCH",
+    "E": "AUTHORITY_PROMOTION_REQUIRES_NEW_PHYSIOLOGY",
+    "F": "ISOLATION_BOUNDARY_NOT_CERTIFIABLE"
+  },
+  "version": "NOREPINEPHRINE_AUTHORITY_CHECKPOINT_V1",
+  "why_not_the_others": {
+    "A": "this is the verdict",
+    "B": "artifact and replay are certified: the renamed, relabelled, block-removed and altered-configuration artifacts fail with the digest recomputed, the earlier artifacts replay, and a fresh process reproduces",
+    "C": "the contract is the authority's own (type, operation, exact unit, one finite positive rate, coherent receipt, a stop without a rate, first move a start, intact chronology, a rate the writer represents) and is held to the shadow's history; the fail-closed matrix and a fuzz of orders produce no executed unsupported order",
+    "D": "the tone binding reads the ratified record by file hash and record digest, is typed twice and equals the core's CENTER_REFERENCE; LOW and HIGH are never read; per-code mutants are refused",
+    "E": "the live series equal the ratified trajectories exactly (FR-F and TIT-1 to TIT-5, both cases): no physiology, parameter or coupling was needed",
+    "F": "only sbp/dbp/map move, no new key reaches the resident, mental_status is the legacy engine's, the page names neither the selector nor the module, and the independent review's isolation probes passed"
+  }
+}
