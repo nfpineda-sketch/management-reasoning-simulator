@@ -1,0 +1,335 @@
+{
+  "adversarial_review": {
+    "declared_not_repaired": [
+      "N8"
+    ],
+    "material": 4,
+    "minor": 8,
+    "mode": "independent, read-only",
+    "repaired": [
+      "M1",
+      "M2",
+      "M3",
+      "M4",
+      "N1",
+      "N2",
+      "N3",
+      "N4",
+      "N5",
+      "N6",
+      "N7"
+    ],
+    "reproduced_before_repair": true,
+    "reviews": 1,
+    "test_side_before_the_review": [
+      "T1",
+      "T2"
+    ]
+  },
+  "certification": {
+    "candidate": {
+      "base": "f3b5e47a6b844221df43f8e3950a79e26fc1b889",
+      "branch": "phase-3-runtime-integration",
+      "fingerprint": "46f637c3c34e70fab91b7fa77cd169f7f8315155257a41ad0e21a6889fbdad9c",
+      "fingerprint_at_start_equals_at_end": true,
+      "scope": "code, tests, the review set, the documents and CLAUDE.md as they stood at the start; the Decision File row FD-P3-301, this record and its index entry (and the moved index pin) were added after it",
+      "valid": true
+    },
+    "controlled_rerun_of_the_failures": {
+      "classification": "the seven failures were AppTest's 20-second timeout under load, not regressions",
+      "files": [
+        "test_inactive_account_portfolio_export.py",
+        "test_catalog_review_in_the_sandbox.py",
+        "test_resident_pages.py",
+        "test_image_bank_portal.py"
+      ],
+      "fingerprint_at_end": "46f637c3c34e70fab91b7fa77cd169f7f8315155257a41ad0e21a6889fbdad9c",
+      "fingerprint_at_start": "46f637c3c34e70fab91b7fa77cd169f7f8315155257a41ad0e21a6889fbdad9c",
+      "load_average_at_start": 0.31,
+      "result": "31 passed, 0 failed (all seven earlier failures among them)",
+      "started": "2026-11-22T06:11:11Z"
+    },
+    "full_suite": {
+      "errors": 0,
+      "failed": 7,
+      "failure_class": "ENVIRONMENTAL: each one is 'RuntimeError: AppTest script run timed out after 20(s)' under the load of 24 parallel partitions (load average 8-10); none touches the management-trace package",
+      "failures": [
+        "test_inactive_account_portfolio_export::test_the_faculty_page_says_who_prepares_it_and_the_administrator_s_page_offers_it",
+        "test_catalog_review_in_the_sandbox::test_an_administrator_opens_a_configuration_under_review_in_the_sandbox",
+        "test_catalog_review_in_the_sandbox::test_a_challenge_outside_the_catalogue_offers_no_review_case",
+        "test_catalog_review_in_the_sandbox::test_the_review_panel_is_on_the_faculty_sandbox",
+        "test_resident_pages::test_faculty_open_the_same_evidence_and_portfolio_from_a_card",
+        "test_resident_pages::test_the_administrator_tells_active_from_inactive_accounts",
+        "test_image_bank_portal::test_faculty_see_the_bank_and_residents_do_not"
+      ],
+      "partitions": 24,
+      "passed": 14584,
+      "runner": ".claude/skills/verificar-y-entregar/scripts/suite_particionada.py",
+      "skipped": 99,
+      "started": "2026-11-22T03:36:53Z",
+      "suite_ended": "2026-11-22T06:10:02Z",
+      "tests": 14691,
+      "xfail": 1
+    },
+    "regressions": {
+      "active_passed": 56,
+      "active_total": 56,
+      "exit": 0,
+      "retired": 10,
+      "retired_reason": "kept, not run: RETIRED_REGRESSIONS (declared by the runner itself)",
+      "runner": "run_regressions.py"
+    },
+    "test_adaptations_declared": [
+      "test_phase3_tone_review_page.py, test_phase3_trajectory_rereview_page.py, test_phase3_titration_review_page.py: the launcher's mode lists include the management-trace review and the landing page after the earlier reviews is that review (the newest lands first; the others return by an explicit choice); p16b renamed accordingly",
+      "test_phase3_faculty_review_page.py: the shared environment opens the management review's own hold, as it already opened the earlier holds; its own tests close it again",
+      "test_phase3_titration_review.py, test_phase3_tone_review.py, test_phase3_trajectory_rereview.py: the wiring assertion names default_mode=MANAGEMENT_MODE",
+      "test_phase3_tone_review_records.py: the three root modules of the later management-trace package join the tuple of later modules",
+      "test_phase3_historical_record_versioning.py: ALL_ENTRIES_DIGEST moved to the index that adds this cycle's review-set record (and again for the checkpoint record)"
+    ]
+  },
+  "confirmations": {
+    "common_core_runtime_authority": false,
+    "human_review_done": false,
+    "no_clinical_core_edit": true,
+    "no_clinical_validation_claim": true,
+    "no_consciousness_authority_expansion": true,
+    "no_gi_recalibration": true,
+    "no_grant_or_snapshot_change": true,
+    "no_new_physiology": true,
+    "no_parser_work": true,
+    "no_pump_limited_authority_expansion": true,
+    "no_reader_edit": true,
+    "no_resident_deployment": true,
+    "no_sealed_record_rewritten": true,
+    "no_source_control_implementation": true,
+    "no_terminal_authority_expansion": true,
+    "no_tone_recalibration": true
+  },
+  "decision_reference": "FD-MTRACE-01 to FD-MTRACE-10",
+  "evidence_class": "MODEL_ANALYSIS",
+  "facts": {
+    "authority": {
+      "common_core_runtime_authority": false,
+      "grant": "GI_NOREPINEPHRINE_DEVELOPMENT_AUTHORITY_GRANT_V1",
+      "pressure_snapshot": "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1",
+      "tone_snapshot": "COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1"
+    },
+    "encounter": {
+      "boundary_provenance": "FACULTY_DEFINED",
+      "cases": [
+        "gi_bleed_57m",
+        "gi_bleed_72f"
+      ],
+      "definition_digest": "e0074bcdc6937ce612bac81ba4ec87328df2671176dc5b5bab20d36c25bb9b06",
+      "horizon_min": 120,
+      "horizon_provenance": "AUTHORED",
+      "id": "GI_HAEMORRHAGE_INITIAL_RESUSCITATION_DEVELOPMENT_ENCOUNTER_V1"
+    },
+    "executable_files_added": [
+      "development_management_trace.py",
+      "faculty_management_review.py",
+      "faculty_management_review_ui.py"
+    ],
+    "executable_files_changed": [
+      "faculty_trajectory_review.py (the extra question Q6)",
+      "faculty_review_ui.py (the launcher mode and hold)",
+      "app.py (the wiring)"
+    ],
+    "executable_files_not_changed": [
+      "clinical_core/",
+      "family_parser.py",
+      "family_engine.py",
+      "active_order_context.py",
+      "order_pipeline.py",
+      "runtime_authority.py",
+      "runtime_ne_authority.py",
+      "runtime_ne_grant.py",
+      "runtime_pressure_grant.py",
+      "runtime_pressure_snapshot.py",
+      "runtime_tone_snapshot.py",
+      "runtime_tone_support.py",
+      "runtime_shadow.py",
+      "runtime_shadow_families.py"
+    ],
+    "review_set": {
+      "digest": "235b5a40443de28191166334d5ae46c6ccb7e498520235bb900901cae7230c8b",
+      "extra_questions": [
+        "Q6"
+      ],
+      "file_sha256": "9455d2700704f92c212e7b6833da37269f059bcd9e4d6c7f804d819b7db394ce",
+      "id": "GI_MANAGEMENT_TRACE_V1_FACULTY_REVIEW",
+      "operator_flag": "MRS_FACULTY_MANAGEMENT_GATE",
+      "path": "docs/revision/PHASE3_GI_MANAGEMENT_TRACE_V1_REVIEW_SET.json",
+      "pinned": "235b5a40443de28191166334d5ae46c6ccb7e498520235bb900901cae7230c8b",
+      "scenarios": [
+        "MT-A",
+        "MT-B",
+        "MT-C",
+        "MT-D",
+        "MT-E",
+        "MT-F",
+        "MT-G",
+        "MT-H",
+        "MT-I",
+        "MT-J"
+      ]
+    },
+    "trace": {
+      "record_type": "PHASE3_GI_DEVELOPMENT_MANAGEMENT_TRACE",
+      "schema": "gi_development_management_trace_v1",
+      "version": "MTRACE-1"
+    }
+  },
+  "limitations": [
+    "H1: in the LIVE resident page a gastroenterology consultation leads to an engine endoscopy and the common core's EndoscopicHemostasis, never reviewed; this package ends its own encounter at the request and does not change the live page (a faculty decision)",
+    "H2: the resident-visible mental status and heart rate of the live page come from the legacy engine and, under norepinephrine, are decoupled from the authority pressure (CONSCIOUSNESS_UNDER_TONE_UNRESOLVED); the trace and the review show neither",
+    "turn semantics: without a stated interval 2 units of red cells occupy 60 minutes in which the resident cannot act; the pressure is observed only at the end of a turn",
+    "the paths are SCRIPTED development paths: their actions are AUTHORED, no resident reasoning is exercised by the review; only one page test exercises the reasoning gate",
+    "the categories (reasonable, temporizing, incomplete, clearly nonbeneficial) and the 120-minute horizon are PROPOSALS for the faculty review",
+    "in gi_bleed_72f the hypotension does not recur before minute 120, so the state-contingent vasopressor steps are not given; that case is not in the review",
+    "a request for definitive control is recognized by the words of the order (gastroenterology, endoscopy, interventional radiology, embolization, surgery); a negated mention also ends the encounter (the conservative direction); a phrasing outside that list is not recognized",
+    "the review set and this record have no signature (the same limit as TD-153 item 7)"
+  ],
+  "next_human_action": "A faculty member signs in to the faculty development review (the launcher lands on 'Management trace review (GI paths)' once the earlier reviews are done) and reviews the ten paths, one screen each: Q1 to Q6, the lock, the overall judgment and the submit; the summary after the tenth shows the proposed categories and the limitations. Separately, and only if wanted: decide H1 (the live page reaches an unreviewed engine haemostasis through a gastroenterology consultation) and H2 (the resident-visible mental status under norepinephrine). Nothing else is to be built on this line until then.",
+  "open_faculty_decisions": [
+    "the human review of the ten management paths",
+    "H1: block, flag or review the engine haemostasis the live page reaches",
+    "H2: the resident-visible mental status under norepinephrine",
+    "the 120-minute development horizon and the proposed categories"
+  ],
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-22",
+    "generating_code": {
+      "app.py": "ead5420f5ed601ae19d69a2fd83ffbb8cd936e7fde0d8c351bca65c867a241d6",
+      "development_management_trace.py": "287943dd8d13d3c7341ad0d05b21dbb0a2b6da16166622bcf841f2ce659ef5c9",
+      "faculty_management_review.py": "9dcfec79016af98b42c7cc07573862b221e7a80d05e855b4626c8fdb0e86ce8b",
+      "faculty_management_review_ui.py": "23b84909ab4dc4cbd7d8b5fb9857923d390df713ea029f85e188326451b884d0",
+      "faculty_review_ui.py": "cdd38ea6e3821a0d09e0851e1fea6b6321d7f4a23048e6bda19a57c58bccc97e",
+      "faculty_trajectory_review.py": "b6efd5a0a1760e97550dc0b6bd675e2abcaf023caae9a0924c16ad6ffcd94709",
+      "review_set": "9455d2700704f92c212e7b6833da37269f059bcd9e4d6c7f804d819b7db394ce",
+      "test_gi_management_trace_paths.py": "98f6a9a839e29d6f8c3ee4de530613552ae91e400f01c9d98d3dc3fdfd047780",
+      "test_management_trace_checkpoint.py": "4c2c11ef49359c5313c7c922cf1b3665e367d92eac9a16d6d47ee01b568da853",
+      "test_phase3_management_review_page.py": "8803d20e9ce09ed353b514e2133e48525d595dc294fa373f05605a16b8706eb6",
+      "test_phase3_management_trace.py": "8eb2567736c796963780f94490581b18de17b90783f00833f5de061bccad64f1",
+      "test_phase3_management_trace_page.py": "ac521117ff34dd81d061fe0b614252f22b468e3c4caa9e8ee1f68b9300ed3b74"
+    },
+    "generating_code_fingerprint": "991993bd751ce13a228094d4c5fd9e6e3b560873562aaaf35e85f78494ea9a2d",
+    "grant_id": "GI_NOREPINEPHRINE_DEVELOPMENT_AUTHORITY_GRANT_V1",
+    "record_id": "GI_MANAGEMENT_TRACE_CHECKPOINT_V1",
+    "record_schema_version": 1,
+    "source_data_digest": "556146abfcf5026c4492382d525eaf998bfada15232693f58a48abeeba2ae63e",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "record_digest": "c82a908e8d0337070734fa83b09c44ec214709d6e67c3a70aedfd9d4b3211ab0",
+  "record_type": "GI_MANAGEMENT_TRACE_CHECKPOINT",
+  "review_findings": {
+    "M1": {
+      "class": "MATERIAL",
+      "note": "a priority the page COMPOSED from other words (on the real page, from the gate's answer) was shown as the resident's: the trace now reads the page's own slot provenance, a composed slot is NOT_EXPRESSED with a note, a slot from another moment keeps its label, and the transcript the page appends after its gate is no longer part of the action",
+      "outcome": "REPAIRED"
+    },
+    "M2": {
+      "class": "MATERIAL",
+      "note": "'Consult GI.' and the interventional-radiology request were recorded-not-modelled and the encounter went on for two hours: every request for definitive control is now the boundary, whatever the ledger did with it",
+      "outcome": "REPAIRED"
+    },
+    "M3": {
+      "class": "MATERIAL",
+      "note": "the authored arrival pressure was labelled a live-authority observation after a turn that does not move the clock: the state now carries its provenance and the chain is checked",
+      "outcome": "REPAIRED"
+    },
+    "M4": {
+      "class": "MATERIAL",
+      "note": "the stored review set named a generating code that was not in the tree: regenerated with the final code; a test requires same_generating_code",
+      "outcome": "REPAIRED"
+    },
+    "N1": {
+      "class": "MINOR",
+      "note": "exit order: an authority stop before a request read as the request, and a stop in the same turn was hidden; the earliest exit in time is the boundary and the others of the turn are named",
+      "outcome": "REPAIRED"
+    },
+    "N2": {
+      "class": "MINOR",
+      "note": "the engine-haemostasis and terminal exits reused other messages; each has its own words, and a turn crossing the horizon says so",
+      "outcome": "REPAIRED"
+    },
+    "N3": {
+      "class": "MINOR",
+      "note": "a minute the authority committed and then disowned counted as an observation; it no longer does",
+      "outcome": "REPAIRED"
+    },
+    "N4": {
+      "class": "MINOR",
+      "note": "the turn rule was labelled OBSERVED; it is MODEL_DERIVED",
+      "outcome": "REPAIRED"
+    },
+    "N5": {
+      "class": "MINOR",
+      "note": "every path began with 'Place an IV line.', which the ledger ignored as already done (an action that did not fit the state); removed",
+      "outcome": "REPAIRED"
+    },
+    "N6": {
+      "class": "MINOR",
+      "note": "the purposes of F, H and I stated the conclusion Q6 asks for; rephrased neutrally",
+      "outcome": "REPAIRED"
+    },
+    "N7": {
+      "class": "MINOR",
+      "note": "the set stored traces but not their inputs; each path now carries its turns and the artifact view the extraction reads, and a test re-extracts every trace from the record alone",
+      "outcome": "REPAIRED"
+    },
+    "N8": {
+      "class": "MINOR",
+      "note": "on a scripted path every block says the resident expressed no reasoning; the screen's note explains it",
+      "outcome": "DECLARED_NOT_REPAIRED"
+    },
+    "T1": {
+      "class": "MATERIAL_TEST_SIDE",
+      "note": "the development runner left the live-authority flags in the process environment, so every later test of the same process ran under the live authority; the runner now restores the environment and a test pins it",
+      "outcome": "REPAIRED"
+    },
+    "T2": {
+      "class": "MATERIAL_TEST_SIDE",
+      "note": "the module-scoped page fixture inherited the suite's session-wide historical reconstruction, so the real page opened no authority; it now declares the ordinary configuration",
+      "outcome": "REPAIRED"
+    }
+  },
+  "sequence": [
+    "P3-503 capability audit (read-only, code and live-authority probes)",
+    "P3-504 development boundary",
+    "P3-505/505A trace model and provenance policy",
+    "P3-506/507 ten paths A-J (reasonable, temporizing, incomplete, clearly nonbeneficial: proposals)",
+    "P3-508 live authority only",
+    "P3-509 temporal contract (no verdict C)",
+    "P3-510 integrated encounter on the page's own order path",
+    "P3-511/511A multipath probes and causal ordering",
+    "P3-512/512A extraction, serialization, re-extraction and faculty reading",
+    "P3-513 educational safety audit (ten lessons)",
+    "P3-514/514A interactive faculty review of the ten paths (Q1-Q6)",
+    "P3-515 one independent adversarial review, M1-M4 and minors repaired",
+    "P3-516 one full certification on one fingerprint",
+    "P3-517 checkpoint, verdict A, hard stop"
+  ],
+  "statement": "One DEVELOPMENT GI haemorrhagic-shock encounter (gi_bleed_57m, gi_bleed_72f) runs the live development pressure authority with the manual norepinephrine control exactly as published, under GI_NOREPINEPHRINE_DEVELOPMENT_AUTHORITY_GRANT_V1. Ten scripted management paths from the same arrival, their categories proposed for the faculty review, show that different decisions give causally different trajectories and the same decisions the same one. Each encounter is read as a management trace (state, priority, action, expected effect, observed response, reassessment, new state) extracted from its own events, every value with one provenance, the resident's reasoning only as expressed, every pressure a committed authority minute, and a development boundary before definitive control of the bleeding that never means cure, bleeding stopped, management complete or safe discharge. No physiology, calibration, grant, snapshot, reader or clinical_core/ source was changed. The human review has NOT been done.",
+  "verdict": "A",
+  "verdict_name": "GI_END_TO_END_MANAGEMENT_TRACE_READY_FOR_HUMAN_REVIEW",
+  "verdicts": {
+    "A": "GI_END_TO_END_MANAGEMENT_TRACE_READY_FOR_HUMAN_REVIEW",
+    "B": "GI_MANAGEMENT_TRACE_BLOCKED_BY_SOURCE_CONTROL_BOUNDARY",
+    "C": "ENCOUNTER_TIMING_REQUIRES_FACULTY_DECISION",
+    "D": "TRACE_EXTRACTION_NOT_CAUSALLY_RELIABLE",
+    "E": "LIVE_AUTHORITY_INTEGRATION_REVEALS_BROADER_ARCHITECTURE_GAP",
+    "F": "EDUCATIONAL_SAFETY_AUDIT_FOUND_MATERIAL_MISLEADING_BEHAVIOR"
+  },
+  "version": "GI_MANAGEMENT_TRACE_CHECKPOINT_V1",
+  "why_not_the_others": {
+    "A": "this is the verdict",
+    "B": "the source-control boundary is represented conservatively (the first definitive request ends the development encounter and nothing after it is observed) and no path needs haemostasis; that the live page REACHES an unreviewed engine haemostasis (H1) is a declared faculty decision, not a blocker of this package",
+    "C": "the timing is the engine's own deterministic rule (a stated interval governs the turn, otherwise the longest administration; at most 120 minutes a step) and every path states its interval; the declared artefacts (the transfusion hour, observation at turn end) do not change any path's reading",
+    "D": "every trace re-extracts identically from its persisted turns, artifact and arrival; every pressure is a committed authority minute bound by its candidate digest; the causal relations hold by test; a tampered trace, an invented reasoning or a substituted action is refused",
+    "E": "the runner is the page's own order path plus the certified authority hooks, and a test on the REAL page gives the same pressures for the same orders; nothing parallel was built",
+    "F": "the ten misleading lessons are attacked by test on the paths, the traces and the review screens without a material implication; mental status, consciousness and heart rate are not shown; the categories appear only in the final summary"
+  }
+}

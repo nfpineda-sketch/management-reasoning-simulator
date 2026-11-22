@@ -405,6 +405,18 @@
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "eb614a69dcd89271c18242f8b58e5ae0f3e4ea6362d9b2270e3c7b82ce3f8d6e"
     },
+    "PHASE3_GI_MANAGEMENT_TRACE_CHECKPOINT.json": {
+      "class": "VERSIONED",
+      "file_sha256": "77dd5fa07cc99d26676e03b88c09d7aa433007f49f6d6cf7459e31de1ce65047",
+      "record_digest": "c82a908e8d0337070734fa83b09c44ec214709d6e67c3a70aedfd9d4b3211ab0",
+      "record_id": "GI_MANAGEMENT_TRACE_CHECKPOINT_V1"
+    },
+    "PHASE3_GI_MANAGEMENT_TRACE_V1_REVIEW_SET.json": {
+      "class": "VERSIONED",
+      "file_sha256": "9455d2700704f92c212e7b6833da37269f059bcd9e4d6c7f804d819b7db394ce",
+      "record_digest": "235b5a40443de28191166334d5ae46c6ccb7e498520235bb900901cae7230c8b",
+      "record_id": "GI_MANAGEMENT_TRACE_V1_FACULTY_REVIEW"
+    },
     "PHASE3_GI_PAIR_DRY_RUN.json": {
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "966a71246f120913c66d2cce55a940a5b5a0de0c4ee5e36cb8f73bf2eaf458bd"
