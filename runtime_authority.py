@@ -48,6 +48,8 @@ MODES = (MODE_LEGACY, MODE_SHADOW_COMPARE, MODE_LIMITED_COMMON_AUTHORITY)
 AUTHORITY_FLAG = "MRS_PHASE3_AUTHORITY"
 #: Where a future experiment would name the approved snapshot it runs with.
 SNAPSHOT_FLAG = "MRS_PHASE3_AUTHORITY_SNAPSHOT"
+#: P3-489: the selector of the norepinephrine grant (the exact id of the ratified tone snapshot). It never selects the grant alone: the ratified pressure snapshot must be named too.
+TONE_FLAG = "MRS_PHASE3_AUTHORITY_TONE_SNAPSHOT"
 #: The environment a first experiment must run in (faculty decision of 2026-11-07).
 ENVIRONMENT_FLAG = "MRS_PHASE3_AUTHORITY_ENVIRONMENT"
 ALLOWED_ENVIRONMENTS = ("development", "faculty")
@@ -605,6 +607,34 @@ class AuthorityGate:
                 "reasons": list(self.reasons), "snapshot_id": self.snapshot_id}
 
 
+def _norepinephrine_permission(environ: Mapping[str, str], *, case_id: Any, snapshot_id: Any, family: Any, domain: Sequence[str], lineage: Mapping, reconstruction: Any) -> tuple:
+    """``(ok, reasons)``: does the norepinephrine grant authorize exactly this run (P3-489/492)? Every dimension of the run is named, the tone snapshot and the ratified pressure snapshot must BIND (read from the
+    records, never recomputed), the digests the grant pins must be the ones the bindings execute, and the live reader must be the order-safety successor the grant pins. Nothing falls back to another grant."""
+    import runtime_ne_authority as ne
+    import runtime_ne_grant as ne_grant
+    import runtime_pressure_snapshot as pressure
+    import runtime_tone_snapshot as tone
+    reasons: list = []
+    if reconstruction:
+        reasons.append("a historical reconstruction of a superseded grant cannot carry a tone selector")
+    ok, why = ne_grant.permits(case_id=case_id, environment=str(environ.get(ENVIRONMENT_FLAG, "") or "").strip().lower() or None, snapshot_id=snapshot_id,
+                               tone_snapshot_id=tone.flag_value(environ) or None, family=family, domain=tuple(domain), lineage=lineage)
+    reasons += why
+    try:
+        tone_configuration = tone.configuration_for(environ)
+        if tone_configuration is None or tone_configuration.configuration_digest != ne_grant.TONE_CONFIGURATION_DIGEST:
+            reasons.append(f"{ne_grant.TONE_SNAPSHOT_MISMATCH}: the configuration digest the grant pins is not the one the tone binding would execute")
+    except tone.ToneBindingError as refusal:
+        reasons.append(f"the tone snapshot does not bind: {', '.join(refusal.reasons)}")
+    try:
+        if snapshot_id != pressure.SNAPSHOT_ID or pressure.bind().configuration_digest != ne_grant.PRESSURE_CONFIGURATION_DIGEST:
+            reasons.append(f"{ne_grant.PRESSURE_SNAPSHOT_MISMATCH}: the norepinephrine grant runs on the ratified joint pressure snapshot only")
+    except pressure.PressureBindingError as refusal:
+        reasons.append(f"the pressure snapshot does not bind: {', '.join(refusal.reasons)}")
+    reasons += [f"{ne_grant.READER_WRONG}: {item}" for item in ne.reader_problems()]
+    return (not reasons), list(dict.fromkeys(reasons))
+
+
 def gate(state: Mapping | None = None, *, environ: Mapping[str, str] | None = None,
          domain: Sequence[str] = AUTHORITY_DOMAIN, case_id: str | None = None,
          family: str | None = None, unsupported: Sequence[str] | None = None) -> AuthorityGate:
@@ -647,16 +677,24 @@ def gate(state: Mapping | None = None, *, environ: Mapping[str, str] | None = No
     # P3-387 (FD-TONE-09): a superseded grant opens nothing by ordinary configuration. A run that DECLARES the historical reconstruction of one (never from a Secret) is asked against
     # the lineage member the live certified core rebuilds, which this layer reads from the lineage itself.
     reconstruction = historical_reconstruction(environ)
-    grant_ok, grant_why = grants.permits(case_id=case_id, environment=str(environ.get(ENVIRONMENT_FLAG, "") or "").strip().lower() or None, snapshot_id=snapshot_id,
-                                         family=family, domain=tuple(domain), lineage={"version_id": member.version_id, "digest": member.digest},
-                                         historical_reconstruction=reconstruction, rebuilt_lineages=ev.rebuilt_predecessors() if reconstruction else ())
+    import runtime_tone_snapshot as tone_snapshot
+    tone_named = tone_snapshot.named(environ)
+    if tone_named:
+        # P3-489/492 (FD-AUTHNE-08): an environment that names a tone snapshot is judged by the norepinephrine grant ALONE. The earlier grants are never consulted for it (they say norepinephrine is not granted), and
+        # a run that names no tone snapshot is judged by them exactly as before.
+        grant_ok, grant_why = _norepinephrine_permission(environ, case_id=case_id, snapshot_id=snapshot_id, family=family, domain=tuple(domain),
+                                                         lineage={"version_id": member.version_id, "digest": member.digest}, reconstruction=reconstruction)
+    else:
+        grant_ok, grant_why = grants.permits(case_id=case_id, environment=str(environ.get(ENVIRONMENT_FLAG, "") or "").strip().lower() or None, snapshot_id=snapshot_id,
+                                             family=family, domain=tuple(domain), lineage={"version_id": member.version_id, "digest": member.digest},
+                                             historical_reconstruction=reconstruction, rebuilt_lineages=ev.rebuilt_predecessors() if reconstruction else ())
     # P3-379 (adversarial review, finding 6): the grant that permits the run also has to agree, AT RUN TIME, with the configuration the binding would execute (checked here and not in the grant module,
     # which imports nothing of the repository on purpose: ``test_phase3_pressure_grant.py::test_g12``).
-    if grant_ok:
+    if grant_ok and not tone_named:
         bound_grant = grants.grant_for_snapshot(str(snapshot_id or ""), reconstruction)
         if bound_grant is not None and not binding_agrees_with_the_grant(bound_grant):
             grant_ok, grant_why = False, [f"{grants.CONFIGURATION_MISMATCH}: the configuration digest the grant pins is not the one the binding would execute"]
-    in_secrets = [name for name in (AUTHORITY_FLAG, SNAPSHOT_FLAG, ENVIRONMENT_FLAG)
+    in_secrets = [name for name in (AUTHORITY_FLAG, SNAPSHOT_FLAG, ENVIRONMENT_FLAG, TONE_FLAG)
                   if rs._named_in_secrets(name)]
     is_pilot, why_pilot = looks_like_the_pilot(environ)
     conditions = {
@@ -1139,7 +1177,7 @@ NO_ADVANCE_TURN = "NO_ADVANCE_TURN_NOTHING_TO_COMMIT"
 NO_ADVANCE_OK = tuple(sorted((set(STRUCTURAL_ACTIONS) | set(NO_COMMON_PHYSIOLOGY_ACTIONS)) - {"diagnostic"}))
 
 
-def disposition_of(kind: Any, fate: Any = None) -> str:
+def disposition_of(kind: Any, fate: Any = None, carried: Sequence[str] = ()) -> str:
     """The disposition of ONE order class, given the fate the ledger settled for it (None before settlement).
 
     A fate that says the order did not act wins over the class: a held order is HELD_NOT_EXECUTED and a terminal one TERMINAL_NOT_EXECUTABLE
@@ -1152,6 +1190,8 @@ def disposition_of(kind: Any, fate: Any = None) -> str:
         return TERMINAL_NOT_EXECUTABLE
     if settled and settled in {str(item) for item in fates_that_did_not_act()}:
         return UNSUPPORTED_ACTION
+    if name in {str(item).strip().lower() for item in carried}:
+        return SUPPORTED_MODELED               # P3-492 (review A3): the class the grant the site stands under carries is modelled, not "unsupported"
     if name in NO_COMMON_PHYSIOLOGY_ACTIONS:
         return EXECUTED_NO_COMMON_PHYSIOLOGY
     if name in STRUCTURAL_ACTIONS and name not in SUPPORTED_ACTIONS:
@@ -1749,13 +1789,13 @@ def settled_provenance(orders: Sequence | None, submission_id: Any = None) -> tu
     return tuple(out)
 
 
-def unsupported_among(kinds: Sequence[str]) -> tuple:
+def unsupported_among(kinds: Sequence[str], carried: Sequence[str] = ()) -> tuple:
     """The classes a pressure authority cannot mirror exactly. An unknown class is unsupported.
 
     P3-212: a class on the EXPLICIT ``NO_COMMON_PHYSIOLOGY_ACTIONS`` allowlist is not unsupported: it was executed and has nothing to mirror.
     It is not silently ignored either: every minute records it as ``no_common_physiology``, and a settled fate that says it did not act is
     still a contradiction (``settle_provenance``) and still a different disposition (``disposition_of``)."""
-    allowed = set(SUPPORTED_ACTIONS) | set(STRUCTURAL_ACTIONS) | set(NO_COMMON_PHYSIOLOGY_ACTIONS)
+    allowed = set(SUPPORTED_ACTIONS) | set(STRUCTURAL_ACTIONS) | set(NO_COMMON_PHYSIOLOGY_ACTIONS) | {str(item).strip().lower() for item in carried}     # P3-492: ``carried`` is what the grant the site stands under adds (nothing for every earlier grant)
     return tuple(sorted({str(kind).strip().lower() or "untyped_action" for kind in kinds
                          if str(kind).strip().lower() not in allowed}))
 
@@ -1763,12 +1803,12 @@ def unsupported_among(kinds: Sequence[str]) -> tuple:
 UNTYPED_GAP = "untyped_gap"
 
 
-def unsupported_in_settlement(rows: Sequence | None) -> tuple:
+def unsupported_in_settlement(rows: Sequence | None, carried: Sequence[str] = ()) -> tuple:
     """The classes of a SETTLED ledger the common mapping cannot represent: the unsupported classes (``unsupported_among``, which normalises the class name)
     and an allowlisted class (the IV line) whose settled fate says it did NOT act (held, terminal, recorded-not-modelled, unrecognized). The one rule the site
     and the dry evaluator share, so that neither can accept what the other refuses (P3-219 review, F1 and F7)."""
     items = [dict(row) if isinstance(row, Mapping) else {} for row in list(rows or [])]
-    found = set(unsupported_among(tuple(str(item.get("class") or "") for item in items)))
+    found = set(unsupported_among(tuple(str(item.get("class") or "") for item in items), carried))
     for item in items:
         name = str(item.get("class") or "").strip().lower()
         if name in NO_COMMON_PHYSIOLOGY_ACTIONS and disposition_of(item.get("class"), item.get("fate")) in (HELD_NOT_EXECUTED, TERMINAL_NOT_EXECUTABLE, UNSUPPORTED_ACTION):
@@ -1776,7 +1816,13 @@ def unsupported_in_settlement(rows: Sequence | None) -> tuple:
     return tuple(sorted(found))
 
 
-def settlement_contradictions(identities: Sequence | None, orders: Sequence | None, submission_id: Any, *, quiet: bool = False) -> list:
+def settled_unsupported(rows: Sequence | None, carried: Sequence[str] = ()) -> tuple:
+    """``unsupported_in_settlement`` for the sites that may stand under a grant that carries a class: with nothing carried the rule is called exactly as it always was (one argument), so the one shared rule
+    stays the one every site and every test reaches by its own name (FD-AUTHNE: adding the carried class changes no call under any other grant)."""
+    return unsupported_in_settlement(rows, tuple(carried)) if carried else unsupported_in_settlement(rows)
+
+
+def settlement_contradictions(identities: Sequence | None, orders: Sequence | None, submission_id: Any, *, quiet: bool = False, carried: Sequence[str] = ()) -> list:
     """The contradictions the SETTLED ledger of a turn reveals against the actions the authority was told ran (P3-271): a consumed action whose canonical lineage does not hold, and a settled
     class the common mapping cannot represent. The same judgement ``AuthoritySite.settle_provenance`` makes after the commit, made here BEFORE it, so a real session never has to take a commit back.
     ``quiet`` is a turn that did not move the clock: it has no lineage to hold, only classes."""
@@ -1787,7 +1833,7 @@ def settlement_contradictions(identities: Sequence | None, orders: Sequence | No
         for row in lineage_violations(lineage):
             found.append({"order_id": dict(row).get("order_id"), "class": dict(row).get("class"), "fate": dict(row).get("fate"), "link": dict(row).get("link"),
                           "why": "the canonical lineage of a consumed action does not hold"})
-    unsupported = unsupported_in_settlement(settled)
+    unsupported = settled_unsupported(settled, carried)
     if unsupported:
         found.append({"class": list(unsupported),
                       "why": (f"{UNSUPPORTED_AUTHORITY_ACTION}: the settled ledger of a turn that did not move the clock carries a management class the common mapping cannot represent"
@@ -1854,6 +1900,18 @@ class AuthoritySite:
     current_overlay: Mapping[str, Any] | None = field(default=None, init=False)
     #: The legacy observable of the turn being judged, WITHOUT the pressure domain (what the legacy engine keeps owning): recorded in the minute (P3-246).
     current_legacy: Mapping[str, Any] | None = field(default=None, init=False)
+    #: P3-492: the verified tone configuration of a site that stands under the norepinephrine grant (None for every other site, which behaves exactly as before), and the authority's verdict on the
+    #: encounter's norepinephrine orders at the turn being judged.
+    tone_configuration: Any = field(default=None, init=False)
+    ne_verdict: Any = field(default=None, init=False)
+
+    def _carried(self) -> tuple:
+        """The action classes the grant this site stands under adds to the supported ones: ``("norepinephrine",)`` under the norepinephrine grant, and nothing under any other."""
+        return ("norepinephrine",) if (self.tone_configuration is not None and dict(self.grant or {}).get("grant_id") == "GI_NOREPINEPHRINE_DEVELOPMENT_AUTHORITY_GRANT_V1") else ()
+
+    def _norepinephrine_verdict(self, session, ran: Sequence | None = None) -> Any:
+        import runtime_ne_authority as ne
+        return ne.check(getattr(session, "mirrored", None), self.tone_configuration, getattr(session, "gaps", None), ran=ran)
 
     # -- the encounter's identity ----------------------------------------------------------------------
     def is_for(self, state: Mapping) -> bool:
@@ -2117,7 +2175,7 @@ class AuthoritySite:
                 # the engine does not MODEL produces no action for the turn, so the ledger is the only place its class appears (the P3-48 gap): "Place an IV
                 # line. Also give <something the mapping cannot represent>" must not slip through because its first order was acknowledged.
                 settled = settled_provenance(orders, submission_id)
-                unsupported = unsupported_in_settlement(settled)
+                unsupported = settled_unsupported(settled, self._carried())
                 quiet["settled_action_classes"] = sorted({str(item.get("class") or "") for item in settled} - {""})
                 quiet["no_common_physiology"] = [dict(row) for row in executed_no_common_physiology(settled)]
                 quiet["provenance_settled"] = True
@@ -2143,7 +2201,7 @@ class AuthoritySite:
             record["action_fates"] = [dict(row) for row in lineage]
             record["no_common_physiology"] = [dict(row) for row in executed_no_common_physiology(lineage)]
             record["action_dispositions"] = [{"order_id": dict(row).get("order_id"), "class": dict(row).get("class"), "fate": dict(row).get("fate"),
-                                              "disposition": disposition_of(dict(row).get("class"), dict(row).get("fate"))} for row in lineage]
+                                              "disposition": disposition_of(dict(row).get("class"), dict(row).get("fate"), self._carried())} for row in lineage]
             record["provenance_settled"] = True
             report["settled"] = len(settled)
             report["lineage"] = [dict(row) for row in lineage]
@@ -2163,7 +2221,7 @@ class AuthoritySite:
             # appears here. The site still decides nothing: it reads the settled classes and applies the
             # same ``unsupported_among`` the eligibility reading applies.
             settled_classes = tuple(str(item.get("class") or "") for item in settled)
-            unsupported = unsupported_in_settlement(settled)
+            unsupported = settled_unsupported(settled, self._carried())
             record["settled_action_classes"] = sorted(set(settled_classes) - {""})
             if unsupported:
                 report["unsupported"] = list(unsupported)
@@ -2222,7 +2280,12 @@ class AuthoritySite:
         # structural class is not a management-relevant unsupported action, and the three GI treatments
         # with no common writer are, whichever side names them.
         gap_kinds = gap_kinds_of(session)
-        unsupported = tuple(sorted(set(unsupported_among(kinds)) | set(unsupported_among(gap_kinds))))
+        # P3-492: under the norepinephrine grant the class is carried, and the authority's OWN contract of the orders decides whether every one of them is one it reads. A violation (or an order the shadow mapping did
+        # not carry, or one the two readings disagree about) is PERMANENT_FAIL_CLOSED: it is an unsupported action, named, and the site halts; nothing recovers it.
+        carried = self._carried()
+        self.ne_verdict = self._norepinephrine_verdict(session, ran) if carried else None
+        not_carried = ("norepinephrine_order_not_carried",) if (self.ne_verdict is not None and not self.ne_verdict.ok) else ()
+        unsupported = tuple(sorted(set(unsupported_among(kinds, carried)) | set(unsupported_among(gap_kinds, carried)) | set(not_carried)))
         # P3-219 review, F3: the failures this turn has not been judged for. Taken ONCE, here, so every path below -- the no-advance turn included -- sees them.
         everything = list(getattr(session, "failures", []) or [])
         new_failures = everything[self.failures_judged:]
@@ -2243,7 +2306,7 @@ class AuthoritySite:
             if settled_rows is not None:
                 # P3-271: a zero-minute turn is judged on its SETTLED classes BEFORE it is recorded (an order the engine does not model produces no action for the turn, so only the settled
                 # ledger names it), so a turn that the authority refuses is never applied to the real encounter.
-                contradictions = settlement_contradictions(action_fates(ran), settled_rows, submission_id, quiet=True)
+                contradictions = settlement_contradictions(action_fates(ran), settled_rows, submission_id, quiet=True, carried=self._carried())
                 if contradictions:
                     return self._hard_fail(minute, f"{PROVENANCE_CONTRADICTION}: {contradictions}", list(settled_provenance(settled_rows, submission_id)), legacy=legacy_observable)
             # P3-212/215: the clock did not move and nothing physiological was asked: there is no new minute to commit and no certified minute is
@@ -2350,7 +2413,7 @@ class AuthoritySite:
         if settled_rows is not None:
             # P3-271: the lineage of the settled orders and their settled classes are judged BEFORE the commit. A contradiction the settlement reveals refuses the turn; it never leaves a committed
             # minute that has to be taken back (faculty decision F: a committed minute is never rewritten).
-            contradictions = settlement_contradictions(action_fates(ran), settled_rows, submission_id)
+            contradictions = settlement_contradictions(action_fates(ran), settled_rows, submission_id, carried=self._carried())
             if contradictions:
                 provenance["provenance_contradictions"] = [dict(item) for item in contradictions]
                 return self._hard_fail(minute, f"{PROVENANCE_CONTRADICTION}: {contradictions}", ran, provenance=provenance, transaction=transaction)
@@ -2647,6 +2710,14 @@ class AuthoritySite:
         if (wanted is None) != (ran is None) or (wanted is not None and ran != wanted):
             return (f"the site's approved snapshot is {self.snapshot_id!r} and the shadow session ran "
                     f"{'the ratified configuration' if ran is not None else 'the older point'}")
+        # P3-492: one run, one tone. A site under the norepinephrine grant needs a session that executed exactly the ratified tone configuration (re-derived, not trusted); any other site needs a session that executed none.
+        import runtime_ne_authority as ne
+        adapter = getattr(runner, "adapter", None)
+        if self.tone_configuration is not None:
+            if not ne.adapter_is_bound(adapter, ran, self.tone_configuration):
+                return "the site stands under the norepinephrine grant and the shadow session did not run the ratified tone configuration"
+        elif isinstance(adapter, ne.BoundToneSupport):
+            return "the shadow session ran a tone configuration and the site stands under no grant that carries it"
         return ""
 
     def _overlay_for(self, session):
@@ -2667,7 +2738,11 @@ class AuthoritySite:
             session_configuration = getattr(getattr(session.runner, "adapter", None), "pressure_configuration", None)
             if (configuration is None) != (session_configuration is None) or (configuration is not None and session_configuration != configuration):
                 raise ValueError("the shadow session and the site run different pressure configurations")
-            self.overlay = pair.ConsciousnessOverlay(pair.bind(pressure=configuration), self.case_id, arrival)
+            if self.tone_configuration is not None:
+                import runtime_ne_authority as ne
+                self.overlay = ne.ToneConsciousnessOverlay(pair.bind(pressure=configuration), self.case_id, arrival, self.tone_configuration)       # P3-492: the SAME hemodynamics as the pressure
+            else:
+                self.overlay = pair.ConsciousnessOverlay(pair.bind(pressure=configuration), self.case_id, arrival)
         except Exception as error:
             self.overlay_refusal = f"{type(error).__name__}: {error}"
         return self.overlay
@@ -2719,7 +2794,8 @@ class AuthoritySite:
                 "consciousness_overlay": ({key: turn.get(key) for key in ("available", "why", "minute", "from_minute", "legacy_mental_status", "rows", "course", "clear", "digest")}
                                           if turn else None),
                 "collapse_boundary": {"policy": "ESTABLISHED_PRECOMMIT_FAIL_CLOSED", "first_established_minute": boundary.get("first_established_minute"),
-                                      "minutes_not_shown": list(boundary.get("minutes_not_shown") or []), "clear": bool(boundary.get("clear")) and bool(turn.get("clear"))}}
+                                      "minutes_not_shown": list(boundary.get("minutes_not_shown") or []), "clear": bool(boundary.get("clear")) and bool(turn.get("clear"))},
+                **({"norepinephrine_contract": self.ne_verdict.summary()} if (self._carried() and self.ne_verdict is not None) else {})}
 
     def _real_artifact_fields(self) -> dict:
         import runtime_pressure_grant as grants
@@ -2733,7 +2809,7 @@ class AuthoritySite:
                        "snapshot": None}
         failed = next((record for record in self.records if record.get("outcome") == ABORTED), None)
         committed = list(self.minutes_committed)
-        return {"authority_label": grants.ARTIFACT_LABEL, "authority_mode": grants.AUTHORITY_MODE, "grant": grants.summary(grant),
+        fields = {"authority_label": grants.ARTIFACT_LABEL, "authority_mode": grants.AUTHORITY_MODE, "grant": grants.summary(grant),
                 "authority_began": bool(committed),
                 "experiment_outcome": ("INVALID_FOR_CONTINUATION" if self.halted and committed else "EXPERIMENT_HALTED" if self.halted else "ACTIVE"),
                 "excluded_domains": list(grants.EXCLUDED_DOMAINS), "consciousness_overlay": overlay,
@@ -2745,6 +2821,12 @@ class AuthoritySite:
                                        "silent_fallback_to_the_legacy_engine": False, "is_patient_death": False,
                                        "what_the_page_does": ("the legacy engine keeps running the encounter, and the resident sees nothing of the experiment; the experiment is INVALID_FOR_CONTINUATION "
                                                               "after a commit (EXPERIMENT_HALTED before one): no later minute is authoritative, the artifact is the record, and it is read, never continued")}}
+        if self._carried():
+            import runtime_ne_authority as ne
+            import runtime_ne_grant as ne_grant
+            fields["grant"] = ne_grant.summary(grant)
+            fields["norepinephrine_authority"] = ne.summary_of(self.ne_verdict, self.tone_configuration, grant)
+        return fields
 
 
 def _as_int(value: Any) -> int:
@@ -2836,6 +2918,10 @@ def open_site(state: Mapping, *, environ: Mapping[str, str] | None = None,
                          experiment_id=str(experiment_id or digest_of({"encounter": encounter,
                                                                        "snapshot": decision.snapshot_id,
                                                                        "site": SITE_VERSION})[:16]))
+    # P3-489/492: a run that names the ratified tone snapshot stands under the norepinephrine grant or opens nothing (never the earlier grant, never the shadow mapping).
+    import runtime_tone_snapshot as tone_snapshot
+    if tone_snapshot.named(live):
+        return _open_norepinephrine_site(site, decision, live, case_id, snapshot)
     # P3-240: the explicit development grant travels with the site, but only when it is the one that authorizes THIS run (the real registered point, the case, the
     # environment, the family and the live core lineage). A run with a TEST-ONLY point carries none and behaves as before the grant existed.
     import runtime_pressure_grant as grants
@@ -2872,6 +2958,28 @@ def open_site(state: Mapping, *, environ: Mapping[str, str] | None = None,
             "grant_id": site.grant.get("grant_id"), "superseded_by": dict(grants.SUPERSEDED[site.grant.get("grant_id")])["by"],
             "live_core": {"version_id": member.version_id, "digest": member.digest}, "rebuilt_core": dict(grant_lineage),
             "declared_by": grants.HISTORICAL_RECONSTRUCTION_FLAG, "is_a_new_development_session": False}
+    return site
+
+
+def _open_norepinephrine_site(site: "AuthoritySite", decision: "AuthorityGate", live: Mapping[str, str], case_id: str, snapshot: Mapping) -> "AuthoritySite | None":
+    """The site of a run that stands under ``GI_NOREPINEPHRINE_DEVELOPMENT_AUTHORITY_GRANT_V1`` (P3-489/492), or None (nothing opens, and the encounter stays the legacy one). The grant is the registered one,
+    judged against every dimension of the run; the tone configuration is re-bound from the records and must be the one the grant pins."""
+    import runtime_ne_grant as ne_grant
+    import runtime_tone_snapshot as tone_snapshot
+    member = rs.CORE_LINEAGE[-1]
+    try:
+        configuration = tone_snapshot.configuration_for(live)
+    except tone_snapshot.ToneBindingError:
+        return None
+    grant = ne_grant.registered_grant(ne_grant.GRANT_ID, ne_grant.GRANT_FINGERPRINT)
+    if grant is None or configuration is None or configuration.configuration_digest != ne_grant.TONE_CONFIGURATION_DIGEST or str(decision.snapshot_id or "") != ne_grant.PRESSURE_SNAPSHOT_ID:
+        return None
+    if ne_grant.grant_problems(grant, case_id=case_id, environment=str(live.get(ENVIRONMENT_FLAG, "") or "").strip().lower(), snapshot_id=str(decision.snapshot_id or ""),
+                               tone_snapshot_id=tone_snapshot.flag_value(live), family=site.family, lineage={"version_id": member.version_id, "digest": member.digest}):
+        return None
+    site.grant = grant
+    site.tone_configuration = configuration
+    site.eligibility = eligibility_record(decision, family=site.family, case_id=case_id, environment=site.environment, snapshot=snapshot, domain=site.domain, store_configured=True, environ=live)
     return site
 
 
@@ -3138,8 +3246,12 @@ def _configuration_changed(site: "AuthoritySite", live: Mapping[str, str]) -> bo
     try:
         if site.environ is not None:
             return False  # an explicit environment was handed in: it is the experiment's own
+        # P3-489 (review): the tone selector is part of the configuration the experiment opened on. A site under the norepinephrine grant needs the tone snapshot named exactly; a site under any other grant needs NONE named.
+        import runtime_tone_snapshot as tone_snapshot
+        wanted_tone = tone_snapshot.SNAPSHOT_ID if site.tone_configuration is not None else ""
         return (str(live.get(SNAPSHOT_FLAG, "") or "").strip() != site.snapshot_id
-                or str(live.get(ENVIRONMENT_FLAG, "") or "").strip() != site.environment)
+                or str(live.get(ENVIRONMENT_FLAG, "") or "").strip() != site.environment
+                or tone_snapshot.flag_value(live) != wanted_tone)
     except Exception:
         return True
 
@@ -3214,6 +3326,9 @@ def replay_site_artifact(artifact: Mapping) -> dict:
     """
     body = dict(artifact)
     recorded = [dict(item) for item in (body.get("minutes") or [])]
+    if dict(body.get("grant") or {}).get("grant_id") == "GI_NOREPINEPHRINE_DEVELOPMENT_AUTHORITY_GRANT_V1":
+        import runtime_tone_support as _tone_support
+        _tone_support.ensure_registered()        # P3-494: the writers the scenario names are rebuildable in this process, in a registry that may have been swapped
     rows = []
     for item in recorded:
         minute = _as_int(item.get("minute"))
@@ -3279,9 +3394,13 @@ def replay_site_artifact(artifact: Mapping) -> dict:
             import runtime_authority_pair as pair_module
             import runtime_pressure_grant as grants
             carried_grant = dict(body.get("grant") or {})
-            named_grant = grants.registered_grant(carried_grant.get("grant_id"), carried_grant.get("fingerprint"))
+            named_grant = _registered_grant(carried_grant.get("grant_id"), carried_grant.get("fingerprint"))
             bound_id = None if named_grant is None else dict(named_grant.get("pressure_snapshot") or {}).get("id")
-            overlay_replay = pair_module.replay_overlay_artifact(body, bound_id)
+            if carried_grant.get("grant_id") == "GI_NOREPINEPHRINE_DEVELOPMENT_AUTHORITY_GRANT_V1" and named_grant is not None:
+                import runtime_ne_authority as _ne
+                overlay_replay = _ne.replay_overlay(body)
+            else:
+                overlay_replay = pair_module.replay_overlay_artifact(body, bound_id)
         except Exception as error:
             overlay_replay = {"checked": True, "reproduces": False, "mismatches": [f"{type(error).__name__}: {error}"], "established_minutes": []}
     halt_replay = halt_reason_replay(body, overlay_replay)
@@ -3369,7 +3488,8 @@ def halt_reason_replay(body: Mapping, overlay_replay: Mapping | None = None) -> 
     elif kind == WINDOW_CLOSED:
         out["reproduces"] = bool(minute > grants.WINDOW_MINUTES)
     elif kind == UNSUPPORTED_AUTHORITY_ACTION:
-        classes = bool(any(unsupported_among(list(item.get("action_kinds") or ())) or unsupported_among(list(item.get("settled_action_classes") or ())) for item in everywhere)
+        carried = ("norepinephrine",) if dict(body.get("grant") or {}).get("grant_id") == "GI_NOREPINEPHRINE_DEVELOPMENT_AUTHORITY_GRANT_V1" else ()
+        classes = bool(any(unsupported_among(list(item.get("action_kinds") or ()), carried) or unsupported_among(list(item.get("settled_action_classes") or ()), carried) for item in everywhere)
                        or any(item.get("unsupported_actions") for item in everywhere))
         undeclared = ("did not declare which actions ran" in reason or "clinical-time route carries no actions" in reason)
         out["reproduces"] = bool(classes or undeclared)
@@ -3615,6 +3735,42 @@ def claims_real_content(artifact: Mapping) -> bool:
                 or any("consciousness_overlay" in dict(record) for record in (body.get("no_advance_turns") or [])))
 
 
+def _scenario_carries_tone(scenario: Any) -> bool:
+    """Whether a captured scenario (plain data) carries the common vasoconstrictor support: a tone gain in the profile or a norepinephrine contributor."""
+    if not isinstance(scenario, Mapping):
+        return False
+    profile, contributors = scenario.get("profile"), scenario.get("contributors")
+    gain = dict(profile).get("vasoconstrictor_support_to_tone_gain") if isinstance(profile, Mapping) else None
+    return bool(gain is not None or any(str(dict(item).get("type") or "").startswith("norepinephrine") for item in (contributors or []) if isinstance(item, Mapping)))
+
+
+def _tone_content_problems(body: Mapping) -> list:
+    """P3-494 (review A1): an artifact that does NOT stand under the norepinephrine grant carries no tone content anywhere -- not in its captured scenario, not in any minute's, not in the overlay's, and no
+    norepinephrine contract. A norepinephrine run relabelled as an earlier grant (its grant summary swapped, its block dropped, an honest overlay spliced in) is caught here."""
+    found: list = []
+    body = dict(body or {})
+    where = [("the artifact", dict(body.get("replay_input") or {}).get("scenario")),
+             ("the overlay", dict(dict(body.get("consciousness_overlay") or {}).get("replay_input") or {}).get("scenario"))]
+    where += [(f"minute {dict(record).get('minute')}", dict(dict(record).get("replay_input") or {}).get("scenario")) for record in (body.get("minutes") or [])]
+    found += [f"{label} captured the common vasoconstrictor support and the artifact does not stand under the norepinephrine grant" for label, scenario in where if _scenario_carries_tone(scenario)]
+    if any("norepinephrine_contract" in dict(record) for record in (body.get("minutes") or [])):
+        found.append("a minute carries a norepinephrine contract and the artifact does not stand under the norepinephrine grant")
+    return found
+
+
+def _registered_grant(grant_id: Any, fingerprint: Any = None) -> Mapping | None:
+    """The registered grant an artifact names: one of the pressure grants, or the norepinephrine grant (P3-494). The two registries are separate, and an id belongs to one."""
+    import runtime_ne_grant as ne_grant
+    import runtime_pressure_grant as grants
+    return grants.registered_grant(grant_id, fingerprint) or ne_grant.registered_grant(grant_id, fingerprint)
+
+
+def _grant_summary(grant: Mapping) -> dict:
+    import runtime_ne_grant as ne_grant
+    import runtime_pressure_grant as grants
+    return ne_grant.summary(grant) if dict(grant).get("grant_id") == ne_grant.GRANT_ID else grants.summary(grant)
+
+
 def real_artifact_problems(artifact: Mapping) -> list:
     """What a REAL artifact claims that its own records contradict, by name (P3-248 review, M4 and L6). Every one of these is re-derivable from the artifact alone:
     the derived fields, the grant it names, the boundary policy and the window against the PINNED constants, and above all that no COMMITTED minute is past the window or
@@ -3648,8 +3804,8 @@ def real_artifact_problems(artifact: Mapping) -> list:
     policy = dict(body.get("post_commit_policy") or {})
     if policy.get("silent_fallback_to_the_legacy_engine") is not False or policy.get("is_patient_death") is not False:
         problems.append("post_commit_policy claims a silent fallback or a patient death")
-    named_grant = grants.registered_grant(dict(body.get("grant") or {}).get("grant_id"), dict(body.get("grant") or {}).get("fingerprint"))
-    if named_grant is None or canonical(dict(body.get("grant") or {})) != canonical(grants.summary(named_grant)):
+    named_grant = _registered_grant(dict(body.get("grant") or {}).get("grant_id"), dict(body.get("grant") or {}).get("fingerprint"))
+    if named_grant is None or canonical(dict(body.get("grant") or {})) != canonical(_grant_summary(named_grant)):
         problems.append("the grant the artifact names is not the registered grant's summary")
     if named_grant is not None:
         # P3-381 (attack list: mixed old/new snapshot values, wrong grant on replay): every identity of the snapshot the artifact carries -- the top-level id, the snapshot mapping's own id and the id
@@ -3684,6 +3840,13 @@ def real_artifact_problems(artifact: Mapping) -> list:
         if not (reading.get("clear") is True and reading.get("first_established_minute") is None and not list(reading.get("minutes_not_shown") or [])
                 and overlay.get("available") is True and overlay.get("clear") is True):
             problems.append(f"minute {at} was committed without a clear collapse boundary")
+    # P3-494: what an artifact under the norepinephrine grant must carry (and what an artifact under any other grant must not): the tone configuration, the contract of every committed minute, the tone values of every
+    # captured scenario, the open limitations. A renamed or mislabelled artifact fails here.
+    if dict(body.get("grant") or {}).get("grant_id") == "GI_NOREPINEPHRINE_DEVELOPMENT_AUTHORITY_GRANT_V1" or "norepinephrine_authority" in body:
+        import runtime_ne_authority as ne          # imported only for an artifact that names the grant or carries the block: verifying an earlier artifact registers nothing new
+        problems.extend(ne.artifact_problems(body))
+    if dict(body.get("grant") or {}).get("grant_id") != "GI_NOREPINEPHRINE_DEVELOPMENT_AUTHORITY_GRANT_V1":
+        problems.extend(_tone_content_problems(body))
     return problems
 
 
@@ -3723,7 +3886,7 @@ def verify_artifact(artifact: Mapping) -> dict:
     # P3-248 (attack 22): a run under the grant names the grant it ran under, and it must be THE registered one (identity and fingerprint), in the artifact and in every minute.
     import runtime_pressure_grant as grants
     named = dict(dict(artifact).get("grant") or {})
-    named_grant = grants.registered_grant(named.get("grant_id"), named.get("fingerprint"))
+    named_grant = _registered_grant(named.get("grant_id"), named.get("fingerprint"))
     registered = (not real) or (named_grant is not None
                                 and list(named.get("excluded_domains") or []) == list(grants.EXCLUDED_DOMAINS) and list(named.get("domain") or []) == list(AUTHORITY_DOMAIN)
                                 and list(dict(artifact).get("excluded_domains") or []) == list(grants.EXCLUDED_DOMAINS)

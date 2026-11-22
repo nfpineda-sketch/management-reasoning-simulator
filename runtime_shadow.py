@@ -145,6 +145,8 @@ ARRIVAL_CONDITIONS = (
 ARRIVAL_REJECTED = "ArrivalNotEligible"
 #: P3-380: the environment names the ratified GI pressure snapshot and the record does not verify. The session runs NOTHING: there is no fallback to the older point.
 PRESSURE_SNAPSHOT_NOT_BOUND = "PressureSnapshotNotBound"
+#: P3-492: the environment names the ratified tone snapshot and it does not bind (or the ratified pressure snapshot it needs is not named): the session runs nothing, never a fallback to a witness name or to no tone.
+TONE_SNAPSHOT_NOT_BOUND = "ToneSnapshotNotBound"
 #: P3-158: what happens to an order the resident asked to hold until a result is back. The engine holds it
 #: (``family_state.deferred_orders``) and runs it itself when the result arrives; only then does the shadow
 #: mirror it, once, dated at the minute the engine REALLY executed it and never at the minute it was placed.
@@ -434,7 +436,22 @@ class ShadowSession:
                     session.runner = None
                     session.ensemble = None
                     return
-                if configuration is not None:
+                # P3-492: the ratified tone snapshot, when (and only when) the environment names one. It needs the ratified pressure snapshot (a tone on another hemodynamics was never reviewed); a refusal to bind
+                # is a failure that says so and a session that runs nothing: no fallback to a witness name, to the shadow's development copy or to no tone.
+                import runtime_tone_snapshot as tone
+                if tone.named(session._environ):
+                    try:
+                        tone_configuration = tone.configuration_for(session._environ)
+                        if configuration is None:
+                            raise tone.ToneBindingError(["THE_TONE_SNAPSHOT_NEEDS_THE_RATIFIED_PRESSURE_SNAPSHOT"])
+                        import runtime_ne_authority as ne
+                        adapter = ne.bound_adapter(configuration, tone_configuration)
+                    except tone.ToneBindingError as refusal:
+                        session.failures.append(ShadowFailure(0, "start", TONE_SNAPSHOT_NOT_BOUND, "the environment names a tone snapshot and it does not bind: " + ", ".join(refusal.reasons), MAPPING_GAP))
+                        session.runner = None
+                        session.ensemble = None
+                        return
+                elif configuration is not None:
                     adapter = runtime_shadow_families.GiHaemorrhageAdapter.configured(configuration)
             session.runner = runtime_shadow_families.ShadowPhysiologyRunner.open(
                 family, session.case_id, state=arrival, scenario_id=scenario_id, adapter=adapter)
@@ -1280,4 +1297,4 @@ LAYER_SOURCES = ("runtime_shadow.py", "runtime_shadow_families.py", "runtime_sha
                  "runtime_authority.py", "runtime_authority_store.py", "runtime_shadow_store.py",
                  "runtime_shadow_observer.py", "runtime_authority_pair.py", "runtime_minute_validation.py", "runtime_pair_site.py",
                  "runtime_pressure_grant.py", "runtime_authority_session.py", "runtime_authority_turn.py", "runtime_faculty_review.py", "runtime_faculty_bundle.py",
-                 "runtime_pressure_snapshot.py", "runtime_tone_support.py")
+                 "runtime_pressure_snapshot.py", "runtime_tone_support.py", "runtime_tone_snapshot.py", "runtime_ne_grant.py", "runtime_ne_authority.py")

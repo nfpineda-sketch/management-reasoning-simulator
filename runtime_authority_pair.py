@@ -1157,7 +1157,7 @@ def scenario_is_at_the_configuration(scenario: Any, cfg: Any) -> bool:
         return False
 
 
-def replay_overlay_artifact(artifact: Mapping, bound_snapshot_id: Any = None) -> dict:
+def replay_overlay_artifact(artifact: Mapping, bound_snapshot_id: Any = None, *, expected_profile_digest: str | None = None) -> dict:
     """Rebuild the overlay FROM THE ARTIFACT ALONE (P3-246A): the bound run's profile must be the pinned version 1's, every recorded row must be the replayed one,
     and every turn's boundary reading (the first established minute and the minutes not shown) must be re-derived from the replay. Never raises."""
     mismatches: list = []
@@ -1181,7 +1181,7 @@ def replay_overlay_artifact(artifact: Mapping, bound_snapshot_id: Any = None) ->
             if bound_is_promoted != promoted:
                 mismatches.append("the overlay names a pressure configuration the grant of the artifact does not bind (or the other way round)")
                 promoted = bound_is_promoted
-        expected_profile = V2_PROFILE_DIGEST if promoted else V1_PROFILE_DIGEST
+        expected_profile = expected_profile_digest or (V2_PROFILE_DIGEST if promoted else V1_PROFILE_DIGEST)      # P3-493: a run under the norepinephrine grant names the digest of the overlay's profile WITH the tone field
         out["snapshot_matches"] = profile_digest(profile) == expected_profile == named.get("profile_digest")
         if promoted:
             # the artifact names the promoted configuration: it must BE the pinned one, and the contributors the replay input carries must be at its rate and kernel

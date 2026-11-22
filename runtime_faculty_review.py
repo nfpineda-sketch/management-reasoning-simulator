@@ -226,7 +226,10 @@ def environment_conditions(live: Mapping[str, str]) -> dict:
         "authority_flag": str(live.get(ra.AUTHORITY_FLAG, "") or "").strip().lower() == ra.MODE_LIMITED_COMMON_AUTHORITY and ra.AUTHORITY_FLAG not in secrets_named,
         # P3-380 (FD-PROMOTE-01): the review environment runs the ratified joint pressure snapshot and nothing else. The older committed point stays registered (its artifacts replay under
         # their own grant) but a NEW review session never opens on it: the human-ratified behaviour and the live authority are the same thing.
-        "snapshot": str(live.get(ra.SNAPSHOT_FLAG, "") or "").strip() == grants.PRESSURE_SNAPSHOT_ID_V2 and ra.SNAPSHOT_FLAG not in secrets_named,
+        # P3-489 (review): the review environment runs the PRESSURE authority alone. A process that also names the tone snapshot would open its sites under the norepinephrine grant (which no review has
+        # described): it is not a review configuration.
+        "snapshot": (str(live.get(ra.SNAPSHOT_FLAG, "") or "").strip() == grants.PRESSURE_SNAPSHOT_ID_V2 and ra.SNAPSHOT_FLAG not in secrets_named
+                     and not str(live.get(ra.TONE_FLAG, "") or "").strip()),
         "development_environment": str(live.get(ra.ENVIRONMENT_FLAG, "") or "").strip().lower() == ENVIRONMENT and ra.ENVIRONMENT_FLAG not in secrets_named,
         "offline_cases": _truthy(live.get(OFFLINE_FLAG)) and OFFLINE_FLAG not in secrets_named,
     }
@@ -271,7 +274,7 @@ def evaluate(environ: Mapping[str, str] | None = None, *, accounts: bool = False
         problems["shadow"] = f"the shadow comparison ({rs.FLAG}) is not on"
         problems["shadow_family"] = f"the live shadow comparison is not on for the {FAMILY!r} family ({rs.FAMILIES_FLAG} leaves it out): the pressure authority has nothing to compare against"
         problems["authority_flag"] = f"{ra.AUTHORITY_FLAG} is not the authority mode (or it is a Secret)"
-        problems["snapshot"] = f"{ra.SNAPSHOT_FLAG} is not {grants.PRESSURE_SNAPSHOT_ID_V2!r} (or it is a Secret)"
+        problems["snapshot"] = f"{ra.SNAPSHOT_FLAG} is not {grants.PRESSURE_SNAPSHOT_ID_V2!r} (or it is a Secret), or {ra.TONE_FLAG} is named (the review runs the pressure authority alone)"
         problems["development_environment"] = f"{ra.ENVIRONMENT_FLAG} is not {ENVIRONMENT!r}, the only environment the registered grant names (or it is a Secret)"
         problems["offline_cases"] = f"{OFFLINE_FLAG} is not on: the review environment uses authored cases only and never pays a provider"
         probed = directory is not None and not store_in_secrets and all(conditions[name] for name in CONFIGURATION_CONDITIONS if name not in ("store", "single_process"))

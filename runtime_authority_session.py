@@ -355,8 +355,11 @@ def _asked(live: Mapping[str, str]) -> bool:
 def _configuration_holds(claim: Mapping, live: Mapping[str, str]) -> bool:
     """Whether the live configuration still asks for the experiment the claim describes: the authority mode, the snapshot the site was opened with and (P3-276, review H1) the shadow
     comparison the site is fed by. Without the shadow the site is never shown a turn of the clock route, so a configuration that lost it can no longer judge anything."""
+    import runtime_ne_grant as ne_grant
+    import runtime_tone_snapshot as tone_snapshot
+    wanted_tone = tone_snapshot.SNAPSHOT_ID if claim.get("grant_id") == ne_grant.GRANT_ID else ""       # P3-489: the tone selector is part of what the claim describes
     return (_asked(live) and str(live.get(ra.SNAPSHOT_FLAG, "") or "").strip() == str(claim.get("snapshot_id") or "")
-            and ra.rs.mode(live) == ra.rs.MODE_SHADOW_COMPARE)
+            and tone_snapshot.flag_value(live) == wanted_tone and ra.rs.mode(live) == ra.rs.MODE_SHADOW_COMPARE)
 
 
 def _decision(allowed: bool, lifecycle: str, reason: str, *, stop_class: str = "", record: Mapping | None = None, sources: Mapping | None = None) -> dict:
