@@ -315,7 +315,7 @@ def _row(kind, where, consequence, guard=None):
 #: ADAPTED in P3-283 (the controlled faculty review environment): ``runtime_faculty_bundle.py`` copies the rows of the common consciousness OVERLAY (its own word, labelled nonauthoritative) into a
 #: faculty-only review bundle as data, and ``runtime_faculty_review.py`` names the word only to say the review mode writes nothing into it. Neither reads the live observable's word, neither feeds it
 #: back, and nothing of either is resident visible.
-MECHANISM_MODULES = ("observable_view.py", "runtime_authority_pair.py", "runtime_authority.py", "runtime_pressure_grant.py", "runtime_faculty_bundle.py", "runtime_faculty_review.py")
+MECHANISM_MODULES = ("observable_view.py", "runtime_authority_pair.py", "runtime_authority.py", "runtime_pressure_grant.py", "runtime_faculty_bundle.py", "runtime_faculty_review.py", "runtime_ne_grant.py")      # P3-489 (declared adaptation): the norepinephrine grant names the word as an EXCLUDED domain, exactly like the pressure grant
 
 #: The classification, by module and function. ``*`` is the module's default for a function not listed. A row says what the function does WITH the
 #: value and where it runs; ``guard`` is what a future pair authority needs, or None when nothing more than the existing rules is needed.
@@ -327,6 +327,8 @@ READER_TABLE = {
                                    "consequence": "the real pressure authority site (P3-243) records the legacy word beside the common overlay, as data: it is never fed back, and the artifact says the overlay writes nothing"}},
     "runtime_pressure_grant.py": {"*": {"class": MECHANISM, "where": GI_TURN, "guard": None,
                                         "consequence": "the pressure grant names the word as an EXCLUDED domain: a constant of a grant that confers nothing over it"}},
+    "runtime_ne_grant.py": {"*": {"class": MECHANISM, "where": GI_TURN, "guard": None,
+                                  "consequence": "the norepinephrine grant (P3-489) names the word as an EXCLUDED domain: a constant of a grant that confers nothing over it"}},
     "runtime_authority_pair.py": {"*": {"class": MECHANISM, "where": GI_TURN, "guard": None,
                                         "consequence": "the dormant pair (P3-213): it carries the common word in the overlay and refuses to write the live field"}},
     "runtime_faculty_bundle.py": {"*": {"class": MECHANISM, "where": GI_TURN, "guard": None,

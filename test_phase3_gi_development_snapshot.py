@@ -80,8 +80,8 @@ def test_the_record_is_not_an_authority_artifact_and_nothing_reads_it_at_runtime
     for path in ROOT.glob("*.py"):
         if path.name.startswith(("test_", "regression_")):
             continue
-        if path.name in ("runtime_authority_pair.py", "runtime_pressure_grant.py"):
-            continue            # ADAPTED in P3-214: the binding to the snapshot lives in the layer's pair module (dormant, registers nothing); ADAPTED in P3-248: the pressure grant names the overlay's snapshot id as DATA (the overlay it binds to version 1); no other module names it
+        if path.name in ("runtime_authority_pair.py", "runtime_pressure_grant.py", "runtime_ne_grant.py"):
+            continue            # ADAPTED in P3-214: the binding to the snapshot lives in the layer's pair module (dormant, registers nothing); ADAPTED in P3-248: the pressure grant names the overlay's snapshot id as DATA (the overlay it binds to version 1); ADAPTED in P3-489 (FD-AUTHNE-08): the norepinephrine grant, a data-only module that extends the pressure grant, names the same overlay snapshot id as DATA; no other module names it
         assert not any(needle in path.read_text(encoding="utf-8") for needle in needles), path.name
     # and no record of any authority store mentions it
     for path in (ROOT / "docs" / "revision").glob("PHASE3_*AUTHORITY*.json"):

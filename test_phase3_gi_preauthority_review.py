@@ -60,7 +60,7 @@ def test_no_runtime_module_names_the_harness_and_the_dry_transaction_never_calls
         if not path.name.startswith(("test_", "regression_")):
             # ADAPTED in P3-214: the layer's pair module names the snapshot (it binds to it); it still names no test-side module
             # ADAPTED in P3-248: the pressure grant names the overlay's snapshot id as DATA (the overlay it binds to version 1 is part of what the grant says); it names no test-side module
-            forbidden = names[:4] if path.name in ("runtime_authority_pair.py", "runtime_pressure_grant.py") else names
+            forbidden = names[:4] if path.name in ("runtime_authority_pair.py", "runtime_pressure_grant.py", "runtime_ne_grant.py") else names      # P3-489 (declared adaptation): the norepinephrine grant is the second data-only grant module
             assert not any(name in path.read_text(encoding="utf-8") for name in forbidden), path.name
     source = inspect.getsource(dry)
     assert ".commit(" not in source and "open_site" not in source and "AUTHORITY_FLAG" not in source

@@ -170,7 +170,9 @@ def test_t9_nothing_executable_reads_the_new_records_and_no_authority_was_expand
     # FD-PROMOTE-01 (declared adaptation). At the ratification nothing executable named these records; the promotion deliberately binds the live authority to the snapshot, so the executable modules that name
     # it are now an EXACT declared set. What this still protects: the monitored limitation is named by exactly two modules and only as declared text (nothing executes it, nothing "fixes" it), and no
     # executable names the closure marker or the human re-review record (the binding pins that record's DIGEST, never its name).
-    declared = {"GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1": ["runtime_authority.py", "runtime_pressure_grant.py", "runtime_pressure_snapshot.py", "runtime_shadow_families.py"],
+    # FD-AUTHNE-08 (declared adaptation): the norepinephrine grant (data only; it extends the pressure grant and binds the SAME snapshot, by name, as part of its body) is the one module added to the set; it does not
+    # name the monitored limitation, the closure marker or the human re-review record, so the rest of what this protects is unchanged.
+    declared = {"GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1": ["runtime_authority.py", "runtime_ne_grant.py", "runtime_pressure_grant.py", "runtime_pressure_snapshot.py", "runtime_shadow_families.py"],
                 "GI_BLOOD_RESUSCITATION_LOW_END_RESPONSE": ["runtime_authority.py", "runtime_pressure_grant.py"],
                 "GI_PRESSURE_DEVELOPMENT_CALIBRATION_CLOSED": [], "PHASE3_HUMAN_FACULTY_REREVIEW": []}
     found = {token: sorted(path.name for path in ROOT.glob("*.py") if not path.name.startswith("test_") and token in path.read_text(encoding="utf-8", errors="replace")) for token in declared}

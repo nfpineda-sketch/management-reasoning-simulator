@@ -370,7 +370,7 @@ def test_m6_nothing_else_moved_no_registered_adapter_no_authority_no_constant_an
     assert review.scenario("FR-F")["expected"] == "HALTED_BY_UNSUPPORTED_ACTION", "the live GI pressure authority still stops on the order"
     readers = [path.name for path in sorted(ROOT.glob("*.py")) if not path.name.startswith("test_") and path.name not in ("conftest.py", "runtime_tone_support.py")
                and "NorepinephrineRateHistory" in path.read_text(encoding="utf-8")]
-    assert readers == [], "no page, no engine, no authority and no scoring names the rate-history writer"
+    assert readers == ["runtime_ne_authority.py"], "FD-AUTHNE-01 (declared adaptation): only the norepinephrine authority module names the rate-history writer (to hold its version and history to the grant); no page, no engine and no scoring does"
     assert "carried_order_ids" in (ROOT / "runtime_shadow_families.py").read_text(encoding="utf-8") and "import runtime_tone_support" not in (ROOT / "runtime_shadow_families.py").read_text(encoding="utf-8")
 
 

@@ -273,7 +273,12 @@ def test_nothing_outside_the_shadow_layers_own_tests_reads_the_mapping():
         text = path.read_text(encoding="utf-8")
         if "runtime_tone_support" in text or "with_tone_support" in text:
             readers.append(path.name)
-    assert readers == ["runtime_shadow.py", "runtime_shadow_families.py"]
+    # FD-AUTHNE-01 / P3-492 (declared adaptation): the LIVE norepinephrine authority reads the mapping -- its module builds the ratified adapter on it and the site's replay registers its writers. The
+    # page, the engine, the scoring and ``clinical_core`` still do not, which is what this test protected.
+    assert readers == ["runtime_authority.py", "runtime_ne_authority.py", "runtime_shadow.py", "runtime_shadow_families.py"], readers
+    for page in ("app.py", "family_engine.py", "scoring.py"):
+        if (ROOT / page).exists():
+            assert "runtime_tone_support" not in (ROOT / page).read_text(encoding="utf-8"), page
     assert "import runtime_tone_support" not in (ROOT / "runtime_shadow.py").read_text(encoding="utf-8")
     assert "import runtime_tone_support" not in (ROOT / "runtime_shadow_families.py").read_text(encoding="utf-8")
     assert "runtime_tone_support.py" in rs.LAYER_SOURCES

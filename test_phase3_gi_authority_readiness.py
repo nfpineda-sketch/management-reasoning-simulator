@@ -52,7 +52,7 @@ def test_no_runtime_module_imports_or_names_the_analysis_modules_or_the_snapshot
         # ADAPTED in P3-214: the binding to GI_DEVELOPMENT_SNAPSHOT_V1 now lives in the layer, in ONE module that names the snapshot to verify it. It
         # still imports no analysis module, registers nothing and no other runtime module names the snapshot.
         # ADAPTED in P3-248: the pressure grant names the overlay's snapshot id as DATA; it imports no analysis module and registers nothing
-        forbidden = names[:3] if path.name in ("runtime_authority_pair.py", "runtime_pressure_grant.py") else names
+        forbidden = names[:3] if path.name in ("runtime_authority_pair.py", "runtime_pressure_grant.py", "runtime_ne_grant.py") else names      # P3-489 (declared adaptation): the norepinephrine grant names the overlay's snapshot id as DATA, like the pressure grant; it imports no analysis module and registers nothing
         assert not any(name in text for name in forbidden), path.name
 
 

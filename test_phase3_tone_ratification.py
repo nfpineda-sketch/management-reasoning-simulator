@@ -306,7 +306,10 @@ def test_t18_the_ratification_changes_nothing_executable_and_expands_no_authorit
 def test_t19_nothing_executable_reads_the_snapshot_the_human_record_or_the_ratification():
     needles = ("COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1", "PHASE3_HUMAN_COMMON_TONE_MULTIFAMILY_REVIEW", "COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1_RATIFICATION", "COMMON_TONE_RATIFICATION_CHECKPOINT")
     offenders = [path.name for path in ROOT_MODULES for text in [path.read_text(encoding="utf-8")] if any(needle in text for needle in needles)]
-    assert offenders == [], f"a record nothing executable reads is read by: {offenders}"
+    # FD-AUTHNE-01 / P3-489/491 (declared adaptation): the faculty PROMOTED the ratified snapshot to a live development authority. Exactly two executable modules now name these records: the binding that
+    # reads and verifies them (``runtime_tone_snapshot``) and the data-only grant that pins their digests (``runtime_ne_grant``). Nothing else reads them -- the page, the engine, the shadow mapping,
+    # the scoring and ``clinical_core`` still do not -- which is what this test protected.
+    assert offenders == ["runtime_ne_grant.py", "runtime_tone_snapshot.py"], f"a record only the tone binding and the grant read is read by: {offenders}"
     core = [path.name for path in (ROOT / "clinical_core").glob("*.py") if any(needle in path.read_text(encoding="utf-8") for needle in needles)]
     assert core == []
 

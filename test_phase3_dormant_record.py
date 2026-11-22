@@ -143,7 +143,15 @@ def test_the_dormant_record_is_what_the_source_says_today():
     # FD-PROMOTE-01 (declared adaptation): the committed dormant record is HISTORICAL and is not regenerated; the source differs from it by exactly one declared delta (the approved snapshots list).
     import test_phase3_promotion_record_delta as promotion
     live_plain = json.loads(json.dumps(live))
-    assert promotion.same_but_for_the_promotion(stored, live_plain, path=("authority", "approved_authority_snapshots")), promotion.delta_problems(stored, live_plain, path=("authority", "approved_authority_snapshots"))
+    # FD-AUTHNE-01 (declared adaptation, the SECOND declared delta): the reader inventory counts one more module and one more site than the stored record because ``runtime_ne_grant.py`` NAMES ``mental_status`` as the
+    # EXCLUDED domain of the norepinephrine grant (classified ``VIEW_MECHANISM_NOT_A_READER``: a constant of a grant that confers nothing over the word). The stored record is first proved self-sealed AS IT IS; then
+    # EXACTLY those two counters are raised by one and the copy is re-sealed, so every other field is still compared byte for byte and any other inventory change (a second new reader, a lost one) is still refused.
+    assert stored["record_digest"] == ra.digest_of({key: value for key, value in stored.items() if key != "record_digest"}), "the stored record is not self-sealed: it was edited"
+    adjusted = json.loads(json.dumps(stored))
+    for counter in ("modules_with_a_syntactic_use", "sites"):
+        adjusted["readers"]["inventory"][counter] += 1
+    adjusted["record_digest"] = ra.digest_of({key: value for key, value in adjusted.items() if key != "record_digest"})
+    assert promotion.same_but_for_the_promotion(adjusted, live_plain, path=("authority", "approved_authority_snapshots")), promotion.delta_problems(adjusted, live_plain, path=("authority", "approved_authority_snapshots"))
     assert stored["authority"] == {"granted": False, "common_core_runtime_authority": False, "approved_authority_snapshots": ["gi_pressure_committed"],
                                    "v1_status": "RATIFIED_FOR_DEVELOPMENT_EXPERIMENTS", "v1_in_the_authority_registry": False}
 
