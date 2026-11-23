@@ -409,6 +409,12 @@
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "0303f9f26250dd780853bf017824846cb6f1a1cc38a64ffdfd76ab9f886d913d"
     },
+    "PHASE3_GI_FINAL_PILOT_CHECKPOINT.json": {
+      "class": "VERSIONED",
+      "file_sha256": "9c9426a21e2c2fd00983ade211b63b6ae934ef87a897222edd7732073b98c956",
+      "record_digest": "46b45b595adf3f3165f1e99db2eca8d723944acc9fe5a087f68015311c6cb163",
+      "record_id": "GI_FINAL_PILOT_CONVERGENCE_CHECKPOINT_V1"
+    },
     "PHASE3_GI_JOINT_FEASIBILITY_ANALYSIS.json": {
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "8601310595e841cfae506b6bce23de1bef4bd8c36aff826c5e9fcb3c54e4ad83"
