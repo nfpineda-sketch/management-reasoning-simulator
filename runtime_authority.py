@@ -1176,6 +1176,61 @@ UNKNOWN_ROUTE = "UNKNOWN_CLOCK_ROUTE"
 NO_ADVANCE_TURN = "NO_ADVANCE_TURN_NOTHING_TO_COMMIT"
 NO_ADVANCE_OK = tuple(sorted((set(STRUCTURAL_ACTIONS) | set(NO_COMMON_PHYSIOLOGY_ACTIONS)) - {"diagnostic"}))
 
+# -- P3-536/537 (FD-FINALPILOT-01 to 04): the classification of a turn that did NOT move the clock after a committed minute ------------------------------------
+#: Every no-time-advance turn is exactly one of these. Only CLARIFICATION_NOOP gets the preservation behaviour; UNSAFE_MUTATION and UNKNOWN keep failing closed
+#: (MINUTE_ALREADY_COMMITTED), and the two classes the site already accepted (FD-P3-NEW-03) keep their own path unchanged: STRUCTURAL_ONLY (a reassessment, a consultation)
+#: and CERTIFIED_SAME_MINUTE_MUTATION (an allowlisted class with no common physiology, the IV line).
+CERTIFIED_SAME_MINUTE_MUTATION = "CERTIFIED_SAME_MINUTE_MUTATION"
+CLARIFICATION_NOOP = "CLARIFICATION_NOOP"
+UNSAFE_MUTATION = "UNSAFE_MUTATION"
+UNKNOWN_NONADVANCING = "UNKNOWN"
+NONADVANCING_CLASSES = (STRUCTURAL_ONLY, CLARIFICATION_NOOP, CERTIFIED_SAME_MINUTE_MUTATION, UNSAFE_MUTATION, UNKNOWN_NONADVANCING)
+#: The outcome a proven clarification no-op is recorded with (beside ``NO_ADVANCE_TURN``): nothing committed, nothing executed, the authority stays on the same committed minute.
+NONADVANCING_CLARIFICATION_NOOP = "NONADVANCING_CLARIFICATION_NOOP"
+#: What a clarification no-op must leave EXACTLY as it was (compared by canonical digest, never by text): the patient state (physiology, case state, infusions, clock, pressures), the
+#: engine's last executed action and its random counter. Everything else a turn owns (the events, the history, the parse, the pending held order, the trace, the ledger) is the
+#: metadata of the clarification itself.
+NOOP_PROTECTED_FIELDS = ("state", "last_executed_action", "rng_counter")
+#: The proof, by name: every one must be True or the turn is not a clarification no-op (FD-FINALPILOT-02).
+NOOP_PROOF_FIELDS = ("order_turn", "clock_unchanged", "at_the_last_committed_minute", "no_intervention_ran", "settled_ledger_given", "no_settled_order_acted",
+                     "every_settled_class_representable", "no_new_shadow_failure", "shadow_did_not_advance", "turn_origin_given", "patient_state_unchanged",
+                     "protected_fields_unchanged", "pressure_is_the_committed_one", "no_authority_sample_committed")
+#: P3-552 (independent review, finding 1): the ledger fates under which an order did NOT act on the patient, for the no-op: held for a question or the reasoning, not
+#: recognized by the reader (nothing was done), cancelled, or an IV line already in place. ``RECORDED_NOT_MODELLED`` is not here: it is non-acting only for a structural class
+#: (a test the engine records without a result, ``NOOP_RECORDED_STRUCTURAL``); for any other class it is decision C (FD-P3-30, P3-48) or the norepinephrine contract
+#: (FD-AUTHNE), and fails closed. ``SCHEDULED`` and ``TERMINAL_NOT_EXECUTABLE`` cannot be proven here and fail closed.
+NOOP_NONACTING_FATES = frozenset({"HELD_CLARIFICATION", "HELD_REASONING", "UNRECOGNIZED", "CANCELLED", "DUPLICATE_IGNORED"})
+NOOP_RECORDED_STRUCTURAL = "RECORDED_NOT_MODELLED"
+#: The classes whose ``RECORDED_NOT_MODELLED`` fate is a record and not a management act: the structural ones (a test recorded without a result) and a stated PLAN (an intention
+#: for later that the engine records and does not carry out). Every other recorded-not-modelled class is decision C.
+RECORDED_NONACTING_CLASSES = tuple(STRUCTURAL_ACTIONS) + ("plan",)
+
+
+def order_did_not_act(row: Mapping) -> bool:
+    """P3-552: whether ONE settled ledger row is an order that did not act on the patient, for the clarification no-op (see ``NOOP_NONACTING_FATES``)."""
+    item = dict(row) if isinstance(row, Mapping) else {}
+    fate = str(item.get("fate") or "").strip().upper()
+    kind = str(item.get("class") or "").strip().lower()
+    return fate in NOOP_NONACTING_FATES or (fate == NOOP_RECORDED_STRUCTURAL and kind in RECORDED_NONACTING_CLASSES)
+
+
+def classify_nonadvancing(proof: Mapping[str, Any], kinds: Sequence[str] = ()) -> str:
+    """The class of a turn that did not move the clock, from its proof (``NOOP_PROOF_FIELDS``) and the classes that ran. Pure; it reads no text.
+
+    An action that ran, a patient state or protected field that changed, or a settled order that acted is evidence of a mutation: UNSAFE_MUTATION. A proof that is merely
+    incomplete (no origin, no ledger, a shadow failure, a shadow that advanced) is UNKNOWN. Both fail closed. Only a complete proof is CLARIFICATION_NOOP."""
+    names = {str(kind).strip().lower() for kind in kinds}
+    if names and names <= set(NO_ADVANCE_OK):
+        return CERTIFIED_SAME_MINUTE_MUTATION if names & set(NO_COMMON_PHYSIOLOGY_ACTIONS) else STRUCTURAL_ONLY
+    if names - set(STRUCTURAL_ACTIONS):
+        return UNSAFE_MUTATION                       # an intervention that ran is a mutation whatever the proof says: the classes are read first, never overridden
+    facts = {name: proof.get(name) is True for name in NOOP_PROOF_FIELDS}
+    if all(facts.values()):
+        return CLARIFICATION_NOOP                    # nothing ran, or only a structural test the engine recorded without changing anything (the proof says so)
+    if proof.get("patient_state_unchanged") is False or proof.get("protected_fields_unchanged") is False or proof.get("no_settled_order_acted") is False:
+        return UNSAFE_MUTATION
+    return UNKNOWN_NONADVANCING
+
 
 def disposition_of(kind: Any, fate: Any = None, carried: Sequence[str] = ()) -> str:
     """The disposition of ONE order class, given the fate the ledger settled for it (None before settlement).
@@ -1808,7 +1863,15 @@ def unsupported_in_settlement(rows: Sequence | None, carried: Sequence[str] = ()
     and an allowlisted class (the IV line) whose settled fate says it did NOT act (held, terminal, recorded-not-modelled, unrecognized). The one rule the site
     and the dry evaluator share, so that neither can accept what the other refuses (P3-219 review, F1 and F7)."""
     items = [dict(row) if isinstance(row, Mapping) else {} for row in list(rows or [])]
-    found = set(unsupported_among(tuple(str(item.get("class") or "") for item in items), carried))
+    # P3-537 (FD-FINALPILOT-03/08): an order the pipeline HELD for a clarification or for the reasoning did not act, so its class is not a class the turn asks the common mapping to
+    # represent: the completed order is judged by its own class on the turn that carries it out. An allowlisted class (the IV line) whose fate says it did not act stays a
+    # contradiction below, exactly as before.
+    # P3-552 (review finding 1): an order the reader did not RECOGNIZE did not act either (nothing was done; the resident is told so) -- it is not a management class the engine
+    # recorded without modelling (that is decision C, and stays: ``RECORDED_NOT_MODELLED`` is still judged by its class).
+    acting = [item for item in items if (str(item.get("fate") or "").strip().upper() not in (_HELD_FATES | {"UNRECOGNIZED"})
+                                         and not (str(item.get("fate") or "").strip().upper() == "RECORDED_NOT_MODELLED" and str(item.get("class") or "").strip().lower() == "plan"))
+              or str(item.get("class") or "").strip().lower() in NO_COMMON_PHYSIOLOGY_ACTIONS]
+    found = set(unsupported_among(tuple(str(item.get("class") or "") for item in acting), carried))
     for item in items:
         name = str(item.get("class") or "").strip().lower()
         if name in NO_COMMON_PHYSIOLOGY_ACTIONS and disposition_of(item.get("class"), item.get("fate")) in (HELD_NOT_EXECUTED, TERMINAL_NOT_EXECUTABLE, UNSUPPORTED_ACTION):
@@ -1904,6 +1967,11 @@ class AuthoritySite:
     #: encounter's norepinephrine orders at the turn being judged.
     tone_configuration: Any = field(default=None, init=False)
     ne_verdict: Any = field(default=None, init=False)
+    #: P3-537: how many minutes the shadow session held when this site last judged a turn it recorded (a commit, a quiet turn, a clarification no-op); -1 before the first.
+    #: A clarification no-op requires the shadow not to have advanced since (no new pressure sample can hide behind a turn that claims nothing happened).
+    shadow_minutes_judged: int = field(default=-1, init=False)
+    #: P3-536: the classification of the last turn that did not move the clock after a committed minute, with its proof (read by the artifact and the faculty view).
+    last_nonadvancing: Mapping[str, Any] | None = field(default=None, init=False)
 
     def _carried(self) -> tuple:
         """The action classes the grant this site stands under adds to the supported ones: ``("norepinephrine",)`` under the norepinephrine grant, and nothing under any other."""
@@ -1951,7 +2019,8 @@ class AuthoritySite:
 
     # -- one minute ------------------------------------------------------------------------------------
     def minute(self, before: Mapping | None, after: Mapping, session: Any,
-               ran: Sequence | None, submission_id: str | None = None, route: str = ORDER_TURN, settled: Sequence | None = None) -> Mapping | None:
+               ran: Sequence | None, submission_id: str | None = None, route: str = ORDER_TURN, settled: Sequence | None = None,
+               origin: Mapping | None = None) -> Mapping | None:
         """One future authority minute: capture, compute, validate, commit atomically, or abort.
 
         Returns a NEW prepared mapping to install, or None. Never raises into the caller: an unexpected
@@ -1960,6 +2029,9 @@ class AuthoritySite:
         ``settled`` (P3-271): the order ledger of the turn AFTER the pipeline settled each order's fate, when the caller has it BEFORE the commit. A real session judges the settled lineage and the
         settled classes here, before it commits, so that a contradiction the settlement reveals is a refusal of the turn and never a commit that has to be taken back (a committed minute is never
         rewritten: faculty decision F). The post-commit ``settle_provenance`` stays, and attaches the lineage to the minute as it always did.
+
+        ``origin`` (P3-537): the untouched pre-turn objects of the transactional turn and their working copies (``turn_origin``), for the protected fields only. A turn that did not
+        move the clock after a committed minute is a clarification no-op ONLY when the site proves from them that nothing it protects changed; without them it never is.
         """
         minute = _as_int(dict(after).get("sim_time"))
         if self.halted:
@@ -1970,6 +2042,7 @@ class AuthoritySite:
             self._persist()
             return None
         self._settled_ledger = None if settled is None else list(settled)
+        self._turn_origin = origin
         try:
             prepared = self._minute(before, dict(after), session, ran, submission_id, route)
         except Exception as error:
@@ -2176,6 +2249,12 @@ class AuthoritySite:
                 # line. Also give <something the mapping cannot represent>" must not slip through because its first order was acknowledged.
                 settled = settled_provenance(orders, submission_id)
                 unsupported = settled_unsupported(settled, self._carried())
+                if quiet.get("outcome") == NONADVANCING_CLARIFICATION_NOOP:
+                    # P3-537: the no-op was proven on the ledger the page settled BEFORE the judgement; the ledger settled after it must say the same -- no order of the turn acted
+                    # (the SAME rule the proof used, ``order_did_not_act``: held, unrecognized, cancelled, ignored duplicates, structural records).
+                    acted = sorted({str(dict(item).get("class") or "") for item in settled if not order_did_not_act(item)})
+                    if acted:
+                        unsupported = tuple(sorted(set(unsupported) | {f"acted_in_a_clarification_noop:{name or 'untyped'}" for name in acted}))
                 quiet["settled_action_classes"] = sorted({str(item.get("class") or "") for item in settled} - {""})
                 quiet["no_common_physiology"] = [dict(row) for row in executed_no_common_physiology(settled)]
                 quiet["provenance_settled"] = True
@@ -2321,13 +2400,26 @@ class AuthoritySite:
                 quiet["consciousness_overlay"] = dict(self._real_minute_fields().get("consciousness_overlay") or {}) or None
             self.no_advance_turns.append(quiet)
             self._unpersisted_quiet = True            # P3-276 (review M2): durable only once ``_persist`` has written it (a quiet turn the store could not write is withdrawn, like a commit)
+            self.shadow_minutes_judged = len(list(getattr(session, "minutes", []) or []))
             return reasserted
         if minute in self.minutes_committed:
-            # One minute is one transaction: a turn that did not advance the clock -- a plan, a held
-            # order, a clarification -- may not commit the same minute a second time. It is checked AFTER
-            # the classes, so a turn carrying an unsupported treatment names it (P3-28 review).
-            return self._hard_fail(minute, f"{MINUTE_ALREADY_COMMITTED}: {minute}", ran,
-                                   legacy=legacy_observable)
+            # One minute is one transaction: a turn that did not advance the clock may not commit the same minute a second time. It is checked AFTER the classes, so a turn
+            # carrying an unsupported treatment names it (P3-28 review). P3-536/537 (FD-FINALPILOT-01 to 04): such a turn is first CLASSIFIED from a proof of state
+            # equivalence; a proven clarification no-op is recorded on the same committed minute and the experiment goes on, and everything else still fails closed here.
+            proof = self._noop_proof(before, after, session, kinds, settled_rows, submission_id, route, new_failures, minute)
+            verdict = classify_nonadvancing(proof, kinds)
+            self.last_nonadvancing = {"minute": minute, "submission_id": str(submission_id or ""), "class": verdict, "proof": dict(proof)}
+            if verdict == CLARIFICATION_NOOP:
+                return self._record_clarification_noop(minute, submission_id, route, settled_rows, proof, legacy_observable, session)
+            unrepresentable = list(getattr(self, "_noop_unrepresentable", []) or [])
+            if verdict == UNKNOWN_NONADVANCING and unrepresentable and proof.get("no_settled_order_acted") is not False:
+                # P3-552 (review finding 1): what blocks the turn is decision C (a management class the common mapping cannot represent, recorded by the engine), not a
+                # mutation: the turn is refused for THAT reason, exactly as a turn that moved the clock would be (and it is never labelled a mutation).
+                self._hard_fail(minute, f"{UNSUPPORTED_AUTHORITY_ACTION}: {unrepresentable}", ran, legacy=legacy_observable, unsupported=tuple(unrepresentable))
+            else:
+                self._hard_fail(minute, f"{MINUTE_ALREADY_COMMITTED}: {minute}", ran, legacy=legacy_observable)
+            self.records[-1]["nonadvancing"] = {"class": verdict, "proof": dict(proof)}
+            return None
         shadow_minute = self._shadow_minute(session, minute)
         if shadow_minute is None:
             # P3-380 (adversarial review, finding 7): when the reason there is no candidate is that the session could not BIND the ratified snapshot, the authority's own record says so (the class
@@ -2445,9 +2537,76 @@ class AuthoritySite:
                            "moved_fields": sorted(moved)})
         self.records.append(provenance)
         self._unpersisted_commit = True          # P3-271: durable only once ``minute`` has persisted it (see ``_persist``)
+        self.shadow_minutes_judged = len(list(getattr(session, "minutes", []) or []))
         return prepared
 
     # -- the pieces ------------------------------------------------------------------------------------
+    def _noop_proof(self, before, after: Mapping, session, kinds: Sequence[str], settled_rows, submission_id, route: str, new_failures, minute: int) -> dict:
+        """P3-537: the proof that a turn which did not move the clock is a clarification no-op, field by field (``NOOP_PROOF_FIELDS``). It compares canonical digests of
+        what the turn could have changed -- never text. Each fact is True (established), False (established NOT to hold: evidence of a mutation for the mutation facts) or
+        None (it could not be established: no origin, no ledger, an error). Only all-True proves; it never raises."""
+        proof: dict = {name: None for name in NOOP_PROOF_FIELDS}
+        self._noop_digests, self._noop_unrepresentable = None, []
+        self._noop_structural = sorted({str(kind).strip().lower() for kind in kinds} & set(STRUCTURAL_ACTIONS))
+        try:
+            proof["order_turn"] = route == ORDER_TURN
+            proof["clock_unchanged"] = (before is not None and _as_int(dict(before).get("sim_time")) == minute == _as_int(dict(after).get("sim_time")))
+            proof["at_the_last_committed_minute"] = bool(self.minutes_committed) and minute == self.minutes_seen
+            proof["no_intervention_ran"] = not ({str(kind).strip().lower() for kind in kinds} - set(STRUCTURAL_ACTIONS))
+            proof["settled_ledger_given"] = settled_rows is not None
+            if settled_rows is not None:
+                rows = [dict(row) for row in settled_provenance(settled_rows, submission_id)]
+                fates = {str(row.get("fate") or "").strip().upper() for row in rows}
+                acted = [row for row in rows if not order_did_not_act(row)]
+                # an order that ran is a mutation; one whose fate cannot be proven non-acting here (scheduled, terminal) leaves the fact unknown
+                proof["no_settled_order_acted"] = (False if any(str(row.get("fate") or "").strip().upper() in {"EXECUTED", "DUPLICATE_CONFIRMED"} for row in acted)
+                                                   else (True if not acted else None))
+                proof["every_settled_class_representable"] = not settled_unsupported(rows, self._carried())
+                self._noop_unrepresentable = list(settled_unsupported(rows, self._carried()))
+                del fates
+            proof["no_new_shadow_failure"] = not list(new_failures or [])
+            proof["shadow_did_not_advance"] = (self.shadow_minutes_judged >= 0 and len(list(getattr(session, "minutes", []) or [])) == self.shadow_minutes_judged)
+            origin = getattr(self, "_turn_origin", None)
+            originals = dict(dict(origin or {}).get("originals") or {})
+            current = dict(dict(origin or {}).get("current") or {})
+            proof["turn_origin_given"] = bool(origin) and all(name in originals and name in current for name in NOOP_PROTECTED_FIELDS)
+            if proof["turn_origin_given"]:
+                self._noop_digests = {"origin_state": digest_of(dict(originals["state"])), "turn_state": digest_of(dict(current["state"])), "judged_state": digest_of(dict(after)),
+                                      "origin_protected": digest_of({name: originals[name] for name in NOOP_PROTECTED_FIELDS if name != "state"}),
+                                      "turn_protected": digest_of({name: current[name] for name in NOOP_PROTECTED_FIELDS if name != "state"})}
+                proof["patient_state_unchanged"] = (self._noop_digests["origin_state"] == self._noop_digests["judged_state"] == self._noop_digests["turn_state"])
+                proof["protected_fields_unchanged"] = self._noop_digests["origin_protected"] == self._noop_digests["turn_protected"]
+            committed = [record for record in self.records if _as_int(record.get("minute")) == minute and record.get("committed")]
+            proof["pressure_is_the_committed_one"] = bool(committed) and (digest_of(pressure_point(dict(after).get("observable")))
+                                                                          == digest_of(pressure_point(committed[-1].get("common_pressures"))))
+            proof["no_authority_sample_committed"] = not any(_as_int(record.get("minute")) == minute and record.get("committed") and record.get("submission_id") == submission_id
+                                                             for record in self.records)
+        except Exception:
+            pass                                        # whatever was not established stays None: the turn is UNKNOWN and fails closed
+        return proof
+
+    def _record_clarification_noop(self, minute: int, submission_id, route: str, settled_rows, proof: Mapping, legacy_observable: Mapping, session) -> None:
+        """P3-537: record a PROVEN clarification no-op on the same committed minute. Nothing is committed, no sample is added, no time is fabricated; the turn is listed in the
+        artifact (``no_advance_turns``, outcome ``NONADVANCING_CLARIFICATION_NOOP``) with its proof and the orders it held, and it is durable only once persisted, exactly like
+        every other zero-minute turn (a turn the store could not write is withdrawn and the experiment halts)."""
+        held = [{"order_id": str(row.get("order_id") or ""), "class": str(row.get("class") or ""), "fate": str(row.get("fate") or "")}
+                for row in (dict(item) for item in settled_provenance(settled_rows or [], submission_id))]
+        digests = dict(getattr(self, "_noop_digests", None) or {})
+        committed = next(record for record in reversed(self.records) if _as_int(record.get("minute")) == minute and record.get("committed"))
+        noop = {"minute": minute, "submission_id": str(submission_id or ""), "route": route, "action_kinds": list(getattr(self, "_noop_structural", []) or []),
+                "action_fates": [], "no_common_physiology": [],
+                "outcome": NONADVANCING_CLARIFICATION_NOOP, "nonadvancing_class": CLARIFICATION_NOOP, "held_orders": held,
+                "proof": {name: proof.get(name) is True for name in NOOP_PROOF_FIELDS},
+                "pressure_digest": digest_of(pressure_point(legacy_observable)),
+                "committed_pressure_digest": digest_of(pressure_point(committed.get("common_pressures"))),
+                "attached_to_committed_minute": minute, "state_digests": digests}
+        if self.grant is not None:
+            noop["consciousness_overlay"] = dict(self._real_minute_fields().get("consciousness_overlay") or {}) or None
+        self.no_advance_turns.append(noop)
+        self._unpersisted_quiet = True
+        self.shadow_minutes_judged = len(list(getattr(session, "minutes", []) or []))
+        return None
+
     def _reassertion(self, after: Mapping, minute: int) -> Mapping | None:
         """The state with the pressure this minute already committed written back over the engine's refresh, or ``None`` when this is not that situation.
 
@@ -3189,6 +3348,12 @@ def turn_applies(store: Any) -> bool:
     return turn.applies(store)
 
 
+def turn_origin(store: Any) -> dict | None:
+    """P3-537: what the site needs to PROVE that a turn which did not move the clock changed nothing it protects (see ``runtime_authority_turn.origin``). One lookup when no turn is open."""
+    import runtime_authority_turn as turn
+    return turn.origin(store)
+
+
 def turn_check(store: Any) -> None:
     """P3-271: called right after the authority judged the turn; a turn it refused is unwound here (``AuthorityTurnDiscarded``, swallowed by the turn's own context). One lookup when no turn is open."""
     import runtime_authority_turn as turn
@@ -3847,7 +4012,43 @@ def real_artifact_problems(artifact: Mapping) -> list:
         problems.extend(ne.artifact_problems(body))
     if dict(body.get("grant") or {}).get("grant_id") != "GI_NOREPINEPHRINE_DEVELOPMENT_AUTHORITY_GRANT_V1":
         problems.extend(_tone_content_problems(body))
+    problems.extend(clarification_noop_problems(body))
     return problems
+
+
+def clarification_noop_problems(artifact: Mapping) -> list:
+    """P3-539 (FD-FINALPILOT-02, "replay reproduces it"): every clarification no-op an artifact lists is re-derived from the artifact ALONE -- its class and outcome agree, every
+    fact of its proof holds, nothing ran, every order it names was held, it is attached to a committed minute, and the pressure it carried is exactly that minute's committed
+    pressure (no sample fabricated, none duplicated). A no-op that fails any of these is named; an artifact without no-ops gets nothing."""
+    body = dict(artifact or {})
+    committed = {_as_int(dict(record).get("minute")): dict(record) for record in (body.get("minutes") or []) if dict(record).get("committed")}
+    found: list = []
+    for item in (body.get("no_advance_turns") or []):
+        quiet = dict(item)
+        if quiet.get("outcome") != NONADVANCING_CLARIFICATION_NOOP and quiet.get("nonadvancing_class") != CLARIFICATION_NOOP:
+            continue
+        at = _as_int(quiet.get("minute"))
+        where = f"the clarification no-op at minute {at}"
+        if quiet.get("outcome") != NONADVANCING_CLARIFICATION_NOOP or quiet.get("nonadvancing_class") != CLARIFICATION_NOOP:
+            found.append(f"{where}: its outcome and its class disagree")
+        proof = dict(quiet.get("proof") or {})
+        failed = [name for name in NOOP_PROOF_FIELDS if proof.get(name) is not True]
+        if failed:
+            found.append(f"{where}: its proof does not hold: {failed}")
+        if (set(str(kind) for kind in (quiet.get("action_kinds") or [])) - set(STRUCTURAL_ACTIONS)) or list(quiet.get("action_fates") or []):
+            found.append(f"{where}: an intervention ran")
+        if not all(order_did_not_act(order) for order in (quiet.get("held_orders") or [])):
+            found.append(f"{where}: it names an order that acted")
+        digests = dict(quiet.get("state_digests") or {})
+        if not (digests and digests.get("origin_state") == digests.get("turn_state") == digests.get("judged_state") and digests.get("origin_protected") == digests.get("turn_protected")
+                and all(len(str(value)) == 64 for value in digests.values())):
+            found.append(f"{where}: its state digests do not show the untouched encounter")
+        record = committed.get(at)
+        if record is None or quiet.get("attached_to_committed_minute") != at:
+            found.append(f"{where}: it is not attached to a committed minute")
+        elif not (quiet.get("pressure_digest") == quiet.get("committed_pressure_digest") == digest_of(pressure_point(record.get("common_pressures")))):
+            found.append(f"{where}: the pressure it carried is not the committed minute's")
+    return found
 
 
 def verify_artifact(artifact: Mapping) -> dict:

@@ -223,6 +223,22 @@ def reset_stale(store: Any) -> str | None:
         return DISCARD
 
 
+def origin(store: Any) -> dict | None:
+    """P3-537: the untouched pre-turn objects of the OPEN transactional turn and their working copies, for the fields a clarification no-op must leave unchanged
+    (``runtime_authority.NOOP_PROTECTED_FIELDS``). References only: nothing is copied and nothing is written. None when no transactional turn is open, which the site reads
+    as a proof it cannot make (it then fails closed exactly as before). Never raises."""
+    try:
+        turn = store.get(TURN_KEY)
+        if not isinstance(turn, AuthorityTurn):
+            return None
+        names = tuple(ra.NOOP_PROTECTED_FIELDS)
+        if any(name not in turn.originals or name not in store for name in names):
+            return None
+        return {"originals": {name: turn.originals[name] for name in names}, "current": {name: store[name] for name in names}}
+    except Exception:
+        return None
+
+
 def ownership_problems(session_fields: Any) -> list:
     """What is wrong with the ownership table against the session's saved fields: a field nobody classified, or classified twice. Empty means partitioned."""
     problems = []

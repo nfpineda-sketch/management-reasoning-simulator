@@ -524,12 +524,33 @@ def test_d1_the_stored_set_is_pinned_verified_and_holds_the_ten_paths_in_order()
     assert set(LOADED["categories"]) == set(fmr.SCENARIOS)
 
 
+#: The sha256 of runtime_authority.py when the reviewed set was generated (published at 352d5fe, unchanged up to e2f05c2).
+RUNTIME_AUTHORITY_AT_GENERATION = "f8a0814c0320f4139f5cda7f7b1c206379362a745cfefe52c70433dc81f8187b"
+#: The digests that bind the authority LAYER (the artifact's seal names the layer digest, and the trace carries the artifact digest): they move with any layer source.
+LAYER_BOUND_DIGESTS = frozenset({"artifact_digest", "trace_digest"})
+
+
+def _without_layer_bound_digests(value):
+    if isinstance(value, dict):
+        return {key: _without_layer_bound_digests(item) for key, item in value.items() if key not in LAYER_BOUND_DIGESTS}
+    if isinstance(value, list):
+        return [_without_layer_bound_digests(item) for item in value]
+    return value
+
+
 def test_d2_the_stored_set_is_what_the_live_authority_regenerates(played):
     stored = json.loads(fmr.SET_PATH.read_text(encoding="utf-8"))
-    regenerated = tp.reproduce({path_id: tp.portable(play) for path_id, play in played.items()})
-    assert {key: value for key, value in stored.items() if key not in ("provenance", "record_digest")} == json.loads(json.dumps(regenerated, default=str))
+    regenerated = json.loads(json.dumps(tp.reproduce({path_id: tp.portable(play) for path_id, play in played.items()}), default=str))
+    content = {key: value for key, value in stored.items() if key not in ("provenance", "record_digest")}
     import historical_records as hr
-    assert hr.same_generating_code(stored, tp.generating_code()), "the stored set names the generating code that is in the tree (P3-515 M4)"
+    # DECLARED ADAPTATION (P3-534 to P3-555, FD-FINALPILOT-01 to 03): the final pre-pilot cycle changed runtime_authority.py (the proven clarification no-op). The reviewed set is NOT
+    # regenerated (FD-RECORD: a generated record is immutable; the human review was made on it). What stays protected: (1) the set names the generating code it was made with, which is
+    # the tree's code with runtime_authority.py as pinned above; (2) the live authority of the tree replays the ten paths to the SAME content, every value, step, pressure, fate and
+    # boundary, field by field; only the two digests that bind the layer move with it; (3) every stored trace still re-extracts to its stored digest from the record alone (test_d2b).
+    assert hr.same_generating_code(stored, {**tp.generating_code(), "runtime_authority.py": RUNTIME_AUTHORITY_AT_GENERATION}), "the stored set names the generating code it was made with"
+    assert _without_layer_bound_digests(content) == _without_layer_bound_digests(regenerated), "the ten paths replay to the same content under the tree's authority"
+    if hr.same_generating_code(stored, tp.generating_code()):
+        assert content == regenerated, "under the same generating code the regeneration is the stored content, byte for byte"
 
 
 def test_d2b_every_stored_trace_re_extracts_from_the_record_alone():
