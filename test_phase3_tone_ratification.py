@@ -12,6 +12,7 @@ What it proves (the documents, the decisions and the checkpoint are tested apart
 * the limitations are persisted with the statuses the faculty gave, and titration and stop are the next priority and are NOT implemented;
 * nothing executable changed: no physiology, no parameter, no pump coupling, no authority, no grant.
 """
+import ast
 import copy
 import hashlib
 import json
@@ -309,7 +310,16 @@ def test_t19_nothing_executable_reads_the_snapshot_the_human_record_or_the_ratif
     # FD-AUTHNE-01 / P3-489/491 (declared adaptation): the faculty PROMOTED the ratified snapshot to a live development authority. Exactly two executable modules now name these records: the binding that
     # reads and verifies them (``runtime_tone_snapshot``) and the data-only grant that pins their digests (``runtime_ne_grant``). Nothing else reads them -- the page, the engine, the shadow mapping,
     # the scoring and ``clinical_core`` still do not -- which is what this test protected.
-    assert offenders == ["runtime_ne_grant.py", "runtime_tone_snapshot.py"], f"a record only the tone binding and the grant read is read by: {offenders}"
+    # P3-532 (declared adaptation, FD-PILOT-08): the controlled development pilot (``gi_pilot``) names the snapshot id ONCE, as a constant: the value its gate requires the environment to select before
+    # an encounter opens. It imports no binding, reads no record, pins no digest and executes nothing of the tone snapshot; ``test_gi_pilot.py::test_u23`` holds the constant equal to
+    # ``runtime_tone_snapshot.SNAPSHOT_ID``. It names none of the other three records (the human record, the ratification, the checkpoint), and the page, the engine, the shadow mapping, the scoring and
+    # ``clinical_core`` still name none of the four.
+    assert offenders == ["gi_pilot.py", "runtime_ne_grant.py", "runtime_tone_snapshot.py"], f"a record only the tone binding and the grant read is read by: {offenders}"
+    pilot = (ROOT / "gi_pilot.py").read_text(encoding="utf-8")
+    assert pilot.count(needles[0]) == 1 and 'TONE_SNAPSHOT_ID = "COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1"' in pilot and not any(needle in pilot for needle in needles[1:]), "the pilot names the snapshot only as its one configuration constant"
+    imported = {(node.module if isinstance(node, ast.ImportFrom) else alias.name) or "" for node in ast.walk(ast.parse(pilot)) if isinstance(node, (ast.Import, ast.ImportFrom)) for alias in node.names}
+    assert not any(name.startswith(("runtime_", "clinical_core")) for name in imported), f"the pilot imports no binding: {sorted(imported)}"
+    assert "docs/revision" not in pilot and "SNAPSHOT_V1.json" not in pilot, "the pilot opens no tone record (its own files are its separate pseudonymous logs)"
     core = [path.name for path in (ROOT / "clinical_core").glob("*.py") if any(needle in path.read_text(encoding="utf-8") for needle in needles)]
     assert core == []
 

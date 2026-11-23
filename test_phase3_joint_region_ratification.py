@@ -3,6 +3,7 @@
 Records only. Nothing here changes an executable, a parameter, a candidate trajectory or an authority: the tests read the sealed records and the certified ones they point to, and they say so when something moves.
 The answers of the human re-review are typed a second time below, on purpose, so that a slip in either copy is caught.
 """
+import ast
 import hashlib
 import json
 import re
@@ -172,8 +173,16 @@ def test_t9_nothing_executable_reads_the_new_records_and_no_authority_was_expand
     # executable names the closure marker or the human re-review record (the binding pins that record's DIGEST, never its name).
     # FD-AUTHNE-08 (declared adaptation): the norepinephrine grant (data only; it extends the pressure grant and binds the SAME snapshot, by name, as part of its body) is the one module added to the set; it does not
     # name the monitored limitation, the closure marker or the human re-review record, so the rest of what this protects is unchanged.
-    declared = {"GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1": ["runtime_authority.py", "runtime_ne_grant.py", "runtime_pressure_grant.py", "runtime_pressure_snapshot.py", "runtime_shadow_families.py"],
+    # P3-532 (declared adaptation, FD-PILOT-08): the controlled development pilot (``gi_pilot``) names the snapshot id ONCE, as a constant: the value its gate requires the environment to select before
+    # an encounter opens. It imports no binding, reads no record, pins no digest and executes nothing of the snapshot (the authority still binds and verifies it); ``test_gi_pilot.py::test_u23`` holds the
+    # constant equal to ``runtime_pressure_snapshot.SNAPSHOT_ID``. It names neither the monitored limitation, nor the closure marker, nor the human re-review record, so the rest is unchanged.
+    declared = {"GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1": ["gi_pilot.py", "runtime_authority.py", "runtime_ne_grant.py", "runtime_pressure_grant.py", "runtime_pressure_snapshot.py", "runtime_shadow_families.py"],
                 "GI_BLOOD_RESUSCITATION_LOW_END_RESPONSE": ["runtime_authority.py", "runtime_pressure_grant.py"],
                 "GI_PRESSURE_DEVELOPMENT_CALIBRATION_CLOSED": [], "PHASE3_HUMAN_FACULTY_REREVIEW": []}
     found = {token: sorted(path.name for path in ROOT.glob("*.py") if not path.name.startswith("test_") and token in path.read_text(encoding="utf-8", errors="replace")) for token in declared}
     assert found == declared, f"the executable modules that name the ratified records are not the declared set: {found}"
+    pilot = (ROOT / "gi_pilot.py").read_text(encoding="utf-8")
+    assert pilot.count("GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1") == 1 and 'PRESSURE_SNAPSHOT_ID = "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1"' in pilot, "the pilot names the snapshot only as its one configuration constant"
+    imported = {(node.module if isinstance(node, ast.ImportFrom) else alias.name) or "" for node in ast.walk(ast.parse(pilot)) if isinstance(node, (ast.Import, ast.ImportFrom)) for alias in node.names}
+    assert not any(name.startswith(("runtime_", "clinical_core")) for name in imported), f"the pilot imports no binding: {sorted(imported)}"
+    assert "docs/revision" not in pilot and "SNAPSHOT_V1.json" not in pilot, "the pilot opens no snapshot record (its own files are its separate pseudonymous logs)"

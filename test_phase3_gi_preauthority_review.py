@@ -562,7 +562,13 @@ def test_review_two_limits_of_the_existing_site_are_read_from_the_source_and_dec
     assert set(now) == set(stored)
     for section, fields in closed.items():
         assert {k: v for k, v in now[section].items() if k not in fields} == {k: v for k, v in stored[section].items() if k not in fields}, section
-    assert now["time_outside_an_order_turn"]["calls_the_authority_site"] is True and now["time_outside_an_order_turn"]["authority_site_call_sites_in_app"] == 2
+    # P3-532 (declared adaptation): the third call of the page's helper is the controlled development pilot's Layer (``gi_pilot.layer_from(..., lambda: _runtime_authority_site())``,
+    # inside the pilot's flag block): the pilot reaches this encounter's site through the page's own helper, never through a wiring of its own. The two routes are unchanged.
+    assert now["time_outside_an_order_turn"]["calls_the_authority_site"] is True and now["time_outside_an_order_turn"]["authority_site_call_sites_in_app"] == 3
+    page = (ROOT / "app.py").read_text(encoding="utf-8")
+    pilot_block = page[page.index('if os.environ.get("MRS_PHASE3_GI_PILOT", "").strip():'):page.index("def _gi_pilot_encounter():")]
+    assert pilot_block.count("_runtime_authority_site()") == 1 and "_gi_pilot.layer_from(" in pilot_block
+    assert page.count("_runtime_authority_site()") - page.count("def _runtime_authority_site()") - pilot_block.count("_runtime_authority_site()") == 2
     assert now["failures_read_by_the_site"]["rule_in_the_site"] is False, "the site no longer filters the failures on the last minute alone"
     route = stored["time_outside_an_order_turn"]
     assert route["route"] == "app.spend_clinical_time" and route["callers_in_app"] == 3 and route["calls_the_shadow"] is True

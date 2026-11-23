@@ -10,6 +10,7 @@ produces no action for the turn, so the live site never saw it and committed, wh
 eligibility reading called that scenario INELIGIBLE_UNSUPPORTED. The settled ledger is the only place the
 class appears, and the site now reads it there. The two readings must agree, scenario by scenario.
 """
+import itertools
 import tempfile
 
 import pytest
@@ -21,6 +22,10 @@ import runtime_shadow as rs
 CASE = "gi_bleed_57m"
 SNAP = "gi_pressure_committed"
 STORE_DIR = tempfile.mkdtemp(prefix="phase3-authority-series-")
+#: P3-532 (declared test repair): an experiment is named by a per-process counter, never by ``id(self)``. A heap address can be reused by a later encounter of the same variant
+#: in the same process (two series of one module share this create-only store), and the reused name then collided with different content: the store refused it and the
+#: authority halted (ARTIFACT_PERSISTENCE_FAILED), one scenario more than certified, depending only on memory layout. Nothing pins these names.
+_EXPERIMENT_NUMBERS = itertools.count(1)
 
 
 @pytest.fixture(autouse=True)
@@ -48,7 +53,7 @@ def _play_the_battery_with_authority(monkeypatch, case=CASE):
         real_init(self, variant, seed)
         site = (None if getattr(self, "shadow", None) is None
                 else ra.open_site(self.state, environ=None,
-                                  experiment_id=f"series-{variant}-{id(self):x}"))
+                                  experiment_id=f"series-{variant}-{next(_EXPERIMENT_NUMBERS):x}"))
         sites[id(self)] = site
         if site is not None:
             books[id(self.shadow)] = {"site": site, "submissions": []}
