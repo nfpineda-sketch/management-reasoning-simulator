@@ -37,6 +37,18 @@
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "d9cdd2779b9f81f2abf6b321b8e3bec38d08a0755c11ec898ddc2a3d8f94b60c"
     },
+    "GI_MANAGEMENT_TRACE_PILOT_SCOPE_V1.json": {
+      "class": "VERSIONED",
+      "file_sha256": "03cefc5efcb89b058bd89584c43dc5bee505e0f9d0ced78a2029825b36be462d",
+      "record_digest": "1b026adbde66387615b00caf3526df5cf0b1eae908e4985ece379eb4e9fe0c4d",
+      "record_id": "GI_MANAGEMENT_TRACE_PILOT_SCOPE_V1"
+    },
+    "GI_MANAGEMENT_TRACE_V1_RATIFICATION.json": {
+      "class": "VERSIONED",
+      "file_sha256": "df089f8b905309a629d9f3df22e3c1d329d0c6198a1317a48c4ff18e582a9440",
+      "record_digest": "5c7fb3a87e91c74c27f09525ae48fe3a129ecf9b75b8974105ef50061b77b56f",
+      "record_id": "GI_MANAGEMENT_TRACE_V1_RATIFICATION"
+    },
     "NEGATIVE_CONTROL_HYPERTENSIVE_PULMONARY_EDEMA_NOREPI_V1.json": {
       "class": "VERSIONED",
       "file_sha256": "d76451326510bb367a6d49d7fed99abf8cbdd88927eb1f3d4dd261a1aa6c5dc5",
@@ -421,6 +433,12 @@
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "966a71246f120913c66d2cce55a940a5b5a0de0c4ee5e36cb8f73bf2eaf458bd"
     },
+    "PHASE3_GI_PILOT_READINESS_CHECKPOINT.json": {
+      "class": "VERSIONED",
+      "file_sha256": "064e7c9ba025d9cb76aa1a20ca2bab771391f30204ec4ea1d57cc63dc581336b",
+      "record_digest": "afc8f294682bf34c3d6dc13185ce306dd6b405d4433d269c1f34d9092d28ff9f",
+      "record_id": "GI_PILOT_READINESS_CHECKPOINT_V1"
+    },
     "PHASE3_GI_PREAUTHORITY_REVIEW.json": {
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "3cfec3b16e83e8bcd8a67b32b1d5fcdbc2337fa703a2a37f03e88c66f44279bd"
@@ -450,6 +468,12 @@
     "PHASE3_HUMAN_FACULTY_REREVIEW.json": {
       "class": "LEGACY_UNVERSIONED",
       "file_sha256": "bd772ec8f37a8b425a88dc87931d9d60fc9cb45e2a5426c33a41712aed86615b"
+    },
+    "PHASE3_HUMAN_GI_MANAGEMENT_TRACE_REVIEW.json": {
+      "class": "VERSIONED",
+      "file_sha256": "895e390aaa389e7eb7f913265de15a8d9579d877b28f1bc219ec5963d743c43c",
+      "record_digest": "b958a5f00961f1f642385ee9cdf755bdef45d5a46de988bab1baa8f9c03a2eed",
+      "record_id": "HUMAN_GI_MANAGEMENT_TRACE_REVIEW_V1"
     },
     "PHASE3_HUMAN_NOREPINEPHRINE_TITRATION_REVIEW.json": {
       "class": "VERSIONED",

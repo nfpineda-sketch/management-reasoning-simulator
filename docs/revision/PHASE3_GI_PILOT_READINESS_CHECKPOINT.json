@@ -1,0 +1,486 @@
+{
+  "adversarial_review": {
+    "declared_not_repaired": [
+      "F7",
+      "F9",
+      "F10",
+      "F11"
+    ],
+    "found_by_the_certification": [
+      "C1",
+      "C2",
+      "C3",
+      "C4",
+      "C5",
+      "C6"
+    ],
+    "material": 4,
+    "minor": 7,
+    "mode": "independent, read-only",
+    "repaired": [
+      "F1",
+      "F2",
+      "F3",
+      "F4",
+      "F5",
+      "F6",
+      "F8"
+    ],
+    "reproduced_before_repair": true,
+    "reviews": 1,
+    "suspected": [
+      "S1"
+    ],
+    "suspected_not_reproduced": 1,
+    "test_side_before_the_review": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7"
+    ]
+  },
+  "architecture_finding": {
+    "effect_on_the_pilot": "the first incomplete, held or unrecognized order a resident writes after the first reassessment ends the development encounter (safely, fail-closed, with the operational message): the primary question of FD-PILOT-07 (sequential decisions with coherent consequences) cannot be asked of real residents, whose incomplete orders are common",
+    "halting_examples": [
+      "Give normal saline.",
+      "Start a pantoprazole infusion.",
+      "Start norepinephrine.",
+      "Titrate norepinephrine to MAP 65.",
+      "What is the hemoglobin?",
+      "Put the patient in the Trendelenburg position."
+    ],
+    "id": "MINUTE_ALREADY_COMMITTED_ON_A_NON_STRUCTURAL_ZERO_MINUTE_TURN",
+    "not_halting_examples": [
+      "Check a hemoglobin.",
+      "Place a second large-bore IV."
+    ],
+    "reproduced_on": "the published base 352d5fe without the pilot, and with it (test_gi_pilot_page.py::test_p16)",
+    "rule": "after the first committed minute, a turn that does not move the clock is 'quiet' only if every action of it is structural (reassessment, consultation, venous access); any other turn re-commits the same minute and the certified authority refuses it with MINUTE_ALREADY_COMMITTED, which halts the development authority permanently (a deliberate rule of P3-28: 'a plan, a held order, a clarification may not commit the same minute a second time')",
+    "what_the_pilot_does": "it neither bypasses nor changes the authority; it declares the rule in the launcher, ends the encounter with the operational message and pins it by test",
+    "what_would_change_it": "a change of the certified authority's zero-minute-turn semantics (for example, a turn in which nothing is carried out and the clock does not move does not re-commit the minute), which is an authority change and needs a faculty decision, a successor of the authority's certification and its own review",
+    "why_the_ten_reviewed_paths_did_not_meet_it": "every turn of the ten paths moves the clock, and the development runner of the previous cycle does not call the authority on such a turn"
+  },
+  "certification": {
+    "c6_correction": "the second run attributed its fourteen timeouts to the orphan pytest that held one core; the third run shows the same class without any orphan, as the certifications of FD-P3-296 (21) and FD-P3-301 (7) did with 24 partitions: the orphan aggravated the load, it was not the only cause",
+    "candidate": {
+      "base": "352d5feaaf7268c59208c5043e150cfdc1194b89",
+      "branch": "phase-3-runtime-integration",
+      "fingerprint": "84c89d9e5a2663c4398738508144d9ef9ebe779c057bffe8fc8e4374f699180c",
+      "fingerprint_at_start_equals_at_end": true,
+      "scope": "code, tests, the cycle's records, the documents and CLAUDE.md as they stood at the start of the third run; the Decision File row FD-P3-305, this record, its index entry and the moved index pin (ALL_ENTRIES_DIGEST) were added after it",
+      "valid": true
+    },
+    "controlled_rerun_of_the_failures": {
+      "classification": "the eleven failures were AppTest's 20-second timeout under load, not regressions",
+      "fingerprint_at_end": "84c89d9e5a2663c4398738508144d9ef9ebe779c057bffe8fc8e4374f699180c",
+      "fingerprint_at_start": "84c89d9e5a2663c4398738508144d9ef9ebe779c057bffe8fc8e4374f699180c",
+      "load_average_at_start": 0.64,
+      "result": "12 passed, 0 failed in 117 s (all eleven failures among them; the two parametrized ids ran both parameters)",
+      "started": "2026-11-23T06:58:08Z"
+    },
+    "full_suite": {
+      "cores": 4,
+      "errors": 0,
+      "failed": 11,
+      "failure_class": "ENVIRONMENTAL: each one is 'RuntimeError: AppTest script run timed out after 20(s)' under the load of 24 parallel partitions on 4 cores (load average 15-18 observed during the run); no orphan process was running; none is an assertion failure",
+      "failures": [
+        "test_pilot_screens_cycle10::test_the_resident_s_evidence_opens_under_their_header_not_after_every_record",
+        "test_resident_pages::test_faculty_open_the_same_evidence_and_portfolio_from_a_card",
+        "test_resident_pages::test_the_administrator_tells_active_from_inactive_accounts",
+        "test_curriculum_app::test_staff_dashboard_keeps_objective_progress[admin]",
+        "test_curriculum_app::test_staff_dashboard_keeps_objective_progress[faculty]",
+        "test_curriculum_app::test_full_app_faculty_brief_remains_visible_after_every_objective_is_assessed",
+        "test_curriculum_app::test_faculty_pdf_link_selects_encounter_once_and_keeps_review_manual",
+        "test_curriculum_app::test_unknown_or_resident_pdf_link_cannot_expose_private_faculty_analysis",
+        "test_curriculum_app::test_full_app_multiobjective_faculty_assessment_and_resident_progress",
+        "test_catalog_review_in_the_sandbox::test_an_administrator_opens_a_configuration_under_review_in_the_sandbox",
+        "test_faculty_cohort::test_staff_open_on_the_cohort_by_year_and_the_record_is_one_click_away[faculty]"
+      ],
+      "partitions": 24,
+      "passed": 14664,
+      "runner": ".claude/skills/verificar-y-entregar/scripts/suite_particionada.py",
+      "skipped": 99,
+      "started": "2026-11-23T05:01:09Z",
+      "suite_ended": "2026-11-23T06:56:40Z",
+      "tests": 14775,
+      "xfail": 1
+    },
+    "no_slowdown_check": {
+      "base_seconds": [
+        46.0,
+        45.8
+      ],
+      "candidate_seconds": [
+        44.1,
+        46.4
+      ],
+      "result": "no slowdown: per test within about 1 s of the base (the slowest, test_catalog_review_in_the_sandbox: 14.1/14.2 s base, 13.6/13.4 s candidate)",
+      "what": "the same six AppTest tests (test_curriculum_app, test_resident_pages, test_faculty_cohort, test_catalog_review_in_the_sandbox) timed in series on the base 352d5fe (a detached worktree, removed afterwards) and on the candidate, two rounds, on an idle machine"
+    },
+    "regressions": {
+      "active_passed": 56,
+      "active_total": 56,
+      "exit": 0,
+      "retired": 10,
+      "retired_reason": "kept, not run: RETIRED_REGRESSIONS (declared by the runner itself)",
+      "runner": "run_regressions.py"
+    },
+    "runs": {
+      "first_run": {
+        "errors": 0,
+        "failed": 16,
+        "fingerprint": "81767f644ea9746b4cbc7daea2da32e233420b013cfb0eeadc74ae51efd842f4",
+        "outcome": "FAILED: 14 assertion failures (C1, C2, C3) and 2 AppTest timeouts (C4); regression_v082_persistent_vitals failed (C1). The candidate was repaired",
+        "regressions_exit": 1,
+        "skipped": 99,
+        "started": "2026-11-22T23:46:28Z",
+        "tests": 14772,
+        "valid": true,
+        "xfail": 1
+      },
+      "second_run": {
+        "errors": 0,
+        "failed": 16,
+        "fingerprint": "ee8d8f6f71c234692701be0a2e365f60929e1bbf7700dc1fdb0cbf3766e44e03",
+        "outcome": "FAILED: 2 assertion failures (C5, repaired by a declared adaptation) and 14 AppTest timeouts (C6, re-run alone: 14 passed). The candidate was repaired",
+        "regressions": "56/56 active, 10 retired, exit 0",
+        "skipped": 99,
+        "started": "2026-11-23T02:16:35Z",
+        "tests": 14775,
+        "valid": true,
+        "xfail": 1
+      },
+      "third_run": "this certification (full_suite, regressions and controlled_rerun_of_the_failures below)"
+    },
+    "test_adaptations_declared": [
+      "test_phase3_gi_preauthority_review.py (C2): the pilot's Layer is a third call of the page's helper _runtime_authority_site, pinned inside the pilot's flag block; the two page routes are unchanged",
+      "test_phase3_tone_review_records.py (C2): the two pilot modules join the tuple of modules that did not exist when the tone review set was generated",
+      "test_phase3_joint_region_ratification.py::test_t9 and test_phase3_tone_ratification.py::test_t19 (C5): gi_pilot.py joins the declared set, pinned to one mention of each snapshot id, no import of a binding and no record path (five mutants caught)",
+      "test_phase3_historical_record_versioning.py: ALL_ENTRIES_DIGEST moved to the index that adds the cycle's three records (and again, after the certification, for this checkpoint)"
+    ],
+    "test_repairs_declared": [
+      "test_runtime_authority_series.py (C3): experiments are named by a per-process counter instead of id(self); a reused heap address collided in the shared create-only store"
+    ]
+  },
+  "confirmations": {
+    "common_core_runtime_authority": false,
+    "no_authority_change": true,
+    "no_calibration_reopened": true,
+    "no_clinical_core_edit": true,
+    "no_clinical_validation_claim": true,
+    "no_consciousness_authority_expansion": true,
+    "no_grant_or_snapshot_change": true,
+    "no_new_physiology": true,
+    "no_pump_limited_authority_expansion": true,
+    "no_reader_edit": true,
+    "no_scoring_consequences": true,
+    "no_sealed_record_rewritten": true,
+    "no_source_control_implementation": true,
+    "real_resident_pilot_started": false
+  },
+  "decision_reference": "FD-PILOT-01 to FD-PILOT-08",
+  "evidence_class": "MODEL_ANALYSIS",
+  "facts": {
+    "authority": {
+      "common_core_runtime_authority": false,
+      "grant": "GI_NOREPINEPHRINE_DEVELOPMENT_AUTHORITY_GRANT_V1",
+      "pressure_snapshot": "GI_JOINT_PRESSURE_DEVELOPMENT_SNAPSHOT_V1",
+      "tone_snapshot": "COMMON_TONE_DEVELOPMENT_SNAPSHOT_V1"
+    },
+    "executable_files_added": [
+      "gi_pilot.py",
+      "gi_pilot_ui.py"
+    ],
+    "executable_files_changed": [
+      "app.py (the pilot hooks, no-ops without the flag, and the pilot's Layer built at the page's one crossing)",
+      "curriculum_runtime.py (start_pilot_encounter)",
+      "resuscitation_room.py (the appearance keyword of render_room)"
+    ],
+    "executable_files_not_changed": [
+      "clinical_core/",
+      "family_parser.py",
+      "family_engine.py",
+      "active_order_context.py",
+      "order_pipeline.py",
+      "runtime_authority.py",
+      "runtime_ne_authority.py",
+      "runtime_ne_grant.py",
+      "runtime_pressure_grant.py",
+      "runtime_pressure_snapshot.py",
+      "runtime_tone_snapshot.py",
+      "runtime_tone_support.py",
+      "runtime_shadow.py",
+      "runtime_shadow_families.py",
+      "development_management_trace.py"
+    ],
+    "pilot": {
+      "cases": [
+        "gi_bleed_57m"
+      ],
+      "challenge_id": "R2-05",
+      "exits": [
+        "DEFINITIVE_CONTROL_REQUESTED",
+        "ENGINE_SOURCE_CONTROL_DETECTED",
+        "DEVELOPMENT_HORIZON",
+        "AUTHORITY_STOP",
+        "AUTHORITY_UNAVAILABLE",
+        "FACULTY_STOP",
+        "PILOT_RECORD_UNAVAILABLE",
+        "PARTICIPANT_FINISHED",
+        "LEGACY_ENGINE_CLOSED",
+        "ENCOUNTER_CLOSED_IN_RECORD"
+      ],
+      "faculty_actions": [
+        "observe",
+        "stop",
+        "flag",
+        "unusable",
+        "replay_review",
+        "inspect_trace"
+      ],
+      "flag": "MRS_PHASE3_GI_PILOT",
+      "horizon_min": 120,
+      "id": "GI_MANAGEMENT_TRACE_CONTROLLED_DEVELOPMENT_PILOT_V1",
+      "participant_kinds": [
+        "started",
+        "turn",
+        "boundary",
+        "ended",
+        "interrupted",
+        "left"
+      ],
+      "store_flag": "MRS_PHASE3_GI_PILOT_STORE"
+    },
+    "records": {
+      "human": {
+        "file": "docs/revision/PHASE3_HUMAN_GI_MANAGEMENT_TRACE_REVIEW.json",
+        "file_sha256": "895e390aaa389e7eb7f913265de15a8d9579d877b28f1bc219ec5963d743c43c",
+        "record_digest": "b958a5f00961f1f642385ee9cdf755bdef45d5a46de988bab1baa8f9c03a2eed"
+      },
+      "ratification": {
+        "file": "docs/revision/GI_MANAGEMENT_TRACE_V1_RATIFICATION.json",
+        "file_sha256": "df089f8b905309a629d9f3df22e3c1d329d0c6198a1317a48c4ff18e582a9440",
+        "record_digest": "5c7fb3a87e91c74c27f09525ae48fe3a129ecf9b75b8974105ef50061b77b56f"
+      },
+      "scope": {
+        "file": "docs/revision/GI_MANAGEMENT_TRACE_PILOT_SCOPE_V1.json",
+        "file_sha256": "03cefc5efcb89b058bd89584c43dc5bee505e0f9d0ced78a2029825b36be462d",
+        "record_digest": "1b026adbde66387615b00caf3526df5cf0b1eae908e4985ece379eb4e9fe0c4d"
+      }
+    }
+  },
+  "limitations": [
+    "the human review of the ten paths is REPORTED, not verified against the persisted store; Q1 to Q6, comments, lock events, timestamps and the reviewer's identity were not reported and none is invented",
+    "H1 is BOUNDED in the pilot (a request for definitive control is recorded and not carried out, and the encounter ends), not resolved: the ordinary live page is unchanged",
+    "H2 is handled in the pilot by labelling the earlier model's mental status and withholding it after norepinephrine; authored case findings are not filtered",
+    "the mental-status filters are text transforms over the sentences the earlier model writes; after norepinephrine a sentence they do not know is filtered by a fixed vocabulary (MENTAL_WORDS, which covers the engine's own ladder)",
+    "the participant trace tolerates exactly one construct-verifier rejection (the carried reading of a turn without advance); development_management_trace.py was not edited because sealed records pin it",
+    "tranexamic acid and other medicines the engine executes halt the authority (AUTHORITY_STOP)",
+    "the pilot encounter is presented in English only, whatever language the participant chose; Spanish is deferred (TD-46)",
+    "an abandoned encounter stays ACTIVE in the record until the same participant starts another (TD-165 item 13)",
+    "the participant reference is pseudonymous, not anonymous: whoever holds the account database can re-link it",
+    "the pilot records are hash-chained but not signed (the same limit as TD-153 item 7)",
+    "one case only (gi_bleed_57m); gi_bleed_72f is deferred",
+    "starting the real pilot needs a separate faculty decision and the grant's scope (resident deployment is NOT granted by GI_NOREPINEPHRINE_DEVELOPMENT_AUTHORITY_GRANT_V1)"
+  ],
+  "next_human_action": "Decide whether the certified authority's zero-minute-turn rule may change for the pilot (a turn in which nothing is carried out and the clock does not move would not re-commit the minute), or whether the pilot should instead run with that rule declared and its encounters expected to end at the first incomplete order. Separately: decide the real pilot's activation (a faculty decision and the grant's scope), H1 beyond the pilot, and H2. Nothing else is to be built on this line until then.",
+  "open_faculty_decisions": [
+    "the zero-minute-turn rule of the certified authority (MINUTE_ALREADY_COMMITTED) for the pilot",
+    "activating the real pilot and the grant's scope",
+    "H1 on the ordinary live page",
+    "H2 on the ordinary live page",
+    "gi_bleed_72f in the pilot"
+  ],
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-23",
+    "generating_code": {
+      "app.py": "6ac3eb79737bbb85ea4445e2ec006b2e49b8108e9a02c8a320aa5e1236debd7a",
+      "curriculum_runtime.py": "609eeee6c3bfcc0ef045891f68142450c59f160e4ef3739ac5d1474fc6eaadc5",
+      "gi_pilot.py": "d8fc5ec976e3e08d1817143bcc07e18bd55cef18658f4d6668a2fca919a4e0fe",
+      "gi_pilot_ui.py": "22be4bd9d57726c6f36046f3637afe4e9834d295f33ac21ee33af3f72b99c7df",
+      "resuscitation_room.py": "7d7074256ba734efa115fcf2c7bbaad6594cc9bed7fffd1f6d07e43e7bceb2ff",
+      "test_gi_pilot.py": "80d19b834188f6cfbc1315e39d967403f77a454182c88860d848823e0ae9941a",
+      "test_gi_pilot_checkpoint.py": "e814af03251e12e862a8eaa9203a7daa77c7b8baf059c15faa35eab14625a611",
+      "test_gi_pilot_page.py": "8ca6786d6c4b5376106a9d71485b54fea65c6097518c70c2b4adc6430bb8e106",
+      "test_gi_pilot_records.py": "3ed1e0145411e05a334964e75b574ce18e6f8438f7b391fd7fa5450421af120c",
+      "test_phase3_gi_pilot_records.py": "2237349b022162ba8108fbdcd0078afc57f7410f1e90895b0339c7448e0f24e1"
+    },
+    "generating_code_fingerprint": "df2195dc2110066291af1edbfc2c63c9ea41cfa52bb9d001dcc134146051cc71",
+    "grant_id": "GI_NOREPINEPHRINE_DEVELOPMENT_AUTHORITY_GRANT_V1",
+    "record_id": "GI_PILOT_READINESS_CHECKPOINT_V1",
+    "record_schema_version": 1,
+    "source_data_digest": "01e84eec1f998eefdf280dab163daa0030c64f0bf663fbff67983c4cb864f824",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "record_digest": "afc8f294682bf34c3d6dc13185ce306dd6b405d4433d269c1f34d9092d28ff9f",
+  "record_type": "GI_PILOT_READINESS_CHECKPOINT",
+  "review_findings": {
+    "C1": {
+      "class": "MATERIAL",
+      "note": "the pilot crossed declared isolation guards: it imported the authority, its store and the shadow (only app.py may), reached the common core by a path that is not a declared crossing (through runtime_pressure_snapshot) and read the mental-status field to relabel it (a new, uninventoried reader); and a hook in _vitals_grid_html broke regression_v082_persistent_vitals, which executes that function alone. Now the pilot imports nothing of the layer (app.py, the page's one crossing, hands it a narrow Layer, as it hands the faculty review pages theirs), its mental-status filters are text transforms that read no field, and _vitals_grid_html is self-contained (test_u22, test_u23, test_u24)",
+      "outcome": "REPAIRED"
+    },
+    "C2": {
+      "class": "MINOR",
+      "note": "test_phase3_tone_review_records::test_c2 lists the two pilot modules among the modules that did not exist when the tone review set was generated, exactly as it already lists the later titration and management-trace modules; test_phase3_gi_preauthority_review::test_review_two_limits counts the pilot's Layer as a third call of the page's helper _runtime_authority_site (pinned inside the pilot's flag block; the two page routes are unchanged)",
+      "outcome": "DECLARED_ADAPTATION"
+    },
+    "C3": {
+      "class": "PRE_EXISTING_TEST_NONDETERMINISM",
+      "note": "test_phase3_minute_validation::test_r2 saw one scenario more halted (23, 11 instead of 24, 10) in the first run only; it did not reproduce alone or in its partition's exact order. Cause: the series harness (test_runtime_authority_series) named an experiment by id(self) and both series of the module share one create-only store; a reused heap address collided with different content, the store refused it and the authority halted (ARTIFACT_PERSISTENCE_FAILED). A probe that reuses the id reproduces exactly that halt; the harness now names experiments by a per-process counter (nothing pins the names)",
+      "outcome": "REPAIRED_IN_THE_TEST_HARNESS"
+    },
+    "C4": {
+      "class": "ENVIRONMENTAL",
+      "note": "two AppTest scripts timed out after 20 s (test_curriculum_app, test_catalog_review_in_the_sandbox) with 24 partitions on 4 cores; the later certifications re-run them",
+      "outcome": "RE_RUN"
+    },
+    "C5": {
+      "class": "MATERIAL",
+      "note": "second run (fingerprint ee8d8f6f...): the C1 repair moved the pilot's configuration to literal constants, and two guards that only an EXACT declared set of executables may name the ratified snapshots (test_phase3_joint_region_ratification::test_t9, test_phase3_tone_ratification::test_t19) failed. The pilot cannot reach the bindings (only app.py crosses, and only into the authority and the shadow), so both guards now declare gi_pilot.py, pinned to ONE mention of each snapshot id, no import of a binding and no record path; test_u23 holds the constants equal to the bindings. Five mutants (a second mention, an import, naming the tone checkpoint or the monitored limitation, a record path) are caught",
+      "outcome": "REPAIRED_BY_DECLARED_ADAPTATION"
+    },
+    "C6": {
+      "class": "ENVIRONMENTAL",
+      "note": "second run: fourteen AppTest scripts timed out after 20 s (test_curriculum_app, test_faculty_cohort, test_catalog_review_in_the_sandbox) while an orphan full-suite pytest left by an earlier probe of this cycle held one of the four cores for 2.5 h; it was stopped, and the fourteen pass alone on the same fingerprint (14 passed in 134 s, load 0.4); the third certification re-runs them",
+      "outcome": "RE_RUN"
+    },
+    "F1": {
+      "class": "MATERIAL",
+      "note": "a participant who chose Spanish read the earlier model's mental status after norepinephrine (the page translated the event before the pilot classified it): the pilot is presented in English and the classification runs on the English words before any translation (test_p17; two mutants)",
+      "outcome": "REPAIRED"
+    },
+    "F10": {
+      "class": "MINOR",
+      "note": "the procedure_events check of engine_source_control is dead code; the consultation and endoscopy checks suffice (TD-165 item 16)",
+      "outcome": "DECLARED_NOT_REPAIRED"
+    },
+    "F11": {
+      "class": "MINOR",
+      "note": "an abandoned encounter stays ACTIVE in the record until the same participant starts another; a faculty stop on it has no session to act on (TD-165 item 13)",
+      "outcome": "DECLARED_NOT_REPAIRED"
+    },
+    "F2": {
+      "class": "MATERIAL",
+      "note": "a second tab of the same participant recorded the first encounter INTERRUPTED while it kept running orders out of faculty control: an encounter the record no longer shows ACTIVE ends on its next run with ENCOUNTER_CLOSED_IN_RECORD before the pending order (test_p18; mutant)",
+      "outcome": "REPAIRED"
+    },
+    "F3": {
+      "class": "MATERIAL",
+      "note": "races inside the one process: the store's write check shared one name per process, and appends read and wrote without a lock (a forked faculty chain made every later stop unrecordable): the check is unique per call and an append is one serialized, locked step (test_u19; two mutants)",
+      "outcome": "REPAIRED"
+    },
+    "F4": {
+      "class": "MATERIAL",
+      "note": "with the image bank 'on' in the secrets and 'off' in the environment the pilot did not refuse: every source that sets it must say off (test_u2, test_p19)",
+      "outcome": "REPAIRED"
+    },
+    "F5": {
+      "class": "MINOR",
+      "note": "the first-pilot flags and the faculty review flag held only in the secrets did not refuse the pilot; they do now (test_u2)",
+      "outcome": "REPAIRED"
+    },
+    "F6": {
+      "class": "MINOR",
+      "note": "without the authority record directory every encounter opened and closed as AUTHORITY_UNAVAILABLE; the pilot now refuses before it starts (test_u2)",
+      "outcome": "REPAIRED"
+    },
+    "F7": {
+      "class": "MINOR",
+      "note": "the hash chain has no key and the replay review does not verify the meta or the orders against the artifact (TD-165 item 9)",
+      "outcome": "DECLARED_NOT_REPAIRED"
+    },
+    "F8": {
+      "class": "MINOR",
+      "note": "internal ledger tokens ('unread', 'plan:future_timed', 'held_with_question') were shown on the participant trace; the participant's own words are (test_u20)",
+      "outcome": "REPAIRED"
+    },
+    "F9": {
+      "class": "MINOR",
+      "note": "the pseudonym is recoverable to the account id by enumerating small ids (TD-165 item 8)",
+      "outcome": "DECLARED_NOT_REPAIRED"
+    },
+    "S1": {
+      "class": "SUSPECTED_NOT_REPRODUCED",
+      "note": "in Talk mode whether the patient can speak derives from the earlier model's mental status (TD-165 item 14)",
+      "outcome": "DECLARED_NOT_REPAIRED"
+    },
+    "T1": {
+      "class": "MATERIAL_FINDING",
+      "note": "after the first committed minute the certified authority halts the encounter permanently on a zero-minute turn that is not purely structural (MINUTE_ALREADY_COMMITTED): reproduced on the base 352d5fe without the pilot; it decides the verdict (architecture_finding)",
+      "outcome": "DECLARED_NOT_REPAIRED"
+    },
+    "T2": {
+      "class": "MATERIAL_TEST_SIDE",
+      "note": "the stored authority artifact did not verify or replay because a read-only mapping was stringified; the pilot record now keeps plain JSON data",
+      "outcome": "REPAIRED"
+    },
+    "T3": {
+      "class": "MATERIAL",
+      "note": "a faculty stop could arrive after a pending submission had already run; the pilot check now runs before it and a submission to an ended pilot encounter is blocked",
+      "outcome": "REPAIRED"
+    },
+    "T4": {
+      "class": "MATERIAL",
+      "note": "the examination text showed the earlier model's mental status after norepinephrine; it is now classified or withheld like the other surfaces",
+      "outcome": "REPAIRED"
+    },
+    "T5": {
+      "class": "MINOR",
+      "note": "the pilot's secret reader bypassed the offline rule's guard (test_offline_cases); it now uses the project's resolver",
+      "outcome": "REPAIRED"
+    },
+    "T6": {
+      "class": "MINOR",
+      "note": "the construct's verifier over-rejects the carried reading of a turn without advance; the pilot tolerates exactly that case (TD-165 item 3)",
+      "outcome": "DECLARED_NOT_REPAIRED"
+    },
+    "T7": {
+      "class": "MINOR",
+      "note": "the earlier encounter page's buttons 'Save & return to dashboard' and 'End this attempt without completing review' stay visible after a pilot encounter; without an account attempt they write nothing",
+      "outcome": "DECLARED_NOT_REPAIRED"
+    }
+  },
+  "sequence": [
+    "P3-518 preserve the reported human review of the ten paths (not store-verified; nothing invented)",
+    "P3-519 ratify GI_MANAGEMENT_TRACE_V1 for controlled development pilot preparation",
+    "P3-520 pilot scope (included, excluded, deferred)",
+    "P3-521 haemostasis boundary (H1 bounded in the pilot)",
+    "P3-522 resident-visible state (H2 labelled or withheld)",
+    "P3-523 participant trace without internals, reasoning only as expressed",
+    "P3-524 faculty controls (observe, stop, inspect, flag, mark unusable, replay review)",
+    "P3-525 pseudonymous, separate, hash-chained logs and replay",
+    "P3-526 fail-safe outside the published development configuration",
+    "P3-527 cases (gi_bleed_57m only; gi_bleed_72f deferred)",
+    "P3-528/529 resident and faculty dry runs (synthetic accounts, AppTest and Chromium)",
+    "P3-530 educational safety",
+    "P3-531 one independent adversarial review (F1-F4 material repaired)",
+    "P3-532 full certification on one fingerprint (third run valid; the first two failed and were repaired)",
+    "P3-533 checkpoint, verdict F, hard stop"
+  ],
+  "statement": "GI_MANAGEMENT_TRACE_V1 is ratified for controlled development pilot preparation (reported human review: ACCEPT_WITH_LIMITATION 10). A development pilot of one GI case, off by default and fail-closed outside the published development configuration, runs the live development pressure authority with the manual norepinephrine control exactly as published under GI_NOREPINEPHRINE_DEVELOPMENT_AUTHORITY_GRANT_V1; it creates no account attempt and reaches no score; it bounds definitive haemostasis before it happens; it labels or withholds the earlier model's mental status; it shows a management trace without internals and with the participant's reasoning only as expressed; and it gives faculty observe, stop, inspect, flag, mark-unusable and replay-review controls over separate, pseudonymous, hash-chained logs. The real pilot was NOT started.",
+  "verdict": "F",
+  "verdict_name": "PILOT_REQUIRES_BROADER_ARCHITECTURE_WORK",
+  "verdicts": {
+    "A": "GI_MANAGEMENT_TRACE_READY_FOR_SMALL_CONTROLLED_RESIDENT_PILOT",
+    "B": "PILOT_BLOCKED_BY_SOURCE_CONTROL_BOUNDARY",
+    "C": "RESIDENT_VISIBLE_STATE_NOT_SAFE",
+    "D": "TRACE_NOT_READY_FOR_RESIDENT_FEEDBACK",
+    "E": "FACULTY_SUPERVISION_NOT_CERTIFIABLE",
+    "F": "PILOT_REQUIRES_BROADER_ARCHITECTURE_WORK"
+  },
+  "version": "GI_PILOT_READINESS_CHECKPOINT_V1",
+  "why_not_the_others": {
+    "A": "after the first committed minute the certified authority halts the encounter permanently on a non-structural zero-minute turn (MINUTE_ALREADY_COMMITTED), which common incomplete orders produce; the primary question of FD-PILOT-07 cannot be asked of real residents, and starting the real pilot is not granted",
+    "B": "the source-control boundary is bounded in the pilot: a request for definitive control (47 phrasings) is recorded and not carried out, and an engine source-control event also ends the encounter at the boundary; H1 stays open on the ordinary live page, but it does not block the pilot",
+    "C": "the pressure shown is the live authority's committed minute; every other value is labelled by its source, the earlier model's mental status is labelled or withheld after norepinephrine on every surface (including Spanish and the examination text), and no internal variable is shown",
+    "D": "the participant trace has one provenance per value, the reasoning only as expressed, replay MATCH, and nine safety attacks pinned by test; no internal token reaches it",
+    "E": "faculty observe, stop, inspect, flag, mark unusable and replay-review; logs are pseudonymous, separate and hash-chained; roles are decided on the server; the limits (no signature, an enumerable pseudonym) are declared, not hidden",
+    "F": "this is the verdict"
+  }
+}

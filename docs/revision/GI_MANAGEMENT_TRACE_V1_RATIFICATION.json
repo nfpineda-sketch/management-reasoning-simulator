@@ -1,0 +1,118 @@
+{
+  "authority": {
+    "common_core_runtime_authority": false,
+    "expanded": false,
+    "grant_changed": false,
+    "snapshot_changed": false
+  },
+  "bound_to": {
+    "management_trace_checkpoint": {
+      "file": "docs/revision/PHASE3_GI_MANAGEMENT_TRACE_CHECKPOINT.json",
+      "file_sha256": "77dd5fa07cc99d26676e03b88c09d7aa433007f49f6d6cf7459e31de1ce65047",
+      "record_digest": "c82a908e8d0337070734fa83b09c44ec214709d6e67c3a70aedfd9d4b3211ab0"
+    },
+    "review_set_digest": "235b5a40443de28191166334d5ae46c6ccb7e498520235bb900901cae7230c8b",
+    "review_set_id": "GI_MANAGEMENT_TRACE_V1_FACULTY_REVIEW"
+  },
+  "calibration_change": false,
+  "construct": "GI_MANAGEMENT_TRACE_V1",
+  "date": "2026-11-22",
+  "faculty_decisions": {
+    "FD-PILOT-01": "Ratify GI_MANAGEMENT_TRACE_V1 as RATIFIED_FOR_CONTROLLED_DEVELOPMENT_PILOT_PREPARATION; NOT clinical validation, production approval or resident deployment yet.",
+    "FD-PILOT-02": "The ten reviewed management paths establish sufficient development evidence that the end-to-end Management Trace construct is causally and educationally coherent. Do NOT reopen GI pressure calibration, common-tone calibration, norepinephrine manual-rate calibration, parser/order safety or management-path calibration unless a material contradiction appears during pilot preparation or actual use.",
+    "FD-PILOT-03": "Preserve the reviewed management meanings as FACULTY INTERPRETATIONS: reasonable, temporizing, incomplete, clearly nonbeneficial. Do NOT automatically convert them into resident scores. Do NOT hard-code them as correctness labels.",
+    "FD-PILOT-04": "H1 remains open: the live engine can perform hemostasis after GI consultation. For the pilot-preparation package: BLOCK or BOUND the encounter before unreviewed definitive hemostasis. Do NOT silently allow an unreviewed source-control trajectory.",
+    "FD-PILOT-05": "H2 remains open: mental status under norepinephrine is nonauthoritative. Do NOT expose tone-driven or pressure-derived consciousness as validated feedback. Resident-visible mental status must be clearly classified as legacy / nonauthoritative or omitted where necessary to avoid misleading feedback.",
+    "FD-PILOT-06": "Current pilot scope: GI hemorrhagic shock only. Do NOT include pump-limited vasopressor cases, pulmonary edema vasopressor use, ACS vasopressor use, other vasopressors, target-based norepinephrine titration, weight-based norepinephrine dosing.",
+    "FD-PILOT-07": "Primary pilot question: can a resident manage a synthetic hemorrhagic-shock encounter, make sequential decisions, observe coherent consequences, and receive a Management Trace that is useful for reflection without exposing internal model variables or unsafe interpretations?",
+    "FD-PILOT-08": "The pilot must remain faculty-supervised, development-only, small, reversible and isolated from scoring / summative assessment. No performance consequences."
+  },
+  "human_record": {
+    "file": "docs/revision/PHASE3_HUMAN_GI_MANAGEMENT_TRACE_REVIEW.json",
+    "overall_counts": {
+      "ACCEPT": 0,
+      "ACCEPT_WITH_LIMITATION": 10,
+      "RECALIBRATE": 0,
+      "REJECT": 0
+    },
+    "record_digest": "b958a5f00961f1f642385ee9cdf755bdef45d5a46de988bab1baa8f9c03a2eed",
+    "verification": "HUMAN_FACULTY_REVIEW_REPORTED_NOT_STORE_VERIFIED"
+  },
+  "is_not": [
+    "clinical validation",
+    "production approval",
+    "resident deployment",
+    "a resident score or a correctness label",
+    "an approval of any management in a real patient"
+  ],
+  "management_meanings": {
+    "converted_into_scores": false,
+    "hard_coded_as_correctness_labels": false,
+    "shown_to_participants": false,
+    "status": "FACULTY_INTERPRETATIONS",
+    "values": [
+      "reasonable",
+      "temporizing",
+      "incomplete",
+      "clearly nonbeneficial"
+    ]
+  },
+  "not_reopened": [
+    "GI pressure calibration",
+    "common-tone calibration",
+    "norepinephrine manual-rate calibration",
+    "parser/order safety",
+    "management-path calibration"
+  ],
+  "open_findings": {
+    "H1": {
+      "pilot_handling": "BOUNDED: a request for definitive control is recorded and not carried out, and the encounter ends at the development boundary (gi_pilot)",
+      "statement": "the live engine can perform haemostasis after a gastroenterology consultation; never reviewed",
+      "status": "OPEN"
+    },
+    "H2": {
+      "pilot_handling": "classified as the earlier model's on every pilot surface and withheld once norepinephrine has been given (gi_pilot)",
+      "statement": "mental status under norepinephrine is nonauthoritative (the earlier model's), decoupled from the development pressure",
+      "status": "OPEN"
+    }
+  },
+  "physiology_change": false,
+  "preserved_original_evidence": {
+    "management_review_set": {
+      "file": "docs/revision/PHASE3_GI_MANAGEMENT_TRACE_V1_REVIEW_SET.json",
+      "file_sha256": "9455d2700704f92c212e7b6833da37269f059bcd9e4d6c7f804d819b7db394ce",
+      "record_digest": "235b5a40443de28191166334d5ae46c6ccb7e498520235bb900901cae7230c8b"
+    },
+    "management_review_set_digest_pinned_in_code": "235b5a40443de28191166334d5ae46c6ccb7e498520235bb900901cae7230c8b",
+    "management_trace_checkpoint": {
+      "file": "docs/revision/PHASE3_GI_MANAGEMENT_TRACE_CHECKPOINT.json",
+      "file_sha256": "77dd5fa07cc99d26676e03b88c09d7aa433007f49f6d6cf7459e31de1ce65047",
+      "record_digest": "c82a908e8d0337070734fa83b09c44ec214709d6e67c3a70aedfd9d4b3211ab0"
+    }
+  },
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-22",
+    "generating_code": {
+      "clinical_core": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "faculty_management_review.py": "9dcfec79016af98b42c7cc07573862b221e7a80d05e855b4626c8fdb0e86ce8b",
+      "gi_pilot.py": "d8fc5ec976e3e08d1817143bcc07e18bd55cef18658f4d6668a2fca919a4e0fe",
+      "test_gi_pilot_records.py": "3ed1e0145411e05a334964e75b574ce18e6f8438f7b391fd7fa5450421af120c"
+    },
+    "generating_code_fingerprint": "bab1d1205f53a6fdb7b8c9d9ce00e674fc5a05b40dea1231df1df1157d509151",
+    "grant_id": null,
+    "record_id": "GI_MANAGEMENT_TRACE_V1_RATIFICATION",
+    "record_schema_version": 1,
+    "source_data_digest": "6fe42b3e3c4222a0650da5d098d75a75abaf0c47c0e522c8e9cfad8a46aa8090",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "ratification_id": "GI_MANAGEMENT_TRACE_V1_RATIFICATION",
+  "record_digest": "5c7fb3a87e91c74c27f09525ae48fe3a129ecf9b75b8974105ef50061b77b56f",
+  "record_type": "GI_MANAGEMENT_TRACE_RATIFICATION",
+  "reopen_only_if": "a material contradiction appears during pilot preparation or actual use",
+  "scoring_change": false,
+  "status": "RATIFIED_FOR_CONTROLLED_DEVELOPMENT_PILOT_PREPARATION",
+  "status_meaning": "accepted to PREPARE a small, faculty-supervised, development-only pilot; nothing more",
+  "version": "P3-519"
+}

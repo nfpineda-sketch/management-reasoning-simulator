@@ -1,0 +1,212 @@
+{
+  "evidence_class": "HUMAN_FACULTY_REVIEW",
+  "evidence_classes": {
+    "HUMAN_FACULTY_REVIEW": "what the faculty reviewer judged in the review of the ten GI management paths, as reported; only this record and the Decision File rows FD-PILOT-01 to FD-PILOT-08 carry it",
+    "MODEL_ANALYSIS": "what the development assistant computed or read from the executable model and the certified records; it explains and bounds, it does not judge",
+    "TEST_RESULT": "what an automated test asserted; it protects a record, it is not a faculty decision"
+  },
+  "not_in_this_record": [
+    "the reviewer's name",
+    "any model-written judgment",
+    "any clinical-validation claim",
+    "the per-event logs (they live in the reviewer's own store)"
+  ],
+  "not_verified": [
+    "the answers Q1 to Q5 (not reported)",
+    "the management meaning Q6 per path (not reported)",
+    "the overall judgments against the persisted logs",
+    "the completion screen",
+    "the lock and submit events, their order and their timestamps",
+    "free-text comments (none were reported per path)",
+    "the reviewer's identity"
+  ],
+  "overall_counts": {
+    "ACCEPT": 0,
+    "ACCEPT_WITH_LIMITATION": 10,
+    "RECALIBRATE": 0,
+    "REJECT": 0
+  },
+  "overall_counts_recomputed_from_the_scenarios": {
+    "ACCEPT": 0,
+    "ACCEPT_WITH_LIMITATION": 10,
+    "RECALIBRATE": 0,
+    "REJECT": 0
+  },
+  "preserved_original_evidence": {
+    "management_review_set": {
+      "file": "docs/revision/PHASE3_GI_MANAGEMENT_TRACE_V1_REVIEW_SET.json",
+      "file_sha256": "9455d2700704f92c212e7b6833da37269f059bcd9e4d6c7f804d819b7db394ce",
+      "record_digest": "235b5a40443de28191166334d5ae46c6ccb7e498520235bb900901cae7230c8b"
+    },
+    "management_review_set_digest_pinned_in_code": "235b5a40443de28191166334d5ae46c6ccb7e498520235bb900901cae7230c8b",
+    "management_trace_checkpoint": {
+      "file": "docs/revision/PHASE3_GI_MANAGEMENT_TRACE_CHECKPOINT.json",
+      "file_sha256": "77dd5fa07cc99d26676e03b88c09d7aa433007f49f6d6cf7459e31de1ce65047",
+      "record_digest": "c82a908e8d0337070734fa83b09c44ec214709d6e67c3a70aedfd9d4b3211ab0"
+    }
+  },
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-22",
+    "generating_code": {
+      "clinical_core": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "faculty_management_review.py": "9dcfec79016af98b42c7cc07573862b221e7a80d05e855b4626c8fdb0e86ce8b",
+      "gi_pilot.py": "d8fc5ec976e3e08d1817143bcc07e18bd55cef18658f4d6668a2fca919a4e0fe",
+      "test_gi_pilot_records.py": "3ed1e0145411e05a334964e75b574ce18e6f8438f7b391fd7fa5450421af120c"
+    },
+    "generating_code_fingerprint": "bab1d1205f53a6fdb7b8c9d9ce00e674fc5a05b40dea1231df1df1157d509151",
+    "grant_id": null,
+    "record_id": "HUMAN_GI_MANAGEMENT_TRACE_REVIEW_V1",
+    "record_schema_version": 1,
+    "source_data_digest": "4adfcdd9e007724ece6182082d3bc8d6de5d5bfe3c7e5b875ab5f28a6525b325",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "provenance_of_the_evidence": {
+    "date_of_record": "2026-11-22",
+    "persisted_store_available_to_the_assistant": false,
+    "reported_in": "the assignment of 2026-11-22 that opened P3-518 ('PHASE 3 — RATIFY END-TO-END GI MANAGEMENT TRACE AND PREPARE CONTROLLED RESIDENT PILOT READINESS')",
+    "reviewer_identity_recorded": false,
+    "reviewer_name": null,
+    "reviewer_role": "faculty",
+    "transcribed_by": "the development assistant; the ten judgments and the seven findings are typed once from the report and nothing was added",
+    "verification": "HUMAN_FACULTY_REVIEW_REPORTED_NOT_STORE_VERIFIED",
+    "why": "no persisted management-review log exists in this container (a search found only the assistant's own transcripts, which are not human evidence); the assignment asked to read the store if available and, if not, to use the reported results and mark the provenance, without inventing Q1 to Q6, comments, timestamps or reviewer identity"
+  },
+  "record_digest": "b958a5f00961f1f642385ee9cdf755bdef45d5a46de988bab1baa8f9c03a2eed",
+  "record_type": "HUMAN_FACULTY_GI_MANAGEMENT_TRACE_REVIEW_RECORD",
+  "reported_findings": [
+    "causal coherence across all ten paths",
+    "no path requiring recalibration",
+    "negative/incomplete paths are educationally useful when clearly framed",
+    "ongoing hemorrhage remains visible",
+    "norepinephrine is shown as temporary pressure support, not definitive treatment",
+    "blood/crystalloid do not imply hemorrhage control",
+    "no resident reasoning is inferred"
+  ],
+  "reported_findings_scope": "the whole review; none is attributed to a single path",
+  "review": {
+    "completion_as_reported": "COMPLETE (10 of 10 judgments reported)",
+    "completion_screen_string": "NOT_REPORTED",
+    "item_digests_note": "computed here from the pinned set (what the review logs carry); the faculty did not report them",
+    "paths_reviewed": 10,
+    "review_set_digest": "235b5a40443de28191166334d5ae46c6ccb7e498520235bb900901cae7230c8b",
+    "review_set_id": "GI_MANAGEMENT_TRACE_V1_FACULTY_REVIEW",
+    "scenario_order_in_the_set": [
+      "MT-A",
+      "MT-B",
+      "MT-C",
+      "MT-D",
+      "MT-E",
+      "MT-F",
+      "MT-G",
+      "MT-H",
+      "MT-I",
+      "MT-J"
+    ]
+  },
+  "scenarios": [
+    {
+      "first_pass_answers_Q1_to_Q5": "NOT_REPORTED",
+      "free_text_comments": "NONE_REPORTED",
+      "management_meaning_Q6": "NOT_REPORTED",
+      "overall": "ACCEPT_WITH_LIMITATION",
+      "recalibration_requested": false,
+      "reviewed_item_digest": "1adef461513c",
+      "scenario_id": "MT-A",
+      "title_in_the_set": "57-year-old man with an upper gastrointestinal bleed: early crystalloid and blood, then reassessment only"
+    },
+    {
+      "first_pass_answers_Q1_to_Q5": "NOT_REPORTED",
+      "free_text_comments": "NONE_REPORTED",
+      "management_meaning_Q6": "NOT_REPORTED",
+      "overall": "ACCEPT_WITH_LIMITATION",
+      "recalibration_requested": false,
+      "reviewed_item_digest": "1b5de792bd12",
+      "scenario_id": "MT-B",
+      "title_in_the_set": "57-year-old man with an upper gastrointestinal bleed: crystalloid and blood, hypotension again, then norepinephrine"
+    },
+    {
+      "first_pass_answers_Q1_to_Q5": "NOT_REPORTED",
+      "free_text_comments": "NONE_REPORTED",
+      "management_meaning_Q6": "NOT_REPORTED",
+      "overall": "ACCEPT_WITH_LIMITATION",
+      "recalibration_requested": false,
+      "reviewed_item_digest": "06e1203681f7",
+      "scenario_id": "MT-C",
+      "title_in_the_set": "57-year-old man with an upper gastrointestinal bleed: norepinephrine first, crystalloid and blood later"
+    },
+    {
+      "first_pass_answers_Q1_to_Q5": "NOT_REPORTED",
+      "free_text_comments": "NONE_REPORTED",
+      "management_meaning_Q6": "NOT_REPORTED",
+      "overall": "ACCEPT_WITH_LIMITATION",
+      "recalibration_requested": false,
+      "reviewed_item_digest": "537c706bfd3f",
+      "scenario_id": "MT-D",
+      "title_in_the_set": "57-year-old man with an upper gastrointestinal bleed: initial resuscitation, norepinephrine, then a rate increase"
+    },
+    {
+      "first_pass_answers_Q1_to_Q5": "NOT_REPORTED",
+      "free_text_comments": "NONE_REPORTED",
+      "management_meaning_Q6": "NOT_REPORTED",
+      "overall": "ACCEPT_WITH_LIMITATION",
+      "recalibration_requested": false,
+      "reviewed_item_digest": "6a1f15631204",
+      "scenario_id": "MT-E",
+      "title_in_the_set": "57-year-old man with an upper gastrointestinal bleed: initial resuscitation, norepinephrine, improvement, then a rate decrease and a stop"
+    },
+    {
+      "first_pass_answers_Q1_to_Q5": "NOT_REPORTED",
+      "free_text_comments": "NONE_REPORTED",
+      "management_meaning_Q6": "NOT_REPORTED",
+      "overall": "ACCEPT_WITH_LIMITATION",
+      "recalibration_requested": false,
+      "reviewed_item_digest": "4093fa53a444",
+      "scenario_id": "MT-F",
+      "title_in_the_set": "57-year-old man with an upper gastrointestinal bleed: norepinephrine without volume or blood"
+    },
+    {
+      "first_pass_answers_Q1_to_Q5": "NOT_REPORTED",
+      "free_text_comments": "NONE_REPORTED",
+      "management_meaning_Q6": "NOT_REPORTED",
+      "overall": "ACCEPT_WITH_LIMITATION",
+      "recalibration_requested": false,
+      "reviewed_item_digest": "38683de77d31",
+      "scenario_id": "MT-G",
+      "title_in_the_set": "57-year-old man with an upper gastrointestinal bleed: slow crystalloid alone"
+    },
+    {
+      "first_pass_answers_Q1_to_Q5": "NOT_REPORTED",
+      "free_text_comments": "NONE_REPORTED",
+      "management_meaning_Q6": "NOT_REPORTED",
+      "overall": "ACCEPT_WITH_LIMITATION",
+      "recalibration_requested": false,
+      "reviewed_item_digest": "ed2a3377f0d0",
+      "scenario_id": "MT-H",
+      "title_in_the_set": "57-year-old man with an upper gastrointestinal bleed: no treatment for two hours"
+    },
+    {
+      "first_pass_answers_Q1_to_Q5": "NOT_REPORTED",
+      "free_text_comments": "NONE_REPORTED",
+      "management_meaning_Q6": "NOT_REPORTED",
+      "overall": "ACCEPT_WITH_LIMITATION",
+      "recalibration_requested": false,
+      "reviewed_item_digest": "2fefb085b946",
+      "scenario_id": "MT-I",
+      "title_in_the_set": "57-year-old man with an upper gastrointestinal bleed: norepinephrine escalated each time the pressure is low again, with no volume or blood"
+    },
+    {
+      "first_pass_answers_Q1_to_Q5": "NOT_REPORTED",
+      "free_text_comments": "NONE_REPORTED",
+      "management_meaning_Q6": "NOT_REPORTED",
+      "overall": "ACCEPT_WITH_LIMITATION",
+      "recalibration_requested": false,
+      "reviewed_item_digest": "2ebe9e7cf3f6",
+      "scenario_id": "MT-J",
+      "title_in_the_set": "57-year-old man with an upper gastrointestinal bleed: norepinephrine stopped at the next reading after a transient rise"
+    }
+  ],
+  "version": "P3-518",
+  "what_it_is": "The human faculty review of the ten development management paths of one GI haemorrhage case (the Management Trace construct GI_MANAGEMENT_TRACE_V1), recorded as HUMAN evidence as the reviewer reported it. It is not converted into an automated truth, it is not a clinical validation, and nothing in it was written by a model. No answer, comment, event or timestamp that was not reported was added."
+}

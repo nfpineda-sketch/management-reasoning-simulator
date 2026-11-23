@@ -1,0 +1,309 @@
+{
+  "case_selection": {
+    "challenge_id": "R2-05",
+    "not_maximized": true,
+    "pilot_cases": [
+      "gi_bleed_57m"
+    ],
+    "why": "the smallest set that uses only reviewed behaviour: the ten faculty-reviewed paths are all of gi_bleed_57m, and in that one case the course itself gives both pilot situations -- volume and blood with reassessment, and a pressure that falls again so that norepinephrine at an explicit rate becomes a decision; gi_bleed_72f runs under the same authority but was not part of the human management-trace review, so it is DEFERRED"
+  },
+  "configuration": {
+    "default": "OFF",
+    "fails_closed": true,
+    "flag": "MRS_PHASE3_GI_PILOT",
+    "flag_value": "on",
+    "requires": [
+      "individual accounts",
+      "not a hosted public deployment",
+      "not the first resident pilot's deployment",
+      "not the faculty development review environment",
+      "the published development configuration (pressure authority, ratified pressure snapshot, tone snapshot, development environment, shadow)",
+      "a pilot record directory outside the repository",
+      "no AI key",
+      "the image bank off"
+    ],
+    "store_flag": "MRS_PHASE3_GI_PILOT_STORE"
+  },
+  "date": "2026-11-22",
+  "decision_reference": "FD-PILOT-01 to FD-PILOT-08",
+  "fail_safe": [
+    {
+      "behaviour": "the encounter stops (AUTHORITY_STOP); no fallback to the earlier model; the record keeps everything up to the stop",
+      "exit": "AUTHORITY_STOP",
+      "situation": "authority mismatch or halt"
+    },
+    {
+      "behaviour": "the encounter does not run (AUTHORITY_UNAVAILABLE)",
+      "exit": "AUTHORITY_UNAVAILABLE",
+      "situation": "no authority site for a pilot encounter"
+    },
+    {
+      "behaviour": "recorded as not understood, or held for the reader's question; nothing is done; the encounter goes on",
+      "exit": null,
+      "situation": "unrecognized or incomplete order BEFORE the first committed minute"
+    },
+    {
+      "behaviour": "the development experiment stops permanently (the certified authority rule MINUTE_ALREADY_COMMITTED, P3-28; found again by the pilot dry run, unchanged here); the encounter ends with the operational message. This is fail closed, and it is the pilot's main open readiness problem (TD-165)",
+      "exit": "AUTHORITY_STOP",
+      "situation": "a turn that does not move the clock AFTER the first committed minute and is not purely structural (an incomplete order the reader must ask about, an order it does not understand, a target instead of a rate, a question typed as an order)"
+    },
+    {
+      "behaviour": "the development experiment stops (AUTHORITY_STOP, the certified fail-closed behaviour, unchanged); the encounter ends with the operational message; nothing is invented",
+      "exit": "AUTHORITY_STOP",
+      "situation": "an order the engine carries out but the development authority does not represent (e.g. tranexamic acid, analgesia, other medications)"
+    },
+    {
+      "behaviour": "the reader asks for an explicit rate with its unit (the approved text); nothing is carried out",
+      "exit": null,
+      "situation": "malformed vasopressor order"
+    },
+    {
+      "behaviour": "that turn is recorded and NOT carried out; the encounter ends at the development boundary",
+      "exit": "DEFINITIVE_CONTROL_REQUESTED",
+      "situation": "request for definitive control of the bleeding"
+    },
+    {
+      "behaviour": "the encounter ends at once at the development boundary; what followed is not shown",
+      "exit": "ENGINE_SOURCE_CONTROL_DETECTED",
+      "situation": "engine state shows source control anyway"
+    },
+    {
+      "behaviour": "the encounter ends at the development boundary",
+      "exit": "DEVELOPMENT_HORIZON",
+      "situation": "two-hour development horizon reached"
+    },
+    {
+      "behaviour": "the encounter stops; nothing more is carried out (fails closed)",
+      "exit": "PILOT_RECORD_UNAVAILABLE",
+      "situation": "pilot record unavailable or its faculty log broken"
+    },
+    {
+      "behaviour": "the participant's trace is withheld; the faculty sees MISMATCH and the encounter is not usable for analysis",
+      "exit": null,
+      "situation": "replay mismatch"
+    },
+    {
+      "behaviour": "the encounter ends at the faculty stop on the participant's next action or refresh",
+      "exit": "FACULTY_STOP",
+      "situation": "faculty abort"
+    },
+    {
+      "behaviour": "the encounter is never resumed (no account attempt exists); the record shows it INTERRUPTED when the participant starts again",
+      "exit": null,
+      "situation": "UI refresh, new tab or process restart"
+    },
+    {
+      "behaviour": "the open one is recorded INTERRUPTED before the new one starts, and on its own next run it ends (ENCOUNTER_CLOSED_IN_RECORD): it never continues, so no participant runs two encounters",
+      "exit": "ENCOUNTER_CLOSED_IN_RECORD",
+      "situation": "a second encounter started while one is open (another tab of the same participant)"
+    },
+    {
+      "behaviour": "appends are serialized and locked, so the chain never forks; the write check is unique per call",
+      "exit": null,
+      "situation": "two sessions writing the pilot record at the same moment"
+    }
+  ],
+  "identifiers": {
+    "encounter": "synthetic PE-<16 hex>",
+    "faculty": "pseudonymous reference F-<12 hex>",
+    "free_text": "the participant's orders and stated reasoning are kept (they are the encounter); the pilot notice asks for no personal information",
+    "participant": "pseudonymous reference P-<12 hex> (a hash of the account id with the pilot id; the account id is never stored)"
+  },
+  "isolation_from_scoring": {
+    "account_attempt_created": false,
+    "faculty_categories_shown_to_participants": false,
+    "legacy_post_encounter_review_layer": "EXCLUDED",
+    "reaches_progress_portfolio_rubric_or_evaluation": false
+  },
+  "pilot_id": "GI_MANAGEMENT_TRACE_CONTROLLED_DEVELOPMENT_PILOT_V1",
+  "provenance": {
+    "contract": "P3-388_HISTORICAL_RECORD_VERSIONING",
+    "generated_on": "2026-11-22",
+    "generating_code": {
+      "clinical_core": "867bac09e09bb5c04629e73fbbdec0f7e1f100da17ef8966f580ba91067a7c9c",
+      "faculty_management_review.py": "9dcfec79016af98b42c7cc07573862b221e7a80d05e855b4626c8fdb0e86ce8b",
+      "gi_pilot.py": "d8fc5ec976e3e08d1817143bcc07e18bd55cef18658f4d6668a2fca919a4e0fe",
+      "test_gi_pilot_records.py": "3ed1e0145411e05a334964e75b574ce18e6f8438f7b391fd7fa5450421af120c"
+    },
+    "generating_code_fingerprint": "bab1d1205f53a6fdb7b8c9d9ce00e674fc5a05b40dea1231df1df1157d509151",
+    "grant_id": null,
+    "record_id": "GI_MANAGEMENT_TRACE_PILOT_SCOPE_V1",
+    "record_schema_version": 1,
+    "source_data_digest": "1bf9b31cd3d39c484ce4e69d297d0ed5bb5521b6f9fb02d8aabbd02cacbe6f1b",
+    "source_snapshot_id": null,
+    "supersedes": null
+  },
+  "ratification": {
+    "file": "docs/revision/GI_MANAGEMENT_TRACE_V1_RATIFICATION.json",
+    "record_digest": "5c7fb3a87e91c74c27f09525ae48fe3a129ecf9b75b8974105ef50061b77b56f",
+    "status": "RATIFIED_FOR_CONTROLLED_DEVELOPMENT_PILOT_PREPARATION"
+  },
+  "record_digest": "1b026adbde66387615b00caf3526df5cf0b1eae908e4985ece379eb4e9fe0c4d",
+  "record_type": "GI_MANAGEMENT_TRACE_PILOT_SCOPE",
+  "scope": {
+    "cases": {
+      "DEFERRED": [
+        "gi_bleed_72f (live-authority case, but not part of the human management-trace review)"
+      ],
+      "EXCLUDED": [
+        "every other family and case",
+        "pump-limited vasopressor cases",
+        "pulmonary edema vasopressor use",
+        "ACS vasopressor use",
+        "generated cases"
+      ],
+      "INCLUDED": [
+        "gi_bleed_57m (the case of the ten faculty-reviewed management paths)"
+      ]
+    },
+    "faculty_controls": {
+      "DEFERRED": [
+        "live co-presence in the participant's screen",
+        "a signed record (needs a key: faculty decision)"
+      ],
+      "INCLUDED": [
+        "observe an encounter (refreshable)",
+        "stop an encounter",
+        "inspect the trace",
+        "flag an output as unsafe or ambiguous",
+        "mark an encounter unusable",
+        "review the replay"
+      ]
+    },
+    "interventions": {
+      "DEFERRED": [
+        "source control",
+        "any intervention not reviewed with the live development authority"
+      ],
+      "EXCLUDED": [
+        "definitive control of the bleeding (endoscopy, interventional radiology, surgery): a request is the development boundary",
+        "other vasopressors",
+        "target-based norepinephrine titration (MAP or SBP targets)",
+        "weight-based norepinephrine dosing (mcg/kg/min)",
+        "automatic or closed-loop titration"
+      ],
+      "INCLUDED": [
+        "crystalloid with a stated volume and duration",
+        "packed red cells",
+        "norepinephrine START / INCREASE / DECREASE / STOP / RESTART at explicit absolute rates in mcg/min",
+        "reassessment with a stated interval",
+        "history, examination and the case's own tests (earlier simulator model)"
+      ]
+    },
+    "trace_fields": {
+      "EXCLUDED": [
+        "scenario priorities of authored paths",
+        "proposed management categories",
+        "provenance identifiers, digests, grant and snapshot ids",
+        "mental status, consciousness, heart rate"
+      ],
+      "INCLUDED": [
+        "state",
+        "the participant's priority, expected effect and reassessment exactly as written (or 'not expressed')",
+        "action as typed, each order with what the simulator did with it",
+        "expected effect (model)",
+        "observed pressure (a committed minute of the live development authority)",
+        "reassessment reading",
+        "new state",
+        "the development boundary"
+      ]
+    },
+    "visible_outputs": {
+      "DEFERRED": [
+        "Spanish presentation of the pilot texts (TD-46)",
+        "consciousness derived from the development pressure"
+      ],
+      "EXCLUDED": [
+        "internal model variables (V, T, tone gain, pressure scale, bleed-rate coordinate, crystalloid kernel, oxygen debt)",
+        "grant, snapshot and lineage identifiers",
+        "the faculty management categories",
+        "any score, rubric, ranking, radar or count",
+        "patient photographs (the image bank is off)",
+        "the legacy post-encounter review layer (guided self-review prompts, expert comparison drafts, AI analysis)",
+        "any AI call"
+      ],
+      "INCLUDED": [
+        "blood pressure and MAP from the live development pressure authority",
+        "the other signs from the earlier simulator model, labelled as such",
+        "mental status labelled as the earlier model's, and withheld once norepinephrine has been given",
+        "the development boundary message",
+        "after the encounter: the faculty-reviewed management trace"
+      ]
+    }
+  },
+  "scope_id": "GI_MANAGEMENT_TRACE_PILOT_SCOPE_V1",
+  "starting_the_real_pilot": "NOT authorized by this record: a separate faculty decision, and the hard stop of P3-533 holds",
+  "version": "P3-520",
+  "visible_field_classes": [
+    {
+      "class": "AUTHORITATIVE",
+      "field": "blood pressure (SBP/DBP) and MAP",
+      "how": "committed minutes of the live development pressure authority; MAP derived from them"
+    },
+    {
+      "class": "LEGACY_NONAUTHORITATIVE",
+      "field": "heart rate and rhythm",
+      "how": "earlier simulator model; covered by the pilot notice"
+    },
+    {
+      "class": "LEGACY_NONAUTHORITATIVE",
+      "field": "SpO2, respiratory support, respiratory rate, work of breathing",
+      "how": "earlier simulator model; covered by the pilot notice"
+    },
+    {
+      "class": "LEGACY_NONAUTHORITATIVE",
+      "field": "capillary refill, extremities, skin, appearance",
+      "how": "earlier simulator model; covered by the pilot notice"
+    },
+    {
+      "class": "LEGACY_NONAUTHORITATIVE",
+      "field": "mental status",
+      "how": "labelled as the earlier model's; WITHHELD once norepinephrine has been given (FD-PILOT-05, H2)"
+    },
+    {
+      "class": "LEGACY_NONAUTHORITATIVE",
+      "field": "laboratory and bedside test results, history, examination",
+      "how": "earlier simulator model; covered by the pilot notice"
+    },
+    {
+      "class": "LEGACY_NONAUTHORITATIVE",
+      "field": "event narrative (patient response, receipts of orders)",
+      "how": "earlier simulator model; the pressure in it is the authority's"
+    },
+    {
+      "class": "DEVELOPMENT_ONLY",
+      "field": "development boundary, pilot notice, faculty-stop notice",
+      "how": "development wording, no clinical outcome"
+    },
+    {
+      "class": "DEVELOPMENT_ONLY",
+      "field": "management trace after the encounter",
+      "how": "the faculty-reviewed construct; no category and no score"
+    },
+    {
+      "class": "HIDDEN",
+      "field": "V, T, tone gain, pressure scale, bleed-rate coordinate, crystalloid kernel, oxygen debt",
+      "how": "never on a participant screen"
+    },
+    {
+      "class": "HIDDEN",
+      "field": "grant, snapshot, lineage, artifact and digest identifiers",
+      "how": "faculty supervision only"
+    },
+    {
+      "class": "HIDDEN",
+      "field": "common-core consciousness (V1 overlay)",
+      "how": "nonauthoritative comparison only; never shown to the participant"
+    },
+    {
+      "class": "HIDDEN",
+      "field": "faculty management categories",
+      "how": "faculty interpretations (FD-PILOT-03); never shown to the participant, never a score"
+    },
+    {
+      "class": "HIDDEN",
+      "field": "participant reference, encounter id",
+      "how": "faculty supervision only"
+    }
+  ]
+}
