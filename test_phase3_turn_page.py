@@ -234,6 +234,10 @@ def test_t5_a_zero_minute_mutating_order_cannot_bypass_the_transactional_judgeme
     """'Order urgent endoscopy.' moves no minute: it used to be executed by the legacy engine and refused afterwards. The turn is refused BEFORE it exists in the real encounter."""
     at, site = _two_commits(monkeypatch, tmp_path, CASES[0])
     committed, last, minute, anchor = list(site.minutes_committed), max(site.minutes_committed), page._minute(at), _anchor(at)
+    # DECLARED ADAPTATION (P3-534 to P3-555, FD-FINALPILOT-01 to 04): the reader does not recognize this order and nothing runs, so on its own it is now a PROVEN clarification
+    # no-op (test_gi_final_pilot::test_b14). What this test protects -- a zero-minute turn the authority REFUSES never happened to the real encounter -- is kept by refusing it:
+    # without the open turn's origin the no-op cannot be proven, and the turn is refused exactly as before.
+    stop._inject_unprovable_zero_minute_turn(monkeypatch)
     before = _execute(at, "Order urgent endoscopy.")
     _refused_turn_proofs(at, site, before=before, minute=minute, committed=committed, last=last, anchor=anchor)
     assert site.halt_reason.startswith(ra.MINUTE_ALREADY_COMMITTED)

@@ -41,7 +41,7 @@ except ImportError:                    # pragma: no cover - the pilot runs on Li
 
 import development_management_trace as mt
 
-VERSION = "P3-520"
+VERSION = "P3-555"            # P3-520: the first version; P3-534 to P3-555 (FD-FINALPILOT-01 to 10): clarification no-op, structural boundary, final pre-pilot convergence
 PILOT_ID = "GI_MANAGEMENT_TRACE_CONTROLLED_DEVELOPMENT_PILOT_V1"
 RATIFIED_CONSTRUCT = "GI_MANAGEMENT_TRACE_V1"
 RATIFIED_STATUS = "RATIFIED_FOR_CONTROLLED_DEVELOPMENT_PILOT_PREPARATION"
@@ -600,6 +600,87 @@ def definitive_orders(orders: Sequence[Mapping] | None) -> list:
     return found
 
 
+# -- P3-541 (FD-FINALPILOT-05): the boundary is read STRUCTURALLY first, then by a wider reading of the participant's words -------------------------------------------
+#: The only way the earlier engine reaches a haemostasis in this case is an executed consultation of a definitive service (gastroenterology performs the endoscopy once it has had
+#: time to come). The engine's own action types that could start it, and the services that name a definitive control. Read from the actions the engine is ABOUT to execute.
+DEFINITIVE_ACTION_TYPES = ("consult", "reperfusion_referral", "endoscopy")
+DEFINITIVE_SERVICE = re.compile(r"gastro|endoscop|surg|radiolog|interventional|\bir\b|\bgi\b", re.I)
+#: The pilot's own, wider reading of a request for definitive control (beside the faculty-reviewed rule ``mt.is_definitive_request``, which is unchanged): the reviewed words
+#: plus scoping, banding, clipping, ligation, laparotomy, theatre / operating room, TIPS, source control, and "control/stop the bleeding". ``OR`` and ``TIPS`` are read in
+#: capitals only (the English words "or" and "tips" are not requests).
+PILOT_DEFINITIVE_WORDS = re.compile(
+    r"\b(?:gi|gastro\w*|endoscop\w*|egd|ogd|scop(?:e|ed|es|ing)|interventional\s+radiolog\w*|ir|emboli[sz]\w*|surg\w*|haemostas\w*|hemostas\w*|laparotom\w*|"
+    r"theatre|theater|operating\s+room|banding|clipping|ligat\w*|sclerotherap\w*|source\s+control)\b"
+    r"|\b(?:band|clip)(?:s|ed)?\s+(?:the\s+|his\s+|her\s+|this\s+|that\s+)?(?:varic\w*|ulcer\w*|vessel\w*|bleed\w*|lesion\w*)"
+    r"|(?-i:\bOR\b)|(?-i:\bTIPS\b)"
+    r"|\b(?:control|stop)\w*\s+(?:the\s+|his\s+|her\s+|this\s+|that\s+)?(?:active\s+)?(?:bleed\w*|haemorrhag\w*|hemorrhag\w*|source)", re.I)
+#: The ledger classes whose own words are read (the reviewed classes plus the reader's held and unread ones): an order of any other class (a fluid, blood, a test, the
+#: vasopressor) is never turned into a boundary by a word in its span.
+PILOT_DEFINITIVE_CLASSES = tuple(mt.DEFINITIVE_CLASSES) + ("clarification", "held_with_question", "unread_words")
+#: A diagnosis names the territory, not a request ("upper GI bleed"); it is removed before a turn with no order is read.
+GI_DIAGNOSIS = re.compile(r"\b(?:(?:upper|lower)\s+)?(?:gi|gastro\w*)\s+(?:bleed\w*|haemorrhag\w*|hemorrhag\w*|tract|ulcer\w*|source)\b", re.I)
+#: A turn with no order that hedges or reasons about later is not a request (it is still recorded as written).
+HEDGE = re.compile(r"\b(?:may|might|could|would|eventually|later|consider\w*|if|whether|probably|possibly|likely|suspect\w*|think|differential|because)\b", re.I)
+#: P3-552 (independent review, finding 2): words that are not a request NOW either -- a negation ("hold off on GI", "do not consult"), a question ("is GI aware?", "what is the
+#: GI plan?"), a report of what already happened ("GI has been informed") and a deferral ("endoscopy once stable", "in case", "possible endoscopy"). The faculty-reviewed rule
+#: is not edited; the pilot applies these to every reading that comes from WORDS (a turn with no order, and an order the reader only planned, held, did not recognize or did
+#: not read). An order of a consultation, endoscopy or procedure class, and the structural barrier, are never softened by them.
+NOT_A_REQUEST = re.compile(
+    r"\?|^\s*(?:what|is|are|has|have|had|was|were|did|does|do|should|can|could|will|would|when|who|why|how|where)\b"
+    r"|\b(?:no|not|don'?t|do\s+not|never|without|avoid|hold\s+off|nil|cancel\w*)\b"
+    r"|\b(?:has|have|had)\s+been\b|\b(?:already|aware|informed|notified|on\s+(?:the|his|her)\s+way)\b"
+    r"|\b(?:once|after|until|in\s+case|possible|in\s+the\s+morning|tomorrow)\b", re.I)
+#: The classes whose definitive reading comes from their own words only; consultation, endoscopy and procedure classes are requests by class.
+WORD_ONLY_CLASSES = tuple(name for name in PILOT_DEFINITIVE_CLASSES if name not in ("consult", "endoscopy", "procedure"))
+
+
+def _words_request(words: str) -> bool:
+    """A reading of WORDS (an order's span or a turn's text) as a request for definitive control: a definitive word that is not part of a diagnosis, and no hedge, negation,
+    question, report or deferral."""
+    bare = GI_DIAGNOSIS.sub(" ", str(words or ""))
+    return bool((PILOT_DEFINITIVE_WORDS.search(bare) or mt.DEFINITIVE_WORDS.search(bare)) and not HEDGE.search(bare) and not NOT_A_REQUEST.search(bare))
+
+
+def definitive_actions(actions: Sequence[Mapping] | None) -> list:
+    """P3-541: the actions the engine is ABOUT to execute that could start the inherited haemostasis (an executed consultation of a definitive service, an endoscopy). The
+    structural barrier: whatever words the turn used and whatever the ledger made of them, none of these reaches the engine in the pilot."""
+    found = []
+    for action in actions or ():
+        try:
+            item = dict(action)
+            kind = str(item.get("type") or item.get("kind") or "").strip().lower()
+            if kind not in DEFINITIVE_ACTION_TYPES:
+                continue
+            service = f"{item.get('service') or ''} {item.get('destination') or ''}"
+            if kind == "endoscopy" or DEFINITIVE_SERVICE.search(service):
+                found.append(item)
+        except Exception:
+            continue
+    return found
+
+
+def definitive_intent(orders: Sequence[Mapping] | None, text: str | None = None) -> list:
+    """P3-541: what in a turn reads as a request for definitive control: an order the faculty-reviewed rule names (``definitive_orders``), an order of a reviewed, held or unread
+    class whose own words the pilot's wider reading names, and -- only when the reader made NO order of the turn -- the turn's words themselves, without a diagnosis and
+    without a hedge. Returns what was found (empty when nothing)."""
+    found = []
+    for order in orders or ():
+        try:
+            item = dict(order)
+            kind = str(item.get("class") or "").strip().lower()
+            words = f"{item.get('canonical') or ''} {item.get('span') or ''}".replace("_", " ")
+            if kind in ("consult", "endoscopy", "procedure"):
+                if definitive_orders([item]):                          # the faculty-reviewed rule, unchanged, for the request classes
+                    found.append(item)
+            elif kind in WORD_ONLY_CLASSES and _words_request(words):   # P3-552: a planned, held, unrecognized or unread order counts only when its words are a request now
+                found.append(item)
+        except Exception:
+            continue
+    if not list(orders or ()) and text and _words_request(str(text)):
+        found.append({"class": "words", "span": str(text)[:200]})
+    return found
+
+
 def engine_source_control(state: Mapping | None) -> list:
     """The second, structural barrier: why the engine state shows a definitive-control consultation or a haemostasis anyway (empty when it does not)."""
     family = dict((state or {}).get("family_state") or {})
@@ -672,10 +753,32 @@ def carried_reading_tolerated(trace: Mapping, problems: Sequence[str]) -> list:
     return keep
 
 
-def participant_trace(events: Sequence[Mapping], artifact: Mapping | None, arrival: Mapping) -> dict:
+#: P3-552 (review finding 4): the class a word-only order is shown under when the pilot did NOT read it as a request for definitive control (a diagnosis, a negation, a question,
+#: a report, a deferral or a hedge) while the faculty-reviewed rule would: the trace must not mark a boundary the encounter did not have. Fate and words are kept as written.
+NOT_A_REQUEST_CLASS = "not_a_request"
+
+
+def _aligned_with_the_boundary(turn: Mapping) -> dict:
+    """One turn as the pilot judged it: every word-only order the faculty-reviewed rule would read as a request, and the pilot did not, is shown under ``NOT_A_REQUEST_CLASS``."""
+    out = dict(turn)
+    orders = []
+    for order in out.get("orders") or ():
+        item = dict(order)
+        kind = str(item.get("class") or "").strip().lower()
+        words = f"{item.get('canonical') or ''} {item.get('span') or ''}".replace("_", " ")
+        if kind in WORD_ONLY_CLASSES and definitive_orders([item]) and not _words_request(words):
+            item["class"] = NOT_A_REQUEST_CLASS
+        orders.append(item)
+    if "orders" in out:
+        out["orders"] = orders
+    return out
+
+
+def participant_trace(events: Sequence[Mapping], artifact: Mapping | None, arrival: Mapping, *, boundary_request: bool = False) -> dict:
     """The faculty-reviewed trace of a participant's encounter, re-extracted from the page's own events and the authority artifact. ``ok`` is False when it does not verify
-    (then nothing is shown to the participant)."""
-    turns = [mt.turn_from_page_event(dict(event)) for event in events or ()]
+    (then nothing is shown to the participant). ``boundary_request``: the pilot ended the encounter on a request for definitive control (its last turn was recorded and not
+    carried out), whichever reading found it."""
+    turns = [_aligned_with_the_boundary(mt.turn_from_page_event(dict(event))) for event in events or ()]
     if not artifact:
         return {"ok": False, "problems": ["no authority artifact"], "trace": None, "blocks": [], "turns": turns}
     try:
@@ -686,7 +789,7 @@ def participant_trace(events: Sequence[Mapping], artifact: Mapping | None, arriv
     blocks = mt.render(trace)
     spans = {order.get("order_id"): order.get("span") for turn in turns for order in turn.get("orders") or () if order.get("order_id") is not None}
     steps = list(trace["steps"])
-    request_step = len(steps) - 1 if dict(trace.get("boundary") or {}).get("kind") == mt.EXIT_DEFINITIVE_HAEMOSTASIS else None
+    request_step = len(steps) - 1 if (dict(trace.get("boundary") or {}).get("kind") == mt.EXIT_DEFINITIVE_HAEMOSTASIS or boundary_request) and steps else None
     for index, (block, step) in enumerate(zip([block for block in blocks if not block.get("boundary")], steps)):
         # P3-523: every order with what the simulator did with it, in plain words (an unsupported or unrecognized order is said as such, never passed off as management);
         # the orders of the turn that requested definitive control were recorded and NOT carried out (P3-521)
@@ -728,7 +831,10 @@ def replay_review(store: PilotStore, eid: str, layer: Layer) -> dict:
     else:
         try:
             verified = layer.verify_artifact(artifact)
-            out["checks"]["artifact_verifies"] = "MATCH" if verified.get("digest_matches") and verified.get("grant_is_the_registered_one") else "MISMATCH"
+            # P3-550: a digest that matches is not enough -- an artifact re-sealed after tampering matches its own digest. It must also be COMPLETE (every real claim, the
+            # clarification no-ops included, re-derived from the artifact itself).
+            out["checks"]["artifact_verifies"] = ("MATCH" if verified.get("digest_matches") and verified.get("grant_is_the_registered_one") and verified.get("complete")
+                                                  else "MISMATCH")
         except Exception:
             out["checks"]["artifact_verifies"] = "MISMATCH"
         try:
@@ -773,6 +879,45 @@ FAIL_SAFE = (
     ("replay mismatch", "the participant's trace is withheld; the faculty sees MISMATCH and the encounter is not usable for analysis", None),
     ("faculty abort", "the encounter ends at the faculty stop on the participant's next action or refresh", EXIT_FACULTY_STOP),
     ("UI refresh, new tab or process restart", "the encounter is never resumed (no account attempt exists); the record shows it INTERRUPTED when the participant starts again", None),
+    ("a second encounter started while one is open (another tab of the same participant)", "the open one is recorded INTERRUPTED before the new one starts, and on its own "
+     "next run it ends (ENCOUNTER_CLOSED_IN_RECORD): it never continues, so no participant runs two encounters", EXIT_CLOSED_IN_RECORD),
+    ("two sessions writing the pilot record at the same moment", "appends are serialized and locked, so the chain never forks; the write check is unique per call", None),
+)
+
+#: P3-555 (FD-FINALPILOT-01 to 10): the fail-safe table of the pilot as it runs after the final pre-pilot convergence. ``FAIL_SAFE`` above is the table AS RATIFIED in the
+#: scope record of P3-520 (that record copies it and is never regenerated); this one supersedes it for the running pilot and is carried by the final checkpoint.
+FAIL_SAFE_FINAL = (
+    ("authority mismatch or halt", "the encounter stops (AUTHORITY_STOP); no fallback to the earlier model; the record keeps everything up to the stop", EXIT_AUTHORITY_STOP),
+    ("no authority site for a pilot encounter", "the encounter does not run (AUTHORITY_UNAVAILABLE)", EXIT_AUTHORITY_UNAVAILABLE),
+    ("the development configuration becomes unavailable during an encounter (a flag, the grant, a snapshot or the store withdrawn)",
+     "the page refuses before anything runs; the record ends the open encounter at once (AUTHORITY_UNAVAILABLE), and it is never resumed if the configuration comes back",
+     EXIT_AUTHORITY_UNAVAILABLE),
+    ("unrecognized or incomplete order BEFORE the first committed minute", "recorded as not understood, or held for the reader's question; nothing is done; the encounter goes on", None),
+    ("a turn that does not move the clock AFTER the first committed minute and acts on nothing (an incomplete order the reader asks about, a target or a relative change "
+     "instead of a rate, an order it does not recognize, a question typed as an order, a stated plan, a test it records without a result)",
+     "a PROVEN clarification no-op (FD-FINALPILOT-01 to 04): the authority compares the untouched encounter with the turn's copy and finds the patient state, the clock, "
+     "the pressure, the infusions and the engine's executed actions unchanged, and every order of the turn held, not recognized or only recorded; the turn is recorded on the "
+     "same committed minute, nothing is committed, and the encounter goes on; the completed order runs normally on a later turn", None),
+    ("a turn that does not move the clock but changes something the proof protects, or whose proof cannot be made", "fails closed: the development experiment stops "
+     "(MINUTE_ALREADY_COMMITTED, classified UNSAFE_MUTATION or UNKNOWN); the encounter ends with the operational message", EXIT_AUTHORITY_STOP),
+    ("an order the development model does not represent, carried out or only recorded by the engine (another medication such as ondansetron or tranexamic acid, a nasogastric "
+     "tube, a urinary catheter, continuous cardiac monitoring) or norepinephrine in a unit other than mcg/min (mg/min, mcg/kg/min)",
+     "the development experiment stops (decision C, FD-P3-30; the norepinephrine contract, FD-AUTHNE: certified fail-closed behaviour, unchanged); the encounter ends with the "
+     "operational message; the launcher says so before the encounter starts", EXIT_AUTHORITY_STOP),
+    ("an order held for a question inside a turn that also carries out other orders", "the held order acts on nothing and is judged by its own class only once it is "
+     "completed; the rest of the turn runs as usual (FD-FINALPILOT-08)", None),
+    ("an incomplete or malformed vasopressor order (a MAP target, a rate without a unit, a relative change, a restart without a rate)",
+     "the reader asks for an explicit rate with its unit (the approved text) or does not recognize it; nothing is carried out; the encounter goes on (a no-op)", None),
+    ("request for definitive control of the bleeding (an action the engine would execute toward it, a consultation, endoscopy or procedure order, or words that ask for it "
+     "now; a negation, a question, a report, a deferral, a hedge or a diagnosis is not a request)",
+     "that turn is recorded and NOT carried out; the encounter ends at the development boundary (FD-FINALPILOT-05)", EXIT_DEFINITIVE_REQUEST),
+    ("engine state shows source control anyway", "the encounter ends at once at the development boundary; what followed is not shown", EXIT_ENGINE_SOURCE_CONTROL),
+    ("two-hour development horizon reached", "the encounter ends at the development boundary", EXIT_HORIZON),
+    ("pilot record unavailable or its faculty log broken", "the encounter stops; nothing more is carried out (fails closed)", EXIT_RECORD_UNAVAILABLE),
+    ("replay mismatch", "the participant's trace is withheld; the faculty sees MISMATCH and the encounter is not usable for analysis", None),
+    ("faculty abort", "the encounter ends at the faculty stop on the participant's next action or refresh", EXIT_FACULTY_STOP),
+    ("UI refresh, new tab or process restart", "the encounter is never resumed (no account attempt exists); the record shows it INTERRUPTED as soon as the participant's new "
+     "session shows the pilot start", None),
     ("a second encounter started while one is open (another tab of the same participant)", "the open one is recorded INTERRUPTED before the new one starts, and on its own "
      "next run it ends (ENCOUNTER_CLOSED_IN_RECORD): it never continues, so no participant runs two encounters", EXIT_CLOSED_IN_RECORD),
     ("two sessions writing the pilot record at the same moment", "appends are serialized and locked, so the chain never forks; the write check is unique per call", None),

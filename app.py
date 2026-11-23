@@ -9250,6 +9250,12 @@ def _authority_turn_reset():
     runtime_authority.turn_reset(st.session_state)
 
 
+def _authority_turn_origin():
+    """Phase 3 (P3-537): the open turn's untouched originals and working copies of the fields a clarification no-op must leave unchanged, for the authority's proof. The layer decides; this function orchestrates and decides nothing."""
+    import runtime_authority
+    return runtime_authority.turn_origin(st.session_state)
+
+
 def _authority_turn_check():
     """Phase 3 (P3-271): called right after the authority judged the turn; a refused turn is unwound here (the layer's own context drops the copy). A no-op when no turn is open."""
     import runtime_authority
@@ -11426,7 +11432,7 @@ def _process_encounter_submission_turn(submission_text, _guard_entry=None, submi
     st.session_state.history.append(_ledger.untagged(parsed))
     trace_input = parsed.get("raw_text") or learner_input
 
-    if _GI_PILOT.get("enabled") and _gi_pilot_ui.barrier(st, turn.get("orders"), turn_minute):
+    if _GI_PILOT.get("enabled") and _gi_pilot_ui.barrier(st, turn.get("orders"), turn_minute, actions=parsed.get("actions"), text=parsed.get("raw_text") or learner_input):
         # Phase 3 (P3-521, FD-PILOT-04): this turn requests definitive control of the bleeding. The engine would execute a consultation that later becomes an unreviewed
         # haemostasis; in the pilot it does NOT run. The turn is recorded exactly as written, every order as recorded and not carried out, and the next run ends the encounter
         # at the development boundary. No clock moves, no authority minute is committed.
@@ -11462,7 +11468,7 @@ def _process_encounter_submission_turn(submission_text, _guard_entry=None, submi
         # minute is one transaction: it either returns a prepared state with the two common pressures
         # written together, or it commits nothing and halts the encounter's authority visibly.
         _prepared = _authority.minute(_shadow_before, st.session_state.state, _shadow, run_actions,
-                                      submission_id, settled=_ledger.snapshot(turn.get("orders") or []))
+                                      submission_id, settled=_ledger.snapshot(turn.get("orders") or []), origin=_authority_turn_origin())
         st.session_state.phase3_authority_artifact = _authority.artifact()
         _authority_turn_check()
         if _prepared is not None:
@@ -11845,7 +11851,11 @@ def _clinical_encounter_workspace():
                 _render_latest_response()
             orders_panel = st.container()
             from clinical_scene import history_facts, answer_history, associated_symptoms, history_topics, history_topic_facts, setting as scene_setting
-            if encounter_mode == "Talk" and not st.session_state.encounter_ended and not _authority_stopped:
+            if encounter_mode == "Talk" and not st.session_state.encounter_ended and not _authority_stopped and _GI_PILOT.get("enabled") and _gi_pilot_ui.talk_withheld(st):
+                # Phase 3 (P3-542, FD-FINALPILOT-06): in the development pilot, once norepinephrine has been given, whether the patient can answer would show the earlier
+                # model's mental status; Talk mode is not offered (the history already obtained stays in the chart). Nothing in the engine changes.
+                st.info(_gi_pilot_ui.TALK_WITHHELD)
+            elif encounter_mode == "Talk" and not st.session_state.encounter_ended and not _authority_stopped:
                 clinical_case = st.session_state.state.get("encounter_spec", {}).get("clinical_case", {})
                 history_source = clinical_case.get("history_source")
                 has_collateral = bool(history_source and str(history_source).strip().lower() not in {"patient", "the patient"})

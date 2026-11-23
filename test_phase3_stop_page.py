@@ -430,6 +430,13 @@ def _inject_invariant(mp):
     mp.setattr(ra.AuthoritySite, "_moved", lambda self, before, after: {"sbp", "mental_status"})
 
 
+def _inject_unprovable_zero_minute_turn(mp):
+    """DECLARED ADAPTATION (P3-534 to P3-555, FD-FINALPILOT-01 to 04): a zero-minute turn that acts on nothing is now a PROVEN clarification no-op and keeps the session.
+    What these tests protect is the stop of a zero-minute turn that is NOT proven: without the open turn's origin the proof cannot be made (UNKNOWN), and the turn still
+    stops with MINUTE_ALREADY_COMMITTED, exactly as before."""
+    mp.setattr(ra, "turn_origin", lambda store: None)
+
+
 MATRIX = (
     ("unsupported_action", None, page.UNSUPPORTED, ra.UNSUPPORTED_AUTHORITY_ACTION, se.STOP_UNSUPPORTED_ACTION),
     ("lineage_mismatch", _inject_lineage, "Reassess in 10 minutes.", ra.GATE_REFUSED, se.STOP_GATE_OR_LINEAGE),
@@ -439,7 +446,7 @@ MATRIX = (
     ("artifact_persistence", _inject_persistence, "Reassess in 10 minutes.", ra.ARTIFACT_PERSISTENCE_FAILED, se.STOP_PERSISTENCE),
     ("wrong_grant", _inject_wrong_grant, "Reassess in 10 minutes.", ra.GATE_REFUSED, se.STOP_GATE_OR_LINEAGE),
     ("invariant_failure", _inject_invariant, "Reassess in 10 minutes.", ra.OUT_OF_DOMAIN_WRITE, se.STOP_REPLAY_OR_ARTIFACT),
-    ("duplicate_zero_minute_turn", None, "Order urgent endoscopy.", ra.MINUTE_ALREADY_COMMITTED, se.STOP_REPLAY_OR_ARTIFACT),
+    ("duplicate_zero_minute_turn", _inject_unprovable_zero_minute_turn, "Order urgent endoscopy.", ra.MINUTE_ALREADY_COMMITTED, se.STOP_REPLAY_OR_ARTIFACT),
 )
 
 
@@ -483,6 +490,7 @@ def test_s17_a_click_that_arrives_with_the_failing_submission_is_not_handled_and
     click (or a Complete click) coalesced into the same run was then handled by a session that had just stopped, and the failing run drew a normal page with no notice."""
     at = _open(monkeypatch, tmp_path, case)
     site = _first_commit(at)
+    _inject_unprovable_zero_minute_turn(monkeypatch)                     # declared adaptation: the failing submission is a zero-minute turn whose no-op cannot be proven
     page._mode(at, "Treat")
     next(item for item in at.text_area if item.label == "Enter your clinical reasoning and/or actions").set_value("Reassess in 300 minutes.")
     next(button for button in at.button if button.label == "Send").click()
@@ -502,6 +510,7 @@ def test_s18_a_complete_click_that_arrives_with_the_failing_submission_does_not_
     monkeypatch.setattr(encounter_close, "has_destination", lambda *args, **kwargs: True)     # the route that closes the encounter outright
     at = _open(monkeypatch, tmp_path, CASES[0])
     _first_commit(at)
+    _inject_unprovable_zero_minute_turn(monkeypatch)                     # declared adaptation: the failing submission is a zero-minute turn whose no-op cannot be proven
     page._mode(at, "Treat")
     next(item for item in at.text_area if item.label == "Enter your clinical reasoning and/or actions").set_value("Reassess in 300 minutes.")
     next(button for button in at.button if button.label == "Send").click()

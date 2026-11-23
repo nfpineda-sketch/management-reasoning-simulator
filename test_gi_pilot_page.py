@@ -354,12 +354,12 @@ def test_p15_without_the_pilot_flag_the_page_is_the_ordinary_one(world):
         assert not decision.get("enabled")
 
 
-def test_p16_after_the_first_commit_an_incomplete_order_stops_the_experiment_the_pre_existing_authority_rule_the_pilot_states(world):
-    """The pilot's main open readiness problem (TD-165), pinned: the certified authority hard-fails a turn that does not move the clock and is not purely structural once a
-    minute is committed (MINUTE_ALREADY_COMMITTED, P3-28). Reproduced on the base without the pilot; the pilot neither hides nor bypasses it: it ends the encounter with the
-    operational message and says so before the encounter starts."""
+def test_p16_after_the_first_commit_an_incomplete_order_is_a_clarification_noop_and_the_encounter_goes_on(world):
+    """P3-532 pinned the pre-existing rule (MINUTE_ALREADY_COMMITTED stopped the experiment on an incomplete order after the first commit). DECLARED ADAPTATION (P3-537,
+    FD-FINALPILOT-01 to 04): the faculty decided that a PROVEN clarification no-op preserves the authority on the same committed minute. The same turn is now held, recorded on
+    the same minute, and the encounter goes on; what fails closed (an unsafe or unprovable same-minute turn) is pinned in ``test_gi_final_pilot.py``."""
     resident = _sign_in(world, _account(world, "resident"))
-    assert "can end the development encounter early" in _screen(resident)
+    assert "holds it and asks what is missing" in _screen(resident)
     _begin(resident)
     page._order(resident, ORDERS[0])
     minute = int(resident.session_state["state"]["sim_time"])
@@ -367,9 +367,10 @@ def test_p16_after_the_first_commit_an_incomplete_order_stops_the_experiment_the
     next(b for b in resident.button if b.label == "Send").click().run()
     resident.run()
     site = resident.session_state[ra.SITE_KEY]
-    assert site.halted and str(site.halt_reason).startswith("MINUTE_ALREADY_COMMITTED")
-    assert resident.session_state["encounter_ended"] is True and _pilot(resident)["exit"] == gp.EXIT_AUTHORITY_STOP
-    assert int(resident.session_state["state"]["sim_time"]) == minute and mt.AUTHORITY_STOP_MESSAGE.split(",")[0] in _screen(resident)
+    assert not site.halted, site.halt_reason
+    assert site.no_advance_turns[-1]["outcome"] == ra.NONADVANCING_CLARIFICATION_NOOP and site.no_advance_turns[-1]["attached_to_committed_minute"] == minute
+    assert resident.session_state["encounter_ended"] is not True and _pilot(resident)["exit"] is None
+    assert int(resident.session_state["state"]["sim_time"]) == minute and resident.session_state["pending_action"]
 
 
 # -- P3-531: the independent review's material findings, pinned on the real page -----------------------------------------------------------

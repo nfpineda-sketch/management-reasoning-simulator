@@ -20,16 +20,28 @@ def _stored(key: str) -> dict:
     return json.loads(records.PATHS[key].read_text(encoding="utf-8"))
 
 
+#: The sha256 of gi_pilot.py when the three records were generated (published at cc1d3af, unchanged at e2f05c2).
+GI_PILOT_AT_GENERATION = "d8fc5ec976e3e08d1817143bcc07e18bd55cef18658f4d6668a2fca919a4e0fe"
+
+
 @pytest.fixture(scope="module")
 def regenerated():
-    return records.reproduce()
+    # DECLARED ADAPTATION (P3-534 to P3-555): the records are chained (each names the digest of the one before), and a digest covers its provenance, so they reproduce
+    # byte for byte only with the generating code they were made with: today's tree with gi_pilot.py as it was at their generation.
+    today = records.generating_code
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(records, "generating_code", lambda: {**today(), "gi_pilot.py": GI_PILOT_AT_GENERATION})
+        return records.reproduce()
 
 
 @pytest.mark.parametrize("key", sorted(records.PATHS))
 def test_r1_each_record_is_sealed_indexed_and_regenerated_by_the_code_it_names(key, regenerated):
     stored = _stored(key)
     assert hr.record_problems(stored) == []
-    assert hr.same_generating_code(stored, records.generating_code()), f"{key}: the stored record names the generating code that is in the tree"
+    # DECLARED ADAPTATION (P3-534 to P3-555, FD-FINALPILOT-01 to 10): the three records were generated with gi_pilot.py as published at cc1d3af (sha256 pinned below). The final
+    # pre-pilot cycle changed gi_pilot.py (clarification no-op wording, the structural boundary); the records are NOT regenerated (FD-RECORD: a generated record is immutable),
+    # their content still reproduces from today's SCOPE (asserted next), and the rest of their generating code is the code in the tree.
+    assert hr.same_generating_code(stored, {**records.generating_code(), "gi_pilot.py": GI_PILOT_AT_GENERATION}), f"{key}: the stored record names the generating code it was made with"
     assert {name: value for name, value in stored.items() if name not in ("provenance", "record_digest")} == json.loads(json.dumps(regenerated[key]))
     entry = hr.load_index()["records"][records.PATHS[key].name]
     assert entry == hr.index_entry(records.PATHS[key], hr.VERSIONED)

@@ -153,8 +153,10 @@ def test_d3_the_application_orchestrates_and_decides_nothing():
     assert len(blocks) == 2, [ast.unparse(node.test) for node in blocks]
     # P3-271 (declared adaptation): the commit now receives the SETTLED ledger and is followed, in this order, by the artifact, the turn's verdict and only then the installation of the prepared state;
     # the provenance block ends with the verdict too. The two blocks and everything they decide are unchanged.
+    # P3-537 (declared adaptation, FD-FINALPILOT-02): the commit also receives the open turn's ORIGIN (the originals of the protected fields), read-only, so the authority can PROVE a
+    # clarification no-op by state equivalence; the call still decides nothing and the block is otherwise identical.
     assert [ast.unparse(node) for node in blocks[0].body] == [
-        "_prepared = _authority.minute(_shadow_before, st.session_state.state, _shadow, run_actions, submission_id, settled=_ledger.snapshot(turn.get('orders') or []))",
+        "_prepared = _authority.minute(_shadow_before, st.session_state.state, _shadow, run_actions, submission_id, settled=_ledger.snapshot(turn.get('orders') or []), origin=_authority_turn_origin())",
         "st.session_state.phase3_authority_artifact = _authority.artifact()",
         "_authority_turn_check()",
         "if _prepared is not None:\n    st.session_state.state = _prepared",

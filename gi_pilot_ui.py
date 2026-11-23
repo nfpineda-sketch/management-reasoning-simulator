@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 import logging
 import os
-from typing import Any, Callable
+from typing import Any, Callable, Mapping
 
 import gi_pilot as gp
 
@@ -56,6 +56,7 @@ def gate(st: Any, layer_in: gp.Layer | None, context: Any, accounts: bool) -> di
     st.session_state[gp.DECISION_KEY] = decision
     if not decision.get("requested") or decision.get("enabled"):
         return decision
+    _close_on_refusal(st, decision)
     st.title(TITLE)
     st.error("DEVELOPMENT PILOT UNAVAILABLE")
     role = ((context or {}).get("user") or {}).get("role")
@@ -67,6 +68,29 @@ def gate(st: Any, layer_in: gp.Layer | None, context: Any, accounts: bool) -> di
         st.write(UNAVAILABLE)
     st.stop()
     return decision
+
+
+def _close_on_refusal(st: Any, decision: Mapping) -> None:
+    """P3-550 (FD-FINALPILOT-09): the configuration became unavailable (a flag, the grant, the snapshot or the store withdrawn) while this session had a pilot encounter open.
+    Nothing of it runs (the page stops here), and the record says so at once: the encounter is ENDED with AUTHORITY_UNAVAILABLE instead of staying ACTIVE, so it can never
+    be resumed if the configuration comes back (its next run ends it, ENCOUNTER_CLOSED_IN_RECORD, before any order). A record that cannot be written is left as it is: the
+    next run of a restored configuration fails closed on it (PILOT_RECORD_UNAVAILABLE)."""
+    info = session(st)
+    if info is None or info.get("exit"):
+        return
+    try:
+        store = _store()
+        if store.status(info["encounter_id"])["state"] != "ACTIVE":
+            return
+        try:
+            _log_turns(st, store, info)
+        except Exception as error:                         # the turns the page already holds are logged when it can; the closing is recorded either way
+            LOG.warning("pilot turns not logged at the refusal: %s", error)
+        store.append_participant(info["encounter_id"], "ended", {"exit": gp.EXIT_AUTHORITY_UNAVAILABLE, "minute": _minute(st),
+                                                                 "reasons": ["the development pilot configuration became unavailable during the encounter"]
+                                                                 + [str(problem) for problem in decision.get("problems") or ()][:5]})
+    except Exception as error:
+        LOG.warning("pilot encounter not closed at the refusal: %s", error)
 
 
 def enabled(st: Any) -> bool:
@@ -120,15 +144,19 @@ def launcher(st: Any, context: Any, initial_state: Any, reset_session: Callable)
         st.error(UNAVAILABLE)
         return
     st.title(TITLE)
+    _close_open_encounters(user)
     st.info(gp.PILOT_NOTICE)
     st.write("One synthetic patient with an upper gastrointestinal bleed. Manage the patient as you normally would: write your orders and, when asked, your reasoning. "
              "The encounter covers the first two hours of resuscitation and ends at the development boundary, or earlier if you request definitive control of the bleeding "
              "or end it yourself. Afterwards you see your management trace, for reflection with your supervising faculty member.")
-    st.warning("Write each order complete: drug or fluid, dose or volume, duration or rate with its unit, and a reassessment interval. In this development pilot an "
-               "incomplete order, an order the simulator does not understand, or a question typed as an order can end the development encounter early.")
-    st.caption("Supported here: fluids with a stated volume and duration, packed red cells, and norepinephrine at an explicit rate in mcg/min. "
-               "Not supported here: other vasopressors, a target blood pressure instead of a rate, weight-based doses. Other medications are not represented by the development "
-               "model: giving one ends the development encounter early (it is not a judgement of the management).")
+    st.warning("Write each order complete: drug or fluid, dose or volume, duration or rate with its unit, and a reassessment interval. When an order is incomplete, the "
+               "simulator holds it and asks what is missing; nothing is carried out and the encounter goes on. When it asks for a rate, write the complete order again "
+               "(for example: Increase norepinephrine to 12 mcg/min).")
+    st.caption("Supported here: fluids with a stated volume and duration, packed red cells, norepinephrine at an explicit rate in mcg/min (start, change, stop, restart), "
+               "reassessment, examination and the case's own tests. A target blood pressure, a relative change or a rate without its unit is held and nothing is given. "
+               "Not represented by the development model, and ending the development encounter early if ordered (it is not a judgement of the management): other "
+               "medications and other vasopressors, norepinephrine in another unit (mg/min, mcg/kg/min), a nasogastric tube, a urinary catheter and continuous monitoring. "
+               "A request for definitive control of the bleeding (gastroenterology, endoscopy, interventional radiology, surgery) ends the encounter at the development boundary.")
     if st.button("Begin the development pilot encounter", type="primary", key="gi_pilot_begin"):
         case_id = gp.PILOT_CASES[0]
         try:
@@ -149,6 +177,19 @@ def launcher(st: Any, context: Any, initial_state: Any, reset_session: Callable)
         st.session_state[gp.SESSION_KEY] = {"encounter_id": eid, "case_id": case_id, "arrival": arrival, "participant": participant, "logged": 0, "exit": None,
                                             "exit_minute": None, "pending_exit": None}
         st.rerun()
+
+
+def _close_open_encounters(user: Mapping) -> None:
+    """P3-545 (FD-FINALPILOT-09): an encounter is never resumed in a new browser session, so the moment a participant's new session shows the pilot start, any encounter
+    of theirs still open in the record is recorded INTERRUPTED (it used to stay ACTIVE until the next start: TD-165 item 13). An open tab of that encounter then ends on its
+    next run (ENCOUNTER_CLOSED_IN_RECORD) before it can run another order. A record that cannot be read is left alone here: the start itself fails closed on it."""
+    try:
+        store = _store()
+        participant = gp.participant_ref(user["id"])
+        for earlier in store.open_encounters_of(participant):
+            store.append_participant(earlier, "interrupted", {"why": "a new session opened the pilot start; an open pilot encounter is never resumed"})
+    except Exception as error:
+        LOG.warning("pilot: open encounters not closed at the start page: %s", error)
 
 
 def on_reset(st: Any) -> None:
@@ -255,16 +296,21 @@ def _end(st: Any, end: Callable, exit_kind: str, *, reasons: list | None = None,
     return True
 
 
-def barrier(st: Any, orders: Any, minute: int) -> bool:
-    """P3-521 (FD-PILOT-04): True when this turn requests definitive control of the bleeding and must NOT run. Called by the page after the turn's orders are in the ledger and
-    BEFORE the engine executes anything. The page records the turn as written and not carried out; the next run ends the encounter at the boundary."""
+def barrier(st: Any, orders: Any, minute: int, *, actions: Any = None, text: Any = None) -> bool:
+    """P3-521 (FD-PILOT-04) and P3-541 (FD-FINALPILOT-05): True when this turn requests definitive control of the bleeding and must NOT run. Called by the page after the turn's
+    orders are in the ledger and BEFORE the engine executes anything. It reads, in this order: the actions the engine is about to execute (STRUCTURAL: an executed consultation of
+    a definitive service is the only way the earlier engine reaches a haemostasis in this case), the turn's orders, and the turn's own words when the reader made no order. The
+    page records the turn as written and not carried out; the next run ends the encounter at the boundary."""
     info = session(st)
     if info is None or info.get("exit") or not enabled(st):
         return False
-    found = gp.definitive_orders(orders)
+    structural = gp.definitive_actions(actions)
+    found = structural + gp.definitive_intent(orders, None if text is None else str(text))
     if not found:
         return False
-    info["pending_exit"] = {"exit": gp.EXIT_DEFINITIVE_REQUEST, "minute": int(minute), "reasons": [str(order.get("canonical") or order.get("span") or order.get("class")) for order in found]}
+    info["pending_exit"] = {"exit": gp.EXIT_DEFINITIVE_REQUEST, "minute": int(minute),
+                            "reasons": [str(item.get("canonical") or item.get("span") or item.get("service") or item.get("class") or item.get("type")) for item in found],
+                            "structural": bool(structural)}
     return True
 
 
@@ -281,6 +327,21 @@ def mark_not_carried_out(turn: Any) -> None:
 
 def ne_given(st: Any) -> bool:
     return gp.norepinephrine_given(st.session_state.get("order_ledger") or [])
+
+
+#: P3-542 (FD-FINALPILOT-06): in Talk mode the earlier model decides whether the patient can answer from ITS mental status, so the answer itself would show a mental status the
+#: development model does not represent under a vasopressor. Once norepinephrine has been given, questions to the patient are not offered (the history already obtained stays
+#: in the chart); nothing in the engine changes.
+TALK_WITHHELD = ("Questions to the patient are not available once norepinephrine has been given in this development pilot: the development model does not represent mental "
+                 "status on a vasopressor, and whether the patient can answer would show it. The history already obtained stays in the chart.")
+
+
+def talk_withheld(st: Any) -> bool:
+    """True when the pilot does not offer Talk mode (a pilot encounter in which norepinephrine has been given)."""
+    try:
+        return bool(active(st) and ne_given(st))
+    except Exception:
+        return True
 
 
 def cells(st: Any, cells_in: Any, mental_labels: Any) -> Any:
@@ -326,7 +387,7 @@ def _closing(st: Any) -> dict:
         if logs["problems"]:
             raise gp.PilotRecordError("; ".join(logs["problems"]))
         events = [entry["payload"]["event"] for entry in logs["participant"] if entry["kind"] == "turn"]
-        result = gp.participant_trace(events, store.artifact(info["encounter_id"]), info["arrival"])
+        result = gp.participant_trace(events, store.artifact(info["encounter_id"]), info["arrival"], boundary_request=info.get("exit") == gp.EXIT_DEFINITIVE_REQUEST)
         if result.get("ok"):
             store.write_trace(info["encounter_id"], {"encounter_id": info["encounter_id"], "trace_digest": result["trace_digest"], "exit": info["exit"], "exit_minute": info["exit_minute"],
                                                      "trace": _plain(result["trace"])})
