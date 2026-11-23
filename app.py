@@ -90,6 +90,28 @@ if os.environ.get("MRS_FACULTY_DEVELOPMENT_REVIEW", "").strip():
     _FACULTY_LAYER = _authority_for_review.faculty_review_layer()      # the page's one crossing into the Phase-3 layer
     _FACULTY_REVIEW = _faculty_review_ui.gate(st, _FACULTY_LAYER, ACCOUNT_CONTEXT, accounts_enabled())
 
+# Phase 3 (P3-520 to P3-526, FD-PILOT-01 to FD-PILOT-08): the controlled DEVELOPMENT pilot of the GI management trace. Off unless an operator names it; a named pilot that
+# cannot be verified stops the page here (fails closed). Every hook below is a no-op without it.
+# P3-532: like the faculty review pages, the pilot modules import nothing of the Phase-3 layer; this block, the page's crossing, hands them what they read (``gi_pilot.Layer``):
+# names, pure checks, the verification of a stored artifact and this encounter's site through the page's own helper (``_runtime_authority_site``).
+_GI_PILOT = {}
+if os.environ.get("MRS_PHASE3_GI_PILOT", "").strip():
+    import gi_pilot as _gi_pilot
+    import gi_pilot_ui as _gi_pilot_ui
+    import runtime_authority as _authority_for_pilot
+    import runtime_shadow as _shadow_for_pilot
+    _GI_PILOT = _gi_pilot_ui.gate(st, _gi_pilot.layer_from(_authority_for_pilot, _shadow_for_pilot, lambda: _runtime_authority_site()), ACCOUNT_CONTEXT, accounts_enabled())
+
+
+def _gi_pilot_encounter():
+    """True while this session runs (or has just closed) a pilot encounter."""
+    return bool(_GI_PILOT.get("enabled")) and _gi_pilot_ui.session(st) is not None
+
+
+def _gi_pilot_check():
+    """Phase 3 (P3-521/524/526): the pilot's once-per-run check; ending the pilot encounter is the page's own close (``begin_decision_review``)."""
+    _gi_pilot_ui.check(st, lambda: begin_decision_review(st.session_state.management_trace, st.session_state.state))
+
 # Phase 0 (0D): before anything reads the encounter, a run that was stopped part way through
 # processing a submission is undone, and the submission waits to run again from the start
 # (submission_guard). Nothing it had applied is kept, and nothing is applied twice.
@@ -614,6 +636,9 @@ def _default_challenge():
 
 
 def reset_session():
+    if _GI_PILOT.get("enabled"):
+        # Phase 3 (P3-526): leaving a pilot encounter is recorded (LEFT) and the encounter is never resumed.
+        _gi_pilot_ui.on_reset(st)
     for key in list(st.session_state):
         if str(key).startswith("_learner_trace_"):
             del st.session_state[key]
@@ -10064,12 +10089,17 @@ def _ecg_strip_svg(observable, duration_seconds=5.0):
 
 def _vitals_grid_html(snapshot, variant="live"):
     import language
+    vitals = _vitals_cells(snapshot, language.current())
+    if (globals().get("_GI_PILOT") or {}).get("enabled"):
+        # Phase 3 (P3-522, FD-PILOT-05): in a pilot encounter mental status is the earlier model's, and is withheld once norepinephrine has been given (display only, by the cell's
+        # label). Read through ``globals()`` so this function stays self-contained when it runs on its own (regression_v082_persistent_vitals executes it alone).
+        vitals = _gi_pilot_ui.cells(st, vitals, ("MENTAL STATUS", language.say("MENTAL STATUS", "es")))
     cells = "".join(
         '<div class="mrs-vital-cell">'
         f'<div class="mrs-vital-label">{escape(str(label))}</div>'
         f'<div class="mrs-vital-value">{escape(str(value))}</div>'
         "</div>"
-        for label, value in _vitals_cells(snapshot, language.current())
+        for label, value in vitals
     )
     return f'<div class="mrs-vitals-grid mrs-vitals-grid--{escape(variant)}">{cells}</div>'
 
@@ -10331,6 +10361,14 @@ def _room_you_words(text):
 
 def render_event(event):
     import language
+    if event["kind"] in ("clinical_update", "examination") and _GI_PILOT.get("enabled"):
+        # Phase 3 (P3-522, P3-531 F1): the pilot classifies or withholds the earlier model's mental status on the ENGLISH words the event stores, before any translation,
+        # so the presentation language cannot carry it past the pilot; the stored event is untouched.
+        event = dict(event)
+        if event["kind"] == "clinical_update":
+            event["text"] = _gi_pilot_ui.update_text(st, event["text"])        # a text transform: no mental-status field is read here (P3-532)
+        else:
+            event["text"] = _gi_pilot_ui.examination_text(st, event["text"])
     body = (language.say(event["text"]) if event["kind"] in _TRANSLATED_EVENTS
             else language.examination(event["text"]) if event["kind"] == "examination"
             else language.case_words(event["text"]) if event["kind"] in _NARRATIVE_EVENTS
@@ -10427,6 +10465,9 @@ if not st.session_state.started:
                                           default_mode=_faculty_review_ui.MANAGEMENT_MODE, hold_prior_modes=_faculty_rereview_ui.prior_modes_held, tone_page=_faculty_tone_ui.draw, hold_other_modes=_faculty_tone_ui.other_modes_held,
                                           titration_page=_faculty_titration_ui.draw, hold_titration=_faculty_titration_ui.other_modes_held,
                                           management_page=_faculty_management_ui.draw, hold_management=_faculty_management_ui.other_modes_held)
+        elif _GI_PILOT.get("enabled"):
+            # Phase 3 (P3-524): in the pilot deployment the dashboard is replaced by the pilot's start (participants) or its supervision page (faculty); no other case starts.
+            _gi_pilot_ui.launcher(st, ACCOUNT_CONTEXT, INITIAL_STATE, reset_session)
         else:
             render_dashboard(ACCOUNT_CONTEXT, INITIAL_STATE, reset_session)
         st.stop()
@@ -11169,6 +11210,14 @@ def _process_encounter_submission(submission_text, _guard_entry=None, submission
     """Run the existing order pipeline without drawing any encounter UI first."""
     if not str(submission_text or "").strip():
         return
+    if _gi_pilot_encounter() and (st.session_state.get("encounter_ended") or (_gi_pilot_ui.session(st) or {}).get("exit")):
+        # Phase 3 (P3-526): the pilot encounter has ended (boundary, faculty stop, record problem): nothing is parsed, executed or advanced; the submission is claimed and
+        # marked blocked so a durable pending entry does not make the page loop on it.
+        if _guard_entry is not None:
+            import submission_guard as _pilot_guard
+            _pilot_guard.begin(st.session_state, _guard_entry, fields=_SESSION_FIELDS, minute=int(st.session_state.state.get("sim_time", 0) or 0))
+            _pilot_guard.finish(st.session_state, "blocked_by_pilot_end")
+        return
     if _authority_blocks("order_submission"):
         # Phase 3 (P3-253): the experimental authority session is stopped. Nothing is parsed, executed, recorded as an order or advanced; the submission is claimed and marked
         # blocked so a durable pending entry does not make the page loop on it. The notice is drawn by the workspace.
@@ -11376,6 +11425,15 @@ def _process_encounter_submission_turn(submission_text, _guard_entry=None, submi
     st.session_state.last_parse = _ledger.untagged(parsed)
     st.session_state.history.append(_ledger.untagged(parsed))
     trace_input = parsed.get("raw_text") or learner_input
+
+    if _GI_PILOT.get("enabled") and _gi_pilot_ui.barrier(st, turn.get("orders"), turn_minute):
+        # Phase 3 (P3-521, FD-PILOT-04): this turn requests definitive control of the bleeding. The engine would execute a consultation that later becomes an unreviewed
+        # haemostasis; in the pilot it does NOT run. The turn is recorded exactly as written, every order as recorded and not carried out, and the next run ends the encounter
+        # at the development boundary. No clock moves, no authority minute is committed.
+        _gi_pilot_ui.mark_not_carried_out(turn)
+        _order_pipeline.ledger_record(st.session_state, turn, add_event)
+        record_management_trace(trace_input, parsed, {"executed": False}, trace_state_before, management_state_snapshot(st.session_state.state), turn=turn)
+        rerun_app()
 
     _shadow = _runtime_shadow_session()
     _shadow_before = _shadow.capture(st.session_state.state) if _shadow is not None else None
@@ -11703,6 +11761,12 @@ def _clinical_encounter_workspace():
             st.session_state, lambda: _write_session(ACCOUNT_CONTEXT)
         )
 
+    if _gi_pilot_encounter() and not st.session_state.encounter_ended:
+        # Phase 3 (P3-521/524/526): once per run and BEFORE a pending submission can move the pilot encounter: log it, and end it on a faculty stop, a record problem, an
+        # unavailable or halted authority, a definitive-control request, source control in the engine state or the two-hour horizon. Ending it is the page's own close; a
+        # submission that arrives after it is claimed and blocked, never run (``_process_encounter_submission``).
+        _gi_pilot_check()
+
     # A free-text Send captured by the callback is processed before bedside, chart,
     # modes or form are drawn. The processing path ends in a fragment-scoped rerun.
     _pre_render_entry = next(iter(_submission_guard.pending(st.session_state)), None)
@@ -11713,11 +11777,16 @@ def _clinical_encounter_workspace():
         _authority_decision = _authority_continuation()
         _authority_stopped = not _authority_decision["allowed"]
 
+    if _gi_pilot_encounter() and not st.session_state.encounter_ended:
+        # Phase 3 (P3-521/524/526): asked again with what is true now (the submission just processed may be the request that ends the pilot encounter).
+        _gi_pilot_check()
+
     _in_room = not st.session_state.encounter_ended
     if _in_room and not _FAST_PENDING_SUBMISSION:
         # The simulated time is said once on the screen, beside the information; the
         # monitor shows the patient now (2026-10-02, section 9).
-        render_room(st.session_state.state, st.session_state.events, _ecg_strip_svg, render_event, "", ACCOUNT_CONTEXT)
+        render_room(st.session_state.state, st.session_state.events, _ecg_strip_svg, render_event, "", ACCOUNT_CONTEXT,
+                    appearance=_gi_pilot_ui.appearance(st) if _GI_PILOT.get("enabled") else None)
     _ecg_acquired, _ecg_notice = False, None
     if _in_room and not _FAST_PENDING_SUBMISSION:
         # In the band above the information. The ECG is acquired before the views are
@@ -11732,6 +11801,10 @@ def _clinical_encounter_workspace():
             else:
                 _ecg_acquired, _ecg_notice = _room.acquire_ecg_button(st.session_state.state, st.session_state.events)
     with st.container(key="encounter-console"):
+        if _in_room and _gi_pilot_encounter():
+            # Phase 3 (P3-522): the pilot notice classifies what the participant reads (pressure from the development model, every other sign from the earlier one).
+            _gi_pilot_ui.notice(st)
+            _gi_pilot_ui.withheld_note(st)
         if _authority_stopped:
             _render_authority_stop_notice(_authority_decision)
         if _ecg_notice:
@@ -12111,6 +12184,10 @@ def _clinical_encounter_workspace():
                         else:
                             st.session_state.close_pending = True
                         rerun_app()
+            elif _gi_pilot_encounter():
+                # Phase 3 (P3-523): after a pilot encounter the participant sees the exit and the faculty-reviewed management trace, nothing of the legacy review layer
+                # (self-review prompts, expert comparison drafts, AI analysis) and no score.
+                _gi_pilot_ui.post_encounter(st)
             else:
                 frozen_trace = st.session_state.get("encounter_closed_trace")
                 if frozen_trace is None:

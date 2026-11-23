@@ -83,7 +83,7 @@ def monitor_html(o, time_label, profile='baseline', seed=0, language='en'):
             + wave + f'<div class="monitor-values">{cards}</div></div>')
 
 
-def render_room(state, events, ecg_svg, render_event, time_label, context=None, *, active=True):
+def render_room(state, events, ecg_svg, render_event, time_label, context=None, *, active=True, appearance=None):
     """Draw the bedside inside the encounter's single keyed workspace fragment.
 
     The workspace fragment owns reruns for the whole encounter, so the bedside must not
@@ -95,14 +95,14 @@ def render_room(state, events, ecg_svg, render_event, time_label, context=None, 
         return
     from clinical_scene import scene_image
     st.session_state['_room_image'] = scene_image(state, events, context)
-    _room(state, events, ecg_svg, render_event, time_label, context, active=True)
+    _room(state, events, ecg_svg, render_event, time_label, context, active=True, appearance=appearance)
 
 
 def clear_room_fragment(context=None):
     """Clear bedside-only transient state before the dashboard is rendered."""
     st.session_state.pop('_room_image', None)
 
-def _room(state, events, ecg_svg, render_event, time_label, context=None, *, active=True):
+def _room(state, events, ecg_svg, render_event, time_label, context=None, *, active=True, appearance=None):
     # A queued fragment rerun can outlive the encounter that scheduled it. Fail closed before
     # touching its captured state: navigation must never repaint an old patient over the dashboard.
     if (not active or not st.session_state.get('started')
@@ -130,10 +130,12 @@ def _room(state, events, ecg_svg, render_event, time_label, context=None, *, act
     o = state['observable']
     import language as languages
     reading = languages.current()
-    description = appearance_summary(state) + ' Work of breathing: ' + str(o.get('work_of_breathing', 'Not recorded'))
+    # Phase 3 (P3-522): a development pilot classifies the appearance line (mental status as the earlier model's, withheld after norepinephrine); None elsewhere.
+    summary = appearance(appearance_summary(state)) if appearance is not None else appearance_summary(state)
+    description = summary + ' Work of breathing: ' + str(o.get('work_of_breathing', 'Not recorded'))
     if reading == 'es':
         # I-3: the summary and the work of breathing, each said whole (``language.examination``).
-        description = (languages.examination(appearance_summary(state), 'es') + ' Trabajo respiratorio: '
+        description = (languages.examination(summary, 'es') + ' Trabajo respiratorio: '
                        + languages.observed_value(str(o.get('work_of_breathing', 'Not recorded')), 'es'))
     profile = state.get('ecg_profile', state.get('encounter_spec', {}).get('ecg_profile', 'baseline'))
     st.markdown(scene_html(image, monitor_html(o, time_label, profile, state.get('seed', 0), reading),

@@ -277,6 +277,35 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
         scene.adopt(st.session_state, st.session_state.state, attempt_id)
 
 
+def start_pilot_encounter(context, initial_state, reset_session, case_id):
+    """P3-524 (FD-PILOT-08): the controlled development pilot's ONE way to start an encounter (``gi_pilot``).
+
+    The pinned authored case, no generation, no picture, no AI -- and NO attempt in the participant's account: the encounter reaches no progress, portfolio, rubric or
+    evaluation surface, and ``save_session`` (which needs an attempt) writes nothing. Its only durable record is the pilot's own (``gi_pilot.PilotStore``). A refresh or a
+    restart therefore never resumes it (fails closed; the pilot record shows it interrupted)."""
+    import gi_pilot
+    if case_id not in gi_pilot.PILOT_CASES:
+        raise AccountError("Only the development pilot's case can be started here.")
+    if not context or not context.get("user"):
+        raise AccountError("The development pilot needs an individual account.")
+    seed = secrets.randbelow(2**31)
+    with encounter_preparation(st) as progress:
+        encounter = generate_encounter(gi_pilot.CHALLENGE_ID, initial_state, api_key="", model="", seed=seed, variant_id=case_id, generation_mode="authored",
+                                       review_model=None, progress=progress)
+    reset_session()
+    for key in ("_attempt_id", "_attempt_revision", "_attempt_status", "_saved_digest"):
+        st.session_state.pop(key, None)
+    st.session_state.state = deepcopy(encounter["state"])
+    st.session_state.started = True
+    import language
+    st.session_state.encounter_language = "en"        # the development pilot is presented in English only (TD-165; P3-531 F1)
+    st.session_state.events = [{"kind": "presentation", "text": encounter["presentation"], "time": 0}]
+    st.session_state.encounter_assignment = {"challenge_id": gi_pilot.CHALLENGE_ID, "reason": gi_pilot.ASSIGNMENT_REASON, "pinned_variant": case_id, "assignment_seed": seed,
+                                             "purpose": "development_pilot", "code_version": code_version(), "runtime_version": RUNTIME_VERSION}
+    st.session_state.selected_case = gi_pilot.CHALLENGE_ID
+    return encounter
+
+
 _CODE_VERSION = None
 
 
