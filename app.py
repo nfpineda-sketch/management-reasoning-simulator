@@ -11792,7 +11792,8 @@ def _clinical_encounter_workspace():
         # The simulated time is said once on the screen, beside the information; the
         # monitor shows the patient now (2026-10-02, section 9).
         render_room(st.session_state.state, st.session_state.events, _ecg_strip_svg, render_event, "", ACCOUNT_CONTEXT,
-                    appearance=_gi_pilot_ui.appearance(st) if _GI_PILOT.get("enabled") else None)
+                    appearance=_gi_pilot_ui.appearance(st) if _GI_PILOT.get("enabled") else None,
+                    photograph=_gi_pilot_ui.photograph(st) if _GI_PILOT.get("enabled") else None)
     _ecg_acquired, _ecg_notice = False, None
     if _in_room and not _FAST_PENDING_SUBMISSION:
         # In the band above the information. The ECG is acquired before the views are

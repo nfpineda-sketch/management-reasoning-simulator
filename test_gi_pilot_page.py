@@ -91,10 +91,16 @@ def _sign_in(world, credentials):
     return at
 
 
+#: An inline image's bytes (``data:<mime>;base64,<payload>``): binary, not text anyone reads.
+IMAGE_PAYLOAD = re.compile(r"data:[\w.+/-]+;base64,[A-Za-z0-9+/=]+")
+
+
 def _screen(at):
+    # DECLARED ADAPTATION (P3-556): the room now carries the pilot's photograph of the patient on arrival inline; its base64 payload can hold any
+    # short letter run by chance (it holds "Q6"), so the scan reads every TEXT on the screen with each image's payload replaced by a marker.
     parts = []
     for kind in ("markdown", "caption", "text", "title", "header", "subheader", "info", "warning", "error", "success"):
-        parts.extend(str(item.value) for item in getattr(at, kind, []))
+        parts.extend(IMAGE_PAYLOAD.sub("data:<image>", str(item.value)) for item in getattr(at, kind, []))
     parts.extend(str(item.label) for item in at.button)
     return "\n".join(parts)
 

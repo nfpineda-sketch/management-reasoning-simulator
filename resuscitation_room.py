@@ -83,7 +83,7 @@ def monitor_html(o, time_label, profile='baseline', seed=0, language='en'):
             + wave + f'<div class="monitor-values">{cards}</div></div>')
 
 
-def render_room(state, events, ecg_svg, render_event, time_label, context=None, *, active=True, appearance=None):
+def render_room(state, events, ecg_svg, render_event, time_label, context=None, *, active=True, appearance=None, photograph=None):
     """Draw the bedside inside the encounter's single keyed workspace fragment.
 
     The workspace fragment owns reruns for the whole encounter, so the bedside must not
@@ -94,15 +94,16 @@ def render_room(state, events, ecg_svg, render_event, time_label, context=None, 
         st.session_state.pop('_room_image', None)
         return
     from clinical_scene import scene_image
-    st.session_state['_room_image'] = scene_image(state, events, context)
-    _room(state, events, ecg_svg, render_event, time_label, context, active=True, appearance=appearance)
+    # Phase 3 (P3-556): a development pilot passes its one static photograph of the patient on arrival; nothing is generated or requested.
+    st.session_state['_room_image'] = photograph() if photograph is not None else scene_image(state, events, context)
+    _room(state, events, ecg_svg, render_event, time_label, context, active=True, appearance=appearance, photograph=photograph)
 
 
 def clear_room_fragment(context=None):
     """Clear bedside-only transient state before the dashboard is rendered."""
     st.session_state.pop('_room_image', None)
 
-def _room(state, events, ecg_svg, render_event, time_label, context=None, *, active=True, appearance=None):
+def _room(state, events, ecg_svg, render_event, time_label, context=None, *, active=True, appearance=None, photograph=None):
     # A queued fragment rerun can outlive the encounter that scheduled it. Fail closed before
     # touching its captured state: navigation must never repaint an old patient over the dashboard.
     if (not active or not st.session_state.get('started')
@@ -116,12 +117,12 @@ def _room(state, events, ecg_svg, render_event, time_label, context=None, *, act
     if '_room_image' in st.session_state:
         image = st.session_state.pop('_room_image')
     else:
-        image = scene_image(state, events, context)
+        image = photograph() if photograph is not None else scene_image(state, events, context)
     # A bank photograph is its own element, always present (empty when there is
     # none), so the element tree keeps its shape and the monitor can change
     # without sending the photograph again (image bank, 2026-09-26).
     from image_scene import View, scene_photo_html
-    photo_apart = isinstance(st.session_state.get('_scene_jobs'), View)
+    photo_apart = photograph is None and isinstance(st.session_state.get('_scene_jobs'), View)
     if photo_apart:
         st.markdown(scene_photo_html(image if st.session_state.get('_scene_current', False) else None),
                     unsafe_allow_html=True)
@@ -138,6 +139,14 @@ def _room(state, events, ecg_svg, render_event, time_label, context=None, *, act
         description = (languages.examination(summary, 'es') + ' Trabajo respiratorio: '
                        + languages.observed_value(str(o.get('work_of_breathing', 'Not recorded')), 'es'))
     profile = state.get('ecg_profile', state.get('encounter_spec', {}).get('ecg_profile', 'baseline'))
+    if photograph is not None:
+        # P3-556: the pilot's photograph is of the patient ON ARRIVAL, never the current state; without it, the neutral view as before.
+        from gi_pilot import ARRIVAL_PHOTOGRAPH_LABEL
+        st.markdown(scene_html(image, monitor_html(o, time_label, profile, state.get('seed', 0), reading),
+                               current=image is not None, pending=False, observations=description,
+                               image_status=None if image is not None else {'state': 'unavailable', 'code': 'NOT_ALLOWED'},
+                               photo_apart=False, language=reading, arrival_label=ARRIVAL_PHOTOGRAPH_LABEL), unsafe_allow_html=True)
+        return
     st.markdown(scene_html(image, monitor_html(o, time_label, profile, state.get('seed', 0), reading),
                           current=st.session_state.get('_scene_current', False),
                           pending=st.session_state.get('_scene_pending', False),

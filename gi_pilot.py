@@ -241,6 +241,89 @@ def display_examination(text: str, ne_given: bool) -> str:
     return re.sub(r"Mental status:\s*(?=[A-Za-z])", "Mental status (earlier model): ", text)
 
 
+# -- P3-556: the bedside photograph of the patient ON ARRIVAL (faculty request of 2026-11-26) -------------------------------------------------
+#
+# ONE photograph already in the repository's image pack, already approved by the faculty (visual and clinical review), shown for the WHOLE pilot
+# encounter and labelled as the patient on arrival. It is never presented as the current state, so it never follows the earlier model's appearance
+# (its mental status included, H2): no dynamic visual change. The image bank stays off (``evaluate``); nothing is generated, requested or written.
+# The person is the one the bank's own rule picks for this case (``image_selection.choose_identity``: a photograph of the arrival state ready, then
+# the build nearest the chart); faculty decision 7 (2026-09-26): a still does not draw a mild pallor or a mild sweat, so the arrival state shares
+# the photograph of its drawable baseline, and the room's neutral note says a still does not show every sign. Every check fails closed: the room
+# then shows its neutral view, exactly as before.
+
+ARRIVAL_PHOTOGRAPH = {"case_id": "gi_bleed_57m", "asset_id": "9f73fef3f26b446ea6db35af6c977898", "identity_id": "V38",
+                      "sha256": "1d272dd7774eae3f44ec47715b66ee70a7c570ecc2321e4c9dc09b6bcabc337c", "mime": "image/webp"}
+ARRIVAL_PHOTOGRAPH_LABEL = "Patient on arrival"
+
+
+def _pack_asset(asset_id: str) -> tuple:
+    """The pack's record of one asset with the reviews a person gave outside the database applied (``image_pack``), and the pack's directory."""
+    import image_pack
+    record = next((dict(asset) for asset in (image_pack.read_manifest() or {}).get("assets") or () if asset.get("id") == asset_id), None)
+    if record is None:
+        return None, image_pack.PACK_DIR
+    for approval in image_pack.read_approvals():
+        if approval.get("asset_id") == asset_id and approval.get("field") in ("visual_review", "clinical_review"):
+            record[approval["field"]] = approval.get("value")
+    return record, image_pack.PACK_DIR
+
+
+_ARRIVAL_BYTES: dict = {}
+
+
+def arrival_photograph_problems(state: Mapping | None) -> list:
+    """Why the pinned arrival photograph may NOT be shown for this encounter (empty: it may). Pure apart from reading the pack."""
+    from image_bank import contract_key
+    from image_identities import compatible, identity
+    from image_selection import human_approved, usable
+    from patient_appearance import appearance_state
+    pin, problems = ARRIVAL_PHOTOGRAPH, []
+    spec = dict((state or {}).get("encounter_spec") or {})
+    case_id = spec.get("variant_id") or ((spec.get("clinical_case") or {}).get("id"))
+    if case_id not in PILOT_CASES or case_id != pin["case_id"]:
+        return [f"the encounter is not the pilot case {pin['case_id']}"]
+    record, directory = _pack_asset(pin["asset_id"])
+    if record is None:
+        return ["the photograph is not in the image pack"]
+    display = dict(record.get("display") or {})
+    if record.get("identity_id") != pin["identity_id"] or display.get("sha256") != pin["sha256"]:
+        problems.append("the pack's record does not match the pinned photograph")
+    if not (usable(record) and human_approved(record)):
+        problems.append("the photograph is not usable with approved visual and clinical reviews")
+    patient = (spec.get("clinical_case") or {}).get("patient")
+    try:
+        if not (isinstance(patient, dict) and compatible(identity(pin["identity_id"]), patient)):
+            problems.append("the person in the photograph is not compatible with the chart")
+    except Exception:
+        problems.append("the person in the photograph cannot be checked against the chart")
+    arrival = {"observable": spec.get("initial_observable") or {}, "encounter_spec": spec, "treatments": {}, "case_id": state.get("case_id")}
+    try:
+        if record.get("state_key") != contract_key(appearance_state(arrival)):
+            problems.append("the photograph does not show the case's arrival appearance")
+    except Exception:
+        problems.append("the case's arrival appearance cannot be read")
+    if pin["sha256"] not in _ARRIVAL_BYTES:
+        path = Path(directory) / str(display.get("file") or "")
+        raw = path.read_bytes() if path.is_file() else b""
+        if hashlib.sha256(raw).hexdigest() != pin["sha256"]:
+            return problems + ["the photograph's bytes are missing or altered"]
+        _ARRIVAL_BYTES[pin["sha256"]] = raw
+    return problems
+
+
+def arrival_photograph(state: Mapping | None) -> Any:
+    """The pilot's static bedside photograph of the patient on arrival, or None (the room then shows its neutral view, as before)."""
+    import base64
+    try:
+        if arrival_photograph_problems(state):
+            return None
+        from image_scene import DisplayImage
+        pin = ARRIVAL_PHOTOGRAPH
+        return DisplayImage(base64.b64encode(_ARRIVAL_BYTES[pin["sha256"]]).decode("ascii"), mime=pin["mime"], asset_id=pin["asset_id"], identity_id=pin["identity_id"])
+    except Exception:                                                   # a photograph that cannot be checked is not shown
+        return None
+
+
 # -- P3-520 / P3-526: configuration, fail closed ------------------------------------------------------------------------------------------
 
 def _inside_repository(path: Path) -> bool:

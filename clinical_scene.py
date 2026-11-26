@@ -219,9 +219,13 @@ SCENE_WORDS_ES = {
 
 
 def scene_html(image_b64, monitor, ecg='', *, current=True, pending=False, observations='', image_status=None,
-               photo_apart=False, language='en'):
+               photo_apart=False, language='en', arrival_label=None):
     """The bed space. With ``photo_apart`` the photograph is its own element (``image_scene``) and
-    this overlay carries no image bytes, so a monitor change does not send the photograph again."""
+    this overlay carries no image bytes, so a monitor change does not send the photograph again.
+
+    ``arrival_label`` (Phase 3, P3-556: the GI development pilot) names a photograph of the patient
+    ON ARRIVAL, never the current state: the room says so in place of "current state", and the
+    current appearance line stays on screen, above the neutral note."""
     if not current:
         image_b64 = None
     current = bool(current and image_b64)
@@ -240,6 +244,10 @@ def scene_html(image_b64, monitor, ecg='', *, current=True, pending=False, obser
     place = SCENE_WORDS_ES['ED / Bed 03'] if spanish else 'ED / Bed 03'
     if spanish:
         status = SCENE_WORDS_ES[status]
+    arrival = bool(arrival_label and current)
+    if arrival:
+        # A new label stays in English until the faculty sign its Spanish (TD-46).
+        status = str(arrival_label)
     detail = scene_status_text(image_status, language) if not current else ''
     # One fixed sentence beside every photograph (faculty instruction of
     # 2026-09-26, point 6). Naming the findings a photograph does not show
@@ -257,7 +265,7 @@ def scene_html(image_b64, monitor, ecg='', *, current=True, pending=False, obser
             f'<div class="scene-time">{escape(place)} · {escape(status)}</div>' +
             (f'<div class="scene-image-status" role="status">{escape(detail)}</div>' if detail else '') +
             (f'<div class="scene-observations scene-note" role="note">{limitation}</div>' if limitation else '') +
-            (f'<div class="scene-observations">{escape(observations)}</div>' if not current else '') + '</div></div>')
+            (f'<div class="scene-observations">{escape(observations)}</div>' if not current or arrival else '') + '</div></div>')
 
 
 def scene_status_text(status, language='en'):
@@ -387,6 +395,7 @@ BEDSPACE_CSS = """
 .scene-note{top:auto;left:0;right:0;bottom:0;width:auto;max-width:none;min-height:var(--note-h);box-sizing:border-box;
  display:flex;align-items:center;justify-content:center;gap:.55rem;padding:4px 12px;background:#f3f6f9;color:#2c3e50;
  border:1px solid #d6dfe7;border-radius:10px;font:12.5px/1.35 system-ui,sans-serif;box-shadow:none}
+.scene-stage:has(.scene-note) .scene-observations:not(.scene-note){bottom:calc(var(--note-h) + var(--note-gap) + .8rem)}
 .scene-note::before{content:"i";flex:0 0 auto;width:15px;height:15px;border:1.4px solid currentColor;border-radius:50%;
  font:700 10px/12.6px Georgia,serif;text-align:center;opacity:.8}
 .scene-image-status{position:absolute;left:.8rem;top:42%;max-width:calc(100% - 1.6rem);color:#dce8ef;

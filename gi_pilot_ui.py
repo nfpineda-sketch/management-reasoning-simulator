@@ -364,6 +364,13 @@ def appearance(st: Any) -> Callable | None:
     return lambda summary: gp.display_appearance(summary, given)
 
 
+def photograph(st: Any) -> Callable | None:
+    """The room's photograph in the pilot (P3-556): the one static, approved photograph of the patient on arrival (None outside the pilot)."""
+    if not active(st):
+        return None
+    return lambda: gp.arrival_photograph(st.session_state.get("state"))
+
+
 def withheld_note(st: Any) -> None:
     if active(st) and ne_given(st):
         st.caption(gp.MENTAL_STATUS_WITHHELD_NOTE)
