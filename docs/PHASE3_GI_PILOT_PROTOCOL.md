@@ -62,7 +62,7 @@ No usar réplicas, varios procesos ni recarga automática: el no-op de aclaraci�
 
 **Comprobación previa (5 minutos, con una cuenta de prueba sintética):**
 1. Entrar como docente: la página dice «GI development pilot · faculty supervision» y no muestra problemas de configuración.
-2. Entrar como residente de prueba: se ve el inicio del piloto con el aviso y el botón «Begin the development pilot encounter».
+2. Entrar como residente de prueba: se ve el inicio del piloto con el aviso y el botón «Begin the development pilot encounter». Al empezar, la sala muestra el monitor y, debajo, la fotografía del paciente con el rótulo «ED / Bed 03 · Patient on arrival» (FD-P3-311). Si en su lugar dice «Current patient image unavailable», el árbol no es el publicado: detener y revisar.
 3. Hacer un encuentro corto: «Give 1 litre of normal saline over 15 minutes. Reassess in 15 minutes.», luego «Give normal saline.» (debe pedir el volumen y el encuentro sigue), luego «Complete Encounter» → «Finish now».
 4. Como docente: elegir ese encuentro, «Review the replay» debe decir que todas las comprobaciones coinciden; marcarlo inutilizable con el motivo «prueba del operador».
 
@@ -80,6 +80,7 @@ Lectura en voz alta antes de empezar, más el texto del propio lanzador:
 > - El modelo de desarrollo **no** representa otros medicamentos u otros vasopresores, la norepinefrina en mg/min o mcg/kg/min, la sonda nasogástrica, la sonda vesical ni el monitoreo continuo: si los ordenas, el encuentro de desarrollo termina antes. No es un juicio sobre tu manejo.
 > - Pedir el control definitivo del sangrado (gastroenterología, endoscopia, radiología intervencionista, cirugía) termina el encuentro en la **frontera del modelo de desarrollo**. No significa que el sangrado se detuvo ni que el paciente está estable.
 > - La presión viene del modelo de desarrollo que revisaron los docentes. Los otros signos vienen del modelo anterior; tras la norepinefrina, el estado mental no se muestra.
+> - La fotografía muestra al paciente **a su llegada** y no cambia durante el encuentro. Lo actual está en el monitor, en la línea de apariencia y en el examen.
 > - No escribas datos personales. Puedes terminar cuando quieras con «Complete Encounter».
 > - Al final verás tu traza de manejo para conversarla con el docente.
 

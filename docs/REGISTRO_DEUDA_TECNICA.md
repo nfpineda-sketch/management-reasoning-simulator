@@ -1069,3 +1069,13 @@ Decisiones: `FD-FINALPILOT-01` a `FD-FINALPILOT-10`. Documento: `docs/PHASE3_GI_
 8. **Registros históricos con su código generador.** El conjunto revisado de la traza (`GI_MANAGEMENT_TRACE_V1`) y los tres registros del ciclo del piloto conservan su código generador (sha de `runtime_authority.py` y de `gi_pilot.py` fijados). Bajo la capa actual, los dos digestos que fijan la capa difieren y el contenido es idéntico; no se regeneran (contrato de registros históricos).
 9. **Encuentro abandonado de quien no vuelve.** Queda `ACTIVE` en el registro hasta que ese participante abra el inicio. Una detención docente sobre él queda registrada y se aplica en la siguiente ejecución de una sesión de ese encuentro; el docente puede además marcarlo inutilizable.
 10. **La frase de molestia del modelo anterior tras la norepinefrina.** La actualización puede decir «The patient reports mild pain.». No deriva del estado mental (sale de la molestia del motor) y no delata el valor oculto, pero sugiere que el paciente se comunica. Se mantiene porque es información clínica del caso; ocultarla sería otra decisión.
+
+## TD-167 · Fase 3, fotografía del paciente a su llegada en el piloto de GI (2026-11-26)
+
+Decisión: `FD-P3-311` (pedido docente del 2026-11-26). Se reutiliza una fotografía ya aprobada del paquete local, fija y con el rótulo «Patient on arrival». El banco de imágenes sigue apagado en el piloto.
+
+1. **La fotografía es de la llegada, no del estado actual.** No cambia con el manejo ni con el deterioro; el rótulo y la línea de apariencia actual lo dicen. Fotografías que sigan el estado durante el piloto exigirían resolver antes H2 (la consciencia del modelo anterior bajo norepinefrina) y una revisión docente de los estados nuevos.
+2. **La palidez leve y el sudor leve no se ven en la fotografía.** Así lo fija la decisión docente 7 (2026-09-26): una fotografía fija no los dibuja. La nota neutra de la sala lo dice sin nombrar los hallazgos. Una fotografía que los muestre sería un activo nuevo, con generación externa y revisión docente.
+3. **La complexión de V38** («severely obese») es la más cercana a la ficha (111 kg, 1,76 m) entre las personas compatibles con una fotografía aprobada del estado de llegada. Es la elección de la regla del banco, no un juicio nuevo.
+4. **El rótulo «Patient on arrival» está sólo en inglés**, a la espera de su español firmado (TD-46).
+5. **El registro sellado del alcance del piloto** (`GI_MANAGEMENT_TRACE_PILOT_SCOPE_V1`) sigue diciendo «patient photographs (the image bank is off)». No se reescribe (contrato de registros históricos); el agregado queda declarado en `FD-P3-311`. Si se quiere un alcance que lo nombre, corresponde un registro sucesor.
